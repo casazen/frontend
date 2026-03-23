@@ -1,6 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect } from 'react';
 import { setAccessTokenGetter } from '@/lib/axios';
+import { isDemoMode, demoUser } from '@/config/demo.config';
 
 export function useAuth() {
   const {
@@ -14,16 +15,34 @@ export function useAuth() {
 
   // Set up the access token getter for axios
   useEffect(() => {
-    setAccessTokenGetter(getAccessTokenSilently);
+    if (!isDemoMode) {
+      setAccessTokenGetter(getAccessTokenSilently);
+    }
   }, [getAccessTokenSilently]);
 
   const logout = () => {
+    if (isDemoMode) {
+      console.log('Demo mode: logout simulation');
+      return;
+    }
     auth0Logout({
       logoutParams: {
         returnTo: window.location.origin,
       },
     });
   };
+
+  // In demo mode, return mock authentication state
+  if (isDemoMode) {
+    return {
+      isLoading: false,
+      isAuthenticated: true,
+      user: demoUser,
+      login: () => console.log('Demo mode: login simulation'),
+      logout,
+      getAccessToken: async () => 'demo-token',
+    };
+  }
 
   return {
     isLoading,
