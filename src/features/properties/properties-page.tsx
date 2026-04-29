@@ -1,69 +1,95 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PropertiesList } from './components/properties-list';
-import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
-import { useProperties, useDeleteProperty } from '@/queries/use-properties';
-import { Plus } from 'lucide-react';
-import type { Property } from '@/types';
+import { MoreHorizontal, Plus } from 'lucide-react';
+
+const PROPERTIES = [
+  { id: 1, name: 'Villa Serena', city: 'Amalfi', country: 'Italy', bedrooms: 4, bathrooms: 3, maxGuests: 8, price: 250, currency: 'EUR', isActive: true, amenities: ['Pool', 'Sea View', 'WiFi', 'AC'] },
+  { id: 2, name: 'Casa Blu', city: 'Positano', country: 'Italy', bedrooms: 2, bathrooms: 1, maxGuests: 4, price: 195, currency: 'EUR', isActive: true, amenities: ['Sea View', 'WiFi', 'Balcony'] },
+  { id: 3, name: 'Apt Roma Centro', city: 'Rome', country: 'Italy', bedrooms: 1, bathrooms: 1, maxGuests: 2, price: 120, currency: 'EUR', isActive: true, amenities: ['WiFi', 'AC', 'Parking'] },
+  { id: 4, name: 'Trullo Alberobello', city: 'Alberobello', country: 'Italy', bedrooms: 2, bathrooms: 2, maxGuests: 4, price: 160, currency: 'EUR', isActive: false, amenities: ['Garden', 'WiFi'] },
+  { id: 5, name: 'Palazzo Venezia', city: 'Venice', country: 'Italy', bedrooms: 3, bathrooms: 2, maxGuests: 6, price: 320, currency: 'EUR', isActive: true, amenities: ['Canal View', 'WiFi', 'Concierge'] },
+];
 
 export function PropertiesPage() {
-  const navigate = useNavigate();
-  const { data, isLoading } = useProperties();
-  const deleteProperty = useDeleteProperty();
+  const [properties, setProperties] = useState(PROPERTIES);
 
-  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
-
-  const handleEdit = (property: Property) => {
-    navigate(`/properties/${property.id}/edit`);
-  };
-
-  const handleView = (property: Property) => {
-    navigate(`/properties/${property.id}`);
-  };
-
-  const handleDelete = async () => {
-    if (propertyToDelete) {
-      await deleteProperty.mutateAsync(propertyToDelete.id);
-      setPropertyToDelete(null);
-    }
+  const toggleActive = (id: number) => {
+    setProperties((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p))
+    );
   };
 
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader
-          title="Properties"
-          description="Manage your vacation rental properties"
-          action={
-            <Button onClick={() => navigate('/properties/create')}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Property
-            </Button>
-          }
-        />
+        <div className="flex items-center justify-between">
+          <PageHeader title="Properties" description="Manage your vacation rental properties" />
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Property
+          </Button>
+        </div>
 
-        <PropertiesList
-          properties={data?.data || []}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onDelete={setPropertyToDelete}
-          onView={handleView}
-          onAdd={() => navigate('/properties/create')}
-        />
-
-        <ConfirmationDialog
-          open={!!propertyToDelete}
-          onOpenChange={(open) => !open && setPropertyToDelete(null)}
-          title="Delete Property"
-          description={`Are you sure you want to delete "${propertyToDelete?.name}"? This action cannot be undone.`}
-          confirmLabel="Delete"
-          variant="destructive"
-          onConfirm={handleDelete}
-          isLoading={deleteProperty.isPending}
-        />
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/40">
+                    {['Property', 'Location', 'Rooms', 'Guests', 'Price / night', 'Amenities', 'Status', ''].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {properties.map((p) => (
+                    <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3 font-medium">{p.name}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{p.bedrooms}bd · {p.bathrooms}ba</td>
+                      <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
+                      <td className="px-4 py-3 font-medium">€{p.price}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {p.amenities.slice(0, 3).map((a) => (
+                            <Badge key={a} variant="secondary" className="text-xs">{a}</Badge>
+                          ))}
+                          {p.amenities.length > 3 && (
+                            <Badge variant="outline" className="text-xs">+{p.amenities.length - 3}</Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={p.isActive ? 'default' : 'secondary'}>
+                          {p.isActive ? 'Active' : 'Paused'}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleActive(p.id)}
+                            className="text-xs"
+                          >
+                            {p.isActive ? 'Pause' : 'Activate'}
+                          </Button>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AppShell>
   );
