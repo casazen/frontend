@@ -49,9 +49,9 @@ export function PropertyDetailPage() {
             <Card>
               <CardContent className="p-0">
                 <div className="relative h-96 bg-muted rounded-lg overflow-hidden">
-                  {property.images && property.images.length > 0 ? (
+                  {property.photoUrls && property.photoUrls.length > 0 ? (
                     <img
-                      src={property.images[0]}
+                      src={property.photoUrls[0]}
                       alt={property.name}
                       className="h-full w-full object-cover"
                     />
@@ -131,7 +131,7 @@ export function PropertyDetailPage() {
                 <div className="border-t pt-4">
                   <div className="text-sm text-muted-foreground mb-1">Price per Night</div>
                   <div className="text-2xl font-bold">
-                    {formatCurrency(property.pricePerNight, property.currency)}
+                    {formatCurrency(property.nightlyRate, property.currency)}
                   </div>
                 </div>
               </CardContent>
@@ -156,7 +156,7 @@ export function PropertyDetailPage() {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">ZIP Code</div>
-                  <div className="font-medium">{property.zipCode}</div>
+                  <div className="font-medium">{property.postalCode}</div>
                 </div>
                 {property.latitude && property.longitude && (
                   <div>

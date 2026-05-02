@@ -6,16 +6,16 @@ export const propertyFormSchema = z.object({
   address: z.string().min(5, 'Address is required'),
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
-  zipCode: z.string().min(3, 'ZIP code is required'),
+  postalCode: z.string().min(3, 'Postal code is required'),  // ✅ Fixed: was zipCode
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   bedrooms: z.number().int().min(1, 'At least 1 bedroom is required').max(50),
   bathrooms: z.number().min(0.5, 'At least 0.5 bathrooms required').max(20),
   maxGuests: z.number().int().min(1, 'At least 1 guest capacity required').max(100),
-  pricePerNight: z.number().min(1, 'Price must be at least 1').max(100000),
+  nightlyRate: z.number().min(1, 'Price must be at least 1').max(100000),  // ✅ Fixed: was pricePerNight
   currency: z.string(),
   amenities: z.array(z.string()),
-  images: z.array(z.string()),
+  photoUrls: z.array(z.string()),  // ✅ Fixed: was images
   isActive: z.boolean(),
 });
 

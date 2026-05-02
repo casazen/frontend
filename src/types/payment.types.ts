@@ -1,17 +1,19 @@
+// ✅ Fixed: Backend uses PascalCase enum values
 export type PaymentStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'REFUNDED'
-  | 'PARTIALLY_REFUNDED';
+  | 'Pending'
+  | 'Processing'
+  | 'Completed'
+  | 'Failed'
+  | 'Refunded'
+  | 'PartiallyRefunded';
 
+// ✅ Fixed: Backend uses PascalCase enum values
 export type PaymentMethod =
-  | 'CREDIT_CARD'
-  | 'DEBIT_CARD'
-  | 'PAYPAL'
-  | 'BANK_TRANSFER'
-  | 'CASH';
+  | 'CreditCard'
+  | 'BankTransfer'
+  | 'PayPal'
+  | 'ApplePay'
+  | 'GooglePay';
 
 export interface Payment {
   id: string;

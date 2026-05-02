@@ -5,16 +5,22 @@ export interface Property {
   address: string;
   city: string;
   country: string;
-  zipCode: string;
+  postalCode: string;  // ✅ Fixed: was zipCode
   latitude?: number;
   longitude?: number;
   bedrooms: number;
   bathrooms: number;
   maxGuests: number;
-  pricePerNight: number;
+  nightlyRate: number;  // ✅ Fixed: was pricePerNight
+  cleaningFee: number;  // ✅ Added - missing from backend
+  damageDeposit: number;  // ✅ Added - missing from backend
   currency: string;
   amenities: string[];
-  images: string[];
+  photoUrls: string[];  // ✅ Fixed: was images
+  houseRules: string;  // ✅ Added - missing from backend
+  cinCode: string | null;  // ✅ Added - Italian compliance
+  timezone: string;  // ✅ Added - missing from backend
+  cancellationPolicyId: string | null;  // ✅ Added - missing from backend
   isActive: boolean;
   ownerId: string;
   createdAt: string;
@@ -27,16 +33,16 @@ export interface CreatePropertyDto {
   address: string;
   city: string;
   country: string;
-  zipCode: string;
+  postalCode: string;  // ✅ Fixed: was zipCode
   latitude?: number;
   longitude?: number;
   bedrooms: number;
   bathrooms: number;
   maxGuests: number;
-  pricePerNight: number;
+  nightlyRate: number;  // ✅ Fixed: was pricePerNight
   currency?: string;
   amenities?: string[];
-  images?: string[];
+  photoUrls?: string[];  // ✅ Fixed: was images
   isActive?: boolean;
 }
 
