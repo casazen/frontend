@@ -1,4 +1,5 @@
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
+// ✅ Fixed: Backend uses PascalCase enum values
+export type BookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
 
 export interface Guest {
   firstName: string;

@@ -17,9 +17,9 @@ export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCar
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
         <div className="relative h-48 bg-muted">
-          {property.images && property.images.length > 0 ? (
+          {property.photoUrls && property.photoUrls.length > 0 ? (
             <img
-              src={property.images[0]}
+              src={property.photoUrls[0]}
               alt={property.name}
               className="h-full w-full object-cover"
             />
@@ -66,7 +66,7 @@ export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCar
         </div>
 
         <div className="text-lg font-bold">
-          {formatCurrency(property.pricePerNight, property.currency)} / night
+          {formatCurrency(property.nightlyRate, property.currency)} / night
         </div>
       </CardContent>
 

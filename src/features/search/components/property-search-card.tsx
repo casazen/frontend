@@ -54,7 +54,7 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
         <div className="pt-2 border-t">
           <div className="flex items-baseline gap-1">
             <Euro className="h-4 w-4 text-muted-foreground" />
-            <span className="text-2xl font-bold">{formatCurrency(property.pricePerNight)}</span>
+            <span className="text-2xl font-bold">{formatCurrency(property.nightlyRate)}</span>
             <span className="text-sm text-muted-foreground">/night</span>
           </div>
         </div>

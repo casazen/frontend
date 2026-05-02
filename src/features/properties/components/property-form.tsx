@@ -31,21 +31,21 @@ export function PropertyForm({ property, onSubmit, isLoading }: PropertyFormProp
       address: property.address,
       city: property.city,
       country: property.country,
-      zipCode: property.zipCode,
+      postalCode: property.postalCode,
       latitude: property.latitude,
       longitude: property.longitude,
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
       maxGuests: property.maxGuests,
-      pricePerNight: property.pricePerNight,
+      nightlyRate: property.nightlyRate,
       currency: property.currency,
       amenities: property.amenities || [],
-      images: property.images || [],
+      photoUrls: property.photoUrls || [],
       isActive: property.isActive,
     } : {
       currency: 'EUR',
       amenities: [],
-      images: [],
+      photoUrls: [],
       isActive: true,
     } as any,
   });
@@ -154,14 +154,14 @@ export function PropertyForm({ property, onSubmit, isLoading }: PropertyFormProp
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="zipCode">ZIP Code *</Label>
+              <Label htmlFor="postalCode">ZIP Code *</Label>
               <Input
-                id="zipCode"
-                {...register('zipCode')}
+                id="postalCode"
+                {...register('postalCode')}
                 placeholder="33101"
               />
-              {errors.zipCode && (
-                <p className="text-sm text-destructive">{errors.zipCode.message}</p>
+              {errors.postalCode && (
+                <p className="text-sm text-destructive">{errors.postalCode.message}</p>
               )}
             </div>
 
@@ -241,16 +241,16 @@ export function PropertyForm({ property, onSubmit, isLoading }: PropertyFormProp
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="pricePerNight">Price per Night *</Label>
+              <Label htmlFor="nightlyRate">Price per Night *</Label>
               <Input
-                id="pricePerNight"
+                id="nightlyRate"
                 type="number"
                 step="0.01"
-                {...register('pricePerNight', { valueAsNumber: true })}
+                {...register('nightlyRate', { valueAsNumber: true })}
                 placeholder="150"
               />
-              {errors.pricePerNight && (
-                <p className="text-sm text-destructive">{errors.pricePerNight.message}</p>
+              {errors.nightlyRate && (
+                <p className="text-sm text-destructive">{errors.nightlyRate.message}</p>
               )}
             </div>
 

@@ -17,7 +17,7 @@ export const otaIntegrationFormSchema = z.object({
 
 export const pricingUpdateSchema = z.object({
   propertyId: z.string().min(1, 'Property is required'),
-  pricePerNight: z.number().min(0.01, 'Price must be greater than 0'),
+  nightlyRate: z.number().min(0.01, 'Price must be greater than 0'),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   platforms: z.array(z.enum(['AIRBNB', 'BOOKING_COM', 'EXPEDIA', 'VRBO', 'TRIPADVISOR', 'AGODA'])).optional(),
