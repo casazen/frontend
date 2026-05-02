@@ -11,7 +11,7 @@ import type {
 
 export const paymentsApi = {
   getAll: (params?: Record<string, any>) =>
-    ApiClient.getPaginated<Payment>('/payments', params),
+    ApiClient.get<Payment[]>('/payments', params),
 
   getById: (id: string) => ApiClient.get<Payment>(`/payments/${id}`),
 
@@ -19,7 +19,7 @@ export const paymentsApi = {
     ApiClient.post<Payment>('/payments', data),
 
   update: (id: string, data: UpdatePaymentDto) =>
-    ApiClient.patch<Payment>(`/payments/${id}`, data),
+    ApiClient.put<Payment>(`/payments/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/payments/${id}`),
 

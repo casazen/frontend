@@ -9,7 +9,7 @@ import type {
 
 export const bookingsApi = {
   getAll: (params?: Record<string, any>) =>
-    ApiClient.getPaginated<Booking>('/bookings', params),
+    ApiClient.get<Booking[]>('/bookings', params),
 
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
 
@@ -17,7 +17,7 @@ export const bookingsApi = {
     ApiClient.post<Booking>('/bookings', data),
 
   update: (id: string, data: UpdateBookingDto) =>
-    ApiClient.patch<Booking>(`/bookings/${id}`, data),
+    ApiClient.put<Booking>(`/bookings/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/bookings/${id}`),
 

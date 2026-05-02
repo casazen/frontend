@@ -8,7 +8,7 @@ import type {
 
 export const propertiesApi = {
   getAll: (params?: Record<string, any>) =>
-    ApiClient.getPaginated<Property>('/properties', params),
+    ApiClient.get<Property[]>('/properties', params),
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
 
@@ -16,10 +16,10 @@ export const propertiesApi = {
     ApiClient.post<Property>('/properties', data),
 
   update: (id: string, data: UpdatePropertyDto) =>
-    ApiClient.patch<Property>(`/properties/${id}`, data),
+    ApiClient.put<Property>(`/properties/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
   search: (params: PropertySearchParams) =>
-    ApiClient.getPaginated<Property>('/properties/search', params),
+    ApiClient.get<Property[]>('/properties/search', params),
 };

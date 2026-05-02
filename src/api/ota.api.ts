@@ -12,7 +12,7 @@ import type {
 
 export const otaApi = {
   getAll: (params?: Record<string, any>) =>
-    ApiClient.getPaginated<OtaIntegration>('/ota', params),
+    ApiClient.get<OtaIntegration[]>('/ota', params),
 
   getById: (id: string) => ApiClient.get<OtaIntegration>(`/ota/${id}`),
 
@@ -20,7 +20,7 @@ export const otaApi = {
     ApiClient.post<OtaIntegration>('/ota', data),
 
   update: (id: string, data: UpdateOtaIntegrationDto) =>
-    ApiClient.patch<OtaIntegration>(`/ota/${id}`, data),
+    ApiClient.put<OtaIntegration>(`/ota/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/ota/${id}`),
 
