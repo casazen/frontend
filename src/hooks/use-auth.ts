@@ -16,7 +16,11 @@ export function useAuth() {
   // Set up the access token getter for axios
   useEffect(() => {
     if (!isDemoMode) {
-      setAccessTokenGetter(getAccessTokenSilently);
+      setAccessTokenGetter(() =>
+        getAccessTokenSilently({
+          authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api' },
+        })
+      );
     }
   }, [getAccessTokenSilently]);
 

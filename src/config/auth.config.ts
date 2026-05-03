@@ -1,8 +1,10 @@
+import { env } from './env.config';
+
 export const authConfig = {
-  domain: import.meta.env.VITE_AUTH0_DOMAIN || '',
-  clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || '',
+  domain: env.auth0.domain,
+  clientId: env.auth0.clientId,
   authorizationParams: {
     redirect_uri: window.location.origin,
-    audience: import.meta.env.VITE_AUTH0_AUDIENCE || '',
+    audience: env.auth0.audience,
   },
 };
