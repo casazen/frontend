@@ -1,27 +1,46 @@
-import { useState } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Plus } from 'lucide-react';
-
-const PROPERTIES = [
-  { id: 1, name: 'Villa Serena', city: 'Amalfi', country: 'Italy', bedrooms: 4, bathrooms: 3, maxGuests: 8, price: 250, currency: 'EUR', isActive: true, amenities: ['Pool', 'Sea View', 'WiFi', 'AC'] },
-  { id: 2, name: 'Casa Blu', city: 'Positano', country: 'Italy', bedrooms: 2, bathrooms: 1, maxGuests: 4, price: 195, currency: 'EUR', isActive: true, amenities: ['Sea View', 'WiFi', 'Balcony'] },
-  { id: 3, name: 'Apt Roma Centro', city: 'Rome', country: 'Italy', bedrooms: 1, bathrooms: 1, maxGuests: 2, price: 120, currency: 'EUR', isActive: true, amenities: ['WiFi', 'AC', 'Parking'] },
-  { id: 4, name: 'Trullo Alberobello', city: 'Alberobello', country: 'Italy', bedrooms: 2, bathrooms: 2, maxGuests: 4, price: 160, currency: 'EUR', isActive: false, amenities: ['Garden', 'WiFi'] },
-  { id: 5, name: 'Palazzo Venezia', city: 'Venice', country: 'Italy', bedrooms: 3, bathrooms: 2, maxGuests: 6, price: 320, currency: 'EUR', isActive: true, amenities: ['Canal View', 'WiFi', 'Concierge'] },
-];
+import { useProperties, useUpdateProperty } from '@/queries/use-properties';
+import { LoadingScreen } from '@/components/shared/loading-screen';
+import type { Property } from '@/types';
 
 export function PropertiesPage() {
-  const [properties, setProperties] = useState(PROPERTIES);
+  const { data: properties, isLoading, error } = useProperties();
+  const updateProperty = useUpdateProperty();
 
-  const toggleActive = (id: number) => {
-    setProperties((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p))
-    );
+  const toggleActive = async (property: Property) => {
+    try {
+      await updateProperty.mutateAsync({
+        id: property.id,
+        data: { isActive: !property.isActive },
+      });
+    } catch (error) {
+      // Error toast already handled by mutation
+    }
   };
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (error) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center space-y-2">
+            <p className="text-lg font-semibold text-destructive">Failed to load properties</p>
+            <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const propertyList = properties?.data || [];
 
   return (
     <AppShell>
@@ -34,62 +53,78 @@ export function PropertiesPage() {
           </Button>
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    {['Property', 'Location', 'Rooms', 'Guests', 'Price / night', 'Amenities', 'Status', ''].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {properties.map((p) => (
-                    <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-3 font-medium">{p.name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{p.bedrooms}bd · {p.bathrooms}ba</td>
-                      <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
-                      <td className="px-4 py-3 font-medium">€{p.price}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {p.amenities.slice(0, 3).map((a) => (
-                            <Badge key={a} variant="secondary" className="text-xs">{a}</Badge>
-                          ))}
-                          {p.amenities.length > 3 && (
-                            <Badge variant="outline" className="text-xs">+{p.amenities.length - 3}</Badge>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={p.isActive ? 'default' : 'secondary'}>
-                          {p.isActive ? 'Active' : 'Paused'}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleActive(p.id)}
-                            className="text-xs"
-                          >
-                            {p.isActive ? 'Pause' : 'Activate'}
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
+        {propertyList.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-lg font-semibold mb-2">No properties yet</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Get started by adding your first vacation rental property
+              </p>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Your First Property
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/40">
+                      {['Property', 'Location', 'Rooms', 'Guests', 'Price / night', 'Amenities', 'Status', ''].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                  </thead>
+                  <tbody>
+                    {propertyList.map((p) => (
+                      <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="px-4 py-3 font-medium">{p.name}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{p.bedrooms}bd · {p.bathrooms}ba</td>
+                        <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
+                        <td className="px-4 py-3 font-medium">{p.currency === 'EUR' ? '€' : '$'}{p.nightlyRate}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(p.amenities || []).slice(0, 3).map((a) => (
+                              <Badge key={a} variant="secondary" className="text-xs">{a}</Badge>
+                            ))}
+                            {(p.amenities || []).length > 3 && (
+                              <Badge variant="outline" className="text-xs">+{p.amenities.length - 3}</Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant={p.isActive ? 'default' : 'secondary'}>
+                            {p.isActive ? 'Active' : 'Paused'}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleActive(p)}
+                              disabled={updateProperty.isPending}
+                              className="text-xs"
+                            >
+                              {p.isActive ? 'Pause' : 'Activate'}
+                            </Button>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AppShell>
   );
