@@ -3,13 +3,24 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Mail, User, Shield } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
-import type { User as UserType } from '@/types';
 
 interface ProfileInfoProps {
-  user: UserType;
+  user: {
+    name?: string;
+    email?: string;
+    picture?: string;
+    sub?: string;
+    role?: string;
+    id?: string;
+  };
 }
 
 export function ProfileInfo({ user }: ProfileInfoProps) {
+  const userId = user.id || user.sub || 'N/A';
+  const userName = user.name || 'Unknown User';
+  const userEmail = user.email || 'N/A';
+  const userRole = user.role || 'User';
+
   return (
     <Card>
       <CardHeader>
@@ -18,14 +29,18 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
-            <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground text-2xl font-semibold">
-              {getInitials(user.name)}
-            </div>
+            {user.picture ? (
+              <img src={user.picture} alt={userName} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground text-2xl font-semibold">
+                {getInitials(userName)}
+              </div>
+            )}
           </Avatar>
           <div>
-            <h3 className="text-xl font-semibold">{user.name}</h3>
+            <h3 className="text-xl font-semibold">{userName}</h3>
             <Badge variant="secondary" className="mt-1">
-              {user.role}
+              {userRole}
             </Badge>
           </div>
         </div>
@@ -35,7 +50,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
             <Mail className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{user.email}</p>
+              <p className="font-medium">{userEmail}</p>
             </div>
           </div>
 
@@ -43,7 +58,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
             <User className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-sm text-muted-foreground">User ID</p>
-              <p className="font-mono text-sm">{user.id}</p>
+              <p className="font-mono text-sm">{userId}</p>
             </div>
           </div>
 
@@ -51,7 +66,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
             <Shield className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-sm text-muted-foreground">Role</p>
-              <p className="font-medium capitalize">{user.role.toLowerCase()}</p>
+              <p className="font-medium capitalize">{userRole.toLowerCase()}</p>
             </div>
           </div>
         </div>
