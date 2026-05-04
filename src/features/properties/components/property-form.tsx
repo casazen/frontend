@@ -13,10 +13,11 @@ import type { Property } from '@/types';
 interface PropertyFormProps {
   property?: Property;
   onSubmit: (data: PropertyFormValues) => void;
+  onCancel?: () => void;
   isLoading?: boolean;
 }
 
-export function PropertyForm({ property, onSubmit, isLoading }: PropertyFormProps) {
+export function PropertyForm({ property, onSubmit, onCancel, isLoading }: PropertyFormProps) {
   const {
     register,
     handleSubmit,
@@ -292,7 +293,7 @@ export function PropertyForm({ property, onSubmit, isLoading }: PropertyFormProp
 
       {/* Form Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" disabled={isLoading}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
         <Button type="submit" disabled={isLoading}>

@@ -1,16 +1,28 @@
+import { useState } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { MoreHorizontal, Plus } from 'lucide-react';
-import { useProperties, useUpdateProperty } from '@/queries/use-properties';
+import { useProperties, useUpdateProperty, useCreateProperty } from '@/queries/use-properties';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { PropertyForm } from './components/property-form';
 import type { Property } from '@/types';
+import type { PropertyFormValues } from './schemas/property.schema';
 
 export function PropertiesPage() {
   const { data: properties, isLoading, error } = useProperties();
   const updateProperty = useUpdateProperty();
+  const createProperty = useCreateProperty();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const toggleActive = async (property: Property) => {
     try {
@@ -18,6 +30,15 @@ export function PropertiesPage() {
         id: property.id,
         data: { isActive: !property.isActive },
       });
+    } catch (error) {
+      // Error toast already handled by mutation
+    }
+  };
+
+  const handleCreateProperty = async (data: PropertyFormValues) => {
+    try {
+      await createProperty.mutateAsync(data);
+      setIsDialogOpen(false);
     } catch (error) {
       // Error toast already handled by mutation
     }
@@ -47,7 +68,7 @@ export function PropertiesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <PageHeader title="Properties" description="Manage your vacation rental properties" />
-          <Button>
+          <Button onClick={() => setIsDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Property
           </Button>
@@ -60,7 +81,7 @@ export function PropertiesPage() {
               <p className="text-sm text-muted-foreground mb-6">
                 Get started by adding your first vacation rental property
               </p>
-              <Button>
+              <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Your First Property
               </Button>
@@ -125,6 +146,22 @@ export function PropertiesPage() {
             </CardContent>
           </Card>
         )}
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Property</DialogTitle>
+              <DialogDescription>
+                Create a new vacation rental property
+              </DialogDescription>
+            </DialogHeader>
+            <PropertyForm
+              onSubmit={handleCreateProperty}
+              onCancel={() => setIsDialogOpen(false)}
+              isLoading={createProperty.isPending}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </AppShell>
   );
