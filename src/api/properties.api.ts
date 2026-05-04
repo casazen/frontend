@@ -20,6 +20,9 @@ export const propertiesApi = {
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
-  search: (params: PropertySearchParams) =>
-    ApiClient.get<Property[]>('/properties/search', params),
+  search: async (params: PropertySearchParams) => {
+    // Backend returns array directly, not wrapped in ApiResponse
+    const response = await axios.get<Property[]>('/properties/search', { params });
+    return response.data;
+  },
 };
