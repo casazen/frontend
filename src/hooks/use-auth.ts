@@ -18,7 +18,10 @@ export function useAuth() {
     if (!isDemoMode) {
       setAccessTokenGetter(() =>
         getAccessTokenSilently({
-          authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api' },
+          authorizationParams: {
+            audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
+            scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
+          },
         })
       );
     }
@@ -54,6 +57,11 @@ export function useAuth() {
     user,
     login: loginWithRedirect,
     logout,
-    getAccessToken: getAccessTokenSilently,
+    getAccessToken: () => getAccessTokenSilently({
+      authorizationParams: {
+        audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
+        scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
+      },
+    }),
   };
 }

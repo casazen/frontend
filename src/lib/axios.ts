@@ -28,11 +28,31 @@ const axiosInstance: AxiosInstance = axios.create({
  */
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (getAccessToken) {
-      const token = await getAccessToken();
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+    // Skip auth for public endpoints
+    const publicEndpoints = ['/health', '/auth/'];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
+    if (!isPublicEndpoint && getAccessToken) {
+      try {
+        const token = await getAccessToken();
+        console.log('[Auth Debug] Token retrieved:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+          console.log('[Auth Debug] Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
+        } else {
+          console.warn('[Auth Debug] No token available - request will be sent without auth');
+          console.warn('[Auth Debug] This may cause 401 errors for protected endpoints');
+        }
+      } catch (error) {
+        console.error('[Auth Debug] Error getting token:', error);
+        // If we can't get a token and this is a protected endpoint, we should probably fail
+        if (error instanceof Error && error.message.includes('login_required')) {
+          console.error('[Auth Debug] Login required - user not authenticated');
+        }
       }
+    } else if (!isPublicEndpoint) {
+      console.warn('[Auth Debug] getAccessToken not set - no auth will be sent');
+      console.warn('[Auth Debug] Make sure AuthInitializer is rendered and user is logged in');
     }
     return config;
   },
@@ -55,6 +75,10 @@ axiosInstance.interceptors.response.use(
         case 401:
           // Unauthorized - token expired or invalid
           console.error('Unauthorized access - please login again');
+          // Redirect to login if needed
+          if (window.location.pathname !== '/login') {
+            console.warn('[Auth Debug] 401 received - user may need to login');
+          }
           break;
         case 403:
           // Forbidden - user doesn't have permission
@@ -63,6 +87,10 @@ axiosInstance.interceptors.response.use(
         case 404:
           // Not found
           console.error('Resource not found');
+          break;
+        case 400:
+          // Bad request - validation errors
+          console.error('Bad request:', error.response.data);
           break;
         case 500:
           // Server error
