@@ -6,5 +6,8 @@ export const authConfig = {
   authorizationParams: {
     redirect_uri: window.location.origin,
     audience: env.auth0.audience,
+    scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
   },
+  useRefreshTokens: true,
+  cacheLocation: 'localstorage' as const,
 };
