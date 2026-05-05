@@ -29,3 +29,6 @@ dist-ssr
 
 # Claude AI files
 .claude/
+
+opencode.json
+public/test-auth.html

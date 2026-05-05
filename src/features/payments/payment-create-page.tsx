@@ -17,7 +17,7 @@ export function PaymentCreatePage() {
   const navigate = useNavigate();
   const createPayment = useCreatePayment();
   const { data: bookingsData } = useBookings();
-  const bookings = bookingsData?.data || [];
+  const bookings = bookingsData ?? [];
 
   const {
     register,

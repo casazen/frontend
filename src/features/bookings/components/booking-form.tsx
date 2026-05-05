@@ -18,7 +18,7 @@ interface BookingFormProps {
 
 export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) {
   const { data: propertiesData } = useProperties();
-  const properties = propertiesData?.data || [];
+  const properties = propertiesData ?? [];
 
   const {
     register,

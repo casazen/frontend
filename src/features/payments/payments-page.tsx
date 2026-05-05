@@ -2,32 +2,36 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Clock, RotateCcw } from 'lucide-react';
-
-const PAYMENTS = [
-  { id: 'PAY-1021', booking: 'BK-00421', guest: 'Marco Rossi', amount: 1500, status: 'completed', method: 'stripe', date: '2025-06-01' },
-  { id: 'PAY-1022', booking: 'BK-00422', guest: 'Anna Bianchi', amount: 975, status: 'pending', method: 'stripe', date: '2025-06-10' },
-  { id: 'PAY-1023', booking: 'BK-00423', guest: 'Luca Ferrari', amount: 480, status: 'completed', method: 'bank_transfer', date: '2025-06-05' },
-  { id: 'PAY-1020', booking: 'BK-00420', guest: 'Sofia Greco', amount: 1500, status: 'refunded', method: 'stripe', date: '2025-05-25' },
-  { id: 'PAY-1019', booking: 'BK-00419', guest: 'Paolo Conti', amount: 1280, status: 'completed', method: 'stripe', date: '2025-05-15' },
-];
+import { CreditCard, Clock, RotateCcw, Loader2 } from 'lucide-react';
+import { usePayments } from '@/queries/use-payments';
 
 const PAY_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  completed: 'default',
-  pending: 'secondary',
-  failed: 'destructive',
-  refunded: 'outline',
-  processing: 'secondary',
+  Completed: 'default',
+  Pending: 'secondary',
+  Processing: 'secondary',
+  Failed: 'destructive',
+  Refunded: 'outline',
+  PartiallyRefunded: 'outline',
 };
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function formatMethod(method: string): string {
+  return method.replace(/([A-Z])/g, ' $1').trim();
+}
+
 export function PaymentsPage() {
-  const totalRevenue = PAYMENTS.filter((p) => p.status === 'completed').reduce((s, p) => s + p.amount, 0);
-  const totalPending = PAYMENTS.filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0);
-  const totalRefunded = PAYMENTS.filter((p) => p.status === 'refunded').reduce((s, p) => s + p.amount, 0);
+  const { data: payments, isLoading, isError } = usePayments();
+
+  const completed = (payments ?? []).filter((p) => p.status === 'Completed');
+  const pending = (payments ?? []).filter((p) => p.status === 'Pending' || p.status === 'Processing');
+  const refunded = (payments ?? []).filter((p) => p.status === 'Refunded' || p.status === 'PartiallyRefunded');
+
+  const totalRevenue = completed.reduce((s, p) => s + p.amount, 0);
+  const totalPending = pending.reduce((s, p) => s + p.amount, 0);
+  const totalRefunded = refunded.reduce((s, p) => s + (p.refundedAmount ?? p.amount), 0);
 
   return (
     <AppShell>
@@ -80,34 +84,57 @@ export function PaymentsPage() {
             <CardTitle>Transactions</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    {['Payment ID', 'Booking', 'Guest', 'Amount', 'Method', 'Date', 'Status'].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {PAYMENTS.map((p) => (
-                    <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{p.booking}</td>
-                      <td className="px-4 py-3 font-medium">{p.guest}</td>
-                      <td className="px-4 py-3 font-medium">€{p.amount.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-muted-foreground capitalize">{p.method.replace('_', ' ')}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(p.date)}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={PAY_STATUS_VARIANT[p.status] ?? 'secondary'} className="capitalize">
-                          {p.status}
-                        </Badge>
-                      </td>
+            {isLoading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Loading payments...</span>
+              </div>
+            )}
+
+            {isError && (
+              <div className="py-8 text-center text-destructive px-4">
+                Failed to load payments. Please try again.
+              </div>
+            )}
+
+            {!isLoading && !isError && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/40">
+                      {['Payment ID', 'Booking ID', 'Amount', 'Method', 'Date', 'Status'].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {(payments ?? []).map((p) => (
+                      <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="px-4 py-3 font-mono text-xs">{p.id.slice(0, 8)}…</td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{p.bookingId.slice(0, 8)}…</td>
+                        <td className="px-4 py-3 font-medium">
+                          {p.currency ?? 'EUR'} {p.amount.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{formatMethod(p.method)}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{formatDate(p.createdAt)}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant={PAY_STATUS_VARIANT[p.status] ?? 'secondary'} className="capitalize">
+                            {p.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                    {(payments ?? []).length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                          No payments found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

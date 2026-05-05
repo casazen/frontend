@@ -5,32 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Search } from 'lucide-react';
-
-const BOOKINGS = [
-  { id: 'BK-00421', guest: { firstName: 'Marco', lastName: 'Rossi' }, property: 'Villa Serena', checkIn: '2025-06-12', checkOut: '2025-06-18', nights: 6, total: 1500, status: 'confirmed', platform: 'Airbnb' },
-  { id: 'BK-00422', guest: { firstName: 'Anna', lastName: 'Bianchi' }, property: 'Casa Blu', checkIn: '2025-06-20', checkOut: '2025-06-25', nights: 5, total: 975, status: 'pending', platform: 'Booking.com' },
-  { id: 'BK-00423', guest: { firstName: 'Luca', lastName: 'Ferrari' }, property: 'Apt Roma Centro', checkIn: '2025-06-22', checkOut: '2025-06-26', nights: 4, total: 480, status: 'checked-in', platform: 'Direct' },
-  { id: 'BK-00420', guest: { firstName: 'Sofia', lastName: 'Greco' }, property: 'Villa Serena', checkIn: '2025-06-01', checkOut: '2025-06-07', nights: 6, total: 1500, status: 'checked-out', platform: 'Airbnb' },
-  { id: 'BK-00419', guest: { firstName: 'Paolo', lastName: 'Conti' }, property: 'Palazzo Venezia', checkIn: '2025-05-20', checkOut: '2025-05-24', nights: 4, total: 1280, status: 'confirmed', platform: 'VRBO' },
-  { id: 'BK-00418', guest: { firstName: 'Elena', lastName: 'Ricci' }, property: 'Trullo Alberobello', checkIn: '2025-05-10', checkOut: '2025-05-14', nights: 4, total: 640, status: 'cancelled', platform: 'Expedia' },
-];
+import { ArrowLeft, Search, Loader2 } from 'lucide-react';
+import { useBookings } from '@/queries/use-bookings';
+import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  confirmed: 'default',
-  pending: 'secondary',
-  'checked-in': 'outline',
-  'checked-out': 'outline',
-  cancelled: 'destructive',
+  Confirmed: 'default',
+  Pending: 'secondary',
+  CheckedIn: 'outline',
+  CheckedOut: 'outline',
+  Cancelled: 'destructive',
 };
 
-const TABS = ['all', 'confirmed', 'pending', 'checked-in', 'checked-out', 'cancelled'];
+const TABS = ['all', 'Confirmed', 'Pending', 'CheckedIn', 'CheckedOut', 'Cancelled'];
+
+const TAB_LABELS: Record<string, string> = {
+  all: 'all',
+  Confirmed: 'confirmed',
+  Pending: 'pending',
+  CheckedIn: 'checked-in',
+  CheckedOut: 'checked-out',
+  Cancelled: 'cancelled',
+};
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-type Booking = typeof BOOKINGS[number];
+function getNights(checkIn: string, checkOut: string): number {
+  const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+  return Math.round(diff / (1000 * 60 * 60 * 24));
+}
 
 function BookingDetail({ booking, onBack }: { booking: Booking; onBack: () => void }) {
   return (
@@ -41,11 +46,10 @@ function BookingDetail({ booking, onBack }: { booking: Booking; onBack: () => vo
         </Button>
         <div>
           <h2 className="text-lg font-semibold">{booking.id}</h2>
-          <p className="text-sm text-muted-foreground">{booking.platform}</p>
         </div>
         <div className="ml-auto">
           <Badge variant={STATUS_VARIANT[booking.status] ?? 'secondary'} className="capitalize">
-            {booking.status}
+            {TAB_LABELS[booking.status] ?? booking.status}
           </Badge>
         </div>
       </div>
@@ -58,33 +62,57 @@ function BookingDetail({ booking, onBack }: { booking: Booking; onBack: () => vo
               <span className="font-medium">{booking.guest.firstName} {booking.guest.lastName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Platform</span>
-              <span className="font-medium">{booking.platform}</span>
+              <span className="text-muted-foreground">Email</span>
+              <span className="font-medium">{booking.guest.email}</span>
             </div>
+            {booking.guest.phone && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Phone</span>
+                <span className="font-medium">{booking.guest.phone}</span>
+              </div>
+            )}
+            {booking.guest.country && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Country</span>
+                <span className="font-medium">{booking.guest.country}</span>
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-base">Booking Details</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Property</span>
-              <span className="font-medium">{booking.property}</span>
+              <span className="text-muted-foreground">Property ID</span>
+              <span className="font-medium font-mono text-xs">{booking.propertyId}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Check-in</span>
-              <span className="font-medium">{formatDate(booking.checkIn)}</span>
+              <span className="font-medium">{formatDate(booking.checkInDate)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Check-out</span>
-              <span className="font-medium">{formatDate(booking.checkOut)}</span>
+              <span className="font-medium">{formatDate(booking.checkOutDate)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Nights</span>
-              <span className="font-medium">{booking.nights}</span>
+              <span className="font-medium">{getNights(booking.checkInDate, booking.checkOutDate)}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Guests</span>
+              <span className="font-medium">{booking.numberOfGuests}</span>
+            </div>
+            {booking.specialRequests && (
+              <div className="flex flex-col gap-1 pt-1">
+                <span className="text-muted-foreground">Special Requests</span>
+                <span className="text-xs">{booking.specialRequests}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t pt-2">
               <span className="font-medium">Total</span>
-              <span className="font-bold text-primary">€{booking.total.toLocaleString()}</span>
+              <span className="font-bold text-primary">
+                {booking.currency ?? 'EUR'} {booking.totalPrice.toLocaleString()}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -98,12 +126,13 @@ export function BookingsPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Booking | null>(null);
 
-  const filtered = BOOKINGS.filter((b) => {
+  const { data: bookings, isLoading, isError } = useBookings();
+
+  const filtered = (bookings ?? []).filter((b) => {
     const matchesTab = activeTab === 'all' || b.status === activeTab;
     const matchesSearch =
       search === '' ||
       `${b.guest.firstName} ${b.guest.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-      b.property.toLowerCase().includes(search.toLowerCase()) ||
       b.id.toLowerCase().includes(search.toLowerCase());
     return matchesTab && matchesSearch;
   });
@@ -130,7 +159,7 @@ export function BookingsPage() {
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     }`}
                   >
-                    {tab}
+                    {TAB_LABELS[tab] ?? tab}
                   </button>
                 ))}
               </div>
@@ -146,53 +175,71 @@ export function BookingsPage() {
                 />
               </div>
 
+              {/* Loading State */}
+              {isLoading && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">Loading bookings...</span>
+                </div>
+              )}
+
+              {/* Error State */}
+              {isError && (
+                <div className="py-8 text-center text-destructive">
+                  Failed to load bookings. Please try again.
+                </div>
+              )}
+
               {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/40">
-                      {['ID', 'Guest', 'Property', 'Check-in', 'Check-out', 'Nights', 'Total', 'Platform', 'Status', ''].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
+              {!isLoading && !isError && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        {['ID', 'Guest', 'Check-in', 'Check-out', 'Nights', 'Guests', 'Total', 'Status', ''].map((h) => (
+                          <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((b) => (
+                        <tr
+                          key={b.id}
+                          className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                          onClick={() => setSelected(b)}
+                        >
+                          <td className="px-4 py-3 font-mono text-xs">{b.id.slice(0, 8)}…</td>
+                          <td className="px-4 py-3 font-medium">{b.guest.firstName} {b.guest.lastName}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkInDate)}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkOutDate)}</td>
+                          <td className="px-4 py-3 text-center">{getNights(b.checkInDate, b.checkOutDate)}</td>
+                          <td className="px-4 py-3 text-center">{b.numberOfGuests}</td>
+                          <td className="px-4 py-3 font-medium">
+                            {b.currency ?? 'EUR'} {b.totalPrice.toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
+                              {TAB_LABELS[b.status] ?? b.status}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelected(b); }}>
+                              View
+                            </Button>
+                          </td>
+                        </tr>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((b) => (
-                      <tr
-                        key={b.id}
-                        className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => setSelected(b)}
-                      >
-                        <td className="px-4 py-3 font-mono text-xs">{b.id}</td>
-                        <td className="px-4 py-3 font-medium">{b.guest.firstName} {b.guest.lastName}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{b.property}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkIn)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkOut)}</td>
-                        <td className="px-4 py-3 text-center">{b.nights}</td>
-                        <td className="px-4 py-3 font-medium">€{b.total.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{b.platform}</td>
-                        <td className="px-4 py-3">
-                          <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
-                            {b.status}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelected(b); }}>
-                            View
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                    {filtered.length === 0 && (
-                      <tr>
-                        <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
-                          No bookings found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                            No bookings found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

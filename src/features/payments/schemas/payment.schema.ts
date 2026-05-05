@@ -4,7 +4,7 @@ export const paymentFormSchema = z.object({
   bookingId: z.string().min(1, 'Booking is required'),
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
   currency: z.string(),
-  method: z.enum(['CREDIT_CARD', 'DEBIT_CARD', 'PAYPAL', 'BANK_TRANSFER', 'CASH']),
+  method: z.enum(['CreditCard', 'BankTransfer', 'PayPal', 'ApplePay', 'GooglePay']),
   description: z.string().optional(),
 });
 
@@ -26,6 +26,14 @@ export const PAYMENT_STATUS_LABELS: Record<string, {
   label: string;
   variant: 'default' | 'success' | 'warning' | 'destructive' | 'secondary'
 }> = {
+  // PascalCase (current backend format)
+  Pending: { label: 'Pending', variant: 'warning' },
+  Processing: { label: 'Processing', variant: 'default' },
+  Completed: { label: 'Completed', variant: 'success' },
+  Failed: { label: 'Failed', variant: 'destructive' },
+  Refunded: { label: 'Refunded', variant: 'secondary' },
+  PartiallyRefunded: { label: 'Partially Refunded', variant: 'secondary' },
+  // UPPER_CASE fallback (legacy)
   PENDING: { label: 'Pending', variant: 'warning' },
   PROCESSING: { label: 'Processing', variant: 'default' },
   COMPLETED: { label: 'Completed', variant: 'success' },
@@ -35,9 +43,9 @@ export const PAYMENT_STATUS_LABELS: Record<string, {
 };
 
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CREDIT_CARD: 'Credit Card',
-  DEBIT_CARD: 'Debit Card',
-  PAYPAL: 'PayPal',
-  BANK_TRANSFER: 'Bank Transfer',
-  CASH: 'Cash',
+  CreditCard: 'Credit Card',
+  BankTransfer: 'Bank Transfer',
+  PayPal: 'PayPal',
+  ApplePay: 'Apple Pay',
+  GooglePay: 'Google Pay',
 };

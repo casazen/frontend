@@ -27,19 +27,19 @@ export function BookingCalendar({ bookings, onSelectEvent, onSelectSlot }: Booki
 
     if (booking) {
       switch (booking.status) {
-        case 'PENDING':
+        case 'Pending':
           backgroundColor = '#f59e0b';
           break;
-        case 'CONFIRMED':
+        case 'Confirmed':
           backgroundColor = '#3b82f6';
           break;
-        case 'CHECKED_IN':
+        case 'CheckedIn':
           backgroundColor = '#10b981';
           break;
-        case 'CHECKED_OUT':
+        case 'CheckedOut':
           backgroundColor = '#6b7280';
           break;
-        case 'CANCELLED':
+        case 'Cancelled':
           backgroundColor = '#ef4444';
           break;
       }

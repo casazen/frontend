@@ -82,13 +82,13 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
             View
           </Button>
         )}
-        {onProcess && payment.status === 'PENDING' && (
+        {onProcess && (payment.status === 'Pending' || payment.status === 'Processing') && (
           <Button variant="outline" size="sm" onClick={() => onProcess(payment)}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Process
           </Button>
         )}
-        {onRefund && payment.status === 'COMPLETED' && (
+        {onRefund && payment.status === 'Completed' && (
           <Button variant="outline" size="sm" onClick={() => onRefund(payment)}>
             <Undo2 className="h-4 w-4 mr-1" />
             Refund
