@@ -1,4 +1,5 @@
 import { ApiClient } from './client';
+import axios from './axios';
 import type {
   Property,
   CreatePropertyDto,
@@ -7,8 +8,11 @@ import type {
 } from '@/types';
 
 export const propertiesApi = {
-  getAll: (params?: Record<string, any>) =>
-    ApiClient.get<Property[]>('/properties', params),
+  getAll: async (params?: Record<string, any>) => {
+    // Backend returns array directly, not wrapped in ApiResponse
+    const response = await axios.get<Property[]>('/properties', { params });
+    return response.data;
+  },
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
 
