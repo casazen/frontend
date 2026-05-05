@@ -3,11 +3,9 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ProfileInfo } from './components/profile-info';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
-import { useUserStore } from '@/store/user-store';
 
 export function ProfilePage() {
-  const { isLoading } = useAuth();
-  const user = useUserStore((state) => state.user);
+  const { isLoading, user } = useAuth();
 
   if (isLoading || !user) {
     return <LoadingScreen />;
