@@ -1,41 +1,28 @@
-import { apiClient } from './client';
+import { ApiClient } from './client';
 import type { Guest, CreateGuestDto, UpdateGuestDto } from '@/types';
 
 export const guestsApi = {
   // GET /api/guests
-  async getAll(search?: string): Promise<Guest[]> {
-    const response = await apiClient.get<Guest[]>('/guests', {
-      params: { search },
-    });
-    return response.data;
-  },
+  getAll: (search?: string) =>
+    ApiClient.get<Guest[]>('/guests', search ? { search } : undefined),
 
   // GET /api/guests/{id}
-  async getById(id: string): Promise<Guest> {
-    const response = await apiClient.get<Guest>(`/guests/${id}`);
-    return response.data;
-  },
+  getById: (id: string) =>
+    ApiClient.get<Guest>(`/guests/${id}`),
 
   // GET /api/guests/email/{email}
-  async getByEmail(email: string): Promise<Guest> {
-    const response = await apiClient.get<Guest>(`/guests/email/${email}`);
-    return response.data;
-  },
+  getByEmail: (email: string) =>
+    ApiClient.get<Guest>(`/guests/email/${email}`),
 
   // POST /api/guests
-  async create(data: CreateGuestDto): Promise<Guest> {
-    const response = await apiClient.post<Guest>('/guests', data);
-    return response.data;
-  },
+  create: (data: CreateGuestDto) =>
+    ApiClient.post<Guest>('/guests', data),
 
   // PUT /api/guests/{id}
-  async update(id: string, data: UpdateGuestDto): Promise<Guest> {
-    const response = await apiClient.put<Guest>(`/guests/${id}`, data);
-    return response.data;
-  },
+  update: (id: string, data: UpdateGuestDto) =>
+    ApiClient.put<Guest>(`/guests/${id}`, data),
 
   // DELETE /api/guests/{id}
-  async delete(id: string): Promise<void> {
-    await apiClient.delete(`/guests/${id}`);
-  },
+  delete: (id: string) =>
+    ApiClient.delete<void>(`/guests/${id}`),
 };

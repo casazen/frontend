@@ -1,5 +1,4 @@
 import { ApiClient } from './client';
-import axios from '@/lib/axios';
 import type {
   Property,
   CreatePropertyDto,
@@ -8,11 +7,8 @@ import type {
 } from '@/types';
 
 export const propertiesApi = {
-  getAll: async (params?: Record<string, any>) => {
-    // Backend returns array directly, not wrapped in ApiResponse
-    const response = await axios.get<Property[]>('/properties', { params });
-    return response.data;
-  },
+  getAll: (params?: Record<string, any>) =>
+    ApiClient.get<Property[]>('/properties', params),
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
 
@@ -24,9 +20,6 @@ export const propertiesApi = {
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
-  search: async (params: PropertySearchParams) => {
-    // Backend returns array directly, not wrapped in ApiResponse
-    const response = await axios.get<Property[]>('/properties/search', { params });
-    return response.data;
-  },
+  search: (params: PropertySearchParams) =>
+    ApiClient.get<Property[]>('/properties/search', params),
 };

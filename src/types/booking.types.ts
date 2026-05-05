@@ -1,7 +1,8 @@
 // ✅ Fixed: Backend uses PascalCase enum values
 export type BookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
 
-export interface Guest {
+/** Inline guest info embedded in booking (subset of the full Guest entity) */
+export interface BookingGuest {
   firstName: string;
   lastName: string;
   email: string;
@@ -19,7 +20,7 @@ export interface Booking {
   totalPrice: number;
   currency: string;
   status: BookingStatus;
-  guest: Guest;
+  guest: BookingGuest;
   specialRequests?: string;
   createdAt: string;
   updatedAt: string;
@@ -30,7 +31,7 @@ export interface CreateBookingDto {
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  guest: Guest;
+  guest: BookingGuest;
   specialRequests?: string;
 }
 

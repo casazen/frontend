@@ -17,7 +17,7 @@ export function OtaSetupPage() {
   const navigate = useNavigate();
   const createIntegration = useCreateOtaIntegration();
   const { data: propertiesData } = useProperties();
-  const properties = propertiesData?.data || [];
+  const properties = propertiesData ?? [];
 
   const {
     register,

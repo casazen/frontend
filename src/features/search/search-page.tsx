@@ -24,7 +24,7 @@ export function SearchPage() {
     console.log('View property details:', property);
   };
 
-  const properties = data?.data || [];
+  const properties = data ?? [];
 
   return (
     <AppShell>

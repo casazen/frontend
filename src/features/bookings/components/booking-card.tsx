@@ -79,13 +79,13 @@ export function BookingCard({ booking, onEdit, onDelete, onView, onCheckIn, onCh
             View
           </Button>
         )}
-        {onCheckIn && booking.status === 'CONFIRMED' && (
+        {onCheckIn && (booking.status === 'Confirmed' || booking.status === 'Pending') && (
           <Button variant="outline" size="sm" onClick={() => onCheckIn(booking)}>
             <LogIn className="h-4 w-4 mr-1" />
             Check In
           </Button>
         )}
-        {onCheckOut && booking.status === 'CHECKED_IN' && (
+        {onCheckOut && booking.status === 'CheckedIn' && (
           <Button variant="outline" size="sm" onClick={() => onCheckOut(booking)}>
             <LogOut className="h-4 w-4 mr-1" />
             Check Out

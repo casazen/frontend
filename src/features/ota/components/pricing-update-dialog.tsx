@@ -31,7 +31,7 @@ export function PricingUpdateDialog({
   isLoading,
 }: PricingUpdateDialogProps) {
   const { data: propertiesData } = useProperties();
-  const properties = propertiesData?.data || [];
+  const properties = propertiesData ?? [];
 
   const {
     register,
@@ -99,16 +99,16 @@ export function PricingUpdateDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pricePerNight">Price per Night *</Label>
+              <Label htmlFor="nightlyRate">Price per Night *</Label>
               <Input
-                id="pricePerNight"
+                id="nightlyRate"
                 type="number"
                 step="0.01"
-                {...register('pricePerNight', { valueAsNumber: true })}
+                {...register('nightlyRate', { valueAsNumber: true })}
                 placeholder="150.00"
               />
-              {errors.pricePerNight && (
-                <p className="text-sm text-destructive">{errors.pricePerNight.message}</p>
+              {errors.nightlyRate && (
+                <p className="text-sm text-destructive">{errors.nightlyRate.message}</p>
               )}
             </div>
 

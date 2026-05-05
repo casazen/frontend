@@ -41,6 +41,13 @@ export type CheckInFormValues = z.infer<typeof checkInFormSchema>;
 export type CheckOutFormValues = z.infer<typeof checkOutFormSchema>;
 
 export const BOOKING_STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'destructive' | 'secondary' }> = {
+  // PascalCase (current backend format)
+  Pending: { label: 'Pending', variant: 'warning' },
+  Confirmed: { label: 'Confirmed', variant: 'default' },
+  CheckedIn: { label: 'Checked In', variant: 'success' },
+  CheckedOut: { label: 'Checked Out', variant: 'secondary' },
+  Cancelled: { label: 'Cancelled', variant: 'destructive' },
+  // UPPER_CASE fallback (legacy)
   PENDING: { label: 'Pending', variant: 'warning' },
   CONFIRMED: { label: 'Confirmed', variant: 'default' },
   CHECKED_IN: { label: 'Checked In', variant: 'success' },

@@ -61,7 +61,7 @@ export function PropertiesPage() {
     );
   }
 
-  const propertyList = properties?.data || [];
+  const propertyList = properties ?? [];
 
   return (
     <AppShell>
