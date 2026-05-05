@@ -1,5 +1,5 @@
 import { ApiClient } from './client';
-import axios from './axios';
+import axios from '@/lib/axios';
 import type {
   Property,
   CreatePropertyDto,
