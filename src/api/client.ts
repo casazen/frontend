@@ -4,13 +4,17 @@ import type { ApiResponse, PaginatedResponse } from '@/types';
 /**
  * Unwraps API response data, handling both wrapped ({ data: T }) and
  * unwrapped (T) responses from the backend.
+ *
+ * The backend returns raw entities/arrays directly (not wrapped).
+ * This helper exists for forward compatibility if the backend ever
+ * adopts an envelope format like { data: T, message?: string }.
  */
 function unwrap<T>(responseData: ApiResponse<T> | T): T {
   if (
     responseData !== null &&
     typeof responseData === 'object' &&
-    'data' in responseData &&
-    Object.keys(responseData as object).length <= 3 // { data, message?, success? }
+    !Array.isArray(responseData) &&
+    'data' in responseData
   ) {
     return (responseData as ApiResponse<T>).data;
   }
