@@ -25,7 +25,7 @@ test('enable AI pricing, trigger manual sync, and verify new history entry appea
   await page.goto(PRICING_URL);
 
   // The AI pricing config card should be visible
-  await expect(page.getByRole('heading', { name: 'AI Dynamic Pricing' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'AI Dynamic Pricing', level: 3 })).toBeVisible();
 
   // The toggle should already be ON (configEnabled.isEnabled = true)
   const toggle = page.getByRole('switch', { name: /enable ai pricing/i });
@@ -104,7 +104,7 @@ test('disable AI pricing and verify the UI reflects the disabled state', async (
   expect(deleteCallCount).toBeGreaterThan(0);
 
   // The badge should now show "Disabled"
-  await expect(page.getByText('Disabled')).toBeVisible();
+  await expect(page.getByText('Disabled', { exact: true })).toBeVisible();
 
   // The sync button should be hidden (pricing disabled → no sync available)
   await expect(page.getByRole('button', { name: /run sync now/i })).not.toBeVisible();
