@@ -10,6 +10,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { usePricingHistory } from '@/queries/use-pricing-adapter';
 import { pricingAdapterApi } from '@/api/pricing-adapter.api';
 import { formatDate } from '@/lib/utils';
+import { toast } from 'sonner';
 import { PricingHistoryTable } from './components/pricing-history-table';
 import type { PricingHistoryEntry } from '@/types';
 
@@ -82,6 +83,8 @@ export function PricingHistoryPage() {
       const csv = buildCsv(result.items);
       const date = formatDate(new Date().toISOString(), 'yyyy-MM-dd');
       triggerCsvDownload(csv, `pricing-history-${date}.csv`);
+    } catch {
+      toast.error('Failed to export pricing history');
     } finally {
       setIsExporting(false);
     }
