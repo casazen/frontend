@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { propertyFormSchema, COMMON_AMENITIES } from '../schemas/property.schema';
+import { propertyFormSchema, COMMON_AMENITIES, AMENITY_LABELS } from '../schemas/property.schema';
 import type { PropertyFormValues } from '../schemas/property.schema';
 import type { Property } from '@/types';
 
@@ -283,7 +283,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading }: Proper
                   onCheckedChange={() => toggleAmenity(amenity)}
                 />
                 <Label htmlFor={`amenity-${amenity}`} className="cursor-pointer text-sm">
-                  {amenity}
+                  {AMENITY_LABELS[amenity] ?? amenity}
                 </Label>
               </div>
             ))}
