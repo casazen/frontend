@@ -20,6 +20,7 @@ import { OtaSetupPage } from '@/features/ota/ota-setup-page';
 import { SearchPage } from '@/features/search/search-page';
 import { ProfilePage } from '@/features/profile/profile-page';
 import { PricingDashboardPage } from '@/features/pricing';
+import { PricingHistoryPage } from '@/features/pricing';
 
 export const router = createBrowserRouter([
   {
@@ -171,6 +172,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <ProfilePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/properties/:id/pricing/history',
+    element: (
+      <ProtectedRoute>
+        <PricingHistoryPage />
       </ProtectedRoute>
     ),
   },
