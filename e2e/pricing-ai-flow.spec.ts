@@ -1,14 +1,3 @@
-/**
- * E2E tests — AI pricing flow
- *
- * Covers issue casazen/frontend#62:
- *   1. Enable AI pricing → verify config saved → trigger manual sync → verify history entry
- *   2. Disable AI pricing → verify toggle reflected in UI
- *   3. View audit trail → verify pagination works correctly
- *
- * The Vite dev server runs in demo mode (VITE_DEMO_MODE=true) so Auth0 is bypassed.
- * All backend calls are intercepted via Playwright page.route().
- */
 import { test, expect } from '@playwright/test';
 import { PROPERTY_ID, historyAfterSync, configDisabled } from './fixtures/pricing.fixtures';
 import {
@@ -26,15 +15,6 @@ const HISTORY_URL = `/properties/${PROPERTY_ID}/pricing/history`;
 test('enable AI pricing, trigger manual sync, and verify new history entry appears', async ({ page }) => {
   await mockPricingApiDefaults(page);
 
-  // Track whether the save-config POST was sent
-  let configPostBody: Record<string, unknown> | null = null;
-  page.on('request', (req) => {
-    if (req.method() === 'POST' && req.url().includes('/pricing-adapter/config/')) {
-      configPostBody = JSON.parse(req.postData() ?? '{}');
-    }
-  });
-
-  // Track whether the sync POST was sent
   let syncCalled = false;
   page.on('request', (req) => {
     if (req.method() === 'POST' && req.url().includes('/pricing-adapter/sync/')) {

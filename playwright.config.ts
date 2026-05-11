@@ -34,7 +34,6 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       VITE_DEMO_MODE: 'true',
-      VITE_API_BASE_URL: 'http://localhost:5173/api-mock',
     },
   },
 });
