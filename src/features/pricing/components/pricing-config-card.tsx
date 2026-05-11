@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 import { RefreshCw, Save, Zap } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
-import type { PricingAdapterConfig, SavePricingAdapterConfigRequest } from '@/types';
+import type { PricingAdapterConfig } from '@/types';
 import type { CreateOrUpdatePricingAdapterConfigRequest } from '@/types/pricing';
 
 interface PricingConfigCardProps {
@@ -73,7 +73,6 @@ export function PricingConfigCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Enable / disable toggle */}
         <div className="flex items-center justify-between">
           <div>
             <Label htmlFor="pricing-toggle" className="text-sm font-medium">
@@ -95,7 +94,6 @@ export function PricingConfigCard({
           </div>
         </div>
 
-        {/* Frequency selector */}
         <div className="space-y-2">
           <Label className="text-sm font-medium">Adaptation frequency</Label>
           <div className="flex gap-4">
@@ -126,7 +124,6 @@ export function PricingConfigCard({
           </div>
         </div>
 
-        {/* Checkboxes */}
         <div className="space-y-3">
           <Label className="text-sm font-medium">Pricing factors</Label>
           <div className="flex items-center gap-2">
@@ -153,7 +150,6 @@ export function PricingConfigCard({
           </div>
         </div>
 
-        {/* Timestamps */}
         {config && (
           <div className="grid grid-cols-2 gap-4 text-sm border-t pt-4">
             <div>
@@ -175,7 +171,6 @@ export function PricingConfigCard({
           </div>
         )}
 
-        {/* Action buttons */}
         <div className="space-y-2 border-t pt-4">
           <Button
             size="sm"
