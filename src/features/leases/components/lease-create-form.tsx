@@ -39,25 +39,31 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
 
   const selectedPropertyId = watch('propertyId');
 
-  const { data: documents } = useQuery({
+  const { data: documents, isFetching: isLoadingDocuments } = useQuery({
     queryKey: ['properties', selectedPropertyId, 'documents'],
     queryFn: () => propertiesApi.getDocuments(selectedPropertyId),
     enabled: !!selectedPropertyId,
   });
 
+  const documentsLoaded = !!selectedPropertyId && !isLoadingDocuments && documents !== undefined;
   const hasApeDocument = documents?.some((doc) => doc.documentType === 'Ape') ?? false;
 
   useEffect(() => {
-    if (selectedPropertyId && documents && !hasApeDocument) {
+    if (documentsLoaded && !hasApeDocument) {
       setApeError(
         'An APE (energy performance certificate) document must be uploaded for this property before creating a lease.'
       );
     } else {
       setApeError(null);
     }
-  }, [selectedPropertyId, documents, hasApeDocument]);
+  }, [documentsLoaded, hasApeDocument]);
 
   const handleFormSubmit = (values: LeaseFormValues) => {
+    if (!documentsLoaded) {
+      setApeError('Please wait while property documents are being verified.');
+      return;
+    }
+
     if (!hasApeDocument) {
       setApeError(
         'An APE (energy performance certificate) document must be uploaded for this property before creating a lease.'
@@ -185,7 +191,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
       </Card>
 
       <div className="flex justify-end gap-4">
-        <Button type="submit" disabled={isLoading || !!apeError}>
+        <Button type="submit" disabled={isLoading || isLoadingDocuments || !!apeError}>
           {isLoading ? 'Creating…' : 'Create lease draft'}
         </Button>
       </div>

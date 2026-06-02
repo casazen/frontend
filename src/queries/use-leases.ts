@@ -20,15 +20,24 @@ export function useLease(id: string) {
   });
 }
 
+const REGISTRATION_STATUSES: LeaseStatus[] = [
+  'SentToProvider',
+  'RegistrationPending',
+  'Registered',
+  'Rejected',
+];
+
 export function useLeaseRegistration(id: string, leaseStatus?: LeaseStatus) {
+  const shouldFetch = !!leaseStatus && REGISTRATION_STATUSES.includes(leaseStatus);
   const shouldPoll =
     leaseStatus === 'SentToProvider' || leaseStatus === 'RegistrationPending';
 
   return useQuery({
     queryKey: [LEASES_KEY, id, 'registration'],
     queryFn: () => leasesApi.getRegistration(id),
-    enabled: !!id,
+    enabled: !!id && shouldFetch,
     refetchInterval: shouldPoll ? 30_000 : false,
+    retry: false,
   });
 }
 
