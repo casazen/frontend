@@ -4,6 +4,7 @@ import type {
   CreatePropertyDto,
   UpdatePropertyDto,
   PropertySearchParams,
+  PropertyDocument,
 } from '@/types';
 
 export const propertiesApi = {
@@ -22,4 +23,7 @@ export const propertiesApi = {
 
   search: (params: PropertySearchParams) =>
     ApiClient.get<Property[]>('/properties/search', params),
+
+  getDocuments: (id: string) =>
+    ApiClient.get<PropertyDocument[]>(`/properties/${id}/documents`),
 };

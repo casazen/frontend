@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   getPricingAdapterConfig,
   createOrUpdatePricingAdapterConfig,
@@ -106,8 +107,29 @@ export function useDisablePricingAdapter(propertyId: string) {
 
   return useMutation({
     mutationFn: () => deletePricingAdapterConfig(propertyId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: pricingAdapterKeys.config(propertyId) });
+
+      const previous = queryClient.getQueryData<PricingAdapterConfigDto>(
+        pricingAdapterKeys.config(propertyId)
+      );
+
+      queryClient.setQueryData<PricingAdapterConfigDto>(
+        pricingAdapterKeys.config(propertyId),
+        (old) => (old ? { ...old, isEnabled: false } : old)
+      );
+
+      return { previous };
+    },
+    onError: (_err, _data, context) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(pricingAdapterKeys.config(propertyId), context.previous);
+      }
+      toast.error('Failed to disable AI pricing');
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pricingAdapterKeys.config(propertyId) });
+      toast.success('AI pricing disabled');
     },
   });
 }
@@ -117,9 +139,12 @@ export function useTriggerPricingSync(propertyId: string) {
 
   return useMutation({
     mutationFn: () => triggerPricingSync(propertyId),
+    onError: () => {
+      toast.error('Failed to trigger pricing sync');
+    },
     onSuccess: () => {
-      // Sync creates new history entries — invalidate history cache
       queryClient.invalidateQueries({ queryKey: pricingAdapterKeys.history(propertyId) });
+      toast.success('Pricing sync started — history will update shortly');
     },
   });
 }

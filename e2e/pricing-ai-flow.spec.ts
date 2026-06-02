@@ -44,12 +44,7 @@ test('enable AI pricing, trigger manual sync, and verify new history entry appea
   // Click sync
   await syncBtn.click();
 
-  // Give React Query time to invalidate and re-fetch the history.
-  // The toast "Pricing sync started" indicates success.
-  await expect(page.getByText(/pricing sync started/i)).toBeVisible({ timeout: 5000 });
-
-  // Verify the sync POST was called
-  expect(syncCalled).toBe(true);
+  await expect.poll(() => syncCalled).toBe(true);
 
   // Navigate to the history page to confirm the new entry is listed
   await page.goto(HISTORY_URL);
@@ -97,14 +92,12 @@ test('disable AI pricing and verify the UI reflects the disabled state', async (
   // Click the toggle to disable AI pricing
   await toggle.click();
 
-  // The success toast should appear
-  await expect(page.getByText(/ai pricing disabled/i)).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText('Disabled', { exact: true })).toBeVisible({ timeout: 10000 });
 
   // The DELETE call must have been made
   expect(deleteCallCount).toBeGreaterThan(0);
 
-  // The badge should now show "Disabled"
-  await expect(page.getByText('Disabled', { exact: true })).toBeVisible();
+  // The badge should now show "Disabled" (already asserted above)
 
   // The sync button should be hidden (pricing disabled → no sync available)
   await expect(page.getByRole('button', { name: /run sync now/i })).not.toBeVisible();

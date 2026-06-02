@@ -21,6 +21,7 @@ import { SearchPage } from '@/features/search/search-page';
 import { ProfilePage } from '@/features/profile/profile-page';
 import { PricingDashboardPage } from '@/features/pricing';
 import { PricingHistoryPage } from '@/features/pricing';
+import { LeasesPage, LeaseCreatePage, LeaseDetailPage } from '@/features/leases';
 
 export const router = createBrowserRouter([
   {
@@ -172,6 +173,30 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <ProfilePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/leases',
+    element: (
+      <ProtectedRoute role="LongTermLandlord">
+        <LeasesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/leases/new',
+    element: (
+      <ProtectedRoute role="LongTermLandlord">
+        <LeaseCreatePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/leases/:id',
+    element: (
+      <ProtectedRoute role="LongTermLandlord">
+        <LeaseDetailPage />
       </ProtectedRoute>
     ),
   },
