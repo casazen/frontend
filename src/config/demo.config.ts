@@ -9,6 +9,8 @@ export const demoUser = {
   name: 'Demo User',
   email: 'demo@casazen.com',
   picture: 'https://ui-avatars.com/api/?name=Demo+User&background=0D8ABC&color=fff',
+  roles: ['LongTermLandlord'],
+  'https://casazen.app/roles': ['LongTermLandlord'],
 };
 
 console.log('🎭 Demo mode:', isDemoMode ? 'ENABLED' : 'DISABLED');

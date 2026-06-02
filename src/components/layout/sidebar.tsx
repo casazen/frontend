@@ -1,5 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
+import { hasRole } from '@/lib/auth-roles';
 import {
   LayoutDashboard,
   Home,
@@ -8,17 +10,20 @@ import {
   Repeat,
   Search,
   User,
+  FileText,
 } from 'lucide-react';
 
 interface NavItem {
   to: string;
   icon: React.ElementType;
   label: string;
+  role?: string;
 }
 
 const navItems: NavItem[] = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/properties', icon: Home, label: 'Properties' },
+  { to: '/leases', icon: FileText, label: 'Leases', role: 'LongTermLandlord' },
   { to: '/bookings', icon: Calendar, label: 'Bookings' },
   { to: '/payments', icon: CreditCard, label: 'Payments' },
   { to: '/ota', icon: Repeat, label: 'OTA Sync' },
@@ -27,6 +32,11 @@ const navItems: NavItem[] = [
 ];
 
 export function Sidebar() {
+  const { user } = useAuth();
+  const visibleItems = navItems.filter(
+    (item) => !item.role || hasRole(user, item.role)
+  );
+
   return (
     <aside className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
       <div className="flex h-16 items-center border-b px-6">
@@ -41,7 +51,7 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="flex-1 space-y-0.5 p-3">
-        {navItems.map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

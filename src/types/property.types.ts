@@ -48,6 +48,24 @@ export interface CreatePropertyDto {
 
 export interface UpdatePropertyDto extends Partial<CreatePropertyDto> {}
 
+export type PropertyDocumentType =
+  | 'CinCertificate'
+  | 'FloorPlan'
+  | 'InsurancePolicy'
+  | 'PropertyLicense'
+  | 'SafetyCompliance'
+  | 'Ape'
+  | 'Other';
+
+export interface PropertyDocument {
+  id: string;
+  fileName: string;
+  storageUrl: string;
+  documentType: PropertyDocumentType;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
 export interface PropertySearchParams {
   city?: string;
   minPrice?: number;
