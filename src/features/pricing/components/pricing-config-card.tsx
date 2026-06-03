@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Label } from '@/components/ui/label';
 import { RefreshCw, Save, Zap } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
-import type { PricingAdapterConfig, SavePricingAdapterConfigRequest } from '@/types';
+import type { PricingAdapterConfig } from '@/types';
 import type { CreateOrUpdatePricingAdapterConfigRequest } from '@/types/pricing';
 
 interface PricingConfigCardProps {
