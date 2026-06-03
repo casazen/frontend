@@ -3,7 +3,11 @@ import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUiStore } from '@/store/ui-store';
 
-export function Header() {
+interface HeaderProps {
+  slotStart?: React.ReactNode;
+}
+
+export function Header({ slotStart }: HeaderProps) {
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
 
   return (
@@ -16,6 +20,7 @@ export function Header() {
       >
         <Menu className="h-5 w-5" />
       </Button>
+      {slotStart}
       <div className="flex-1" />
       <UserMenu />
     </header>

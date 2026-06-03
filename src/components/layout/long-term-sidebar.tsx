@@ -1,26 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  Home,
-  Calendar,
-  CreditCard,
-  Repeat,
-  Search,
-  User,
-} from 'lucide-react';
+import { FileText, Home, User } from 'lucide-react';
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/properties', icon: Home, label: 'Properties' },
-  { to: '/bookings', icon: Calendar, label: 'Bookings' },
-  { to: '/payments', icon: CreditCard, label: 'Payments' },
-  { to: '/ota', icon: Repeat, label: 'OTA Sync' },
-  { to: '/search', icon: Search, label: 'Search' },
+  { to: '/leases', icon: FileText, label: 'Leases' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 
-export function Sidebar() {
+export function LongTermSidebar() {
   return (
     <aside className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
       <div className="flex h-16 items-center border-b px-6">
@@ -30,7 +17,9 @@ export function Sidebar() {
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-base font-bold tracking-tight">CASAZEN</span>
-            <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">Property Manager</span>
+            <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">
+              Long-Term Rental
+            </span>
           </div>
         </div>
       </div>
@@ -39,7 +28,7 @@ export function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
+            end={item.to === '/leases'}
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
