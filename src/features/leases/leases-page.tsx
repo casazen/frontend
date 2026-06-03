@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { FileText, Plus } from 'lucide-react';
-import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -27,8 +26,7 @@ export function LeasesPage() {
   const items = leases ?? [];
 
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <PageHeader
           title="Long-term leases"
           description="Manage contract drafts, signing, and RLI registration"
@@ -95,7 +93,6 @@ export function LeasesPage() {
             ))}
           </div>
         )}
-      </div>
-    </AppShell>
+    </div>
   );
 }

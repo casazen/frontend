@@ -1,5 +1,8 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { ShortStayLayerGuard } from '@/components/auth/short-stay-layer-guard';
+import { LongTermAppShell } from '@/components/layout/long-term-app-shell';
+import { AppLayerProvider } from '@/contexts/app-layer-provider';
 import { LoginPage } from '@/pages/login-page';
 import { DashboardPage } from '@/features/dashboard/dashboard-page';
 import { PropertiesPage } from '@/features/properties/properties-page';
@@ -18,7 +21,7 @@ import { RevenuePage } from '@/features/payments/revenue-page';
 import { OtaPage } from '@/features/ota/ota-page';
 import { OtaSetupPage } from '@/features/ota/ota-setup-page';
 import { SearchPage } from '@/features/search/search-page';
-import { ProfilePage } from '@/features/profile/profile-page';
+import { LayerAwareProfilePage } from '@/features/profile/layer-aware-profile-page';
 import { PricingDashboardPage } from '@/features/pricing';
 import { PricingHistoryPage } from '@/features/pricing';
 import { LeasesPage, LeaseCreatePage, LeaseDetailPage } from '@/features/leases';
@@ -29,184 +32,121 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-    path: '/',
-    element: (
-      <ProtectedRoute>
-        <DashboardPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/properties',
-    element: (
-      <ProtectedRoute>
-        <PropertiesPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/properties/create',
-    element: (
-      <ProtectedRoute>
-        <PropertyCreatePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/properties/:id',
-    element: (
-      <ProtectedRoute>
-        <PropertyDetailPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/properties/:id/edit',
-    element: (
-      <ProtectedRoute>
-        <PropertyEditPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/properties/:id/pricing',
-    element: (
-      <ProtectedRoute>
-        <PricingDashboardPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/bookings',
-    element: (
-      <ProtectedRoute>
-        <BookingsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/bookings/create',
-    element: (
-      <ProtectedRoute>
-        <BookingCreatePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/bookings/calendar',
-    element: (
-      <ProtectedRoute>
-        <CalendarPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/bookings/:id',
-    element: (
-      <ProtectedRoute>
-        <BookingDetailPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/bookings/:id/edit',
-    element: (
-      <ProtectedRoute>
-        <BookingEditPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/payments',
-    element: (
-      <ProtectedRoute>
-        <PaymentsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/payments/create',
-    element: (
-      <ProtectedRoute>
-        <PaymentCreatePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/payments/revenue',
-    element: (
-      <ProtectedRoute>
-        <RevenuePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/payments/:id',
-    element: (
-      <ProtectedRoute>
-        <PaymentDetailPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/ota',
-    element: (
-      <ProtectedRoute>
-        <OtaPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/ota/create',
-    element: (
-      <ProtectedRoute>
-        <OtaSetupPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
     path: '/search',
     element: <SearchPage />,
   },
   {
-    path: '/profile',
     element: (
       <ProtectedRoute>
-        <ProfilePage />
+        <AppLayerProvider>
+          <Outlet />
+        </AppLayerProvider>
       </ProtectedRoute>
     ),
-  },
-  {
-    path: '/leases',
-    element: (
-      <ProtectedRoute role="LongTermLandlord">
-        <LeasesPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/leases/new',
-    element: (
-      <ProtectedRoute role="LongTermLandlord">
-        <LeaseCreatePage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/leases/:id',
-    element: (
-      <ProtectedRoute role="LongTermLandlord">
-        <LeaseDetailPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/properties/:id/pricing/history',
-    element: (
-      <ProtectedRoute>
-        <PricingHistoryPage />
-      </ProtectedRoute>
-    ),
+    children: [
+      {
+        element: <ShortStayLayerGuard />,
+        children: [
+          {
+            path: '/',
+            element: <DashboardPage />,
+          },
+          {
+            path: '/properties',
+            element: <PropertiesPage />,
+          },
+          {
+            path: '/properties/create',
+            element: <PropertyCreatePage />,
+          },
+          {
+            path: '/properties/:id',
+            element: <PropertyDetailPage />,
+          },
+          {
+            path: '/properties/:id/edit',
+            element: <PropertyEditPage />,
+          },
+          {
+            path: '/properties/:id/pricing',
+            element: <PricingDashboardPage />,
+          },
+          {
+            path: '/properties/:id/pricing/history',
+            element: <PricingHistoryPage />,
+          },
+          {
+            path: '/bookings',
+            element: <BookingsPage />,
+          },
+          {
+            path: '/bookings/create',
+            element: <BookingCreatePage />,
+          },
+          {
+            path: '/bookings/calendar',
+            element: <CalendarPage />,
+          },
+          {
+            path: '/bookings/:id',
+            element: <BookingDetailPage />,
+          },
+          {
+            path: '/bookings/:id/edit',
+            element: <BookingEditPage />,
+          },
+          {
+            path: '/payments',
+            element: <PaymentsPage />,
+          },
+          {
+            path: '/payments/create',
+            element: <PaymentCreatePage />,
+          },
+          {
+            path: '/payments/revenue',
+            element: <RevenuePage />,
+          },
+          {
+            path: '/payments/:id',
+            element: <PaymentDetailPage />,
+          },
+          {
+            path: '/ota',
+            element: <OtaPage />,
+          },
+          {
+            path: '/ota/create',
+            element: <OtaSetupPage />,
+          },
+        ],
+      },
+      {
+        path: '/profile',
+        element: <LayerAwareProfilePage />,
+      },
+      {
+        element: (
+          <ProtectedRoute role="LongTermLandlord">
+            <LongTermAppShell />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: '/leases',
+            element: <LeasesPage />,
+          },
+          {
+            path: '/leases/new',
+            element: <LeaseCreatePage />,
+          },
+          {
+            path: '/leases/:id',
+            element: <LeaseDetailPage />,
+          },
+        ],
+      },
+    ],
   },
   {
     path: '*',
