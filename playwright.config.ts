@@ -19,6 +19,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    viewport: { width: 1280, height: 720 },
   },
 
   projects: [
@@ -31,7 +32,8 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev:demo',
     url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
+    // Always start dev:demo so VITE_DEMO_MODE is set (avoid reusing a non-demo dev server on :5173)
+    reuseExistingServer: false,
     env: {
       VITE_DEMO_MODE: 'true',
     },

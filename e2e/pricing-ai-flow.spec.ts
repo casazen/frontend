@@ -5,6 +5,7 @@ import {
   mockConfigDisabled,
   mockHistoryAfterSync,
 } from './helpers/api-mock';
+import { demoUrl } from './helpers/demo-profile';
 
 const PRICING_URL = `/properties/${PROPERTY_ID}/pricing`;
 const HISTORY_URL = `/properties/${PROPERTY_ID}/pricing/history`;
@@ -22,7 +23,7 @@ test('enable AI pricing, trigger manual sync, and verify new history entry appea
     }
   });
 
-  await page.goto(PRICING_URL);
+  await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
   // The AI pricing config card should be visible
   await expect(page.getByRole('heading', { name: 'AI Dynamic Pricing', level: 3 })).toBeVisible();
@@ -47,7 +48,7 @@ test('enable AI pricing, trigger manual sync, and verify new history entry appea
   await expect.poll(() => syncCalled).toBe(true);
 
   // Navigate to the history page to confirm the new entry is listed
-  await page.goto(HISTORY_URL);
+  await page.goto(demoUrl(HISTORY_URL, 'short-stay'));
 
   const newEntryReason = historyAfterSync.items[0].changeReason; // 'Manual sync triggered'
   await expect(page.getByText(newEntryReason)).toBeVisible();
@@ -82,7 +83,7 @@ test('disable AI pricing and verify the UI reflects the disabled state', async (
     }
   });
 
-  await page.goto(PRICING_URL);
+  await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
   // Pricing should start as enabled
   const toggle = page.getByRole('switch', { name: /enable ai pricing/i });
@@ -112,7 +113,7 @@ test('disable AI pricing and verify the UI reflects the disabled state', async (
 test('audit trail page paginates correctly across multiple pages', async ({ page }) => {
   await mockPricingApiDefaults(page);
 
-  await page.goto(HISTORY_URL);
+  await page.goto(demoUrl(HISTORY_URL, 'short-stay'));
 
   // Page header
   await expect(page.getByRole('heading', { name: 'Pricing Audit Trail' })).toBeVisible();
