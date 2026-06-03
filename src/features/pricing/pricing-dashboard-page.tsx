@@ -12,13 +12,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BrainCircuit, ExternalLink } from 'lucide-react';
 import {
   usePricingAdapterConfig,
-  useUpdatePricingAdapterConfig,
+  useSavePricingAdapterConfig,
   useDisablePricingAdapter,
   useTriggerPricingSync,
   usePricingHistory,
   usePricingPreview,
-} from '@/queries/pricingAdapter';
-import type { CreateOrUpdatePricingAdapterConfigRequest } from '@/types/pricing';
+} from '@/queries/use-pricing-adapter';
+import type { SavePricingAdapterConfigRequest } from '@/types';
 import { PricingConfigCard } from './components/pricing-config-card';
 import { PricingHistoryTable } from './components/pricing-history-table';
 import { PricingPreviewSection } from './components/pricing-preview-section';
@@ -44,16 +44,16 @@ export function PricingDashboardPage() {
   const { data: history, isLoading: isLoadingHistory } = usePricingHistory(propertyId!, historyFilters);
   const { data: preview, isLoading: isLoadingPreview } = usePricingPreview(propertyId!);
 
-  const updateConfig = useUpdatePricingAdapterConfig(propertyId!);
+  const saveConfig = useSavePricingAdapterConfig(propertyId!);
   const disableConfig = useDisablePricingAdapter(propertyId!);
   const triggerSync = useTriggerPricingSync(propertyId!);
 
-  const isSaving = updateConfig.isPending || disableConfig.isPending;
+  const isSaving = saveConfig.isPending || disableConfig.isPending;
   const isSyncing = triggerSync.isPending;
 
   function handleToggle(enabled: boolean) {
     if (enabled) {
-      updateConfig.mutate({
+      saveConfig.mutate({
         isEnabled: true,
         adaptationFrequency: config?.adaptationFrequency ?? 'daily',
         includeSeasonality: config?.includeSeasonality ?? true,
@@ -64,8 +64,8 @@ export function PricingDashboardPage() {
     }
   }
 
-  function handleSave(data: CreateOrUpdatePricingAdapterConfigRequest) {
-    updateConfig.mutate(data);
+  function handleSave(data: SavePricingAdapterConfigRequest) {
+    saveConfig.mutate(data);
   }
 
   function handleFromChange(value: string) {

@@ -45,8 +45,8 @@ export function PricingPreviewSection({ prices }: PricingPreviewSectionProps) {
                 className="text-muted-foreground"
               />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  formatCurrency(value),
+                formatter={(value, name) => [
+                  formatCurrency(typeof value === 'number' ? value : 0),
                   name === 'suggested' ? 'AI price' : 'Base price',
                 ]}
                 labelFormatter={(label) => `Date: ${label}`}
