@@ -1,6 +1,9 @@
 export const ROLES_CLAIM = 'https://casazen.app/roles';
 
-type UserWithRoles = Record<string, unknown> | null | undefined;
+export const ROLE_PROPERTY_OWNER = 'PropertyOwner';
+export const ROLE_LONG_TERM_LANDLORD = 'LongTermLandlord';
+
+export type UserWithRoles = Record<string, unknown> | null | undefined;
 
 export function getUserRoles(user: UserWithRoles): string[] {
   if (!user) return [];
@@ -19,4 +22,16 @@ export function getUserRoles(user: UserWithRoles): string[] {
 
 export function hasRole(user: UserWithRoles, role: string): boolean {
   return getUserRoles(user).includes(role);
+}
+
+export function isShortStayOnly(user: UserWithRoles): boolean {
+  return hasRole(user, ROLE_PROPERTY_OWNER) && !hasRole(user, ROLE_LONG_TERM_LANDLORD);
+}
+
+export function isLongTermOnly(user: UserWithRoles): boolean {
+  return hasRole(user, ROLE_LONG_TERM_LANDLORD) && !hasRole(user, ROLE_PROPERTY_OWNER);
+}
+
+export function isDualRole(user: UserWithRoles): boolean {
+  return hasRole(user, ROLE_PROPERTY_OWNER) && hasRole(user, ROLE_LONG_TERM_LANDLORD);
 }
