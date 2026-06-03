@@ -1,7 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { useEffect } from 'react';
 import { setAccessTokenGetter } from '@/lib/axios';
-import { isDemoMode, demoUser } from '@/config/demo.config';
+import { isDemoMode, getDemoUser } from '@/config/demo.config';
 
 export function useAuth() {
   const {
@@ -44,7 +44,7 @@ export function useAuth() {
     return {
       isLoading: false,
       isAuthenticated: true,
-      user: demoUser,
+      user: getDemoUser(),
       login: () => console.log('Demo mode: login simulation'),
       logout,
       getAccessToken: async () => 'demo-token',
