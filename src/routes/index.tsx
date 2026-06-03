@@ -2,7 +2,12 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { ShortStayLayerGuard } from '@/components/auth/short-stay-layer-guard';
 import { LongTermAppShell } from '@/components/layout/long-term-app-shell';
+import { AdminAppShell } from '@/components/layout/admin-app-shell';
 import { AppLayerProvider } from '@/contexts/app-layer-provider';
+import { AdminDashboardPage } from '@/features/admin/admin-dashboard-page';
+import { AdminUsersPage } from '@/features/admin/admin-users-page';
+import { AdminCinPage } from '@/features/admin/admin-cin-page';
+import { AdminJobsPage } from '@/features/admin/admin-jobs-page';
 import { LoginPage } from '@/pages/login-page';
 import { DashboardPage } from '@/features/dashboard/dashboard-page';
 import { PropertiesPage } from '@/features/properties/properties-page';
@@ -143,6 +148,31 @@ export const router = createBrowserRouter([
           {
             path: '/leases/:id',
             element: <LeaseDetailPage />,
+          },
+        ],
+      },
+      {
+        element: (
+          <ProtectedRoute role="Admin">
+            <AdminAppShell />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: '/admin',
+            element: <AdminDashboardPage />,
+          },
+          {
+            path: '/admin/users',
+            element: <AdminUsersPage />,
+          },
+          {
+            path: '/admin/cin',
+            element: <AdminCinPage />,
+          },
+          {
+            path: '/admin/jobs',
+            element: <AdminJobsPage />,
           },
         ],
       },
