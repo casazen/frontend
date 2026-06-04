@@ -30,7 +30,7 @@ export function RevenuePage() {
           title="Revenue Analytics"
           description="Track and analyze your revenue performance"
           action={
-            <Button variant="outline" onClick={() => navigate('/payments')}>
+            <Button variant="outline" onClick={() => navigate('/app/short-rent/payments')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Payments
             </Button>

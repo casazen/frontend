@@ -1,13 +1,21 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { FileText, Home, User } from 'lucide-react';
+import { FileText, Home, User, type LucideIcon } from 'lucide-react';
+import { getNavEntries } from '@/config/route-manifest';
 
-const navItems = [
-  { to: '/leases', icon: FileText, label: 'Leases' },
-  { to: '/profile', icon: User, label: 'Profile' },
-];
+const ICONS: Record<string, LucideIcon> = {
+  FileText,
+  User,
+};
 
 export function LongTermSidebar() {
+  const navItems = getNavEntries('long-rent').map((entry) => ({
+    to: entry.path,
+    icon: ICONS[entry.icon ?? 'FileText'] ?? FileText,
+    label: entry.navLabel ?? '',
+    end: entry.path === '/app/long-rent/leases',
+  }));
+
   return (
     <aside className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
       <div className="flex h-16 items-center border-b px-6">
@@ -28,7 +36,7 @@ export function LongTermSidebar() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/leases'}
+            end={item.end}
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',

@@ -1,15 +1,23 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BarChart3, Building2, FileCheck, Home, Settings } from 'lucide-react';
+import { FileCheck, Home, LayoutDashboard, Settings, Users, type LucideIcon } from 'lucide-react';
+import { getNavEntries } from '@/config/route-manifest';
 
-const navItems = [
-  { to: '/admin', icon: BarChart3, label: 'Dashboard', end: true },
-  { to: '/admin/users', icon: Building2, label: 'Users' },
-  { to: '/admin/cin', icon: FileCheck, label: 'CIN Compliance' },
-  { to: '/admin/jobs', icon: Settings, label: 'Background Jobs' },
-];
+const ICONS: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  Users,
+  FileCheck,
+  Settings,
+};
 
 export function AdminSidebar() {
+  const navItems = getNavEntries('admin').map((entry) => ({
+    to: entry.path,
+    icon: ICONS[entry.icon ?? 'LayoutDashboard'] ?? LayoutDashboard,
+    label: entry.navLabel ?? '',
+    end: entry.path === '/app/admin',
+  }));
+
   return (
     <aside className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
       <div className="flex h-16 items-center border-b px-6">

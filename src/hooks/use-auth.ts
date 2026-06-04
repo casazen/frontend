@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { setAccessTokenGetter } from '@/lib/axios';
 import { isDemoMode, getDemoUser } from '@/config/demo.config';
 
@@ -38,6 +38,8 @@ export function useAuth() {
       },
     });
   };
+
+  const demoUser = useMemo(() => getDemoUser(), [typeof window !== 'undefined' ? window.location.href : '']);
 
   // In demo mode, return mock authentication state
   if (isDemoMode) {

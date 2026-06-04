@@ -10,9 +10,11 @@ import {
 import { User, LogOut } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useWorkspace } from '@/hooks/use-workspace';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
+  const { activeContext } = useWorkspace();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -33,7 +35,7 @@ export function UserMenu() {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/profile')}>
+        <DropdownMenuItem onClick={() => navigate(`/app/${activeContext ?? 'short-rent'}/profile`)}>
           <User className="mr-2 h-4 w-4" />
           Profile
         </DropdownMenuItem>

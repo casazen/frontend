@@ -4,11 +4,11 @@ import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { PricingDashboardPage } from '../pricing-dashboard-page';
-import * as pricingQueries from '@/queries/pricingAdapter';
+import * as pricingQueries from '@/queries/use-pricing-adapter';
 import type { PricingAdapterConfig, PricingPreviewResponse } from '@/types';
 import type { PricingHistoryPagedResponse } from '@/types';
 
-vi.mock('@/queries/pricingAdapter');
+vi.mock('@/queries/use-pricing-adapter');
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'app-shell' }, children),
@@ -111,7 +111,7 @@ function setupAllMocks(overrides: Partial<{
   vi.mocked(pricingQueries.usePricingAdapterConfig).mockReturnValue({ data: configData, isLoading: configLoading } as any);
   vi.mocked(pricingQueries.usePricingPreview).mockReturnValue({ data: previewData, isLoading: false } as any);
   vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: historyData, isLoading: false } as any);
-  vi.mocked(pricingQueries.useUpdatePricingAdapterConfig).mockReturnValue({ ...noopMutation(), mutate: updateMutate } as any);
+  vi.mocked(pricingQueries.useSavePricingAdapterConfig).mockReturnValue({ ...noopMutation(), mutate: updateMutate } as any);
   vi.mocked(pricingQueries.useDisablePricingAdapter).mockReturnValue({ ...noopMutation(), mutate: disableMutate } as any);
   vi.mocked(pricingQueries.useTriggerPricingSync).mockReturnValue({ ...noopMutation(), mutate: syncMutate } as any);
 }
@@ -237,7 +237,7 @@ describe('PricingDashboardPage', () => {
     vi.mocked(pricingQueries.usePricingAdapterConfig).mockReturnValue({ data: mockConfig, isLoading: false } as any);
     vi.mocked(pricingQueries.usePricingPreview).mockReturnValue({ data: mockPreview, isLoading: false } as any);
     vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: undefined, isLoading: true } as any);
-    vi.mocked(pricingQueries.useUpdatePricingAdapterConfig).mockReturnValue(noopMutation() as any);
+    vi.mocked(pricingQueries.useSavePricingAdapterConfig).mockReturnValue(noopMutation() as any);
     vi.mocked(pricingQueries.useDisablePricingAdapter).mockReturnValue(noopMutation() as any);
     vi.mocked(pricingQueries.useTriggerPricingSync).mockReturnValue(noopMutation() as any);
 

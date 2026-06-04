@@ -11,7 +11,7 @@ export function BookingCreatePage() {
 
   const handleSubmit = async (data: BookingFormValues) => {
     await createBooking.mutateAsync(data);
-    navigate('/bookings');
+    navigate('/app/short-rent/bookings');
   };
 
   return (

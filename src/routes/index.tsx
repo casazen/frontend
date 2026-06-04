@@ -1,35 +1,39 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { ShortStayLayerGuard } from '@/components/auth/short-stay-layer-guard';
-import { LongTermAppShell } from '@/components/layout/long-term-app-shell';
-import { AdminAppShell } from '@/components/layout/admin-app-shell';
-import { AppLayerProvider } from '@/contexts/app-layer-provider';
-import { AdminDashboardPage } from '@/features/admin/admin-dashboard-page';
-import { AdminUsersPage } from '@/features/admin/admin-users-page';
-import { AdminCinPage } from '@/features/admin/admin-cin-page';
-import { AdminJobsPage } from '@/features/admin/admin-jobs-page';
 import { LoginPage } from '@/pages/login-page';
-import { DashboardPage } from '@/features/dashboard/dashboard-page';
-import { PropertiesPage } from '@/features/properties/properties-page';
-import { PropertyCreatePage } from '@/features/properties/property-create-page';
-import { PropertyEditPage } from '@/features/properties/property-edit-page';
-import { PropertyDetailPage } from '@/features/properties/property-detail-page';
-import { BookingsPage } from '@/features/bookings/bookings-page';
-import { BookingCreatePage } from '@/features/bookings/booking-create-page';
-import { BookingEditPage } from '@/features/bookings/booking-edit-page';
-import { BookingDetailPage } from '@/features/bookings/booking-detail-page';
-import { CalendarPage } from '@/features/bookings/calendar-page';
-import { PaymentsPage } from '@/features/payments/payments-page';
-import { PaymentCreatePage } from '@/features/payments/payment-create-page';
-import { PaymentDetailPage } from '@/features/payments/payment-detail-page';
-import { RevenuePage } from '@/features/payments/revenue-page';
-import { OtaPage } from '@/features/ota/ota-page';
-import { OtaSetupPage } from '@/features/ota/ota-setup-page';
 import { SearchPage } from '@/features/search/search-page';
-import { LayerAwareProfilePage } from '@/features/profile/layer-aware-profile-page';
-import { PricingDashboardPage } from '@/features/pricing';
-import { PricingHistoryPage } from '@/features/pricing';
-import { LeasesPage, LeaseCreatePage, LeaseDetailPage } from '@/features/leases';
+import { WorkspaceProvider } from '@/contexts/workspace-provider';
+import { ContextLayout } from '@/components/layout/context-layout';
+import { ContextRouteGuard } from '@/components/auth/context-route-guard';
+import { ContextPickerPage } from '@/pages/context-picker-page';
+import { NoAccessPage } from '@/pages/no-access-page';
+import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
+import { LegacyRedirect } from './legacy-redirect';
+import { ManifestRoute } from './manifest-route';
+
+function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
+  const prefix = `/app/${contextKey}`;
+  const entries = ROUTE_MANIFEST.filter((entry) => entry.context === contextKey);
+
+  return entries.map((entry) => {
+    const relativePath = entry.path === prefix ? '' : entry.path.slice(`${prefix}/`.length);
+    return {
+      path: relativePath,
+      element: (
+        <ContextRouteGuard contextKey={contextKey} requiredPermissions={entry.requiredPermissions}>
+          <ManifestRoute entry={entry} />
+        </ContextRouteGuard>
+      ),
+    } satisfies RouteObject;
+  });
+}
+
+const legacyPaths = Array.from(
+  new Set(
+    ROUTE_MANIFEST.flatMap((entry) => entry.legacyPaths ?? [])
+      .filter((path) => path !== '/'),
+  ),
+);
 
 export const router = createBrowserRouter([
   {
@@ -41,145 +45,69 @@ export const router = createBrowserRouter([
     element: <SearchPage />,
   },
   {
+    path: '/app',
     element: (
       <ProtectedRoute>
-        <AppLayerProvider>
+        <WorkspaceProvider>
           <Outlet />
-        </AppLayerProvider>
+        </WorkspaceProvider>
       </ProtectedRoute>
     ),
     children: [
       {
-        element: <ShortStayLayerGuard />,
+        path: 'choose-context',
+        element: <ContextPickerPage />,
+      },
+      {
+        path: 'no-access',
+        element: <NoAccessPage />,
+      },
+      {
+        path: 'short-rent',
+        element: <ContextLayout />,
         children: [
-          {
-            path: '/',
-            element: <DashboardPage />,
-          },
-          {
-            path: '/properties',
-            element: <PropertiesPage />,
-          },
-          {
-            path: '/properties/create',
-            element: <PropertyCreatePage />,
-          },
-          {
-            path: '/properties/:id',
-            element: <PropertyDetailPage />,
-          },
-          {
-            path: '/properties/:id/edit',
-            element: <PropertyEditPage />,
-          },
-          {
-            path: '/properties/:id/pricing',
-            element: <PricingDashboardPage />,
-          },
-          {
-            path: '/properties/:id/pricing/history',
-            element: <PricingHistoryPage />,
-          },
-          {
-            path: '/bookings',
-            element: <BookingsPage />,
-          },
-          {
-            path: '/bookings/create',
-            element: <BookingCreatePage />,
-          },
-          {
-            path: '/bookings/calendar',
-            element: <CalendarPage />,
-          },
-          {
-            path: '/bookings/:id',
-            element: <BookingDetailPage />,
-          },
-          {
-            path: '/bookings/:id/edit',
-            element: <BookingEditPage />,
-          },
-          {
-            path: '/payments',
-            element: <PaymentsPage />,
-          },
-          {
-            path: '/payments/create',
-            element: <PaymentCreatePage />,
-          },
-          {
-            path: '/payments/revenue',
-            element: <RevenuePage />,
-          },
-          {
-            path: '/payments/:id',
-            element: <PaymentDetailPage />,
-          },
-          {
-            path: '/ota',
-            element: <OtaPage />,
-          },
-          {
-            path: '/ota/create',
-            element: <OtaSetupPage />,
-          },
+          ...buildContextChildren('short-rent'),
         ],
       },
       {
-        path: '/profile',
-        element: <LayerAwareProfilePage />,
-      },
-      {
-        element: (
-          <ProtectedRoute role="LongTermLandlord">
-            <LongTermAppShell />
-          </ProtectedRoute>
-        ),
+        path: 'long-rent',
+        element: <ContextLayout />,
         children: [
-          {
-            path: '/leases',
-            element: <LeasesPage />,
-          },
-          {
-            path: '/leases/new',
-            element: <LeaseCreatePage />,
-          },
-          {
-            path: '/leases/:id',
-            element: <LeaseDetailPage />,
-          },
+          ...buildContextChildren('long-rent'),
         ],
       },
       {
-        element: (
-          <ProtectedRoute role="Admin">
-            <AdminAppShell />
-          </ProtectedRoute>
-        ),
+        path: 'admin',
+        element: <ContextLayout />,
         children: [
-          {
-            path: '/admin',
-            element: <AdminDashboardPage />,
-          },
-          {
-            path: '/admin/users',
-            element: <AdminUsersPage />,
-          },
-          {
-            path: '/admin/cin',
-            element: <AdminCinPage />,
-          },
-          {
-            path: '/admin/jobs',
-            element: <AdminJobsPage />,
-          },
+          ...buildContextChildren('admin'),
         ],
       },
     ],
   },
   {
+    element: (
+      <ProtectedRoute>
+        <WorkspaceProvider>
+          <LegacyRedirect />
+        </WorkspaceProvider>
+      </ProtectedRoute>
+    ),
+    children: [],
+    path: '/',
+  },
+  ...legacyPaths.map((path) => ({
+    path,
+    element: (
+      <ProtectedRoute>
+        <WorkspaceProvider>
+          <LegacyRedirect />
+        </WorkspaceProvider>
+      </ProtectedRoute>
+    ),
+  })),
+  {
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <Navigate to="/app/choose-context" replace />,
   },
 ]);
