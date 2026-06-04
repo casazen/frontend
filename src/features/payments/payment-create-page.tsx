@@ -32,7 +32,7 @@ export function PaymentCreatePage() {
 
   const onSubmit = async (data: PaymentFormValues) => {
     await createPayment.mutateAsync(data);
-    navigate('/payments');
+    navigate('/app/short-rent/payments');
   };
 
   return (
@@ -126,7 +126,7 @@ export function PaymentCreatePage() {
           </Card>
 
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => navigate('/payments')}>
+            <Button type="button" variant="outline" onClick={() => navigate('/app/short-rent/payments')}>
               Cancel
             </Button>
             <Button type="submit" disabled={createPayment.isPending}>

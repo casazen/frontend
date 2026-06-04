@@ -31,7 +31,7 @@ export function LeasesPage() {
           title="Long-term leases"
           description="Manage contract drafts, signing, and RLI registration"
           action={
-            <Button onClick={() => navigate('/leases/new')}>
+            <Button onClick={() => navigate('/app/long-rent/leases/new')}>
               <Plus className="mr-2 h-4 w-4" />
               Create lease
             </Button>
@@ -51,7 +51,7 @@ export function LeasesPage() {
             description="Create your first long-term lease contract draft to start the signing and registration workflow."
             action={{
               label: 'Create lease',
-              onClick: () => navigate('/leases/new'),
+              onClick: () => navigate('/app/long-rent/leases/new'),
             }}
           />
         ) : (
@@ -60,7 +60,7 @@ export function LeasesPage() {
               <Card
                 key={lease.id}
                 className="cursor-pointer transition-colors hover:bg-muted/40"
-                onClick={() => navigate(`/leases/${lease.id}`)}
+                onClick={() => navigate(`/app/long-rent/leases/${lease.id}`)}
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="space-y-1">

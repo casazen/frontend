@@ -1,22 +1,22 @@
 import { Sidebar } from './sidebar';
 import { Header } from './header';
-import { LayerSwitcher } from './layer-switcher';
+import { WorkspaceSwitcher } from './workspace-switcher';
 import { DemoBanner } from '@/components/shared/demo-banner';
-import { useAppLayerContext } from '@/hooks/use-app-layer-context';
+import { useWorkspace } from '@/hooks/use-workspace';
 
 interface AppShellProps {
   children: React.ReactNode;
 }
 
 export function AppShell({ children }: AppShellProps) {
-  const { canSwitchLayer } = useAppLayerContext();
+  const { contexts } = useWorkspace();
 
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <DemoBanner />
-        <Header slotStart={canSwitchLayer ? <LayerSwitcher /> : undefined} />
+        <Header slotStart={contexts.length > 1 ? <WorkspaceSwitcher /> : undefined} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>

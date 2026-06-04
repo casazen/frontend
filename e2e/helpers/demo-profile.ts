@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-export type DemoProfile = 'short-stay' | 'long-term' | 'dual';
+export type DemoProfile = 'short-stay' | 'long-term' | 'dual' | 'admin' | 'triple';
 
 export function demoUrl(path: string, profile: DemoProfile): string {
   const separator = path.includes('?') ? '&' : '?';
