@@ -15,7 +15,7 @@ export function BookingEditPage() {
   const handleSubmit = async (data: BookingFormValues) => {
     if (id) {
       await updateBooking.mutateAsync({ id, data });
-      navigate('/bookings');
+      navigate('/app/short-rent/bookings');
     }
   };
 

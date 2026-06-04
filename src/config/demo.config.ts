@@ -10,30 +10,37 @@
 export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export type DemoProfile = 'short-stay' | 'long-term' | 'dual';
+export type ExtendedDemoProfile = DemoProfile | 'admin' | 'triple';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
 
-const demoProfiles: Record<DemoProfile, { roles: string[] }> = {
+const demoProfiles: Record<ExtendedDemoProfile, { roles: string[] }> = {
   'short-stay': {
     roles: ['PropertyOwner'],
   },
   'long-term': {
     roles: ['LongTermLandlord'],
   },
+  admin: {
+    roles: ['Admin'],
+  },
   dual: {
     roles: ['PropertyOwner', 'LongTermLandlord'],
   },
+  triple: {
+    roles: ['PropertyOwner', 'LongTermLandlord', 'Admin'],
+  },
 };
 
-function resolveDemoProfile(): DemoProfile {
+function resolveDemoProfile(): ExtendedDemoProfile {
   const raw = import.meta.env.VITE_DEMO_PROFILE as string | undefined;
-  if (raw === 'short-stay' || raw === 'long-term' || raw === 'dual') {
-    return raw;
+  if (raw && raw in demoProfiles) {
+    return raw as ExtendedDemoProfile;
   }
   return 'long-term';
 }
 
-function buildDemoUser(profile: DemoProfile) {
+function buildDemoUser(profile: ExtendedDemoProfile) {
   const roles = demoProfiles[profile].roles;
   return {
     name: 'Demo User',
@@ -46,22 +53,22 @@ function buildDemoUser(profile: DemoProfile) {
 
 const DEMO_PROFILE_STORAGE_KEY = 'casazen:demo-profile';
 
-function resolveRuntimeDemoProfile(): DemoProfile | null {
+function resolveRuntimeDemoProfile(): ExtendedDemoProfile | null {
   if (typeof window === 'undefined') return null;
 
   const params = new URLSearchParams(window.location.search);
   const fromQuery = params.get('demoProfile');
-  if (fromQuery === 'short-stay' || fromQuery === 'long-term' || fromQuery === 'dual') {
+  if (fromQuery && fromQuery in demoProfiles) {
     sessionStorage.setItem(DEMO_PROFILE_STORAGE_KEY, fromQuery);
-    return fromQuery;
+    return fromQuery as ExtendedDemoProfile;
   }
 
   const stored = sessionStorage.getItem(DEMO_PROFILE_STORAGE_KEY);
-  if (stored === 'short-stay' || stored === 'long-term' || stored === 'dual') {
-    return stored;
+  if (stored && stored in demoProfiles) {
+    return stored as ExtendedDemoProfile;
   }
 
-  const runtime = (window as Window & { __E2E_DEMO_PROFILE?: DemoProfile }).__E2E_DEMO_PROFILE;
+  const runtime = (window as Window & { __E2E_DEMO_PROFILE?: ExtendedDemoProfile }).__E2E_DEMO_PROFILE;
   if (runtime && runtime in demoProfiles) {
     return runtime;
   }

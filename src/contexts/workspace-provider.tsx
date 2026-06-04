@@ -1,0 +1,166 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
+import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
+import { getDemoUser, isDemoMode } from '@/config/demo.config';
+import { useAuth } from '@/hooks/use-auth';
+import { deriveContextsFromRoles, getUserRoles } from '@/lib/auth-roles';
+import {
+  ACTIVE_CONTEXT_STORAGE_KEY,
+  LEGACY_ACTIVE_LAYER_STORAGE_KEY,
+  WorkspaceContext,
+} from './workspace-context';
+
+function readStoredContext(): AppContextKey | null {
+  const stored = localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY);
+  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin') {
+    return stored;
+  }
+
+  const legacy = localStorage.getItem(LEGACY_ACTIVE_LAYER_STORAGE_KEY);
+  if (legacy === 'short-stay') {
+    return 'short-rent';
+  }
+  if (legacy === 'long-term') {
+    return 'long-rent';
+  }
+  return null;
+}
+
+export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const roleSignature = useMemo(() => {
+    const authUser = isDemoMode ? getDemoUser() : user;
+    return getUserRoles(authUser).slice().sort().join('|');
+  }, [isDemoMode, location.search, user]);
+  const [contexts, setContexts] = useState<ContextBootstrapDto[]>([]);
+  const [activeContext, setActiveContextState] = useState<AppContextKey | null>(readStoredContext);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadContexts = async () => {
+      const authUser = isDemoMode ? getDemoUser() : user;
+
+      if (isDemoMode) {
+        const fallback = deriveContextsFromRoles(authUser);
+        if (!mounted) return;
+        setContexts(fallback);
+        const stored = readStoredContext();
+        const resolved = fallback.some((c) => c.contextKey === stored)
+          ? stored
+          : fallback[0]?.contextKey ?? null;
+        setActiveContextState(resolved);
+        if (resolved) {
+          localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, resolved);
+        }
+        setIsReady(true);
+        return;
+      }
+
+      try {
+        const bootstrap = await contextsApi.getContexts();
+        if (!mounted) return;
+        setContexts(bootstrap.contexts);
+
+        const stored = readStoredContext();
+        const preferred = bootstrap.lastUsedContextKey ?? stored;
+        const resolved = bootstrap.contexts.some((c) => c.contextKey === preferred)
+          ? preferred ?? null
+          : bootstrap.contexts[0]?.contextKey ?? null;
+        setActiveContextState(resolved);
+        if (resolved) {
+          localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, resolved);
+        }
+      } catch {
+        if (!mounted) return;
+        const fallback = deriveContextsFromRoles(authUser);
+        setContexts(fallback);
+        const stored = readStoredContext();
+        const resolved = fallback.some((c) => c.contextKey === stored)
+          ? stored
+          : fallback[0]?.contextKey ?? null;
+        setActiveContextState(resolved);
+        if (resolved) {
+          localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, resolved);
+        }
+      } finally {
+        if (mounted) {
+          setIsReady(true);
+        }
+      }
+    };
+
+    void loadContexts();
+    return () => {
+      mounted = false;
+    };
+  }, [roleSignature]);
+
+  const setActiveContext = useCallback(
+    (contextKey: AppContextKey, navigateToDefault = true) => {
+      if (!contexts.some((c) => c.contextKey === contextKey)) {
+        return;
+      }
+
+      setActiveContextState((previous) => (previous === contextKey ? previous : contextKey));
+      localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, contextKey);
+      if (navigateToDefault) {
+        const target = contexts.find((c) => c.contextKey === contextKey)?.defaultRoute ?? getDefaultRoute(contextKey);
+        navigate(target, { replace: true });
+      }
+    },
+    [contexts, navigate],
+  );
+
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
+    const match = location.pathname.match(/^\/app\/(short-rent|long-rent|admin)(?:\/|$)/);
+    if (!match) {
+      return;
+    }
+
+    const fromUrl = match[1] as AppContextKey;
+    if (!contexts.some((c) => c.contextKey === fromUrl)) {
+      return;
+    }
+
+    setActiveContextState((previous) => (previous === fromUrl ? previous : fromUrl));
+    localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, fromUrl);
+  }, [contexts, isReady, location.pathname]);
+
+  const hasPermission = useCallback(
+    (contextKey: AppContextKey, permission: string) => {
+      const ctx = contexts.find((c) => c.contextKey === contextKey);
+      if (!ctx) return false;
+      if (!permission) return true;
+      return ctx.permissions.includes(permission);
+    },
+    [contexts],
+  );
+
+  const getDefaultContextRoute = useCallback(
+    (contextKey: AppContextKey) => contexts.find((c) => c.contextKey === contextKey)?.defaultRoute ?? getDefaultRoute(contextKey),
+    [contexts],
+  );
+
+  const value = useMemo(
+    () => ({
+      contexts,
+      activeContext,
+      isReady,
+      setActiveContext,
+      hasPermission,
+      getDefaultRoute: getDefaultContextRoute,
+    }),
+    [activeContext, contexts, getDefaultContextRoute, hasPermission, isReady, setActiveContext],
+  );
+
+  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
+}

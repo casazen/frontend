@@ -3,7 +3,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getDefaultHomePath, resolveInitialLayer } from '@/hooks/use-app-layer';
 import { Home, LogIn } from 'lucide-react';
 
 export function LoginPage() {
@@ -12,8 +11,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      const layer = resolveInitialLayer(user);
-      navigate(getDefaultHomePath(layer), { replace: true });
+      navigate('/app/choose-context', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 

@@ -39,7 +39,7 @@ export function LeaseDetailPage() {
         <p className="text-muted-foreground">
           The lease you are looking for does not exist or you do not have access.
         </p>
-        <Button className="mt-4" variant="outline" onClick={() => navigate('/leases')}>
+        <Button className="mt-4" variant="outline" onClick={() => navigate('/app/long-rent/leases')}>
           Back to leases
         </Button>
       </div>
@@ -72,7 +72,7 @@ export function LeaseDetailPage() {
   return (
     <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/leases')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/app/long-rent/leases')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <PageHeader

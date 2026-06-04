@@ -15,7 +15,7 @@ export function PropertyEditPage() {
   const handleSubmit = async (data: PropertyFormValues) => {
     if (id) {
       await updateProperty.mutateAsync({ id, data });
-      navigate('/properties');
+      navigate('/app/short-rent/properties');
     }
   };
 

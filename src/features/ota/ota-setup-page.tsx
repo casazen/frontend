@@ -38,7 +38,7 @@ export function OtaSetupPage() {
 
   const onSubmit = async (data: OtaIntegrationFormValues) => {
     await createIntegration.mutateAsync(data);
-    navigate('/ota');
+    navigate('/app/short-rent/ota');
   };
 
   return (
@@ -176,7 +176,7 @@ export function OtaSetupPage() {
           )}
 
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => navigate('/ota')}>
+            <Button type="button" variant="outline" onClick={() => navigate('/app/short-rent/ota')}>
               Cancel
             </Button>
             <Button type="submit" disabled={createIntegration.isPending}>

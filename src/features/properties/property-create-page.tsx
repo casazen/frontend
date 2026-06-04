@@ -11,7 +11,7 @@ export function PropertyCreatePage() {
 
   const handleSubmit = async (data: PropertyFormValues) => {
     await createProperty.mutateAsync(data);
-    navigate('/properties');
+    navigate('/app/short-rent/properties');
   };
 
   return (

@@ -13,7 +13,7 @@ export function CalendarPage() {
 
   const handleSelectEvent = (event: BookingCalendarEvent) => {
     if (event.resource) {
-      navigate(`/bookings/${event.resource.id}`);
+      navigate(`/app/short-rent/bookings/${event.resource.id}`);
     }
   };
 
@@ -29,7 +29,7 @@ export function CalendarPage() {
           title="Bookings Calendar"
           description="View and manage bookings in calendar format"
           action={
-            <Button variant="outline" onClick={() => navigate('/bookings')}>
+            <Button variant="outline" onClick={() => navigate('/app/short-rent/bookings')}>
               <List className="mr-2 h-4 w-4" />
               List View
             </Button>
