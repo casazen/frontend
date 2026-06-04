@@ -33,3 +33,6 @@ dist-ssr
 opencode.json
 public/test-auth.html
 e2e/.auth/
+
+.env.e2e
+
