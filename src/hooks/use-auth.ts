@@ -46,7 +46,7 @@ export function useAuth() {
     return {
       isLoading: false,
       isAuthenticated: true,
-      user: getDemoUser(),
+      user: demoUser,
       login: () => console.log('Demo mode: login simulation'),
       logout,
       getAccessToken: async () => 'demo-token',
