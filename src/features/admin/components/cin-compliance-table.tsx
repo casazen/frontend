@@ -31,7 +31,7 @@ export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
+          {(items ?? []).map((item) => (
             <tr key={item.propertyId} className="border-b last:border-0">
               <td className="py-3 pr-4 font-medium">{item.propertyName}</td>
               <td className="py-3 pr-4 text-muted-foreground">{item.city}</td>
@@ -44,7 +44,7 @@ export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps
               </td>
             </tr>
           ))}
-          {items.length === 0 && (
+          {(items ?? []).length === 0 && (
             <tr>
               <td colSpan={5} className="py-8 text-center text-muted-foreground">
                 Nessun dato trovato.
