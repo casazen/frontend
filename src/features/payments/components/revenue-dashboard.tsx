@@ -10,7 +10,8 @@ interface RevenueDashboardProps {
 }
 
 export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboardProps) {
-  const chartData = analytics.data.map((item) => ({
+  const rows = analytics.data ?? [];
+  const chartData = rows.map((item) => ({
     period: item.period,
     revenue: item.revenue,
     bookings: item.bookings,
@@ -61,7 +62,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.data.length}</div>
+            <div className="text-2xl font-bold">{rows.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -144,7 +145,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
                 </tr>
               </thead>
               <tbody>
-                {analytics.data.map((item) => (
+                {rows.map((item) => (
                   <tr key={item.period} className="border-b">
                     <td className="py-2">{item.period}</td>
                     <td className="text-right font-medium">

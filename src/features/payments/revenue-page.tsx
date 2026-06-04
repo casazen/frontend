@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,8 +23,7 @@ export function RevenuePage() {
   });
 
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <PageHeader
           title="Revenue Analytics"
           description="Track and analyze your revenue performance"
@@ -107,7 +105,6 @@ export function RevenuePage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </AppShell>
+    </div>
   );
 }

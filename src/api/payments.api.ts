@@ -1,4 +1,5 @@
 import { ApiClient } from './client';
+import { buildRevenueAnalytics } from '@/lib/revenue-analytics';
 import type {
   Payment,
   CreatePaymentDto,
@@ -29,6 +30,8 @@ export const paymentsApi = {
   refund: (id: string, data?: RefundPaymentDto) =>
     ApiClient.post<Payment>(`/payments/${id}/refund`, data),
 
-  getRevenue: (params?: RevenueParams) =>
-    ApiClient.get<RevenueAnalytics>('/payments/revenue', params),
+  getRevenue: async (params?: RevenueParams): Promise<RevenueAnalytics> => {
+    const payments = await ApiClient.get<Payment[]>('/payments');
+    return buildRevenueAnalytics(payments ?? [], params);
+  },
 };
