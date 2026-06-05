@@ -4,12 +4,13 @@ import type {
   CreatePropertyDto,
   UpdatePropertyDto,
   PropertySearchParams,
+  PropertyDocumentType,
 } from '@/types';
 import { toast } from 'sonner';
 
 const PROPERTIES_KEY = 'properties';
 
-export function useProperties(params?: Record<string, any>) {
+export function useProperties(params?: Record<string, string | number | boolean | undefined>) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, params],
     queryFn: () => propertiesApi.getAll(params),
@@ -20,6 +21,14 @@ export function useProperty(id: string) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, id],
     queryFn: () => propertiesApi.getById(id),
+    enabled: !!id,
+  });
+}
+
+export function usePropertyDetail(id: string) {
+  return useQuery({
+    queryKey: [PROPERTIES_KEY, id, 'detail'],
+    queryFn: () => propertiesApi.getDetail(id),
     enabled: !!id,
   });
 }
@@ -76,5 +85,45 @@ export function useSearchProperties(params?: PropertySearchParams) {
     queryKey: [PROPERTIES_KEY, 'search', params],
     queryFn: () => propertiesApi.search(params || {}),
     enabled: !!params,
+  });
+}
+
+export function useUploadPropertyDocument() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      propertyId,
+      file,
+      documentType,
+    }: {
+      propertyId: string;
+      file: File;
+      documentType: PropertyDocumentType;
+    }) => propertiesApi.uploadDocument(propertyId, file, documentType),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
+      toast.success('Documento caricato con successo');
+    },
+    onError: (error: Error & { response?: { data?: { error?: string } } }) => {
+      const message = error.response?.data?.error ?? 'Caricamento documento non riuscito';
+      toast.error(message);
+    },
+  });
+}
+
+export function useDeletePropertyDocument() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ propertyId, docId }: { propertyId: string; docId: string }) =>
+      propertiesApi.deleteDocument(propertyId, docId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
+      toast.success('Documento eliminato');
+    },
+    onError: () => {
+      toast.error('Eliminazione documento non riuscita');
+    },
   });
 }
