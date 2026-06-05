@@ -76,6 +76,12 @@ export default defineConfig({
         env: {
           VITE_API_BASE_URL:
             process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
+          VITE_AUTH0_DOMAIN:
+            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
+          VITE_AUTH0_CLIENT_ID:
+            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_AUDIENCE:
+            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
         },
       }
     : {
