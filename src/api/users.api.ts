@@ -1,5 +1,13 @@
 import { ApiClient } from '@/api/client';
-import type { UserDetail, UserSummary, UpdateProfileRequest, ChangeRoleRequest, PagedResult } from '@/types';
+import type {
+  UserDetail,
+  UserSummary,
+  UpdateProfileRequest,
+  ChangeRoleRequest,
+  PagedResult,
+  RentalType,
+  OnboardingResponse,
+} from '@/types';
 
 interface GetUsersParams {
   page?: number;
@@ -42,4 +50,10 @@ export const UsersApi = {
 
   deactivateUser: (id: string): Promise<void> =>
     ApiClient.delete<void>(`/users/${id}`),
+
+  postOnboarding: (rentalType: RentalType): Promise<OnboardingResponse> =>
+    ApiClient.post<OnboardingResponse>('/users/onboarding', { rentalType }),
+
+  putOnboarding: (rentalType: RentalType): Promise<OnboardingResponse> =>
+    ApiClient.put<OnboardingResponse>('/users/onboarding', { rentalType }),
 };

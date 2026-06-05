@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
-import type { UpdateProfileRequest } from '@/types';
+import type { RentalType, UpdateProfileRequest } from '@/types';
 import { toast } from 'sonner';
 
 const USERS_KEY = 'users';
@@ -63,6 +63,17 @@ export function useChangeUserRole() {
     },
     onError: () => {
       toast.error('Impossibile aggiornare il ruolo');
+    },
+  });
+}
+
+export function useCompleteOnboarding() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (rentalType: RentalType) => UsersApi.postOnboarding(rentalType),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [ME_KEY] });
     },
   });
 }
