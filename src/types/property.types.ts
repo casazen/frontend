@@ -46,7 +46,7 @@ export interface CreatePropertyDto {
   isActive?: boolean;
 }
 
-export interface UpdatePropertyDto extends Partial<CreatePropertyDto> {}
+export type UpdatePropertyDto = Partial<CreatePropertyDto>;
 
 export type PropertyDocumentType =
   | 'CinCertificate'
@@ -64,6 +64,70 @@ export interface PropertyDocument {
   documentType: PropertyDocumentType;
   uploadedBy: string;
   uploadedAt: string;
+}
+
+export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
+
+export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
+
+export interface PropertyDocumentDto {
+  id: string;
+  fileName: string;
+  fileType: string;
+  uploadedAt: string;
+  downloadUrl: string;
+}
+
+export interface OtaIntegrationSummaryDto {
+  id: string;
+  platform: string;
+  syncStatus: OtaSyncStatus;
+  lastSyncAt: string;
+  isActive: boolean;
+  syncEnabled: boolean;
+}
+
+export interface BookingsSummaryDto {
+  totalBookings: number;
+  upcomingBookings: number;
+  activeBookings: number;
+  nextCheckIn: string | null;
+  nextCheckOut: string | null;
+}
+
+export interface PricingAdapterSummaryDto {
+  isEnabled: boolean;
+  lastAdaptedAt: string | null;
+  nextScheduledRunAt: string | null;
+}
+
+export interface PropertyDetailDto {
+  id: string;
+  ownerId: string;
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  nightlyRate: number;
+  cleaningFee: number;
+  damageDeposit: number;
+  cinCode: string | null;
+  cinStatus: CinStatus;
+  timezone: string;
+  amenities: string[];
+  photoUrls: string[];
+  houseRules: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  documents: PropertyDocumentDto[];
+  otaIntegrations: OtaIntegrationSummaryDto[];
+  bookingsSummary: BookingsSummaryDto;
+  pricingAdapterSummary: PricingAdapterSummaryDto;
 }
 
 export interface PropertySearchParams {
