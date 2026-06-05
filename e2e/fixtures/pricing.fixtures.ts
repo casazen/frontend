@@ -83,12 +83,30 @@ export const historyAfterSync: PricingHistoryPagedResponse = {
   page: 1,
 };
 
+function buildPreviewDays(count: number): PricingPreviewResponse['prices'] {
+  const reasons = ['Weekend uplift', 'Weekday rate', 'Public holiday', 'High demand', 'Low season'];
+  return Array.from({ length: count }, (_, index) => {
+    const day = 12 + index;
+    const date = `2026-05-${String(day).padStart(2, '0')}`;
+    const isWeekend = index % 7 === 0 || index % 7 === 6;
+    const basePrice = 100;
+    const suggestedPrice = isWeekend ? 140 + (index % 3) * 5 : 105 + (index % 4) * 3;
+    return {
+      date,
+      suggestedPrice,
+      basePrice,
+      reason: reasons[index % reasons.length],
+    };
+  });
+}
+
 export const previewData: PricingPreviewResponse = {
-  prices: [
-    { date: '2026-05-12', suggestedPrice: 145, basePrice: 100, reason: 'Weekend uplift' },
-    { date: '2026-05-13', suggestedPrice: 140, basePrice: 100, reason: 'Weekend uplift' },
-    { date: '2026-05-14', suggestedPrice: 110, basePrice: 100, reason: 'Weekday rate' },
-  ],
+  prices: buildPreviewDays(90),
+};
+
+/** Subset used when tests only need the AC20 minimum (≥ 7 rows). */
+export const previewDataMinimal: PricingPreviewResponse = {
+  prices: buildPreviewDays(7),
 };
 
 export const syncResponse = { jobId: 'job-e2e-sync-001' };
