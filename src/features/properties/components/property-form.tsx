@@ -172,7 +172,13 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading }: Proper
                 id="latitude"
                 type="number"
                 step="any"
-                {...register('latitude', { valueAsNumber: true })}
+                {...register('latitude', {
+                  setValueAs: (value) => {
+                    if (value === '' || value === null || value === undefined) return undefined;
+                    const parsed = Number(value);
+                    return Number.isNaN(parsed) ? undefined : parsed;
+                  },
+                })}
                 placeholder="25.7617"
               />
             </div>
@@ -183,7 +189,13 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading }: Proper
                 id="longitude"
                 type="number"
                 step="any"
-                {...register('longitude', { valueAsNumber: true })}
+                {...register('longitude', {
+                  setValueAs: (value) => {
+                    if (value === '' || value === null || value === undefined) return undefined;
+                    const parsed = Number(value);
+                    return Number.isNaN(parsed) ? undefined : parsed;
+                  },
+                })}
                 placeholder="-80.1918"
               />
             </div>

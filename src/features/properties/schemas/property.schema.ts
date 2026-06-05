@@ -7,14 +7,8 @@ export const propertyFormSchema = z.object({
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
   postalCode: z.string().min(3, 'Postal code is required'),  // ✅ Fixed: was zipCode
-  latitude: z.preprocess(
-    (val) => (typeof val === 'number' && Number.isNaN(val) ? undefined : val),
-    z.number().min(-90).max(90).optional(),
-  ),
-  longitude: z.preprocess(
-    (val) => (typeof val === 'number' && Number.isNaN(val) ? undefined : val),
-    z.number().min(-180).max(180).optional(),
-  ),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
   bedrooms: z.number().int().min(1, 'At least 1 bedroom is required').max(50),
   bathrooms: z.number().min(0.5, 'At least 0.5 bathrooms required').max(20),
   maxGuests: z.number().int().min(1, 'At least 1 guest capacity required').max(100),
