@@ -8,6 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * @see https://playwright.dev/docs/test-configuration
  */
+const isStagingRun = process.env.E2E_STAGING === '1';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -22,20 +24,48 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
   },
 
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
+  projects: isStagingRun
+    ? [
+        {
+          name: 'setup',
+          testMatch: /auth\.setup\.ts/,
+        },
+        {
+          name: 'staging',
+          testMatch: '**/property-staging.spec.ts',
+          dependencies: ['setup'],
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+            storageState: 'e2e/.auth/long-term-user.json',
+          },
+        },
+      ]
+    : [
+        {
+          name: 'chromium',
+          testIgnore: ['**/property-staging.spec.ts'],
+          use: { ...devices['Desktop Chrome'] },
+        },
+      ],
 
-  webServer: {
-    command: 'npm run dev:demo',
-    url: 'http://localhost:5173',
-    // Always start dev:demo so VITE_DEMO_MODE is set (avoid reusing a non-demo dev server on :5173)
-    reuseExistingServer: false,
-    env: {
-      VITE_DEMO_MODE: 'true',
-    },
-  },
+  webServer: isStagingRun
+    ? {
+        command: 'npm run dev',
+        url: 'http://localhost:5173',
+        reuseExistingServer: false,
+        timeout: 120_000,
+        env: {
+          VITE_API_BASE_URL:
+            process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
+        },
+      }
+    : {
+        command: 'npm run dev:demo',
+        url: 'http://localhost:5173',
+        reuseExistingServer: false,
+        env: {
+          VITE_DEMO_MODE: 'true',
+        },
+      },
 });

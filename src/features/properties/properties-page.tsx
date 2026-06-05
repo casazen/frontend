@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -102,7 +103,11 @@ export function PropertiesPage() {
                   <tbody>
                     {propertyList.map((p) => (
                       <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="px-4 py-3 font-medium">{p.name}</td>
+                        <td className="px-4 py-3 font-medium">
+                          <Link to={`/properties/${p.id}`} className="hover:underline">
+                            {p.name}
+                          </Link>
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
                         <td className="px-4 py-3 text-muted-foreground">{p.bedrooms}bd · {p.bathrooms}ba</td>
                         <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
