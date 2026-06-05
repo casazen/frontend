@@ -13,7 +13,10 @@ export interface UserSummary {
   email: string;
   firstName: string;
   lastName: string;
+  /** Primary role (legacy / display fallback) */
   role: UserRole;
+  /** All assigned Auth0 roles */
+  roles: UserRole[];
   rentalType?: RentalType | null;
   isActive: boolean;
   createdAt: string;
@@ -32,6 +35,10 @@ export interface UpdateProfileRequest {
 
 export interface ChangeRoleRequest {
   role: UserRole;
+}
+
+export interface ChangeRolesRequest {
+  roles: UserRole[];
 }
 
 export interface OnboardingRequest {

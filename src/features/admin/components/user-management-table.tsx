@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { displayUserName } from '@/api/users.mapper';
 import { ChangeRoleDialog } from './change-role-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
@@ -33,7 +34,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
             <tr className="border-b text-left text-muted-foreground">
               <th className="pb-2 pr-4 font-medium">Nome</th>
               <th className="pb-2 pr-4 font-medium">Email</th>
-              <th className="pb-2 pr-4 font-medium">Ruolo</th>
+              <th className="pb-2 pr-4 font-medium">Ruoli</th>
               <th className="pb-2 pr-4 font-medium">Stato</th>
               <th className="pb-2 font-medium">Azioni</th>
             </tr>
@@ -41,12 +42,16 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
           <tbody>
             {users.map((user) => (
               <tr key={user.id} className="border-b last:border-0">
-                <td className="py-3 pr-4 font-medium">
-                  {user.firstName} {user.lastName}
-                </td>
-                <td className="py-3 pr-4 text-muted-foreground">{user.email}</td>
+                <td className="py-3 pr-4 font-medium">{displayUserName(user)}</td>
+                <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
                 <td className="py-3 pr-4">
-                  <Badge variant="outline">{user.role}</Badge>
+                  <div className="flex flex-wrap gap-1">
+                    {(user.roles.length > 0 ? user.roles : [user.role]).map((role) => (
+                      <Badge key={role} variant="outline">
+                        {role}
+                      </Badge>
+                    ))}
+                  </div>
                 </td>
                 <td className="py-3 pr-4">
                   {user.isActive ? (
@@ -62,7 +67,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                       size="sm"
                       onClick={() => setRoleTarget(user)}
                     >
-                      Ruolo
+                      Ruoli
                     </Button>
                     {user.isActive && (
                       <Button

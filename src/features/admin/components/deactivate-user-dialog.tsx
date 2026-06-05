@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { displayUserName } from '@/api/users.mapper';
 import { useDeactivateUser } from '@/queries/use-users';
 import type { UserSummary } from '@/types';
 
@@ -30,7 +31,8 @@ export function DeactivateUserDialog({ user, open, onOpenChange }: DeactivateUse
         <DialogHeader>
           <DialogTitle>Disattiva utente</DialogTitle>
           <DialogDescription>
-            Sei sicuro di voler disattivare {user?.firstName} {user?.lastName} ({user?.email})?
+            Sei sicuro di voler disattivare {user ? displayUserName(user) : 'l\'utente'}
+            {user?.email ? ` (${user.email})` : ''}?
             L&apos;utente non potrà più accedere al sistema.
           </DialogDescription>
         </DialogHeader>
