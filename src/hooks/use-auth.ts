@@ -41,6 +41,11 @@ export function useAuth() {
 
   const demoUser = useMemo(() => getDemoUser(), [typeof window !== 'undefined' ? window.location.href : '']);
 
+  const authParams = {
+    audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
+    scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
+  };
+
   // In demo mode, return mock authentication state
   if (isDemoMode) {
     return {
@@ -50,6 +55,7 @@ export function useAuth() {
       login: () => console.log('Demo mode: login simulation'),
       logout,
       getAccessToken: async () => 'demo-token',
+      refreshAccessToken: async () => 'demo-token',
     };
   }
 
@@ -59,11 +65,11 @@ export function useAuth() {
     user,
     login: loginWithRedirect,
     logout,
-    getAccessToken: () => getAccessTokenSilently({
-      authorizationParams: {
-        audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
-        scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
-      },
-    }),
+    getAccessToken: () => getAccessTokenSilently({ authorizationParams: authParams }),
+    refreshAccessToken: () =>
+      getAccessTokenSilently({
+        authorizationParams: authParams,
+        cacheMode: 'off',
+      }),
   };
 }

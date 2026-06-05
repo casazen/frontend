@@ -6,12 +6,15 @@ export type UserRole =
   | 'Staff'
   | 'LongTermLandlord';
 
+export type RentalType = 'ShortTerm' | 'LongTerm' | 'Both';
+
 export interface UserSummary {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  rentalType?: RentalType | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -29,6 +32,15 @@ export interface UpdateProfileRequest {
 
 export interface ChangeRoleRequest {
   role: UserRole;
+}
+
+export interface OnboardingRequest {
+  rentalType: RentalType;
+}
+
+export interface OnboardingResponse {
+  rolesAssigned: string[];
+  rentalType: RentalType;
 }
 
 export interface PagedResult<T> {

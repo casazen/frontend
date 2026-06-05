@@ -1,5 +1,6 @@
 import { PageHeader } from '@/components/layout/page-header';
 import { ProfileInfo } from './components/profile-info';
+import { OperatorTypeSection } from './components/operator-type-section';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -18,6 +19,7 @@ export function ProfileContentPage() {
       />
 
       <ProfileInfo user={user} />
+      <OperatorTypeSection />
     </div>
   );
 }

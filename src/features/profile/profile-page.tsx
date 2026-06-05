@@ -1,6 +1,7 @@
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ProfileInfo } from './components/profile-info';
+import { OperatorTypeSection } from './components/operator-type-section';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -20,6 +21,7 @@ export function ProfilePage() {
         />
 
         <ProfileInfo user={user} />
+        <OperatorTypeSection />
       </div>
     </AppShell>
   );
