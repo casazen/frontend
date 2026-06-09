@@ -2,12 +2,12 @@ import { PropertySearchCard } from './property-search-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
-import type { Property } from '@/types';
+import type { PublicPropertyDto } from '@/types';
 
 interface SearchResultsProps {
-  properties: Property[];
+  properties: PublicPropertyDto[];
   isLoading?: boolean;
-  onViewDetails: (property: Property) => void;
+  onViewDetails: (property: PublicPropertyDto) => void;
 }
 
 export function SearchResults({ properties, isLoading, onViewDetails }: SearchResultsProps) {

@@ -8,6 +8,8 @@ import type {
   PropertyDocument,
   PropertyDetailDto,
   PropertyDocumentDto,
+  PublicPropertyDto,
+  PublicPropertyDetailDto,
 } from '@/types';
 
 export const propertiesApi = {
@@ -24,8 +26,16 @@ export const propertiesApi = {
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
-  search: (params: PropertySearchParams) =>
-    ApiClient.get<Property[]>('/properties/search', params),
+  search: (params: PropertySearchParams) => {
+    const apiParams: Record<string, string | number | undefined> = {};
+    if (params.city) apiParams.city = params.city;
+    if (params.minBedrooms !== undefined) apiParams.bedrooms = params.minBedrooms;
+    if (params.maxPrice !== undefined) apiParams.maxPrice = params.maxPrice;
+    return ApiClient.get<PublicPropertyDto[]>('/properties/search', apiParams);
+  },
+
+  getPublicProperty: (id: string) =>
+    ApiClient.get<PublicPropertyDetailDto>(`/properties/${id}/public`),
 
   getDocuments: (id: string) =>
     ApiClient.get<PropertyDocument[]>(`/properties/${id}/documents`),
