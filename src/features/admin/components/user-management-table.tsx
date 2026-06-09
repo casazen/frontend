@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChangeRoleDialog } from './change-role-dialog';
+import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
 
@@ -13,6 +14,7 @@ interface UserManagementTableProps {
 
 export function UserManagementTable({ users, isLoading }: UserManagementTableProps) {
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
+  const [planTarget, setPlanTarget] = useState<UserSummary | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<UserSummary | null>(null);
 
   if (isLoading) {
@@ -34,6 +36,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
               <th className="pb-2 pr-4 font-medium">Nome</th>
               <th className="pb-2 pr-4 font-medium">Email</th>
               <th className="pb-2 pr-4 font-medium">Ruolo</th>
+              <th className="pb-2 pr-4 font-medium">Piano</th>
               <th className="pb-2 pr-4 font-medium">Stato</th>
               <th className="pb-2 font-medium">Azioni</th>
             </tr>
@@ -49,6 +52,9 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                   <Badge variant="outline">{user.role}</Badge>
                 </td>
                 <td className="py-3 pr-4">
+                  <Badge variant="secondary">{user.planTier ?? '—'}</Badge>
+                </td>
+                <td className="py-3 pr-4">
                   {user.isActive ? (
                     <Badge variant="default">Attivo</Badge>
                   ) : (
@@ -57,6 +63,14 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                 </td>
                 <td className="py-3">
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPlanTarget(user)}
+                      disabled={!user.orgId}
+                    >
+                      Piano
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -79,7 +93,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                <td colSpan={6} className="py-8 text-center text-muted-foreground">
                   Nessun utente trovato.
                 </td>
               </tr>
@@ -87,6 +101,12 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
           </tbody>
         </table>
       </div>
+
+      <ChangeOrgPlanDialog
+        user={planTarget}
+        open={planTarget !== null}
+        onOpenChange={(open) => { if (!open) setPlanTarget(null); }}
+      />
 
       <ChangeRoleDialog
         user={roleTarget}

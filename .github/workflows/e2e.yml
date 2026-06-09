@@ -56,13 +56,15 @@ jobs:
       - name: Wait for Railway/Vercel deploy
         run: sleep 90
 
-      - name: Vercel FE deploy smoke
+      - name: Vercel FE deploy smoke (develop / staging)
+        if: github.ref != 'refs/heads/main'
         env:
           E2E_DEPLOY_SMOKE: '1'
-          E2E_DEPLOY_FE_URL: ${{ github.ref == 'refs/heads/main' && 'https://casazen-app.vercel.app' || 'https://casazen-app.vercel.app' }}
+          E2E_DEPLOY_FE_URL: ${{ vars.STAGING_FE_URL || 'https://casazen-app.vercel.app' }}
         run: npm run test:e2e -- vercel-deploy-smoke
 
-      - name: Railway API regression (authenticated)
+      - name: Railway API regression — test env (develop)
+        if: github.ref != 'refs/heads/main'
         env:
           E2E_STAGING: '1'
           E2E_STAGING_API_URL: ${{ vars.RAILWAY_TEST_URL }}/api
@@ -81,3 +83,19 @@ jobs:
           export VITE_AUTH0_CLIENT_ID="${VITE_AUTH0_CLIENT_ID:-xmZPesTR04r349c14n77MgJ2iSCeFaJb}"
           export VITE_AUTH0_AUDIENCE="${VITE_AUTH0_AUDIENCE:-https://casazen-api}"
           npx playwright test e2e/api-regression-smoke.spec.ts --project=setup --project=staging
+
+      - name: Production full-stack smoke (main → prod FE + prod API)
+        if: github.ref == 'refs/heads/main'
+        env:
+          E2E_PROD_SMOKE: '1'
+          E2E_PROD_FE_URL: https://casazen-app.vercel.app
+          E2E_PROD_API_URL: ${{ vars.RAILWAY_PROD_URL }}/api
+          E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
+          E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
+        run: |
+          if [ -z "$E2E_AUTH0_EMAIL" ] || [ -z "$E2E_AUTH0_PASSWORD" ]; then
+            echo "::error::E2E_AUTH0_EMAIL/PASSWORD required for production smoke on main."
+            echo "Without authenticated prod checks, staging can pass while production breaks."
+            exit 1
+          fi
+          npm run test:e2e -- prod-deploy-smoke

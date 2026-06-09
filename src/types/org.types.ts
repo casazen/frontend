@@ -26,3 +26,11 @@ export interface Entitlement {
   usage: EntitlementUsage;
   canAddProperty: boolean;
 }
+
+/** Catalogue entry from GET /api/orgs/plans. maxProperties = -1 means unlimited. */
+export interface PlanCatalogEntry {
+  tier: PlanTier;
+  displayName: string;
+  maxProperties: number;
+  description: string;
+}

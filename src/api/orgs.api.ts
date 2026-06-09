@@ -1,8 +1,13 @@
 import { ApiClient } from '@/api/client';
-import type { Entitlement } from '@/types';
+import type { Entitlement, PlanCatalogEntry, PlanTier } from '@/types';
 
 export const OrgsApi = {
-  /** GET /api/orgs/me/entitlement — resolved plan limits + usage for the caller's org (#202, AC8). */
+  getPlans: (): Promise<PlanCatalogEntry[]> =>
+    ApiClient.get<PlanCatalogEntry[]>('/orgs/plans'),
+
   getMyEntitlement: (): Promise<Entitlement> =>
     ApiClient.get<Entitlement>('/orgs/me/entitlement'),
+
+  updateMyPlan: (planTier: PlanTier): Promise<Entitlement> =>
+    ApiClient.put<Entitlement>('/orgs/me/plan', { planTier }),
 };

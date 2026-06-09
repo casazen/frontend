@@ -6,8 +6,8 @@ export const PLAN_LIMIT_MESSAGE = 'Hai raggiunto il limite del tuo piano';
 /** Italian CTA label pointing at the (billing-spec-owned) upgrade route. */
 export const PLAN_UPGRADE_CTA = 'Passa a un piano superiore';
 
-/** Target route for the upgrade CTA. Route is owned by spec-saas-billing; we only link to it. */
-export const PLAN_UPGRADE_PATH = '/app/billing/upgrade';
+/** Target route for plan management (MVP until Stripe billing). */
+export const PLAN_UPGRADE_PATH = '/app/short-rent/settings/plan';
 
 interface EntitlementErrorBody {
   code?: string;
