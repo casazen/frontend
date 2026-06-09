@@ -76,7 +76,7 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
 
       <CardFooter className="p-4 pt-0">
         <Button className="w-full" onClick={() => onViewDetails(property)}>
-          View Details
+          Dettagli
         </Button>
       </CardFooter>
     </Card>

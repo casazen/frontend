@@ -59,6 +59,13 @@ describe('axios public endpoint allowlist (#212)', () => {
     expect(mockGetAccessToken).not.toHaveBeenCalled();
   });
 
+  it('AC12: skips auth for /public/orgs/*', async () => {
+    const config = { url: '/public/orgs/demo-casazen', headers: {} } as InternalAxiosRequestConfig;
+    await requestInterceptor(config);
+
+    expect(mockGetAccessToken).not.toHaveBeenCalled();
+  });
+
   it('AC12: attaches auth for protected property endpoints', async () => {
     const config = { url: '/properties', headers: {} } as InternalAxiosRequestConfig;
     await requestInterceptor(config);
