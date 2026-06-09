@@ -5,7 +5,7 @@ import { SearchFilters } from './components/search-filters';
 import { SearchResults } from './components/search-results';
 import { useSearchProperties } from '@/queries/use-properties';
 import type { SearchFiltersFormValues } from './schemas/search.schema';
-import type { Property } from '@/types';
+import type { PublicPropertyDto } from '@/types';
 
 export function SearchPage() {
   const [filters, setFilters] = useState<SearchFiltersFormValues>({});
@@ -19,7 +19,7 @@ export function SearchPage() {
     setFilters({});
   };
 
-  const handleViewDetails = (property: Property) => {
+  const handleViewDetails = (property: PublicPropertyDto) => {
     // In a real app, this would navigate to a public property detail page
     console.log('View property details:', property);
   };

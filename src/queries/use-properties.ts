@@ -95,6 +95,14 @@ export function useSearchProperties(params?: PropertySearchParams) {
   });
 }
 
+export function usePublicProperty(id: string) {
+  return useQuery({
+    queryKey: [PROPERTIES_KEY, id, 'public'],
+    queryFn: () => propertiesApi.getPublicProperty(id),
+    enabled: !!id,
+  });
+}
+
 export function useUploadPropertyDocument() {
   const queryClient = useQueryClient();
 

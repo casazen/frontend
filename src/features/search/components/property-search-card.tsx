@@ -3,20 +3,31 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Users, Euro } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import type { Property } from '@/types';
+import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
+import type { PublicPropertyDto } from '@/types';
 
 interface PropertySearchCardProps {
-  property: Property;
-  onViewDetails: (property: Property) => void;
+  property: PublicPropertyDto;
+  onViewDetails: (property: PublicPropertyDto) => void;
 }
 
 export function PropertySearchCard({ property, onViewDetails }: PropertySearchCardProps) {
+  const heroPhoto = property.photoUrls[0];
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
-        <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-          <div className="text-6xl">🏠</div>
-        </div>
+        {heroPhoto ? (
+          <img
+            src={heroPhoto}
+            alt={property.name}
+            className="h-48 w-full object-cover"
+          />
+        ) : (
+          <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <div className="text-6xl">🏠</div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="p-4 space-y-3">
@@ -25,10 +36,13 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="h-3 w-3" />
             <span className="line-clamp-1">
-              {property.address}, {property.city}
+              {property.city}
+              {property.postalCode ? ` (${property.postalCode})` : ''}
             </span>
           </div>
         </div>
+
+        <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
 
         {property.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">

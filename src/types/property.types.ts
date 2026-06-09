@@ -68,6 +68,35 @@ export interface PropertyDocument {
 
 export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 
+/** Public list read-model (US-001 #212) — no ownerId or internal fields. */
+export interface PublicPropertyDto {
+  id: string;
+  name: string;
+  description: string;
+  city: string;
+  postalCode: string;
+  latitude?: number;
+  longitude?: number;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  nightlyRate: number;
+  cleaningFee: number;
+  amenities: string[];
+  photoUrls: string[];
+  cinCode: string | null;
+  cinStatus: CinStatus;
+  timezone: string;
+}
+
+/** Public detail read-model for branded site / checkout (US-001 #212). */
+export interface PublicPropertyDetailDto extends PublicPropertyDto {
+  houseRules: string;
+  cancellationPolicySummary: string;
+  minNights: number | null;
+  currency: string;
+}
+
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
 
 export interface PropertyDocumentDto {
