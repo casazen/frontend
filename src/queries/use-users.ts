@@ -1,10 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
+import { OrgsApi } from '@/api/orgs.api';
 import type { RentalType, UpdateProfileRequest } from '@/types';
 import { toast } from 'sonner';
 
 const USERS_KEY = 'users';
 const ME_KEY = 'me';
+
+/** Query key for the caller's resolved plan entitlement (#202). Exported so writes can invalidate it. */
+export const ENTITLEMENT_QUERY_KEY = ['entitlement'] as const;
 
 interface GetUsersParams {
   page?: number;
@@ -33,6 +37,28 @@ export function useMe() {
   return useQuery({
     queryKey: [ME_KEY],
     queryFn: () => UsersApi.getMe(),
+  });
+}
+
+/**
+ * Convenience wrapper over {@link useMe} that surfaces the caller's org + plan (#202, AC9/AC11).
+ * Returns null org for users with no tenant yet (pre-backfill) so the UI can fail gracefully.
+ */
+export function useCurrentUser() {
+  const query = useMe();
+  return {
+    ...query,
+    user: query.data ?? null,
+    org: query.data?.org ?? null,
+    planTier: query.data?.org?.planTier ?? null,
+  };
+}
+
+/** Resolved plan entitlement (limits + usage) for the caller's org (#202, AC8). */
+export function useEntitlement() {
+  return useQuery({
+    queryKey: ENTITLEMENT_QUERY_KEY,
+    queryFn: () => OrgsApi.getMyEntitlement(),
   });
 }
 

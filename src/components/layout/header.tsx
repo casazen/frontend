@@ -1,6 +1,7 @@
 import { UserMenu } from '@/components/auth/user-menu';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { OrgBadge } from '@/components/org/org-badge';
 import { useUiStore } from '@/store/ui-store';
 
 interface HeaderProps {
@@ -22,7 +23,10 @@ export function Header({ slotStart }: HeaderProps) {
       </Button>
       {slotStart}
       <div className="flex-1" />
-      <UserMenu />
+      <div className="flex items-center gap-3">
+        <OrgBadge />
+        <UserMenu />
+      </div>
     </header>
   );
 }

@@ -1,3 +1,5 @@
+import type { Org } from './org.types';
+
 export type UserRole =
   | 'Admin'
   | 'PropertyOwner'
@@ -22,6 +24,9 @@ export interface UserSummary {
 export interface UserDetail extends UserSummary {
   phoneNumber?: string;
   updatedAt: string;
+  // Tenant boundary (#202, AC9). Nullable: a brand-new user pre-backfill has no org yet.
+  orgId?: string | null;
+  org?: Org | null;
 }
 
 export interface UpdateProfileRequest {
