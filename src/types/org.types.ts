@@ -34,3 +34,12 @@ export interface PlanCatalogEntry {
   maxProperties: number;
   description: string;
 }
+
+/** Anonymous branding read-model for /book/:orgSlug (US-003 #215). */
+export interface PublicOrgDto {
+  slug: string;
+  displayName: string;
+  logoUrl: string | null;
+  themeColor: string | null;
+  contactEmail: string;
+}

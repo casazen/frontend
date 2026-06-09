@@ -12,6 +12,10 @@ import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
+import { PublicBookingShell } from '@/components/layout/public-booking-shell';
+import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
+import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
+import { CheckoutPlaceholderPage } from '@/features/public-booking/checkout-placeholder-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -101,6 +105,15 @@ export const router = createBrowserRouter([
         <SearchPage />
       </WorkspaceProvider>
     ),
+  },
+  {
+    path: '/book/:orgSlug',
+    element: <PublicBookingShell />,
+    children: [
+      { index: true, element: <OrgLandingPage /> },
+      { path: 'property/:propertyId', element: <PublicPropertyPage /> },
+      { path: 'property/:propertyId/checkout', element: <CheckoutPlaceholderPage /> },
+    ],
   },
   {
     element: (
