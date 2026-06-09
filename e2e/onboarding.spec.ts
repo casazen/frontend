@@ -1,8 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { demoUrl } from './helpers/demo-profile';
+import { mockPlansCatalog } from './helpers/org-api-mock';
+
+async function completeOnboardingFromRentalChoice(
+  page: import('@playwright/test').Page,
+  rentalButtonIndex: number,
+) {
+  await page.getByRole('button', { name: 'Scegli' }).nth(rentalButtonIndex).click();
+  await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
+  await page.getByTestId('onboarding-plan-confirm').click();
+}
 
 test.describe('Role-based onboarding (#198)', () => {
   test.beforeEach(async ({ page }) => {
+    await mockPlansCatalog(page);
     await page.addInitScript(() => {
       localStorage.clear();
       sessionStorage.clear();
@@ -28,14 +39,14 @@ test.describe('Role-based onboarding (#198)', () => {
   test('AC3 short-term choice navigates to short-rent home', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await page.getByRole('button', { name: 'Scegli' }).first().click();
+    await completeOnboardingFromRentalChoice(page, 0);
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
   });
 
   test('AC3 long-term choice navigates to leases home', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await page.getByRole('button', { name: 'Scegli' }).nth(1).click();
+    await completeOnboardingFromRentalChoice(page, 1);
     await expect(page).toHaveURL(/\/app\/long-rent\/leases/, { timeout: 15_000 });
   });
 
