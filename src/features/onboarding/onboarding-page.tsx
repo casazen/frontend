@@ -2,32 +2,47 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
-import { useCompleteOnboarding } from '@/queries/use-users';
+import { useCompleteOnboarding, useMe } from '@/queries/use-users';
 import type { PlanTier, RentalType } from '@/types';
-import { getHomeRouteForRentalType, getHomeRouteForUser } from '@/lib/onboarding';
+import { getHomeRouteForRentalType, getHomeRouteForUser, needsOrgSetup } from '@/lib/onboarding';
 import { getUserRoles } from '@/lib/auth-roles';
 import { isDemoMode } from '@/config/demo.config';
 import { applyDemoOnboardingProfile } from '@/lib/demo-onboarding';
 import { RentalTypeCard } from './components/rental-type-card';
 import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
 import { Button } from '@/components/ui/button';
+import { LoadingScreen } from '@/components/shared/loading-screen';
 
 const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 
 export function OnboardingPage() {
   const navigate = useNavigate();
   const { user, refreshAccessToken } = useAuth();
+  const { data: profile, isLoading: profileLoading } = useMe();
   const completeOnboarding = useCompleteOnboarding();
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedType, setSelectedType] = useState<RentalType | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanTier>('Starter');
   const [failedType, setFailedType] = useState<RentalType | null>(null);
 
+  const hasRoles = getUserRoles(user).length > 0;
+  const isOrgBackfill = hasRoles && needsOrgSetup(profile);
+
   useEffect(() => {
-    if (getUserRoles(user).length > 0) {
+    if (profileLoading || !profile) return;
+
+    if (profile.rentalType) {
+      setSelectedType(profile.rentalType);
+    }
+
+    if (isOrgBackfill && profile.rentalType) {
+      setStep(2);
+    }
+
+    if (!needsOrgSetup(profile) && hasRoles) {
       navigate(getHomeRouteForUser(user), { replace: true });
     }
-  }, [navigate, user]);
+  }, [navigate, user, profile, profileLoading, hasRoles, isOrgBackfill]);
 
   const finishOnboarding = async (rentalType: RentalType, planTier: PlanTier) => {
     setSelectedType(rentalType);
@@ -40,7 +55,7 @@ export function OnboardingPage() {
         return;
       }
 
-      await completeOnboarding.mutateAsync({ rentalType, planTier });
+      await completeOnboarding.mutateAsync({ rentalType, planTier, isUpdate: hasRoles });
       await refreshAccessToken();
       window.location.assign(getHomeRouteForRentalType(rentalType));
     } catch {
@@ -60,6 +75,10 @@ export function OnboardingPage() {
     void finishOnboarding(selectedType, selectedPlan);
   };
 
+  if (profileLoading) {
+    return <LoadingScreen message="Caricamento..." />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
       <div className="mx-auto max-w-5xl space-y-10 text-center">
@@ -71,7 +90,9 @@ export function OnboardingPage() {
           <p className="text-muted-foreground">
             {step === 1
               ? 'Scegli il tipo di operatore per personalizzare la tua esperienza.'
-              : 'Seleziona il piano iniziale per la tua organizzazione. Potrai modificarlo in seguito.'}
+              : isOrgBackfill
+                ? 'Configura la tua organizzazione per iniziare a gestire proprietà e prenotazioni.'
+                : 'Seleziona il piano iniziale per la tua organizzazione. Potrai modificarlo in seguito.'}
           </p>
         </div>
 
@@ -96,14 +117,16 @@ export function OnboardingPage() {
               actionLabel="Seleziona"
             />
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={completeOnboarding.isPending}
-                onClick={() => setStep(1)}
-              >
-                Indietro
-              </Button>
+              {!isOrgBackfill && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={completeOnboarding.isPending}
+                  onClick={() => setStep(1)}
+                >
+                  Indietro
+                </Button>
+              )}
               <Button
                 type="button"
                 data-testid="onboarding-plan-confirm"

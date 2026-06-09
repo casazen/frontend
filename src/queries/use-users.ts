@@ -120,8 +120,18 @@ export function useCompleteOnboarding() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ rentalType, planTier }: { rentalType: RentalType; planTier?: PlanTier }) =>
-      UsersApi.postOnboarding({ rentalType, planTier }),
+    mutationFn: ({
+      rentalType,
+      planTier,
+      isUpdate,
+    }: {
+      rentalType: RentalType;
+      planTier?: PlanTier;
+      isUpdate?: boolean;
+    }) =>
+      isUpdate
+        ? UsersApi.putOnboarding({ rentalType, planTier })
+        : UsersApi.postOnboarding({ rentalType, planTier }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });

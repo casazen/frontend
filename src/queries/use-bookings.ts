@@ -25,10 +25,17 @@ export function useBooking(id: string) {
   });
 }
 
-export function useBookingCalendar(params?: { propertyId?: string; startDate?: string; endDate?: string }) {
+export function useBookingCalendar(params?: {
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  timezone?: string;
+}) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, 'calendar', params],
-    queryFn: () => bookingsApi.getCalendar(params),
+    queryFn: () => bookingsApi.getCalendar(params!),
+    enabled: !!params?.propertyId && !!params?.startDate && !!params?.endDate,
+    retry: 1,
   });
 }
 

@@ -32,7 +32,18 @@ export function getHomeRouteForUser(user: UserWithRoles): string {
   return '/app/short-rent';
 }
 
-export function needsOnboarding(user: UserWithRoles): boolean {
+/** True when the caller has no tenant org yet (blocks property create, plan, entitlement). */
+export function needsOrgSetup(profile?: { orgId?: string | null } | null): boolean {
+  return !profile?.orgId;
+}
+
+export function needsOnboarding(
+  user: UserWithRoles,
+  profile?: { orgId?: string | null } | null,
+): boolean {
+  if (needsOrgSetup(profile)) {
+    return true;
+  }
   if (isAdmin(user)) {
     return false;
   }
