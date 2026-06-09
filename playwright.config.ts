@@ -9,6 +9,7 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 const isStagingRun = process.env.E2E_STAGING === '1';
+const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
 
 export default defineConfig({
   testDir: './e2e',
@@ -24,7 +25,18 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
   },
 
-  projects: isStagingRun
+  projects: isDeploySmokeRun
+    ? [
+        {
+          name: 'deploy-smoke',
+          testMatch: '**/vercel-deploy-smoke.spec.ts',
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_DEPLOY_FE_URL ?? 'https://casazen-app.vercel.app',
+          },
+        },
+      ]
+    : isStagingRun
     ? [
         {
           name: 'setup',
@@ -32,7 +44,7 @@ export default defineConfig({
         },
         {
           name: 'staging',
-          testMatch: '**/property-staging.spec.ts',
+          testMatch: /\/(property-staging|api-regression-smoke)\.spec\.ts/,
           dependencies: ['setup'],
           use: {
             ...devices['Desktop Chrome'],
@@ -44,12 +56,18 @@ export default defineConfig({
     : [
         {
           name: 'chromium',
-          testIgnore: ['**/property-staging.spec.ts'],
+          testIgnore: [
+            '**/property-staging.spec.ts',
+            '**/api-regression-smoke.spec.ts',
+            '**/vercel-deploy-smoke.spec.ts',
+          ],
           use: { ...devices['Desktop Chrome'] },
         },
       ],
 
-  webServer: isStagingRun
+  webServer: isDeploySmokeRun
+    ? undefined
+    : isStagingRun
     ? {
         command: 'npm run dev',
         url: 'http://localhost:5173',
@@ -58,6 +76,12 @@ export default defineConfig({
         env: {
           VITE_API_BASE_URL:
             process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
+          VITE_AUTH0_DOMAIN:
+            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
+          VITE_AUTH0_CLIENT_ID:
+            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_AUDIENCE:
+            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
         },
       }
     : {

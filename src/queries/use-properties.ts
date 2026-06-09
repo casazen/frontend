@@ -7,6 +7,8 @@ import type {
   PropertyDocumentType,
 } from '@/types';
 import { toast } from 'sonner';
+import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
+import { isPlanLimitError } from '@/lib/entitlement-error';
 
 const PROPERTIES_KEY = 'properties';
 
@@ -40,9 +42,14 @@ export function useCreateProperty() {
     mutationFn: (data: CreatePropertyDto) => propertiesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
+      // Usage changed → plan badge / create gating must refetch (#202, AC8).
+      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
       toast.success('Property created successfully');
     },
-    onError: () => {
+    onError: (error: unknown) => {
+      // Plan-limit (403/409) is surfaced as an Italian message + upgrade CTA by the call site
+      // (create page inline alert / list dialog toast), so skip the generic error toast here.
+      if (isPlanLimitError(error)) return;
       toast.error('Failed to create property');
     },
   });

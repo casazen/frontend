@@ -15,9 +15,11 @@ interface PropertyFormProps {
   onSubmit: (data: PropertyFormValues) => void;
   onCancel?: () => void;
   isLoading?: boolean;
+  /** When true, the submit action is blocked (e.g. plan limit reached, #202). */
+  disabled?: boolean;
 }
 
-export function PropertyForm({ property, onSubmit, onCancel, isLoading }: PropertyFormProps) {
+export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled }: PropertyFormProps) {
   const {
     register,
     handleSubmit,
@@ -308,7 +310,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading }: Proper
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading || disabled}>
           {isLoading ? 'Saving...' : property ? 'Update Property' : 'Create Property'}
         </Button>
       </div>

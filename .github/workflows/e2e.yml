@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
   push:
     branches: [main, develop]
+  workflow_dispatch:
 
 jobs:
   e2e:
@@ -23,7 +24,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
+      - name: Run E2E tests (demo mode)
         run: npm run test:e2e
 
       - name: Upload Playwright report
@@ -33,3 +34,50 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  e2e-deploy-smoke:
+    name: E2E deploy smoke (Vercel + Railway)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for Railway/Vercel deploy
+        run: sleep 90
+
+      - name: Vercel FE deploy smoke
+        env:
+          E2E_DEPLOY_SMOKE: '1'
+          E2E_DEPLOY_FE_URL: ${{ github.ref == 'refs/heads/main' && 'https://casazen-app.vercel.app' || 'https://casazen-app.vercel.app' }}
+        run: npm run test:e2e -- vercel-deploy-smoke
+
+      - name: Railway API regression (authenticated)
+        env:
+          E2E_STAGING: '1'
+          E2E_STAGING_API_URL: ${{ vars.RAILWAY_TEST_URL }}/api
+          E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
+          E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
+          VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+          VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
+        run: |
+          if [ -z "$E2E_AUTH0_EMAIL" ] || [ -z "$E2E_AUTH0_PASSWORD" ]; then
+            echo "::warning::E2E_AUTH0_EMAIL/PASSWORD not set — skipping authenticated Railway API regression."
+            echo "Add GitHub secrets to catch EF migration 500s on authenticated routes."
+            exit 0
+          fi
+          export VITE_AUTH0_DOMAIN="${VITE_AUTH0_DOMAIN:-dev-mp6wadq7j6bophl5.us.auth0.com}"
+          export VITE_AUTH0_CLIENT_ID="${VITE_AUTH0_CLIENT_ID:-xmZPesTR04r349c14n77MgJ2iSCeFaJb}"
+          export VITE_AUTH0_AUDIENCE="${VITE_AUTH0_AUDIENCE:-https://casazen-api}"
+          npx playwright test e2e/api-regression-smoke.spec.ts --project=setup --project=staging
