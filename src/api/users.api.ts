@@ -5,7 +5,7 @@ import type {
   UpdateProfileRequest,
   ChangeRoleRequest,
   PagedResult,
-  RentalType,
+  OnboardingRequest,
   OnboardingResponse,
 } from '@/types';
 
@@ -51,9 +51,9 @@ export const UsersApi = {
   deactivateUser: (id: string): Promise<void> =>
     ApiClient.delete<void>(`/users/${id}`),
 
-  postOnboarding: (rentalType: RentalType): Promise<OnboardingResponse> =>
-    ApiClient.post<OnboardingResponse>('/users/onboarding', { rentalType }),
+  postOnboarding: (body: OnboardingRequest): Promise<OnboardingResponse> =>
+    ApiClient.post<OnboardingResponse>('/users/onboarding', body),
 
-  putOnboarding: (rentalType: RentalType): Promise<OnboardingResponse> =>
-    ApiClient.put<OnboardingResponse>('/users/onboarding', { rentalType }),
+  putOnboarding: (body: OnboardingRequest): Promise<OnboardingResponse> =>
+    ApiClient.put<OnboardingResponse>('/users/onboarding', body),
 };

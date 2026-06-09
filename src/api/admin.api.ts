@@ -1,5 +1,5 @@
 import { ApiClient } from '@/api/client';
-import type { AdminStats, CinComplianceItem, JobStatus } from '@/types';
+import type { AdminStats, CinComplianceItem, JobStatus, Entitlement } from '@/types';
 
 /** Backend PagedResultDto<T> (camelCase JSON) */
 interface BackendPagedResult<T> {
@@ -26,4 +26,7 @@ export const AdminApi = {
 
   getJobs: (): Promise<JobStatus[]> =>
     ApiClient.get<JobStatus[]>('/admin/jobs'),
+
+  updateOrgPlan: (orgId: string, planTier: string): Promise<Entitlement> =>
+    ApiClient.patch<Entitlement>(`/admin/orgs/${orgId}/plan`, { planTier }),
 };

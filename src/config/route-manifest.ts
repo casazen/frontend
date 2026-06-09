@@ -67,6 +67,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/pricing/history'],
   },
   {
+    path: '/app/short-rent/settings/plan',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navLabel: 'Piano',
+    icon: 'CreditCard',
+    component: async () => ({
+      default: (await import('@/features/settings/plan-settings-page')).PlanSettingsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

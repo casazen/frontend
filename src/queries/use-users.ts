@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
-import type { RentalType, UpdateProfileRequest } from '@/types';
+import type { RentalType, UpdateProfileRequest, PlanTier } from '@/types';
 import { toast } from 'sonner';
 
 const USERS_KEY = 'users';
@@ -93,13 +93,38 @@ export function useChangeUserRole() {
   });
 }
 
+export function usePlans() {
+  return useQuery({
+    queryKey: ['plans'],
+    queryFn: () => OrgsApi.getPlans(),
+  });
+}
+
+export function useUpdateMyPlan() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (planTier: PlanTier) => OrgsApi.updateMyPlan(planTier),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [ME_KEY] });
+      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
+      toast.success('Piano aggiornato con successo');
+    },
+    onError: () => {
+      toast.error('Impossibile aggiornare il piano');
+    },
+  });
+}
+
 export function useCompleteOnboarding() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (rentalType: RentalType) => UsersApi.postOnboarding(rentalType),
+    mutationFn: ({ rentalType, planTier }: { rentalType: RentalType; planTier?: PlanTier }) =>
+      UsersApi.postOnboarding({ rentalType, planTier }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
+      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
     },
   });
 }

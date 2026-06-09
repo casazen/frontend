@@ -10,6 +10,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const isStagingRun = process.env.E2E_STAGING === '1';
 const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
+const isProdSmokeRun = process.env.E2E_PROD_SMOKE === '1';
 
 export default defineConfig({
   testDir: './e2e',
@@ -25,7 +26,18 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
   },
 
-  projects: isDeploySmokeRun
+  projects: isProdSmokeRun
+    ? [
+        {
+          name: 'prod-smoke',
+          testMatch: '**/prod-deploy-smoke.spec.ts',
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_PROD_FE_URL ?? 'https://casazen-app.vercel.app',
+          },
+        },
+      ]
+    : isDeploySmokeRun
     ? [
         {
           name: 'deploy-smoke',
@@ -65,7 +77,7 @@ export default defineConfig({
         },
       ],
 
-  webServer: isDeploySmokeRun
+  webServer: isDeploySmokeRun || isProdSmokeRun
     ? undefined
     : isStagingRun
     ? {

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { OrgBadge } from '../org-badge';
 import { PlanBadge } from '../plan-badge';
 import * as useUsers from '@/queries/use-users';
@@ -22,7 +23,11 @@ describe('OrgBadge (#202 AC11)', () => {
       isLoading: false,
     } as unknown as ReturnType<typeof useUsers.useCurrentUser>);
 
-    render(<OrgBadge />);
+    render(
+      <MemoryRouter>
+        <OrgBadge />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByTestId('org-badge')).toBeInTheDocument();
     expect(screen.getByText('Acme Stays')).toBeInTheDocument();

@@ -1,4 +1,5 @@
 import type { Org } from './org.types';
+import type { PlanTier } from './org.types';
 
 export type UserRole =
   | 'Admin'
@@ -19,6 +20,9 @@ export interface UserSummary {
   rentalType?: RentalType | null;
   isActive: boolean;
   createdAt: string;
+  orgId?: string | null;
+  orgName?: string | null;
+  planTier?: PlanTier | null;
 }
 
 export interface UserDetail extends UserSummary {
@@ -41,6 +45,7 @@ export interface ChangeRoleRequest {
 
 export interface OnboardingRequest {
   rentalType: RentalType;
+  planTier?: PlanTier;
 }
 
 export interface OnboardingResponse {

@@ -81,3 +81,89 @@ export async function mockEntitlement(page: Page, options: MockEntitlementOption
     });
   });
 }
+
+const DEFAULT_PLANS = [
+  {
+    tier: 'Starter',
+    displayName: 'Starter',
+    maxProperties: 3,
+    description: 'Fino a 3 proprietà — ideale per iniziare.',
+  },
+  {
+    tier: 'Pro',
+    displayName: 'Pro',
+    maxProperties: 50,
+    description: 'Fino a 50 proprietà — per operatori in crescita.',
+  },
+  {
+    tier: 'Scale',
+    displayName: 'Scale',
+    maxProperties: -1,
+    description: 'Proprietà illimitate — per agenzie e PM.',
+  },
+];
+
+/** Mocks GET /api/orgs/plans — plan catalogue for onboarding and settings. */
+export async function mockPlansCatalog(page: Page): Promise<void> {
+  await page.route('**/api/orgs/plans', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(DEFAULT_PLANS),
+    });
+  });
+}
+
+/** Mocks PUT /api/orgs/me/plan and returns updated entitlement. */
+export async function mockUpdateMyPlan(page: Page): Promise<void> {
+  await page.route('**/api/orgs/me/plan', async (route) => {
+    if (route.request().method() !== 'PUT') {
+      await route.fallback();
+      return;
+    }
+
+    const payload = route.request().postDataJSON() as { planTier?: PlanTier };
+    const tier = payload.planTier ?? 'Starter';
+    const maxProperties = tier === 'Pro' ? 50 : tier === 'Scale' ? 999999 : 3;
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        orgId: 'org-e2e-0001',
+        planTier: tier,
+        limits: { maxProperties },
+        usage: { properties: 1 },
+        canAddProperty: true,
+      }),
+    });
+  });
+}
+
+/** Mocks PATCH /api/admin/orgs/{id}/plan for admin plan changes. */
+export async function mockAdminUpdateOrgPlan(page: Page): Promise<void> {
+  await page.route('**/api/admin/orgs/*/plan', async (route) => {
+    if (route.request().method() !== 'PATCH') {
+      await route.fallback();
+      return;
+    }
+
+    const payload = route.request().postDataJSON() as { planTier?: PlanTier };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        orgId: 'org-target',
+        planTier: payload.planTier ?? 'Pro',
+        limits: { maxProperties: 50 },
+        usage: { properties: 0 },
+        canAddProperty: true,
+      }),
+    });
+  });
+}
