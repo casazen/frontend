@@ -27,26 +27,35 @@ const CIN_CONFIG: Record<CinStatus, { variant: 'success' | 'warning' | 'destruct
 interface PropertyCinBadgeProps {
   cinStatus: CinStatus;
   cinCode?: string | null;
+  onEdit?: () => void;
 }
 
-export function PropertyCinBadge({ cinStatus, cinCode }: PropertyCinBadgeProps) {
+export function PropertyCinBadge({ cinStatus, cinCode, onEdit }: PropertyCinBadgeProps) {
   const [open, setOpen] = useState(false);
   const config = CIN_CONFIG[cinStatus];
+
+  const handleClick = () => {
+    if (onEdit) {
+      onEdit();
+      return;
+    }
+    setOpen((prev) => !prev);
+  };
 
   return (
     <div className="relative inline-block">
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={handleClick}
         className="focus:outline-none focus:ring-2 focus:ring-ring rounded-full"
-        aria-label={`Stato CIN: ${config.label}`}
+        aria-label={`Stato CIN: ${config.label}${onEdit ? '. Clicca per modificare' : ''}`}
       >
         <Badge variant={config.variant} className="cursor-pointer text-sm px-3 py-1">
           {config.label}
           {cinCode ? ` · ${cinCode}` : ''}
         </Badge>
       </button>
-      {open && (
+      {!onEdit && open && (
         <div
           role="tooltip"
           className={cn(

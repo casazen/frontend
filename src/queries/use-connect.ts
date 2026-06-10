@@ -1,6 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ConnectApi } from '@/api/connect.api';
+import { AxiosError } from 'axios';
 import { toast } from 'sonner';
+
+function connectErrorMessage(error: unknown): string {
+  if (error instanceof AxiosError) {
+    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
+    if (detail)
+      return detail;
+  }
+
+  return 'Impossibile avviare la connessione con Stripe';
+}
 
 export const CONNECT_STATUS_KEY = ['connect', 'status'] as const;
 
@@ -26,8 +37,8 @@ export function useStartConnectOnboarding() {
       queryClient.invalidateQueries({ queryKey: CONNECT_STATUS_KEY });
       window.location.assign(data.url);
     },
-    onError: () => {
-      toast.error('Impossibile avviare la connessione con Stripe');
+    onError: (error) => {
+      toast.error(connectErrorMessage(error));
     },
   });
 }

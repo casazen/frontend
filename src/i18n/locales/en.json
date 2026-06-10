@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "properties": "Properties",
+    "profile": "Profile",
+    "plan": "Plan",
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "alloggiati": "Alloggiati",
+    "cin": "CIN",
+    "payments": "Payments",
+    "revenue": "Revenue",
+    "stripeConnect": "Stripe Connect",
+    "ota": "OTA",
+    "leases": "Leases",
+    "users": "Users",
+    "jobs": "Jobs",
+    "more": "More",
+    "group": {
+      "operazioni": "Operations",
+      "immobili": "Properties",
+      "finanza": "Finance",
+      "compliance": "Compliance",
+      "integrazioni": "Integrations",
+      "account": "Account",
+      "amministrazione": "Administration"
+    }
+  },
+  "booking": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "checkedIn": "Checked in",
+      "checkedOut": "Checked out",
+      "cancelled": "Cancelled"
+    }
+  },
+  "ota": {
+    "status": {
+      "connected": "Connected",
+      "warning": "Warning",
+      "disconnected": "Disconnected"
+    }
+  }
+}

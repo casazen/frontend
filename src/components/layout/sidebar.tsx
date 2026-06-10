@@ -1,36 +1,19 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import {
-  Calendar,
-  CalendarDays,
-  ChartColumn,
-  CreditCard,
-  Home,
-  LayoutDashboard,
-  Repeat,
-  ShieldCheck,
-  type LucideIcon,
-  User,
-} from 'lucide-react';
-import { getNavEntries } from '@/config/route-manifest';
-
-const ICONS: Record<string, LucideIcon> = {
-  LayoutDashboard,
-  Home,
-  Calendar,
-  CalendarDays,
-  CreditCard,
-  ChartColumn,
-  Repeat,
-  ShieldCheck,
-  User,
-};
+import { Home } from 'lucide-react';
+import { getVisibleNavEntries } from '@/config/route-manifest';
+import { getNavIcon } from '@/lib/nav-icons';
+import { getNavLabel } from '@/lib/nav-labels';
+import { useWorkspace } from '@/hooks/use-workspace';
 
 export function Sidebar() {
-  const navItems = getNavEntries('short-rent').map((entry) => ({
+  const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const navItems = getVisibleNavEntries('short-rent', hasPermission).map((entry) => ({
     to: entry.path,
-    label: entry.navLabel ?? '',
-    icon: ICONS[entry.icon ?? 'LayoutDashboard'] ?? LayoutDashboard,
+    label: getNavLabel(entry, t),
+    icon: getNavIcon(entry.icon),
     end: entry.path === '/app/short-rent',
   }));
 

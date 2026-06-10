@@ -27,6 +27,24 @@
   border-color: var(--color-border);
 }
 
+:root {
+  --bottom-nav-height: 4rem;
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--bottom-nav-height));
+}
+
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 0px) + var(--bottom-nav-height));
+  }
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);

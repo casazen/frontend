@@ -8,6 +8,12 @@ import * as propertyQueries from '@/queries/use-properties';
 import type { PropertyDetailDto } from '@/types';
 
 vi.mock('@/queries/use-properties');
+vi.mock('@/queries/use-cin', () => ({
+  useUpdatePropertyCin: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+}));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) =>
@@ -112,10 +118,11 @@ describe('PropertyDetailPage', () => {
     expect(screen.getByText('Booking.com')).toBeInTheDocument();
   });
 
-  it('AC9: CIN badge shows tooltip on click', () => {
+  it('AC9: CIN badge opens edit dialog on click', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Stato CIN: CIN valido/i }));
-    expect(screen.getByRole('tooltip')).toHaveTextContent('D.L. 145/2023');
+    expect(screen.getByRole('dialog', { name: 'Codice CIN' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT-12345-0123456789');
   });
 
   it('AC12: does not render apiKey in OTA section', () => {

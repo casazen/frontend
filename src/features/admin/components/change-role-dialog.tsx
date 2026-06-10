@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,16 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
   const [selectedRole, setSelectedRole] = useState<UserRole>(user?.role ?? 'Guest');
   const { mutate: changeRole, isPending } = useChangeUserRole();
 
+  useEffect(() => {
+    if (user) {
+      setSelectedRole(user.role);
+    }
+  }, [user]);
+
+  const displayName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || user.id
+    : '';
+
   function handleConfirm() {
     if (!user) return;
     changeRole(
@@ -45,7 +55,7 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
         <DialogHeader>
           <DialogTitle>Cambia ruolo</DialogTitle>
           <DialogDescription>
-            Seleziona il nuovo ruolo per {user?.firstName} {user?.lastName}.
+            Seleziona il nuovo ruolo per {displayName}.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
