@@ -15,7 +15,7 @@ import { ManifestRoute } from './manifest-route';
 import { PublicBookingShell } from '@/components/layout/public-booking-shell';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
-import { CheckoutPlaceholderPage } from '@/features/public-booking/checkout-placeholder-page';
+import { CheckoutPage } from '@/features/public-booking/checkout-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -112,7 +112,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'property/:propertyId', element: <PublicPropertyPage /> },
-      { path: 'property/:propertyId/checkout', element: <CheckoutPlaceholderPage /> },
+      { path: 'property/:propertyId/checkout', element: <CheckoutPage /> },
     ],
   },
   {

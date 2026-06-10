@@ -73,7 +73,7 @@ test.describe('Branded booking site (#215)', () => {
     await page.locator('#check-out').fill('2026-07-04');
     await page.getByRole('button', { name: 'Procedi al checkout' }).click();
 
-    await expect(page.getByTestId('checkout-placeholder')).toBeVisible();
+    await expect(page.getByTestId('direct-checkout-page')).toBeVisible();
     await expect(page).not.toHaveURL(/\/login/);
   });
 
