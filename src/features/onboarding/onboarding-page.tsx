@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
@@ -17,6 +17,8 @@ const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 
 export function OnboardingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isEditMode = searchParams.get('mode') === 'edit';
   const { user, refreshAccessToken } = useAuth();
   const { data: profile, isLoading: profileLoading } = useMe();
   const completeOnboarding = useCompleteOnboarding();
@@ -39,10 +41,10 @@ export function OnboardingPage() {
       setStep(2);
     }
 
-    if (!needsOrgSetup(profile) && hasRoles) {
+    if (!needsOrgSetup(profile) && hasRoles && !isEditMode) {
       navigate(getHomeRouteForUser(user), { replace: true });
     }
-  }, [navigate, user, profile, profileLoading, hasRoles, isOrgBackfill]);
+  }, [navigate, user, profile, profileLoading, hasRoles, isOrgBackfill, isEditMode]);
 
   const finishOnboarding = async (rentalType: RentalType, planTier: PlanTier) => {
     setSelectedType(rentalType);
@@ -85,7 +87,11 @@ export function OnboardingPage() {
         <div className="space-y-3">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">CasaZen</p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            {step === 1 ? 'Come vuoi usare CasaZen?' : 'Scegli il tuo piano'}
+            {step === 1
+              ? isEditMode
+                ? 'Modifica tipo di operatore'
+                : 'Come vuoi usare CasaZen?'
+              : 'Scegli il tuo piano'}
           </h1>
           <p className="text-muted-foreground">
             {step === 1
@@ -133,7 +139,11 @@ export function OnboardingPage() {
                 disabled={completeOnboarding.isPending || !selectedType}
                 onClick={handlePlanConfirm}
               >
-                {completeOnboarding.isPending ? 'Configurazione...' : 'Completa registrazione'}
+                {completeOnboarding.isPending
+                  ? 'Configurazione...'
+                  : isEditMode
+                    ? 'Salva modifiche'
+                    : 'Completa registrazione'}
               </Button>
             </div>
           </div>

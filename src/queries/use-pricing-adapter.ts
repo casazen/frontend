@@ -3,15 +3,33 @@ import { pricingAdapterApi } from '@/api/pricing-adapter.api';
 import type {
   SavePricingAdapterConfigRequest,
   PricingHistoryQueryParams,
+  PricingAdapterConfig,
 } from '@/types';
 import { toast } from 'sonner';
 
 const PRICING_KEY = 'pricing-adapter';
 
+export function defaultPricingConfig(propertyId: string): PricingAdapterConfig {
+  return {
+    propertyId,
+    isEnabled: false,
+    adaptationFrequency: 'daily',
+    includeSeasonality: true,
+    includePublicHolidays: true,
+    lastAdaptedAt: null,
+    nextScheduledRunAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export function usePricingAdapterConfig(propertyId: string) {
   return useQuery({
     queryKey: [PRICING_KEY, 'config', propertyId],
-    queryFn: () => pricingAdapterApi.getConfig(propertyId),
+    queryFn: async () => {
+      const config = await pricingAdapterApi.getConfig(propertyId);
+      return config ?? defaultPricingConfig(propertyId);
+    },
     enabled: !!propertyId,
   });
 }
@@ -68,7 +86,10 @@ export function useDisablePricingAdapter(propertyId: string) {
 export function usePricingHistory(propertyId: string, params?: PricingHistoryQueryParams) {
   return useQuery({
     queryKey: [PRICING_KEY, 'history', propertyId, params],
-    queryFn: () => pricingAdapterApi.getHistory(propertyId, params),
+    queryFn: async () => {
+      const history = await pricingAdapterApi.getHistory(propertyId, params);
+      return history ?? { items: [], total: 0, page: params?.page ?? 1 };
+    },
     enabled: !!propertyId,
   });
 }

@@ -17,7 +17,7 @@ export function OperatorTypeSection() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Tipo di operatore</CardTitle>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/onboarding">Modifica tipo</Link>
+          <Link to="/onboarding?mode=edit">Modifica tipo</Link>
         </Button>
       </CardHeader>
       <CardContent>

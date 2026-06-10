@@ -64,6 +64,7 @@ export function useUpdateProperty() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.id] });
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.id, 'detail'] });
       toast.success('Property updated successfully');
     },
     onError: () => {

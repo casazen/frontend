@@ -7,6 +7,11 @@ import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
 
+function formatUserName(user: UserSummary): string {
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  return name || user.email || user.id;
+}
+
 interface UserManagementTableProps {
   users: UserSummary[];
   isLoading: boolean;
@@ -45,9 +50,9 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
             {users.map((user) => (
               <tr key={user.id} className="border-b last:border-0">
                 <td className="py-3 pr-4 font-medium">
-                  {user.firstName} {user.lastName}
+                  {formatUserName(user)}
                 </td>
-                <td className="py-3 pr-4 text-muted-foreground">{user.email}</td>
+                <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
                 <td className="py-3 pr-4">
                   <Badge variant="outline">{user.role}</Badge>
                 </td>
