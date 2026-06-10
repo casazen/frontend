@@ -80,6 +80,10 @@ export function PricingHistoryPage() {
         ...(from && { from }),
         ...(to && { to }),
       });
+      if (!result) {
+        toast.error('Failed to export pricing history');
+        return;
+      }
       const csv = buildCsv(result.items);
       const date = formatDate(new Date().toISOString(), 'yyyy-MM-dd');
       triggerCsvDownload(csv, `pricing-history-${date}.csv`);

@@ -89,8 +89,9 @@ describe('pricingAdapterApi', () => {
       const result = await pricingAdapterApi.getHistory(PROPERTY_ID);
 
       expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/history/${PROPERTY_ID}`, undefined);
-      expect(result.items).toHaveLength(1);
-      expect(result.total).toBe(1);
+      expect(result).not.toBeNull();
+      expect(result!.items).toHaveLength(1);
+      expect(result!.total).toBe(1);
     });
 
     it('forwards pagination params to GET /pricing-adapter/history/:propertyId', async () => {
@@ -121,8 +122,9 @@ describe('pricingAdapterApi', () => {
       const result = await pricingAdapterApi.getPreview(PROPERTY_ID);
 
       expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/preview/${PROPERTY_ID}`);
-      expect(result.prices).toHaveLength(1);
-      expect(result.prices[0].date).toBe('2026-05-12');
+      expect(result).not.toBeNull();
+      expect(result!.prices).toHaveLength(1);
+      expect(result!.prices[0].date).toBe('2026-05-12');
     });
   });
 });

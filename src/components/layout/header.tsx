@@ -1,6 +1,7 @@
 import { UserMenu } from '@/components/auth/user-menu';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { OrgBadge } from '@/components/org/org-badge';
 import { useUiStore } from '@/store/ui-store';
 
@@ -25,6 +26,7 @@ export function Header({ slotStart }: HeaderProps) {
       {slotStart}
       <div className="flex-1" />
       <div className="flex items-center gap-3">
+        <LanguageSwitcher />
         <OrgBadge />
         <UserMenu />
       </div>
