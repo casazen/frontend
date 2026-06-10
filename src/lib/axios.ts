@@ -29,7 +29,7 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // Skip auth for public endpoints
-    const publicEndpoints = ['/health', '/auth/', '/properties/search', '/public/orgs'];
+    const publicEndpoints = ['/health', '/auth/', '/properties/search', '/public/orgs', '/public/bookings'];
     const isPublicEndpoint =
       publicEndpoints.some((endpoint) => config.url?.includes(endpoint)) ||
       (config.url?.includes('/properties/') && config.url.includes('/public'));
