@@ -4,7 +4,7 @@ export interface RouteManifestEntry {
   path: string;
   context: AppContextKey;
   requiredPermissions: string[];
-  navLabel?: string;
+  navKey?: string;
   icon?: string;
   isDefault?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
@@ -16,7 +16,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent',
     context: 'short-rent',
     requiredPermissions: [],
-    navLabel: 'Dashboard',
+    navKey: 'nav.dashboard',
     icon: 'LayoutDashboard',
     isDefault: true,
     component: async () => ({ default: (await import('@/features/dashboard/dashboard-page')).DashboardPage }),
@@ -26,7 +26,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/properties',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
-    navLabel: 'Proprietà',
+    navKey: 'nav.properties',
     icon: 'Home',
     component: async () => ({ default: (await import('@/features/properties/properties-page')).PropertiesPage }),
     legacyPaths: ['/properties'],
@@ -77,6 +77,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    path: '/app/short-rent/settings/billing',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navLabel: 'Fatturazione',
+    icon: 'Receipt',
+    component: async () => ({
+      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/settings/billing/plans',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/billing/plans-page')).BillingPlansPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -110,6 +128,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'CalendarDays',
     component: async () => ({ default: (await import('@/features/bookings/calendar-page')).CalendarPage }),
     legacyPaths: ['/bookings/calendar'],
+  },
+  {
+    path: '/app/short-rent/alloggiati',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navLabel: 'Alloggiati',
+    icon: 'ShieldCheck',
+    component: async () => ({
+      default: (await import('@/features/alloggiati/alloggiati-dashboard-page')).AlloggiatiDashboardPage,
+    }),
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -177,7 +205,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/profile',
     context: 'short-rent',
     requiredPermissions: [],
-    navLabel: 'Profilo',
+    navKey: 'nav.profile',
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-page')).ProfilePage }),
     legacyPaths: ['/profile'],
@@ -186,7 +214,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/leases',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
-    navLabel: 'Contratti',
+    navKey: 'nav.leases',
     icon: 'FileText',
     isDefault: true,
     component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
@@ -210,7 +238,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/profile',
     context: 'long-rent',
     requiredPermissions: [],
-    navLabel: 'Profilo',
+    navKey: 'nav.profile',
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-content-page')).ProfileContentPage }),
     legacyPaths: ['/profile'],
@@ -219,7 +247,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin',
     context: 'admin',
     requiredPermissions: ['admin.stats.read'],
-    navLabel: 'Dashboard',
+    navKey: 'nav.dashboard',
     icon: 'LayoutDashboard',
     isDefault: true,
     component: async () => ({ default: (await import('@/features/admin/admin-dashboard-page')).AdminDashboardPage }),
@@ -229,7 +257,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/users',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
-    navLabel: 'Utenti',
+    navKey: 'nav.users',
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/admin/admin-users-page')).AdminUsersPage }),
     legacyPaths: ['/admin/users'],
@@ -238,7 +266,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/cin',
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
-    navLabel: 'CIN',
+    navKey: 'nav.cin',
     icon: 'FileCheck',
     component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
     legacyPaths: ['/admin/cin'],
@@ -247,7 +275,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/jobs',
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],
-    navLabel: 'Job',
+    navKey: 'nav.jobs',
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],

@@ -6,6 +6,7 @@ import type {
   CheckInDto,
   CheckOutDto,
 } from '@/types';
+import type { CalendarResponseDto } from '@/types/calendar.types';
 
 export const bookingsApi = {
   getAll: (params?: Record<string, any>) =>
@@ -21,8 +22,8 @@ export const bookingsApi = {
 
   delete: (id: string) => ApiClient.delete<void>(`/bookings/${id}`),
 
-  getCalendar: (params?: { propertyId?: string; startDate?: string; endDate?: string }) =>
-    ApiClient.get<Booking[]>('/bookings/calendar', params),
+  getCalendar: (params: { propertyId: string; startDate: string; endDate: string; timezone?: string }) =>
+    ApiClient.get<CalendarResponseDto>('/bookings/calendar', params),
 
   checkIn: (id: string, data?: CheckInDto) =>
     ApiClient.post<Booking>(`/bookings/${id}/check-in`, data),

@@ -8,6 +8,7 @@ import {
   Home,
   LayoutDashboard,
   Repeat,
+  ShieldCheck,
   type LucideIcon,
   User,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ const ICONS: Record<string, LucideIcon> = {
   CreditCard,
   ChartColumn,
   Repeat,
+  ShieldCheck,
   User,
 };
 

@@ -1,5 +1,82 @@
 import type { Page } from '@playwright/test';
-import type { PlanTier } from '../../src/types';
+import type { PlanTier, RentalType, UserRole } from '../../src/types';
+
+const DEMO_ORG = {
+  id: 'org-e2e-0001',
+  name: 'Acme Stays',
+  slug: 'acme-stays',
+  planTier: 'Pro' as PlanTier,
+};
+
+function buildDemoMeBody(profile: string) {
+  if (profile === 'onboarding') {
+    return {
+      id: 'auth0|demo-onboarding',
+      email: 'demo@casazen.com',
+      firstName: 'Demo',
+      lastName: 'User',
+      role: 'Guest' as UserRole,
+      rentalType: null,
+      isActive: true,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+      orgId: null,
+      org: null,
+    };
+  }
+
+  const rentalType: RentalType =
+    profile === 'long-term' ? 'LongTerm' : profile === 'dual' || profile === 'triple' ? 'Both' : 'ShortTerm';
+  const role: UserRole =
+    profile === 'admin' || profile === 'triple'
+      ? 'Admin'
+      : profile === 'long-term'
+        ? 'LongTermLandlord'
+        : 'PropertyOwner';
+
+  return {
+    id: 'auth0|demo-e2e',
+    email: 'demo@casazen.com',
+    firstName: 'Demo',
+    lastName: 'User',
+    role,
+    rentalType,
+    isActive: true,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+    orgId: DEMO_ORG.id,
+    org: DEMO_ORG,
+  };
+}
+
+/**
+ * Default GET /api/users/me mock for demo-mode E2E (#217).
+ * Resolves demo profile from the active page (query param or sessionStorage).
+ * Tests that need a custom profile should register their own route afterward (last wins).
+ */
+export async function installDemoUserMeMock(page: Page): Promise<void> {
+  await page.route('**/api/users/me', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+
+    const profile = await page.evaluate(() => {
+      const params = new URLSearchParams(window.location.search);
+      const fromQuery = params.get('demoProfile');
+      if (fromQuery) return fromQuery;
+      const stored = sessionStorage.getItem('casazen:demo-profile');
+      if (stored) return stored;
+      return 'short-stay';
+    });
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(buildDemoMeBody(profile)),
+    });
+  });
+}
 
 interface MockOrgOptions {
   name?: string;
