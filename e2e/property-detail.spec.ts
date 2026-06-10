@@ -26,11 +26,12 @@ test.describe('Property detail page (#152)', () => {
     await expect(page.getByRole('button', { name: /Gestisci prezzi AI/i })).toBeVisible();
   });
 
-  test('AC9: CIN badge click shows regulatory tooltip', async ({ page }) => {
+  test('AC9: CIN badge click opens edit dialog with regulatory context', async ({ page }) => {
     await page.goto(demoUrl(DETAIL_URL, 'short-stay'));
 
     await page.getByRole('button', { name: /Stato CIN: CIN valido/i }).click();
-    await expect(page.getByRole('tooltip')).toContainText('D.L. 145/2023');
+    await expect(page.getByRole('dialog', { name: 'Codice CIN' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT-12345-0123456789');
   });
 
   test('AC10: document upload dialog opens with drag-drop zone', async ({ page }) => {
