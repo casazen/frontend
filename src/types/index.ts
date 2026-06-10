@@ -13,3 +13,4 @@ export * from './lease.types';
 export * from './admin.types';
 export * from './users.types';
 export * from './org.types';
+export * from './direct-booking.types';
