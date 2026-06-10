@@ -52,7 +52,7 @@ export function WorkspaceSwitcher() {
             aria-selected={isSelected}
             tabIndex={isSelected ? 0 : -1}
             className={cn(
-              'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+              'min-h-11 min-w-11 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
               isSelected ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
             )}
             onClick={() => setActiveContext(context.contextKey)}

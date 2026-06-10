@@ -1,20 +1,19 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { FileCheck, Home, LayoutDashboard, Settings, Users, type LucideIcon } from 'lucide-react';
-import { getNavEntries } from '@/config/route-manifest';
-
-const ICONS: Record<string, LucideIcon> = {
-  LayoutDashboard,
-  Users,
-  FileCheck,
-  Settings,
-};
+import { Home } from 'lucide-react';
+import { getVisibleNavEntries } from '@/config/route-manifest';
+import { getNavIcon } from '@/lib/nav-icons';
+import { getNavLabel } from '@/lib/nav-labels';
+import { useWorkspace } from '@/hooks/use-workspace';
 
 export function AdminSidebar() {
-  const navItems = getNavEntries('admin').map((entry) => ({
+  const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const navItems = getVisibleNavEntries('admin', hasPermission).map((entry) => ({
     to: entry.path,
-    icon: ICONS[entry.icon ?? 'LayoutDashboard'] ?? LayoutDashboard,
-    label: entry.navLabel ?? '',
+    icon: getNavIcon(entry.icon),
+    label: getNavLabel(entry, t),
     end: entry.path === '/app/admin',
   }));
 
