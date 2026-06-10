@@ -9,11 +9,15 @@ import { useBooking } from '@/queries/use-bookings';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { BOOKING_STATUS_LABELS } from './schemas/booking.schema';
 import { Edit, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react';
+import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
+import { AlloggiatiStatusBadge } from '@/features/alloggiati/components/alloggiati-status-badge';
+import { ResendButton } from '@/features/alloggiati/components/resend-button';
 
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: booking, isLoading } = useBooking(id!);
+  const { data: alloggiatiStatus } = useAlloggiatiStatus(id!);
 
   if (isLoading) {
     return <LoadingScreen message="Loading booking..." />;
@@ -156,6 +160,36 @@ export function BookingDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {alloggiatiStatus && (
+              <Card data-testid="booking-alloggiati-section">
+                <CardHeader>
+                  <CardTitle>Alloggiati Web</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Stato comunicazione</span>
+                    <AlloggiatiStatusBadge
+                      status={alloggiatiStatus.status}
+                      isOverdue={alloggiatiStatus.isOverdue}
+                    />
+                  </div>
+                  {alloggiatiStatus.confirmationNumber && (
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Conferma: </span>
+                      {alloggiatiStatus.confirmationNumber}
+                    </div>
+                  )}
+                  {alloggiatiStatus.errorMessage && (
+                    <p className="text-sm text-destructive">{alloggiatiStatus.errorMessage}</p>
+                  )}
+                  {!alloggiatiStatus.dataComplete && (
+                    <p className="text-sm text-muted-foreground">Dati ospite incompleti</p>
+                  )}
+                  <ResendButton bookingId={id!} status={alloggiatiStatus.status} />
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
