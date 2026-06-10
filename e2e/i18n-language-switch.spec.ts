@@ -24,7 +24,7 @@ const DEMO_BOOKING = {
 };
 
 async function mockDashboardApis(page: import('@playwright/test').Page): Promise<void> {
-  await page.route('**/api/bookings**', async (route) => {
+  await page.route('**/api/bookings', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -37,7 +37,7 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
     });
   });
 
-  await page.route('**/api/properties**', async (route) => {
+  await page.route('**/api/properties', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -50,7 +50,7 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
     });
   });
 
-  await page.route('**/api/payments**', async (route) => {
+  await page.route('**/api/payments', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -63,7 +63,7 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
     });
   });
 
-  await page.route('**/api/ota/integrations**', async (route) => {
+  await page.route('**/api/ota/integrations', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -77,48 +77,62 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
   });
 }
 
+async function resetLocaleToDefault(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => localStorage.removeItem('casazen.locale'));
+  await page.reload({ waitUntil: 'networkidle' });
+}
+
+async function switchToEnglish(page: import('@playwright/test').Page): Promise<void> {
+  await page.getByTestId('language-switcher').locator('button', { hasText: 'EN' }).click();
+}
+
+async function gotoDashboard(page: import('@playwright/test').Page): Promise<void> {
+  await expect(page.getByTestId('language-switcher')).toBeVisible({ timeout: 15_000 });
+}
+
 test.describe('i18n language switch (#251)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.removeItem('casazen.locale');
-    });
     await installDemoUserMeMock(page);
     await mockDashboardApis(page);
   });
 
   test('defaults to Italian Cruscotto and Immobili nav label', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await resetLocaleToDefault(page);
+    await gotoDashboard(page);
 
     await expect(page.getByRole('heading', { name: 'Cruscotto' })).toBeVisible();
-    await expect(page.getByTestId('language-switcher')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Immobili' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Proprietà' })).not.toBeVisible();
   });
 
   test('switches to English dashboard title', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await resetLocaleToDefault(page);
+    await gotoDashboard(page);
 
-    await page.getByTestId('language-switcher').getByRole('button', { name: 'EN' }).click();
+    await switchToEnglish(page);
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Properties' })).toBeVisible();
   });
 
   test('persists locale across reload', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await resetLocaleToDefault(page);
+    await gotoDashboard(page);
 
-    await page.getByTestId('language-switcher').getByRole('button', { name: 'EN' }).click();
+    await switchToEnglish(page);
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.reload({ waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-    await expect(page.getByTestId('language-switcher').getByRole('button', { name: 'EN' })).toHaveAttribute(
+    await expect(page.getByTestId('language-switcher').locator('button', { hasText: 'EN' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
   });
 
   test('booking badge shows Confermata not confirmed slug', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await resetLocaleToDefault(page);
+    await gotoDashboard(page);
 
     await expect(page.getByText('Confermata')).toBeVisible();
     await expect(page.getByText('confirmed', { exact: true })).not.toBeVisible();
