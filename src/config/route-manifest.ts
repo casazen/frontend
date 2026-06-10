@@ -77,6 +77,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    path: '/app/short-rent/settings/payments',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navLabel: 'Pagamenti',
+    icon: 'Wallet',
+    component: async () => ({
+      default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
