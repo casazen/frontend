@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 
 test.describe('Admin panel — auth-gate and shell', () => {
   test('AC12 /admin redirects away when user lacks Admin role', async ({ page }) => {

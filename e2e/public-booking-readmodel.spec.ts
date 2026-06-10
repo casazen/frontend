@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import {
   mockPublicBookingReadApi,

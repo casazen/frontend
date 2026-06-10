@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 import { waitForAppReady } from './helpers/auth';
 
 test.describe.skip('Long-term layer (real Auth0 + API)', () => {
