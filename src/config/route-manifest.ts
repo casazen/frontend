@@ -1,5 +1,16 @@
 export type AppContextKey = 'short-rent' | 'long-rent' | 'admin';
 
+export type NavGroup =
+  | 'operazioni'
+  | 'immobili'
+  | 'finanza'
+  | 'compliance'
+  | 'integrazioni'
+  | 'account'
+  | 'amministrazione';
+
+export type NavPlacement = 'primary' | 'secondary';
+
 export interface RouteManifestEntry {
   path: string;
   context: AppContextKey;
@@ -7,11 +18,24 @@ export interface RouteManifestEntry {
   navKey?: string;
   /** Italian nav label when navKey i18n entry is not used */
   navLabel?: string;
+  navGroup?: NavGroup;
+  navPlacement?: NavPlacement;
+  navOrder?: number;
   icon?: string;
   isDefault?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
 }
+
+export const NAV_GROUP_ORDER: NavGroup[] = [
+  'operazioni',
+  'immobili',
+  'finanza',
+  'compliance',
+  'integrazioni',
+  'account',
+  'amministrazione',
+];
 
 export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
@@ -19,6 +43,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: [],
     navKey: 'nav.dashboard',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 1,
     icon: 'LayoutDashboard',
     isDefault: true,
     component: async () => ({ default: (await import('@/features/dashboard/dashboard-page')).DashboardPage }),
@@ -29,6 +56,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.properties',
+    navGroup: 'immobili',
+    navPlacement: 'primary',
+    navOrder: 3,
     icon: 'Home',
     component: async () => ({ default: (await import('@/features/properties/properties-page')).PropertiesPage }),
     legacyPaths: ['/properties'],
@@ -72,7 +102,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/settings/plan',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
-    navLabel: 'Piano',
+    navKey: 'nav.plan',
+    navGroup: 'finanza',
+    navPlacement: 'secondary',
+    navOrder: 3,
     icon: 'CreditCard',
     component: async () => ({
       default: (await import('@/features/settings/plan-settings-page')).PlanSettingsPage,
@@ -82,7 +115,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
-    navLabel: 'Pagamenti',
+    navKey: 'nav.stripeConnect',
+    navGroup: 'finanza',
+    navPlacement: 'secondary',
+    navOrder: 4,
     icon: 'Wallet',
     component: async () => ({
       default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
@@ -92,7 +128,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
-    navLabel: 'Prenotazioni',
+    navKey: 'nav.bookings',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 2,
     icon: 'Calendar',
     component: async () => ({ default: (await import('@/features/bookings/bookings-page')).BookingsPage }),
     legacyPaths: ['/bookings'],
@@ -108,7 +147,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/bookings/calendar',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
-    navLabel: 'Calendario',
+    navKey: 'nav.calendar',
+    navGroup: 'operazioni',
+    navPlacement: 'secondary',
+    navOrder: 2,
     icon: 'CalendarDays',
     component: async () => ({ default: (await import('@/features/bookings/calendar-page')).CalendarPage }),
     legacyPaths: ['/bookings/calendar'],
@@ -117,7 +159,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/alloggiati',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
-    navLabel: 'Alloggiati',
+    navKey: 'nav.alloggiati',
+    navGroup: 'compliance',
+    navPlacement: 'secondary',
     icon: 'ShieldCheck',
     component: async () => ({
       default: (await import('@/features/alloggiati/alloggiati-dashboard-page')).AlloggiatiDashboardPage,
@@ -127,7 +171,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/cin',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
-    navLabel: 'CIN',
+    navKey: 'nav.cin',
+    navGroup: 'compliance',
+    navPlacement: 'secondary',
     icon: 'ShieldCheck',
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
@@ -151,7 +197,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/payments',
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
-    navLabel: 'Pagamenti',
+    navKey: 'nav.payments',
+    navGroup: 'finanza',
+    navPlacement: 'secondary',
+    navOrder: 1,
     icon: 'CreditCard',
     component: async () => ({ default: (await import('@/features/payments/payments-page')).PaymentsPage }),
     legacyPaths: ['/payments'],
@@ -167,7 +216,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/payments/revenue',
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
-    navLabel: 'Ricavi',
+    navKey: 'nav.revenue',
+    navGroup: 'finanza',
+    navPlacement: 'secondary',
+    navOrder: 2,
     icon: 'ChartColumn',
     component: async () => ({ default: (await import('@/features/payments/revenue-page')).RevenuePage }),
     legacyPaths: ['/payments/revenue'],
@@ -183,7 +235,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/short-rent/ota',
     context: 'short-rent',
     requiredPermissions: ['ota.read'],
-    navLabel: 'OTA',
+    navKey: 'nav.ota',
+    navGroup: 'integrazioni',
+    navPlacement: 'secondary',
     icon: 'Repeat',
     component: async () => ({ default: (await import('@/features/ota/ota-page')).OtaPage }),
     legacyPaths: ['/ota'],
@@ -200,6 +254,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: [],
     navKey: 'nav.profile',
+    navGroup: 'account',
+    navPlacement: 'secondary',
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-page')).ProfilePage }),
     legacyPaths: ['/profile'],
@@ -209,6 +265,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.leases',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 1,
     icon: 'FileText',
     isDefault: true,
     component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
@@ -233,6 +292,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'long-rent',
     requiredPermissions: [],
     navKey: 'nav.profile',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 2,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-content-page')).ProfileContentPage }),
     legacyPaths: ['/profile'],
@@ -242,6 +304,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.stats.read'],
     navKey: 'nav.dashboard',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 1,
     icon: 'LayoutDashboard',
     isDefault: true,
     component: async () => ({ default: (await import('@/features/admin/admin-dashboard-page')).AdminDashboardPage }),
@@ -252,6 +317,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
     navKey: 'nav.users',
+    navGroup: 'amministrazione',
+    navPlacement: 'primary',
+    navOrder: 2,
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/admin/admin-users-page')).AdminUsersPage }),
     legacyPaths: ['/admin/users'],
@@ -261,6 +329,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
     navKey: 'nav.cin',
+    navGroup: 'amministrazione',
+    navPlacement: 'primary',
+    navOrder: 3,
     icon: 'FileCheck',
     component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
     legacyPaths: ['/admin/cin'],
@@ -270,20 +341,101 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],
     navKey: 'nav.jobs',
+    navGroup: 'amministrazione',
+    navPlacement: 'primary',
+    navOrder: 4,
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],
   },
 ];
 
+export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
+
+function isNavEntry(entry: RouteManifestEntry): boolean {
+  return !!(entry.navKey || entry.navLabel);
+}
+
+function hasEntryPermission(
+  entry: RouteManifestEntry,
+  hasPermission?: PermissionPredicate,
+): boolean {
+  if (!hasPermission) return true;
+  return entry.requiredPermissions.every((permission) =>
+    hasPermission(entry.context, permission),
+  );
+}
+
 export function getDefaultRoute(contextKey: AppContextKey): string {
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
 
+/** @deprecated Use getVisibleNavEntries for permission-aware navigation */
 export function getNavEntries(contextKey: AppContextKey): RouteManifestEntry[] {
   return ROUTE_MANIFEST.filter(
-    (entry) => entry.context === contextKey && !!(entry.navKey || entry.navLabel),
+    (entry) => entry.context === contextKey && isNavEntry(entry),
   );
+}
+
+export function getVisibleNavEntries(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+): RouteManifestEntry[] {
+  return ROUTE_MANIFEST.filter(
+    (entry) =>
+      entry.context === contextKey &&
+      isNavEntry(entry) &&
+      hasEntryPermission(entry, hasPermission),
+  ).sort((a, b) => (a.navOrder ?? 99) - (b.navOrder ?? 99));
+}
+
+export function getPrimaryNavEntries(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+): RouteManifestEntry[] {
+  return getVisibleNavEntries(contextKey, hasPermission).filter(
+    (entry) => entry.navPlacement === 'primary',
+  );
+}
+
+export function getSecondaryNavEntries(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+): RouteManifestEntry[] {
+  return getVisibleNavEntries(contextKey, hasPermission).filter(
+    (entry) => entry.navPlacement === 'secondary',
+  );
+}
+
+export function getSecondaryNavByGroup(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+): Map<NavGroup, RouteManifestEntry[]> {
+  const grouped = new Map<NavGroup, RouteManifestEntry[]>();
+  for (const entry of getSecondaryNavEntries(contextKey, hasPermission)) {
+    if (!entry.navGroup) continue;
+    const list = grouped.get(entry.navGroup) ?? [];
+    list.push(entry);
+    grouped.set(entry.navGroup, list);
+  }
+  return grouped;
+}
+
+/** Drawer entries: secondary routes, or all visible routes when no secondary (long-rent, admin). */
+export function getDrawerNavByGroup(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+): Map<NavGroup, RouteManifestEntry[]> {
+  const secondary = getSecondaryNavEntries(contextKey, hasPermission);
+  const entries = secondary.length > 0 ? secondary : getVisibleNavEntries(contextKey, hasPermission);
+  const grouped = new Map<NavGroup, RouteManifestEntry[]>();
+  for (const entry of entries) {
+    if (!entry.navGroup) continue;
+    const list = grouped.get(entry.navGroup) ?? [];
+    list.push(entry);
+    grouped.set(entry.navGroup, list);
+  }
+  return grouped;
 }
 
 export function getManifestEntry(path: string): RouteManifestEntry | undefined {

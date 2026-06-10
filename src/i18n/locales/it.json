@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "properties": "Immobili",
+    "profile": "Profilo",
+    "plan": "Piano",
+    "bookings": "Prenotazioni",
+    "calendar": "Calendario",
+    "alloggiati": "Alloggiati",
+    "cin": "CIN",
+    "payments": "Incassi",
+    "revenue": "Ricavi",
+    "stripeConnect": "Stripe Connect",
+    "ota": "OTA",
+    "leases": "Contratti",
+    "users": "Utenti",
+    "jobs": "Job",
+    "more": "Altro",
+    "group": {
+      "operazioni": "Operazioni",
+      "immobili": "Immobili",
+      "finanza": "Finanza",
+      "compliance": "Compliance",
+      "integrazioni": "Integrazioni",
+      "account": "Account",
+      "amministrazione": "Amministrazione"
+    }
+  },
+  "booking": {
+    "status": {
+      "pending": "In attesa",
+      "confirmed": "Confermata",
+      "checkedIn": "Check-in effettuato",
+      "checkedOut": "Check-out effettuato",
+      "cancelled": "Annullata"
+    }
+  },
+  "ota": {
+    "status": {
+      "connected": "Connesso",
+      "warning": "Attenzione",
+      "disconnected": "Disconnesso"
+    }
+  }
+}
