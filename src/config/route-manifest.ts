@@ -79,6 +79,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    path: '/app/short-rent/settings/billing',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navLabel: 'Fatturazione',
+    icon: 'Receipt',
+    component: async () => ({
+      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/settings/billing/plans',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/billing/plans-page')).BillingPlansPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -121,6 +139,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'ShieldCheck',
     component: async () => ({
       default: (await import('@/features/alloggiati/alloggiati-dashboard-page')).AlloggiatiDashboardPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/cin',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navLabel: 'CIN',
+    icon: 'ShieldCheck',
+    component: async () => ({
+      default: (await import('@/features/cin')).CinCompliancePage,
     }),
   },
   {

@@ -43,6 +43,7 @@ export interface CreatePropertyDto {
   currency?: string;
   amenities?: string[];
   photoUrls?: string[];  // ✅ Fixed: was images
+  cinCode?: string | null;
   isActive?: boolean;
 }
 

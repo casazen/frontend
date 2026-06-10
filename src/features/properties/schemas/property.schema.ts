@@ -17,6 +17,11 @@ export const propertyFormSchema = z.object({
   amenities: z.array(z.string()),
   photoUrls: z.array(z.string()),  // ✅ Fixed: was images
   isActive: z.boolean(),
+  cinCode: z
+    .string()
+    .regex(/^IT-\d{5}-\d{10}$/, 'Formato CIN: IT-XXXXX-XXXXXXXXXX')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>;
