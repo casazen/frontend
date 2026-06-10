@@ -5,6 +5,8 @@ export interface RouteManifestEntry {
   context: AppContextKey;
   requiredPermissions: string[];
   navKey?: string;
+  /** Italian nav label when navKey i18n entry is not used */
+  navLabel?: string;
   icon?: string;
   isDefault?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
@@ -74,24 +76,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'CreditCard',
     component: async () => ({
       default: (await import('@/features/settings/plan-settings-page')).PlanSettingsPage,
-    }),
-  },
-  {
-    path: '/app/short-rent/settings/billing',
-    context: 'short-rent',
-    requiredPermissions: ['property.write'],
-    navLabel: 'Fatturazione',
-    icon: 'Receipt',
-    component: async () => ({
-      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
-    }),
-  },
-  {
-    path: '/app/short-rent/settings/billing/plans',
-    context: 'short-rent',
-    requiredPermissions: ['property.write'],
-    component: async () => ({
-      default: (await import('@/features/billing/plans-page')).BillingPlansPage,
     }),
   },
   {
@@ -287,7 +271,9 @@ export function getDefaultRoute(contextKey: AppContextKey): string {
 }
 
 export function getNavEntries(contextKey: AppContextKey): RouteManifestEntry[] {
-  return ROUTE_MANIFEST.filter((entry) => entry.context === contextKey && !!entry.navLabel);
+  return ROUTE_MANIFEST.filter(
+    (entry) => entry.context === contextKey && !!(entry.navKey || entry.navLabel),
+  );
 }
 
 export function getManifestEntry(path: string): RouteManifestEntry | undefined {
