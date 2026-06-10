@@ -15,6 +15,8 @@ import {
 import { MoreHorizontal, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProperties, useUpdateProperty, useCreateProperty } from '@/queries/use-properties';
+import { useCinCompliance } from '@/queries/use-cin';
+import { CinDeadlineBanner } from '@/features/cin';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PropertyForm } from './components/property-form';
 import { isPlanLimitError, PLAN_LIMIT_MESSAGE } from '@/lib/entitlement-error';
@@ -23,6 +25,7 @@ import type { PropertyFormValues } from './schemas/property.schema';
 
 export function PropertiesPage() {
   const { data: properties, isLoading, error } = useProperties();
+  const { data: cinCompliance } = useCinCompliance();
   const updateProperty = useUpdateProperty();
   const createProperty = useCreateProperty();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,7 +36,7 @@ export function PropertiesPage() {
         id: property.id,
         data: { isActive: !property.isActive },
       });
-    } catch (error) {
+    } catch {
       // Error toast already handled by mutation
     }
   };
@@ -75,6 +78,8 @@ export function PropertiesPage() {
   return (
     <AppShell>
       <div className="space-y-6">
+        {cinCompliance?.summary && <CinDeadlineBanner summary={cinCompliance.summary} />}
+
         <div className="flex items-center justify-between">
           <PageHeader title="Properties" description="Manage your vacation rental properties" />
           <Button onClick={() => setIsDialogOpen(true)}>

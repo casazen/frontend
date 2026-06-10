@@ -22,6 +22,11 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
     const url = route.request().url();
     const path = new URL(url).pathname;
 
+    if (path.includes('/cin-compliance') || /\/cin$/.test(path)) {
+      await route.fallback();
+      return;
+    }
+
     if (path.includes('/detail') || path.includes('/documents') || path.includes('/images')) {
       await route.fallback();
       return;

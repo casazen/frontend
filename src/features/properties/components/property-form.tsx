@@ -45,12 +45,14 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
       amenities: property.amenities || [],
       photoUrls: property.photoUrls || [],
       isActive: property.isActive,
+      cinCode: property.cinCode ?? '',
     } : {
       currency: 'EUR',
       amenities: [],
       photoUrls: [],
       isActive: true,
-    } as any,
+      cinCode: '',
+    } satisfies Partial<PropertyFormValues>,
   });
 
   const selectedAmenities = watch('amenities') || [];
@@ -107,6 +109,27 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
               Active (visible to guests)
             </Label>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Conformità CIN</CardTitle>
+          <CardDescription>
+            Codice Identificativo Nazionale (D.L. 145/2023) — formato IT-XXXXX-XXXXXXXXXX
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Label htmlFor="cinCode">Codice CIN</Label>
+          <Input
+            id="cinCode"
+            data-testid="property-cin-input"
+            {...register('cinCode')}
+            placeholder="IT-12345-0123456789"
+          />
+          {errors.cinCode && (
+            <p className="text-sm text-destructive">{errors.cinCode.message}</p>
+          )}
         </CardContent>
       </Card>
 
