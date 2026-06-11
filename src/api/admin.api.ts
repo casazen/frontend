@@ -15,13 +15,25 @@ export interface CinComplianceQuery {
   cinStatus?: 'valid' | 'missing' | 'invalid';
 }
 
+export interface CinCompliancePagedResult {
+  items: CinComplianceItem[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
 export const AdminApi = {
   getStats: (): Promise<AdminStats> =>
     ApiClient.get<AdminStats>('/admin/stats'),
 
-  getCinCompliance: (params?: CinComplianceQuery): Promise<CinComplianceItem[]> =>
+  getCinCompliance: (params?: CinComplianceQuery): Promise<CinCompliancePagedResult> =>
     ApiClient.get<BackendPagedResult<CinComplianceItem>>('/admin/cin-compliance', params).then(
-      (res) => res.items ?? [],
+      (res) => ({
+        items: res.items ?? [],
+        totalCount: res.totalCount ?? 0,
+        page: res.page ?? 1,
+        pageSize: res.pageSize ?? 20,
+      }),
     ),
 
   getJobs: (): Promise<JobStatus[]> =>
