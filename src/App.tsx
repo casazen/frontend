@@ -7,6 +7,7 @@ import { AuthInitializer } from '@/components/auth/auth-initializer';
 import { authConfig } from '@/config/auth.config';
 import { queryClient } from '@/lib/query-client';
 import { router } from '@/routes';
+import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Auth0Provider {...authConfig}>
         <AuthInitializer>
           <QueryClientProvider client={queryClient}>
+            <I18nLocaleSync />
             <RouterProvider router={router} />
             <Toaster position="top-right" richColors />
           </QueryClientProvider>
