@@ -12,6 +12,7 @@ import {
   mockPricingApiDefaults,
   mockConfigDisabled,
   mockHistoryAfterSync,
+  mockDelayedPricingSync,
 } from './helpers/api-mock';
 import { demoUrl } from './helpers/demo-profile';
 import { mockCurrentUserWithOrg, mockEntitlement, mockPlansCatalog } from './helpers/org-api-mock';
@@ -90,18 +91,10 @@ test.describe('Pricing Adapter verification (AC16–AC20)', () => {
     });
 
     let syncCalled = false;
-    await page.route(`**/api/pricing-adapter/sync/${PROPERTY_ID}`, async (route) => {
-      if (route.request().method() !== 'POST') {
-        await route.fallback();
-        return;
-      }
-      syncCalled = true;
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      await route.fulfill({
-        status: 202,
-        contentType: 'application/json',
-        body: JSON.stringify({ jobId: 'job-e2e-sync-001' }),
-      });
+    await mockDelayedPricingSync(page, {
+      onSync: () => {
+        syncCalled = true;
+      },
     });
 
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
@@ -109,11 +102,25 @@ test.describe('Pricing Adapter verification (AC16–AC20)', () => {
     const syncBtn = page.getByTestId('sync-btn');
     await expect(syncBtn).toBeVisible();
 
+    const syncResponse = page.waitForResponse(
+      (res) =>
+        res.request().method() === 'POST' &&
+        res.url().includes(`/api/pricing-adapter/sync/${PROPERTY_ID}`),
+      { timeout: 15_000 },
+    );
     await syncBtn.click();
-
-    await expect(syncBtn).toContainText('Syncing...');
+    await expect(syncBtn).toContainText('Syncing...', { timeout: 10_000 });
+    expect((await syncResponse).status()).toBe(202);
     await expect.poll(() => syncCalled).toBe(true);
     await expect(page.getByText('Pricing sync started — history will update shortly')).toBeVisible();
+    await page
+      .waitForResponse(
+        (res) =>
+          res.request().method() === 'GET' &&
+          res.url().includes(`/api/pricing-adapter/history/${PROPERTY_ID}`),
+        { timeout: 10_000 },
+      )
+      .catch(() => undefined);
     const relevantErrors = consoleErrors.filter(
       (msg) =>
         !msg.includes('No response from server') &&
