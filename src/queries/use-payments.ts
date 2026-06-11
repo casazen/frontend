@@ -1,12 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi } from '@/api/payments.api';
-import type {
-  CreatePaymentDto,
-  UpdatePaymentDto,
-  ProcessPaymentDto,
-  RefundPaymentDto,
-  RevenueParams,
-} from '@/types';
+import type { CreatePaymentDto, RevenueParams } from '@/types';
 import { toast } from 'sonner';
 
 const PAYMENTS_KEY = 'payments';
@@ -48,47 +42,14 @@ export function useCreatePayment() {
   });
 }
 
-export function useUpdatePayment() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdatePaymentDto }) =>
-      paymentsApi.update(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, variables.id] });
-      toast.success('Payment updated successfully');
-    },
-    onError: () => {
-      toast.error('Failed to update payment');
-    },
-  });
-}
-
-export function useDeletePayment() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => paymentsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-      toast.success('Payment deleted successfully');
-    },
-    onError: () => {
-      toast.error('Failed to delete payment');
-    },
-  });
-}
-
 export function useProcessPayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ProcessPaymentDto }) =>
-      paymentsApi.process(id, data),
-    onSuccess: (_, variables) => {
+    mutationFn: (id: string) => paymentsApi.process(id),
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, variables.id] });
+      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, id] });
       toast.success('Payment processed successfully');
     },
     onError: () => {
@@ -101,8 +62,8 @@ export function useRefundPayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data?: RefundPaymentDto }) =>
-      paymentsApi.refund(id, data),
+    mutationFn: ({ id, amount }: { id: string; amount?: number }) =>
+      paymentsApi.refund(id, amount),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, variables.id] });
