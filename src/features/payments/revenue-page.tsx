@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +13,7 @@ import { useRevenue } from '@/queries/use-payments';
 import { ArrowLeft } from 'lucide-react';
 
 export function RevenuePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -23,27 +26,29 @@ export function RevenuePage() {
   });
 
   return (
-    <div className="space-y-6">
+    <AppShell>
+      <div className="space-y-6">
         <PageHeader
-          title="Revenue Analytics"
-          description="Track and analyze your revenue performance"
+          title={t('revenue.pageTitle', { defaultValue: 'Analisi ricavi' })}
+          description={t('revenue.pageDescription', {
+            defaultValue: 'Monitora e analizza l’andamento dei ricavi',
+          })}
           action={
             <Button variant="outline" onClick={() => navigate('/app/short-rent/payments')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Payments
+              {t('revenue.backToPayments', { defaultValue: 'Torna agli incassi' })}
             </Button>
           }
         />
 
-        {/* Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
+            <CardTitle>{t('revenue.filters', { defaultValue: 'Filtri' })}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
+                <Label htmlFor="startDate">{t('revenue.startDate', { defaultValue: 'Data inizio' })}</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -53,7 +58,7 @@ export function RevenuePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
+                <Label htmlFor="endDate">{t('revenue.endDate', { defaultValue: 'Data fine' })}</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -63,17 +68,17 @@ export function RevenuePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="groupBy">Group By</Label>
+                <Label htmlFor="groupBy">{t('revenue.groupBy', { defaultValue: 'Raggruppa per' })}</Label>
                 <select
                   id="groupBy"
                   value={groupBy}
-                  onChange={(e) => setGroupBy(e.target.value as any)}
+                  onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <option value="day">Day</option>
-                  <option value="week">Week</option>
-                  <option value="month">Month</option>
-                  <option value="year">Year</option>
+                  <option value="day">{t('revenue.period.day', { defaultValue: 'Giorno' })}</option>
+                  <option value="week">{t('revenue.period.week', { defaultValue: 'Settimana' })}</option>
+                  <option value="month">{t('revenue.period.month', { defaultValue: 'Mese' })}</option>
+                  <option value="year">{t('revenue.period.year', { defaultValue: 'Anno' })}</option>
                 </select>
               </div>
 
@@ -86,25 +91,27 @@ export function RevenuePage() {
                     setGroupBy('month');
                   }}
                 >
-                  Reset Filters
+                  {t('revenue.resetFilters', { defaultValue: 'Reimposta filtri' })}
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Dashboard */}
         {isLoading ? (
-          <LoadingScreen message="Loading analytics..." />
+          <LoadingScreen message={t('revenue.loading', { defaultValue: 'Caricamento analisi...' })} />
         ) : analytics ? (
           <RevenueDashboard analytics={analytics} />
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">No revenue data available</p>
+              <p className="text-muted-foreground">
+                {t('revenue.empty', { defaultValue: 'Nessun dato ricavi disponibile' })}
+              </p>
             </CardContent>
           </Card>
         )}
-    </div>
+      </div>
+    </AppShell>
   );
 }

@@ -1,60 +1,10 @@
-import { NavLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
-import { Home } from 'lucide-react';
-import { getVisibleNavEntries } from '@/config/route-manifest';
-import { getNavIcon } from '@/lib/nav-icons';
-import { getNavLabel } from '@/lib/nav-labels';
-import { useWorkspace } from '@/hooks/use-workspace';
+import { ContextSidebar } from './context-sidebar';
 
 export function Sidebar() {
-  const { t } = useTranslation();
-  const { hasPermission } = useWorkspace();
-  const navItems = getVisibleNavEntries('short-rent', hasPermission).map((entry) => ({
-    to: entry.path,
-    label: getNavLabel(entry, t),
-    icon: getNavIcon(entry.icon),
-    end: entry.path === '/app/short-rent',
-  }));
-
   return (
-    <aside className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
-      <div className="flex h-16 items-center border-b px-6">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Home className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-base font-bold tracking-tight">CASAZEN</span>
-            <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">Property Manager</span>
-          </div>
-        </div>
-      </div>
-      <nav className="flex-1 space-y-0.5 p-3">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )
-            }
-          >
-            <>
-              <item.icon className="h-4 w-4 shrink-0" />
-              {item.label}
-            </>
-          </NavLink>
-        ))}
-      </nav>
-      <div className="border-t p-3">
-        <p className="text-[10px] text-muted-foreground text-center tracking-wide">v1.0.0 · casazen.io</p>
-      </div>
-    </aside>
+    <ContextSidebar
+      contextKey="short-rent"
+      subtitle="Property Manager"
+    />
   );
 }

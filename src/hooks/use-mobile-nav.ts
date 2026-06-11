@@ -3,28 +3,14 @@ import { useLocation } from 'react-router-dom';
 import {
   getPrimaryNavEntries,
   getSecondaryNavEntries,
+  getVisibleNavEntries,
   type AppContextKey,
-  type RouteManifestEntry,
 } from '@/config/route-manifest';
+import { isNavEntryActive } from '@/lib/nav-active';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useUiStore } from '@/store/ui-store';
 
 export type MobileNavTabId = string | 'more';
-
-function isBookingsActive(pathname: string): boolean {
-  return (
-    pathname.startsWith('/app/short-rent/bookings') &&
-    !pathname.startsWith('/app/short-rent/bookings/calendar')
-  );
-}
-
-function isRouteActive(pathname: string, entry: RouteManifestEntry): boolean {
-  const exact = entry.path === '/app/short-rent' || entry.path === '/app/admin';
-  if (exact) {
-    return pathname === entry.path;
-  }
-  return pathname === entry.path || pathname.startsWith(`${entry.path}/`);
-}
 
 export function useMobileNav(contextKey: AppContextKey) {
   const location = useLocation();
@@ -35,6 +21,7 @@ export function useMobileNav(contextKey: AppContextKey) {
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
+  const allEntries = getVisibleNavEntries(contextKey, permissionCheck);
   const primaryEntries = getPrimaryNavEntries(contextKey, permissionCheck);
   const secondaryEntries = getSecondaryNavEntries(contextKey, permissionCheck);
   const hasSecondary = secondaryEntries.length > 0;
@@ -46,23 +33,17 @@ export function useMobileNav(contextKey: AppContextKey) {
   const resolveActiveTab = (): MobileNavTabId => {
     const pathname = location.pathname;
 
-    if (contextKey === 'short-rent') {
-      if (pathname === '/app/short-rent') return '/app/short-rent';
-      if (isBookingsActive(pathname)) return '/app/short-rent/bookings';
-      if (pathname.startsWith('/app/short-rent/properties')) return '/app/short-rent/properties';
-
-      const secondaryMatch = secondaryEntries.some((entry) => isRouteActive(pathname, entry));
-      if (secondaryMatch || sidebarOpen) return 'more';
-      return primaryEntries[0]?.path ?? 'more';
+    const activePrimary = primaryEntries.find((entry) =>
+      isNavEntryActive(pathname, entry, allEntries),
+    );
+    if (activePrimary) {
+      return activePrimary.path;
     }
 
-    for (const entry of primaryEntries) {
-      if (isRouteActive(pathname, entry)) {
-        return entry.path;
-      }
-    }
-
-    if (hasSecondary && (sidebarOpen || secondaryEntries.some((e) => isRouteActive(pathname, e)))) {
+    const onSecondary = secondaryEntries.some((entry) =>
+      isNavEntryActive(pathname, entry, allEntries),
+    );
+    if (onSecondary || sidebarOpen) {
       return 'more';
     }
 
