@@ -2,7 +2,14 @@ import { useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useWorkspace } from '@/hooks/use-workspace';
 
-export function WorkspaceSwitcher() {
+type WorkspaceSwitcherLayout = 'sidebar' | 'drawer';
+
+interface WorkspaceSwitcherProps {
+  layout?: WorkspaceSwitcherLayout;
+  className?: string;
+}
+
+export function WorkspaceSwitcher({ layout = 'sidebar', className }: WorkspaceSwitcherProps) {
   const { contexts, activeContext, setActiveContext } = useWorkspace();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -32,35 +39,54 @@ export function WorkspaceSwitcher() {
     return null;
   }
 
+  const isDrawer = layout === 'drawer';
+
   return (
-    <div
-      role="tablist"
-      aria-label="Workspace context"
-      className="ml-2 flex rounded-lg border bg-muted p-0.5"
-      onKeyDown={handleKeyDown}
-    >
-      {contexts.map((context, index) => {
-        const isSelected = activeContext === context.contextKey;
-        return (
-          <button
-            key={context.contextKey}
-            ref={(element) => {
-              tabRefs.current[index] = element;
-            }}
-            type="button"
-            role="tab"
-            aria-selected={isSelected}
-            tabIndex={isSelected ? 0 : -1}
-            className={cn(
-              'min-h-11 min-w-11 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-              isSelected ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
-            )}
-            onClick={() => setActiveContext(context.contextKey)}
-          >
-            {context.displayName}
-          </button>
-        );
-      })}
+    <div className={cn('min-w-0', className)}>
+      <p
+        className={cn(
+          'mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground',
+          isDrawer ? 'px-4' : 'px-2',
+        )}
+      >
+        Workspace
+      </p>
+      <div
+        role="tablist"
+        aria-label="Workspace context"
+        className={cn(
+          'flex gap-0.5 rounded-lg border bg-muted p-0.5',
+          isDrawer ? 'mx-4' : 'mx-2',
+          isDrawer && 'flex-col sm:flex-row',
+        )}
+        onKeyDown={handleKeyDown}
+      >
+        {contexts.map((context, index) => {
+          const isSelected = activeContext === context.contextKey;
+          return (
+            <button
+              key={context.contextKey}
+              ref={(element) => {
+                tabRefs.current[index] = element;
+              }}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              tabIndex={isSelected ? 0 : -1}
+              className={cn(
+                'min-h-10 flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+                'truncate text-center',
+                isSelected
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+              onClick={() => setActiveContext(context.contextKey)}
+            >
+              {context.displayName}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
