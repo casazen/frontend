@@ -17,6 +17,8 @@ import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
+import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
+import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -119,6 +121,14 @@ export const router = createBrowserRouter([
   {
     path: '/checkin/:token',
     element: <CheckInPage />,
+  },
+  {
+    path: '/p/affitti-brevi/:region/:comune',
+    element: <ComplianceGuidePage />,
+  },
+  {
+    path: '/p/tassa-soggiorno/:comune',
+    element: <TouristTaxCalculatorPage />,
   },
   {
     element: (

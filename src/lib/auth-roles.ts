@@ -95,6 +95,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'admin.users.manage',
         'admin.cin.read',
         'admin.jobs.read',
+        'admin.seo.read',
         'admin.tax.manage',
       ],
       defaultRoute: '/app/admin',
