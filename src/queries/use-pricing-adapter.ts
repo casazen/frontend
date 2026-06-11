@@ -112,7 +112,10 @@ export function useTriggerPricingSync(propertyId: string) {
 export function usePricingPreview(propertyId: string) {
   return useQuery({
     queryKey: [PRICING_KEY, 'preview', propertyId],
-    queryFn: () => pricingAdapterApi.getPreview(propertyId),
+    queryFn: async () => {
+      const preview = await pricingAdapterApi.getPreview(propertyId);
+      return preview ?? { prices: [] };
+    },
     enabled: !!propertyId,
   });
 }

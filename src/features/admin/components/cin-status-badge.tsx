@@ -14,6 +14,6 @@ const STATUS_MAP: Record<
 };
 
 export function CinStatusBadge({ status }: CinStatusBadgeProps) {
-  const { label, variant } = STATUS_MAP[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  const mapped = STATUS_MAP[status] ?? STATUS_MAP.missing;
+  return <Badge variant={mapped.variant}>{mapped.label}</Badge>;
 }
