@@ -348,6 +348,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],
   },
+  {
+    path: '/app/admin/seo',
+    context: 'admin',
+    requiredPermissions: ['admin.seo.read'],
+    navLabel: 'SEO Compliance',
+    navGroup: 'amministrazione',
+    navPlacement: 'primary',
+    navOrder: 5,
+    icon: 'Globe',
+    component: async () => ({ default: (await import('@/features/admin/seo-dashboard-page')).SeoDashboardPage }),
+    legacyPaths: ['/admin/seo'],
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
