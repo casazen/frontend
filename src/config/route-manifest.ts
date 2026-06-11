@@ -353,7 +353,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/seo',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
-    navLabel: 'SEO Compliance',
+    navKey: 'nav.seo',
     navGroup: 'amministrazione',
     navPlacement: 'primary',
     navOrder: 5,
