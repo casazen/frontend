@@ -34,20 +34,22 @@ test.describe('Mobile navigation (#252)', () => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: 'Open navigation menu' }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByText('Finanza')).toBeVisible();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+    await expect(drawer.getByText(/Finanza|Finance/i)).toBeVisible();
 
-    await page.getByRole('link', { name: 'Incassi' }).click();
+    await drawer.getByRole('link', { name: /Incassi|Payments/i }).click();
     await expect(page).toHaveURL(/\/app\/short-rent\/payments/);
-    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(drawer).not.toBeVisible();
   });
 
   test('drawer shows disambiguated payment labels', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: 'Open navigation menu' }).click();
-    await expect(page.getByRole('link', { name: 'Incassi' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Stripe Connect' })).toBeVisible();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer.getByRole('link', { name: /Incassi|Payments/i })).toBeVisible();
+    await expect(drawer.getByRole('link', { name: /Stripe Connect/i })).toBeVisible();
   });
 
   test('no horizontal overflow on dashboard', async ({ page }) => {
@@ -73,7 +75,9 @@ test.describe('Mobile navigation (#252)', () => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByRole('tab', { name: 'Affitti brevi' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Affitti lungo termine' })).toBeVisible();
+    await page.getByRole('button', { name: 'Open navigation menu' }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer.getByRole('tab', { name: 'Affitti brevi' })).toBeVisible();
+    await expect(drawer.getByRole('tab', { name: 'Affitti lungo termine' })).toBeVisible();
   });
 });

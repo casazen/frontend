@@ -421,6 +421,21 @@ export function getSecondaryNavByGroup(
   return grouped;
 }
 
+/** Desktop sidebar: all visible nav entries grouped (primary + secondary). */
+export function getDesktopNavByGroup(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+): Map<NavGroup, RouteManifestEntry[]> {
+  const grouped = new Map<NavGroup, RouteManifestEntry[]>();
+  for (const entry of getVisibleNavEntries(contextKey, hasPermission)) {
+    if (!entry.navGroup) continue;
+    const list = grouped.get(entry.navGroup) ?? [];
+    list.push(entry);
+    grouped.set(entry.navGroup, list);
+  }
+  return grouped;
+}
+
 /** Drawer entries: secondary routes, or all visible routes when no secondary (long-rent, admin). */
 export function getDrawerNavByGroup(
   contextKey: AppContextKey,
