@@ -5,6 +5,7 @@ import { useSeoMeta } from '@/lib/seo-meta';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
 import { SeoCtaBlock } from './components/seo-cta-block';
 import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-widget';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export function TouristTaxCalculatorPage() {
   const { comune = '' } = useParams<{ comune: string }>();
@@ -49,7 +50,7 @@ export function TouristTaxCalculatorPage() {
       {page.bodyHtml && (
         <article
           className="prose prose-neutral max-w-none dark:prose-invert"
-          dangerouslySetInnerHTML={{ __html: page.bodyHtml }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.bodyHtml) }}
           data-testid="tourist-tax-page-body"
         />
       )}

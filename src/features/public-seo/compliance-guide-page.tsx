@@ -5,6 +5,7 @@ import { useSeoMeta } from '@/lib/seo-meta';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
 import { SeoCtaBlock } from './components/seo-cta-block';
 import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-widget';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export function ComplianceGuidePage() {
   const { region = '', comune = '' } = useParams<{ region: string; comune: string }>();
@@ -50,7 +51,7 @@ export function ComplianceGuidePage() {
 
       <article
         className="prose prose-neutral max-w-none dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: page.bodyHtml }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.bodyHtml) }}
         data-testid="compliance-guide-body"
       />
 

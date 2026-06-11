@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useGenerateSeoPages, usePlatformAiBudget, useSeoPages } from '@/queries/use-admin-seo';
+import { useGenerateSeoPages, usePlatformAiBudget, useSeoPages, useUpdateSeoReviewStatus } from '@/queries/use-admin-seo';
 import { SeoReviewStatusBadge } from './components/seo-review-status-badge';
 import { formatDate } from '@/lib/utils';
 
@@ -18,6 +18,7 @@ export function SeoDashboardPage() {
   const { data, isLoading, isError } = useSeoPages({ page: 1, pageSize: 50 });
   const { data: budget } = usePlatformAiBudget();
   const generateMutation = useGenerateSeoPages();
+  const reviewMutation = useUpdateSeoReviewStatus();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   async function handleRegenerate() {
@@ -73,7 +74,8 @@ export function SeoDashboardPage() {
                     <th className="pb-2 pr-4">Comune</th>
                     <th className="pb-2 pr-4">Tipo</th>
                     <th className="pb-2 pr-4">Stato</th>
-                    <th className="pb-2">Ultimo refresh</th>
+                    <th className="pb-2 pr-4">Ultimo refresh</th>
+                    <th className="pb-2">Azioni</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,10 +93,31 @@ export function SeoDashboardPage() {
                       <td className="py-3 pr-4">
                         <SeoReviewStatusBadge status={item.legalReviewStatus} />
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 pr-4">
                         {item.lastRefreshedAt
                           ? formatDate(item.lastRefreshedAt)
                           : '—'}
+                      </td>
+                      <td className="py-3">
+                        {item.legalReviewStatus === 'Draft' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={reviewMutation.isPending}
+                            data-testid={`seo-approve-${item.id}`}
+                            onClick={() =>
+                              void reviewMutation.mutateAsync({
+                                pageId: item.id,
+                                body: {
+                                  legalReviewStatus: 'Reviewed',
+                                  counselApproved: true,
+                                },
+                              })
+                            }
+                          >
+                            Approva
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
