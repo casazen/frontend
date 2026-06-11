@@ -17,6 +17,32 @@ import {
 const pricingBase = `**/api/pricing-adapter`;
 
 /**
+ * Overrides POST sync with a delayed response so the UI can show the pending spinner.
+ * Call AFTER mockPricingApiDefaults — Playwright evaluates routes LIFO.
+ */
+export async function mockDelayedPricingSync(
+  page: Page,
+  options: { delayMs?: number; onSync?: () => void } = {},
+): Promise<void> {
+  const delayMs = options.delayMs ?? 800;
+
+  await page.route(`${pricingBase}/sync/${PROPERTY_ID}`, async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback();
+      return;
+    }
+
+    options.onSync?.();
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await route.fulfill({
+      status: 202,
+      contentType: 'application/json',
+      body: JSON.stringify({ jobId: 'job-e2e-sync-001' }),
+    });
+  });
+}
+
+/**
  * Registers the full set of default API mocks needed for the AI pricing flow.
  * Playwright route handlers are evaluated in LIFO order — later registrations
  * take priority, so individual tests can override a specific route by calling
