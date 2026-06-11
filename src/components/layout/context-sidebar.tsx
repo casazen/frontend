@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { Home } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   getDesktopNavByGroup,
   getVisibleNavEntries,
@@ -24,6 +25,7 @@ export function ContextSidebar({
   iconClassName = 'bg-primary text-primary-foreground',
   footerLabel = 'v1.0.0 · casazen.io',
 }: ContextSidebarProps) {
+  const { t } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
@@ -32,7 +34,7 @@ export function ContextSidebar({
   const grouped = getDesktopNavByGroup(contextKey, permissionCheck);
 
   return (
-    <aside role="complementary" aria-label="Main navigation" className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
+    <aside role="complementary" aria-label={t('shell.mainNavigation')} className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
       <div className="border-b px-4 py-4 space-y-3">
         <div className="flex items-center gap-2.5 px-2">
           <div

@@ -10,23 +10,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useGenerateSeoPages, usePlatformAiBudget, useSeoPages, useUpdateSeoReviewStatus } from '@/queries/use-admin-seo';
+import {
+  useApproveAllSeoDrafts,
+  useGenerateSeoPages,
+  usePlatformAiBudget,
+  useSeoComuni,
+  useSeoPages,
+  useUpdateSeoReviewStatus,
+} from '@/queries/use-admin-seo';
 import { SeoReviewStatusBadge } from './components/seo-review-status-badge';
 import { formatDate } from '@/lib/utils';
 
 export function SeoDashboardPage() {
   const { data, isLoading, isError } = useSeoPages({ page: 1, pageSize: 50 });
+  const { data: comuni } = useSeoComuni();
   const { data: budget } = usePlatformAiBudget();
   const generateMutation = useGenerateSeoPages();
   const reviewMutation = useUpdateSeoReviewStatus();
+  const approveAllMutation = useApproveAllSeoDrafts();
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const comuneCount = comuni?.length ?? 0;
 
   async function handleRegenerate() {
     setConfirmOpen(false);
     await generateMutation.mutateAsync({
-      comuneCodes: ['013075'],
+      comuneCodes: [],
       pageTypes: ['ComplianceGuide', 'TouristTaxCalc'],
       forceRegenerate: false,
+      autoApproveCounsel: true,
     });
   }
 
@@ -36,13 +48,23 @@ export function SeoDashboardPage() {
         title="SEO Compliance"
         description="Pagine programmatiche per affitti brevi e tassa di soggiorno"
         action={
-          <Button
-            onClick={() => setConfirmOpen(true)}
-            disabled={generateMutation.isPending}
-            data-testid="seo-regenerate-button"
-          >
-            Rigenera
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => void approveAllMutation.mutateAsync(true)}
+              disabled={approveAllMutation.isPending}
+              data-testid="seo-approve-all-button"
+            >
+              Approva tutte
+            </Button>
+            <Button
+              onClick={() => setConfirmOpen(true)}
+              disabled={generateMutation.isPending}
+              data-testid="seo-regenerate-button"
+            >
+              Genera tutti
+            </Button>
+          </div>
         }
       />
 
@@ -136,7 +158,8 @@ export function SeoDashboardPage() {
           <DialogHeader>
             <DialogTitle>Conferma rigenerazione</DialogTitle>
             <DialogDescription>
-              Verrà accodato un job Hangfire per rigenerare le pagine SEO del comune di Como (013075).
+              Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry
+              ({comuneCount} comuni, 2 pagine ciascuno) e approvarle automaticamente.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -46,7 +46,7 @@ describe('BottomNav', () => {
 
   it('renders primary tabs for short-rent', () => {
     renderBottomNav();
-    expect(screen.getByRole('link', { name: /Dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Cruscotto|Dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Prenotazioni/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Immobili/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Altro/i })).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('BottomNav', () => {
 
     renderBottomNav();
     expect(screen.queryByRole('link', { name: /Immobili/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Cruscotto|Dashboard/i })).toBeInTheDocument();
   });
 
   it('marks bookings tab active on bookings list path', () => {

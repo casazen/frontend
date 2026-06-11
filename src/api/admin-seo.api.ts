@@ -1,6 +1,8 @@
 import { ApiClient } from '@/api/client';
 import type {
   PlatformAiBudget,
+  SeoBulkApproveResult,
+  SeoComuneRegistryItem,
   SeoGenerateAccepted,
   SeoGenerateRequest,
   SeoPageAdmin,
@@ -36,4 +38,10 @@ export const AdminSeoApi = {
 
   getBudget: (): Promise<PlatformAiBudget> =>
     ApiClient.get<PlatformAiBudget>('/admin/seo/budget'),
+
+  listComuni: (): Promise<SeoComuneRegistryItem[]> =>
+    ApiClient.get<SeoComuneRegistryItem[]>('/admin/seo/comuni'),
+
+  approveAllDrafts: (counselApproved = true): Promise<SeoBulkApproveResult> =>
+    ApiClient.post<SeoBulkApproveResult>('/admin/seo/approve-all-drafts', { counselApproved }),
 };

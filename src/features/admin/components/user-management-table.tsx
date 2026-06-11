@@ -2,15 +2,11 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatUserDisplayName } from '@/lib/user-display';
 import { ChangeRoleDialog } from './change-role-dialog';
 import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
-
-function formatUserName(user: UserSummary): string {
-  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-  return name || user.email || user.id;
-}
 
 interface UserManagementTableProps {
   users: UserSummary[];
@@ -50,7 +46,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
             {users.map((user) => (
               <tr key={user.id} className="border-b last:border-0">
                 <td className="py-3 pr-4 font-medium">
-                  {formatUserName(user)}
+                  {formatUserDisplayName(user)}
                 </td>
                 <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
                 <td className="py-3 pr-4">

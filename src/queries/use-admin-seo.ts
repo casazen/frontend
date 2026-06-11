@@ -12,6 +12,29 @@ export function useSeoPages(params?: SeoPagesQuery) {
   });
 }
 
+export function useSeoComuni() {
+  return useQuery({
+    queryKey: [ADMIN_SEO_KEY, 'comuni'],
+    queryFn: () => AdminSeoApi.listComuni(),
+  });
+}
+
+export function useApproveAllSeoDrafts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (counselApproved?: boolean) =>
+      AdminSeoApi.approveAllDrafts(counselApproved ?? true),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
+      toast.success(`${result.approvedCount} pagine approvate`);
+    },
+    onError: () => {
+      toast.error('Impossibile approvare le bozze SEO');
+    },
+  });
+}
+
 export function usePlatformAiBudget() {
   return useQuery({
     queryKey: [ADMIN_SEO_KEY, 'budget'],

@@ -1,21 +1,19 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { mockLeasesApiEmpty } from './helpers/lease-api-mock';
+import { resetE2eStorage } from './helpers/locale';
 
 test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-    });
+    await resetE2eStorage(page, 'en');
   });
 
   test('AC1 PropertyOwner-only sees short-stay shell without long-term nav', async ({ page }) => {
     await page.goto(demoUrl('/', 'short-stay'));
 
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
-    await expect(page.getByRole('link', { name: 'Prenotazioni' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Contratti' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /Prenotazioni|Bookings/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toHaveCount(0);
   });
 
   test('AC2 LongTermLandlord-only sees long-term shell and lease home', async ({ page }) => {
@@ -23,8 +21,8 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
 
     await expect(page).toHaveURL(/\/app\/long-rent\/leases(?:\?.*)?$/, { timeout: 15_000 });
     await expect(page.getByText(/long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Contratti' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Prenotazioni' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Prenotazioni|Bookings/i })).toHaveCount(0);
   });
 
   test('AC3 dual-role user can switch layers with persistent switcher', async ({ page }) => {
@@ -40,7 +38,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
 
     await page.getByRole('tab', { name: 'Affitti brevi' }).click();
     await expect(page).toHaveURL(/\/app\/short-rent(?:\?.*)?$/, { timeout: 15_000 });
-    await expect(page.getByText(/property manager/i)).toBeVisible();
+    await expect(page.getByText(/property manager|short-term rentals|affitti brevi/i)).toBeVisible();
   });
 
   test('AC4 long-term layer renders leases list route', async ({ page }) => {
@@ -55,7 +53,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await page.goto(demoUrl('/leases', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
-    await expect(page.getByText(/property manager/i)).toBeVisible();
+    await expect(page.getByText(/property manager|short-term rentals|affitti brevi/i)).toBeVisible();
   });
 
   test('AC6 dual-role deep link to /leases stays in long-term shell', async ({ page }) => {
@@ -63,7 +61,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await page.goto(demoUrl('/leases', 'dual'), { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText(/long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Contratti' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Affitti lungo termine' })).toHaveAttribute('aria-selected', 'true');
   });
 });
