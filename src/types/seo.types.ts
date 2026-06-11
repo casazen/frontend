@@ -92,6 +92,18 @@ export interface SeoGenerateRequest {
   comuneCodes: string[];
   pageTypes?: SeoPageType[];
   forceRegenerate?: boolean;
+  autoApproveCounsel?: boolean;
+}
+
+export interface SeoComuneRegistryItem {
+  code: string;
+  name: string;
+  regionSlug: string;
+  comuneSlug: string;
+}
+
+export interface SeoBulkApproveResult {
+  approvedCount: number;
 }
 
 export interface SeoGenerateAccepted {

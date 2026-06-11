@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useChangeUserRole } from '@/queries/use-users';
+import { formatUserDisplayName } from '@/lib/user-display';
 import type { UserSummary, UserRole } from '@/types';
 
 const ALL_ROLES: UserRole[] = [
@@ -37,9 +38,7 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
     }
   }, [user]);
 
-  const displayName = user
-    ? [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || user.id
-    : '';
+  const displayName = user ? formatUserDisplayName(user) : '';
 
   function handleConfirm() {
     if (!user) return;

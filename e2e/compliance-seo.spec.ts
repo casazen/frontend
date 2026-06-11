@@ -50,15 +50,25 @@ test.describe('Programmatic Compliance SEO (#258)', () => {
     expect(authHeader).toBeUndefined();
   });
 
-  test('AC13: admin SEO dashboard lists pages and Rigenera triggers generate job', async ({ page }) => {
-    let generateCalled = false;
+  test('AC13: admin SEO dashboard lists pages, Genera tutti and Approva tutte work', async ({ page }) => {
+    let generateBody: Record<string, unknown> | undefined;
+    let approveCalled = false;
 
     await page.route('**/api/admin/seo/generate', async (route) => {
-      generateCalled = true;
+      generateBody = route.request().postDataJSON() as Record<string, unknown>;
       await route.fulfill({
         status: 202,
         contentType: 'application/json',
         body: JSON.stringify(demoSeoGenerateAccepted),
+      });
+    });
+
+    await page.route('**/api/admin/seo/approve-all-drafts', async (route) => {
+      approveCalled = true;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ approvedCount: 1 }),
       });
     });
 
@@ -71,10 +81,14 @@ test.describe('Programmatic Compliance SEO (#258)', () => {
     await expect(page.getByTestId('seo-review-status-draft')).toBeVisible();
     await expect(page.getByTestId('seo-ai-budget-card')).toBeVisible();
 
+    await page.getByTestId('seo-approve-all-button').click();
+    await expect.poll(() => approveCalled).toBe(true);
+
     await page.getByTestId('seo-regenerate-button').click();
     await expect(page.getByTestId('seo-regenerate-dialog')).toBeVisible();
     await page.getByTestId('seo-regenerate-confirm').click();
 
-    await expect.poll(() => generateCalled).toBe(true);
+    await expect.poll(() => generateBody?.autoApproveCounsel).toBe(true);
+    await expect.poll(() => (generateBody?.comuneCodes as string[])?.length).toBe(0);
   });
 });

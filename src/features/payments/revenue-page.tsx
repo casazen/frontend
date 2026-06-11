@@ -47,14 +47,12 @@ export function RevenuePage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          title={t('revenue.pageTitle', { defaultValue: 'Analisi ricavi' })}
-          description={t('revenue.pageDescription', {
-            defaultValue: 'Monitora e analizza l’andamento dei ricavi',
-          })}
+          title={t('revenue.pageTitle')}
+          description={t('revenue.pageDescription')}
           action={
             <Button variant="outline" onClick={() => navigate('/app/short-rent/payments')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('revenue.backToPayments', { defaultValue: 'Torna agli incassi' })}
+              {t('revenue.backToPayments')}
             </Button>
           }
         />

@@ -1,4 +1,5 @@
 import { ApiClient } from '@/api/client';
+import { normalizeUserSummary } from '@/lib/api-normalize';
 import type {
   UserDetail,
   UserSummary,
@@ -27,9 +28,9 @@ interface BackendPagedResult<T> {
 
 export const UsersApi = {
   getUsers: (params: GetUsersParams): Promise<PagedResult<UserSummary>> =>
-    ApiClient.get<BackendPagedResult<UserSummary>>('/users', params as Record<string, unknown>).then(
+    ApiClient.get<BackendPagedResult<Record<string, unknown>>>('/users', params as Record<string, unknown>).then(
       (res) => ({
-        items: res.items ?? [],
+        items: (res.items ?? []).map(normalizeUserSummary),
         totalCount: res.totalCount ?? 0,
         page: res.page ?? 1,
         pageSize: res.pageSize ?? 20,

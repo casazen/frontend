@@ -22,8 +22,11 @@ describe('route-manifest nav helpers', () => {
     const secondary = getSecondaryNavEntries('short-rent', allowAll);
     const payments = secondary.find((e) => e.path === '/app/short-rent/payments');
     const stripe = secondary.find((e) => e.path === '/app/short-rent/settings/payments');
+    const plan = secondary.find((e) => e.path === '/app/short-rent/settings/plan');
     expect(payments?.navKey).toBe('nav.payments');
     expect(stripe?.navKey).toBe('nav.stripeConnect');
+    expect(stripe?.navGroup).toBe('account');
+    expect(plan?.navGroup).toBe('account');
   });
 
   it('hides OTA when ota.read permission is missing', () => {

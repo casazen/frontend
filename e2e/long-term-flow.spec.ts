@@ -44,7 +44,7 @@ test.describe.skip('Long-term layer (real Auth0 + API)', () => {
 
     await page.getByRole('tab', { name: 'Short-stay' }).click();
     await expect(page).toHaveURL(/\/(?:\?.*)?$/, { timeout: 15_000 });
-    await expect(page.getByText(/property manager/i)).toBeVisible();
+    await expect(page.getByText(/property manager|short-term rentals|affitti brevi/i)).toBeVisible();
 
     await page.getByRole('tab', { name: 'Long-term' }).click();
     await expect(page).toHaveURL(/\/leases/, { timeout: 15_000 });

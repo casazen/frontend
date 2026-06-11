@@ -1,6 +1,6 @@
 {
   "nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
     "plan": "Piano",
@@ -20,9 +20,9 @@
       "operazioni": "Operazioni",
       "immobili": "Immobili",
       "finanza": "Finanza",
-      "compliance": "Compliance",
+      "compliance": "Conformità",
       "integrazioni": "Integrazioni",
-      "account": "Account",
+      "account": "Account e impostazioni",
       "amministrazione": "Amministrazione"
     }
   },
@@ -31,6 +31,34 @@
     "switchToEnglish": "Passa all'inglese",
     "italian": "IT",
     "english": "EN"
+  },
+  "shell": {
+    "shortRentSubtitle": "Affitti brevi",
+    "longRentSubtitle": "Affitti lungo termine",
+    "adminSubtitle": "Amministrazione",
+    "adminFooter": "v1.0.0 · Admin",
+    "workspaceLabel": "Area di lavoro",
+    "workspaceContext": "Contesto applicativo",
+    "mainNavigation": "Navigazione principale",
+    "mobileNavigation": "Navigazione mobile",
+    "openMenu": "Apri menu di navigazione"
+  },
+  "leases": {
+    "pageTitle": "Contratti lungo termine",
+    "pageDescription": "Gestisci bozze, firma e registrazione RLI",
+    "createLease": "Nuovo contratto",
+    "loading": "Caricamento contratti...",
+    "emptyTitle": "Nessun contratto",
+    "emptyDescription": "Crea il primo contratto di locazione lungo termine.",
+    "loadError": "Impossibile caricare i contratti. Riprova.",
+    "rentLabel": "Canone ",
+    "regimeLabel": "Regime ",
+    "partiesLabel": "Parti "
+  },
+  "revenue": {
+    "pageTitle": "Analisi ricavi",
+    "pageDescription": "Monitora e analizza l'andamento dei ricavi",
+    "backToPayments": "Torna agli incassi"
   },
   "dashboard": {
     "title": "Cruscotto",
