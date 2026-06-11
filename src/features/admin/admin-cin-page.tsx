@@ -4,7 +4,7 @@ import { CinComplianceTable } from './components/cin-compliance-table';
 import { useCinCompliance } from '@/queries/use-admin';
 
 export function AdminCinPage() {
-  const { data, isLoading } = useCinCompliance();
+  const { data, isLoading, isError } = useCinCompliance();
 
   return (
     <div className="space-y-6">
@@ -14,7 +14,13 @@ export function AdminCinPage() {
       />
       <Card>
         <CardContent className="pt-6">
-          <CinComplianceTable items={data ?? []} isLoading={isLoading} />
+          {isError ? (
+            <p className="py-8 text-center text-destructive">
+              Impossibile caricare i dati CIN. Riprova più tardi.
+            </p>
+          ) : (
+            <CinComplianceTable items={data ?? []} isLoading={isLoading} />
+          )}
         </CardContent>
       </Card>
     </div>
