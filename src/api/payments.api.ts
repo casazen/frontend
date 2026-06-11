@@ -3,12 +3,27 @@ import { buildRevenueAnalytics } from '@/lib/revenue-analytics';
 import type {
   Payment,
   CreatePaymentDto,
-  UpdatePaymentDto,
-  ProcessPaymentDto,
-  RefundPaymentDto,
   RevenueParams,
   RevenueAnalytics,
+  RevenueResponse,
 } from '@/types';
+
+function mapRevenueResponseToAnalytics(response: RevenueResponse): RevenueAnalytics {
+  const period = `${response.startDate} — ${response.endDate}`;
+  return {
+    totalRevenue: response.revenue,
+    totalBookings: 0,
+    averageBookingValue: 0,
+    data: [
+      {
+        period,
+        revenue: response.revenue,
+        bookings: 0,
+        averageBookingValue: 0,
+      },
+    ],
+  };
+}
 
 export const paymentsApi = {
   getAll: (params?: Record<string, any>) =>
@@ -19,18 +34,29 @@ export const paymentsApi = {
   create: (data: CreatePaymentDto) =>
     ApiClient.post<Payment>('/payments', data),
 
-  update: (id: string, data: UpdatePaymentDto) =>
-    ApiClient.put<Payment>(`/payments/${id}`, data),
+  process: (id: string) =>
+    ApiClient.post<Payment>(`/payments/${id}/process`),
 
-  delete: (id: string) => ApiClient.delete<void>(`/payments/${id}`),
-
-  process: (id: string, data: ProcessPaymentDto) =>
-    ApiClient.post<Payment>(`/payments/${id}/process`, data),
-
-  refund: (id: string, data?: RefundPaymentDto) =>
-    ApiClient.post<Payment>(`/payments/${id}/refund`, data),
+  refund: (id: string, amount?: number) => {
+    const url =
+      amount !== undefined
+        ? `/payments/${id}/refund?amount=${encodeURIComponent(String(amount))}`
+        : `/payments/${id}/refund`;
+    return ApiClient.post<Payment>(url);
+  },
 
   getRevenue: async (params?: RevenueParams): Promise<RevenueAnalytics> => {
+    const { propertyId, startDate, endDate } = params ?? {};
+
+    if (propertyId && startDate && endDate) {
+      const response = await ApiClient.get<RevenueResponse>('/payments/revenue', {
+        propertyId,
+        startDate,
+        endDate,
+      });
+      return mapRevenueResponseToAnalytics(response);
+    }
+
     const payments = await ApiClient.get<Payment[]>('/payments');
     return buildRevenueAnalytics(payments ?? [], params);
   },

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { propertiesApi } from '../properties.api';
 import { ApiClient } from '../client';
-import type { PublicPropertyDetailDto, PublicPropertyDto } from '@/types';
+import type { Property, PublicPropertyDetailDto, PublicPropertyDto } from '@/types';
 
 vi.mock('../client');
 
@@ -58,5 +58,16 @@ describe('propertiesApi public read-model (#212)', () => {
     expect(ApiClient.get).toHaveBeenCalledWith(`/properties/${mockListItem.id}/public`);
     expect(result.currency).toBe('EUR');
     expect(result).not.toHaveProperty('ownerId');
+  });
+});
+
+describe('propertiesApi update (#26)', () => {
+  it('uses PUT /properties/:id to match backend PropertiesController', async () => {
+    vi.mocked(ApiClient.put).mockResolvedValueOnce({} as Property);
+
+    await propertiesApi.update(mockListItem.id, { name: 'Updated name' });
+
+    expect(ApiClient.put).toHaveBeenCalledWith(`/properties/${mockListItem.id}`, { name: 'Updated name' });
+    expect(ApiClient.patch).not.toHaveBeenCalled();
   });
 });

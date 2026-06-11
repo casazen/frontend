@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
@@ -10,19 +10,37 @@ import { Input } from '@/components/ui/input';
 import { RevenueDashboard } from './components/revenue-dashboard';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useRevenue } from '@/queries/use-payments';
+import { useProperties } from '@/queries/use-properties';
 import { ArrowLeft } from 'lucide-react';
+
+function defaultStartDate(): string {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+}
+
+function defaultEndDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export function RevenuePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const { data: properties } = useProperties();
+  const [propertyId, setPropertyId] = useState('');
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
   const [groupBy, setGroupBy] = useState<'day' | 'week' | 'month' | 'year'>('month');
 
+  const selectedPropertyId = useMemo(() => {
+    if (propertyId) return propertyId;
+    return properties?.[0]?.id ?? '';
+  }, [propertyId, properties]);
+
   const { data: analytics, isLoading } = useRevenue({
-    startDate: startDate || undefined,
-    endDate: endDate || undefined,
-    groupBy,
+    propertyId: selectedPropertyId || undefined,
+    startDate,
+    endDate,
+    groupBy: selectedPropertyId ? undefined : groupBy,
   });
 
   return (
@@ -46,7 +64,27 @@ export function RevenuePage() {
             <CardTitle>{t('revenue.filters', { defaultValue: 'Filtri' })}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+              <div className="space-y-2">
+                <Label htmlFor="propertyId">{t('revenue.property', { defaultValue: 'Proprietà' })}</Label>
+                <select
+                  id="propertyId"
+                  value={selectedPropertyId}
+                  onChange={(e) => setPropertyId(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {(properties ?? []).length === 0 ? (
+                    <option value="">{t('revenue.noProperties', { defaultValue: 'Nessuna proprietà' })}</option>
+                  ) : (
+                    (properties ?? []).map((property) => (
+                      <option key={property.id} value={property.id}>
+                        {property.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="startDate">{t('revenue.startDate', { defaultValue: 'Data inizio' })}</Label>
                 <Input
@@ -86,8 +124,9 @@ export function RevenuePage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setStartDate('');
-                    setEndDate('');
+                    setPropertyId('');
+                    setStartDate(defaultStartDate());
+                    setEndDate(defaultEndDate());
                     setGroupBy('month');
                   }}
                 >

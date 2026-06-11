@@ -47,9 +47,12 @@ export interface ProcessPaymentDto {
   saveCard?: boolean;
 }
 
-export interface RefundPaymentDto {
-  amount?: number; // If not provided, full refund
-  reason?: string;
+/** Matches GET /payments/revenue backend response. */
+export interface RevenueResponse {
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  revenue: number;
 }
 
 export interface RevenueParams {
