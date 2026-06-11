@@ -109,11 +109,16 @@ export const demoPlatformAiBudget: PlatformAiBudget = {
   lastResetAt: '2026-06-01T00:00:00Z',
 };
 
+export const demoSeoComuni = [
+  { code: '013075', name: 'Como', regionSlug: 'lombardia', comuneSlug: 'como' },
+  { code: '015146', name: 'Milano', regionSlug: 'lombardia', comuneSlug: 'milano' },
+];
+
 export const demoSeoGenerateAccepted: SeoGenerateAccepted = {
   jobId: 'job-e2e-seo-001',
   enqueuedAt: '2026-06-11T12:00:00Z',
-  comuneCount: 1,
-  estimatedPages: 2,
+  comuneCount: demoSeoComuni.length,
+  estimatedPages: demoSeoComuni.length * 2,
 };
 
 export async function mockComplianceSeoApi(page: Page): Promise<void> {
@@ -146,6 +151,22 @@ export async function mockComplianceSeoApi(page: Page): Promise<void> {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(demoSeoPages),
+    });
+  });
+
+  await page.route('**/api/admin/seo/comuni', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(demoSeoComuni),
+    });
+  });
+
+  await page.route('**/api/admin/seo/approve-all-drafts', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ approvedCount: 1 }),
     });
   });
 
