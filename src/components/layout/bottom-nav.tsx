@@ -23,7 +23,7 @@ export function BottomNav({ contextKey }: BottomNavProps) {
 
   return (
     <nav
-      aria-label="Mobile navigation"
+      aria-label={t('shell.mobileNavigation')}
       className="fixed bottom-0 inset-x-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
       style={{ height: 'var(--bottom-nav-height)' }}
     >

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FileText, Plus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -12,15 +13,16 @@ import { FISCAL_REGIME_LABELS } from './schemas/lease.schema';
 import type { LeaseContract } from '@/types';
 
 function getPropertyLabel(lease: LeaseContract): string {
-  return lease.property?.name ?? `Property ${lease.propertyId.slice(0, 8)}`;
+  return lease.property?.name ?? lease.propertyId.slice(0, 8);
 }
 
 export function LeasesPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: leases, isLoading, isError } = useLeases();
 
   if (isLoading) {
-    return <LoadingScreen message="Loading leases..." />;
+    return <LoadingScreen message={t('leases.loading')} />;
   }
 
   const items = leases ?? [];
@@ -28,29 +30,29 @@ export function LeasesPage() {
   return (
     <div className="space-y-6">
         <PageHeader
-          title="Long-term leases"
-          description="Manage contract drafts, signing, and RLI registration"
+          title={t('leases.pageTitle')}
+          description={t('leases.pageDescription')}
           action={
             <Button onClick={() => navigate('/app/long-rent/leases/new')}>
               <Plus className="mr-2 h-4 w-4" />
-              Create lease
+              {t('leases.createLease')}
             </Button>
           }
         />
 
         {isError && (
           <p className="text-sm text-destructive">
-            Failed to load leases. Please try again.
+            {t('leases.loadError')}
           </p>
         )}
 
         {items.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="No leases yet"
-            description="Create your first long-term lease contract draft to start the signing and registration workflow."
+            title={t('leases.emptyTitle')}
+            description={t('leases.emptyDescription')}
             action={{
-              label: 'Create lease',
+              label: t('leases.createLease'),
               onClick: () => navigate('/app/long-rent/leases/new'),
             }}
           />
@@ -73,19 +75,19 @@ export function LeasesPage() {
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Rent </span>
+                    <span className="text-muted-foreground">{t('leases.rentLabel')}</span>
                     <span className="font-medium">
                       {formatCurrency(lease.monthlyRent)}/mo
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Regime </span>
+                    <span className="text-muted-foreground">{t('leases.regimeLabel')}</span>
                     <span className="font-medium">
                       {FISCAL_REGIME_LABELS[lease.fiscalRegime]}
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Parties </span>
+                    <span className="text-muted-foreground">{t('leases.partiesLabel')}</span>
                     <span className="font-medium">{lease.parties?.length ?? 0}</span>
                   </div>
                 </CardContent>

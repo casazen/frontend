@@ -1,5 +1,6 @@
 import { UserMenu } from '@/components/auth/user-menu';
 import { Menu } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { OrgBadge } from '@/components/org/org-badge';
@@ -10,6 +11,7 @@ interface HeaderProps {
 }
 
 export function Header({ slotStart }: HeaderProps) {
+  const { t } = useTranslation();
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
 
   return (
@@ -18,7 +20,7 @@ export function Header({ slotStart }: HeaderProps) {
         variant="ghost"
         size="icon"
         className="min-h-11 min-w-11 md:hidden"
-        aria-label="Open navigation menu"
+        aria-label={t('shell.openMenu')}
         onClick={toggleSidebar}
       >
         <Menu className="h-5 w-5" />

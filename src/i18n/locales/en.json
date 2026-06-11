@@ -32,6 +32,33 @@
     "italian": "IT",
     "english": "EN"
   },
+  "shell": {
+    "shortRentSubtitle": "Short-term rentals",
+    "longRentSubtitle": "Long-term rentals",
+    "adminSubtitle": "Administration",
+    "adminFooter": "v1.0.0 · Admin",
+    "workspaceLabel": "Workspace",
+    "workspaceContext": "Workspace context",
+    "mainNavigation": "Main navigation",
+    "mobileNavigation": "Mobile navigation",
+    "openMenu": "Open navigation menu"
+  },
+  "leases": {
+    "pageTitle": "Long-term leases",
+    "pageDescription": "Manage contract drafts, signing, and RLI registration",
+    "createLease": "Create lease",
+    "loading": "Loading leases...",
+    "emptyTitle": "No leases yet",
+    "loadError": "Failed to load leases. Please try again.",
+    "rentLabel": "Rent ",
+    "regimeLabel": "Regime ",
+    "partiesLabel": "Parties "
+  },
+  "revenue": {
+    "pageTitle": "Revenue analytics",
+    "pageDescription": "Track and analyze revenue performance",
+    "backToPayments": "Back to payments"
+  },
   "dashboard": {
     "title": "Dashboard",
     "description": "Welcome to CASAZEN — your vacation property management platform",

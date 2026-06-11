@@ -1,5 +1,9 @@
 import { useCallback, useRef } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Building2, FileText, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 
 type WorkspaceSwitcherLayout = 'sidebar' | 'drawer';
@@ -9,7 +13,14 @@ interface WorkspaceSwitcherProps {
   className?: string;
 }
 
+const CONTEXT_ICONS: Record<AppContextKey, LucideIcon> = {
+  'short-rent': Building2,
+  'long-rent': FileText,
+  admin: Shield,
+};
+
 export function WorkspaceSwitcher({ layout = 'sidebar', className }: WorkspaceSwitcherProps) {
+  const { t } = useTranslation();
   const { contexts, activeContext, setActiveContext } = useWorkspace();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -49,19 +60,19 @@ export function WorkspaceSwitcher({ layout = 'sidebar', className }: WorkspaceSw
           isDrawer ? 'px-4' : 'px-2',
         )}
       >
-        Workspace
+        {t('shell.workspaceLabel')}
       </p>
       <div
         role="tablist"
-        aria-label="Workspace context"
+        aria-label={t('shell.workspaceContext')}
         className={cn(
-          'flex gap-0.5 rounded-lg border bg-muted p-0.5',
+          'flex gap-1 rounded-lg border bg-muted p-1',
           isDrawer ? 'mx-4' : 'mx-2',
-          isDrawer && 'flex-col sm:flex-row',
         )}
         onKeyDown={handleKeyDown}
       >
         {contexts.map((context, index) => {
+          const Icon = CONTEXT_ICONS[context.contextKey];
           const isSelected = activeContext === context.contextKey;
           return (
             <button
@@ -72,17 +83,18 @@ export function WorkspaceSwitcher({ layout = 'sidebar', className }: WorkspaceSw
               type="button"
               role="tab"
               aria-selected={isSelected}
+              aria-label={context.displayName}
+              title={context.displayName}
               tabIndex={isSelected ? 0 : -1}
               className={cn(
-                'min-h-10 flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
-                'truncate text-center',
+                'group relative flex min-h-10 min-w-10 flex-1 items-center justify-center rounded-md transition-colors',
                 isSelected
                   ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
               )}
               onClick={() => setActiveContext(context.contextKey)}
             >
-              {context.displayName}
+              <Icon className="h-4 w-4 shrink-0" aria-hidden />
             </button>
           );
         })}

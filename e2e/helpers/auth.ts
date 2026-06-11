@@ -163,7 +163,10 @@ export async function waitForAppReady(page: Page): Promise<void> {
       return (
         text.includes('Long-term leases') ||
         text.includes('Long-Term Rental') ||
+        text.includes('Long-term rentals') ||
         text.includes('Property Manager') ||
+        text.includes('Short-term rentals') ||
+        text.includes('Affitti brevi') ||
         text.includes('Dashboard') ||
         text.includes('No leases yet')
       );

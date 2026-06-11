@@ -40,7 +40,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
 
     await page.getByRole('tab', { name: 'Affitti brevi' }).click();
     await expect(page).toHaveURL(/\/app\/short-rent(?:\?.*)?$/, { timeout: 15_000 });
-    await expect(page.getByText(/property manager/i)).toBeVisible();
+    await expect(page.getByText(/property manager|short-term rentals|affitti brevi/i)).toBeVisible();
   });
 
   test('AC4 long-term layer renders leases list route', async ({ page }) => {
@@ -55,7 +55,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await page.goto(demoUrl('/leases', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
-    await expect(page.getByText(/property manager/i)).toBeVisible();
+    await expect(page.getByText(/property manager|short-term rentals|affitti brevi/i)).toBeVisible();
   });
 
   test('AC6 dual-role deep link to /leases stays in long-term shell', async ({ page }) => {
