@@ -23,7 +23,8 @@ export function useApproveAllSeoDrafts() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (counselApproved = true) => AdminSeoApi.approveAllDrafts(counselApproved),
+    mutationFn: (counselApproved?: boolean) =>
+      AdminSeoApi.approveAllDrafts(counselApproved ?? true),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
       toast.success(`${result.approvedCount} pagine approvate`);
