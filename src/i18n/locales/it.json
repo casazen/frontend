@@ -26,6 +26,50 @@
       "amministrazione": "Amministrazione"
     }
   },
+  "language": {
+    "switchToItalian": "Passa all'italiano",
+    "switchToEnglish": "Passa all'inglese",
+    "italian": "IT",
+    "english": "EN"
+  },
+  "dashboard": {
+    "title": "Cruscotto",
+    "description": "Benvenuto in CASAZEN — la piattaforma per la gestione degli affitti brevi",
+    "stats": {
+      "totalRevenue": {
+        "title": "Ricavi totali",
+        "description": "Pagamenti completati"
+      },
+      "activeBookings": {
+        "title": "Prenotazioni attive",
+        "description": "Confermate + check-in effettuato"
+      },
+      "totalProperties": {
+        "title": "Immobili totali",
+        "description": "Immobili attivi"
+      },
+      "occupancyRate": {
+        "title": "Tasso di occupazione",
+        "description": "Attualmente in check-in"
+      }
+    },
+    "recentBookings": {
+      "title": "Prenotazioni recenti",
+      "description": "Ultime attività di prenotazione",
+      "empty": "Nessuna prenotazione.",
+      "columns": {
+        "guest": "Ospite",
+        "dates": "Date",
+        "amount": "Importo",
+        "status": "Stato"
+      }
+    },
+    "otaStatus": {
+      "title": "Stato canali OTA",
+      "description": "Stato sincronizzazione per piattaforma",
+      "empty": "Nessuna integrazione OTA configurata."
+    }
+  },
   "booking": {
     "status": {
       "pending": "In attesa",
@@ -40,6 +84,44 @@
       "connected": "Connesso",
       "warning": "Attenzione",
       "disconnected": "Disconnesso"
+    }
+  },
+  "property": {
+    "form": {
+      "basicInfo": {
+        "title": "Informazioni di base",
+        "description": "Dettagli generali sull'immobile"
+      },
+      "name": "Nome immobile *",
+      "description": "Descrizione *",
+      "isActive": "Attivo (visibile agli ospiti)",
+      "location": {
+        "title": "Posizione",
+        "description": "Dove si trova l'immobile?"
+      },
+      "address": "Indirizzo *",
+      "city": "Città *",
+      "country": "Paese *",
+      "postalCode": "CAP *",
+      "latitude": "Latitudine",
+      "longitude": "Longitudine",
+      "details": {
+        "title": "Dettagli immobile",
+        "description": "Capacità e informazioni sui prezzi"
+      },
+      "bedrooms": "Camere *",
+      "bathrooms": "Bagni *",
+      "maxGuests": "Ospiti max *",
+      "nightlyRate": "Prezzo per notte *",
+      "currency": "Valuta",
+      "amenities": {
+        "title": "Servizi",
+        "description": "Seleziona tutti i servizi disponibili nell'immobile"
+      },
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "update": "Aggiorna immobile",
+      "create": "Crea immobile"
     }
   }
 }

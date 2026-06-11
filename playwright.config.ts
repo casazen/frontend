@@ -99,7 +99,7 @@ export default defineConfig({
     : {
         command: 'npm run dev:demo',
         url: 'http://localhost:5173',
-        reuseExistingServer: false,
+        reuseExistingServer: !process.env.CI,
         env: {
           VITE_DEMO_MODE: 'true',
         },

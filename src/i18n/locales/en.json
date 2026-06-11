@@ -26,6 +26,50 @@
       "amministrazione": "Administration"
     }
   },
+  "language": {
+    "switchToItalian": "Switch to Italian",
+    "switchToEnglish": "Switch to English",
+    "italian": "IT",
+    "english": "EN"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Welcome to CASAZEN — your vacation property management platform",
+    "stats": {
+      "totalRevenue": {
+        "title": "Total Revenue",
+        "description": "Completed payments"
+      },
+      "activeBookings": {
+        "title": "Active Bookings",
+        "description": "Confirmed + checked in"
+      },
+      "totalProperties": {
+        "title": "Total Properties",
+        "description": "Active properties"
+      },
+      "occupancyRate": {
+        "title": "Occupancy Rate",
+        "description": "Currently checked in"
+      }
+    },
+    "recentBookings": {
+      "title": "Recent Bookings",
+      "description": "Latest booking activity",
+      "empty": "No bookings yet.",
+      "columns": {
+        "guest": "Guest",
+        "dates": "Dates",
+        "amount": "Amount",
+        "status": "Status"
+      }
+    },
+    "otaStatus": {
+      "title": "OTA Channel Status",
+      "description": "Sync status per platform",
+      "empty": "No OTA integrations configured."
+    }
+  },
   "booking": {
     "status": {
       "pending": "Pending",
@@ -40,6 +84,44 @@
       "connected": "Connected",
       "warning": "Warning",
       "disconnected": "Disconnected"
+    }
+  },
+  "property": {
+    "form": {
+      "basicInfo": {
+        "title": "Basic Information",
+        "description": "General details about the property"
+      },
+      "name": "Property Name *",
+      "description": "Description *",
+      "isActive": "Active (visible to guests)",
+      "location": {
+        "title": "Location",
+        "description": "Where is the property located?"
+      },
+      "address": "Address *",
+      "city": "City *",
+      "country": "Country *",
+      "postalCode": "ZIP Code *",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "details": {
+        "title": "Property Details",
+        "description": "Capacity and pricing information"
+      },
+      "bedrooms": "Bedrooms *",
+      "bathrooms": "Bathrooms *",
+      "maxGuests": "Max Guests *",
+      "nightlyRate": "Price per Night *",
+      "currency": "Currency",
+      "amenities": {
+        "title": "Amenities",
+        "description": "Select all amenities available at the property"
+      },
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "update": "Update Property",
+      "create": "Create Property"
     }
   }
 }
