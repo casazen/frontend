@@ -10,10 +10,19 @@ export function useAdminStats() {
   });
 }
 
-export function useCinCompliance() {
+export function useCinCompliance(
+  page = 1,
+  pageSize = 20,
+  cinStatus?: 'valid' | 'missing' | 'invalid',
+) {
   return useQuery({
-    queryKey: [ADMIN_KEY, 'cin-compliance'],
-    queryFn: () => AdminApi.getCinCompliance(),
+    queryKey: [ADMIN_KEY, 'cin-compliance', page, pageSize, cinStatus ?? 'all'],
+    queryFn: () =>
+      AdminApi.getCinCompliance({
+        page,
+        pageSize,
+        ...(cinStatus ? { cinStatus } : {}),
+      }),
   });
 }
 
