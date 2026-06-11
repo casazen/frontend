@@ -4,6 +4,7 @@ import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
 import { useCurrentUser, useEntitlement, usePlans, useUpdateMyPlan } from '@/queries/use-users';
 import type { PlanTier } from '@/types';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export function PlanSettingsPage() {
   const { org, planTier } = useCurrentUser();
@@ -29,6 +30,19 @@ export function PlanSettingsPage() {
               : 'Gestisci il piano della tua organizzazione.'
           }
         />
+
+        <div
+          className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm"
+          data-testid="stripe-billing-banner"
+        >
+          <p>
+            Per abbonamenti con pagamento ricorrente via Stripe, vai ai{' '}
+            <Link to="/settings/billing/plans" className="underline text-primary font-medium">
+              piani di fatturazione
+            </Link>
+            .
+          </p>
+        </div>
 
         {entitlement && (
           <div

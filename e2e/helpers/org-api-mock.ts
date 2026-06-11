@@ -222,6 +222,52 @@ export async function mockUpdateMyPlan(page: Page): Promise<void> {
   });
 }
 
+interface MockUserRoleOptions extends MockOrgOptions {
+  role?: UserRole;
+}
+
+/**
+ * Mocks GET /api/users/me with a specific role (#230, AC13).
+ * Use for Staff/Guest billing-admin denial tests.
+ */
+export async function mockCurrentUserWithRole(
+  page: Page,
+  options: MockUserRoleOptions = {},
+): Promise<void> {
+  const org = {
+    id: options.orgId ?? 'org-e2e-0001',
+    name: options.name ?? 'Acme Stays',
+    slug: options.slug ?? 'acme-stays',
+    planTier: options.planTier ?? 'Pro',
+  };
+
+  await page.route('**/api/users/me', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 'auth0|demo-e2e',
+        email: 'demo@casazen.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        role: options.role ?? 'PropertyOwner',
+        rentalType: 'ShortTerm',
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        phoneNumber: null,
+        updatedAt: '2026-01-01T00:00:00Z',
+        orgId: org.id,
+        org,
+      }),
+    });
+  });
+}
+
 /** Mocks PATCH /api/admin/orgs/{id}/plan for admin plan changes. */
 export async function mockAdminUpdateOrgPlan(page: Page): Promise<void> {
   await page.route('**/api/admin/orgs/*/plan', async (route) => {

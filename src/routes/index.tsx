@@ -19,6 +19,9 @@ import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { RequireOrgBillingAdmin } from '@/features/billing/guards/require-org-billing-admin';
+import { BillingSettingsPage } from '@/features/billing/billing-settings-page';
+import { PlansPage } from '@/features/billing/plans-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -143,7 +146,39 @@ export const router = createBrowserRouter([
       },
       {
         element: <OnboardingGuard />,
-        children: workspaceRoutes,
+        children: [
+          ...workspaceRoutes,
+          {
+            path: '/settings/billing',
+            element: (
+              <WorkspaceProvider>
+                <RequireOrgBillingAdmin>
+                  <BillingSettingsPage />
+                </RequireOrgBillingAdmin>
+              </WorkspaceProvider>
+            ),
+          },
+          {
+            path: '/settings/billing/plans',
+            element: (
+              <WorkspaceProvider>
+                <RequireOrgBillingAdmin>
+                  <PlansPage />
+                </RequireOrgBillingAdmin>
+              </WorkspaceProvider>
+            ),
+          },
+          {
+            path: '/app/billing/upgrade',
+            element: (
+              <WorkspaceProvider>
+                <RequireOrgBillingAdmin>
+                  <Navigate to="/settings/billing/plans" replace />
+                </RequireOrgBillingAdmin>
+              </WorkspaceProvider>
+            ),
+          },
+        ],
       },
     ],
   },
