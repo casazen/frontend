@@ -28,6 +28,8 @@ export interface UserSummary {
 export interface UserDetail extends UserSummary {
   phoneNumber?: string;
   updatedAt: string;
+  // UTC timestamp when user completed onboarding. Null if user has not completed onboarding yet.
+  onboardingCompletedAt?: string | null;
   // Tenant boundary (#202, AC9). Nullable: a brand-new user pre-backfill has no org yet.
   orgId?: string | null;
   org?: Org | null;

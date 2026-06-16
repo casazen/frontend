@@ -20,6 +20,8 @@ function buildDemoMeBody(profile: string) {
       isActive: true,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
+      // No onboardingCompletedAt for onboarding profile (#277)
+      onboardingCompletedAt: null,
       orgId: null,
       org: null,
     };
@@ -44,6 +46,8 @@ function buildDemoMeBody(profile: string) {
     isActive: true,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
+    // Set onboardingCompletedAt for all completed profiles (#277)
+    onboardingCompletedAt: '2026-01-01T00:00:00Z',
     orgId: DEMO_ORG.id,
     org: DEMO_ORG,
   };
@@ -117,6 +121,7 @@ export async function mockCurrentUserWithOrg(page: Page, options: MockOrgOptions
         createdAt: '2026-01-01T00:00:00Z',
         phoneNumber: null,
         updatedAt: '2026-01-01T00:00:00Z',
+        onboardingCompletedAt: '2026-01-01T00:00:00Z',
         orgId: org.id,
         org,
       }),
