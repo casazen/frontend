@@ -31,7 +31,7 @@ export function CinDeadlineBanner({ summary }: CinDeadlineBannerProps) {
           Sanzioni da €800 a €8.000 per immobile.
           {' '}
           <a
-            href="https://bdsr.ministeroturismo.it"
+            href="https://bdsr.ministeroturismo.gov.it/"
             target="_blank"
             rel="noopener noreferrer"
             className="underline font-medium"

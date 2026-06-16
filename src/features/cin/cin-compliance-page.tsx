@@ -25,7 +25,7 @@ export function CinCompliancePage() {
             <p className="mb-4 text-sm text-muted-foreground">
               Richiedi il CIN sul portale{' '}
               <a
-                href="https://bdsr.ministeroturismo.it"
+                href="https://bdsr.ministeroturismo.gov.it/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary underline"
