@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { useOrgPublicProperty } from '@/queries/use-public-org';
+import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
 import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
 import type { PublicOrgDto } from '@/types';
-import { ArrowLeft, Bed, Bath, Loader2, Users } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Loader2, Users, AlertCircle } from 'lucide-react';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -28,6 +28,7 @@ export function PublicPropertyPage() {
   const { org } = useOutletContext<PublicBookingContext>();
   const navigate = useNavigate();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertyId);
+  const { data: availability } = usePropertyAvailability(propertyId);
 
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -35,6 +36,26 @@ export function PublicPropertyPage() {
   const nights = useMemo(() => nightsBetween(checkIn, checkOut), [checkIn, checkOut]);
   const lodgingTotal = property ? property.nightlyRate * nights : 0;
   const estimatedTotal = property ? lodgingTotal + property.cleaningFee : 0;
+
+  const isDateBooked = (dateStr: string): boolean => {
+    return availability?.bookedDates.includes(dateStr) ?? false;
+  };
+
+  const checkInBooked = checkIn && isDateBooked(checkIn);
+  const checkOutBooked = checkOut && isDateBooked(checkOut);
+  const dateRangeAvailable = useMemo(() => {
+    if (!checkIn || !checkOut || !availability) return true;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    let current = new Date(start);
+    while (current < end) {
+      if (availability.bookedDates.includes(current.toISOString().split('T')[0])) {
+        return false;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return true;
+  }, [checkIn, checkOut, availability]);
 
   if (isLoading) {
     return (
@@ -127,13 +148,44 @@ export function PublicPropertyPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="check-in">Check-in</Label>
-            <Input id="check-in" type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+            <Input
+              id="check-in"
+              type="date"
+              value={checkIn}
+              onChange={(e) => setCheckIn(e.target.value)}
+              className={checkInBooked ? 'border-red-500' : ''}
+            />
+            {checkInBooked && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" /> Questa data è già prenotata
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="check-out">Check-out</Label>
-            <Input id="check-out" type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+            <Input
+              id="check-out"
+              type="date"
+              value={checkOut}
+              onChange={(e) => setCheckOut(e.target.value)}
+              className={checkOutBooked ? 'border-red-500' : ''}
+            />
+            {checkOutBooked && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" /> Questa data è già prenotata
+              </p>
+            )}
           </div>
         </div>
+
+        {checkIn && checkOut && !dateRangeAvailable && (
+          <div className="rounded-md border border-red-500 bg-red-50 p-3 flex gap-2 items-start">
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-red-700">
+              Una o più date nel periodo selezionato sono già prenotate. Scegli date diverse.
+            </p>
+          </div>
+        )}
 
         {nights > 0 && (
           <div className="space-y-1 text-sm">
@@ -149,7 +201,7 @@ export function PublicPropertyPage() {
 
         <Button
           className="w-full sm:w-auto"
-          disabled={nights <= 0}
+          disabled={nights <= 0 || !dateRangeAvailable}
           onClick={() =>
             navigate(
               `/book/${orgSlug}/property/${propertyId}/checkout?checkIn=${checkIn}&checkOut=${checkOut}`,

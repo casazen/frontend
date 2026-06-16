@@ -18,6 +18,12 @@ if (import.meta.env.PROD && !isDemoMode && !auth0ClientId) {
   );
 }
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (
+  import.meta.env.PROD
+    ? 'https://casazen-api.up.railway.app/api'  // Production: Railway prod
+    : 'https://localhost:5001/api'               // Development: local
+);
+
 export const env = {
   auth0: {
     domain: auth0Domain,
@@ -25,7 +31,7 @@ export const env = {
     audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
   },
   api: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://localhost:5001/api',
+    baseUrl: apiBaseUrl,
   },
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,

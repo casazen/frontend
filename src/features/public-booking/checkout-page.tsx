@@ -1,18 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useOrgPublicProperty } from '@/queries/use-public-org';
 import { useCreateDirectBooking } from '@/queries/use-public-booking';
+import { publicBookingApi } from '@/api/public-booking.api';
 import { ConsentCheckbox } from '@/features/public-booking/components/consent-checkbox';
 import { PriceBreakdown } from '@/features/public-booking/components/price-breakdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { isDemoMode } from '@/config/demo.config';
-import type { DirectBookingResponse, PublicOrgDto } from '@/types';
+import type { DirectBookingResponse, PublicOrgDto, PaymentOption } from '@/types';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -81,6 +82,116 @@ function StripePaymentStep({
   );
 }
 
+function StripeSetupStep({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: () => void;
+  onError: (message: string) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!stripe || !elements) return;
+
+    setProcessing(true);
+    const { error } = await stripe.confirmSetup({
+      elements,
+      confirmParams: { return_url: window.location.href },
+      redirect: 'if_required',
+    });
+    setProcessing(false);
+
+    if (error) {
+      onError(error.message ?? 'Errore nella configurazione del pagamento');
+      return;
+    }
+
+    onSuccess();
+  };
+
+  return (
+    <div className="space-y-4" data-testid="checkout-setup-step">
+      <PaymentElement />
+      <Button className="w-full" onClick={handleConfirm} disabled={processing}>
+        {processing ? 'Conferma…' : 'Conferma pagamento'}
+      </Button>
+    </div>
+  );
+}
+
+function ConfirmationScreen({
+  bookingResult,
+  org,
+  orgSlug,
+}: {
+  bookingResult: DirectBookingResponse;
+  org: PublicOrgDto;
+  orgSlug: string | undefined;
+}) {
+  const formatDate = (date: string | Date) => {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleDateString('it-IT', { month: 'long', day: 'numeric' });
+  };
+
+  const daysUntilDeadline = (deadline: string | Date) => {
+    const d = typeof deadline === 'string' ? new Date(deadline) : deadline;
+    const today = new Date();
+    const diff = d.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days;
+  };
+
+  const paymentText = {
+    Immediate: 'Pagato online',
+    OnCancellationDeadline: `Pagamento previsto per ${formatDate(bookingResult.freeRefundDeadline)}`,
+    OnSite: 'Da pagare in struttura',
+  }[bookingResult.paymentOption] || '';
+
+  return (
+    <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="checkout-confirmation">
+      <div className="flex justify-center">
+        <div className="rounded-full bg-green-100 p-4">
+          <CheckCircle2 className="h-12 w-12 text-green-600" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">Prenotazione confermata!</h2>
+        <p className="text-muted-foreground">
+          Il tuo soggiorno presso {org.displayName} è confermato.
+        </p>
+      </div>
+      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
+        <p className="text-xs font-medium text-muted-foreground">RIFERIMENTO PRENOTAZIONE</p>
+        <p className="font-mono text-lg font-semibold">{bookingResult.bookingId}</p>
+      </div>
+      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
+        <p className="text-xs font-medium text-muted-foreground">METODO DI PAGAMENTO</p>
+        <p className="text-sm">{paymentText}</p>
+        {bookingResult.paymentOption === 'OnCancellationDeadline' && (
+          <p className="text-xs text-orange-600 mt-2">
+            Cancellazione gratuita fino a {daysUntilDeadline(bookingResult.freeRefundDeadline)} giorni
+          </p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Link to={`/book/${orgSlug}`} className="block">
+          <Button variant="outline" className="w-full">
+            Torna alle strutture
+          </Button>
+        </Link>
+        <Link to={`/book/${orgSlug}/my-bookings`} className="block">
+          <Button className="w-full">
+            Visualizza le mie prenotazioni
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function CheckoutPage() {
   const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
@@ -92,6 +203,7 @@ export function CheckoutPage() {
   const { data: property, isLoading } = useOrgPublicProperty(orgSlug, propertyId);
   const createBooking = useCreateDirectBooking();
 
+  const [paymentOption, setPaymentOption] = useState<PaymentOption | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -110,8 +222,33 @@ export function CheckoutPage() {
     return loadStripe(publishableKey, { stripeAccount: stripeAccountId });
   }, [bookingResult]);
 
+  useEffect(() => {
+    if (confirmed && bookingResult && bookingResult.paymentOption === 'Immediate') {
+      let attempts = 0;
+      const checkStatus = async () => {
+        try {
+          const status = await publicBookingApi.getBookingStatus(bookingResult.bookingId);
+          if (status.status === 'Confirmed') {
+            return;
+          }
+          attempts++;
+          if (attempts < 15) {
+            setTimeout(checkStatus, 2000);
+          }
+        } catch {
+          // Continue polling
+          attempts++;
+          if (attempts < 15) {
+            setTimeout(checkStatus, 2000);
+          }
+        }
+      };
+      checkStatus();
+    }
+  }, [confirmed, bookingResult]);
+
   const handleCreateBooking = async () => {
-    if (!propertyId || !checkIn || !checkOut || nights <= 0) return;
+    if (!propertyId || !checkIn || !checkOut || nights <= 0 || !paymentOption) return;
 
     setPaymentError(null);
     try {
@@ -123,8 +260,13 @@ export function CheckoutPage() {
         numberOfChildren: children,
         guest: { firstName, lastName, email, phone, country },
         consent: { dataProcessing: true, consentVersion: DIRECT_CHECKOUT_CONSENT_VERSION },
+        paymentOption,
       });
       setBookingResult(result);
+
+      if (paymentOption === 'OnSite') {
+        setConfirmed(true);
+      }
     } catch {
       setPaymentError('Impossibile avviare il checkout. Verifica i dati e riprova.');
     }
@@ -139,15 +281,7 @@ export function CheckoutPage() {
   }
 
   if (confirmed && bookingResult) {
-    return (
-      <div className="mx-auto max-w-lg space-y-4 text-center" data-testid="checkout-confirmation">
-        <h2 className="text-2xl font-bold">Prenotazione confermata</h2>
-        <p className="text-muted-foreground">
-          Grazie! Il tuo soggiorno presso {org.displayName} è confermato.
-        </p>
-        <p className="font-mono text-sm">Riferimento: {bookingResult.bookingId}</p>
-      </div>
-    );
+    return <ConfirmationScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} />;
   }
 
   return (
@@ -168,7 +302,48 @@ export function CheckoutPage() {
       )}
 
       {!bookingResult ? (
-        <div className="space-y-4" data-testid="checkout-guest-step">
+        <div className="space-y-6" data-testid="checkout-guest-step">
+          {!paymentOption ? (
+            <div className="space-y-4 border rounded-lg p-4 bg-card">
+              <div className="space-y-2">
+                <h3 className="font-semibold">Metodo di pagamento</h3>
+                <p className="text-sm text-muted-foreground">
+                  Cancellazione gratuita fino a {new Date(new Date(checkIn).getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('it-IT', { month: 'long', day: 'numeric' })}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentOption('Immediate')}
+                  className="w-full p-3 border-2 border-primary rounded-lg bg-primary/5 hover:bg-primary/10 text-left font-medium transition"
+                >
+                  Paga subito
+                </button>
+                {nights > 7 && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentOption('OnCancellationDeadline')}
+                    className="w-full p-3 border-2 border-orange-200 rounded-lg hover:bg-orange-50 text-left font-medium transition"
+                  >
+                    Paga al {new Date(new Date(checkIn).getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' })}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPaymentOption('OnSite')}
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg hover:bg-purple-50 text-left font-medium transition"
+                >
+                  Paga in struttura
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={() => setPaymentOption(null)} className="w-full">
+              Cambia metodo di pagamento
+            </Button>
+          )}
+
+          <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName">Nome</Label>
@@ -233,12 +408,14 @@ export function CheckoutPage() {
               !lastName ||
               !email ||
               nights <= 0 ||
+              !paymentOption ||
               createBooking.isPending
             }
             onClick={handleCreateBooking}
           >
-            {createBooking.isPending ? 'Preparazione pagamento…' : 'Continua al pagamento'}
+            {createBooking.isPending ? 'Preparazione pagamento…' : 'Continua'}
           </Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -251,11 +428,24 @@ export function CheckoutPage() {
             currency={bookingResult.currency}
           />
 
-          {isDemoMode ? (
+          {bookingResult.paymentOption === 'OnSite' ? (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm font-medium text-green-800">
+                ✓ Prenotazione confermata. Pagamento in struttura.
+              </p>
+            </div>
+          ) : isDemoMode ? (
             <DemoPaymentStep onSuccess={() => setConfirmed(true)} />
-          ) : stripePromise ? (
+          ) : stripePromise && bookingResult.clientSecret ? (
             <Elements stripe={stripePromise} options={{ clientSecret: bookingResult.clientSecret }}>
               <StripePaymentStep
+                onSuccess={() => setConfirmed(true)}
+                onError={setPaymentError}
+              />
+            </Elements>
+          ) : stripePromise && bookingResult.setupIntentClientSecret ? (
+            <Elements stripe={stripePromise} options={{ clientSecret: bookingResult.setupIntentClientSecret }}>
+              <StripeSetupStep
                 onSuccess={() => setConfirmed(true)}
                 onError={setPaymentError}
               />
