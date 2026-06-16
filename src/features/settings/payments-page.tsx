@@ -51,6 +51,24 @@ export function ConnectPaymentsPage() {
           description="Collega il tuo account Stripe per ricevere i pagamenti degli ospiti direttamente sul tuo conto."
         />
 
+        {bookingSiteUrl && (
+          <div className="rounded-lg border bg-card p-6 space-y-3">
+            <div>
+              <p className="text-sm font-medium">Il tuo sito di prenotazioni</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.
+              </p>
+            </div>
+            <Link
+              to={bookingSiteUrl}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
+            >
+              Visita {org?.name ?? 'il sito'}
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
+
         {!status?.chargesEnabled && (
           <div
             role="alert"
@@ -59,19 +77,7 @@ export function ConnectPaymentsPage() {
           >
             <p className="font-medium text-destructive">Sito prenotazioni non ancora attivo</p>
             <p className="text-muted-foreground">
-              Completa la verifica Stripe per abilitare il checkout sul sito prenotazioni
-              {bookingSiteUrl ? (
-                <>
-                  {' '}
-                  (<Link to={bookingSiteUrl} className="underline text-primary">
-                    {org?.name ?? 'sito brandizzato'}
-                  </Link>
-                  )
-                </>
-              ) : (
-                ' brandizzato'
-              )}
-              . Gli ospiti non potranno pagare finché l&apos;account non è attivo.
+              Completa la verifica Stripe per abilitare il checkout sul sito prenotazioni. Gli ospiti non potranno pagare finché l&apos;account non è attivo.
             </p>
           </div>
         )}
