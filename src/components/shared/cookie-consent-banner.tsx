@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 const STORAGE_KEY = 'casazen_cookie_consent';
@@ -12,11 +12,8 @@ function readConsent(): ConsentChoice | null {
 }
 
 export function CookieConsentBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(readConsent() === null);
-  }, []);
+  // Initialise directly from localStorage — avoids the setState-in-effect pattern
+  const [visible, setVisible] = useState(() => readConsent() === null);
 
   if (!visible) return null;
 
