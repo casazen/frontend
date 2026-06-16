@@ -36,3 +36,7 @@ e2e/.auth/
 
 .env.e2e
 
+# Playwright test output
+test-results/
+playwright-report/
+

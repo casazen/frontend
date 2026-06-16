@@ -20,7 +20,7 @@ export function PublicBookingShell() {
       root.style.removeProperty('--primary');
       root.style.removeProperty('--ring');
     };
-  }, [org?.themeColor]);
+  }, [org]);
 
   if (isLoading) {
     return (
