@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
 import type { PlanTier, RentalType } from '@/types';
-import { getHomeRouteForRentalType, getHomeRouteForUser, needsOrgSetup } from '@/lib/onboarding';
+import { getHomeRouteForRentalType, getHomeRouteForUser, needsOrgSetup, canEditOnboarding } from '@/lib/onboarding';
 import { getUserRoles } from '@/lib/auth-roles';
 import { isDemoMode } from '@/config/demo.config';
 import { applyDemoOnboardingProfile } from '@/lib/demo-onboarding';
@@ -39,6 +39,17 @@ export function OnboardingPage() {
 
     if (isOrgBackfill && profile.rentalType) {
       setStep(2);
+    }
+
+    // Edit mode: skip to plan selection if user has rental type (#277)
+    if (isEditMode && profile.rentalType) {
+      setStep(2);
+    }
+
+    // Guard: edit mode requires onboardingCompletedAt timestamp + orgId (#277)
+    if (isEditMode && !canEditOnboarding(profile)) {
+      navigate('/', { replace: true });
+      return;
     }
 
     if (!needsOrgSetup(profile) && hasRoles && !isEditMode) {

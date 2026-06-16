@@ -39,8 +39,15 @@ export function needsOrgSetup(profile?: { orgId?: string | null } | null): boole
 
 export function needsOnboarding(
   user: UserWithRoles,
-  profile?: { orgId?: string | null } | null,
+  profile?: { orgId?: string | null; onboardingCompletedAt?: string | null } | null,
 ): boolean {
+  // NEW: Timestamp is the single source of truth (#277)
+  // If onboardingCompletedAt exists, user never needs onboarding again (idempotent)
+  if (profile?.onboardingCompletedAt) {
+    return false;
+  }
+
+  // Fallback for backward compat (pre-migration users without timestamp)
   if (needsOrgSetup(profile)) {
     return true;
   }
@@ -48,4 +55,15 @@ export function needsOnboarding(
     return false;
   }
   return getUserRoles(user).length === 0;
+}
+
+/**
+ * Check if user can enter edit mode.
+ * Requires both: onboardingCompletedAt (proof of completion) AND orgId (org exists).
+ */
+export function canEditOnboarding(
+  profile?: { orgId?: string | null; onboardingCompletedAt?: string | null } | null,
+): boolean {
+  if (!profile) return false;
+  return !!profile.onboardingCompletedAt && !!profile.orgId;
 }
