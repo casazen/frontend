@@ -1,5 +1,5 @@
 import { ApiClient } from './client';
-import type { CreateDirectBookingPayload, DirectBookingResponse } from '@/types';
+import type { CreateDirectBookingPayload, DirectBookingResponse, GuestBookingLookupResponse, BookingStatusResponse } from '@/types';
 
 export interface PropertyAvailability {
   propertyId: string;
@@ -21,4 +21,10 @@ export const publicBookingApi = {
       `/public/bookings/property/${propertyId}/availability${queryString ? `?${queryString}` : ''}`,
     );
   },
+
+  lookupGuestBookings: (email: string) =>
+    ApiClient.post<GuestBookingLookupResponse>('/public/bookings/lookup', { email }),
+
+  getBookingStatus: (bookingId: string) =>
+    ApiClient.get<BookingStatusResponse>(`/public/bookings/${bookingId}/status`),
 };
