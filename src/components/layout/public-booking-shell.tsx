@@ -1,4 +1,4 @@
-import { Link, Outlet, useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { usePublicOrg } from '@/queries/use-public-org';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
@@ -20,7 +20,7 @@ export function PublicBookingShell() {
       root.style.removeProperty('--primary');
       root.style.removeProperty('--ring');
     };
-  }, [org?.themeColor]);
+  }, [org]);
 
   if (isLoading) {
     return (
@@ -54,12 +54,22 @@ export function PublicBookingShell() {
 
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
         <div className="flex justify-center gap-4">
-          <Link to="/privacy" className="hover:underline">
+          <a
+            href="https://casazen.app/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-sm text-muted-foreground hover:text-primary"
+          >
             Privacy Policy
-          </Link>
-          <Link to="/terms" className="hover:underline">
+          </a>
+          <a
+            href="https://casazen.app/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-sm text-muted-foreground hover:text-primary"
+          >
             Termini di servizio
-          </Link>
+          </a>
         </div>
         <p className="mt-2">© {new Date().getFullYear()} {org.displayName}</p>
       </footer>
