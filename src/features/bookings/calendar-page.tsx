@@ -90,7 +90,7 @@ export function CalendarPage() {
 
         {propertiesLoading ? (
           <div className="flex h-[600px] items-center justify-center">
-            <p>Loading calendar...</p>
+            <p>Caricamento calendario...</p>
           </div>
         ) : propertyList.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center gap-2 text-center">
@@ -120,7 +120,7 @@ export function CalendarPage() {
 
             {calendarLoading ? (
               <div className="flex h-[600px] items-center justify-center">
-                <p>Loading calendar...</p>
+                <p>Caricamento calendario...</p>
               </div>
             ) : isError ? (
               <div className="flex h-[400px] items-center justify-center text-destructive">
