@@ -15,6 +15,8 @@ export function mockDirectBookingResponse(overrides?: Partial<DirectBookingRespo
     currency: 'EUR',
     touristTaxAmount: 8,
     basePrice: 642,
+    paymentOption: 'Immediate',
+    freeRefundDeadline: '2026-06-24T00:00:00Z',
     ...overrides,
   };
 }

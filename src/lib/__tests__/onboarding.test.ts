@@ -31,6 +31,15 @@ describe('onboarding helpers', () => {
     expect(needsOnboarding({ roles: [] }, { orgId: null, onboardingCompletedAt: null })).toBe(true);
   });
 
+  it('requires org backfill when onboardingCompletedAt set but org missing (#285)', () => {
+    expect(
+      needsOnboarding(
+        { roles: ['Admin'] },
+        { orgId: null, onboardingCompletedAt: '2026-06-16T12:00:00Z' },
+      ),
+    ).toBe(true);
+  });
+
   it('canEditOnboarding requires both timestamp and orgId', () => {
     // No profile = cannot edit
     expect(canEditOnboarding(null)).toBe(false);
