@@ -1,12 +1,14 @@
+import { Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
 import { useCurrentUser, useEntitlement, usePlans, useUpdateMyPlan } from '@/queries/use-users';
+import { needsOrgSetup } from '@/lib/onboarding';
 import type { PlanTier } from '@/types';
 import { useState } from 'react';
 
 export function PlanSettingsPage() {
-  const { org, planTier } = useCurrentUser();
+  const { org, planTier, user } = useCurrentUser();
   const { data: entitlement } = useEntitlement();
   const { data: plans } = usePlans();
   const updatePlan = useUpdateMyPlan();
@@ -17,6 +19,10 @@ export function PlanSettingsPage() {
     await updatePlan.mutateAsync(tier);
     setSelectedTier(null);
   };
+
+  if (user && needsOrgSetup(user)) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   return (
     <AppShell>

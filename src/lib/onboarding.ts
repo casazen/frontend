@@ -41,16 +41,16 @@ export function needsOnboarding(
   user: UserWithRoles,
   profile?: { orgId?: string | null; onboardingCompletedAt?: string | null } | null,
 ): boolean {
-  // NEW: Timestamp is the single source of truth (#277)
-  // If onboardingCompletedAt exists, user never needs onboarding again (idempotent)
+  // Org backfill takes priority — e.g. admin with timestamp but no tenant (#285)
+  if (needsOrgSetup(profile)) {
+    return true;
+  }
+
+  // Timestamp is the single source of truth (#277)
   if (profile?.onboardingCompletedAt) {
     return false;
   }
 
-  // Fallback for backward compat (pre-migration users without timestamp)
-  if (needsOrgSetup(profile)) {
-    return true;
-  }
   if (isAdmin(user)) {
     return false;
   }

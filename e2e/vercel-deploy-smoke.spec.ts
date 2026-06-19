@@ -21,6 +21,15 @@ test.describe('Vercel deploy smoke', () => {
     expect(html).not.toMatch(/VITE_[A-Z_]+=placeholder/i);
   });
 
+  test('public /book route serves SPA (not static env leak) (#284)', async ({ page }) => {
+    await page.goto(`${FE_URL.replace(/\/$/, '')}/book/demo-org`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await expect(page.locator('#root')).toBeAttached({ timeout: 30_000 });
+    const html = await page.content();
+    expect(html).not.toMatch(/VITE_[A-Z_]+=placeholder/i);
+  });
+
   test('login page or app shell loads without console 500 storms', async ({ page }) => {
     const serverErrors: string[] = [];
     page.on('response', (res) => {

@@ -56,9 +56,12 @@ export function useCurrentUser() {
 
 /** Resolved plan entitlement (limits + usage) for the caller's org (#202, AC8). */
 export function useEntitlement() {
+  const { org } = useCurrentUser();
   return useQuery({
     queryKey: ENTITLEMENT_QUERY_KEY,
     queryFn: () => OrgsApi.getMyEntitlement(),
+    enabled: !!org?.id,
+    retry: false,
   });
 }
 
