@@ -72,12 +72,14 @@ test.describe('Golden Journey web (#301)', () => {
       await route.fulfill({ status: 404, body: '{}' });
     });
 
-    const response = await page.request.get(
-      demoUrl(`/api/public/resolve-host?host=${DEMO_ORG_SLUG}.casazen.it`, 'short-stay'),
-    );
-    expect(response.status()).toBe(200);
-    const body = await response.json();
-    expect(body.slug).toBe(DEMO_ORG_SLUG);
+    await page.goto(demoUrl('/', 'short-stay'));
+    const result = await page.evaluate(async (slug) => {
+      const res = await fetch(`/api/public/resolve-host?host=${slug}.casazen.it`);
+      return { status: res.status, slug: (await res.json()).slug as string };
+    }, DEMO_ORG_SLUG);
+
+    expect(result.status).toBe(200);
+    expect(result.slug).toBe(DEMO_ORG_SLUG);
   });
 
   test.fixme('GJ-5: calendar + iCal blocks — Fase 1', async () => {});
