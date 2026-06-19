@@ -4,7 +4,6 @@ import { mockPlansCatalog } from './helpers/org-api-mock';
 import {
   DEMO_ORG_SLUG,
   mockBrandedBookingApi,
-  mockOrgPropertyId,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
 

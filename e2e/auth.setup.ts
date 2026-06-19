@@ -4,6 +4,8 @@ import { dirname } from 'node:path';
 import { loginViaAuth0, waitForAppReady } from './helpers/auth';
 import { e2eEnv, requireE2eCredentials } from './helpers/env';
 
+setup.setTimeout(120_000);
+
 setup('authenticate long-term test user', async ({ page }) => {
   mkdirSync(dirname(e2eEnv.authStoragePath), { recursive: true });
 
