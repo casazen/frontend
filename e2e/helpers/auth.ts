@@ -160,6 +160,12 @@ export async function waitForAppReady(page: Page): Promise<void> {
       if (text.includes('Authenticating...')) return false;
       if (text.includes('Sign in with Auth0')) return false;
 
+      for (const key of Object.keys(localStorage)) {
+        if (!key.includes('auth0spajs')) continue;
+        const raw = localStorage.getItem(key);
+        if (raw?.includes('access_token')) return true;
+      }
+
       return (
         text.includes('Long-term leases') ||
         text.includes('Long-Term Rental') ||

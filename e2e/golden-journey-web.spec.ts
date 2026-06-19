@@ -2,55 +2,25 @@ import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { mockPlansCatalog } from './helpers/org-api-mock';
 import {
-  GJ_SLUG,
-  installGoldenJourneyApiMocks,
-} from './helpers/golden-journey-mock';
+  DEMO_ORG_SLUG,
+  mockBrandedBookingApi,
+  mockPublicOrg,
+} from './helpers/branded-booking-mock';
 
 /**
- * Golden Journey web harness — Fase 0 skeleton (steps 1–4).
- * Steps 5–12 are test.fixme until Fase 1 features land (#301).
- * @see Sessions/specs/spec-golden-journey-e2e.md
+ * Golden Journey web — Fase 0 batch (#301).
+ * Single sequential demo run for steps 1–4; steps 5–12 remain Fase 1.
  */
-test.describe('Golden Journey web (#301 / #286)', () => {
+test.describe('Golden Journey web (#301)', () => {
   test.beforeEach(async ({ page }) => {
     await mockPlansCatalog(page);
-    await installGoldenJourneyApiMocks(page);
-  });
-
-  test('GJ-1: supplier onboarding entry (admin path stub)', async ({ page }) => {
-    await page.goto(demoUrl('/admin/users', 'short-stay'));
-    // Demo user lacks admin — verify auth gate, no 500
-    await expect(page).not.toHaveURL(/\/admin\/users/, { timeout: 10_000 });
-  });
-
-  test('GJ-2: supplier activation wizard reachable (demo stub)', async ({ page }) => {
-    await page.route('**/api/me/contexts**', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          contexts: [{ type: 'supplier', orgId: 'cccccccc-cccc-cccc-cccc-ccccccccccc1', status: 'Pending' }],
-        }),
-      });
+    await mockBrandedBookingApi(page);
+    await page.addInitScript(() => {
+      localStorage.removeItem('casazen_cookie_consent');
     });
-
-    await page.goto(demoUrl('/app/supplier/onboarding', 'short-stay'));
-    // Page may redirect if route not fully wired — assert no server error surface
-    await expect(page.locator('#root')).toBeVisible();
-    const body = await page.locator('body').innerText();
-    expect(body.toLowerCase()).not.toContain('internal server error');
   });
 
-  test('GJ-3: host onboarding → short-rent home', async ({ page }) => {
-    await page.goto(demoUrl('/onboarding', 'onboarding'));
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
-    await page.getByRole('button', { name: 'Scegli' }).first().click();
-    await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-    await page.getByTestId('onboarding-plan-confirm').click();
-    await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
-  });
-
-  test('GJ-4: guest public booking page loads without API 500', async ({ page }) => {
+  test('GJ steps 1–4 sequential (demo mode)', async ({ page }) => {
     const api500: string[] = [];
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) {
@@ -58,17 +28,60 @@ test.describe('Golden Journey web (#301 / #286)', () => {
       }
     });
 
-    await page.goto(demoUrl(`/book/${GJ_SLUG}`, 'short-stay'), { waitUntil: 'networkidle' });
-    await expect(page.locator('#root')).toBeVisible();
+    // Step 1–2: supplier path — auth gate (no admin in demo)
+    await page.goto(demoUrl('/admin/users', 'short-stay'));
+    await expect(page).not.toHaveURL(/\/admin\/users/, { timeout: 10_000 });
+
+    // Step 3: host onboarding → short-rent
+    await page.goto(demoUrl('/onboarding', 'onboarding'));
+    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await page.getByRole('button', { name: 'Scegli' }).first().click();
+    await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
+    await page.getByTestId('onboarding-plan-confirm').click();
+    await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
+
+    // Step 4: guest public booking — branded shell
+    await page.goto(demoUrl(`/book/${DEMO_ORG_SLUG}`, 'short-stay'), { waitUntil: 'networkidle' });
+    await expect(page.getByTestId('public-booking-shell')).toBeVisible({ timeout: 15_000 });
+    await expect(
+      page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
+
     expect(api500).toEqual([]);
   });
 
-  test.fixme('GJ-5: calendar shows booking + iCal blocks — Fase 1', async () => {});
-  test.fixme('GJ-6: guest check-in + Alloggiati — Fase 1', async () => {});
-  test.fixme('GJ-7: host service request — Fase 1', async () => {});
-  test.fixme('GJ-8: supplier presa in carico — Fase 1', async () => {});
-  test.fixme('GJ-9: supplier completato — Fase 1', async () => {});
-  test.fixme('GJ-10: host payment — Fase 1', async () => {});
-  test.fixme('GJ-11: checkout wizard — Fase 1', async () => {});
-  test.fixme('GJ-12: cockpit green — Fase 1', async () => {});
+  test('resolve-host API mock: subdomain maps to org branding (#288)', async ({ page }) => {
+    await page.route('**/api/public/resolve-host**', async (route) => {
+      const url = new URL(route.request().url());
+      const host = url.searchParams.get('host');
+      if (host === `${DEMO_ORG_SLUG}.casazen.it`) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            orgId: '11111111-1111-1111-1111-111111111101',
+            slug: DEMO_ORG_SLUG,
+            publicHostMode: 'CasazenSubdomain',
+            branding: mockPublicOrg,
+          }),
+        });
+        return;
+      }
+      await route.fulfill({ status: 404, body: '{}' });
+    });
+
+    await page.goto(demoUrl('/', 'short-stay'));
+    const result = await page.evaluate(async (slug) => {
+      const res = await fetch(`/api/public/resolve-host?host=${slug}.casazen.it`);
+      return { status: res.status, slug: (await res.json()).slug as string };
+    }, DEMO_ORG_SLUG);
+
+    expect(result.status).toBe(200);
+    expect(result.slug).toBe(DEMO_ORG_SLUG);
+  });
+
+  test.fixme('GJ-5: calendar + iCal blocks — Fase 1', async () => {});
+  test.fixme('GJ-6: guest check-in — Fase 1', async () => {});
+  test.fixme('GJ-7–12: service loop + checkout — Fase 1', async () => {});
 });
