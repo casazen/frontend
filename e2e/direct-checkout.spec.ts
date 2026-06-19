@@ -31,6 +31,10 @@ test.describe('Direct checkout (#226)', () => {
     let bookingAuthHeader: string | undefined;
 
     await page.route('**/api/public/bookings', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
       bookingAuthHeader = route.request().headers()['authorization'];
       await route.fulfill({
         status: 200,
@@ -46,6 +50,8 @@ test.describe('Direct checkout (#226)', () => {
           currency: 'EUR',
           touristTaxAmount: 6,
           basePrice: 551,
+          paymentOption: 'Immediate',
+          freeRefundDeadline: '2026-06-24T00:00:00Z',
         }),
       });
     });
@@ -56,18 +62,19 @@ test.describe('Direct checkout (#226)', () => {
 
     await expect(page.getByTestId('checkout-guest-step')).toBeVisible({ timeout: 15_000 });
 
+    await page.getByRole('button', { name: 'Paga subito' }).click();
     await page.locator('#firstName').fill('Mario');
     await page.locator('#lastName').fill('Rossi');
     await page.locator('#email').fill('mario.rossi@example.com');
     await page.locator('#phone').fill('+393331234567');
     await page.getByRole('checkbox').click();
-    await page.getByRole('button', { name: 'Continua al pagamento' }).click();
+    await page.getByRole('button', { name: 'Continua' }).click();
 
     await expect(page.getByTestId('checkout-payment-step')).toBeVisible();
     expect(bookingAuthHeader).toBeUndefined();
 
     await page.getByRole('button', { name: 'Paga ora' }).click();
     await expect(page.getByTestId('checkout-confirmation')).toBeVisible();
-    await expect(page.getByText('Prenotazione confermata')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Prenotazione confermata/i })).toBeVisible();
   });
 });
