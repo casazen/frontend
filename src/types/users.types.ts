@@ -1,5 +1,6 @@
 import type { Org } from './org.types';
 import type { PlanTier } from './org.types';
+import type { OnboardingConsentsPayload } from './onboarding.types';
 
 export type UserRole =
   | 'Admin'
@@ -48,6 +49,7 @@ export interface ChangeRoleRequest {
 export interface OnboardingRequest {
   rentalType: RentalType;
   planTier?: PlanTier;
+  consents?: OnboardingConsentsPayload;
 }
 
 export interface OnboardingResponse {

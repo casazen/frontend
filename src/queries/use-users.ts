@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
 import type { RentalType, UpdateProfileRequest, PlanTier } from '@/types';
+import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 
 const USERS_KEY = 'users';
@@ -127,14 +128,16 @@ export function useCompleteOnboarding() {
       rentalType,
       planTier,
       isUpdate,
+      consents,
     }: {
       rentalType: RentalType;
       planTier?: PlanTier;
       isUpdate?: boolean;
+      consents?: OnboardingConsentsPayload;
     }) =>
       isUpdate
         ? UsersApi.putOnboarding({ rentalType, planTier })
-        : UsersApi.postOnboarding({ rentalType, planTier }),
+        : UsersApi.postOnboarding({ rentalType, planTier, consents }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
