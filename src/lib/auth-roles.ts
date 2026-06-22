@@ -3,6 +3,7 @@ export const ROLES_CLAIM = 'https://casazen.app/roles';
 export const ROLE_PROPERTY_OWNER = 'PropertyOwner';
 export const ROLE_LONG_TERM_LANDLORD = 'LongTermLandlord';
 export const ROLE_ADMIN = 'Admin';
+export const ROLE_SUPPLIER = 'Supplier';
 
 export type UserWithRoles = Record<string, unknown> | null | undefined;
 

@@ -10,7 +10,7 @@
 export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export type DemoProfile = 'short-stay' | 'long-term' | 'dual' | 'onboarding';
-export type ExtendedDemoProfile = DemoProfile | 'admin' | 'triple';
+export type ExtendedDemoProfile = DemoProfile | 'admin' | 'triple' | 'supplier';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
 
@@ -32,6 +32,9 @@ const demoProfiles: Record<ExtendedDemoProfile, { roles: string[] }> = {
   },
   triple: {
     roles: ['PropertyOwner', 'LongTermLandlord', 'Admin'],
+  },
+  supplier: {
+    roles: ['Supplier'],
   },
 };
 
