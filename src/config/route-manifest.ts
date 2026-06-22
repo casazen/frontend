@@ -1,4 +1,4 @@
-export type AppContextKey = 'short-rent' | 'long-rent' | 'admin';
+export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 
 export type NavGroup =
   | 'operazioni'
@@ -392,6 +392,9 @@ function hasEntryPermission(
 }
 
 export function getDefaultRoute(contextKey: AppContextKey): string {
+  if (contextKey === 'supplier') {
+    return '/supplier/inbox';
+  }
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
 

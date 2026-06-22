@@ -1,5 +1,5 @@
 import type { RentalType } from '@/types';
-import { getUserRoles, isAdmin, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER } from '@/lib/auth-roles';
+import { getUserRoles, isAdmin, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
 import type { UserWithRoles } from '@/lib/auth-roles';
 
 export const RENTAL_TYPE_LABELS: Record<RentalType, string> = {
@@ -25,6 +25,13 @@ export function getHomeRouteForUser(user: UserWithRoles): string {
   }
 
   const roles = getUserRoles(user);
+  const isHost =
+    roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
+
+  if (roles.includes(ROLE_SUPPLIER) && !isHost) {
+    return '/supplier/inbox';
+  }
+
   if (roles.includes(ROLE_LONG_TERM_LANDLORD) && !roles.includes(ROLE_PROPERTY_OWNER)) {
     return '/app/long-rent/leases';
   }
