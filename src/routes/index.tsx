@@ -20,6 +20,11 @@ import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { SupplierShell } from '@/features/supplier/supplier-shell';
+import { SupplierActivationPage } from '@/features/supplier/supplier-activation-page';
+import { SupplierInboxPage } from '@/features/supplier/supplier-inbox-page';
+import { SupplierProfilePage } from '@/features/supplier/supplier-profile-page';
+import { SupplierAvailabilityPage } from '@/features/supplier/supplier-availability-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -131,6 +136,21 @@ export const router = createBrowserRouter([
   {
     path: '/p/tassa-soggiorno/:comune',
     element: <TouristTaxCalculatorPage />,
+  },
+  {
+    path: '/supplier',
+    element: (
+      <ProtectedRoute role="Supplier">
+        <SupplierShell />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="/supplier/inbox" replace /> },
+      { path: 'activation', element: <SupplierActivationPage /> },
+      { path: 'inbox', element: <SupplierInboxPage /> },
+      { path: 'profile', element: <SupplierProfilePage /> },
+      { path: 'availability', element: <SupplierAvailabilityPage /> },
+    ],
   },
   {
     element: (

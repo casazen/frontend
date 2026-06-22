@@ -1,6 +1,7 @@
 import { test, expect } from './test';
-import { demoUrl } from './helpers/demo-profile';
+import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 import { mockPlansCatalog } from './helpers/org-api-mock';
+import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 import {
   DEMO_ORG_SLUG,
   mockBrandedBookingApi,
@@ -8,10 +9,9 @@ import {
 } from './helpers/branded-booking-mock';
 
 /**
- * Golden Journey web — Fase 0 batch (#301).
- * Single sequential demo run for steps 1–4; steps 5–12 remain Fase 1.
+ * Golden Journey web — Fase 0 batch (#301) + Fase 1 Wave 1 supplier (#292).
  */
-test.describe('Golden Journey web (#301)', () => {
+test.describe('Golden Journey web (#301 / #292)', () => {
   test.beforeEach(async ({ page }) => {
     await mockPlansCatalog(page);
     await mockBrandedBookingApi(page);
@@ -20,17 +20,42 @@ test.describe('Golden Journey web (#301)', () => {
     });
   });
 
-  test('GJ steps 1–4 sequential (demo mode)', async ({ page }) => {
+  test('GJ steps 1–2: supplier activation (demo mode)', async ({ page }) => {
+    await setDemoProfile(page, 'supplier');
+    await mockSupplierConsoleApi(page);
+
+    await page.goto(demoUrl('/supplier/activation', 'supplier'));
+    await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore/i })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Pulizie' }).click();
+    await page.getByLabel('Codici comune (separati da virgola)').fill('H501');
+    await page.getByLabel('Descrizione').fill('Servizi di pulizia professionali per affitti brevi.');
+    await page.getByLabel(/Accetto i termini di servizio/i).click();
+    await page.getByRole('button', { name: 'Attiva profilo' }).click();
+
+    await expect(page).toHaveURL(/\/supplier\/inbox/, { timeout: 15_000 });
+    await expect(page.getByTestId('supplier-inbox-page')).toBeVisible();
+  });
+
+  test('GJ supplier inbox mobile viewport F1 smoke (#292)', async ({ page }) => {
+    await setDemoProfile(page, 'supplier');
+    await mockSupplierConsoleApi(page, { active: true });
+    await page.setViewportSize({ width: 375, height: 812 });
+
+    await page.goto(demoUrl('/supplier/inbox', 'supplier'));
+    await expect(page.getByTestId('supplier-shell')).toBeVisible();
+    await expect(page.getByTestId('supplier-inbox-page')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Inbox' })).toBeVisible();
+  });
+
+  test('GJ steps 3–4 sequential (demo mode)', async ({ page }) => {
     const api500: string[] = [];
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) {
         api500.push(`${res.status()} ${res.url()}`);
       }
     });
-
-    // Step 1–2: supplier path — auth gate (no admin in demo)
-    await page.goto(demoUrl('/admin/users', 'short-stay'));
-    await expect(page).not.toHaveURL(/\/admin\/users/, { timeout: 10_000 });
 
     // Step 3: host onboarding → short-rent
     await page.goto(demoUrl('/onboarding', 'onboarding'));
