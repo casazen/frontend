@@ -10,6 +10,7 @@ import {
   ROLE_ADMIN,
   ROLE_LONG_TERM_LANDLORD,
   ROLE_PROPERTY_OWNER,
+  ROLE_SUPPLIER,
 } from '../auth-roles';
 
 describe('auth-roles', () => {
@@ -49,6 +50,15 @@ describe('auth-roles', () => {
     expect(isDualRole(user)).toBe(true);
     expect(isShortStayOnly(user)).toBe(false);
     expect(isLongTermOnly(user)).toBe(false);
+  });
+
+  it('derives supplier workspace context from JWT roles', () => {
+    const user = { roles: [ROLE_PROPERTY_OWNER, ROLE_SUPPLIER] };
+    const contexts = deriveContextsFromRoles(user);
+
+    expect(contexts).toHaveLength(2);
+    expect(contexts.some((c) => c.contextKey === 'short-rent')).toBe(true);
+    expect(contexts.some((c) => c.contextKey === 'supplier')).toBe(true);
   });
 
   it('derives workspace contexts from JWT roles', () => {

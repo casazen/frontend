@@ -13,7 +13,7 @@ import {
 
 function readStoredContext(): AppContextKey | null {
   const stored = localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY);
-  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin') {
+  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin' || stored === 'supplier') {
     return stored;
   }
 
@@ -121,18 +121,26 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const match = location.pathname.match(/^\/app\/(short-rent|long-rent|admin)(?:\/|$)/);
-    if (!match) {
+    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin)(?:\/|$)/);
+    if (appMatch) {
+      const fromUrl = appMatch[1] as AppContextKey;
+      if (!contexts.some((c) => c.contextKey === fromUrl)) {
+        return;
+      }
+
+      setActiveContextState((previous) => (previous === fromUrl ? previous : fromUrl));
+      localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, fromUrl);
       return;
     }
 
-    const fromUrl = match[1] as AppContextKey;
-    if (!contexts.some((c) => c.contextKey === fromUrl)) {
-      return;
-    }
+    if (location.pathname.startsWith('/supplier')) {
+      if (!contexts.some((c) => c.contextKey === 'supplier')) {
+        return;
+      }
 
-    setActiveContextState((previous) => (previous === fromUrl ? previous : fromUrl));
-    localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, fromUrl);
+      setActiveContextState((previous) => (previous === 'supplier' ? previous : 'supplier'));
+      localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, 'supplier');
+    }
   }, [contexts, isReady, location.pathname]);
 
   const hasPermission = useCallback(

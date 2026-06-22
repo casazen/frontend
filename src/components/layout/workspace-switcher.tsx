@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Building2, FileText, Shield } from 'lucide-react';
+import { Building2, FileText, Shield, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { AppContextKey } from '@/config/route-manifest';
@@ -17,6 +17,7 @@ const CONTEXT_ICONS: Record<AppContextKey, LucideIcon> = {
   'short-rent': Building2,
   'long-rent': FileText,
   admin: Shield,
+  supplier: Wrench,
 };
 
 export function WorkspaceSwitcher({ layout = 'sidebar', className }: WorkspaceSwitcherProps) {

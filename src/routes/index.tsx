@@ -141,7 +141,9 @@ export const router = createBrowserRouter([
     path: '/supplier',
     element: (
       <ProtectedRoute role="Supplier">
-        <SupplierShell />
+        <WorkspaceProvider>
+          <SupplierShell />
+        </WorkspaceProvider>
       </ProtectedRoute>
     ),
     children: [

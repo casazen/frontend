@@ -43,7 +43,7 @@ export function isAdmin(user: UserWithRoles): boolean {
 }
 
 export interface DerivedContext {
-  contextKey: 'short-rent' | 'long-rent' | 'admin';
+  contextKey: 'short-rent' | 'long-rent' | 'admin' | 'supplier';
   displayName: string;
   roleKey: string;
   permissions: string[];
@@ -100,6 +100,21 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'admin.tax.manage',
       ],
       defaultRoute: '/app/admin',
+    });
+  }
+
+  if (roles.includes(ROLE_SUPPLIER)) {
+    contexts.push({
+      contextKey: 'supplier',
+      displayName: 'Fornitore',
+      roleKey: 'supplier',
+      permissions: [
+        'supplier.profile.read',
+        'supplier.profile.write',
+        'supplier.inbox.read',
+        'supplier.availability.write',
+      ],
+      defaultRoute: '/supplier/inbox',
     });
   }
 
