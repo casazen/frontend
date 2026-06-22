@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
   getUserRoles,
   hasRole,
+  deriveContextsFromAccessToken,
   deriveContextsFromRoles,
   isDualRole,
   isLongTermOnly,
   isShortStayOnly,
+  parseRolesFromAccessToken,
   ROLES_CLAIM,
   ROLE_ADMIN,
   ROLE_LONG_TERM_LANDLORD,
@@ -68,5 +70,16 @@ describe('auth-roles', () => {
     expect(contexts).toHaveLength(2);
     expect(contexts.some((c) => c.contextKey === 'short-rent')).toBe(true);
     expect(contexts.some((c) => c.contextKey === 'admin')).toBe(true);
+  });
+
+  it('parses roles from access token payload', () => {
+    const payload = btoa(JSON.stringify({ [ROLES_CLAIM]: ['PropertyOwner', 'Admin'] }));
+    const token = `header.${payload}.signature`;
+
+    expect(parseRolesFromAccessToken(token)).toEqual(['PropertyOwner', 'Admin']);
+    expect(deriveContextsFromAccessToken(token).map((c) => c.contextKey)).toEqual([
+      'short-rent',
+      'admin',
+    ]);
   });
 });

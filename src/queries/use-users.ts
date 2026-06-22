@@ -38,6 +38,7 @@ export function useMe() {
   return useQuery({
     queryKey: [ME_KEY],
     queryFn: () => UsersApi.getMe(),
+    refetchOnMount: 'always',
   });
 }
 

@@ -6,10 +6,14 @@ import { useMe } from '@/queries/use-users';
 
 export function OnboardingGuard() {
   const { isLoading: authLoading, isAuthenticated, user } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useMe();
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useMe();
 
-  if (authLoading || (isAuthenticated && profileLoading)) {
+  if (authLoading || (isAuthenticated && profileLoading && !profile)) {
     return <LoadingScreen message="Caricamento..." />;
+  }
+
+  if (isAuthenticated && profileError && !profile) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   if (isAuthenticated && needsOnboarding(user, profile)) {

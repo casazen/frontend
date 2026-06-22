@@ -50,6 +50,44 @@ export interface DerivedContext {
   defaultRoute: string;
 }
 
+/** Parse Auth0 roles from an access-token JWT payload (roles live here, not in the ID token profile). */
+export function parseRolesFromAccessToken(token: string | undefined | null): string[] {
+  if (!token) return [];
+
+  const parts = token.split('.');
+  if (parts.length < 2) return [];
+
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
+    const roles = payload[ROLES_CLAIM];
+
+    if (Array.isArray(roles)) {
+      return roles.filter((role): role is string => typeof role === 'string');
+    }
+
+    if (typeof roles === 'string') {
+      const trimmed = roles.trim();
+      if (trimmed.startsWith('[')) {
+        const parsed = JSON.parse(trimmed) as unknown;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((role): role is string => typeof role === 'string');
+        }
+      }
+      return trimmed.length > 0 ? [trimmed] : [];
+    }
+
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export function deriveContextsFromAccessToken(token: string | undefined | null): DerivedContext[] {
+  return deriveContextsFromRoles({ [ROLES_CLAIM]: parseRolesFromAccessToken(token) });
+}
+
 export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
   const roles = getUserRoles(user);
   const contexts: DerivedContext[] = [];
