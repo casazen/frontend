@@ -1,9 +1,10 @@
 import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { AdminAppShell } from './admin-app-shell';
 import { LongTermAppShell } from './long-term-app-shell';
+import { SupplierAppShell } from './supplier-app-shell';
 import type { AppContextKey } from '@/config/route-manifest';
 
-const KNOWN_CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'admin'];
+const KNOWN_CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'admin', 'supplier'];
 
 export function ContextLayout() {
   const { context } = useParams();
@@ -28,6 +29,14 @@ export function ContextLayout() {
       <AdminAppShell>
         <Outlet />
       </AdminAppShell>
+    );
+  }
+
+  if (contextKey === 'supplier') {
+    return (
+      <SupplierAppShell>
+        <Outlet />
+      </SupplierAppShell>
     );
   }
 

@@ -16,6 +16,10 @@
     "users": "Users",
     "jobs": "Jobs",
     "seo": "SEO Compliance",
+    "inbox": "Inbox",
+    "inviteSupplier": "Invite supplier",
+    "availability": "Availability",
+    "activation": "Activation",
     "more": "More",
     "group": {
       "operazioni": "Operations",
@@ -37,6 +41,7 @@
     "shortRentSubtitle": "Short-term rentals",
     "longRentSubtitle": "Long-term rentals",
     "adminSubtitle": "Administration",
+    "supplierSubtitle": "Supplier",
     "adminFooter": "v1.0.0 · Admin",
     "workspaceLabel": "Workspace",
     "workspaceContext": "Workspace context",
@@ -50,6 +55,7 @@
     "createLease": "Create lease",
     "loading": "Loading leases...",
     "emptyTitle": "No leases yet",
+    "emptyDescription": "Create your first long-term lease contract.",
     "loadError": "Failed to load leases. Please try again.",
     "rentLabel": "Rent ",
     "regimeLabel": "Regime ",
@@ -58,7 +64,22 @@
   "revenue": {
     "pageTitle": "Revenue analytics",
     "pageDescription": "Track and analyze revenue performance",
-    "backToPayments": "Back to payments"
+    "backToPayments": "Back to payments",
+    "filters": "Filters",
+    "property": "Property",
+    "noProperties": "No properties",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "groupBy": "Group by",
+    "period": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year"
+    },
+    "resetFilters": "Reset filters",
+    "loading": "Loading analytics...",
+    "empty": "No revenue data available"
   },
   "dashboard": {
     "title": "Dashboard",
