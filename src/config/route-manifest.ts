@@ -326,6 +326,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/users'],
   },
   {
+    path: '/app/admin/profile',
+    context: 'admin',
+    requiredPermissions: ['admin.users.read'],
+    navKey: 'nav.profile',
+    navGroup: 'amministrazione',
+    navPlacement: 'secondary',
+    navOrder: 7,
+    icon: 'User',
+    component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
+  },
+  {
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],

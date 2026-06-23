@@ -11,6 +11,13 @@ import { User, LogOut } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '@/hooks/use-workspace';
+import type { AppContextKey } from '@/config/route-manifest';
+
+function profilePathForContext(context: AppContextKey | null): string {
+  if (context === 'admin') return '/app/admin/profile';
+  if (context === 'long-rent') return '/app/long-rent/profile';
+  return '/app/short-rent/profile';
+}
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -35,7 +42,7 @@ export function UserMenu() {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate(`/app/${activeContext ?? 'short-rent'}/profile`)}>
+        <DropdownMenuItem onClick={() => navigate(profilePathForContext(activeContext))}>
           <User className="mr-2 h-4 w-4" />
           Profile
         </DropdownMenuItem>
