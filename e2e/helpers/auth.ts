@@ -6,37 +6,41 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
 
   await page.goto('/login');
-  await page.getByRole('button', { name: /sign in with auth0/i }).click();
+
+  // Click the Auth0 login button — try multiple possible labels
+  const loginButton = page.getByRole('button', { name: /sign in|accedi|log in|login|auth0/i });
+  await loginButton.waitFor({ state: 'visible', timeout: 15_000 });
+  await loginButton.click();
 
   await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
 
+  // Auth0 Universal Login — username/email field
   const usernameField = page
-    .locator('input[name="username"], input[name="email"], input[type="email"]')
+    .locator('input[name="username"], input[name="email"], input[type="email"], input[autocomplete="username"], input[autocomplete="email"]')
     .first();
   await usernameField.waitFor({ state: 'visible', timeout: 15_000 });
   await usernameField.fill(email);
 
-  const passwordField = page.locator('input[name="password"], input[type="password"]').first();
-  const passwordVisible = await passwordField.isVisible().catch(() => false);
+  // Check if password is on the same screen (classic login) or separate screen (identifier-first)
+  const passwordField = page.locator('input[name="password"], input[type="password"], input[autocomplete="current-password"]').first();
+  const passwordVisible = await passwordField.isVisible({ timeout: 3_000 }).catch(() => false);
 
   if (!passwordVisible) {
-    await page
-      .locator(
-        'button[type="submit"], button[name="action"], button[data-action-button-primary="true"]'
-      )
-      .first()
-      .click();
+    // Identifier-first flow: submit username then enter password
+    const submitBtn = page
+      .locator('button[type="submit"], button[name="action"], button[data-action-button-primary="true"], button[data-provider="auth0"], input[type="submit"]')
+      .first();
+    await submitBtn.click();
     await passwordField.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   await passwordField.fill(password);
 
-  await page
-    .locator(
-      'button[type="submit"], button[name="action"], button[data-action-button-primary="true"]'
-    )
-    .first()
-    .click();
+  // Submit password
+  const finalSubmit = page
+    .locator('button[type="submit"], button[name="action"], button[data-action-button-primary="true"], input[type="submit"]')
+    .first();
+  await finalSubmit.click();
 
   await page.waitForURL((url) => !url.hostname.includes('auth0.com'), { timeout: 60_000 });
 }
@@ -159,23 +163,27 @@ export async function waitForAppReady(page: Page): Promise<void> {
       const text = document.body.innerText;
       if (text.includes('Authenticating...')) return false;
       if (text.includes('Sign in with Auth0')) return false;
+      if (text.includes('Accedi con Auth0')) return false;
 
+      // Check for access_token in localStorage (works regardless of UI language)
       for (const key of Object.keys(localStorage)) {
         if (!key.includes('auth0spajs')) continue;
         const raw = localStorage.getItem(key);
         if (raw?.includes('access_token')) return true;
       }
 
-      return (
-        text.includes('Long-term leases') ||
-        text.includes('Long-Term Rental') ||
-        text.includes('Long-term rentals') ||
-        text.includes('Property Manager') ||
-        text.includes('Short-term rentals') ||
-        text.includes('Affitti brevi') ||
-        text.includes('Dashboard') ||
-        text.includes('No leases yet')
-      );
+      // Check for known app content across languages and contexts
+      const knownContent = [
+        // English
+        'Dashboard', 'Long-term leases', 'No leases yet',
+        'Short-term rentals', 'Property Manager', 'Long-Term Rental',
+        // Italian (post-UX redesign)
+        'Cruscotto', 'Immobili', 'Prenotazioni', 'Calendario',
+        'Affitti brevi', 'Affitti lungo termine',
+        // Generic
+        'properties', 'bookings', 'calendar',
+      ];
+      return knownContent.some((fragment) => text.includes(fragment));
     },
     undefined,
     { timeout: 90_000 }

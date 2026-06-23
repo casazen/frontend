@@ -14,8 +14,8 @@ setup('authenticate long-term test user', async ({ page }) => {
   await loginViaAuth0(page);
   await waitForAppReady(page);
 
-  await page.goto('/profile');
-  await expect(page.getByRole('heading', { name: email })).toBeVisible({ timeout: 15_000 });
+  await page.goto('/app/short-rent/profile');
+  await expect(page.getByText(email, { exact: false })).toBeVisible({ timeout: 15_000 });
 
   await page.context().storageState({ path: e2eEnv.authStoragePath });
 });
