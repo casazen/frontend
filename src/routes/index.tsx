@@ -20,6 +20,7 @@ import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { SupplierCheckInPage } from '@/pages/supplier-check-in';
+import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 
@@ -130,6 +131,10 @@ export const router = createBrowserRouter([
       { path: 'property/:propertyId', element: <PublicPropertyPage /> },
       { path: 'property/:propertyId/checkout', element: <CheckoutPage /> },
     ],
+  },
+  {
+    path: '/s/:slug',
+    element: <SupplierShowcasePage />,
   },
   {
     path: '/check-in/:jobId',
