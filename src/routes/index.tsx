@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { LoginPage } from '@/pages/login-page';
+import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { ContextLayout } from '@/components/layout/context-layout';
@@ -106,6 +107,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <SupplierRegisterPage />,
   },
   {
     path: '/search',

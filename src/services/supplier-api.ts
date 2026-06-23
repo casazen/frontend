@@ -66,3 +66,14 @@ export async function inviteSupplier(payload: {
   const { data } = await axios.post<{ inviteId: string; expiresAt: string }>('/admin/suppliers/invite', payload);
   return data;
 }
+
+export async function registerSupplier(payload: {
+  email: string;
+  legalName: string;
+  phone: string;
+  comuneCode: string;
+  inviteToken?: string;
+}): Promise<{ orgId: string; authRedirectUrl: string }> {
+  const { data } = await axios.post<{ orgId: string; authRedirectUrl: string }>('/suppliers/register', payload);
+  return data;
+}
