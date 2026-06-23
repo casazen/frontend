@@ -1,27 +1,206 @@
 {
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "description": "CasaZen system overview",
+      "loadError": "Unable to load statistics.",
+      "kpi": {
+        "totalProperties": "Total properties",
+        "activeProperties": "Active properties",
+        "totalBookings": "Total bookings",
+        "bookingsThisMonth": "Bookings this month",
+        "upcomingCheckIns": "Upcoming check-ins",
+        "totalRevenue": "Total revenue"
+      },
+      "cin": {
+        "title": "CIN Compliance",
+        "total": "Total",
+        "valid": "Valid",
+        "missing": "Missing",
+        "invalid": "Invalid"
+      },
+      "ota": {
+        "title": "OTA Sync Health",
+        "synced": "Synced",
+        "failed": "Failed",
+        "neverSynced": "Never synced"
+      }
+    },
+    "cin": {
+      "title": "CIN Compliance",
+      "description": "National identification code verification (D.L. 145/2023)",
+      "filters": "Filters",
+      "loadError": "Unable to load CIN data. Please try again later.",
+      "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} properties)",
+      "previous": "Previous",
+      "next": "Next",
+      "filter": {
+        "allStatuses": "All statuses",
+        "valid": "Valid",
+        "missing": "Missing",
+        "invalid": "Invalid"
+      },
+      "table": {
+        "property": "Property",
+        "city": "City",
+        "owner": "Owner",
+        "cin": "CIN",
+        "status": "Status",
+        "empty": "No data found."
+      }
+    },
+    "users": {
+      "title": "User Management",
+      "description": "View and manage all system users",
+      "filters": "Filters",
+      "searchPlaceholder": "Search by name or email...",
+      "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} users)",
+      "previous": "Previous",
+      "next": "Next",
+      "filter": {
+        "allRoles": "All roles"
+      },
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "plan": "Plan",
+        "status": "Status",
+        "actions": "Actions",
+        "active": "Active",
+        "inactive": "Inactive",
+        "planAction": "Plan",
+        "roleAction": "Role",
+        "deactivateAction": "Deactivate",
+        "empty": "No users found."
+      },
+      "deactivateDialog": {
+        "title": "Deactivate user",
+        "description": "Are you sure you want to deactivate {{firstName}} {{lastName}} ({{email}})? The user will no longer be able to access the system.",
+        "cancel": "Cancel",
+        "deactivating": "Deactivating...",
+        "confirm": "Deactivate"
+      },
+      "roleDialog": {
+        "title": "Change role",
+        "description": "Select the new role for {{name}}.",
+        "label": "Role",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "planDialog": {
+        "title": "Organization plan",
+        "description": "The user does not have an organization associated yet.",
+        "changeTitle": "Change plan — {{name}}",
+        "changeDescription": "Current plan:",
+        "actionLabel": "Set plan"
+      }
+    },
+    "jobs": {
+      "title": "Background Jobs",
+      "description": "Hangfire job status (refreshed every 30 seconds)",
+      "table": {
+        "job": "Job",
+        "cron": "Cron",
+        "lastRun": "Last run",
+        "nextRun": "Next run",
+        "status": "Status",
+        "empty": "No jobs found."
+      }
+    },
+    "supplierInvite": {
+      "title": "Invite supplier",
+      "description": "Send a pilot invitation per municipality",
+      "newInvite": "New invitation",
+      "email": "Email",
+      "comuneCode": "Municipality code",
+      "message": "Message (optional)",
+      "sendInvite": "Send invitation",
+      "toast": {
+        "success": "Invitation sent — expires {{expiresAt}}",
+        "error": "Unable to send the invitation"
+      }
+    },
+    "seo": {
+      "title": "SEO Compliance",
+      "description": "Programmatic pages for short-term rentals and tourist tax",
+      "approveAll": "Approve all",
+      "generateAll": "Generate all",
+      "aiBudget": "Platform AI budget",
+      "budgetTokens": "{{used}} / {{cap}} tokens this month",
+      "loading": "Loading...",
+      "loadError": "Unable to load SEO pages. Please try again later.",
+      "table": {
+        "comune": "Municipality",
+        "type": "Type",
+        "status": "Status",
+        "lastRefresh": "Last refresh",
+        "actions": "Actions",
+        "approve": "Approve",
+        "empty": "No SEO pages."
+      },
+      "confirmDialog": {
+        "title": "Confirm regeneration",
+        "description": "A Hangfire job will be queued to generate SEO pages for all municipalities in the registry ({{count}} municipalities, 2 pages each) and approve them automatically.",
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+      },
+      "status": {
+        "reviewed": "Reviewed",
+        "draft": "Draft"
+      }
+    },
+    "profile": {
+      "title": "User profile",
+      "description": "Account information and API testing tools"
+    },
+    "badges": {
+      "cin": {
+        "valid": "Valid",
+        "missing": "Missing",
+        "invalid": "Invalid"
+      },
+      "job": {
+        "succeeded": "Completed",
+        "failed": "Failed",
+        "processing": "In progress",
+        "enqueued": "Enqueued",
+        "unknown": "Unknown"
+      },
+      "seo": {
+        "reviewed": "Reviewed",
+        "draft": "Draft"
+      }
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
-    "plan": "Plan",
+    "plan": "Plan & Billing",
     "bookings": "Bookings",
     "calendar": "Calendar",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
     "payments": "Payments",
     "revenue": "Revenue",
-    "stripeConnect": "Stripe Connect",
+    "stripeConnect": "Payouts",
     "ota": "OTA",
     "leases": "Leases",
     "users": "Users",
-    "jobs": "Jobs",
-    "seo": "SEO Compliance",
+    "jobs": "Processes",
+    "suppliers": "Suppliers",
+    "guests": "Guests",
+    "taxRates": "Tourist Tax",
+    "seo": "SEO & Content",
     "more": "More",
     "group": {
       "operazioni": "Operations",
       "immobili": "Properties",
       "finanza": "Finance",
       "compliance": "Compliance",
+      "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrations",
       "account": "Account",
       "amministrazione": "Administration"
@@ -50,10 +229,58 @@
     "createLease": "Create lease",
     "loading": "Loading leases...",
     "emptyTitle": "No leases yet",
+    "emptyDescription": "Create your first long-term lease contract.",
     "loadError": "Failed to load leases. Please try again.",
     "rentLabel": "Rent ",
     "regimeLabel": "Regime ",
-    "partiesLabel": "Parties "
+    "partiesLabel": "Parties ",
+    "detailLoading": "Loading lease...",
+    "notFound": "Lease not found",
+    "notFoundDescription": "The lease you are looking for does not exist or you do not have access.",
+    "backToList": "Back to leases",
+    "leaseContract": "Lease contract",
+    "contractTerms": "Contract terms",
+    "monthlyRent": "Monthly rent",
+    "fiscalRegime": "Fiscal regime",
+    "registrationDeadline": "Registration deadline",
+    "created": "Created",
+    "parties": "Parties",
+    "signing": "Signing",
+    "signingDescription": "Generate the contract PDF and send signing links to all parties.",
+    "initiating": "Initiating...",
+    "initiateSigning": "Initiate signing",
+    "timeline": "Timeline",
+    "validation": {
+      "firstName": {
+        "required": "First name is required"
+      },
+      "lastName": {
+        "required": "Last name is required"
+      },
+      "fiscalCode": {
+        "minLength": "Fiscal code must be at least 11 characters",
+        "maxLength": "Fiscal code must be at most 16 characters"
+      },
+      "citizenship": {
+        "length": "Use ISO 3166-1 alpha-2 country code (e.g. IT)"
+      },
+      "contactEmail": {
+        "format": "Valid email is required"
+      },
+      "propertyId": {
+        "required": "Property is required"
+      },
+      "startDate": {
+        "required": "Start date is required"
+      },
+      "endDate": {
+        "required": "End date is required",
+        "afterStart": "End date must be after start date"
+      },
+      "monthlyRent": {
+        "positive": "Monthly rent must be greater than zero"
+      }
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -105,6 +332,47 @@
       "checkedIn": "Checked in",
       "checkedOut": "Checked out",
       "cancelled": "Cancelled"
+    },
+    "calendar": {
+      "pageTitle": "Bookings Calendar",
+      "pageDescription": "View and manage bookings in calendar format",
+      "listView": "List View",
+      "loading": "Loading calendar...",
+      "noProperties": "No properties available",
+      "noPropertiesHint": "Add a property to view the bookings calendar.",
+      "goToProperties": "Go to properties",
+      "property": "Property",
+      "loadError": "Unable to load the calendar. Please try again later."
+    },
+    "validation": {
+      "firstName": {
+        "minLength": "First name must be at least 2 characters"
+      },
+      "lastName": {
+        "minLength": "Last name must be at least 2 characters"
+      },
+      "email": {
+        "format": "Invalid email address"
+      },
+      "phone": {
+        "minLength": "Phone number must be at least 10 digits"
+      },
+      "country": {
+        "required": "Country is required"
+      },
+      "propertyId": {
+        "required": "Property is required"
+      },
+      "checkInDate": {
+        "required": "Check-in date is required"
+      },
+      "checkOutDate": {
+        "required": "Check-out date is required",
+        "afterCheckIn": "Check-out date must be after check-in date"
+      },
+      "numberOfGuests": {
+        "min": "At least 1 guest is required"
+      }
     }
   },
   "ota": {
@@ -112,7 +380,75 @@
       "connected": "Connected",
       "warning": "Warning",
       "disconnected": "Disconnected"
+    },
+    "validation": {
+      "propertyId": {
+        "required": "Property is required"
+      },
+      "nightlyRate": {
+        "min": "Price must be greater than 0"
+      }
     }
+  },
+  "shared": {
+    "errorBoundary": {
+      "title": "Something went wrong",
+      "fallbackMessage": "An unexpected error occurred",
+      "reload": "Reload Page"
+    },
+    "errorFallback": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred. Please try again or contact support if the problem persists.",
+      "tryAgain": "Try Again",
+      "goHome": "Go Home"
+    },
+    "cookieConsent": {
+      "ariaLabel": "Cookie Consent",
+      "text": "We use essential cookies for the site to function and, only with your consent, analytics cookies. You can accept or reject non-essential cookies.",
+      "reject": "Decline",
+      "accept": "Accept"
+    },
+    "demoBanner": {
+      "message": "Demo Mode - No authentication required. All data is simulated."
+    },
+    "loading": {
+      "defaultMessage": "Loading..."
+    },
+    "userMenu": {
+      "profile": "Profile",
+      "logout": "Logout"
+    },
+    "documentUpload": {
+      "uploadDocument": "Upload document",
+      "documentType": "Document type",
+      "dragDropText": "Drag a file here or click to select",
+      "fileFormats": "PDF, DOC, DOCX, JPG, PNG — max 10 MB",
+      "uploading": "Uploading...",
+      "upload": "Upload",
+      "types": {
+        "cinCertificate": "CIN Certificate",
+        "floorPlan": "Floor Plan",
+        "insurancePolicy": "Insurance Policy",
+        "propertyLicense": "Property License",
+        "safetyCompliance": "Safety Compliance",
+        "ape": "APE",
+        "other": "Other"
+      }
+    },
+    "contextPicker": {
+      "loading": "Loading...",
+      "title": "Select workspace",
+      "description": "Choose the application context to open."
+    },
+    "noAccess": {
+      "title": "No access available",
+      "description": "Your account is not associated with any operational workspace. Sign out and sign back in, or contact the administrator for role assignment.",
+      "loginAgain": "Sign in again"
+    }
+  },
+  "common": {
+    "planLimitMessage": "You have reached your plan limit",
+    "planUpgradeCta": "Upgrade to a higher plan"
   },
   "property": {
     "form": {
@@ -150,6 +486,304 @@
       "saving": "Saving...",
       "update": "Update Property",
       "create": "Create Property"
+    },
+    "validation": {
+      "name": {
+        "minLength": "Name must be at least 3 characters",
+        "maxLength": "Name must be less than 100 characters"
+      },
+      "description": {
+        "minLength": "Description must be at least 10 characters",
+        "maxLength": "Description must be less than 1000 characters"
+      },
+      "address": {
+        "required": "Address is required"
+      },
+      "city": {
+        "required": "City is required"
+      },
+      "country": {
+        "required": "Country is required"
+      },
+      "postalCode": {
+        "required": "Postal code is required"
+      },
+      "bedrooms": {
+        "min": "At least 1 bedroom is required"
+      },
+      "bathrooms": {
+        "min": "At least 0.5 bathrooms required"
+      },
+      "maxGuests": {
+        "min": "At least 1 guest capacity required"
+      },
+      "nightlyRate": {
+        "min": "Price must be at least 1"
+      },
+      "cin": {
+        "format": "CIN format: IT-XXXXX-XXXXXXXXXX"
+      }
+    }
+  },
+  "supplier": {
+    "profileLoading": "Loading profile...",
+    "profileTitle": "Supplier Profile",
+    "profileDescription": "Account and data visible to hosts in the supplier picker",
+    "professionalProfile": "Professional Profile",
+    "status": "Status",
+    "companyName": "Company name",
+    "email": "Email",
+    "phone": "Phone",
+    "categories": "Categories",
+    "municipalities": "Municipalities",
+    "bioEmpty": "No bio written yet.",
+    "supplierDefault": "Supplier",
+    "availabilityLoading": "Loading availability...",
+    "availabilityUpdated": "Availability updated",
+    "availabilitySaveError": "Could not save availability",
+    "availabilityTitle": "Availability",
+    "availabilityDescription": "Tap a day to mark it as unavailable",
+    "available": "Available",
+    "notAvailable": "Not available",
+    "saveAvailability": "Save availability",
+    "activationLoading": "Loading activation...",
+    "activationTitle": "Supplier Profile Activation",
+    "activationDescription": "Complete the 5 steps to appear in the host marketplace",
+    "activationStatus": "Activation status",
+    "serviceCategories": "Service categories",
+    "operatingMunicipalities": "Municipalities of operation",
+    "municipalityCodesLabel": "Municipality codes (comma-separated)",
+    "description": "Description",
+    "describeServicesPlaceholder": "Describe your services...",
+    "acceptTos": "I accept the CasaZen supplier terms of service",
+    "saveProgress": "Save progress",
+    "activateProfile": "Activate profile",
+    "progressSaved": "Progress saved",
+    "profileActivated": "Supplier profile activated",
+    "completeAllSteps": "Complete all steps before activating the profile",
+    "inboxTitle": "Assignment Inbox",
+    "inboxDescription": "Service requests from hosts (available from marketplace wave 2)",
+    "loading": "Loading...",
+    "noAssignments": "No open assignments",
+    "assignmentsCount": "{{count}} assignments"
+  },
+  "settings": {
+    "planTitle": "Your plan",
+    "planOrgDescription": "Organization: {{orgName}}. Choose the plan that best fits your portfolio.",
+    "planDefaultDescription": "Manage your organization's plan.",
+    "currentUsage": "Current usage:",
+    "unlimited": "unlimited",
+    "planUsage": "{{propertyCount}} properties of {{maxProperties}}",
+    "switchToPlan": "Switch to this plan",
+    "stripeBillingNote": "Recurring card payment will be available with Stripe integration ({{planCount}} plans configured).",
+    "connectStatusDisconnected": "Not connected",
+    "connectStatusPending": "Verifying",
+    "connectStatusActive": "Active",
+    "connectPaymentsTitle": "Payments / Payouts",
+    "connectDescription": "Connect your Stripe account to receive guest payments directly to your bank.",
+    "yourBookingSite": "Your booking site",
+    "visitPublicSiteDescription": "Visit the public site to see what your guests see.",
+    "visitSite": "Visit {{siteName}}",
+    "bookingSiteNotActive": "Booking site not yet active",
+    "bookingSiteNotActiveDescription": "Complete Stripe verification to enable checkout on your booking site. Guests cannot pay until the account is active.",
+    "stripeConnectionStatus": "Stripe connection status",
+    "connectStripe": "Connect Stripe",
+    "completeVerification": "Complete verification",
+    "loadingPayments": "Loading payment status...",
+    "stripeStatusError": "Could not load Stripe status. Please try again shortly.",
+    "stripeAccount": "Stripe account:",
+    "verificationIncomplete": "Verification incomplete",
+    "verificationIncompleteDescription": "Stripe requires additional documents. Click \"Complete verification\" to continue the onboarding.",
+    "accountActiveMessage": "Your account can accept payments. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
+    "managePlanIn": "Manage SaaS plan in",
+    "planSettings": "Plan settings"
+  },
+  "profile": {
+    "title": "My Profile",
+    "description": "View and manage your account information",
+    "profileInformation": "Profile Information",
+    "email": "Email",
+    "userId": "User ID",
+    "role": "Role",
+    "notAvailable": "N/A",
+    "unknownUser": "Unknown User",
+    "user": "User",
+    "operatorType": "Operator type",
+    "editType": "Edit type",
+    "currentType": "Current type",
+    "loading": "Loading...",
+    "notConfigured": "Not configured",
+    "apiToken": "API Token",
+    "apiTokenDescription": "Copy the current session Bearer token to test the APIs (e.g. local Swagger). Do not share the token: it contains your access permissions.",
+    "tokenUnavailable": "Token unavailable. Please log in again.",
+    "tokenCopied": "Token copied to clipboard",
+    "tokenCopyError": "Unable to copy the token",
+    "copying": "Copying...",
+    "copyToken": "Copy token",
+    "tokenPasteInstructions": "Paste the token in Authorize (with or without the Bearer prefix)."
+  },
+  "alloggiati": {
+    "loading": "Loading Alloggiati...",
+    "title": "Alloggiati Web",
+    "description": "Police reporting communication status (Art. 109 TULPS)",
+    "noPendingReport": "No bookings with pending Alloggiati report.",
+    "bookings": "Bookings",
+    "guest": "Guest",
+    "property": "Property",
+    "checkIn": "Check-in",
+    "status": "Status",
+    "statusLabel": {
+      "Pending": "Pending",
+      "Submitted": "Submitted",
+      "Confirmed": "Confirmed",
+      "Failed": "Failed",
+      "Expired": "Expired"
+    },
+    "deadline": "Deadline",
+    "incompleteData": "Incomplete data",
+    "over24h": "Over 24h",
+    "hoursRemaining": "{{hours}}h remaining",
+    "details": "Details",
+    "expired": "Expired",
+    "statusPending": "Pending",
+    "statusSubmitted": "Submitted",
+    "statusConfirmed": "Confirmed",
+    "statusFailed": "Failed"
+  },
+  "guests": {
+    "title": "Guests",
+    "search": "Search by name or email...",
+    "empty": "No guests found",
+    "detail": "Guest Detail",
+    "anagrafica": "Personal Info",
+    "bookings": "Bookings",
+    "documents": "Documents",
+    "gdpr": "GDPR",
+    "export": "Export Data",
+    "anonymize": "Anonymize",
+    "delete": "Delete Data",
+    "deleteConfirm": "Are you sure you want to delete all data for this guest? This action is irreversible.",
+    "consentMarketing": "Marketing consent",
+    "retention": "Data retention until",
+    "noDocument": "No document uploaded"
+  },
+  "taxRates": {
+    "title": "Tourist Tax Rates",
+    "city": "City",
+    "ratePerNight": "Rate per night",
+    "maxNights": "Max nights",
+    "region": "Region",
+    "effectiveFrom": "Effective from",
+    "empty": "No tax rates configured",
+    "create": "New rate",
+    "edit": "Edit rate",
+    "delete": "Delete rate"
+  },
+  "amenity": {
+    "WiFi": "WiFi",
+    "AirConditioning": "Air Conditioning",
+    "Heating": "Heating",
+    "Kitchen": "Kitchen",
+    "Washer": "Washer",
+    "Dryer": "Dryer",
+    "TV": "TV",
+    "FreeParking": "Parking",
+    "Pool": "Pool",
+    "HotTub": "Hot Tub",
+    "Gym": "Gym",
+    "Elevator": "Elevator",
+    "Balcony": "Balcony",
+    "Terrace": "Terrace",
+    "Garden": "Garden",
+    "BBQGrill": "BBQ Grill",
+    "Fireplace": "Fireplace",
+    "PetFriendly": "Pet Friendly",
+    "SmokeDetector": "Smoke Detector",
+    "FirstAidKit": "First Aid Kit",
+    "FireExtinguisher": "Fire Extinguisher",
+    "CarbonMonoxideDetector": "Carbon Monoxide Detector"
+  },
+  "cin": {
+    "status": {
+      "Valid": "Valid",
+      "Missing": "Missing",
+      "Invalid": "Invalid"
+    }
+  },
+  "payment": {
+    "status": {
+      "Pending": "Pending",
+      "Processing": "Processing",
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Refunded": "Refunded",
+      "PartiallyRefunded": "Partially Refunded"
+    },
+    "method": {
+      "CreditCard": "Credit Card",
+      "BankTransfer": "Bank Transfer",
+      "PayPal": "PayPal",
+      "ApplePay": "Apple Pay",
+      "GooglePay": "Google Pay"
+    },
+    "validation": {
+      "bookingId": {
+        "required": "Booking is required"
+      },
+      "amount": {
+        "min": "Amount must be greater than 0"
+      },
+      "paymentMethodId": {
+        "required": "Payment method is required"
+      }
+    }
+  },
+  "checkin": {
+    "sendLink": "Send check-in link",
+    "linkGenerated": "Check-in link generated",
+    "copyLink": "Copy link",
+    "sendEmail": "Send via email",
+    "guestEmail": "Guest email",
+    "documentType": {
+      "Passport": "Passport",
+      "IdentityCard": "Identity Card",
+      "DriversLicense": "Driver's License",
+      "Other": "Other"
+    },
+    "gender": {
+      "Male": "Male",
+      "Female": "Female",
+      "Other": "Other"
+    },
+    "validation": {
+      "dateOfBirth": {
+        "required": "Date of birth is required"
+      },
+      "placeOfBirth": {
+        "required": "Place of birth is required",
+        "maxLength": "Place of birth must be less than 100 characters"
+      },
+      "nationality": {
+        "required": "Nationality is required",
+        "maxLength": "Nationality must be less than 100 characters"
+      },
+      "gender": {
+        "required": "Select gender"
+      },
+      "documentType": {
+        "required": "Select document type"
+      },
+      "documentNumber": {
+        "required": "Document number is required",
+        "maxLength": "Document number must be less than 50 characters"
+      },
+      "documentIssuingCountry": {
+        "required": "Issuing country is required",
+        "maxLength": "Issuing country must be less than 100 characters"
+      },
+      "consentAccepted": {
+        "required": "You must accept data processing"
+      }
     }
   }
 }

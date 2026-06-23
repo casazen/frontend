@@ -30,4 +30,7 @@ export const bookingsApi = {
 
   checkOut: (id: string, data?: CheckOutDto) =>
     ApiClient.post<Booking>(`/bookings/${id}/check-out`, data),
+
+  generateCheckInToken: (id: string) =>
+    ApiClient.post<{ token: string }>(`/bookings/${id}/check-in-token`),
 };
