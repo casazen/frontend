@@ -5,15 +5,21 @@ import { requireE2eCredentials, e2eEnv } from './env';
 export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
 
-  await page.goto('/login', { waitUntil: 'networkidle' });
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  // Give React time to hydrate
+  await page.waitForTimeout(3000);
 
-  // Wait for the page to render — look for ANY button or heading
-  await page.waitForLoadState('domcontentloaded');
-
-  // Click the Auth0 login button — try multiple possible labels
-  // Use a broad selector first, then narrow down
+  // Debug: log page content if button not found quickly
   const loginButton = page.locator('button').filter({ hasText: /sign in|accedi|log in|login|auth0/i }).first();
-  await loginButton.waitFor({ state: 'visible', timeout: 30_000 });
+  try {
+    await loginButton.waitFor({ state: 'visible', timeout: 10_000 });
+  } catch {
+    // Take screenshot and log page text for debugging
+    await page.screenshot({ path: 'test-results/login-debug.png' });
+    const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
+    const title = await page.title().catch(() => '(no title)');
+    throw new Error(`Login button not found. Page title: "${title}". Body text preview: "${bodyText.slice(0, 300)}"`);
+  }
   await loginButton.click();
 
   await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
