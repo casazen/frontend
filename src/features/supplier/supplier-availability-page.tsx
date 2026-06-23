@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -28,9 +28,14 @@ export function SupplierAvailabilityPage() {
   const { data, isLoading } = useSupplierAvailability(from, to);
   const updateAvailability = useUpdateSupplierAvailability();
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const initialized = useRef(false);
 
+  // Initialize local state from server data on first load only.
+  // After that local state is the source of truth — we don't overwrite
+  // it on subsequent refetches (e.g. after save triggers invalidateQueries).
   useEffect(() => {
-    if (!data?.dates) return;
+    if (!data?.dates || initialized.current) return;
+    initialized.current = true;
     setSelected(Object.fromEntries(data.dates.map((entry) => [entry.date, entry.available])));
   }, [data]);
 
