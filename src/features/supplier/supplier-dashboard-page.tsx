@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth0 } from '@auth0/auth0-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,19 +34,39 @@ function computeMissing(profile: { categories?: string[]; comuni?: string[]; bio
 export function SupplierDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth0();
+  const queryClient = useQueryClient();
   const { data: profile, isLoading: profileLoading } = useSupplierProfile();
   const { isLoading: activationLoading } = useSupplierActivation();
   const updateProfile = useUpdateSupplierProfile();
 
   const isLoading = profileLoading || activationLoading;
   const missing = useMemo(() => computeMissing(profile), [profile]);
-  const [showWizard, setShowWizard] = useState(true);
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardKey, setWizardKey] = useState(0);
 
-  // Wizard local state
-  const [categories, setCategories] = useState<string[]>(profile?.categories ?? []);
-  const [comuneInput, setComuneInput] = useState((profile?.comuni ?? []).join(', '));
-  const [bio, setBio] = useState(profile?.bio ?? '');
+  // Sync wizard local state from the latest profile data whenever it loads.
+  const [categories, setCategories] = useState<string[]>([]);
+  const [comuneInput, setComuneInput] = useState('');
+  const [bio, setBio] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const hydrateFromProfile = () => {
+    setCategories(profile?.categories ?? []);
+    setComuneInput((profile?.comuni ?? []).join(', '));
+    setBio(profile?.bio ?? '');
+  };
+
+  // Populate wizard fields when profile first loads or changes.
+  useEffect(() => {
+    if (profile) {
+      hydrateFromProfile();
+      // Auto-open wizard on first load if profile is incomplete.
+      if (computeMissing(profile)) {
+        setShowWizard(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileLoading]); // only fire when loading completes
 
   const handleSave = async () => {
     setSaving(true);
@@ -55,8 +76,12 @@ export function SupplierDashboardPage() {
         comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
         bio,
       });
+      // Force refetch so next render sees the saved data.
+      await queryClient.invalidateQueries({ queryKey: ['supplier'] });
       toast.success(t('supplier.progressSaved'));
       setShowWizard(false);
+      // Force wizard to re-initialise from fresh profile next time it opens.
+      setWizardKey((k) => k + 1);
     } catch {
       toast.error(t('supplier.progressSaveError'));
     } finally {
@@ -137,10 +162,11 @@ export function SupplierDashboardPage() {
       )}
 
       {/* Profile completion wizard — auto-opens if profile incomplete */}
-      <Dialog open={showWizard && !!missing} onOpenChange={(open) => {
+      <Dialog key={wizardKey} open={showWizard && !!missing} onOpenChange={(open) => {
         // Prevent dismissing until profile is complete
         if (missing && open === false) return;
         setShowWizard(open);
+        if (open) hydrateFromProfile(); // re-populate from latest profile when opened
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
