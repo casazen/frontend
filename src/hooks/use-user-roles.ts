@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { getUserRoles, parseRolesFromAccessToken } from '@/lib/auth-roles';
+
+function rolesEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((r, i) => r === b[i]);
+}
 
 /**
  * CasaZen roles live in the access token (Auth0 Action), not the ID token profile.
@@ -9,16 +13,19 @@ import { getUserRoles, parseRolesFromAccessToken } from '@/lib/auth-roles';
 export function useUserRoles(): string[] {
   const { user, isAuthenticated, isLoading, getAccessToken } = useAuth();
   const [roles, setRoles] = useState<string[]>(() => getUserRoles(user));
+  const rolesRef = useRef(roles);
+  rolesRef.current = roles;
 
   useEffect(() => {
     if (isLoading || !isAuthenticated) {
-      setRoles([]);
+      const empty: string[] = [];
+      if (!rolesEqual(rolesRef.current, empty)) setRoles(empty);
       return;
     }
 
     const fromProfile = getUserRoles(user);
     if (fromProfile.length > 0) {
-      setRoles(fromProfile);
+      if (!rolesEqual(rolesRef.current, fromProfile)) setRoles(fromProfile);
       return;
     }
 
@@ -28,10 +35,12 @@ export function useUserRoles(): string[] {
       try {
         const token = await getAccessToken();
         if (cancelled) return;
-        setRoles(parseRolesFromAccessToken(token));
+        const parsed = parseRolesFromAccessToken(token);
+        if (!cancelled && !rolesEqual(rolesRef.current, parsed)) setRoles(parsed);
       } catch {
         if (!cancelled) {
-          setRoles([]);
+          const empty: string[] = [];
+          if (!rolesEqual(rolesRef.current, empty)) setRoles(empty);
         }
       }
     })();

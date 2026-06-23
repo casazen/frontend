@@ -7,6 +7,15 @@ async function completeOnboardingFromRentalChoice(
   rentalButtonIndex: number,
 ) {
   await page.getByRole('button', { name: 'Scegli' }).nth(rentalButtonIndex).click();
+
+  // Consents step — accept all required checkboxes
+  const checkboxes = page.getByTestId('onboarding-consents-step').getByRole('checkbox');
+  const count = await checkboxes.count();
+  for (let i = 0; i < Math.min(count, 4); i++) {
+    await checkboxes.nth(i).check();
+  }
+  await page.getByTestId('onboarding-consents-continue').click();
+
   await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
   await page.getByTestId('onboarding-plan-confirm').click();
 }
