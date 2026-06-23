@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export function PricingConfigCard({
   onSave,
   onSync,
 }: PricingConfigCardProps) {
+  const { t } = useTranslation();
   const isEnabled = config?.isEnabled ?? false;
 
   // Local form state, synced from server data
@@ -65,10 +67,10 @@ export function PricingConfigCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-yellow-500" />
-            <CardTitle>AI Dynamic Pricing</CardTitle>
+            <CardTitle>{t('pricing.config.title')}</CardTitle>
           </div>
           <Badge variant={isEnabled ? 'success' : 'secondary'}>
-            {isEnabled ? 'Active' : 'Disabled'}
+            {isEnabled ? t('pricing.config.active') : t('pricing.config.disabled')}
           </Badge>
         </div>
       </CardHeader>
@@ -77,10 +79,10 @@ export function PricingConfigCard({
         <div className="flex items-center justify-between">
           <div>
             <Label htmlFor="pricing-toggle" className="text-sm font-medium">
-              Enable AI pricing
+              {t('pricing.config.enableLabel')}
             </Label>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Automatically adjusts nightly rates based on demand, season, and local events.
+              {t('pricing.config.enableDescription')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -97,7 +99,7 @@ export function PricingConfigCard({
 
         {/* Frequency selector */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Adaptation frequency</Label>
+          <Label className="text-sm font-medium">{t('pricing.config.frequencyLabel')}</Label>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -109,7 +111,7 @@ export function PricingConfigCard({
                 className="accent-primary"
                 data-testid="frequency-daily"
               />
-              <span className="text-sm">Daily</span>
+              <span className="text-sm">{t('pricing.config.daily')}</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -121,14 +123,14 @@ export function PricingConfigCard({
                 className="accent-primary"
                 data-testid="frequency-weekly"
               />
-              <span className="text-sm">Weekly</span>
+              <span className="text-sm">{t('pricing.config.weekly')}</span>
             </label>
           </div>
         </div>
 
         {/* Checkboxes */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Pricing factors</Label>
+          <Label className="text-sm font-medium">{t('pricing.config.factorsLabel')}</Label>
           <div className="flex items-center gap-2">
             <Checkbox
               id="include-seasonality"
@@ -137,7 +139,7 @@ export function PricingConfigCard({
               data-testid="include-seasonality"
             />
             <Label htmlFor="include-seasonality" className="text-sm cursor-pointer">
-              Include seasonality
+              {t('pricing.config.includeSeasonality')}
             </Label>
           </div>
           <div className="flex items-center gap-2">
@@ -148,7 +150,7 @@ export function PricingConfigCard({
               data-testid="include-public-holidays"
             />
             <Label htmlFor="include-public-holidays" className="text-sm cursor-pointer">
-              Include public holidays
+              {t('pricing.config.includePublicHolidays')}
             </Label>
           </div>
         </div>
@@ -157,7 +159,7 @@ export function PricingConfigCard({
         {config && (
           <div className="grid grid-cols-2 gap-4 text-sm border-t pt-4">
             <div>
-              <span className="text-muted-foreground text-xs">Last run</span>
+              <span className="text-muted-foreground text-xs">{t('pricing.config.lastRun')}</span>
               <p className="font-medium text-xs mt-0.5">
                 {config.lastAdaptedAt
                   ? formatDateTime(config.lastAdaptedAt)
@@ -165,7 +167,7 @@ export function PricingConfigCard({
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground text-xs">Next run</span>
+              <span className="text-muted-foreground text-xs">{t('pricing.config.nextRun')}</span>
               <p className="font-medium text-xs mt-0.5">
                 {config.nextScheduledRunAt
                   ? formatDateTime(config.nextScheduledRunAt)
@@ -189,7 +191,7 @@ export function PricingConfigCard({
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            {isSaving ? 'Saving...' : 'Save configuration'}
+            {isSaving ? t('pricing.config.saving') : t('pricing.config.save')}
           </Button>
 
           {isEnabled && (
@@ -206,7 +208,7 @@ export function PricingConfigCard({
               ) : (
                 <RefreshCw className="mr-2 h-4 w-4" />
               )}
-              {isSyncing ? 'Syncing...' : 'Run sync now'}
+              {isSyncing ? t('pricing.config.syncing') : t('pricing.config.syncNow')}
             </Button>
           )}
         </div>

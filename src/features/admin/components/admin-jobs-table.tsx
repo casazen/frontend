@@ -1,5 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { JobStatusBadge } from './job-status-badge';
 import type { JobStatus } from '@/types';
 
@@ -10,7 +11,7 @@ interface AdminJobsTableProps {
 
 function formatDate(value: string | null): string {
   if (!value) return '—';
-  return new Date(value).toLocaleString('it-IT', {
+  return new Date(value).toLocaleString(i18n.language, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

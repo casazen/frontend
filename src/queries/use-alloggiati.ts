@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const ALLOGGIATI_KEY = 'alloggiati';
 
@@ -27,10 +28,10 @@ export function useResendAlloggiatiReport() {
     onSuccess: (_, bookingId) => {
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY] });
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status', bookingId] });
-      toast.success('Comunicazione inviata');
+      toast.success(i18n.t('toast.alloggiatiSent'));
     },
     onError: () => {
-      toast.error('Invio non riuscito. Riprova più tardi.');
+      toast.error(i18n.t('toast.alloggiatiSendFailed'));
     },
   });
 }

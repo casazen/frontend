@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/utils';
 import { leasesApi } from '@/api/leases.api';
-import { REGISTRATION_STATUS_LABELS } from '../schemas/lease.schema';
+import { REGISTRATION_STATUS_VARIANTS } from '../schemas/lease.schema';
+import { getRegistrationStatusLabel } from '@/lib/i18n-labels';
+import { useTranslation } from 'react-i18next';
 import type { LeaseRegistration, LeaseStatus } from '@/types';
 import { toast } from 'sonner';
 
@@ -26,12 +28,13 @@ export function RegistrationStatusPanel({
   isRegistering,
   canRegister,
 }: RegistrationStatusPanelProps) {
+  const { t } = useTranslation();
   const [isDownloading, setIsDownloading] = useState(false);
 
   const statusConfig = registration
-    ? REGISTRATION_STATUS_LABELS[registration.status] ?? {
-        label: registration.status,
-        variant: 'secondary' as const,
+    ? {
+        label: getRegistrationStatusLabel(registration.status, t),
+        variant: (REGISTRATION_STATUS_VARIANTS[registration.status] ?? 'secondary') as 'default' | 'secondary' | 'outline' | 'destructive' | 'success',
       }
     : null;
 

@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { propertiesApi } from '@/api/properties.api';
 import { useProperties } from '@/queries/use-properties';
-import { FISCAL_REGIME_LABELS, leaseFormSchema } from '../schemas/lease.schema';
+import { leaseFormSchema } from '../schemas/lease.schema';
+import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
 import type { LeaseFormValues } from '../schemas/lease.schema';
 import type { CreateLeaseDto } from '@/types';
 import { AlertTriangle } from 'lucide-react';
@@ -19,6 +21,7 @@ interface LeaseCreateFormProps {
 }
 
 export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
+  const { t } = useTranslation();
   const { data: propertiesData } = useProperties();
   const properties = propertiesData ?? [];
   const [apeError, setApeError] = useState<string | null>(null);
@@ -129,9 +132,9 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
               {...register('fiscalRegime')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              {Object.entries(FISCAL_REGIME_LABELS).map(([value, label]) => (
+              {['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato'].map((value) => (
                 <option key={value} value={value}>
-                  {label}
+                  {getFiscalRegimeLabel(value, t)}
                 </option>
               ))}
             </select>

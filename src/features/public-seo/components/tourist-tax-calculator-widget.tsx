@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PublicTouristTaxRateSummary } from '@/types/seo.types';
 import { useCalculateTouristTax } from '@/queries/use-public-seo';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export function TouristTaxCalculatorWidget({
   comuneSlug,
   rateSummary,
 }: TouristTaxCalculatorWidgetProps) {
+  const { t } = useTranslation();
   const [numberOfAdults, setNumberOfAdults] = useState(2);
   const [numberOfChildren, setNumberOfChildren] = useState(0);
   const [checkInDate, setCheckInDate] = useState(defaultCheckIn);
@@ -52,21 +54,26 @@ export function TouristTaxCalculatorWidget({
     });
   }
 
+  const childrenLabel =
+    calculateMutation.data && calculateMutation.data.numberOfChildren > 0
+      ? t('publicSeo.childrenLabel', { count: calculateMutation.data.numberOfChildren })
+      : '';
+
   return (
     <section
       className="my-8 rounded-lg border p-6"
       data-testid="tourist-tax-calculator-widget"
     >
-      <h2 className="text-xl font-semibold">Calcola la tassa di soggiorno</h2>
+      <h2 className="text-xl font-semibold">{t('publicSeo.calculateTax')}</h2>
       {rateLabel && (
         <p className="mt-1 text-sm text-muted-foreground" data-testid="tourist-tax-rate-summary">
-          Tariffa ufficiale: {rateLabel}
+          {t('publicSeo.officialRate', { rate: rateLabel })}
         </p>
       )}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="tax-adults">Adulti</Label>
+          <Label htmlFor="tax-adults">{t('publicBooking.adults')}</Label>
           <Input
             id="tax-adults"
             type="number"
@@ -77,7 +84,7 @@ export function TouristTaxCalculatorWidget({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tax-children">Bambini</Label>
+          <Label htmlFor="tax-children">{t('publicBooking.children')}</Label>
           <Input
             id="tax-children"
             type="number"
@@ -88,7 +95,7 @@ export function TouristTaxCalculatorWidget({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tax-checkin">Check-in</Label>
+          <Label htmlFor="tax-checkin">{t('publicBooking.checkInLabel')}</Label>
           <Input
             id="tax-checkin"
             type="date"
@@ -98,7 +105,7 @@ export function TouristTaxCalculatorWidget({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tax-checkout">Check-out</Label>
+          <Label htmlFor="tax-checkout">{t('publicBooking.checkOutLabel')}</Label>
           <Input
             id="tax-checkout"
             type="date"
@@ -118,23 +125,24 @@ export function TouristTaxCalculatorWidget({
         {calculateMutation.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Calcolo…
+            {t('publicSeo.calculating')}
           </>
         ) : (
-          'Calcola'
+          t('publicSeo.calculate')
         )}
       </Button>
 
       {calculateMutation.data && (
         <div className="mt-4 rounded-md bg-muted p-4" data-testid="tax-calculation-result">
           <p className="text-lg font-semibold">
-            Tassa stimata: {formatCurrency(calculateMutation.data.taxAmount)}
+            {t('publicSeo.estimatedTax', { amount: formatCurrency(calculateMutation.data.taxAmount) })}
           </p>
           <p className="text-sm text-muted-foreground">
-            {calculateMutation.data.nights} notti · {calculateMutation.data.numberOfAdults} adulti
-            {calculateMutation.data.numberOfChildren > 0
-              ? ` · ${calculateMutation.data.numberOfChildren} bambini`
-              : ''}
+            {t('publicSeo.nightsAndPeople', {
+              nights: calculateMutation.data.nights,
+              adults: calculateMutation.data.numberOfAdults,
+              children: childrenLabel,
+            })}
           </p>
           <p className="mt-2 text-xs text-muted-foreground">{calculateMutation.data.disclaimer}</p>
         </div>
@@ -142,7 +150,7 @@ export function TouristTaxCalculatorWidget({
 
       {calculateMutation.isError && (
         <p className="mt-4 text-sm text-destructive" data-testid="tax-calculation-error">
-          Impossibile calcolare la tassa. Verifica i dati inseriti.
+          {t('publicSeo.calculationError')}
         </p>
       )}
     </section>

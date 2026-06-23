@@ -21,6 +21,7 @@ import {
 } from '@/queries/use-admin-seo';
 import { SeoReviewStatusBadge } from './components/seo-review-status-badge';
 import { formatDate } from '@/lib/utils';
+import i18n from '@/i18n/config';
 
 export function SeoDashboardPage() {
   const { t } = useTranslation();
@@ -77,8 +78,8 @@ export function SeoDashboardPage() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             {t('admin.seo.budgetTokens', {
-              used: budget.tokensUsedThisMonth.toLocaleString('it-IT'),
-              cap: budget.monthlyTokenCap.toLocaleString('it-IT'),
+              used: budget.tokensUsedThisMonth.toLocaleString(i18n.language),
+              cap: budget.monthlyTokenCap.toLocaleString(i18n.language),
             })}
           </CardContent>
         </Card>

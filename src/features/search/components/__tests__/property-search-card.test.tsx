@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PropertySearchCard } from '../property-search-card';
+import i18n from '@/i18n/config';
 import type { PublicPropertyDto } from '@/types';
 
 // PropertySearchCard renders links via PropertyCinBadge — no router needed for these tests
@@ -50,9 +51,12 @@ describe('PropertySearchCard (listing card used in public booking site, AC6)', (
 
   it('renders capacity badges (beds, bathrooms, guests)', () => {
     render(withRouter(<PropertySearchCard property={baseProperty} onViewDetails={vi.fn()} />));
-    expect(screen.getByText(/2 beds/)).toBeInTheDocument();
-    expect(screen.getByText(/1 bath/)).toBeInTheDocument();
-    expect(screen.getByText(/4 guests/)).toBeInTheDocument();
+    const bedsLabel = i18n.t('search.card.bed_other', { count: 2 });
+    const bathsLabel = i18n.t('search.card.bath_one', { count: 1 });
+    const guestsLabel = i18n.t('search.card.guests', { count: 4 });
+    expect(screen.getByText(new RegExp(`2 ${bedsLabel}`))).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`1 ${bathsLabel}`))).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`4 ${guestsLabel}`))).toBeInTheDocument();
   });
 
   it('shows the hero photo when photoUrls is non-empty', () => {
@@ -67,11 +71,12 @@ describe('PropertySearchCard (listing card used in public booking site, AC6)', (
     expect(screen.getByText('🏠')).toBeInTheDocument();
   });
 
-  it('calls onViewDetails with the property when Dettagli is clicked', () => {
+  it('calls onViewDetails with the property when details button is clicked', () => {
     const onViewDetails = vi.fn();
     render(withRouter(<PropertySearchCard property={baseProperty} onViewDetails={onViewDetails} />));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Dettagli' }));
+    const detailsLabel = i18n.t('search.card.details');
+    fireEvent.click(screen.getByRole('button', { name: detailsLabel }));
     expect(onViewDetails).toHaveBeenCalledOnce();
     expect(onViewDetails).toHaveBeenCalledWith(baseProperty);
   });

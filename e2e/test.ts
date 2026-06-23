@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import { installDemoUserMeMock } from './helpers/org-api-mock';
+import { installDemoUserMeMock, mockPlansCatalog } from './helpers/org-api-mock';
 
 export const test = base.extend({
   page: async ({ page }, use) => {
@@ -9,6 +9,7 @@ export const test = base.extend({
       }
     });
     await installDemoUserMeMock(page);
+    await mockPlansCatalog(page);
     await use(page);
   },
 });

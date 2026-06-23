@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Settings, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-import { OTA_PLATFORM_LABELS, SYNC_STATUS_LABELS } from '../schemas/ota.schema';
+import { getOtaPlatformLabel, getSyncStatusLabel } from '@/lib/i18n-labels';
+import { OTA_PLATFORM_COLORS, OTA_PLATFORM_ICONS, SYNC_STATUS_VARIANTS } from '../schemas/ota.schema';
 import type { OtaIntegration } from '@/types';
 
 interface OtaCardProps {
@@ -15,22 +17,25 @@ interface OtaCardProps {
 }
 
 export function OtaCard({ integration, onSync, onEdit, onDelete, onValidate }: OtaCardProps) {
-  const platformConfig = OTA_PLATFORM_LABELS[integration.platform];
+  const { t } = useTranslation();
+  const platformColor = OTA_PLATFORM_COLORS[integration.platform] ?? '#888';
+  const platformIcon = OTA_PLATFORM_ICONS[integration.platform] ?? '🏠';
+  const platformLabel = getOtaPlatformLabel(integration.platform, t);
   const syncStatusConfig = integration.lastSyncStatus
-    ? SYNC_STATUS_LABELS[integration.lastSyncStatus]
+    ? { variant: SYNC_STATUS_VARIANTS[integration.lastSyncStatus] ?? 'secondary', label: getSyncStatusLabel(integration.lastSyncStatus, t) }
     : null;
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader
         className="p-4"
-        style={{ borderTop: `4px solid ${platformConfig.color}` }}
+        style={{ borderTop: `4px solid ${platformColor}` }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{platformConfig.icon}</span>
+            <span className="text-2xl">{platformIcon}</span>
             <div>
-              <h3 className="font-semibold text-lg">{platformConfig.label}</h3>
+              <h3 className="font-semibold text-lg">{platformLabel}</h3>
               <p className="text-xs text-muted-foreground">Property: {integration.propertyId.slice(0, 8)}</p>
             </div>
           </div>

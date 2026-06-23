@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +15,7 @@ interface ConsentsStepProps {
 }
 
 export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProps) {
+  const { t } = useTranslation();
   const { tos, privacy, dpa, subprocessors, isLoading: docsLoading, isError } = useLegalDocuments();
   const [tosAccepted, setTosAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -22,14 +24,14 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
   const [marketingOptIn, setMarketingOptIn] = useState(false);
 
   if (docsLoading) {
-    return <LoadingScreen message="Caricamento documenti legali..." />;
+    return <LoadingScreen message={t('onboarding.loadingLegalDocs')} />;
   }
 
   if (isError || !tos || !privacy || !dpa || !subprocessors) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          Impossibile caricare i documenti legali. Riprova tra qualche istante.
+          {t('onboarding.cannotLoadLegalDocs')}
         </CardContent>
       </Card>
     );
@@ -57,28 +59,28 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
     <div className="space-y-6 text-left" data-testid="onboarding-consents-step">
       <Card>
         <CardHeader>
-          <CardTitle>Documenti legali</CardTitle>
+          <CardTitle>{t('onboarding.legalDocuments')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <ConsentRow
             id="tos"
             checked={tosAccepted}
             onCheckedChange={setTosAccepted}
-            label={`Accetto i ${tos.title} (v${tos.version})`}
+            label={t('onboarding.acceptTos', { title: tos.title, version: tos.version })}
             summary={tos.summary}
           />
           <ConsentRow
             id="privacy"
             checked={privacyAccepted}
             onCheckedChange={setPrivacyAccepted}
-            label={`Accetto l'${privacy.title} (v${privacy.version})`}
+            label={t('onboarding.acceptPrivacy', { title: privacy.title, version: privacy.version })}
             summary={privacy.summary}
           />
           <ConsentRow
             id="dpa"
             checked={dpaAccepted}
             onCheckedChange={setDpaAccepted}
-            label={`Accetto il ${dpa.title} (v${dpa.version})`}
+            label={t('onboarding.acceptDpa', { title: dpa.title, version: dpa.version })}
             summary={dpa.summary}
           />
           <div className="rounded-md border p-4 space-y-3">
@@ -89,8 +91,7 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
                 onCheckedChange={(value) => setSubprocessorsAcknowledged(value === true)}
               />
               <Label htmlFor="subprocessors" className="leading-relaxed cursor-pointer">
-                Ho preso visione dell&apos;elenco dei responsabili del trattamento (v
-                {subprocessors.version})
+                {t('onboarding.subprocessorsAcknowledged', { version: subprocessors.version })}
               </Label>
             </div>
             <ul className="ml-8 list-disc text-sm text-muted-foreground space-y-1">
@@ -105,14 +106,14 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
             id="marketing"
             checked={marketingOptIn}
             onCheckedChange={setMarketingOptIn}
-            label="Desidero ricevere aggiornamenti e novità (opzionale)"
+            label={t('onboarding.marketingOptIn')}
           />
         </CardContent>
       </Card>
 
       <div className="flex flex-wrap justify-center gap-3">
         <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
-          Indietro
+          {t('onboarding.back')}
         </Button>
         <Button
           type="button"
@@ -120,7 +121,7 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
           disabled={!allRequired || isLoading}
           onClick={handleContinue}
         >
-          Continua
+          {t('onboarding.continue')}
         </Button>
       </div>
     </div>

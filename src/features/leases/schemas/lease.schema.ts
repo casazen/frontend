@@ -31,35 +31,27 @@ export const leaseFormSchema = z
 
 export type LeaseFormValues = z.infer<typeof leaseFormSchema>;
 
-export const FISCAL_REGIME_LABELS: Record<
-  LeaseFormValues['fiscalRegime'],
-  string
-> = {
-  CedolareSecca: 'Cedolare secca',
-  RegimeOrdinario: 'Regime ordinario',
-  CanoneConcordato: 'Canone concordato',
+/** @deprecated Use getFiscalRegimeLabel from @/lib/i18n-labels */
+export const FISCAL_REGIME_I18N_KEYS: Record<LeaseFormValues['fiscalRegime'], string> = {
+  CedolareSecca: 'leases.fiscalRegimeLabel.CedolareSecca',
+  RegimeOrdinario: 'leases.fiscalRegimeLabel.RegimeOrdinario',
+  CanoneConcordato: 'leases.fiscalRegimeLabel.CanoneConcordato',
 };
 
-export const LEASE_STATUS_LABELS: Record<
-  string,
-  { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' | 'success' }
-> = {
-  Draft: { label: 'Draft', variant: 'secondary' },
-  AwaitingSignature: { label: 'Awaiting signature', variant: 'outline' },
-  PartiallySigned: { label: 'Partially signed', variant: 'outline' },
-  Signed: { label: 'Signed', variant: 'default' },
-  RegistrationPending: { label: 'Registration pending', variant: 'outline' },
-  SentToProvider: { label: 'Sent to provider', variant: 'outline' },
-  Registered: { label: 'Registered', variant: 'success' },
-  Rejected: { label: 'Rejected', variant: 'destructive' },
+export const LEASE_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
+  Draft: 'secondary',
+  AwaitingSignature: 'outline',
+  PartiallySigned: 'outline',
+  Signed: 'default',
+  RegistrationPending: 'outline',
+  SentToProvider: 'outline',
+  Registered: 'success',
+  Rejected: 'destructive',
 };
 
-export const REGISTRATION_STATUS_LABELS: Record<
-  string,
-  { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' | 'success' }
-> = {
-  Pending: { label: 'Pending', variant: 'secondary' },
-  SentToProvider: { label: 'Sent to provider', variant: 'outline' },
-  Registered: { label: 'Registered', variant: 'success' },
-  Failed: { label: 'Failed', variant: 'destructive' },
+export const REGISTRATION_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
+  Pending: 'secondary',
+  SentToProvider: 'outline',
+  Registered: 'success',
+  Failed: 'destructive',
 };

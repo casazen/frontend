@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { leasesApi } from '@/api/leases.api';
 import type { CreateLeaseDto, LeaseStatus } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const LEASES_KEY = 'leases';
 
@@ -48,10 +49,10 @@ export function useCreateLease() {
     mutationFn: (data: CreateLeaseDto) => leasesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
-      toast.success('Lease draft created successfully');
+      toast.success(i18n.t('toast.leaseDraftCreated'));
     },
     onError: () => {
-      toast.error('Unable to create lease. Check property documents and try again.');
+      toast.error(i18n.t('toast.leaseCreateFailed'));
     },
   });
 }
@@ -64,10 +65,10 @@ export function useInitiateSigning() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
-      toast.success('Signing initiated — share the links with each party');
+      toast.success(i18n.t('toast.signingInitiated'));
     },
     onError: () => {
-      toast.error('Signing cannot be initiated for this lease.');
+      toast.error(i18n.t('toast.signingInitiateFailed'));
     },
   });
 }
@@ -81,10 +82,10 @@ export function useTriggerRegistration() {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'registration'] });
-      toast.success('Registration submitted to provider');
+      toast.success(i18n.t('toast.registrationSubmitted'));
     },
     onError: () => {
-      toast.error('Unable to submit registration. Please try again.');
+      toast.error(i18n.t('toast.registrationSubmitFailed'));
     },
   });
 }

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeases } from '@/queries/use-leases';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { LeaseStatusBadge } from './components/lease-status-badge';
-import { FISCAL_REGIME_LABELS } from './schemas/lease.schema';
+import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
 import type { LeaseContract } from '@/types';
 
 function getPropertyLabel(lease: LeaseContract): string {
@@ -83,7 +83,7 @@ export function LeasesPage() {
                   <div>
                     <span className="text-muted-foreground">{t('leases.regimeLabel')}</span>
                     <span className="font-medium">
-                      {FISCAL_REGIME_LABELS[lease.fiscalRegime]}
+                      {getFiscalRegimeLabel(lease.fiscalRegime, t)}
                     </span>
                   </div>
                   <div>

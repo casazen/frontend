@@ -25,23 +25,23 @@ export function BookingDetailPage() {
   const [activeTab, setActiveTab] = useState<BookingTab>('details');
   const { data: booking, isLoading } = useBooking(id!);
   const { data: alloggiatiStatus } = useAlloggiatiStatus(id!);
+  const { t } = useTranslation();
 
   if (isLoading) {
-    return <LoadingScreen message="Loading booking..." />;
+    return <LoadingScreen message={t('booking.detailPage.loading')} />;
   }
 
   if (!booking) {
     return (
       <AppShell>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Booking not found</h2>
-          <p className="text-muted-foreground">The booking you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold mb-2">{t('booking.detailPage.notFound')}</h2>
+          <p className="text-muted-foreground">{t('booking.detailPage.notFoundDescription')}</p>
         </div>
       </AppShell>
     );
   }
 
-  const { t } = useTranslation();
   const statusLabel = getBookingStatusLabel(booking.status, t);
   const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
   const nights = Math.ceil(
@@ -49,10 +49,10 @@ export function BookingDetailPage() {
   );
 
   const tabs: { key: BookingTab; label: string }[] = [
-    { key: 'details', label: 'Dettagli' },
-    { key: 'guest', label: 'Ospite' },
-    { key: 'payment', label: 'Pagamento' },
-    { key: 'alloggiati', label: 'Alloggiati' },
+    { key: 'details', label: t('booking.detailPage.tabs.details') },
+    { key: 'guest', label: t('booking.detailPage.tabs.guest') },
+    { key: 'payment', label: t('booking.detailPage.tabs.payment') },
+    { key: 'alloggiati', label: t('booking.detailPage.tabs.alloggiati') },
   ];
 
   return (
@@ -66,7 +66,7 @@ export function BookingDetailPage() {
           action={
             <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Booking
+              {t('booking.detailPage.editBooking')}
             </Button>
           }
         />
@@ -75,7 +75,7 @@ export function BookingDetailPage() {
           to={`/app/short-rent/properties/${booking.propertyId}`}
           className="text-primary hover:underline text-sm inline-block"
         >
-          Vedi proprieta &#8594;
+          {t('booking.detailPage.viewProperty')} &#8594;
         </Link>
 
         <div className="flex gap-1 border-b mb-6">
@@ -100,7 +100,7 @@ export function BookingDetailPage() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Dettagli prenotazione</CardTitle>
+                    <CardTitle>{t('booking.detailPage.bookingDetailsTitle')}</CardTitle>
                     <Badge variant={statusVariant} className="text-base px-3 py-1">
                       {statusLabel}
                     </Badge>
@@ -111,14 +111,14 @@ export function BookingDetailPage() {
                     <div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <Calendar className="h-4 w-4" />
-                        Check-in
+                        {t('booking.detail.checkIn')}
                       </div>
                       <div className="font-medium">{formatDate(booking.checkInDate, 'PPP')}</div>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <Calendar className="h-4 w-4" />
-                        Check-out
+                        {t('booking.detail.checkOut')}
                       </div>
                       <div className="font-medium">{formatDate(booking.checkOutDate, 'PPP')}</div>
                     </div>
@@ -127,16 +127,16 @@ export function BookingDetailPage() {
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-muted-foreground" />
-                      <span>{booking.numberOfGuests} guests</span>
+                      <span>{booking.numberOfGuests} {t('booking.detail.guest_other')}</span>
                     </div>
                     <div className="text-muted-foreground">
-                      {nights} night{nights !== 1 ? 's' : ''}
+                      {nights} {nights !== 1 ? t('booking.detail.night_other') : t('booking.detail.night_one')}
                     </div>
                   </div>
 
                   {booking.specialRequests && (
                     <div className="pt-3 border-t">
-                      <div className="text-sm text-muted-foreground mb-1">Special Requests</div>
+                      <div className="text-sm text-muted-foreground mb-1">{t('booking.detailPage.specialRequests')}</div>
                       <p className="text-sm">{booking.specialRequests}</p>
                     </div>
                   )}
@@ -147,15 +147,15 @@ export function BookingDetailPage() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Timeline</CardTitle>
+                  <CardTitle>{t('booking.detailPage.timeline')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div>
-                    <div className="text-muted-foreground">Created</div>
+                    <div className="text-muted-foreground">{t('booking.detailPage.created')}</div>
                     <div>{formatDate(booking.createdAt, 'PPp')}</div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">Last Updated</div>
+                    <div className="text-muted-foreground">{t('booking.detailPage.lastUpdated')}</div>
                     <div>{formatDate(booking.updatedAt, 'PPp')}</div>
                   </div>
                 </CardContent>
@@ -167,11 +167,11 @@ export function BookingDetailPage() {
         {activeTab === 'guest' && (
           <Card>
             <CardHeader>
-              <CardTitle>Informazioni ospite</CardTitle>
+              <CardTitle>{t('booking.detailPage.guestInformationTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-muted-foreground">Nome</div>
+                <div className="text-sm text-muted-foreground">{t('booking.detailPage.guestName')}</div>
                 <div className="font-medium">
                   {booking.guest.firstName} {booking.guest.lastName}
                 </div>
@@ -202,19 +202,19 @@ export function BookingDetailPage() {
         {activeTab === 'payment' && (
           <Card>
             <CardHeader>
-              <CardTitle>Riepilogo pagamento</CardTitle>
+              <CardTitle>{t('booking.detailPage.paymentSummaryTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {nights} night{nights !== 1 ? 's' : ''}
+                  {nights} {nights !== 1 ? t('booking.detail.night_other') : t('booking.detail.night_one')}
                 </span>
-                <span>{formatCurrency(booking.totalPrice / nights, booking.currency)}/night</span>
+                <span>{formatCurrency(booking.totalPrice / nights, booking.currency)}{t('booking.detailPage.perNight')}</span>
               </div>
 
               <div className="border-t pt-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Totale</span>
+                  <span className="font-semibold">{t('booking.detailPage.total')}</span>
                   <span className="text-2xl font-bold">
                     {formatCurrency(booking.totalPrice, booking.currency)}
                   </span>
@@ -227,11 +227,11 @@ export function BookingDetailPage() {
         {activeTab === 'alloggiati' && alloggiatiStatus && (
           <Card data-testid="booking-alloggiati-section">
             <CardHeader>
-              <CardTitle>Alloggiati Web</CardTitle>
+              <CardTitle>{t('booking.detailPage.alloggiatiWeb')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Stato comunicazione</span>
+                <span className="text-sm text-muted-foreground">{t('booking.detailPage.communicationStatus')}</span>
                 <AlloggiatiStatusBadge
                   status={alloggiatiStatus.status}
                   isOverdue={alloggiatiStatus.isOverdue}
@@ -239,7 +239,7 @@ export function BookingDetailPage() {
               </div>
               {alloggiatiStatus.confirmationNumber && (
                 <div className="text-sm">
-                  <span className="text-muted-foreground">Conferma: </span>
+                  <span className="text-muted-foreground">{t('booking.detailPage.confirmation')}</span>
                   {alloggiatiStatus.confirmationNumber}
                 </div>
               )}
@@ -247,7 +247,7 @@ export function BookingDetailPage() {
                 <p className="text-sm text-destructive">{alloggiatiStatus.errorMessage}</p>
               )}
               {!alloggiatiStatus.dataComplete && (
-                <p className="text-sm text-muted-foreground">Dati ospite incompleti</p>
+                <p className="text-sm text-muted-foreground">{t('booking.detailPage.incompleteGuestData')}</p>
               )}
               <ResendButton bookingId={id!} status={alloggiatiStatus.status} />
             </CardContent>
@@ -257,11 +257,11 @@ export function BookingDetailPage() {
         {activeTab === 'alloggiati' && !alloggiatiStatus && (
           <Card>
             <CardHeader>
-              <CardTitle>Alloggiati Web</CardTitle>
+              <CardTitle>{t('booking.detailPage.alloggiatiWeb')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Nessuna informazione Alloggiati disponibile per questa prenotazione.
+                {t('booking.detailPage.noAlloggiatiInfo')}
               </p>
             </CardContent>
           </Card>

@@ -342,7 +342,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    navLabel: 'Invita fornitore',
+    navKey: 'nav.inviteSupplier',
     navGroup: 'operations',
     navPlacement: 'secondary',
     navOrder: 6,

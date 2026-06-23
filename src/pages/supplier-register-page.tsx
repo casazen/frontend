@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { registerSupplier } from '@/services/supplier-api';
 import { Home, Loader2 } from 'lucide-react';
 
 export function SupplierRegisterPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { loginWithRedirect } = useAuth0();
 
@@ -27,7 +29,7 @@ export function SupplierRegisterPage() {
     setError('');
 
     if (!legalName.trim() || !phone.trim()) {
-      setError('Compila tutti i campi obbligatori.');
+      setError(t('supplier.register.errorFields'));
       return;
     }
 
@@ -45,7 +47,7 @@ export function SupplierRegisterPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : 'Errore durante la registrazione. Riprova.';
+          : t('supplier.register.errorGeneric');
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -71,17 +73,17 @@ export function SupplierRegisterPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <CardTitle className="text-2xl">Registrazione completata</CardTitle>
+            <CardTitle className="text-2xl">{t('supplier.register.successTitle')}</CardTitle>
             <CardDescription>
-              Il tuo profilo fornitore è stato creato. Ora crea il tuo account per accedere alla piattaforma.
+              {t('supplier.register.successDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button onClick={handleGoToAuth0} className="w-full" size="lg">
-              Crea il tuo account
+              {t('supplier.register.createAccount')}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
-              Dopo aver creato l'account, potrai accedere alla console fornitore e alla web app.
+              {t('supplier.register.afterAccount')}
             </p>
           </CardContent>
         </Card>
@@ -96,15 +98,15 @@ export function SupplierRegisterPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <Home className="h-8 w-8" />
           </div>
-          <CardTitle className="text-2xl">Registrazione Fornitore</CardTitle>
+          <CardTitle className="text-2xl">{t('supplier.register.title')}</CardTitle>
           <CardDescription>
-            Sei stato invitato su CasaZen. Compila il form per registrarti.
+            {t('supplier.register.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('supplier.register.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -115,7 +117,7 @@ export function SupplierRegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="comune">Comune</Label>
+              <Label htmlFor="comune">{t('supplier.register.comune')}</Label>
               <Input
                 id="comune"
                 value={comuneFromUrl}
@@ -125,25 +127,25 @@ export function SupplierRegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="legalName">Nome attività / Ragione sociale *</Label>
+              <Label htmlFor="legalName">{t('supplier.register.legalName')}</Label>
               <Input
                 id="legalName"
                 value={legalName}
                 onChange={(e) => setLegalName(e.target.value)}
-                placeholder="Es. Impresa di Pulizie Rossi"
+                placeholder={t('supplier.register.legalNamePlaceholder')}
                 required
                 maxLength={300}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefono *</Label>
+              <Label htmlFor="phone">{t('supplier.register.phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Es. +39 123 456 7890"
+                placeholder={t('supplier.register.phonePlaceholder')}
                 required
                 maxLength={50}
               />
@@ -157,18 +159,18 @@ export function SupplierRegisterPage() {
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Registrazione in corso...
+                  {t('supplier.register.registering')}
                 </>
               ) : (
-                'Completa la registrazione'
+                t('supplier.register.complete')
               )}
             </Button>
           </form>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Hai già un account?{' '}
+            {t('supplier.register.existingAccount')}{' '}
             <Link to="/login" className="text-primary underline">
-              Accedi
+              {t('supplier.register.login')}
             </Link>
           </p>
         </CardContent>

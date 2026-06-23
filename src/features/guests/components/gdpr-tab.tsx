@@ -36,10 +36,10 @@ export function GdprTab({ guest }: GdprTabProps) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success('Data exported successfully');
+      toast.success(t('guests.gdprTab.exportSuccess'));
     },
     onError: () => {
-      toast.error('Failed to export data');
+      toast.error(t('guests.gdprTab.exportError'));
     },
   });
 
@@ -47,10 +47,10 @@ export function GdprTab({ guest }: GdprTabProps) {
   const anonymizeMutation = useMutation({
     mutationFn: () => gdprApi.anonymizeData(guest.id),
     onSuccess: () => {
-      toast.success('Data anonymized successfully');
+      toast.success(t('guests.gdprTab.anonymizeSuccess'));
     },
     onError: () => {
-      toast.error('Failed to anonymize data');
+      toast.error(t('guests.gdprTab.anonymizeError'));
     },
   });
 
@@ -58,10 +58,10 @@ export function GdprTab({ guest }: GdprTabProps) {
   const deleteMutation = useMutation({
     mutationFn: () => gdprApi.deleteData(guest.id, deleteReason || 'User requested erasure'),
     onSuccess: () => {
-      toast.success('Data deleted successfully');
+      toast.success(t('guests.gdprTab.deleteSuccess'));
     },
     onError: () => {
-      toast.error('Failed to delete data');
+      toast.error(t('guests.gdprTab.deleteError'));
     },
   });
 
@@ -70,10 +70,10 @@ export function GdprTab({ guest }: GdprTabProps) {
     mutationFn: (marketingConsent: boolean) =>
       gdprApi.updateConsent(guest.id, marketingConsent),
     onSuccess: () => {
-      toast.success('Consent updated successfully');
+      toast.success(t('guests.gdprTab.consentSuccess'));
     },
     onError: () => {
-      toast.error('Failed to update consent');
+      toast.error(t('guests.gdprTab.consentError'));
     },
   });
 
@@ -91,11 +91,11 @@ export function GdprTab({ guest }: GdprTabProps) {
           <p className="font-medium">{formatOptionalDate(guest.dataRetentionUntil)}</p>
         </div>
         <div>
-          <span className="text-muted-foreground">Consenso trattamento dati</span>
+          <span className="text-muted-foreground">{t('guests.gdprTab.dataConsent')}</span>
           <p className="font-medium">{formatOptionalDate(guest.consentDate)}</p>
         </div>
         <div>
-          <span className="text-muted-foreground">Finalità trattamento</span>
+          <span className="text-muted-foreground">{t('guests.gdprTab.processingPurpose')}</span>
           <p className="font-medium">{guest.dataProcessingPurpose || '—'}</p>
         </div>
         <div>
@@ -111,7 +111,7 @@ export function GdprTab({ guest }: GdprTabProps) {
         <div className="space-y-0.5">
           <Label htmlFor="marketing-consent">{t('guests.consentMarketing')}</Label>
           <p className="text-sm text-muted-foreground">
-            Consenso al trattamento dei dati per finalità di marketing
+            {t('guests.gdprTab.marketingConsentDescription')}
           </p>
         </div>
         <Switch
@@ -147,7 +147,7 @@ export function GdprTab({ guest }: GdprTabProps) {
           ) : (
             <ShieldOff className="mr-2 h-4 w-4" />
           )}
-          {guest.dataAnonymizedDate ? 'Anonimizzato' : t('guests.anonymize')}
+          {guest.dataAnonymizedDate ? t('guests.gdprTab.anonymized') : t('guests.anonymize')}
         </Button>
 
         <Button
@@ -160,7 +160,7 @@ export function GdprTab({ guest }: GdprTabProps) {
           ) : (
             <Trash2 className="mr-2 h-4 w-4" />
           )}
-          {guest.isDeleted ? 'Cancellato' : t('guests.delete')}
+          {guest.isDeleted ? t('guests.gdprTab.deleted') : t('guests.delete')}
         </Button>
       </div>
 
@@ -168,17 +168,17 @@ export function GdprTab({ guest }: GdprTabProps) {
       <div className="text-sm space-y-1 border-t pt-4">
         {guest.erasureRequested && (
           <p className="text-amber-600">
-            Richiesta cancellazione: {formatOptionalDate(guest.erasureRequestedDate)}
+            {t('guests.gdprTab.erasureRequested')} {formatOptionalDate(guest.erasureRequestedDate)}
           </p>
         )}
         {guest.dataAnonymizedDate && (
           <p className="text-muted-foreground">
-            Anonimizzato il: {formatOptionalDate(guest.dataAnonymizedDate)}
+            {t('guests.gdprTab.anonymizedOn')} {formatOptionalDate(guest.dataAnonymizedDate)}
           </p>
         )}
         {guest.isDeleted && (
           <p className="text-destructive">
-            Cancellato il: {formatOptionalDate(guest.deletedAt)}
+            {t('guests.gdprTab.deletedOn')} {formatOptionalDate(guest.deletedAt)}
             {guest.deletionReason && ` — ${guest.deletionReason}`}
           </p>
         )}
@@ -188,9 +188,9 @@ export function GdprTab({ guest }: GdprTabProps) {
       <ConfirmationDialog
         open={showAnonymizeConfirm}
         onOpenChange={setShowAnonymizeConfirm}
-        title="Anonimizza dati"
-        description="Questa azione renderà anonimi tutti i dati personali dell'ospite. Non sarà più possibile identificarlo. Continuare?"
-        confirmLabel="Anonimizza"
+        title={t('guests.gdprTab.anonymizeTitle')}
+        description={t('guests.gdprTab.anonymizeDescription')}
+        confirmLabel={t('guests.gdprTab.anonymizeConfirm')}
         variant="destructive"
         onConfirm={() => anonymizeMutation.mutate()}
         isLoading={anonymizeMutation.isPending}
@@ -200,9 +200,9 @@ export function GdprTab({ guest }: GdprTabProps) {
       <ConfirmationDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title="Cancella dati"
+        title={t('guests.gdprTab.deleteTitle')}
         description={t('guests.deleteConfirm')}
-        confirmLabel="Cancella definitivamente"
+        confirmLabel={t('guests.gdprTab.deleteConfirmLabel')}
         variant="destructive"
         onConfirm={() => deleteMutation.mutate()}
         isLoading={deleteMutation.isPending}

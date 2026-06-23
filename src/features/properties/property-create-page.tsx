@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PropertyForm } from './components/property-form';
@@ -14,6 +15,7 @@ import {
 import type { PropertyFormValues } from './schemas/property.schema';
 
 export function PropertyCreatePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const createProperty = useCreateProperty();
   const { data: entitlement } = useEntitlement();
@@ -41,8 +43,8 @@ export function PropertyCreatePage() {
     <AppShell>
       <div className="space-y-6 max-w-4xl mx-auto">
         <PageHeader
-          title="Crea proprietà"
-          description="Aggiungi una nuova struttura ricettiva al tuo portfolio"
+          title={t('property.create.title')}
+          description={t('property.create.description')}
         />
 
         {blockedByPlan && (

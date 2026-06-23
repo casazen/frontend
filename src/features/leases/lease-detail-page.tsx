@@ -17,7 +17,7 @@ import { LeaseStatusBadge } from './components/lease-status-badge';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RegistrationStatusPanel } from './components/registration-status-panel';
 import { ExtraEUWarningBanner } from './components/extra-eu-warning-banner';
-import { FISCAL_REGIME_LABELS } from './schemas/lease.schema';
+import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
 import type { SignerInfo } from '@/types';
 
 export function LeaseDetailPage() {
@@ -103,7 +103,7 @@ export function LeaseDetailPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.fiscalRegime')}</p>
-                  <p className="font-medium">{FISCAL_REGIME_LABELS[lease.fiscalRegime]}</p>
+                  <p className="font-medium">{getFiscalRegimeLabel(lease.fiscalRegime, t)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.registrationDeadline')}</p>

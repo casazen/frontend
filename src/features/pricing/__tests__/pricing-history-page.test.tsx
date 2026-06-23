@@ -3,6 +3,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { PricingHistoryPage } from '../pricing-history-page';
 import * as pricingQueries from '@/queries/use-pricing-adapter';
 import * as pricingApi from '@/api/pricing-adapter.api';
@@ -52,25 +54,28 @@ const mockHistoryMultiPage: PricingHistoryPagedResponse = {
 function renderPage(propertyId = PROPERTY_ID) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    createElement(
-      QueryClientProvider,
-      { client },
+    createElement(I18nextProvider, { i18n },
       createElement(
-        MemoryRouter,
-        { initialEntries: [`/properties/${propertyId}/pricing/history`] },
-        createElement(Routes, null,
-          createElement(Route, {
-            path: '/properties/:id/pricing/history',
-            element: createElement(PricingHistoryPage),
-          })
+        QueryClientProvider,
+        { client },
+        createElement(
+          MemoryRouter,
+          { initialEntries: [`/properties/${propertyId}/pricing/history`] },
+          createElement(Routes, null,
+            createElement(Route, {
+              path: '/properties/:id/pricing/history',
+              element: createElement(PricingHistoryPage),
+            })
+          )
         )
       )
     )
   );
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
+  await i18n.changeLanguage('en');
   Object.defineProperty(window, 'URL', {
     value: { createObjectURL: vi.fn(() => 'blob:fake'), revokeObjectURL: vi.fn() },
     writable: true,

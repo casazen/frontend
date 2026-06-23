@@ -78,12 +78,12 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">{t('property.form.name')}</Label>
-            <Input id="name" {...register('name')} placeholder="Beautiful Beach House" />
+            <Input id="name" {...register('name')} placeholder={t('property.form.placeholder.name')} />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">{t('property.form.description')}</Label>
-            <Textarea id="description" {...register('description')} placeholder="Describe your property..." rows={4} />
+            <Textarea id="description" {...register('description')} placeholder={t('property.form.placeholder.description')} rows={4} />
             {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
           <div className="flex items-center space-x-2">
@@ -95,12 +95,12 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
 
       <Card>
         <CardHeader>
-          <CardTitle>Conformità CIN</CardTitle>
-          <CardDescription>Codice Identificativo Nazionale (D.L. 145/2023) — formato IT-XXXXX-XXXXXXXXXX</CardDescription>
+          <CardTitle>{t('property.form.cin.title')}</CardTitle>
+          <CardDescription>{t('property.form.cin.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Label htmlFor="cinCode">Codice CIN</Label>
-          <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder="IT-12345-0123456789" />
+          <Label htmlFor="cinCode">{t('property.form.cin.label')}</Label>
+          <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder={t('property.form.cin.placeholder')} />
           {errors.cinCode && <p className="text-sm text-destructive">{errors.cinCode.message}</p>}
         </CardContent>
       </Card>
@@ -113,25 +113,25 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="address">{t('property.form.address')}</Label>
-            <Input id="address" {...register('address')} placeholder="123 Main Street" />
+            <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
             {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">{t('property.form.city')}</Label>
-              <Input id="city" {...register('city')} placeholder="Miami" />
+              <Input id="city" {...register('city')} placeholder={t('property.form.placeholder.city')} />
               {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="country">{t('property.form.country')}</Label>
-              <Input id="country" {...register('country')} placeholder="USA" />
+              <Input id="country" {...register('country')} placeholder={t('property.form.placeholder.country')} />
               {errors.country && <p className="text-sm text-destructive">{errors.country.message}</p>}
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
-              <Input id="postalCode" {...register('postalCode')} placeholder="33101" />
+              <Input id="postalCode" {...register('postalCode')} placeholder={t('property.form.placeholder.postalCode')} />
               {errors.postalCode && <p className="text-sm text-destructive">{errors.postalCode.message}</p>}
             </div>
             <div className="space-y-2">
@@ -140,7 +140,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
                 if (value === '' || value === null || value === undefined) return undefined;
                 const parsed = Number(value);
                 return Number.isNaN(parsed) ? undefined : parsed;
-              }})} placeholder="25.7617" />
+              }})} placeholder={t('property.form.placeholder.latitude')} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="longitude">{t('property.form.longitude')}</Label>
@@ -148,7 +148,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
                 if (value === '' || value === null || value === undefined) return undefined;
                 const parsed = Number(value);
                 return Number.isNaN(parsed) ? undefined : parsed;
-              }})} placeholder="-80.1918" />
+              }})} placeholder={t('property.form.placeholder.longitude')} />
             </div>
           </div>
         </CardContent>
@@ -163,29 +163,29 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="bedrooms">{t('property.form.bedrooms')}</Label>
-              <Input id="bedrooms" type="number" {...register('bedrooms', { valueAsNumber: true })} placeholder="3" />
+              <Input id="bedrooms" type="number" {...register('bedrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bedrooms')} />
               {errors.bedrooms && <p className="text-sm text-destructive">{errors.bedrooms.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="bathrooms">{t('property.form.bathrooms')}</Label>
-              <Input id="bathrooms" type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} placeholder="2" />
+              <Input id="bathrooms" type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bathrooms')} />
               {errors.bathrooms && <p className="text-sm text-destructive">{errors.bathrooms.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
-              <Input id="maxGuests" type="number" {...register('maxGuests', { valueAsNumber: true })} placeholder="6" />
+              <Input id="maxGuests" type="number" {...register('maxGuests', { valueAsNumber: true })} placeholder={t('property.form.placeholder.maxGuests')} />
               {errors.maxGuests && <p className="text-sm text-destructive">{errors.maxGuests.message}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
-              <Input id="nightlyRate" type="number" step="0.01" {...register('nightlyRate', { valueAsNumber: true })} placeholder="150" />
+              <Input id="nightlyRate" type="number" step="0.01" {...register('nightlyRate', { valueAsNumber: true })} placeholder={t('property.form.placeholder.nightlyRate')} />
               {errors.nightlyRate && <p className="text-sm text-destructive">{errors.nightlyRate.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">{t('property.form.currency')}</Label>
-              <Input id="currency" {...register('currency')} placeholder="EUR" />
+              <Input id="currency" {...register('currency')} placeholder={t('property.form.placeholder.currency')} />
             </div>
           </div>
         </CardContent>

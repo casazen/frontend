@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { useTouristTaxPage } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
@@ -8,6 +9,7 @@ import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-
 import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export function TouristTaxCalculatorPage() {
+  const { t } = useTranslation();
   const { comune = '' } = useParams<{ comune: string }>();
   const { data: page, isLoading, isError } = useTouristTaxPage(comune);
 
@@ -32,9 +34,9 @@ export function TouristTaxCalculatorPage() {
   if (isError || !page) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-12" data-testid="tourist-tax-page-not-found">
-        <h1 className="text-2xl font-bold">Pagina non trovata</h1>
+        <h1 className="text-2xl font-bold">{t('publicSeo.notFound')}</h1>
         <p className="mt-2 text-muted-foreground">
-          Il calcolatore per questo comune non è ancora disponibile.
+          {t('publicSeo.calculatorNotAvailable')}
         </p>
       </main>
     );

@@ -4,6 +4,7 @@ import { OrgsApi } from '@/api/orgs.api';
 import type { RentalType, UpdateProfileRequest, PlanTier } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const USERS_KEY = 'users';
 const ME_KEY = 'me';
@@ -74,10 +75,10 @@ export function useUpdateMe() {
     mutationFn: (data: UpdateProfileRequest) => UsersApi.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
-      toast.success('Profilo aggiornato con successo');
+      toast.success(i18n.t('toast.profileUpdated'));
     },
     onError: () => {
-      toast.error('Impossibile aggiornare il profilo');
+      toast.error(i18n.t('toast.profileUpdateFailed'));
     },
   });
 }
@@ -90,10 +91,10 @@ export function useChangeUserRole() {
       UsersApi.changeRole(id, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
-      toast.success('Ruolo aggiornato con successo');
+      toast.success(i18n.t('toast.roleUpdated'));
     },
     onError: () => {
-      toast.error('Impossibile aggiornare il ruolo');
+      toast.error(i18n.t('toast.roleUpdateFailed'));
     },
   });
 }
@@ -113,10 +114,10 @@ export function useUpdateMyPlan() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
-      toast.success('Piano aggiornato con successo');
+      toast.success(i18n.t('toast.planUpdated'));
     },
     onError: () => {
-      toast.error('Impossibile aggiornare il piano');
+      toast.error(i18n.t('toast.planUpdateFailed'));
     },
   });
 }
@@ -153,10 +154,10 @@ export function useDeactivateUser() {
     mutationFn: (id: string) => UsersApi.deactivateUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
-      toast.success('Utente disattivato con successo');
+      toast.success(i18n.t('toast.userDeactivated'));
     },
     onError: () => {
-      toast.error('Impossibile disattivare l\'utente');
+      toast.error(i18n.t('toast.userDeactivateFailed'));
     },
   });
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { SearchFilters } from './components/search-filters';
@@ -8,6 +9,7 @@ import type { SearchFiltersFormValues } from './schemas/search.schema';
 import type { PublicPropertyDto } from '@/types';
 
 export function SearchPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<SearchFiltersFormValues>({});
   const { data, isLoading } = useSearchProperties(filters);
 
@@ -20,7 +22,6 @@ export function SearchPage() {
   };
 
   const handleViewDetails = (property: PublicPropertyDto) => {
-    // In a real app, this would navigate to a public property detail page
     console.log('View property details:', property);
   };
 
@@ -30,8 +31,8 @@ export function SearchPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          title="Search Properties"
-          description="Find your perfect vacation rental"
+          title={t('search.page.title')}
+          description={t('search.page.description')}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -42,7 +43,7 @@ export function SearchPage() {
           <div className="lg:col-span-3">
             <div className="mb-4">
               <p className="text-sm text-muted-foreground">
-                {isLoading ? 'Searching...' : `${properties.length} properties found`}
+                {isLoading ? t('search.page.searching') : t('search.page.results', { count: properties.length })}
               </p>
             </div>
             <SearchResults

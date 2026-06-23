@@ -1,12 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlanCatalogEntry, PlanTier } from '@/types';
 import { cn } from '@/lib/utils';
-
-function formatLimit(maxProperties: number): string {
-  if (maxProperties < 0) return 'Proprietà illimitate';
-  return maxProperties === 1 ? '1 proprietà' : `Fino a ${maxProperties} proprietà`;
-}
 
 interface PlanCardProps {
   plan: PlanCatalogEntry;
@@ -23,10 +19,17 @@ export function PlanCard({
   currentTier,
   onSelect,
   isLoading = false,
-  actionLabel = 'Scegli piano',
+  actionLabel,
 }: PlanCardProps) {
+  const { t } = useTranslation();
   const isSelected = selectedTier === plan.tier;
   const isCurrent = currentTier === plan.tier;
+
+  function formatLimit(maxProperties: number): string {
+    if (maxProperties < 0) return t('plan.unlimitedProperties');
+    if (maxProperties === 1) return t('plan.oneProperty');
+    return t('plan.upToProperties', { count: maxProperties });
+  }
 
   return (
     <Card
@@ -51,10 +54,10 @@ export function PlanCard({
           onClick={() => onSelect(plan.tier)}
         >
           {isCurrent
-            ? 'Piano attuale'
+            ? t('plan.currentPlan')
             : isLoading && isSelected
-              ? 'Salvataggio...'
-              : actionLabel}
+              ? t('plan.saving')
+              : actionLabel ?? t('plan.choosePlan')}
         </Button>
       </CardContent>
     </Card>

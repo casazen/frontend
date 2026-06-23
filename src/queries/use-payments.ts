@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi } from '@/api/payments.api';
 import type { CreatePaymentDto, RevenueParams } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const PAYMENTS_KEY = 'payments';
 
@@ -34,10 +35,10 @@ export function useCreatePayment() {
     mutationFn: (data: CreatePaymentDto) => paymentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-      toast.success('Payment created successfully');
+      toast.success(i18n.t('toast.paymentCreated'));
     },
     onError: () => {
-      toast.error('Failed to create payment');
+      toast.error(i18n.t('toast.paymentCreateFailed'));
     },
   });
 }
@@ -50,10 +51,10 @@ export function useProcessPayment() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, id] });
-      toast.success('Payment processed successfully');
+      toast.success(i18n.t('toast.paymentProcessed'));
     },
     onError: () => {
-      toast.error('Failed to process payment');
+      toast.error(i18n.t('toast.paymentProcessFailed'));
     },
   });
 }
@@ -68,10 +69,10 @@ export function useRefundPayment() {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, variables.id] });
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, 'revenue'] });
-      toast.success('Payment refunded successfully');
+      toast.success(i18n.t('toast.paymentRefunded'));
     },
     onError: () => {
-      toast.error('Failed to refund payment');
+      toast.error(i18n.t('toast.paymentRefundFailed'));
     },
   });
 }

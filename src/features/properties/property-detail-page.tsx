@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import { PropertyPricingSummaryCard } from './components/property-pricing-summar
 type PropertyTab = 'info' | 'pricing' | 'ota' | 'documents' | 'cin';
 
 export function PropertyDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
@@ -31,26 +33,26 @@ export function PropertyDetailPage() {
   const updateCin = useUpdatePropertyCin();
 
   if (isLoading) {
-    return <LoadingScreen message="Caricamento proprieta..." />;
+    return <LoadingScreen message={t('property.detail.loading')} />;
   }
 
   if (isError || !property) {
     return (
       <AppShell>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Proprieta non trovata</h2>
-          <p className="text-muted-foreground">La proprieta che stai cercando non esiste.</p>
+          <h2 className="text-2xl font-bold mb-2">{t('property.detail.notFound')}</h2>
+          <p className="text-muted-foreground">{t('property.detail.notFoundDescription')}</p>
         </div>
       </AppShell>
     );
   }
 
   const tabs: { key: PropertyTab; label: string }[] = [
-    { key: 'info', label: 'Info & Foto' },
-    { key: 'pricing', label: 'Prezzi AI' },
-    { key: 'ota', label: 'Canali OTA' },
-    { key: 'documents', label: 'Documenti' },
-    { key: 'cin', label: 'CIN & Compliance' },
+    { key: 'info', label: t('property.detail.tabs.info') },
+    { key: 'pricing', label: t('property.detail.tabs.pricing') },
+    { key: 'ota', label: t('property.detail.tabs.ota') },
+    { key: 'documents', label: t('property.detail.tabs.documents') },
+    { key: 'cin', label: t('property.detail.tabs.cin') },
   ];
 
   return (
@@ -69,11 +71,11 @@ export function PropertyDetailPage() {
                 onEdit={() => setCinDialogOpen(true)}
               />
               <Badge variant={property.isActive ? 'success' : 'secondary'}>
-                {property.isActive ? 'Attiva' : 'Inattiva'}
+                {property.isActive ? t('property.detail.active') : t('property.detail.inactive')}
               </Badge>
               <Button onClick={() => navigate(`/app/short-rent/properties/${id}/edit`)}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifica
+                {t('property.detail.edit')}
               </Button>
             </div>
           }
@@ -83,7 +85,7 @@ export function PropertyDetailPage() {
           to={`/app/short-rent/bookings?propertyId=${property.id}`}
           className="text-primary hover:underline text-sm inline-block"
         >
-          Prenotazioni di questa proprieta &#8594;
+          {t('property.detail.bookingsLink')} &#8594;
         </Link>
 
         <div className="flex gap-1 border-b mb-6">
@@ -110,7 +112,7 @@ export function PropertyDetailPage() {
               {property.description && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Descrizione</CardTitle>
+                    <CardTitle>{t('property.detail.description')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">{property.description}</p>
@@ -143,18 +145,18 @@ export function PropertyDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5" />
-                    Prezzi AI
+                    {t('property.detail.pricingTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
-                    Configura l'adattatore AI per la tariffazione dinamica di questa proprieta.
+                    {t('property.detail.pricingDescription')}
                   </p>
                   <Button
                     variant="outline"
                     onClick={() => navigate(`/app/short-rent/properties/${id}/pricing`)}
                   >
-                    Gestisci prezzi AI
+                    {t('property.detail.managePricing')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </CardContent>
@@ -187,7 +189,7 @@ export function PropertyDetailPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Codice CIN</CardTitle>
+                <CardTitle>{t('property.detail.cinTitle')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -201,23 +203,22 @@ export function PropertyDetailPage() {
                     onClick={() => setCinDialogOpen(true)}
                   >
                     <Edit className="mr-2 h-4 w-4" />
-                    Modifica CIN
+                    {t('property.detail.editCin')}
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Il Codice Identificativo Nazionale (CIN) e obbligatorio ai sensi del D.L. 145/2023
-                  per tutte le strutture ricettive in Italia. Formato richiesto: IT-XXXXX-XXXXXXXXXX.
+                  {t('property.detail.cinDescription')}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Riepilogo compliance</CardTitle>
+                <CardTitle>{t('property.detail.complianceSummary')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Stato CIN</span>
+                  <span className="text-sm">{t('property.detail.cinStatus')}</span>
                   <Badge
                     variant={
                       property.cinStatus === 'Valid'
@@ -227,23 +228,19 @@ export function PropertyDetailPage() {
                           : 'destructive'
                     }
                   >
-                    {property.cinStatus === 'Valid'
-                      ? 'Valido'
-                      : property.cinStatus === 'Missing'
-                        ? 'Mancante'
-                        : 'Non valido'}
+                    {t(`cin.status.${property.cinStatus}`)}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Proprieta attiva</span>
+                  <span className="text-sm">{t('property.detail.propertyActive')}</span>
                   <Badge variant={property.isActive ? 'success' : 'secondary'}>
-                    {property.isActive ? 'Si' : 'No'}
+                    {property.isActive ? t('property.detail.yes') : t('property.detail.no')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Documenti</span>
+                  <span className="text-sm">{t('property.detail.documents')}</span>
                   <span className="text-sm font-medium">
-                    {property.documents.length} caricati
+                    {t('property.detail.documentsCount', { count: property.documents.length })}
                   </span>
                 </div>
               </CardContent>

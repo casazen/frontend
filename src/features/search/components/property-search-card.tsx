@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ interface PropertySearchCardProps {
 }
 
 export function PropertySearchCard({ property, onViewDetails }: PropertySearchCardProps) {
+  const { t } = useTranslation();
   const heroPhoto = property.photoUrls[0];
 
   return (
@@ -25,7 +27,7 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
           />
         ) : (
           <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <div className="text-6xl">🏠</div>
+            <div className="text-6xl">&#x1F3E0;</div>
           </div>
         )}
       </CardHeader>
@@ -53,15 +55,15 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="flex items-center gap-1">
             <Bed className="h-3 w-3" />
-            {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
+            {property.bedrooms} {property.bedrooms !== 1 ? t('search.card.bed_other') : t('search.card.bed_one')}
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Bath className="h-3 w-3" />
-            {property.bathrooms} bath{property.bathrooms !== 1 ? 's' : ''}
+            {property.bathrooms} {property.bathrooms !== 1 ? t('search.card.bath_other') : t('search.card.bath_one')}
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Users className="h-3 w-3" />
-            {property.maxGuests} guests
+            {property.maxGuests} {t('search.card.guests')}
           </Badge>
         </div>
 
@@ -69,14 +71,14 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
           <div className="flex items-baseline gap-1">
             <Euro className="h-4 w-4 text-muted-foreground" />
             <span className="text-2xl font-bold">{formatCurrency(property.nightlyRate)}</span>
-            <span className="text-sm text-muted-foreground">/night</span>
+            <span className="text-sm text-muted-foreground">{t('search.card.perNight')}</span>
           </div>
         </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
         <Button className="w-full" onClick={() => onViewDetails(property)}>
-          Dettagli
+          {t('search.card.details')}
         </Button>
       </CardFooter>
     </Card>

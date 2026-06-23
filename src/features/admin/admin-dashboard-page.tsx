@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminStats } from '@/queries/use-admin';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { Building2, Calendar, DollarSign, FileCheck, Wifi } from 'lucide-react';
 
 export function AdminDashboardPage() {
@@ -53,7 +54,7 @@ export function AdminDashboardPage() {
             />
             <AdminKpiCard
               title={t('admin.dashboard.kpi.totalRevenue')}
-              value={`€ ${stats.totalRevenue.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`}
+              value={`€ ${stats.totalRevenue.toLocaleString(i18n.language, { minimumFractionDigits: 2 })}`}
               icon={DollarSign}
             />
           </div>

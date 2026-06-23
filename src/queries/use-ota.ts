@@ -7,6 +7,7 @@ import type {
   OtaPricingUpdate,
 } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const OTA_KEY = 'ota';
 
@@ -40,10 +41,10 @@ export function useCreateOtaIntegration() {
     mutationFn: (data: CreateOtaIntegrationDto) => otaApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
-      toast.success('OTA integration created successfully');
+      toast.success(i18n.t('toast.otaIntegrationCreated'));
     },
     onError: () => {
-      toast.error('Failed to create OTA integration');
+      toast.error(i18n.t('toast.otaIntegrationCreateFailed'));
     },
   });
 }
@@ -57,10 +58,10 @@ export function useUpdateOtaIntegration() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
       queryClient.invalidateQueries({ queryKey: [OTA_KEY, variables.id] });
-      toast.success('OTA integration updated successfully');
+      toast.success(i18n.t('toast.otaIntegrationUpdated'));
     },
     onError: () => {
-      toast.error('Failed to update OTA integration');
+      toast.error(i18n.t('toast.otaIntegrationUpdateFailed'));
     },
   });
 }
@@ -72,10 +73,10 @@ export function useDeleteOtaIntegration() {
     mutationFn: (id: string) => otaApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
-      toast.success('OTA integration deleted successfully');
+      toast.success(i18n.t('toast.otaIntegrationDeleted'));
     },
     onError: () => {
-      toast.error('Failed to delete OTA integration');
+      toast.error(i18n.t('toast.otaIntegrationDeleteFailed'));
     },
   });
 }
@@ -88,10 +89,10 @@ export function useSyncAllOta() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      toast.success('OTA sync completed successfully');
+      toast.success(i18n.t('toast.otaSyncCompleted'));
     },
     onError: () => {
-      toast.error('Failed to sync OTA platforms');
+      toast.error(i18n.t('toast.otaSyncFailed'));
     },
   });
 }
@@ -104,10 +105,10 @@ export function useSyncOtaPlatform() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      toast.success('Platform synced successfully');
+      toast.success(i18n.t('toast.otaPlatformSynced'));
     },
     onError: () => {
-      toast.error('Failed to sync platform');
+      toast.error(i18n.t('toast.otaPlatformSyncFailed'));
     },
   });
 }
@@ -119,10 +120,10 @@ export function useUpdateOtaPricing() {
     mutationFn: (data: OtaPricingUpdate) => otaApi.updatePricing(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
-      toast.success('Pricing updated on OTA platforms');
+      toast.success(i18n.t('toast.otaPricingUpdated'));
     },
     onError: () => {
-      toast.error('Failed to update pricing');
+      toast.error(i18n.t('toast.otaPricingUpdateFailed'));
     },
   });
 }
@@ -132,13 +133,13 @@ export function useValidateOta() {
     mutationFn: (id: string) => otaApi.validate(id),
     onSuccess: (data) => {
       if (data.isValid) {
-        toast.success('OTA credentials validated successfully');
+        toast.success(i18n.t('toast.otaCredentialsValidated'));
       } else {
-        toast.error(`Validation failed: ${data.errors?.join(', ')}`);
+        toast.error(i18n.t('toast.otaValidationFailed', { errors: data.errors?.join(', ') ?? '' }));
       }
     },
     onError: () => {
-      toast.error('Failed to validate OTA credentials');
+      toast.error(i18n.t('toast.otaCredentialsValidationFailed'));
     },
   });
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import i18n from '@/i18n/config';
 import { useInviteSupplier } from '@/queries/use-supplier';
 
 export function AdminSupplierInvitePage() {
@@ -24,7 +25,7 @@ export function AdminSupplierInvitePage() {
         message: message || undefined,
       });
       toast.success(t('admin.supplierInvite.toast.success', {
-        expiresAt: new Date(result.expiresAt).toLocaleDateString('it-IT'),
+        expiresAt: new Date(result.expiresAt).toLocaleDateString(i18n.language),
       }));
       setEmail('');
       setComuneCode('');

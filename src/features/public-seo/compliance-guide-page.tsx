@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { useComplianceGuide } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
@@ -8,6 +9,7 @@ import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-
 import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export function ComplianceGuidePage() {
+  const { t } = useTranslation();
   const { region = '', comune = '' } = useParams<{ region: string; comune: string }>();
   const { data: page, isLoading, isError } = useComplianceGuide(region, comune);
 
@@ -32,9 +34,9 @@ export function ComplianceGuidePage() {
   if (isError || !page) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-12" data-testid="compliance-guide-not-found">
-        <h1 className="text-2xl font-bold">Pagina non trovata</h1>
+        <h1 className="text-2xl font-bold">{t('publicSeo.notFound')}</h1>
         <p className="mt-2 text-muted-foreground">
-          La guida per questo comune non è ancora disponibile.
+          {t('publicSeo.guideNotAvailable')}
         </p>
       </main>
     );

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { PropertyDocumentDto } from '@/types';
@@ -12,17 +13,18 @@ interface PropertyDocumentsSectionProps {
 }
 
 export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocumentsSectionProps) {
+  const { t } = useTranslation();
   const deleteMutation = useDeletePropertyDocument();
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>Documenti</CardTitle>
+        <CardTitle>{t('property.documents.title')}</CardTitle>
         <DocumentUploadDialog propertyId={propertyId} />
       </CardHeader>
       <CardContent>
         {documents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nessun documento caricato.</p>
+          <p className="text-sm text-muted-foreground">{t('property.documents.empty')}</p>
         ) : (
           <ul className="space-y-2">
             {documents.map((doc) => (
@@ -43,7 +45,7 @@ export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocu
                   <Button variant="ghost" size="icon" asChild>
                     <a href={doc.downloadUrl} download={doc.fileName} target="_blank" rel="noreferrer">
                       <Download className="h-4 w-4" />
-                      <span className="sr-only">Scarica</span>
+                      <span className="sr-only">{t('property.documents.download')}</span>
                     </a>
                   </Button>
                   <Button
@@ -53,7 +55,7 @@ export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocu
                     onClick={() => deleteMutation.mutate({ propertyId, docId: doc.id })}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
-                    <span className="sr-only">Elimina</span>
+                    <span className="sr-only">{t('property.documents.delete')}</span>
                   </Button>
                 </div>
               </li>

@@ -73,7 +73,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="dateOfBirth">Data di nascita *</Label>
+          <Label htmlFor="dateOfBirth">{t('checkin.birthDate')}</Label>
           <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
           {errors.dateOfBirth && (
             <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>
@@ -81,7 +81,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="placeOfBirth">Luogo di nascita *</Label>
+          <Label htmlFor="placeOfBirth">{t('checkin.birthPlace')}</Label>
           <Input id="placeOfBirth" {...register('placeOfBirth')} />
           {errors.placeOfBirth && (
             <p className="text-sm text-destructive">{errors.placeOfBirth.message}</p>
@@ -89,7 +89,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="nationality">Nazionalità *</Label>
+          <Label htmlFor="nationality">{t('checkin.nationality')}</Label>
           <Input id="nationality" {...register('nationality')} />
           {errors.nationality && (
             <p className="text-sm text-destructive">{errors.nationality.message}</p>
@@ -97,9 +97,9 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="gender">Sesso *</Label>
+          <Label htmlFor="gender">{t('checkin.genderLabel')}</Label>
           <select id="gender" {...register('gender')} className={selectClassName}>
-            <option value="">Seleziona</option>
+            <option value="">{t('checkin.selectGender')}</option>
             {GENDERS.map((value) => (
               <option key={value} value={value}>
                 {getGenderLabel(value, t)}
@@ -112,9 +112,9 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="documentType">Tipo documento *</Label>
+          <Label htmlFor="documentType">{t('checkin.documentTypeLabel')}</Label>
           <select id="documentType" {...register('documentType')} className={selectClassName}>
-            <option value="">Seleziona</option>
+            <option value="">{t('checkin.selectDocumentType')}</option>
             {DOCUMENT_TYPES.map((value) => (
               <option key={value} value={value}>
                 {getDocumentTypeLabel(value, t)}
@@ -127,7 +127,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="documentNumber">Numero documento *</Label>
+          <Label htmlFor="documentNumber">{t('checkin.documentNumber')}</Label>
           <Input id="documentNumber" {...register('documentNumber')} />
           {errors.documentNumber && (
             <p className="text-sm text-destructive">{errors.documentNumber.message}</p>
@@ -135,12 +135,12 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="documentExpiryDate">Scadenza documento</Label>
+          <Label htmlFor="documentExpiryDate">{t('checkin.documentExpiry')}</Label>
           <Input id="documentExpiryDate" type="date" {...register('documentExpiryDate')} />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="documentIssuingCountry">Paese di rilascio *</Label>
+          <Label htmlFor="documentIssuingCountry">{t('checkin.documentIssuingCountry')}</Label>
           <Input id="documentIssuingCountry" {...register('documentIssuingCountry')} />
           {errors.documentIssuingCountry && (
             <p className="text-sm text-destructive">{errors.documentIssuingCountry.message}</p>
@@ -148,22 +148,22 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         </div>
 
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="address">Indirizzo</Label>
+          <Label htmlFor="address">{t('checkin.address')}</Label>
           <Input id="address" {...register('address')} />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="city">Città</Label>
+          <Label htmlFor="city">{t('checkin.city')}</Label>
           <Input id="city" {...register('city')} />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="postalCode">CAP</Label>
+          <Label htmlFor="postalCode">{t('checkin.postalCode')}</Label>
           <Input id="postalCode" {...register('postalCode')} />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="country">Paese di residenza</Label>
+          <Label htmlFor="country">{t('checkin.country')}</Label>
           <Input id="country" {...register('country')} />
         </div>
       </div>
@@ -175,9 +175,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
           onCheckedChange={(value) => setValue('consentAccepted', value === true, { shouldValidate: true })}
         />
         <Label htmlFor="consentAccepted" className="text-sm leading-relaxed cursor-pointer">
-          Acconsento al trattamento dei miei dati personali per adempiere all&apos;obbligo di
-          comunicazione alla Questura (Art. 109 TULPS), in conformità con l&apos;informativa privacy
-          dell&apos;operatore.
+          {t('checkin.gdprConsent')}
         </Label>
       </div>
       {errors.consentAccepted && (
@@ -185,7 +183,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
       )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? 'Salvataggio…' : 'Salva dati'}
+        {isSubmitting ? t('checkin.saving') : t('checkin.saveData')}
       </Button>
     </form>
   );

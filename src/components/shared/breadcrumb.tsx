@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, Home } from 'lucide-react';
 
 interface BreadcrumbItem {
@@ -10,41 +11,43 @@ interface BreadcrumbProps {
   items?: BreadcrumbItem[];
 }
 
-function pathToBreadcrumbs(pathname: string): BreadcrumbItem[] {
-  const labelMap: Record<string, string> = {
-    'app': 'Home',
-    'short-rent': 'Home',
-    'admin': 'Admin',
-    'properties': 'Immobili',
-    'bookings': 'Prenotazioni',
-    'guests': 'Ospiti',
-    'payments': 'Pagamenti',
-    'finance': 'Finanza',
-    'ota': 'Canali OTA',
-    'compliance': 'Compliance',
-    'cin': 'CIN',
-    'alloggiati': 'Alloggiati',
-    'calendar': 'Calendario',
-    'revenue': 'Fatturato',
-    'profile': 'Profilo',
-    'settings': 'Impostazioni',
-    'pricing': 'Prezzi AI',
-    'history': 'Storico',
-    'tax-rates': 'Tassa di Soggiorno',
-    'create': 'Nuovo',
-    'edit': 'Modifica',
-    'users': 'Utenti',
-    'jobs': 'Processi',
-    'seo': 'SEO',
-    'suppliers': 'Fornitori',
-    'invite': 'Invita',
-    'activation': 'Attivazione',
-    'availability': 'Disponibilità',
-    'inbox': 'Richieste',
-    'plan': 'Piano',
-    'leases': 'Contratti',
+function useBreadcrumbLabelMap(t: (key: string) => string): Record<string, string> {
+  return {
+    'app': t('breadcrumb.home'),
+    'short-rent': t('breadcrumb.home'),
+    'admin': t('breadcrumb.admin'),
+    'properties': t('breadcrumb.properties'),
+    'bookings': t('breadcrumb.bookings'),
+    'guests': t('breadcrumb.guests'),
+    'payments': t('breadcrumb.payments'),
+    'finance': t('breadcrumb.finance'),
+    'ota': t('breadcrumb.ota'),
+    'compliance': t('breadcrumb.compliance'),
+    'cin': t('breadcrumb.cin'),
+    'alloggiati': t('breadcrumb.alloggiati'),
+    'calendar': t('breadcrumb.calendar'),
+    'revenue': t('breadcrumb.revenue'),
+    'profile': t('breadcrumb.profile'),
+    'settings': t('breadcrumb.settings'),
+    'pricing': t('breadcrumb.pricing'),
+    'history': t('breadcrumb.history'),
+    'tax-rates': t('breadcrumb.taxRates'),
+    'create': t('breadcrumb.create'),
+    'edit': t('breadcrumb.edit'),
+    'users': t('breadcrumb.users'),
+    'jobs': t('breadcrumb.jobs'),
+    'seo': t('breadcrumb.seo'),
+    'suppliers': t('breadcrumb.suppliers'),
+    'invite': t('breadcrumb.invite'),
+    'activation': t('breadcrumb.activation'),
+    'availability': t('breadcrumb.availability'),
+    'inbox': t('breadcrumb.inbox'),
+    'plan': t('breadcrumb.plan'),
+    'leases': t('breadcrumb.leases'),
   };
+}
 
+function pathToBreadcrumbs(pathname: string, labelMap: Record<string, string>): BreadcrumbItem[] {
   const segments = pathname.split('/').filter(Boolean);
   const items: BreadcrumbItem[] = [];
   let accumulatedPath = '';
@@ -64,8 +67,10 @@ function pathToBreadcrumbs(pathname: string): BreadcrumbItem[] {
 }
 
 export function Breadcrumb({ items: customItems }: BreadcrumbProps) {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
-  const items = customItems || pathToBreadcrumbs(pathname);
+  const labelMap = useBreadcrumbLabelMap(t);
+  const items = customItems || pathToBreadcrumbs(pathname, labelMap);
 
   if (items.length <= 1) return null;
 

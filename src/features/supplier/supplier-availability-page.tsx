@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -79,7 +80,7 @@ export function SupplierAvailabilityPage() {
                   onClick={() => toggleDay(key)}
                   data-testid={`availability-${key}`}
                 >
-                  <p className="text-sm font-medium">{day.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                  <p className="text-sm font-medium">{day.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                   <p className="text-xs text-muted-foreground">{available ? t('supplier.available') : t('supplier.notAvailable')}</p>
                 </button>
               </CardContent>

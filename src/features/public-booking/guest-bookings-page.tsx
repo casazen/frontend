@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
@@ -9,16 +10,20 @@ import { publicBookingApi } from '@/api/public-booking.api';
 import type { GuestBookingItem } from '@/types';
 import { toast } from 'sonner';
 
-const lookupSchema = z.object({
-  email: z.string().email('Email non valido'),
-});
+const createLookupSchema = (t: (key: string) => string) =>
+  z.object({
+    email: z.string().email(t('publicBooking.emailValidation')),
+  });
 
-type LookupForm = z.infer<typeof lookupSchema>;
+type LookupForm = z.infer<ReturnType<typeof createLookupSchema>>;
 
 export function GuestBookingsPage() {
+  const { t, i18n } = useTranslation();
   const [bookings, setBookings] = useState<GuestBookingItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  const lookupSchema = createLookupSchema(t);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LookupForm>({
     resolver: zodResolver(lookupSchema),
@@ -31,10 +36,10 @@ export function GuestBookingsPage() {
       const response = await publicBookingApi.lookupGuestBookings(data.email);
       setBookings(response.bookings);
       if (response.bookings.length === 0) {
-        toast.info('Nessuna prenotazione trovata per questo indirizzo email');
+        toast.info(t('publicBooking.noBookingsFoundToast'));
       }
-    } catch (error) {
-      toast.error('Errore nella ricerca. Riprova più tardi.');
+    } catch {
+      toast.error(t('publicBooking.searchErrorToast'));
       setBookings([]);
     } finally {
       setIsLoading(false);
@@ -44,15 +49,15 @@ export function GuestBookingsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Confirmed':
-        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium"><CheckCircle2 className="h-4 w-4" /> Confermata</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium"><CheckCircle2 className="h-4 w-4" /> {t('booking.status.confirmed')}</span>;
       case 'Pending':
-        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium"><Clock className="h-4 w-4" /> In sospeso</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium"><Clock className="h-4 w-4" /> {t('publicBooking.pendingStatus')}</span>;
       case 'CheckedIn':
-        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">Check-in</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">{t('publicBooking.checkedInStatus')}</span>;
       case 'CheckedOut':
-        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">Completata</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">{t('publicBooking.completedStatus')}</span>;
       case 'Cancelled':
-        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">Annullata</span>;
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">{t('booking.status.cancelled')}</span>;
       default:
         return <span className="text-sm text-muted-foreground">{status}</span>;
     }
@@ -61,11 +66,11 @@ export function GuestBookingsPage() {
   const getPaymentBadge = (paymentOption: string) => {
     switch (paymentOption) {
       case 'Immediate':
-        return <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Pagato online</span>;
+        return <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">{t('publicBooking.paidOnlineBadge')}</span>;
       case 'OnCancellationDeadline':
-        return <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Pagamento al deadline</span>;
+        return <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">{t('publicBooking.paymentDeadlineBadge')}</span>;
       case 'OnSite':
-        return <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Pagamento in struttura</span>;
+        return <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">{t('publicBooking.payOnSiteBadge')}</span>;
       default:
         return null;
     }
@@ -73,7 +78,7 @@ export function GuestBookingsPage() {
 
   const formatDate = (date: string | Date) => {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('it-IT', { month: 'long', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric', year: 'numeric' });
   };
 
   const daysUntilDeadline = (deadline: string | Date) => {
@@ -87,9 +92,9 @@ export function GuestBookingsPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-2">
-        <h2 className="text-3xl font-bold">Le mie prenotazioni</h2>
+        <h2 className="text-3xl font-bold">{t('publicBooking.myBookingsTitle')}</h2>
         <p className="text-muted-foreground">
-          Inserisci il tuo indirizzo email per visualizzare le tue prenotazioni
+          {t('publicBooking.myBookingsDescription')}
         </p>
       </section>
 
@@ -108,7 +113,7 @@ export function GuestBookingsPage() {
           </div>
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Cerca
+            {t('publicBooking.search')}
           </Button>
         </form>
       </div>
@@ -117,8 +122,8 @@ export function GuestBookingsPage() {
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex gap-3">
           <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-amber-900">Nessuna prenotazione trovata</p>
-            <p className="text-sm text-amber-800">Non abbiamo trovato prenotazioni per questo indirizzo email.</p>
+            <p className="font-medium text-amber-900">{t('publicBooking.noBookingsFound')}</p>
+            <p className="text-sm text-amber-800">{t('publicBooking.noBookingsFoundDescription')}</p>
           </div>
         </div>
       )}
@@ -126,7 +131,7 @@ export function GuestBookingsPage() {
       {bookings.length > 0 && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Trovate {bookings.length} prenotazione{bookings.length !== 1 ? 'i' : ''}
+            {t('publicBooking.bookingsCount', { count: bookings.length, plural: bookings.length !== 1 ? 'i' : '' })}
           </p>
           <div className="space-y-4">
             {bookings.map((booking) => (
@@ -143,28 +148,28 @@ export function GuestBookingsPage() {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Check-in</p>
+                    <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.checkIn')}</p>
                     <p className="text-sm font-medium">{formatDate(booking.checkInDate)}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Check-out</p>
+                    <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.checkOut')}</p>
                     <p className="text-sm font-medium">{formatDate(booking.checkOutDate)}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-muted-foreground">Metodo di pagamento</p>
+                    <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.paymentMethod')}</p>
                     {getPaymentBadge(booking.paymentOption)}
                   </div>
 
                   {booking.paymentOption === 'OnCancellationDeadline' && (
                     <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                       <p className="text-sm font-medium text-orange-900">
-                        Cancellazione gratuita fino al {formatDate(booking.freeRefundDeadline)}
+                        {t('publicBooking.freeCancellationBy', { date: formatDate(booking.freeRefundDeadline) })}
                       </p>
                       <p className="text-xs text-orange-700 mt-1">
-                        ({daysUntilDeadline(booking.freeRefundDeadline)} giorni rimanenti)
+                        {t('publicBooking.daysRemaining', { days: daysUntilDeadline(booking.freeRefundDeadline) })}
                       </p>
                     </div>
                   )}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { BookingsSummaryDto } from '@/types';
 import { formatDate } from '@/lib/utils';
@@ -8,12 +9,14 @@ interface PropertyBookingsKpiProps {
 }
 
 export function PropertyBookingsKpi({ summary }: PropertyBookingsKpiProps) {
+  const { t } = useTranslation();
+
   const cards = [
-    { label: 'Totale prenotazioni', value: summary.totalBookings, icon: ListOrdered },
-    { label: 'In arrivo', value: summary.upcomingBookings, icon: CalendarClock },
-    { label: 'Attive', value: summary.activeBookings, icon: Home },
+    { label: t('property.bookings.total'), value: summary.totalBookings, icon: ListOrdered },
+    { label: t('property.bookings.upcoming'), value: summary.upcomingBookings, icon: CalendarClock },
+    { label: t('property.bookings.active'), value: summary.activeBookings, icon: Home },
     {
-      label: 'Prossimo check-in',
+      label: t('property.bookings.nextCheckIn'),
       value: summary.nextCheckIn ? formatDate(summary.nextCheckIn) : '—',
       icon: Calendar,
     },
@@ -22,7 +25,7 @@ export function PropertyBookingsKpi({ summary }: PropertyBookingsKpiProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Riepilogo prenotazioni</CardTitle>
+        <CardTitle>{t('property.bookings.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

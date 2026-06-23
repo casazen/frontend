@@ -3,6 +3,7 @@ import { AdminApi } from '@/api/admin.api';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import type { PlanTier } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const USERS_KEY = 'users';
 
@@ -15,10 +16,10 @@ export function useAdminUpdateOrgPlan() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
-      toast.success('Piano organizzazione aggiornato');
+      toast.success(i18n.t('toast.orgPlanUpdated'));
     },
     onError: () => {
-      toast.error('Impossibile aggiornare il piano dell\'organizzazione');
+      toast.error(i18n.t('toast.orgPlanUpdateFailed'));
     },
   });
 }

@@ -30,7 +30,7 @@ export function TouristTaxPage() {
       <div className="space-y-6">
         <PageHeader
           title={t('taxRates.title')}
-          description="Aliquote fiscali comunali per la tassa di soggiorno"
+          description={t('taxRates.description')}
         />
 
         <Card>
@@ -46,14 +46,14 @@ export function TouristTaxPage() {
             {/* Error State */}
             {isError && !isLoading && (
               <div className="py-12 text-center">
-                <p className="text-destructive mb-4">Failed to load tax rates.</p>
+                <p className="text-destructive mb-4">{t('taxRates.loadError')}</p>
                 <Button
                   variant="outline"
                   onClick={() => refetch()}
                   disabled={isRefetching}
                 >
                   <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-                  Retry
+                  {t('taxRates.retry')}
                 </Button>
               </div>
             )}

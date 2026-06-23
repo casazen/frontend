@@ -19,15 +19,15 @@ export function PaymentDetailPage() {
   const { data: payment, isLoading } = usePayment(id!);
 
   if (isLoading) {
-    return <LoadingScreen message="Loading payment..." />;
+    return <LoadingScreen message={t('payment.detail.loading')} />;
   }
 
   if (!payment) {
     return (
       <AppShell>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Payment not found</h2>
-          <p className="text-muted-foreground">The payment you're looking for doesn't exist.</p>
+          <h2 className="text-2xl font-bold mb-2">{t('payment.detail.notFound')}</h2>
+          <p className="text-muted-foreground">{t('payment.detail.notFoundDescription')}</p>
         </div>
       </AppShell>
     );
@@ -41,12 +41,12 @@ export function PaymentDetailPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          title={`Payment #${payment.id.slice(0, 8)}`}
-          description="Payment transaction details"
+          title={`${t('payment.detail.title')}${payment.id.slice(0, 8)}`}
+          description={t('payment.detail.description')}
           action={
             <Button onClick={() => navigate(`/payments/${id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Payment
+              {t('payment.detail.editPayment')}
             </Button>
           }
         />
@@ -57,7 +57,7 @@ export function PaymentDetailPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Payment Information</CardTitle>
+                  <CardTitle>{t('payment.detail.paymentInformation')}</CardTitle>
                   <Badge variant={statusVariant} className="text-base px-3 py-1">
                     {statusLabel}
                   </Badge>
@@ -65,7 +65,7 @@ export function PaymentDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">Amount</div>
+                  <div className="text-sm text-muted-foreground mb-1">{t('payment.detail.amount')}</div>
                   <div className="text-3xl font-bold">
                     {formatCurrency(payment.amount, payment.currency)}
                   </div>
@@ -73,30 +73,30 @@ export function PaymentDetailPage() {
 
                 <div className="grid grid-cols-2 gap-4 pt-3 border-t">
                   <div>
-                    <div className="text-sm text-muted-foreground">Payment Method</div>
+                    <div className="text-sm text-muted-foreground">{t('payment.detail.paymentMethod')}</div>
                     <div className="font-medium">{methodLabel}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Date</div>
+                    <div className="text-sm text-muted-foreground">{t('payment.detail.date')}</div>
                     <div className="font-medium">{formatDate(payment.createdAt, 'PPp')}</div>
                   </div>
                 </div>
 
                 {payment.description && (
                   <div className="pt-3 border-t">
-                    <div className="text-sm text-muted-foreground mb-1">Description</div>
+                    <div className="text-sm text-muted-foreground mb-1">{t('payment.detail.description')}</div>
                     <p className="text-sm">{payment.description}</p>
                   </div>
                 )}
 
                 {payment.refundedAmount && payment.refundedAmount > 0 && (
                   <div className="pt-3 border-t">
-                    <div className="text-sm text-muted-foreground mb-1">Refunded Amount</div>
+                    <div className="text-sm text-muted-foreground mb-1">{t('payment.detail.refundedAmount')}</div>
                     <div className="text-lg font-medium text-destructive">
                       -{formatCurrency(payment.refundedAmount, payment.currency)}
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      Net: {formatCurrency(payment.amount - payment.refundedAmount, payment.currency)}
+                      {t('payment.detail.net')} {formatCurrency(payment.amount - payment.refundedAmount, payment.currency)}
                     </div>
                   </div>
                 )}
@@ -106,18 +106,18 @@ export function PaymentDetailPage() {
             {(payment.stripePaymentIntentId || payment.stripeChargeId) && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Stripe Information</CardTitle>
+                  <CardTitle>{t('payment.detail.stripeInformation')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {payment.stripePaymentIntentId && (
                     <div>
-                      <div className="text-sm text-muted-foreground">Payment Intent ID</div>
+                      <div className="text-sm text-muted-foreground">{t('payment.detail.paymentIntentId')}</div>
                       <div className="font-mono text-sm">{payment.stripePaymentIntentId}</div>
                     </div>
                   )}
                   {payment.stripeChargeId && (
                     <div>
-                      <div className="text-sm text-muted-foreground">Charge ID</div>
+                      <div className="text-sm text-muted-foreground">{t('payment.detail.chargeId')}</div>
                       <div className="font-mono text-sm">{payment.stripeChargeId}</div>
                     </div>
                   )}
@@ -130,11 +130,11 @@ export function PaymentDetailPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Booking Details</CardTitle>
+                <CardTitle>{t('payment.detail.bookingDetails')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div>
-                  <div className="text-sm text-muted-foreground">Booking ID</div>
+                  <div className="text-sm text-muted-foreground">{t('payment.detail.bookingId')}</div>
                   <div className="font-medium">{payment.bookingId}</div>
                 </div>
               </CardContent>
@@ -142,15 +142,15 @@ export function PaymentDetailPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Timeline</CardTitle>
+                <CardTitle>{t('payment.detail.timeline')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <div>
-                  <div className="text-muted-foreground">Created</div>
+                  <div className="text-muted-foreground">{t('payment.detail.created')}</div>
                   <div>{formatDate(payment.createdAt, 'PPp')}</div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground">Last Updated</div>
+                  <div className="text-muted-foreground">{t('payment.detail.lastUpdated')}</div>
                   <div>{formatDate(payment.updatedAt, 'PPp')}</div>
                 </div>
               </CardContent>

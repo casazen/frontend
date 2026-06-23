@@ -64,6 +64,26 @@ export function persistLocale(locale: AppLocale): void {
   localStorage.setItem(LOCALE_STORAGE_KEY, locale);
 }
 
+export function getFiscalRegimeLabel(regime: string, t: TFunction): string {
+  return t(`leases.fiscalRegimeLabel.${regime}`);
+}
+
+export function getLeaseStatusLabel(status: string, t: TFunction): string {
+  return t(`leases.statusLabel.${status}`);
+}
+
+export function getRegistrationStatusLabel(status: string, t: TFunction): string {
+  return t(`leases.registrationStatusLabel.${status}`);
+}
+
+export function getOtaPlatformLabel(platform: string, t: TFunction): string {
+  return t(`ota.platform.${platform}`);
+}
+
+export function getSyncStatusLabel(status: string, t: TFunction): string {
+  return t(`ota.syncStatus.${status}`);
+}
+
 export function readPersistedLocale(): AppLocale | null {
   const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
   if (stored === 'it' || stored === 'en') {

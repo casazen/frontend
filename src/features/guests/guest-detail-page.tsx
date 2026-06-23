@@ -47,18 +47,18 @@ export function GuestDetailPage() {
     return (
       <AppShell>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Guest not found</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('guests.notFound')}</h2>
           <p className="text-muted-foreground mb-4">
-            The guest you are looking for does not exist or could not be loaded.
+            {t('guests.notFoundDescription')}
           </p>
           <div className="flex items-center justify-center gap-3">
             <Button variant="outline" onClick={() => refetch()} disabled={isRefetching}>
               <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-              Retry
+              {t('guests.retry')}
             </Button>
             <Button variant="outline" onClick={() => navigate('/app/short-rent/guests')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to guests
+              {t('guests.backToGuests')}
             </Button>
           </div>
         </div>
@@ -110,33 +110,33 @@ export function GuestDetailPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Nome</span>
+                  <span className="text-muted-foreground">{t('guests.name')}</span>
                   <span className="font-medium">{guest.firstName} {guest.lastName}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Email</span>
+                  <span className="text-muted-foreground">{t('guests.email')}</span>
                   <span className="font-medium">{guest.email}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Telefono</span>
+                  <span className="text-muted-foreground">{t('guests.phone')}</span>
                   <span className="font-medium">{guest.phoneNumber || '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sesso</span>
+                  <span className="text-muted-foreground">{t('guests.gender')}</span>
                   <span className="font-medium">{guest.gender ?? '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Data di nascita</span>
+                  <span className="text-muted-foreground">{t('guests.dateOfBirth')}</span>
                   <span className="font-medium">
                     {guest.dateOfBirth ? formatDate(guest.dateOfBirth) : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Luogo di nascita</span>
+                  <span className="text-muted-foreground">{t('guests.placeOfBirth')}</span>
                   <span className="font-medium">{guest.placeOfBirth || '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Nazionalità</span>
+                  <span className="text-muted-foreground">{t('guests.nationality')}</span>
                   <span className="font-medium">{guest.nationality || '—'}</span>
                 </div>
               </CardContent>
@@ -146,24 +146,24 @@ export function GuestDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  Indirizzo
+                  {t('guests.addressSection')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Indirizzo</span>
+                  <span className="text-muted-foreground">{t('guests.address')}</span>
                   <span className="font-medium">{guest.address || '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Città</span>
+                  <span className="text-muted-foreground">{t('guests.city')}</span>
                   <span className="font-medium">{guest.city || '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">CAP</span>
+                  <span className="text-muted-foreground">{t('guests.postalCode')}</span>
                   <span className="font-medium">{guest.postalCode || '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Paese</span>
+                  <span className="text-muted-foreground">{t('guests.country')}</span>
                   <span className="font-medium">{guest.country || '—'}</span>
                 </div>
               </CardContent>
@@ -172,7 +172,7 @@ export function GuestDetailPage() {
             {guest.notes && (
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle className="text-lg">Note</CardTitle>
+                  <CardTitle className="text-lg">{t('guests.notes')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm">{guest.notes}</p>
@@ -189,7 +189,7 @@ export function GuestDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Prenotazioni collegate a questo ospite. Utilizza la sezione Prenotazioni per maggiori dettagli.
+                {t('guests.noBookings')}
               </p>
             </CardContent>
           </Card>
@@ -207,27 +207,27 @@ export function GuestDetailPage() {
               {guest.documentNumber ? (
                 <>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tipo documento</span>
+                    <span className="text-muted-foreground">{t('guests.documentType')}</span>
                     <span className="font-medium">{guest.documentType ?? '—'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Numero documento</span>
+                    <span className="text-muted-foreground">{t('guests.documentNumber')}</span>
                     <span className="font-medium">{guest.documentNumber}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Data rilascio</span>
+                    <span className="text-muted-foreground">{t('guests.documentIssueDate')}</span>
                     <span className="font-medium">
                       {guest.documentIssueDate ? formatDate(guest.documentIssueDate) : '—'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Data scadenza</span>
+                    <span className="text-muted-foreground">{t('guests.documentExpiryDate')}</span>
                     <span className="font-medium">
                       {guest.documentExpiryDate ? formatDate(guest.documentExpiryDate) : '—'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Paese rilascio</span>
+                    <span className="text-muted-foreground">{t('guests.documentIssuingCountry')}</span>
                     <span className="font-medium">{guest.documentIssuingCountry || '—'}</span>
                   </div>
                 </>

@@ -1,15 +1,17 @@
 import { useAppLayerContext } from '@/hooks/use-app-layer-context';
 import type { AppLayer } from '@/hooks/use-app-layer';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import { useCallback, useRef } from 'react';
 
-const LAYERS: { value: AppLayer; label: string }[] = [
-  { value: 'short-stay', label: 'Short-stay' },
-  { value: 'long-term', label: 'Long-term' },
-];
-
 export function LayerSwitcher() {
+  const { t } = useTranslation();
   const { activeLayer, setLayer, canSwitchLayer } = useAppLayerContext();
+
+  const LAYERS: { value: AppLayer; key: string }[] = [
+    { value: 'short-stay', key: 'shell.layerShortStay' },
+    { value: 'long-term', key: 'shell.layerLongTerm' },
+  ];
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleKeyDown = useCallback(
@@ -65,7 +67,7 @@ export function LayerSwitcher() {
             )}
             onClick={() => setLayer(layer.value)}
           >
-            {layer.label}
+            {t(layer.key)}
           </button>
         );
       })}

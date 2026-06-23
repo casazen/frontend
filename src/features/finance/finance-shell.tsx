@@ -1,18 +1,20 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PaymentsPage } from '@/features/payments/payments-page';
 import { RevenuePage } from '@/features/payments/revenue-page';
 import { ConnectPaymentsPage } from '@/features/settings/payments-page';
 
 type FinanceTab = 'pagamenti' | 'fatturato' | 'incassi';
 
-const TABS: { key: FinanceTab; label: string }[] = [
-  { key: 'pagamenti', label: 'Pagamenti' },
-  { key: 'fatturato', label: 'Fatturato' },
-  { key: 'incassi', label: 'Incassi' },
-];
-
 export function FinanceShell() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<FinanceTab>('pagamenti');
+
+  const TABS: { key: FinanceTab; label: string }[] = [
+    { key: 'pagamenti', label: t('finance.payments') },
+    { key: 'fatturato', label: t('finance.revenue') },
+    { key: 'incassi', label: t('finance.payouts') },
+  ];
 
   return (
     <>

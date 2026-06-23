@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export function PropertyCinDialog({
   onSave,
   isSaving,
 }: PropertyCinDialogProps) {
+  const { t } = useTranslation();
   const [value, setValue] = useState(cinCode ?? '');
 
   const handleOpenChange = (next: boolean) => {
@@ -49,33 +51,32 @@ export function PropertyCinDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Codice CIN</DialogTitle>
+          <DialogTitle>{t('property.cin.dialog.title')}</DialogTitle>
           <DialogDescription>
-            Inserisci il Codice Identificativo Nazionale (formato IT-XXXXX-XXXXXXXXXX) per la
-            conformità BDSR (D.L. 145/2023).
+            {t('property.cin.dialog.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="cin-code">Codice CIN</Label>
+          <Label htmlFor="cin-code">{t('property.cin.dialog.label')}</Label>
           <Input
             id="cin-code"
             value={value}
             onChange={(e) => setValue(e.target.value.toUpperCase())}
-            placeholder="IT-12345-6789012345"
+            placeholder={t('property.cin.dialog.placeholder')}
             aria-invalid={cinStatus === 'Invalid'}
           />
           <p className="text-xs text-muted-foreground">
-            Lascia vuoto per rimuovere il CIN registrato.
+            {t('property.cin.dialog.hint')}
           </p>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Annulla
+            {t('property.cin.dialog.cancel')}
           </Button>
           <Button type="button" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Salvataggio...' : 'Salva CIN'}
+            {isSaving ? t('property.cin.dialog.saving') : t('property.cin.dialog.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
