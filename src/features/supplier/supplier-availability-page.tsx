@@ -1,37 +1,60 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useUpdateSupplierAvailability } from '@/queries/use-supplier';
+import { LoadingScreen } from '@/components/shared/loading-screen';
+import { useSupplierAvailability, useUpdateSupplierAvailability } from '@/queries/use-supplier';
+
+const VISIBLE_DAYS = 14;
 
 function formatDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-export function SupplierAvailabilityPage() {
-  const updateAvailability = useUpdateSupplierAvailability();
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
-
-  const days = Array.from({ length: 14 }, (_, index) => {
+function buildVisibleDays(): Date[] {
+  return Array.from({ length: VISIBLE_DAYS }, (_, index) => {
     const date = new Date();
+    date.setHours(12, 0, 0, 0);
     date.setDate(date.getDate() + index);
     return date;
   });
+}
+
+export function SupplierAvailabilityPage() {
+  const days = useMemo(() => buildVisibleDays(), []);
+  const from = formatDateKey(days[0]);
+  const to = formatDateKey(days[days.length - 1]);
+  const { data, isLoading } = useSupplierAvailability(from, to);
+  const updateAvailability = useUpdateSupplierAvailability();
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!data?.dates) return;
+    setSelected(Object.fromEntries(data.dates.map((entry) => [entry.date, entry.available])));
+  }, [data]);
 
   const toggleDay = (key: string) => {
     setSelected((prev) => ({ ...prev, [key]: !(prev[key] ?? true) }));
   };
 
   const save = async () => {
-    const dates = Object.entries(selected).map(([date, available]) => ({ date, available }));
-    if (dates.length === 0) {
-      toast.message('Seleziona almeno un giorno');
-      return;
+    const dates = days.map((day) => {
+      const date = formatDateKey(day);
+      return { date, available: selected[date] ?? true };
+    });
+
+    try {
+      await updateAvailability.mutateAsync(dates);
+      toast.success('Disponibilità aggiornata');
+    } catch {
+      toast.error('Impossibile salvare la disponibilità');
     }
-    await updateAvailability.mutateAsync(dates);
-    toast.success('Disponibilità aggiornata');
   };
+
+  if (isLoading) {
+    return <LoadingScreen message="Caricamento disponibilità..." />;
+  }
 
   return (
     <div className="space-y-6">

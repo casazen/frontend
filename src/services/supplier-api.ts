@@ -1,6 +1,7 @@
 import axios from '@/lib/axios';
 import type {
   ActivationStatus,
+  SupplierAvailabilityResponse,
   SupplierInboxResponse,
   SupplierProfile,
   UpdateAvailabilityEntry,
@@ -37,6 +38,16 @@ export async function updateSupplierProfile(
 export async function fetchSupplierInbox(status = 'open', page = 1, pageSize = 20): Promise<SupplierInboxResponse> {
   const { data } = await axios.get<SupplierInboxResponse>('/supplier/inbox', {
     params: { status, page, pageSize },
+  });
+  return data;
+}
+
+export async function fetchSupplierAvailability(
+  from: string,
+  to: string,
+): Promise<SupplierAvailabilityResponse> {
+  const { data } = await axios.get<SupplierAvailabilityResponse>('/supplier/availability', {
+    params: { from, to },
   });
   return data;
 }

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   completeSupplierActivation,
   fetchSupplierActivation,
+  fetchSupplierAvailability,
   fetchSupplierInbox,
   fetchSupplierProfile,
   inviteSupplier,
@@ -51,9 +52,20 @@ export function useUpdateSupplierProfile() {
   });
 }
 
+export function useSupplierAvailability(from: string, to: string) {
+  return useQuery({
+    queryKey: ['supplier', 'availability', from, to],
+    queryFn: () => fetchSupplierAvailability(from, to),
+  });
+}
+
 export function useUpdateSupplierAvailability() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dates: UpdateAvailabilityEntry[]) => updateSupplierAvailability(dates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+    },
   });
 }
 
