@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -12,29 +13,34 @@ import { Upload } from 'lucide-react';
 import type { PropertyDocumentType } from '@/types';
 import { useUploadPropertyDocument } from '@/queries/use-properties';
 
-const DOCUMENT_TYPES: { value: PropertyDocumentType; label: string }[] = [
-  { value: 'CinCertificate', label: 'Certificato CIN' },
-  { value: 'FloorPlan', label: 'Planimetria' },
-  { value: 'InsurancePolicy', label: 'Polizza assicurativa' },
-  { value: 'PropertyLicense', label: 'Licenza struttura' },
-  { value: 'SafetyCompliance', label: 'Conformità sicurezza' },
-  { value: 'Ape', label: 'APE' },
-  { value: 'Other', label: 'Altro' },
-];
-
 const ACCEPTED_TYPES = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
 
 interface DocumentUploadDialogProps {
   propertyId: string;
 }
 
+function getDocumentTypeLabels(t: ReturnType<typeof useTranslation>['t']): { value: PropertyDocumentType; label: string }[] {
+  return [
+    { value: 'CinCertificate', label: t('shared.documentUpload.types.cinCertificate') },
+    { value: 'FloorPlan', label: t('shared.documentUpload.types.floorPlan') },
+    { value: 'InsurancePolicy', label: t('shared.documentUpload.types.insurancePolicy') },
+    { value: 'PropertyLicense', label: t('shared.documentUpload.types.propertyLicense') },
+    { value: 'SafetyCompliance', label: t('shared.documentUpload.types.safetyCompliance') },
+    { value: 'Ape', label: t('shared.documentUpload.types.ape') },
+    { value: 'Other', label: t('shared.documentUpload.types.other') },
+  ];
+}
+
 export function DocumentUploadDialog({ propertyId }: DocumentUploadDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<PropertyDocumentType>('CinCertificate');
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadPropertyDocument();
+
+  const documentTypes = getDocumentTypeLabels(t);
 
   const reset = useCallback(() => {
     setFile(null);
@@ -75,25 +81,25 @@ export function DocumentUploadDialog({ propertyId }: DocumentUploadDialogProps) 
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Upload className="mr-2 h-4 w-4" />
-          Carica documento
+          {t('shared.documentUpload.uploadDocument')}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Carica documento</DialogTitle>
+          <DialogTitle>{t('shared.documentUpload.uploadDocument')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="documentType">Tipo documento</Label>
+            <Label htmlFor="documentType">{t('shared.documentUpload.documentType')}</Label>
             <select
               id="documentType"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={documentType}
               onChange={(e) => setDocumentType(e.target.value as PropertyDocumentType)}
             >
-              {DOCUMENT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              {documentTypes.map((dt) => (
+                <option key={dt.value} value={dt.value}>
+                  {dt.label}
                 </option>
               ))}
             </select>
@@ -112,9 +118,9 @@ export function DocumentUploadDialog({ propertyId }: DocumentUploadDialogProps) 
           >
             <Upload className="h-8 w-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground text-center">
-              Trascina un file qui o clicca per selezionare
+              {t('shared.documentUpload.dragDropText')}
             </p>
-            <p className="text-xs text-muted-foreground">PDF, DOC, DOCX, JPG, PNG — max 10 MB</p>
+            <p className="text-xs text-muted-foreground">{t('shared.documentUpload.fileFormats')}</p>
             {file && <p className="text-sm font-medium">{file.name}</p>}
             <input
               ref={inputRef}
@@ -129,7 +135,7 @@ export function DocumentUploadDialog({ propertyId }: DocumentUploadDialogProps) 
             disabled={!file || uploadMutation.isPending}
             onClick={handleSubmit}
           >
-            {uploadMutation.isPending ? 'Caricamento...' : 'Carica'}
+            {uploadMutation.isPending ? t('shared.documentUpload.uploading') : t('shared.documentUpload.upload')}
           </Button>
         </div>
       </DialogContent>

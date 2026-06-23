@@ -1,4 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 import { CinStatusBadge } from './cin-status-badge';
 import type { CinComplianceItem } from '@/types';
 
@@ -8,6 +9,8 @@ interface CinComplianceTableProps {
 }
 
 export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -23,11 +26,11 @@ export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-muted-foreground">
-            <th className="pb-2 pr-4 font-medium">Proprietà</th>
-            <th className="pb-2 pr-4 font-medium">Città</th>
-            <th className="pb-2 pr-4 font-medium">Proprietario</th>
-            <th className="pb-2 pr-4 font-medium">CIN</th>
-            <th className="pb-2 font-medium">Stato</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.cin.table.property')}</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.cin.table.city')}</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.cin.table.owner')}</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.cin.table.cin')}</th>
+            <th className="pb-2 font-medium">{t('admin.cin.table.status')}</th>
           </tr>
         </thead>
         <tbody>
@@ -47,7 +50,7 @@ export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps
           {(items ?? []).length === 0 && (
             <tr>
               <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                Nessun dato trovato.
+                {t('admin.cin.table.empty')}
               </td>
             </tr>
           )}

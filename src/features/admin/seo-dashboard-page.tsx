@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { SeoReviewStatusBadge } from './components/seo-review-status-badge';
 import { formatDate } from '@/lib/utils';
 
 export function SeoDashboardPage() {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useSeoPages({ page: 1, pageSize: 50 });
   const { data: comuni } = useSeoComuni();
   const { data: budget } = usePlatformAiBudget();
@@ -45,8 +47,8 @@ export function SeoDashboardPage() {
   return (
     <div className="space-y-6" data-testid="seo-dashboard-page">
       <PageHeader
-        title="SEO Compliance"
-        description="Pagine programmatiche per affitti brevi e tassa di soggiorno"
+        title={t('admin.seo.title')}
+        description={t('admin.seo.description')}
         action={
           <div className="flex gap-2">
             <Button
@@ -55,14 +57,14 @@ export function SeoDashboardPage() {
               disabled={approveAllMutation.isPending}
               data-testid="seo-approve-all-button"
             >
-              Approva tutte
+              {t('admin.seo.approveAll')}
             </Button>
             <Button
               onClick={() => setConfirmOpen(true)}
               disabled={generateMutation.isPending}
               data-testid="seo-regenerate-button"
             >
-              Genera tutti
+              {t('admin.seo.generateAll')}
             </Button>
           </div>
         }
@@ -71,11 +73,13 @@ export function SeoDashboardPage() {
       {budget && (
         <Card data-testid="seo-ai-budget-card">
           <CardHeader>
-            <CardTitle>Budget AI piattaforma</CardTitle>
+            <CardTitle>{t('admin.seo.aiBudget')}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            {budget.tokensUsedThisMonth.toLocaleString('it-IT')} /{' '}
-            {budget.monthlyTokenCap.toLocaleString('it-IT')} token questo mese
+            {t('admin.seo.budgetTokens', {
+              used: budget.tokensUsedThisMonth.toLocaleString('it-IT'),
+              cap: budget.monthlyTokenCap.toLocaleString('it-IT'),
+            })}
           </CardContent>
         </Card>
       )}
@@ -84,20 +88,20 @@ export function SeoDashboardPage() {
         <CardContent className="pt-6">
           {isError ? (
             <p className="py-8 text-center text-destructive">
-              Impossibile caricare le pagine SEO. Riprova più tardi.
+              {t('admin.seo.loadError')}
             </p>
           ) : isLoading ? (
-            <p className="py-8 text-center text-muted-foreground">Caricamento…</p>
+            <p className="py-8 text-center text-muted-foreground">{t('admin.seo.loading')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm" data-testid="seo-pages-table">
                 <thead>
                   <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2 pr-4">Comune</th>
-                    <th className="pb-2 pr-4">Tipo</th>
-                    <th className="pb-2 pr-4">Stato</th>
-                    <th className="pb-2 pr-4">Ultimo refresh</th>
-                    <th className="pb-2">Azioni</th>
+                    <th className="pb-2 pr-4">{t('admin.seo.table.comune')}</th>
+                    <th className="pb-2 pr-4">{t('admin.seo.table.type')}</th>
+                    <th className="pb-2 pr-4">{t('admin.seo.table.status')}</th>
+                    <th className="pb-2 pr-4">{t('admin.seo.table.lastRefresh')}</th>
+                    <th className="pb-2">{t('admin.seo.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,7 +141,7 @@ export function SeoDashboardPage() {
                               })
                             }
                           >
-                            Approva
+                            {t('admin.seo.table.approve')}
                           </Button>
                         )}
                       </td>
@@ -146,7 +150,7 @@ export function SeoDashboardPage() {
                 </tbody>
               </table>
               {data && data.items.length === 0 && (
-                <p className="py-8 text-center text-muted-foreground">Nessuna pagina SEO.</p>
+                <p className="py-8 text-center text-muted-foreground">{t('admin.seo.table.empty')}</p>
               )}
             </div>
           )}
@@ -156,18 +160,17 @@ export function SeoDashboardPage() {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent data-testid="seo-regenerate-dialog">
           <DialogHeader>
-            <DialogTitle>Conferma rigenerazione</DialogTitle>
+            <DialogTitle>{t('admin.seo.confirmDialog.title')}</DialogTitle>
             <DialogDescription>
-              Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry
-              ({comuneCount} comuni, 2 pagine ciascuno) e approvarle automaticamente.
+              {t('admin.seo.confirmDialog.description', { count: comuneCount })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              Annulla
+              {t('admin.seo.confirmDialog.cancel')}
             </Button>
             <Button onClick={() => void handleRegenerate()} data-testid="seo-regenerate-confirm">
-              Conferma
+              {t('admin.seo.confirmDialog.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

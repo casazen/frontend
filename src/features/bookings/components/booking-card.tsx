@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Edit, Trash2, LogIn, LogOut } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { BOOKING_STATUS_LABELS } from '../schemas/booking.schema';
+import { BOOKING_STATUS_VARIANTS } from '../schemas/booking.schema';
+import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import type { Booking } from '@/types';
 
 interface BookingCardProps {
@@ -16,7 +18,9 @@ interface BookingCardProps {
 }
 
 export function BookingCard({ booking, onEdit, onDelete, onView, onCheckIn, onCheckOut }: BookingCardProps) {
-  const statusConfig = BOOKING_STATUS_LABELS[booking.status] || BOOKING_STATUS_LABELS.PENDING;
+  const { t } = useTranslation();
+  const statusLabel = getBookingStatusLabel(booking.status, t);
+  const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
   const nights = Math.ceil(
     (new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime()) / (1000 * 60 * 60 * 24)
   );
@@ -29,8 +33,8 @@ export function BookingCard({ booking, onEdit, onDelete, onView, onCheckIn, onCh
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="font-semibold">Booking #{booking.id.slice(0, 8)}</span>
           </div>
-          <Badge variant={statusConfig.variant}>
-            {statusConfig.label}
+          <Badge variant={statusVariant}>
+            {statusLabel}
           </Badge>
         </div>
       </CardHeader>

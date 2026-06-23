@@ -7,8 +7,8 @@ import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import {
   isPlanLimitError,
-  PLAN_LIMIT_MESSAGE,
-  PLAN_UPGRADE_CTA,
+  getPlanLimitMessage,
+  getPlanUpgradeCta,
   PLAN_UPGRADE_PATH,
 } from '@/lib/entitlement-error';
 import type { PropertyFormValues } from './schemas/property.schema';
@@ -51,12 +51,12 @@ export function PropertyCreatePage() {
             data-testid="plan-limit-alert"
             className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm"
           >
-            <p className="font-medium text-destructive">{PLAN_LIMIT_MESSAGE}</p>
+            <p className="font-medium text-destructive">{getPlanLimitMessage()}</p>
             <Link
               to={PLAN_UPGRADE_PATH}
               className="mt-1 inline-block font-medium text-primary underline underline-offset-2"
             >
-              {PLAN_UPGRADE_CTA}
+              {getPlanUpgradeCta()}
             </Link>
           </div>
         )}

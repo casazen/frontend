@@ -19,7 +19,7 @@ import { useCinCompliance } from '@/queries/use-cin';
 import { CinDeadlineBanner } from '@/features/cin';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PropertyForm } from './components/property-form';
-import { isPlanLimitError, PLAN_LIMIT_MESSAGE } from '@/lib/entitlement-error';
+import { isPlanLimitError, getPlanLimitMessage } from '@/lib/entitlement-error';
 import type { Property } from '@/types';
 import type { PropertyFormValues } from './schemas/property.schema';
 
@@ -49,7 +49,7 @@ export function PropertiesPage() {
       // Plan-limit (403/409) is suppressed by the mutation's onError; surface the Italian
       // message here so the dialog still informs the owner (#202, AC12).
       if (isPlanLimitError(error)) {
-        toast.error(PLAN_LIMIT_MESSAGE);
+        toast.error(getPlanLimitMessage());
         return;
       }
       // Other errors already surfaced by the mutation's onError toast.

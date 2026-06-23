@@ -1,15 +1,18 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  DOCUMENT_TYPE_LABELS,
-  GENDER_LABELS,
   guestCheckInFormSchema,
   type GuestCheckInFormValues,
 } from '../schemas/checkin.schema';
+import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
+
+const DOCUMENT_TYPES = ['Passport', 'IdentityCard', 'DriversLicense', 'Other'] as const;
+const GENDERS = ['Male', 'Female', 'Other'] as const;
 import type { CheckInGuestDto } from '@/types/alloggiati.types';
 
 interface GuestDataFormProps {
@@ -27,6 +30,7 @@ function toDateInputValue(value?: string | null): string {
 }
 
 export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormProps) {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -96,9 +100,9 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
           <Label htmlFor="gender">Sesso *</Label>
           <select id="gender" {...register('gender')} className={selectClassName}>
             <option value="">Seleziona</option>
-            {Object.entries(GENDER_LABELS).map(([value, label]) => (
+            {GENDERS.map((value) => (
               <option key={value} value={value}>
-                {label}
+                {getGenderLabel(value, t)}
               </option>
             ))}
           </select>
@@ -111,9 +115,9 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
           <Label htmlFor="documentType">Tipo documento *</Label>
           <select id="documentType" {...register('documentType')} className={selectClassName}>
             <option value="">Seleziona</option>
-            {Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => (
+            {DOCUMENT_TYPES.map((value) => (
               <option key={value} value={value}>
-                {label}
+                {getDocumentTypeLabel(value, t)}
               </option>
             ))}
           </select>

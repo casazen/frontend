@@ -10,14 +10,14 @@ export const otaCredentialsSchema = z.object({
 
 export const otaIntegrationFormSchema = z.object({
   platform: z.enum(['AIRBNB', 'BOOKING_COM', 'EXPEDIA', 'VRBO', 'TRIPADVISOR', 'AGODA']),
-  propertyId: z.string().min(1, 'Property is required'),
+  propertyId: z.string().min(1, 'ota.validation.propertyId.required'),
   credentials: otaCredentialsSchema,
   isActive: z.boolean(),
 });
 
 export const pricingUpdateSchema = z.object({
-  propertyId: z.string().min(1, 'Property is required'),
-  nightlyRate: z.number().min(0.01, 'Price must be greater than 0'),
+  propertyId: z.string().min(1, 'ota.validation.propertyId.required'),
+  nightlyRate: z.number().min(0.01, 'ota.validation.nightlyRate.min'),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   platforms: z.array(z.enum(['AIRBNB', 'BOOKING_COM', 'EXPEDIA', 'VRBO', 'TRIPADVISOR', 'AGODA'])).optional(),

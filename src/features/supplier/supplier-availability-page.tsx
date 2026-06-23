@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ function buildVisibleDays(): Date[] {
 }
 
 export function SupplierAvailabilityPage() {
+  const { t } = useTranslation();
   const days = useMemo(() => buildVisibleDays(), []);
   const from = formatDateKey(days[0]);
   const to = formatDateKey(days[days.length - 1]);
@@ -51,19 +53,19 @@ export function SupplierAvailabilityPage() {
 
     try {
       await updateAvailability.mutateAsync(dates);
-      toast.success('Disponibilità aggiornata');
+      toast.success(t('supplier.availabilityUpdated'));
     } catch {
-      toast.error('Impossibile salvare la disponibilità');
+      toast.error(t('supplier.availabilitySaveError'));
     }
   };
 
   if (isLoading) {
-    return <LoadingScreen message="Caricamento disponibilità..." />;
+    return <LoadingScreen message={t('supplier.availabilityLoading')} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Disponibilità" description="Tocca un giorno per segnare indisponibilità" />
+      <PageHeader title={t('supplier.availabilityTitle')} description={t('supplier.availabilityDescription')} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {days.map((day) => {
           const key = formatDateKey(day);
@@ -78,7 +80,7 @@ export function SupplierAvailabilityPage() {
                   data-testid={`availability-${key}`}
                 >
                   <p className="text-sm font-medium">{day.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                  <p className="text-xs text-muted-foreground">{available ? 'Disponibile' : 'Non disponibile'}</p>
+                  <p className="text-xs text-muted-foreground">{available ? t('supplier.available') : t('supplier.notAvailable')}</p>
                 </button>
               </CardContent>
             </Card>
@@ -86,7 +88,7 @@ export function SupplierAvailabilityPage() {
         })}
       </div>
       <Button onClick={() => void save()} disabled={updateAvailability.isPending}>
-        Salva disponibilità
+        {t('supplier.saveAvailability')}
       </Button>
     </div>
   );

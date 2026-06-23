@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -7,12 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { usePayment } from '@/queries/use-payments';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { PAYMENT_STATUS_LABELS, PAYMENT_METHOD_LABELS } from './schemas/payment.schema';
+import { PAYMENT_STATUS_VARIANTS } from './schemas/payment.schema';
+import { getPaymentStatusLabel, getPaymentMethodLabel } from '@/lib/i18n-labels';
 import { Edit } from 'lucide-react';
 
 export function PaymentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: payment, isLoading } = usePayment(id!);
 
   if (isLoading) {
@@ -30,8 +33,9 @@ export function PaymentDetailPage() {
     );
   }
 
-  const statusConfig = PAYMENT_STATUS_LABELS[payment.status] || PAYMENT_STATUS_LABELS.PENDING;
-  const methodLabel = PAYMENT_METHOD_LABELS[payment.method] || payment.method;
+  const statusLabel = getPaymentStatusLabel(payment.status, t);
+  const statusVariant = PAYMENT_STATUS_VARIANTS[payment.status] || PAYMENT_STATUS_VARIANTS.Pending;
+  const methodLabel = getPaymentMethodLabel(payment.method, t);
 
   return (
     <AppShell>
@@ -54,8 +58,8 @@ export function PaymentDetailPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Payment Information</CardTitle>
-                  <Badge variant={statusConfig.variant} className="text-base px-3 py-1">
-                    {statusConfig.label}
+                  <Badge variant={statusVariant} className="text-base px-3 py-1">
+                    {statusLabel}
                   </Badge>
                 </div>
               </CardHeader>

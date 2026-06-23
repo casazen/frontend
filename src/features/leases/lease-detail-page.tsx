@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2, PenLine } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -20,6 +21,7 @@ import { FISCAL_REGIME_LABELS } from './schemas/lease.schema';
 import type { SignerInfo } from '@/types';
 
 export function LeaseDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: lease, isLoading } = useLease(id!);
@@ -29,18 +31,18 @@ export function LeaseDetailPage() {
   const [signers, setSigners] = useState<SignerInfo[]>([]);
 
   if (isLoading) {
-    return <LoadingScreen message="Loading lease..." />;
+    return <LoadingScreen message={t('leases.detailLoading')} />;
   }
 
   if (!lease) {
     return (
       <div className="py-12 text-center">
-        <h2 className="mb-2 text-2xl font-bold">Lease not found</h2>
+        <h2 className="mb-2 text-2xl font-bold">{t('leases.notFound')}</h2>
         <p className="text-muted-foreground">
-          The lease you are looking for does not exist or you do not have access.
+          {t('leases.notFoundDescription')}
         </p>
         <Button className="mt-4" variant="outline" onClick={() => navigate('/app/long-rent/leases')}>
-          Back to leases
+          {t('leases.backToList')}
         </Button>
       </div>
     );
@@ -76,7 +78,7 @@ export function LeaseDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <PageHeader
-            title={lease.property?.name ?? 'Lease contract'}
+            title={lease.property?.name ?? t('leases.leaseContract')}
             description={`${formatDate(lease.startDate)} — ${formatDate(lease.endDate)}`}
           />
           <div className="ml-auto">
@@ -90,25 +92,25 @@ export function LeaseDetailPage() {
           <div className="space-y-6 lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Contract terms</CardTitle>
+                <CardTitle>{t('leases.contractTerms')}</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 text-sm sm:grid-cols-2">
                 <div>
-                  <p className="text-muted-foreground">Monthly rent</p>
+                  <p className="text-muted-foreground">{t('leases.monthlyRent')}</p>
                   <p className="text-lg font-semibold">
                     {formatCurrency(lease.monthlyRent)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Fiscal regime</p>
+                  <p className="text-muted-foreground">{t('leases.fiscalRegime')}</p>
                   <p className="font-medium">{FISCAL_REGIME_LABELS[lease.fiscalRegime]}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Registration deadline</p>
+                  <p className="text-muted-foreground">{t('leases.registrationDeadline')}</p>
                   <p className="font-medium">{formatDate(lease.registrationDeadline)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Created</p>
+                  <p className="text-muted-foreground">{t('leases.created')}</p>
                   <p className="font-medium">{formatDateTime(lease.createdAt)}</p>
                 </div>
               </CardContent>
@@ -116,7 +118,7 @@ export function LeaseDetailPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Parties</CardTitle>
+                <CardTitle>{t('leases.parties')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {parties.map((party) => (
@@ -139,11 +141,11 @@ export function LeaseDetailPage() {
             {lease.status === 'Draft' && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Signing</CardTitle>
+                  <CardTitle>{t('leases.signing')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="mb-4 text-sm text-muted-foreground">
-                    Generate the contract PDF and send signing links to all parties.
+                    {t('leases.signingDescription')}
                   </p>
                   <Button
                     onClick={handleInitiateSigning}
@@ -152,12 +154,12 @@ export function LeaseDetailPage() {
                     {initiateSigning.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Initiating…
+                        {t('leases.initiating')}
                       </>
                     ) : (
                       <>
                         <PenLine className="mr-2 h-4 w-4" />
-                        Initiate signing
+                        {t('leases.initiateSigning')}
                       </>
                     )}
                   </Button>
@@ -183,7 +185,7 @@ export function LeaseDetailPage() {
             {lease.events && lease.events.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Timeline</CardTitle>
+                  <CardTitle>{t('leases.timeline')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   {lease.events.map((event, index) => (

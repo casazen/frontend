@@ -1,31 +1,206 @@
 {
+  "admin": {
+    "dashboard": {
+      "title": "Dashboard Amministratore",
+      "description": "Panoramica del sistema CasaZen",
+      "loadError": "Impossibile caricare le statistiche.",
+      "kpi": {
+        "totalProperties": "Proprietà totali",
+        "activeProperties": "Proprietà attive",
+        "totalBookings": "Prenotazioni totali",
+        "bookingsThisMonth": "Prenotazioni del mese",
+        "upcomingCheckIns": "Check-in imminenti",
+        "totalRevenue": "Ricavi totali"
+      },
+      "cin": {
+        "title": "Conformità CIN",
+        "total": "Totale",
+        "valid": "Validi",
+        "missing": "Mancanti",
+        "invalid": "Non validi"
+      },
+      "ota": {
+        "title": "Salute OTA Sync",
+        "synced": "Sincronizzati",
+        "failed": "Falliti",
+        "neverSynced": "Mai sincronizzati"
+      }
+    },
+    "cin": {
+      "title": "Conformità CIN",
+      "description": "Verifica dei codici identificativi nazionali (D.L. 145/2023)",
+      "filters": "Filtri",
+      "loadError": "Impossibile caricare i dati CIN. Riprova più tardi.",
+      "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} proprietà)",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "filter": {
+        "allStatuses": "Tutti gli stati",
+        "valid": "Valido",
+        "missing": "Mancante",
+        "invalid": "Non valido"
+      },
+      "table": {
+        "property": "Proprietà",
+        "city": "Città",
+        "owner": "Proprietario",
+        "cin": "CIN",
+        "status": "Stato",
+        "empty": "Nessun dato trovato."
+      }
+    },
+    "users": {
+      "title": "Gestione Utenti",
+      "description": "Visualizza e gestisci tutti gli utenti del sistema",
+      "filters": "Filtri",
+      "searchPlaceholder": "Cerca per nome o email...",
+      "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} utenti)",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "filter": {
+        "allRoles": "Tutti i ruoli"
+      },
+      "table": {
+        "name": "Nome",
+        "email": "Email",
+        "role": "Ruolo",
+        "plan": "Piano",
+        "status": "Stato",
+        "actions": "Azioni",
+        "active": "Attivo",
+        "inactive": "Inattivo",
+        "planAction": "Piano",
+        "roleAction": "Ruolo",
+        "deactivateAction": "Disattiva",
+        "empty": "Nessun utente trovato."
+      },
+      "deactivateDialog": {
+        "title": "Disattiva utente",
+        "description": "Sei sicuro di voler disattivare {{firstName}} {{lastName}} ({{email}})? L'utente non potrà più accedere al sistema.",
+        "cancel": "Annulla",
+        "deactivating": "Disattivazione...",
+        "confirm": "Disattiva"
+      },
+      "roleDialog": {
+        "title": "Cambia ruolo",
+        "description": "Seleziona il nuovo ruolo per {{name}}.",
+        "label": "Ruolo",
+        "cancel": "Annulla",
+        "saving": "Salvataggio...",
+        "save": "Salva"
+      },
+      "planDialog": {
+        "title": "Piano organizzazione",
+        "description": "L'utente non ha ancora un'organizzazione associata.",
+        "changeTitle": "Cambia piano — {{name}}",
+        "changeDescription": "Piano attuale:",
+        "actionLabel": "Imposta piano"
+      }
+    },
+    "jobs": {
+      "title": "Background Jobs",
+      "description": "Stato dei job Hangfire (aggiornato ogni 30 secondi)",
+      "table": {
+        "job": "Job",
+        "cron": "Cron",
+        "lastRun": "Ultima esecuzione",
+        "nextRun": "Prossima esecuzione",
+        "status": "Stato",
+        "empty": "Nessun job trovato."
+      }
+    },
+    "supplierInvite": {
+      "title": "Invita fornitore",
+      "description": "Invia un invito pilota per comune",
+      "newInvite": "Nuovo invito",
+      "email": "Email",
+      "comuneCode": "Codice comune",
+      "message": "Messaggio (opzionale)",
+      "sendInvite": "Invia invito",
+      "toast": {
+        "success": "Invito inviato — scade {{expiresAt}}",
+        "error": "Impossibile inviare l'invito"
+      }
+    },
+    "seo": {
+      "title": "SEO Compliance",
+      "description": "Pagine programmatiche per affitti brevi e tassa di soggiorno",
+      "approveAll": "Approva tutte",
+      "generateAll": "Genera tutti",
+      "aiBudget": "Budget AI piattaforma",
+      "budgetTokens": "{{used}} / {{cap}} token questo mese",
+      "loading": "Caricamento…",
+      "loadError": "Impossibile caricare le pagine SEO. Riprova più tardi.",
+      "table": {
+        "comune": "Comune",
+        "type": "Tipo",
+        "status": "Stato",
+        "lastRefresh": "Ultimo refresh",
+        "actions": "Azioni",
+        "approve": "Approva",
+        "empty": "Nessuna pagina SEO."
+      },
+      "confirmDialog": {
+        "title": "Conferma rigenerazione",
+        "description": "Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno) e approvarle automaticamente.",
+        "cancel": "Annulla",
+        "confirm": "Conferma"
+      },
+      "status": {
+        "reviewed": "Revisionato",
+        "draft": "Bozza"
+      }
+    },
+    "profile": {
+      "title": "Profilo utente",
+      "description": "Informazioni account e strumenti per il test API"
+    },
+    "badges": {
+      "cin": {
+        "valid": "Valido",
+        "missing": "Mancante",
+        "invalid": "Non valido"
+      },
+      "job": {
+        "succeeded": "Completato",
+        "failed": "Fallito",
+        "processing": "In corso",
+        "enqueued": "In coda",
+        "unknown": "Sconosciuto"
+      },
+      "seo": {
+        "reviewed": "Revisionato",
+        "draft": "Bozza"
+      }
+    }
+  },
   "nav": {
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
-    "plan": "Piano",
+    "plan": "Piano e Fatturazione",
     "bookings": "Prenotazioni",
     "calendar": "Calendario",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
     "payments": "Incassi",
     "revenue": "Ricavi",
-    "stripeConnect": "Stripe Connect",
+    "stripeConnect": "Incassi e Payout",
     "ota": "OTA",
     "leases": "Contratti",
     "users": "Utenti",
-    "jobs": "Job",
-    "seo": "SEO Compliance",
-    "inbox": "Inbox",
-    "inviteSupplier": "Invita fornitore",
-    "availability": "Disponibilità",
-    "activation": "Attivazione",
+    "jobs": "Processi",
+    "suppliers": "Fornitori",
+    "guests": "Ospiti",
+    "taxRates": "Tassa di Soggiorno",
+    "seo": "SEO & Contenuti",
     "more": "Altro",
     "group": {
       "operazioni": "Operazioni",
       "immobili": "Immobili",
       "finanza": "Finanza",
       "compliance": "Conformità",
+      "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrazioni",
       "account": "Account e impostazioni",
       "amministrazione": "Amministrazione"
@@ -41,7 +216,6 @@
     "shortRentSubtitle": "Affitti brevi",
     "longRentSubtitle": "Affitti lungo termine",
     "adminSubtitle": "Amministrazione",
-    "supplierSubtitle": "Fornitore",
     "adminFooter": "v1.0.0 · Admin",
     "workspaceLabel": "Area di lavoro",
     "workspaceContext": "Contesto applicativo",
@@ -59,27 +233,59 @@
     "loadError": "Impossibile caricare i contratti. Riprova.",
     "rentLabel": "Canone ",
     "regimeLabel": "Regime ",
-    "partiesLabel": "Parti "
+    "partiesLabel": "Parti ",
+    "detailLoading": "Caricamento contratto...",
+    "notFound": "Contratto non trovato",
+    "notFoundDescription": "Il contratto che stai cercando non esiste o non hai i permessi per visualizzarlo.",
+    "backToList": "Torna ai contratti",
+    "leaseContract": "Contratto di locazione",
+    "contractTerms": "Termini contrattuali",
+    "monthlyRent": "Canone mensile",
+    "fiscalRegime": "Regime fiscale",
+    "registrationDeadline": "Scadenza registrazione",
+    "created": "Creato",
+    "parties": "Parti",
+    "signing": "Firma",
+    "signingDescription": "Genera il contratto PDF e invia i link di firma a tutte le parti.",
+    "initiating": "Avvio...",
+    "initiateSigning": "Avvia firma",
+    "timeline": "Cronologia",
+    "validation": {
+      "firstName": {
+        "required": "Il nome e' obbligatorio"
+      },
+      "lastName": {
+        "required": "Il cognome e' obbligatorio"
+      },
+      "fiscalCode": {
+        "minLength": "Il codice fiscale deve essere di almeno 11 caratteri",
+        "maxLength": "Il codice fiscale deve essere di al massimo 16 caratteri"
+      },
+      "citizenship": {
+        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)"
+      },
+      "contactEmail": {
+        "format": "Email valida obbligatoria"
+      },
+      "propertyId": {
+        "required": "La proprieta' e' obbligatoria"
+      },
+      "startDate": {
+        "required": "La data di inizio e' obbligatoria"
+      },
+      "endDate": {
+        "required": "La data di fine e' obbligatoria",
+        "afterStart": "La data di fine deve essere successiva all'inizio"
+      },
+      "monthlyRent": {
+        "positive": "Il canone mensile deve essere maggiore di zero"
+      }
+    }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
     "pageDescription": "Monitora e analizza l'andamento dei ricavi",
-    "backToPayments": "Torna agli incassi",
-    "filters": "Filtri",
-    "property": "Proprietà",
-    "noProperties": "Nessuna proprietà",
-    "startDate": "Data inizio",
-    "endDate": "Data fine",
-    "groupBy": "Raggruppa per",
-    "period": {
-      "day": "Giorno",
-      "week": "Settimana",
-      "month": "Mese",
-      "year": "Anno"
-    },
-    "resetFilters": "Reimposta filtri",
-    "loading": "Caricamento analisi...",
-    "empty": "Nessun dato ricavi disponibile"
+    "backToPayments": "Torna agli incassi"
   },
   "dashboard": {
     "title": "Cruscotto",
@@ -126,6 +332,47 @@
       "checkedIn": "Check-in effettuato",
       "checkedOut": "Check-out effettuato",
       "cancelled": "Annullata"
+    },
+    "calendar": {
+      "pageTitle": "Calendario prenotazioni",
+      "pageDescription": "Visualizza e gestisci le prenotazioni in formato calendario",
+      "listView": "Vista elenco",
+      "loading": "Caricamento calendario...",
+      "noProperties": "Nessuna proprietà disponibile",
+      "noPropertiesHint": "Aggiungi una proprietà per visualizzare il calendario prenotazioni.",
+      "goToProperties": "Vai alle proprietà",
+      "property": "Proprietà",
+      "loadError": "Impossibile caricare il calendario. Riprova più tardi."
+    },
+    "validation": {
+      "firstName": {
+        "minLength": "Il nome deve essere di almeno 2 caratteri"
+      },
+      "lastName": {
+        "minLength": "Il cognome deve essere di almeno 2 caratteri"
+      },
+      "email": {
+        "format": "Indirizzo email non valido"
+      },
+      "phone": {
+        "minLength": "Il numero di telefono deve essere di almeno 10 cifre"
+      },
+      "country": {
+        "required": "Il paese e' obbligatorio"
+      },
+      "propertyId": {
+        "required": "La proprieta' e' obbligatoria"
+      },
+      "checkInDate": {
+        "required": "La data di check-in e' obbligatoria"
+      },
+      "checkOutDate": {
+        "required": "La data di check-out e' obbligatoria",
+        "afterCheckIn": "La data di check-out deve essere successiva al check-in"
+      },
+      "numberOfGuests": {
+        "min": "Almeno 1 ospite e' obbligatorio"
+      }
     }
   },
   "ota": {
@@ -133,7 +380,75 @@
       "connected": "Connesso",
       "warning": "Attenzione",
       "disconnected": "Disconnesso"
+    },
+    "validation": {
+      "propertyId": {
+        "required": "La proprieta' e' obbligatoria"
+      },
+      "nightlyRate": {
+        "min": "Il prezzo deve essere maggiore di 0"
+      }
     }
+  },
+  "shared": {
+    "errorBoundary": {
+      "title": "Qualcosa e' andato storto",
+      "fallbackMessage": "Si e' verificato un errore imprevisto",
+      "reload": "Ricarica pagina"
+    },
+    "errorFallback": {
+      "title": "Qualcosa e' andato storto",
+      "description": "Si e' verificato un errore imprevisto. Riprova o contatta l'assistenza se il problema persiste.",
+      "tryAgain": "Riprova",
+      "goHome": "Vai alla home"
+    },
+    "cookieConsent": {
+      "ariaLabel": "Consenso cookie",
+      "text": "Utilizziamo cookie essenziali per il funzionamento del sito e, solo con il tuo consenso, cookie analitici. Puoi accettare o rifiutare i cookie non essenziali.",
+      "reject": "Rifiuta",
+      "accept": "Accetta"
+    },
+    "demoBanner": {
+      "message": "Modalita' demo - Nessuna autenticazione richiesta. Tutti i dati sono simulati."
+    },
+    "loading": {
+      "defaultMessage": "Caricamento..."
+    },
+    "userMenu": {
+      "profile": "Profilo",
+      "logout": "Esci"
+    },
+    "documentUpload": {
+      "uploadDocument": "Carica documento",
+      "documentType": "Tipo documento",
+      "dragDropText": "Trascina un file qui o clicca per selezionare",
+      "fileFormats": "PDF, DOC, DOCX, JPG, PNG — max 10 MB",
+      "uploading": "Caricamento...",
+      "upload": "Carica",
+      "types": {
+        "cinCertificate": "Certificato CIN",
+        "floorPlan": "Planimetria",
+        "insurancePolicy": "Polizza assicurativa",
+        "propertyLicense": "Licenza struttura",
+        "safetyCompliance": "Conformita' sicurezza",
+        "ape": "APE",
+        "other": "Altro"
+      }
+    },
+    "contextPicker": {
+      "loading": "Caricamento...",
+      "title": "Seleziona workspace",
+      "description": "Scegli il contesto applicativo da aprire."
+    },
+    "noAccess": {
+      "title": "Nessun accesso disponibile",
+      "description": "Il tuo account non e associato ad alcun workspace operativo. Esci e accedi di nuovo, oppure contatta l'amministratore per l'assegnazione dei ruoli.",
+      "loginAgain": "Accedi di nuovo"
+    }
+  },
+  "common": {
+    "planLimitMessage": "Hai raggiunto il limite del tuo piano",
+    "planUpgradeCta": "Passa a un piano superiore"
   },
   "property": {
     "form": {
@@ -171,6 +486,304 @@
       "saving": "Salvataggio...",
       "update": "Aggiorna immobile",
       "create": "Crea immobile"
+    },
+    "validation": {
+      "name": {
+        "minLength": "Il nome deve essere di almeno 3 caratteri",
+        "maxLength": "Il nome deve essere inferiore a 100 caratteri"
+      },
+      "description": {
+        "minLength": "La descrizione deve essere di almeno 10 caratteri",
+        "maxLength": "La descrizione deve essere inferiore a 1000 caratteri"
+      },
+      "address": {
+        "required": "L'indirizzo e' obbligatorio"
+      },
+      "city": {
+        "required": "La citta' e' obbligatoria"
+      },
+      "country": {
+        "required": "Il paese e' obbligatorio"
+      },
+      "postalCode": {
+        "required": "Il CAP e' obbligatorio"
+      },
+      "bedrooms": {
+        "min": "Almeno 1 camera e' obbligatoria"
+      },
+      "bathrooms": {
+        "min": "Almeno 0.5 bagni sono obbligatori"
+      },
+      "maxGuests": {
+        "min": "Almeno 1 ospite di capacita' e' obbligatorio"
+      },
+      "nightlyRate": {
+        "min": "Il prezzo deve essere almeno 1"
+      },
+      "cin": {
+        "format": "Formato CIN: IT-XXXXX-XXXXXXXXXX"
+      }
+    }
+  },
+  "supplier": {
+    "profileLoading": "Caricamento profilo...",
+    "profileTitle": "Profilo fornitore",
+    "profileDescription": "Account e dati visibili ai host nel picker",
+    "professionalProfile": "Profilo professionale",
+    "status": "Stato",
+    "companyName": "Ragione sociale",
+    "email": "Email",
+    "phone": "Telefono",
+    "categories": "Categorie",
+    "municipalities": "Comuni",
+    "bioEmpty": "Bio non ancora compilata.",
+    "supplierDefault": "Fornitore",
+    "availabilityLoading": "Caricamento disponibilità...",
+    "availabilityUpdated": "Disponibilità aggiornata",
+    "availabilitySaveError": "Impossibile salvare la disponibilità",
+    "availabilityTitle": "Disponibilità",
+    "availabilityDescription": "Tocca un giorno per segnare indisponibilità",
+    "available": "Disponibile",
+    "notAvailable": "Non disponibile",
+    "saveAvailability": "Salva disponibilità",
+    "activationLoading": "Caricamento attivazione...",
+    "activationTitle": "Attivazione profilo fornitore",
+    "activationDescription": "Completa i 5 passaggi per comparire nel marketplace host",
+    "activationStatus": "Stato attivazione",
+    "serviceCategories": "Categorie di servizio",
+    "operatingMunicipalities": "Comuni di operatività",
+    "municipalityCodesLabel": "Codici comune (separati da virgola)",
+    "description": "Descrizione",
+    "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
+    "acceptTos": "Accetto i termini di servizio fornitore CasaZen",
+    "saveProgress": "Salva progresso",
+    "activateProfile": "Attiva profilo",
+    "progressSaved": "Progresso salvato",
+    "profileActivated": "Profilo fornitore attivato",
+    "completeAllSteps": "Completa tutti i passaggi prima di attivare il profilo",
+    "inboxTitle": "Inbox incarichi",
+    "inboxDescription": "Richieste di servizio dai host (disponibile dalla wave 2 marketplace)",
+    "loading": "Caricamento...",
+    "noAssignments": "Nessun incarico aperto",
+    "assignmentsCount": "{{count}} incarichi"
+  },
+  "settings": {
+    "planTitle": "Il tuo piano",
+    "planOrgDescription": "Organizzazione: {{orgName}}. Scegli il piano più adatto al tuo portfolio.",
+    "planDefaultDescription": "Gestisci il piano della tua organizzazione.",
+    "currentUsage": "Utilizzo attuale:",
+    "unlimited": "illimitate",
+    "planUsage": "{{propertyCount}} proprietà su {{maxProperties}}",
+    "switchToPlan": "Passa a questo piano",
+    "stripeBillingNote": "Il pagamento ricorrente con carta sarà disponibile con l'integrazione Stripe ({{planCount}} piani configurati).",
+    "connectStatusDisconnected": "Non collegato",
+    "connectStatusPending": "In verifica",
+    "connectStatusActive": "Attivo",
+    "connectPaymentsTitle": "Pagamenti / Payouts",
+    "connectDescription": "Collega il tuo account Stripe per ricevere i pagamenti degli ospiti direttamente sul tuo conto.",
+    "yourBookingSite": "Il tuo sito di prenotazioni",
+    "visitPublicSiteDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
+    "visitSite": "Visita {{siteName}}",
+    "bookingSiteNotActive": "Sito prenotazioni non ancora attivo",
+    "bookingSiteNotActiveDescription": "Completa la verifica Stripe per abilitare il checkout sul sito prenotazioni. Gli ospiti non potranno pagare finché l'account non è attivo.",
+    "stripeConnectionStatus": "Stato connessione Stripe",
+    "connectStripe": "Collega Stripe",
+    "completeVerification": "Completa la verifica",
+    "loadingPayments": "Caricamento stato pagamenti…",
+    "stripeStatusError": "Impossibile caricare lo stato Stripe. Riprova tra poco.",
+    "stripeAccount": "Account Stripe:",
+    "verificationIncomplete": "Verifica incompleta",
+    "verificationIncompleteDescription": "Stripe richiede documenti aggiuntivi. Clicca \"Completa la verifica\" per continuare l'onboarding.",
+    "accountActiveMessage": "Il tuo account può accettare pagamenti. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi.",
+    "managePlanIn": "Gestisci il piano SaaS in",
+    "planSettings": "Impostazioni piano"
+  },
+  "profile": {
+    "title": "Il mio profilo",
+    "description": "Visualizza e gestisci le informazioni del tuo account",
+    "profileInformation": "Informazioni profilo",
+    "email": "Email",
+    "userId": "ID utente",
+    "role": "Ruolo",
+    "notAvailable": "N/D",
+    "unknownUser": "Utente sconosciuto",
+    "user": "Utente",
+    "operatorType": "Tipo di operatore",
+    "editType": "Modifica tipo",
+    "currentType": "Tipo attuale",
+    "loading": "Caricamento...",
+    "notConfigured": "Non configurato",
+    "apiToken": "Token API",
+    "apiTokenDescription": "Copia il Bearer token della sessione corrente per testare le API (es. Swagger locale). Non condividere il token: contiene i tuoi permessi di accesso.",
+    "tokenUnavailable": "Token non disponibile. Effettua di nuovo il login.",
+    "tokenCopied": "Token copiato negli appunti",
+    "tokenCopyError": "Impossibile copiare il token",
+    "copying": "Copia in corso...",
+    "copyToken": "Copia token",
+    "tokenPasteInstructions": "Incolla il token in Authorize (con o senza prefisso Bearer )."
+  },
+  "alloggiati": {
+    "loading": "Caricamento Alloggiati…",
+    "title": "Alloggiati Web",
+    "description": "Stato delle comunicazioni alla Questura (Art. 109 TULPS)",
+    "noPendingReport": "Nessuna prenotazione con comunicazione Alloggiati in sospeso.",
+    "bookings": "Prenotazioni",
+    "guest": "Ospite",
+    "property": "Proprietà",
+    "checkIn": "Check-in",
+    "status": "Stato",
+    "statusLabel": {
+      "Pending": "In attesa",
+      "Submitted": "Inviato",
+      "Confirmed": "Confermato",
+      "Failed": "Errore",
+      "Expired": "Scaduto"
+    },
+    "deadline": "Scadenza",
+    "incompleteData": "Dati incompleti",
+    "over24h": "Oltre 24h",
+    "hoursRemaining": "{{hours}}h rimanenti",
+    "details": "Dettagli",
+    "expired": "Scaduto",
+    "statusPending": "In attesa",
+    "statusSubmitted": "Inviato",
+    "statusConfirmed": "Confermato",
+    "statusFailed": "Errore"
+  },
+  "guests": {
+    "title": "Ospiti",
+    "search": "Cerca per nome o email...",
+    "empty": "Nessun ospite trovato",
+    "detail": "Dettaglio ospite",
+    "anagrafica": "Anagrafica",
+    "bookings": "Prenotazioni",
+    "documents": "Documenti",
+    "gdpr": "GDPR",
+    "export": "Esporta dati",
+    "anonymize": "Anonimizza",
+    "delete": "Cancella dati",
+    "deleteConfirm": "Sei sicuro di voler cancellare tutti i dati di questo ospite? Questa azione e' irreversibile.",
+    "consentMarketing": "Consenso marketing",
+    "retention": "Conservazione dati fino al",
+    "noDocument": "Nessun documento caricato"
+  },
+  "taxRates": {
+    "title": "Aliquote Tassa di Soggiorno",
+    "city": "Citta'",
+    "ratePerNight": "Tariffa per notte",
+    "maxNights": "Notti massime",
+    "region": "Regione",
+    "effectiveFrom": "In vigore dal",
+    "empty": "Nessuna aliquota configurata",
+    "create": "Nuova aliquota",
+    "edit": "Modifica aliquota",
+    "delete": "Elimina aliquota"
+  },
+  "amenity": {
+    "WiFi": "WiFi",
+    "AirConditioning": "Aria condizionata",
+    "Heating": "Riscaldamento",
+    "Kitchen": "Cucina",
+    "Washer": "Lavatrice",
+    "Dryer": "Asciugatrice",
+    "TV": "TV",
+    "FreeParking": "Parcheggio",
+    "Pool": "Piscina",
+    "HotTub": "Vasca idromassaggio",
+    "Gym": "Palestra",
+    "Elevator": "Ascensore",
+    "Balcony": "Balcone",
+    "Terrace": "Terrazza",
+    "Garden": "Giardino",
+    "BBQGrill": "Barbecue",
+    "Fireplace": "Camino",
+    "PetFriendly": "Pet friendly",
+    "SmokeDetector": "Rilevatore di fumo",
+    "FirstAidKit": "Kit di pronto soccorso",
+    "FireExtinguisher": "Estintore",
+    "CarbonMonoxideDetector": "Rilevatore CO2"
+  },
+  "cin": {
+    "status": {
+      "Valid": "Valido",
+      "Missing": "Mancante",
+      "Invalid": "Non valido"
+    }
+  },
+  "payment": {
+    "status": {
+      "Pending": "In attesa",
+      "Processing": "In elaborazione",
+      "Completed": "Completato",
+      "Failed": "Fallito",
+      "Refunded": "Rimborsato",
+      "PartiallyRefunded": "Parzialmente rimborsato"
+    },
+    "method": {
+      "CreditCard": "Carta di credito",
+      "BankTransfer": "Bonifico bancario",
+      "PayPal": "PayPal",
+      "ApplePay": "Apple Pay",
+      "GooglePay": "Google Pay"
+    },
+    "validation": {
+      "bookingId": {
+        "required": "La prenotazione e' obbligatoria"
+      },
+      "amount": {
+        "min": "L'importo deve essere maggiore di 0"
+      },
+      "paymentMethodId": {
+        "required": "Il metodo di pagamento e' obbligatorio"
+      }
+    }
+  },
+  "checkin": {
+    "sendLink": "Invia link check-in",
+    "linkGenerated": "Link check-in generato",
+    "copyLink": "Copia link",
+    "sendEmail": "Invia via email",
+    "guestEmail": "Email dell'ospite",
+    "documentType": {
+      "Passport": "Passaporto",
+      "IdentityCard": "Carta d'identita'",
+      "DriversLicense": "Patente di guida",
+      "Other": "Altro"
+    },
+    "gender": {
+      "Male": "Maschio",
+      "Female": "Femmina",
+      "Other": "Altro"
+    },
+    "validation": {
+      "dateOfBirth": {
+        "required": "Data di nascita obbligatoria"
+      },
+      "placeOfBirth": {
+        "required": "Luogo di nascita obbligatorio",
+        "maxLength": "Luogo di nascita deve essere inferiore a 100 caratteri"
+      },
+      "nationality": {
+        "required": "Nazionalita' obbligatoria",
+        "maxLength": "Nazionalita' deve essere inferiore a 100 caratteri"
+      },
+      "gender": {
+        "required": "Seleziona il sesso"
+      },
+      "documentType": {
+        "required": "Seleziona il tipo di documento"
+      },
+      "documentNumber": {
+        "required": "Numero documento obbligatorio",
+        "maxLength": "Numero documento deve essere inferiore a 50 caratteri"
+      },
+      "documentIssuingCountry": {
+        "required": "Paese di rilascio obbligatorio",
+        "maxLength": "Paese di rilascio deve essere inferiore a 100 caratteri"
+      },
+      "consentAccepted": {
+        "required": "Devi accettare il trattamento dei dati"
+      }
     }
   }
 }

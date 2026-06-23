@@ -1,10 +1,7 @@
 import { AxiosError } from 'axios';
 
-/** Italian end-user copy shown when a write is blocked by the org's plan limit (#202, AC8/AC12). */
-export const PLAN_LIMIT_MESSAGE = 'Hai raggiunto il limite del tuo piano';
-
-/** Italian CTA label pointing at the (billing-spec-owned) upgrade route. */
-export const PLAN_UPGRADE_CTA = 'Passa a un piano superiore';
+// Re-exported from i18n-labels.ts — canonical home for i18n-aware label functions
+export { getPlanLimitMessage, getPlanUpgradeCta } from './i18n-labels';
 
 /** Target route for plan management (MVP until Stripe billing). */
 export const PLAN_UPGRADE_PATH = '/app/short-rent/settings/plan';

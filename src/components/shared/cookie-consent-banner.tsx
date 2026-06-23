@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 const STORAGE_KEY = 'casazen_cookie_consent';
@@ -12,6 +13,8 @@ function readConsent(): ConsentChoice | null {
 }
 
 export function CookieConsentBanner() {
+  const { t } = useTranslation();
+
   // Initialise directly from localStorage — avoids the setState-in-effect pattern
   const [visible, setVisible] = useState(() => readConsent() === null);
 
@@ -25,21 +28,20 @@ export function CookieConsentBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Consenso cookie"
+      aria-label={t('shared.cookieConsent.ariaLabel')}
       className="fixed bottom-0 inset-x-0 z-50 border-t bg-background/95 backdrop-blur p-4 shadow-lg"
       data-testid="cookie-consent-banner"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          Utilizziamo cookie essenziali per il funzionamento del sito e, solo con il tuo consenso,
-          cookie analitici. Puoi accettare o rifiutare i cookie non essenziali.
+          {t('shared.cookieConsent.text')}
         </p>
         <div className="flex shrink-0 gap-2">
           <Button variant="outline" size="sm" onClick={() => persist('rejected')}>
-            Rifiuta
+            {t('shared.cookieConsent.reject')}
           </Button>
           <Button size="sm" onClick={() => persist('accepted')}>
-            Accetta
+            {t('shared.cookieConsent.accept')}
           </Button>
         </div>
       </div>

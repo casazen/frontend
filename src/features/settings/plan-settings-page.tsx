@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
@@ -8,6 +9,7 @@ import type { PlanTier } from '@/types';
 import { useState } from 'react';
 
 export function PlanSettingsPage() {
+  const { t } = useTranslation();
   const { org, planTier, user } = useCurrentUser();
   const { data: entitlement } = useEntitlement();
   const { data: plans } = usePlans();
@@ -28,11 +30,11 @@ export function PlanSettingsPage() {
     <AppShell>
       <div className="mx-auto max-w-5xl space-y-6">
         <PageHeader
-          title="Il tuo piano"
+          title={t('settings.planTitle')}
           description={
             org
-              ? `Organizzazione: ${org.name}. Scegli il piano più adatto al tuo portfolio.`
-              : 'Gestisci il piano della tua organizzazione.'
+              ? t('settings.planOrgDescription', { orgName: org.name })
+              : t('settings.planDefaultDescription')
           }
         />
 
@@ -42,13 +44,13 @@ export function PlanSettingsPage() {
             data-testid="plan-usage-summary"
           >
             <p>
-              Utilizzo attuale: <strong>{entitlement.usage.properties}</strong> proprietà su{' '}
-              <strong>
-                {entitlement.limits.maxProperties >= 1_000_000
-                  ? 'illimitate'
-                  : entitlement.limits.maxProperties}
-              </strong>
-              .
+              {t('settings.currentUsage')} <strong>{entitlement.usage.properties}</strong>{' '}
+              {t('settings.planUsage', {
+                propertyCount: entitlement.usage.properties,
+                maxProperties: entitlement.limits.maxProperties >= 1_000_000
+                  ? t('settings.unlimited')
+                  : entitlement.limits.maxProperties,
+              })}.
             </p>
           </div>
         )}
@@ -58,12 +60,11 @@ export function PlanSettingsPage() {
           currentTier={planTier}
           onSelect={(tier) => void handleSelect(tier)}
           isLoading={updatePlan.isPending}
-          actionLabel="Passa a questo piano"
+          actionLabel={t('settings.switchToPlan')}
         />
 
         <p className="text-sm text-muted-foreground">
-          Il pagamento ricorrente con carta sarà disponibile con l&apos;integrazione Stripe (
-          {plans?.length ?? 3} piani configurati).
+          {t('settings.stripeBillingNote', { planCount: plans?.length ?? 3 })}
         </p>
       </div>
     </AppShell>
