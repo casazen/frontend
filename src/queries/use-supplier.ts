@@ -46,7 +46,10 @@ export function useUpdateSupplierProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateSupplierProfile,
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      // Update the profile cache immediately with the response from the server.
+      // This avoids a stale-data window caused by staleTime + refetchOnMount.
+      queryClient.setQueryData(['supplier', 'profile'], updated);
       queryClient.invalidateQueries({ queryKey: ['supplier'] });
     },
   });
