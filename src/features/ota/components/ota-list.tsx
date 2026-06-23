@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { OtaCard } from './ota-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,6 +24,8 @@ export function OtaList({
   onValidate,
   onAdd,
 }: OtaListProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -39,9 +42,9 @@ export function OtaList({
     return (
       <EmptyState
         icon={Repeat}
-        title="No OTA integrations"
-        description="Connect your properties to OTA platforms to sync bookings automatically"
-        action={onAdd ? { label: 'Add Integration', onClick: onAdd } : undefined}
+        title={t('ota.list.emptyTitle')}
+        description={t('ota.list.emptyDescription')}
+        action={onAdd ? { label: t('ota.list.addAction'), onClick: onAdd } : undefined}
       />
     );
   }

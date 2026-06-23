@@ -1,3 +1,4 @@
+import i18n from '@/i18n/config';
 import { env } from '@/config/env.config';
 
 export const ROLES_CLAIM = 'https://casazen.app/roles';
@@ -114,7 +115,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
   if (roles.includes(ROLE_PROPERTY_OWNER)) {
     contexts.push({
       contextKey: 'short-rent',
-      displayName: 'Affitti brevi',
+      displayName: i18n.t('shell.shortRentSubtitle'),
       roleKey: 'property_owner',
       permissions: [
         'property.read',
@@ -135,7 +136,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
   if (roles.includes(ROLE_LONG_TERM_LANDLORD)) {
     contexts.push({
       contextKey: 'long-rent',
-      displayName: 'Affitti lungo termine',
+      displayName: i18n.t('shell.longRentSubtitle'),
       roleKey: 'long_term_landlord',
       permissions: ['lease.read', 'lease.create', 'lease.sign', 'lease.register'],
       defaultRoute: '/app/long-rent/leases',
@@ -145,7 +146,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
   if (roles.includes(ROLE_ADMIN)) {
     contexts.push({
       contextKey: 'admin',
-      displayName: 'Amministrazione',
+      displayName: i18n.t('shell.adminSubtitle'),
       roleKey: 'platform_admin',
       permissions: [
         'admin.stats.read',
@@ -163,7 +164,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
   if (roles.includes(ROLE_SUPPLIER)) {
     contexts.push({
       contextKey: 'supplier',
-      displayName: 'Fornitore',
+      displayName: i18n.t('supplier.supplierDefault'),
       roleKey: 'supplier',
       permissions: [
         'supplier.profile.read',

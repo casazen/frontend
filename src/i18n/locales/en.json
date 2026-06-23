@@ -195,6 +195,10 @@
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "more": "More",
+    "brandShort": "CASAZEN",
+    "brandAdmin": "CASAZEN Admin",
+    "brandSupplier": "CASAZEN Supplier",
+    "inviteSupplier": "Invite supplier",
     "group": {
       "operazioni": "Operations",
       "immobili": "Properties",
@@ -223,7 +227,8 @@
     "mobileNavigation": "Mobile navigation",
     "openMenu": "Open navigation menu",
     "layerShortStay": "Short-stay",
-    "layerLongTerm": "Long-term"
+    "layerLongTerm": "Long-term",
+    "supplierSubtitle": "Supplier"
   },
   "leases": {
     "pageTitle": "Long-term leases",
@@ -252,6 +257,28 @@
     "initiating": "Initiating...",
     "initiateSigning": "Initiate signing",
     "timeline": "Timeline",
+    "fiscalRegimeLabel": {
+      "CedolareSecca": "Flat-rate tax (Cedolare Secca)",
+      "RegimeOrdinario": "Ordinary regime",
+      "CanoneConcordato": "Agreed rent",
+      "Altro": "Other"
+    },
+    "statusLabel": {
+      "Draft": "Draft",
+      "AwaitingSignature": "Awaiting signature",
+      "Signed": "Signed",
+      "Registered": "Registered",
+      "Terminated": "Terminated",
+      "Renewed": "Renewed",
+      "Cancelled": "Cancelled"
+    },
+    "registrationStatusLabel": {
+      "Pending": "Pending",
+      "SentToProvider": "Sent to provider",
+      "Registered": "Registered",
+      "Failed": "Failed",
+      "Exempt": "Exempt"
+    },
     "validation": {
       "firstName": {
         "required": "First name is required"
@@ -282,12 +309,52 @@
       "monthlyRent": {
         "positive": "Monthly rent must be greater than zero"
       }
+    },
+    "createPageTitle": "Create lease",
+    "createPageDescription": "Define contract parties and terms — a draft will be saved for review",
+    "form": {
+      "propertyTermsTitle": "Property & terms",
+      "propertyTermsDescription": "Select the property and define lease terms",
+      "propertyLabel": "Property *",
+      "selectProperty": "Select a property",
+      "fiscalRegimeLabel": "Fiscal regime *",
+      "startDateLabel": "Start date *",
+      "endDateLabel": "End date *",
+      "monthlyRentLabel": "Monthly rent (€) *",
+      "landlordTitle": "Landlord",
+      "landlordDescription": "Contract party — property owner or representative",
+      "tenantTitle": "Tenant",
+      "tenantDescription": "Contract party — lessee",
+      "firstNameLabel": "First name *",
+      "lastNameLabel": "Last name *",
+      "fiscalCodeLabel": "Fiscal code *",
+      "citizenshipLabel": "Citizenship (ISO) *",
+      "contactEmailLabel": "Contact email *",
+      "creating": "Creating...",
+      "createDraft": "Create lease draft",
+      "apeMissingError": "An APE (energy performance certificate) document must be uploaded for this property before creating a lease.",
+      "waitingDocuments": "Please wait while property documents are being verified."
     }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
     "pageDescription": "Track and analyze revenue performance",
-    "backToPayments": "Back to payments"
+    "backToPayments": "Back to payments",
+    "filters": "Filters",
+    "property": "Property",
+    "noProperties": "No properties",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "groupBy": "Group by",
+    "period": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year"
+    },
+    "resetFilters": "Reset filters",
+    "loading": "Loading analytics...",
+    "empty": "No revenue data available"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -394,7 +461,10 @@
         "guests": "Guests",
         "total": "Total",
         "status": "Status"
-      }
+      },
+      "emptyTitle": "No bookings found",
+      "emptyDescription": "Get started by creating your first booking",
+      "addAction": "Add Booking"
     },
     "detail": {
       "guestInformation": "Guest Information",
@@ -603,6 +673,49 @@
       "cancel": "Cancel",
       "updating": "Updating...",
       "update": "Update Pricing"
+    },
+    "list": {
+      "emptyTitle": "No OTA integrations",
+      "emptyDescription": "Connect your properties to OTA platforms to sync bookings automatically",
+      "addAction": "Add Integration"
+    },
+    "card": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "lastSync": "Last Sync",
+      "property": "Property: {{id}}",
+      "syncError": "Sync Error",
+      "neverSynced": "Never synced",
+      "created": "Created {{date}}",
+      "syncNow": "Sync Now",
+      "validate": "Validate"
+    },
+    "platform": {
+      "Airbnb": "Airbnb",
+      "AIRBNB": "Airbnb",
+      "BookingCom": "Booking.com",
+      "BOOKING_COM": "Booking.com",
+      "Expedia": "Expedia",
+      "EXPEDIA": "Expedia",
+      "Vrbo": "VRBO",
+      "VRBO": "VRBO",
+      "TripAdvisor": "TripAdvisor",
+      "TRIPADVISOR": "TripAdvisor",
+      "Agoda": "Agoda",
+      "AGODA": "Agoda"
+    },
+    "syncStatus": {
+      "Connected": "Connected",
+      "Disconnected": "Disconnected",
+      "Warning": "Warning",
+      "Pending": "Pending",
+      "InProgress": "In progress",
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "SUCCESS": "Success",
+      "FAILED": "Failed",
+      "SYNCING": "Syncing",
+      "WARNING": "Warning"
     }
   },
   "shared": {
@@ -626,8 +739,11 @@
     "demoBanner": {
       "message": "Demo Mode - No authentication required. All data is simulated."
     },
+    "confirm": "Confirm",
+    "cancel": "Cancel",
     "loading": {
-      "defaultMessage": "Loading..."
+      "defaultMessage": "Loading...",
+      "srOnly": "Loading..."
     },
     "userMenu": {
       "profile": "Profile",
@@ -1068,7 +1184,8 @@
     "upToProperties": "Up to {{count}} properties",
     "currentPlan": "Current plan",
     "saving": "Saving...",
-    "choosePlan": "Choose plan"
+    "choosePlan": "Choose plan",
+    "managePlan": "Manage plan"
   },
   "profile": {
     "title": "My Profile",
@@ -1093,6 +1210,14 @@
     "copying": "Copying...",
     "copyToken": "Copy token",
     "tokenPasteInstructions": "Paste the token in Authorize (with or without the Bearer prefix)."
+  },
+  "roles": {
+    "Admin": "Admin",
+    "PropertyOwner": "PropertyOwner",
+    "PropertyManager": "PropertyManager",
+    "Guest": "Guest",
+    "Staff": "Staff",
+    "LongTermLandlord": "LongTermLandlord"
   },
   "alloggiati": {
     "loading": "Loading Alloggiati...",
@@ -1141,6 +1266,8 @@
     "notFound": "Guest not found",
     "notFoundDescription": "The guest you are looking for does not exist or could not be loaded.",
     "retry": "Retry",
+    "createdAt": "Created At",
+    "viewDetails": "Details",
     "backToGuests": "Back to guests",
     "name": "First Name",
     "email": "Email",
@@ -1198,7 +1325,20 @@
     "delete": "Delete rate",
     "description": "Municipal tax rates for the tourist tax",
     "loadError": "Failed to load tax rates.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "pageDescription": "Manage tourist tax rates for all municipalities",
+    "actions": "Actions",
+    "editAction": "Edit",
+    "deleteAction": "Delete",
+    "saving": "Saving...",
+    "update": "Update",
+    "createAction": "Create",
+    "notes": "Notes",
+    "minimumAge": "Minimum age",
+    "effectiveTo": "End date",
+    "createDescription": "Enter the details for the new tax rate.",
+    "editDescription": "Edit the details of the existing tax rate.",
+    "deleteDescription": "Confirm deletion of the tax rate for {{city}}? This action is reversible (soft delete)."
   },
   "finance": {
     "payments": "Payments",
@@ -1230,6 +1370,10 @@
     "CarbonMonoxideDetector": "Carbon Monoxide Detector"
   },
   "cin": {
+    "pageTitle": "CIN Compliance",
+    "pageDescription": "National identification code management — D.L. 145/2023",
+    "requestOnPortal": "Request CIN on the portal",
+    "bdsrPortal": "BDSR — Ministry of Tourism",
     "status": {
       "Valid": "Valid",
       "Missing": "Missing",
@@ -1285,7 +1429,10 @@
         "method": "Method",
         "date": "Date",
         "status": "Status"
-      }
+      },
+      "emptyTitle": "No payments found",
+      "emptyDescription": "Get started by creating your first payment",
+      "addAction": "Add Payment"
     },
     "detail": {
       "title": "Payment #",
@@ -1457,7 +1604,18 @@
     "country": "Country of residence",
     "gdprConsent": "I consent to the processing of my personal data to fulfill the obligation of reporting to the Police (Art. 109 TULPS), in compliance with the operator's privacy policy.",
     "saving": "Saving...",
-    "saveData": "Save data"
+    "saveData": "Save data",
+    "linkCopied": "Link copied",
+    "emailSubject": "Check-in CasaZen",
+    "emailClientOpening": "Opening email client...",
+    "generateLink": "Generate link",
+    "generateLinkDescription": "Generate a check-in link to send to the guest for data entry.",
+    "generateLinkHelper": "Click the button to generate a unique check-in link.",
+    "enterGuestEmailHelper": "Enter the guest's email to send the link via your email client.",
+    "close": "Close",
+    "guestEmailPlaceholder": "guest@example.com",
+    "generateError": "Failed to generate check-in link. Please try again.",
+    "checkinEmailBody": "Dear guest,\n\nClick the link below to complete your check-in:\n\n{{url}}\n\nCasaZen"
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -1546,7 +1704,8 @@
     "checkoutPlaceholderPaymentComing": "Payment coming soon",
     "checkoutPlaceholderDescription": "Secure payment for {{orgName}} will be available after the operator activates Stripe Connect. This page will host the direct checkout flow (spec-direct-checkout).",
     "gdprConsentText": "I consent to the processing of my personal data for booking management, in compliance with the operator's privacy policy.",
-    "emailValidation": "Invalid email"
+    "emailValidation": "Invalid email",
+    "emailPlaceholder": "name@example.com"
   },
   "publicSeo": {
     "notFound": "Page not found",
@@ -1674,5 +1833,91 @@
     "platformDescription": "Vacation Property Management Platform",
     "signInMessage": "Sign in to manage your properties, bookings, and payments",
     "signInButton": "Sign in with Auth0"
+  },
+  "toast": {
+    "propertyCreated": "Property created successfully",
+    "propertyCreateFailed": "Failed to create property",
+    "propertyUpdated": "Property updated successfully",
+    "propertyUpdateFailed": "Failed to update property",
+    "propertyDeleted": "Property deleted successfully",
+    "propertyDeleteFailed": "Failed to delete property",
+    "bookingCreated": "Booking created successfully",
+    "bookingCreateFailed": "Failed to create booking",
+    "bookingUpdated": "Booking updated successfully",
+    "bookingUpdateFailed": "Failed to update booking",
+    "bookingDeleted": "Booking deleted successfully",
+    "bookingDeleteFailed": "Failed to delete booking",
+    "guestCheckedIn": "Check-in completed successfully",
+    "checkInGuestFailed": "Failed to complete check-in",
+    "guestCheckedOut": "Check-out completed successfully",
+    "checkOutGuestFailed": "Failed to complete check-out",
+    "paymentCreated": "Payment created successfully",
+    "paymentCreateFailed": "Failed to create payment",
+    "paymentProcessed": "Payment processed successfully",
+    "paymentProcessFailed": "Failed to process payment",
+    "paymentRefunded": "Refund processed successfully",
+    "paymentRefundFailed": "Failed to process refund",
+    "otaIntegrationCreated": "OTA integration created successfully",
+    "otaIntegrationCreateFailed": "Failed to create OTA integration",
+    "otaIntegrationUpdated": "OTA integration updated successfully",
+    "otaIntegrationUpdateFailed": "Failed to update OTA integration",
+    "otaIntegrationDeleted": "OTA integration deleted successfully",
+    "otaIntegrationDeleteFailed": "Failed to delete OTA integration",
+    "otaSyncCompleted": "OTA sync completed successfully",
+    "otaSyncFailed": "OTA sync failed",
+    "platformSynced": "Platform synced successfully",
+    "platformSyncFailed": "Failed to sync platform",
+    "otaPricingUpdated": "OTA pricing updated successfully",
+    "otaPricingUpdateFailed": "Failed to update OTA pricing",
+    "otaCredentialsValidated": "OTA credentials validated successfully",
+    "otaCredentialsValidationFailed": "OTA credentials validation failed",
+    "pricingConfigSaved": "Pricing configuration saved successfully",
+    "pricingConfigSaveFailed": "Failed to save pricing configuration",
+    "pricingDisabled": "AI pricing disabled successfully",
+    "pricingDisableFailed": "Failed to disable AI pricing",
+    "pricingSyncStarted": "Pricing sync started successfully",
+    "pricingSyncFailed": "Pricing sync failed",
+    "leaseDraftCreated": "Lease draft created successfully",
+    "leaseCreateFailed": "Failed to create lease",
+    "signingInitiated": "Signing initiated successfully",
+    "signingInitiateFailed": "Failed to initiate signing",
+    "registrationSubmitted": "Registration submitted successfully",
+    "registrationSubmitFailed": "Failed to submit registration",
+    "profileUpdated": "Profile updated successfully",
+    "profileUpdateFailed": "Failed to update profile",
+    "roleUpdated": "Role updated successfully",
+    "roleUpdateFailed": "Failed to update role",
+    "planUpdated": "Plan updated successfully",
+    "planUpdateFailed": "Failed to update plan",
+    "userDeactivated": "User deactivated successfully",
+    "userDeactivateFailed": "Failed to deactivate user",
+    "cinCodeUpdated": "CIN code updated successfully",
+    "cinCodeUpdateFailed": "Failed to update CIN code",
+    "alloggiatiSent": "Alloggiati report sent successfully",
+    "alloggiatiSendFailed": "Failed to send Alloggiati report",
+    "checkInDataSaved": "Check-in data saved successfully",
+    "checkInDataSaveFailed": "Failed to save check-in data",
+    "checkInDocumentUploaded": "Check-in document uploaded successfully",
+    "checkInDocumentUploadFailed": "Failed to upload check-in document",
+    "documentUploaded": "Document uploaded successfully",
+    "documentUploadFailed": "Failed to upload document",
+    "documentDeleted": "Document deleted successfully",
+    "documentDeleteFailed": "Failed to delete document",
+    "seoApproved": "{{count}} SEO pages approved successfully",
+    "seoApproveFailed": "Failed to approve SEO pages",
+    "seoGenerated": "SEO pages generated successfully",
+    "seoGenerateFailed": "Failed to generate SEO pages",
+    "seoReviewUpdated": "SEO review updated successfully",
+    "seoReviewUpdateFailed": "Failed to update SEO review",
+    "orgPlanUpdated": "Organization plan updated successfully",
+    "orgPlanUpdateFailed": "Failed to update organization plan",
+    "dataExported": "Data exported successfully",
+    "dataExportFailed": "Failed to export data",
+    "dataAnonymized": "Data anonymized successfully",
+    "dataAnonymizeFailed": "Failed to anonymize data",
+    "dataDeleted": "Data deleted successfully",
+    "dataDeleteFailed": "Failed to delete data",
+    "consentUpdated": "Consent updated successfully",
+    "consentUpdateFailed": "Failed to update consent"
   }
 }

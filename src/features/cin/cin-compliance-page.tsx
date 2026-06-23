@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,14 +8,15 @@ import { CinSummaryCards } from './components/cin-summary-cards';
 import { useCinCompliance } from '@/queries/use-cin';
 
 export function CinCompliancePage() {
+  const { t } = useTranslation();
   const { data, isLoading } = useCinCompliance();
 
   return (
     <AppShell>
       <div className="space-y-6" data-testid="cin-compliance-page">
         <PageHeader
-          title="Conformità CIN"
-          description="Gestione codici identificativi nazionali — D.L. 145/2023"
+          title={t('cin.pageTitle')}
+          description={t('cin.pageDescription')}
         />
 
         {data?.summary && <CinDeadlineBanner summary={data.summary} />}
@@ -23,14 +25,14 @@ export function CinCompliancePage() {
         <Card>
           <CardContent className="pt-6">
             <p className="mb-4 text-sm text-muted-foreground">
-              Richiedi il CIN sul portale{' '}
+              {t('cin.requestOnPortal')}{' '}
               <a
                 href="https://bdsr.ministeroturismo.gov.it/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary underline"
               >
-                BDSR — Ministero del Turismo
+                {t('cin.bdsrPortal')}
               </a>
             </p>
             <CinComplianceTable items={data?.items ?? []} isLoading={isLoading} />

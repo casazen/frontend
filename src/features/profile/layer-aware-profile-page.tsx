@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { LongTermAppShell } from '@/components/layout/long-term-app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -8,6 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 
 function ProfileContent() {
   const { isLoading, user } = useAuth();
+  const { t } = useTranslation();
 
   if (isLoading || !user) {
     return <LoadingScreen />;
@@ -16,8 +18,8 @@ function ProfileContent() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
-        title="My Profile"
-        description="View and manage your account information"
+        title={t('profile.title')}
+        description={t('profile.description')}
       />
       <ProfileInfo user={user} />
     </div>

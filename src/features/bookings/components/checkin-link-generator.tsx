@@ -37,7 +37,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
       toast.success(t('checkin.linkGenerated'));
     },
     onError: () => {
-      toast.error('Failed to generate check-in link. Please try again.');
+      toast.error(t('checkin.generateError'));
     },
   });
 
@@ -49,18 +49,18 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
     if (!checkinUrl) return;
     await copyTextToClipboard(checkinUrl);
     setCopied(true);
-    toast.success('Link copiato');
+    toast.success(t('checkin.linkCopied'));
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSendEmail = () => {
     if (!checkinUrl || !emailTo) return;
-    const subject = encodeURIComponent('Check-in CasaZen');
+    const subject = encodeURIComponent(t('checkin.emailSubject'));
     const body = encodeURIComponent(
-      `Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n${checkinUrl}\n\nCasaZen`
+      t('checkin.checkinEmailBody', { url: checkinUrl })
     );
     window.open(`mailto:${emailTo}?subject=${subject}&body=${body}`, '_blank');
-    toast.success('Apertura client email...');
+    toast.success(t('checkin.emailClientOpening'));
   };
 
   return (
@@ -76,7 +76,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
         <DialogHeader>
           <DialogTitle>{t('checkin.sendLink')}</DialogTitle>
           <DialogDescription>
-            Genera un link di check-in da inviare all'ospite per la compilazione dei dati.
+            {t('checkin.generateLinkDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -84,7 +84,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
           {!generatedToken ? (
             <div className="flex flex-col items-center py-6 text-center">
               <p className="text-sm text-muted-foreground mb-4">
-                Clicca il pulsante per generare un link di check-in univoco.
+                {t('checkin.generateLinkHelper')}
               </p>
               <Button
                 onClick={() => generateMutation.mutate()}
@@ -95,7 +95,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
                 ) : (
                   <Link className="mr-2 h-4 w-4" />
                 )}
-                Genera link
+                {t('checkin.generateLink')}
               </Button>
             </div>
           ) : (
@@ -133,7 +133,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
                     type="email"
                     value={emailTo}
                     onChange={(e) => setEmailTo(e.target.value)}
-                    placeholder="ospite@esempio.com"
+                    placeholder={t('checkin.guestEmailPlaceholder')}
                   />
                   <Button
                     variant="outline"
@@ -145,7 +145,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Inserisci l'email dell'ospite per inviare il link tramite il tuo client di posta.
+                  {t('checkin.enterGuestEmailHelper')}
                 </p>
               </div>
             </>
@@ -154,7 +154,7 @@ export function CheckinLinkGenerator({ bookingId, guestEmail }: CheckinLinkGener
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Chiudi
+            {t('checkin.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

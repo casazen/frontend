@@ -30,7 +30,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
 };
 
 function formatDate(d: string, locale: string) {
-  return new Date(d).toLocaleDateString(locale === 'en' ? 'en-GB' : 'it-IT', {
+  return new Date(d).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
   });

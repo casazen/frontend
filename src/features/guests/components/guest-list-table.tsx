@@ -18,12 +18,12 @@ export function GuestListTable({ guests }: GuestListTableProps) {
             <th className="px-4 py-3 text-left font-medium text-muted-foreground">
               {t('guests.anagrafica')}
             </th>
-            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
+            <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('guests.email')}</th>
             <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-              Città
+              {t('guests.city')}
             </th>
             <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-              Data Creazione
+              {t('guests.createdAt')}
             </th>
             <th className="px-4 py-3 text-right font-medium text-muted-foreground" />
           </tr>
@@ -47,7 +47,7 @@ export function GuestListTable({ guests }: GuestListTableProps) {
                   to={`/app/short-rent/guests/${guest.id}`}
                   className="text-primary hover:underline text-sm font-medium"
                 >
-                  Dettagli
+                  {t('guests.viewDetails')}
                 </Link>
               </td>
             </tr>

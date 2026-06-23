@@ -105,9 +105,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
             {existing ? t('taxRates.edit') : t('taxRates.create')}
           </DialogTitle>
           <DialogDescription>
-            {existing
-              ? 'Modifica i dettagli dell\'aliquota esistente.'
-              : 'Inserisci i dettagli per la nuova aliquota fiscale.'}
+            {existing ? t('taxRates.editDescription') : t('taxRates.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +155,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="minimumAge">Età minima</Label>
+              <Label htmlFor="minimumAge">{t('taxRates.minimumAge')}</Label>
               <Input
                 id="minimumAge"
                 type="number"
@@ -183,7 +181,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="effectiveTo">Data fine validità</Label>
+            <Label htmlFor="effectiveTo">{t('taxRates.effectiveTo')}</Label>
             <Input
               id="effectiveTo"
               type="date"
@@ -192,7 +190,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Note</Label>
+            <Label htmlFor="notes">{t('taxRates.notes')}</Label>
             <Input id="notes" {...register('notes')} />
           </div>
 
@@ -203,10 +201,10 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Annulla
+              {t('shared.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvataggio...' : existing ? 'Aggiorna' : 'Crea'}
+              {isLoading ? t('taxRates.saving') : existing ? t('taxRates.update') : t('taxRates.createAction')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from "@/lib/utils";
 
 interface SpinnerProps {
@@ -6,6 +7,7 @@ interface SpinnerProps {
 }
 
 export function Spinner({ size = "md", className }: SpinnerProps) {
+  const { t } = useTranslation();
   const sizeStyles = {
     sm: "h-4 w-4 border-2",
     md: "h-8 w-8 border-2",
@@ -22,7 +24,7 @@ export function Spinner({ size = "md", className }: SpinnerProps) {
       role="status"
     >
       <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-        Loading...
+        {t('shared.loading.srOnly')}
       </span>
     </div>
   );

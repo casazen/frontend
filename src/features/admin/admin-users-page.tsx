@@ -48,12 +48,12 @@ export function AdminUsersPage() {
             onChange={(e) => { setRole(e.target.value); setPage(1); }}
           >
             <option value="">{t('admin.users.filter.allRoles')}</option>
-            <option value="Admin">Admin</option>
-            <option value="PropertyOwner">PropertyOwner</option>
-            <option value="PropertyManager">PropertyManager</option>
-            <option value="Guest">Guest</option>
-            <option value="Staff">Staff</option>
-            <option value="LongTermLandlord">LongTermLandlord</option>
+            <option value="Admin">{t('roles.Admin')}</option>
+            <option value="PropertyOwner">{t('roles.PropertyOwner')}</option>
+            <option value="PropertyManager">{t('roles.PropertyManager')}</option>
+            <option value="Guest">{t('roles.Guest')}</option>
+            <option value="Staff">{t('roles.Staff')}</option>
+            <option value="LongTermLandlord">{t('roles.LongTermLandlord')}</option>
           </select>
         </CardContent>
       </Card>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -25,12 +26,15 @@ export function ConfirmationDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   variant = "default",
   onConfirm,
   isLoading = false,
 }: ConfirmationDialogProps) {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t('shared.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('shared.cancel');
   const handleConfirm = async () => {
     await onConfirm();
     onOpenChange(false);
@@ -49,14 +53,14 @@ export function ConfirmationDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </Button>
           <Button
             variant={variant}
             onClick={handleConfirm}
             disabled={isLoading}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

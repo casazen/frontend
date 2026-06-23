@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Home } from 'lucide-react';
 import {
   getDrawerNavByGroup,
@@ -10,21 +11,22 @@ import { GroupedNavLinks } from './grouped-nav-links';
 import { WorkspaceSwitcher } from './workspace-switcher';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-const CONTEXT_TITLES: Record<AppContextKey, string> = {
-  'short-rent': 'CASAZEN',
-  'long-rent': 'CASAZEN',
-  admin: 'CASAZEN Admin',
-  supplier: 'CASAZEN Fornitore',
-};
-
 interface MobileNavDrawerProps {
   contextKey: AppContextKey;
 }
 
 export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
+  const { t } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
   const sidebarOpen = useUiStore((state) => state.sidebarOpen);
   const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
+
+  const CONTEXT_TITLES: Record<AppContextKey, string> = {
+    'short-rent': t('nav.brandShort'),
+    'long-rent': t('nav.brandShort'),
+    admin: t('nav.brandAdmin'),
+    supplier: t('nav.brandSupplier'),
+  };
 
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
