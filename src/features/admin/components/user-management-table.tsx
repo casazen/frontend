@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,6 +15,7 @@ interface UserManagementTableProps {
 }
 
 export function UserManagementTable({ users, isLoading }: UserManagementTableProps) {
+  const { t } = useTranslation();
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
   const [planTarget, setPlanTarget] = useState<UserSummary | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<UserSummary | null>(null);
@@ -34,12 +36,12 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
-              <th className="pb-2 pr-4 font-medium">Nome</th>
-              <th className="pb-2 pr-4 font-medium">Email</th>
-              <th className="pb-2 pr-4 font-medium">Ruolo</th>
-              <th className="pb-2 pr-4 font-medium">Piano</th>
-              <th className="pb-2 pr-4 font-medium">Stato</th>
-              <th className="pb-2 font-medium">Azioni</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.name')}</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.email')}</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.role')}</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.plan')}</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.status')}</th>
+              <th className="pb-2 font-medium">{t('admin.users.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -57,9 +59,9 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                 </td>
                 <td className="py-3 pr-4">
                   {user.isActive ? (
-                    <Badge variant="default">Attivo</Badge>
+                    <Badge variant="default">{t('admin.users.table.active')}</Badge>
                   ) : (
-                    <Badge variant="secondary">Inattivo</Badge>
+                    <Badge variant="secondary">{t('admin.users.table.inactive')}</Badge>
                   )}
                 </td>
                 <td className="py-3">
@@ -70,14 +72,14 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                       onClick={() => setPlanTarget(user)}
                       disabled={!user.orgId}
                     >
-                      Piano
+                      {t('admin.users.table.planAction')}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setRoleTarget(user)}
                     >
-                      Ruolo
+                      {t('admin.users.table.roleAction')}
                     </Button>
                     {user.isActive && (
                       <Button
@@ -85,7 +87,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                         size="sm"
                         onClick={() => setDeactivateTarget(user)}
                       >
-                        Disattiva
+                        {t('admin.users.table.deactivateAction')}
                       </Button>
                     )}
                   </div>
@@ -95,7 +97,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                  Nessun utente trovato.
+                  {t('admin.users.table.empty')}
                 </td>
               </tr>
             )}

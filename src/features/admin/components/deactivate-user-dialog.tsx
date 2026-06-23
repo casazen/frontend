@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 import { useDeactivateUser } from '@/queries/use-users';
 import type { UserSummary } from '@/types';
 
@@ -17,6 +18,7 @@ interface DeactivateUserDialogProps {
 }
 
 export function DeactivateUserDialog({ user, open, onOpenChange }: DeactivateUserDialogProps) {
+  const { t } = useTranslation();
   const { mutate: deactivate, isPending } = useDeactivateUser();
 
   function handleConfirm() {
@@ -28,18 +30,21 @@ export function DeactivateUserDialog({ user, open, onOpenChange }: DeactivateUse
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Disattiva utente</DialogTitle>
+          <DialogTitle>{t('admin.users.deactivateDialog.title')}</DialogTitle>
           <DialogDescription>
-            Sei sicuro di voler disattivare {user?.firstName} {user?.lastName} ({user?.email})?
-            L&apos;utente non potrà più accedere al sistema.
+            {t('admin.users.deactivateDialog.description', {
+              firstName: user?.firstName ?? '',
+              lastName: user?.lastName ?? '',
+              email: user?.email ?? '',
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annulla
+            {t('admin.users.deactivateDialog.cancel')}
           </Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={isPending}>
-            {isPending ? 'Disattivazione...' : 'Disattiva'}
+            {isPending ? t('admin.users.deactivateDialog.deactivating') : t('admin.users.deactivateDialog.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

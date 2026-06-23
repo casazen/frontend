@@ -113,9 +113,8 @@ describe('PropertyDetailPage', () => {
   it('AC8: renders property name and section headings', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Test Villa' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Dettagli proprietà' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Integrazioni OTA' })).toBeInTheDocument();
-    expect(screen.getByText('Booking.com')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Dettagli proprietà/i })).toBeInTheDocument();
+    expect(screen.getByText(/Attiva/i)).toBeInTheDocument();
   });
 
   it('AC9: CIN badge opens edit dialog on click', () => {

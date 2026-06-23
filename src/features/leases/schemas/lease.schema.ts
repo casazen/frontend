@@ -2,30 +2,30 @@ import { z } from 'zod';
 
 const partySchema = z.object({
   role: z.enum(['Landlord', 'Tenant']),
-  firstName: z.string().min(1, 'First name is required').max(100),
-  lastName: z.string().min(1, 'Last name is required').max(100),
+  firstName: z.string().min(1, 'leases.validation.firstName.required').max(100),
+  lastName: z.string().min(1, 'leases.validation.lastName.required').max(100),
   fiscalCode: z
     .string()
-    .min(11, 'Fiscal code must be at least 11 characters')
-    .max(16, 'Fiscal code must be at most 16 characters'),
+    .min(11, 'leases.validation.fiscalCode.minLength')
+    .max(16, 'leases.validation.fiscalCode.maxLength'),
   citizenship: z
     .string()
-    .length(2, 'Use ISO 3166-1 alpha-2 country code (e.g. IT)'),
-  contactEmail: z.string().email('Valid email is required'),
+    .length(2, 'leases.validation.citizenship.length'),
+  contactEmail: z.string().email('leases.validation.contactEmail.format'),
 });
 
 export const leaseFormSchema = z
   .object({
-    propertyId: z.string().min(1, 'Property is required'),
+    propertyId: z.string().min(1, 'leases.validation.propertyId.required'),
     fiscalRegime: z.enum(['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato']),
-    startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().min(1, 'End date is required'),
-    monthlyRent: z.number().positive('Monthly rent must be greater than zero'),
+    startDate: z.string().min(1, 'leases.validation.startDate.required'),
+    endDate: z.string().min(1, 'leases.validation.endDate.required'),
+    monthlyRent: z.number().positive('leases.validation.monthlyRent.positive'),
     landlord: partySchema,
     tenant: partySchema.extend({ role: z.literal('Tenant') }),
   })
   .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
-    message: 'End date must be after start date',
+    message: 'leases.validation.endDate.afterStart',
     path: ['endDate'],
   });
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
@@ -24,6 +25,7 @@ interface SupplierActivationFormProps {
 }
 
 function SupplierActivationForm({ profile, activation }: SupplierActivationFormProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const updateProfile = useUpdateSupplierProfile();
   const completeActivation = useCompleteSupplierActivation();
@@ -48,30 +50,30 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
         .filter(Boolean),
       bio,
     });
-    toast.success('Progresso salvato');
+    toast.success(t('supplier.progressSaved'));
   };
 
   const handleComplete = async () => {
     try {
       await saveProfileFields();
       await completeActivation.mutateAsync(tosAccepted);
-      toast.success('Profilo fornitore attivato');
+      toast.success(t('supplier.profileActivated'));
       navigate('/supplier/inbox', { replace: true });
     } catch {
-      toast.error('Completa tutti i passaggi prima di attivare il profilo');
+      toast.error(t('supplier.completeAllSteps'));
     }
   };
 
   return (
     <div className="space-y-6" data-testid="supplier-activation-page">
       <PageHeader
-        title="Attivazione profilo fornitore"
-        description="Completa i 5 passaggi per comparire nel marketplace host"
+        title={t('supplier.activationTitle')}
+        description={t('supplier.activationDescription')}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Stato attivazione</CardTitle>
+          <CardTitle>{t('supplier.activationStatus')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {(activation.steps ?? []).map((step) => (
@@ -88,7 +90,7 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
 
       <Card>
         <CardHeader>
-          <CardTitle>Categorie di servizio</CardTitle>
+          <CardTitle>{t('supplier.serviceCategories')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {CATEGORY_OPTIONS.map((category) => (
@@ -106,10 +108,10 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
 
       <Card>
         <CardHeader>
-          <CardTitle>Comuni di operatività</CardTitle>
+          <CardTitle>{t('supplier.operatingMunicipalities')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Label htmlFor="comuni">Codici comune (separati da virgola)</Label>
+          <Label htmlFor="comuni">{t('supplier.municipalityCodesLabel')}</Label>
           <Input
             id="comuni"
             value={comuni}
@@ -122,16 +124,16 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
 
       <Card>
         <CardHeader>
-          <CardTitle>Profilo professionale</CardTitle>
+          <CardTitle>{t('supplier.professionalProfile')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Label htmlFor="bio">Descrizione</Label>
+          <Label htmlFor="bio">{t('supplier.description')}</Label>
           <textarea
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             className="mt-2 min-h-24 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="Descrivi i tuoi servizi..."
+            placeholder={t('supplier.describeServicesPlaceholder')}
           />
         </CardContent>
       </Card>
@@ -144,17 +146,17 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
             onCheckedChange={(checked) => setTosAccepted(checked === true)}
           />
           <Label htmlFor="tos" className="leading-relaxed">
-            Accetto i termini di servizio fornitore CasaZen
+            {t('supplier.acceptTos')}
           </Label>
         </CardContent>
       </Card>
 
       <div className="flex flex-wrap gap-3">
         <Button type="button" variant="outline" onClick={() => void saveProfileFields()} disabled={updateProfile.isPending}>
-          Salva progresso
+          {t('supplier.saveProgress')}
         </Button>
         <Button type="button" onClick={() => void handleComplete()} disabled={completeActivation.isPending}>
-          Attiva profilo
+          {t('supplier.activateProfile')}
         </Button>
       </div>
     </div>
@@ -162,11 +164,12 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
 }
 
 export function SupplierActivationPage() {
+  const { t } = useTranslation();
   const { data: activation, isLoading: activationLoading } = useSupplierActivation();
   const { data: profile, isLoading: profileLoading } = useSupplierProfile();
 
   if (activationLoading || profileLoading || !profile || !activation) {
-    return <LoadingScreen message="Caricamento attivazione..." />;
+    return <LoadingScreen message={t('supplier.activationLoading')} />;
   }
 
   if (activation.status === 'Active') {

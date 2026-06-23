@@ -1,30 +1,15 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
-
-const AMENITY_LABELS: Record<string, string> = {
-  WiFi: 'Wi-Fi',
-  TV: 'TV',
-  CableTV: 'TV via cavo',
-  Workspace: 'Spazio di lavoro',
-  AirConditioning: 'Aria condizionata',
-  Heating: 'Riscaldamento',
-  Kitchen: 'Cucina',
-  Pool: 'Piscina',
-  Washer: 'Lavatrice',
-  Dryer: 'Asciugatrice',
-  Parking: 'Parcheggio',
-  Elevator: 'Ascensore',
-};
-
-function amenityLabel(name: string): string {
-  return AMENITY_LABELS[name] ?? name.replace(/([A-Z])/g, ' $1').trim();
-}
+import { getAmenityLabel } from '@/lib/i18n-labels';
 
 interface PropertyAmenitiesGridProps {
   amenities: string[];
 }
 
 export function PropertyAmenitiesGrid({ amenities }: PropertyAmenitiesGridProps) {
+  const { t } = useTranslation();
+
   if (!amenities.length) return null;
 
   return (
@@ -37,7 +22,7 @@ export function PropertyAmenitiesGrid({ amenities }: PropertyAmenitiesGridProps)
           {amenities.map((amenity) => (
             <div key={amenity} className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-              <span className="text-sm">{amenityLabel(amenity)}</span>
+              <span className="text-sm">{getAmenityLabel(amenity, t)}</span>
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 type JobLastStatus = 'Succeeded' | 'Failed' | 'Processing' | 'Enqueued' | 'Unknown';
 
@@ -6,18 +7,25 @@ interface JobStatusBadgeProps {
   status: JobLastStatus;
 }
 
-const STATUS_MAP: Record<
-  JobLastStatus,
-  { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }
-> = {
-  Succeeded: { label: 'Completato', variant: 'default' },
-  Failed: { label: 'Fallito', variant: 'destructive' },
-  Processing: { label: 'In corso', variant: 'secondary' },
-  Enqueued: { label: 'In coda', variant: 'outline' },
-  Unknown: { label: 'Sconosciuto', variant: 'outline' },
+const STATUS_KEY: Record<JobLastStatus, string> = {
+  Succeeded: 'succeeded',
+  Failed: 'failed',
+  Processing: 'processing',
+  Enqueued: 'enqueued',
+  Unknown: 'unknown',
+};
+
+const STATUS_VARIANT: Record<JobLastStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+  Succeeded: 'default',
+  Failed: 'destructive',
+  Processing: 'secondary',
+  Enqueued: 'outline',
+  Unknown: 'outline',
 };
 
 export function JobStatusBadge({ status }: JobStatusBadgeProps) {
-  const { label, variant } = STATUS_MAP[status] ?? STATUS_MAP.Unknown;
-  return <Badge variant={variant}>{label}</Badge>;
+  const { t } = useTranslation();
+  const key = STATUS_KEY[status] ?? 'unknown';
+  const variant = STATUS_VARIANT[status] ?? 'outline';
+  return <Badge variant={variant}>{t(`admin.badges.job.${key}`)}</Badge>;
 }

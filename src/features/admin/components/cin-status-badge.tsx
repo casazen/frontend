@@ -1,19 +1,21 @@
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 interface CinStatusBadgeProps {
   status: 'valid' | 'missing' | 'invalid';
 }
 
-const STATUS_MAP: Record<
+const STATUS_VARIANT: Record<
   CinStatusBadgeProps['status'],
-  { label: string; variant: 'default' | 'secondary' | 'destructive' }
+  'default' | 'secondary' | 'destructive'
 > = {
-  valid: { label: 'Valido', variant: 'default' },
-  missing: { label: 'Mancante', variant: 'secondary' },
-  invalid: { label: 'Non valido', variant: 'destructive' },
+  valid: 'default',
+  missing: 'secondary',
+  invalid: 'destructive',
 };
 
 export function CinStatusBadge({ status }: CinStatusBadgeProps) {
-  const mapped = STATUS_MAP[status] ?? STATUS_MAP.missing;
-  return <Badge variant={mapped.variant}>{mapped.label}</Badge>;
+  const { t } = useTranslation();
+  const variant = STATUS_VARIANT[status] ?? 'secondary';
+  return <Badge variant={variant}>{t(`admin.badges.cin.${status}`)}</Badge>;
 }

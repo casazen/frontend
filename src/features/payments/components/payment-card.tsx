@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Edit, Trash2, RefreshCw, Undo2 } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { PAYMENT_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../schemas/payment.schema';
+import { PAYMENT_STATUS_VARIANTS } from '../schemas/payment.schema';
+import { getPaymentStatusLabel, getPaymentMethodLabel } from '@/lib/i18n-labels';
 import type { Payment } from '@/types';
 
 interface PaymentCardProps {
@@ -16,8 +18,10 @@ interface PaymentCardProps {
 }
 
 export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRefund }: PaymentCardProps) {
-  const statusConfig = PAYMENT_STATUS_LABELS[payment.status] || PAYMENT_STATUS_LABELS.PENDING;
-  const methodLabel = PAYMENT_METHOD_LABELS[payment.method] || payment.method;
+  const { t } = useTranslation();
+  const statusLabel = getPaymentStatusLabel(payment.status, t);
+  const statusVariant = PAYMENT_STATUS_VARIANTS[payment.status] || PAYMENT_STATUS_VARIANTS.Pending;
+  const methodLabel = getPaymentMethodLabel(payment.method, t);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -27,8 +31,8 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
             <CreditCard className="h-4 w-4 text-muted-foreground" />
             <span className="font-semibold">Payment #{payment.id.slice(0, 8)}</span>
           </div>
-          <Badge variant={statusConfig.variant}>
-            {statusConfig.label}
+          <Badge variant={statusVariant}>
+            {statusLabel}
           </Badge>
         </div>
       </CardHeader>

@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { propertyFormSchema, COMMON_AMENITIES, AMENITY_LABELS } from '../schemas/property.schema';
+import { propertyFormSchema, COMMON_AMENITIES } from '../schemas/property.schema';
+import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
 import type { Property } from '@/types';
 
@@ -200,7 +201,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
             {COMMON_AMENITIES.map((amenity) => (
               <div key={amenity} className="flex items-center space-x-2">
                 <Checkbox id={`amenity-${amenity}`} checked={selectedAmenities.includes(amenity)} onCheckedChange={() => toggleAmenity(amenity)} />
-                <Label htmlFor={`amenity-${amenity}`} className="cursor-pointer text-sm">{AMENITY_LABELS[amenity] ?? amenity}</Label>
+                <Label htmlFor={`amenity-${amenity}`} className="cursor-pointer text-sm">{getAmenityLabel(amenity, t)}</Label>
               </div>
             ))}
           </div>

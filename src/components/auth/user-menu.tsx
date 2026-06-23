@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -20,6 +21,7 @@ function profilePathForContext(context: AppContextKey | null): string {
 }
 
 export function UserMenu() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { activeContext } = useWorkspace();
   const navigate = useNavigate();
@@ -44,12 +46,12 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate(profilePathForContext(activeContext))}>
           <User className="mr-2 h-4 w-4" />
-          Profile
+          {t('shared.userMenu.profile')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout}>
           <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          {t('shared.userMenu.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

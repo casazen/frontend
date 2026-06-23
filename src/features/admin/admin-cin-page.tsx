@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ const PAGE_SIZE = 20;
 type CinStatusFilter = '' | 'valid' | 'missing' | 'invalid';
 
 export function AdminCinPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [cinStatus, setCinStatus] = useState<CinStatusFilter>('');
 
@@ -24,13 +26,13 @@ export function AdminCinPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Conformità CIN"
-        description="Verifica dei codici identificativi nazionali (D.L. 145/2023)"
+        title={t('admin.cin.title')}
+        description={t('admin.cin.description')}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Filtri</CardTitle>
+          <CardTitle>{t('admin.cin.filters')}</CardTitle>
         </CardHeader>
         <CardContent>
           <select
@@ -42,10 +44,10 @@ export function AdminCinPage() {
             }}
             data-testid="cin-status-filter"
           >
-            <option value="">Tutti gli stati</option>
-            <option value="valid">Valido</option>
-            <option value="missing">Mancante</option>
-            <option value="invalid">Non valido</option>
+            <option value="">{t('admin.cin.filter.allStatuses')}</option>
+            <option value="valid">{t('admin.cin.filter.valid')}</option>
+            <option value="missing">{t('admin.cin.filter.missing')}</option>
+            <option value="invalid">{t('admin.cin.filter.invalid')}</option>
           </select>
         </CardContent>
       </Card>
@@ -54,7 +56,7 @@ export function AdminCinPage() {
         <CardContent className="pt-6">
           {isError ? (
             <p className="py-8 text-center text-destructive">
-              Impossibile caricare i dati CIN. Riprova più tardi.
+              {t('admin.cin.loadError')}
             </p>
           ) : (
             <>
@@ -62,7 +64,7 @@ export function AdminCinPage() {
               {data && data.totalCount > PAGE_SIZE && (
                 <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
                   <span>
-                    Pagina {page} di {totalPages} ({data.totalCount} proprietà)
+                    {t('admin.cin.pagination', { page, totalPages, totalCount: data.totalCount })}
                   </span>
                   <div className="flex gap-2">
                     <Button
@@ -71,7 +73,7 @@ export function AdminCinPage() {
                       disabled={page <= 1}
                       onClick={() => setPage((p) => p - 1)}
                     >
-                      Precedente
+                      {t('admin.cin.previous')}
                     </Button>
                     <Button
                       variant="outline"
@@ -79,7 +81,7 @@ export function AdminCinPage() {
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => p + 1)}
                     >
-                      Successiva
+                      {t('admin.cin.next')}
                     </Button>
                   </div>
                 </div>

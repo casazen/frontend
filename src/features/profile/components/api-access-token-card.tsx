@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { copyTextToClipboard } from '@/lib/utils';
 
 export function ApiAccessTokenCard() {
+  const { t } = useTranslation();
   const { getAccessToken, refreshAccessToken } = useAuth();
   const [isCopying, setIsCopying] = useState(false);
 
@@ -21,14 +23,14 @@ export function ApiAccessTokenCard() {
       }
 
       if (!token) {
-        toast.error('Token non disponibile. Effettua di nuovo il login.');
+        toast.error(t('profile.tokenUnavailable'));
         return;
       }
 
       await copyTextToClipboard(token);
-      toast.success('Token copiato negli appunti');
+      toast.success(t('profile.tokenCopied'));
     } catch {
-      toast.error('Impossibile copiare il token');
+      toast.error(t('profile.tokenCopyError'));
     } finally {
       setIsCopying(false);
     }
@@ -37,19 +39,18 @@ export function ApiAccessTokenCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Token API</CardTitle>
+        <CardTitle>{t('profile.apiToken')}</CardTitle>
         <CardDescription>
-          Copia il Bearer token della sessione corrente per testare le API (es. Swagger locale).
-          Non condividere il token: contiene i tuoi permessi di accesso.
+          {t('profile.apiTokenDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <Button type="button" variant="outline" onClick={() => void handleCopyToken()} disabled={isCopying}>
           <Copy className="mr-2 h-4 w-4" />
-          {isCopying ? 'Copia in corso...' : 'Copia token'}
+          {isCopying ? t('profile.copying') : t('profile.copyToken')}
         </Button>
         <p className="text-xs text-muted-foreground">
-          Incolla il token in Authorize (con o senza prefisso <code>Bearer </code>).
+          {t('profile.tokenPasteInstructions')}
         </p>
       </CardContent>
     </Card>

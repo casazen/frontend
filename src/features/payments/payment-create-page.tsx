@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -10,11 +11,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreatePayment } from '@/queries/use-payments';
 import { useBookings } from '@/queries/use-bookings';
-import { paymentFormSchema, PAYMENT_METHOD_LABELS } from './schemas/payment.schema';
+import { paymentFormSchema } from './schemas/payment.schema';
+import { getPaymentMethodLabel } from '@/lib/i18n-labels';
 import type { PaymentFormValues } from './schemas/payment.schema';
+
+const PAYMENT_METHODS = ['CreditCard', 'BankTransfer', 'PayPal', 'ApplePay', 'GooglePay'] as const;
 
 export function PaymentCreatePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const createPayment = useCreatePayment();
   const { data: bookingsData } = useBookings();
   const bookings = bookingsData ?? [];
@@ -102,9 +107,9 @@ export function PaymentCreatePage() {
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <option value="">Select a method</option>
-                  {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
+                  {PAYMENT_METHODS.map((value) => (
                     <option key={value} value={value}>
-                      {label}
+                      {getPaymentMethodLabel(value, t)}
                     </option>
                   ))}
                 </select>

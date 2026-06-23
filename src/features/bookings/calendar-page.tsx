@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ function mapCalendarBooking(dto: CalendarBookingDto): Booking {
 }
 
 export function CalendarPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: properties, isLoading: propertiesLoading } = useProperties();
   const propertyList = properties ?? [];
@@ -78,32 +80,32 @@ export function CalendarPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          title="Bookings Calendar"
-          description="View and manage bookings in calendar format"
+          title={t('booking.calendar.pageTitle')}
+          description={t('booking.calendar.pageDescription')}
           action={
             <Button variant="outline" onClick={() => navigate('/app/short-rent/bookings')}>
               <List className="mr-2 h-4 w-4" />
-              List View
+              {t('booking.calendar.listView')}
             </Button>
           }
         />
 
         {propertiesLoading ? (
           <div className="flex h-[600px] items-center justify-center">
-            <p>Caricamento calendario...</p>
+            <p>{t('booking.calendar.loading')}</p>
           </div>
         ) : propertyList.length === 0 ? (
           <div className="flex h-[400px] flex-col items-center justify-center gap-2 text-center">
-            <p className="font-medium">Nessuna proprietà disponibile</p>
+            <p className="font-medium">{t('booking.calendar.noProperties')}</p>
             <p className="text-sm text-muted-foreground">
-              Aggiungi una proprietà per visualizzare il calendario prenotazioni.
+              {t('booking.calendar.noPropertiesHint')}
             </p>
-            <Button onClick={() => navigate('/app/short-rent/properties')}>Vai alle proprietà</Button>
+            <Button onClick={() => navigate('/app/short-rent/properties')}>{t('booking.calendar.goToProperties')}</Button>
           </div>
         ) : (
           <>
             <div className="max-w-sm space-y-2">
-              <Label htmlFor="calendar-property">Proprietà</Label>
+              <Label htmlFor="calendar-property">{t('booking.calendar.property')}</Label>
               <select
                 id="calendar-property"
                 className="w-full rounded-md border px-3 py-2 text-sm"
@@ -120,11 +122,11 @@ export function CalendarPage() {
 
             {calendarLoading ? (
               <div className="flex h-[600px] items-center justify-center">
-                <p>Caricamento calendario...</p>
+                <p>{t('booking.calendar.loading')}</p>
               </div>
             ) : isError ? (
               <div className="flex h-[400px] items-center justify-center text-destructive">
-                Impossibile caricare il calendario. Riprova più tardi.
+                {t('booking.calendar.loadError')}
               </div>
             ) : (
               <BookingCalendar
