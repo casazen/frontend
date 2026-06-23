@@ -56,7 +56,7 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
       await saveProfileFields();
       await completeActivation.mutateAsync(tosAccepted);
       toast.success('Profilo fornitore attivato');
-      navigate('/supplier/inbox', { replace: true });
+      navigate('/app/supplier/inbox', { replace: true });
     } catch {
       toast.error('Completa tutti i passaggi prima di attivare il profilo');
     }
@@ -170,7 +170,7 @@ export function SupplierActivationPage() {
   }
 
   if (activation.status === 'Active') {
-    return <Navigate to="/supplier/inbox" replace />;
+    return <Navigate to="/app/supplier/inbox" replace />;
   }
 
   return <SupplierActivationForm key={profile.orgId} profile={profile} activation={activation} />;

@@ -16,6 +16,10 @@
     "users": "Utenti",
     "jobs": "Job",
     "seo": "SEO Compliance",
+    "inbox": "Inbox",
+    "inviteSupplier": "Invita fornitore",
+    "availability": "Disponibilità",
+    "activation": "Attivazione",
     "more": "Altro",
     "group": {
       "operazioni": "Operazioni",
@@ -37,6 +41,7 @@
     "shortRentSubtitle": "Affitti brevi",
     "longRentSubtitle": "Affitti lungo termine",
     "adminSubtitle": "Amministrazione",
+    "supplierSubtitle": "Fornitore",
     "adminFooter": "v1.0.0 · Admin",
     "workspaceLabel": "Area di lavoro",
     "workspaceContext": "Contesto applicativo",
@@ -59,7 +64,22 @@
   "revenue": {
     "pageTitle": "Analisi ricavi",
     "pageDescription": "Monitora e analizza l'andamento dei ricavi",
-    "backToPayments": "Torna agli incassi"
+    "backToPayments": "Torna agli incassi",
+    "filters": "Filtri",
+    "property": "Proprietà",
+    "noProperties": "Nessuna proprietà",
+    "startDate": "Data inizio",
+    "endDate": "Data fine",
+    "groupBy": "Raggruppa per",
+    "period": {
+      "day": "Giorno",
+      "week": "Settimana",
+      "month": "Mese",
+      "year": "Anno"
+    },
+    "resetFilters": "Reimposta filtri",
+    "loading": "Caricamento analisi...",
+    "empty": "Nessun dato ricavi disponibile"
   },
   "dashboard": {
     "title": "Cruscotto",

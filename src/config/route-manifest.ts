@@ -340,7 +340,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    navLabel: 'Invita fornitore',
+    navKey: 'nav.inviteSupplier',
     navGroup: 'amministrazione',
     navPlacement: 'secondary',
     navOrder: 6,
@@ -384,6 +384,51 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/seo-dashboard-page')).SeoDashboardPage }),
     legacyPaths: ['/admin/seo'],
   },
+  {
+    path: '/app/supplier/inbox',
+    context: 'supplier',
+    requiredPermissions: ['supplier.inbox.read'],
+    navKey: 'nav.inbox',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 1,
+    icon: 'Inbox',
+    isDefault: true,
+    component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),
+  },
+  {
+    path: '/app/supplier/availability',
+    context: 'supplier',
+    requiredPermissions: ['supplier.availability.write'],
+    navKey: 'nav.availability',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 2,
+    icon: 'CalendarDays',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
+  },
+  {
+    path: '/app/supplier/profile',
+    context: 'supplier',
+    requiredPermissions: ['supplier.profile.read'],
+    navKey: 'nav.profile',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 3,
+    icon: 'User',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-profile-page')).SupplierProfilePage }),
+  },
+  {
+    path: '/app/supplier/activation',
+    context: 'supplier',
+    requiredPermissions: ['supplier.profile.write'],
+    navKey: 'nav.activation',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 4,
+    icon: 'ClipboardCheck',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-activation-page')).SupplierActivationPage }),
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
@@ -404,7 +449,7 @@ function hasEntryPermission(
 
 export function getDefaultRoute(contextKey: AppContextKey): string {
   if (contextKey === 'supplier') {
-    return '/supplier/inbox';
+    return '/app/supplier/inbox';
   }
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
