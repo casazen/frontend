@@ -8,6 +8,7 @@ import {
   deriveContextsFromAccessToken,
   deriveContextsFromRoles,
   getUserRoles,
+  type UserWithRoles,
 } from '@/lib/auth-roles';
 import {
   ACTIVE_CONTEXT_STORAGE_KEY,
@@ -57,6 +58,22 @@ function applyResolvedContext(
   }
 }
 
+async function resolveContextsFromAuth(
+  authUser: UserWithRoles,
+  getAccessToken: () => Promise<string | undefined>,
+): Promise<ContextBootstrapDto[]> {
+  let fallback = deriveContextsFromRoles(authUser);
+  if (fallback.length === 0) {
+    try {
+      const token = await getAccessToken();
+      fallback = deriveContextsFromAccessToken(token);
+    } catch (tokenError) {
+      console.warn('[Workspace] Could not read roles from access token', tokenError);
+    }
+  }
+  return fallback;
+}
+
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading: authLoading, getAccessToken } = useAuth();
   const location = useLocation();
@@ -99,22 +116,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       try {
         const bootstrap = await contextsApi.getContexts();
         if (!mounted) return;
-        const loaded = bootstrap.contexts ?? [];
+        let loaded = bootstrap.contexts ?? [];
+        if (loaded.length === 0) {
+          loaded = await resolveContextsFromAuth(authUser, getAccessToken);
+        }
         applyResolvedContext(loaded, bootstrap.lastUsedContextKey, setContexts, setActiveContextState);
       } catch (error) {
         if (!mounted) return;
         console.warn('[Workspace] GET /api/me/contexts failed — using JWT fallback', error);
-
-        let fallback = deriveContextsFromRoles(authUser);
-        if (fallback.length === 0) {
-          try {
-            const token = await getAccessToken();
-            fallback = deriveContextsFromAccessToken(token);
-          } catch (tokenError) {
-            console.warn('[Workspace] Could not read roles from access token', tokenError);
-          }
-        }
-
+        const fallback = await resolveContextsFromAuth(authUser, getAccessToken);
         applyResolvedContext(fallback, readStoredContext(), setContexts, setActiveContextState);
       } finally {
         if (mounted) {
@@ -127,7 +137,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, [authLoading, getAccessToken, isAuthenticated, roleSignature, user]);
+  }, [authLoading, getAccessToken, isAuthenticated, roleSignature]);
 
   const setActiveContext = useCallback(
     (contextKey: AppContextKey, navigateToDefault = true) => {
