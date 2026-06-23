@@ -1,4 +1,4 @@
-import axios from '@/lib/axios';
+import { ApiClient } from '@/api/client';
 import type {
   ActivationStatus,
   SupplierAvailabilityResponse,
@@ -6,22 +6,18 @@ import type {
   SupplierProfile,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
+import axios from '@/lib/axios';
 
 export async function fetchSupplierActivation(): Promise<ActivationStatus> {
-  const { data } = await axios.get<ActivationStatus>('/supplier/profile/activation');
-  return data;
+  return ApiClient.get<ActivationStatus>('/supplier/profile/activation');
 }
 
 export async function completeSupplierActivation(tosAccepted: boolean): Promise<{ status: string }> {
-  const { data } = await axios.post<{ status: string }>('/supplier/profile/activation/complete', {
-    tosAccepted,
-  });
-  return data;
+  return ApiClient.post<{ status: string }>('/supplier/profile/activation/complete', { tosAccepted });
 }
 
 export async function fetchSupplierProfile(): Promise<SupplierProfile> {
-  const { data } = await axios.get<SupplierProfile>('/supplier/profile');
-  return data;
+  return ApiClient.get<SupplierProfile>('/supplier/profile');
 }
 
 export async function updateSupplierProfile(
@@ -31,8 +27,7 @@ export async function updateSupplierProfile(
     photoUrls?: string[];
   },
 ): Promise<SupplierProfile> {
-  const { data } = await axios.put<SupplierProfile>('/supplier/profile', payload);
-  return data;
+  return ApiClient.put<SupplierProfile>('/supplier/profile', payload);
 }
 
 export async function fetchSupplierInbox(status = 'open', page = 1, pageSize = 20): Promise<SupplierInboxResponse> {

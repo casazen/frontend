@@ -71,19 +71,22 @@ export function SupplierDashboardPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateProfile.mutateAsync({
+      const result = await updateProfile.mutateAsync({
         categories,
         comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
         bio,
       });
-      // Force refetch so next render sees the saved data.
+      console.log('[SupplierDashboard] Save result:', result);
+      // The mutation's onSuccess already sets the cache with the returned profile.
+      // Force refetch so the UI updates immediately.
       await queryClient.invalidateQueries({ queryKey: ['supplier'] });
       toast.success(t('supplier.progressSaved'));
       setShowWizard(false);
-      // Force wizard to re-initialise from fresh profile next time it opens.
       setWizardKey((k) => k + 1);
-    } catch {
-      toast.error(t('supplier.progressSaveError'));
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || 'Unknown error';
+      console.error('[SupplierDashboard] Save failed:', msg, err);
+      toast.error(`${t('supplier.progressSaveError')}: ${msg}`);
     } finally {
       setSaving(false);
     }
