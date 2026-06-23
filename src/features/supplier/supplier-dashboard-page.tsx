@@ -26,7 +26,7 @@ function computeMissing(profile: { categories?: string[]; comuni?: string[]; bio
   const m: MissingFields = {
     categories: !profile.categories?.length,
     comuni: !profile.comuni?.length,
-    bio: !profile.bio,
+    bio: !profile.bio?.trim(),
   };
   return (m.categories || m.comuni || m.bio) ? m : null;
 }
@@ -227,7 +227,10 @@ export function SupplierDashboardPage() {
           </div>
 
           <div className="flex justify-end gap-3 mt-4">
-            <Button onClick={() => void handleSave()} disabled={saving}>
+            <Button
+              onClick={() => void handleSave()}
+              disabled={saving || categories.length === 0 || comuneInput.trim().length === 0 || bio.trim().length === 0}
+            >
               {saving ? t('shared.loading.defaultMessage') : <>{t('supplier.saveAndContinue')} <ArrowRight className="ml-1 h-4 w-4" /></>}
             </Button>
           </div>
