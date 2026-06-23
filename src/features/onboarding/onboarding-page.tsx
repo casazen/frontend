@@ -5,8 +5,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
 import type { PlanTier, RentalType } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
+import { ROLES_CLAIM } from '@/lib/auth-roles';
+import { useUserRoles } from '@/hooks/use-user-roles';
 import { getHomeRouteForRentalType, getHomeRouteForUser, needsOrgSetup, canEditOnboarding } from '@/lib/onboarding';
-import { getUserRoles } from '@/lib/auth-roles';
 import { isDemoMode } from '@/config/demo.config';
 import { applyDemoOnboardingProfile } from '@/lib/demo-onboarding';
 import { RentalTypeCard } from './components/rental-type-card';
@@ -32,7 +33,8 @@ export function OnboardingPage() {
   const [consents, setConsents] = useState<OnboardingConsentsPayload | null>(null);
   const [failedType, setFailedType] = useState<RentalType | null>(null);
 
-  const hasRoles = getUserRoles(user).length > 0;
+  const roles = useUserRoles();
+  const hasRoles = roles.length > 0;
   const isOrgBackfill = hasRoles && needsOrgSetup(profile);
   const needsConsentsStep = !hasRoles && !isEditMode;
 
@@ -57,9 +59,9 @@ export function OnboardingPage() {
     }
 
     if (!needsOrgSetup(profile) && hasRoles && !isEditMode) {
-      navigate(getHomeRouteForUser(user), { replace: true });
+      navigate(getHomeRouteForUser({ [ROLES_CLAIM]: roles }), { replace: true });
     }
-  }, [navigate, user, profile, profileLoading, hasRoles, isOrgBackfill, isEditMode]);
+  }, [navigate, user, profile, profileLoading, hasRoles, isOrgBackfill, isEditMode, roles]);
 
   const finishOnboarding = async (rentalType: RentalType, planTier: PlanTier) => {
     setSelectedType(rentalType);

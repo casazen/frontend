@@ -121,6 +121,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           loaded = await resolveContextsFromAuth(authUser, getAccessToken);
         }
         applyResolvedContext(loaded, bootstrap.lastUsedContextKey, setContexts, setActiveContextState);
+        if (loaded.length > 0) {
+          sessionStorage.removeItem('cz-empty-workspace-recovery-attempted');
+        }
       } catch (error) {
         if (!mounted) return;
         console.warn('[Workspace] GET /api/me/contexts failed — using JWT fallback', error);

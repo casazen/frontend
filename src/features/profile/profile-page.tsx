@@ -4,18 +4,18 @@ import { ProfileInfo } from './components/profile-info';
 import { OperatorTypeSection } from './components/operator-type-section';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
+import { useUserRoles } from '@/hooks/use-user-roles';
 import { useMe } from '@/queries/use-users';
-import { getUserRoles } from '@/lib/auth-roles';
 
 export function ProfilePage() {
   const { isLoading, user } = useAuth();
+  const roles = useUserRoles();
   const { data: profile, isLoading: profileLoading } = useMe();
 
   if (isLoading || profileLoading || !user) {
     return <LoadingScreen />;
   }
 
-  const roles = getUserRoles(user);
   const displayRole = roles.includes('Admin')
     ? 'Admin'
     : roles[0] ?? profile?.role ?? 'User';

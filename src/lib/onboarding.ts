@@ -1,5 +1,5 @@
 import type { RentalType } from '@/types';
-import { getUserRoles, isAdmin, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
+import { getUserRoles, isAdmin, ROLE_ADMIN, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
 import type { UserWithRoles } from '@/lib/auth-roles';
 
 export const RENTAL_TYPE_LABELS: Record<RentalType, string> = {
@@ -47,7 +47,10 @@ export function needsOrgSetup(profile?: { orgId?: string | null } | null): boole
 export function needsOnboarding(
   user: UserWithRoles,
   profile?: { orgId?: string | null; onboardingCompletedAt?: string | null } | null,
+  roles?: string[],
 ): boolean {
+  const resolvedRoles = roles ?? getUserRoles(user);
+
   // Org backfill takes priority — e.g. admin with timestamp but no tenant (#285)
   if (needsOrgSetup(profile)) {
     return true;
@@ -58,10 +61,10 @@ export function needsOnboarding(
     return false;
   }
 
-  if (isAdmin(user)) {
+  if (resolvedRoles.includes(ROLE_ADMIN)) {
     return false;
   }
-  return getUserRoles(user).length === 0;
+  return resolvedRoles.length === 0;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/use-auth';
+import { useUserRoles } from '@/hooks/use-user-roles';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Navigate } from 'react-router-dom';
 import { isDemoMode } from '@/config/demo.config';
@@ -13,9 +14,10 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   const { isLoading, isAuthenticated, user } = useAuth();
+  const roles = useUserRoles();
   const hasShownRoleToast = useRef(false);
 
-  const isAuthorized = !role || hasRole(user, role);
+  const isAuthorized = !role || (isDemoMode ? hasRole(user, role) : roles.includes(role));
 
   useEffect(() => {
     if (!isDemoMode && !isLoading && isAuthenticated && role && !isAuthorized && !hasShownRoleToast.current) {

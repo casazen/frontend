@@ -1,3 +1,5 @@
+import { env } from '@/config/env.config';
+
 export const ROLES_CLAIM = 'https://casazen.app/roles';
 
 export const ROLE_PROPERTY_OWNER = 'PropertyOwner';
@@ -61,27 +63,44 @@ export function parseRolesFromAccessToken(token: string | undefined | null): str
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
     const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
-    const roles = payload[ROLES_CLAIM];
 
-    if (Array.isArray(roles)) {
-      return roles.filter((role): role is string => typeof role === 'string');
+    const fromCustomClaim = parseRolesClaimValue(payload[ROLES_CLAIM]);
+    if (fromCustomClaim.length > 0) {
+      return fromCustomClaim;
     }
 
-    if (typeof roles === 'string') {
-      const trimmed = roles.trim();
-      if (trimmed.startsWith('[')) {
+    const audienceRoles = parseRolesClaimValue(payload[`${env.auth0.audience}/roles`]);
+    if (audienceRoles.length > 0) {
+      return audienceRoles;
+    }
+
+    return parseRolesClaimValue(payload.roles);
+  } catch {
+    return [];
+  }
+}
+
+function parseRolesClaimValue(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((role): role is string => typeof role === 'string');
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[')) {
+      try {
         const parsed = JSON.parse(trimmed) as unknown;
         if (Array.isArray(parsed)) {
           return parsed.filter((role): role is string => typeof role === 'string');
         }
+      } catch {
+        return [];
       }
-      return trimmed.length > 0 ? [trimmed] : [];
     }
-
-    return [];
-  } catch {
-    return [];
+    return trimmed.length > 0 ? [trimmed] : [];
   }
+
+  return [];
 }
 
 export function deriveContextsFromAccessToken(token: string | undefined | null): DerivedContext[] {
