@@ -1,4 +1,4 @@
-export type AppContextKey = 'short-rent' | 'long-rent' | 'admin';
+export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 
 export type NavGroup =
   | 'operazioni'
@@ -326,6 +326,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/users'],
   },
   {
+    path: '/app/admin/suppliers/invite',
+    context: 'admin',
+    requiredPermissions: ['admin.users.manage'],
+    navLabel: 'Invita fornitore',
+    navGroup: 'amministrazione',
+    navPlacement: 'secondary',
+    navOrder: 6,
+    icon: 'UserPlus',
+    component: async () => ({ default: (await import('@/features/admin/admin-supplier-invite-page')).AdminSupplierInvitePage }),
+    legacyPaths: ['/admin/suppliers/invite'],
+  },
+  {
     path: '/app/admin/cin',
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
@@ -380,6 +392,9 @@ function hasEntryPermission(
 }
 
 export function getDefaultRoute(contextKey: AppContextKey): string {
+  if (contextKey === 'supplier') {
+    return '/supplier/inbox';
+  }
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
 

@@ -1,0 +1,64 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  completeSupplierActivation,
+  fetchSupplierActivation,
+  fetchSupplierInbox,
+  fetchSupplierProfile,
+  inviteSupplier,
+  updateSupplierAvailability,
+  updateSupplierProfile,
+} from '@/services/supplier-api';
+import type { UpdateAvailabilityEntry } from '@/types/supplier';
+
+export function useSupplierActivation() {
+  return useQuery({
+    queryKey: ['supplier', 'activation'],
+    queryFn: fetchSupplierActivation,
+  });
+}
+
+export function useSupplierProfile() {
+  return useQuery({
+    queryKey: ['supplier', 'profile'],
+    queryFn: fetchSupplierProfile,
+  });
+}
+
+export function useSupplierInbox(status = 'open', page = 1) {
+  return useQuery({
+    queryKey: ['supplier', 'inbox', status, page],
+    queryFn: () => fetchSupplierInbox(status, page),
+  });
+}
+
+export function useCompleteSupplierActivation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (tosAccepted: boolean) => completeSupplierActivation(tosAccepted),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier'] });
+    },
+  });
+}
+
+export function useUpdateSupplierProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateSupplierProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier'] });
+    },
+  });
+}
+
+export function useUpdateSupplierAvailability() {
+  return useMutation({
+    mutationFn: (dates: UpdateAvailabilityEntry[]) => updateSupplierAvailability(dates),
+  });
+}
+
+export function useInviteSupplier() {
+  return useMutation({
+    mutationFn: inviteSupplier,
+  });
+}

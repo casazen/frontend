@@ -55,5 +55,6 @@ describe('onboarding helpers', () => {
     expect(getHomeRouteForUser({ roles: ['LongTermLandlord'] })).toBe('/app/long-rent/leases');
     expect(getHomeRouteForUser({ roles: ['PropertyOwner', 'LongTermLandlord'] })).toBe('/app/short-rent');
     expect(getHomeRouteForUser({ roles: ['Admin'] })).toBe('/app/admin');
+    expect(getHomeRouteForUser({ roles: ['Supplier'] })).toBe('/supplier/inbox');
   });
 });

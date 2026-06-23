@@ -1,13 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { useEmptyWorkspaceRecovery } from '@/hooks/use-empty-workspace-recovery';
+import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Navigate } from 'react-router-dom';
 
 export function ContextPickerPage() {
   const { contexts, isReady, setActiveContext } = useWorkspace();
+  const isRecovering = useEmptyWorkspaceRecovery(contexts.length, isReady);
 
-  if (!isReady) {
-    return null;
+  if (!isReady || isRecovering) {
+    return <LoadingScreen message="Caricamento..." />;
   }
 
   if (contexts.length === 0) {

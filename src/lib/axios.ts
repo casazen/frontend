@@ -38,6 +38,8 @@ axiosInstance.interceptors.request.use(
       '/public/content',
       '/public/tourist-tax',
       '/checkin/',
+      '/suppliers/register',
+      '/legal/',
     ];
     const isPublicEndpoint =
       publicEndpoints.some((endpoint) => config.url?.includes(endpoint)) ||

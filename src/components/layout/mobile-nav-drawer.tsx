@@ -14,6 +14,7 @@ const CONTEXT_TITLES: Record<AppContextKey, string> = {
   'short-rent': 'CASAZEN',
   'long-rent': 'CASAZEN',
   admin: 'CASAZEN Admin',
+  supplier: 'CASAZEN Fornitore',
 };
 
 interface MobileNavDrawerProps {

@@ -2,13 +2,15 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { useEmptyWorkspaceRecovery } from '@/hooks/use-empty-workspace-recovery';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 
 export function LegacyRedirect() {
   const location = useLocation();
   const { contexts, activeContext, isReady, getDefaultRoute } = useWorkspace();
+  const isRecovering = useEmptyWorkspaceRecovery(contexts.length, isReady);
 
-  if (!isReady) {
+  if (!isReady || isRecovering) {
     return <LoadingScreen message="Loading workspace..." />;
   }
 

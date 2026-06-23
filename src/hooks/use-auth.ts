@@ -1,7 +1,12 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { setAccessTokenGetter } from '@/lib/axios';
 import { isDemoMode, getDemoUser } from '@/config/demo.config';
+
+const AUTH_PARAMS = {
+  audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
+  scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
+} as const;
 
 export function useAuth() {
   const {
@@ -14,18 +19,21 @@ export function useAuth() {
   } = useAuth0();
 
   // Set up the access token getter for axios
+  const getAccessToken = useCallback(
+    () => getAccessTokenSilently({ authorizationParams: AUTH_PARAMS }),
+    [getAccessTokenSilently],
+  );
+
+  const refreshAccessToken = useCallback(
+    () => getAccessTokenSilently({ authorizationParams: AUTH_PARAMS, cacheMode: 'off' }),
+    [getAccessTokenSilently],
+  );
+
   useEffect(() => {
     if (!isDemoMode) {
-      setAccessTokenGetter(() =>
-        getAccessTokenSilently({
-          authorizationParams: {
-            audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
-            scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
-          },
-        })
-      );
+      setAccessTokenGetter(getAccessToken);
     }
-  }, [getAccessTokenSilently]);
+  }, [getAccessToken]);
 
   const logout = () => {
     if (isDemoMode) {
@@ -39,12 +47,33 @@ export function useAuth() {
     });
   };
 
-  const demoUser = useMemo(() => getDemoUser(), [typeof window !== 'undefined' ? window.location.href : '']);
+  const forceReauth = useCallback(() => {
+    if (isDemoMode) {
+      window.location.replace('/login');
+      return;
+    }
+    void loginWithRedirect({
+      authorizationParams: {
+        ...AUTH_PARAMS,
+        prompt: 'login',
+      },
+    });
+  }, [loginWithRedirect]);
 
-  const authParams = {
-    audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
-    scope: 'openid profile email read:properties write:properties read:bookings write:bookings',
-  };
+  const logoutToLogin = useCallback(() => {
+    if (isDemoMode) {
+      window.location.replace('/login');
+      return;
+    }
+    // returnTo must be listed in Auth0 Allowed Logout URLs (origin only, not /login).
+    auth0Logout({
+      logoutParams: {
+        returnTo: window.location.origin,
+      },
+    });
+  }, [auth0Logout]);
+
+  const demoUser = useMemo(() => getDemoUser(), [typeof window !== 'undefined' ? window.location.href : '']);
 
   // In demo mode, return mock authentication state
   if (isDemoMode) {
@@ -56,6 +85,8 @@ export function useAuth() {
       logout,
       getAccessToken: async () => 'demo-token',
       refreshAccessToken: async () => 'demo-token',
+      logoutToLogin: () => window.location.replace('/login'),
+      forceReauth: () => window.location.replace('/login'),
     };
   }
 
@@ -65,11 +96,9 @@ export function useAuth() {
     user,
     login: loginWithRedirect,
     logout,
-    getAccessToken: () => getAccessTokenSilently({ authorizationParams: authParams }),
-    refreshAccessToken: () =>
-      getAccessTokenSilently({
-        authorizationParams: authParams,
-        cacheMode: 'off',
-      }),
+    logoutToLogin,
+    forceReauth,
+    getAccessToken,
+    refreshAccessToken,
   };
 }

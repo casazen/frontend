@@ -2,14 +2,17 @@ import { describe, it, expect } from 'vitest';
 import {
   getUserRoles,
   hasRole,
+  deriveContextsFromAccessToken,
   deriveContextsFromRoles,
   isDualRole,
   isLongTermOnly,
   isShortStayOnly,
+  parseRolesFromAccessToken,
   ROLES_CLAIM,
   ROLE_ADMIN,
   ROLE_LONG_TERM_LANDLORD,
   ROLE_PROPERTY_OWNER,
+  ROLE_SUPPLIER,
 } from '../auth-roles';
 
 describe('auth-roles', () => {
@@ -51,6 +54,15 @@ describe('auth-roles', () => {
     expect(isLongTermOnly(user)).toBe(false);
   });
 
+  it('derives supplier workspace context from JWT roles', () => {
+    const user = { roles: [ROLE_PROPERTY_OWNER, ROLE_SUPPLIER] };
+    const contexts = deriveContextsFromRoles(user);
+
+    expect(contexts).toHaveLength(2);
+    expect(contexts.some((c) => c.contextKey === 'short-rent')).toBe(true);
+    expect(contexts.some((c) => c.contextKey === 'supplier')).toBe(true);
+  });
+
   it('derives workspace contexts from JWT roles', () => {
     const user = { roles: [ROLE_PROPERTY_OWNER, ROLE_ADMIN] };
     const contexts = deriveContextsFromRoles(user);
@@ -58,5 +70,16 @@ describe('auth-roles', () => {
     expect(contexts).toHaveLength(2);
     expect(contexts.some((c) => c.contextKey === 'short-rent')).toBe(true);
     expect(contexts.some((c) => c.contextKey === 'admin')).toBe(true);
+  });
+
+  it('parses roles from access token payload', () => {
+    const payload = btoa(JSON.stringify({ [ROLES_CLAIM]: ['PropertyOwner', 'Admin'] }));
+    const token = `header.${payload}.signature`;
+
+    expect(parseRolesFromAccessToken(token)).toEqual(['PropertyOwner', 'Admin']);
+    expect(deriveContextsFromAccessToken(token).map((c) => c.contextKey)).toEqual([
+      'short-rent',
+      'admin',
+    ]);
   });
 });
