@@ -5,11 +5,15 @@ import { requireE2eCredentials, e2eEnv } from './env';
 export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
 
-  await page.goto('/login');
+  await page.goto('/login', { waitUntil: 'networkidle' });
+
+  // Wait for the page to render — look for ANY button or heading
+  await page.waitForLoadState('domcontentloaded');
 
   // Click the Auth0 login button — try multiple possible labels
-  const loginButton = page.getByRole('button', { name: /sign in|accedi|log in|login|auth0/i });
-  await loginButton.waitFor({ state: 'visible', timeout: 15_000 });
+  // Use a broad selector first, then narrow down
+  const loginButton = page.locator('button').filter({ hasText: /sign in|accedi|log in|login|auth0/i }).first();
+  await loginButton.waitFor({ state: 'visible', timeout: 30_000 });
   await loginButton.click();
 
   await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
