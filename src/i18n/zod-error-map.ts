@@ -13,8 +13,7 @@ function resolveI18nMessage(message: string): string {
   return resolved !== message ? resolved : message;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const i18nZodErrorMap: z.ZodErrorMap = (issue: any, ctx: any) => {
+export const i18nZodErrorMap: z.ZodErrorMap = (issue) => {
   if (issue.message) {
     const resolved = resolveI18nMessage(issue.message);
     if (resolved !== issue.message) {
@@ -22,5 +21,8 @@ export const i18nZodErrorMap: z.ZodErrorMap = (issue: any, ctx: any) => {
     }
     return { message: issue.message };
   }
-  return { message: ctx.defaultError };
+  if ('defaultError' in issue) {
+    return { message: (issue as Record<string, string>).defaultError };
+  }
+  return { message: 'Invalid input' };
 };
