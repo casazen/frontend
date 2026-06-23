@@ -47,15 +47,28 @@ export function useAuth() {
     });
   };
 
-  const logoutToLogin = useCallback(() => {
+  const forceReauth = useCallback(() => {
     if (isDemoMode) {
-      console.log('Demo mode: logout simulation');
       window.location.replace('/login');
       return;
     }
+    void loginWithRedirect({
+      authorizationParams: {
+        ...AUTH_PARAMS,
+        prompt: 'login',
+      },
+    });
+  }, [loginWithRedirect]);
+
+  const logoutToLogin = useCallback(() => {
+    if (isDemoMode) {
+      window.location.replace('/login');
+      return;
+    }
+    // returnTo must be listed in Auth0 Allowed Logout URLs (origin only, not /login).
     auth0Logout({
       logoutParams: {
-        returnTo: `${window.location.origin}/login`,
+        returnTo: window.location.origin,
       },
     });
   }, [auth0Logout]);
@@ -73,6 +86,7 @@ export function useAuth() {
       getAccessToken: async () => 'demo-token',
       refreshAccessToken: async () => 'demo-token',
       logoutToLogin: () => window.location.replace('/login'),
+      forceReauth: () => window.location.replace('/login'),
     };
   }
 
@@ -83,6 +97,7 @@ export function useAuth() {
     login: loginWithRedirect,
     logout,
     logoutToLogin,
+    forceReauth,
     getAccessToken,
     refreshAccessToken,
   };

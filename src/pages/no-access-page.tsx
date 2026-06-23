@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
 export function NoAccessPage() {
-  const { logoutToLogin } = useAuth();
+  const { forceReauth } = useAuth();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4">
@@ -16,7 +16,7 @@ export function NoAccessPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => logoutToLogin()}>Esci e accedi di nuovo</Button>
+          <Button onClick={() => forceReauth()}>Accedi di nuovo</Button>
         </CardContent>
       </Card>
     </div>
