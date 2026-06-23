@@ -22,7 +22,7 @@ function formatDate(d: string) {
 }
 
 function formatMethod(method: string, t: (key: string) => string): string {
-  return t(`payment.method.${method}`, method.replace(/([A-Z])/g, ' $1').trim());
+  return t(`payment.method.${method}`);
 }
 
 export function PaymentsPage() {
