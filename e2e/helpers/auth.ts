@@ -5,20 +5,29 @@ import { requireE2eCredentials, e2eEnv } from './env';
 export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
 
+  // Capture browser console for debugging blank page issues
+  const consoleLogs: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'error' || msg.text().includes('[DEBUG]') || msg.text().includes('Error')) {
+      consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
+    }
+  });
+  page.on('pageerror', (err) => {
+    consoleLogs.push(`[PAGE_ERROR] ${err.message}`);
+  });
+
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  // Give React time to hydrate
   await page.waitForTimeout(3000);
 
-  // Debug: log page content if button not found quickly
   const loginButton = page.locator('button').filter({ hasText: /sign in|accedi|log in|login|auth0/i }).first();
   try {
     await loginButton.waitFor({ state: 'visible', timeout: 10_000 });
   } catch {
-    // Take screenshot and log page text for debugging
     await page.screenshot({ path: 'test-results/login-debug.png' });
     const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
     const title = await page.title().catch(() => '(no title)');
-    throw new Error(`Login button not found. Page title: "${title}". Body text preview: "${bodyText.slice(0, 300)}"`);
+    const consoleDump = consoleLogs.length > 0 ? ` Console errors: ${consoleLogs.join(' | ')}` : '';
+    throw new Error(`Login button not found. Page title: "${title}". Body text preview: "${bodyText.slice(0, 300)}".${consoleDump}`);
   }
   await loginButton.click();
 
