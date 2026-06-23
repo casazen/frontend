@@ -1,8 +1,9 @@
 import React from 'react';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface ErrorBoundaryProps {
+interface ErrorBoundaryProps extends WithTranslation {
   children: React.ReactNode;
 }
 
@@ -11,7 +12,7 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundaryInner extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -26,6 +27,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   render() {
+    const { t } = this.props;
+
     if (this.state.hasError) {
       return (
         <div className="flex h-screen items-center justify-center">
@@ -33,11 +36,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <div className="rounded-full bg-destructive/10 p-6">
               <AlertTriangle className="h-12 w-12 text-destructive" />
             </div>
-            <h1 className="text-2xl font-bold">Something went wrong</h1>
+            <h1 className="text-2xl font-bold">{t('shared.errorBoundary.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message || t('shared.errorBoundary.fallbackMessage')}
             </p>
-            <Button onClick={() => window.location.reload()}>Reload Page</Button>
+            <Button onClick={() => window.location.reload()}>
+              {t('shared.errorBoundary.reload')}
+            </Button>
           </div>
         </div>
       );
@@ -46,3 +51,5 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryInner);

@@ -1,4 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { JobStatusBadge } from './job-status-badge';
 import type { JobStatus } from '@/types';
 
@@ -9,7 +11,7 @@ interface AdminJobsTableProps {
 
 function formatDate(value: string | null): string {
   if (!value) return '—';
-  return new Date(value).toLocaleString('it-IT', {
+  return new Date(value).toLocaleString(i18n.language, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -19,6 +21,8 @@ function formatDate(value: string | null): string {
 }
 
 export function AdminJobsTable({ jobs, isLoading }: AdminJobsTableProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -34,11 +38,11 @@ export function AdminJobsTable({ jobs, isLoading }: AdminJobsTableProps) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-muted-foreground">
-            <th className="pb-2 pr-4 font-medium">Job</th>
-            <th className="pb-2 pr-4 font-medium">Cron</th>
-            <th className="pb-2 pr-4 font-medium">Ultima esecuzione</th>
-            <th className="pb-2 pr-4 font-medium">Prossima esecuzione</th>
-            <th className="pb-2 font-medium">Stato</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.job')}</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.cron')}</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.lastRun')}</th>
+            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.nextRun')}</th>
+            <th className="pb-2 font-medium">{t('admin.jobs.table.status')}</th>
           </tr>
         </thead>
         <tbody>
@@ -58,7 +62,7 @@ export function AdminJobsTable({ jobs, isLoading }: AdminJobsTableProps) {
           {jobs.length === 0 && (
             <tr>
               <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                Nessun job trovato.
+                {t('admin.jobs.table.empty')}
               </td>
             </tr>
           )}

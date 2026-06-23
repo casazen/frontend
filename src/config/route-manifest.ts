@@ -7,7 +7,8 @@ export type NavGroup =
   | 'compliance'
   | 'integrazioni'
   | 'account'
-  | 'amministrazione';
+  | 'compliance-audit'
+  | 'operations';
 
 export type NavPlacement = 'primary' | 'secondary';
 
@@ -34,7 +35,8 @@ export const NAV_GROUP_ORDER: NavGroup[] = [
   'compliance',
   'integrazioni',
   'account',
-  'amministrazione',
+  'compliance-audit',
+  'operations',
 ];
 
 export const ROUTE_MANIFEST: RouteManifestEntry[] = [
@@ -149,7 +151,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     navKey: 'nav.calendar',
     navGroup: 'operazioni',
-    navPlacement: 'secondary',
+    navPlacement: 'primary',
     navOrder: 2,
     icon: 'CalendarDays',
     component: async () => ({ default: (await import('@/features/bookings/calendar-page')).CalendarPage }),
@@ -168,7 +170,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    path: '/app/short-rent/cin',
+    path: '/app/short-rent/compliance/cin',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.cin',
@@ -318,7 +320,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
     navKey: 'nav.users',
-    navGroup: 'amministrazione',
+    navGroup: 'operations',
     navPlacement: 'primary',
     navOrder: 2,
     icon: 'Users',
@@ -326,11 +328,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/users'],
   },
   {
+    path: '/app/admin/profile',
+    context: 'admin',
+    requiredPermissions: ['admin.users.read'],
+    navKey: 'nav.profile',
+    navGroup: 'operations',
+    navPlacement: 'secondary',
+    navOrder: 7,
+    icon: 'User',
+    component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
+  },
+  {
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    navLabel: 'Invita fornitore',
-    navGroup: 'amministrazione',
+    navKey: 'nav.inviteSupplier',
+    navGroup: 'operations',
     navPlacement: 'secondary',
     navOrder: 6,
     icon: 'UserPlus',
@@ -338,23 +351,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/suppliers/invite'],
   },
   {
-    path: '/app/admin/cin',
+    path: '/app/admin/compliance/cin',
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
     navKey: 'nav.cin',
-    navGroup: 'amministrazione',
+    navGroup: 'compliance-audit',
     navPlacement: 'primary',
-    navOrder: 3,
+    navOrder: 1,
     icon: 'FileCheck',
     component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
-    legacyPaths: ['/admin/cin'],
   },
   {
     path: '/app/admin/jobs',
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],
     navKey: 'nav.jobs',
-    navGroup: 'amministrazione',
+    navGroup: 'operations',
     navPlacement: 'primary',
     navOrder: 4,
     icon: 'Settings',
@@ -366,12 +378,53 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.seo',
-    navGroup: 'amministrazione',
+    navGroup: 'operations',
     navPlacement: 'primary',
     navOrder: 5,
     icon: 'Globe',
     component: async () => ({ default: (await import('@/features/admin/seo-dashboard-page')).SeoDashboardPage }),
     legacyPaths: ['/admin/seo'],
+  },
+  // Guests
+  {
+    path: '/app/short-rent/guests',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.guests',
+    navGroup: 'operazioni',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/guests/guests-page')).GuestsPage }),
+  },
+  {
+    path: '/app/short-rent/guests/:id',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
+  },
+  // Tourist Tax
+  {
+    path: '/app/short-rent/compliance/tax-rates',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.taxRates',
+    navGroup: 'compliance',
+    navPlacement: 'secondary',
+    icon: 'Coins',
+    component: async () => ({ default: (await import('@/features/tourist-tax/tourist-tax-page')).TouristTaxPage }),
+  },
+  // Admin Tax Rates
+  {
+    path: '/app/admin/compliance/tax-rates',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.taxRates',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 3,
+    icon: 'Coins',
+    component: async () => ({ default: (await import('@/features/admin/admin-tax-rates-page')).AdminTaxRatesPage }),
   },
 ];
 

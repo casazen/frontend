@@ -6,6 +6,7 @@ import type {
   PricingAdapterConfig,
 } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const PRICING_KEY = 'pricing-adapter';
 
@@ -50,11 +51,11 @@ export function useSavePricingAdapterConfig(propertyId: string) {
     },
     onError: (_err, _data, context) => {
       queryClient.setQueryData([PRICING_KEY, 'config', propertyId], context?.previous);
-      toast.error('Failed to save pricing configuration');
+      toast.error(i18n.t('toast.pricingConfigSaveFailed'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
-      toast.success('Pricing configuration saved');
+      toast.success(i18n.t('toast.pricingConfigSaved'));
     },
   });
 }
@@ -74,11 +75,11 @@ export function useDisablePricingAdapter(propertyId: string) {
     },
     onError: (_err, _data, context) => {
       queryClient.setQueryData([PRICING_KEY, 'config', propertyId], context?.previous);
-      toast.error('Failed to disable AI pricing');
+      toast.error(i18n.t('toast.pricingDisableFailed'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
-      toast.success('AI pricing disabled');
+      toast.success(i18n.t('toast.pricingDisabled'));
     },
   });
 }
@@ -101,10 +102,10 @@ export function useTriggerPricingSync(propertyId: string) {
     mutationFn: () => pricingAdapterApi.triggerSync(propertyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'history', propertyId] });
-      toast.success('Pricing sync started — history will update shortly');
+      toast.success(i18n.t('toast.pricingSyncStarted'));
     },
     onError: () => {
-      toast.error('Failed to trigger pricing sync');
+      toast.error(i18n.t('toast.pricingSyncFailed'));
     },
   });
 }

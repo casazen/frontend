@@ -1,7 +1,5 @@
 import { test, expect } from './test';
-import { demoUrl, setDemoProfile } from './helpers/demo-profile';
-import { mockPlansCatalog } from './helpers/org-api-mock';
-import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
+import { demoUrl } from './helpers/demo-profile';
 import {
   DEMO_ORG_SLUG,
   mockBrandedBookingApi,
@@ -9,44 +7,15 @@ import {
 } from './helpers/branded-booking-mock';
 
 /**
- * Golden Journey web — Fase 0 batch (#301) + Fase 1 Wave 1 supplier (#292).
+ * Golden Journey web — Fase 0 batch (#301): host onboarding + branded booking.
+ * Supplier tests consolidated into supplier-layout.spec.ts.
  */
-test.describe('Golden Journey web (#301 / #292)', () => {
+test.describe('Golden Journey web (#301)', () => {
   test.beforeEach(async ({ page }) => {
-    await mockPlansCatalog(page);
     await mockBrandedBookingApi(page);
     await page.addInitScript(() => {
       localStorage.removeItem('casazen_cookie_consent');
     });
-  });
-
-  test('GJ steps 1–2: supplier activation (demo mode)', async ({ page }) => {
-    await setDemoProfile(page, 'supplier');
-    await mockSupplierConsoleApi(page);
-
-    await page.goto(demoUrl('/supplier/activation', 'supplier'));
-    await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore/i })).toBeVisible();
-
-    await page.getByRole('button', { name: 'Pulizie' }).click();
-    await page.getByLabel('Codici comune (separati da virgola)').fill('H501');
-    await page.getByLabel('Descrizione').fill('Servizi di pulizia professionali per affitti brevi.');
-    await page.getByLabel(/Accetto i termini di servizio/i).click();
-    await page.getByRole('button', { name: 'Attiva profilo' }).click();
-
-    await expect(page).toHaveURL(/\/supplier\/inbox/, { timeout: 15_000 });
-    await expect(page.getByTestId('supplier-inbox-page')).toBeVisible();
-  });
-
-  test('GJ supplier inbox mobile viewport F1 smoke (#292)', async ({ page }) => {
-    await setDemoProfile(page, 'supplier');
-    await mockSupplierConsoleApi(page, { active: true });
-    await page.setViewportSize({ width: 375, height: 812 });
-
-    await page.goto(demoUrl('/supplier/inbox', 'supplier'));
-    await expect(page.getByTestId('supplier-shell')).toBeVisible();
-    await expect(page.getByTestId('supplier-inbox-page')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Inbox' })).toBeVisible();
   });
 
   test('GJ steps 3–4 sequential (demo mode)', async ({ page }) => {
@@ -105,8 +74,4 @@ test.describe('Golden Journey web (#301 / #292)', () => {
     expect(result.status).toBe(200);
     expect(result.slug).toBe(DEMO_ORG_SLUG);
   });
-
-  test.fixme('GJ-5: calendar + iCal blocks — Fase 1', async () => {});
-  test.fixme('GJ-6: guest check-in — Fase 1', async () => {});
-  test.fixme('GJ-7–12: service loop + checkout — Fase 1', async () => {});
 });

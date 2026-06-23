@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,11 +20,12 @@ import { useCinCompliance } from '@/queries/use-cin';
 import { CinDeadlineBanner } from '@/features/cin';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PropertyForm } from './components/property-form';
-import { isPlanLimitError, PLAN_LIMIT_MESSAGE } from '@/lib/entitlement-error';
+import { isPlanLimitError, getPlanLimitMessage } from '@/lib/entitlement-error';
 import type { Property } from '@/types';
 import type { PropertyFormValues } from './schemas/property.schema';
 
 export function PropertiesPage() {
+  const { t } = useTranslation();
   const { data: properties, isLoading, error } = useProperties();
   const { data: cinCompliance } = useCinCompliance();
   const updateProperty = useUpdateProperty();
@@ -49,7 +51,7 @@ export function PropertiesPage() {
       // Plan-limit (403/409) is suppressed by the mutation's onError; surface the Italian
       // message here so the dialog still informs the owner (#202, AC12).
       if (isPlanLimitError(error)) {
-        toast.error(PLAN_LIMIT_MESSAGE);
+        toast.error(getPlanLimitMessage());
         return;
       }
       // Other errors already surfaced by the mutation's onError toast.
@@ -65,8 +67,8 @@ export function PropertiesPage() {
       <AppShell>
         <div className="flex items-center justify-center h-[60vh]">
           <div className="text-center space-y-2">
-            <p className="text-lg font-semibold text-destructive">Failed to load properties</p>
-            <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+            <p className="text-lg font-semibold text-destructive">{t('property.page.errorLoad')}</p>
+            <p className="text-sm text-muted-foreground">{t('property.page.errorHint')}</p>
           </div>
         </div>
       </AppShell>
@@ -81,23 +83,23 @@ export function PropertiesPage() {
         {cinCompliance?.summary && <CinDeadlineBanner summary={cinCompliance.summary} />}
 
         <div className="flex items-center justify-between">
-          <PageHeader title="Properties" description="Manage your vacation rental properties" />
+          <PageHeader title={t('property.page.title')} description={t('property.page.description')} />
           <Button onClick={() => setIsDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Property
+            {t('property.page.addButton')}
           </Button>
         </div>
 
         {propertyList.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-lg font-semibold mb-2">No properties yet</p>
+              <p className="text-lg font-semibold mb-2">{t('property.page.emptyTitle')}</p>
               <p className="text-sm text-muted-foreground mb-6">
-                Get started by adding your first vacation rental property
+                {t('property.page.emptyDescription')}
               </p>
               <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Your First Property
+                {t('property.page.emptyCta')}
               </Button>
             </CardContent>
           </Card>
@@ -108,7 +110,16 @@ export function PropertiesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/40">
-                      {['Property', 'Location', 'Rooms', 'Guests', 'Price / night', 'Amenities', 'Status', ''].map((h) => (
+                      {[
+                        t('property.table.property'),
+                        t('property.table.location'),
+                        t('property.table.rooms'),
+                        t('property.table.guests'),
+                        t('property.table.priceNight'),
+                        t('property.table.amenities'),
+                        t('property.table.status'),
+                        '',
+                      ].map((h) => (
                         <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
                       ))}
                     </tr>
@@ -137,7 +148,7 @@ export function PropertiesPage() {
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant={p.isActive ? 'default' : 'secondary'}>
-                            {p.isActive ? 'Active' : 'Paused'}
+                            {p.isActive ? t('property.table.active') : t('property.table.paused')}
                           </Badge>
                         </td>
                         <td className="px-4 py-3">
@@ -149,7 +160,7 @@ export function PropertiesPage() {
                               disabled={updateProperty.isPending}
                               className="text-xs"
                             >
-                              {p.isActive ? 'Pause' : 'Activate'}
+                              {p.isActive ? t('property.table.pause') : t('property.table.activate')}
                             </Button>
                             <Button variant="ghost" size="icon">
                               <MoreHorizontal className="h-4 w-4" />
@@ -168,9 +179,9 @@ export function PropertiesPage() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Property</DialogTitle>
+              <DialogTitle>{t('property.page.addDialogTitle')}</DialogTitle>
               <DialogDescription>
-                Create a new vacation rental property
+                {t('property.page.addDialogDescription')}
               </DialogDescription>
             </DialogHeader>
             <PropertyForm

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
 import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
@@ -24,6 +25,7 @@ function nightsBetween(checkIn: string, checkOut: string): number {
 }
 
 export function PublicPropertyPage() {
+  const { t } = useTranslation();
   const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const navigate = useNavigate();
@@ -68,9 +70,9 @@ export function PublicPropertyPage() {
   if (isError || !property) {
     return (
       <div className="space-y-4 text-center">
-        <p className="text-muted-foreground">Struttura non trovata.</p>
+        <p className="text-muted-foreground">{t('publicBooking.propertyNotFound')}</p>
         <Button asChild variant="outline">
-          <Link to={`/book/${orgSlug}`}>Torna alle strutture</Link>
+          <Link to={`/book/${orgSlug}`}>{t('publicBooking.backToProperties')}</Link>
         </Button>
       </div>
     );
@@ -83,7 +85,7 @@ export function PublicPropertyPage() {
       <Button asChild variant="ghost" className="px-0">
         <Link to={`/book/${orgSlug}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Torna a {org.displayName}
+          {t('publicBooking.backToOrg', { orgName: org.displayName })}
         </Link>
       </Button>
 
@@ -111,43 +113,43 @@ export function PublicPropertyPage() {
 
         <div className="flex flex-wrap gap-4 text-sm">
           <span className="flex items-center gap-1">
-            <Bed className="h-4 w-4" /> {property.bedrooms} camere
+            <Bed className="h-4 w-4" /> {property.bedrooms} {t('publicBooking.camere')}
           </span>
           <span className="flex items-center gap-1">
-            <Bath className="h-4 w-4" /> {property.bathrooms} bagni
+            <Bath className="h-4 w-4" /> {property.bathrooms} {t('publicBooking.bagni')}
           </span>
           <span className="flex items-center gap-1">
-            <Users className="h-4 w-4" /> fino a {property.maxGuests} ospiti
+            <Users className="h-4 w-4" /> {t('publicBooking.ospiti', { count: property.maxGuests })}
           </span>
         </div>
 
         {property.amenities.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-2">Servizi</h3>
+            <h3 className="font-semibold mb-2">{t('publicBooking.servicesTitle')}</h3>
             <p className="text-sm text-muted-foreground">{property.amenities.join(' · ')}</p>
           </div>
         )}
 
         {property.houseRules && (
           <div>
-            <h3 className="font-semibold mb-2">Regolamento</h3>
+            <h3 className="font-semibold mb-2">{t('publicBooking.rulesTitle')}</h3>
             <p className="text-sm whitespace-pre-wrap">{property.houseRules}</p>
           </div>
         )}
 
         {property.cancellationPolicySummary && (
           <div>
-            <h3 className="font-semibold mb-2">Cancellazione</h3>
+            <h3 className="font-semibold mb-2">{t('publicBooking.cancellationTitle')}</h3>
             <p className="text-sm text-muted-foreground">{property.cancellationPolicySummary}</p>
           </div>
         )}
       </div>
 
       <section className="rounded-lg border p-6 space-y-4" data-testid="booking-preview">
-        <h3 className="text-xl font-semibold">Prenota il soggiorno</h3>
+        <h3 className="text-xl font-semibold">{t('publicBooking.propertyTitle')}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="check-in">Check-in</Label>
+            <Label htmlFor="check-in">{t('publicBooking.checkInLabel')}</Label>
             <Input
               id="check-in"
               type="date"
@@ -157,12 +159,12 @@ export function PublicPropertyPage() {
             />
             {checkInBooked && (
               <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" /> Questa data è già prenotata
+                <AlertCircle className="h-4 w-4" /> {t('publicBooking.dateAlreadyBooked')}
               </p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="check-out">Check-out</Label>
+            <Label htmlFor="check-out">{t('publicBooking.checkOutLabel')}</Label>
             <Input
               id="check-out"
               type="date"
@@ -172,7 +174,7 @@ export function PublicPropertyPage() {
             />
             {checkOutBooked && (
               <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" /> Questa data è già prenotata
+                <AlertCircle className="h-4 w-4" /> {t('publicBooking.dateAlreadyBooked')}
               </p>
             )}
           </div>
@@ -182,7 +184,7 @@ export function PublicPropertyPage() {
           <div className="rounded-md border border-red-500 bg-red-50 p-3 flex gap-2 items-start">
             <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-red-700">
-              Una o più date nel periodo selezionato sono già prenotate. Scegli date diverse.
+              {t('publicBooking.dateRangeBooked')}
             </p>
           </div>
         )}
@@ -190,12 +192,12 @@ export function PublicPropertyPage() {
         {nights > 0 && (
           <div className="space-y-1 text-sm">
             <p>
-              {nights} notte{nights !== 1 ? 'i' : ''} × {formatCurrency(property.nightlyRate)} ={' '}
+              {nights} {t('publicBooking.notte')}{nights !== 1 ? 'i' : ''} × {formatCurrency(property.nightlyRate)} ={' '}
               {formatCurrency(lodgingTotal)}
             </p>
-            <p>Pulizia: {formatCurrency(property.cleaningFee)}</p>
-            <p className="text-muted-foreground">Tassa di soggiorno: calcolata al checkout</p>
-            <p className="text-lg font-semibold pt-2">Totale stimato: {formatCurrency(estimatedTotal)}</p>
+            <p>{t('publicBooking.pulizia')}: {formatCurrency(property.cleaningFee)}</p>
+            <p className="text-muted-foreground">{t('publicBooking.tassaSoggiornoCalculated')}</p>
+            <p className="text-lg font-semibold pt-2">{t('publicBooking.totaleStimato', { amount: formatCurrency(estimatedTotal) })}</p>
           </div>
         )}
 
@@ -208,7 +210,7 @@ export function PublicPropertyPage() {
             )
           }
         >
-          Procedi al checkout
+          {t('publicBooking.proceedToCheckout')}
         </Button>
       </section>
     </div>

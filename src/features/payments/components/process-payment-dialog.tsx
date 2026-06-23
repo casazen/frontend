@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function ProcessPaymentDialog({
   onConfirm,
   isLoading,
 }: ProcessPaymentDialogProps) {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -58,40 +60,42 @@ export function ProcessPaymentDialog({
 
   if (!payment) return null;
 
+  const formattedAmount = formatCurrency(payment.amount, payment.currency);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Process Payment</DialogTitle>
+            <DialogTitle>{t('payment.process.title')}</DialogTitle>
             <DialogDescription>
-              Process payment of {formatCurrency(payment.amount, payment.currency)}
+              {t('payment.process.description', { amount: formattedAmount })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="rounded-lg bg-muted p-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Amount</span>
+                <span className="text-muted-foreground">{t('payment.process.amount')}</span>
                 <span className="font-semibold">
-                  {formatCurrency(payment.amount, payment.currency)}
+                  {formattedAmount}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Method</span>
+                <span className="text-muted-foreground">{t('payment.process.method')}</span>
                 <span className="font-medium">{payment.method}</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="paymentMethodId">Payment Method ID *</Label>
+              <Label htmlFor="paymentMethodId">{t('payment.process.paymentMethodId')}</Label>
               <Input
                 id="paymentMethodId"
                 {...register('paymentMethodId')}
-                placeholder="pm_1234567890..."
+                placeholder={t('payment.process.paymentMethodIdPlaceholder')}
               />
               <p className="text-xs text-muted-foreground">
-                Stripe payment method ID (e.g., from Stripe Elements)
+                {t('payment.process.paymentMethodIdHint')}
               </p>
               {errors.paymentMethodId && (
                 <p className="text-sm text-destructive">{errors.paymentMethodId.message}</p>
@@ -105,17 +109,17 @@ export function ProcessPaymentDialog({
                 onCheckedChange={(checked) => setValue('saveCard', !!checked)}
               />
               <Label htmlFor="saveCard" className="cursor-pointer text-sm">
-                Save card for future payments
+                {t('payment.process.saveCard')}
               </Label>
             </div>
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              {t('payment.process.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Processing...' : 'Process Payment'}
+              {isLoading ? t('payment.process.processing') : t('payment.process.confirm')}
             </Button>
           </DialogFooter>
         </form>

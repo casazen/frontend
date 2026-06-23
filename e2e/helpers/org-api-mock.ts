@@ -9,6 +9,23 @@ const DEMO_ORG = {
 };
 
 function buildDemoMeBody(profile: string) {
+  if (profile === 'supplier') {
+    return {
+      id: 'auth0|demo-supplier',
+      email: 'supplier@demo.casazen.com',
+      firstName: 'Demo',
+      lastName: 'Fornitore',
+      role: 'Supplier' as UserRole,
+      rentalType: null,
+      isActive: true,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+      onboardingCompletedAt: '2026-01-01T00:00:00Z',
+      orgId: null,
+      org: null,
+    };
+  }
+
   if (profile === 'onboarding') {
     return {
       id: 'auth0|demo-onboarding',

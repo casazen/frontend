@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,7 @@ function triggerCsvDownload(csv: string, filename: string) {
 }
 
 export function PricingHistoryPage() {
+  const { t } = useTranslation();
   const { id: propertyId } = useParams<{ id: string }>();
   const [page, setPage] = useState(1);
   const [from, setFrom] = useState('');
@@ -81,14 +83,14 @@ export function PricingHistoryPage() {
         ...(to && { to }),
       });
       if (!result) {
-        toast.error('Failed to export pricing history');
+        toast.error(t('pricing.history.exportError'));
         return;
       }
       const csv = buildCsv(result.items);
       const date = formatDate(new Date().toISOString(), 'yyyy-MM-dd');
       triggerCsvDownload(csv, `pricing-history-${date}.csv`);
     } catch {
-      toast.error('Failed to export pricing history');
+      toast.error(t('pricing.history.exportError'));
     } finally {
       setIsExporting(false);
     }
@@ -99,20 +101,20 @@ export function PricingHistoryPage() {
       <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" asChild>
-            <Link to={`/properties/${propertyId}/pricing`} aria-label="Back to pricing">
+            <Link to={`/properties/${propertyId}/pricing`} aria-label={t('pricing.history.backLabel')}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <PageHeader
-            title="Pricing Audit Trail"
-            description="Full history of AI-driven price adaptations for compliance and review."
+            title={t('pricing.history.title')}
+            description={t('pricing.history.description')}
           />
         </div>
 
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Price Adaptation History</CardTitle>
+              <CardTitle>{t('pricing.dashboard.historyTitle')}</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
@@ -121,14 +123,14 @@ export function PricingHistoryPage() {
                 data-testid="export-btn"
               >
                 <Download className="mr-2 h-4 w-4" />
-                {isExporting ? 'Exporting...' : 'Export CSV'}
+                {isExporting ? t('pricing.history.exporting') : t('pricing.history.exportCsv')}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="filter-from">From</Label>
+                <Label htmlFor="filter-from">{t('pricing.history.from')}</Label>
                 <Input
                   id="filter-from"
                   type="date"
@@ -139,7 +141,7 @@ export function PricingHistoryPage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="filter-to">To</Label>
+                <Label htmlFor="filter-to">{t('pricing.history.to')}</Label>
                 <Input
                   id="filter-to"
                   type="date"

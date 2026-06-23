@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ export function CheckOutDialog({
   onConfirm,
   isLoading,
 }: CheckOutDialogProps) {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -57,20 +59,22 @@ export function CheckOutDialog({
 
   if (!booking) return null;
 
+  const guestName = `${booking.guest.firstName} ${booking.guest.lastName}`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Check Out Guest</DialogTitle>
+            <DialogTitle>{t('booking.checkOutDialog.title')}</DialogTitle>
             <DialogDescription>
-              Check out {booking.guest.firstName} {booking.guest.lastName}
+              {t('booking.checkOutDialog.description', { name: guestName })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="actualCheckOutTime">Check-out Time</Label>
+              <Label htmlFor="actualCheckOutTime">{t('booking.checkOutDialog.checkOutTime')}</Label>
               <Input
                 id="actualCheckOutTime"
                 type="datetime-local"
@@ -82,21 +86,21 @@ export function CheckOutDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="damages">Damages (if any)</Label>
+              <Label htmlFor="damages">{t('booking.checkOutDialog.damages')}</Label>
               <Textarea
                 id="damages"
                 {...register('damages')}
-                placeholder="Describe any damages found..."
+                placeholder={t('booking.checkOutDialog.damagesPlaceholder')}
                 rows={3}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes">{t('booking.checkOutDialog.notes')}</Label>
               <Textarea
                 id="notes"
                 {...register('notes')}
-                placeholder="Any notes about the check-out..."
+                placeholder={t('booking.checkOutDialog.notesPlaceholder')}
                 rows={2}
               />
             </div>
@@ -104,10 +108,10 @@ export function CheckOutDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              {t('booking.checkOutDialog.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Checking Out...' : 'Confirm Check Out'}
+              {isLoading ? t('booking.checkOutDialog.checkingOut') : t('booking.checkOutDialog.confirm')}
             </Button>
           </DialogFooter>
         </form>

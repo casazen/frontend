@@ -171,7 +171,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'supplier.inbox.read',
         'supplier.availability.write',
       ],
-      defaultRoute: '/supplier/inbox',
+      defaultRoute: '/app/supplier/inbox',
     });
   }
 

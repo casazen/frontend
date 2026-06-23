@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { COMMON_AMENITIES, AMENITY_LABELS } from '../property.schema';
+import { describe, it, expect, beforeEach } from 'vitest';
+import i18n from '@/i18n/config';
+import { COMMON_AMENITIES } from '../property.schema';
+import { getAmenityLabel } from '@/lib/i18n-labels';
 
 describe('COMMON_AMENITIES', () => {
   it('uses exact C# enum names (no spaces)', () => {
@@ -35,21 +37,37 @@ describe('COMMON_AMENITIES', () => {
 });
 
 describe('AMENITY_LABELS', () => {
-  it('has a label for every amenity in COMMON_AMENITIES', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('has a translated label for every amenity in COMMON_AMENITIES', () => {
+    const t = i18n.getFixedT('en');
     for (const amenity of COMMON_AMENITIES) {
-      expect(AMENITY_LABELS).toHaveProperty(amenity);
+      const label = getAmenityLabel(amenity, t);
+      expect(label).toBeTruthy();
+      expect(label).not.toBe(`amenity.${amenity}`);
     }
   });
 
-  it('maps enum names to human-readable display labels', () => {
-    expect(AMENITY_LABELS['AirConditioning']).toBe('Air Conditioning');
-    expect(AMENITY_LABELS['BBQGrill']).toBe('BBQ Grill');
-    expect(AMENITY_LABELS['FirstAidKit']).toBe('First Aid Kit');
-    expect(AMENITY_LABELS['PetFriendly']).toBe('Pet Friendly');
-    expect(AMENITY_LABELS['CarbonMonoxideDetector']).toBe('Carbon Monoxide Detector');
-    expect(AMENITY_LABELS['FireExtinguisher']).toBe('Fire Extinguisher');
-    expect(AMENITY_LABELS['FreeParking']).toBe('Parking');
-    expect(AMENITY_LABELS['HotTub']).toBe('Hot Tub');
-    expect(AMENITY_LABELS['SmokeDetector']).toBe('Smoke Detector');
+  it('maps enum names to human-readable English display labels', () => {
+    const t = i18n.getFixedT('en');
+    expect(getAmenityLabel('AirConditioning', t)).toBe('Air Conditioning');
+    expect(getAmenityLabel('BBQGrill', t)).toBe('BBQ Grill');
+    expect(getAmenityLabel('FirstAidKit', t)).toBe('First Aid Kit');
+    expect(getAmenityLabel('PetFriendly', t)).toBe('Pet Friendly');
+    expect(getAmenityLabel('CarbonMonoxideDetector', t)).toBe('Carbon Monoxide Detector');
+    expect(getAmenityLabel('FireExtinguisher', t)).toBe('Fire Extinguisher');
+    expect(getAmenityLabel('FreeParking', t)).toBe('Parking');
+    expect(getAmenityLabel('HotTub', t)).toBe('Hot Tub');
+    expect(getAmenityLabel('SmokeDetector', t)).toBe('Smoke Detector');
+  });
+
+  it('returns Italian labels when locale is Italian', async () => {
+    await i18n.changeLanguage('it');
+    const t = i18n.getFixedT('it');
+    expect(getAmenityLabel('AirConditioning', t)).toBe('Aria condizionata');
+    expect(getAmenityLabel('Kitchen', t)).toBe('Cucina');
+    expect(getAmenityLabel('FreeParking', t)).toBe('Parcheggio');
   });
 });

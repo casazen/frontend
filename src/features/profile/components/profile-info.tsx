@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -16,15 +17,16 @@ interface ProfileInfoProps {
 }
 
 export function ProfileInfo({ user }: ProfileInfoProps) {
-  const userId = user.id || user.sub || 'N/A';
-  const userName = user.name || 'Unknown User';
-  const userEmail = user.email || 'N/A';
-  const userRole = user.role || 'User';
+  const { t } = useTranslation();
+  const userId = user.id || user.sub || t('profile.notAvailable');
+  const userName = user.name || t('profile.unknownUser');
+  const userEmail = user.email || t('profile.notAvailable');
+  const userRole = user.role || t('profile.user');
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
+        <CardTitle>{t('profile.profileInformation')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
@@ -49,7 +51,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
           <div className="flex items-center gap-3">
             <Mail className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">{t('profile.email')}</p>
               <p className="font-medium">{userEmail}</p>
             </div>
           </div>
@@ -57,7 +59,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
           <div className="flex items-center gap-3">
             <User className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">User ID</p>
+              <p className="text-sm text-muted-foreground">{t('profile.userId')}</p>
               <p className="font-mono text-sm">{userId}</p>
             </div>
           </div>
@@ -65,7 +67,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
           <div className="flex items-center gap-3">
             <Shield className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Role</p>
+              <p className="text-sm text-muted-foreground">{t('profile.role')}</p>
               <p className="font-medium capitalize">{userRole.toLowerCase()}</p>
             </div>
           </div>

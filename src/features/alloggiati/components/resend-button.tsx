@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useResendAlloggiatiReport } from '@/queries/use-alloggiati';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Send, CheckCircle2 } from 'lucide-react';
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
 
 interface ResendButtonProps {
@@ -8,27 +8,52 @@ interface ResendButtonProps {
   status: AlloggiatiWebStatus;
 }
 
+function getButtonLabel(status: AlloggiatiWebStatus): string {
+  switch (status) {
+    case 'Pending':
+      return 'Invia';
+    case 'Submitted':
+      return 'Inviato';
+    case 'Failed':
+      return 'Reinvia';
+    case 'Confirmed':
+      return 'Inviato';
+    default:
+      return 'Invia';
+  }
+}
+
+function canSend(status: AlloggiatiWebStatus): boolean {
+  return status !== 'Confirmed';
+}
+
 export function ResendButton({ bookingId, status }: ResendButtonProps) {
   const resend = useResendAlloggiatiReport();
+  const disabled = !canSend(status);
 
-  if (status !== 'Failed') {
-    return null;
-  }
+  const label = getButtonLabel(status);
+  const isSent = status === 'Submitted' || status === 'Confirmed';
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => resend.mutate(bookingId)}
-      disabled={resend.isPending}
-      data-testid="alloggiati-resend-button"
-    >
-      {resend.isPending ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <RefreshCw className="mr-2 h-4 w-4" />
-      )}
-      Reinvia comunicazione
-    </Button>
+    <div className="relative inline-block" title={disabled ? 'Comunicazione già inviata e confermata' : undefined}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => resend.mutate(bookingId)}
+        disabled={disabled || resend.isPending}
+        data-testid="alloggiati-resend-button"
+      >
+        {resend.isPending ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : isSent ? (
+          <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
+        ) : status === 'Failed' ? (
+          <RefreshCw className="mr-2 h-4 w-4" />
+        ) : (
+          <Send className="mr-2 h-4 w-4" />
+        )}
+        {label}
+      </Button>
+    </div>
   );
 }

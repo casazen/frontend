@@ -7,6 +7,7 @@ import type {
   CheckOutDto,
 } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const BOOKINGS_KEY = 'bookings';
 
@@ -46,10 +47,10 @@ export function useCreateBooking() {
     mutationFn: (data: CreateBookingDto) => bookingsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      toast.success('Booking created successfully');
+      toast.success(i18n.t('toast.bookingCreated'));
     },
     onError: () => {
-      toast.error('Failed to create booking');
+      toast.error(i18n.t('toast.bookingCreateFailed'));
     },
   });
 }
@@ -63,10 +64,10 @@ export function useUpdateBooking() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
-      toast.success('Booking updated successfully');
+      toast.success(i18n.t('toast.bookingUpdated'));
     },
     onError: () => {
-      toast.error('Failed to update booking');
+      toast.error(i18n.t('toast.bookingUpdateFailed'));
     },
   });
 }
@@ -78,10 +79,10 @@ export function useDeleteBooking() {
     mutationFn: (id: string) => bookingsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      toast.success('Booking deleted successfully');
+      toast.success(i18n.t('toast.bookingDeleted'));
     },
     onError: () => {
-      toast.error('Failed to delete booking');
+      toast.error(i18n.t('toast.bookingDeleteFailed'));
     },
   });
 }
@@ -95,10 +96,10 @@ export function useCheckIn() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
-      toast.success('Guest checked in successfully');
+      toast.success(i18n.t('toast.guestCheckedIn'));
     },
     onError: () => {
-      toast.error('Failed to check in guest');
+      toast.error(i18n.t('toast.checkInGuestFailed'));
     },
   });
 }
@@ -112,10 +113,10 @@ export function useCheckOut() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
-      toast.success('Guest checked out successfully');
+      toast.success(i18n.t('toast.guestCheckedOut'));
     },
     onError: () => {
-      toast.error('Failed to check out guest');
+      toast.error(i18n.t('toast.checkOutGuestFailed'));
     },
   });
 }

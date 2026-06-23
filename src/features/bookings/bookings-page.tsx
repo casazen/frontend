@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Search, Loader2 } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
+import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -19,17 +22,8 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
 
 const TABS = ['all', 'Confirmed', 'Pending', 'CheckedIn', 'CheckedOut', 'Cancelled'];
 
-const TAB_LABELS: Record<string, string> = {
-  all: 'all',
-  Confirmed: 'confirmed',
-  Pending: 'pending',
-  CheckedIn: 'checked-in',
-  CheckedOut: 'checked-out',
-  Cancelled: 'cancelled',
-};
-
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function getNights(checkIn: string, checkOut: string): number {
@@ -37,7 +31,7 @@ function getNights(checkIn: string, checkOut: string): number {
   return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
-function BookingDetail({ booking, onBack }: { booking: Booking; onBack: () => void }) {
+function BookingDetail({ booking, onBack, t }: { booking: Booking; onBack: () => void; t: (key: string) => string }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -49,69 +43,69 @@ function BookingDetail({ booking, onBack }: { booking: Booking; onBack: () => vo
         </div>
         <div className="ml-auto">
           <Badge variant={STATUS_VARIANT[booking.status] ?? 'secondary'} className="capitalize">
-            {TAB_LABELS[booking.status] ?? booking.status}
+            {getBookingStatusLabel(booking.status, t)}
           </Badge>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-base">Guest Information</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('booking.detail.guestInformation')}</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Name</span>
+              <span className="text-muted-foreground">{t('booking.detail.guestName')}</span>
               <span className="font-medium">{booking.guest.firstName} {booking.guest.lastName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Email</span>
+              <span className="text-muted-foreground">{t('booking.detail.guestEmail')}</span>
               <span className="font-medium">{booking.guest.email}</span>
             </div>
             {booking.guest.phone && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Phone</span>
+                <span className="text-muted-foreground">{t('booking.detail.guestPhone')}</span>
                 <span className="font-medium">{booking.guest.phone}</span>
               </div>
             )}
             {booking.guest.country && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Country</span>
+                <span className="text-muted-foreground">{t('booking.detail.guestCountry')}</span>
                 <span className="font-medium">{booking.guest.country}</span>
               </div>
             )}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Booking Details</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('booking.detail.bookingDetails')}</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Property ID</span>
+              <span className="text-muted-foreground">{t('booking.detail.propertyId')}</span>
               <span className="font-medium font-mono text-xs">{booking.propertyId}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Check-in</span>
+              <span className="text-muted-foreground">{t('booking.detail.checkIn')}</span>
               <span className="font-medium">{formatDate(booking.checkInDate)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Check-out</span>
+              <span className="text-muted-foreground">{t('booking.detail.checkOut')}</span>
               <span className="font-medium">{formatDate(booking.checkOutDate)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Nights</span>
+              <span className="text-muted-foreground">{t('booking.detail.nights')}</span>
               <span className="font-medium">{getNights(booking.checkInDate, booking.checkOutDate)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Guests</span>
+              <span className="text-muted-foreground">{t('booking.detail.guests')}</span>
               <span className="font-medium">{booking.numberOfGuests}</span>
             </div>
             {booking.specialRequests && (
               <div className="flex flex-col gap-1 pt-1">
-                <span className="text-muted-foreground">Special Requests</span>
+                <span className="text-muted-foreground">{t('booking.detail.specialRequests')}</span>
                 <span className="text-xs">{booking.specialRequests}</span>
               </div>
             )}
             <div className="flex justify-between border-t pt-2">
-              <span className="font-medium">Total</span>
+              <span className="font-medium">{t('booking.detail.total')}</span>
               <span className="font-bold text-primary">
-                {booking.currency ?? 'EUR'} {booking.totalPrice.toLocaleString()}
+                {booking.currency ?? 'EUR'} {booking.totalPrice.toLocaleString(i18n.language)}
               </span>
             </div>
           </CardContent>
@@ -122,6 +116,7 @@ function BookingDetail({ booking, onBack }: { booking: Booking; onBack: () => vo
 }
 
 export function BookingsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Booking | null>(null);
@@ -137,13 +132,18 @@ export function BookingsPage() {
     return matchesTab && matchesSearch;
   });
 
+  const getTabLabel = (tab: string): string => {
+    if (tab === 'all') return t('booking.list.all');
+    return getBookingStatusLabel(tab, t);
+  };
+
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader title="Bookings" description="Manage all your property bookings" />
+        <PageHeader title={t('booking.list.title')} description={t('booking.list.description')} />
 
         {selected ? (
-          <BookingDetail booking={selected} onBack={() => setSelected(null)} />
+          <BookingDetail booking={selected} onBack={() => setSelected(null)} t={t} />
         ) : (
           <Card>
             <CardContent className="pt-4 space-y-4">
@@ -159,7 +159,7 @@ export function BookingsPage() {
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     }`}
                   >
-                    {TAB_LABELS[tab] ?? tab}
+                    {getTabLabel(tab)}
                   </button>
                 ))}
               </div>
@@ -168,7 +168,7 @@ export function BookingsPage() {
               <div className="relative max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search bookings..."
+                  placeholder={t('booking.list.searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -179,14 +179,14 @@ export function BookingsPage() {
               {isLoading && (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  <span className="ml-2 text-muted-foreground">Loading bookings...</span>
+                  <span className="ml-2 text-muted-foreground">{t('booking.list.loading')}</span>
                 </div>
               )}
 
               {/* Error State */}
               {isError && (
                 <div className="py-8 text-center text-destructive">
-                  Failed to load bookings. Please try again.
+                  {t('booking.list.loadError')}
                 </div>
               )}
 
@@ -196,7 +196,17 @@ export function BookingsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-muted/40">
-                        {['ID', 'Guest', 'Check-in', 'Check-out', 'Nights', 'Guests', 'Total', 'Status', ''].map((h) => (
+                        {[
+                          t('booking.list.columns.id'),
+                          t('booking.list.columns.guest'),
+                          t('booking.list.columns.checkIn'),
+                          t('booking.list.columns.checkOut'),
+                          t('booking.list.columns.nights'),
+                          t('booking.list.columns.guests'),
+                          t('booking.list.columns.total'),
+                          t('booking.list.columns.status'),
+                          '',
+                        ].map((h) => (
                           <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
                         ))}
                       </tr>
@@ -208,7 +218,7 @@ export function BookingsPage() {
                           className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
                           onClick={() => setSelected(b)}
                         >
-                          <td className="px-4 py-3 font-mono text-xs">{b.id.slice(0, 8)}…</td>
+                          <td className="px-4 py-3 font-mono text-xs">{b.id.slice(0, 8)}...</td>
                           <td className="px-4 py-3 font-medium">{b.guest.firstName} {b.guest.lastName}</td>
                           <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkInDate)}</td>
                           <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkOutDate)}</td>
@@ -219,12 +229,12 @@ export function BookingsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
-                              {TAB_LABELS[b.status] ?? b.status}
+                              {getBookingStatusLabel(b.status, t)}
                             </Badge>
                           </td>
                           <td className="px-4 py-3">
                             <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelected(b); }}>
-                              View
+                              {t('booking.list.view')}
                             </Button>
                           </td>
                         </tr>
@@ -232,7 +242,7 @@ export function BookingsPage() {
                       {filtered.length === 0 && (
                         <tr>
                           <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
-                            No bookings found.
+                            {t('booking.list.noResults')}
                           </td>
                         </tr>
                       )}

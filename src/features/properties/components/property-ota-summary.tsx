@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { OtaIntegrationSummaryDto } from '@/types';
@@ -24,14 +25,16 @@ interface PropertyOtaSummaryProps {
 }
 
 export function PropertyOtaSummary({ integrations }: PropertyOtaSummaryProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Integrazioni OTA</CardTitle>
+        <CardTitle>{t('property.ota.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {integrations.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nessuna integrazione OTA configurata.</p>
+          <p className="text-sm text-muted-foreground">{t('property.ota.empty')}</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {integrations.map((integration) => (
@@ -42,14 +45,14 @@ export function PropertyOtaSummary({ integrations }: PropertyOtaSummaryProps) {
                 </div>
                 <div className="flex gap-2">
                   <Badge variant={integration.isActive ? 'success' : 'secondary'}>
-                    {integration.isActive ? 'Attiva' : 'Inattiva'}
+                    {integration.isActive ? t('property.ota.active') : t('property.ota.inactive')}
                   </Badge>
                   {integration.syncEnabled && (
-                    <Badge variant="outline">Sync ON</Badge>
+                    <Badge variant="outline">{t('property.ota.syncOn')}</Badge>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Ultima sync: {integration.lastSyncAt ? formatDateTime(integration.lastSyncAt) : '—'}
+                  {t('property.ota.lastSync')} {integration.lastSyncAt ? formatDateTime(integration.lastSyncAt) : '—'}
                 </p>
               </div>
             ))}

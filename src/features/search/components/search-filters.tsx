@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ interface SearchFiltersProps {
 }
 
 export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -37,17 +39,17 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Search className="h-5 w-5" />
-          Search Filters
+          {t('search.filters.title')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
+            <Label htmlFor="city">{t('search.filters.city')}</Label>
             <Input
               id="city"
               {...register('city')}
-              placeholder="e.g., Rome, Milan, Florence..."
+              placeholder={t('search.filters.cityPlaceholder')}
             />
             {errors.city && (
               <p className="text-sm text-destructive">{errors.city.message}</p>
@@ -56,7 +58,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="minPrice">Min Price (€/night)</Label>
+              <Label htmlFor="minPrice">{t('search.filters.minPrice')}</Label>
               <Input
                 id="minPrice"
                 type="number"
@@ -65,7 +67,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxPrice">Max Price (€/night)</Label>
+              <Label htmlFor="maxPrice">{t('search.filters.maxPrice')}</Label>
               <Input
                 id="maxPrice"
                 type="number"
@@ -77,7 +79,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="minBedrooms">Min Bedrooms</Label>
+              <Label htmlFor="minBedrooms">{t('search.filters.minBedrooms')}</Label>
               <Input
                 id="minBedrooms"
                 type="number"
@@ -86,7 +88,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxBedrooms">Max Bedrooms</Label>
+              <Label htmlFor="maxBedrooms">{t('search.filters.maxBedrooms')}</Label>
               <Input
                 id="maxBedrooms"
                 type="number"
@@ -98,7 +100,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="minBathrooms">Min Bathrooms</Label>
+              <Label htmlFor="minBathrooms">{t('search.filters.minBathrooms')}</Label>
               <Input
                 id="minBathrooms"
                 type="number"
@@ -107,7 +109,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxBathrooms">Max Bathrooms</Label>
+              <Label htmlFor="maxBathrooms">{t('search.filters.maxBathrooms')}</Label>
               <Input
                 id="maxBathrooms"
                 type="number"
@@ -120,11 +122,11 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
           <div className="flex gap-2 pt-2">
             <Button type="submit" className="flex-1">
               <Search className="mr-2 h-4 w-4" />
-              Search
+              {t('search.filters.search')}
             </Button>
             <Button type="button" variant="outline" onClick={handleReset}>
               <X className="mr-2 h-4 w-4" />
-              Reset
+              {t('search.filters.reset')}
             </Button>
           </div>
         </form>

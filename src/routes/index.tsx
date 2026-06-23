@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { LoginPage } from '@/pages/login-page';
+import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { ContextLayout } from '@/components/layout/context-layout';
@@ -20,11 +21,6 @@ import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
-import { SupplierShell } from '@/features/supplier/supplier-shell';
-import { SupplierActivationPage } from '@/features/supplier/supplier-activation-page';
-import { SupplierInboxPage } from '@/features/supplier/supplier-inbox-page';
-import { SupplierProfilePage } from '@/features/supplier/supplier-profile-page';
-import { SupplierAvailabilityPage } from '@/features/supplier/supplier-availability-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -82,6 +78,11 @@ const workspaceRoutes: RouteObject[] = [
         element: <ContextLayout />,
         children: [...buildContextChildren('admin')],
       },
+      {
+        path: 'supplier',
+        element: <ContextLayout />,
+        children: [...buildContextChildren('supplier')],
+      },
     ],
   },
   {
@@ -106,6 +107,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <SupplierRegisterPage />,
   },
   {
     path: '/search',
@@ -139,20 +144,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/supplier',
-    element: (
-      <ProtectedRoute role="Supplier">
-        <WorkspaceProvider>
-          <SupplierShell />
-        </WorkspaceProvider>
-      </ProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <Navigate to="/supplier/inbox" replace /> },
-      { path: 'activation', element: <SupplierActivationPage /> },
-      { path: 'inbox', element: <SupplierInboxPage /> },
-      { path: 'profile', element: <SupplierProfilePage /> },
-      { path: 'availability', element: <SupplierAvailabilityPage /> },
-    ],
+    element: <Navigate to="/app/supplier/inbox" replace />,
+  },
+  {
+    path: '/supplier/*',
+    element: <Navigate to="/app/supplier/inbox" replace />,
   },
   {
     element: (

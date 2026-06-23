@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { LayerSwitcher } from '../layer-switcher';
 
 vi.mock('@/hooks/use-app-layer-context', () => ({
@@ -8,7 +10,15 @@ vi.mock('@/hooks/use-app-layer-context', () => ({
 
 import { useAppLayerContext } from '@/hooks/use-app-layer-context';
 
+function renderWithI18n(ui: React.ReactElement) {
+  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>);
+}
+
 describe('LayerSwitcher', () => {
+  beforeEach(() => {
+    void i18n.changeLanguage('en');
+  });
+
   it('renders nothing when layer switching is disabled', () => {
     vi.mocked(useAppLayerContext).mockReturnValue({
       activeLayer: 'short-stay',
@@ -18,7 +28,7 @@ describe('LayerSwitcher', () => {
       getDefaultHomePath: () => '/',
     });
 
-    const { container } = render(<LayerSwitcher />);
+    const { container } = renderWithI18n(<LayerSwitcher />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -31,7 +41,7 @@ describe('LayerSwitcher', () => {
       getDefaultHomePath: () => '/',
     });
 
-    render(<LayerSwitcher />);
+    renderWithI18n(<LayerSwitcher />);
     expect(screen.getByRole('tablist')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Short-stay' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'Long-term' })).toHaveAttribute('aria-selected', 'false');
@@ -47,7 +57,7 @@ describe('LayerSwitcher', () => {
       getDefaultHomePath: () => '/',
     });
 
-    render(<LayerSwitcher />);
+    renderWithI18n(<LayerSwitcher />);
     fireEvent.click(screen.getByRole('tab', { name: 'Long-term' }));
     expect(setLayer).toHaveBeenCalledWith('long-term');
   });

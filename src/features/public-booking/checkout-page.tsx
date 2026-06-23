@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useOrgPublicProperty } from '@/queries/use-public-org';
@@ -27,16 +28,18 @@ function nightsBetween(checkIn: string, checkOut: string): number {
 
 function DemoPaymentStep({
   onSuccess,
+  t,
 }: {
   onSuccess: () => void;
+  t: (key: string) => string;
 }) {
   return (
     <div className="space-y-4" data-testid="checkout-payment-step">
       <p className="text-sm text-muted-foreground">
-        Modalità demo: il pagamento Stripe è simulato localmente.
+        {t('publicBooking.demoPaymentNote')}
       </p>
       <Button className="w-full" onClick={onSuccess}>
-        Paga ora
+        {t('publicBooking.payNow')}
       </Button>
     </div>
   );
@@ -45,9 +48,11 @@ function DemoPaymentStep({
 function StripePaymentStep({
   onSuccess,
   onError,
+  t,
 }: {
   onSuccess: () => void;
   onError: (message: string) => void;
+  t: (key: string) => string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -65,7 +70,7 @@ function StripePaymentStep({
     setProcessing(false);
 
     if (error) {
-      onError(error.message ?? 'Pagamento non riuscito');
+      onError(error.message ?? t('publicBooking.paymentFailed'));
       return;
     }
 
@@ -76,7 +81,7 @@ function StripePaymentStep({
     <div className="space-y-4" data-testid="checkout-payment-step">
       <PaymentElement />
       <Button className="w-full" onClick={handlePay} disabled={processing}>
-        {processing ? 'Elaborazione…' : 'Paga ora'}
+        {processing ? t('publicBooking.processing') : t('publicBooking.payNow')}
       </Button>
     </div>
   );
@@ -85,9 +90,11 @@ function StripePaymentStep({
 function StripeSetupStep({
   onSuccess,
   onError,
+  t,
 }: {
   onSuccess: () => void;
   onError: (message: string) => void;
+  t: (key: string) => string;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -105,7 +112,7 @@ function StripeSetupStep({
     setProcessing(false);
 
     if (error) {
-      onError(error.message ?? 'Errore nella configurazione del pagamento');
+      onError(error.message ?? t('publicBooking.paymentSetupError'));
       return;
     }
 
@@ -116,7 +123,7 @@ function StripeSetupStep({
     <div className="space-y-4" data-testid="checkout-setup-step">
       <PaymentElement />
       <Button className="w-full" onClick={handleConfirm} disabled={processing}>
-        {processing ? 'Conferma…' : 'Conferma pagamento'}
+        {processing ? t('publicBooking.confirming') : t('publicBooking.confirmPaymentSetup')}
       </Button>
     </div>
   );
@@ -126,14 +133,18 @@ function ConfirmationScreen({
   bookingResult,
   org,
   orgSlug,
+  t,
+  i18n,
 }: {
   bookingResult: DirectBookingResponse;
   org: PublicOrgDto;
   orgSlug: string | undefined;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  i18n: { language: string };
 }) {
   const formatDate = (date: string | Date) => {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('it-IT', { month: 'long', day: 'numeric' });
+    return d.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric' });
   };
 
   const daysUntilDeadline = (deadline: string | Date) => {
@@ -144,11 +155,18 @@ function ConfirmationScreen({
     return days;
   };
 
-  const paymentText = {
-    Immediate: 'Pagato online',
-    OnCancellationDeadline: `Pagamento previsto per ${formatDate(bookingResult.freeRefundDeadline)}`,
-    OnSite: 'Da pagare in struttura',
-  }[bookingResult.paymentOption] || '';
+  const paymentText = (() => {
+    switch (bookingResult.paymentOption) {
+      case 'Immediate':
+        return t('publicBooking.paidOnline');
+      case 'OnCancellationDeadline':
+        return t('publicBooking.paymentDueBy', { date: formatDate(bookingResult.freeRefundDeadline) });
+      case 'OnSite':
+        return t('publicBooking.payOnSite');
+      default:
+        return '';
+    }
+  })();
 
   return (
     <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="checkout-confirmation">
@@ -158,33 +176,33 @@ function ConfirmationScreen({
         </div>
       </div>
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Prenotazione confermata!</h2>
+        <h2 className="text-2xl font-bold">{t('publicBooking.bookingConfirmed')}</h2>
         <p className="text-muted-foreground">
-          Il tuo soggiorno presso {org.displayName} è confermato.
+          {t('publicBooking.bookingConfirmedDescription', { orgName: org.displayName })}
         </p>
       </div>
       <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="text-xs font-medium text-muted-foreground">RIFERIMENTO PRENOTAZIONE</p>
+        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.bookingReference')}</p>
         <p className="font-mono text-lg font-semibold">{bookingResult.bookingId}</p>
       </div>
       <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="text-xs font-medium text-muted-foreground">METODO DI PAGAMENTO</p>
+        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.paymentMethod')}</p>
         <p className="text-sm">{paymentText}</p>
         {bookingResult.paymentOption === 'OnCancellationDeadline' && (
           <p className="text-xs text-orange-600 mt-2">
-            Cancellazione gratuita fino a {daysUntilDeadline(bookingResult.freeRefundDeadline)} giorni
+            {t('publicBooking.freeCancellationUntil', { days: daysUntilDeadline(bookingResult.freeRefundDeadline) })}
           </p>
         )}
       </div>
       <div className="space-y-2">
         <Link to={`/book/${orgSlug}`} className="block">
           <Button variant="outline" className="w-full">
-            Torna alle strutture
+            {t('publicBooking.backToProperties')}
           </Button>
         </Link>
         <Link to={`/book/${orgSlug}/my-bookings`} className="block">
           <Button className="w-full">
-            Visualizza le mie prenotazioni
+            {t('publicBooking.viewMyBookings')}
           </Button>
         </Link>
       </div>
@@ -193,6 +211,7 @@ function ConfirmationScreen({
 }
 
 export function CheckoutPage() {
+  const { t, i18n } = useTranslation();
   const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const [searchParams] = useSearchParams();
@@ -268,7 +287,7 @@ export function CheckoutPage() {
         setConfirmed(true);
       }
     } catch {
-      setPaymentError('Impossibile avviare il checkout. Verifica i dati e riprova.');
+      setPaymentError(t('publicBooking.checkoutError'));
     }
   };
 
@@ -281,7 +300,7 @@ export function CheckoutPage() {
   }
 
   if (confirmed && bookingResult) {
-    return <ConfirmationScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} />;
+    return <ConfirmationScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} t={t} i18n={i18n} />;
   }
 
   return (
@@ -289,15 +308,15 @@ export function CheckoutPage() {
       <Button asChild variant="ghost" className="px-0">
         <Link to={`/book/${orgSlug}/property/${propertyId}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Torna alla struttura
+          {t('publicBooking.backToProperty')}
         </Link>
       </Button>
 
-      <h2 className="text-2xl font-bold">Checkout — {property?.name ?? 'Struttura'}</h2>
+      <h2 className="text-2xl font-bold">{t('publicBooking.checkoutTitle', { propertyName: property?.name ?? 'Struttura' })}</h2>
 
       {checkIn && checkOut && (
         <p className="text-muted-foreground">
-          Date: {checkIn} → {checkOut} ({nights} notte{nights !== 1 ? 'i' : ''})
+          {t('publicBooking.checkoutDates', { checkIn, checkOut, nights, plural: nights !== 1 ? 'i' : '' })}
         </p>
       )}
 
@@ -306,9 +325,11 @@ export function CheckoutPage() {
           {!paymentOption ? (
             <div className="space-y-4 border rounded-lg p-4 bg-card">
               <div className="space-y-2">
-                <h3 className="font-semibold">Metodo di pagamento</h3>
+                <h3 className="font-semibold">{t('publicBooking.paymentMethodTitle')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Cancellazione gratuita fino a {new Date(new Date(checkIn).getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('it-IT', { month: 'long', day: 'numeric' })}
+                  {t('publicBooking.freeCancellationBy', {
+                    date: new Date(new Date(checkIn).getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString(i18n.language, { month: 'long', day: 'numeric' })
+                  })}
                 </p>
               </div>
               <div className="space-y-2">
@@ -317,7 +338,7 @@ export function CheckoutPage() {
                   onClick={() => setPaymentOption('Immediate')}
                   className="w-full p-3 border-2 border-primary rounded-lg bg-primary/5 hover:bg-primary/10 text-left font-medium transition"
                 >
-                  Paga subito
+                  {t('publicBooking.payImmediately')}
                 </button>
                 {nights > 7 && (
                   <button
@@ -325,7 +346,9 @@ export function CheckoutPage() {
                     onClick={() => setPaymentOption('OnCancellationDeadline')}
                     className="w-full p-3 border-2 border-orange-200 rounded-lg hover:bg-orange-50 text-left font-medium transition"
                   >
-                    Paga al {new Date(new Date(checkIn).getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' })}
+                    {t('publicBooking.payOnDeadline', {
+                      date: new Date(new Date(checkIn).getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })
+                    })}
                   </button>
                 )}
                 <button
@@ -333,38 +356,38 @@ export function CheckoutPage() {
                   onClick={() => setPaymentOption('OnSite')}
                   className="w-full p-3 border-2 border-purple-200 rounded-lg hover:bg-purple-50 text-left font-medium transition"
                 >
-                  Paga in struttura
+                  {t('publicBooking.payOnSiteOption')}
                 </button>
               </div>
             </div>
           ) : (
             <Button variant="outline" onClick={() => setPaymentOption(null)} className="w-full">
-              Cambia metodo di pagamento
+              {t('publicBooking.changePaymentMethod')}
             </Button>
           )}
 
           <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="firstName">Nome</Label>
+              <Label htmlFor="firstName">{t('publicBooking.firstName')}</Label>
               <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Cognome</Label>
+              <Label htmlFor="lastName">{t('publicBooking.lastName')}</Label>
               <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('publicBooking.email')}</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Telefono</Label>
+            <Label htmlFor="phone">{t('publicBooking.phone')}</Label>
             <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="adults">Adulti</Label>
+              <Label htmlFor="adults">{t('publicBooking.adults')}</Label>
               <Input
                 id="adults"
                 type="number"
@@ -374,7 +397,7 @@ export function CheckoutPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="children">Bambini</Label>
+              <Label htmlFor="children">{t('publicBooking.children')}</Label>
               <Input
                 id="children"
                 type="number"
@@ -413,7 +436,7 @@ export function CheckoutPage() {
             }
             onClick={handleCreateBooking}
           >
-            {createBooking.isPending ? 'Preparazione pagamento…' : 'Continua'}
+            {createBooking.isPending ? t('publicBooking.preparingPayment') : t('publicBooking.continue')}
           </Button>
           </div>
         </div>
@@ -431,16 +454,17 @@ export function CheckoutPage() {
           {bookingResult.paymentOption === 'OnSite' ? (
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-sm font-medium text-green-800">
-                ✓ Prenotazione confermata. Pagamento in struttura.
+                ✓ {t('publicBooking.bookingConfirmedOnSite')}
               </p>
             </div>
           ) : isDemoMode ? (
-            <DemoPaymentStep onSuccess={() => setConfirmed(true)} />
+            <DemoPaymentStep onSuccess={() => setConfirmed(true)} t={t} />
           ) : stripePromise && bookingResult.clientSecret ? (
             <Elements stripe={stripePromise} options={{ clientSecret: bookingResult.clientSecret }}>
               <StripePaymentStep
                 onSuccess={() => setConfirmed(true)}
                 onError={setPaymentError}
+                t={t}
               />
             </Elements>
           ) : stripePromise && bookingResult.setupIntentClientSecret ? (
@@ -448,6 +472,7 @@ export function CheckoutPage() {
               <StripeSetupStep
                 onSuccess={() => setConfirmed(true)}
                 onError={setPaymentError}
+                t={t}
               />
             </Elements>
           ) : null}

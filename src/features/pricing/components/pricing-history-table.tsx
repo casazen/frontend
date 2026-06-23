@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,6 +27,7 @@ export function PricingHistoryTable({
   pageSize,
   onPageChange,
 }: PricingHistoryTableProps) {
+  const { t } = useTranslation();
   const totalPages = data ? Math.ceil(data.total / pageSize) : 0;
 
   if (isLoading) {
@@ -41,7 +43,7 @@ export function PricingHistoryTable({
   if (!data || data.items.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground" data-testid="history-empty">
-        No price adaptation history found.
+        {t('pricing.historyTable.empty')}
       </div>
     );
   }
@@ -52,13 +54,13 @@ export function PricingHistoryTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">Date</th>
-              <th className="px-4 py-3 text-right font-medium">Prev Price</th>
-              <th className="px-4 py-3 text-right font-medium">New Price</th>
+              <th className="px-4 py-3 text-left font-medium">{t('pricing.historyTable.date')}</th>
+              <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.prevPrice')}</th>
+              <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.newPrice')}</th>
               <th className="px-4 py-3 text-right font-medium">Δ%</th>
-              <th className="px-4 py-3 text-left font-medium">Reason</th>
-              <th className="px-4 py-3 text-right font-medium">Confidence</th>
-              <th className="px-4 py-3 text-left font-medium">OTA Status</th>
+              <th className="px-4 py-3 text-left font-medium">{t('pricing.historyTable.reason')}</th>
+              <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.confidence')}</th>
+              <th className="px-4 py-3 text-left font-medium">{t('pricing.historyTable.otaStatus')}</th>
             </tr>
           </thead>
           <tbody>
@@ -100,14 +102,14 @@ export function PricingHistoryTable({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Page {page} of {totalPages} ({data.total} entries)</span>
+          <span>{t('pricing.historyTable.pagination', { page, totalPages, total: data.total })}</span>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              aria-label="Previous page"
+              aria-label={t('pricing.historyTable.prevPage')}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -116,7 +118,7 @@ export function PricingHistoryTable({
               size="sm"
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
-              aria-label="Next page"
+              aria-label={t('pricing.historyTable.nextPage')}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

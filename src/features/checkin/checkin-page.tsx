@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { formatDate } from '@/lib/utils';
@@ -13,6 +14,7 @@ import type { GuestCheckInFormValues } from './schemas/checkin.schema';
 import { CheckCircle2 } from 'lucide-react';
 
 export function CheckInPage() {
+  const { t } = useTranslation();
   const { token = '' } = useParams<{ token: string }>();
   const { data: context, isLoading, isError } = useCheckInContext(token);
   const submitGuestData = useSubmitGuestCheckIn(token);
@@ -30,7 +32,7 @@ export function CheckInPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen message="Caricamento check-in…" />;
+    return <LoadingScreen message={t('checkin.loading')} />;
   }
 
   if (isError || !context) {
@@ -38,9 +40,9 @@ export function CheckInPage() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <Card className="max-w-md w-full">
           <CardHeader>
-            <CardTitle>Link non valido</CardTitle>
+            <CardTitle>{t('checkin.invalidLink')}</CardTitle>
             <CardDescription>
-              Il link di check-in non è valido o è scaduto. Contatta il gestore della struttura.
+              {t('checkin.invalidLinkDescription')}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -52,7 +54,7 @@ export function CheckInPage() {
     <div className="min-h-screen bg-muted/30 py-8 px-4" data-testid="checkin-page">
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Check-in ospite</h1>
+          <h1 className="text-2xl font-bold">{t('checkin.guestCheckIn')}</h1>
           <p className="text-muted-foreground">{context.propertyName}</p>
           <p className="text-sm text-muted-foreground">
             {formatDate(context.checkInDate)} – {formatDate(context.checkOutDate)}
@@ -64,7 +66,7 @@ export function CheckInPage() {
             <CardContent className="flex items-center gap-3 py-4">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
               <p className="text-sm text-green-800" data-testid="checkin-complete-banner">
-                Check-in completato. Grazie!
+                {t('checkin.checkInComplete')}
               </p>
             </CardContent>
           </Card>
@@ -72,9 +74,9 @@ export function CheckInPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dati anagrafici</CardTitle>
+            <CardTitle>{t('checkin.personalData')}</CardTitle>
             <CardDescription>
-              Compila i campi richiesti dalla normativa Alloggiati Web (Art. 109 TULPS).
+              {t('checkin.personalDataDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -88,7 +90,7 @@ export function CheckInPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Documento</CardTitle>
+            <CardTitle>{t('checkin.document')}</CardTitle>
           </CardHeader>
           <CardContent>
             <DocumentUpload

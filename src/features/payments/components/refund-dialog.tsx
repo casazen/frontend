@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function RefundDialog({
   onConfirm,
   isLoading,
 }: RefundDialogProps) {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -54,45 +56,47 @@ export function RefundDialog({
   if (!payment) return null;
 
   const refundableAmount = payment.amount - (payment.refundedAmount || 0);
+  const formattedAmount = formatCurrency(payment.amount, payment.currency);
+  const formattedRefundable = formatCurrency(refundableAmount, payment.currency);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Refund Payment</DialogTitle>
+            <DialogTitle>{t('payment.refund.title')}</DialogTitle>
             <DialogDescription>
-              Refund payment of {formatCurrency(payment.amount, payment.currency)}
+              {t('payment.refund.description', { amount: formattedAmount })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="rounded-lg bg-muted p-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Original Amount</span>
+                <span className="text-muted-foreground">{t('payment.refund.originalAmount')}</span>
                 <span className="font-semibold">
-                  {formatCurrency(payment.amount, payment.currency)}
+                  {formattedAmount}
                 </span>
               </div>
               {payment.refundedAmount && payment.refundedAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Already Refunded</span>
+                  <span className="text-muted-foreground">{t('payment.refund.alreadyRefunded')}</span>
                   <span className="font-medium text-destructive">
                     -{formatCurrency(payment.refundedAmount, payment.currency)}
                   </span>
                 </div>
               )}
               <div className="flex justify-between text-sm pt-2 border-t">
-                <span className="text-muted-foreground">Refundable Amount</span>
+                <span className="text-muted-foreground">{t('payment.refund.refundableAmount')}</span>
                 <span className="font-bold">
-                  {formatCurrency(refundableAmount, payment.currency)}
+                  {formattedRefundable}
                 </span>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="amount">
-                Refund Amount (leave empty for full refund)
+                {t('payment.refund.refundAmountLabel')}
               </Label>
               <Input
                 id="amount"
@@ -102,7 +106,7 @@ export function RefundDialog({
                 placeholder={refundableAmount.toString()}
               />
               <p className="text-xs text-muted-foreground">
-                Enter a custom amount or leave empty to refund {formatCurrency(refundableAmount, payment.currency)}
+                {t('payment.refund.refundAmountHint', { amount: formattedRefundable })}
               </p>
               {errors.amount && (
                 <p className="text-sm text-destructive">{errors.amount.message}</p>
@@ -110,11 +114,11 @@ export function RefundDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason for Refund</Label>
+              <Label htmlFor="reason">{t('payment.refund.reason')}</Label>
               <Textarea
                 id="reason"
                 {...register('reason')}
-                placeholder="Explain why this payment is being refunded..."
+                placeholder={t('payment.refund.reasonPlaceholder')}
                 rows={3}
               />
             </div>
@@ -122,10 +126,10 @@ export function RefundDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              {t('payment.refund.cancel')}
             </Button>
             <Button type="submit" variant="destructive" disabled={isLoading}>
-              {isLoading ? 'Processing Refund...' : 'Confirm Refund'}
+              {isLoading ? t('payment.refund.processingRefund') : t('payment.refund.confirm')}
             </Button>
           </DialogFooter>
         </form>

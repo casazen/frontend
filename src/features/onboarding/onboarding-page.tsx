@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
@@ -21,6 +22,7 @@ const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 type WizardStep = 'role' | 'consents' | 'plan';
 
 export function OnboardingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isEditMode = searchParams.get('mode') === 'edit';
@@ -75,7 +77,7 @@ export function OnboardingPage() {
       }
 
       if (needsConsentsStep && !consents) {
-        toast.error('Accetta i documenti legali obbligatori prima di continuare.');
+        toast.error(t('onboarding.consentRequiredToast'));
         setStep('consents');
         return;
       }
@@ -90,7 +92,7 @@ export function OnboardingPage() {
       window.location.assign(getHomeRouteForRentalType(rentalType));
     } catch {
       setFailedType(rentalType);
-      toast.error('Errore durante la configurazione del profilo. Riprova.');
+      toast.error(t('onboarding.configurationErrorToast'));
       setSelectedType(null);
     }
   };
@@ -106,32 +108,32 @@ export function OnboardingPage() {
   };
 
   if (profileLoading) {
-    return <LoadingScreen message="Caricamento..." />;
+    return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
   }
 
   const heading =
     step === 'role'
       ? isEditMode
-        ? 'Modifica tipo di operatore'
-        : 'Come vuoi usare CasaZen?'
+        ? t('onboarding.editOperatorType')
+        : t('onboarding.howToUse')
       : step === 'consents'
-        ? 'Accetta i documenti legali'
-        : 'Scegli il tuo piano';
+        ? t('onboarding.acceptLegalDocs')
+        : t('onboarding.choosePlan');
 
   const subheading =
     step === 'role'
-      ? 'Scegli il tipo di operatore per personalizzare la tua esperienza.'
+      ? t('onboarding.roleDescription')
       : step === 'consents'
-        ? 'Per attivare il tuo account sono richiesti ToS, privacy, DPA e l\'elenco subprocessori.'
+        ? t('onboarding.consentsDescription')
         : isOrgBackfill
-          ? 'Configura la tua organizzazione per iniziare a gestire proprietà e prenotazioni.'
-          : 'Seleziona il piano iniziale per la tua organizzazione. Potrai modificarlo in seguito.';
+          ? t('onboarding.planOrgDescription')
+          : t('onboarding.planDefaultDescription');
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
       <div className="mx-auto max-w-5xl space-y-10 text-center">
         <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary">CasaZen</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-primary">{t('onboarding.casaZen')}</p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
           <p className="text-muted-foreground">{subheading}</p>
         </div>
@@ -167,7 +169,7 @@ export function OnboardingPage() {
               selectedTier={selectedPlan}
               onSelect={setSelectedPlan}
               isLoading={completeOnboarding.isPending}
-              actionLabel="Seleziona"
+              actionLabel={t('onboarding.select')}
             />
             <div className="flex flex-wrap items-center justify-center gap-3">
               {!isOrgBackfill && (
@@ -177,7 +179,7 @@ export function OnboardingPage() {
                   disabled={completeOnboarding.isPending}
                   onClick={() => setStep(needsConsentsStep ? 'consents' : 'role')}
                 >
-                  Indietro
+                  {t('onboarding.back')}
                 </Button>
               )}
               <Button
@@ -187,10 +189,10 @@ export function OnboardingPage() {
                 onClick={handlePlanConfirm}
               >
                 {completeOnboarding.isPending
-                  ? 'Configurazione...'
+                  ? t('onboarding.configuring')
                   : isEditMode
-                    ? 'Salva modifiche'
-                    : 'Completa registrazione'}
+                    ? t('onboarding.saveChanges')
+                    : t('onboarding.completeRegistration')}
               </Button>
             </div>
           </div>
@@ -202,7 +204,7 @@ export function OnboardingPage() {
             className="text-sm font-medium text-primary underline-offset-4 hover:underline"
             onClick={() => void finishOnboarding(failedType, selectedPlan)}
           >
-            Riprova
+            {t('onboarding.retry')}
           </button>
         )}
       </div>

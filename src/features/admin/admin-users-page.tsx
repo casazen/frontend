@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { useUsers } from '@/queries/use-users';
 const PAGE_SIZE = 20;
 
 export function AdminUsersPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [role, setRole] = useState('');
   const [page, setPage] = useState(1);
@@ -25,17 +27,17 @@ export function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Gestione Utenti"
-        description="Visualizza e gestisci tutti gli utenti del sistema"
+        title={t('admin.users.title')}
+        description={t('admin.users.description')}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Filtri</CardTitle>
+          <CardTitle>{t('admin.users.filters')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Input
-            placeholder="Cerca per nome o email..."
+            placeholder={t('admin.users.searchPlaceholder')}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="max-w-xs"
@@ -45,7 +47,7 @@ export function AdminUsersPage() {
             value={role}
             onChange={(e) => { setRole(e.target.value); setPage(1); }}
           >
-            <option value="">Tutti i ruoli</option>
+            <option value="">{t('admin.users.filter.allRoles')}</option>
             <option value="Admin">Admin</option>
             <option value="PropertyOwner">PropertyOwner</option>
             <option value="PropertyManager">PropertyManager</option>
@@ -65,7 +67,7 @@ export function AdminUsersPage() {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
               <span>
-                Pagina {page} di {totalPages} ({data?.totalCount ?? 0} utenti)
+                {t('admin.users.pagination', { page, totalPages, totalCount: data?.totalCount ?? 0 })}
               </span>
               <div className="flex gap-2">
                 <Button
@@ -74,7 +76,7 @@ export function AdminUsersPage() {
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
                 >
-                  Precedente
+                  {t('admin.users.previous')}
                 </Button>
                 <Button
                   variant="outline"
@@ -82,7 +84,7 @@ export function AdminUsersPage() {
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Successiva
+                  {t('admin.users.next')}
                 </Button>
               </div>
             </div>

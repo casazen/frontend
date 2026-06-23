@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, XCircle, RefreshCw, Loader2 } from 'lucide-react';
+import i18n from '@/i18n/config';
 import { useOtaIntegrations, useSyncAllOta, useSyncOtaPlatform } from '@/queries/use-ota';
 import type { OtaIntegration, OtaPlatform } from '@/types';
 
@@ -22,16 +24,16 @@ function getConnectionStatus(integration: OtaIntegration): 'connected' | 'warnin
   return 'connected';
 }
 
-function formatLastSync(lastSyncAt?: string): string {
-  if (!lastSyncAt) return 'Never';
+function formatLastSync(lastSyncAt: string | undefined, t: (key: string, options?: Record<string, unknown>) => string): string {
+  if (!lastSyncAt) return t('ota.page.never');
   const date = new Date(lastSyncAt);
   const diffMs = Date.now() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffMins < 1) return t('ota.page.justNow');
+  if (diffMins < 60) return t('ota.page.minAgo', { count: diffMins });
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  if (diffHours < 24) return t('ota.page.hourAgo', { count: diffHours });
+  return date.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' });
 }
 
 function StatusIcon({ status }: { status: 'connected' | 'warning' | 'disconnected' }) {
@@ -46,7 +48,7 @@ function statusVariant(status: 'connected' | 'warning' | 'disconnected'): 'defau
   return 'outline';
 }
 
-function OtaCard({ integration }: { integration: OtaIntegration }) {
+function OtaCard({ integration, t }: { integration: OtaIntegration; t: (key: string, options?: Record<string, unknown>) => string }) {
   const syncPlatform = useSyncOtaPlatform();
   const connectionStatus = getConnectionStatus(integration);
 
@@ -64,20 +66,20 @@ function OtaCard({ integration }: { integration: OtaIntegration }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Status</span>
+          <span className="text-muted-foreground">{t('ota.page.status')}</span>
           <Badge variant={statusVariant(connectionStatus)} className="capitalize">
-            {connectionStatus}
+            {t(`ota.status.${connectionStatus}`)}
           </Badge>
         </div>
         {integration.lastSyncStatus && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Last sync status</span>
+            <span className="text-muted-foreground">{t('ota.page.lastSyncStatus')}</span>
             <span className="text-xs font-medium">{integration.lastSyncStatus}</span>
           </div>
         )}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Last sync</span>
-          <span className="text-muted-foreground">{formatLastSync(integration.lastSyncAt)}</span>
+          <span className="text-muted-foreground">{t('ota.page.lastSync')}</span>
+          <span className="text-muted-foreground">{formatLastSync(integration.lastSyncAt, t)}</span>
         </div>
         {integration.syncError && (
           <div className="text-xs text-destructive bg-destructive/10 rounded p-2">
@@ -95,7 +97,7 @@ function OtaCard({ integration }: { integration: OtaIntegration }) {
             {syncPlatform.isPending ? (
               <Loader2 className="mr-2 h-3 w-3 animate-spin" />
             ) : null}
-            {connectionStatus === 'disconnected' ? 'Connect' : 'Sync now'}
+            {connectionStatus === 'disconnected' ? t('ota.page.connect') : t('ota.page.syncNow')}
           </Button>
         </div>
       </CardContent>
@@ -104,6 +106,7 @@ function OtaCard({ integration }: { integration: OtaIntegration }) {
 }
 
 export function OtaPage() {
+  const { t } = useTranslation();
   const { data: integrations, isLoading, isError } = useOtaIntegrations();
   const syncAll = useSyncAllOta();
 
@@ -115,7 +118,7 @@ export function OtaPage() {
     <AppShell>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <PageHeader title="OTA Sync" description="Manage channel connections and sync status" />
+          <PageHeader title={t('ota.page.title')} description={t('ota.page.description')} />
           <Button
             variant="outline"
             onClick={handleSyncAll}
@@ -126,33 +129,33 @@ export function OtaPage() {
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
-            Sync All
+            {t('ota.page.syncAll')}
           </Button>
         </div>
 
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Loading OTA integrations...</span>
+            <span className="ml-2 text-muted-foreground">{t('ota.page.loading')}</span>
           </div>
         )}
 
         {isError && (
           <div className="py-8 text-center text-destructive">
-            Failed to load OTA integrations. Please try again.
+            {t('ota.page.error')}
           </div>
         )}
 
         {!isLoading && !isError && (integrations ?? []).length === 0 && (
           <div className="py-12 text-center text-muted-foreground">
-            No OTA integrations configured yet.
+            {t('ota.page.empty')}
           </div>
         )}
 
         {!isLoading && !isError && (integrations ?? []).length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(integrations ?? []).map((integration) => (
-              <OtaCard key={integration.id} integration={integration} />
+              <OtaCard key={integration.id} integration={integration} t={t} />
             ))}
           </div>
         )}

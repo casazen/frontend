@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { pricingUpdateSchema, OTA_PLATFORM_LABELS } from '../schemas/ota.schema';
+import { useTranslation } from 'react-i18next';
+import { getOtaPlatformLabel } from '@/lib/i18n-labels';
+import { pricingUpdateSchema, OTA_PLATFORM_ICONS } from '../schemas/ota.schema';
 import { useProperties } from '@/queries/use-properties';
 import type { PricingUpdateFormValues } from '../schemas/ota.schema';
 import type { OtaPlatform } from '@/types';
@@ -30,6 +32,7 @@ export function PricingUpdateDialog({
   onConfirm,
   isLoading,
 }: PricingUpdateDialogProps) {
+  const { t } = useTranslation();
   const { data: propertiesData } = useProperties();
   const properties = propertiesData ?? [];
 
@@ -72,21 +75,21 @@ export function PricingUpdateDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Update OTA Pricing</DialogTitle>
+            <DialogTitle>{t('ota.pricing.title')}</DialogTitle>
             <DialogDescription>
-              Update pricing across multiple OTA platforms simultaneously
+              {t('ota.pricing.description')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="propertyId">Property *</Label>
+              <Label htmlFor="propertyId">{t('ota.pricing.propertyLabel')}</Label>
               <select
                 id="propertyId"
                 {...register('propertyId')}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <option value="">Select a property</option>
+                <option value="">{t('ota.pricing.selectProperty')}</option>
                 {properties.map((property) => (
                   <option key={property.id} value={property.id}>
                     {property.name}
@@ -99,7 +102,7 @@ export function PricingUpdateDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="nightlyRate">Price per Night *</Label>
+              <Label htmlFor="nightlyRate">{t('ota.pricing.priceLabel')}</Label>
               <Input
                 id="nightlyRate"
                 type="number"
@@ -114,7 +117,7 @@ export function PricingUpdateDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date (optional)</Label>
+                <Label htmlFor="startDate">{t('ota.pricing.startDate')}</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -123,7 +126,7 @@ export function PricingUpdateDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date (optional)</Label>
+                <Label htmlFor="endDate">{t('ota.pricing.endDate')}</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -133,9 +136,9 @@ export function PricingUpdateDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Platforms (all if none selected)</Label>
+              <Label>{t('ota.pricing.platformsLabel')}</Label>
               <div className="grid grid-cols-2 gap-3">
-                {Object.entries(OTA_PLATFORM_LABELS).map(([platform, config]) => (
+                {Object.keys(OTA_PLATFORM_ICONS).map((platform) => (
                   <div key={platform} className="flex items-center space-x-2">
                     <Checkbox
                       id={`platform-${platform}`}
@@ -146,8 +149,8 @@ export function PricingUpdateDialog({
                       htmlFor={`platform-${platform}`}
                       className="cursor-pointer text-sm flex items-center gap-1"
                     >
-                      <span>{config.icon}</span>
-                      {config.label}
+                      <span>{OTA_PLATFORM_ICONS[platform]}</span>
+                      {getOtaPlatformLabel(platform, t)}
                     </Label>
                   </div>
                 ))}
@@ -157,10 +160,10 @@ export function PricingUpdateDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              {t('ota.pricing.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Updating...' : 'Update Pricing'}
+              {isLoading ? t('ota.pricing.updating') : t('ota.pricing.update')}
             </Button>
           </DialogFooter>
         </form>

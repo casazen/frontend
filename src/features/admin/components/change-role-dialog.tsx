@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from 'react-i18next';
 import { useChangeUserRole } from '@/queries/use-users';
 import { formatUserDisplayName } from '@/lib/user-display';
 import type { UserSummary, UserRole } from '@/types';
@@ -29,6 +30,7 @@ interface ChangeRoleDialogProps {
 }
 
 export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogProps) {
+  const { t } = useTranslation();
   const [selectedRole, setSelectedRole] = useState<UserRole>(user?.role ?? 'Guest');
   const { mutate: changeRole, isPending } = useChangeUserRole();
 
@@ -52,13 +54,13 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Cambia ruolo</DialogTitle>
+          <DialogTitle>{t('admin.users.roleDialog.title')}</DialogTitle>
           <DialogDescription>
-            Seleziona il nuovo ruolo per {displayName}.
+            {t('admin.users.roleDialog.description', { name: displayName })}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="role-select">Ruolo</Label>
+          <Label htmlFor="role-select">{t('admin.users.roleDialog.label')}</Label>
           <select
             id="role-select"
             className="w-full rounded-md border px-3 py-2 text-sm"
@@ -74,10 +76,10 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annulla
+            {t('admin.users.roleDialog.cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={isPending}>
-            {isPending ? 'Salvataggio...' : 'Salva'}
+            {isPending ? t('admin.users.roleDialog.saving') : t('admin.users.roleDialog.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

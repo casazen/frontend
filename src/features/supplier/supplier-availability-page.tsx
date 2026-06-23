@@ -1,41 +1,72 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useUpdateSupplierAvailability } from '@/queries/use-supplier';
+import { LoadingScreen } from '@/components/shared/loading-screen';
+import { useSupplierAvailability, useUpdateSupplierAvailability } from '@/queries/use-supplier';
+
+const VISIBLE_DAYS = 14;
 
 function formatDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-export function SupplierAvailabilityPage() {
-  const updateAvailability = useUpdateSupplierAvailability();
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
-
-  const days = Array.from({ length: 14 }, (_, index) => {
+function buildVisibleDays(): Date[] {
+  return Array.from({ length: VISIBLE_DAYS }, (_, index) => {
     const date = new Date();
+    date.setHours(12, 0, 0, 0);
     date.setDate(date.getDate() + index);
     return date;
   });
+}
+
+export function SupplierAvailabilityPage() {
+  const { t } = useTranslation();
+  const days = useMemo(() => buildVisibleDays(), []);
+  const from = formatDateKey(days[0]);
+  const to = formatDateKey(days[days.length - 1]);
+  const { data, isLoading } = useSupplierAvailability(from, to);
+  const updateAvailability = useUpdateSupplierAvailability();
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const initialized = useRef(false);
+
+  // Initialize local state from server data on first load only.
+  // After that local state is the source of truth — we don't overwrite
+  // it on subsequent refetches (e.g. after save triggers invalidateQueries).
+  useEffect(() => {
+    if (!data?.dates || initialized.current) return;
+    initialized.current = true;
+    setSelected(Object.fromEntries(data.dates.map((entry) => [entry.date, entry.available])));
+  }, [data]);
 
   const toggleDay = (key: string) => {
     setSelected((prev) => ({ ...prev, [key]: !(prev[key] ?? true) }));
   };
 
   const save = async () => {
-    const dates = Object.entries(selected).map(([date, available]) => ({ date, available }));
-    if (dates.length === 0) {
-      toast.message('Seleziona almeno un giorno');
-      return;
+    const dates = days.map((day) => {
+      const date = formatDateKey(day);
+      return { date, available: selected[date] ?? true };
+    });
+
+    try {
+      await updateAvailability.mutateAsync(dates);
+      toast.success(t('supplier.availabilityUpdated'));
+    } catch {
+      toast.error(t('supplier.availabilitySaveError'));
     }
-    await updateAvailability.mutateAsync(dates);
-    toast.success('Disponibilità aggiornata');
   };
+
+  if (isLoading) {
+    return <LoadingScreen message={t('supplier.availabilityLoading')} />;
+  }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Disponibilità" description="Tocca un giorno per segnare indisponibilità" />
+      <PageHeader title={t('supplier.availabilityTitle')} description={t('supplier.availabilityDescription')} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {days.map((day) => {
           const key = formatDateKey(day);
@@ -49,8 +80,8 @@ export function SupplierAvailabilityPage() {
                   onClick={() => toggleDay(key)}
                   data-testid={`availability-${key}`}
                 >
-                  <p className="text-sm font-medium">{day.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                  <p className="text-xs text-muted-foreground">{available ? 'Disponibile' : 'Non disponibile'}</p>
+                  <p className="text-sm font-medium">{day.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                  <p className="text-xs text-muted-foreground">{available ? t('supplier.available') : t('supplier.notAvailable')}</p>
                 </button>
               </CardContent>
             </Card>
@@ -58,7 +89,7 @@ export function SupplierAvailabilityPage() {
         })}
       </div>
       <Button onClick={() => void save()} disabled={updateAvailability.isPending}>
-        Salva disponibilità
+        {t('supplier.saveAvailability')}
       </Button>
     </div>
   );

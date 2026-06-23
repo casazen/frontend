@@ -1,26 +1,30 @@
 import { Home, KeyRound, Layers } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { RentalType } from '@/types';
 import { cn } from '@/lib/utils';
 
-const CARD_META: Record<
-  RentalType,
-  { title: string; description: string; icon: typeof Home }
-> = {
+type CardMetaEntry = {
+  titleKey: string;
+  descriptionKey: string;
+  icon: typeof Home;
+};
+
+const CARD_META: Record<RentalType, CardMetaEntry> = {
   ShortTerm: {
-    title: 'Affitti brevi',
-    description: 'Gestisci prenotazioni short-stay su Airbnb, Booking.com e altri',
+    titleKey: 'onboarding.shortTermTitle',
+    descriptionKey: 'onboarding.shortTermDescription',
     icon: Home,
   },
   LongTerm: {
-    title: 'Locazioni di lungo periodo',
-    description: 'Gestisci contratti di locazione, registrazione RLI, cedolare secca',
+    titleKey: 'onboarding.longTermTitle',
+    descriptionKey: 'onboarding.longTermDescription',
     icon: KeyRound,
   },
   Both: {
-    title: 'Entrambi',
-    description: 'Accedi a entrambe le sezioni con switcher rapido',
+    titleKey: 'onboarding.bothTitle',
+    descriptionKey: 'onboarding.bothDescription',
     icon: Layers,
   },
 };
@@ -33,6 +37,7 @@ interface RentalTypeCardProps {
 }
 
 export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }: RentalTypeCardProps) {
+  const { t } = useTranslation();
   const meta = CARD_META[rentalType];
   const Icon = meta.icon;
   const isSelected = selectedType === rentalType;
@@ -48,8 +53,8 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Icon className="h-6 w-6" aria-hidden />
         </div>
-        <CardTitle>{meta.title}</CardTitle>
-        <CardDescription>{meta.description}</CardDescription>
+        <CardTitle>{t(meta.titleKey)}</CardTitle>
+        <CardDescription>{t(meta.descriptionKey)}</CardDescription>
       </CardHeader>
       <CardContent>
         <Button
@@ -58,7 +63,7 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
           disabled={isLoading}
           onClick={() => onSelect(rentalType)}
         >
-          {isLoading && isSelected ? 'Configurazione...' : 'Scegli'}
+          {isLoading && isSelected ? t('onboarding.configuring') : t('onboarding.choose')}
         </Button>
       </CardContent>
     </Card>

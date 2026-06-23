@@ -5,10 +5,11 @@ import type { OnboardingConsentsPayload } from './onboarding.types';
 export type UserRole =
   | 'Admin'
   | 'PropertyOwner'
+  | 'LongTermLandlord'
+  | 'Supplier'
   | 'PropertyManager'
   | 'Guest'
-  | 'Staff'
-  | 'LongTermLandlord';
+  | 'Staff';
 
 export type RentalType = 'ShortTerm' | 'LongTerm' | 'Both';
 

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2, Upload } from 'lucide-react';
@@ -13,6 +14,7 @@ interface DocumentUploadProps {
 }
 
 export function DocumentUpload({ onUpload, existingUrl, isUploading }: DocumentUploadProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,12 +25,12 @@ export function DocumentUpload({ onUpload, existingUrl, isUploading }: DocumentU
     setError(null);
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError('Formato non supportato. Usa JPG, PNG, WebP o PDF.');
+      setError(t('checkin.unsupportedFormat'));
       return;
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError('Il file supera la dimensione massima di 5 MB.');
+      setError(t('checkin.fileTooLarge'));
       return;
     }
 
@@ -41,15 +43,15 @@ export function DocumentUpload({ onUpload, existingUrl, isUploading }: DocumentU
   return (
     <div className="space-y-4" data-testid="document-upload">
       <div>
-        <Label htmlFor="documentScan">Documento d&apos;identità</Label>
+        <Label htmlFor="documentScan">{t('checkin.documentIdentity')}</Label>
         <p className="text-sm text-muted-foreground mt-1">
-          Carica una scansione o foto del documento (max 5 MB).
+          {t('checkin.documentHint')}
         </p>
       </div>
 
       {existingUrl && (
         <p className="text-sm text-green-700" data-testid="document-upload-success">
-          Documento già caricato.
+          {t('checkin.documentAlreadyUploaded')}
         </p>
       )}
 
@@ -74,7 +76,7 @@ export function DocumentUpload({ onUpload, existingUrl, isUploading }: DocumentU
           ) : (
             <Upload className="mr-2 h-4 w-4" />
           )}
-          {isUploading ? 'Caricamento…' : 'Seleziona file'}
+          {isUploading ? t('checkin.uploading') : t('checkin.selectFile')}
         </Button>
       </div>
 

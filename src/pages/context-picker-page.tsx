@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -6,11 +7,12 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Navigate } from 'react-router-dom';
 
 export function ContextPickerPage() {
+  const { t } = useTranslation();
   const { contexts, isReady, setActiveContext } = useWorkspace();
   const isRecovering = useEmptyWorkspaceRecovery(contexts.length, isReady);
 
   if (!isReady || isRecovering) {
-    return <LoadingScreen message="Caricamento..." />;
+    return <LoadingScreen message={t('shared.contextPicker.loading')} />;
   }
 
   if (contexts.length === 0) {
@@ -25,8 +27,8 @@ export function ContextPickerPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4">
       <Card className="w-full max-w-xl">
         <CardHeader>
-          <CardTitle>Seleziona workspace</CardTitle>
-          <CardDescription>Scegli il contesto applicativo da aprire.</CardDescription>
+          <CardTitle>{t('shared.contextPicker.title')}</CardTitle>
+          <CardDescription>{t('shared.contextPicker.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {contexts.map((context) => (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
@@ -9,6 +10,7 @@ interface PropertyPhotoCarouselProps {
 }
 
 export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarouselProps) {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const hasPhotos = photoUrls.length > 0;
 
@@ -33,7 +35,7 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
                     size="icon"
                     className="absolute left-4 top-1/2 -translate-y-1/2"
                     onClick={goPrev}
-                    aria-label="Foto precedente"
+                    aria-label={t('property.photos.prev')}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -42,7 +44,7 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
                     size="icon"
                     className="absolute right-4 top-1/2 -translate-y-1/2"
                     onClick={goNext}
-                    aria-label="Foto successiva"
+                    aria-label={t('property.photos.next')}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>

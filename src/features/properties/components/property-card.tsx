@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,8 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
@@ -30,7 +33,7 @@ export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCar
           )}
           <div className="absolute top-2 right-2">
             <Badge variant={property.isActive ? 'success' : 'secondary'}>
-              {property.isActive ? 'Active' : 'Inactive'}
+              {property.isActive ? t('property.card.active') : t('property.card.inactive')}
             </Badge>
           </div>
         </div>
@@ -66,14 +69,14 @@ export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCar
         </div>
 
         <div className="text-lg font-bold">
-          {formatCurrency(property.nightlyRate, property.currency)} / night
+          {formatCurrency(property.nightlyRate, property.currency)} {t('property.card.perNight')}
         </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0 flex gap-2">
         {onView && (
           <Button variant="outline" className="flex-1" onClick={() => onView(property)}>
-            View
+            {t('property.card.view')}
           </Button>
         )}
         {onEdit && (

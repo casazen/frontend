@@ -1,4 +1,5 @@
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty } from '@/queries/use-public-org';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -12,6 +13,7 @@ interface PublicBookingContext {
  * Checkout shell — payment flow owned by spec-direct-checkout (US-002).
  */
 export function CheckoutPlaceholderPage() {
+  const { t } = useTranslation();
   const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const [searchParams] = useSearchParams();
@@ -32,24 +34,22 @@ export function CheckoutPlaceholderPage() {
       <Button asChild variant="ghost" className="px-0">
         <Link to={`/book/${orgSlug}/property/${propertyId}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Torna alla struttura
+          {t('publicBooking.backToProperty')}
         </Link>
       </Button>
 
-      <h2 className="text-2xl font-bold">Checkout — {property?.name ?? 'Struttura'}</h2>
+      <h2 className="text-2xl font-bold">{t('publicBooking.checkoutTitle', { propertyName: property?.name ?? 'Struttura' })}</h2>
 
       {checkIn && checkOut && (
         <p className="text-muted-foreground">
-          Date selezionate: {checkIn} → {checkOut}
+          {t('publicBooking.checkoutPlaceholderDates', { checkIn, checkOut })}
         </p>
       )}
 
       <div className="rounded-lg border bg-muted/40 p-6 space-y-3">
-        <p className="font-medium">Pagamento in arrivo</p>
+        <p className="font-medium">{t('publicBooking.checkoutPlaceholderPaymentComing')}</p>
         <p className="text-sm text-muted-foreground">
-          Il pagamento sicuro per {org.displayName} sarà disponibile dopo l&apos;attivazione di Stripe
-          Connect da parte dell&apos;operatore. Questa pagina accoglierà il flusso di checkout diretto
-          (spec-direct-checkout).
+          {t('publicBooking.checkoutPlaceholderDescription', { orgName: org.displayName })}
         </p>
       </div>
     </div>

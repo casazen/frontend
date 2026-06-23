@@ -1,25 +1,25 @@
 import { z } from 'zod';
 
 export const propertyFormSchema = z.object({
-  name: z.string().min(3, 'Name must be at least 3 characters').max(100, 'Name must be less than 100 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters').max(1000, 'Description must be less than 1000 characters'),
-  address: z.string().min(5, 'Address is required'),
-  city: z.string().min(2, 'City is required'),
-  country: z.string().min(2, 'Country is required'),
-  postalCode: z.string().min(3, 'Postal code is required'),  // ✅ Fixed: was zipCode
+  name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
+  description: z.string().min(10, 'property.validation.description.minLength').max(1000, 'property.validation.description.maxLength'),
+  address: z.string().min(5, 'property.validation.address.required'),
+  city: z.string().min(2, 'property.validation.city.required'),
+  country: z.string().min(2, 'property.validation.country.required'),
+  postalCode: z.string().min(3, 'property.validation.postalCode.required'),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  bedrooms: z.number().int().min(1, 'At least 1 bedroom is required').max(50),
-  bathrooms: z.number().min(0.5, 'At least 0.5 bathrooms required').max(20),
-  maxGuests: z.number().int().min(1, 'At least 1 guest capacity required').max(100),
-  nightlyRate: z.number().min(1, 'Price must be at least 1').max(100000),  // ✅ Fixed: was pricePerNight
+  bedrooms: z.number().int().min(1, 'property.validation.bedrooms.min').max(50),
+  bathrooms: z.number().min(0.5, 'property.validation.bathrooms.min').max(20),
+  maxGuests: z.number().int().min(1, 'property.validation.maxGuests.min').max(100),
+  nightlyRate: z.number().min(1, 'property.validation.nightlyRate.min').max(100000),
   currency: z.string(),
   amenities: z.array(z.string()),
-  photoUrls: z.array(z.string()),  // ✅ Fixed: was images
+  photoUrls: z.array(z.string()),
   isActive: z.boolean(),
   cinCode: z
     .string()
-    .regex(/^IT-\d{5}-\d{10}$/, 'Formato CIN: IT-XXXXX-XXXXXXXXXX')
+    .regex(/^IT-\d{5}-\d{10}$/, 'property.validation.cin.format')
     .optional()
     .or(z.literal('')),
 });
@@ -52,28 +52,5 @@ export const COMMON_AMENITIES = [
   'CarbonMonoxideDetector',
 ];
 
-// Human-readable display labels for UI checkboxes
-export const AMENITY_LABELS: Record<string, string> = {
-  WiFi: 'WiFi',
-  AirConditioning: 'Air Conditioning',
-  Heating: 'Heating',
-  Kitchen: 'Kitchen',
-  Washer: 'Washer',
-  Dryer: 'Dryer',
-  TV: 'TV',
-  FreeParking: 'Parking',
-  Pool: 'Pool',
-  HotTub: 'Hot Tub',
-  Gym: 'Gym',
-  Elevator: 'Elevator',
-  Balcony: 'Balcony',
-  Terrace: 'Terrace',
-  Garden: 'Garden',
-  BBQGrill: 'BBQ Grill',
-  Fireplace: 'Fireplace',
-  PetFriendly: 'Pet Friendly',
-  SmokeDetector: 'Smoke Detector',
-  FirstAidKit: 'First Aid Kit',
-  FireExtinguisher: 'Fire Extinguisher',
-  CarbonMonoxideDetector: 'Carbon Monoxide Detector',
-};
+// Amenity labels are now resolved via getAmenityLabel() from @/lib/i18n-labels
+// See amenity.{key} entries in locale JSONs

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
@@ -10,6 +11,7 @@ interface RevenueDashboardProps {
 }
 
 export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboardProps) {
+  const { t } = useTranslation();
   const rows = analytics.data ?? [];
   const chartData = rows.map((item) => ({
     period: item.period,
@@ -24,7 +26,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.totalRevenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -36,7 +38,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.totalBookings')}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -46,7 +48,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Booking Value</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.avgBookingValue')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -58,7 +60,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Periods</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.periods')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -70,8 +72,8 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
       {/* Revenue Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Revenue Over Time</CardTitle>
-          <CardDescription>Track your revenue performance by period</CardDescription>
+          <CardTitle>{t('payment.revenue.charts.revenueOverTime')}</CardTitle>
+          <CardDescription>{t('payment.revenue.charts.revenueOverTimeDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -88,7 +90,7 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
                 dataKey="revenue"
                 stroke="#3b82f6"
                 strokeWidth={2}
-                name="Revenue"
+                name={t('payment.revenue.charts.revenue')}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -98,8 +100,8 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
       {/* Bookings Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Bookings & Average Value</CardTitle>
-          <CardDescription>Number of bookings and average value per period</CardDescription>
+          <CardTitle>{t('payment.revenue.charts.bookingsAvgValue')}</CardTitle>
+          <CardDescription>{t('payment.revenue.charts.bookingsAvgValueDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -114,13 +116,13 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
                 yAxisId="left"
                 dataKey="bookings"
                 fill="#10b981"
-                name="Bookings"
+                name={t('payment.revenue.charts.bookings')}
               />
               <Bar
                 yAxisId="right"
                 dataKey="avgValue"
                 fill="#f59e0b"
-                name="Avg Value"
+                name={t('payment.revenue.charts.avgValue')}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -130,18 +132,18 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
       {/* Period Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Detailed Breakdown</CardTitle>
-          <CardDescription>Revenue breakdown by period</CardDescription>
+          <CardTitle>{t('payment.revenue.table.title')}</CardTitle>
+          <CardDescription>{t('payment.revenue.table.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2">Period</th>
-                  <th className="text-right py-2">Revenue</th>
-                  <th className="text-right py-2">Bookings</th>
-                  <th className="text-right py-2">Avg Value</th>
+                  <th className="text-left py-2">{t('payment.revenue.table.period')}</th>
+                  <th className="text-right py-2">{t('payment.revenue.table.revenue')}</th>
+                  <th className="text-right py-2">{t('payment.revenue.table.bookings')}</th>
+                  <th className="text-right py-2">{t('payment.revenue.table.avgValue')}</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ export function CheckInDialog({
   onConfirm,
   isLoading,
 }: CheckInDialogProps) {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -56,20 +58,22 @@ export function CheckInDialog({
 
   if (!booking) return null;
 
+  const guestName = `${booking.guest.firstName} ${booking.guest.lastName}`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Check In Guest</DialogTitle>
+            <DialogTitle>{t('booking.checkInDialog.title')}</DialogTitle>
             <DialogDescription>
-              Check in {booking.guest.firstName} {booking.guest.lastName}
+              {t('booking.checkInDialog.description', { name: guestName })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="actualCheckInTime">Check-in Time</Label>
+              <Label htmlFor="actualCheckInTime">{t('booking.checkInDialog.checkInTime')}</Label>
               <Input
                 id="actualCheckInTime"
                 type="datetime-local"
@@ -81,11 +85,11 @@ export function CheckInDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes">{t('booking.checkInDialog.notes')}</Label>
               <Textarea
                 id="notes"
                 {...register('notes')}
-                placeholder="Any notes about the check-in..."
+                placeholder={t('booking.checkInDialog.notesPlaceholder')}
                 rows={3}
               />
             </div>
@@ -93,10 +97,10 @@ export function CheckInDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              {t('booking.checkInDialog.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Checking In...' : 'Confirm Check In'}
+              {isLoading ? t('booking.checkInDialog.checkingIn') : t('booking.checkInDialog.confirm')}
             </Button>
           </DialogFooter>
         </form>

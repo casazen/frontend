@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -26,6 +27,7 @@ import { PricingPreviewSection } from './components/pricing-preview-section';
 const PAGE_SIZE = 20;
 
 export function PricingDashboardPage() {
+  const { t } = useTranslation();
   const { id: propertyId } = useParams<{ id: string }>();
 
   // History filters state
@@ -79,15 +81,15 @@ export function PricingDashboardPage() {
   }
 
   if (isLoadingConfig) {
-    return <LoadingScreen message="Loading pricing configuration..." />;
+    return <LoadingScreen message={t('pricing.dashboard.loading')} />;
   }
 
   return (
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          title="AI Dynamic Pricing"
-          description="Manage automated price adaptation and preview AI-suggested rates."
+          title={t('pricing.dashboard.title')}
+          description={t('pricing.dashboard.description')}
         />
 
         {/* Configuration + Preview */}
@@ -107,8 +109,8 @@ export function PricingDashboardPage() {
             {!config?.isEnabled ? (
               <EmptyState
                 icon={BrainCircuit}
-                title="AI pricing is disabled"
-                description="Enable AI dynamic pricing to see the 90-day price preview and let the engine optimise your nightly rates automatically."
+                title={t('pricing.dashboard.disabledTitle')}
+                description={t('pricing.dashboard.disabledDescription')}
               />
             ) : isLoadingPreview ? (
               <div className="space-y-4">
@@ -120,8 +122,8 @@ export function PricingDashboardPage() {
             ) : (
               <EmptyState
                 icon={BrainCircuit}
-                title="No preview available"
-                description="Run a pricing sync to generate the first 90-day price preview."
+                title={t('pricing.dashboard.noPreview')}
+                description={t('pricing.dashboard.noPreviewDescription')}
               />
             )}
           </div>
@@ -131,11 +133,11 @@ export function PricingDashboardPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Price Adaptation History</CardTitle>
+              <CardTitle>{t('pricing.dashboard.historyTitle')}</CardTitle>
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/properties/${propertyId}/pricing/history`}>
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  Full History
+                  {t('pricing.dashboard.fullHistory')}
                 </Link>
               </Button>
             </div>
@@ -143,7 +145,7 @@ export function PricingDashboardPage() {
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="history-from">From</Label>
+                <Label htmlFor="history-from">{t('pricing.dashboard.from')}</Label>
                 <Input
                   id="history-from"
                   type="date"
@@ -154,7 +156,7 @@ export function PricingDashboardPage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="history-to">To</Label>
+                <Label htmlFor="history-to">{t('pricing.dashboard.to')}</Label>
                 <Input
                   id="history-to"
                   type="date"

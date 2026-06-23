@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { checkinApi } from '@/api/checkin.api';
 import type { SubmitGuestCheckInRequest } from '@/types/alloggiati.types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const CHECKIN_KEY = 'checkin';
 
@@ -21,10 +22,10 @@ export function useSubmitGuestCheckIn(token: string) {
     mutationFn: (data: SubmitGuestCheckInRequest) => checkinApi.submitGuestData(token, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
-      toast.success('Dati registrati con successo');
+      toast.success(i18n.t('toast.checkInDataSaved'));
     },
     onError: () => {
-      toast.error('Impossibile salvare i dati. Verifica i campi e riprova.');
+      toast.error(i18n.t('toast.checkInDataSaveFailed'));
     },
   });
 }
@@ -36,10 +37,10 @@ export function useUploadCheckInDocument(token: string) {
     mutationFn: (file: File) => checkinApi.uploadDocument(token, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
-      toast.success('Documento caricato');
+      toast.success(i18n.t('toast.checkInDocumentUploaded'));
     },
     onError: () => {
-      toast.error('Caricamento documento non riuscito');
+      toast.error(i18n.t('toast.checkInDocumentUploadFailed'));
     },
   });
 }

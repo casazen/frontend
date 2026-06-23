@@ -14,6 +14,7 @@ describe('route-manifest nav helpers', () => {
     expect(primary.map((e) => e.path)).toEqual([
       '/app/short-rent',
       '/app/short-rent/bookings',
+      '/app/short-rent/bookings/calendar',
       '/app/short-rent/properties',
     ]);
   });

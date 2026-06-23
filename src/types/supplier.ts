@@ -33,3 +33,7 @@ export interface UpdateAvailabilityEntry {
   date: string;
   available: boolean;
 }
+
+export interface SupplierAvailabilityResponse {
+  dates: UpdateAvailabilityEntry[];
+}

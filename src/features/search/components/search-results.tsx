@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PropertySearchCard } from './property-search-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +12,8 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ properties, isLoading, onViewDetails }: SearchResultsProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -27,8 +30,8 @@ export function SearchResults({ properties, isLoading, onViewDetails }: SearchRe
     return (
       <EmptyState
         icon={Search}
-        title="No properties found"
-        description="Try adjusting your search filters to find more properties"
+        title={t('search.results.noProperties')}
+        description={t('search.results.noPropertiesDesc')}
       />
     );
   }

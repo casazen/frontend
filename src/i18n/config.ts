@@ -1,5 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { z } from 'zod';
+import { i18nZodErrorMap } from './zod-error-map';
 import it from './locales/it.json';
 import en from './locales/en.json';
 
@@ -29,5 +31,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: 'it',
   interpolation: { escapeValue: false },
 });
+
+z.setErrorMap(i18nZodErrorMap);
 
 export default i18n;

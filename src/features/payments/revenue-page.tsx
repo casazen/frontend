@@ -59,12 +59,12 @@ export function RevenuePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('revenue.filters', { defaultValue: 'Filtri' })}</CardTitle>
+            <CardTitle>{t('revenue.filters')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
               <div className="space-y-2">
-                <Label htmlFor="propertyId">{t('revenue.property', { defaultValue: 'Proprietà' })}</Label>
+                <Label htmlFor="propertyId">{t('revenue.property')}</Label>
                 <select
                   id="propertyId"
                   value={selectedPropertyId}
@@ -72,7 +72,7 @@ export function RevenuePage() {
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   {(properties ?? []).length === 0 ? (
-                    <option value="">{t('revenue.noProperties', { defaultValue: 'Nessuna proprietà' })}</option>
+                    <option value="">{t('revenue.noProperties')}</option>
                   ) : (
                     (properties ?? []).map((property) => (
                       <option key={property.id} value={property.id}>
@@ -84,7 +84,7 @@ export function RevenuePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="startDate">{t('revenue.startDate', { defaultValue: 'Data inizio' })}</Label>
+                <Label htmlFor="startDate">{t('revenue.startDate')}</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -94,7 +94,7 @@ export function RevenuePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endDate">{t('revenue.endDate', { defaultValue: 'Data fine' })}</Label>
+                <Label htmlFor="endDate">{t('revenue.endDate')}</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -104,17 +104,17 @@ export function RevenuePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="groupBy">{t('revenue.groupBy', { defaultValue: 'Raggruppa per' })}</Label>
+                <Label htmlFor="groupBy">{t('revenue.groupBy')}</Label>
                 <select
                   id="groupBy"
                   value={groupBy}
                   onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <option value="day">{t('revenue.period.day', { defaultValue: 'Giorno' })}</option>
-                  <option value="week">{t('revenue.period.week', { defaultValue: 'Settimana' })}</option>
-                  <option value="month">{t('revenue.period.month', { defaultValue: 'Mese' })}</option>
-                  <option value="year">{t('revenue.period.year', { defaultValue: 'Anno' })}</option>
+                  <option value="day">{t('revenue.period.day')}</option>
+                  <option value="week">{t('revenue.period.week')}</option>
+                  <option value="month">{t('revenue.period.month')}</option>
+                  <option value="year">{t('revenue.period.year')}</option>
                 </select>
               </div>
 
@@ -128,7 +128,7 @@ export function RevenuePage() {
                     setGroupBy('month');
                   }}
                 >
-                  {t('revenue.resetFilters', { defaultValue: 'Reimposta filtri' })}
+                  {t('revenue.resetFilters')}
                 </Button>
               </div>
             </div>
@@ -136,14 +136,14 @@ export function RevenuePage() {
         </Card>
 
         {isLoading ? (
-          <LoadingScreen message={t('revenue.loading', { defaultValue: 'Caricamento analisi...' })} />
+          <LoadingScreen message={t('revenue.loading')} />
         ) : analytics ? (
           <RevenueDashboard analytics={analytics} />
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground">
-                {t('revenue.empty', { defaultValue: 'Nessun dato ricavi disponibile' })}
+                {t('revenue.empty')}
               </p>
             </CardContent>
           </Card>

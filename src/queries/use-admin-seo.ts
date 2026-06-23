@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AdminSeoApi } from '@/api/admin-seo.api';
 import type { SeoGenerateRequest, SeoPagesQuery, UpdateSeoReviewStatusRequest } from '@/types/seo.types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 
 const ADMIN_SEO_KEY = 'admin-seo';
 
@@ -27,10 +28,10 @@ export function useApproveAllSeoDrafts() {
       AdminSeoApi.approveAllDrafts(counselApproved ?? true),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
-      toast.success(`${result.approvedCount} pagine approvate`);
+      toast.success(i18n.t('toast.seoApproved', { count: result.approvedCount }));
     },
     onError: () => {
-      toast.error('Impossibile approvare le bozze SEO');
+      toast.error(i18n.t('toast.seoApproveFailed'));
     },
   });
 }
@@ -49,10 +50,10 @@ export function useGenerateSeoPages() {
     mutationFn: (request: SeoGenerateRequest) => AdminSeoApi.generatePages(request),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
-      toast.success(`Job ${result.jobId} accodato (${result.estimatedPages} pagine stimate)`);
+      toast.success(i18n.t('toast.seoGenerated', { jobId: result.jobId, estimatedPages: result.estimatedPages }));
     },
     onError: () => {
-      toast.error('Impossibile avviare la rigenerazione SEO');
+      toast.error(i18n.t('toast.seoGenerateFailed'));
     },
   });
 }
@@ -70,10 +71,10 @@ export function useUpdateSeoReviewStatus() {
     }) => AdminSeoApi.updateReviewStatus(pageId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
-      toast.success('Stato revisione aggiornato');
+      toast.success(i18n.t('toast.seoReviewUpdated'));
     },
     onError: () => {
-      toast.error('Impossibile aggiornare lo stato revisione');
+      toast.error(i18n.t('toast.seoReviewUpdateFailed'));
     },
   });
 }

@@ -7,6 +7,7 @@ import type {
   PropertyDocumentType,
 } from '@/types';
 import { toast } from 'sonner';
+import i18n from '@/i18n/config';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
@@ -44,13 +45,13 @@ export function useCreateProperty() {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
       // Usage changed → plan badge / create gating must refetch (#202, AC8).
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
-      toast.success('Property created successfully');
+      toast.success(i18n.t('toast.propertyCreated'));
     },
     onError: (error: unknown) => {
       // Plan-limit (403/409) is surfaced as an Italian message + upgrade CTA by the call site
       // (create page inline alert / list dialog toast), so skip the generic error toast here.
       if (isPlanLimitError(error)) return;
-      toast.error('Failed to create property');
+      toast.error(i18n.t('toast.propertyCreateFailed'));
     },
   });
 }
@@ -65,10 +66,10 @@ export function useUpdateProperty() {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.id] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.id, 'detail'] });
-      toast.success('Property updated successfully');
+      toast.success(i18n.t('toast.propertyUpdated'));
     },
     onError: () => {
-      toast.error('Failed to update property');
+      toast.error(i18n.t('toast.propertyUpdateFailed'));
     },
   });
 }
@@ -80,10 +81,10 @@ export function useDeleteProperty() {
     mutationFn: (id: string) => propertiesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
-      toast.success('Property deleted successfully');
+      toast.success(i18n.t('toast.propertyDeleted'));
     },
     onError: () => {
-      toast.error('Failed to delete property');
+      toast.error(i18n.t('toast.propertyDeleteFailed'));
     },
   });
 }
@@ -119,10 +120,10 @@ export function useUploadPropertyDocument() {
     }) => propertiesApi.uploadDocument(propertyId, file, documentType),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
-      toast.success('Documento caricato con successo');
+      toast.success(i18n.t('toast.documentUploaded'));
     },
     onError: (error: Error & { response?: { data?: { error?: string } } }) => {
-      const message = error.response?.data?.error ?? 'Caricamento documento non riuscito';
+      const message = error.response?.data?.error ?? i18n.t('toast.documentUploadFailed');
       toast.error(message);
     },
   });
@@ -136,10 +137,10 @@ export function useDeletePropertyDocument() {
       propertiesApi.deleteDocument(propertyId, docId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
-      toast.success('Documento eliminato');
+      toast.success(i18n.t('toast.documentDeleted'));
     },
     onError: () => {
-      toast.error('Eliminazione documento non riuscita');
+      toast.error(i18n.t('toast.documentDeleteFailed'));
     },
   });
 }
