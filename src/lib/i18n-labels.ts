@@ -1,5 +1,6 @@
-import type { TFunction } from 'i18next';
 import type { BookingStatus } from '@/types';
+
+type TranslateFn = (key: string) => string;
 import { LOCALE_STORAGE_KEY, type AppLocale } from '@/i18n/config';
 import i18n from '@/i18n/config';
 
@@ -13,40 +14,40 @@ const BOOKING_STATUS_KEYS: Record<BookingStatus, string> = {
 
 export type OtaConnectionStatus = 'connected' | 'warning' | 'disconnected';
 
-export function getBookingStatusLabel(status: string, t: TFunction): string {
+export function getBookingStatusLabel(status: string, t: TranslateFn): string {
   const key = BOOKING_STATUS_KEYS[status as BookingStatus];
   return key ? t(key) : status;
 }
 
-export function getOtaConnectionStatusLabel(status: OtaConnectionStatus, t: TFunction): string {
+export function getOtaConnectionStatusLabel(status: OtaConnectionStatus, t: TranslateFn): string {
   return t(`ota.status.${status}`);
 }
 
-export function getAmenityLabel(amenity: string, t: TFunction): string {
+export function getAmenityLabel(amenity: string, t: TranslateFn): string {
   return t(`amenity.${amenity}`);
 }
 
-export function getAlloggiatiStatusLabel(status: string, t: TFunction): string {
+export function getAlloggiatiStatusLabel(status: string, t: TranslateFn): string {
   return t(`alloggiati.statusLabel.${status}`);
 }
 
-export function getPaymentStatusLabel(status: string, t: TFunction): string {
+export function getPaymentStatusLabel(status: string, t: TranslateFn): string {
   return t(`payment.status.${status}`);
 }
 
-export function getPaymentMethodLabel(method: string, t: TFunction): string {
+export function getPaymentMethodLabel(method: string, t: TranslateFn): string {
   return t(`payment.method.${method}`);
 }
 
-export function getDocumentTypeLabel(type: string, t: TFunction): string {
+export function getDocumentTypeLabel(type: string, t: TranslateFn): string {
   return t(`checkin.documentType.${type}`);
 }
 
-export function getGenderLabel(gender: string, t: TFunction): string {
+export function getGenderLabel(gender: string, t: TranslateFn): string {
   return t(`checkin.gender.${gender}`);
 }
 
-export function getCinStatusLabel(status: string, t: TFunction): string {
+export function getCinStatusLabel(status: string, t: TranslateFn): string {
   return t(`cin.status.${status}`);
 }
 
@@ -64,23 +65,23 @@ export function persistLocale(locale: AppLocale): void {
   localStorage.setItem(LOCALE_STORAGE_KEY, locale);
 }
 
-export function getFiscalRegimeLabel(regime: string, t: TFunction): string {
+export function getFiscalRegimeLabel(regime: string, t: TranslateFn): string {
   return t(`leases.fiscalRegimeLabel.${regime}`);
 }
 
-export function getLeaseStatusLabel(status: string, t: TFunction): string {
+export function getLeaseStatusLabel(status: string, t: TranslateFn): string {
   return t(`leases.statusLabel.${status}`);
 }
 
-export function getRegistrationStatusLabel(status: string, t: TFunction): string {
+export function getRegistrationStatusLabel(status: string, t: TranslateFn): string {
   return t(`leases.registrationStatusLabel.${status}`);
 }
 
-export function getOtaPlatformLabel(platform: string, t: TFunction): string {
+export function getOtaPlatformLabel(platform: string, t: TranslateFn): string {
   return t(`ota.platform.${platform}`);
 }
 
-export function getSyncStatusLabel(status: string, t: TFunction): string {
+export function getSyncStatusLabel(status: string, t: TranslateFn): string {
   return t(`ota.syncStatus.${status}`);
 }
 
