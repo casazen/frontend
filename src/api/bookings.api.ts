@@ -12,6 +12,9 @@ export const bookingsApi = {
   getAll: (params?: Record<string, any>) =>
     ApiClient.get<Booking[]>('/bookings', params),
 
+  getByGuestId: (guestId: string) =>
+    ApiClient.get<Booking[]>('/bookings', { guestId }),
+
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
 
   create: (data: CreateBookingDto) =>

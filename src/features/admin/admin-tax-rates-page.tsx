@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -98,7 +98,10 @@ export function AdminTaxRatesPage() {
         />
 
         <Card>
-          <CardContent className="pt-4">
+          <CardHeader>
+            <CardTitle>{t('taxRates.listTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent>
             {/* Loading State */}
             {isLoading && (
               <div className="flex items-center justify-center py-12">
