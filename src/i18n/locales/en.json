@@ -198,6 +198,7 @@
     "brandShort": "CASAZEN",
     "brandAdmin": "CASAZEN Admin",
     "brandSupplier": "CASAZEN Supplier",
+    "vetrina": "Showcase",
     "inviteSupplier": "Invite supplier",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendar",
@@ -211,6 +212,9 @@
       "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrations",
       "account": "Settings",
+      "reporting": "Reports",
+      "vetrina": "Showcase",
+      "operations": "Administration",
       "amministrazione": "Administration"
     }
   },
@@ -1323,6 +1327,14 @@
     "accountActiveMessage": "Your account can accept payments. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
     "managePlanIn": "Manage SaaS plan in",
     "planSettings": "Plan settings"
+  },
+  "vetrina": {
+    "title": "Showcase",
+    "description": "Your public booking site. See how your guests view your properties.",
+    "yourSite": "Your booking site",
+    "visitDescription": "Visit your public site to see how your guests experience it.",
+    "visitSite": "Visit {{siteName}}",
+    "noOrg": "Complete your organization setup to activate the public site."
   },
   "plan": {
     "unlimitedProperties": "Unlimited properties",

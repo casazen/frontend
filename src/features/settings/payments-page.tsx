@@ -2,7 +2,6 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useCurrentUser } from '@/queries/use-users';
 import { CONNECT_STATUS_KEY, useConnectStatus, useStartConnectOnboarding } from '@/queries/use-connect';
 import { resolveConnectUiStatus } from '@/types/connect.types';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,7 +12,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 export function ConnectPaymentsPage() {
   const { t } = useTranslation();
-  const { org } = useCurrentUser();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const stripeReturn = searchParams.get('stripe_return') === '1' || searchParams.get('stripe_refresh') === '1';
@@ -31,7 +29,6 @@ export function ConnectPaymentsPage() {
 
   const uiStatus = resolveConnectUiStatus(status);
   const hasRequirements = (status?.requirementsDue?.length ?? 0) > 0;
-  const bookingSiteUrl = org?.slug ? `/book/${org.slug}` : null;
 
   const STATUS_LABEL: Record<ReturnType<typeof resolveConnectUiStatus>, string> = {
     disconnected: t('settings.connectStatusDisconnected'),
@@ -52,24 +49,6 @@ export function ConnectPaymentsPage() {
           title={t('settings.connectPaymentsTitle')}
           description={t('settings.connectDescription')}
         />
-
-        {bookingSiteUrl && (
-          <div className="rounded-lg border bg-card p-6 space-y-3">
-            <div>
-              <p className="text-sm font-medium">{t('settings.yourBookingSite')}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t('settings.visitPublicSiteDescription')}
-              </p>
-            </div>
-            <Link
-              to={bookingSiteUrl}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
-            >
-              {t('settings.visitSite', { siteName: org?.name ?? 'il sito' })}
-              <ExternalLink className="h-4 w-4" />
-            </Link>
-          </div>
-        )}
 
         {!status?.chargesEnabled && (
           <div
