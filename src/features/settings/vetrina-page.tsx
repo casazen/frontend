@@ -15,8 +15,8 @@ export function VetrinaPage() {
     <AppShell>
       <div className="mx-auto max-w-3xl space-y-6">
         <PageHeader
-          title={t('vetrina.title')}
-          description={t('vetrina.description')}
+          title={t('directBooking.title')}
+          description={t('directBooking.description')}
         />
 
         {bookingSiteUrl ? (
@@ -27,15 +27,15 @@ export function VetrinaPage() {
                   <Globe className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <h3 className="font-semibold">{t('vetrina.yourSite')}</h3>
+                  <h3 className="font-semibold">{t('directBooking.yourSite')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {t('vetrina.visitDescription')}
+                    {t('directBooking.visitDescription')}
                   </p>
                   <Link
                     to={bookingSiteUrl}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
                   >
-                    {t('vetrina.visitSite', { siteName: org?.name ?? 'il sito' })}
+                    {t('directBooking.visitSite', { siteName: org?.name ?? 'il sito' })}
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 </div>
@@ -46,7 +46,7 @@ export function VetrinaPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <Globe className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">{t('vetrina.noOrg')}</p>
+              <p className="text-sm text-muted-foreground">{t('directBooking.noOrg')}</p>
             </CardContent>
           </Card>
         )}
