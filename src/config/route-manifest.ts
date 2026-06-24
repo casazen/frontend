@@ -459,12 +459,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-calendar-sync-page')).SupplierCalendarSyncPage }),
   },
   {
-    path: '/app/supplier/help/ical',
-    context: 'supplier',
-    requiredPermissions: [],
-    component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
-  },
-  {
     path: '/app/supplier/profile',
     context: 'supplier',
     requiredPermissions: [],

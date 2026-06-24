@@ -23,6 +23,7 @@ import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -159,6 +160,10 @@ export const router = createBrowserRouter([
   {
     path: '/supplier/*',
     element: <Navigate to="/app/supplier/inbox" replace />,
+  },
+  {
+    path: '/help/ical',
+    element: <IcalHelpPage />,
   },
   {
     element: (
