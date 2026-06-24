@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useSupplierProfile, useSupplierActivation, useUpdateSupplierProfile } from '@/queries/use-supplier';
-import { CheckCircle2, ArrowRight, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle2, ArrowRight, AlertTriangle, Pencil } from 'lucide-react';
 
 const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
 
@@ -34,6 +35,7 @@ function computeMissing(profile: { categories?: string[]; comuni?: string[]; bio
 export function SupplierDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth0();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: profile, isLoading: profileLoading } = useSupplierProfile();
   const { isLoading: activationLoading } = useSupplierActivation();
@@ -94,10 +96,15 @@ export function SupplierDashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title={t('supplier.dashboardTitle')}
-        description={t('supplier.dashboardDescription')}
-      />
+      <div className="flex items-start justify-between">
+        <PageHeader
+          title={t('supplier.dashboardTitle')}
+          description={t('supplier.dashboardDescription')}
+        />
+        <Button variant="outline" size="sm" className="mt-2 shrink-0" onClick={() => navigate('/app/supplier/profile')}>
+          <Pencil className="mr-1 h-4 w-4" /> {t('supplier.editProfile')}
+        </Button>
+      </div>
 
       {/* Incomplete profile warning + auto-popup wizard */}
       {!isLoading && missing && (
