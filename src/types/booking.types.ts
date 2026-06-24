@@ -13,6 +13,7 @@ export interface BookingGuest {
 export interface Booking {
   id: string;
   propertyId: string;
+  propertyName?: string;
   userId: string;
   checkInDate: string;
   checkOutDate: string;

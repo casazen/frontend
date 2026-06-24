@@ -48,16 +48,10 @@ export const paymentsApi = {
   getRevenue: async (params?: RevenueParams): Promise<RevenueAnalytics> => {
     const { propertyId, startDate, endDate } = params ?? {};
 
-    if (propertyId && startDate && endDate) {
-      const response = await ApiClient.get<RevenueResponse>('/payments/revenue', {
-        propertyId,
-        startDate,
-        endDate,
-      });
-      return mapRevenueResponseToAnalytics(response);
-    }
+    const queryParams: Record<string, any> = {};
+    if (propertyId) queryParams.propertyId = propertyId;
 
-    const payments = await ApiClient.get<Payment[]>('/payments');
+    const payments = await ApiClient.get<Payment[]>('/payments', queryParams);
     return buildRevenueAnalytics(payments ?? [], params);
   },
 };

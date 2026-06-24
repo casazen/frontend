@@ -3,7 +3,6 @@ export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 export type NavGroup =
   | 'operazioni'
   | 'immobili'
-  | 'finanza'
   | 'compliance'
   | 'integrazioni'
   | 'account'
@@ -31,7 +30,6 @@ export interface RouteManifestEntry {
 export const NAV_GROUP_ORDER: NavGroup[] = [
   'operazioni',
   'immobili',
-  'finanza',
   'compliance',
   'integrazioni',
   'account',
@@ -200,9 +198,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
     navKey: 'nav.payments',
-    navGroup: 'finanza',
+    navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 1,
+    navOrder: 3,
     icon: 'CreditCard',
     component: async () => ({ default: (await import('@/features/payments/payments-page')).PaymentsPage }),
     legacyPaths: ['/payments'],
@@ -219,9 +217,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
     navKey: 'nav.revenue',
-    navGroup: 'finanza',
+    navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 2,
+    navOrder: 4,
     icon: 'ChartColumn',
     component: async () => ({ default: (await import('@/features/payments/revenue-page')).RevenuePage }),
     legacyPaths: ['/payments/revenue'],
@@ -349,17 +347,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'UserPlus',
     component: async () => ({ default: (await import('@/features/admin/admin-supplier-invite-page')).AdminSupplierInvitePage }),
     legacyPaths: ['/admin/suppliers/invite'],
-  },
-  {
-    path: '/app/admin/compliance/cin',
-    context: 'admin',
-    requiredPermissions: ['admin.cin.read'],
-    navKey: 'nav.cin',
-    navGroup: 'compliance-audit',
-    navPlacement: 'primary',
-    navOrder: 1,
-    icon: 'FileCheck',
-    component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
   },
   {
     path: '/app/admin/jobs',

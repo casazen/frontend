@@ -210,7 +210,7 @@
       "compliance": "Conformità",
       "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrazioni",
-      "account": "Account e impostazioni",
+      "account": "Impostazioni",
       "amministrazione": "Amministrazione"
     }
   },
@@ -1428,7 +1428,8 @@
     "country": "Paese",
     "notes": "Note",
     "addressSection": "Indirizzo",
-    "noBookings": "Prenotazioni collegate a questo ospite. Utilizza la sezione Prenotazioni per maggiori dettagli.",
+    "noBookings": "Nessuna prenotazione",
+    "noBookingsDescription": "Questo ospite non ha ancora prenotazioni registrate nel sistema.",
     "documentType": "Tipo documento",
     "documentNumber": "Numero documento",
     "documentIssueDate": "Data rilascio",
@@ -1460,7 +1461,8 @@
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
-    "city": "Citta'",
+    "listTitle": "Elenco aliquote",
+    "city": "Città",
     "ratePerNight": "Tariffa per notte",
     "maxNights": "Notti massime",
     "region": "Regione",
