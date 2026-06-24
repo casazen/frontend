@@ -79,6 +79,7 @@ export function AdminTaxRatesPage() {
   const isFormLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
+    <>
     <div className="space-y-6">
         <PageHeader
           title={t('taxRates.title')}
@@ -243,5 +244,6 @@ export function AdminTaxRatesPage() {
         }}
         isLoading={deleteMutation.isPending}
       />
+    </>
   );
 }
