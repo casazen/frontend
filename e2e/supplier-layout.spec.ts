@@ -5,7 +5,7 @@ import { resetE2eStorage } from './helpers/locale';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
-    test('full activation: picks category, fills form, submits, lands on inbox', async ({ page }) => {
+    test('full activation: completes 2-step wizard, lands on dashboard', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page);
 
@@ -13,14 +13,16 @@ test.describe('Supplier layout standardization', () => {
       await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
       await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore/i })).toBeVisible();
 
+      // Step 1: categories + comuni
       await page.getByRole('button', { name: 'Pulizie' }).click();
       await page.getByLabel('Codici comune (separati da virgola)').fill('H501');
-      await page.getByLabel('Descrizione').fill('Servizi di pulizia professionali per affitti brevi.');
+      await page.getByRole('button', { name: /Continua/i }).click();
+
+      // Step 2: ToS + activate
       await page.getByLabel(/Accetto i termini di servizio/i).click();
       await page.getByRole('button', { name: 'Attiva profilo' }).click();
 
-      await expect(page).toHaveURL(/\/supplier\/inbox/, { timeout: 15_000 });
-      await expect(page.getByTestId('supplier-inbox-page')).toBeVisible();
+      await expect(page).toHaveURL(/\/app\/supplier\/dashboard/, { timeout: 15_000 });
     });
 
     test('inbox mobile viewport F1 smoke (#292)', async ({ page }) => {
@@ -29,9 +31,8 @@ test.describe('Supplier layout standardization', () => {
       await page.setViewportSize({ width: 375, height: 812 });
 
       await page.goto(demoUrl('/supplier/inbox', 'supplier'));
-      await expect(page.getByTestId('supplier-shell')).toBeVisible();
-      await expect(page.getByTestId('supplier-inbox-page')).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Inbox' })).toBeVisible();
+      await expect(page.getByTestId('supplier-inbox-page')).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('link', { name: /Richieste|Requests|Inbox/i })).toBeVisible();
     });
   });
   test.describe('Legacy redirect', () => {
@@ -61,10 +62,11 @@ test.describe('Supplier layout standardization', () => {
 
       const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
       await expect(sidebar).toBeVisible();
-      await expect(sidebar.getByRole('link', { name: /Inbox/i })).toBeVisible();
+      await expect(sidebar.getByRole('link', { name: /Dashboard/i })).toBeVisible();
+      await expect(sidebar.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
+      await expect(sidebar.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
-      await expect(sidebar.getByRole('link', { name: /Attivazione|Activation/i })).toBeVisible();
     });
 
     test('sidebar shows Fornitore subtitle', async ({ page }) => {
@@ -113,9 +115,10 @@ test.describe('Supplier layout standardization', () => {
 
       const bottomNav = page.getByRole('navigation', { name: 'Mobile navigation' });
       await expect(bottomNav).toBeVisible();
-      await expect(bottomNav.getByRole('link', { name: /Inbox/i })).toBeVisible();
+      await expect(bottomNav.getByRole('link', { name: /Dashboard/i })).toBeVisible();
+      await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
+      await expect(bottomNav.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
-      await expect(bottomNav.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
     });
 
     test('drawer opens from hamburger and shows secondary items', async ({ page }) => {
@@ -126,7 +129,7 @@ test.describe('Supplier layout standardization', () => {
       await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
       const drawer = page.getByRole('dialog');
       await expect(drawer).toBeVisible();
-      await expect(drawer.getByRole('link', { name: /Attivazione|Activation/i })).toBeVisible();
+      await expect(drawer.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
     });
 
     test('drawer closes on navigation', async ({ page }) => {
@@ -136,8 +139,8 @@ test.describe('Supplier layout standardization', () => {
 
       await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
       const drawer = page.getByRole('dialog');
-      await drawer.getByRole('link', { name: /Disponibilità|Availability/i }).click();
-      await expect(page).toHaveURL(/\/app\/supplier\/availability/);
+      await drawer.getByRole('link', { name: /Profilo|Profile/i }).click();
+      await expect(page).toHaveURL(/\/app\/supplier\/profile/);
       await expect(drawer).not.toBeVisible();
     });
   });

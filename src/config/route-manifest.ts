@@ -480,6 +480,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Inbox',
     component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),
   },
+  {
+    path: '/app/supplier/availability',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierAvailability',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'CalendarCheck',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;

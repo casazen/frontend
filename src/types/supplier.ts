@@ -37,3 +37,21 @@ export interface UpdateAvailabilityEntry {
 export interface SupplierAvailabilityResponse {
   dates: UpdateAvailabilityEntry[];
 }
+
+export interface CalendarSyncStatus {
+  calendarSyncType: string;
+  icalFeedUrl?: string | null;
+  calendarLastSyncAt?: string | null;
+  calendarSyncError?: string | null;
+}
+
+export interface SupplierDashboard {
+  profileCompletionPercent: number;
+  status: string;
+  totalJobs: number;
+  completedJobs: number;
+  upcomingJobs: number;
+  availabilityRate: number;
+  calendarSyncStatus: CalendarSyncStatus;
+  lastUpdated: string;
+}

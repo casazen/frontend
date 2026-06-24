@@ -14,9 +14,11 @@ import {
   useSupplierActivation,
   useSupplierProfile,
   useUpdateSupplierProfile,
+  useSetIcalFeed,
 } from '@/queries/use-supplier';
 import type { SupplierProfile } from '@/types/supplier';
-import { Calendar, Smartphone, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Calendar, Smartphone, CheckCircle2, ArrowRight, Link2, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
 
@@ -102,8 +104,14 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const completeActivation = useCompleteSupplierActivation();
+  const setIcalFeedMutation = useSetIcalFeed();
   const [tosAccepted, setTosAccepted] = useState(Boolean(profile.tosAcceptedAt));
   const [activating, setActivating] = useState(false);
+
+  // iCal dialog state
+  const [showIcalDialog, setShowIcalDialog] = useState(false);
+  const [icalUrl, setIcalUrl] = useState('');
+  const [savingIcal, setSavingIcal] = useState(false);
 
   const handleActivate = async () => {
     setActivating(true);
@@ -118,6 +126,20 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
     }
   };
 
+  const handleSaveIcal = async () => {
+    if (!icalUrl.trim()) return;
+    setSavingIcal(true);
+    try {
+      await setIcalFeedMutation.mutateAsync(icalUrl.trim());
+      toast.success(t('supplier.syncSuccess'));
+      setShowIcalDialog(false);
+    } catch {
+      toast.error(t('supplier.syncError'));
+    } finally {
+      setSavingIcal(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -128,33 +150,39 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
           <p className="text-sm text-muted-foreground">{t('supplier.calendarSyncDescription')}</p>
 
           <div className="grid gap-3">
-            <div className="flex items-start gap-3 rounded-md border p-3">
-              <Calendar className="mt-0.5 h-5 w-5 text-primary shrink-0" />
+            {/* Google Calendar — coming soon */}
+            <div className="flex items-start gap-3 rounded-md border p-3 opacity-60">
+              <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium">{t('supplier.googleCalendar')}</p>
                 <p className="text-xs text-muted-foreground">{t('supplier.googleCalendarHint')}</p>
-                <Button size="sm" variant="outline" className="mt-2" onClick={() => navigate('/app/supplier/calendar')}>
-                  {t('supplier.connectLater')}
+                <Button size="sm" variant="outline" className="mt-2" disabled>
+                  {t('supplier.comingSoon')}
                 </Button>
               </div>
             </div>
 
+            {/* iCal Feed — functional */}
             <div className="flex items-start gap-3 rounded-md border p-3">
-              <Calendar className="mt-0.5 h-5 w-5 text-primary shrink-0" />
+              <Link2 className="mt-0.5 h-5 w-5 text-primary shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium">{t('supplier.icalFeed')}</p>
                 <p className="text-xs text-muted-foreground">{t('supplier.icalFeedHint')}</p>
-                <Button size="sm" variant="outline" className="mt-2" onClick={() => navigate('/app/supplier/calendar')}>
-                  {t('supplier.connectLater')}
+                <Button size="sm" variant="outline" className="mt-2" onClick={() => { setIcalUrl(''); setShowIcalDialog(true); }}>
+                  {t('supplier.pasteIcalUrl')}
                 </Button>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 rounded-md border p-3">
-              <Smartphone className="mt-0.5 h-5 w-5 text-primary shrink-0" />
+            {/* WhatsApp — coming soon */}
+            <div className="flex items-start gap-3 rounded-md border p-3 opacity-60">
+              <Smartphone className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium">{t('supplier.whatsappOption')}</p>
                 <p className="text-xs text-muted-foreground">{t('supplier.whatsappHint')}</p>
+                <Button size="sm" variant="outline" className="mt-2" disabled>
+                  {t('supplier.comingSoon')}
+                </Button>
               </div>
             </div>
           </div>
@@ -181,6 +209,33 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
         </Button>
         <p className="text-xs text-muted-foreground">{t('supplier.completeLaterHint')}</p>
       </div>
+
+      {/* iCal Dialog */}
+      <Dialog open={showIcalDialog} onOpenChange={setShowIcalDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('supplier.icalFeedUrlTitle')}</DialogTitle>
+            <DialogDescription>{t('supplier.icalFeedUrlDescription')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <Input
+              value={icalUrl}
+              onChange={(e) => setIcalUrl(e.target.value)}
+              placeholder="https://calendar.google.com/calendar/ical/..."
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setShowIcalDialog(false)} disabled={savingIcal}>
+              {t('shared.cancel')}
+            </Button>
+            <Button onClick={() => void handleSaveIcal()} disabled={savingIcal || !icalUrl.trim()}>
+              {savingIcal && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('supplier.saveAndSync')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

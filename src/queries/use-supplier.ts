@@ -1,13 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   completeSupplierActivation,
+  fetchCalendarSyncStatus,
   fetchSupplierActivation,
   fetchSupplierAvailability,
+  fetchSupplierDashboard,
   fetchSupplierInbox,
   fetchSupplierProfile,
   inviteSupplier,
+  setIcalFeed,
   updateSupplierAvailability,
   updateSupplierProfile,
+  uploadSupplierPhotos,
 } from '@/services/supplier-api';
 import type { UpdateAvailabilityEntry } from '@/types/supplier';
 
@@ -75,5 +79,39 @@ export function useUpdateSupplierAvailability() {
 export function useInviteSupplier() {
   return useMutation({
     mutationFn: inviteSupplier,
+  });
+}
+
+export function useSupplierDashboard() {
+  return useQuery({
+    queryKey: ['supplier', 'dashboard'],
+    queryFn: fetchSupplierDashboard,
+  });
+}
+
+export function useCalendarSyncStatus() {
+  return useQuery({
+    queryKey: ['supplier', 'calendar-sync'],
+    queryFn: fetchCalendarSyncStatus,
+  });
+}
+
+export function useSetIcalFeed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: setIcalFeed,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier'] });
+    },
+  });
+}
+
+export function useUploadSupplierPhotos() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: uploadSupplierPhotos,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier', 'profile'] });
+    },
   });
 }

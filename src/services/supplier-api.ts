@@ -1,7 +1,9 @@
 import { ApiClient } from '@/api/client';
 import type {
   ActivationStatus,
+  CalendarSyncStatus,
   SupplierAvailabilityResponse,
+  SupplierDashboard,
   SupplierInboxResponse,
   SupplierProfile,
   UpdateAvailabilityEntry,
@@ -70,5 +72,26 @@ export async function registerSupplier(payload: {
   inviteToken?: string;
 }): Promise<{ orgId: string; authRedirectUrl: string }> {
   const { data } = await axios.post<{ orgId: string; authRedirectUrl: string }>('/suppliers/register', payload);
+  return data;
+}
+
+export async function fetchSupplierDashboard(): Promise<SupplierDashboard> {
+  return ApiClient.get<SupplierDashboard>('/supplier/dashboard');
+}
+
+export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {
+  return ApiClient.get<CalendarSyncStatus>('/supplier/calendar/status');
+}
+
+export async function setIcalFeed(icalFeedUrl: string): Promise<CalendarSyncStatus> {
+  return ApiClient.put<CalendarSyncStatus>('/supplier/calendar/ical', { icalFeedUrl });
+}
+
+export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: string[] }> {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('photos', file));
+  const { data } = await axios.post<{ urls: string[] }>('/supplier/profile/photos', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }
