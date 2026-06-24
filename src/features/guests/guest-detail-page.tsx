@@ -5,12 +5,25 @@ import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { EmptyState } from '@/components/shared/empty-state';
 import { GdprTab } from './components/gdpr-tab';
 import { guestsApi } from '@/api/guests.api';
-import { formatDate } from '@/lib/utils';
-import { ArrowLeft, RefreshCw, User, MapPin, FileText, Shield } from 'lucide-react';
+import { bookingsApi } from '@/api/bookings.api';
+import { formatDate, formatCurrency } from '@/lib/utils';
+import { getBookingStatusLabel } from '@/lib/i18n-labels';
+import { ArrowLeft, RefreshCw, User, MapPin, FileText, Shield, Calendar, Loader2 } from 'lucide-react';
+import type { Booking } from '@/types';
+
+const BOOKING_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+  Confirmed: 'default',
+  Pending: 'secondary',
+  CheckedIn: 'default',
+  CheckedOut: 'outline',
+  Cancelled: 'destructive',
+};
 
 type TabKey = 'anagrafica' | 'prenotazioni' | 'documenti' | 'gdpr';
 
@@ -38,6 +51,17 @@ export function GuestDetailPage() {
     queryFn: () => guestsApi.getById(id!),
     enabled: !!id,
   });
+
+  const {
+    data: guestBookings,
+    isLoading: bookingsLoading,
+  } = useQuery({
+    queryKey: ['bookings', { guestId: id }],
+    queryFn: () => bookingsApi.getByGuestId(id!),
+    enabled: !!id,
+  });
+
+  const bookings = guestBookings ?? [];
 
   if (isLoading) {
     return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
@@ -188,9 +212,51 @@ export function GuestDetailPage() {
               <CardTitle className="text-lg">{t('guests.bookings')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t('guests.noBookings')}
-              </p>
+              {bookingsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">{t('shared.loading.defaultMessage')}</span>
+                </div>
+              ) : bookings.length === 0 ? (
+                <EmptyState
+                  icon={Calendar}
+                  title={t('guests.noBookings')}
+                  description={t('guests.noBookingsDescription')}
+                />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.detail.propertyId')}</th>
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.list.columns.checkIn')}</th>
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.list.columns.checkOut')}</th>
+                        <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('booking.list.columns.total')}</th>
+                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.list.columns.status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookings.map((booking) => (
+                        <tr
+                          key={booking.id}
+                          className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                          onClick={() => navigate(`/app/short-rent/bookings/${booking.id}`)}
+                        >
+                          <td className="px-4 py-3 font-medium">{booking.propertyName ?? '—'}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatDate(booking.checkInDate)}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{formatDate(booking.checkOutDate)}</td>
+                          <td className="px-4 py-3 text-right font-medium">{formatCurrency(booking.totalPrice, booking.currency)}</td>
+                          <td className="px-4 py-3">
+                            <Badge variant={BOOKING_STATUS_VARIANT[booking.status] ?? 'secondary'}>
+                              {getBookingStatusLabel(booking.status)}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

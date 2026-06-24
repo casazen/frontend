@@ -16,6 +16,10 @@ const PLAN_TIERS = ['Starter', 'Pro', 'Scale'] as const;
 
 test.describe('Plan management (#202 extension)', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
     await mockPlansCatalog(page);
   });
 
@@ -24,6 +28,14 @@ test.describe('Plan management (#202 extension)', () => {
       await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
 
       await page.getByRole('button', { name: 'Scegli' }).first().click();
+
+      const checkboxes = page.getByTestId('onboarding-consents-step').getByRole('checkbox');
+      const cbCount = await checkboxes.count();
+      for (let i = 0; i < Math.min(cbCount, 4); i++) {
+        await checkboxes.nth(i).check();
+      }
+      await page.getByTestId('onboarding-consents-continue').click();
+
       await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
 
       await page.getByTestId(`plan-card-${tier}`).getByRole('button', { name: 'Seleziona' }).click();

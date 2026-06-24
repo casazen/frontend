@@ -1,27 +1,25 @@
-import axios from '@/lib/axios';
+import { ApiClient } from '@/api/client';
 import type {
   ActivationStatus,
+  CalendarSyncStatus,
   SupplierAvailabilityResponse,
+  SupplierDashboard,
   SupplierInboxResponse,
   SupplierProfile,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
+import axios from '@/lib/axios';
 
 export async function fetchSupplierActivation(): Promise<ActivationStatus> {
-  const { data } = await axios.get<ActivationStatus>('/supplier/profile/activation');
-  return data;
+  return ApiClient.get<ActivationStatus>('/supplier/profile/activation');
 }
 
 export async function completeSupplierActivation(tosAccepted: boolean): Promise<{ status: string }> {
-  const { data } = await axios.post<{ status: string }>('/supplier/profile/activation/complete', {
-    tosAccepted,
-  });
-  return data;
+  return ApiClient.post<{ status: string }>('/supplier/profile/activation/complete', { tosAccepted });
 }
 
 export async function fetchSupplierProfile(): Promise<SupplierProfile> {
-  const { data } = await axios.get<SupplierProfile>('/supplier/profile');
-  return data;
+  return ApiClient.get<SupplierProfile>('/supplier/profile');
 }
 
 export async function updateSupplierProfile(
@@ -31,8 +29,7 @@ export async function updateSupplierProfile(
     photoUrls?: string[];
   },
 ): Promise<SupplierProfile> {
-  const { data } = await axios.put<SupplierProfile>('/supplier/profile', payload);
-  return data;
+  return ApiClient.put<SupplierProfile>('/supplier/profile', payload);
 }
 
 export async function fetchSupplierInbox(status = 'open', page = 1, pageSize = 20): Promise<SupplierInboxResponse> {
@@ -75,5 +72,26 @@ export async function registerSupplier(payload: {
   inviteToken?: string;
 }): Promise<{ orgId: string; authRedirectUrl: string }> {
   const { data } = await axios.post<{ orgId: string; authRedirectUrl: string }>('/suppliers/register', payload);
+  return data;
+}
+
+export async function fetchSupplierDashboard(): Promise<SupplierDashboard> {
+  return ApiClient.get<SupplierDashboard>('/supplier/dashboard');
+}
+
+export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {
+  return ApiClient.get<CalendarSyncStatus>('/supplier/calendar/status');
+}
+
+export async function setIcalFeed(icalFeedUrl: string): Promise<CalendarSyncStatus> {
+  return ApiClient.put<CalendarSyncStatus>('/supplier/calendar/ical', { icalFeedUrl });
+}
+
+export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: string[] }> {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('photos', file));
+  const { data } = await axios.post<{ urls: string[] }>('/supplier/profile/photos', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }

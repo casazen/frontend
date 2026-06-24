@@ -75,18 +75,24 @@ export function useAuth() {
 
   const demoUser = useMemo(() => getDemoUser(), [typeof window !== 'undefined' ? window.location.href : '']);
 
+  const demoLogin = useCallback(() => console.log('Demo mode: login simulation'), []);
+  const demoGetAccessToken = useCallback(async () => 'demo-token', []);
+  const demoRefreshAccessToken = useCallback(async () => 'demo-token', []);
+  const demoLogoutToLogin = useCallback(() => window.location.replace('/login'), []);
+  const demoForceReauth = useCallback(() => window.location.replace('/login'), []);
+
   // In demo mode, return mock authentication state
   if (isDemoMode) {
     return {
       isLoading: false,
       isAuthenticated: true,
       user: demoUser,
-      login: () => console.log('Demo mode: login simulation'),
+      login: demoLogin,
       logout,
-      getAccessToken: async () => 'demo-token',
-      refreshAccessToken: async () => 'demo-token',
-      logoutToLogin: () => window.location.replace('/login'),
-      forceReauth: () => window.location.replace('/login'),
+      getAccessToken: demoGetAccessToken,
+      refreshAccessToken: demoRefreshAccessToken,
+      logoutToLogin: demoLogoutToLogin,
+      forceReauth: demoForceReauth,
     };
   }
 

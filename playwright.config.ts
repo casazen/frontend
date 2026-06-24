@@ -8,6 +8,7 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * @see https://playwright.dev/docs/test-configuration
  */
+const isLocalRun = process.env.E2E_LOCAL === '1';
 const isStagingRun = process.env.E2E_STAGING === '1';
 const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
 const isProdSmokeRun = process.env.E2E_PROD_SMOKE === '1';
@@ -48,6 +49,23 @@ export default defineConfig({
           },
         },
       ]
+    : isLocalRun
+    ? [
+        {
+          name: 'setup',
+          testMatch: /auth\.setup\.ts/,
+        },
+        {
+          name: 'local',
+          testMatch: /\/(property-staging|local-integration)\.spec\.ts/,
+          dependencies: ['setup'],
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+            storageState: 'e2e/.auth/long-term-user.json',
+          },
+        },
+      ]
     : isStagingRun
     ? [
         {
@@ -72,6 +90,7 @@ export default defineConfig({
             '**/property-staging.spec.ts',
             '**/api-regression-smoke.spec.ts',
             '**/vercel-deploy-smoke.spec.ts',
+            '**/local-integration.spec.ts',
           ],
           use: { ...devices['Desktop Chrome'] },
         },
@@ -79,6 +98,23 @@ export default defineConfig({
 
   webServer: isDeploySmokeRun || isProdSmokeRun
     ? undefined
+    : isLocalRun
+    ? {
+        command: 'npm run dev',
+        url: 'http://localhost:5173',
+        reuseExistingServer: true,
+        timeout: 120_000,
+        env: {
+          VITE_API_BASE_URL:
+            process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api',
+          VITE_AUTH0_DOMAIN:
+            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
+          VITE_AUTH0_CLIENT_ID:
+            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_AUDIENCE:
+            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
+        },
+      }
     : isStagingRun
     ? {
         command: 'npm run dev',

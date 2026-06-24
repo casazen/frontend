@@ -6,135 +6,187 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import {
   useCompleteSupplierActivation,
   useSupplierActivation,
   useSupplierProfile,
   useUpdateSupplierProfile,
+  useSetIcalFeed,
 } from '@/queries/use-supplier';
-import type { ActivationStatus, SupplierProfile } from '@/types/supplier';
+import type { SupplierProfile } from '@/types/supplier';
+import { Calendar, Smartphone, CheckCircle2, ArrowRight, Link2, Loader2 } from 'lucide-react';
+import { IcalHelpTooltip } from './components/ical-help-tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Biancheria', 'Giardinaggio'];
+const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
 
-interface SupplierActivationFormProps {
+interface Step1Props {
   profile: SupplierProfile;
-  activation: ActivationStatus;
+  onNext: () => void;
 }
 
-function SupplierActivationForm({ profile, activation }: SupplierActivationFormProps) {
+function Step1Registration({ profile, onNext }: Step1Props) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const updateProfile = useUpdateSupplierProfile();
-  const completeActivation = useCompleteSupplierActivation();
 
   const [categories, setCategories] = useState<string[]>(profile.categories ?? []);
-  const [comuni, setComuni] = useState((profile.comuni ?? []).join(', '));
-  const [bio, setBio] = useState(profile.bio ?? '');
-  const [tosAccepted, setTosAccepted] = useState(Boolean(profile.tosAcceptedAt));
+  const [comuneInput, setComuneInput] = useState((profile.comuni ?? []).join(', '));
+  const [saving, setSaving] = useState(false);
 
-  const toggleCategory = (category: string) => {
-    setCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
-    );
+  const toggleCategory = (c: string) => {
+    setCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
   };
 
-  const saveProfileFields = async () => {
-    await updateProfile.mutateAsync({
-      categories,
-      comuni: comuni
-        .split(',')
-        .map((c) => c.trim())
-        .filter(Boolean),
-      bio,
-    });
-    toast.success(t('supplier.progressSaved'));
-  };
-
-  const handleComplete = async () => {
+  const handleSaveAndNext = async () => {
+    setSaving(true);
     try {
-      await saveProfileFields();
-      await completeActivation.mutateAsync(tosAccepted);
-      toast.success(t('supplier.profileActivated'));
-      navigate('/supplier/inbox', { replace: true });
+      await updateProfile.mutateAsync({
+        categories,
+        comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
+      });
+      toast.success(t('supplier.progressSaved'));
+      onNext();
     } catch {
-      toast.error(t('supplier.completeAllSteps'));
+      toast.error(t('supplier.progressSaveError'));
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="space-y-6" data-testid="supplier-activation-page">
-      <PageHeader
-        title={t('supplier.activationTitle')}
-        description={t('supplier.activationDescription')}
-      />
-
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t('supplier.activationStatus')}</CardTitle>
+          <CardTitle>{t('supplier.step1Title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {(activation.steps ?? []).map((step) => (
-            <div key={step.id} className="flex items-start justify-between gap-3 rounded-md border p-3">
-              <div>
-                <p className="font-medium">{step.label}</p>
-                {step.blocker ? <p className="text-sm text-muted-foreground">{step.blocker}</p> : null}
-              </div>
-              <span className="text-xs uppercase text-muted-foreground">{step.status}</span>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>{t('supplier.serviceCategories')}</Label>
+            <p className="mb-2 text-xs text-muted-foreground">{t('supplier.categoriesHint')}</p>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_OPTIONS.map((category) => (
+                <Button
+                  key={category}
+                  type="button"
+                  size="sm"
+                  variant={categories.includes(category) ? 'default' : 'outline'}
+                  onClick={() => toggleCategory(category)}
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
-          ))}
+          </div>
+
+          <div>
+            <Label htmlFor="comuni">{t('supplier.operatingMunicipalities')}</Label>
+            <p className="mb-2 text-xs text-muted-foreground">{t('supplier.comuniHint')}</p>
+            <Input
+              id="comuni"
+              value={comuneInput}
+              onChange={(e) => setComuneInput(e.target.value)}
+              placeholder={t('supplier.comuniPlaceholder')}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('supplier.serviceCategories')}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS.map((category) => (
-            <Button
-              key={category}
-              type="button"
-              variant={categories.includes(category) ? 'default' : 'outline'}
-              onClick={() => toggleCategory(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </CardContent>
-      </Card>
+      <Button onClick={() => void handleSaveAndNext()} disabled={saving} className="w-full">
+        {t('supplier.continueToCalendar')} <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('supplier.operatingMunicipalities')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Label htmlFor="comuni">{t('supplier.municipalityCodesLabel')}</Label>
-          <Input
-            id="comuni"
-            value={comuni}
-            onChange={(e) => setComuni(e.target.value)}
-            placeholder="H501, F205"
-            className="mt-2"
-          />
-        </CardContent>
-      </Card>
+function Step2Calendar({ profile }: { profile: SupplierProfile }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const completeActivation = useCompleteSupplierActivation();
+  const setIcalFeedMutation = useSetIcalFeed();
+  const [tosAccepted, setTosAccepted] = useState(Boolean(profile.tosAcceptedAt));
+  const [activating, setActivating] = useState(false);
 
+  // iCal dialog state
+  const [showIcalDialog, setShowIcalDialog] = useState(false);
+  const [icalUrl, setIcalUrl] = useState('');
+  const [savingIcal, setSavingIcal] = useState(false);
+
+  const handleActivate = async () => {
+    setActivating(true);
+    try {
+      await completeActivation.mutateAsync(tosAccepted);
+      toast.success(t('supplier.profileActivated'));
+      navigate('/app/supplier/dashboard', { replace: true });
+    } catch {
+      toast.error(t('supplier.acceptTosFirst'));
+    } finally {
+      setActivating(false);
+    }
+  };
+
+  const handleSaveIcal = async () => {
+    if (!icalUrl.trim()) return;
+    setSavingIcal(true);
+    try {
+      await setIcalFeedMutation.mutateAsync(icalUrl.trim());
+      toast.success(t('supplier.syncSuccess'));
+      setShowIcalDialog(false);
+    } catch {
+      toast.error(t('supplier.syncError'));
+    } finally {
+      setSavingIcal(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t('supplier.professionalProfile')}</CardTitle>
+          <CardTitle>{t('supplier.step2Title')}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Label htmlFor="bio">{t('supplier.description')}</Label>
-          <textarea
-            id="bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className="mt-2 min-h-24 w-full rounded-md border px-3 py-2 text-sm"
-            placeholder={t('supplier.describeServicesPlaceholder')}
-          />
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">{t('supplier.calendarSyncDescription')}</p>
+
+          <div className="grid gap-3">
+            {/* Google Calendar — coming soon */}
+            <div className="flex items-start gap-3 rounded-md border p-3 opacity-60">
+              <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">{t('supplier.googleCalendar')}</p>
+                <p className="text-xs text-muted-foreground">{t('supplier.googleCalendarHint')}</p>
+                <Button size="sm" variant="outline" className="mt-2" disabled>
+                  {t('supplier.comingSoon')}
+                </Button>
+              </div>
+            </div>
+
+            {/* iCal Feed — functional */}
+            <div className="flex items-start gap-3 rounded-md border p-3">
+              <Link2 className="mt-0.5 h-5 w-5 text-primary shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">{t('supplier.icalFeed')}</p>
+                <p className="text-xs text-muted-foreground">{t('supplier.icalFeedHint')}</p>
+                <Button size="sm" variant="outline" className="mt-2" onClick={() => { setIcalUrl(''); setShowIcalDialog(true); }}>
+                  {t('supplier.pasteIcalUrl')}
+                </Button>
+              </div>
+            </div>
+
+            {/* WhatsApp — coming soon */}
+            <div className="flex items-start gap-3 rounded-md border p-3 opacity-60">
+              <Smartphone className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">{t('supplier.whatsappOption')}</p>
+                <p className="text-xs text-muted-foreground">{t('supplier.whatsappHint')}</p>
+                <Button size="sm" variant="outline" className="mt-2" disabled>
+                  {t('supplier.comingSoon')}
+                </Button>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -145,20 +197,50 @@ function SupplierActivationForm({ profile, activation }: SupplierActivationFormP
             checked={tosAccepted}
             onCheckedChange={(checked) => setTosAccepted(checked === true)}
           />
-          <Label htmlFor="tos" className="leading-relaxed">
+          <Label htmlFor="tos" className="leading-relaxed text-sm">
             {t('supplier.acceptTos')}
           </Label>
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap gap-3">
-        <Button type="button" variant="outline" onClick={() => void saveProfileFields()} disabled={updateProfile.isPending}>
-          {t('supplier.saveProgress')}
-        </Button>
-        <Button type="button" onClick={() => void handleComplete()} disabled={completeActivation.isPending}>
+      <div className="flex flex-col items-center gap-3">
+        <Button onClick={() => void handleActivate()} disabled={activating || !tosAccepted} className="w-full">
+          <CheckCircle2 className="mr-2 h-4 w-4" />
           {t('supplier.activateProfile')}
         </Button>
+        <p className="text-xs text-muted-foreground">{t('supplier.completeLaterHint')}</p>
       </div>
+
+      {/* iCal Dialog */}
+      <Dialog open={showIcalDialog} onOpenChange={setShowIcalDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('supplier.icalFeedUrlTitle')}</DialogTitle>
+            <DialogDescription>{t('supplier.icalFeedUrlDescription')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="flex items-center gap-1.5">
+              <Label className="text-sm font-medium">{t('supplier.icalFeedUrlLabel')}</Label>
+              <IcalHelpTooltip />
+            </div>
+            <Input
+              value={icalUrl}
+              onChange={(e) => setIcalUrl(e.target.value)}
+              placeholder="https://calendar.google.com/calendar/ical/..."
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setShowIcalDialog(false)} disabled={savingIcal}>
+              {t('shared.cancel')}
+            </Button>
+            <Button onClick={() => void handleSaveIcal()} disabled={savingIcal || !icalUrl.trim()}>
+              {savingIcal && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('supplier.saveAndSync')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -173,8 +255,23 @@ export function SupplierActivationPage() {
   }
 
   if (activation.status === 'Active') {
-    return <Navigate to="/supplier/inbox" replace />;
+    return <Navigate to="/app/supplier/dashboard" replace />;
   }
 
-  return <SupplierActivationForm key={profile.orgId} profile={profile} activation={activation} />;
+  const [step, setStep] = useState<'registration' | 'calendar'>('registration');
+
+  return (
+    <div className="max-w-lg mx-auto" data-testid="supplier-activation-page">
+      <PageHeader
+        title={t('supplier.activationTitle')}
+        description={t('supplier.activationNewDescription')}
+      />
+
+      {step === 'registration' ? (
+        <Step1Registration profile={profile} onNext={() => setStep('calendar')} />
+      ) : (
+        <Step2Calendar profile={profile} />
+      )}
+    </div>
+  );
 }

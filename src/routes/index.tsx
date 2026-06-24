@@ -19,8 +19,11 @@ import { PublicPropertyPage } from '@/features/public-booking/public-property-pa
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
+import { SupplierCheckInPage } from '@/pages/supplier-check-in';
+import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -131,6 +134,14 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: '/s/:slug',
+    element: <SupplierShowcasePage />,
+  },
+  {
+    path: '/check-in/:jobId',
+    element: <SupplierCheckInPage />,
+  },
+  {
     path: '/checkin/:token',
     element: <CheckInPage />,
   },
@@ -149,6 +160,10 @@ export const router = createBrowserRouter([
   {
     path: '/supplier/*',
     element: <Navigate to="/app/supplier/inbox" replace />,
+  },
+  {
+    path: '/help/ical',
+    element: <IcalHelpPage />,
   },
   {
     element: (

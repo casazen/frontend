@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PaymentCard } from './payment-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +26,8 @@ export function PaymentsList({
   onRefund,
   onAdd,
 }: PaymentsListProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -41,9 +44,9 @@ export function PaymentsList({
     return (
       <EmptyState
         icon={CreditCard}
-        title="No payments found"
-        description="Get started by creating your first payment"
-        action={onAdd ? { label: 'Add Payment', onClick: onAdd } : undefined}
+        title={t('payment.list.emptyTitle')}
+        description={t('payment.list.emptyDescription')}
+        action={onAdd ? { label: t('payment.list.addAction'), onClick: onAdd } : undefined}
       />
     );
   }

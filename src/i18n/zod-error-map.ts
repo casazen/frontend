@@ -1,19 +1,28 @@
 import { z } from 'zod';
-import i18n from './config';
+import type { i18n as I18nInstance } from 'i18next';
 
-/**
- * Custom Zod error map that resolves i18n keys at display time.
- * Schema validation messages use dot-notation keys (e.g. 'property.validation.name.minLength').
- * When the key resolves to something different than the raw string, the translation is used.
- * Otherwise, the raw message is returned as-is (handles non-i18n Zod default messages).
- */
-export const i18nZodErrorMap: z.ZodErrorMap = (issue, ctx) => {
+let _i18n: I18nInstance | null = null;
+
+export function setZodErrorMapI18n(i18n: I18nInstance): void {
+  _i18n = i18n;
+}
+
+function resolveI18nMessage(message: string): string {
+  if (!_i18n) return message;
+  const resolved = _i18n.t(message);
+  return resolved !== message ? resolved : message;
+}
+
+export const i18nZodErrorMap: z.ZodErrorMap = (issue) => {
   if (issue.message) {
-    const resolved = i18n.t(issue.message);
+    const resolved = resolveI18nMessage(issue.message);
     if (resolved !== issue.message) {
       return { message: resolved };
     }
     return { message: issue.message };
   }
-  return { message: ctx.defaultError };
+  if ('defaultError' in issue) {
+    return { message: (issue as Record<string, string>).defaultError };
+  }
+  return { message: 'Invalid input' };
 };

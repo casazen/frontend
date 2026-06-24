@@ -195,6 +195,14 @@
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "more": "Altro",
+    "brandShort": "CASAZEN",
+    "brandAdmin": "CASAZEN Admin",
+    "brandSupplier": "CASAZEN Fornitore",
+    "inviteSupplier": "Invita fornitore",
+    "supplierDashboard": "Dashboard",
+    "supplierCalendar": "Calendario",
+    "supplierInbox": "Richieste",
+    "supplierAvailability": "Disponibilità",
     "group": {
       "operazioni": "Operazioni",
       "immobili": "Immobili",
@@ -202,7 +210,7 @@
       "compliance": "Conformità",
       "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrazioni",
-      "account": "Account e impostazioni",
+      "account": "Impostazioni",
       "amministrazione": "Amministrazione"
     }
   },
@@ -223,7 +231,8 @@
     "mobileNavigation": "Navigazione mobile",
     "openMenu": "Apri menu di navigazione",
     "layerShortStay": "Affitti brevi",
-    "layerLongTerm": "Affitti lungo termine"
+    "layerLongTerm": "Affitti lungo termine",
+    "supplierSubtitle": "Fornitore"
   },
   "leases": {
     "pageTitle": "Contratti lungo termine",
@@ -252,6 +261,28 @@
     "initiating": "Avvio...",
     "initiateSigning": "Avvia firma",
     "timeline": "Cronologia",
+    "fiscalRegimeLabel": {
+      "CedolareSecca": "Cedolare secca",
+      "RegimeOrdinario": "Regime ordinario",
+      "CanoneConcordato": "Canone concordato",
+      "Altro": "Altro"
+    },
+    "statusLabel": {
+      "Draft": "Bozza",
+      "AwaitingSignature": "In attesa di firma",
+      "Signed": "Firmato",
+      "Registered": "Registrato",
+      "Terminated": "Terminato",
+      "Renewed": "Rinnovato",
+      "Cancelled": "Annullato"
+    },
+    "registrationStatusLabel": {
+      "Pending": "In attesa",
+      "SentToProvider": "Inviato al provider",
+      "Registered": "Registrato",
+      "Failed": "Fallito",
+      "Exempt": "Esente"
+    },
     "validation": {
       "firstName": {
         "required": "Il nome e' obbligatorio"
@@ -282,12 +313,52 @@
       "monthlyRent": {
         "positive": "Il canone mensile deve essere maggiore di zero"
       }
+    },
+    "createPageTitle": "Nuovo contratto",
+    "createPageDescription": "Definisci le parti del contratto e i termini — una bozza verrà salvata per la revisione",
+    "form": {
+      "propertyTermsTitle": "Immobile e termini",
+      "propertyTermsDescription": "Seleziona l'immobile e definisci i termini del contratto",
+      "propertyLabel": "Immobile *",
+      "selectProperty": "Seleziona un immobile",
+      "fiscalRegimeLabel": "Regime fiscale *",
+      "startDateLabel": "Data inizio *",
+      "endDateLabel": "Data fine *",
+      "monthlyRentLabel": "Canone mensile (€) *",
+      "landlordTitle": "Proprietario",
+      "landlordDescription": "Parte contraente — proprietario o rappresentante",
+      "tenantTitle": "Conduttore",
+      "tenantDescription": "Parte contraente — locatario",
+      "firstNameLabel": "Nome *",
+      "lastNameLabel": "Cognome *",
+      "fiscalCodeLabel": "Codice fiscale *",
+      "citizenshipLabel": "Cittadinanza (ISO) *",
+      "contactEmailLabel": "Email di contatto *",
+      "creating": "Creazione...",
+      "createDraft": "Crea bozza contratto",
+      "apeMissingError": "Un documento APE (certificato di prestazione energetica) deve essere caricato per questa proprietà prima di creare un contratto.",
+      "waitingDocuments": "Attendi la verifica dei documenti della proprietà."
     }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
     "pageDescription": "Monitora e analizza l'andamento dei ricavi",
-    "backToPayments": "Torna agli incassi"
+    "backToPayments": "Torna agli incassi",
+    "filters": "Filtri",
+    "property": "Proprieta'",
+    "noProperties": "Nessuna proprieta'",
+    "startDate": "Data inizio",
+    "endDate": "Data fine",
+    "groupBy": "Raggruppa per",
+    "period": {
+      "day": "Giorno",
+      "week": "Settimana",
+      "month": "Mese",
+      "year": "Anno"
+    },
+    "resetFilters": "Reimposta filtri",
+    "loading": "Caricamento analisi...",
+    "empty": "Nessun dato ricavi disponibile"
   },
   "dashboard": {
     "title": "Cruscotto",
@@ -394,7 +465,10 @@
         "guests": "Ospiti",
         "total": "Totale",
         "status": "Stato"
-      }
+      },
+      "emptyTitle": "Nessuna prenotazione trovata",
+      "emptyDescription": "Inizia creando la tua prima prenotazione",
+      "addAction": "Aggiungi prenotazione"
     },
     "detail": {
       "guestInformation": "Informazioni ospite",
@@ -603,6 +677,49 @@
       "cancel": "Annulla",
       "updating": "Aggiornamento...",
       "update": "Aggiorna prezzi"
+    },
+    "list": {
+      "emptyTitle": "Nessuna integrazione OTA",
+      "emptyDescription": "Connetti le tue proprietà alle piattaforme OTA per sincronizzare automaticamente le prenotazioni",
+      "addAction": "Aggiungi integrazione"
+    },
+    "card": {
+      "active": "Attiva",
+      "inactive": "Inattiva",
+      "lastSync": "Ultima sync",
+      "property": "Immobile: {{id}}",
+      "syncError": "Errore sync",
+      "neverSynced": "Mai sincronizzato",
+      "created": "Creato il {{date}}",
+      "syncNow": "Sincronizza ora",
+      "validate": "Valida"
+    },
+    "platform": {
+      "Airbnb": "Airbnb",
+      "AIRBNB": "Airbnb",
+      "BookingCom": "Booking.com",
+      "BOOKING_COM": "Booking.com",
+      "Expedia": "Expedia",
+      "EXPEDIA": "Expedia",
+      "Vrbo": "VRBO",
+      "VRBO": "VRBO",
+      "TripAdvisor": "TripAdvisor",
+      "TRIPADVISOR": "TripAdvisor",
+      "Agoda": "Agoda",
+      "AGODA": "Agoda"
+    },
+    "syncStatus": {
+      "Connected": "Connesso",
+      "Disconnected": "Disconnesso",
+      "Warning": "Attenzione",
+      "Pending": "In attesa",
+      "InProgress": "In corso",
+      "Completed": "Completato",
+      "Failed": "Fallito",
+      "SUCCESS": "Successo",
+      "FAILED": "Fallito",
+      "SYNCING": "In corso",
+      "WARNING": "Attenzione"
     }
   },
   "shared": {
@@ -626,8 +743,11 @@
     "demoBanner": {
       "message": "Modalita' demo - Nessuna autenticazione richiesta. Tutti i dati sono simulati."
     },
+    "confirm": "Conferma",
+    "cancel": "Annulla",
     "loading": {
-      "defaultMessage": "Caricamento..."
+      "defaultMessage": "Caricamento...",
+      "srOnly": "Caricamento..."
     },
     "userMenu": {
       "profile": "Profilo",
@@ -975,6 +1095,12 @@
     "profileDescription": "Account e dati visibili ai host nel picker",
     "professionalProfile": "Profilo professionale",
     "status": "Stato",
+    "statusActive": "Attivo",
+    "statusPending": "In attesa",
+    "visibleToHosts": "Visibile ai host nella ricerca",
+    "completeActivationHint": "Completa l'attivazione per essere visibile",
+    "noneSet": "Non impostato",
+    "welcomeBack": "Bentornato",
     "companyName": "Ragione sociale",
     "email": "Email",
     "phone": "Telefono",
@@ -990,9 +1116,45 @@
     "available": "Disponibile",
     "notAvailable": "Non disponibile",
     "saveAvailability": "Salva disponibilità",
+    "calendarSyncTitle": "Sincronizzazione Calendario",
+    "calendarSyncDescription": "Scegli come gestire la tua disponibilità. Zero sforzo dopo il setup iniziale.",
+    "googleCalendar": "Google Calendar",
+    "googleCalendarHint": "Collega il tuo Google Calendar in un click. Leggiamo solo quando sei occupato.",
+    "connectCalendar": "Collega calendario",
+    "icalFeed": "Apple / Outlook / Airbnb",
+    "icalFeedHint": "Incolla il link iCal del tuo calendario. Funziona con Apple, Outlook, Airbnb e Booking.",
+    "pasteIcalUrl": "Incolla link iCal",
+    "whatsappOption": "WhatsApp",
+    "whatsappHint": "Niente calendario? Ti mandiamo un messaggio ogni settimana. Rispondi con un tap.",
+    "enableWhatsapp": "Attiva WhatsApp",
+    "dashboardTitle": "Dashboard",
+    "dashboardDescription": "La tua operatività su CasaZen",
+    "incompleteProfile": "Profilo incompleto",
+    "incompleteProfileHint": "Completa il profilo per essere visibile a tutti gli host nella tua zona. Ci vogliono 2 minuti.",
+    "completeNow": "Completa ora",
+    "completeProfileTitle": "Completa il tuo profilo",
+    "completeProfileDescription": "Questi dettagli aiutano gli host a sceglierti. Il profilo non può rimanere incompleto.",
+    "saveAndContinue": "Salva e continua",
+    "editProfile": "Modifica profilo",
+    "saveProfile": "Salva profilo",
+    "vatNumber": "Partita IVA",
+    "photoUrls": "Foto",
+    "photoUrlsHint": "Un URL per riga. Le prime foto appariranno nella tua vetrina pubblica.",
+    "bio": "Descrizione",
     "activationLoading": "Caricamento attivazione...",
     "activationTitle": "Attivazione profilo fornitore",
+    "activationNewDescription": "Due minuti e sei operativo. Il resto puoi completarlo dopo.",
     "activationDescription": "Completa i 5 passaggi per comparire nel marketplace host",
+    "step1Title": "Cosa offri e dove?",
+    "step2Title": "Come gestisci la disponibilità?",
+    "continueToCalendar": "Continua",
+    "categoriesHint": "Scegli una o più categorie. Potrai aggiungerne altre dopo.",
+    "comuniHint": "Inserisci i nomi delle città dove operi, separati da virgola.",
+    "comuniPlaceholder": "es. Roma, Milano, Napoli",
+    "acceptTosFirst": "Devi accettare i termini di servizio",
+    "connectLater": "Configura dopo",
+    "completeLaterHint": "Potrai completare il profilo e aggiungere dettagli in qualsiasi momento dalla dashboard.",
+    "progressSaveError": "Impossibile salvare. Riprova.",
     "activationStatus": "Stato attivazione",
     "serviceCategories": "Categorie di servizio",
     "operatingMunicipalities": "Comuni di operatività",
@@ -1029,6 +1191,106 @@
       "complete": "Completa la registrazione",
       "existingAccount": "Hai già un account?",
       "login": "Accedi"
+    },
+    "completedJobs": "Lavori completati",
+    "totalJobsCount": "{{total}} incarichi totali",
+    "upcomingJobs": "Prossimi incarichi",
+    "availabilityRate": "Tasso disponibilità",
+    "profileCompleted": "Profilo completato",
+    "profileCompletion": "Profilo completo al {{percent}}%",
+    "calendarSyncStatus": "Stato calendario",
+    "notConnected": "Non connesso",
+    "lastSync": "Ultimo sync",
+    "manageSync": "Gestisci sync",
+    "goToActivation": "Vai all'attivazione",
+    "gettingStarted": "Primi passi",
+    "completeProfileCTA": "Completa il profilo",
+    "completeProfileCTAHint": "Aggiungi categorie, comuni e bio",
+    "setupCalendarCTA": "Configura il calendario",
+    "setupCalendarCTAHint": "Sincronizza la disponibilità in automatico",
+    "setAvailabilityCTA": "Disponibilità manuale",
+    "setAvailabilityCTAHint": "Imposta i giorni disponibili",
+    "comingSoon": "Presto disponibile",
+    "icalFeedUrlTitle": "Collega feed iCal",
+    "icalFeedUrlDescription": "Incolla l'URL del tuo calendario iCal. Supportiamo Apple Calendar, Outlook, Airbnb e Booking.com.",
+    "icalFeedUrlLabel": "URL feed iCal",
+    "saveAndSync": "Salva e sincronizza",
+    "syncSuccess": "Sincronizzazione avviata",
+    "syncError": "Errore durante la sincronizzazione",
+    "icalConnected": "Feed iCal connesso",
+    "editIcalUrl": "Modifica URL iCal",
+    "edit": "Modifica",
+    "syncStatusTitle": "Stato sincronizzazione",
+    "companyInfo": "Informazioni azienda",
+    "categoriesAndComuni": "Categorie e comuni",
+    "currentPhotos": "Foto esistenti",
+    "newPhotos": "Nuove foto",
+    "addPhotos": "Aggiungi foto",
+    "uploadPhotos": "Carica foto",
+    "photosUploaded": "Foto caricate",
+    "photosUploadError": "Errore durante il caricamento foto",
+    "maxPhotosError": "Massimo {{max}} foto consentite",
+    "photoCount": "{{current}}/{{max}} foto",
+    "photoGallery": "Galleria foto",
+    "noPhotos": "Nessuna foto caricata",
+    "help": {
+      "icalPageTitle": "Come collegare il calendario via iCal",
+      "icalPageDescription": "Istruzioni passo passo per esportare l'URL iCal dalle piattaforme più diffuse. Copia il link e incollalo nella pagina di sincronizzazione.",
+      "icalIntro": "Ogni piattaforma lo chiama in modo diverso: \"Esporta calendario\", \"Sincronizza calendari\", \"Indirizzo segreto iCal\". Trova il tuo qui sotto e incolla l'URL nel dialog di collegamento.",
+      "icalTooltipText": "Non sai dove trovare il link iCal? Scopri come esportarlo da Airbnb, Booking, Google Calendar e altre piattaforme.",
+      "icalTooltipCta": "Scopri come fare",
+      "icalTooltipLabel": "Aiuto iCal",
+      "backToSync": "Torna alla sincronizzazione calendario",
+      "airbnbTitle": "Airbnb",
+      "airbnbSteps": [
+        "Vai su Menu → Annunci e seleziona il tuo annuncio",
+        "Clicca su Disponibilità → Sincronizzazione calendari",
+        "Clicca su Esporta calendario",
+        "Copia l'URL sotto \"URL calendario (iCal)\"",
+        "Incollalo nel dialog iCal di CasaZen"
+      ],
+      "bookingTitle": "Booking.com",
+      "bookingSteps": [
+        "Accedi all'Extranet",
+        "Vai su Tariffe e Disponibilità → Calendario",
+        "Clicca su Esporta",
+        "Copia l'URL iCal mostrato nel popup",
+        "Incollalo nel dialog iCal di CasaZen"
+      ],
+      "vrboTitle": "VRBO",
+      "vrboSteps": [
+        "Vai su Dashboard → seleziona la tua proprietà",
+        "Clicca su Calendario → Importa/Esporta",
+        "Clicca su Esporta → copia l'URL iCal",
+        "Incollalo nel dialog iCal di CasaZen"
+      ],
+      "googleCalendarTitle": "Google Calendar",
+      "googleCalendarSteps": [
+        "Da computer: apri Google Calendar",
+        "Clicca sull'icona ingranaggio → Impostazioni",
+        "A sinistra, clicca sul nome del calendario",
+        "Scorri fino a \"Integra calendario\"",
+        "Copia l'URL \"Indirizzo segreto iCal\"",
+        "Incollalo nel dialog iCal di CasaZen"
+      ],
+      "appleCalendarTitle": "Apple Calendar",
+      "appleCalendarSteps": [
+        "Apri Calendario sul tuo Mac",
+        "Clic destro su un calendario nella barra laterale",
+        "Clicca su Condividi → Calendario pubblico",
+        "Copia il link mostrato",
+        "Incollalo nel dialog iCal di CasaZen"
+      ],
+      "outlookTitle": "Outlook",
+      "outlookSteps": [
+        "Apri Outlook sul web (outlook.office.com)",
+        "Vai su Calendario → Impostazioni (ingranaggio)",
+        "Clicca su Calendari condivisi → Pubblica calendario",
+        "Seleziona il calendario e il livello di permesso",
+        "Copia l'URL ICS",
+        "Incollalo nel dialog iCal di CasaZen"
+      ],
+      "syncFrequencyNote": "CasaZen sincronizza i feed iCal ogni 15 minuti. Le modifiche sul calendario esterno saranno visibili entro 15 minuti."
     }
   },
   "settings": {
@@ -1068,7 +1330,8 @@
     "upToProperties": "Fino a {{count}} proprietà",
     "currentPlan": "Piano attuale",
     "saving": "Salvataggio...",
-    "choosePlan": "Scegli piano"
+    "choosePlan": "Scegli piano",
+    "managePlan": "Gestisci piano"
   },
   "profile": {
     "title": "Il mio profilo",
@@ -1093,6 +1356,14 @@
     "copying": "Copia in corso...",
     "copyToken": "Copia token",
     "tokenPasteInstructions": "Incolla il token in Authorize (con o senza prefisso Bearer )."
+  },
+  "roles": {
+    "Admin": "Amministratore",
+    "PropertyOwner": "Proprietario",
+    "PropertyManager": "Property Manager",
+    "Guest": "Ospite",
+    "Staff": "Staff",
+    "LongTermLandlord": "Locatore lungo termine"
   },
   "alloggiati": {
     "loading": "Caricamento Alloggiati…",
@@ -1141,6 +1412,8 @@
     "notFound": "Ospite non trovato",
     "notFoundDescription": "L'ospite che stai cercando non esiste o non può essere caricato.",
     "retry": "Riprova",
+    "createdAt": "Data Creazione",
+    "viewDetails": "Dettagli",
     "backToGuests": "Torna agli ospiti",
     "name": "Nome",
     "email": "Email",
@@ -1155,7 +1428,8 @@
     "country": "Paese",
     "notes": "Note",
     "addressSection": "Indirizzo",
-    "noBookings": "Prenotazioni collegate a questo ospite. Utilizza la sezione Prenotazioni per maggiori dettagli.",
+    "noBookings": "Nessuna prenotazione",
+    "noBookingsDescription": "Questo ospite non ha ancora prenotazioni registrate nel sistema.",
     "documentType": "Tipo documento",
     "documentNumber": "Numero documento",
     "documentIssueDate": "Data rilascio",
@@ -1187,7 +1461,8 @@
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
-    "city": "Citta'",
+    "listTitle": "Elenco aliquote",
+    "city": "Città",
     "ratePerNight": "Tariffa per notte",
     "maxNights": "Notti massime",
     "region": "Regione",
@@ -1198,7 +1473,20 @@
     "delete": "Elimina aliquota",
     "description": "Aliquote fiscali comunali per la tassa di soggiorno",
     "loadError": "Impossibile caricare le aliquote fiscali.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "pageDescription": "Gestisci le aliquote della tassa di soggiorno per tutti i comuni",
+    "actions": "Azioni",
+    "editAction": "Modifica",
+    "deleteAction": "Elimina",
+    "saving": "Salvataggio...",
+    "update": "Aggiorna",
+    "createAction": "Crea",
+    "notes": "Note",
+    "minimumAge": "Età minima",
+    "effectiveTo": "Data fine validità",
+    "createDescription": "Inserisci i dettagli per la nuova aliquota fiscale.",
+    "editDescription": "Modifica i dettagli dell'aliquota esistente.",
+    "deleteDescription": "Confermi l'eliminazione dell'aliquota per {{city}}? Questa azione è reversibile (soft delete)."
   },
   "finance": {
     "payments": "Pagamenti",
@@ -1230,6 +1518,10 @@
     "CarbonMonoxideDetector": "Rilevatore CO2"
   },
   "cin": {
+    "pageTitle": "Conformità CIN",
+    "pageDescription": "Gestione codici identificativi nazionali — D.L. 145/2023",
+    "requestOnPortal": "Richiedi il CIN sul portale",
+    "bdsrPortal": "BDSR — Ministero del Turismo",
     "status": {
       "Valid": "Valido",
       "Missing": "Mancante",
@@ -1285,7 +1577,10 @@
         "method": "Metodo",
         "date": "Data",
         "status": "Stato"
-      }
+      },
+      "emptyTitle": "Nessun pagamento trovato",
+      "emptyDescription": "Inizia creando il tuo primo pagamento",
+      "addAction": "Aggiungi pagamento"
     },
     "detail": {
       "title": "Pagamento #",
@@ -1457,7 +1752,18 @@
     "country": "Paese di residenza",
     "gdprConsent": "Acconsento al trattamento dei miei dati personali per adempiere all'obbligo di comunicazione alla Questura (Art. 109 TULPS), in conformita' con l'informativa privacy dell'operatore.",
     "saving": "Salvataggio...",
-    "saveData": "Salva dati"
+    "saveData": "Salva dati",
+    "linkCopied": "Link copiato",
+    "emailSubject": "Check-in CasaZen",
+    "emailClientOpening": "Apertura client email...",
+    "generateLink": "Genera link",
+    "generateLinkDescription": "Genera un link di check-in da inviare all'ospite per la compilazione dei dati.",
+    "generateLinkHelper": "Clicca il pulsante per generare un link di check-in univoco.",
+    "enterGuestEmailHelper": "Inserisci l'email dell'ospite per inviare il link tramite il tuo client di posta.",
+    "close": "Chiudi",
+    "guestEmailPlaceholder": "ospite@esempio.com",
+    "generateError": "Impossibile generare il link di check-in. Riprova.",
+    "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen"
   },
   "publicBooking": {
     "payNow": "Paga ora",
@@ -1546,7 +1852,8 @@
     "checkoutPlaceholderPaymentComing": "Pagamento in arrivo",
     "checkoutPlaceholderDescription": "Il pagamento sicuro per {{orgName}} sara' disponibile dopo l'attivazione di Stripe Connect da parte dell'operatore. Questa pagina accogliera' il flusso di checkout diretto (spec-direct-checkout).",
     "gdprConsentText": "Acconsento al trattamento dei miei dati personali per la gestione della prenotazione, in conformita' con l'informativa privacy dell'operatore.",
-    "emailValidation": "Email non valido"
+    "emailValidation": "Email non valido",
+    "emailPlaceholder": "nome@esempio.com"
   },
   "publicSeo": {
     "notFound": "Pagina non trovata",
@@ -1674,5 +1981,91 @@
     "platformDescription": "Piattaforma gestione affitti brevi",
     "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
     "signInButton": "Accedi con Auth0"
+  },
+  "toast": {
+    "propertyCreated": "Immobile creato con successo",
+    "propertyCreateFailed": "Impossibile creare l'immobile",
+    "propertyUpdated": "Immobile aggiornato con successo",
+    "propertyUpdateFailed": "Impossibile aggiornare l'immobile",
+    "propertyDeleted": "Immobile eliminato con successo",
+    "propertyDeleteFailed": "Impossibile eliminare l'immobile",
+    "bookingCreated": "Prenotazione creata con successo",
+    "bookingCreateFailed": "Impossibile creare la prenotazione",
+    "bookingUpdated": "Prenotazione aggiornata con successo",
+    "bookingUpdateFailed": "Impossibile aggiornare la prenotazione",
+    "bookingDeleted": "Prenotazione eliminata con successo",
+    "bookingDeleteFailed": "Impossibile eliminare la prenotazione",
+    "guestCheckedIn": "Check-in effettuato con successo",
+    "checkInGuestFailed": "Impossibile completare il check-in",
+    "guestCheckedOut": "Check-out effettuato con successo",
+    "checkOutGuestFailed": "Impossibile completare il check-out",
+    "paymentCreated": "Pagamento creato con successo",
+    "paymentCreateFailed": "Impossibile creare il pagamento",
+    "paymentProcessed": "Pagamento elaborato con successo",
+    "paymentProcessFailed": "Impossibile elaborare il pagamento",
+    "paymentRefunded": "Rimborso effettuato con successo",
+    "paymentRefundFailed": "Impossibile effettuare il rimborso",
+    "otaIntegrationCreated": "Integrazione OTA creata con successo",
+    "otaIntegrationCreateFailed": "Impossibile creare l'integrazione OTA",
+    "otaIntegrationUpdated": "Integrazione OTA aggiornata con successo",
+    "otaIntegrationUpdateFailed": "Impossibile aggiornare l'integrazione OTA",
+    "otaIntegrationDeleted": "Integrazione OTA eliminata con successo",
+    "otaIntegrationDeleteFailed": "Impossibile eliminare l'integrazione OTA",
+    "otaSyncCompleted": "Sync OTA completato con successo",
+    "otaSyncFailed": "Sync OTA fallito",
+    "platformSynced": "Piattaforma sincronizzata con successo",
+    "platformSyncFailed": "Impossibile sincronizzare la piattaforma",
+    "otaPricingUpdated": "Prezzi OTA aggiornati con successo",
+    "otaPricingUpdateFailed": "Impossibile aggiornare i prezzi OTA",
+    "otaCredentialsValidated": "Credenziali OTA validate con successo",
+    "otaCredentialsValidationFailed": "Validazione credenziali OTA fallita",
+    "pricingConfigSaved": "Configurazione prezzi salvata con successo",
+    "pricingConfigSaveFailed": "Impossibile salvare la configurazione prezzi",
+    "pricingDisabled": "Pricing AI disattivato con successo",
+    "pricingDisableFailed": "Impossibile disattivare il pricing AI",
+    "pricingSyncStarted": "Sync prezzi avviato con successo",
+    "pricingSyncFailed": "Sync prezzi fallito",
+    "leaseDraftCreated": "Bozza contratto creata con successo",
+    "leaseCreateFailed": "Impossibile creare il contratto",
+    "signingInitiated": "Firma avviata con successo",
+    "signingInitiateFailed": "Impossibile avviare la firma",
+    "registrationSubmitted": "Registrazione inviata con successo",
+    "registrationSubmitFailed": "Impossibile inviare la registrazione",
+    "profileUpdated": "Profilo aggiornato con successo",
+    "profileUpdateFailed": "Impossibile aggiornare il profilo",
+    "roleUpdated": "Ruolo aggiornato con successo",
+    "roleUpdateFailed": "Impossibile aggiornare il ruolo",
+    "planUpdated": "Piano aggiornato con successo",
+    "planUpdateFailed": "Impossibile aggiornare il piano",
+    "userDeactivated": "Utente disattivato con successo",
+    "userDeactivateFailed": "Impossibile disattivare l'utente",
+    "cinCodeUpdated": "Codice CIN aggiornato con successo",
+    "cinCodeUpdateFailed": "Impossibile aggiornare il codice CIN",
+    "alloggiatiSent": "Comunicazione Alloggiati inviata con successo",
+    "alloggiatiSendFailed": "Impossibile inviare la comunicazione Alloggiati",
+    "checkInDataSaved": "Dati check-in salvati con successo",
+    "checkInDataSaveFailed": "Impossibile salvare i dati del check-in",
+    "checkInDocumentUploaded": "Documento check-in caricato con successo",
+    "checkInDocumentUploadFailed": "Impossibile caricare il documento check-in",
+    "documentUploaded": "Documento caricato con successo",
+    "documentUploadFailed": "Impossibile caricare il documento",
+    "documentDeleted": "Documento eliminato con successo",
+    "documentDeleteFailed": "Impossibile eliminare il documento",
+    "seoApproved": "{{count}} pagine SEO approvate con successo",
+    "seoApproveFailed": "Impossibile approvare le pagine SEO",
+    "seoGenerated": "Pagine SEO generate con successo",
+    "seoGenerateFailed": "Impossibile generare le pagine SEO",
+    "seoReviewUpdated": "Revisione SEO aggiornata con successo",
+    "seoReviewUpdateFailed": "Impossibile aggiornare la revisione SEO",
+    "orgPlanUpdated": "Piano organizzazione aggiornato con successo",
+    "orgPlanUpdateFailed": "Impossibile aggiornare il piano organizzazione",
+    "dataExported": "Dati esportati con successo",
+    "dataExportFailed": "Impossibile esportare i dati",
+    "dataAnonymized": "Dati anonimizzati con successo",
+    "dataAnonymizeFailed": "Impossibile anonimizzare i dati",
+    "dataDeleted": "Dati cancellati con successo",
+    "dataDeleteFailed": "Impossibile cancellare i dati",
+    "consentUpdated": "Consenso aggiornato con successo",
+    "consentUpdateFailed": "Impossibile aggiornare il consenso"
   }
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PropertyCard } from './property-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +22,8 @@ export function PropertiesList({
   onView,
   onAdd,
 }: PropertiesListProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -40,9 +43,9 @@ export function PropertiesList({
     return (
       <EmptyState
         icon={Home}
-        title="No properties found"
-        description="Get started by creating your first property listing"
-        action={onAdd ? { label: 'Add Property', onClick: onAdd } : undefined}
+        title={t('property.page.emptyTitle')}
+        description={t('property.page.emptyDescription')}
+        action={onAdd ? { label: t('property.page.emptyCta'), onClick: onAdd } : undefined}
       />
     );
   }

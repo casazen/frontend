@@ -36,11 +36,11 @@ export function OtaCard({ integration, onSync, onEdit, onDelete, onValidate }: O
             <span className="text-2xl">{platformIcon}</span>
             <div>
               <h3 className="font-semibold text-lg">{platformLabel}</h3>
-              <p className="text-xs text-muted-foreground">Property: {integration.propertyId.slice(0, 8)}</p>
+              <p className="text-xs text-muted-foreground">{t('ota.card.property', { id: integration.propertyId.slice(0, 8) })}</p>
             </div>
           </div>
           <Badge variant={integration.isActive ? 'success' : 'secondary'}>
-            {integration.isActive ? 'Active' : 'Inactive'}
+            {integration.isActive ? t('ota.card.active') : t('ota.card.inactive')}
           </Badge>
         </div>
       </CardHeader>
@@ -48,7 +48,7 @@ export function OtaCard({ integration, onSync, onEdit, onDelete, onValidate }: O
       <CardContent className="p-4 space-y-3">
         {integration.lastSyncAt && (
           <div>
-            <p className="text-sm text-muted-foreground">Last Sync</p>
+            <p className="text-sm text-muted-foreground">{t('ota.card.lastSync')}</p>
             <p className="font-medium text-sm">{formatDate(integration.lastSyncAt, 'PPp')}</p>
             {syncStatusConfig && (
               <Badge variant={syncStatusConfig.variant} className="mt-1">
@@ -63,7 +63,7 @@ export function OtaCard({ integration, onSync, onEdit, onDelete, onValidate }: O
             <div className="flex items-start gap-2">
               <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-destructive">Sync Error</p>
+                <p className="text-sm font-medium text-destructive">{t('ota.card.syncError')}</p>
                 <p className="text-xs text-destructive/80 mt-1">{integration.syncError}</p>
               </div>
             </div>
@@ -72,13 +72,13 @@ export function OtaCard({ integration, onSync, onEdit, onDelete, onValidate }: O
 
         {!integration.lastSyncAt && (
           <div className="text-sm text-muted-foreground">
-            Never synced
+            {t('ota.card.neverSynced')}
           </div>
         )}
 
         <div className="pt-2 border-t">
           <p className="text-xs text-muted-foreground">
-            Created {formatDate(integration.createdAt)}
+            {t('ota.card.created', { date: formatDate(integration.createdAt) })}
           </p>
         </div>
       </CardContent>
@@ -92,13 +92,13 @@ export function OtaCard({ integration, onSync, onEdit, onDelete, onValidate }: O
             className="flex-1"
           >
             <RefreshCw className="h-4 w-4 mr-1" />
-            Sync Now
+            {t('ota.card.syncNow')}
           </Button>
         )}
         {onValidate && (
           <Button variant="outline" size="sm" onClick={() => onValidate(integration)}>
             <CheckCircle className="h-4 w-4 mr-1" />
-            Validate
+            {t('ota.card.validate')}
           </Button>
         )}
         {onEdit && (

@@ -53,24 +53,20 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
 
   useEffect(() => {
     if (documentsLoaded && !hasApeDocument) {
-      setApeError(
-        'An APE (energy performance certificate) document must be uploaded for this property before creating a lease.'
-      );
+      setApeError(t('leases.form.apeMissingError'));
     } else {
       setApeError(null);
     }
-  }, [documentsLoaded, hasApeDocument]);
+  }, [documentsLoaded, hasApeDocument, t]);
 
   const handleFormSubmit = (values: LeaseFormValues) => {
     if (!documentsLoaded) {
-      setApeError('Please wait while property documents are being verified.');
+      setApeError(t('leases.form.waitingDocuments'));
       return;
     }
 
     if (!hasApeDocument) {
-      setApeError(
-        'An APE (energy performance certificate) document must be uploaded for this property before creating a lease.'
-      );
+      setApeError(t('leases.form.apeMissingError'));
       return;
     }
 
@@ -92,18 +88,18 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Property &amp; terms</CardTitle>
-          <CardDescription>Select the property and define lease terms</CardDescription>
+          <CardTitle>{t('leases.form.propertyTermsTitle')}</CardTitle>
+          <CardDescription>{t('leases.form.propertyTermsDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="propertyId">Property *</Label>
+            <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
             <select
               id="propertyId"
               {...register('propertyId')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <option value="">Select a property</option>
+              <option value="">{t('leases.form.selectProperty')}</option>
               {properties.map((property) => (
                 <option key={property.id} value={property.id}>
                   {property.name} — {property.city}
@@ -126,7 +122,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="fiscalRegime">Fiscal regime *</Label>
+            <Label htmlFor="fiscalRegime">{t('leases.form.fiscalRegimeLabel')}</Label>
             <select
               id="fiscalRegime"
               {...register('fiscalRegime')}
@@ -142,14 +138,14 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start date *</Label>
+              <Label htmlFor="startDate">{t('leases.form.startDateLabel')}</Label>
               <Input id="startDate" type="date" {...register('startDate')} />
               {errors.startDate && (
                 <p className="text-sm text-destructive">{errors.startDate.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endDate">End date *</Label>
+              <Label htmlFor="endDate">{t('leases.form.endDateLabel')}</Label>
               <Input id="endDate" type="date" {...register('endDate')} />
               {errors.endDate && (
                 <p className="text-sm text-destructive">{errors.endDate.message}</p>
@@ -158,7 +154,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="monthlyRent">Monthly rent (€) *</Label>
+            <Label htmlFor="monthlyRent">{t('leases.form.monthlyRentLabel')}</Label>
             <Input
               id="monthlyRent"
               type="number"
@@ -175,27 +171,27 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Landlord</CardTitle>
-          <CardDescription>Contract party — property owner or representative</CardDescription>
+          <CardTitle>{t('leases.form.landlordTitle')}</CardTitle>
+          <CardDescription>{t('leases.form.landlordDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <PartyFields prefix="landlord" register={register} errors={errors.landlord} />
+          <PartyFields prefix="landlord" register={register} errors={errors.landlord} t={t} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Tenant</CardTitle>
-          <CardDescription>Contract party — lessee</CardDescription>
+          <CardTitle>{t('leases.form.tenantTitle')}</CardTitle>
+          <CardDescription>{t('leases.form.tenantDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <PartyFields prefix="tenant" register={register} errors={errors.tenant} />
+          <PartyFields prefix="tenant" register={register} errors={errors.tenant} t={t} />
         </CardContent>
       </Card>
 
       <div className="flex justify-end gap-4">
         <Button type="submit" disabled={isLoading || isLoadingDocuments || !!apeError}>
-          {isLoading ? 'Creating…' : 'Create lease draft'}
+          {isLoading ? t('leases.form.creating') : t('leases.form.createDraft')}
         </Button>
       </div>
     </form>
@@ -206,36 +202,38 @@ function PartyFields({
   prefix,
   register,
   errors,
+  t,
 }: {
   prefix: 'landlord' | 'tenant';
   register: UseFormRegister<LeaseFormValues>;
   errors?: FieldErrors<LeaseFormValues['landlord']> | FieldErrors<LeaseFormValues['tenant']>;
+  t: (key: string) => string;
 }) {
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor={`${prefix}.firstName`}>First name *</Label>
+        <Label htmlFor={`${prefix}.firstName`}>{t('leases.form.firstNameLabel')}</Label>
         <Input id={`${prefix}.firstName`} {...register(`${prefix}.firstName`)} />
         {errors?.firstName && (
           <p className="text-sm text-destructive">{errors.firstName.message}</p>
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${prefix}.lastName`}>Last name *</Label>
+        <Label htmlFor={`${prefix}.lastName`}>{t('leases.form.lastNameLabel')}</Label>
         <Input id={`${prefix}.lastName`} {...register(`${prefix}.lastName`)} />
         {errors?.lastName && (
           <p className="text-sm text-destructive">{errors.lastName.message}</p>
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${prefix}.fiscalCode`}>Fiscal code *</Label>
+        <Label htmlFor={`${prefix}.fiscalCode`}>{t('leases.form.fiscalCodeLabel')}</Label>
         <Input id={`${prefix}.fiscalCode`} {...register(`${prefix}.fiscalCode`)} />
         {errors?.fiscalCode && (
           <p className="text-sm text-destructive">{errors.fiscalCode.message}</p>
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${prefix}.citizenship`}>Citizenship (ISO) *</Label>
+        <Label htmlFor={`${prefix}.citizenship`}>{t('leases.form.citizenshipLabel')}</Label>
         <Input
           id={`${prefix}.citizenship`}
           maxLength={2}
@@ -247,7 +245,7 @@ function PartyFields({
         )}
       </div>
       <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor={`${prefix}.contactEmail`}>Contact email *</Label>
+        <Label htmlFor={`${prefix}.contactEmail`}>{t('leases.form.contactEmailLabel')}</Label>
         <Input
           id={`${prefix}.contactEmail`}
           type="email"

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { BookingCard } from './booking-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +26,8 @@ export function BookingsList({
   onCheckOut,
   onAdd,
 }: BookingsListProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -41,9 +44,9 @@ export function BookingsList({
     return (
       <EmptyState
         icon={Calendar}
-        title="No bookings found"
-        description="Get started by creating your first booking"
-        action={onAdd ? { label: 'Add Booking', onClick: onAdd } : undefined}
+        title={t('booking.list.emptyTitle')}
+        description={t('booking.list.emptyDescription')}
+        action={onAdd ? { label: t('booking.list.addAction'), onClick: onAdd } : undefined}
       />
     );
   }

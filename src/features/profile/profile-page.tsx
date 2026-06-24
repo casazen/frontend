@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ProfileInfo } from './components/profile-info';
@@ -8,6 +9,7 @@ import { useUserRoles } from '@/hooks/use-user-roles';
 import { useMe } from '@/queries/use-users';
 
 export function ProfilePage() {
+  const { t } = useTranslation();
   const { isLoading, user } = useAuth();
   const roles = useUserRoles();
   const { data: profile, isLoading: profileLoading } = useMe();
@@ -35,8 +37,8 @@ export function ProfilePage() {
     <AppShell>
       <div className="space-y-6 max-w-3xl mx-auto">
         <PageHeader
-          title="My Profile"
-          description="View and manage your account information"
+          title={t('profile.title')}
+          description={t('profile.description')}
         />
 
         <ProfileInfo user={profileUser} />

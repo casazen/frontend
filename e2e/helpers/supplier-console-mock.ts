@@ -95,6 +95,66 @@ export async function mockSupplierConsoleApi(page: Page, options?: { active?: bo
       return;
     }
 
+    if (url.includes('/dashboard')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          profileCompletionPercent: active ? 100 : 40,
+          status: active ? 'Active' : 'Pending',
+          totalJobs: active ? 5 : 0,
+          completedJobs: active ? 3 : 0,
+          upcomingJobs: active ? 2 : 0,
+          availabilityRate: active ? 0.8 : 0,
+          calendarSyncStatus: {
+            calendarSyncType: 'None',
+            icalFeedUrl: null,
+            calendarLastSyncAt: null,
+            calendarSyncError: null,
+          },
+          lastUpdated: new Date().toISOString(),
+        }),
+      });
+      return;
+    }
+
+    if (url.includes('/calendar/status')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          calendarSyncType: 'None',
+          icalFeedUrl: null,
+          calendarLastSyncAt: null,
+          calendarSyncError: null,
+        }),
+      });
+      return;
+    }
+
+    if (url.includes('/calendar/ical') && method === 'PUT') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          calendarSyncType: 'ICalFeed',
+          icalFeedUrl: 'https://example.com/ical',
+          calendarLastSyncAt: new Date().toISOString(),
+          calendarSyncError: null,
+        }),
+      });
+      return;
+    }
+
+    if (url.includes('/profile/photos') && method === 'POST') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ urls: [...profile.photoUrls, '/uploads/suppliers/demo/photo1.jpg'] }),
+      });
+      return;
+    }
+
     await route.continue();
   });
 }

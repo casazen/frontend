@@ -102,7 +102,7 @@ export function GuestBookingsPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Input
-              placeholder="nome@esempio.com"
+              placeholder={t('publicBooking.emailPlaceholder')}
               type="email"
               disabled={isLoading}
               {...register('email')}

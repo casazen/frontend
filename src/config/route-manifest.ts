@@ -3,7 +3,6 @@ export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 export type NavGroup =
   | 'operazioni'
   | 'immobili'
-  | 'finanza'
   | 'compliance'
   | 'integrazioni'
   | 'account'
@@ -31,7 +30,6 @@ export interface RouteManifestEntry {
 export const NAV_GROUP_ORDER: NavGroup[] = [
   'operazioni',
   'immobili',
-  'finanza',
   'compliance',
   'integrazioni',
   'account',
@@ -200,9 +198,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
     navKey: 'nav.payments',
-    navGroup: 'finanza',
+    navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 1,
+    navOrder: 3,
     icon: 'CreditCard',
     component: async () => ({ default: (await import('@/features/payments/payments-page')).PaymentsPage }),
     legacyPaths: ['/payments'],
@@ -219,9 +217,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
     navKey: 'nav.revenue',
-    navGroup: 'finanza',
+    navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 2,
+    navOrder: 4,
     icon: 'ChartColumn',
     component: async () => ({ default: (await import('@/features/payments/revenue-page')).RevenuePage }),
     legacyPaths: ['/payments/revenue'],
@@ -351,17 +349,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/suppliers/invite'],
   },
   {
-    path: '/app/admin/compliance/cin',
-    context: 'admin',
-    requiredPermissions: ['admin.cin.read'],
-    navKey: 'nav.cin',
-    navGroup: 'compliance-audit',
-    navPlacement: 'primary',
-    navOrder: 1,
-    icon: 'FileCheck',
-    component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
-  },
-  {
     path: '/app/admin/jobs',
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],
@@ -426,6 +413,71 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Coins',
     component: async () => ({ default: (await import('@/features/admin/admin-tax-rates-page')).AdminTaxRatesPage }),
   },
+  // ============================================================
+  // Supplier console
+  // ============================================================
+  {
+    path: '/app/supplier/activation',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({ default: (await import('@/features/supplier/supplier-activation-page')).SupplierActivationPage }),
+  },
+  {
+    path: '/app/supplier/dashboard',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierDashboard',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 1,
+    icon: 'LayoutDashboard',
+    isDefault: true,
+    component: async () => ({ default: (await import('@/features/supplier/supplier-dashboard-page')).SupplierDashboardPage }),
+  },
+  {
+    path: '/app/supplier/calendar',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierCalendar',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 2,
+    icon: 'Calendar',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-calendar-sync-page')).SupplierCalendarSyncPage }),
+  },
+  {
+    path: '/app/supplier/profile',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.profile',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 1,
+    icon: 'User',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-profile-page')).SupplierProfilePage }),
+  },
+  {
+    path: '/app/supplier/inbox',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierInbox',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 3,
+    icon: 'Inbox',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),
+  },
+  {
+    path: '/app/supplier/availability',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierAvailability',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'CalendarCheck',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
@@ -446,7 +498,7 @@ function hasEntryPermission(
 
 export function getDefaultRoute(contextKey: AppContextKey): string {
   if (contextKey === 'supplier') {
-    return '/supplier/inbox';
+    return '/app/supplier/dashboard';
   }
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }

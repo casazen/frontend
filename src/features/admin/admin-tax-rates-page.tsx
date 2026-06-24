@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -83,7 +83,7 @@ export function AdminTaxRatesPage() {
       <div className="space-y-6">
         <PageHeader
           title={t('taxRates.title')}
-          description="Gestisci le aliquote della tassa di soggiorno per tutti i comuni"
+          description={t('taxRates.pageDescription')}
           action={
             <Button
               onClick={() => {
@@ -98,7 +98,10 @@ export function AdminTaxRatesPage() {
         />
 
         <Card>
-          <CardContent className="pt-4">
+          <CardHeader>
+            <CardTitle>{t('taxRates.listTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent>
             {/* Loading State */}
             {isLoading && (
               <div className="flex items-center justify-center py-12">
@@ -110,14 +113,14 @@ export function AdminTaxRatesPage() {
             {/* Error State */}
             {isError && !isLoading && (
               <div className="py-12 text-center">
-                <p className="text-destructive mb-4">Failed to load tax rates.</p>
+                <p className="text-destructive mb-4">{t('taxRates.loadError')}</p>
                 <Button
                   variant="outline"
                   onClick={() => refetch()}
                   disabled={isRefetching}
                 >
                   <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-                  Retry
+                  {t('taxRates.retry')}
                 </Button>
               </div>
             )}
@@ -160,7 +163,7 @@ export function AdminTaxRatesPage() {
                         {t('taxRates.effectiveFrom')}
                       </th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                        Azioni
+                        {t('taxRates.actions')}
                       </th>
                     </tr>
                   </thead>
@@ -190,7 +193,7 @@ export function AdminTaxRatesPage() {
                                 setEditingRate(rate);
                                 setFormOpen(true);
                               }}
-                              title="Modifica"
+                              title={t('taxRates.editAction')}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -198,7 +201,7 @@ export function AdminTaxRatesPage() {
                               variant="ghost"
                               size="icon"
                               onClick={() => setDeletingRate(rate)}
-                              title="Elimina"
+                              title={t('taxRates.deleteAction')}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -230,8 +233,8 @@ export function AdminTaxRatesPage() {
           if (!open) setDeletingRate(null);
         }}
         title={t('taxRates.delete')}
-        description={`Confermi l'eliminazione dell'aliquota per ${deletingRate?.city ?? ''}? Questa azione è reversibile (soft delete).`}
-        confirmLabel="Elimina"
+        description={t('taxRates.deleteDescription', { city: deletingRate?.city ?? '' })}
+        confirmLabel={t('taxRates.deleteAction')}
         variant="destructive"
         onConfirm={async () => {
           if (deletingRate) {
