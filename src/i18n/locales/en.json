@@ -1336,6 +1336,14 @@
     "visitSite": "Visit {{siteName}}",
     "noOrg": "Complete your organization setup to activate the public site."
   },
+  "directBooking": {
+    "title": "Direct Booking",
+    "description": "Your direct booking site. Share it with guests to receive commission-free OTA bookings.",
+    "yourSite": "Your booking site",
+    "visitDescription": "Visit your public site to see how your guests experience it.",
+    "visitSite": "Visit {{siteName}}",
+    "noOrg": "Complete your organization setup to activate the public site."
+  },
   "plan": {
     "unlimitedProperties": "Unlimited properties",
     "oneProperty": "1 property",

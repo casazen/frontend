@@ -199,6 +199,8 @@
     "brandAdmin": "CASAZEN Admin",
     "brandSupplier": "CASAZEN Fornitore",
     "vetrina": "Vetrina",
+    "directBooking": "Direct Booking",
+    "stripeConnect": "Configurazione Stripe",
     "inviteSupplier": "Invita fornitore",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
@@ -1331,6 +1333,14 @@
   "vetrina": {
     "title": "Vetrina",
     "description": "Il tuo sito di prenotazioni pubblico. Qui puoi vedere come appari ai tuoi ospiti.",
+    "yourSite": "Il tuo sito di prenotazioni",
+    "visitDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
+    "visitSite": "Visita {{siteName}}",
+    "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico."
+  },
+  "directBooking": {
+    "title": "Direct Booking",
+    "description": "Il tuo sito di prenotazioni diretto. Condividilo con i tuoi ospiti per ricevere prenotazioni senza commissioni OTA.",
     "yourSite": "Il tuo sito di prenotazioni",
     "visitDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
     "visitSite": "Visita {{siteName}}",

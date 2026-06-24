@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { AppShell } from '@/components/layout/app-shell';
+
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,8 +79,7 @@ export function AdminTaxRatesPage() {
   const isFormLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <PageHeader
           title={t('taxRates.title')}
           description={t('taxRates.pageDescription')}
@@ -244,6 +243,5 @@ export function AdminTaxRatesPage() {
         }}
         isLoading={deleteMutation.isPending}
       />
-    </AppShell>
   );
 }
