@@ -5,25 +5,7 @@ import type {
   CreatePaymentDto,
   RevenueParams,
   RevenueAnalytics,
-  RevenueResponse,
 } from '@/types';
-
-function mapRevenueResponseToAnalytics(response: RevenueResponse): RevenueAnalytics {
-  const period = `${response.startDate} — ${response.endDate}`;
-  return {
-    totalRevenue: response.revenue,
-    totalBookings: 0,
-    averageBookingValue: 0,
-    data: [
-      {
-        period,
-        revenue: response.revenue,
-        bookings: 0,
-        averageBookingValue: 0,
-      },
-    ],
-  };
-}
 
 export const paymentsApi = {
   getAll: (params?: Record<string, any>) =>
@@ -46,7 +28,7 @@ export const paymentsApi = {
   },
 
   getRevenue: async (params?: RevenueParams): Promise<RevenueAnalytics> => {
-    const { propertyId, startDate, endDate } = params ?? {};
+    const propertyId = params?.propertyId;
 
     const queryParams: Record<string, any> = {};
     if (propertyId) queryParams.propertyId = propertyId;

@@ -15,7 +15,6 @@ import { bookingsApi } from '@/api/bookings.api';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { ArrowLeft, RefreshCw, User, MapPin, FileText, Shield, Calendar, Loader2 } from 'lucide-react';
-import type { Booking } from '@/types';
 
 const BOOKING_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   Confirmed: 'default',
@@ -248,7 +247,7 @@ export function GuestDetailPage() {
                           <td className="px-4 py-3 text-right font-medium">{formatCurrency(booking.totalPrice, booking.currency)}</td>
                           <td className="px-4 py-3">
                             <Badge variant={BOOKING_STATUS_VARIANT[booking.status] ?? 'secondary'}>
-                              {getBookingStatusLabel(booking.status)}
+                              {getBookingStatusLabel(booking.status, t)}
                             </Badge>
                           </td>
                         </tr>
