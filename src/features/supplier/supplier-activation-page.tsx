@@ -18,6 +18,7 @@ import {
 } from '@/queries/use-supplier';
 import type { SupplierProfile } from '@/types/supplier';
 import { Calendar, Smartphone, CheckCircle2, ArrowRight, Link2, Loader2 } from 'lucide-react';
+import { IcalHelpTooltip } from './components/ical-help-tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
@@ -218,6 +219,10 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
             <DialogDescription>{t('supplier.icalFeedUrlDescription')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-2">
+            <div className="flex items-center gap-1.5">
+              <Label className="text-sm font-medium">{t('supplier.icalFeedUrlLabel')}</Label>
+              <IcalHelpTooltip />
+            </div>
             <Input
               value={icalUrl}
               onChange={(e) => setIcalUrl(e.target.value)}

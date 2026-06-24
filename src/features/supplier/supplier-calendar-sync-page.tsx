@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useCalendarSyncStatus, useSetIcalFeed } from '@/queries/use-supplier';
 import { Calendar, Link2, Smartphone, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { IcalHelpTooltip } from './components/ical-help-tooltip';
 
 export function SupplierCalendarSyncPage() {
   const { t } = useTranslation();
@@ -131,7 +132,10 @@ export function SupplierCalendarSyncPage() {
 
           <div className="space-y-4 mt-2">
             <div>
-              <Label htmlFor="ical-url">{t('supplier.icalFeedUrlLabel')}</Label>
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="ical-url">{t('supplier.icalFeedUrlLabel')}</Label>
+                <IcalHelpTooltip />
+              </div>
               <Input
                 id="ical-url"
                 className="mt-2"
