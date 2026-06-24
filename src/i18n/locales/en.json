@@ -1232,7 +1232,66 @@
     "maxPhotosError": "Maximum {{max}} photos allowed",
     "photoCount": "{{current}}/{{max}} photos",
     "photoGallery": "Photo gallery",
-    "noPhotos": "No photos uploaded"
+    "noPhotos": "No photos uploaded",
+    "help": {
+      "icalPageTitle": "How to connect your calendar via iCal",
+      "icalPageDescription": "Step-by-step instructions to export the iCal URL from the most popular platforms. Copy the link and paste it in the calendar sync page.",
+      "icalIntro": "Each platform calls it differently: \"Export calendar\", \"Sync calendars\", \"Secret iCal address\". Find yours below and paste the URL in the connection dialog.",
+      "icalTooltipText": "Don't know where to find your iCal link? See how to export it from Airbnb, Booking, Google Calendar and other platforms.",
+      "icalTooltipCta": "See how to do it",
+      "icalTooltipLabel": "iCal help",
+      "backToSync": "Back to calendar sync",
+      "airbnbTitle": "Airbnb",
+      "airbnbSteps": [
+        "Go to Menu → Listings and select your listing",
+        "Click Availability → Calendar sync",
+        "Click Export calendar",
+        "Copy the URL under \"Calendar URL (iCal)\"",
+        "Paste it in the CasaZen iCal dialog"
+      ],
+      "bookingTitle": "Booking.com",
+      "bookingSteps": [
+        "Log in to the Extranet",
+        "Go to Rates & Availability → Calendar",
+        "Click Export",
+        "Copy the iCal URL shown in the popup",
+        "Paste it in the CasaZen iCal dialog"
+      ],
+      "vrboTitle": "VRBO",
+      "vrboSteps": [
+        "Go to Dashboard → select your property",
+        "Click Calendar → Import/Export",
+        "Click Export → copy the iCal URL",
+        "Paste it in the CasaZen iCal dialog"
+      ],
+      "googleCalendarTitle": "Google Calendar",
+      "googleCalendarSteps": [
+        "On a computer: open Google Calendar",
+        "Click the gear icon → Settings",
+        "On the left, click the calendar name",
+        "Scroll to \"Integrate calendar\"",
+        "Copy the \"Secret iCal address\" URL",
+        "Paste it in the CasaZen iCal dialog"
+      ],
+      "appleCalendarTitle": "Apple Calendar",
+      "appleCalendarSteps": [
+        "Open Calendar on your Mac",
+        "Right-click a calendar in the sidebar",
+        "Click Share → Public Calendar",
+        "Copy the link shown",
+        "Paste it in the CasaZen iCal dialog"
+      ],
+      "outlookTitle": "Outlook",
+      "outlookSteps": [
+        "Open Outlook on the web (outlook.office.com)",
+        "Go to Calendar → Settings (gear icon)",
+        "Click Shared calendars → Publish calendar",
+        "Select the calendar and permission level",
+        "Copy the ICS URL",
+        "Paste it in the CasaZen iCal dialog"
+      ],
+      "syncFrequencyNote": "CasaZen syncs iCal feeds every 15 minutes. Changes made on the external calendar will appear within 15 minutes."
+    }
   },
   "settings": {
     "planTitle": "Your plan",
