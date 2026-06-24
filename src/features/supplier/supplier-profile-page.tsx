@@ -50,11 +50,11 @@ export function SupplierProfilePage() {
     try {
       await updateProfile.mutateAsync({
         legalName: legalName.trim() || undefined,
-        vatNumber: vatNumber.trim() || undefined,
+        vatNumber: vatNumber.trim(),
         phone: phone.trim() || undefined,
         categories,
         comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
-        bio: bio.trim() || undefined,
+        bio: bio.trim(),
         photoUrls: photoUrlsInput.split('\n').map((x) => x.trim()).filter(Boolean),
       });
       toast.success(t('supplier.progressSaved'));
