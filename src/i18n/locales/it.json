@@ -198,6 +198,7 @@
     "brandShort": "CASAZEN",
     "brandAdmin": "CASAZEN Admin",
     "brandSupplier": "CASAZEN Fornitore",
+    "vetrina": "Vetrina",
     "inviteSupplier": "Invita fornitore",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
@@ -211,6 +212,9 @@
       "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrazioni",
       "account": "Impostazioni",
+      "reporting": "Report",
+      "vetrina": "Vetrina",
+      "operations": "Amministrazione",
       "amministrazione": "Amministrazione"
     }
   },
@@ -1323,6 +1327,14 @@
     "accountActiveMessage": "Il tuo account può accettare pagamenti. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi.",
     "managePlanIn": "Gestisci il piano SaaS in",
     "planSettings": "Impostazioni piano"
+  },
+  "vetrina": {
+    "title": "Vetrina",
+    "description": "Il tuo sito di prenotazioni pubblico. Qui puoi vedere come appari ai tuoi ospiti.",
+    "yourSite": "Il tuo sito di prenotazioni",
+    "visitDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
+    "visitSite": "Visita {{siteName}}",
+    "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico."
   },
   "plan": {
     "unlimitedProperties": "Proprietà illimitate",

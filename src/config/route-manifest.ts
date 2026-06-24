@@ -6,6 +6,8 @@ export type NavGroup =
   | 'compliance'
   | 'integrazioni'
   | 'account'
+  | 'reporting'
+  | 'vetrina'
   | 'compliance-audit'
   | 'operations';
 
@@ -30,8 +32,10 @@ export interface RouteManifestEntry {
 export const NAV_GROUP_ORDER: NavGroup[] = [
   'operazioni',
   'immobili',
+  'reporting',
   'compliance',
   'integrazioni',
+  'vetrina',
   'account',
   'compliance-audit',
   'operations',
@@ -217,9 +221,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['payment.read'],
     navKey: 'nav.revenue',
-    navGroup: 'account',
+    navGroup: 'reporting',
     navPlacement: 'secondary',
-    navOrder: 4,
+    navOrder: 1,
     icon: 'ChartColumn',
     component: async () => ({ default: (await import('@/features/payments/revenue-page')).RevenuePage }),
     legacyPaths: ['/payments/revenue'],
@@ -248,6 +252,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['ota.write'],
     component: async () => ({ default: (await import('@/features/ota/ota-setup-page')).OtaSetupPage }),
     legacyPaths: ['/ota/create'],
+  },
+  {
+    path: '/app/short-rent/vetrina',
+    context: 'short-rent',
+    requiredPermissions: [],
+    navKey: 'nav.vetrina',
+    navGroup: 'vetrina',
+    navPlacement: 'secondary',
+    navOrder: 1,
+    icon: 'Globe',
+    component: async () => ({ default: (await import('@/features/settings/vetrina-page')).VetrinaPage }),
   },
   {
     path: '/app/short-rent/profile',
@@ -389,17 +404,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
-  },
-  // Tourist Tax
-  {
-    path: '/app/short-rent/compliance/tax-rates',
-    context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    navKey: 'nav.taxRates',
-    navGroup: 'compliance',
-    navPlacement: 'secondary',
-    icon: 'Coins',
-    component: async () => ({ default: (await import('@/features/tourist-tax/tourist-tax-page')).TouristTaxPage }),
   },
   // Admin Tax Rates
   {
