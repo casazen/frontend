@@ -1093,6 +1093,51 @@
       "nextPage": "Next page"
     }
   },
+  "serviceRequest": {
+    "requestSupplier": "Request supplier",
+    "requestDescription": "Send a service request to an active supplier in your property's area.",
+    "category": "Category",
+    "supplier": "Supplier",
+    "selectSupplier": "Select supplier",
+    "noSuppliers": "No active suppliers in this area.",
+    "urgency": "Urgency",
+    "urgencyNormal": "Normal",
+    "urgencyHigh": "High",
+    "urgencyEmergency": "Emergency",
+    "notes": "Notes",
+    "chargeToGuest": "Charge to guest (tracking only)",
+    "submit": "Send request",
+    "created": "Service request sent",
+    "createFailed": "Could not create service request",
+    "timelineTitle": "Supplier requests",
+    "markPaid": "Mark as paid",
+    "markedPaid": "Marked as paid",
+    "take": "Accept",
+    "complete": "Complete",
+    "reject": "Decline",
+    "rejectTitle": "Decline request",
+    "rejectReason": "Reason",
+    "taken": "Request accepted",
+    "completed": "Work completed",
+    "rejected": "Request declined",
+    "actionFailed": "Action failed",
+    "createdAt": "Created {{date}}",
+    "completedAt": "Completed {{date}}",
+    "categories": {
+      "cleaning": "Cleaning",
+      "maintenance": "Maintenance",
+      "plumbing": "Plumbing",
+      "laundry": "Laundry"
+    },
+    "status": {
+      "Richiesto": "Requested",
+      "PresoInCarico": "Accepted",
+      "InCorso": "In progress",
+      "Completato": "Completed",
+      "Pagato": "Paid",
+      "Rifiutato": "Declined"
+    }
+  },
   "supplier": {
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",

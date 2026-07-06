@@ -1095,6 +1095,51 @@
       "nextPage": "Pagina successiva"
     }
   },
+  "serviceRequest": {
+    "requestSupplier": "Richiedi fornitore",
+    "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
+    "category": "Categoria",
+    "supplier": "Fornitore",
+    "selectSupplier": "Seleziona fornitore",
+    "noSuppliers": "Nessun fornitore attivo in questa zona.",
+    "urgency": "Urgenza",
+    "urgencyNormal": "Normale",
+    "urgencyHigh": "Alta",
+    "urgencyEmergency": "Emergenza",
+    "notes": "Note",
+    "chargeToGuest": "Addebita all'ospite (solo tracciamento)",
+    "submit": "Invia richiesta",
+    "created": "Richiesta inviata",
+    "createFailed": "Impossibile creare la richiesta",
+    "timelineTitle": "Richieste fornitore",
+    "markPaid": "Segna pagato",
+    "markedPaid": "Segnato come pagato",
+    "take": "Presa in carico",
+    "complete": "Completa",
+    "reject": "Rifiuta",
+    "rejectTitle": "Rifiuta richiesta",
+    "rejectReason": "Motivo",
+    "taken": "Richiesta accettata",
+    "completed": "Lavoro completato",
+    "rejected": "Richiesta rifiutata",
+    "actionFailed": "Azione non riuscita",
+    "createdAt": "Creata {{date}}",
+    "completedAt": "Completata {{date}}",
+    "categories": {
+      "cleaning": "Pulizie",
+      "maintenance": "Manutenzione",
+      "plumbing": "Idraulico",
+      "laundry": "Lavanderia"
+    },
+    "status": {
+      "Richiesto": "Richiesto",
+      "PresoInCarico": "Preso in carico",
+      "InCorso": "In corso",
+      "Completato": "Completato",
+      "Pagato": "Pagato",
+      "Rifiutato": "Rifiutato"
+    }
+  },
   "supplier": {
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
