@@ -16,6 +16,10 @@ import { Edit, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { AlloggiatiStatusBadge } from '@/features/alloggiati/components/alloggiati-status-badge';
 import { ResendButton } from '@/features/alloggiati/components/resend-button';
+import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
+import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
+import { useProperty } from '@/queries/use-properties';
+import { useServiceRequests } from '@/queries/use-service-requests';
 
 type BookingTab = 'details' | 'guest' | 'payment' | 'alloggiati';
 
@@ -24,6 +28,10 @@ export function BookingDetailPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<BookingTab>('details');
   const { data: booking, isLoading } = useBooking(id!);
+  const { data: property } = useProperty(booking?.propertyId ?? '');
+  const { data: serviceRequests } = useServiceRequests(
+    booking ? { propertyId: booking.propertyId } : undefined,
+  );
   const { data: alloggiatiStatus } = useAlloggiatiStatus(id!);
   const { t } = useTranslation();
 
@@ -64,10 +72,19 @@ export function BookingDetailPage() {
           title={`Booking #${booking.id.slice(0, 8)}`}
           description={`${booking.guest.firstName} ${booking.guest.lastName}`}
           action={
-            <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              {t('booking.detailPage.editBooking')}
-            </Button>
+            <div className="flex gap-2">
+              {property?.city && (
+                <ServiceRequestForm
+                  propertyId={booking.propertyId}
+                  bookingId={booking.id}
+                  propertyCity={property.city}
+                />
+              )}
+              <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                {t('booking.detailPage.editBooking')}
+              </Button>
+            </div>
           }
         />
 
@@ -145,6 +162,7 @@ export function BookingDetailPage() {
             </div>
 
             <div className="space-y-6">
+              <ServiceRequestTimeline requests={serviceRequests?.items ?? []} />
               <Card>
                 <CardHeader>
                   <CardTitle>{t('booking.detailPage.timeline')}</CardTitle>

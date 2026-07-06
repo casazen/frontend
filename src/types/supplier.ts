@@ -25,7 +25,7 @@ export interface ActivationStatus {
 }
 
 export interface SupplierInboxResponse {
-  items: unknown[];
+  items: import('@/types/service-request').ServiceRequestSummary[];
   total: number;
 }
 
