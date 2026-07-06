@@ -1140,6 +1140,25 @@
       "Rifiutato": "Rifiutato"
     }
   },
+  "ical": {
+    "title": "Calendario OTA",
+    "description": "Importa il calendario Airbnb o Booking.com e condividi la disponibilità CasaZen via iCal.",
+    "importUrlLabel": "URL import (HTTPS)",
+    "importHint": "Incolla l'URL iCal dalla tua OTA. Serve aiuto?",
+    "helpLink": "Come trovare il link iCal",
+    "saveImport": "Salva e sincronizza",
+    "syncStatus": "Stato sincronizzazione",
+    "lastSync": "Ultima sync: {{date}}",
+    "neverSynced": "Mai sincronizzato",
+    "statusValue": "Stato: {{status}}",
+    "blockCount": "{{count}} periodi bloccati importati",
+    "exportUrlLabel": "URL export per le OTA",
+    "exportHint": "Incolla questo URL su Airbnb/Booking per esportare prenotazioni e blocchi CasaZen.",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "legendBooking": "Prenotazione",
+    "legendIcalBlock": "Blocco OTA (iCal)"
+  },
   "supplier": {
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",

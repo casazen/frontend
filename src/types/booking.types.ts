@@ -46,6 +46,7 @@ export interface BookingCalendarEvent {
   start: Date;
   end: Date;
   resource?: Booking;
+  eventType?: 'booking' | 'ical-block';
 }
 
 export interface CheckInDto {

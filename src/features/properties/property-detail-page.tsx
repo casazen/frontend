@@ -18,6 +18,7 @@ import { PropertyInfoCard } from './components/property-info-card';
 import { PropertyAmenitiesGrid } from './components/property-amenities-grid';
 import { PropertyDocumentsSection } from './components/property-documents-section';
 import { PropertyOtaSummary } from './components/property-ota-summary';
+import { IcalSettings } from './components/ical-settings';
 import { PropertyBookingsKpi } from './components/property-bookings-kpi';
 import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
 
@@ -175,6 +176,7 @@ export function PropertyDetailPage() {
 
         {activeTab === 'ota' && (
           <div className="space-y-6">
+            <IcalSettings propertyId={property.id} />
             <PropertyOtaSummary integrations={property.otaIntegrations} />
           </div>
         )}
