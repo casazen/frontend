@@ -20,6 +20,7 @@ import { ServiceRequestForm } from '@/features/service-requests/components/servi
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
 import { useProperty } from '@/queries/use-properties';
 import { useServiceRequests } from '@/queries/use-service-requests';
+import { CheckInSessionBadge } from './components/checkin-session-badge';
 
 type BookingTab = 'details' | 'guest' | 'payment' | 'alloggiati';
 
@@ -188,6 +189,10 @@ export function BookingDetailPage() {
               <CardTitle>{t('booking.detailPage.guestInformationTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="pb-3 border-b">
+                <div className="text-sm text-muted-foreground mb-2">{t('checkin.sessionLabel')}</div>
+                <CheckInSessionBadge bookingId={booking.id} />
+              </div>
               <div>
                 <div className="text-sm text-muted-foreground">{t('booking.detailPage.guestName')}</div>
                 <div className="font-medium">
