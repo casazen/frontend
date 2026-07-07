@@ -1,15 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { checkinApi } from '@/api/checkin.api';
-import type { SubmitGuestCheckInRequest } from '@/types/alloggiati.types';
+import { publicCheckinApi } from '@/api/checkin.api';
+import { bookingsApi } from '@/api/bookings.api';
+import type { PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 
 const CHECKIN_KEY = 'checkin';
+const CHECKIN_SESSION_KEY = 'checkin-session';
 
 export function useCheckInContext(token: string) {
   return useQuery({
     queryKey: [CHECKIN_KEY, token],
-    queryFn: () => checkinApi.getContext(token),
+    queryFn: () => publicCheckinApi.getContext(token),
     enabled: !!token,
     retry: 1,
   });
@@ -19,7 +21,7 @@ export function useSubmitGuestCheckIn(token: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: SubmitGuestCheckInRequest) => checkinApi.submitGuestData(token, data),
+    mutationFn: (data: PublicCheckInSubmitRequest) => publicCheckinApi.submit(token, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
       toast.success(i18n.t('toast.checkInDataSaved'));
@@ -30,17 +32,25 @@ export function useSubmitGuestCheckIn(token: string) {
   });
 }
 
-export function useUploadCheckInDocument(token: string) {
+export function useBookingCheckInSession(bookingId: string) {
+  return useQuery({
+    queryKey: [CHECKIN_SESSION_KEY, bookingId],
+    queryFn: () => bookingsApi.getCheckInSession(bookingId),
+    enabled: !!bookingId,
+  });
+}
+
+export function useResendCheckInLink(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (file: File) => checkinApi.uploadDocument(token, file),
+    mutationFn: () => bookingsApi.resendCheckInLink(bookingId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
-      toast.success(i18n.t('toast.checkInDocumentUploaded'));
+      queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+      toast.success(i18n.t('checkin.resendSuccess'));
     },
     onError: () => {
-      toast.error(i18n.t('toast.checkInDocumentUploadFailed'));
+      toast.error(i18n.t('checkin.resendError'));
     },
   });
 }
