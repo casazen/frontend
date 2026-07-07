@@ -14,26 +14,31 @@ export function VetrinaPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-4xl space-y-6">
-        <PageHeader
-          title={t('directBooking.title')}
-          description={t('directBooking.description')}
-        />
-
-        {bookingSitePath ? (
-          <div className="space-y-6">
-            <VetrinaUrlCopy bookingSitePath={bookingSitePath} />
-            <VetrinaPreviewPanel bookingSitePath={bookingSitePath} />
+      {bookingSitePath ? (
+        <div className="-m-4 flex min-h-[calc(100svh-9rem)] flex-col overflow-hidden max-md:min-h-[calc(100svh-9rem-var(--bottom-nav-height))] md:-m-6 md:min-h-[calc(100svh-5.5rem)]">
+          <div className="shrink-0 space-y-4 border-b bg-background px-4 py-4 md:px-6">
+            <PageHeader
+              title={t('directBooking.title')}
+              description={t('directBooking.description')}
+            />
+            <VetrinaUrlCopy bookingSitePath={bookingSitePath} variant="inline" />
           </div>
-        ) : (
-          <Card>
+          <VetrinaPreviewPanel bookingSitePath={bookingSitePath} />
+        </div>
+      ) : (
+        <div className="mx-auto max-w-3xl">
+          <PageHeader
+            title={t('directBooking.title')}
+            description={t('directBooking.description')}
+          />
+          <Card className="mt-6">
             <CardContent className="py-12 text-center">
               <Globe className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t('directBooking.noOrg')}</p>
             </CardContent>
           </Card>
-        )}
-      </div>
+        </div>
+      )}
     </AppShell>
   );
 }
