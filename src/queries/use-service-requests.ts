@@ -5,6 +5,7 @@ import {
   fetchServiceRequest,
   fetchServiceRequests,
   fetchSuppliersByComune,
+  fetchSuppliersByProperty,
   markServiceRequestPaid,
   matchSupplier,
   rejectServiceRequest,
@@ -50,6 +51,14 @@ export function useSuppliersByComune(comune?: string, category?: string) {
     queryKey: ['suppliers', comune, category],
     queryFn: () => fetchSuppliersByComune(comune!, category),
     enabled: !!comune,
+  });
+}
+
+export function useSuppliersByProperty(propertyId?: string, category?: string) {
+  return useQuery({
+    queryKey: ['suppliers', 'property', propertyId, category],
+    queryFn: () => fetchSuppliersByProperty(propertyId!, category),
+    enabled: !!propertyId,
   });
 }
 

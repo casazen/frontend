@@ -11,7 +11,8 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { usePropertyDetail } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
-import { Edit, ArrowRight, Sparkles, ExternalLink } from 'lucide-react';
+import { Edit, ArrowRight, Sparkles, ExternalLink, Wrench } from 'lucide-react';
+import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { PropertyCinBadge } from './components/property-cin-badge';
 import { PropertyCinDialog } from './components/property-cin-dialog';
 import { PropertyPhotoCarousel } from './components/property-photo-carousel';
@@ -76,6 +77,14 @@ export function PropertyDetailPage() {
               <Badge variant={property.isActive ? 'success' : 'secondary'}>
                 {property.isActive ? t('property.detail.active') : t('property.detail.inactive')}
               </Badge>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/app/short-rent/marketplace?propertyId=${property.id}`)}
+                data-testid="property-request-service-btn"
+              >
+                <Wrench className="mr-2 h-4 w-4" />
+                {t('serviceRequest.requestSupplier')}
+              </Button>
               <Button onClick={() => navigate(`/app/short-rent/properties/${id}/edit`)}>
                 <Edit className="mr-2 h-4 w-4" />
                 {t('property.detail.edit')}
@@ -89,7 +98,7 @@ export function PropertyDetailPage() {
             <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
               <p className="text-sm text-muted-foreground">{t('property.detail.publicSiteHint')}</p>
               <a
-                href={`/book/${org.slug}/property/${property.id}`}
+                href={buildPropertyBookingPath(org.slug, property)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"

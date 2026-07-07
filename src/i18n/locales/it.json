@@ -1025,7 +1025,16 @@
       },
       "cin": {
         "format": "Formato CIN: IT-XXXXX-XXXXXXXXXX"
+      },
+      "slug": {
+        "format": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. la-mia-struttura)",
+        "maxLength": "Lo slug deve essere al massimo 80 caratteri"
       }
+    },
+    "slug": {
+      "label": "Slug URL (opzionale)",
+      "placeholder": "la-mia-struttura",
+      "hint": "Personalizza l'URL di questa struttura nel tuo sito di prenotazione. Lascia vuoto per usare l'ID della struttura."
     }
   },
   "pricing": {
@@ -1102,6 +1111,7 @@
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
     "aiMatchDescription": "L'AI CasaZen seleziona il fornitore migliore per la tua proprietà e il tipo di intervento.",
+    "propertyScopedDescription": "Invia una richiesta di servizio al fornitore selezionato per questa proprietà.",
     "aiRecommendation": "Raccomandazione AI",
     "matching": "Ricerca del fornitore migliore...",
     "selectedSupplier": "Fornitore selezionato",
@@ -1171,11 +1181,17 @@
   },
   "marketplace": {
     "title": "Marketplace servizi",
-    "description": "Gestisci le richieste di fornitori per pulizie, manutenzione e servizi immobile.",
+    "description": "Trova fornitori per la tua proprietà e gestisci le richieste di servizio.",
+    "selectProperty": "Seleziona proprietà",
+    "selectPropertyHint": "Seleziona una proprietà per vedere i fornitori disponibili.",
+    "allCategories": "Tutte le categorie",
+    "suppliersTitle": "Fornitori disponibili",
+    "noSuppliers": "Nessun fornitore trovato per questa proprietà.",
+    "selectSupplierHint": "Seleziona un fornitore per vedere i dettagli e richiedere un servizio.",
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
     "noRequests": "Nessuna richiesta di servizio.",
-    "noRequestsHint": "Apri una prenotazione e usa \"Richiedi fornitore\" per creare il primo intervento.",
+    "noRequestsHint": "Seleziona una proprietà e un fornitore per creare il primo intervento.",
     "viewBooking": "Vedi prenotazione",
     "quickActions": "Azioni rapide",
     "goToBookings": "Vai alle prenotazioni",
@@ -1442,7 +1458,15 @@
     "publicUrlDescription": "Condividi questo link con i tuoi ospiti per prenotazioni dirette.",
     "copyUrl": "Copia URL",
     "urlCopied": "URL copiato negli appunti",
-    "urlCopyError": "Impossibile copiare l'URL"
+    "urlCopyError": "Impossibile copiare l'URL",
+    "propertiesLabel": "Proprietà",
+    "noProperties": "Nessuna proprietà trovata. Aggiungine una per iniziare.",
+    "published": "Pubblicata",
+    "notPublished": "Non pubblicata",
+    "copyPropertyUrl": "Copia URL struttura",
+    "openPropertyPage": "Apri pagina struttura",
+    "orgUrlSectionTitle": "URL organizzazione",
+    "selectPropertyHint": "Seleziona una struttura per vedere l'anteprima della pagina di prenotazione."
   },
   "plan": {
     "unlimitedProperties": "Proprietà illimitate",

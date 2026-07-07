@@ -13,10 +13,12 @@ export const mockPublicOrg: PublicOrgDto = {
 
 export const mockOrgPropertyId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const mockOrgPropertyId2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+export const mockOrgPropertySlug = 'trastevere-suite';
 
 export const mockOrgProperties: PublicPropertyDto[] = [
   {
     id: mockOrgPropertyId,
+    slug: mockOrgPropertySlug,
     name: 'Trastevere Suite',
     description: 'Appartamento luminoso nel cuore di Roma.',
     city: 'Roma',
@@ -34,6 +36,7 @@ export const mockOrgProperties: PublicPropertyDto[] = [
   },
   {
     id: mockOrgPropertyId2,
+    slug: null,
     name: 'Centro Storico Loft',
     description: 'Loft nel centro storico.',
     city: 'Roma',
@@ -60,7 +63,7 @@ export async function mockBrandedBookingApi(page: Page): Promise<void> {
       return;
     }
 
-    if (url.includes(`/properties/${mockOrgPropertyId}`)) {
+    if (url.includes(`/properties/${mockOrgPropertyId}`) || url.includes(`/properties/${mockOrgPropertySlug}`)) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

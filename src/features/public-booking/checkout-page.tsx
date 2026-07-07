@@ -214,14 +214,14 @@ function ConfirmationScreen({
 
 export function CheckoutPage() {
   const { t, i18n } = useTranslation();
-  const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
+  const { orgSlug, propertySlugOrId } = useParams<{ orgSlug: string; propertySlugOrId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const { params, toQueryString } = useBookingSearchParams();
   const checkIn = params.checkIn;
   const checkOut = params.checkOut;
   const nights = useMemo(() => nightsBetween(checkIn, checkOut), [checkIn, checkOut]);
 
-  const { data: property, isLoading } = useOrgPublicProperty(orgSlug, propertyId);
+  const { data: property, isLoading } = useOrgPublicProperty(orgSlug, propertySlugOrId);
   const createBooking = useCreateDirectBooking();
 
   const [paymentOption, setPaymentOption] = useState<PaymentOption | null>(null);
@@ -269,12 +269,12 @@ export function CheckoutPage() {
   }, [confirmed, bookingResult]);
 
   const handleCreateBooking = async () => {
-    if (!propertyId || !checkIn || !checkOut || nights <= 0 || !paymentOption) return;
+    if (!propertySlugOrId || !checkIn || !checkOut || nights <= 0 || !paymentOption) return;
 
     setPaymentError(null);
     try {
       const result = await createBooking.mutateAsync({
-        propertyId,
+        propertyId: property?.id ?? propertySlugOrId,
         checkInDate: checkIn,
         checkOutDate: checkOut,
         numberOfAdults: adults,
@@ -313,7 +313,7 @@ export function CheckoutPage() {
       <PublicBreadcrumb
         segments={[
           { label: org.displayName, href: basePath },
-          { label: property?.name ?? t('publicBooking.propertyFallback'), href: `${basePath}/property/${propertyId}${propertyQuery}` },
+          { label: property?.name ?? t('publicBooking.propertyFallback'), href: `${basePath}/property/${propertySlugOrId}${propertyQuery}` },
           { label: t('publicSite.breadcrumbCheckout') },
         ]}
       />
