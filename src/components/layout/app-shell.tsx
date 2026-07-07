@@ -16,7 +16,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <DemoBanner />
         <Header />
-        <main className="flex-1 overflow-y-auto p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] md:pb-6 md:p-6">
+        <main className="flex flex-1 flex-col overflow-y-auto p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] md:pb-6 md:p-6">
           {children}
         </main>
         <BottomNav contextKey="short-rent" />

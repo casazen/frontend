@@ -48,6 +48,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
       photoUrls: property.photoUrls || [],
       isActive: property.isActive,
       cinCode: property.cinCode ?? '',
+      slug: property.slug ?? '',
     } : {
       country: 'IT',
       currency: 'EUR',
@@ -55,6 +56,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
       photoUrls: [],
       isActive: true,
       cinCode: '',
+      slug: '',
     } satisfies Partial<PropertyFormValues>,
   });
 
@@ -89,6 +91,18 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
           <div className="flex items-center space-x-2">
             <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked)} />
             <Label htmlFor="isActive" className="cursor-pointer">{t('property.form.isActive')}</Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="slug">{t('property.slug.label')}</Label>
+            <Input
+              id="slug"
+              data-testid="property-slug-input"
+              {...register('slug')}
+              placeholder={t('property.slug.placeholder')}
+            />
+            {errors.slug && <p className="text-sm text-destructive">{errors.slug.message}</p>}
+            <p className="text-xs text-muted-foreground">{t('property.slug.hint')}</p>
           </div>
         </CardContent>
       </Card>

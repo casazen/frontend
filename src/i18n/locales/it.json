@@ -1025,7 +1025,16 @@
       },
       "cin": {
         "format": "Formato CIN: IT-XXXXX-XXXXXXXXXX"
+      },
+      "slug": {
+        "format": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. la-mia-struttura)",
+        "maxLength": "Lo slug deve essere al massimo 80 caratteri"
       }
+    },
+    "slug": {
+      "label": "Slug URL (opzionale)",
+      "placeholder": "la-mia-struttura",
+      "hint": "Personalizza l'URL di questa struttura nel tuo sito di prenotazione. Lascia vuoto per usare l'ID della struttura."
     }
   },
   "pricing": {
@@ -1102,6 +1111,7 @@
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
     "aiMatchDescription": "L'AI CasaZen seleziona il fornitore migliore per la tua proprietà e il tipo di intervento.",
+    "propertyScopedDescription": "Invia una richiesta di servizio al fornitore selezionato per questa proprietà.",
     "aiRecommendation": "Raccomandazione AI",
     "matching": "Ricerca del fornitore migliore...",
     "selectedSupplier": "Fornitore selezionato",
@@ -1171,11 +1181,17 @@
   },
   "marketplace": {
     "title": "Marketplace servizi",
-    "description": "Gestisci le richieste di fornitori per pulizie, manutenzione e servizi immobile.",
+    "description": "Trova fornitori per la tua proprietà e gestisci le richieste di servizio.",
+    "selectProperty": "Seleziona proprietà",
+    "selectPropertyHint": "Seleziona una proprietà per vedere i fornitori disponibili.",
+    "allCategories": "Tutte le categorie",
+    "suppliersTitle": "Fornitori disponibili",
+    "noSuppliers": "Nessun fornitore trovato per questa proprietà.",
+    "selectSupplierHint": "Seleziona un fornitore per vedere i dettagli e richiedere un servizio.",
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
     "noRequests": "Nessuna richiesta di servizio.",
-    "noRequestsHint": "Apri una prenotazione e usa \"Richiedi fornitore\" per creare il primo intervento.",
+    "noRequestsHint": "Seleziona una proprietà e un fornitore per creare il primo intervento.",
     "viewBooking": "Vedi prenotazione",
     "quickActions": "Azioni rapide",
     "goToBookings": "Vai alle prenotazioni",
@@ -1442,7 +1458,15 @@
     "publicUrlDescription": "Condividi questo link con i tuoi ospiti per prenotazioni dirette.",
     "copyUrl": "Copia URL",
     "urlCopied": "URL copiato negli appunti",
-    "urlCopyError": "Impossibile copiare l'URL"
+    "urlCopyError": "Impossibile copiare l'URL",
+    "propertiesLabel": "Proprietà",
+    "noProperties": "Nessuna proprietà trovata. Aggiungine una per iniziare.",
+    "published": "Pubblicata",
+    "notPublished": "Non pubblicata",
+    "copyPropertyUrl": "Copia URL struttura",
+    "openPropertyPage": "Apri pagina struttura",
+    "orgUrlSectionTitle": "URL organizzazione",
+    "selectPropertyHint": "Seleziona una struttura per vedere l'anteprima della pagina di prenotazione."
   },
   "plan": {
     "unlimitedProperties": "Proprietà illimitate",
@@ -1812,6 +1836,8 @@
       "Other": "Altro"
     },
     "validation": {
+      "firstName": { "required": "Nome obbligatorio" },
+      "lastName": { "required": "Cognome obbligatorio" },
       "dateOfBirth": {
         "required": "Data di nascita obbligatoria"
       },
@@ -1883,7 +1909,32 @@
     "close": "Chiudi",
     "guestEmailPlaceholder": "ospite@esempio.com",
     "generateError": "Impossibile generare il link di check-in. Riprova.",
-    "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen"
+    "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen",
+    "firstName": "Nome *",
+    "lastName": "Cognome *",
+    "stepPersonal": "Dati anagrafici",
+    "stepDocument": "Documento d'identita'",
+    "stepConsents": "Consensi",
+    "stepOf": "Passo {{step}} di {{total}}",
+    "next": "Avanti",
+    "back": "Indietro",
+    "submit": "Invia check-in",
+    "successTitle": "Check-in completato!",
+    "successDescription": "I tuoi dati sono stati registrati. Grazie!",
+    "marketingConsent": "Acconsento a ricevere comunicazioni promozionali (facoltativo).",
+    "sessionLabel": "Stato check-in ospite",
+    "sessionLoading": "Caricamento stato sessione...",
+    "noSession": "Nessuna sessione check-in attiva.",
+    "resendLink": "Invia sollecito",
+    "resendSuccess": "Link check-in reinviato all'ospite.",
+    "resendError": "Impossibile reinviare il link check-in.",
+    "status": {
+      "Inviato": "Link inviato",
+      "InCompilazione": "In compilazione",
+      "Completo": "Completato",
+      "AlloggiatiInviato": "Alloggiati inviato",
+      "Scaduto": "Scaduto"
+    }
   },
   "publicSite": {
     "skipToContent": "Vai al contenuto",
@@ -2124,6 +2175,91 @@
     "platformDescription": "Piattaforma gestione affitti brevi",
     "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
     "signInButton": "Accedi con Auth0"
+  },
+  "compliance": {
+    "status": {
+      "Pending": "In attesa",
+      "Active": "Attivo",
+      "Suspended": "Sospeso"
+    },
+    "page": {
+      "title": "Cockpit compliance",
+      "description": "Attività di compliance in sospeso per immobili e prenotazioni"
+    },
+    "summary": {
+      "title": "Panoramica compliance",
+      "description": "Immobili e prenotazioni che richiedono attenzione",
+      "loading": "Caricamento riepilogo compliance...",
+      "error": "Impossibile caricare il riepilogo compliance.",
+      "viewAll": "Vedi tutto",
+      "allClear": "Tutte le attività di compliance sono aggiornate.",
+      "none": "Nessuna attività in sospeso",
+      "propertiesPending": "Immobili in attesa di attivazione",
+      "guestCheckIns": "Check-in ospiti incompleti",
+      "checkoutsDue": "Check-out in scadenza",
+      "alloggiatiFailures": "Errori Alloggiati"
+    },
+    "properties": {
+      "openWizard": "Wizard attivazione",
+      "publishBlocked": "Completa il wizard di attivazione prima di pubblicare l'immobile."
+    },
+    "activation": {
+      "loading": "Caricamento wizard attivazione...",
+      "notFound": "Immobile non trovato",
+      "title": "Attiva {{name}}",
+      "description": "Completa tutti i passaggi richiesti per pubblicare il tuo immobile su CasaZen.",
+      "ctaTitle": "Immobile non ancora attivo",
+      "ctaDescription": "Completa il wizard di attivazione per soddisfare i requisiti di compliance per affitti brevi.",
+      "openWizard": "Apri wizard attivazione",
+      "cinLabel": "Codice CIN",
+      "cinGuidance": "Come ottenere il codice CIN",
+      "saveAndContinue": "Salva e continua",
+      "continue": "Continua",
+      "documentsHint": "Carica i documenti obbligatori (licenza, assicurazione, certificati di sicurezza).",
+      "safetyHint": "Conferma che le attrezzature di sicurezza obbligatorie sono presenti e conformi.",
+      "safety": {
+        "smokeDetector": "Rilevatore di fumo installato e funzionante",
+        "fireExtinguisher": "Estintore presente e ispezionato",
+        "gasCompliance": "Certificato conformità impianto gas in archivio"
+      },
+      "touristTaxHint": "Configura le aliquote di soggiorno per {{city}} prima di accettare ospiti.",
+      "touristTaxAdmin": "Apri impostazioni tassa di soggiorno",
+      "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
+      "backToEdit": "Torna alla modifica immobile",
+      "complete": "Completa attivazione",
+      "completed": "Immobile attivato con successo",
+      "blockersRemain": "Attivazione salvata — completa i blocchi rimanenti per pubblicare.",
+      "completeFailed": "Impossibile completare l'attivazione"
+    },
+    "checkout": {
+      "loading": "Caricamento wizard check-out...",
+      "notFound": "Prenotazione non trovata",
+      "unavailable": "Wizard check-out non disponibile",
+      "unavailableHint": "Questa prenotazione non è ancora idonea al check-out.",
+      "title": "Check-out ospite",
+      "description": "Completa il check-out per {{guest}}",
+      "confirmDepartureLabel": "Confermo che l'ospite ha lasciato la struttura ed è pronta per il turnover.",
+      "summaryGuestData": "Dati identità ospite conservati secondo obblighi di legge",
+      "summaryAlloggiati": "Stato invio Alloggiati Web verificato",
+      "summaryRetention": "Periodo di conservazione documenti confermato",
+      "supplierHint": "Prenota opzionalmente servizi di turnover dai fornitori del marketplace.",
+      "noSuppliers": "Nessun fornitore disponibile per questo comune.",
+      "serviceNotes": "Note per il fornitore",
+      "paymentHint": "Verifica pagamenti in sospeso e riscossione tassa di soggiorno prima di chiudere il soggiorno.",
+      "propertyReadyHint": "Conferma che l'immobile è pulito e pronto per il prossimo ospite.",
+      "next": "Passo successivo",
+      "backToBooking": "Torna alla prenotazione",
+      "complete": "Completa check-out",
+      "completed": "Check-out completato con successo",
+      "completeFailed": "Impossibile completare il check-out",
+      "steps": {
+        "confirm-departure": "Conferma che l'ospite ha lasciato la struttura.",
+        "compliance-summary": "Rivedi gli obblighi di compliance per questo soggiorno.",
+        "supplier-selection": "Seleziona servizi di turnover se necessario.",
+        "payment": "Salda pagamenti e depositi.",
+        "property-ready": "Segna l'immobile pronto per la prossima prenotazione."
+      }
+    }
   },
   "toast": {
     "propertyCreated": "Immobile creato con successo",

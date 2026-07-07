@@ -14,12 +14,12 @@ interface PublicBookingContext {
  */
 export function CheckoutPlaceholderPage() {
   const { t } = useTranslation();
-  const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
+  const { orgSlug, propertySlugOrId } = useParams<{ orgSlug: string; propertySlugOrId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const [searchParams] = useSearchParams();
   const checkIn = searchParams.get('checkIn') ?? '';
   const checkOut = searchParams.get('checkOut') ?? '';
-  const { data: property, isLoading } = useOrgPublicProperty(orgSlug, propertyId);
+  const { data: property, isLoading } = useOrgPublicProperty(orgSlug, propertySlugOrId);
 
   if (isLoading) {
     return (
@@ -32,7 +32,7 @@ export function CheckoutPlaceholderPage() {
   return (
     <div className="mx-auto max-w-lg space-y-6" data-testid="checkout-placeholder">
       <Button asChild variant="ghost" className="px-0">
-        <Link to={`/book/${orgSlug}/property/${propertyId}`}>
+        <Link to={`/book/${orgSlug}/property/${propertySlugOrId}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('publicBooking.backToProperty')}
         </Link>

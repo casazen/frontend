@@ -23,13 +23,15 @@ export function OrgLandingPage() {
   useEffect(() => {
     if (!isLoading && properties.length === 1) {
       const query = searchParams.toString();
-      navigate(`/book/${orgSlug}/property/${properties[0].id}${query ? `?${query}` : ''}`, { replace: true });
+      const segment = properties[0].slug?.trim() || properties[0].id;
+      navigate(`/book/${orgSlug}/property/${segment}${query ? `?${query}` : ''}`, { replace: true });
     }
   }, [isLoading, properties, orgSlug, navigate, searchParams]);
 
   const handleViewDetails = (property: PublicPropertyDto) => {
     const query = searchParams.toString();
-    navigate(`/book/${orgSlug}/property/${property.id}${query ? `?${query}` : ''}`);
+    const segment = property.slug?.trim() || property.id;
+    navigate(`/book/${orgSlug}/property/${segment}${query ? `?${query}` : ''}`);
   };
 
   if (!isLoading && properties.length === 1) {

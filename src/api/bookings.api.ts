@@ -7,6 +7,7 @@ import type {
   CheckOutDto,
 } from '@/types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
+import type { CheckInSessionStatusDto, ResendCheckInLinkResponse } from '@/types/public-checkin.types';
 
 export const bookingsApi = {
   getAll: (params?: Record<string, any>) =>
@@ -36,4 +37,10 @@ export const bookingsApi = {
 
   generateCheckInToken: (id: string) =>
     ApiClient.post<{ token: string }>(`/bookings/${id}/check-in-token`),
+
+  getCheckInSession: (id: string) =>
+    ApiClient.get<CheckInSessionStatusDto>(`/bookings/${id}/checkin-session`),
+
+  resendCheckInLink: (id: string) =>
+    ApiClient.post<ResendCheckInLinkResponse>(`/bookings/${id}/checkin/resend-link`),
 };

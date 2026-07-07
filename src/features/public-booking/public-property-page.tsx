@@ -20,10 +20,10 @@ interface PublicBookingContext {
 
 export function PublicPropertyPage() {
   const { t } = useTranslation();
-  const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
+  const { orgSlug, propertySlugOrId } = useParams<{ orgSlug: string; propertySlugOrId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
-  const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertyId);
-  const { data: availability } = usePropertyAvailability(propertyId);
+  const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
+  const { data: availability } = usePropertyAvailability(propertySlugOrId);
   const { toQueryString } = useBookingSearchParams();
 
   if (isLoading) {
