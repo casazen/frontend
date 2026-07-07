@@ -180,6 +180,7 @@
     "profile": "Profilo",
     "plan": "Piano e Fatturazione",
     "bookings": "Prenotazioni",
+    "marketplace": "Marketplace",
     "calendar": "Calendario",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
@@ -846,7 +847,9 @@
       "no": "No",
       "pricingTitle": "Prezzi AI",
       "pricingDescription": "Configura l'adattatore AI per la tariffazione dinamica di questa proprietà.",
-      "managePricing": "Gestisci prezzi AI"
+      "managePricing": "Gestisci prezzi AI",
+      "viewOnPublicSite": "Vedi sul sito pubblico",
+      "publicSiteHint": "Anteprima di come gli ospiti vedono questa struttura sul sito di prenotazione diretta."
     },
     "info": {
       "title": "Dettagli proprietà",
@@ -1098,6 +1101,13 @@
   "serviceRequest": {
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
+    "aiMatchDescription": "L'AI CasaZen seleziona il fornitore migliore per la tua proprietà e il tipo di intervento.",
+    "aiRecommendation": "Raccomandazione AI",
+    "matching": "Ricerca del fornitore migliore...",
+    "selectedSupplier": "Fornitore selezionato",
+    "externalFallbackIntro": "Nessun fornitore CasaZen disponibile nelle vicinanze. Ecco le attività locali più votate su Google:",
+    "noExternalResults": "Nessun risultato esterno. Prova un'altra categoria o contatta il supporto.",
+    "website": "Sito web",
     "category": "Categoria",
     "supplier": "Fornitore",
     "selectSupplier": "Seleziona fornitore",
@@ -1139,6 +1149,39 @@
       "Pagato": "Pagato",
       "Rifiutato": "Rifiutato"
     }
+  },
+  "ical": {
+    "title": "Calendario OTA",
+    "description": "Importa il calendario Airbnb o Booking.com e condividi la disponibilità CasaZen via iCal.",
+    "importUrlLabel": "URL import (HTTPS)",
+    "importHint": "Incolla l'URL iCal dalla tua OTA. Serve aiuto?",
+    "helpLink": "Come trovare il link iCal",
+    "saveImport": "Salva e sincronizza",
+    "syncStatus": "Stato sincronizzazione",
+    "lastSync": "Ultima sync: {{date}}",
+    "neverSynced": "Mai sincronizzato",
+    "statusValue": "Stato: {{status}}",
+    "blockCount": "{{count}} periodi bloccati importati",
+    "exportUrlLabel": "URL export per le OTA",
+    "exportHint": "Incolla questo URL su Airbnb/Booking per esportare prenotazioni e blocchi CasaZen.",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "legendBooking": "Prenotazione",
+    "legendIcalBlock": "Blocco OTA (iCal)"
+  },
+  "marketplace": {
+    "title": "Marketplace servizi",
+    "description": "Gestisci le richieste di fornitori per pulizie, manutenzione e servizi immobile.",
+    "requestsTitle": "Le tue richieste",
+    "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
+    "noRequests": "Nessuna richiesta di servizio.",
+    "noRequestsHint": "Apri una prenotazione e usa \"Richiedi fornitore\" per creare il primo intervento.",
+    "viewBooking": "Vedi prenotazione",
+    "quickActions": "Azioni rapide",
+    "goToBookings": "Vai alle prenotazioni",
+    "goToProperties": "Vai alle proprietà",
+    "propertiesTitle": "Le tue proprietà",
+    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
   },
   "supplier": {
     "profileLoading": "Caricamento profilo...",
@@ -1389,7 +1432,17 @@
     "yourSite": "Il tuo sito di prenotazioni",
     "visitDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
     "visitSite": "Visita {{siteName}}",
-    "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico."
+    "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico.",
+    "previewTitle": "Anteprima sito pubblico",
+    "previewDesktop": "Anteprima desktop",
+    "previewMobile": "Anteprima mobile",
+    "previewIframeTitle": "Anteprima sito prenotazioni",
+    "openFullscreen": "Apri a schermo intero",
+    "publicUrlTitle": "URL pubblico",
+    "publicUrlDescription": "Condividi questo link con i tuoi ospiti per prenotazioni dirette.",
+    "copyUrl": "Copia URL",
+    "urlCopied": "URL copiato negli appunti",
+    "urlCopyError": "Impossibile copiare l'URL"
   },
   "plan": {
     "unlimitedProperties": "Proprietà illimitate",
@@ -1832,6 +1885,26 @@
     "generateError": "Impossibile generare il link di check-in. Riprova.",
     "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen"
   },
+  "publicSite": {
+    "skipToContent": "Vai al contenuto",
+    "navProperties": "Strutture",
+    "navMyBookings": "Le mie prenotazioni",
+    "openMenu": "Apri menu",
+    "privacy": "Privacy Policy",
+    "terms": "Termini di servizio",
+    "poweredBy": "Powered by CasaZen",
+    "preview": "Anteprima sito",
+    "explore": "Esplora",
+    "viewProperties": "Scopri le strutture",
+    "ourProperties": "Le nostre strutture",
+    "mobileBookingCta": "Verifica disponibilità",
+    "galleryLabel": "Galleria foto di {{name}}",
+    "openPhoto": "Apri foto {{index}} di {{total}}",
+    "photoAlt": "{{name}} — foto {{index}}",
+    "breadcrumbLabel": "Percorso di navigazione",
+    "breadcrumbCheckout": "Checkout",
+    "closeBookingSheet": "Chiudi pannello prenotazione"
+  },
   "publicBooking": {
     "payNow": "Paga ora",
     "paymentFailed": "Pagamento non riuscito",
@@ -1892,6 +1965,9 @@
     "propertyTitle": "Prenota il soggiorno",
     "checkInLabel": "Check-in",
     "checkOutLabel": "Check-out",
+    "guestsLabel": "Ospiti",
+    "maxGuestsExceeded": "Massimo {{max}} ospiti per questa struttura",
+    "propertyFallback": "Struttura",
     "dateAlreadyBooked": "Questa data e' gia' prenotata",
     "dateRangeBooked": "Una o piu' date nel periodo selezionato sono gia' prenotate. Scegli date diverse.",
     "camere": "camere",

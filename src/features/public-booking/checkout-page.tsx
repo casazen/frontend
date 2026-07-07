@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
@@ -14,7 +14,9 @@ import { Label } from '@/components/ui/label';
 import { isDemoMode } from '@/config/demo.config';
 import type { DirectBookingResponse, PublicOrgDto, PaymentOption } from '@/types';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
+import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
+import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -214,9 +216,9 @@ export function CheckoutPage() {
   const { t, i18n } = useTranslation();
   const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
-  const [searchParams] = useSearchParams();
-  const checkIn = searchParams.get('checkIn') ?? '';
-  const checkOut = searchParams.get('checkOut') ?? '';
+  const { params, toQueryString } = useBookingSearchParams();
+  const checkIn = params.checkIn;
+  const checkOut = params.checkOut;
   const nights = useMemo(() => nightsBetween(checkIn, checkOut), [checkIn, checkOut]);
 
   const { data: property, isLoading } = useOrgPublicProperty(orgSlug, propertyId);
@@ -303,14 +305,18 @@ export function CheckoutPage() {
     return <ConfirmationScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} t={t} i18n={i18n} />;
   }
 
+  const basePath = `/book/${orgSlug}`;
+  const propertyQuery = toQueryString();
+
   return (
     <div className="mx-auto max-w-lg space-y-6" data-testid="direct-checkout-page">
-      <Button asChild variant="ghost" className="px-0">
-        <Link to={`/book/${orgSlug}/property/${propertyId}`}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('publicBooking.backToProperty')}
-        </Link>
-      </Button>
+      <PublicBreadcrumb
+        segments={[
+          { label: org.displayName, href: basePath },
+          { label: property?.name ?? t('publicBooking.propertyFallback'), href: `${basePath}/property/${propertyId}${propertyQuery}` },
+          { label: t('publicSite.breadcrumbCheckout') },
+        ]}
+      />
 
       <h2 className="text-2xl font-bold">{t('publicBooking.checkoutTitle', { propertyName: property?.name ?? 'Struttura' })}</h2>
 

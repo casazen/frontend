@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/shared/breadcrumb';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { usePropertyDetail } from '@/queries/use-properties';
+import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
-import { Edit, ArrowRight, Sparkles } from 'lucide-react';
+import { Edit, ArrowRight, Sparkles, ExternalLink } from 'lucide-react';
 import { PropertyCinBadge } from './components/property-cin-badge';
 import { PropertyCinDialog } from './components/property-cin-dialog';
 import { PropertyPhotoCarousel } from './components/property-photo-carousel';
@@ -18,6 +19,7 @@ import { PropertyInfoCard } from './components/property-info-card';
 import { PropertyAmenitiesGrid } from './components/property-amenities-grid';
 import { PropertyDocumentsSection } from './components/property-documents-section';
 import { PropertyOtaSummary } from './components/property-ota-summary';
+import { IcalSettings } from './components/ical-settings';
 import { PropertyBookingsKpi } from './components/property-bookings-kpi';
 import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
 
@@ -30,6 +32,7 @@ export function PropertyDetailPage() {
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<PropertyTab>('info');
   const { data: property, isLoading, isError } = usePropertyDetail(id!);
+  const { org } = useCurrentUser();
   const updateCin = useUpdatePropertyCin();
 
   if (isLoading) {
@@ -80,6 +83,23 @@ export function PropertyDetailPage() {
             </div>
           }
         />
+
+        {org?.slug ? (
+          <Card data-testid="host-public-site-link">
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <p className="text-sm text-muted-foreground">{t('property.detail.publicSiteHint')}</p>
+              <a
+                href={`/book/${org.slug}/property/${property.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+              >
+                {t('property.detail.viewOnPublicSite')}
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Link
           to={`/app/short-rent/bookings?propertyId=${property.id}`}
@@ -175,6 +195,7 @@ export function PropertyDetailPage() {
 
         {activeTab === 'ota' && (
           <div className="space-y-6">
+            <IcalSettings propertyId={property.id} />
             <PropertyOtaSummary integrations={property.otaIntegrations} />
           </div>
         )}

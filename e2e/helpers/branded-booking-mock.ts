@@ -12,6 +12,7 @@ export const mockPublicOrg: PublicOrgDto = {
 };
 
 export const mockOrgPropertyId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+export const mockOrgPropertyId2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 export const mockOrgProperties: PublicPropertyDto[] = [
   {
@@ -28,6 +29,23 @@ export const mockOrgProperties: PublicPropertyDto[] = [
     amenities: ['Wifi', 'Aria condizionata'],
     photoUrls: ['https://cdn.example.com/trastevere-suite.jpg'],
     cinCode: 'IT-12345-0123456789',
+    cinStatus: 'Valid',
+    timezone: 'Europe/Rome',
+  },
+  {
+    id: mockOrgPropertyId2,
+    name: 'Centro Storico Loft',
+    description: 'Loft nel centro storico.',
+    city: 'Roma',
+    postalCode: '00186',
+    bedrooms: 1,
+    bathrooms: 1,
+    maxGuests: 2,
+    nightlyRate: 120,
+    cleaningFee: 40,
+    amenities: ['Wifi'],
+    photoUrls: [],
+    cinCode: 'IT-12345-0987654321',
     cinStatus: 'Valid',
     timezone: 'Europe/Rome',
   },
