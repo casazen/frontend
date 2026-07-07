@@ -35,11 +35,15 @@ export interface PlanCatalogEntry {
   description: string;
 }
 
-/** Anonymous branding read-model for /book/:orgSlug (US-003 #215). */
+/** Anonymous branding read-model for /book/:orgSlug (US-003 #215, US-023 #297). */
 export interface PublicOrgDto {
   slug: string;
   displayName: string;
   logoUrl: string | null;
   themeColor: string | null;
   contactEmail: string;
+  heroImageUrl?: string | null;
+  tagline?: string | null;
+  publicThemeId?: string | null;
+  showPoweredBy?: boolean;
 }

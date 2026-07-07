@@ -180,6 +180,7 @@
     "profile": "Profile",
     "plan": "Plan & Billing",
     "bookings": "Bookings",
+    "marketplace": "Marketplace",
     "calendar": "Calendar",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
@@ -1096,6 +1097,13 @@
   "serviceRequest": {
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
+    "aiMatchDescription": "CasaZen AI picks the best supplier for your property and intervention type.",
+    "aiRecommendation": "AI recommendation",
+    "matching": "Finding the best supplier...",
+    "selectedSupplier": "Selected supplier",
+    "externalFallbackIntro": "No CasaZen suppliers available nearby. Here are top-rated local businesses from Google:",
+    "noExternalResults": "No external results found. Try a different category or contact support.",
+    "website": "Website",
     "category": "Category",
     "supplier": "Supplier",
     "selectSupplier": "Select supplier",
@@ -1156,6 +1164,20 @@
     "copied": "Copied",
     "legendBooking": "Booking",
     "legendIcalBlock": "OTA block (iCal)"
+  },
+  "marketplace": {
+    "title": "Service Marketplace",
+    "description": "Manage supplier requests for cleaning, maintenance and property services.",
+    "requestsTitle": "Your requests",
+    "requestsDescription": "All service requests across your properties.",
+    "noRequests": "No service requests yet.",
+    "noRequestsHint": "Open a booking and use \"Request supplier\" to create your first intervention.",
+    "viewBooking": "View booking",
+    "quickActions": "Quick actions",
+    "goToBookings": "Go to bookings",
+    "goToProperties": "Go to properties",
+    "propertiesTitle": "Your properties",
+    "propertiesDescription": "Request services from a property or booking detail page."
   },
   "supplier": {
     "profileLoading": "Loading profile...",
@@ -1848,6 +1870,23 @@
     "guestEmailPlaceholder": "guest@example.com",
     "generateError": "Failed to generate check-in link. Please try again.",
     "checkinEmailBody": "Dear guest,\n\nClick the link below to complete your check-in:\n\n{{url}}\n\nCasaZen"
+  },
+  "publicSite": {
+    "skipToContent": "Skip to content",
+    "navProperties": "Properties",
+    "navMyBookings": "My bookings",
+    "openMenu": "Open menu",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "poweredBy": "Powered by CasaZen",
+    "preview": "Preview site",
+    "explore": "Explore",
+    "viewProperties": "View properties",
+    "ourProperties": "Our properties",
+    "mobileBookingCta": "Check availability",
+    "galleryLabel": "Photo gallery for {{name}}",
+    "openPhoto": "Open photo {{index}} of {{total}}",
+    "photoAlt": "{{name}} — photo {{index}}"
   },
   "publicBooking": {
     "payNow": "Pay now",

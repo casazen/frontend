@@ -180,6 +180,7 @@
     "profile": "Profilo",
     "plan": "Piano e Fatturazione",
     "bookings": "Prenotazioni",
+    "marketplace": "Marketplace",
     "calendar": "Calendario",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
@@ -1098,6 +1099,13 @@
   "serviceRequest": {
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
+    "aiMatchDescription": "L'AI CasaZen seleziona il fornitore migliore per la tua proprietà e il tipo di intervento.",
+    "aiRecommendation": "Raccomandazione AI",
+    "matching": "Ricerca del fornitore migliore...",
+    "selectedSupplier": "Fornitore selezionato",
+    "externalFallbackIntro": "Nessun fornitore CasaZen disponibile nelle vicinanze. Ecco le attività locali più votate su Google:",
+    "noExternalResults": "Nessun risultato esterno. Prova un'altra categoria o contatta il supporto.",
+    "website": "Sito web",
     "category": "Categoria",
     "supplier": "Fornitore",
     "selectSupplier": "Seleziona fornitore",
@@ -1158,6 +1166,20 @@
     "copied": "Copiato",
     "legendBooking": "Prenotazione",
     "legendIcalBlock": "Blocco OTA (iCal)"
+  },
+  "marketplace": {
+    "title": "Marketplace servizi",
+    "description": "Gestisci le richieste di fornitori per pulizie, manutenzione e servizi immobile.",
+    "requestsTitle": "Le tue richieste",
+    "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
+    "noRequests": "Nessuna richiesta di servizio.",
+    "noRequestsHint": "Apri una prenotazione e usa \"Richiedi fornitore\" per creare il primo intervento.",
+    "viewBooking": "Vedi prenotazione",
+    "quickActions": "Azioni rapide",
+    "goToBookings": "Vai alle prenotazioni",
+    "goToProperties": "Vai alle proprietà",
+    "propertiesTitle": "Le tue proprietà",
+    "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
   },
   "supplier": {
     "profileLoading": "Caricamento profilo...",
@@ -1850,6 +1872,23 @@
     "guestEmailPlaceholder": "ospite@esempio.com",
     "generateError": "Impossibile generare il link di check-in. Riprova.",
     "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen"
+  },
+  "publicSite": {
+    "skipToContent": "Vai al contenuto",
+    "navProperties": "Strutture",
+    "navMyBookings": "Le mie prenotazioni",
+    "openMenu": "Apri menu",
+    "privacy": "Privacy Policy",
+    "terms": "Termini di servizio",
+    "poweredBy": "Powered by CasaZen",
+    "preview": "Anteprima sito",
+    "explore": "Esplora",
+    "viewProperties": "Scopri le strutture",
+    "ourProperties": "Le nostre strutture",
+    "mobileBookingCta": "Verifica disponibilità",
+    "galleryLabel": "Galleria foto di {{name}}",
+    "openPhoto": "Apri foto {{index}} di {{total}}",
+    "photoAlt": "{{name}} — foto {{index}}"
   },
   "publicBooking": {
     "payNow": "Paga ora",
