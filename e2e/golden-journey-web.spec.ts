@@ -15,6 +15,7 @@ test.describe('Golden Journey web (#301)', () => {
     await mockBrandedBookingApi(page);
     await page.addInitScript(() => {
       localStorage.removeItem('casazen_cookie_consent');
+      localStorage.setItem('casazen.locale', 'it');
     });
   });
 

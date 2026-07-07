@@ -5,10 +5,11 @@ import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-pub
 import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
+import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
+import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 import type { PublicOrgDto } from '@/types';
-import { ArrowLeft, Bed, Bath, Loader2, Users } from 'lucide-react';
+import { Bed, Bath, Loader2, Users } from 'lucide-react';
 
-const Hero = lazy(() => import('@/features/public-site/components/Hero').then((m) => ({ default: m.Hero })));
 const PropertyGallery = lazy(() => import('@/features/public-site/components/PropertyGallery').then((m) => ({ default: m.PropertyGallery })));
 const AmenityGrid = lazy(() => import('@/features/public-site/components/AmenityGrid').then((m) => ({ default: m.AmenityGrid })));
 const BookingWidget = lazy(() => import('@/features/public-site/components/BookingWidget').then((m) => ({ default: m.BookingWidget })));
@@ -23,6 +24,7 @@ export function PublicPropertyPage() {
   const { org } = useOutletContext<PublicBookingContext>();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertyId);
   const { data: availability } = usePropertyAvailability(propertyId);
+  const { toQueryString } = useBookingSearchParams();
 
   if (isLoading) {
     return (
@@ -43,18 +45,17 @@ export function PublicPropertyPage() {
     );
   }
 
-  return (
-    <div className="space-y-8">
-      <Button asChild variant="ghost" className="px-0">
-        <Link to={`/book/${orgSlug}`}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('publicBooking.backToOrg', { orgName: org.displayName })}
-        </Link>
-      </Button>
+  const basePath = `/book/${orgSlug}`;
+  const query = toQueryString();
 
-      <Suspense fallback={null}>
-        <Hero imageUrl={property.photoUrls[0]} title={property.name} tagline={property.city} />
-      </Suspense>
+  return (
+    <div className="space-y-8" data-testid="public-property-page">
+      <PublicBreadcrumb
+        segments={[
+          { label: org.displayName, href: basePath },
+          { label: property.name },
+        ]}
+      />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
         <div className="space-y-8">
@@ -65,7 +66,7 @@ export function PublicPropertyPage() {
           <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 className="public-display text-2xl font-semibold">{property.name}</h2>
+                <h1 className="public-display text-2xl font-semibold">{property.name}</h1>
                 <p className="text-[var(--cz-public-muted)]">
                   {property.city}
                   {property.postalCode ? ` (${property.postalCode})` : ''}
@@ -85,7 +86,7 @@ export function PublicPropertyPage() {
 
             {property.amenities.length > 0 ? (
               <div className="space-y-3">
-                <h3 className="font-semibold">{t('publicBooking.servicesTitle')}</h3>
+                <h2 className="font-semibold">{t('publicBooking.servicesTitle')}</h2>
                 <Suspense fallback={null}>
                   <AmenityGrid amenities={property.amenities} />
                 </Suspense>
@@ -94,14 +95,14 @@ export function PublicPropertyPage() {
 
             {property.houseRules ? (
               <div>
-                <h3 className="font-semibold mb-2">{t('publicBooking.rulesTitle')}</h3>
+                <h2 className="mb-2 font-semibold">{t('publicBooking.rulesTitle')}</h2>
                 <p className="text-sm whitespace-pre-wrap">{property.houseRules}</p>
               </div>
             ) : null}
 
             {property.cancellationPolicySummary ? (
               <div>
-                <h3 className="font-semibold mb-2">{t('publicBooking.cancellationTitle')}</h3>
+                <h2 className="mb-2 font-semibold">{t('publicBooking.cancellationTitle')}</h2>
                 <p className="text-sm text-[var(--cz-public-muted)]">{property.cancellationPolicySummary}</p>
               </div>
             ) : null}
@@ -109,7 +110,7 @@ export function PublicPropertyPage() {
         </div>
 
         <Suspense fallback={null}>
-          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} />
+          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} querySuffix={query} />
         </Suspense>
       </div>
     </div>

@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrgProperties } from '@/queries/use-public-org';
 import { PropertySearchCard } from '@/features/search/components/property-search-card';
@@ -17,11 +17,28 @@ export function OrgLandingPage() {
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { data: properties = [], isLoading } = useOrgProperties(orgSlug);
 
+  useEffect(() => {
+    if (!isLoading && properties.length === 1) {
+      const query = searchParams.toString();
+      navigate(`/book/${orgSlug}/property/${properties[0].id}${query ? `?${query}` : ''}`, { replace: true });
+    }
+  }, [isLoading, properties, orgSlug, navigate, searchParams]);
+
   const handleViewDetails = (property: PublicPropertyDto) => {
-    navigate(`/book/${orgSlug}/property/${property.id}`);
+    const query = searchParams.toString();
+    navigate(`/book/${orgSlug}/property/${property.id}${query ? `?${query}` : ''}`);
   };
+
+  if (!isLoading && properties.length === 1) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--cz-public-primary)]" />
+      </div>
+    );
+  }
 
   const heroImage = org.heroImageUrl ?? properties[0]?.photoUrls?.[0] ?? null;
 

@@ -845,7 +845,9 @@
       "no": "No",
       "pricingTitle": "AI Pricing",
       "pricingDescription": "Configure the AI adapter for dynamic pricing for this property.",
-      "managePricing": "Manage AI pricing"
+      "managePricing": "Manage AI pricing",
+      "viewOnPublicSite": "View on public site",
+      "publicSiteHint": "Preview how guests see this property on your direct booking site."
     },
     "info": {
       "title": "Property details",
@@ -1428,7 +1430,17 @@
     "yourSite": "Your booking site",
     "visitDescription": "Visit your public site to see how your guests experience it.",
     "visitSite": "Visit {{siteName}}",
-    "noOrg": "Complete your organization setup to activate the public site."
+    "noOrg": "Complete your organization setup to activate the public site.",
+    "previewTitle": "Public site preview",
+    "previewDesktop": "Desktop preview",
+    "previewMobile": "Mobile preview",
+    "previewIframeTitle": "Booking site preview",
+    "openFullscreen": "Open fullscreen",
+    "publicUrlTitle": "Public URL",
+    "publicUrlDescription": "Share this link with guests for direct bookings.",
+    "copyUrl": "Copy URL",
+    "urlCopied": "URL copied to clipboard",
+    "urlCopyError": "Could not copy URL"
   },
   "plan": {
     "unlimitedProperties": "Unlimited properties",
@@ -1886,7 +1898,10 @@
     "mobileBookingCta": "Check availability",
     "galleryLabel": "Photo gallery for {{name}}",
     "openPhoto": "Open photo {{index}} of {{total}}",
-    "photoAlt": "{{name}} — photo {{index}}"
+    "photoAlt": "{{name}} — photo {{index}}",
+    "breadcrumbLabel": "Breadcrumb",
+    "breadcrumbCheckout": "Checkout",
+    "closeBookingSheet": "Close booking panel"
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -1948,6 +1963,9 @@
     "propertyTitle": "Book your stay",
     "checkInLabel": "Check-in",
     "checkOutLabel": "Check-out",
+    "guestsLabel": "Guests",
+    "maxGuestsExceeded": "Maximum {{max}} guests for this property",
+    "propertyFallback": "Property",
     "dateAlreadyBooked": "This date is already booked",
     "dateRangeBooked": "One or more dates in the selected range are already booked. Please choose different dates.",
     "camere": "bedrooms",

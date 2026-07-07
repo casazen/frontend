@@ -2,6 +2,7 @@ import { test, expect } from './test';
 import {
   DEMO_ORG_SLUG,
   mockBrandedBookingApi,
+  mockOrgProperties,
   mockOrgPropertyId,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
@@ -11,6 +12,7 @@ test.describe('Branded booking site (#215)', () => {
     await mockBrandedBookingApi(page);
     await page.addInitScript(() => {
       localStorage.removeItem('casazen_cookie_consent');
+      localStorage.setItem('casazen.locale', 'it');
     });
   });
 
@@ -20,7 +22,7 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
-    await expect(page.getByText('CIN valido')).toBeVisible();
+    await expect(page.getByText('CIN valido').first()).toBeVisible();
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -108,5 +110,65 @@ test.describe('Branded booking site (#215)', () => {
     // In demo mode the protected routes are bypassed, but in non-demo they redirect
     // We verify the page is NOT the public booking shell (no auth chrome on /book)
     await expect(page.getByTestId('public-site-shell')).not.toBeAttached();
+  });
+});
+
+test.describe('Vetrina navigation UX pass 1 (#338)', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockBrandedBookingApi(page);
+    await page.addInitScript(() => {
+      localStorage.removeItem('casazen_cookie_consent');
+      localStorage.setItem('casazen.locale', 'it');
+    });
+  });
+
+  test('AC2: property detail shows breadcrumb org > property', async ({ page }) => {
+    await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}`);
+
+    const breadcrumb = page.getByTestId('public-breadcrumb');
+    await expect(breadcrumb).toBeVisible({ timeout: 15_000 });
+    await expect(breadcrumb.getByText(mockPublicOrg.displayName)).toBeVisible();
+    await expect(breadcrumb.getByText('Trastevere Suite')).toBeVisible();
+  });
+
+  test('AC3: URL params persist on property detail and checkout', async ({ page }) => {
+    await page.goto(
+      `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}?checkIn=2026-08-01&checkOut=2026-08-05&guests=3`,
+    );
+
+    await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#check-in')).toHaveValue('2026-08-01');
+    await expect(page.locator('#check-out')).toHaveValue('2026-08-05');
+    await expect(page.locator('#guests')).toHaveValue('3');
+
+    await page.getByRole('button', { name: 'Procedi al checkout' }).click();
+    await expect(page).toHaveURL(/checkIn=2026-08-01/);
+    await expect(page).toHaveURL(/checkOut=2026-08-05/);
+    await expect(page).toHaveURL(/guests=3/);
+    await expect(page.getByTestId('public-breadcrumb')).toContainText('Checkout');
+  });
+
+  test('AC4: single-property org redirects landing to property detail', async ({ page }) => {
+    await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/properties`, async (route) => {
+      const url = route.request().url();
+      if (route.request().method() !== 'GET' || !url.endsWith('/properties')) {
+        await route.fallback();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([mockOrgProperties[0]]),
+      });
+    });
+
+    await page.goto(`/book/${DEMO_ORG_SLUG}?checkIn=2026-09-01&checkOut=2026-09-03`);
+
+    await expect(page).toHaveURL(
+      new RegExp(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}`),
+      { timeout: 15_000 },
+    );
+    await expect(page).toHaveURL(/checkIn=2026-09-01/);
+    await expect(page.getByTestId('public-property-page')).toBeVisible();
   });
 });
