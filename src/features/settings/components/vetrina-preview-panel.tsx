@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, Monitor, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface VetrinaPreviewPanelProps {
   bookingSitePath: string;
@@ -14,53 +13,56 @@ export function VetrinaPreviewPanel({ bookingSitePath }: VetrinaPreviewPanelProp
   const absoluteUrl = `${window.location.origin}${bookingSitePath}`;
 
   return (
-    <Card data-testid="vetrina-preview-panel">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-semibold">{t('directBooking.previewTitle')}</CardTitle>
-        <div className="flex gap-1">
-          <Button
-            type="button"
-            variant={device === 'desktop' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setDevice('desktop')}
-            aria-label={t('directBooking.previewDesktop')}
+    <div className="flex min-h-0 flex-1 flex-col" data-testid="vetrina-preview-panel">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2 md:px-6">
+        <span className="text-sm font-medium">{t('directBooking.previewTitle')}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              variant={device === 'desktop' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setDevice('desktop')}
+              aria-label={t('directBooking.previewDesktop')}
+            >
+              <Monitor className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant={device === 'mobile' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setDevice('mobile')}
+              aria-label={t('directBooking.previewMobile')}
+            >
+              <Smartphone className="h-4 w-4" />
+            </Button>
+          </div>
+          <a
+            href={absoluteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
           >
-            <Monitor className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant={device === 'mobile' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setDevice('mobile')}
-            aria-label={t('directBooking.previewMobile')}
-          >
-            <Smartphone className="h-4 w-4" />
-          </Button>
+            {t('directBooking.openFullscreen')}
+            <ExternalLink className="h-4 w-4" />
+          </a>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div
-          className={`mx-auto overflow-hidden rounded-lg border bg-muted/30 transition-all ${
-            device === 'mobile' ? 'max-w-[375px]' : 'w-full'
+      </div>
+
+      <div
+        className={`relative min-h-0 flex-1 bg-muted/20 ${
+          device === 'mobile' ? 'flex justify-center' : ''
+        }`}
+      >
+        <iframe
+          title={t('directBooking.previewIframeTitle')}
+          src={bookingSitePath}
+          className={`absolute inset-0 border-0 bg-background ${
+            device === 'mobile' ? 'left-1/2 w-full max-w-[430px] -translate-x-1/2 shadow-lg' : 'h-full w-full'
           }`}
-        >
-          <iframe
-            title={t('directBooking.previewIframeTitle')}
-            src={bookingSitePath}
-            className={`w-full border-0 ${device === 'mobile' ? 'h-[600px]' : 'h-[480px]'}`}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          />
-        </div>
-        <a
-          href={absoluteUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-        >
-          {t('directBooking.openFullscreen')}
-          <ExternalLink className="h-4 w-4" />
-        </a>
-      </CardContent>
-    </Card>
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        />
+      </div>
+    </div>
   );
 }
