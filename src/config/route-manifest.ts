@@ -160,6 +160,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/bookings/calendar'],
   },
   {
+    path: '/app/short-rent/marketplace',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.marketplace',
+    navGroup: 'operazioni',
+    navPlacement: 'primary',
+    navOrder: 2.5,
+    icon: 'Store',
+    component: async () => ({ default: (await import('@/features/marketplace/marketplace-page')).MarketplacePage }),
+  },
+  {
     path: '/app/short-rent/alloggiati',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

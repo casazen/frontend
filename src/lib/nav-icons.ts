@@ -13,6 +13,7 @@ import {
   Repeat,
   Settings,
   ShieldCheck,
+  Store,
   User,
   UserPlus,
   Users,
@@ -39,6 +40,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   FileText,
   FileCheck,
   Settings,
+  Store,
   Wallet,
   Wrench,
 };

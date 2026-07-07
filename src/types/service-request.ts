@@ -75,3 +75,40 @@ export interface SupplierListResponse {
   page: number;
   pageSize: number;
 }
+
+export interface SupplierMatchCandidate {
+  orgId: string;
+  legalName: string;
+  phone: string;
+  email: string;
+  bio?: string | null;
+  matchScore: number;
+  matchReason: string;
+  source: string;
+}
+
+export interface ExternalSupplierSuggestion {
+  name: string;
+  address: string;
+  phone?: string | null;
+  email?: string | null;
+  rating?: number | null;
+  reviewCount?: number | null;
+  googleMapsUrl?: string | null;
+  websiteUrl?: string | null;
+  source: string;
+}
+
+export interface SupplierMatchResponse {
+  recommended?: SupplierMatchCandidate | null;
+  alternatives: SupplierMatchCandidate[];
+  externalSuggestions: ExternalSupplierSuggestion[];
+  usedExternalFallback: boolean;
+}
+
+export interface MatchSupplierDto {
+  propertyId: string;
+  category: string;
+  urgency?: ServiceRequestUrgency;
+  notes?: string;
+}
