@@ -50,15 +50,15 @@ export function VetrinaPreviewPanel({ bookingSitePath }: VetrinaPreviewPanelProp
       </div>
 
       <div
-        className={`flex min-h-0 flex-1 bg-muted/20 ${
-          device === 'mobile' ? 'items-stretch justify-center' : ''
+        className={`relative min-h-0 flex-1 bg-muted/20 ${
+          device === 'mobile' ? 'flex justify-center' : ''
         }`}
       >
         <iframe
           title={t('directBooking.previewIframeTitle')}
           src={bookingSitePath}
-          className={`min-h-0 flex-1 border-0 bg-background ${
-            device === 'mobile' ? 'w-full max-w-[430px] shadow-lg' : 'h-full w-full'
+          className={`absolute inset-0 border-0 bg-background ${
+            device === 'mobile' ? 'left-1/2 w-full max-w-[430px] -translate-x-1/2 shadow-lg' : 'h-full w-full'
           }`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         />
