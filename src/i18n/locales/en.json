@@ -1810,6 +1810,8 @@
       "Other": "Other"
     },
     "validation": {
+      "firstName": { "required": "First name is required" },
+      "lastName": { "required": "Last name is required" },
       "dateOfBirth": {
         "required": "Date of birth is required"
       },
@@ -1881,7 +1883,32 @@
     "close": "Close",
     "guestEmailPlaceholder": "guest@example.com",
     "generateError": "Failed to generate check-in link. Please try again.",
-    "checkinEmailBody": "Dear guest,\n\nClick the link below to complete your check-in:\n\n{{url}}\n\nCasaZen"
+    "checkinEmailBody": "Dear guest,\n\nClick the link below to complete your check-in:\n\n{{url}}\n\nCasaZen",
+    "firstName": "First name *",
+    "lastName": "Last name *",
+    "stepPersonal": "Personal details",
+    "stepDocument": "Identity document",
+    "stepConsents": "Consents",
+    "stepOf": "Step {{step}} of {{total}}",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit check-in",
+    "successTitle": "Check-in complete!",
+    "successDescription": "Your details have been recorded. Thank you!",
+    "marketingConsent": "I agree to receive promotional communications (optional).",
+    "sessionLabel": "Guest check-in status",
+    "sessionLoading": "Loading session status...",
+    "noSession": "No active check-in session.",
+    "resendLink": "Send reminder",
+    "resendSuccess": "Check-in link resent to guest.",
+    "resendError": "Failed to resend check-in link.",
+    "status": {
+      "Inviato": "Link sent",
+      "InCompilazione": "In progress",
+      "Completo": "Complete",
+      "AlloggiatiInviato": "Alloggiati submitted",
+      "Scaduto": "Expired"
+    }
   },
   "publicSite": {
     "skipToContent": "Skip to content",
