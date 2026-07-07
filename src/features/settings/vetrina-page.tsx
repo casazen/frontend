@@ -3,7 +3,6 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCurrentUser } from '@/queries/use-users';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { ExternalLink, Globe } from 'lucide-react';
 
 export function VetrinaPage() {
@@ -31,13 +30,15 @@ export function VetrinaPage() {
                   <p className="text-sm text-muted-foreground">
                     {t('directBooking.visitDescription')}
                   </p>
-                  <Link
-                    to={bookingSiteUrl}
+                  <a
+                    href={bookingSiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
                   >
-                    {t('directBooking.visitSite', { siteName: org?.name ?? 'il sito' })}
+                    {t('publicSite.preview')}
                     <ExternalLink className="h-4 w-4" />
-                  </Link>
+                  </a>
                 </div>
               </div>
             </CardContent>

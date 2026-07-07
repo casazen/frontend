@@ -1,68 +1,33 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
 import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/lib/utils';
 import type { PublicOrgDto } from '@/types';
-import { ArrowLeft, Bed, Bath, Loader2, Users, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Loader2, Users } from 'lucide-react';
+
+const Hero = lazy(() => import('@/features/public-site/components/Hero').then((m) => ({ default: m.Hero })));
+const PropertyGallery = lazy(() => import('@/features/public-site/components/PropertyGallery').then((m) => ({ default: m.PropertyGallery })));
+const AmenityGrid = lazy(() => import('@/features/public-site/components/AmenityGrid').then((m) => ({ default: m.AmenityGrid })));
+const BookingWidget = lazy(() => import('@/features/public-site/components/BookingWidget').then((m) => ({ default: m.BookingWidget })));
 
 interface PublicBookingContext {
   org: PublicOrgDto;
-}
-
-function nightsBetween(checkIn: string, checkOut: string): number {
-  if (!checkIn || !checkOut) return 0;
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
-  const diff = end.getTime() - start.getTime();
-  if (diff <= 0) return 0;
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
 export function PublicPropertyPage() {
   const { t } = useTranslation();
   const { orgSlug, propertyId } = useParams<{ orgSlug: string; propertyId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
-  const navigate = useNavigate();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertyId);
   const { data: availability } = usePropertyAvailability(propertyId);
-
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-
-  const nights = useMemo(() => nightsBetween(checkIn, checkOut), [checkIn, checkOut]);
-  const lodgingTotal = property ? property.nightlyRate * nights : 0;
-  const estimatedTotal = property ? lodgingTotal + property.cleaningFee : 0;
-
-  const isDateBooked = (dateStr: string): boolean => {
-    return availability?.bookedDates.includes(dateStr) ?? false;
-  };
-
-  const checkInBooked = checkIn && isDateBooked(checkIn);
-  const checkOutBooked = checkOut && isDateBooked(checkOut);
-  const dateRangeAvailable = useMemo(() => {
-    if (!checkIn || !checkOut || !availability) return true;
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    let current = new Date(start);
-    while (current < end) {
-      if (availability.bookedDates.includes(current.toISOString().split('T')[0])) {
-        return false;
-      }
-      current.setDate(current.getDate() + 1);
-    }
-    return true;
-  }, [checkIn, checkOut, availability]);
 
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--cz-public-primary)]" />
       </div>
     );
   }
@@ -70,15 +35,13 @@ export function PublicPropertyPage() {
   if (isError || !property) {
     return (
       <div className="space-y-4 text-center">
-        <p className="text-muted-foreground">{t('publicBooking.propertyNotFound')}</p>
+        <p className="text-[var(--cz-public-muted)]">{t('publicBooking.propertyNotFound')}</p>
         <Button asChild variant="outline">
           <Link to={`/book/${orgSlug}`}>{t('publicBooking.backToProperties')}</Link>
         </Button>
       </div>
     );
   }
-
-  const heroPhoto = property.photoUrls[0];
 
   return (
     <div className="space-y-8">
@@ -89,130 +52,66 @@ export function PublicPropertyPage() {
         </Link>
       </Button>
 
-      {heroPhoto ? (
-        <img src={heroPhoto} alt={property.name} className="h-72 w-full rounded-lg object-cover" />
-      ) : (
-        <div className="flex h-72 items-center justify-center rounded-lg bg-muted text-6xl">🏠</div>
-      )}
+      <Suspense fallback={null}>
+        <Hero imageUrl={property.photoUrls[0]} title={property.name} tagline={property.city} />
+      </Suspense>
 
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold">{property.name}</h2>
-            <p className="text-muted-foreground">
-              {property.city}
-              {property.postalCode ? ` (${property.postalCode})` : ''}
-            </p>
+      <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="space-y-8">
+          <Suspense fallback={null}>
+            <PropertyGallery photoUrls={property.photoUrls} alt={property.name} />
+          </Suspense>
+
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="public-display text-2xl font-semibold">{property.name}</h2>
+                <p className="text-[var(--cz-public-muted)]">
+                  {property.city}
+                  {property.postalCode ? ` (${property.postalCode})` : ''}
+                </p>
+              </div>
+              <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
+            </div>
+
+            <AiContentNotice visible={false} />
+            <p className="text-[var(--cz-public-muted)]">{property.description}</p>
+
+            <div className="flex flex-wrap gap-4 text-sm">
+              <span className="flex items-center gap-1"><Bed className="h-4 w-4" /> {property.bedrooms} {t('publicBooking.camere')}</span>
+              <span className="flex items-center gap-1"><Bath className="h-4 w-4" /> {property.bathrooms} {t('publicBooking.bagni')}</span>
+              <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {t('publicBooking.ospiti', { count: property.maxGuests })}</span>
+            </div>
+
+            {property.amenities.length > 0 ? (
+              <div className="space-y-3">
+                <h3 className="font-semibold">{t('publicBooking.servicesTitle')}</h3>
+                <Suspense fallback={null}>
+                  <AmenityGrid amenities={property.amenities} />
+                </Suspense>
+              </div>
+            ) : null}
+
+            {property.houseRules ? (
+              <div>
+                <h3 className="font-semibold mb-2">{t('publicBooking.rulesTitle')}</h3>
+                <p className="text-sm whitespace-pre-wrap">{property.houseRules}</p>
+              </div>
+            ) : null}
+
+            {property.cancellationPolicySummary ? (
+              <div>
+                <h3 className="font-semibold mb-2">{t('publicBooking.cancellationTitle')}</h3>
+                <p className="text-sm text-[var(--cz-public-muted)]">{property.cancellationPolicySummary}</p>
+              </div>
+            ) : null}
           </div>
-          <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
         </div>
 
-        <AiContentNotice visible={false} />
-
-        <p className="text-muted-foreground">{property.description}</p>
-
-        <div className="flex flex-wrap gap-4 text-sm">
-          <span className="flex items-center gap-1">
-            <Bed className="h-4 w-4" /> {property.bedrooms} {t('publicBooking.camere')}
-          </span>
-          <span className="flex items-center gap-1">
-            <Bath className="h-4 w-4" /> {property.bathrooms} {t('publicBooking.bagni')}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-4 w-4" /> {t('publicBooking.ospiti', { count: property.maxGuests })}
-          </span>
-        </div>
-
-        {property.amenities.length > 0 && (
-          <div>
-            <h3 className="font-semibold mb-2">{t('publicBooking.servicesTitle')}</h3>
-            <p className="text-sm text-muted-foreground">{property.amenities.join(' · ')}</p>
-          </div>
-        )}
-
-        {property.houseRules && (
-          <div>
-            <h3 className="font-semibold mb-2">{t('publicBooking.rulesTitle')}</h3>
-            <p className="text-sm whitespace-pre-wrap">{property.houseRules}</p>
-          </div>
-        )}
-
-        {property.cancellationPolicySummary && (
-          <div>
-            <h3 className="font-semibold mb-2">{t('publicBooking.cancellationTitle')}</h3>
-            <p className="text-sm text-muted-foreground">{property.cancellationPolicySummary}</p>
-          </div>
-        )}
+        <Suspense fallback={null}>
+          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} />
+        </Suspense>
       </div>
-
-      <section className="rounded-lg border p-6 space-y-4" data-testid="booking-preview">
-        <h3 className="text-xl font-semibold">{t('publicBooking.propertyTitle')}</h3>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="check-in">{t('publicBooking.checkInLabel')}</Label>
-            <Input
-              id="check-in"
-              type="date"
-              value={checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
-              className={checkInBooked ? 'border-red-500' : ''}
-            />
-            {checkInBooked && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" /> {t('publicBooking.dateAlreadyBooked')}
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="check-out">{t('publicBooking.checkOutLabel')}</Label>
-            <Input
-              id="check-out"
-              type="date"
-              value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-              className={checkOutBooked ? 'border-red-500' : ''}
-            />
-            {checkOutBooked && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" /> {t('publicBooking.dateAlreadyBooked')}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {checkIn && checkOut && !dateRangeAvailable && (
-          <div className="rounded-md border border-red-500 bg-red-50 p-3 flex gap-2 items-start">
-            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-red-700">
-              {t('publicBooking.dateRangeBooked')}
-            </p>
-          </div>
-        )}
-
-        {nights > 0 && (
-          <div className="space-y-1 text-sm">
-            <p>
-              {nights} {t('publicBooking.notte')}{nights !== 1 ? 'i' : ''} × {formatCurrency(property.nightlyRate)} ={' '}
-              {formatCurrency(lodgingTotal)}
-            </p>
-            <p>{t('publicBooking.pulizia')}: {formatCurrency(property.cleaningFee)}</p>
-            <p className="text-muted-foreground">{t('publicBooking.tassaSoggiornoCalculated')}</p>
-            <p className="text-lg font-semibold pt-2">{t('publicBooking.totaleStimato', { amount: formatCurrency(estimatedTotal) })}</p>
-          </div>
-        )}
-
-        <Button
-          className="w-full sm:w-auto"
-          disabled={nights <= 0 || !dateRangeAvailable}
-          onClick={() =>
-            navigate(
-              `/book/${orgSlug}/property/${propertyId}/checkout?checkIn=${checkIn}&checkOut=${checkOut}`,
-            )
-          }
-        >
-          {t('publicBooking.proceedToCheckout')}
-        </Button>
-      </section>
     </div>
   );
 }

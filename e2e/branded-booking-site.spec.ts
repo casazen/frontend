@@ -17,7 +17,7 @@ test.describe('Branded booking site (#215)', () => {
   test('AC4/AC5: branded landing renders org branding and listings without login', async ({ page }) => {
     await page.goto(`/book/${DEMO_ORG_SLUG}`);
 
-    await expect(page.getByTestId('public-booking-shell')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
     await expect(page.getByText('CIN valido')).toBeVisible();
@@ -88,7 +88,7 @@ test.describe('Branded booking site (#215)', () => {
 
   test('AC8: footer contains Privacy Policy and Terms of Service links', async ({ page }) => {
     await page.goto(`/book/${DEMO_ORG_SLUG}`);
-    await expect(page.getByTestId('public-booking-shell')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
 
     await expect(page.getByRole('link', { name: 'Privacy Policy' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Termini di servizio' })).toBeVisible();
@@ -107,6 +107,6 @@ test.describe('Branded booking site (#215)', () => {
     await page.goto('/app/short-rent/dashboard');
     // In demo mode the protected routes are bypassed, but in non-demo they redirect
     // We verify the page is NOT the public booking shell (no auth chrome on /book)
-    await expect(page.getByTestId('public-booking-shell')).not.toBeAttached();
+    await expect(page.getByTestId('public-site-shell')).not.toBeAttached();
   });
 });

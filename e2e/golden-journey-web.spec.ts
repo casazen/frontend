@@ -36,7 +36,7 @@ test.describe('Golden Journey web (#301)', () => {
 
     // Step 4: guest public booking — branded shell
     await page.goto(demoUrl(`/book/${DEMO_ORG_SLUG}`, 'short-stay'), { waitUntil: 'networkidle' });
-    await expect(page.getByTestId('public-booking-shell')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
     await expect(
       page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true }),
     ).toBeVisible();

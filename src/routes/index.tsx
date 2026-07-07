@@ -13,7 +13,7 @@ import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
-import { PublicBookingShell } from '@/components/layout/public-booking-shell';
+import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
@@ -125,12 +125,19 @@ export const router = createBrowserRouter([
   },
   {
     path: '/book/:orgSlug',
-    element: <PublicBookingShell />,
+    element: <PublicSiteShell mode="org" />,
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       { path: 'property/:propertyId', element: <PublicPropertyPage /> },
       { path: 'property/:propertyId/checkout', element: <CheckoutPage /> },
+    ],
+  },
+  {
+    element: <PublicSiteShell mode="default" />,
+    children: [
+      { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
+      { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
     ],
   },
   {
@@ -144,14 +151,6 @@ export const router = createBrowserRouter([
   {
     path: '/checkin/:token',
     element: <CheckInPage />,
-  },
-  {
-    path: '/p/affitti-brevi/:region/:comune',
-    element: <ComplianceGuidePage />,
-  },
-  {
-    path: '/p/tassa-soggiorno/:comune',
-    element: <TouristTaxCalculatorPage />,
   },
   {
     path: '/supplier',
