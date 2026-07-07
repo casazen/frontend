@@ -22,6 +22,8 @@ export interface Property {
   timezone: string;  // ✅ Added - missing from backend
   cancellationPolicyId: string | null;  // ✅ Added - missing from backend
   isActive: boolean;
+  complianceStatus?: string | null;
+  slug?: string | null;
   ownerId: string;
   createdAt: string;
   updatedAt: string;
@@ -44,6 +46,7 @@ export interface CreatePropertyDto {
   amenities?: string[];
   photoUrls?: string[];  // ✅ Fixed: was images
   cinCode?: string | null;
+  slug?: string | null;
   isActive?: boolean;
 }
 
@@ -72,6 +75,7 @@ export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 /** Public list read-model (US-001 #212) — no ownerId or internal fields. */
 export interface PublicPropertyDto {
   id: string;
+  slug?: string | null;
   name: string;
   description: string;
   city: string;

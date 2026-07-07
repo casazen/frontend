@@ -22,6 +22,12 @@ export const propertyFormSchema = z.object({
     .regex(/^IT-\d{5}-\d{10}$/, 'property.validation.cin.format')
     .optional()
     .or(z.literal('')),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'property.validation.slug.format')
+    .max(80, 'property.validation.slug.maxLength')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>;

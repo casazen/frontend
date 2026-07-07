@@ -52,6 +52,10 @@ export async function fetchSuppliersByComune(comune: string, category?: string):
   return ApiClient.get<SupplierListResponse>('/suppliers', { comune, category });
 }
 
+export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
+  return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category });
+}
+
 export async function matchSupplier(payload: MatchSupplierDto): Promise<SupplierMatchResponse> {
   const { data } = await axios.post<SupplierMatchResponse>('/service-requests/match-supplier', payload);
   return data;

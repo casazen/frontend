@@ -4,6 +4,7 @@ import {
   mockBrandedBookingApi,
   mockOrgProperties,
   mockOrgPropertyId,
+  mockOrgPropertySlug,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
 
@@ -165,7 +166,7 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     await page.goto(`/book/${DEMO_ORG_SLUG}?checkIn=2026-09-01&checkOut=2026-09-03`);
 
     await expect(page).toHaveURL(
-      new RegExp(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}`),
+      new RegExp(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}`),
       { timeout: 15_000 },
     );
     await expect(page).toHaveURL(/checkIn=2026-09-01/);

@@ -16,9 +16,7 @@ import { Edit, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { AlloggiatiStatusBadge } from '@/features/alloggiati/components/alloggiati-status-badge';
 import { ResendButton } from '@/features/alloggiati/components/resend-button';
-import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
-import { useProperty } from '@/queries/use-properties';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import { CheckInSessionBadge } from './components/checkin-session-badge';
 
@@ -29,7 +27,6 @@ export function BookingDetailPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<BookingTab>('details');
   const { data: booking, isLoading } = useBooking(id!);
-  const { data: property } = useProperty(booking?.propertyId ?? '');
   const { data: serviceRequests } = useServiceRequests(
     booking ? { propertyId: booking.propertyId } : undefined,
   );
@@ -73,19 +70,10 @@ export function BookingDetailPage() {
           title={`Booking #${booking.id.slice(0, 8)}`}
           description={`${booking.guest.firstName} ${booking.guest.lastName}`}
           action={
-            <div className="flex gap-2">
-              {property?.city && (
-                <ServiceRequestForm
-                  propertyId={booking.propertyId}
-                  bookingId={booking.id}
-                  propertyCity={property.city}
-                />
-              )}
-              <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
-                <Edit className="mr-2 h-4 w-4" />
-                {t('booking.detailPage.editBooking')}
-              </Button>
-            </div>
+            <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
+              <Edit className="mr-2 h-4 w-4" />
+              {t('booking.detailPage.editBooking')}
+            </Button>
           }
         />
 

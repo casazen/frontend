@@ -1023,7 +1023,16 @@
       },
       "cin": {
         "format": "CIN format: IT-XXXXX-XXXXXXXXXX"
+      },
+      "slug": {
+        "format": "Slug must contain only lowercase letters, numbers and hyphens (e.g. my-property)",
+        "maxLength": "Slug must be at most 80 characters"
       }
+    },
+    "slug": {
+      "label": "URL Slug (optional)",
+      "placeholder": "my-property",
+      "hint": "Customize the URL for this property on your booking site. Leave empty to use the property ID."
     }
   },
   "pricing": {
@@ -1100,6 +1109,7 @@
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
     "aiMatchDescription": "CasaZen AI picks the best supplier for your property and intervention type.",
+    "propertyScopedDescription": "Send a service request to the selected supplier for this property.",
     "aiRecommendation": "AI recommendation",
     "matching": "Finding the best supplier...",
     "selectedSupplier": "Selected supplier",
@@ -1169,11 +1179,17 @@
   },
   "marketplace": {
     "title": "Service Marketplace",
-    "description": "Manage supplier requests for cleaning, maintenance and property services.",
+    "description": "Find suppliers for your property and manage service requests.",
+    "selectProperty": "Select a property",
+    "selectPropertyHint": "Select a property to browse available suppliers.",
+    "allCategories": "All categories",
+    "suppliersTitle": "Available suppliers",
+    "noSuppliers": "No suppliers found for this property.",
+    "selectSupplierHint": "Select a supplier to view details and request a service.",
     "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",
     "noRequests": "No service requests yet.",
-    "noRequestsHint": "Open a booking and use \"Request supplier\" to create your first intervention.",
+    "noRequestsHint": "Select a property and a supplier to create your first intervention.",
     "viewBooking": "View booking",
     "quickActions": "Quick actions",
     "goToBookings": "Go to bookings",
@@ -1440,7 +1456,15 @@
     "publicUrlDescription": "Share this link with guests for direct bookings.",
     "copyUrl": "Copy URL",
     "urlCopied": "URL copied to clipboard",
-    "urlCopyError": "Could not copy URL"
+    "urlCopyError": "Could not copy URL",
+    "propertiesLabel": "Properties",
+    "noProperties": "No properties found. Add a property to get started.",
+    "published": "Published",
+    "notPublished": "Not published",
+    "copyPropertyUrl": "Copy property URL",
+    "openPropertyPage": "Open property page",
+    "orgUrlSectionTitle": "Org URL",
+    "selectPropertyHint": "Select a property to preview its booking page."
   },
   "plan": {
     "unlimitedProperties": "Unlimited properties",
