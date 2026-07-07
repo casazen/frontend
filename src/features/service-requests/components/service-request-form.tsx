@@ -30,7 +30,7 @@ interface ServiceRequestFormProps {
   propertyCity: string;
 }
 
-export function ServiceRequestForm({ propertyId, bookingId, propertyCity }: ServiceRequestFormProps) {
+export function ServiceRequestForm({ propertyId, bookingId, propertyCity: _propertyCity }: ServiceRequestFormProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<string>('cleaning');
