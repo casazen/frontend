@@ -40,24 +40,25 @@ export function VetrinaPropertyRow({ property, orgSlug, isSelected, onSelect }: 
       type="button"
       data-testid="vetrina-property-row"
       onClick={() => onSelect(property.id)}
-      className={`w-full flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors hover:bg-muted/50 ${
+      className={`w-full flex items-start gap-2 rounded-lg border px-3 py-2.5 text-left transition-colors hover:bg-muted/50 ${
         isSelected ? 'border-primary bg-primary/5' : 'border-transparent bg-transparent'
       }`}
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{property.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{property.city}</p>
+        <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+          <p className="truncate text-xs text-muted-foreground">{property.city}</p>
+          <Badge
+            variant={publishable ? 'success' : 'secondary'}
+            className="shrink-0 px-1.5 py-0 text-[10px]"
+            data-testid="property-publish-badge"
+          >
+            {publishable ? t('directBooking.published') : t('directBooking.notPublished')}
+          </Badge>
+        </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        <Badge
-          variant={publishable ? 'success' : 'secondary'}
-          className="text-xs"
-          data-testid="property-publish-badge"
-        >
-          {publishable ? t('directBooking.published') : t('directBooking.notPublished')}
-        </Badge>
-
+      <div className="flex shrink-0 items-center gap-1">
         <Button
           type="button"
           variant="ghost"
