@@ -67,7 +67,8 @@ function WidgetForm({
       checkOut ? `checkOut=${checkOut}` : '',
       guests !== 2 ? `guests=${guests}` : '',
     ].filter(Boolean).join('&');
-    navigate(`/book/${orgSlug}/property/${property.id}/checkout${qs ? `?${qs}` : ''}`);
+    const segment = (property as { slug?: string | null }).slug?.trim() || property.id;
+    navigate(`/book/${orgSlug}/property/${segment}/checkout${qs ? `?${qs}` : ''}`);
     onCheckout?.();
   };
 

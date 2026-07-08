@@ -129,8 +129,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
-      { path: 'property/:propertyId', element: <PublicPropertyPage /> },
-      { path: 'property/:propertyId/checkout', element: <CheckoutPage /> },
+      { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
+      { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
     ],
   },
   {
