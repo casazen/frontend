@@ -49,7 +49,7 @@ export function PublicPropertyPage() {
   const query = toQueryString();
 
   return (
-    <div className="space-y-8" data-testid="public-property-page">
+    <div className="space-y-6 md:space-y-8" data-testid="public-property-page">
       <PublicBreadcrumb
         segments={[
           { label: org.displayName, href: basePath },
@@ -66,7 +66,7 @@ export function PublicPropertyPage() {
           <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="public-display text-2xl font-semibold">{property.name}</h1>
+                <h1 className="public-display text-xl font-semibold md:text-2xl">{property.name}</h1>
                 <p className="text-[var(--cz-public-muted)]">
                   {property.city}
                   {property.postalCode ? ` (${property.postalCode})` : ''}

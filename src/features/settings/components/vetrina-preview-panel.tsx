@@ -2,10 +2,15 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, Monitor, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface VetrinaPreviewPanelProps {
   bookingSitePath: string;
 }
+
+/** iPhone 14 logical viewport — keeps iframe media queries in mobile mode. */
+const MOBILE_PREVIEW_WIDTH = 390;
+const MOBILE_PREVIEW_HEIGHT = 720;
 
 export function VetrinaPreviewPanel({ bookingSitePath }: VetrinaPreviewPanelProps) {
   const { t } = useTranslation();
@@ -50,18 +55,37 @@ export function VetrinaPreviewPanel({ bookingSitePath }: VetrinaPreviewPanelProp
       </div>
 
       <div
-        className={`relative min-h-0 flex-1 bg-muted/20 ${
-          device === 'mobile' ? 'flex justify-center' : ''
-        }`}
+        className={cn(
+          'min-h-0 flex-1',
+          device === 'mobile'
+            ? 'flex items-start justify-center overflow-y-auto bg-muted/30 p-4 md:p-6'
+            : 'relative bg-muted/20',
+        )}
+        data-device-preview={device}
       >
-        <iframe
-          title={t('directBooking.previewIframeTitle')}
-          src={bookingSitePath}
-          className={`absolute inset-0 border-0 bg-background ${
-            device === 'mobile' ? 'left-1/2 w-full max-w-[430px] -translate-x-1/2 shadow-lg' : 'h-full w-full'
-          }`}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        />
+        {device === 'mobile' ? (
+          <div
+            className="mb-4 shrink-0 overflow-hidden rounded-[2.5rem] border-[10px] border-zinc-900 bg-zinc-900 shadow-2xl"
+            data-testid="vetrina-mobile-frame"
+            style={{ width: MOBILE_PREVIEW_WIDTH }}
+          >
+            <iframe
+              title={t('directBooking.previewIframeTitle')}
+              src={bookingSitePath}
+              width={MOBILE_PREVIEW_WIDTH}
+              height={MOBILE_PREVIEW_HEIGHT}
+              className="block border-0 bg-background"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            />
+          </div>
+        ) : (
+          <iframe
+            title={t('directBooking.previewIframeTitle')}
+            src={bookingSitePath}
+            className="absolute inset-0 h-full w-full border-0 bg-background"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          />
+        )}
       </div>
     </div>
   );

@@ -38,6 +38,10 @@ async function mockMarketplaceApis(page: Page) {
   await mockEntitlement(page);
 
   await page.route('**/api/suppliers**', async (route) => {
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
+      await route.fallback();
+      return;
+    }
     const url = new URL(route.request().url());
     if (url.searchParams.get('propertyId') === PROPERTY_ID) {
       await route.fulfill({
@@ -55,6 +59,10 @@ async function mockMarketplaceApis(page: Page) {
   });
 
   await page.route('**/api/service-requests**', async (route) => {
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
+      await route.fallback();
+      return;
+    }
     const method = route.request().method();
     if (method === 'GET') {
       await route.fulfill({
@@ -110,7 +118,7 @@ test.describe('Marketplace suppliers (#340)', () => {
 
     await page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`).click();
     await expect(page.getByTestId('marketplace-supplier-detail')).toBeVisible();
-    await expect(page.getByText('Pulizie Express Srl')).toBeVisible();
+    await expect(page.getByTestId('marketplace-supplier-detail').getByText('Pulizie Express Srl')).toBeVisible();
 
     await page.getByTestId('marketplace-request-service-btn').click();
     await expect(page.getByTestId('service-request-dialog')).toBeVisible();

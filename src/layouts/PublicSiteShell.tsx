@@ -75,22 +75,22 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
       </a>
 
       <header className="border-b border-black/10 bg-[var(--cz-public-surface)]">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-4">
-          <Link to={isOrgMode ? basePath : '/search'} className="flex min-w-0 items-center">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4 md:py-4">
+          <Link to={isOrgMode ? basePath : '/search'} className="flex min-w-0 flex-1 items-center">
             {org?.logoUrl ? (
-              <img src={org.logoUrl} alt={displayName} className="h-10 w-auto max-w-[200px] object-contain" />
+              <img src={org.logoUrl} alt={displayName} className="h-9 w-auto max-w-[160px] object-contain md:h-10 md:max-w-[200px]" />
             ) : (
-              <span className="public-display truncate text-lg font-semibold">{displayName}</span>
+              <span className="public-display truncate text-base font-semibold md:text-lg">{displayName}</span>
             )}
           </Link>
 
           {isOrgMode ? (
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 md:gap-2">
               {showBookingCta ? (
                 <Button
                   type="button"
                   size="sm"
-                  className="public-site-cta border-0"
+                  className="public-site-cta hidden border-0 md:inline-flex"
                   onClick={scrollToBookingWidget}
                   data-testid="header-booking-cta"
                 >
@@ -122,7 +122,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         </div>
       </header>
 
-      <main id="main-content" className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8 pb-24 md:pb-8">
+      <main id="main-content" className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 md:px-4 md:py-8 md:pb-8">
         {isOrgMode ? <Outlet context={{ org }} /> : <Outlet />}
       </main>
 
