@@ -25,6 +25,7 @@ export interface Entitlement {
   limits: EntitlementLimits;
   usage: EntitlementUsage;
   canAddProperty: boolean;
+  canUseCustomDomain?: boolean;
 }
 
 /** Catalogue entry from GET /api/orgs/plans. maxProperties = -1 means unlimited. */

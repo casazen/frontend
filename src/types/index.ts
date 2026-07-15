@@ -13,5 +13,6 @@ export * from './lease.types';
 export * from './admin.types';
 export * from './users.types';
 export * from './org.types';
+export * from './domain.types';
 export * from './direct-booking.types';
 export * from './alloggiati.types';

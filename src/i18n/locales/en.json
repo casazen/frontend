@@ -119,7 +119,9 @@
       "sendInvite": "Send invitation",
       "toast": {
         "success": "Invitation sent — expires {{expiresAt}}",
-        "error": "Unable to send the invitation"
+        "error": "Unable to send the invitation",
+        "duplicate": "An active invitation already exists for this email",
+        "emailFailed": "Email delivery failed — please try again in a few minutes"
       }
     },
     "seo": {
@@ -187,6 +189,7 @@
     "payments": "Payments",
     "revenue": "Revenue",
     "stripeConnect": "Payouts",
+    "domain": "Public domain",
     "ota": "OTA",
     "leases": "Leases",
     "users": "Users",
@@ -1430,7 +1433,50 @@
     "verificationIncompleteDescription": "Stripe requires additional documents. Click \"Complete verification\" to continue the onboarding.",
     "accountActiveMessage": "Your account can accept payments. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
     "managePlanIn": "Manage SaaS plan in",
-    "planSettings": "Plan settings"
+    "domainLink": "Domain settings"
+  },
+  "domain": {
+    "status": {
+      "Pending": "Pending",
+      "Verified": "Verified",
+      "Failed": "Failed"
+    },
+    "modes": {
+      "path": "CasaZen path (/book/{slug})",
+      "subdomain": "CasaZen subdomain ({slug}.casazen.it)",
+      "custom": "Custom domain (Pro)"
+    },
+    "settings": {
+      "title": "Public booking domain",
+      "description": "Choose how guests reach your branded booking site.",
+      "loading": "Loading domain settings...",
+      "noOrg": "No organization found for your account.",
+      "modeTitle": "Publication mode",
+      "modeDescription": "Starter supports path and subdomain. Custom domains require Pro.",
+      "subdomainLabel": "Subdomain label",
+      "customDomainLabel": "Custom domain",
+      "save": "Save domain settings",
+      "saved": "Domain settings saved",
+      "saveFailed": "Could not save domain settings",
+      "verify": "Verify DNS",
+      "verifySuccess": "Domain verified successfully",
+      "verifyFailed": "DNS verification failed — check your records and try again",
+      "upgradeCta": "Custom domains are available on Pro.",
+      "upgradeLink": "Upgrade plan",
+      "currentTitle": "Current configuration",
+      "pathUrl": "Path URL",
+      "subdomainUrl": "Subdomain URL",
+      "customDomainUrl": "Custom domain URL"
+    },
+    "dns": {
+      "title": "DNS instructions",
+      "description": "Add these records at your DNS provider, then click Verify.",
+      "cname": "CNAME record",
+      "txt": "TXT verification record",
+      "copyCname": "Copy CNAME target",
+      "copyTxt": "Copy TXT value",
+      "copied": "Copied to clipboard"
+    }
   },
   "vetrina": {
     "title": "Showcase",
