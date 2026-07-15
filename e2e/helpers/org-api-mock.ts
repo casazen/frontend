@@ -21,8 +21,13 @@ function buildDemoMeBody(profile: string) {
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
       onboardingCompletedAt: '2026-01-01T00:00:00Z',
-      orgId: null,
-      org: null,
+      orgId: '22222222-2222-2222-2222-222222222202',
+      org: {
+        id: '22222222-2222-2222-2222-222222222202',
+        name: 'Pulizie Demo Srl',
+        slug: 'pulizie-demo',
+        planTier: 'Starter' as PlanTier,
+      },
     };
   }
 

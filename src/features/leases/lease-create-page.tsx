@@ -12,7 +12,7 @@ export function LeaseCreatePage() {
 
   const handleSubmit = async (data: CreateLeaseDto) => {
     const lease = await createLease.mutateAsync(data);
-    navigate(`/leases/${lease.id}`);
+    navigate(`/app/long-rent/leases/${lease.id}`);
   };
 
   return (

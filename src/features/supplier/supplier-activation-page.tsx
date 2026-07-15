@@ -247,6 +247,7 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
 
 export function SupplierActivationPage() {
   const { t } = useTranslation();
+  const [step, setStep] = useState<'registration' | 'calendar'>('registration');
   const { data: activation, isLoading: activationLoading } = useSupplierActivation();
   const { data: profile, isLoading: profileLoading } = useSupplierProfile();
 
@@ -257,8 +258,6 @@ export function SupplierActivationPage() {
   if (activation.status === 'Active') {
     return <Navigate to="/app/supplier/dashboard" replace />;
   }
-
-  const [step, setStep] = useState<'registration' | 'calendar'>('registration');
 
   return (
     <div className="max-w-lg mx-auto" data-testid="supplier-activation-page">
