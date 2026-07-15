@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { isAxiosError } from 'axios';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,8 +31,17 @@ export function AdminSupplierInvitePage() {
       setEmail('');
       setComuneCode('');
       setMessage('');
-    } catch {
-      toast.error(t('admin.supplierInvite.toast.error'));
+    } catch (error) {
+      const code = isAxiosError(error)
+        ? (error.response?.data as { code?: string } | undefined)?.code
+        : undefined;
+      if (code === 'duplicate_invite') {
+        toast.error(t('admin.supplierInvite.toast.duplicate'));
+      } else if (code === 'invite_email_failed') {
+        toast.error(t('admin.supplierInvite.toast.emailFailed'));
+      } else {
+        toast.error(t('admin.supplierInvite.toast.error'));
+      }
     }
   };
 
@@ -48,17 +58,33 @@ export function AdminSupplierInvitePage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="email">{t('admin.supplierInvite.email')}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input
+              id="email"
+              type="email"
+              data-testid="invite-email-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="comune">{t('admin.supplierInvite.comuneCode')}</Label>
-            <Input id="comune" value={comuneCode} onChange={(e) => setComuneCode(e.target.value)} placeholder="H501" />
+            <Input
+              id="comune"
+              data-testid="invite-comune-input"
+              value={comuneCode}
+              onChange={(e) => setComuneCode(e.target.value)}
+              placeholder="H501"
+            />
           </div>
           <div>
             <Label htmlFor="message">{t('admin.supplierInvite.message')}</Label>
             <Input id="message" value={message} onChange={(e) => setMessage(e.target.value)} />
           </div>
-          <Button onClick={() => void submit()} disabled={invite.isPending || !email || !comuneCode}>
+          <Button
+            data-testid="invite-submit-btn"
+            onClick={() => void submit()}
+            disabled={invite.isPending || !email || !comuneCode}
+          >
             {t('admin.supplierInvite.sendInvite')}
           </Button>
         </CardContent>

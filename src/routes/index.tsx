@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { LoginPage } from '@/pages/login-page';
@@ -158,7 +159,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/supplier/*',
-    element: <Navigate to="/app/supplier/inbox" replace />,
+    element: <SupplierLegacyPathRedirect />,
   },
   {
     path: '/help/ical',

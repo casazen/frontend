@@ -10,5 +10,6 @@ export function demoUrl(path: string, profile: DemoProfile): string {
 export async function setDemoProfile(page: Page, profile: DemoProfile): Promise<void> {
   await page.addInitScript((value) => {
     (window as Window & { __E2E_DEMO_PROFILE?: string }).__E2E_DEMO_PROFILE = value;
+    sessionStorage.setItem('casazen:demo-profile', value);
   }, profile);
 }

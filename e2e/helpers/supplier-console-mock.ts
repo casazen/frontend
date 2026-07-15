@@ -47,8 +47,20 @@ const demoActivationActive: ActivationStatus = {
   steps: demoActivationPending.steps.map((step) => ({ ...step, status: 'completed', blocker: null })),
 };
 
-export async function mockSupplierConsoleApi(page: Page, options?: { active?: boolean }): Promise<void> {
+interface InboxItem {
+  id: string;
+  status: string;
+  propertyName?: string;
+  serviceCategory?: string;
+  requestedAt?: string;
+}
+
+export async function mockSupplierConsoleApi(
+  page: Page,
+  options?: { active?: boolean; inboxItems?: InboxItem[] },
+): Promise<void> {
   const active = options?.active ?? false;
+  const inboxItems = options?.inboxItems ?? [];
   const profile: SupplierProfile = active
     ? { ...demoSupplierProfile, status: 'Active', categories: ['Pulizie'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
     : demoSupplierProfile;
@@ -86,7 +98,11 @@ export async function mockSupplierConsoleApi(page: Page, options?: { active?: bo
     }
 
     if (url.includes('/inbox')) {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], total: 0 }) });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: inboxItems, total: inboxItems.length }),
+      });
       return;
     }
 
