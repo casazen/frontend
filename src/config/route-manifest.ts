@@ -103,6 +103,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/pricing/history'],
   },
   {
+    path: '/app/short-rent/settings/domain',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navKey: 'nav.domain',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 4,
+    icon: 'Globe',
+    component: async () => ({
+      default: (await import('@/features/settings/domain/custom-domain-settings-page')).CustomDomainSettingsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/plan',
     context: 'short-rent',
     requiredPermissions: ['property.read'],

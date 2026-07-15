@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Menu } from 'lucide-react';
 import { usePublicOrg } from '@/queries/use-public-org';
+import { useCustomHostRedirect } from '@/hooks/use-custom-host-redirect';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { Footer } from '@/features/public-site/components/Footer';
@@ -29,6 +30,7 @@ function scrollToBookingWidget() {
 }
 
 export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
+  useCustomHostRedirect();
   const { t } = useTranslation();
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const location = useLocation();
