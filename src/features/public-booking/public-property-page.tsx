@@ -84,11 +84,11 @@ export function PublicPropertyPage() {
               <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {t('publicBooking.ospiti', { count: property.maxGuests })}</span>
             </div>
 
-            {property.amenities.length > 0 ? (
+            {(property.amenities ?? []).length > 0 ? (
               <div className="space-y-3">
                 <h2 className="font-semibold">{t('publicBooking.servicesTitle')}</h2>
                 <Suspense fallback={null}>
-                  <AmenityGrid amenities={property.amenities} />
+                  <AmenityGrid amenities={property.amenities ?? []} />
                 </Suspense>
               </div>
             ) : null}

@@ -37,7 +37,11 @@ export function PriceBreakdown({
       </div>
       <div className="flex justify-between">
         <span>{t('publicBooking.tassaSoggiorno')}</span>
-        <span>{formatCurrency(touristTaxAmount, currency)}</span>
+        <span>
+          {touristTaxAmount > 0
+            ? formatCurrency(touristTaxAmount, currency)
+            : t('publicBooking.tassaSoggiornoCalculated')}
+        </span>
       </div>
       <div className="flex justify-between border-t pt-2 text-base font-semibold">
         <span>{t('publicBooking.totale')}</span>

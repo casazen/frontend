@@ -14,7 +14,7 @@ interface PropertySearchCardProps {
 
 export function PropertySearchCard({ property, onViewDetails }: PropertySearchCardProps) {
   const { t } = useTranslation();
-  const heroPhoto = property.photoUrls[0];
+  const heroPhoto = property.photoUrls?.[0];
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">

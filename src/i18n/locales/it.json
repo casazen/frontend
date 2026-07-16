@@ -119,7 +119,9 @@
       "sendInvite": "Invia invito",
       "toast": {
         "success": "Invito inviato — scade {{expiresAt}}",
-        "error": "Impossibile inviare l'invito"
+        "error": "Impossibile inviare l'invito",
+        "duplicate": "Esiste già un invito attivo per questa email",
+        "emailFailed": "Consegna email fallita — riprova tra qualche minuto"
       }
     },
     "seo": {
@@ -187,6 +189,7 @@
     "payments": "Incassi",
     "revenue": "Ricavi",
     "stripeConnect": "Incassi e Payout",
+    "domain": "Dominio pubblico",
     "ota": "OTA",
     "leases": "Contratti",
     "users": "Utenti",
@@ -1432,7 +1435,51 @@
     "verificationIncompleteDescription": "Stripe richiede documenti aggiuntivi. Clicca \"Completa la verifica\" per continuare l'onboarding.",
     "accountActiveMessage": "Il tuo account può accettare pagamenti. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi.",
     "managePlanIn": "Gestisci il piano SaaS in",
+    "domainLink": "Impostazioni dominio",
     "planSettings": "Impostazioni piano"
+  },
+  "domain": {
+    "status": {
+      "Pending": "In attesa",
+      "Verified": "Verificato",
+      "Failed": "Non verificato"
+    },
+    "modes": {
+      "path": "Percorso CasaZen (/book/{slug})",
+      "subdomain": "Sottodominio CasaZen ({slug}.casazen.it)",
+      "custom": "Dominio personalizzato (Pro)"
+    },
+    "settings": {
+      "title": "Dominio prenotazioni pubblico",
+      "description": "Scegli come gli ospiti raggiungono il tuo sito di prenotazione brandizzato.",
+      "loading": "Caricamento impostazioni dominio…",
+      "noOrg": "Nessuna organizzazione trovata per il tuo account.",
+      "modeTitle": "Modalità di pubblicazione",
+      "modeDescription": "Starter supporta percorso e sottodominio. I domini personalizzati richiedono Pro.",
+      "subdomainLabel": "Etichetta sottodominio",
+      "customDomainLabel": "Dominio personalizzato",
+      "save": "Salva impostazioni dominio",
+      "saved": "Impostazioni dominio salvate",
+      "saveFailed": "Impossibile salvare le impostazioni dominio",
+      "verify": "Verifica DNS",
+      "verifySuccess": "Dominio verificato con successo",
+      "verifyFailed": "Verifica DNS non riuscita — controlla i record e riprova",
+      "upgradeCta": "I domini personalizzati sono disponibili con Pro.",
+      "upgradeLink": "Passa a Pro",
+      "currentTitle": "Configurazione attuale",
+      "pathUrl": "URL percorso",
+      "subdomainUrl": "URL sottodominio",
+      "customDomainUrl": "URL dominio personalizzato"
+    },
+    "dns": {
+      "title": "Istruzioni DNS",
+      "description": "Aggiungi questi record presso il tuo provider DNS, poi clicca Verifica.",
+      "cname": "Record CNAME",
+      "txt": "Record TXT di verifica",
+      "copyCname": "Copia target CNAME",
+      "copyTxt": "Copia valore TXT",
+      "copied": "Copiato negli appunti"
+    }
   },
   "vetrina": {
     "title": "Vetrina",

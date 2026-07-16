@@ -1,7 +1,7 @@
 import { test, expect } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
-import { resetE2eStorage } from './helpers/locale';
+import { pinE2eLocale, resetE2eStorage } from './helpers/locale';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
@@ -9,18 +9,18 @@ test.describe('Supplier layout standardization', () => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page);
 
-      await page.goto(demoUrl('/supplier/activation', 'supplier'));
+      await page.goto(demoUrl('/app/supplier/activation', 'supplier'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier Profile Activation/i })).toBeVisible();
 
       // Step 1: categories + comuni
       await page.getByRole('button', { name: 'Pulizie' }).click();
-      await page.getByLabel('Codici comune (separati da virgola)').fill('H501');
-      await page.getByRole('button', { name: /Continua/i }).click();
+      await page.locator('#comuni').fill('H501');
+      await page.getByRole('button', { name: /Continua|Continue/i }).click();
 
       // Step 2: ToS + activate
-      await page.getByLabel(/Accetto i termini di servizio/i).click();
-      await page.getByRole('button', { name: 'Attiva profilo' }).click();
+      await page.locator('#tos').click();
+      await page.getByRole('button', { name: /Attiva profilo|Activate profile/i }).click();
 
       await expect(page).toHaveURL(/\/app\/supplier\/dashboard/, { timeout: 15_000 });
     });
@@ -55,6 +55,10 @@ test.describe('Supplier layout standardization', () => {
   test.describe('Desktop sidebar', () => {
     test.use({ viewport: { width: 1280, height: 720 } });
 
+    test.beforeEach(async ({ page }) => {
+      await pinE2eLocale(page, 'en');
+    });
+
     test('sidebar shows supplier nav items', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
@@ -84,7 +88,7 @@ test.describe('Supplier layout standardization', () => {
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
       const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
-      const inboxLink = sidebar.getByRole('link', { name: /Inbox/i });
+      const inboxLink = sidebar.getByRole('link', { name: /Inbox|Richieste|Requests/i });
       await expect(inboxLink).toHaveAttribute('aria-current', 'page');
     });
 
@@ -113,7 +117,7 @@ test.describe('Supplier layout standardization', () => {
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      const bottomNav = page.getByRole('navigation', { name: 'Mobile navigation' });
+      const bottomNav = page.getByRole('navigation', { name: 'Navigazione mobile' });
       await expect(bottomNav).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Dashboard/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
