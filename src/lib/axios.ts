@@ -65,7 +65,7 @@ axiosInstance.interceptors.request.use(
       }
     } else if (!isPublicEndpoint) {
       console.warn('[Auth Debug] getAccessToken not set - no auth will be sent');
-      console.warn('[Auth Debug] Make sure AuthInitializer is rendered and user is logged in');
+      console.warn('[Auth Debug] Make sure Auth0 providers are mounted and user is logged in');
     }
     return config;
   },

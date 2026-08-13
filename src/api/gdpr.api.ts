@@ -12,4 +12,8 @@ export const gdprApi = {
 
   updateConsent: (guestId: string, marketingConsent: boolean) =>
     ApiClient.put(`/gdpr/guests/${guestId}/consent`, { marketingConsent }),
+
+  exportOrgFiscal: () => ApiClient.get('/gdpr/org/export'),
+
+  anonymizeOrgFiscal: () => ApiClient.post('/gdpr/org/anonymize'),
 };

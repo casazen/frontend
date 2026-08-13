@@ -27,6 +27,7 @@ export function PaymentCreatePage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
@@ -34,6 +35,11 @@ export function PaymentCreatePage() {
       currency: 'EUR',
     } as any,
   });
+
+  const selectedBookingId = watch('bookingId');
+  const selectedBooking = bookings.find((b) => b.id === selectedBookingId);
+  const otaSources = new Set(['Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda']);
+  const isOta = selectedBooking?.source ? otaSources.has(selectedBooking.source) : false;
 
   const onSubmit = async (data: PaymentFormValues) => {
     await createPayment.mutateAsync(data);
@@ -117,6 +123,12 @@ export function PaymentCreatePage() {
                   <p className="text-sm text-destructive">{errors.method.message}</p>
                 )}
               </div>
+
+              {isOta && (
+                <p data-testid="fiscal-ota-withholding-hint" className="text-sm text-muted-foreground">
+                  {t('fiscal.page.description')}
+                </p>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="description">{t('payment.create.description')}</Label>

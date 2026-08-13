@@ -26,6 +26,9 @@ export interface Payment {
   stripeChargeId?: string;
   refundedAmount?: number;
   description?: string;
+  otaWithholdingTax?: number;
+  withholdingTaxApplied?: boolean;
+  netAmountAfterWithholding?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +39,11 @@ export interface CreatePaymentDto {
   currency?: string;
   method: PaymentMethod;
   description?: string;
+  applyOtaWithholding?: boolean;
+  manualWithholdingTax?: number;
+  otaWithholdingTax?: number;
+  withholdingTaxApplied?: boolean;
+  netAmountAfterWithholding?: number;
 }
 
 export interface UpdatePaymentDto extends Partial<CreatePaymentDto> {

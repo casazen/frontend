@@ -32,32 +32,80 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   await loginButton.click();
 
   await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
+  await page.waitForLoadState('domcontentloaded');
 
-  // Auth0 Universal Login — username/email field
-  const usernameField = page
-    .locator('input[name="username"], input[name="email"], input[type="email"], input[autocomplete="username"], input[autocomplete="email"]')
+  // New Universal Login sometimes shows a database-connection picker first.
+  // Avoid "Forgot password" / generic Email links — those divert into reset flows.
+  const preIdentifier = page
+    .getByRole('button', { name: /continue with (email|password)|accedi con email/i })
+    .or(page.locator('button[data-provider="auth0"]'))
     .first();
-  await usernameField.waitFor({ state: 'visible', timeout: 15_000 });
+  if (await preIdentifier.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    await preIdentifier.click();
+  }
+
+  // Auth0 Universal Login — username/email field (classic + New UL + identifier-first)
+  const usernameSelectors = [
+    'input#username',
+    'input[name="username"]',
+    'input[name="email"]',
+    'input[type="email"]',
+    'input[inputmode="email"]',
+    'input[autocomplete="username"]',
+    'input[autocomplete="email"]',
+  ].join(', ');
+
+  const usernameField = page.locator(usernameSelectors).first();
+  try {
+    await usernameField.waitFor({ state: 'visible', timeout: 20_000 });
+  } catch {
+    await page.screenshot({ path: 'test-results/auth0-username-debug.png', fullPage: true }).catch(() => undefined);
+    const url = page.url();
+    const title = await page.title().catch(() => '(no title)');
+    const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
+    const consoleDump = consoleLogs.length > 0 ? ` Console errors: ${consoleLogs.join(' | ')}` : '';
+    throw new Error(
+      `Auth0 username field not visible. URL: "${url}". Title: "${title}". Body preview: "${bodyText.slice(0, 500)}".${consoleDump}`,
+    );
+  }
   await usernameField.fill(email);
 
-  // Check if password is on the same screen (classic login) or separate screen (identifier-first)
-  const passwordField = page.locator('input[name="password"], input[type="password"], input[autocomplete="current-password"]').first();
+  const passwordField = page
+    .locator('input#password, input[name="password"], input[type="password"], input[autocomplete="current-password"]')
+    .first();
   const passwordVisible = await passwordField.isVisible({ timeout: 3_000 }).catch(() => false);
 
   if (!passwordVisible) {
-    // Identifier-first flow: submit username then enter password
-    const submitBtn = page
-      .locator('button[type="submit"], button[name="action"], button[data-action-button-primary="true"], button[data-provider="auth0"], input[type="submit"]')
+    // Identifier-first: only the primary Continue action — never Forgot/Reset.
+    const continueBtn = page
+      .getByRole('button', { name: /^(continue|continua|next|avanti|log in|login|accedi)$/i })
+      .or(page.locator('button[data-action-button-primary="true"]'))
+      .or(page.locator('button[type="submit"][name="action"][value="default"]'))
       .first();
-    await submitBtn.click();
-    await passwordField.waitFor({ state: 'visible', timeout: 15_000 });
+    await continueBtn.click();
+
+    const resetHeading = page.getByRole('heading', { name: /check your email|controlla la tua email|reset/i });
+    if (await resetHeading.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      throw new Error(
+        'Auth0 entered password-reset flow instead of password login. Fix E2E user password in Auth0 (or avoid Forgot password) and retry.',
+      );
+    }
+
+    try {
+      await passwordField.waitFor({ state: 'visible', timeout: 15_000 });
+    } catch {
+      await page.screenshot({ path: 'test-results/auth0-password-debug.png', fullPage: true }).catch(() => undefined);
+      const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
+      throw new Error(`Auth0 password field not visible after Continue. Body preview: "${bodyText.slice(0, 500)}"`);
+    }
   }
 
   await passwordField.fill(password);
 
-  // Submit password
   const finalSubmit = page
-    .locator('button[type="submit"], button[name="action"], button[data-action-button-primary="true"], input[type="submit"]')
+    .getByRole('button', { name: /^(continue|continua|log in|login|accedi|sign in)$/i })
+    .or(page.locator('button[data-action-button-primary="true"]'))
+    .or(page.locator('button[type="submit"][name="action"][value="default"]'))
     .first();
   await finalSubmit.click();
 
@@ -181,25 +229,30 @@ export async function waitForAppReady(page: Page): Promise<void> {
     () => {
       const text = document.body.innerText;
       if (text.includes('Authenticating...')) return false;
+      if (text.includes('Caricamento...')) return false;
       if (text.includes('Sign in with Auth0')) return false;
       if (text.includes('Accedi con Auth0')) return false;
 
-      // Check for access_token in localStorage (works regardless of UI language)
+      // Require Auth0 SPA cache before treating UI chrome as ready.
+      // Onboarding copy ("Affitti brevi") must not short-circuit without a token.
+      let hasToken = false;
       for (const key of Object.keys(localStorage)) {
         if (!key.includes('auth0spajs')) continue;
         const raw = localStorage.getItem(key);
-        if (raw?.includes('access_token')) return true;
+        if (raw?.includes('access_token')) {
+          hasToken = true;
+          break;
+        }
       }
+      if (!hasToken) return false;
 
-      // Check for known app content across languages and contexts
+      if (text.includes('Come vuoi usare CasaZen')) return true;
+
       const knownContent = [
-        // English
         'Dashboard', 'Long-term leases', 'No leases yet',
         'Short-term rentals', 'Property Manager', 'Long-Term Rental',
-        // Italian (post-UX redesign)
         'Cruscotto', 'Immobili', 'Prenotazioni', 'Calendario',
         'Affitti brevi', 'Affitti lungo termine',
-        // Generic
         'properties', 'bookings', 'calendar',
       ];
       return knownContent.some((fragment) => text.includes(fragment));

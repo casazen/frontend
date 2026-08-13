@@ -186,6 +186,7 @@
     "calendar": "Calendar",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
+    "fiscal": "Fiscal regime",
     "payments": "Payments",
     "revenue": "Revenue",
     "stripeConnect": "Payouts",
@@ -2305,5 +2306,34 @@
     "dataDeleteFailed": "Failed to delete data",
     "consentUpdated": "Consent updated successfully",
     "consentUpdateFailed": "Failed to update consent"
+  },
+  "fiscal": {
+    "page": {
+      "title": "2026 fiscal regime",
+      "description": "Cedolare secca, VAT number and OTA withholding (L. 199/2025, D.L. 50/2017)."
+    },
+    "loading": "Loading…",
+    "count": "{{count}} active STR properties in {{year}}",
+    "recommended": "Recommended",
+    "assigned": "Assigned",
+    "primary": "Set as primary property (21%)",
+    "alert": {
+      "piva": "VAT number required from the third STR property.",
+      "wizard": "Open the wizard"
+    },
+    "wizard": {
+      "title": "Tax profile",
+      "description": "Enter VAT number and tax code. CasaZen does not replace an accountant.",
+      "hasPiva": "I have a VAT number",
+      "piva": "VAT number",
+      "cf": "Tax code",
+      "save": "Save"
+    },
+    "reports": {
+      "title": "Fiscal reports",
+      "description": "Data pack for your accountant (not a tax return).",
+      "link": "Open reports",
+      "totals": "Gross {{gross}} EUR — net {{net}} EUR"
+    }
   }
 }
