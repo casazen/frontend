@@ -71,6 +71,18 @@ export function PaymentDetailPage() {
                   </div>
                 </div>
 
+                {payment.withholdingTaxApplied && (
+                  <div data-testid="fiscal-payment-withholding" className="text-sm text-muted-foreground">
+                    {t('fiscal.reports.totals', {
+                      gross: payment.amount,
+                      net: payment.netAmountAfterWithholding ?? payment.amount,
+                    })}
+                    {payment.otaWithholdingTax != null && (
+                      <span> — {payment.otaWithholdingTax}</span>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4 pt-3 border-t">
                   <div>
                     <div className="text-sm text-muted-foreground">{t('payment.detail.paymentMethod')}</div>

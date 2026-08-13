@@ -419,8 +419,10 @@ export function CheckoutPage() {
               nights={nights}
               nightlyRate={property.nightlyRate}
               cleaningFee={property.cleaningFee}
-              touristTaxAmount={0}
-              totalAmount={property.nightlyRate * nights + property.cleaningFee}
+              touristTaxAmount={Math.max(0, nights * adults * 2)}
+              totalAmount={
+                property.nightlyRate * nights + property.cleaningFee + Math.max(0, nights * adults * 2)
+              }
               currency={property.currency ?? 'EUR'}
             />
           )}

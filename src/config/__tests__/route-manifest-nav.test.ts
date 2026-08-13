@@ -15,7 +15,9 @@ describe('route-manifest nav helpers', () => {
       '/app/short-rent',
       '/app/short-rent/bookings',
       '/app/short-rent/bookings/calendar',
+      '/app/short-rent/marketplace',
       '/app/short-rent/properties',
+      '/app/short-rent/vetrina',
     ]);
   });
 

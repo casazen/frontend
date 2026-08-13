@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/use-auth';
 import { registerSupplier } from '@/services/supplier-api';
 import { Home, Loader2 } from 'lucide-react';
 
 export function SupplierRegisterPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const { loginWithRedirect } = useAuth0();
+  const { login } = useAuth();
 
   const inviteToken = searchParams.get('inviteToken') ?? '';
   const emailFromUrl = searchParams.get('email') ?? '';
@@ -55,7 +55,7 @@ export function SupplierRegisterPage() {
   }
 
   function handleGoToAuth0() {
-    void loginWithRedirect({
+    login({
       authorizationParams: {
         screen_hint: 'signup',
         login_hint: emailFromUrl,

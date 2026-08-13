@@ -23,6 +23,7 @@ export interface Booking {
   status: BookingStatus;
   guest: BookingGuest;
   specialRequests?: string;
+  source?: string;
   createdAt: string;
   updatedAt: string;
 }

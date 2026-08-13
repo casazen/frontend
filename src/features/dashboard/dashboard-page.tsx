@@ -10,6 +10,7 @@ import { useProperties } from '@/queries/use-properties';
 import { usePayments } from '@/queries/use-payments';
 import { useOtaIntegrations } from '@/queries/use-ota';
 import { getBookingStatusLabel, getOtaConnectionStatusLabel } from '@/lib/i18n-labels';
+import { ComplianceSummaryWidget } from '@/features/compliance/compliance-summary-widget';
 import type { OtaIntegration, OtaPlatform } from '@/types';
 
 const PLATFORM_LABELS: Record<OtaPlatform, string> = {
@@ -49,21 +50,26 @@ export function DashboardPage() {
   const { data: payments } = usePayments();
   const { data: otaIntegrations } = useOtaIntegrations();
 
-  const totalRevenue = (payments ?? [])
+  const paymentList = Array.isArray(payments) ? payments : [];
+  const bookingList = Array.isArray(bookings) ? bookings : [];
+  const propertyList = Array.isArray(properties) ? properties : [];
+  const otaList = Array.isArray(otaIntegrations) ? otaIntegrations : [];
+
+  const totalRevenue = paymentList
     .filter((p) => p.status === 'Completed')
     .reduce((sum, p) => sum + p.amount, 0);
 
-  const activeBookings = (bookings ?? []).filter(
+  const activeBookings = bookingList.filter(
     (b) => b.status === 'Confirmed' || b.status === 'CheckedIn',
   ).length;
 
-  const totalProperties = (properties ?? []).length;
+  const totalProperties = propertyList.length;
 
-  const checkedIn = (bookings ?? []).filter((b) => b.status === 'CheckedIn').length;
+  const checkedIn = bookingList.filter((b) => b.status === 'CheckedIn').length;
   const occupancyRate =
     totalProperties > 0 ? Math.round((checkedIn / totalProperties) * 100) : 0;
 
-  const recentBookings = [...(bookings ?? [])]
+  const recentBookings = [...bookingList]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
@@ -71,6 +77,8 @@ export function DashboardPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader title={t('dashboard.title')} description={t('dashboard.description')} />
+
+        <ComplianceSummaryWidget />
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
@@ -165,13 +173,13 @@ export function DashboardPage() {
               <CardDescription>{t('dashboard.otaStatus.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              {(otaIntegrations ?? []).length === 0 ? (
+              {otaList.length === 0 ? (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   {t('dashboard.otaStatus.empty')}
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {(otaIntegrations ?? []).map((integration) => {
+                  {otaList.map((integration) => {
                     const status = getOtaConnectionStatus(integration);
                     return (
                       <div key={integration.id} className="flex items-center justify-between">

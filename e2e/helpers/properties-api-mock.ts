@@ -66,6 +66,21 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       return;
     }
 
+    const byIdMatch = path.match(/\/api\/properties\/([^/]+)\/?$/);
+    if (method === 'GET' && byIdMatch) {
+      const property = store.properties.find((p) => p.id === byIdMatch[1]);
+      if (!property) {
+        await route.fulfill({ status: 404, body: JSON.stringify({ title: 'Not Found' }) });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(property),
+      });
+      return;
+    }
+
     await route.fallback();
   });
 

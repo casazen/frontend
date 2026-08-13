@@ -6,6 +6,8 @@ export const paymentFormSchema = z.object({
   currency: z.string(),
   method: z.enum(['CreditCard', 'BankTransfer', 'PayPal', 'ApplePay', 'GooglePay']),
   description: z.string().optional(),
+  applyOtaWithholding: z.boolean().optional(),
+  manualWithholdingTax: z.number().optional(),
 });
 
 export const processPaymentSchema = z.object({
