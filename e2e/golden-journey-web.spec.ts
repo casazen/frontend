@@ -1,5 +1,7 @@
 import { test as l3, expect as l3expect } from '@playwright/test';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { readAccessToken } from './helpers/auth';
+import { e2eEnv } from './helpers/env';
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import {
@@ -217,6 +219,42 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     l3expect(token, 'Auth0 access token from storageState').toBeTruthy();
     const auth = { Authorization: `Bearer ${token}` };
 
+    const linkSupplier = await request.post(`${API}/suppliers/register`, {
+      headers: auth,
+      data: {
+        email: e2eEnv.auth0Email,
+        legalName: `GJ Host Supplier ${run}`,
+        phone: '+390612345678',
+        comuneCode: '058091',
+      },
+    });
+    l3expect(linkSupplier.status(), 'Step 2 link supplier org to host').toBe(201);
+
+    const profilePut = await request.put(`${API}/supplier/profile`, {
+      headers: auth,
+      data: {
+        categories: ['cleaning'],
+        comuni: ['058091'],
+        bio: 'Fornitore golden journey L3',
+      },
+    });
+    l3expect(profilePut.status(), 'Step 2 supplier profile').toBeLessThan(500);
+
+    const activate = await request.post(`${API}/supplier/profile/activation/complete`, {
+      headers: auth,
+      data: { tosAccepted: true },
+    });
+    l3expect(activate.status(), 'Step 2 supplier Active').toBeLessThan(500);
+    if (activate.ok()) {
+      const actBody = (await activate.json()) as { status?: string };
+      l3expect(actBody.status, 'Step 2 status Active').toBe('Active');
+    }
+
+    const profileGet = await request.get(`${API}/supplier/profile`, { headers: auth });
+    l3expect(profileGet.status(), 'Step 2 supplier profile readable').toBe(200);
+    const supplierProfile = (await profileGet.json()) as { orgId: string };
+    l3expect(supplierProfile.orgId, 'Step 2 supplier org').toBeTruthy();
+
     const emptyCreate = await request.post(`${API}/properties`, {
       headers: auth,
       data: { name: '' },
@@ -239,8 +277,18 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
         slug: propertySlug,
       },
     });
-    l3expect(create.status(), 'Step 3 / PE2E-ORG create property').toBe(201);
-    const property = (await create.json()) as { id: string; slug?: string };
+    l3expect(create.status(), 'Step 3 / PE2E-ORG create property').not.toBe(500);
+    let property: { id: string; slug?: string };
+    if (create.status() === 201) {
+      property = (await create.json()) as { id: string; slug?: string };
+    } else {
+      l3expect(create.status(), 'Step 3 plan limit reuses existing property').toBe(403);
+      const listed = await request.get(`${API}/properties`, { headers: auth });
+      l3expect(listed.status()).toBe(200);
+      const rows = (await listed.json()) as { id: string; slug?: string }[];
+      l3expect(rows.length, 'existing properties after plan limit').toBeGreaterThan(0);
+      property = rows[0];
+    }
     l3expect(property.id).toBeTruthy();
 
     const me = await request.get(`${API}/users/me`, { headers: auth });
@@ -254,7 +302,7 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     }
 
     const start = new Date();
-    start.setUTCDate(start.getUTCDate() + 14);
+    start.setUTCDate(start.getUTCDate() + 6);
     const end = new Date(start);
     end.setUTCDate(end.getUTCDate() + 3);
     const cal = await request.get(`${API}/bookings/calendar`, {
@@ -270,27 +318,48 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     const calMissing = await request.get(`${API}/bookings/calendar`, { headers: auth });
     l3expect(calMissing.status(), 'PE2E-CAL missing propertyId').not.toBe(500);
 
-    const hostBooking = await request.post(`${API}/bookings`, {
+    const guestPayload = {
+      firstName: 'Mario',
+      lastName: 'Rossi',
+      email: `guest-${run}@mailinator.com`,
+      phone: '+393331234567',
+      country: 'IT',
+    };
+    let hostBooking = await request.post(`${API}/bookings`, {
       headers: auth,
       data: {
         propertyId: property.id,
         checkInDate: start.toISOString(),
         checkOutDate: end.toISOString(),
         numberOfGuests: 2,
-        guest: {
-          firstName: 'Mario',
-          lastName: 'Rossi',
-          email: `guest-${run}@mailinator.com`,
-          phoneNumber: '+393331234567',
-        },
+        guest: guestPayload,
       },
     });
-    l3expect(hostBooking.status(), 'Step 4 host booking create').toBeLessThan(500);
-    let bookingId: string | undefined;
-    if (hostBooking.ok()) {
-      const booking = (await hostBooking.json()) as { id?: string; bookingId?: string };
-      bookingId = booking.id ?? booking.bookingId;
+    // Prefer a window still in the current calendar month (host app shows "Mese corrente").
+    for (const extraDays of [3, 9, 14, 22, 30, 45]) {
+      if (hostBooking.status() === 201) break;
+      const retryStart = new Date();
+      retryStart.setUTCDate(retryStart.getUTCDate() + 6 + extraDays);
+      const retryEnd = new Date(retryStart);
+      retryEnd.setUTCDate(retryEnd.getUTCDate() + 3);
+      hostBooking = await request.post(`${API}/bookings`, {
+        headers: auth,
+        data: {
+          propertyId: property.id,
+          checkInDate: retryStart.toISOString(),
+          checkOutDate: retryEnd.toISOString(),
+          numberOfGuests: 2,
+          guest: guestPayload,
+        },
+      });
     }
+    if (hostBooking.status() !== 201) {
+      const body = await hostBooking.text();
+      l3expect(hostBooking.status(), `Step 4 host booking create: ${body.slice(0, 400)}`).toBe(201);
+    }
+    const booking = (await hostBooking.json()) as { id?: string; bookingId?: string };
+    const bookingId = booking.id ?? booking.bookingId;
+    l3expect(bookingId, 'Step 4 booking id').toBeTruthy();
 
     if (bookingId) {
       const session = await request.get(`${API}/bookings/${bookingId}/checkin-session`, {
@@ -303,43 +372,51 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
       headers: auth,
       data: {
         propertyId: property.id,
-        supplierOrgId: registered.orgId,
+        bookingId,
+        supplierOrgId: supplierProfile.orgId,
         category: 'cleaning',
         notes: `Turnover ${run}`,
       },
     });
-    l3expect(sr.status(), 'Step 7 create ServiceRequest').toBeLessThan(500);
-    let serviceRequestId: string | undefined;
-    let srStatus: string | undefined;
-    if (sr.status() === 201) {
-      const created = (await sr.json()) as { id: string; status: string };
-      serviceRequestId = created.id;
-      srStatus = created.status;
-      l3expect(srStatus).toBe('Richiesto');
-    }
+    l3expect(sr.status(), 'Step 7 create ServiceRequest').toBe(201);
+    const createdSr = (await sr.json()) as { id: string; status: string };
+    const serviceRequestId = createdSr.id;
+    l3expect(createdSr.status).toBe('Richiesto');
 
-    if (serviceRequestId) {
-      const takeAnon = await request.post(`${API}/service-requests/${serviceRequestId}/take`);
-      l3expect(takeAnon.status(), 'Step 8 take requires supplier').toBe(401);
+    const takeAnon = await request.post(`${API}/service-requests/${serviceRequestId}/take`);
+    l3expect(takeAnon.status(), 'Step 8 take requires supplier').toBe(401);
 
-      const paid = await request.post(`${API}/service-requests/${serviceRequestId}/mark-paid`, {
-        headers: auth,
-      });
-      l3expect(paid.status(), 'Step 10 mark-paid (host)').toBeLessThan(500);
+    const take = await request.post(`${API}/service-requests/${serviceRequestId}/take`, {
+      headers: auth,
+    });
+    l3expect(take.status(), 'Step 8 take').toBe(200);
+    l3expect(((await take.json()) as { status: string }).status).toBe('PresoInCarico');
 
-      const after = await request.get(`${API}/service-requests/${serviceRequestId}`, {
-        headers: auth,
-      });
-      l3expect(after.status()).toBeLessThan(500);
-      if (after.ok() && bookingId) {
-        const srBody = (await after.json()) as { status: string };
-        const bookingGet = await request.get(`${API}/bookings/${bookingId}`, { headers: auth });
-        l3expect(bookingGet.status()).toBeLessThan(500);
-        if (bookingGet.ok()) {
-          const b = (await bookingGet.json()) as { status?: string };
-          l3expect(srBody.status, 'AC14 service-request status readable').toBeTruthy();
-          l3expect(b.status, 'AC14 booking status readable').toBeTruthy();
-        }
+    const complete = await request.post(`${API}/service-requests/${serviceRequestId}/complete`, {
+      headers: auth,
+      data: { notes: `Done ${run}` },
+    });
+    l3expect(complete.status(), 'Step 9 complete').toBe(200);
+    l3expect(((await complete.json()) as { status: string }).status).toBe('Completato');
+
+    const paid = await request.post(`${API}/service-requests/${serviceRequestId}/mark-paid`, {
+      headers: auth,
+    });
+    l3expect(paid.status(), 'Step 10 mark-paid (host)').toBe(200);
+    l3expect(((await paid.json()) as { status: string }).status).toBe('Pagato');
+
+    const after = await request.get(`${API}/service-requests/${serviceRequestId}`, {
+      headers: auth,
+    });
+    l3expect(after.status()).toBe(200);
+    if (bookingId) {
+      const srBody = (await after.json()) as { status: string };
+      const bookingGet = await request.get(`${API}/bookings/${bookingId}`, { headers: auth });
+      l3expect(bookingGet.status()).toBeLessThan(500);
+      if (bookingGet.ok()) {
+        const b = (await bookingGet.json()) as { status?: string };
+        l3expect(srBody.status, 'AC14 service-request status').toBe('Pagato');
+        l3expect(b.status, 'AC14 booking status readable').toBeTruthy();
       }
     }
 
@@ -354,5 +431,19 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     l3expect(summary.status(), 'Step 12 compliance summary').toBeLessThan(500);
 
     l3expect(api500, 'AC3 no API 500').toEqual([]);
+
+    if (bookingId) {
+      mkdirSync('e2e/.auth', { recursive: true });
+      writeFileSync(
+        'e2e/.auth/gj-seed.json',
+        JSON.stringify({
+          bookingId,
+          serviceRequestId,
+          propertyId: property.id,
+          supplierOrgId: supplierProfile.orgId,
+          guestName: 'Mario Rossi',
+        }),
+      );
+    }
   });
 });
