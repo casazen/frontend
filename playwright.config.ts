@@ -57,7 +57,8 @@ export default defineConfig({
         },
         {
           name: 'local',
-          testMatch: /\/(property-staging|local-integration)\.spec\.ts/,
+          testMatch:
+            /\/(property-staging|local-integration|golden-journey-web|golden-journey-supplier-mobile)\.spec\.ts/,
           dependencies: ['setup'],
           use: {
             ...devices['Desktop Chrome'],

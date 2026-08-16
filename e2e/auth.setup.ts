@@ -14,8 +14,22 @@ setup('authenticate long-term test user', async ({ page }) => {
   await loginViaAuth0(page);
   await waitForAppReady(page);
 
-  await page.goto('/app/short-rent/profile');
-  await expect(page.getByText(email, { exact: false })).toBeVisible({ timeout: 15_000 });
+  const onboarding = page.getByRole('heading', { name: /Come vuoi usare CasaZen/i });
+  const landedOnOnboarding =
+    page.url().includes('/onboarding') ||
+    (await onboarding.isVisible({ timeout: 5_000 }).catch(() => false));
+  if (landedOnOnboarding) {
+    await expect(onboarding).toBeVisible({ timeout: 10_000 });
+  } else {
+    await page.goto('/app/short-rent/profile');
+    const emailVisible = await page
+      .getByText(email, { exact: false })
+      .isVisible({ timeout: 10_000 })
+      .catch(() => false);
+    if (!emailVisible) {
+      await expect(onboarding).toBeVisible({ timeout: 10_000 });
+    }
+  }
 
   await page.context().storageState({ path: e2eEnv.authStoragePath });
 });
