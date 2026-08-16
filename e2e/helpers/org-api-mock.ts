@@ -77,24 +77,34 @@ function buildDemoMeBody(profile: string) {
 
 /**
  * Default GET /api/users/me mock for demo-mode E2E (#217).
- * Resolves demo profile from the active page (query param or sessionStorage).
+ * Tracks ?demoProfile= from navigations (no page.evaluate in the route handler —
+ * evaluate-in-route can deadlock while the page waits for the response).
  * Tests that need a custom profile should register their own route afterward (last wins).
  */
 export async function installDemoUserMeMock(page: Page): Promise<void> {
-  await page.route('**/api/users/me', async (route) => {
+  let profile = 'short-stay';
+
+  const syncProfileFromUrl = (rawUrl: string) => {
+    try {
+      const fromQuery = new URL(rawUrl).searchParams.get('demoProfile');
+      if (fromQuery) profile = fromQuery;
+    } catch {
+      // ignore malformed URLs
+    }
+  };
+
+  page.on('framenavigated', (frame) => {
+    if (frame === page.mainFrame()) syncProfileFromUrl(frame.url());
+  });
+
+  await page.route('**/api/users/me**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
     }
 
-    const profile = await page.evaluate(() => {
-      const params = new URLSearchParams(window.location.search);
-      const fromQuery = params.get('demoProfile');
-      if (fromQuery) return fromQuery;
-      const stored = sessionStorage.getItem('casazen:demo-profile');
-      if (stored) return stored;
-      return 'short-stay';
-    });
+    const referer = route.request().headers()['referer'] ?? route.request().headers()['Referer'];
+    if (referer) syncProfileFromUrl(referer);
 
     await route.fulfill({
       status: 200,

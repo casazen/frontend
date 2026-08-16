@@ -186,6 +186,7 @@
     "calendar": "Calendario",
     "alloggiati": "Alloggiati",
     "cin": "CIN",
+    "fiscal": "Regime fiscale",
     "payments": "Incassi",
     "revenue": "Ricavi",
     "stripeConnect": "Incassi e Payout",
@@ -2393,5 +2394,34 @@
     "dataDeleteFailed": "Impossibile cancellare i dati",
     "consentUpdated": "Consenso aggiornato con successo",
     "consentUpdateFailed": "Impossibile aggiornare il consenso"
+  },
+  "fiscal": {
+    "page": {
+      "title": "Regime fiscale 2026",
+      "description": "Cedolare secca, Partita IVA e ritenute OTA (L. 199/2025, D.L. 50/2017)."
+    },
+    "loading": "Caricamento…",
+    "count": "{{count}} immobili STR attivi nel {{year}}",
+    "recommended": "Raccomandato",
+    "assigned": "Assegnato",
+    "primary": "Designa come primo immobile (21%)",
+    "alert": {
+      "piva": "P.IVA obbligatoria dal terzo immobile STR.",
+      "wizard": "Apri la procedura guidata"
+    },
+    "wizard": {
+      "title": "Profilo fiscale",
+      "description": "Inserisci Partita IVA e codice fiscale. CasaZen non sostituisce un commercialista.",
+      "hasPiva": "Ho una Partita IVA",
+      "piva": "Partita IVA",
+      "cf": "Codice fiscale",
+      "save": "Salva"
+    },
+    "reports": {
+      "title": "Report fiscali",
+      "description": "Pacchetto dati per il commercialista (non una dichiarazione).",
+      "link": "Apri i report",
+      "totals": "Lordo {{gross}} € — netto {{net}} €"
+    }
   }
 }

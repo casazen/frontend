@@ -84,7 +84,7 @@ export function CalendarPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: properties, isLoading: propertiesLoading } = useProperties();
-  const propertyList = properties ?? [];
+  const propertyList = Array.isArray(properties) ? properties : [];
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
 
   const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';

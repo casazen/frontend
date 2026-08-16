@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { paymentsApi } from '../payments.api';
 import { ApiClient } from '../client';
-import type { Payment, RevenueResponse } from '@/types';
+import type { Payment } from '@/types';
 
 vi.mock('../client');
 vi.mock('@/lib/revenue-analytics', () => ({
@@ -56,14 +56,15 @@ describe('paymentsApi contract sync (#17)', () => {
     expect(ApiClient.post).toHaveBeenCalledWith(`/payments/${paymentId}/refund`);
   });
 
-  it('getRevenue calls GET /payments/revenue when property and date range are provided', async () => {
-    const revenueResponse: RevenueResponse = {
-      propertyId,
-      startDate: '2026-01-01',
-      endDate: '2026-01-31',
-      revenue: 900,
-    };
-    vi.mocked(ApiClient.get).mockResolvedValueOnce(revenueResponse);
+  it('getRevenue loads payments and builds analytics client-side', async () => {
+    const { buildRevenueAnalytics } = await import('@/lib/revenue-analytics');
+    vi.mocked(buildRevenueAnalytics).mockReturnValueOnce({
+      totalRevenue: 900,
+      totalBookings: 1,
+      averageBookingValue: 900,
+      data: [{ period: '2026-01', revenue: 900, bookings: 1 }],
+    });
+    vi.mocked(ApiClient.get).mockResolvedValueOnce([mockPayment]);
 
     const result = await paymentsApi.getRevenue({
       propertyId,
@@ -71,11 +72,8 @@ describe('paymentsApi contract sync (#17)', () => {
       endDate: '2026-01-31',
     });
 
-    expect(ApiClient.get).toHaveBeenCalledWith('/payments/revenue', {
-      propertyId,
-      startDate: '2026-01-01',
-      endDate: '2026-01-31',
-    });
+    expect(ApiClient.get).toHaveBeenCalledWith('/payments', { propertyId });
+    expect(buildRevenueAnalytics).toHaveBeenCalled();
     expect(result.totalRevenue).toBe(900);
     expect(result.data[0]?.revenue).toBe(900);
   });

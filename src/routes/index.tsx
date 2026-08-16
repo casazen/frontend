@@ -14,6 +14,8 @@ import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
+import { CatchAllRedirect } from './catch-all-redirect';
+import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
@@ -132,6 +134,8 @@ export const router = createBrowserRouter([
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
+      // Compat for links missing `/property/` (e.g. older mobile share URLs)
+      { path: ':propertySlugOrId', element: <LegacyPropertyBookingRedirect /> },
     ],
   },
   {
@@ -184,6 +188,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <CatchAllRedirect />,
   },
 ]);

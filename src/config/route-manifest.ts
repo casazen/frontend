@@ -89,11 +89,57 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/edit'],
   },
   {
+    path: '/app/short-rent/properties/:id/activation',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/compliance/activation-wizard')).PropertyActivationWizard,
+    }),
+    legacyPaths: ['/properties/:id/activation'],
+  },
+  {
     path: '/app/short-rent/properties/:id/pricing',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     component: async () => ({ default: (await import('@/features/pricing')).PricingDashboardPage }),
     legacyPaths: ['/properties/:id/pricing'],
+  },
+  {
+    path: '/app/short-rent/compliance',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({
+      default: (await import('@/features/compliance/compliance-summary-page')).ComplianceSummaryPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/fiscal',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.fiscal',
+    navGroup: 'compliance',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/fiscal/fiscal-dashboard-page')).FiscalDashboardPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/fiscal/wizard',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/fiscal/fiscal-wizard-page')).FiscalWizardPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/fiscal/reports',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({
+      default: (await import('@/features/fiscal/fiscal-reports-page')).FiscalReportsPage,
+    }),
   },
   {
     path: '/app/short-rent/properties/:id/pricing/history',
@@ -171,6 +217,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'CalendarDays',
     component: async () => ({ default: (await import('@/features/bookings/calendar-page')).CalendarPage }),
     legacyPaths: ['/bookings/calendar'],
+  },
+  {
+    path: '/app/short-rent/bookings/:id/checkout',
+    context: 'short-rent',
+    requiredPermissions: ['booking.write'],
+    component: async () => ({
+      default: (await import('@/features/compliance/checkout-wizard')).CheckoutWizardPage,
+    }),
+    legacyPaths: ['/bookings/:id/checkout'],
   },
   {
     path: '/app/short-rent/marketplace',

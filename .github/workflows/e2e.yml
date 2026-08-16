@@ -1,28 +1,102 @@
 name: E2E Tests
 
-# E2E tests now run locally in Stage 03 (SDLC harness) — NOT in CI.
-# See: backend/.claude/sdlc/03-development/harness.md
-# Local workflow: backend/scripts/start-backend-local.ps1 + npm run test:e2e:local
-#
-# This workflow is intentionally a no-op so that any "E2E Tests" required
-# status check in GitHub branch protection passes immediately.
+# L2 (demo) runs on every PR. Staging L3/GJ runs on push to develop when secrets exist.
+# Local L3: backend/scripts/quality/run-l3-local.ps1
 
 on:
   pull_request:
     branches: [main, develop]
   push:
     branches: [main, develop]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
 
 jobs:
-  e2e:
+  e2e-l2:
+    name: E2E L2 (demo)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
-      - name: E2E skipped (runs locally in Stage 03)
-        run: echo "E2E tests run locally via SDLC Stage 03 harness. See .claude/sdlc/03-development/harness.md"
+      - uses: actions/checkout@v4
 
-  e2e-deploy-smoke:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run L2 demo suite
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-l2-report
+          path: playwright-report/
+          retention-days: 7
+
+  e2e-staging:
+    name: E2E staging smoke + GJ
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 60
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: []
     steps:
-      - name: E2E deploy smoke skipped (runs locally in Stage 03)
-        run: echo "E2E deploy smoke runs locally via SDLC Stage 03 harness."
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: API regression smoke
+        if: ${{ secrets.E2E_AUTH0_EMAIL != '' }}
+        run: E2E_STAGING=1 npm run test:e2e -- --project=staging
+        env:
+          CI: true
+          E2E_STAGING: '1'
+          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
+          E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
+          E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
+          VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+          VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
+
+      - name: Golden Journey / L3 staging project
+        if: ${{ secrets.E2E_AUTH0_EMAIL != '' }}
+        run: E2E_STAGING=1 npm run test:e2e -- --project=staging-gj
+        env:
+          CI: true
+          E2E_STAGING: '1'
+          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
+          E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
+          E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
+          VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+          VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
+
+      - name: Skip notice when secrets missing
+        if: ${{ secrets.E2E_AUTH0_EMAIL == '' }}
+        run: |
+          echo "::warning::E2E_AUTH0_EMAIL secret not set — staging E2E skipped. Configure repo secrets for L3 gates."
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-staging-report
+          path: playwright-report/
+          retention-days: 7
