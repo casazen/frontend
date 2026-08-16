@@ -1,4 +1,5 @@
 import { test as l3, expect as l3expect } from '@playwright/test';
+import { readAccessToken } from './helpers/auth';
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import {
@@ -8,7 +9,6 @@ import {
 } from './helpers/branded-booking-mock';
 import { mockComplianceApi } from './helpers/compliance-mock';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
-import { mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 const isLocalL3 = process.env.E2E_LOCAL === '1' || process.env.E2E_STAGING === '1';
@@ -65,8 +65,6 @@ test.describe('Golden Journey web (#301)', () => {
 
   test('GJ steps 5–7 host ops shell (calendar + marketplace + compliance)', async ({ page }) => {
     const property = buildCreatedProperty({ name: 'Villa GJ' });
-    await mockCurrentUserWithOrg(page);
-    await mockEntitlement(page);
     await mockPropertiesApi(page, [property]);
     await mockComplianceApi(page);
     await page.route('**/api/bookings/calendar**', async (route) => {
@@ -111,8 +109,10 @@ test.describe('Golden Journey web (#301)', () => {
       }
     });
 
-    await page.goto(demoUrl('/app/short-rent/bookings/calendar', 'short-stay'));
-    await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 15_000 });
+    await page.goto(demoUrl('/app/short-rent/bookings/calendar', 'short-stay'), {
+      waitUntil: 'networkidle',
+    });
+    await expect(page.locator('#calendar-property')).toBeVisible({ timeout: 15_000 });
 
     await page.goto(demoUrl('/app/short-rent/marketplace', 'short-stay'));
     await expect(page.locator('body')).toBeVisible();
@@ -164,9 +164,16 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     const propertyName = `GJ Villa ${run}`;
     const propertySlug = run;
     const api500: string[] = [];
+    let capturedBearer: string | null = null;
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) {
         api500.push(`${res.status()} ${res.url()}`);
+      }
+    });
+    page.on('request', (req) => {
+      const header = req.headers()['authorization'];
+      if (header?.startsWith('Bearer ') && req.url().includes('/api/')) {
+        capturedBearer = header.slice('Bearer '.length);
       }
     });
 
@@ -213,20 +220,7 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
       await l3expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 20_000 });
     }
 
-    const token = await page.evaluate(() => {
-      for (const key of Object.keys(localStorage)) {
-        if (!key.includes('auth0spajs')) continue;
-        try {
-          const parsed = JSON.parse(localStorage.getItem(key) ?? '{}') as {
-            body?: { access_token?: string };
-          };
-          if (parsed.body?.access_token) return parsed.body.access_token;
-        } catch {
-          /* continue */
-        }
-      }
-      return null;
-    });
+    const token = (await readAccessToken(page)) ?? capturedBearer;
     l3expect(token, 'Auth0 access token from storageState').toBeTruthy();
     const auth = { Authorization: `Bearer ${token}` };
 
@@ -242,7 +236,7 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
       data: {
         name: propertyName,
         description: 'Proprietà golden journey L3',
-        address: 'Via Roma 10',
+        address: `Via Roma ${run}`,
         city: 'Roma',
         postalCode: '00100',
         bedrooms: 2,
