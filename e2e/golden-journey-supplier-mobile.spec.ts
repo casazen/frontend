@@ -40,8 +40,8 @@ test.describe('Golden Journey supplier mobile (AC13 F1–F2)', () => {
       seed = JSON.parse(readFileSync('e2e/.auth/gj-seed.json', 'utf8')) as GjSeed;
     }
 
-    const profileGet = await request.get(`${API}/supplier/profile`, { headers: auth });
-    if (profileGet.status() !== 200) {
+    const profileLookup = await request.get(`${API}/supplier/profile`, { headers: auth });
+    if (profileLookup.status() !== 200) {
       const link = await request.post(`${API}/suppliers/register`, {
         headers: auth,
         data: {
@@ -52,14 +52,16 @@ test.describe('Golden Journey supplier mobile (AC13 F1–F2)', () => {
         },
       });
       expect([200, 201], 'F1 supplier link').toContain(link.status());
-      await request.put(`${API}/supplier/profile`, {
+      const profilePut = await request.put(`${API}/supplier/profile`, {
         headers: auth,
         data: { categories: ['cleaning'], comuni: ['058091'], bio: 'F1–F2' },
       });
-      await request.post(`${API}/supplier/profile/activation/complete`, {
+      expect([200, 201], 'F1 supplier profile').toContain(profilePut.status());
+      const activate = await request.post(`${API}/supplier/profile/activation/complete`, {
         headers: auth,
         data: { tosAccepted: true },
       });
+      expect([200, 201], 'F1 supplier activate').toContain(activate.status());
     }
 
     const profile = await request.get(`${API}/supplier/profile`, { headers: auth });
@@ -96,7 +98,7 @@ test.describe('Golden Journey supplier mobile (AC13 F1–F2)', () => {
     const take = page.getByTestId(`take-${created.id}`);
     await expect(take, 'AC13 F1 Presa in carico must be reachable').toBeVisible({ timeout: 15_000 });
     await take.click();
-    await expect(page.getByText(/Presa in carico|Preso in carico|PresoInCarico|Richiesta accettata/i)).toBeVisible({
+    await expect(page.getByTestId(`complete-${created.id}`), 'AC13 F1 complete action after take').toBeVisible({
       timeout: 15_000,
     });
 

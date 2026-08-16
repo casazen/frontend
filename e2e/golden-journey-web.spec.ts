@@ -16,6 +16,11 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 const isLocalL3 = process.env.E2E_LOCAL === '1' || process.env.E2E_STAGING === '1';
 const API = process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api';
 
+/** Happy-path HTTP: only 200/201 count as success. 4xx is a failure unless the test names it. */
+function expectSuccessStatus(status: number, label: string): void {
+  l3expect([200, 201], `${label} (got ${status})`).toContain(status);
+}
+
 /**
  * Golden Journey web — AC1–AC5.
  * L2 demo (default CI) keeps page.route. L3 (`E2E_LOCAL=1`) hits the real API with unique slugs.
@@ -228,7 +233,10 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
         comuneCode: '058091',
       },
     });
-    l3expect(linkSupplier.status(), 'Step 2 link supplier org to host').toBe(201);
+    if (linkSupplier.status() !== 201) {
+      const alreadyLinked = await request.get(`${API}/supplier/profile`, { headers: auth });
+      expectSuccessStatus(alreadyLinked.status(), 'Step 2 supplier already linked');
+    }
 
     const profilePut = await request.put(`${API}/supplier/profile`, {
       headers: auth,
@@ -238,20 +246,18 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
         bio: 'Fornitore golden journey L3',
       },
     });
-    l3expect(profilePut.status(), 'Step 2 supplier profile').toBeLessThan(500);
+    expectSuccessStatus(profilePut.status(), 'Step 2 supplier profile');
 
     const activate = await request.post(`${API}/supplier/profile/activation/complete`, {
       headers: auth,
       data: { tosAccepted: true },
     });
-    l3expect(activate.status(), 'Step 2 supplier Active').toBeLessThan(500);
-    if (activate.ok()) {
-      const actBody = (await activate.json()) as { status?: string };
-      l3expect(actBody.status, 'Step 2 status Active').toBe('Active');
-    }
+    expectSuccessStatus(activate.status(), 'Step 2 supplier Active');
+    const actBody = (await activate.json()) as { status?: string };
+    l3expect(actBody.status, 'Step 2 status Active').toBe('Active');
 
     const profileGet = await request.get(`${API}/supplier/profile`, { headers: auth });
-    l3expect(profileGet.status(), 'Step 2 supplier profile readable').toBe(200);
+    expectSuccessStatus(profileGet.status(), 'Step 2 supplier profile readable');
     const supplierProfile = (await profileGet.json()) as { orgId: string };
     l3expect(supplierProfile.orgId, 'Step 2 supplier org').toBeTruthy();
 
@@ -259,8 +265,7 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
       headers: auth,
       data: { name: '' },
     });
-    l3expect(emptyCreate.status(), 'PE2E-ORG / AC4 validation').toBeGreaterThanOrEqual(400);
-    l3expect(emptyCreate.status()).toBeLessThan(500);
+    l3expect(emptyCreate.status(), 'PE2E-ORG / AC4 validation (expected 400)').toBe(400);
 
     const create = await request.post(`${API}/properties`, {
       headers: auth,
@@ -277,32 +282,44 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
         slug: propertySlug,
       },
     });
-    l3expect(create.status(), 'Step 3 / PE2E-ORG create property').not.toBe(500);
+    if (create.status() !== 201 && create.status() !== 403) {
+      const body = await create.text();
+      l3expect(create.status(), `Step 3 create property: ${body.slice(0, 400)}`).toBe(201);
+    }
     let property: { id: string; slug?: string };
     if (create.status() === 201) {
       property = (await create.json()) as { id: string; slug?: string };
     } else {
       l3expect(create.status(), 'Step 3 plan limit reuses existing property').toBe(403);
       const listed = await request.get(`${API}/properties`, { headers: auth });
-      l3expect(listed.status()).toBe(200);
+      expectSuccessStatus(listed.status(), 'Step 3 list properties after plan limit');
       const rows = (await listed.json()) as { id: string; slug?: string }[];
       l3expect(rows.length, 'existing properties after plan limit').toBeGreaterThan(0);
       property = rows[0];
     }
     l3expect(property.id).toBeTruthy();
+    const icalExport = await request.get(`${API}/properties/${property.id}/ical/export-url`, {
+      headers: auth,
+    });
+    expectSuccessStatus(icalExport.status(), 'Step 3 iCal export URL');
+    const icalStatus = await request.get(`${API}/properties/${property.id}/ical/status`, {
+      headers: auth,
+    });
+    expectSuccessStatus(icalStatus.status(), 'Step 3 iCal status');
 
     const me = await request.get(`${API}/users/me`, { headers: auth });
-    l3expect(me.status()).toBe(200);
+    expectSuccessStatus(me.status(), 'GET /users/me');
     const meBody = (await me.json()) as { slug?: string; org?: { slug?: string } };
     const orgSlug = meBody.slug ?? meBody.org?.slug;
     if (orgSlug) {
       const pub = await request.get(`${API}/public/orgs/${orgSlug}`);
-      l3expect([200, 404], 'PE2E-BOOK public org').toContain(pub.status());
-      l3expect(pub.status()).not.toBe(500);
+      expectSuccessStatus(pub.status(), 'PE2E-BOOK public org');
+      const pubProps = await request.get(`${API}/public/orgs/${orgSlug}/properties`);
+      expectSuccessStatus(pubProps.status(), 'Step 3 public properties');
     }
 
     const start = new Date();
-    start.setUTCDate(start.getUTCDate() + 6);
+    start.setUTCHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setUTCDate(end.getUTCDate() + 3);
     const cal = await request.get(`${API}/bookings/calendar`, {
@@ -313,10 +330,10 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
         endDate: end.toISOString().slice(0, 10),
       },
     });
-    l3expect(cal.status(), 'Step 5 calendar with propertyId').toBe(200);
+    expectSuccessStatus(cal.status(), 'Step 5 calendar with propertyId');
 
     const calMissing = await request.get(`${API}/bookings/calendar`, { headers: auth });
-    l3expect(calMissing.status(), 'PE2E-CAL missing propertyId').not.toBe(500);
+    l3expect(calMissing.status(), 'PE2E-CAL missing propertyId (expected 404)').toBe(404);
 
     const guestPayload = {
       firstName: 'Mario',
@@ -325,6 +342,14 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
       phone: '+393331234567',
       country: 'IT',
     };
+    const listedForBooking = await request.get(`${API}/properties`, { headers: auth });
+    expectSuccessStatus(listedForBooking.status(), 'Step 4 list properties for booking window');
+    const propertyCandidates = (await listedForBooking.json()) as { id: string }[];
+    const orderedProperties = [
+      property,
+      ...propertyCandidates.filter((row) => row.id !== property.id),
+    ];
+
     let hostBooking = await request.post(`${API}/bookings`, {
       headers: auth,
       data: {
@@ -335,23 +360,26 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
         guest: guestPayload,
       },
     });
-    // Prefer a window still in the current calendar month (host app shows "Mese corrente").
-    for (const extraDays of [3, 9, 14, 22, 30, 45]) {
-      if (hostBooking.status() === 201) break;
-      const retryStart = new Date();
-      retryStart.setUTCDate(retryStart.getUTCDate() + 6 + extraDays);
-      const retryEnd = new Date(retryStart);
-      retryEnd.setUTCDate(retryEnd.getUTCDate() + 3);
-      hostBooking = await request.post(`${API}/bookings`, {
-        headers: auth,
-        data: {
-          propertyId: property.id,
-          checkInDate: retryStart.toISOString(),
-          checkOutDate: retryEnd.toISOString(),
-          numberOfGuests: 2,
-          guest: guestPayload,
-        },
-      });
+    // Stay on today's check-in. If today is occupied, try other host properties — never shift into the future.
+    bookingSearch: for (const candidate of orderedProperties) {
+      for (const nights of [3, 2, 1]) {
+        const windowEnd = new Date(start);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + nights);
+        hostBooking = await request.post(`${API}/bookings`, {
+          headers: auth,
+          data: {
+            propertyId: candidate.id,
+            checkInDate: start.toISOString(),
+            checkOutDate: windowEnd.toISOString(),
+            numberOfGuests: 2,
+            guest: guestPayload,
+          },
+        });
+        if (hostBooking.status() === 201) {
+          property = candidate;
+          break bookingSearch;
+        }
+      }
     }
     if (hostBooking.status() !== 201) {
       const body = await hostBooking.text();
@@ -361,11 +389,32 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     const bookingId = booking.id ?? booking.bookingId;
     l3expect(bookingId, 'Step 4 booking id').toBeTruthy();
 
-    if (bookingId) {
-      const session = await request.get(`${API}/bookings/${bookingId}/checkin-session`, {
-        headers: auth,
+    const session = await request.get(`${API}/bookings/${bookingId}/checkin-session`, {
+      headers: auth,
+    });
+    expectSuccessStatus(session.status(), 'Step 6 check-in session');
+
+    const checkIn = await request.post(`${API}/bookings/${bookingId}/check-in`, {
+      headers: auth,
+    });
+    const checkInBody = await checkIn.text();
+    expectSuccessStatus(checkIn.status(), `Step 6 host check-in: ${checkInBody.slice(0, 400)}`);
+    l3expect((JSON.parse(checkInBody) as { status?: string }).status, 'Step 6 booking CheckedIn').toBe(
+      'CheckedIn',
+    );
+
+    const resendLink = await request.post(`${API}/bookings/${bookingId}/checkin/resend-link`, {
+      headers: auth,
+    });
+    expectSuccessStatus(resendLink.status(), 'Step 6 guest check-in link');
+    const resendBody = (await resendLink.json()) as { success?: boolean; checkInLink?: string };
+    l3expect(resendBody.success, 'Step 6 check-in session created').toBe(true);
+    if (resendBody.checkInLink) {
+      const path = new URL(resendBody.checkInLink).pathname;
+      await page.goto(path);
+      await l3expect(page.getByTestId('checkin-page').or(page.getByText(/check-in/i).first())).toBeVisible({
+        timeout: 15_000,
       });
-      l3expect(session.status(), 'Step 6 check-in session').toBeLessThan(500);
     }
 
     const sr = await request.post(`${API}/service-requests`, {
@@ -408,27 +457,53 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     const after = await request.get(`${API}/service-requests/${serviceRequestId}`, {
       headers: auth,
     });
-    l3expect(after.status()).toBe(200);
-    if (bookingId) {
-      const srBody = (await after.json()) as { status: string };
-      const bookingGet = await request.get(`${API}/bookings/${bookingId}`, { headers: auth });
-      l3expect(bookingGet.status()).toBeLessThan(500);
-      if (bookingGet.ok()) {
-        const b = (await bookingGet.json()) as { status?: string };
-        l3expect(srBody.status, 'AC14 service-request status').toBe('Pagato');
-        l3expect(b.status, 'AC14 booking status readable').toBeTruthy();
-      }
-    }
+    expectSuccessStatus(after.status(), 'AC14 GET service-request');
+    const srBody = (await after.json()) as { status: string };
+    const bookingGet = await request.get(`${API}/bookings/${bookingId}`, { headers: auth });
+    expectSuccessStatus(bookingGet.status(), 'AC14 GET booking');
+    const b = (await bookingGet.json()) as { status?: string };
+    l3expect(srBody.status, 'AC14 service-request status').toBe('Pagato');
+    l3expect(b.status, 'AC14 booking CheckedIn').toBe('CheckedIn');
 
-    if (bookingId) {
-      const checkout = await request.post(`${API}/bookings/${bookingId}/checkout-wizard/start`, {
-        headers: auth,
-      });
-      l3expect(checkout.status(), 'Step 11 checkout wizard').toBeLessThan(500);
-    }
+    const checkout = await request.post(`${API}/bookings/${bookingId}/checkout-wizard/start`, {
+      headers: auth,
+    });
+    const checkoutBody = await checkout.text();
+    expectSuccessStatus(checkout.status(), `Step 11 checkout wizard start: ${checkoutBody.slice(0, 400)}`);
+
+    await page.goto(`/app/short-rent/bookings/calendar`);
+    await page.locator('#calendar-property').selectOption(property.id);
+    await l3expect(page.getByText('Mario Rossi').first()).toBeVisible({ timeout: 20_000 });
+
+    await page.goto(`/app/short-rent/bookings/${bookingId}`);
+    await l3expect(page.getByText('Mario Rossi').first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Ospite' }).click();
+    await l3expect(
+      page.getByTestId('checkin-session-badge').or(page.getByTestId('checkin-session-none')),
+    ).toBeVisible({ timeout: 15_000 });
+
+    await page.goto(`/app/short-rent/bookings/${bookingId}/checkout`);
+    await l3expect(page.getByTestId('checkout-wizard-page')).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('checkout-confirm-departure').click();
+    await page.getByTestId('checkout-complete-button').click();
+    await l3expect(page.getByText(/Check-out completato/i)).toBeVisible({ timeout: 20_000 });
+
+    const afterCheckout = await request.get(`${API}/bookings/${bookingId}`, { headers: auth });
+    expectSuccessStatus(afterCheckout.status(), 'Step 11 GET booking after checkout');
+    l3expect(((await afterCheckout.json()) as { status?: string }).status, 'Step 11 CheckedOut').toBe(
+      'CheckedOut',
+    );
 
     const summary = await request.get(`${API}/compliance/summary`, { headers: auth });
-    l3expect(summary.status(), 'Step 12 compliance summary').toBeLessThan(500);
+    expectSuccessStatus(summary.status(), 'Step 12 compliance summary');
+    const summaryBody = (await summary.json()) as {
+      checkoutsDue?: { items?: { id?: string }[] };
+    };
+    const dueIds = (summaryBody.checkoutsDue?.items ?? []).map((item) => item.id);
+    l3expect(dueIds, 'Step 12 this booking not in checkouts due').not.toContain(bookingId);
+
+    await page.goto('/app/short-rent');
+    await l3expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 20_000 });
 
     l3expect(api500, 'AC3 no API 500').toEqual([]);
 
