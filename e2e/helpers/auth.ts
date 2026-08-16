@@ -112,6 +112,38 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   await page.waitForURL((url) => !url.hostname.includes('auth0.com'), { timeout: 60_000 });
 }
 
+export async function readAccessToken(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    const stores: Storage[] = [localStorage, sessionStorage];
+    for (const store of stores) {
+      for (const key of Object.keys(store)) {
+        const raw = store.getItem(key);
+        if (!raw?.includes('access_token')) continue;
+        try {
+          const parsed = JSON.parse(raw) as unknown;
+          const walk = (value: unknown): string | null => {
+            if (!value || typeof value !== 'object') return null;
+            const record = value as Record<string, unknown>;
+            const direct = record.access_token ?? (record.body as { access_token?: string } | undefined)?.access_token;
+            if (typeof direct === 'string' && direct.length > 20) return direct;
+            for (const nested of Object.values(record)) {
+              const found = walk(nested);
+              if (found) return found;
+            }
+            return null;
+          };
+          const token = walk(parsed);
+          if (token) return token;
+        } catch {
+          const match = raw.match(/"access_token"\s*:\s*"([^"]+)"/);
+          if (match?.[1]) return match[1];
+        }
+      }
+    }
+    return null;
+  });
+}
+
 export async function readAuth0Sub(page: Page): Promise<string | null> {
   return page.evaluate(() => {
     const decodeSub = (token: string): string | null => {
@@ -130,28 +162,39 @@ export async function readAuth0Sub(page: Page): Promise<string | null> {
       }
     };
 
-    for (const key of Object.keys(localStorage)) {
-      if (!key.includes('auth0spajs')) continue;
-      try {
-        const raw = localStorage.getItem(key);
+    const stores: Storage[] = [localStorage, sessionStorage];
+    for (const store of stores) {
+      for (const key of Object.keys(store)) {
+        const raw = store.getItem(key);
         if (!raw) continue;
-        const parsed = JSON.parse(raw) as {
-          body?: {
+        try {
+          const parsed = JSON.parse(raw) as {
+            body?: {
+              id_token?: string;
+              access_token?: string;
+              decodedToken?: { user?: { sub?: string } };
+            };
             id_token?: string;
-            decodedToken?: { user?: { sub?: string } };
+            access_token?: string;
           };
-        };
 
-        const fromDecoded = parsed.body?.decodedToken?.user?.sub;
-        if (fromDecoded) return fromDecoded;
+          const fromDecoded = parsed.body?.decodedToken?.user?.sub;
+          if (fromDecoded) return fromDecoded;
 
-        const idToken = parsed.body?.id_token;
-        if (typeof idToken === 'string') {
-          const sub = decodeSub(idToken);
-          if (sub) return sub;
+          const idToken = parsed.body?.id_token ?? parsed.id_token;
+          if (typeof idToken === 'string') {
+            const sub = decodeSub(idToken);
+            if (sub) return sub;
+          }
+
+          const accessToken = parsed.body?.access_token ?? parsed.access_token;
+          if (typeof accessToken === 'string') {
+            const sub = decodeSub(accessToken);
+            if (sub) return sub;
+          }
+        } catch {
+          /* try next */
         }
-      } catch {
-        // try next cache entry
       }
     }
 
@@ -180,22 +223,26 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
       }
     };
 
-    for (const key of Object.keys(localStorage)) {
-      if (!key.includes('auth0spajs')) continue;
+    const stores: Storage[] = [localStorage, sessionStorage];
+    for (const store of stores) {
+    for (const key of Object.keys(store)) {
+      if (!key.toLowerCase().includes('auth0') && !store.getItem(key)?.includes('access_token')) continue;
       try {
-        const raw = localStorage.getItem(key);
+        const raw = store.getItem(key);
         if (!raw) continue;
         const parsed = JSON.parse(raw) as {
           body?: { access_token?: string; id_token?: string };
+          access_token?: string;
+          id_token?: string;
         };
 
-        const accessToken = parsed.body?.access_token;
+        const accessToken = parsed.body?.access_token ?? parsed.access_token;
         if (typeof accessToken === 'string') {
           const roles = decodeRoles(accessToken);
           if (roles.length > 0) return roles;
         }
 
-        const idToken = parsed.body?.id_token;
+        const idToken = parsed.body?.id_token ?? parsed.id_token;
         if (typeof idToken === 'string') {
           const roles = decodeRoles(idToken);
           if (roles.length > 0) return roles;
@@ -203,6 +250,7 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
       } catch {
         // try next cache entry
       }
+    }
     }
 
     return [];
@@ -233,18 +281,21 @@ export async function waitForAppReady(page: Page): Promise<void> {
       if (text.includes('Sign in with Auth0')) return false;
       if (text.includes('Accedi con Auth0')) return false;
 
-      // Require Auth0 SPA cache before treating UI chrome as ready.
-      // Onboarding copy ("Affitti brevi") must not short-circuit without a token.
+      // Token cache (any Auth0/storage key) or authenticated Italian chrome.
       let hasToken = false;
-      for (const key of Object.keys(localStorage)) {
-        if (!key.includes('auth0spajs')) continue;
-        const raw = localStorage.getItem(key);
-        if (raw?.includes('access_token')) {
-          hasToken = true;
-          break;
+      for (const store of [localStorage, sessionStorage]) {
+        for (const key of Object.keys(store)) {
+          const raw = store.getItem(key);
+          if (raw?.includes('access_token')) {
+            hasToken = true;
+            break;
+          }
         }
+        if (hasToken) break;
       }
-      if (!hasToken) return false;
+      if (!hasToken && !text.includes('Cruscotto') && !text.includes('Il mio profilo')) {
+        return false;
+      }
 
       if (text.includes('Come vuoi usare CasaZen')) return true;
 

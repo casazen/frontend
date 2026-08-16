@@ -67,6 +67,8 @@ export default defineConfig({
             '**/local-integration.spec.ts',
             '**/l3/**/*.spec.ts',
             '**/*-l3.spec.ts',
+            '**/golden-journey-web.spec.ts',
+            '**/golden-journey-supplier-mobile.spec.ts',
           ],
           dependencies: ['setup'],
           use: {

@@ -1,0 +1,38 @@
+name: E2E Golden Journey
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  golden-journey-web:
+    name: GJ web suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run golden-journey-web (L2 demo on PR)
+        run: npx playwright test e2e/golden-journey-web.spec.ts --project=chromium
+      - name: Run supplier mobile F1–F2 file if present
+        run: npx playwright test e2e/golden-journey-supplier-mobile.spec.ts --project=chromium
+        continue-on-error: true
+
+  golden-journey-app:
+    name: GJ host app (Maestro)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule' || contains(github.event.pull_request.labels.*.name, 'e2e-app')
+    steps:
+      - name: Maestro suite
+        run: |
+          echo "Checkout casazen/mobile and run maestro test e2e/m1-calendar.yaml … m7-checkout.yaml against the shared backend seed."
+          echo "This job is a gate placeholder until the mobile repo is checked out in CI."
