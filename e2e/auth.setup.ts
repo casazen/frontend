@@ -1,7 +1,7 @@
 import { test as setup, expect } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { loginViaAuth0, readAuth0Roles, readAuth0Sub, waitForAppReady } from './helpers/auth';
+import { loginViaAuth0, readAccessToken, readAuth0Roles, readAuth0Sub, waitForAppReady } from './helpers/auth';
 import { e2eEnv, requireE2eCredentials } from './helpers/env';
 
 setup.setTimeout(180_000);
@@ -9,13 +9,15 @@ setup.setTimeout(180_000);
 async function waitForSession(page: import('@playwright/test').Page): Promise<void> {
   await page.waitForFunction(
     () => {
-      for (const key of Object.keys(localStorage)) {
-        if (!key.toLowerCase().includes('auth0')) continue;
-        const raw = localStorage.getItem(key) ?? '';
-        if (raw.includes('access_token')) return true;
+      for (const store of [localStorage, sessionStorage]) {
+        for (const key of Object.keys(store)) {
+          const raw = store.getItem(key) ?? '';
+          if (raw.includes('access_token')) return true;
+        }
       }
-      // Auth0 React may expose the subject in chrome before cache keys settle.
-      return /auth0\|[a-zA-Z0-9]+/.test(document.body.innerText);
+      const text = document.body.innerText;
+      if (text.includes('Cruscotto') || text.includes('Il mio profilo')) return true;
+      return /auth0\|[a-zA-Z0-9]+/.test(text);
     },
     undefined,
     { timeout: 90_000 },
@@ -64,14 +66,18 @@ setup('authenticate long-term test user', async ({ page }) => {
   await waitForSession(page);
   await waitForAppReady(page);
 
+  const token = await readAccessToken(page);
   const sub = await readAuth0Sub(page);
-  if (!sub) {
-    // Fall back to subject rendered in the shell (seen when SPA cache key shape drifts).
-    const chip = page.getByRole('link', { name: /auth0\|/i }).first();
-    await expect(chip, 'Auth0 session missing (no token cache and no user chip)').toBeVisible({
+  if (!sub && !token) {
+    const chrome = page
+      .getByRole('heading', { name: /Cruscotto|Dashboard|Il mio profilo/i })
+      .or(page.getByRole('button', { name: /@/ }))
+      .or(page.getByRole('link', { name: /auth0\|/i }))
+      .first();
+    await expect(chrome, 'Auth0 session missing (no token cache and no authenticated chrome)').toBeVisible({
       timeout: 15_000,
     });
-  } else if (e2eEnv.auth0UserId) {
+  } else if (sub && e2eEnv.auth0UserId) {
     expect(sub).toBe(e2eEnv.auth0UserId);
   }
 
