@@ -68,12 +68,19 @@ export function BookingDetailPage() {
 
         <PageHeader
           title={`Booking #${booking.id.slice(0, 8)}`}
-          description={`${booking.guest.firstName} ${booking.guest.lastName}`}
+          description={`${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}
           action={
-            <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              {t('booking.detailPage.editBooking')}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" asChild>
+                <Link to={`/app/short-rent/bookings/${id}/checkout`} data-testid="open-checkout-wizard">
+                  {t('booking.card.checkOutAction')}
+                </Link>
+              </Button>
+              <Button onClick={() => navigate(`/app/short-rent/bookings/${id}/edit`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                {t('booking.detailPage.editBooking')}
+              </Button>
+            </div>
           }
         />
 

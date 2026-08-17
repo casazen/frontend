@@ -49,11 +49,11 @@ export function useComplianceSummary() {
   });
 }
 
-export function useStartCheckoutWizard(bookingId: string) {
+export function useStartCheckoutWizard(bookingId: string, enabled = true) {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'checkout', bookingId],
     queryFn: () => startCheckoutWizard(bookingId),
-    enabled: !!bookingId,
+    enabled: !!bookingId && enabled,
     retry: false,
   });
 }
@@ -67,6 +67,7 @@ export function useCompleteCheckoutWizard(bookingId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings', bookingId] });
       toast.success(i18n.t('compliance.checkout.completed'));
     },
     onError: () => toast.error(i18n.t('compliance.checkout.completeFailed')),
