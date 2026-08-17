@@ -428,7 +428,10 @@
       "creating": "Creazione...",
       "createDraft": "Crea bozza contratto",
       "apeMissingError": "Un documento APE (certificato di prestazione energetica) deve essere caricato per questa proprietà prima di creare un contratto.",
-      "waitingDocuments": "Attendi la verifica dei documenti della proprietà."
+      "waitingDocuments": "Attendi la verifica dei documenti della proprietà.",
+      "concordatoRangeRequired": "Calcola la fascia di canone concordato e inserisci un canone mensile compreso tra il minimo e il massimo.",
+      "concordatoRentOutOfRange": "Il canone mensile e' fuori dalla fascia calcolata per questo immobile.",
+      "concordatoRangeHint": "Fascia mensile: {{min}} – {{max}} EUR"
     }
   },
   "revenue": {

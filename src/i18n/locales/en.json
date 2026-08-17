@@ -426,7 +426,10 @@
       "creating": "Creating...",
       "createDraft": "Create lease draft",
       "apeMissingError": "An APE (energy performance certificate) document must be uploaded for this property before creating a lease.",
-      "waitingDocuments": "Please wait while property documents are being verified."
+      "waitingDocuments": "Please wait while property documents are being verified.",
+      "concordatoRangeRequired": "Calculate the agreed-rent band and enter a monthly rent between the minimum and maximum.",
+      "concordatoRentOutOfRange": "Monthly rent is outside the calculated band for this property.",
+      "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR"
     }
   },
   "revenue": {

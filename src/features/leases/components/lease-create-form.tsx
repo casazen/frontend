@@ -14,6 +14,8 @@ import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
 import type { LeaseFormValues } from '../schemas/lease.schema';
 import type { CreateLeaseDto } from '@/types';
 import { AlertTriangle } from 'lucide-react';
+import { CanoneConcordatoCalculator, type ConcordatoRange } from './canone-concordato-calculator';
+import { isRentInConcordatoRange } from '../lib/concordato-rent-range';
 
 interface LeaseCreateFormProps {
   onSubmit: (data: CreateLeaseDto) => void;
@@ -25,6 +27,8 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
   const { data: propertiesData } = useProperties();
   const properties = propertiesData ?? [];
   const [apeError, setApeError] = useState<string | null>(null);
+  const [concordatoRange, setConcordatoRange] = useState<ConcordatoRange | null>(null);
+  const [concordatoError, setConcordatoError] = useState<string | null>(null);
 
   const {
     register,
@@ -41,6 +45,8 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
   });
 
   const selectedPropertyId = watch('propertyId');
+  const fiscalRegime = watch('fiscalRegime');
+  const monthlyRent = watch('monthlyRent');
 
   const { data: documents, isFetching: isLoadingDocuments } = useQuery({
     queryKey: ['properties', selectedPropertyId, 'documents'],
@@ -59,6 +65,11 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
     }
   }, [documentsLoaded, hasApeDocument, t]);
 
+  useEffect(() => {
+    setConcordatoRange(null);
+    setConcordatoError(null);
+  }, [selectedPropertyId, fiscalRegime]);
+
   const handleFormSubmit = (values: LeaseFormValues) => {
     if (!documentsLoaded) {
       setApeError(t('leases.form.waitingDocuments'));
@@ -70,7 +81,15 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
       return;
     }
 
+    if (values.fiscalRegime === 'CanoneConcordato') {
+      if (!isRentInConcordatoRange(values.monthlyRent, concordatoRange?.minMonthly, concordatoRange?.maxMonthly)) {
+        setConcordatoError(t('leases.form.concordatoRangeRequired'));
+        return;
+      }
+    }
+
     setApeError(null);
+    setConcordatoError(null);
     onSubmit({
       propertyId: values.propertyId,
       fiscalRegime: values.fiscalRegime,
@@ -136,6 +155,18 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
             </select>
           </div>
 
+          {fiscalRegime === 'CanoneConcordato' && selectedPropertyId && (
+            <CanoneConcordatoCalculator
+              propertyId={selectedPropertyId}
+              onRangeChange={setConcordatoRange}
+            />
+          )}
+          {concordatoError && (
+            <p role="alert" className="text-sm text-destructive">
+              {concordatoError}
+            </p>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">{t('leases.form.startDateLabel')}</Label>
@@ -165,6 +196,20 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
             {errors.monthlyRent && (
               <p className="text-sm text-destructive">{errors.monthlyRent.message}</p>
             )}
+            {fiscalRegime === 'CanoneConcordato' && concordatoRange && (
+              <p className="text-sm text-muted-foreground">
+                {t('leases.form.concordatoRangeHint', {
+                  min: concordatoRange.minMonthly.toFixed(2),
+                  max: concordatoRange.maxMonthly.toFixed(2),
+                })}
+              </p>
+            )}
+            {fiscalRegime === 'CanoneConcordato' &&
+              concordatoRange &&
+              monthlyRent > 0 &&
+              !isRentInConcordatoRange(monthlyRent, concordatoRange.minMonthly, concordatoRange.maxMonthly) && (
+                <p className="text-sm text-destructive">{t('leases.form.concordatoRentOutOfRange')}</p>
+              )}
           </div>
         </CardContent>
       </Card>
