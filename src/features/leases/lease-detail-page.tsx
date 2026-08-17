@@ -17,6 +17,9 @@ import { LeaseStatusBadge } from './components/lease-status-badge';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RegistrationStatusPanel } from './components/registration-status-panel';
 import { ExtraEUWarningBanner } from './components/extra-eu-warning-banner';
+import { CanoneConcordatoCalculator } from './components/canone-concordato-calculator';
+import { AttestationGuidancePanel } from './components/attestation-guidance-panel';
+import { ImuNotificationExportButton } from './components/imu-notification-export-button';
 import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
 import type { SignerInfo } from '@/types';
 
@@ -179,6 +182,10 @@ export function LeaseDetailPage() {
               onRegister={handleRegister}
               isRegistering={triggerRegistration.isPending}
             />
+
+            <CanoneConcordatoCalculator propertyId={lease.propertyId} />
+            <AttestationGuidancePanel propertyId={lease.propertyId} />
+            <ImuNotificationExportButton leaseId={lease.id} leaseStatus={lease.status} />
           </div>
 
           <div className="space-y-6">
