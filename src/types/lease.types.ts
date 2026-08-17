@@ -102,3 +102,34 @@ export interface TriggerRegistrationResult {
   registrationStatus: RegistrationStatus;
   message: string;
 }
+
+export interface CedolareAdvisory {
+  leaseRegime: FiscalRegime;
+  annualRent: number;
+  cedolareRate: number;
+  cedolareEstimateEur: number;
+  registroRate: number;
+  registroEstimateEur: number;
+  bolloEur: number;
+  ordinaryIrpefNote: string;
+  disclaimer: string;
+}
+
+export interface RliChecklistItem {
+  key: string;
+  label: string;
+  done: boolean;
+}
+
+export interface RliChecklist {
+  registrationDeadline: string;
+  daysRemaining: number;
+  tosVersion: string;
+  attestationText: string;
+  items: RliChecklistItem[];
+}
+
+export interface TriggerRegistrationRequest {
+  tosVersion: string;
+  attestationAccepted: boolean;
+}
