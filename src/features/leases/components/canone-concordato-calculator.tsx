@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,11 +10,17 @@ import { useCanoneConcordatoEligibility } from '@/queries/use-canone-concordato'
 import { formatCurrency } from '@/lib/utils';
 import type { CanoneConcordatoEligibility } from '@/api/canone-concordato.api';
 
-interface Props {
-  propertyId: string;
+export interface ConcordatoRange {
+  minMonthly: number;
+  maxMonthly: number;
 }
 
-export function CanoneConcordatoCalculator({ propertyId }: Props) {
+interface Props {
+  propertyId: string;
+  onRangeChange?: (range: ConcordatoRange | null) => void;
+}
+
+export function CanoneConcordatoCalculator({ propertyId, onRangeChange }: Props) {
   const { t } = useTranslation();
   const eligibility = useCanoneConcordatoEligibility();
   const [sqm, setSqm] = useState('65');
@@ -28,8 +34,7 @@ export function CanoneConcordatoCalculator({ propertyId }: Props) {
   const [years, setYears] = useState('3');
   const [result, setResult] = useState<CanoneConcordatoEligibility | null>(null);
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const handleCalculate = async () => {
     const data = await eligibility.mutateAsync({
       propertyId,
       query: {
@@ -45,6 +50,11 @@ export function CanoneConcordatoCalculator({ propertyId }: Props) {
       },
     });
     setResult(data);
+    if (data.available && data.canoneMinMensile != null && data.canoneMaxMensile != null) {
+      onRangeChange?.({ minMonthly: data.canoneMinMensile, maxMonthly: data.canoneMaxMensile });
+    } else {
+      onRangeChange?.(null);
+    }
   };
 
   return (
@@ -53,7 +63,7 @@ export function CanoneConcordatoCalculator({ propertyId }: Props) {
         <CardTitle>{t('leases.canoneConcordato.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('leases.canoneConcordato.sqm')}>
             <Input type="number" min={1} value={sqm} onChange={(e) => setSqm(e.target.value)} required />
           </Field>
@@ -79,11 +89,15 @@ export function CanoneConcordatoCalculator({ propertyId }: Props) {
             <Input type="number" min={0} value={typeDCount} onChange={(e) => setTypeDCount(e.target.value)} required />
           </Field>
           <div className="flex items-center gap-2 sm:col-span-2">
-            <Checkbox id="furnished" checked={furnished} onCheckedChange={(v) => setFurnished(v === true)} />
-            <Label htmlFor="furnished">{t('leases.canoneConcordato.furnished')}</Label>
+            <Checkbox
+              id={`furnished-${propertyId}`}
+              checked={furnished}
+              onCheckedChange={(v) => setFurnished(v === true)}
+            />
+            <Label htmlFor={`furnished-${propertyId}`}>{t('leases.canoneConcordato.furnished')}</Label>
           </div>
           <div className="sm:col-span-2">
-            <Button type="submit" disabled={eligibility.isPending}>
+            <Button type="button" onClick={() => void handleCalculate()} disabled={eligibility.isPending}>
               {eligibility.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -94,7 +108,7 @@ export function CanoneConcordatoCalculator({ propertyId }: Props) {
               )}
             </Button>
           </div>
-        </form>
+        </div>
 
         {eligibility.isError && (
           <p className="text-sm text-destructive">{t('leases.canoneConcordato.error')}</p>
