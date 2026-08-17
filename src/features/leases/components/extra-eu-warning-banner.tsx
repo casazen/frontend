@@ -1,6 +1,8 @@
 import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function ExtraEUWarningBanner() {
+  const { t } = useTranslation();
   return (
     <div
       role="alert"
@@ -8,14 +10,8 @@ export function ExtraEUWarningBanner() {
     >
       <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
       <div className="space-y-1">
-        <p className="font-semibold">
-          Cessione di fabbricato — Questura notification required
-        </p>
-        <p className="text-sm">
-          This lease includes a tenant with non-EU citizenship. Italian law requires
-          notifying the Questura within 48 hours of contract signing. Ensure the
-          cessione di fabbricato is filed on time.
-        </p>
+        <p className="font-semibold">{t('leases.rli.extraEuTitle')}</p>
+        <p className="text-sm">{t('leases.rli.extraEuBody')}</p>
       </div>
     </div>
   );

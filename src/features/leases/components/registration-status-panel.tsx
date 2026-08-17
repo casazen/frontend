@@ -8,8 +8,8 @@ import { leasesApi } from '@/api/leases.api';
 import { REGISTRATION_STATUS_VARIANTS } from '../schemas/lease.schema';
 import { getRegistrationStatusLabel } from '@/lib/i18n-labels';
 import { useTranslation } from 'react-i18next';
-import type { LeaseRegistration, LeaseStatus } from '@/types';
 import { toast } from 'sonner';
+import type { LeaseRegistration, LeaseStatus } from '@/types';
 
 interface RegistrationStatusPanelProps {
   leaseId: string;
@@ -34,7 +34,12 @@ export function RegistrationStatusPanel({
   const statusConfig = registration
     ? {
         label: getRegistrationStatusLabel(registration.status, t),
-        variant: (REGISTRATION_STATUS_VARIANTS[registration.status] ?? 'secondary') as 'default' | 'secondary' | 'outline' | 'destructive' | 'success',
+        variant: (REGISTRATION_STATUS_VARIANTS[registration.status] ?? 'secondary') as
+          | 'default'
+          | 'secondary'
+          | 'outline'
+          | 'destructive'
+          | 'success',
       }
     : null;
 
@@ -48,9 +53,9 @@ export function RegistrationStatusPanel({
       anchor.download = `receipt-${leaseId}.pdf`;
       anchor.click();
       URL.revokeObjectURL(url);
-      toast.success('Receipt downloaded');
+      toast.success(t('leases.rli.receiptOk'));
     } catch {
-      toast.error('Receipt is not available yet');
+      toast.error(t('leases.rli.receiptError'));
     } finally {
       setIsDownloading(false);
     }
@@ -61,14 +66,10 @@ export function RegistrationStatusPanel({
       <CardHeader>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <CardTitle>RLI registration</CardTitle>
-            <CardDescription>
-              Submit the signed contract to the Agenzia delle Entrate via Openapi.it
-            </CardDescription>
+            <CardTitle>{t('leases.rli.registrationTitle')}</CardTitle>
+            <CardDescription>{t('leases.rli.registrationDescription')}</CardDescription>
           </div>
-          {statusConfig && (
-            <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
-          )}
+          {statusConfig && <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -76,27 +77,25 @@ export function RegistrationStatusPanel({
           <div className="grid gap-3 text-sm sm:grid-cols-2">
             {registration.registrationCode && (
               <div>
-                <p className="text-muted-foreground">Registration code</p>
+                <p className="text-muted-foreground">{t('leases.rli.registrationCode')}</p>
                 <p className="font-medium font-mono">{registration.registrationCode}</p>
               </div>
             )}
             {registration.submittedAt && (
               <div>
-                <p className="text-muted-foreground">Submitted</p>
+                <p className="text-muted-foreground">{t('leases.rli.submitted')}</p>
                 <p className="font-medium">{formatDateTime(registration.submittedAt)}</p>
               </div>
             )}
             {registration.confirmedAt && (
               <div>
-                <p className="text-muted-foreground">Confirmed</p>
+                <p className="text-muted-foreground">{t('leases.rli.confirmed')}</p>
                 <p className="font-medium">{formatDateTime(registration.confirmedAt)}</p>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No registration has been submitted yet.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('leases.rli.notSubmitted')}</p>
         )}
 
         <div className="flex flex-wrap gap-3">
@@ -105,29 +104,25 @@ export function RegistrationStatusPanel({
               {isRegistering ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting…
+                  {t('leases.rli.submitting')}
                 </>
               ) : (
-                'Register with Agenzia delle Entrate'
+                t('leases.rli.submit')
               )}
             </Button>
           )}
 
           {leaseStatus === 'Registered' && (
-            <Button
-              variant="outline"
-              onClick={handleDownloadReceipt}
-              disabled={isDownloading}
-            >
+            <Button variant="outline" onClick={handleDownloadReceipt} disabled={isDownloading}>
               {isDownloading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Downloading…
+                  {t('leases.rli.downloading')}
                 </>
               ) : (
                 <>
                   <Download className="mr-2 h-4 w-4" />
-                  Download receipt
+                  {t('leases.rli.downloadReceipt')}
                 </>
               )}
             </Button>

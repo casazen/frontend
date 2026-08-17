@@ -10,9 +10,11 @@ import {
   useInitiateSigning,
   useLease,
   useLeaseRegistration,
+  useRliChecklist,
   useTriggerRegistration,
 } from '@/queries/use-leases';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
+import { maskFiscalCode } from '@/lib/mask-fiscal-code';
 import { LeaseStatusBadge } from './components/lease-status-badge';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RegistrationStatusPanel } from './components/registration-status-panel';
@@ -20,6 +22,9 @@ import { ExtraEUWarningBanner } from './components/extra-eu-warning-banner';
 import { CanoneConcordatoCalculator } from './components/canone-concordato-calculator';
 import { AttestationGuidancePanel } from './components/attestation-guidance-panel';
 import { ImuNotificationExportButton } from './components/imu-notification-export-button';
+import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
+import { RliChecklist } from './components/rli-checklist';
+import { DelegaCaptureDialog } from './components/delega-capture-dialog';
 import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
 import type { SignerInfo } from '@/types';
 
@@ -29,9 +34,11 @@ export function LeaseDetailPage() {
   const navigate = useNavigate();
   const { data: lease, isLoading } = useLease(id!);
   const { data: registration } = useLeaseRegistration(id!, lease?.status);
+  const { data: checklist } = useRliChecklist(id!);
   const initiateSigning = useInitiateSigning();
   const triggerRegistration = useTriggerRegistration();
   const [signers, setSigners] = useState<SignerInfo[]>([]);
+  const [delegaOpen, setDelegaOpen] = useState(false);
 
   if (isLoading) {
     return <LoadingScreen message={t('leases.detailLoading')} />;
@@ -69,7 +76,19 @@ export function LeaseDetailPage() {
   };
 
   const handleRegister = async () => {
-    await triggerRegistration.mutateAsync(lease.id);
+    setDelegaOpen(true);
+  };
+
+  const handleDelegaConfirm = async (payload: {
+    tosVersion: string;
+    attestationAccepted: boolean;
+  }) => {
+    await triggerRegistration.mutateAsync({
+      id: lease.id,
+      tosVersion: payload.tosVersion,
+      attestationAccepted: payload.attestationAccepted,
+    });
+    setDelegaOpen(false);
   };
 
   const registrationData = registration ?? lease.registration;
@@ -134,6 +153,9 @@ export function LeaseDetailPage() {
                         {party.firstName} {party.lastName}
                       </p>
                       <p className="text-sm text-muted-foreground">{party.role}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('leases.fiscalCodeMasked')}: {maskFiscalCode(party.fiscalCode)}
+                      </p>
                     </div>
                     <p className="text-sm">{party.contactEmail}</p>
                   </div>
@@ -174,6 +196,8 @@ export function LeaseDetailPage() {
               <LeaseSigningPanel signers={activeSigners} />
             )}
 
+            <CedolareDecisionPanel leaseId={lease.id} />
+            <RliChecklist leaseId={lease.id} />
             <RegistrationStatusPanel
               leaseId={lease.id}
               leaseStatus={lease.status}
@@ -181,6 +205,14 @@ export function LeaseDetailPage() {
               canRegister={lease.status === 'Signed'}
               onRegister={handleRegister}
               isRegistering={triggerRegistration.isPending}
+            />
+            <DelegaCaptureDialog
+              open={delegaOpen}
+              onOpenChange={setDelegaOpen}
+              tosVersion={checklist?.tosVersion ?? '2026-08-rli-delega-bozza'}
+              attestationText={checklist?.attestationText ?? ''}
+              isSubmitting={triggerRegistration.isPending}
+              onConfirm={handleDelegaConfirm}
             />
 
             <CanoneConcordatoCalculator propertyId={lease.propertyId} />

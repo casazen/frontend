@@ -77,15 +77,51 @@ export function useTriggerRegistration() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => leasesApi.triggerRegistration(id),
-    onSuccess: (_, id) => {
+    mutationFn: ({
+      id,
+      tosVersion,
+      attestationAccepted,
+    }: {
+      id: string;
+      tosVersion: string;
+      attestationAccepted: boolean;
+    }) => leasesApi.triggerRegistration(id, { tosVersion, attestationAccepted }),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'registration'] });
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'rli'] });
       toast.success(i18n.t('toast.registrationSubmitted'));
     },
     onError: () => {
       toast.error(i18n.t('toast.registrationSubmitFailed'));
+    },
+  });
+}
+
+export function useRliAdvisory(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, id, 'rli', 'advisory'],
+    queryFn: () => leasesApi.getRliAdvisory(id),
+    enabled: !!id,
+  });
+}
+
+export function useRliChecklist(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, id, 'rli', 'checklist'],
+    queryFn: () => leasesApi.getRliChecklist(id),
+    enabled: !!id,
+  });
+}
+
+export function useExportRli() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => leasesApi.exportRli(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'rli'] });
     },
   });
 }
