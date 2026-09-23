@@ -2095,7 +2095,8 @@
       },
       "consentAccepted": {
         "required": "You must accept data processing"
-      }
+      },
+      "invalidValue": "Invalid value"
     },
     "loading": "Loading check-in...",
     "invalidLink": "Invalid link",
@@ -2120,6 +2121,7 @@
     "documentTypeLabel": "Document type *",
     "selectDocumentType": "Select",
     "documentNumber": "Document number *",
+    "documentNumberOnFile": "Document on file: {{masked}}. For your security, enter the full number again.",
     "documentExpiry": "Document expiry",
     "documentIssuingCountry": "Issuing country *",
     "address": "Address",
@@ -2149,8 +2151,11 @@
     "next": "Next",
     "back": "Back",
     "submit": "Submit check-in",
+    "fixHighlightedFields": "Some details are not valid: fix the highlighted fields and submit again.",
     "successTitle": "Check-in complete!",
     "successDescription": "Your details have been recorded. Thank you!",
+    "alreadyCompletedTitle": "Check-in already completed",
+    "alreadyCompletedDescription": "The details for this stay have already been submitted. To protect your privacy they are no longer shown. To correct them, contact the property manager.",
     "marketingConsent": "I agree to receive promotional communications (optional).",
     "sessionLabel": "Guest check-in status",
     "sessionLoading": "Loading session status...",
@@ -2658,7 +2663,8 @@
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
       "duplicateInvite": "A pending invite already exists for this email.",
-      "inviteEmailFailed": "The invite email could not be sent. Try again later."
+      "inviteEmailFailed": "The invite email could not be sent. Try again later.",
+      "checkinAlreadySubmitted": "The check-in has already been completed."
     }
   },
   "validation": {

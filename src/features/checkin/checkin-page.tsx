@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type DefaultValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,25 +12,50 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { formatDate } from '@/lib/utils';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { useCheckInContext, useSubmitGuestCheckIn } from '@/queries/use-checkin';
-import { publicCheckInFormSchema, type PublicCheckInFormValues } from './schemas/checkin.schema';
-import { getDocumentTypeLabel } from '@/lib/i18n-labels';
+import {
+  ALLOGGIATI_GENDERS,
+  publicCheckInFormSchema,
+  toPublicCheckInSubmitRequest,
+  type PublicCheckInFormValues,
+} from './schemas/checkin.schema';
+import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { getServerFieldErrors } from '@/lib/server-validation-errors';
 import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { PublicCheckInGuestPrefill } from '@/types/public-checkin.types';
+import type { AlloggiatiGender, PublicCheckInGuestPrefill } from '@/types/public-checkin.types';
+
+type FormField = keyof PublicCheckInFormValues;
 
 const DOCUMENT_TYPES = ['Passport', 'IdentityCard', 'DriversLicense', 'Other'] as const;
 const selectClassName =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 const COMPLETE_STATUSES = new Set(['Completo', 'AlloggiatiInviato']);
+const FORM_FIELDS = Object.keys(publicCheckInFormSchema.shape) as FormField[];
+/** Fields validated before leaving each step (index = step - 1). */
+const STEP_FIELDS: FormField[][] = [
+  ['firstName', 'lastName', 'gender', 'dateOfBirth', 'placeOfBirth', 'nationality'],
+  ['documentType', 'documentNumber', 'documentIssuingCountry'],
+  ['gdprConsent', 'marketingConsent'],
+];
 
-function defaultValues(prefill?: PublicCheckInGuestPrefill | null): PublicCheckInFormValues {
+function isAlloggiatiGender(value: unknown): value is AlloggiatiGender {
+  return (ALLOGGIATI_GENDERS as readonly unknown[]).includes(value);
+}
+
+/**
+ * Form values prefilled from the guest data on file. The document number is never prefilled: the API returns it
+ * masked, so the guest types it again.
+ */
+function defaultValues(prefill?: PublicCheckInGuestPrefill | null): DefaultValues<PublicCheckInFormValues> {
   return {
     firstName: prefill?.firstName ?? '',
     lastName: prefill?.lastName ?? '',
+    gender: isAlloggiatiGender(prefill?.gender) ? prefill.gender : undefined,
     dateOfBirth: prefill?.dateOfBirth?.slice(0, 10) ?? '',
     placeOfBirth: prefill?.placeOfBirth ?? '',
     nationality: prefill?.nationality ?? '',
     documentType: 'Passport',
-    documentNumber: prefill?.documentNumber ?? '',
+    documentNumber: '',
     documentIssuingCountry: prefill?.documentIssuingCountry ?? '',
     gdprConsent: false,
     marketingConsent: false,
@@ -40,17 +65,18 @@ function defaultValues(prefill?: PublicCheckInGuestPrefill | null): PublicCheckI
 export function CheckInPage() {
   const { t } = useTranslation();
   const { token = '' } = useParams<{ token: string }>();
-  const { data: context, isLoading, isError } = useCheckInContext(token);
+  const { data: context, isLoading, isError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<PublicCheckInFormValues>({
     resolver: zodResolver(publicCheckInFormSchema),
     defaultValues: defaultValues(),
   });
 
-  const { register, handleSubmit, setValue, watch, trigger, reset, formState: { errors } } = form;
+  const { register, handleSubmit, setValue, setError, watch, trigger, reset, formState: { errors } } = form;
 
   useEffect(() => {
     if (context?.guestPrefill) reset(defaultValues(context.guestPrefill));
@@ -58,19 +84,36 @@ export function CheckInPage() {
 
   const gdprConsent = watch('gdprConsent');
   const marketingConsent = watch('marketingConsent');
+  const maskedDocumentNumber = context?.guestPrefill?.documentNumberMasked;
 
   const goNext = async () => {
-    const fieldsByStep: (keyof PublicCheckInFormValues)[][] = [
-      ['firstName', 'lastName', 'dateOfBirth', 'placeOfBirth', 'nationality'],
-      ['documentType', 'documentNumber', 'documentIssuingCountry'],
-      ['gdprConsent'],
-    ];
-    if (await trigger(fieldsByStep[step - 1])) setStep((s) => Math.min(3, s + 1));
+    if (await trigger(STEP_FIELDS[step - 1])) setStep((s) => Math.min(3, s + 1));
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    await submitCheckIn.mutateAsync({ ...values, marketingConsent: values.marketingConsent ?? false });
-    setSubmitted(true);
+    setSubmitError(null);
+    try {
+      await submitCheckIn.mutateAsync(toPublicCheckInSubmitRequest(values));
+      setSubmitted(true);
+    } catch (error) {
+      // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
+      if (getHttpStatus(error) === 409) {
+        await refetch();
+        return;
+      }
+
+      const fieldErrors = getServerFieldErrors(error, FORM_FIELDS, t('checkin.validation.invalidValue'));
+      const invalidFields = FORM_FIELDS.filter((field) => fieldErrors[field]);
+      invalidFields.forEach((field) => setError(field, { type: 'server', message: fieldErrors[field] }));
+
+      const firstInvalidStep = STEP_FIELDS.findIndex((fields) => fields.some((field) => invalidFields.includes(field)));
+      if (firstInvalidStep >= 0) {
+        setStep(firstInvalidStep + 1);
+        setSubmitError(t('checkin.fixHighlightedFields'));
+      } else {
+        setSubmitError(getProblemMessage(error, t) ?? t('toast.checkInDataSaveFailed'));
+      }
+    }
   });
 
   if (isLoading) return <LoadingScreen message={t('checkin.loading')} />;
@@ -88,15 +131,19 @@ export function CheckInPage() {
     );
   }
 
-  if (COMPLETE_STATUSES.has(context.status) || submitted) {
+  if (submitted || context.completed || COMPLETE_STATUSES.has(context.status)) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-muted/30" data-testid="checkin-success">
         <Card className="max-w-md w-full text-center">
           <CardContent className="pt-10 pb-8 space-y-4">
             <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto" />
-            <h1 className="text-2xl font-bold">{t('checkin.successTitle')}</h1>
-            <p className="text-muted-foreground">{t('checkin.successDescription')}</p>
-            <p className="text-sm font-medium">{context.propertyName}</p>
+            <h1 className="text-2xl font-bold">
+              {submitted ? t('checkin.successTitle') : t('checkin.alreadyCompletedTitle')}
+            </h1>
+            <p className="text-muted-foreground">
+              {submitted ? t('checkin.successDescription') : t('checkin.alreadyCompletedDescription')}
+            </p>
+            {context.propertyName && <p className="text-sm font-medium">{context.propertyName}</p>}
           </CardContent>
         </Card>
       </div>
@@ -109,9 +156,11 @@ export function CheckInPage() {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">{t('checkin.guestCheckIn')}</h1>
           <p className="text-muted-foreground">{context.propertyName}</p>
-          <p className="text-sm text-muted-foreground">
-            {formatDate(context.checkInDate)} – {formatDate(context.checkOutDate)}
-          </p>
+          {context.checkInDate && context.checkOutDate && (
+            <p className="text-sm text-muted-foreground">
+              {formatDate(context.checkInDate)} – {formatDate(context.checkOutDate)}
+            </p>
+          )}
         </div>
         <div className="flex justify-center gap-2" data-testid="checkin-progress">
           {[1, 2, 3].map((n) => (
@@ -133,28 +182,38 @@ export function CheckInPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">{t('checkin.firstName')}</Label>
-                    <Input id="firstName" {...register('firstName')} />
-                    <FormFieldError error={errors.firstName} />
+                    <Input id="firstName" {...register('firstName')} aria-invalid={!!errors.firstName} aria-describedby="firstName-error" />
+                    <FormFieldError id="firstName-error" error={errors.firstName} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">{t('checkin.lastName')}</Label>
-                    <Input id="lastName" {...register('lastName')} />
-                    <FormFieldError error={errors.lastName} />
+                    <Input id="lastName" {...register('lastName')} aria-invalid={!!errors.lastName} aria-describedby="lastName-error" />
+                    <FormFieldError id="lastName-error" error={errors.lastName} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">{t('checkin.genderLabel')}</Label>
+                    <select id="gender" {...register('gender')} aria-invalid={!!errors.gender} aria-describedby="gender-error" className={selectClassName}>
+                      <option value="">{t('checkin.selectGender')}</option>
+                      {ALLOGGIATI_GENDERS.map((value) => (
+                        <option key={value} value={value}>{getGenderLabel(value, t)}</option>
+                      ))}
+                    </select>
+                    <FormFieldError id="gender-error" error={errors.gender} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dateOfBirth">{t('checkin.birthDate')}</Label>
-                    <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
-                    <FormFieldError error={errors.dateOfBirth} />
+                    <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} aria-invalid={!!errors.dateOfBirth} aria-describedby="dateOfBirth-error" />
+                    <FormFieldError id="dateOfBirth-error" error={errors.dateOfBirth} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="placeOfBirth">{t('checkin.birthPlace')}</Label>
-                    <Input id="placeOfBirth" {...register('placeOfBirth')} />
-                    <FormFieldError error={errors.placeOfBirth} />
+                    <Input id="placeOfBirth" {...register('placeOfBirth')} aria-invalid={!!errors.placeOfBirth} aria-describedby="placeOfBirth-error" />
+                    <FormFieldError id="placeOfBirth-error" error={errors.placeOfBirth} />
                   </div>
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2">
                     <Label htmlFor="nationality">{t('checkin.nationality')}</Label>
-                    <Input id="nationality" {...register('nationality')} />
-                    <FormFieldError error={errors.nationality} />
+                    <Input id="nationality" {...register('nationality')} aria-invalid={!!errors.nationality} aria-describedby="nationality-error" />
+                    <FormFieldError id="nationality-error" error={errors.nationality} />
                   </div>
                 </div>
               )}
@@ -162,22 +221,27 @@ export function CheckInPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="documentType">{t('checkin.documentTypeLabel')}</Label>
-                    <select id="documentType" {...register('documentType')} className={selectClassName}>
+                    <select id="documentType" {...register('documentType')} aria-invalid={!!errors.documentType} aria-describedby="documentType-error" className={selectClassName}>
                       {DOCUMENT_TYPES.map((value) => (
                         <option key={value} value={value}>{getDocumentTypeLabel(value, t)}</option>
                       ))}
                     </select>
-                    <FormFieldError error={errors.documentType} />
+                    <FormFieldError id="documentType-error" error={errors.documentType} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="documentNumber">{t('checkin.documentNumber')}</Label>
-                    <Input id="documentNumber" {...register('documentNumber')} />
-                    <FormFieldError error={errors.documentNumber} />
+                    <Input id="documentNumber" autoComplete="off" {...register('documentNumber')} aria-invalid={!!errors.documentNumber} aria-describedby="documentNumber-error" />
+                    {maskedDocumentNumber && (
+                      <p className="text-xs text-muted-foreground" data-testid="checkin-document-on-file">
+                        {t('checkin.documentNumberOnFile', { masked: maskedDocumentNumber })}
+                      </p>
+                    )}
+                    <FormFieldError id="documentNumber-error" error={errors.documentNumber} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="documentIssuingCountry">{t('checkin.documentIssuingCountry')}</Label>
-                    <Input id="documentIssuingCountry" {...register('documentIssuingCountry')} />
-                    <FormFieldError error={errors.documentIssuingCountry} />
+                    <Input id="documentIssuingCountry" {...register('documentIssuingCountry')} aria-invalid={!!errors.documentIssuingCountry} aria-describedby="documentIssuingCountry-error" />
+                    <FormFieldError id="documentIssuingCountry-error" error={errors.documentIssuingCountry} />
                   </div>
                 </div>
               )}
@@ -193,7 +257,7 @@ export function CheckInPage() {
                       {t('checkin.gdprConsent')}
                     </Label>
                   </div>
-                  <FormFieldError error={errors.gdprConsent} />
+                  <FormFieldError id="gdprConsent-error" error={errors.gdprConsent} />
                   <div className="flex items-start gap-3 rounded-md border p-4">
                     <Checkbox
                       id="marketingConsent"
@@ -205,6 +269,11 @@ export function CheckInPage() {
                     </Label>
                   </div>
                 </div>
+              )}
+              {submitError && (
+                <p role="alert" className="text-sm text-destructive" data-testid="checkin-submit-error">
+                  {submitError}
+                </p>
               )}
               <div className="flex justify-between pt-4">
                 <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
