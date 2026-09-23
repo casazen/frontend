@@ -2655,6 +2655,7 @@
       "noOrgContext": "Your account is not linked to any organization.",
       "duplicatePropertyAddress": "This address is already used by an active property.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
+      "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
       "duplicateInvite": "A pending invite already exists for this email.",
       "inviteEmailFailed": "The invite email could not be sent. Try again later."

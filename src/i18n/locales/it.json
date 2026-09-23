@@ -2655,6 +2655,7 @@
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
       "duplicatePropertyAddress": "Indirizzo già usato da un immobile attivo.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
+      "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi."
