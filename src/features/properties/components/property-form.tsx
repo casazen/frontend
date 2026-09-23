@@ -11,6 +11,7 @@ import { propertyFormSchema, COMMON_AMENITIES } from '../schemas/property.schema
 import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
 import type { Property } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface PropertyFormProps {
   property?: Property;
@@ -81,12 +82,12 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
           <div className="space-y-2">
             <Label htmlFor="name">{t('property.form.name')}</Label>
             <Input id="name" {...register('name')} placeholder={t('property.form.placeholder.name')} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            <FormFieldError error={errors.name} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">{t('property.form.description')}</Label>
             <Textarea id="description" {...register('description')} placeholder={t('property.form.placeholder.description')} rows={4} />
-            {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+            <FormFieldError error={errors.description} />
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked)} />
@@ -101,7 +102,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
               {...register('slug')}
               placeholder={t('property.slug.placeholder')}
             />
-            {errors.slug && <p className="text-sm text-destructive">{errors.slug.message}</p>}
+            <FormFieldError error={errors.slug} />
             <p className="text-xs text-muted-foreground">{t('property.slug.hint')}</p>
           </div>
         </CardContent>
@@ -115,7 +116,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
         <CardContent className="space-y-2">
           <Label htmlFor="cinCode">{t('property.form.cin.label')}</Label>
           <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder={t('property.form.cin.placeholder')} />
-          {errors.cinCode && <p className="text-sm text-destructive">{errors.cinCode.message}</p>}
+          <FormFieldError error={errors.cinCode} />
         </CardContent>
       </Card>
 
@@ -128,25 +129,25 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
           <div className="space-y-2">
             <Label htmlFor="address">{t('property.form.address')}</Label>
             <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
-            {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
+            <FormFieldError error={errors.address} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">{t('property.form.city')}</Label>
               <Input id="city" {...register('city')} placeholder={t('property.form.placeholder.city')} />
-              {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
+              <FormFieldError error={errors.city} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="country">{t('property.form.country')}</Label>
               <Input id="country" {...register('country')} placeholder={t('property.form.placeholder.country')} />
-              {errors.country && <p className="text-sm text-destructive">{errors.country.message}</p>}
+              <FormFieldError error={errors.country} />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
               <Input id="postalCode" {...register('postalCode')} placeholder={t('property.form.placeholder.postalCode')} />
-              {errors.postalCode && <p className="text-sm text-destructive">{errors.postalCode.message}</p>}
+              <FormFieldError error={errors.postalCode} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="latitude">{t('property.form.latitude')}</Label>
@@ -178,24 +179,24 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
             <div className="space-y-2">
               <Label htmlFor="bedrooms">{t('property.form.bedrooms')}</Label>
               <Input id="bedrooms" type="number" {...register('bedrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bedrooms')} />
-              {errors.bedrooms && <p className="text-sm text-destructive">{errors.bedrooms.message}</p>}
+              <FormFieldError error={errors.bedrooms} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="bathrooms">{t('property.form.bathrooms')}</Label>
               <Input id="bathrooms" type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bathrooms')} />
-              {errors.bathrooms && <p className="text-sm text-destructive">{errors.bathrooms.message}</p>}
+              <FormFieldError error={errors.bathrooms} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
               <Input id="maxGuests" type="number" {...register('maxGuests', { valueAsNumber: true })} placeholder={t('property.form.placeholder.maxGuests')} />
-              {errors.maxGuests && <p className="text-sm text-destructive">{errors.maxGuests.message}</p>}
+              <FormFieldError error={errors.maxGuests} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
               <Input id="nightlyRate" type="number" step="0.01" {...register('nightlyRate', { valueAsNumber: true })} placeholder={t('property.form.placeholder.nightlyRate')} />
-              {errors.nightlyRate && <p className="text-sm text-destructive">{errors.nightlyRate.message}</p>}
+              <FormFieldError error={errors.nightlyRate} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">{t('property.form.currency')}</Label>

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
@@ -54,5 +54,26 @@ describe('LeaseCreateForm canone concordato', () => {
     });
 
     expect(await screen.findByText(i18n.t('leases.canoneConcordato.title'))).toBeInTheDocument();
+  });
+});
+
+describe('LeaseCreateForm validation messages (A7-25)', () => {
+  beforeEach(() => {
+    void i18n.changeLanguage('it');
+  });
+
+  it('LeaseCreateForm_EmptyFiscalCode_ShowsTranslatedMessageNotI18nKey', async () => {
+    const onSubmit = vi.fn();
+    const { container } = renderForm(onSubmit);
+
+    fireEvent.submit(container.querySelector('form')!);
+
+    const key = 'leases.validation.fiscalCode.minLength';
+    await waitFor(() => {
+      expect(screen.getAllByText(i18n.t(key)).length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText(key)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^leases\.validation\./)).not.toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

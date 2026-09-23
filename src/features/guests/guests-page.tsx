@@ -60,14 +60,14 @@ export function GuestsPage() {
             {/* Error State */}
             {isError && !isLoading && (
               <div className="py-12 text-center">
-                <p className="text-destructive mb-4">Failed to load guests.</p>
+                <p className="text-destructive mb-4">{t('guests.loadError')}</p>
                 <Button
                   variant="outline"
                   onClick={() => refetch()}
                   disabled={isRefetching}
                 >
                   <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-                  Retry
+                  {t('guests.retry')}
                 </Button>
               </div>
             )}

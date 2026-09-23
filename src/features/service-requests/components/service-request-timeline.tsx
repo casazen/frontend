@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/utils';
 import { useMarkServiceRequestPaid } from '@/queries/use-service-requests';
 import type { ServiceRequest } from '@/types/service-request';
+import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   Richiesto: 'secondary',
@@ -35,9 +36,9 @@ export function ServiceRequestTimeline({ requests }: ServiceRequestTimelineProps
           <div key={sr.id} className="flex flex-col gap-2 border-b pb-4 last:border-0 last:pb-0">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={STATUS_VARIANT[sr.status] ?? 'secondary'}>
-                {t(`serviceRequest.status.${sr.status}`, { defaultValue: sr.status })}
+                {getServiceRequestStatusLabel(sr.status, t)}
               </Badge>
-              <span className="text-sm font-medium">{t(`serviceRequest.categories.${sr.category}`, { defaultValue: sr.category })}</span>
+              <span className="text-sm font-medium">{getServiceCategoryLabel(sr.category, t)}</span>
               {sr.supplierName && (
                 <span className="text-sm text-muted-foreground">— {sr.supplierName}</span>
               )}

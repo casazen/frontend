@@ -34,11 +34,30 @@ import { PropertyForm } from '@/features/properties/components/property-form';
 
 const STEP_ORDER = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'] as const;
 
+const SAFETY_ITEMS = ['smokeDetector', 'fireExtinguisher', 'gasCompliance'] as const;
+
+const STEP_ICON_COLOR = {
+  complete: 'text-green-600',
+  warning: 'text-amber-500',
+  current: 'text-primary',
+  pending: 'text-muted-foreground',
+} as const;
+
 function stepIndex(stepId: string): number {
   return STEP_ORDER.indexOf(stepId as (typeof STEP_ORDER)[number]);
 }
 
+/** Step title translated by step id; falls back to the label sent by the API for unknown steps. */
+function useStepLabel() {
+  const { t, i18n } = useTranslation();
+  return (step: ComplianceWizardStep) => {
+    const key = `compliance.activation.steps.${step.id}`;
+    return i18n.exists(key) ? t(key) : step.label;
+  };
+}
+
 function StepIndicator({ steps, currentStepId }: { steps: ComplianceWizardStep[]; currentStepId: string }) {
+  const stepLabel = useStepLabel();
   const sorted = [...steps].sort((a, b) => stepIndex(a.id) - stepIndex(b.id));
 
   return (
@@ -53,12 +72,12 @@ function StepIndicator({ steps, currentStepId }: { steps: ComplianceWizardStep[]
               : Circle;
         const color =
           step.status === 'complete'
-            ? 'text-green-600'
+            ? STEP_ICON_COLOR.complete
             : step.status === 'warning'
-              ? 'text-amber-500'
+              ? STEP_ICON_COLOR.warning
               : isCurrent
-                ? 'text-primary'
-                : 'text-muted-foreground';
+                ? STEP_ICON_COLOR.current
+                : STEP_ICON_COLOR.pending;
 
         return (
           <button
@@ -70,7 +89,7 @@ function StepIndicator({ steps, currentStepId }: { steps: ComplianceWizardStep[]
             }`}
           >
             <Icon className={`h-3.5 w-3.5 ${color}`} />
-            <span>{step.label}</span>
+            <span>{stepLabel(step)}</span>
           </button>
         );
       })}
@@ -82,6 +101,7 @@ export function PropertyActivationWizard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const stepLabel = useStepLabel();
   const propertyId = id!;
 
   const { data: property, isLoading: propertyLoading } = useProperty(propertyId);
@@ -165,7 +185,7 @@ export function PropertyActivationWizard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{currentStep.label}</CardTitle>
+            <CardTitle>{stepLabel(currentStep)}</CardTitle>
             {currentStep.message && (
               <CardDescription className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
@@ -235,7 +255,7 @@ export function PropertyActivationWizard() {
             {currentStepId === 'safety' && (
               <div className="space-y-4 max-w-lg">
                 <p className="text-sm text-muted-foreground">{t('compliance.activation.safetyHint')}</p>
-                {(['smokeDetector', 'fireExtinguisher', 'gasCompliance'] as const).map((key) => (
+                {SAFETY_ITEMS.map((key) => (
                   <div key={key} className="flex items-center gap-2">
                     <Checkbox
                       id={`safety-${key}`}

@@ -14,6 +14,7 @@ import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
 const DOCUMENT_TYPES = ['Passport', 'IdentityCard', 'DriversLicense', 'Other'] as const;
 const GENDERS = ['Male', 'Female', 'Other'] as const;
 import type { CheckInGuestDto } from '@/types/alloggiati.types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface GuestDataFormProps {
   guest: CheckInGuestDto;
@@ -75,25 +76,19 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         <div className="space-y-2">
           <Label htmlFor="dateOfBirth">{t('checkin.birthDate')}</Label>
           <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
-          {errors.dateOfBirth && (
-            <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>
-          )}
+          <FormFieldError error={errors.dateOfBirth} />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="placeOfBirth">{t('checkin.birthPlace')}</Label>
           <Input id="placeOfBirth" {...register('placeOfBirth')} />
-          {errors.placeOfBirth && (
-            <p className="text-sm text-destructive">{errors.placeOfBirth.message}</p>
-          )}
+          <FormFieldError error={errors.placeOfBirth} />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="nationality">{t('checkin.nationality')}</Label>
           <Input id="nationality" {...register('nationality')} />
-          {errors.nationality && (
-            <p className="text-sm text-destructive">{errors.nationality.message}</p>
-          )}
+          <FormFieldError error={errors.nationality} />
         </div>
 
         <div className="space-y-2">
@@ -106,9 +101,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
               </option>
             ))}
           </select>
-          {errors.gender && (
-            <p className="text-sm text-destructive">{errors.gender.message}</p>
-          )}
+          <FormFieldError error={errors.gender} />
         </div>
 
         <div className="space-y-2">
@@ -121,17 +114,13 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
               </option>
             ))}
           </select>
-          {errors.documentType && (
-            <p className="text-sm text-destructive">{errors.documentType.message}</p>
-          )}
+          <FormFieldError error={errors.documentType} />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="documentNumber">{t('checkin.documentNumber')}</Label>
           <Input id="documentNumber" {...register('documentNumber')} />
-          {errors.documentNumber && (
-            <p className="text-sm text-destructive">{errors.documentNumber.message}</p>
-          )}
+          <FormFieldError error={errors.documentNumber} />
         </div>
 
         <div className="space-y-2">
@@ -142,9 +131,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
         <div className="space-y-2">
           <Label htmlFor="documentIssuingCountry">{t('checkin.documentIssuingCountry')}</Label>
           <Input id="documentIssuingCountry" {...register('documentIssuingCountry')} />
-          {errors.documentIssuingCountry && (
-            <p className="text-sm text-destructive">{errors.documentIssuingCountry.message}</p>
-          )}
+          <FormFieldError error={errors.documentIssuingCountry} />
         </div>
 
         <div className="space-y-2 sm:col-span-2">
@@ -178,9 +165,7 @@ export function GuestDataForm({ guest, onSubmit, isSubmitting }: GuestDataFormPr
           {t('checkin.gdprConsent')}
         </Label>
       </div>
-      {errors.consentAccepted && (
-        <p className="text-sm text-destructive">{errors.consentAccepted.message}</p>
-      )}
+      <FormFieldError error={errors.consentAccepted} />
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? t('checkin.saving') : t('checkin.saveData')}

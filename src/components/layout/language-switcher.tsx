@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
       data-testid="language-switcher"
       className="flex items-center gap-0.5 rounded-md border bg-muted/40 p-0.5"
       role="group"
-      aria-label="Language"
+      aria-label={t('language.label')}
     >
       <Button
         type="button"

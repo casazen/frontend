@@ -14,14 +14,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { TouristTaxRate, CreateTouristTaxRateDto, UpdateTouristTaxRateDto } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
+// Messages are i18n keys: FormFieldError translates them when rendering.
 const taxRateSchema = z.object({
-  city: z.string().min(2, 'La città è obbligatoria'),
-  regionCode: z.string().min(2, 'La regione è obbligatoria'),
-  ratePerPersonPerNight: z.number().min(0.01, 'La tariffa deve essere maggiore di 0'),
+  city: z.string().min(2, 'taxRates.validation.cityRequired'),
+  regionCode: z.string().min(2, 'taxRates.validation.regionRequired'),
+  ratePerPersonPerNight: z.number().min(0.01, 'taxRates.validation.rateMin'),
   maxNights: z.number().min(0).optional().nullable(),
   minimumAge: z.number().min(0).optional(),
-  effectiveFrom: z.string().min(1, 'La data di entrata in vigore è obbligatoria'),
+  effectiveFrom: z.string().min(1, 'taxRates.validation.effectiveFromRequired'),
   effectiveTo: z.string().optional().nullable(),
   notes: z.string().optional(),
   isActive: z.boolean().optional(),
@@ -113,17 +115,13 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
           <div className="space-y-2">
             <Label htmlFor="city">{t('taxRates.city')} *</Label>
             <Input id="city" {...register('city')} />
-            {errors.city && (
-              <p className="text-sm text-destructive">{errors.city.message}</p>
-            )}
+            <FormFieldError error={errors.city} />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="regionCode">{t('taxRates.region')} *</Label>
             <Input id="regionCode" {...register('regionCode')} />
-            {errors.regionCode && (
-              <p className="text-sm text-destructive">{errors.regionCode.message}</p>
-            )}
+            <FormFieldError error={errors.regionCode} />
           </div>
 
           <div className="space-y-2">
@@ -135,9 +133,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
               min="0"
               {...register('ratePerPersonPerNight', { valueAsNumber: true })}
             />
-            {errors.ratePerPersonPerNight && (
-              <p className="text-sm text-destructive">{errors.ratePerPersonPerNight.message}</p>
-            )}
+            <FormFieldError error={errors.ratePerPersonPerNight} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -149,9 +145,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
                 min="0"
                 {...register('maxNights', { valueAsNumber: true })}
               />
-              {errors.maxNights && (
-                <p className="text-sm text-destructive">{errors.maxNights.message}</p>
-              )}
+              <FormFieldError error={errors.maxNights} />
             </div>
 
             <div className="space-y-2">
@@ -162,9 +156,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
                 min="0"
                 {...register('minimumAge', { valueAsNumber: true })}
               />
-              {errors.minimumAge && (
-                <p className="text-sm text-destructive">{errors.minimumAge.message}</p>
-              )}
+              <FormFieldError error={errors.minimumAge} />
             </div>
           </div>
 
@@ -175,9 +167,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
               type="date"
               {...register('effectiveFrom')}
             />
-            {errors.effectiveFrom && (
-              <p className="text-sm text-destructive">{errors.effectiveFrom.message}</p>
-            )}
+            <FormFieldError error={errors.effectiveFrom} />
           </div>
 
           <div className="space-y-2">

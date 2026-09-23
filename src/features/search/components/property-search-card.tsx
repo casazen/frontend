@@ -55,11 +55,11 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="flex items-center gap-1">
             <Bed className="h-3 w-3" />
-            {property.bedrooms} {property.bedrooms !== 1 ? t('search.card.bed_other') : t('search.card.bed_one')}
+            {property.bedrooms} {t('search.card.bed', { count: property.bedrooms })}
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Bath className="h-3 w-3" />
-            {property.bathrooms} {property.bathrooms !== 1 ? t('search.card.bath_other') : t('search.card.bath_one')}
+            {property.bathrooms} {t('search.card.bath', { count: property.bathrooms })}
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Users className="h-3 w-3" />

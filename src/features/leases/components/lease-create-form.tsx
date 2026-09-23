@@ -16,6 +16,9 @@ import type { CreateLeaseDto } from '@/types';
 import { AlertTriangle } from 'lucide-react';
 import { CanoneConcordatoCalculator, type ConcordatoRange } from './canone-concordato-calculator';
 import { isRentInConcordatoRange } from '../lib/concordato-rent-range';
+import { FormFieldError } from '@/components/shared/form-field-error';
+
+const FISCAL_REGIMES = ['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato'] as const;
 
 interface LeaseCreateFormProps {
   onSubmit: (data: CreateLeaseDto) => void;
@@ -125,9 +128,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
                 </option>
               ))}
             </select>
-            {errors.propertyId && (
-              <p className="text-sm text-destructive">{errors.propertyId.message}</p>
-            )}
+            <FormFieldError error={errors.propertyId} />
           </div>
 
           {apeError && (
@@ -147,7 +148,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
               {...register('fiscalRegime')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              {['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato'].map((value) => (
+              {FISCAL_REGIMES.map((value) => (
                 <option key={value} value={value}>
                   {getFiscalRegimeLabel(value, t)}
                 </option>
@@ -171,16 +172,12 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
             <div className="space-y-2">
               <Label htmlFor="startDate">{t('leases.form.startDateLabel')}</Label>
               <Input id="startDate" type="date" {...register('startDate')} />
-              {errors.startDate && (
-                <p className="text-sm text-destructive">{errors.startDate.message}</p>
-              )}
+              <FormFieldError error={errors.startDate} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="endDate">{t('leases.form.endDateLabel')}</Label>
               <Input id="endDate" type="date" {...register('endDate')} />
-              {errors.endDate && (
-                <p className="text-sm text-destructive">{errors.endDate.message}</p>
-              )}
+              <FormFieldError error={errors.endDate} />
             </div>
           </div>
 
@@ -193,9 +190,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
               min="0.01"
               {...register('monthlyRent', { valueAsNumber: true })}
             />
-            {errors.monthlyRent && (
-              <p className="text-sm text-destructive">{errors.monthlyRent.message}</p>
-            )}
+            <FormFieldError error={errors.monthlyRent} />
             {fiscalRegime === 'CanoneConcordato' && concordatoRange && (
               <p className="text-sm text-muted-foreground">
                 {t('leases.form.concordatoRangeHint', {
@@ -259,23 +254,17 @@ function PartyFields({
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.firstName`}>{t('leases.form.firstNameLabel')}</Label>
         <Input id={`${prefix}.firstName`} {...register(`${prefix}.firstName`)} />
-        {errors?.firstName && (
-          <p className="text-sm text-destructive">{errors.firstName.message}</p>
-        )}
+        <FormFieldError error={errors?.firstName} />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.lastName`}>{t('leases.form.lastNameLabel')}</Label>
         <Input id={`${prefix}.lastName`} {...register(`${prefix}.lastName`)} />
-        {errors?.lastName && (
-          <p className="text-sm text-destructive">{errors.lastName.message}</p>
-        )}
+        <FormFieldError error={errors?.lastName} />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.fiscalCode`}>{t('leases.form.fiscalCodeLabel')}</Label>
         <Input id={`${prefix}.fiscalCode`} {...register(`${prefix}.fiscalCode`)} />
-        {errors?.fiscalCode && (
-          <p className="text-sm text-destructive">{errors.fiscalCode.message}</p>
-        )}
+        <FormFieldError error={errors?.fiscalCode} />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.citizenship`}>{t('leases.form.citizenshipLabel')}</Label>
@@ -285,9 +274,7 @@ function PartyFields({
           placeholder="IT"
           {...register(`${prefix}.citizenship`)}
         />
-        {errors?.citizenship && (
-          <p className="text-sm text-destructive">{errors.citizenship.message}</p>
-        )}
+        <FormFieldError error={errors?.citizenship} />
       </div>
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor={`${prefix}.contactEmail`}>{t('leases.form.contactEmailLabel')}</Label>
@@ -296,9 +283,7 @@ function PartyFields({
           type="email"
           {...register(`${prefix}.contactEmail`)}
         />
-        {errors?.contactEmail && (
-          <p className="text-sm text-destructive">{errors.contactEmail.message}</p>
-        )}
+        <FormFieldError error={errors?.contactEmail} />
       </div>
     </>
   );

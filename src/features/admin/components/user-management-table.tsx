@@ -8,6 +8,7 @@ import { ChangeRoleDialog } from './change-role-dialog';
 import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
+import { getPlanTierLabel, getRoleLabel } from '@/lib/i18n-labels';
 
 interface UserManagementTableProps {
   users: UserSummary[];
@@ -52,10 +53,10 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                 </td>
                 <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
                 <td className="py-3 pr-4">
-                  <Badge variant="outline">{user.role}</Badge>
+                  <Badge variant="outline">{getRoleLabel(user.role, t)}</Badge>
                 </td>
                 <td className="py-3 pr-4">
-                  <Badge variant="secondary">{user.planTier ?? '—'}</Badge>
+                  <Badge variant="secondary">{user.planTier ? getPlanTierLabel(user.planTier, t) : '—'}</Badge>
                 </td>
                 <td className="py-3 pr-4">
                   {user.isActive ? (

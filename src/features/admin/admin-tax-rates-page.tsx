@@ -11,6 +11,7 @@ import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { TaxRateForm } from './components/tax-rate-form';
 import { touristTaxApi } from '@/api/tourist-tax.api';
 import { formatDate } from '@/lib/utils';
+import { getProblemMessage } from '@/lib/api-errors';
 import { Plus, Pencil, Trash2, Loader2, RefreshCw, Coins } from 'lucide-react';
 import type { TouristTaxRate, CreateTouristTaxRateDto, UpdateTouristTaxRateDto } from '@/types';
 
@@ -37,10 +38,10 @@ export function AdminTaxRatesPage() {
     mutationFn: (data: CreateTouristTaxRateDto) => touristTaxApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tourist-tax-rates'] });
-      toast.success('Aliquota creata con successo');
+      toast.success(t('taxRates.toast.created'));
     },
-    onError: () => {
-      toast.error('Impossibile creare l\'aliquota');
+    onError: (error) => {
+      toast.error(getProblemMessage(error, t) ?? t('taxRates.toast.createFailed'));
     },
   });
 
@@ -49,10 +50,10 @@ export function AdminTaxRatesPage() {
       touristTaxApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tourist-tax-rates'] });
-      toast.success('Aliquota aggiornata con successo');
+      toast.success(t('taxRates.toast.updated'));
     },
-    onError: () => {
-      toast.error('Impossibile aggiornare l\'aliquota');
+    onError: (error) => {
+      toast.error(getProblemMessage(error, t) ?? t('taxRates.toast.updateFailed'));
     },
   });
 
@@ -60,10 +61,10 @@ export function AdminTaxRatesPage() {
     mutationFn: (id: string) => touristTaxApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tourist-tax-rates'] });
-      toast.success('Aliquota eliminata con successo');
+      toast.success(t('taxRates.toast.deleted'));
     },
-    onError: () => {
-      toast.error('Impossibile eliminare l\'aliquota');
+    onError: (error) => {
+      toast.error(getProblemMessage(error, t) ?? t('taxRates.toast.deleteFailed'));
     },
   });
 

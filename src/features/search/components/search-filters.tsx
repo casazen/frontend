@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Search, X } from 'lucide-react';
 import { searchFiltersSchema } from '../schemas/search.schema';
 import type { SearchFiltersFormValues } from '../schemas/search.schema';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface SearchFiltersProps {
   onSearch: (filters: SearchFiltersFormValues) => void;
@@ -51,9 +52,7 @@ export function SearchFilters({ onSearch, onReset }: SearchFiltersProps) {
               {...register('city')}
               placeholder={t('search.filters.cityPlaceholder')}
             />
-            {errors.city && (
-              <p className="text-sm text-destructive">{errors.city.message}</p>
-            )}
+            <FormFieldError error={errors.city} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

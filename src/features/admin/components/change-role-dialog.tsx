@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useChangeUserRole } from '@/queries/use-users';
 import { formatUserDisplayName } from '@/lib/user-display';
 import type { UserSummary, UserRole } from '@/types';
+import { getRoleLabel } from '@/lib/i18n-labels';
 
 const ALL_ROLES: UserRole[] = [
   'Admin',
@@ -72,7 +73,7 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
           >
             {ALL_ROLES.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {getRoleLabel(r, t)}
               </option>
             ))}
           </select>

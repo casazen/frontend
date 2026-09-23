@@ -20,14 +20,13 @@ export function PriceBreakdown({
 }: PriceBreakdownProps) {
   const { t } = useTranslation();
   const lodgingTotal = nightlyRate * nights;
-  const plural = nights !== 1 ? 'i' : '';
 
   return (
     <div className="space-y-2 rounded-lg border p-4 text-sm" data-testid="price-breakdown">
       <h3 className="font-semibold">{t('publicBooking.priceBreakdownTitle')}</h3>
       <div className="flex justify-between">
         <span>
-          {t('publicBooking.nightsBreakdown', { nights, plural, rate: formatCurrency(nightlyRate, currency) })}
+          {t('publicBooking.nightsBreakdown', { count: nights, rate: formatCurrency(nightlyRate, currency) })}
         </span>
         <span>{formatCurrency(lodgingTotal, currency)}</span>
       </div>

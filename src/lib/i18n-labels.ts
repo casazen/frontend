@@ -1,8 +1,19 @@
-import type { BookingStatus } from '@/types';
+import type { BookingStatus, RentalType } from '@/types';
 
 type TranslateFn = (key: string) => string;
 import { LOCALE_STORAGE_KEY, type AppLocale } from '@/i18n/config';
 import i18n from '@/i18n/config';
+
+/**
+ * Label of an enum-like value coming from the API (`<prefix>.<value>`).
+ * Values without a translation key (e.g. free-text categories typed by a supplier, or a
+ * value added by a newer backend) are shown as they are instead of as a raw i18n key.
+ */
+function translateEnumValue(prefix: string, value: string | null | undefined, t: TranslateFn): string {
+  if (!value) return '';
+  const key = `${prefix}.${value}`;
+  return i18n.exists(key) ? t(key) : value;
+}
 
 const BOOKING_STATUS_KEYS: Record<BookingStatus, string> = {
   Pending: 'booking.status.pending',
@@ -75,6 +86,48 @@ export function getLeaseStatusLabel(status: string, t: TranslateFn): string {
 
 export function getRegistrationStatusLabel(status: string, t: TranslateFn): string {
   return t(`leases.registrationStatusLabel.${status}`);
+}
+
+export function getLeasePartyRoleLabel(role: string, t: TranslateFn): string {
+  return translateEnumValue('leases.partyRole', role, t);
+}
+
+/** Label of an application role (`Admin`, `PropertyOwner`, ...). */
+export function getRoleLabel(role: string, t: TranslateFn): string {
+  return translateEnumValue('roles', role, t);
+}
+
+/** Label of a plan tier (`Starter`, `Pro`, `Scale`). */
+export function getPlanTierLabel(tier: string, t: TranslateFn): string {
+  return translateEnumValue('plan.tier', tier, t);
+}
+
+const RENTAL_TYPE_KEYS: Record<RentalType, string> = {
+  ShortTerm: 'onboarding.shortTermTitle',
+  LongTerm: 'onboarding.longTermTitle',
+  Both: 'onboarding.bothTitle',
+};
+
+/** Label of the operator type chosen during onboarding. */
+export function getRentalTypeLabel(rentalType: string, t: TranslateFn): string {
+  const key = RENTAL_TYPE_KEYS[rentalType as RentalType];
+  return key ? t(key) : rentalType;
+}
+
+export function getServiceCategoryLabel(category: string, t: TranslateFn): string {
+  return translateEnumValue('serviceRequest.categories', category, t);
+}
+
+export function getServiceRequestStatusLabel(status: string, t: TranslateFn): string {
+  return translateEnumValue('serviceRequest.status', status, t);
+}
+
+export function getSupplierStatusLabel(status: string, t: TranslateFn): string {
+  return translateEnumValue('supplier.statusLabel', status, t);
+}
+
+export function getCheckInSessionStatusLabel(status: string, t: TranslateFn): string {
+  return translateEnumValue('checkin.status', status, t);
 }
 
 export function getOtaPlatformLabel(platform: string, t: TranslateFn): string {

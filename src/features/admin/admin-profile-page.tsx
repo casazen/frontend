@@ -21,7 +21,7 @@ export function AdminProfilePage() {
 
   const displayRole = roles.includes(ROLE_ADMIN)
     ? 'Admin'
-    : roles[0] ?? profile?.role ?? 'User';
+    : roles[0] ?? profile?.role;
   const displayName =
     user.name ||
     [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') ||

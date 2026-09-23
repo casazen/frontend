@@ -10,6 +10,7 @@ import { bookingFormSchema } from '../schemas/booking.schema';
 import { useProperties } from '@/queries/use-properties';
 import type { BookingFormValues } from '../schemas/booking.schema';
 import type { Booking } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface BookingFormProps {
   booking?: Booking;
@@ -62,9 +63,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 </option>
               ))}
             </select>
-            {errors.propertyId && (
-              <p className="text-sm text-destructive">{errors.propertyId.message}</p>
-            )}
+            <FormFieldError error={errors.propertyId} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -75,9 +74,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 type="date"
                 {...register('checkInDate')}
               />
-              {errors.checkInDate && (
-                <p className="text-sm text-destructive">{errors.checkInDate.message}</p>
-              )}
+              <FormFieldError error={errors.checkInDate} />
             </div>
 
             <div className="space-y-2">
@@ -87,9 +84,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 type="date"
                 {...register('checkOutDate')}
               />
-              {errors.checkOutDate && (
-                <p className="text-sm text-destructive">{errors.checkOutDate.message}</p>
-              )}
+              <FormFieldError error={errors.checkOutDate} />
             </div>
           </div>
 
@@ -101,9 +96,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
               {...register('numberOfGuests', { valueAsNumber: true })}
               placeholder={t('booking.form.numberOfGuestsPlaceholder')}
             />
-            {errors.numberOfGuests && (
-              <p className="text-sm text-destructive">{errors.numberOfGuests.message}</p>
-            )}
+            <FormFieldError error={errors.numberOfGuests} />
           </div>
 
           <div className="space-y-2">
@@ -133,9 +126,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 {...register('guest.firstName')}
                 placeholder={t('booking.form.firstNamePlaceholder')}
               />
-              {errors.guest?.firstName && (
-                <p className="text-sm text-destructive">{errors.guest.firstName.message}</p>
-              )}
+              <FormFieldError error={errors.guest?.firstName} />
             </div>
 
             <div className="space-y-2">
@@ -145,9 +136,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 {...register('guest.lastName')}
                 placeholder={t('booking.form.lastNamePlaceholder')}
               />
-              {errors.guest?.lastName && (
-                <p className="text-sm text-destructive">{errors.guest.lastName.message}</p>
-              )}
+              <FormFieldError error={errors.guest?.lastName} />
             </div>
           </div>
 
@@ -159,9 +148,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
               {...register('guest.email')}
               placeholder={t('booking.form.emailPlaceholder')}
             />
-            {errors.guest?.email && (
-              <p className="text-sm text-destructive">{errors.guest.email.message}</p>
-            )}
+            <FormFieldError error={errors.guest?.email} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -173,9 +160,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 {...register('guest.phone')}
                 placeholder={t('booking.form.phonePlaceholder')}
               />
-              {errors.guest?.phone && (
-                <p className="text-sm text-destructive">{errors.guest.phone.message}</p>
-              )}
+              <FormFieldError error={errors.guest?.phone} />
             </div>
 
             <div className="space-y-2">
@@ -185,9 +170,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
                 {...register('guest.country')}
                 placeholder={t('booking.form.countryPlaceholder')}
               />
-              {errors.guest?.country && (
-                <p className="text-sm text-destructive">{errors.guest.country.message}</p>
-              )}
+              <FormFieldError error={errors.guest?.country} />
             </div>
           </div>
         </CardContent>

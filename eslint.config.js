@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import i18next from 'eslint-plugin-i18next'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 // All API calls go through ApiClient / '@/lib/axios': base URL from VITE_API_BASE_URL, bearer
@@ -46,6 +47,50 @@ export default defineConfig([
     files: ['src/pages/supplier-check-in.tsx'],
     rules: {
       'no-restricted-globals': 'off',
+    },
+  },
+  {
+    // i18n (A9-25): user-visible text in JSX goes through t() with keys in it.json and en.json.
+    // Warn only: it reports literal JSX text and literal values of user-visible attributes.
+    files: ['src/**/*.tsx'],
+    // supplier-shell.tsx is dead code deleted by task SU-16.
+    ignores: ['src/**/__tests__/**', 'src/**/*.test.tsx', 'src/test/**', 'src/features/supplier/supplier-shell.tsx'],
+    plugins: { i18next },
+    rules: {
+      'i18next/no-literal-string': [
+        'warn',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            include: ['placeholder', 'title', 'alt', 'aria-label', 'aria-description', 'label', 'description', 'message'],
+          },
+          callees: {
+            exclude: [
+              'i18n(ext)?', 't', 'require', 'cn', 'clsx', 'register', 'watch', 'setValue', 'getValues', 'trigger',
+              'navigate', 'format', 'formatDate', 'formatDateTime', 'formatCurrency', 'toLocale\\w*',
+              'Intl\\.\\w+', 'Date', 'URLSearchParams', 'searchParams\\.\\w+', 'window\\.open',
+              'setParams', 'includes', 'startsWith', 'endsWith', 'indexOf', 'split', 'join', 'replace',
+              'querySelector\\w*', 'getElementById', 'addEventListener', 'removeEventListener', 'invalidateQueries',
+            ],
+          },
+          'object-properties': {
+            exclude: ['[A-Z_-]+', 'weekday', 'year', 'month', 'day', 'hour', 'minute', 'second', 'timeZone', 'style', 'currency', 'queryKey', 'variant', 'size', 'mode'],
+          },
+          words: {
+            exclude: [
+              // symbols, numbers and punctuation (including typographic ones)
+              '[\\s\\d!-/:-@[-`{-~·•—–×✓✔○Δ€£%©→←↑↓]+',
+              /^[\p{Extended_Pictographic}\s]+$/u,
+              // constants, codes and identifiers (e.g. H501, IT-12345-0123456789)
+              '[A-Z0-9_-]+',
+              // URLs and domains used as examples
+              '(https?://|www\\.)\\S*',
+              // brand and product names
+              'CasaZen', 'CASAZEN', 'Google Maps', 'Stripe', 'Auth0', 'Airbnb', 'Booking\\.com', 'iCal',
+            ],
+          },
+        },
+      ],
     },
   },
   {

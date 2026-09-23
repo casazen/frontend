@@ -77,7 +77,7 @@ export function LeasesPage() {
                   <div>
                     <span className="text-muted-foreground">{t('leases.rentLabel')}</span>
                     <span className="font-medium">
-                      {formatCurrency(lease.monthlyRent)}/mo
+                      {t('leases.monthlyRentValue', { amount: formatCurrency(lease.monthlyRent) })}
                     </span>
                   </div>
                   <div>

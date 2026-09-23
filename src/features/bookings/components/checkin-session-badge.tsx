@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Send } from 'lucide-react';
 import { useBookingCheckInSession, useResendCheckInLink } from '@/queries/use-checkin';
 import type { GuestCheckInSessionStatus } from '@/types/public-checkin.types';
+import { getCheckInSessionStatusLabel } from '@/lib/i18n-labels';
 
 const STATUS_VARIANT: Record<GuestCheckInSessionStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   Inviato: 'secondary',
@@ -37,7 +38,7 @@ export function CheckInSessionBadge({ bookingId }: { bookingId: string }) {
   return (
     <div className="flex flex-wrap items-center gap-3" data-testid="checkin-session-badge">
       <Badge variant={STATUS_VARIANT[status] ?? 'secondary'}>
-        {t(`checkin.status.${status}`, { defaultValue: status })}
+        {getCheckInSessionStatusLabel(status, t)}
       </Badge>
       {canResend && (
         <Button variant="outline" size="sm" onClick={() => resend.mutate()} disabled={resend.isPending} data-testid="checkin-resend-button">

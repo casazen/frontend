@@ -73,7 +73,7 @@ export function SupplierDashboardPage() {
           </div>
           {dashboard && dashboard.totalJobs > 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {t('supplier.totalJobsCount', { total: dashboard.totalJobs })}
+              {t('supplier.totalJobsCount', { count: dashboard.totalJobs })}
             </p>
           )}
         </Card>

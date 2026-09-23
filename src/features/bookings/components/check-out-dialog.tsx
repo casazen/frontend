@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { checkOutFormSchema } from '../schemas/booking.schema';
 import type { CheckOutFormValues } from '../schemas/booking.schema';
 import type { Booking } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface CheckOutDialogProps {
   booking: Booking | null;
@@ -80,9 +81,7 @@ export function CheckOutDialog({
                 type="datetime-local"
                 {...register('actualCheckOutTime')}
               />
-              {errors.actualCheckOutTime && (
-                <p className="text-sm text-destructive">{errors.actualCheckOutTime.message}</p>
-              )}
+              <FormFieldError error={errors.actualCheckOutTime} />
             </div>
 
             <div className="space-y-2">

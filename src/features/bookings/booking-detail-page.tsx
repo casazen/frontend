@@ -140,10 +140,10 @@ export function BookingDetailPage() {
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-muted-foreground" />
-                      <span>{booking.numberOfGuests} {t('booking.detail.guest_other')}</span>
+                      <span>{booking.numberOfGuests} {t('booking.detail.guest', { count: booking.numberOfGuests })}</span>
                     </div>
                     <div className="text-muted-foreground">
-                      {nights} {nights !== 1 ? t('booking.detail.night_other') : t('booking.detail.night_one')}
+                      {nights} {t('booking.detail.night', { count: nights })}
                     </div>
                   </div>
 
@@ -225,7 +225,7 @@ export function BookingDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {nights} {nights !== 1 ? t('booking.detail.night_other') : t('booking.detail.night_one')}
+                  {nights} {t('booking.detail.night', { count: nights })}
                 </span>
                 <span>{formatCurrency(booking.totalPrice / nights, booking.currency)}{t('booking.detailPage.perNight')}</span>
               </div>

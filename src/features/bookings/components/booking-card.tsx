@@ -63,7 +63,7 @@ export function BookingCard({ booking, onEdit, onDelete, onView, onCheckIn, onCh
             <span>{booking.numberOfGuests} {t('booking.card.guests')}</span>
           </div>
           <div className="text-sm text-muted-foreground">
-            {nights} {nights !== 1 ? t('booking.card.night_other') : t('booking.card.night_one')}
+            {nights} {t('booking.card.night', { count: nights })}
           </div>
         </div>
 

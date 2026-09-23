@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 
 export function SupplierInboxPage() {
   const { t } = useTranslation();
@@ -58,8 +59,8 @@ export function SupplierInboxPage() {
               <CardContent className="py-4 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{item.propertyName}</span>
-                  <Badge variant="secondary">{t(`serviceRequest.categories.${item.category}`, { defaultValue: item.category })}</Badge>
-                  <Badge>{t(`serviceRequest.status.${item.status}`, { defaultValue: item.status })}</Badge>
+                  <Badge variant="secondary">{getServiceCategoryLabel(item.category, t)}</Badge>
+                  <Badge>{getServiceRequestStatusLabel(item.status, t)}</Badge>
                 </div>
                 {item.notes && <p className="text-sm text-muted-foreground">{item.notes}</p>}
                 <div className="flex flex-wrap gap-2">

@@ -277,7 +277,9 @@ export async function waitForAppReady(page: Page): Promise<void> {
     () => {
       const text = document.body.innerText;
       if (text.includes('Authenticating...')) return false;
+      if (text.includes('Autenticazione in corso...')) return false;
       if (text.includes('Caricamento...')) return false;
+      if (text.includes("Caricamento dell'area di lavoro...")) return false;
       if (text.includes('Sign in with Auth0')) return false;
       if (text.includes('Accedi con Auth0')) return false;
 
