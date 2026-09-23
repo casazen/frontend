@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Users, Euro } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { displayableMediaUrls } from '@/lib/media-url';
 import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
 import type { PublicPropertyDto } from '@/types';
 
@@ -14,7 +15,7 @@ interface PropertySearchCardProps {
 
 export function PropertySearchCard({ property, onViewDetails }: PropertySearchCardProps) {
   const { t } = useTranslation();
-  const heroPhoto = property.photoUrls?.[0];
+  const [heroPhoto] = displayableMediaUrls(property.photoUrls);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">

@@ -956,12 +956,15 @@
     },
     "photos": {
       "prev": "Foto precedente",
-      "next": "Foto successiva"
+      "next": "Foto successiva",
+      "unavailable": "Foto non disponibile",
+      "alt": "{{name}} - foto {{index}}"
     },
     "documents": {
       "title": "Documenti",
       "empty": "Nessun documento caricato.",
       "download": "Scarica",
+      "downloading": "Download in corso",
       "delete": "Elimina"
     },
     "cin": {
@@ -2471,6 +2474,7 @@
     "documentUploadFailed": "Impossibile caricare il documento",
     "documentDeleted": "Documento eliminato con successo",
     "documentDeleteFailed": "Impossibile eliminare il documento",
+    "documentDownloadFailed": "Impossibile scaricare il documento",
     "seoApproved": "{{count}} pagine SEO approvate con successo",
     "seoApproveFailed": "Impossibile approvare le pagine SEO",
     "seoGenerated": "Pagine SEO generate con successo",
@@ -2530,7 +2534,8 @@
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
-      "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi."
+      "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
+      "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo."
     }
   }
 }

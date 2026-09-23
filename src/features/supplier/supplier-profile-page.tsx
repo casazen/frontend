@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
 import { Pencil, Check, X, Upload, Trash2, ImageIcon } from 'lucide-react';
+import { displayableMediaUrls } from '@/lib/media-url';
 
 const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
 const MAX_PHOTOS = 10;
@@ -385,9 +386,9 @@ export function SupplierProfilePage() {
               <CardTitle>{t('supplier.photoGallery')}</CardTitle>
             </CardHeader>
             <CardContent>
-              {(profile.photoUrls ?? []).length > 0 ? (
+              {displayableMediaUrls(profile.photoUrls).length > 0 ? (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {profile.photoUrls!.map((url, i) => (
+                  {displayableMediaUrls(profile.photoUrls).map((url, i) => (
                     <div key={i} className="aspect-square rounded-lg overflow-hidden border">
                       <img src={url} alt="" className="h-full w-full object-cover" />
                     </div>

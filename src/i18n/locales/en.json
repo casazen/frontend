@@ -954,12 +954,15 @@
     },
     "photos": {
       "prev": "Previous photo",
-      "next": "Next photo"
+      "next": "Next photo",
+      "unavailable": "Photo unavailable",
+      "alt": "{{name}} - photo {{index}}"
     },
     "documents": {
       "title": "Documents",
       "empty": "No documents uploaded.",
       "download": "Download",
+      "downloading": "Downloading",
       "delete": "Delete"
     },
     "cin": {
@@ -2374,6 +2377,7 @@
     "documentUploadFailed": "Failed to upload document",
     "documentDeleted": "Document deleted successfully",
     "documentDeleteFailed": "Failed to delete document",
+    "documentDownloadFailed": "Failed to download document",
     "seoApproved": "{{count}} SEO pages approved successfully",
     "seoApproveFailed": "Failed to approve SEO pages",
     "seoGenerated": "SEO pages generated successfully",
@@ -2433,7 +2437,8 @@
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "billingGateClosed": "Billing is not available yet.",
       "duplicateInvite": "A pending invite already exists for this email.",
-      "inviteEmailFailed": "The invite email could not be sent. Try again later."
+      "inviteEmailFailed": "The invite email could not be sent. Try again later.",
+      "documentFileMissing": "The file of this document is no longer available: please upload it again."
     }
   }
 }

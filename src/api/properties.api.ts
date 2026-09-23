@@ -1,5 +1,6 @@
 import { ApiClient } from './client';
 import axios from '@/lib/axios';
+import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   Property,
   CreatePropertyDto,
@@ -57,4 +58,19 @@ export const propertiesApi = {
 
   deleteDocument: (id: string, docId: string) =>
     ApiClient.delete<void>(`/properties/${id}/documents/${docId}`),
+
+  /**
+   * Documents are in the private storage bucket: the file is fetched through the authenticated
+   * endpoint (bearer token, tenant/ownership check), never through a public link.
+   */
+  downloadDocument: async (id: string, docId: string): Promise<Blob> => {
+    try {
+      const response = await axios.get<Blob>(`/properties/${id}/documents/${docId}/download`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      throw await withJsonErrorBody(error);
+    }
+  },
 };
