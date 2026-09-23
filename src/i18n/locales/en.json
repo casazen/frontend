@@ -946,7 +946,7 @@
       "bookingsLink": "Bookings for this property",
       "description": "Description",
       "cinTitle": "CIN Code",
-      "cinDescription": "The National Identification Code (CIN) is mandatory under D.L. 145/2023 for all accommodation facilities in Italy. Required format: IT-XXXXX-XXXXXXXXXX.",
+      "cinDescription": "The National Identification Code (CIN) is mandatory under D.L. 145/2023 for all accommodation facilities in Italy. Format: IT + ISTAT municipality code (6 digits) + category (2 characters) + alphanumeric code (up to 8 characters), e.g. IT015146C2ABCDEFGH.",
       "editCin": "Edit CIN",
       "complianceSummary": "Compliance summary",
       "cinStatus": "CIN status",
@@ -980,12 +980,15 @@
     },
     "photos": {
       "prev": "Previous photo",
-      "next": "Next photo"
+      "next": "Next photo",
+      "unavailable": "Photo unavailable",
+      "alt": "{{name}} - photo {{index}}"
     },
     "documents": {
       "title": "Documents",
       "empty": "No documents uploaded.",
       "download": "Download",
+      "downloading": "Downloading",
       "delete": "Delete"
     },
     "cin": {
@@ -995,15 +998,16 @@
         "invalid": "CIN invalid",
         "editAria": "CIN status: {{label}}. Click to edit",
         "aria": "CIN status: {{label}}",
-        "tooltipValid": "BDSR registration obligation (D.L. 145/2023). The CIN code complies with the IT-XXXXX-XXXXXXXXXX format.",
+        "tooltipValid": "BDSR registration obligation (D.L. 145/2023). The CIN code is in the official format.",
         "tooltipMissing": "BDSR registration obligation (D.L. 145/2023). Failure to communicate the CIN may result in penalties.",
-        "tooltipInvalid": "Required format: IT-XXXXX-XXXXXXXXXX (5 structure digits + 10 unit digits) per D.L. 145/2023."
+        "tooltipInvalid": "The CIN is not in the official format: IT + ISTAT municipality code (6 digits) + category (2 characters) + alphanumeric code (up to 8 characters), e.g. IT015146C2ABCDEFGH (D.L. 145/2023)."
       },
+      "public": "CIN: {{code}}",
       "dialog": {
         "title": "CIN Code",
-        "description": "Enter the National Identification Code (format IT-XXXXX-XXXXXXXXXX) for BDSR compliance (D.L. 145/2023).",
+        "description": "Enter the National Identification Code issued by the BDSR (e.g. IT015146C2ABCDEFGH). Spaces and hyphens are ignored (D.L. 145/2023).",
         "label": "CIN Code",
-        "placeholder": "IT-12345-6789012345",
+        "placeholder": "IT015146C2ABCDEFGH",
         "hint": "Leave empty to remove the registered CIN.",
         "cancel": "Cancel",
         "saving": "Saving...",
@@ -1081,9 +1085,9 @@
       "create": "Create Property",
       "cin": {
         "title": "CIN Compliance",
-        "description": "National Identification Code (D.L. 145/2023) — format IT-XXXXX-XXXXXXXXXX",
+        "description": "National Identification Code (D.L. 145/2023) issued by the BDSR, e.g. IT015146C2ABCDEFGH",
         "label": "CIN Code",
-        "placeholder": "IT-12345-0123456789"
+        "placeholder": "IT015146C2ABCDEFGH"
       },
       "placeholder": {
         "name": "Beautiful Beach House",
@@ -1135,7 +1139,7 @@
         "min": "Price must be at least 1"
       },
       "cin": {
-        "format": "CIN format: IT-XXXXX-XXXXXXXXXX"
+        "format": "Invalid CIN: IT + ISTAT municipality code (6 digits) + category (2 characters) + up to 8 alphanumeric characters, e.g. IT015146C2ABCDEFGH. Spaces and hyphens are ignored."
       },
       "slug": {
         "format": "Slug must contain only lowercase letters, numbers and hyphens (e.g. my-property)",
@@ -2603,6 +2607,7 @@
     "documentUploadFailed": "Failed to upload document",
     "documentDeleted": "Document deleted successfully",
     "documentDeleteFailed": "Failed to delete document",
+    "documentDownloadFailed": "Failed to download document",
     "seoApproveFailed": "Failed to approve SEO pages",
     "seoGenerated": "SEO pages generated successfully",
     "seoGenerateFailed": "Failed to generate SEO pages",
@@ -2667,7 +2672,10 @@
       "billingGateClosed": "Billing is not available yet.",
       "duplicateInvite": "A pending invite already exists for this email.",
       "inviteEmailFailed": "The invite email could not be sent. Try again later.",
-      "checkinAlreadySubmitted": "The check-in has already been completed."
+      "checkinAlreadySubmitted": "The check-in has already been completed.",
+      "invalidCinFormat": "The CIN is not in the official format (e.g. IT015146C2ABCDEFGH).",
+      "duplicateCin": "This CIN is already assigned to another property.",
+      "documentFileMissing": "The file of this document is no longer available: please upload it again."
     }
   },
   "validation": {

@@ -44,11 +44,11 @@ const mockDetail: PropertyDetailDto = {
   nightlyRate: 100,
   cleaningFee: 30,
   damageDeposit: 150,
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
   amenities: ['WiFi'],
-  photoUrls: ['/photo.jpg'],
+  photoUrls: ['https://ref.supabase.co/storage/v1/object/public/casazen-test-public/properties/p/photos/a.jpg'],
   houseRules: '',
   isActive: true,
   createdAt: '2026-01-01T00:00:00Z',
@@ -108,6 +108,10 @@ describe('PropertyDetailPage', () => {
       mutate: vi.fn(),
       isPending: false,
     } as unknown as ReturnType<typeof propertyQueries.useDeletePropertyDocument>);
+    vi.mocked(propertyQueries.useDownloadPropertyDocument).mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof propertyQueries.useDownloadPropertyDocument>);
   });
 
   it('AC8: renders property name and section headings', () => {
@@ -121,7 +125,7 @@ describe('PropertyDetailPage', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Stato CIN: CIN valido/i }));
     expect(screen.getByRole('dialog', { name: 'Codice CIN' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT-12345-0123456789');
+    expect(screen.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT058091C27G5FFZDZ');
   });
 
   it('AC12: does not render apiKey in OTA section', () => {

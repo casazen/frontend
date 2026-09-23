@@ -40,7 +40,7 @@ function buildVetrinaProperty(overrides: Partial<Property> = {}): Property {
     amenities: ['WiFi'],
     photoUrls: [],
     houseRules: '',
-    cinCode: 'IT-12345-0123456789',
+    cinCode: 'IT058091C27G5FFZDZ',
     timezone: 'Europe/Rome',
     cancellationPolicyId: null,
     isActive: true,

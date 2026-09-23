@@ -23,7 +23,9 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
-    await expect(page.getByText('CIN valido').first()).toBeVisible();
+    // Guests see the CIN code only, never a compliance badge ("CIN valido" / "CIN non valido")
+    await expect(page.getByTestId('public-cin').first()).toContainText('IT058091C27G5FFZDZ');
+    await expect(page.getByText('CIN valido')).toHaveCount(0);
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -55,7 +57,7 @@ test.describe('Branded booking site (#215)', () => {
           cleaningFee: 55,
           amenities: ['Wifi'],
           photoUrls: [],
-          cinCode: 'IT-12345-0123456789',
+          cinCode: 'IT058091C27G5FFZDZ',
           cinStatus: 'Valid',
           timezone: 'Europe/Rome',
           houseRules: 'Check-in dalle 15:00.',

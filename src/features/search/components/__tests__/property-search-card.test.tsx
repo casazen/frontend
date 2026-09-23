@@ -4,8 +4,7 @@ import { PropertySearchCard } from '../property-search-card';
 import i18n from '@/i18n/config';
 import type { PublicPropertyDto } from '@/types';
 
-// PropertySearchCard renders links via PropertyCinBadge — no router needed for these tests
-// but we stub MemoryRouter for any Link descendants.
+// No router needed for these tests, but we stub MemoryRouter for any Link descendants.
 import { MemoryRouter } from 'react-router-dom';
 import { createElement } from 'react';
 
@@ -26,7 +25,7 @@ const baseProperty: PublicPropertyDto = {
   cleaningFee: 55,
   amenities: ['Wifi', 'Aria condizionata'],
   photoUrls: ['https://cdn.example.com/photo.jpg'],
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
 };
@@ -81,10 +80,24 @@ describe('PropertySearchCard (listing card used in public booking site, AC6)', (
     expect(onViewDetails).toHaveBeenCalledWith(baseProperty);
   });
 
-  it('renders the CIN badge for a valid CIN', () => {
+  it('PropertySearchCard_ValidCin_ShowsCinCodeWithoutComplianceBadge', () => {
     render(withRouter(<PropertySearchCard property={baseProperty} onViewDetails={vi.fn()} />));
-    // Badge shows label · cinCode when cinCode is present
-    expect(screen.getByText(/CIN valido/)).toBeInTheDocument();
+    expect(screen.getByTestId('public-cin')).toHaveTextContent('CIN: IT058091C27G5FFZDZ');
+    expect(screen.queryByText(/CIN valido/)).not.toBeInTheDocument();
+  });
+
+  it('PropertySearchCard_InvalidOrMissingCin_ShowsNoCinStateToGuests', () => {
+    const invalid = { ...baseProperty, cinCode: 'IT123450123456789', cinStatus: 'Invalid' as const };
+    const { unmount } = render(withRouter(<PropertySearchCard property={invalid} onViewDetails={vi.fn()} />));
+    expect(screen.queryByTestId('public-cin')).not.toBeInTheDocument();
+    expect(screen.queryByText(/CIN non valido/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/IT123450123456789/)).not.toBeInTheDocument();
+    unmount();
+
+    const missing = { ...baseProperty, cinCode: null, cinStatus: 'Missing' as const };
+    render(withRouter(<PropertySearchCard property={missing} onViewDetails={vi.fn()} />));
+    expect(screen.queryByTestId('public-cin')).not.toBeInTheDocument();
+    expect(screen.queryByText(/CIN mancante/)).not.toBeInTheDocument();
   });
 
   it('shows description when provided', () => {

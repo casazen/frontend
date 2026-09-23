@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { optionalCinSchema } from '@/lib/cin-format';
 
 export const propertyFormSchema = z.object({
   name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
@@ -17,11 +18,8 @@ export const propertyFormSchema = z.object({
   amenities: z.array(z.string()),
   photoUrls: z.array(z.string()),
   isActive: z.boolean(),
-  cinCode: z
-    .string()
-    .regex(/^IT-\d{5}-\d{10}$/, 'property.validation.cin.format')
-    .optional()
-    .or(z.literal('')),
+  // Official CIN format, spaces/hyphens/case ignored: shared with the backend rule (src/lib/cin-format.ts).
+  cinCode: optionalCinSchema,
   slug: z
     .string()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'property.validation.slug.format')

@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Users, Euro } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
+import { displayableMediaUrls } from '@/lib/media-url';
+import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
 import type { PublicPropertyDto } from '@/types';
 
 interface PropertySearchCardProps {
@@ -14,7 +15,7 @@ interface PropertySearchCardProps {
 
 export function PropertySearchCard({ property, onViewDetails }: PropertySearchCardProps) {
   const { t } = useTranslation();
-  const heroPhoto = property.photoUrls?.[0];
+  const [heroPhoto] = displayableMediaUrls(property.photoUrls);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -44,7 +45,7 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
           </div>
         </div>
 
-        <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
+        <PublicCinLabel cinStatus={property.cinStatus} cinCode={property.cinCode} />
 
         {property.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">

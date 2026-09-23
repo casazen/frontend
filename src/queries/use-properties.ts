@@ -9,6 +9,7 @@ import type {
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
+import { saveBlobAs } from '@/lib/file-download';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
@@ -125,6 +126,19 @@ export function useUploadPropertyDocument() {
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.documentUploadFailed'));
+    },
+  });
+}
+
+export function useDownloadPropertyDocument() {
+  return useMutation({
+    mutationFn: ({ propertyId, docId }: { propertyId: string; docId: string; fileName: string }) =>
+      propertiesApi.downloadDocument(propertyId, docId),
+    onSuccess: (blob, variables) => {
+      saveBlobAs(blob, variables.fileName);
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.documentDownloadFailed'));
     },
   });
 }

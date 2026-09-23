@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ImageOff, MapPin } from 'lucide-react';
+import { displayableMediaUrls } from '@/lib/media-url';
 
 interface PropertyPhotoCarouselProps {
   photoUrls: string[];
@@ -12,23 +13,36 @@ interface PropertyPhotoCarouselProps {
 export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarouselProps) {
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
-  const hasPhotos = photoUrls.length > 0;
+  const [failedUrls, setFailedUrls] = useState<string[]>([]);
+  // Absolute storage URLs only: a legacy relative path would load the SPA's index.html on Vercel.
+  const photos = displayableMediaUrls(photoUrls);
+  const hasPhotos = photos.length > 0;
+  const current = hasPhotos ? photos[index % photos.length] : undefined;
+  const position = hasPhotos ? (index % photos.length) + 1 : 0;
 
-  const goPrev = () => setIndex((i) => (i === 0 ? photoUrls.length - 1 : i - 1));
-  const goNext = () => setIndex((i) => (i === photoUrls.length - 1 ? 0 : i + 1));
+  const goPrev = () => setIndex((i) => (i % photos.length === 0 ? photos.length - 1 : (i % photos.length) - 1));
+  const goNext = () => setIndex((i) => ((i % photos.length) + 1) % photos.length);
 
   return (
     <Card>
       <CardContent className="p-0">
         <div className="relative h-96 bg-muted rounded-lg overflow-hidden">
-          {hasPhotos ? (
+          {current ? (
             <>
-              <img
-                src={photoUrls[index]}
-                alt={`${name} - foto ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
-              {photoUrls.length > 1 && (
+              {failedUrls.includes(current) ? (
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                  <ImageOff className="h-16 w-16" />
+                  <p className="text-sm">{t('property.photos.unavailable')}</p>
+                </div>
+              ) : (
+                <img
+                  src={current}
+                  alt={t('property.photos.alt', { name, index: position })}
+                  className="h-full w-full object-cover"
+                  onError={() => setFailedUrls((urls) => (urls.includes(current) ? urls : [...urls, current]))}
+                />
+              )}
+              {photos.length > 1 && (
                 <>
                   <Button
                     variant="secondary"
@@ -49,7 +63,7 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
-                    {index + 1} / {photoUrls.length}
+                    {position} / {photos.length}
                   </div>
                 </>
               )}
