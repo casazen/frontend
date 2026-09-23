@@ -1782,7 +1782,10 @@
       "deleteTitle": "Delete data",
       "deleteConfirmLabel": "Delete permanently"
     },
-    "loadError": "Failed to load guests."
+    "loadError": "Failed to load guests.",
+    "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} guests)",
+    "previous": "Previous",
+    "next": "Next"
   },
   "taxRates": {
     "title": "Tourist Tax Rates",

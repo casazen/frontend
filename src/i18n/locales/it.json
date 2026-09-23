@@ -1782,7 +1782,10 @@
       "deleteTitle": "Cancella dati",
       "deleteConfirmLabel": "Cancella definitivamente"
     },
-    "loadError": "Impossibile caricare gli ospiti."
+    "loadError": "Impossibile caricare gli ospiti.",
+    "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} ospiti)",
+    "previous": "Precedente",
+    "next": "Successiva"
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",

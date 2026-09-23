@@ -1,10 +1,21 @@
 import { ApiClient } from './client';
-import type { Guest, CreateGuestDto, UpdateGuestDto } from '@/types';
+import type {
+  Guest,
+  GuestSummary,
+  GuestListParams,
+  CreateGuestDto,
+  UpdateGuestDto,
+  PagedResult,
+} from '@/types';
 
 export const guestsApi = {
-  // GET /api/guests
-  getAll: (search?: string) =>
-    ApiClient.get<Guest[]>('/guests', search ? { search } : undefined),
+  // GET /api/guests — one page of the caller org's guests (backend PagedResultDto<GuestSummaryDto>)
+  getAll: (params: GuestListParams = {}) =>
+    ApiClient.get<PagedResult<GuestSummary>>('/guests', {
+      ...(params.search ? { search: params.search } : {}),
+      ...(params.page ? { page: params.page } : {}),
+      ...(params.pageSize ? { pageSize: params.pageSize } : {}),
+    }),
 
   // GET /api/guests/{id}
   getById: (id: string) =>
@@ -12,7 +23,7 @@ export const guestsApi = {
 
   // GET /api/guests/email/{email}
   getByEmail: (email: string) =>
-    ApiClient.get<Guest>(`/guests/email/${email}`),
+    ApiClient.get<Guest>(`/guests/email/${encodeURIComponent(email)}`),
 
   // POST /api/guests
   create: (data: CreateGuestDto) =>
