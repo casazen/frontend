@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrgProperties } from '@/queries/use-public-org';
 import { PropertySearchCard } from '@/features/search/components/property-search-card';
 import type { PublicOrgDto, PublicPropertyDto } from '@/types';
+import { displayableMediaUrls } from '@/lib/media-url';
 import { Loader2 } from 'lucide-react';
 
 const Hero = lazy(() => import('@/features/public-site/components/Hero').then((m) => ({ default: m.Hero })));
@@ -42,7 +43,7 @@ export function OrgLandingPage() {
     );
   }
 
-  const heroImage = org.heroImageUrl ?? properties[0]?.photoUrls?.[0] ?? null;
+  const heroImage = org.heroImageUrl ?? displayableMediaUrls(properties[0]?.photoUrls)[0] ?? null;
 
   return (
     <div className="space-y-[var(--cz-public-section-y)]">

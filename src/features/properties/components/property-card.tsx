@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Users, Edit, Trash2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { displayableMediaUrls } from '@/lib/media-url';
 import type { Property } from '@/types';
 
 interface PropertyCardProps {
@@ -15,14 +16,15 @@ interface PropertyCardProps {
 
 export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCardProps) {
   const { t } = useTranslation();
+  const [coverPhoto] = displayableMediaUrls(property.photoUrls);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
         <div className="relative h-48 bg-muted">
-          {property.photoUrls && property.photoUrls.length > 0 ? (
+          {coverPhoto ? (
             <img
-              src={property.photoUrls[0]}
+              src={coverPhoto}
               alt={property.name}
               className="h-full w-full object-cover"
             />

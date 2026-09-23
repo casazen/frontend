@@ -48,7 +48,7 @@ const mockDetail: PropertyDetailDto = {
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
   amenities: ['WiFi'],
-  photoUrls: ['/photo.jpg'],
+  photoUrls: ['https://ref.supabase.co/storage/v1/object/public/casazen-test-public/properties/p/photos/a.jpg'],
   houseRules: '',
   isActive: true,
   createdAt: '2026-01-01T00:00:00Z',
@@ -108,6 +108,10 @@ describe('PropertyDetailPage', () => {
       mutate: vi.fn(),
       isPending: false,
     } as unknown as ReturnType<typeof propertyQueries.useDeletePropertyDocument>);
+    vi.mocked(propertyQueries.useDownloadPropertyDocument).mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof propertyQueries.useDownloadPropertyDocument>);
   });
 
   it('AC8: renders property name and section headings', () => {

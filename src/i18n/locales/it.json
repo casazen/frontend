@@ -980,12 +980,15 @@
     },
     "photos": {
       "prev": "Foto precedente",
-      "next": "Foto successiva"
+      "next": "Foto successiva",
+      "unavailable": "Foto non disponibile",
+      "alt": "{{name}} - foto {{index}}"
     },
     "documents": {
       "title": "Documenti",
       "empty": "Nessun documento caricato.",
       "download": "Scarica",
+      "downloading": "Download in corso",
       "delete": "Elimina"
     },
     "cin": {
@@ -1783,7 +1786,10 @@
       "deleteTitle": "Cancella dati",
       "deleteConfirmLabel": "Cancella definitivamente"
     },
-    "loadError": "Impossibile caricare gli ospiti."
+    "loadError": "Impossibile caricare gli ospiti.",
+    "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} ospiti)",
+    "previous": "Precedente",
+    "next": "Successiva"
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -2596,6 +2602,7 @@
     "documentUploadFailed": "Impossibile caricare il documento",
     "documentDeleted": "Documento eliminato con successo",
     "documentDeleteFailed": "Impossibile eliminare il documento",
+    "documentDownloadFailed": "Impossibile scaricare il documento",
     "seoApproveFailed": "Impossibile approvare le pagine SEO",
     "seoGenerated": "Pagine SEO generate con successo",
     "seoGenerateFailed": "Impossibile generare le pagine SEO",
@@ -2661,7 +2668,8 @@
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
       "invalidCinFormat": "Il CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
-      "duplicateCin": "Questo CIN è già associato a un altro immobile."
+      "duplicateCin": "Questo CIN è già associato a un altro immobile.",
+      "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo."
     }
   },
   "validation": {

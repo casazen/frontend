@@ -980,12 +980,15 @@
     },
     "photos": {
       "prev": "Previous photo",
-      "next": "Next photo"
+      "next": "Next photo",
+      "unavailable": "Photo unavailable",
+      "alt": "{{name}} - photo {{index}}"
     },
     "documents": {
       "title": "Documents",
       "empty": "No documents uploaded.",
       "download": "Download",
+      "downloading": "Downloading",
       "delete": "Delete"
     },
     "cin": {
@@ -1783,7 +1786,10 @@
       "deleteTitle": "Delete data",
       "deleteConfirmLabel": "Delete permanently"
     },
-    "loadError": "Failed to load guests."
+    "loadError": "Failed to load guests.",
+    "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} guests)",
+    "previous": "Previous",
+    "next": "Next"
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
@@ -2596,6 +2602,7 @@
     "documentUploadFailed": "Failed to upload document",
     "documentDeleted": "Document deleted successfully",
     "documentDeleteFailed": "Failed to delete document",
+    "documentDownloadFailed": "Failed to download document",
     "seoApproveFailed": "Failed to approve SEO pages",
     "seoGenerated": "SEO pages generated successfully",
     "seoGenerateFailed": "Failed to generate SEO pages",
@@ -2661,7 +2668,8 @@
       "duplicateInvite": "A pending invite already exists for this email.",
       "inviteEmailFailed": "The invite email could not be sent. Try again later.",
       "invalidCinFormat": "The CIN is not in the official format (e.g. IT015146C2ABCDEFGH).",
-      "duplicateCin": "This CIN is already assigned to another property."
+      "duplicateCin": "This CIN is already assigned to another property.",
+      "documentFileMissing": "The file of this document is no longer available: please upload it again."
     }
   },
   "validation": {
