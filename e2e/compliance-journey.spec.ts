@@ -94,7 +94,7 @@ test.describe('Italian Compliance Golden Path', () => {
       await mockCinComplianceApi(page);
     });
 
-    test('property create validates CIN format IT-XXXXX-XXXXXXXXXX', async ({ page }) => {
+    test('property create accepts a real CIN written with hyphens', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
       await page.getByRole('button', { name: /Add|Aggiungi/i }).click();
@@ -110,8 +110,8 @@ test.describe('Italian Compliance Golden Path', () => {
       await page.getByLabel(/Max Guests|Ospiti max/i).fill('4');
       await page.getByLabel(/Price per Night|Prezzo per notte/i).fill('120');
 
-      // Valid CIN
-      await page.getByLabel(/CIN/i).fill('IT-12345-0123456789');
+      // Real CIN (official BDSR format) typed with separators: accepted, the backend stores it normalized
+      await page.getByLabel(/CIN/i).fill('IT-058091-C2-7G5FFZDZ');
 
       const resp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && r.url().includes('/api/properties'),

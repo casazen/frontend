@@ -18,7 +18,7 @@ const mockListItem: PublicPropertyDto = {
   cleaningFee: 50,
   amenities: ['Wifi'],
   photoUrls: ['https://cdn.example.com/photo.jpg'],
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
 };

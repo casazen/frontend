@@ -15,7 +15,7 @@ export const demoCinCompliance: CinComplianceResponse = {
     {
       propertyId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
       propertyName: 'Monolocale Mare',
-      cinCode: 'IT-12345-0123456789',
+      cinCode: 'IT058091C27G5FFZDZ',
       cinStatus: 'valid',
       city: 'Napoli',
     },

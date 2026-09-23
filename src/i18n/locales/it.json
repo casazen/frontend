@@ -946,7 +946,7 @@
       "bookingsLink": "Prenotazioni di questa proprietà",
       "description": "Descrizione",
       "cinTitle": "Codice CIN",
-      "cinDescription": "Il Codice Identificativo Nazionale (CIN) è obbligatorio ai sensi del D.L. 145/2023 per tutte le strutture ricettive in Italia. Formato richiesto: IT-XXXXX-XXXXXXXXXX.",
+      "cinDescription": "Il Codice Identificativo Nazionale (CIN) è obbligatorio ai sensi del D.L. 145/2023 per tutte le strutture ricettive in Italia. Formato: IT + codice ISTAT del comune (6 cifre) + categoria (2 caratteri) + codice alfanumerico (fino a 8 caratteri), es. IT015146C2ABCDEFGH.",
       "editCin": "Modifica CIN",
       "complianceSummary": "Riepilogo compliance",
       "cinStatus": "Stato CIN",
@@ -995,15 +995,16 @@
         "invalid": "CIN non valido",
         "editAria": "Stato CIN: {{label}}. Clicca per modificare",
         "aria": "Stato CIN: {{label}}",
-        "tooltipValid": "Obbligo di registrazione BDSR (D.L. 145/2023). Il codice CIN è conforme al formato IT-XXXXX-XXXXXXXXXX.",
+        "tooltipValid": "Obbligo di registrazione BDSR (D.L. 145/2023). Il codice CIN è nel formato ufficiale.",
         "tooltipMissing": "Obbligo di registrazione BDSR (D.L. 145/2023). Mancata comunicazione del CIN può comportare sanzioni.",
-        "tooltipInvalid": "Formato richiesto: IT-XXXXX-XXXXXXXXXX (5 cifre struttura + 10 cifre unità) secondo D.L. 145/2023."
+        "tooltipInvalid": "Il CIN non è nel formato ufficiale: IT + codice ISTAT del comune (6 cifre) + categoria (2 caratteri) + codice alfanumerico (fino a 8 caratteri), es. IT015146C2ABCDEFGH (D.L. 145/2023)."
       },
+      "public": "CIN: {{code}}",
       "dialog": {
         "title": "Codice CIN",
-        "description": "Inserisci il Codice Identificativo Nazionale (formato IT-XXXXX-XXXXXXXXXX) per la conformità BDSR (D.L. 145/2023).",
+        "description": "Inserisci il Codice Identificativo Nazionale rilasciato dalla BDSR (es. IT015146C2ABCDEFGH). Spazi e trattini vengono ignorati (D.L. 145/2023).",
         "label": "Codice CIN",
-        "placeholder": "IT-12345-6789012345",
+        "placeholder": "IT015146C2ABCDEFGH",
         "hint": "Lascia vuoto per rimuovere il CIN registrato.",
         "cancel": "Annulla",
         "saving": "Salvataggio...",
@@ -1081,9 +1082,9 @@
       "create": "Crea immobile",
       "cin": {
         "title": "Conformità CIN",
-        "description": "Codice Identificativo Nazionale (D.L. 145/2023) — formato IT-XXXXX-XXXXXXXXXX",
+        "description": "Codice Identificativo Nazionale (D.L. 145/2023) rilasciato dalla BDSR, es. IT015146C2ABCDEFGH",
         "label": "Codice CIN",
-        "placeholder": "IT-12345-0123456789"
+        "placeholder": "IT015146C2ABCDEFGH"
       },
       "placeholder": {
         "name": "Casa Bella Vista",
@@ -1135,7 +1136,7 @@
         "min": "Il prezzo deve essere almeno 1"
       },
       "cin": {
-        "format": "Formato CIN: IT-XXXXX-XXXXXXXXXX"
+        "format": "CIN non valido: IT + codice ISTAT del comune (6 cifre) + categoria (2 caratteri) + fino a 8 caratteri alfanumerici, es. IT015146C2ABCDEFGH. Spazi e trattini vengono ignorati."
       },
       "slug": {
         "format": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. la-mia-struttura)",
@@ -2658,7 +2659,9 @@
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
-      "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi."
+      "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
+      "invalidCinFormat": "Il CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
+      "duplicateCin": "Questo CIN è già associato a un altro immobile."
     }
   },
   "validation": {

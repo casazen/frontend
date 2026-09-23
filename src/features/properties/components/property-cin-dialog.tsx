@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { CinStatus } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
+import { CIN_FORMAT_MESSAGE_KEY, isEmptyOrValidCin, normalizeCin } from '@/lib/cin-format';
 
 interface PropertyCinDialogProps {
   propertyId: string;
@@ -33,17 +35,22 @@ export function PropertyCinDialog({
 }: PropertyCinDialogProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState(cinCode ?? '');
+  const [formatError, setFormatError] = useState(false);
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
       setValue(cinCode ?? '');
+      setFormatError(false);
     }
     onOpenChange(next);
   };
 
   const handleSave = async () => {
-    const trimmed = value.trim();
-    await onSave(trimmed.length > 0 ? trimmed : null);
+    if (!isEmptyOrValidCin(value)) {
+      setFormatError(true);
+      return;
+    }
+    await onSave(normalizeCin(value));
     onOpenChange(false);
   };
 
@@ -62,10 +69,15 @@ export function PropertyCinDialog({
           <Input
             id="cin-code"
             value={value}
-            onChange={(e) => setValue(e.target.value.toUpperCase())}
+            onChange={(e) => {
+              setValue(e.target.value.toUpperCase());
+              setFormatError(false);
+            }}
             placeholder={t('property.cin.dialog.placeholder')}
-            aria-invalid={cinStatus === 'Invalid'}
+            aria-invalid={formatError || cinStatus === 'Invalid'}
+            aria-describedby={formatError ? 'cin-code-error' : undefined}
           />
+          {formatError && <FormFieldError id="cin-code-error" message={CIN_FORMAT_MESSAGE_KEY} />}
           <p className="text-xs text-muted-foreground">
             {t('property.cin.dialog.hint')}
           </p>

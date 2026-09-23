@@ -44,7 +44,7 @@ const mockDetail: PropertyDetailDto = {
   nightlyRate: 100,
   cleaningFee: 30,
   damageDeposit: 150,
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
   amenities: ['WiFi'],
@@ -121,7 +121,7 @@ describe('PropertyDetailPage', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Stato CIN: CIN valido/i }));
     expect(screen.getByRole('dialog', { name: 'Codice CIN' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT-12345-0123456789');
+    expect(screen.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT058091C27G5FFZDZ');
   });
 
   it('AC12: does not render apiKey in OTA section', () => {

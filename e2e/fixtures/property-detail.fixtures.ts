@@ -16,7 +16,7 @@ export const propertyDetailFixture: PropertyDetailDto = {
   nightlyRate: 120,
   cleaningFee: 40,
   damageDeposit: 200,
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
   amenities: ['WiFi', 'AirConditioning', 'Kitchen'],
