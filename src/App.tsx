@@ -1,15 +1,28 @@
+import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { queryClient } from '@/lib/query-client';
+import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { router } from '@/routes';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
 
 function AppShell() {
+  useEffect(() => {
+    // 403 on a protected read → existing no-access page. `replace` keeps Back from reopening the
+    // forbidden page (which would 403 again).
+    setApiForbiddenHandler(() => {
+      if (router.state.location.pathname !== NO_ACCESS_PATH) {
+        void router.navigate(NO_ACCESS_PATH, { replace: true });
+      }
+    });
+    return () => setApiForbiddenHandler(null);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <I18nLocaleSync />

@@ -10,7 +10,7 @@ export interface PropertyAvailability {
 
 export const publicBookingApi = {
   createDirectBooking: (payload: CreateDirectBookingPayload) =>
-    ApiClient.post<DirectBookingResponse>('/public/bookings', payload),
+    ApiClient.post<DirectBookingResponse>('/public/bookings', payload, { public: true }),
 
   getPropertyAvailability: (propertyId: string, startDate?: string, endDate?: string) => {
     const params = new URLSearchParams();
@@ -19,12 +19,14 @@ export const publicBookingApi = {
     const queryString = params.toString();
     return ApiClient.get<PropertyAvailability>(
       `/public/bookings/property/${propertyId}/availability${queryString ? `?${queryString}` : ''}`,
+      undefined,
+      { public: true },
     );
   },
 
   lookupGuestBookings: (email: string) =>
-    ApiClient.post<GuestBookingLookupResponse>('/public/bookings/lookup', { email }),
+    ApiClient.post<GuestBookingLookupResponse>('/public/bookings/lookup', { email }, { public: true }),
 
   getBookingStatus: (bookingId: string) =>
-    ApiClient.get<BookingStatusResponse>(`/public/bookings/${bookingId}/status`),
+    ApiClient.get<BookingStatusResponse>(`/public/bookings/${bookingId}/status`, undefined, { public: true }),
 };

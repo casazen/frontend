@@ -3,6 +3,7 @@ import { leasesApi } from '@/api/leases.api';
 import type { CreateLeaseDto, LeaseStatus } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const LEASES_KEY = 'leases';
 
@@ -51,8 +52,8 @@ export function useCreateLease() {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.leaseDraftCreated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.leaseCreateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.leaseCreateFailed'));
     },
   });
 }
@@ -67,8 +68,8 @@ export function useInitiateSigning() {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
       toast.success(i18n.t('toast.signingInitiated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.signingInitiateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.signingInitiateFailed'));
     },
   });
 }
@@ -93,8 +94,8 @@ export function useTriggerRegistration() {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'rli'] });
       toast.success(i18n.t('toast.registrationSubmitted'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.registrationSubmitFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.registrationSubmitFailed'));
     },
   });
 }

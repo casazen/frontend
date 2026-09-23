@@ -4,24 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Calendar, Wrench } from 'lucide-react';
-
-interface ShowcaseData {
-  slug: string;
-  legalName: string;
-  categories: string[];
-  comuni: string[];
-  bio?: string;
-  photoUrls: string[];
-  availability: { date: string; available: boolean }[];
-}
+import { publicSupplierApi, type SupplierShowcaseDto } from '@/api/public-supplier.api';
 
 export function SupplierShowcasePage() {
   const { t } = useTranslation();
   const { slug } = useParams();
 
-  const { data, isLoading, error } = useQuery<ShowcaseData>({
+  const { data, isLoading, error } = useQuery<SupplierShowcaseDto>({
     queryKey: ['supplier-showcase', slug],
-    queryFn: () => fetch(`/api/public/suppliers/${slug}`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
+    queryFn: () => publicSupplierApi.getShowcase(slug!),
     enabled: !!slug,
   });
 

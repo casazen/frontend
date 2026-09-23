@@ -5,6 +5,7 @@ import type { RentalType, UpdateProfileRequest, PlanTier } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const USERS_KEY = 'users';
 const ME_KEY = 'me';
@@ -77,8 +78,8 @@ export function useUpdateMe() {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
       toast.success(i18n.t('toast.profileUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.profileUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.profileUpdateFailed'));
     },
   });
 }
@@ -93,8 +94,8 @@ export function useChangeUserRole() {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
       toast.success(i18n.t('toast.roleUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.roleUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.roleUpdateFailed'));
     },
   });
 }
@@ -116,8 +117,8 @@ export function useUpdateMyPlan() {
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
       toast.success(i18n.t('toast.planUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.planUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.planUpdateFailed'));
     },
   });
 }
@@ -156,8 +157,8 @@ export function useDeactivateUser() {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
       toast.success(i18n.t('toast.userDeactivated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.userDeactivateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.userDeactivateFailed'));
     },
   });
 }

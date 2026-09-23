@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { authConfig } from '@/config/auth.config';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
-import { setAccessTokenGetter } from '@/lib/axios';
+import { setApiAuthHandlers } from '@/lib/axios';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -53,8 +53,10 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
   const refreshAccessToken = useCallback(async () => 'demo-token', []);
 
   useEffect(() => {
-    setAccessTokenGetter(getAccessToken);
-  }, [getAccessToken]);
+    // Demo tokens never expire: no re-login handler.
+    setApiAuthHandlers({ getAccessToken, refreshAccessToken });
+    return () => setApiAuthHandlers(null);
+  }, [getAccessToken, refreshAccessToken]);
 
   const value = useMemo<AuthBridgeValue>(
     () => ({
@@ -118,10 +120,6 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     [getAccessTokenSilently],
   );
 
-  useEffect(() => {
-    setAccessTokenGetter(getAccessToken);
-  }, [getAccessToken]);
-
   const login = useCallback(
     (options?: LoginOptions) => {
       void loginWithRedirect({
@@ -133,6 +131,16 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     },
     [loginWithRedirect],
   );
+
+  useEffect(() => {
+    setApiAuthHandlers({
+      getAccessToken,
+      refreshAccessToken,
+      // 401 after a token refresh (or Auth0 `login_required`): Auth0 redirect, loop-guarded by the client.
+      onSessionExpired: () => login(),
+    });
+    return () => setApiAuthHandlers(null);
+  }, [getAccessToken, refreshAccessToken, login]);
 
   const logout = useCallback(() => {
     auth0Logout({

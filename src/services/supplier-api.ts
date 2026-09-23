@@ -71,7 +71,9 @@ export async function registerSupplier(payload: {
   comuneCode: string;
   inviteToken?: string;
 }): Promise<{ orgId: string; authRedirectUrl: string }> {
-  const { data } = await axios.post<{ orgId: string; authRedirectUrl: string }>('/suppliers/register', payload);
+  const { data } = await axios.post<{ orgId: string; authRedirectUrl: string }>('/suppliers/register', payload, {
+    public: true,
+  });
   return data;
 }
 

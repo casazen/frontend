@@ -6,8 +6,8 @@ import type {
 
 export const publicCheckinApi = {
   getContext: (token: string) =>
-    ApiClient.get<PublicCheckInContextDto>(`/public/checkin/${token}`),
+    ApiClient.get<PublicCheckInContextDto>(`/public/checkin/${token}`, undefined, { public: true }),
 
   submit: (token: string, data: PublicCheckInSubmitRequest) =>
-    ApiClient.post<{ sessionId: string; message: string }>(`/public/checkin/${token}`, data),
+    ApiClient.post<{ sessionId: string; message: string }>(`/public/checkin/${token}`, data, { public: true }),
 };
