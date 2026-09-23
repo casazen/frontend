@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useResendAlloggiatiReport } from '@/queries/use-alloggiati';
 import { Loader2, RefreshCw, Send, CheckCircle2 } from 'lucide-react';
@@ -8,18 +9,16 @@ interface ResendButtonProps {
   status: AlloggiatiWebStatus;
 }
 
-function getButtonLabel(status: AlloggiatiWebStatus): string {
+function getButtonLabelKey(status: AlloggiatiWebStatus): string {
   switch (status) {
-    case 'Pending':
-      return 'Invia';
     case 'Submitted':
-      return 'Inviato';
-    case 'Failed':
-      return 'Reinvia';
     case 'Confirmed':
-      return 'Inviato';
+      return 'alloggiati.sent';
+    case 'Failed':
+      return 'alloggiati.resend';
+    case 'Pending':
     default:
-      return 'Invia';
+      return 'alloggiati.send';
   }
 }
 
@@ -28,14 +27,15 @@ function canSend(status: AlloggiatiWebStatus): boolean {
 }
 
 export function ResendButton({ bookingId, status }: ResendButtonProps) {
+  const { t } = useTranslation();
   const resend = useResendAlloggiatiReport();
   const disabled = !canSend(status);
 
-  const label = getButtonLabel(status);
+  const label = t(getButtonLabelKey(status));
   const isSent = status === 'Submitted' || status === 'Confirmed';
 
   return (
-    <div className="relative inline-block" title={disabled ? 'Comunicazione già inviata e confermata' : undefined}>
+    <div className="relative inline-block" title={disabled ? t('alloggiati.alreadyConfirmed') : undefined}>
       <Button
         variant="outline"
         size="sm"

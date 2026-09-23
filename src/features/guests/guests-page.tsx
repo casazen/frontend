@@ -11,22 +11,27 @@ import { GuestListTable } from './components/guest-list-table';
 import { guestsApi } from '@/api/guests.api';
 import { Search, Loader2, RefreshCw, Users } from 'lucide-react';
 
+const PAGE_SIZE = 20;
+
 export function GuestsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const {
-    data: guests,
+    data,
     isLoading,
     isError,
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['guests', search],
-    queryFn: () => guestsApi.getAll(search || undefined),
+    queryKey: ['guests', { search, page }],
+    queryFn: () => guestsApi.getAll({ search: search || undefined, page, pageSize: PAGE_SIZE }),
   });
 
-  const filtered = guests ?? [];
+  const filtered = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <AppShell>
@@ -44,7 +49,10 @@ export function GuestsPage() {
               <Input
                 placeholder={t('guests.search')}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 className="pl-9"
               />
             </div>
@@ -60,14 +68,14 @@ export function GuestsPage() {
             {/* Error State */}
             {isError && !isLoading && (
               <div className="py-12 text-center">
-                <p className="text-destructive mb-4">Failed to load guests.</p>
+                <p className="text-destructive mb-4">{t('guests.loadError')}</p>
                 <Button
                   variant="outline"
                   onClick={() => refetch()}
                   disabled={isRefetching}
                 >
                   <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-                  Retry
+                  {t('guests.retry')}
                 </Button>
               </div>
             )}
@@ -84,6 +92,31 @@ export function GuestsPage() {
             {/* Table */}
             {!isLoading && !isError && filtered.length > 0 && (
               <GuestListTable guests={filtered} />
+            )}
+
+            {/* Pagination */}
+            {!isLoading && !isError && totalPages > 1 && (
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{t('guests.pagination', { page, totalPages, totalCount })}</span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    {t('guests.previous')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    {t('guests.next')}
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

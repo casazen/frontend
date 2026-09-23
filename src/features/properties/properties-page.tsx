@@ -133,7 +133,11 @@ export function PropertiesPage() {
                           </Link>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{p.bedrooms}bd · {p.bathrooms}ba</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {t('property.table.bedroomsCount', { count: p.bedrooms })}
+                          {' · '}
+                          {t('property.table.bathroomsCount', { count: p.bathrooms })}
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
                         <td className="px-4 py-3 font-medium">{p.currency === 'EUR' ? '€' : '$'}{p.nightlyRate}</td>
                         <td className="px-4 py-3">

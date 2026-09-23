@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatDate } from '@/lib/utils';
+import { FormFieldError } from '@/components/shared/form-field-error';
 import { useCheckInContext, useSubmitGuestCheckIn } from '@/queries/use-checkin';
 import { publicCheckInFormSchema, type PublicCheckInFormValues } from './schemas/checkin.schema';
 import { getDocumentTypeLabel } from '@/lib/i18n-labels';
@@ -49,7 +50,7 @@ export function CheckInPage() {
     defaultValues: defaultValues(),
   });
 
-  const { register, handleSubmit, setValue, watch, trigger, reset } = form;
+  const { register, handleSubmit, setValue, watch, trigger, reset, formState: { errors } } = form;
 
   useEffect(() => {
     if (context?.guestPrefill) reset(defaultValues(context.guestPrefill));
@@ -133,22 +134,27 @@ export function CheckInPage() {
                   <div className="space-y-2">
                     <Label htmlFor="firstName">{t('checkin.firstName')}</Label>
                     <Input id="firstName" {...register('firstName')} />
+                    <FormFieldError error={errors.firstName} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">{t('checkin.lastName')}</Label>
                     <Input id="lastName" {...register('lastName')} />
+                    <FormFieldError error={errors.lastName} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dateOfBirth">{t('checkin.birthDate')}</Label>
                     <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
+                    <FormFieldError error={errors.dateOfBirth} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="placeOfBirth">{t('checkin.birthPlace')}</Label>
                     <Input id="placeOfBirth" {...register('placeOfBirth')} />
+                    <FormFieldError error={errors.placeOfBirth} />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="nationality">{t('checkin.nationality')}</Label>
                     <Input id="nationality" {...register('nationality')} />
+                    <FormFieldError error={errors.nationality} />
                   </div>
                 </div>
               )}
@@ -161,14 +167,17 @@ export function CheckInPage() {
                         <option key={value} value={value}>{getDocumentTypeLabel(value, t)}</option>
                       ))}
                     </select>
+                    <FormFieldError error={errors.documentType} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="documentNumber">{t('checkin.documentNumber')}</Label>
                     <Input id="documentNumber" {...register('documentNumber')} />
+                    <FormFieldError error={errors.documentNumber} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="documentIssuingCountry">{t('checkin.documentIssuingCountry')}</Label>
                     <Input id="documentIssuingCountry" {...register('documentIssuingCountry')} />
+                    <FormFieldError error={errors.documentIssuingCountry} />
                   </div>
                 </div>
               )}
@@ -184,6 +193,7 @@ export function CheckInPage() {
                       {t('checkin.gdprConsent')}
                     </Label>
                   </div>
+                  <FormFieldError error={errors.gdprConsent} />
                   <div className="flex items-start gap-3 rounded-md border p-4">
                     <Checkbox
                       id="marketingConsent"

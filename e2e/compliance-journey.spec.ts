@@ -289,7 +289,7 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('alloggiati-resend-button')).toBeVisible();
 
       await page.getByTestId('alloggiati-resend-button').click();
-      await expect(page.getByText('Comunicazione inviata')).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText('Comunicazione Alloggiati inviata con successo')).toBeVisible({ timeout: 10_000 });
     });
   });
 

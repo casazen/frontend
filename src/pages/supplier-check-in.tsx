@@ -29,12 +29,13 @@ export function SupplierCheckInPage() {
   const [data, setData] = useState<CheckInData | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  // i18n key of the error to show
   const [error, setError] = useState<string | null>(null);
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     if (!jobId || !token) {
-      setError('Invalid link');
+      setError('supplierCheckIn.invalidLink');
       setLoading(false);
       return;
     }
@@ -42,7 +43,7 @@ export function SupplierCheckInPage() {
     fetch(`/api/public/check-in/${jobId}?token=${encodeURIComponent(token)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((d: CheckInData) => setData(d))
-      .catch(() => setError('Check-in link is invalid or expired'))
+      .catch(() => setError('supplierCheckIn.linkInvalidOrExpired'))
       .finally(() => setLoading(false));
   }, [jobId, token]);
 
@@ -70,7 +71,7 @@ export function SupplierCheckInPage() {
       const updated = await fetch(`/api/public/check-in/${jobId}?token=${encodeURIComponent(token)}`);
       setData(await updated.json());
     } catch {
-      setError('Check-in failed. Make sure you are at the property.');
+      setError('supplierCheckIn.checkInFailed');
     } finally {
       setActionLoading(false);
     }
@@ -88,7 +89,7 @@ export function SupplierCheckInPage() {
       const updated = await fetch(`/api/public/check-in/${jobId}?token=${encodeURIComponent(token)}`);
       setData(await updated.json());
     } catch {
-      setError('Check-out failed.');
+      setError('supplierCheckIn.checkOutFailed');
     } finally {
       setActionLoading(false);
     }
@@ -101,7 +102,7 @@ export function SupplierCheckInPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-sm text-center">
           <CardContent className="pt-6">
-            <p className="text-lg font-medium text-destructive">{error ?? 'Not found'}</p>
+            <p className="text-lg font-medium text-destructive">{t(error ?? 'supplierCheckIn.notFound')}</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {t('checkin.invalidLinkDescription')}
             </p>
@@ -134,7 +135,7 @@ export function SupplierCheckInPage() {
 
           {data.checkedInAt && (
             <div className="rounded-md bg-muted px-3 py-2 text-sm">
-              Check-in: {new Date(data.checkedInAt).toLocaleTimeString()}
+              {t('supplierCheckIn.checkedInAt', { time: new Date(data.checkedInAt).toLocaleTimeString() })}
             </div>
           )}
 
@@ -152,7 +153,7 @@ export function SupplierCheckInPage() {
               onClick={() => void doCheckIn()}
               disabled={actionLoading}
             >
-              {actionLoading ? <Spinner /> : <><MapPin className="mr-2 h-4 w-4" /> Check-In</>}
+              {actionLoading ? <Spinner /> : <><MapPin className="mr-2 h-4 w-4" /> {t('supplierCheckIn.checkInAction')}</>}
             </Button>
           )}
 
@@ -164,7 +165,7 @@ export function SupplierCheckInPage() {
               onClick={() => void doCheckOut()}
               disabled={actionLoading}
             >
-              {actionLoading ? <Spinner /> : <><ArrowRight className="mr-2 h-4 w-4" /> Check-Out</>}
+              {actionLoading ? <Spinner /> : <><ArrowRight className="mr-2 h-4 w-4" /> {t('supplierCheckIn.checkOutAction')}</>}
             </Button>
           )}
 

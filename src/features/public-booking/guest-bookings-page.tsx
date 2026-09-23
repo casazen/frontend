@@ -9,21 +9,20 @@ import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { publicBookingApi } from '@/api/public-booking.api';
 import type { GuestBookingItem } from '@/types';
 import { toast } from 'sonner';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
-const createLookupSchema = (t: (key: string) => string) =>
-  z.object({
-    email: z.string().email(t('publicBooking.emailValidation')),
-  });
+// The message is an i18n key: FormFieldError translates it when rendering.
+const lookupSchema = z.object({
+  email: z.string().email('publicBooking.emailValidation'),
+});
 
-type LookupForm = z.infer<ReturnType<typeof createLookupSchema>>;
+type LookupForm = z.infer<typeof lookupSchema>;
 
 export function GuestBookingsPage() {
   const { t, i18n } = useTranslation();
   const [bookings, setBookings] = useState<GuestBookingItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
-  const lookupSchema = createLookupSchema(t);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LookupForm>({
     resolver: zodResolver(lookupSchema),
@@ -107,9 +106,7 @@ export function GuestBookingsPage() {
               disabled={isLoading}
               {...register('email')}
             />
-            {errors.email && (
-              <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
-            )}
+            <FormFieldError error={errors.email} className="mt-2 text-sm text-red-600" />
           </div>
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -131,7 +128,7 @@ export function GuestBookingsPage() {
       {bookings.length > 0 && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {t('publicBooking.bookingsCount', { count: bookings.length, plural: bookings.length !== 1 ? 'i' : '' })}
+            {t('publicBooking.bookingsCount', { count: bookings.length })}
           </p>
           <div className="space-y-4">
             {bookings.map((booking) => (
@@ -169,7 +166,7 @@ export function GuestBookingsPage() {
                         {t('publicBooking.freeCancellationBy', { date: formatDate(booking.freeRefundDeadline) })}
                       </p>
                       <p className="text-xs text-orange-700 mt-1">
-                        {t('publicBooking.daysRemaining', { days: daysUntilDeadline(booking.freeRefundDeadline) })}
+                        {t('publicBooking.daysRemaining', { count: daysUntilDeadline(booking.freeRefundDeadline) })}
                       </p>
                     </div>
                   )}

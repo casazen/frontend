@@ -57,7 +57,7 @@ export function PricingHistoryTable({
               <th className="px-4 py-3 text-left font-medium">{t('pricing.historyTable.date')}</th>
               <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.prevPrice')}</th>
               <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.newPrice')}</th>
-              <th className="px-4 py-3 text-right font-medium">Δ%</th>
+              <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.delta')}</th>
               <th className="px-4 py-3 text-left font-medium">{t('pricing.historyTable.reason')}</th>
               <th className="px-4 py-3 text-right font-medium">{t('pricing.historyTable.confidence')}</th>
               <th className="px-4 py-3 text-left font-medium">{t('pricing.historyTable.otaStatus')}</th>

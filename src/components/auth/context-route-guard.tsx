@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -10,11 +11,12 @@ interface ContextRouteGuardProps {
 }
 
 export function ContextRouteGuard({ contextKey, requiredPermissions = [], children }: ContextRouteGuardProps) {
+  const { t } = useTranslation();
   const { contexts, isReady, getDefaultRoute } = useWorkspace();
   const current = contexts.find((ctx) => ctx.contextKey === contextKey);
 
   if (!isReady) {
-    return <LoadingScreen message="Loading workspace..." />;
+    return <LoadingScreen message={t('shared.auth.loadingWorkspace')} />;
   }
 
   if (contexts.length === 0) {

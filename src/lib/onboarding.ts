@@ -2,12 +2,6 @@ import type { RentalType } from '@/types';
 import { getUserRoles, isAdmin, ROLE_ADMIN, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
 import type { UserWithRoles } from '@/lib/auth-roles';
 
-export const RENTAL_TYPE_LABELS: Record<RentalType, string> = {
-  ShortTerm: 'Affitti brevi',
-  LongTerm: 'Locazioni di lungo periodo',
-  Both: 'Entrambi',
-};
-
 export function getHomeRouteForRentalType(rentalType: RentalType): string {
   switch (rentalType) {
     case 'LongTerm':

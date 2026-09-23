@@ -139,8 +139,8 @@ export function TouristTaxCalculatorWidget({
           </p>
           <p className="text-sm text-muted-foreground">
             {t('publicSeo.nightsAndPeople', {
-              nights: calculateMutation.data.nights,
-              adults: calculateMutation.data.numberOfAdults,
+              nights: t('publicSeo.nightsCount', { count: calculateMutation.data.nights }),
+              adults: t('publicSeo.adultsCount', { count: calculateMutation.data.numberOfAdults }),
               children: childrenLabel,
             })}
           </p>

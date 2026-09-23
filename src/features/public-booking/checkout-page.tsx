@@ -192,7 +192,7 @@ function ConfirmationScreen({
         <p className="text-sm">{paymentText}</p>
         {bookingResult.paymentOption === 'OnCancellationDeadline' && (
           <p className="text-xs text-orange-600 mt-2">
-            {t('publicBooking.freeCancellationUntil', { days: daysUntilDeadline(bookingResult.freeRefundDeadline) })}
+            {t('publicBooking.freeCancellationUntil', { count: daysUntilDeadline(bookingResult.freeRefundDeadline) })}
           </p>
         )}
       </div>
@@ -318,11 +318,11 @@ export function CheckoutPage() {
         ]}
       />
 
-      <h2 className="text-2xl font-bold">{t('publicBooking.checkoutTitle', { propertyName: property?.name ?? 'Struttura' })}</h2>
+      <h2 className="text-2xl font-bold">{t('publicBooking.checkoutTitle', { propertyName: property?.name ?? t('publicBooking.propertyFallback') })}</h2>
 
       {checkIn && checkOut && (
         <p className="text-muted-foreground">
-          {t('publicBooking.checkoutDates', { checkIn, checkOut, nights, plural: nights !== 1 ? 'i' : '' })}
+          {t('publicBooking.checkoutDates', { checkIn, checkOut, count: nights })}
         </p>
       )}
 

@@ -17,6 +17,7 @@ import { processPaymentSchema } from '../schemas/payment.schema';
 import { formatCurrency } from '@/lib/utils';
 import type { ProcessPaymentFormValues } from '../schemas/payment.schema';
 import type { Payment } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface ProcessPaymentDialogProps {
   payment: Payment | null;
@@ -97,9 +98,7 @@ export function ProcessPaymentDialog({
               <p className="text-xs text-muted-foreground">
                 {t('payment.process.paymentMethodIdHint')}
               </p>
-              {errors.paymentMethodId && (
-                <p className="text-sm text-destructive">{errors.paymentMethodId.message}</p>
-              )}
+              <FormFieldError error={errors.paymentMethodId} />
             </div>
 
             <div className="flex items-center space-x-2">

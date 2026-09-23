@@ -1,8 +1,10 @@
 import { ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/utils';
+import { getLeasePartyRoleLabel } from '@/lib/i18n-labels';
 import type { SignerInfo } from '@/types';
 
 interface LeaseSigningPanelProps {
@@ -10,16 +12,15 @@ interface LeaseSigningPanelProps {
 }
 
 export function LeaseSigningPanel({ signers }: LeaseSigningPanelProps) {
+  const { t } = useTranslation();
+
   if (signers.length === 0) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Digital signing</CardTitle>
-        <CardDescription>
-          Share each signing link with the corresponding party. Links expire at the
-          indicated time.
-        </CardDescription>
+        <CardTitle>{t('leases.signingPanel.title')}</CardTitle>
+        <CardDescription>{t('leases.signingPanel.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {signers.map((signer) => (
@@ -30,10 +31,10 @@ export function LeaseSigningPanel({ signers }: LeaseSigningPanelProps) {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{signer.name}</span>
-                <Badge variant="outline">{signer.role}</Badge>
+                <Badge variant="outline">{getLeasePartyRoleLabel(signer.role, t)}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                Expires {formatDateTime(signer.expiresAt)}
+                {t('leases.signingPanel.expires', { date: formatDateTime(signer.expiresAt) })}
               </p>
             </div>
             <Button
@@ -42,7 +43,7 @@ export function LeaseSigningPanel({ signers }: LeaseSigningPanelProps) {
               onClick={() => window.open(signer.signingUrl, '_blank', 'noopener,noreferrer')}
             >
               <ExternalLink className="mr-2 h-4 w-4" />
-              Open signing link
+              {t('leases.signingPanel.openLink')}
             </Button>
           </div>
         ))}

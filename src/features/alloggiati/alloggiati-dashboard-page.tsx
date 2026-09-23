@@ -13,6 +13,7 @@ import { AlloggiatiStatusBadge } from './components/alloggiati-status-badge';
 import { formatDate } from '@/lib/utils';
 import { AlertTriangle, Send, Loader2 } from 'lucide-react';
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const ALLOGGIATI_KEY = 'alloggiati';
 
@@ -30,10 +31,10 @@ export function AlloggiatiDashboardPage() {
     onSuccess: (_, bookingId) => {
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY] });
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status', bookingId] });
-      toast.success('Comunicazione inviata');
+      toast.success(t('toast.alloggiatiSent'));
     },
-    onError: () => {
-      toast.error('Invio non riuscito. Riprova più tardi.');
+    onError: (error) => {
+      toast.error(getProblemMessage(error, t) ?? t('toast.alloggiatiSendFailed'));
     },
   });
 
@@ -115,7 +116,7 @@ export function AlloggiatiDashboardPage() {
                                 ) : (
                                   <Send className="mr-1 h-3.5 w-3.5" />
                                 )}
-                                Invia
+                                {t('alloggiati.send')}
                               </Button>
                             )}
                             <Link

@@ -123,7 +123,7 @@ export function CustomDomainSettingsPage() {
                     <Input
                       id="custom-domain"
                       data-testid="custom-domain-input"
-                      placeholder="www.tuovilla.it"
+                      placeholder={t('domain.settings.customDomainPlaceholder')}
                       value={customDomain}
                       onChange={(e) => setCustomDomain(e.target.value)}
                     />

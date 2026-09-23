@@ -15,7 +15,7 @@ export function PropertyAmenitiesGrid({ amenities }: PropertyAmenitiesGridProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Servizi</CardTitle>
+        <CardTitle>{t('property.form.amenities.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

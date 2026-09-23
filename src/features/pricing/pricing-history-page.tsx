@@ -17,8 +17,16 @@ import type { PricingHistoryEntry } from '@/types';
 
 const PAGE_SIZE = 20;
 
-function buildCsv(items: PricingHistoryEntry[]): string {
-  const headers = ['Date', 'Previous Price', 'New Price', 'Delta%', 'Reason', 'AI Confidence', 'OTA Status'];
+function buildCsv(items: PricingHistoryEntry[], t: (key: string) => string): string {
+  const headers = [
+    t('pricing.historyTable.date'),
+    t('pricing.historyTable.prevPrice'),
+    t('pricing.historyTable.newPrice'),
+    t('pricing.historyTable.delta'),
+    t('pricing.historyTable.reason'),
+    t('pricing.historyTable.confidence'),
+    t('pricing.historyTable.otaStatus'),
+  ].map((header) => `"${header.replace(/"/g, '""')}"`);
   const rows = items.map((e) => {
     const delta = e.previousPrice > 0
       ? ((e.newPrice - e.previousPrice) / e.previousPrice) * 100
@@ -86,7 +94,7 @@ export function PricingHistoryPage() {
         toast.error(t('pricing.history.exportError'));
         return;
       }
-      const csv = buildCsv(result.items);
+      const csv = buildCsv(result.items, t);
       const date = formatDate(new Date().toISOString(), 'yyyy-MM-dd');
       triggerCsvDownload(csv, `pricing-history-${date}.csv`);
     } catch {

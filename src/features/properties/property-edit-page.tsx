@@ -48,7 +48,7 @@ export function PropertyEditPage() {
         <div className="flex flex-wrap gap-3" data-testid="property-activation-cta">
           <Button asChild variant="outline">
             <Link to={`/app/short-rent/properties/${property.id}/activation`}>
-              {t('compliance.activation.openWizard', { defaultValue: 'Wizard attivazione' })}
+              {t('compliance.activation.openWizard')}
             </Link>
           </Button>
         </div>

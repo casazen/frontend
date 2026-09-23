@@ -11,6 +11,7 @@ import { useServiceRequests, useSuppliersByProperty } from '@/queries/use-servic
 import { useProperties } from '@/queries/use-properties';
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import type { SupplierPicker } from '@/types/service-request';
+import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 
 const CATEGORIES = ['cleaning', 'maintenance', 'plumbing', 'laundry'] as const;
 
@@ -131,7 +132,7 @@ export function MarketplacePage() {
                     <div className="flex flex-wrap gap-1">
                       {supplier.categories.map((cat) => (
                         <Badge key={cat} variant="secondary" className="text-xs">
-                          {t(`serviceRequest.categories.${cat}`, { defaultValue: cat })}
+                          {getServiceCategoryLabel(cat, t)}
                         </Badge>
                       ))}
                     </div>
@@ -171,7 +172,7 @@ export function MarketplacePage() {
                   <div className="flex flex-wrap gap-1 pt-1">
                     {selectedSupplier.categories.map((cat) => (
                       <Badge key={cat} variant="outline" className="text-xs">
-                        {t(`serviceRequest.categories.${cat}`, { defaultValue: cat })}
+                        {getServiceCategoryLabel(cat, t)}
                       </Badge>
                     ))}
                   </div>
@@ -237,14 +238,14 @@ export function MarketplacePage() {
                       <div className="font-medium">
                         {req.propertyName ?? req.propertyId.slice(0, 8)}
                         {' · '}
-                        {t(`serviceRequest.categories.${req.category}`, { defaultValue: req.category })}
+                        {getServiceCategoryLabel(req.category, t)}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {req.supplierName ?? '—'}
                       </div>
                     </div>
                     <Badge variant="secondary">
-                      {t(`serviceRequest.status.${req.status}`, { defaultValue: req.status })}
+                      {getServiceRequestStatusLabel(req.status, t)}
                     </Badge>
                   </div>
                 ))}

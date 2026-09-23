@@ -106,10 +106,10 @@ export function useSyncOtaPlatform() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      toast.success(i18n.t('toast.otaPlatformSynced'));
+      toast.success(i18n.t('toast.platformSynced'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.otaPlatformSyncFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.platformSyncFailed'));
     },
   });
 }

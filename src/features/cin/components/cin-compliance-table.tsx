@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CinStatusBadge } from '@/features/admin/components/cin-status-badge';
 import type { CinComplianceItem } from '@/types/cin.types';
 
@@ -8,12 +9,14 @@ interface CinComplianceTableProps {
 }
 
 export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Caricamento...</p>;
+    return <p className="text-sm text-muted-foreground">{t('shared.loading.defaultMessage')}</p>;
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nessuna proprietà trovata.</p>;
+    return <p className="text-sm text-muted-foreground">{t('cin.table.empty')}</p>;
   }
 
   return (
@@ -21,8 +24,14 @@ export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps
       <table className="w-full text-sm" data-testid="cin-compliance-table">
         <thead>
           <tr className="border-b bg-muted/40">
-            {['Proprietà', 'Città', 'Codice CIN', 'Stato', ''].map((h) => (
-              <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
+            {[
+              t('cin.table.property'),
+              t('cin.table.city'),
+              t('cin.table.cinCode'),
+              t('cin.table.status'),
+              '',
+            ].map((h, index) => (
+              <th key={index} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
             ))}
           </tr>
         </thead>
@@ -48,7 +57,7 @@ export function CinComplianceTable({ items, isLoading }: CinComplianceTableProps
                   to={`/app/short-rent/properties/${item.propertyId}/edit`}
                   className="text-primary hover:underline text-xs"
                 >
-                  Modifica CIN
+                  {t('cin.table.editCin')}
                 </Link>
               </td>
             </tr>

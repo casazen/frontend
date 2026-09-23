@@ -144,9 +144,10 @@
       },
       "confirmDialog": {
         "title": "Conferma rigenerazione",
-        "description": "Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno) e approvarle automaticamente.",
         "cancel": "Annulla",
-        "confirm": "Conferma"
+        "confirm": "Conferma",
+        "description_one": "Verrà accodato un job Hangfire per generare le pagine SEO di {{count}} comune nel registry (2 pagine ciascuno) e approvarle automaticamente.",
+        "description_other": "Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno) e approvarle automaticamente."
       },
       "status": {
         "reviewed": "Revisionato",
@@ -189,7 +190,7 @@
     "fiscal": "Regime fiscale",
     "payments": "Incassi",
     "revenue": "Ricavi",
-    "stripeConnect": "Incassi e Payout",
+    "stripeConnect": "Configurazione Stripe",
     "domain": "Dominio pubblico",
     "ota": "OTA",
     "leases": "Contratti",
@@ -205,7 +206,6 @@
     "brandSupplier": "CASAZEN Fornitore",
     "vetrina": "Vetrina",
     "directBooking": "Direct Booking",
-    "stripeConnect": "Configurazione Stripe",
     "inviteSupplier": "Invita fornitore",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
@@ -229,7 +229,8 @@
     "switchToItalian": "Passa all'italiano",
     "switchToEnglish": "Passa all'inglese",
     "italian": "IT",
-    "english": "EN"
+    "english": "EN",
+    "label": "Lingua"
   },
   "shell": {
     "shortRentSubtitle": "Affitti brevi",
@@ -243,7 +244,8 @@
     "openMenu": "Apri menu di navigazione",
     "layerShortStay": "Affitti brevi",
     "layerLongTerm": "Affitti lungo termine",
-    "supplierSubtitle": "Fornitore"
+    "supplierSubtitle": "Fornitore",
+    "layerSwitcherLabel": "Area applicativa"
   },
   "leases": {
     "pageTitle": "Contratti lungo termine",
@@ -432,7 +434,18 @@
       "concordatoRangeRequired": "Calcola la fascia di canone concordato e inserisci un canone mensile compreso tra il minimo e il massimo.",
       "concordatoRentOutOfRange": "Il canone mensile e' fuori dalla fascia calcolata per questo immobile.",
       "concordatoRangeHint": "Fascia mensile: {{min}} – {{max}} EUR"
-    }
+    },
+    "signingPanel": {
+      "title": "Firma digitale",
+      "description": "Condividi ogni link di firma con la parte corrispondente. I link scadono all'orario indicato.",
+      "expires": "Scade il {{date}}",
+      "openLink": "Apri link di firma"
+    },
+    "partyRole": {
+      "Landlord": "Locatore",
+      "Tenant": "Conduttore"
+    },
+    "monthlyRentValue": "{{amount}}/mese"
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -618,14 +631,14 @@
     "edit": {
       "title": "Modifica prenotazione",
       "editBooking": "Modifica prenotazione",
-      "description": "Aggiorna prenotazione per {name}",
+      "description": "Aggiorna prenotazione per {{name}}",
       "loading": "Caricamento prenotazione...",
       "notFound": "Prenotazione non trovata",
       "notFoundDescription": "La prenotazione che stai cercando non esiste."
     },
     "checkInDialog": {
       "title": "Check-in ospite",
-      "description": "Check-in di {name}",
+      "description": "Check-in di {{name}}",
       "checkInTime": "Orario check-in",
       "notes": "Note (opzionale)",
       "notesPlaceholder": "Eventuali note sul check-in...",
@@ -635,7 +648,7 @@
     },
     "checkOutDialog": {
       "title": "Check-out ospite",
-      "description": "Check-out di {name}",
+      "description": "Check-out di {{name}}",
       "checkOutTime": "Orario check-out",
       "damages": "Danni (se presenti)",
       "damagesPlaceholder": "Descrivi eventuali danni riscontrati...",
@@ -749,7 +762,6 @@
     },
     "syncAll": {
       "title": "Sincronizza tutte le piattaforme",
-      "description": "Verranno sincronizzate le prenotazioni da tutte le {{count}} piattaforme OTA connesse. Potrebbe richiedere qualche minuto.",
       "whatHappens": "Cosa succederà:",
       "step1": "Recupera le ultime prenotazioni da tutte le piattaforme",
       "step2": "Aggiorna le prenotazioni esistenti se modificate",
@@ -757,7 +769,9 @@
       "step4": "Evita duplicati con corrispondenza intelligente",
       "cancel": "Annulla",
       "syncing": "Sincronizzazione...",
-      "startSync": "Avvia sync"
+      "startSync": "Avvia sync",
+      "description_one": "Verranno sincronizzate le prenotazioni da {{count}} piattaforma OTA connessa. Potrebbe richiedere qualche minuto.",
+      "description_other": "Verranno sincronizzate le prenotazioni da tutte le {{count}} piattaforme OTA connesse. Potrebbe richiedere qualche minuto."
     },
     "pricing": {
       "title": "Aggiorna prezzi OTA",
@@ -873,7 +887,13 @@
       "title": "Nessun accesso disponibile",
       "description": "Il tuo account non e associato ad alcun workspace operativo. Esci e accedi di nuovo, oppure contatta l'amministratore per l'assegnazione dei ruoli.",
       "loginAgain": "Accedi di nuovo"
-    }
+    },
+    "auth": {
+      "noSectionAccess": "Non hai accesso a questa sezione",
+      "authenticating": "Autenticazione in corso...",
+      "loadingWorkspace": "Caricamento dell'area di lavoro..."
+    },
+    "close": "Chiudi"
   },
   "common": {
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
@@ -903,7 +923,11 @@
       "active": "Attivo",
       "paused": "In pausa",
       "pause": "Pausa",
-      "activate": "Attiva"
+      "activate": "Attiva",
+      "bedroomsCount_one": "{{count}} camera",
+      "bedroomsCount_other": "{{count}} camere",
+      "bathroomsCount_one": "{{count}} bagno",
+      "bathroomsCount_other": "{{count}} bagni"
     },
     "detail": {
       "loading": "Caricamento proprietà...",
@@ -1194,7 +1218,8 @@
       "otaStatus": "Stato OTA",
       "pagination": "Pagina {{page}} di {{totalPages}} ({{total}} voci)",
       "prevPage": "Pagina precedente",
-      "nextPage": "Pagina successiva"
+      "nextPage": "Pagina successiva",
+      "delta": "Δ%"
     }
   },
   "serviceRequest": {
@@ -1261,13 +1286,14 @@
     "lastSync": "Ultima sync: {{date}}",
     "neverSynced": "Mai sincronizzato",
     "statusValue": "Stato: {{status}}",
-    "blockCount": "{{count}} periodi bloccati importati",
     "exportUrlLabel": "URL export per le OTA",
     "exportHint": "Incolla questo URL su Airbnb/Booking per esportare prenotazioni e blocchi CasaZen.",
     "copy": "Copia",
     "copied": "Copiato",
     "legendBooking": "Prenotazione",
-    "legendIcalBlock": "Blocco OTA (iCal)"
+    "legendIcalBlock": "Blocco OTA (iCal)",
+    "blockCount_one": "{{count}} periodo bloccato importato",
+    "blockCount_other": "{{count}} periodi bloccati importati"
   },
   "marketplace": {
     "title": "Marketplace servizi",
@@ -1393,7 +1419,6 @@
       "login": "Accedi"
     },
     "completedJobs": "Lavori completati",
-    "totalJobsCount": "{{total}} incarichi totali",
     "upcomingJobs": "Prossimi incarichi",
     "availabilityRate": "Tasso disponibilità",
     "profileCompleted": "Profilo completato",
@@ -1491,7 +1516,19 @@
         "Incollalo nel dialog iCal di CasaZen"
       ],
       "syncFrequencyNote": "CasaZen sincronizza i feed iCal ogni 15 minuti. Le modifiche sul calendario esterno saranno visibili entro 15 minuti."
-    }
+    },
+    "statusLabel": {
+      "Pending": "In attesa",
+      "Active": "Attivo",
+      "Suspended": "Sospeso"
+    },
+    "placeholders": {
+      "companyName": "es. Impresa di Pulizie Rossi",
+      "vatNumber": "es. IT12345678901",
+      "phone": "es. +39 123 456 7890"
+    },
+    "totalJobsCount_one": "{{count}} incarico totale",
+    "totalJobsCount_other": "{{count}} incarichi totali"
   },
   "settings": {
     "planTitle": "Il tuo piano",
@@ -1556,7 +1593,8 @@
       "currentTitle": "Configurazione attuale",
       "pathUrl": "URL percorso",
       "subdomainUrl": "URL sottodominio",
-      "customDomainUrl": "URL dominio personalizzato"
+      "customDomainUrl": "URL dominio personalizzato",
+      "customDomainPlaceholder": "www.tuovilla.it"
     },
     "dns": {
       "title": "Istruzioni DNS",
@@ -1605,11 +1643,17 @@
   "plan": {
     "unlimitedProperties": "Proprietà illimitate",
     "oneProperty": "1 proprietà",
-    "upToProperties": "Fino a {{count}} proprietà",
     "currentPlan": "Piano attuale",
     "saving": "Salvataggio...",
     "choosePlan": "Scegli piano",
-    "managePlan": "Gestisci piano"
+    "managePlan": "Gestisci piano",
+    "tier": {
+      "Starter": "Starter",
+      "Pro": "Pro",
+      "Scale": "Scale"
+    },
+    "upToProperties_one": "Fino a {{count}} proprietà",
+    "upToProperties_other": "Fino a {{count}} proprietà"
   },
   "profile": {
     "title": "Il mio profilo",
@@ -1641,7 +1685,8 @@
     "PropertyManager": "Property Manager",
     "Guest": "Ospite",
     "Staff": "Staff",
-    "LongTermLandlord": "Locatore lungo termine"
+    "LongTermLandlord": "Locatore lungo termine",
+    "Supplier": "Fornitore"
   },
   "alloggiati": {
     "loading": "Caricamento Alloggiati…",
@@ -1669,7 +1714,11 @@
     "statusPending": "In attesa",
     "statusSubmitted": "Inviato",
     "statusConfirmed": "Confermato",
-    "statusFailed": "Errore"
+    "statusFailed": "Errore",
+    "send": "Invia",
+    "sent": "Inviato",
+    "resend": "Reinvia",
+    "alreadyConfirmed": "Comunicazione già inviata e confermata"
   },
   "guests": {
     "title": "Ospiti",
@@ -1735,7 +1784,11 @@
       "anonymizeConfirm": "Anonimizza",
       "deleteTitle": "Cancella dati",
       "deleteConfirmLabel": "Cancella definitivamente"
-    }
+    },
+    "loadError": "Impossibile caricare gli ospiti.",
+    "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} ospiti)",
+    "previous": "Precedente",
+    "next": "Successiva"
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -1764,7 +1817,21 @@
     "effectiveTo": "Data fine validità",
     "createDescription": "Inserisci i dettagli per la nuova aliquota fiscale.",
     "editDescription": "Modifica i dettagli dell'aliquota esistente.",
-    "deleteDescription": "Confermi l'eliminazione dell'aliquota per {{city}}? Questa azione è reversibile (soft delete)."
+    "deleteDescription": "Confermi l'eliminazione dell'aliquota per {{city}}? Questa azione è reversibile (soft delete).",
+    "validation": {
+      "cityRequired": "La città è obbligatoria",
+      "regionRequired": "La regione è obbligatoria",
+      "rateMin": "La tariffa deve essere maggiore di 0",
+      "effectiveFromRequired": "La data di entrata in vigore è obbligatoria"
+    },
+    "toast": {
+      "created": "Aliquota creata con successo",
+      "createFailed": "Impossibile creare l'aliquota",
+      "updated": "Aliquota aggiornata con successo",
+      "updateFailed": "Impossibile aggiornare l'aliquota",
+      "deleted": "Aliquota eliminata con successo",
+      "deleteFailed": "Impossibile eliminare l'aliquota"
+    }
   },
   "finance": {
     "payments": "Pagamenti",
@@ -1804,6 +1871,30 @@
       "Valid": "Valido",
       "Missing": "Mancante",
       "Invalid": "Non valido"
+    },
+    "summary": {
+      "valid": "Validi",
+      "missing": "Mancanti",
+      "invalid": "Non validi",
+      "daysUntilDeadline": "Giorni alla scadenza"
+    },
+    "table": {
+      "empty": "Nessuna proprietà trovata.",
+      "property": "Proprietà",
+      "city": "Città",
+      "cinCode": "Codice CIN",
+      "status": "Stato",
+      "editCin": "Modifica CIN"
+    },
+    "banner": {
+      "title": "Conformità CIN richiesta (D.L. 145/2023)",
+      "nonCompliantCount_one": "Hai {{count}} proprietà senza CIN valido.",
+      "nonCompliantCount_other": "Hai {{count}} proprietà senza CIN valido.",
+      "deadlineToday": "La scadenza è oggi.",
+      "daysUntilDeadline_one": "Manca {{count}} giorno alla scadenza del {{deadline}}.",
+      "daysUntilDeadline_other": "Mancano {{count}} giorni alla scadenza del {{deadline}}.",
+      "penalties": "Sanzioni da €800 a €8.000 per immobile.",
+      "requestOnBdsr": "Richiedi il CIN su BDSR"
     }
   },
   "payment": {
@@ -1901,7 +1992,7 @@
     },
     "process": {
       "title": "Elabora pagamento",
-      "description": "Elabora pagamento di {amount}",
+      "description": "Elabora pagamento di {{amount}}",
       "amount": "Importo",
       "method": "Metodo",
       "paymentMethodId": "ID metodo di pagamento *",
@@ -1914,12 +2005,12 @@
     },
     "refund": {
       "title": "Rimborsa pagamento",
-      "description": "Rimborsa pagamento di {amount}",
+      "description": "Rimborsa pagamento di {{amount}}",
       "originalAmount": "Importo originale",
       "alreadyRefunded": "Gia rimborsato",
       "refundableAmount": "Importo rimborsabile",
       "refundAmountLabel": "Importo rimborso (lascia vuoto per rimborso totale)",
-      "refundAmountHint": "Inserisci un importo personalizzato o lascia vuoto per rimborsare {amount}",
+      "refundAmountHint": "Inserisci un importo personalizzato o lascia vuoto per rimborsare {{amount}}",
       "reason": "Motivo del rimborso",
       "reasonPlaceholder": "Spiega perche questo pagamento viene rimborsato...",
       "cancel": "Annulla",
@@ -1950,6 +2041,13 @@
         "bookings": "Prenotazioni",
         "avgValue": "Valore medio"
       }
+    },
+    "card": {
+      "title": "Pagamento #{{id}}",
+      "stripeId": "ID Stripe: {{id}}",
+      "view": "Visualizza",
+      "process": "Elabora",
+      "refund": "Rimborsa"
     }
   },
   "checkin": {
@@ -1970,8 +2068,12 @@
       "Other": "Altro"
     },
     "validation": {
-      "firstName": { "required": "Nome obbligatorio" },
-      "lastName": { "required": "Cognome obbligatorio" },
+      "firstName": {
+        "required": "Nome obbligatorio"
+      },
+      "lastName": {
+        "required": "Cognome obbligatorio"
+      },
       "dateOfBirth": {
         "required": "Data di nascita obbligatoria"
       },
@@ -2088,7 +2190,8 @@
     "photoAlt": "{{name}} — foto {{index}}",
     "breadcrumbLabel": "Percorso di navigazione",
     "breadcrumbCheckout": "Checkout",
-    "closeBookingSheet": "Chiudi pannello prenotazione"
+    "closeBookingSheet": "Chiudi pannello prenotazione",
+    "directBookingTagline": "Prenotazione diretta"
   },
   "publicBooking": {
     "payNow": "Paga ora",
@@ -2106,13 +2209,11 @@
     "paidOnline": "Pagato online",
     "paymentDueBy": "Pagamento previsto per {{date}}",
     "payOnSite": "Da pagare in struttura",
-    "freeCancellationUntil": "Cancellazione gratuita fino a {{days}} giorni",
     "backToProperties": "Torna alle strutture",
     "backToProperty": "Torna alla struttura",
     "backToOrg": "Torna a {{orgName}}",
     "viewMyBookings": "Visualizza le mie prenotazioni",
     "checkoutTitle": "Checkout — {{propertyName}}",
-    "checkoutDates": "Date: {{checkIn}} → {{checkOut}} ({{nights}} notte{{plural}})",
     "paymentMethodTitle": "Metodo di pagamento",
     "freeCancellationBy": "Cancellazione gratuita fino a {{date}}",
     "payImmediately": "Paga subito",
@@ -2136,7 +2237,6 @@
     "noBookingsFoundDescription": "Non abbiamo trovato prenotazioni per questo indirizzo email.",
     "noBookingsFoundToast": "Nessuna prenotazione trovata per questo indirizzo email",
     "searchErrorToast": "Errore nella ricerca. Riprova piu' tardi.",
-    "bookingsCount": "Trovate {{count}} prenotazione{{plural}}",
     "checkIn": "Check-in",
     "checkOut": "Check-out",
     "pendingStatus": "In sospeso",
@@ -2145,31 +2245,26 @@
     "paidOnlineBadge": "Pagato online",
     "paymentDeadlineBadge": "Pagamento al deadline",
     "payOnSiteBadge": "Pagamento in struttura",
-    "daysRemaining": "{{days}} giorni rimanenti",
     "propertyNotFound": "Struttura non trovata.",
     "propertyTitle": "Prenota il soggiorno",
     "checkInLabel": "Check-in",
     "checkOutLabel": "Check-out",
     "guestsLabel": "Ospiti",
-    "maxGuestsExceeded": "Massimo {{max}} ospiti per questa struttura",
     "propertyFallback": "Struttura",
     "dateAlreadyBooked": "Questa data e' gia' prenotata",
     "dateRangeBooked": "Una o piu' date nel periodo selezionato sono gia' prenotate. Scegli date diverse.",
     "camere": "camere",
     "bagni": "bagni",
-    "ospiti": "fino a {{count}} ospiti",
     "servicesTitle": "Servizi",
     "rulesTitle": "Regolamento",
     "cancellationTitle": "Cancellazione",
     "proceedToCheckout": "Procedi al checkout",
-    "notte": "notte",
     "pulizia": "Pulizia",
     "tassaSoggiorno": "Tassa di soggiorno",
     "tassaSoggiornoCalculated": "Tassa di soggiorno: calcolata al checkout",
     "totale": "Totale",
     "totaleStimato": "Totale stimato: {{amount}}",
     "priceBreakdownTitle": "Riepilogo prezzi",
-    "nightsBreakdown": "{{nights}} notte{{plural}} x {{rate}}",
     "welcomeToOrg": "Benvenuto su {{orgName}}",
     "welcomeDescription": "Sfoglia le nostre strutture disponibili e prenota direttamente, senza commissioni.",
     "noPropertiesPublished": "Nessuna struttura pubblicata al momento.",
@@ -2181,7 +2276,23 @@
     "checkoutPlaceholderDescription": "Il pagamento sicuro per {{orgName}} sara' disponibile dopo l'attivazione di Stripe Connect da parte dell'operatore. Questa pagina accogliera' il flusso di checkout diretto (spec-direct-checkout).",
     "gdprConsentText": "Acconsento al trattamento dei miei dati personali per la gestione della prenotazione, in conformita' con l'informativa privacy dell'operatore.",
     "emailValidation": "Email non valido",
-    "emailPlaceholder": "nome@esempio.com"
+    "emailPlaceholder": "nome@esempio.com",
+    "bookingsCount_one": "Trovata {{count}} prenotazione",
+    "bookingsCount_other": "Trovate {{count}} prenotazioni",
+    "daysRemaining_one": "{{count}} giorno rimanente",
+    "daysRemaining_other": "{{count}} giorni rimanenti",
+    "checkoutDates_one": "Date: {{checkIn}} → {{checkOut}} ({{count}} notte)",
+    "checkoutDates_other": "Date: {{checkIn}} → {{checkOut}} ({{count}} notti)",
+    "freeCancellationUntil_one": "Cancellazione gratuita fino a {{count}} giorno",
+    "freeCancellationUntil_other": "Cancellazione gratuita fino a {{count}} giorni",
+    "nightsBreakdown_one": "{{count}} notte x {{rate}}",
+    "nightsBreakdown_other": "{{count}} notti x {{rate}}",
+    "nightsTimesRateTotal_one": "{{count}} notte × {{rate}} = {{total}}",
+    "nightsTimesRateTotal_other": "{{count}} notti × {{rate}} = {{total}}",
+    "ospiti_one": "fino a {{count}} ospite",
+    "ospiti_other": "fino a {{count}} ospiti",
+    "maxGuestsExceeded_one": "Massimo {{count}} ospite per questa struttura",
+    "maxGuestsExceeded_other": "Massimo {{count}} ospiti per questa struttura"
   },
   "publicSeo": {
     "notFound": "Pagina non trovata",
@@ -2190,15 +2301,20 @@
     "calculateTax": "Calcola la tassa di soggiorno",
     "officialRate": "Tariffa ufficiale: {{rate}}",
     "estimatedTax": "Tassa stimata: {{amount}}",
-    "nightsAndPeople": "{{nights}} notti · {{adults}} adulti{{children}}",
-    "childrenLabel": " · {{count}} bambini",
+    "nightsAndPeople": "{{nights}} · {{adults}}{{children}}",
     "calculate": "Calcola",
     "calculating": "Calcolo...",
     "calculationError": "Impossibile calcolare la tassa. Verifica i dati inseriti.",
     "tryCasaZen": "Prova CasaZen a {{comuneName}}",
     "tryCasaZenDescription": "Verifica la conformita' del tuo affitto breve o registrati gratuitamente.",
     "verifyCompliance": "Verifica conformita'",
-    "registerFree": "Registrati gratis"
+    "registerFree": "Registrati gratis",
+    "nightsCount_one": "{{count}} notte",
+    "nightsCount_other": "{{count}} notti",
+    "adultsCount_one": "{{count}} adulto",
+    "adultsCount_other": "{{count}} adulti",
+    "childrenLabel_one": " · {{count}} bambino",
+    "childrenLabel_other": " · {{count}} bambini"
   },
   "onboarding": {
     "casaZen": "CasaZen",
@@ -2265,7 +2381,8 @@
     "availability": "Disponibilita'",
     "inbox": "Richieste",
     "plan": "Piano",
-    "leases": "Contratti"
+    "leases": "Contratti",
+    "ariaLabel": "Percorso di navigazione"
   },
   "aiContentNotice": {
     "label": "Descrizione generata con AI"
@@ -2275,7 +2392,8 @@
       "title": "Cerca proprieta",
       "description": "Trova la casa vacanza perfetta",
       "searching": "Ricerca in corso...",
-      "results": "{count} proprieta trovate"
+      "results_one": "{{count}} proprietà trovata",
+      "results_other": "{{count}} proprietà trovate"
     },
     "filters": {
       "title": "Filtri di ricerca",
@@ -2308,7 +2426,8 @@
     "brand": "CASAZEN",
     "platformDescription": "Piattaforma gestione affitti brevi",
     "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
-    "signInButton": "Accedi con Auth0"
+    "signInButton": "Accedi con Auth0",
+    "signIn": "Accedi"
   },
   "compliance": {
     "status": {
@@ -2363,7 +2482,15 @@
       "complete": "Completa attivazione",
       "completed": "Immobile attivato con successo",
       "blockersRemain": "Attivazione salvata — completa i blocchi rimanenti per pubblicare.",
-      "completeFailed": "Impossibile completare l'attivazione"
+      "completeFailed": "Impossibile completare l'attivazione",
+      "steps": {
+        "base-data": "Dati base proprietà",
+        "cin": "Codice CIN",
+        "documents": "Documenti richiesti",
+        "safety": "Checklist sicurezza",
+        "tourist-tax": "Imposta di soggiorno",
+        "ical": "Sincronizzazione calendario"
+      }
     },
     "checkout": {
       "loading": "Caricamento check-out...",
@@ -2475,7 +2602,6 @@
     "documentDeleted": "Documento eliminato con successo",
     "documentDeleteFailed": "Impossibile eliminare il documento",
     "documentDownloadFailed": "Impossibile scaricare il documento",
-    "seoApproved": "{{count}} pagine SEO approvate con successo",
     "seoApproveFailed": "Impossibile approvare le pagine SEO",
     "seoGenerated": "Pagine SEO generate con successo",
     "seoGenerateFailed": "Impossibile generare le pagine SEO",
@@ -2490,7 +2616,10 @@
     "dataDeleted": "Dati cancellati con successo",
     "dataDeleteFailed": "Impossibile cancellare i dati",
     "consentUpdated": "Consenso aggiornato con successo",
-    "consentUpdateFailed": "Impossibile aggiornare il consenso"
+    "consentUpdateFailed": "Impossibile aggiornare il consenso",
+    "otaValidationFailed": "Validazione credenziali OTA fallita: {{errors}}",
+    "seoApproved_one": "{{count}} pagina SEO approvata con successo",
+    "seoApproved_other": "{{count}} pagine SEO approvate con successo"
   },
   "fiscal": {
     "page": {
@@ -2498,7 +2627,6 @@
       "description": "Cedolare secca, Partita IVA e ritenute OTA (L. 199/2025, D.L. 50/2017)."
     },
     "loading": "Caricamento…",
-    "count": "{{count}} immobili STR attivi nel {{year}}",
     "recommended": "Raccomandato",
     "assigned": "Assegnato",
     "primary": "Designa come primo immobile (21%)",
@@ -2519,7 +2647,9 @@
       "description": "Pacchetto dati per il commercialista (non una dichiarazione).",
       "link": "Apri i report",
       "totals": "Lordo {{gross}} € — netto {{net}} €"
-    }
+    },
+    "count_one": "{{count}} immobile STR attivo nel {{year}}",
+    "count_other": "{{count}} immobili STR attivi nel {{year}}"
   },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
@@ -2532,10 +2662,53 @@
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
       "duplicatePropertyAddress": "Indirizzo già usato da un immobile attivo.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
+      "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
       "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo."
     }
+  },
+  "validation": {
+    "required": "Campo obbligatorio",
+    "invalid": "Valore non valido",
+    "tooShort_one": "Inserisci almeno {{count}} carattere",
+    "tooShort_other": "Inserisci almeno {{count}} caratteri",
+    "tooLong_one": "Inserisci al massimo {{count}} carattere",
+    "tooLong_other": "Inserisci al massimo {{count}} caratteri",
+    "tooFewItems_one": "Seleziona almeno {{count}} elemento",
+    "tooFewItems_other": "Seleziona almeno {{count}} elementi",
+    "tooManyItems_one": "Seleziona al massimo {{count}} elemento",
+    "tooManyItems_other": "Seleziona al massimo {{count}} elementi",
+    "min": "Il valore deve essere almeno {{minimum}}",
+    "greaterThan": "Il valore deve essere maggiore di {{minimum}}",
+    "max": "Il valore deve essere al massimo {{maximum}}",
+    "lessThan": "Il valore deve essere minore di {{maximum}}",
+    "email": "Indirizzo email non valido",
+    "format": "Formato non valido",
+    "invalidOption": "Seleziona un'opzione valida"
+  },
+  "insecureOrigin": {
+    "title": "Origine non sicura",
+    "description": "Auth0 richiede HTTPS (o localhost). Apri la console host con un URL sicuro.",
+    "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
+    "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
+    "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
+  },
+  "supplierCheckIn": {
+    "invalidLink": "Link non valido",
+    "linkInvalidOrExpired": "Il link di check-in non è valido o è scaduto",
+    "checkInFailed": "Check-in non riuscito. Assicurati di essere presso l'immobile.",
+    "checkOutFailed": "Check-out non riuscito.",
+    "notFound": "Non trovato",
+    "checkedInAt": "Check-in: {{time}}",
+    "checkInAction": "Check-in",
+    "checkOutAction": "Check-out"
+  },
+  "supplierShowcase": {
+    "notFound": "Fornitore non trovato",
+    "notFoundDescription": "Questa pagina fornitore non esiste o non è più attiva.",
+    "availableDays_one": "{{count}} giorno disponibile nelle prossime 2 settimane",
+    "availableDays_other": "{{count}} giorni disponibili nelle prossime 2 settimane"
   }
 }

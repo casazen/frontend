@@ -116,13 +116,17 @@ function WidgetForm({
       ) : null}
 
       {guests > property.maxGuests ? (
-        <p className="text-sm text-red-600">{t('publicBooking.maxGuestsExceeded', { max: property.maxGuests })}</p>
+        <p className="text-sm text-red-600">{t('publicBooking.maxGuestsExceeded', { count: property.maxGuests })}</p>
       ) : null}
 
       {nights > 0 ? (
         <div className="space-y-1 text-sm">
           <p>
-            {nights} {t('publicBooking.notte')}{nights !== 1 ? 'i' : ''} × {formatCurrency(property.nightlyRate)} = {formatCurrency(lodgingTotal)}
+            {t('publicBooking.nightsTimesRateTotal', {
+              count: nights,
+              rate: formatCurrency(property.nightlyRate),
+              total: formatCurrency(lodgingTotal),
+            })}
           </p>
           <p>{t('publicBooking.pulizia')}: {formatCurrency(property.cleaningFee)}</p>
           <p className="text-[var(--cz-public-muted)]">{t('publicBooking.tassaSoggiornoCalculated')}</p>

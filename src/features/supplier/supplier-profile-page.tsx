@@ -10,6 +10,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
 import { Pencil, Check, X, Upload, Trash2, ImageIcon } from 'lucide-react';
 import { displayableMediaUrls } from '@/lib/media-url';
+import { getSupplierStatusLabel } from '@/lib/i18n-labels';
 
 const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
 const MAX_PHOTOS = 10;
@@ -152,21 +153,21 @@ export function SupplierProfilePage() {
                 <div>
                   <Label>{t('supplier.companyName')}</Label>
                   <Input value={legalName} onChange={(e) => setLegalName(e.target.value)}
-                         placeholder="es. Impresa di Pulizie Rossi" className="mt-1" />
+                         placeholder={t('supplier.placeholders.companyName')} className="mt-1" />
                 </div>
                 <div>
                   <Label>{t('supplier.vatNumber')}</Label>
                   <Input value={vatNumber} onChange={(e) => setVatNumber(e.target.value)}
-                         placeholder="es. IT12345678901" className="mt-1" />
+                         placeholder={t('supplier.placeholders.vatNumber')} className="mt-1" />
                 </div>
                 <div>
                   <Label>{t('supplier.phone')}</Label>
                   <Input value={phone} onChange={(e) => setPhone(e.target.value)}
-                         placeholder="es. +39 123 456 7890" className="mt-1" />
+                         placeholder={t('supplier.placeholders.phone')} className="mt-1" />
                 </div>
                 <div>
                   <Label>{t('supplier.status')}</Label>
-                  <Input value={profile.status} disabled className="mt-1 opacity-60" />
+                  <Input value={getSupplierStatusLabel(profile.status, t)} disabled className="mt-1 opacity-60" />
                 </div>
               </div>
             </CardContent>
@@ -327,7 +328,7 @@ export function SupplierProfilePage() {
                   <span className="text-sm font-medium text-muted-foreground">{t('supplier.status')}</span>
                   <p className="mt-0.5">
                     <span className={profile.status === 'Active' ? 'text-green-600 font-medium' : 'text-amber-600'}>
-                      {profile.status}
+                      {getSupplierStatusLabel(profile.status, t)}
                     </span>
                   </p>
                 </div>

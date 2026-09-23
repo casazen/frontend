@@ -43,7 +43,7 @@ export function LayerSwitcher() {
   return (
     <div
       role="tablist"
-      aria-label="Application layer"
+      aria-label={t('shell.layerSwitcherLabel')}
       className="ml-2 flex rounded-lg border bg-muted p-0.5"
       onKeyDown={handleKeyDown}
     >

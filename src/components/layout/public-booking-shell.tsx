@@ -1,11 +1,13 @@
 import { Outlet, useParams, NavLink } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePublicOrg } from '@/queries/use-public-org';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { Loader2, Home, Clipboard } from 'lucide-react';
 
 export function PublicBookingShell() {
+  const { t } = useTranslation();
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const { data: org, isLoading, isError } = usePublicOrg(orgSlug);
 
@@ -44,7 +46,7 @@ export function PublicBookingShell() {
             ) : null}
             <div>
               <h1 className="text-xl font-semibold">{org.displayName}</h1>
-              <p className="text-sm text-muted-foreground">Prenotazione diretta</p>
+              <p className="text-sm text-muted-foreground">{t('publicSite.directBookingTagline')}</p>
             </div>
           </div>
           <nav className="flex gap-8 border-t">
@@ -59,7 +61,7 @@ export function PublicBookingShell() {
               }
             >
               <Home className="h-4 w-4" />
-              Strutture
+              {t('publicSite.navProperties')}
             </NavLink>
             <NavLink
               to={`/book/${orgSlug}/my-bookings`}
@@ -72,7 +74,7 @@ export function PublicBookingShell() {
               }
             >
               <Clipboard className="h-4 w-4" />
-              Le mie prenotazioni
+              {t('publicSite.navMyBookings')}
             </NavLink>
           </nav>
         </div>
@@ -90,7 +92,7 @@ export function PublicBookingShell() {
             rel="noopener noreferrer"
             className="underline text-sm text-muted-foreground hover:text-primary"
           >
-            Privacy Policy
+            {t('publicSite.privacy')}
           </a>
           <a
             href="https://casazen.app/terms"
@@ -98,7 +100,7 @@ export function PublicBookingShell() {
             rel="noopener noreferrer"
             className="underline text-sm text-muted-foreground hover:text-primary"
           >
-            Termini di servizio
+            {t('publicSite.terms')}
           </a>
         </div>
         <p className="mt-2">© {new Date().getFullYear()} {org.displayName}</p>

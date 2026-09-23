@@ -17,6 +17,7 @@ import { refundPaymentSchema } from '../schemas/payment.schema';
 import { formatCurrency } from '@/lib/utils';
 import type { RefundPaymentFormValues } from '../schemas/payment.schema';
 import type { Payment } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface RefundDialogProps {
   payment: Payment | null;
@@ -108,9 +109,7 @@ export function RefundDialog({
               <p className="text-xs text-muted-foreground">
                 {t('payment.refund.refundAmountHint', { amount: formattedRefundable })}
               </p>
-              {errors.amount && (
-                <p className="text-sm text-destructive">{errors.amount.message}</p>
-              )}
+              <FormFieldError error={errors.amount} />
             </div>
 
             <div className="space-y-2">

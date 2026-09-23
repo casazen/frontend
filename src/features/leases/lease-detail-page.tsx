@@ -25,7 +25,7 @@ import { ImuNotificationExportButton } from './components/imu-notification-expor
 import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
 import { RliChecklist } from './components/rli-checklist';
 import { DelegaCaptureDialog } from './components/delega-capture-dialog';
-import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
+import { getFiscalRegimeLabel, getLeasePartyRoleLabel } from '@/lib/i18n-labels';
 import type { SignerInfo } from '@/types';
 
 export function LeaseDetailPage() {
@@ -152,7 +152,7 @@ export function LeaseDetailPage() {
                       <p className="font-medium">
                         {party.firstName} {party.lastName}
                       </p>
-                      <p className="text-sm text-muted-foreground">{party.role}</p>
+                      <p className="text-sm text-muted-foreground">{getLeasePartyRoleLabel(party.role, t)}</p>
                       <p className="text-sm text-muted-foreground">
                         {t('leases.fiscalCodeMasked')}: {maskFiscalCode(party.fiscalCode)}
                       </p>

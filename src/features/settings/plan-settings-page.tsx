@@ -16,10 +16,11 @@ export function PlanSettingsPage() {
   const updatePlan = useUpdateMyPlan();
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
 
-  const handleSelect = async (tier: PlanTier) => {
+  // Paid tiers need an active subscription (#274): an upgrade is refused with `subscription_required`, shown by
+  // useUpdateMyPlan's onError via getProblemMessage, and the current plan stays unchanged. Checkout comes with PL-12.
+  const handleSelect = (tier: PlanTier) => {
     setSelectedTier(tier);
-    await updatePlan.mutateAsync(tier);
-    setSelectedTier(null);
+    updatePlan.mutate(tier, { onSettled: () => setSelectedTier(null) });
   };
 
   if (user && needsOrgSetup(user)) {
@@ -58,7 +59,7 @@ export function PlanSettingsPage() {
         <PlanSelectionGrid
           selectedTier={selectedTier ?? planTier}
           currentTier={planTier}
-          onSelect={(tier) => void handleSelect(tier)}
+          onSelect={handleSelect}
           isLoading={updatePlan.isPending}
           actionLabel={t('settings.switchToPlan')}
         />
