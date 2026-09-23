@@ -69,4 +69,4 @@ export interface CreateGuestDto {
   notes?: string;
 }
 
-export interface UpdateGuestDto extends Partial<CreateGuestDto> {}
+export type UpdateGuestDto = Partial<CreateGuestDto>;

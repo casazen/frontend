@@ -27,7 +27,7 @@ export interface CreateTouristTaxRateDto {
   notes?: string;
 }
 
-export interface UpdateTouristTaxRateDto extends Partial<CreateTouristTaxRateDto> {}
+export type UpdateTouristTaxRateDto = Partial<CreateTouristTaxRateDto>;
 
 export interface TouristTaxCalculationRequest {
   city: string;

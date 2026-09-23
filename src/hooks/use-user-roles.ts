@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { getUserRoles, parseRolesFromAccessToken } from '@/lib/auth-roles';
 
@@ -13,19 +13,20 @@ function rolesEqual(a: string[], b: string[]): boolean {
 export function useUserRoles(): string[] {
   const { user, isAuthenticated, isLoading, getAccessToken } = useAuth();
   const [roles, setRoles] = useState<string[]>(() => getUserRoles(user));
-  const rolesRef = useRef(roles);
-  rolesRef.current = roles;
 
   useEffect(() => {
+    // Keep the previous array when the roles are unchanged: consumers use it as a hook dependency.
+    const updateRoles = (next: string[]) =>
+      setRoles((previous) => (rolesEqual(previous, next) ? previous : next));
+
     if (isLoading || !isAuthenticated) {
-      const empty: string[] = [];
-      if (!rolesEqual(rolesRef.current, empty)) setRoles(empty);
+      updateRoles([]);
       return;
     }
 
     const fromProfile = getUserRoles(user);
     if (fromProfile.length > 0) {
-      if (!rolesEqual(rolesRef.current, fromProfile)) setRoles(fromProfile);
+      updateRoles(fromProfile);
       return;
     }
 
@@ -35,13 +36,9 @@ export function useUserRoles(): string[] {
       try {
         const token = await getAccessToken();
         if (cancelled) return;
-        const parsed = parseRolesFromAccessToken(token);
-        if (!cancelled && !rolesEqual(rolesRef.current, parsed)) setRoles(parsed);
+        updateRoles(parseRolesFromAccessToken(token));
       } catch {
-        if (!cancelled) {
-          const empty: string[] = [];
-          if (!rolesEqual(rolesRef.current, empty)) setRoles(empty);
-        }
+        if (!cancelled) updateRoles([]);
       }
     })();
 

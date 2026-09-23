@@ -78,10 +78,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading: authLoading, getAccessToken } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  // Contexts depend only on the roles: reload them when the role set changes,
+  // not whenever the user object identity changes (e.g. after a token refresh).
   const roleSignature = useMemo(() => {
     const authUser = isDemoMode ? getDemoUser() : user;
     return getUserRoles(authUser).slice().sort().join('|');
-  }, [isDemoMode, user]);
+  }, [user]);
   const [contexts, setContexts] = useState<ContextBootstrapDto[]>([]);
   const [activeContext, setActiveContextState] = useState<AppContextKey | null>(readStoredContext);
   const [isReady, setIsReady] = useState(false);
@@ -95,7 +97,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     const loadContexts = async () => {
-      const authUser = isDemoMode ? getDemoUser() : user;
+      const authUser: UserWithRoles = { roles: roleSignature ? roleSignature.split('|') : [] };
 
       if (isDemoMode) {
         const fallback = deriveContextsFromRoles(authUser);

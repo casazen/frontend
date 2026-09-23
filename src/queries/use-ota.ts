@@ -11,7 +11,7 @@ import i18n from '@/i18n/config';
 
 const OTA_KEY = 'ota';
 
-export function useOtaIntegrations(params?: Record<string, any>) {
+export function useOtaIntegrations(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [OTA_KEY, params],
     queryFn: () => otaApi.getAll(params),

@@ -10,7 +10,7 @@ import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInSessionStatusDto, ResendCheckInLinkResponse } from '@/types/public-checkin.types';
 
 export const bookingsApi = {
-  getAll: (params?: Record<string, any>) =>
+  getAll: (params?: Record<string, unknown>) =>
     ApiClient.get<Booking[]>('/bookings', params),
 
   getByGuestId: (guestId: string) =>

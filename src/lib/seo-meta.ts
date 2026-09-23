@@ -42,8 +42,13 @@ export function applySeoMeta({ title, description, canonicalUrl }: SeoMetaInput)
 }
 
 export function useSeoMeta(meta: SeoMetaInput | null) {
+  // Depend on the primitive fields: callers pass a new object literal on every render.
+  const title = meta?.title;
+  const description = meta?.description;
+  const canonicalUrl = meta?.canonicalUrl;
+
   useEffect(() => {
-    if (!meta) return;
-    applySeoMeta(meta);
-  }, [meta?.title, meta?.description, meta?.canonicalUrl]);
+    if (title === undefined) return;
+    applySeoMeta({ title, description, canonicalUrl });
+  }, [title, description, canonicalUrl]);
 }

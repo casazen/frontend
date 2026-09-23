@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -65,23 +65,31 @@ export function ServiceRequestForm({
 
   const shouldRunAiMatch = !skipAiMatch && !preselectedSupplierOrgId;
 
+  // Reads the latest notes/preselection without re-running the match on every keystroke.
+  const onMatchCriteriaChange = useEffectEvent(
+    (criteria: { propertyId: string; category: string; urgency: ServiceRequestUrgency }) => {
+      if (!shouldRunAiMatch) {
+        if (preselectedSupplierOrgId) setSupplierOrgId(preselectedSupplierOrgId);
+        return;
+      }
+      setSupplierOrgId('');
+      matchMutation.mutate({ ...criteria, notes: notes || undefined });
+    },
+  );
+
+  // (Re)run the AI match when the dialog opens or the match criteria change.
   useEffect(() => {
     if (!open) return;
-    if (!shouldRunAiMatch) {
-      if (preselectedSupplierOrgId) setSupplierOrgId(preselectedSupplierOrgId);
-      return;
-    }
-    setSupplierOrgId('');
-    matchMutation.mutate({ propertyId, category, urgency, notes: notes || undefined });
-  }, [open, category, urgency, propertyId]);
+    onMatchCriteriaChange({ propertyId, category, urgency });
+  }, [open, propertyId, category, urgency]);
 
-  useEffect(() => {
-    if (!open || !shouldRunAiMatch) return;
-    const recommended = matchMutation.data?.recommended;
-    if (recommended && !supplierOrgId) {
-      setSupplierOrgId(recommended.orgId);
-    }
-  }, [matchMutation.data, open, supplierOrgId, shouldRunAiMatch]);
+  // Preselect the recommended supplier when the match returns and nothing is selected
+  // (adjusting state during render).
+  const recommendedOrgId =
+    open && shouldRunAiMatch ? matchMutation.data?.recommended?.orgId : undefined;
+  if (recommendedOrgId && !supplierOrgId) {
+    setSupplierOrgId(recommendedOrgId);
+  }
 
   const selectCandidate = (candidate: SupplierMatchCandidate) => {
     setSupplierOrgId(candidate.orgId);

@@ -24,6 +24,9 @@ vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
 
+// The page reads only `data` and `isLoading`: partial objects are cast to the full query result.
+type HistoryResult = ReturnType<typeof pricingQueries.usePricingHistory>;
+
 const PROPERTY_ID = 'prop-test';
 
 const mockEntry = {
@@ -84,7 +87,7 @@ beforeEach(async () => {
 
 describe('PricingHistoryPage', () => {
   it('shows loading state while fetching', () => {
-    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: undefined, isLoading: true } as any);
+    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: undefined, isLoading: true } as unknown as HistoryResult);
 
     renderPage();
 
@@ -92,7 +95,7 @@ describe('PricingHistoryPage', () => {
   });
 
   it('renders history rows when data is available', () => {
-    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: mockHistory, isLoading: false } as any);
+    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: mockHistory, isLoading: false } as unknown as HistoryResult);
 
     renderPage();
 
@@ -105,7 +108,7 @@ describe('PricingHistoryPage', () => {
     vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({
       data: { items: [], total: 0, page: 1 },
       isLoading: false,
-    } as any);
+    } as unknown as HistoryResult);
 
     renderPage();
 
@@ -113,7 +116,7 @@ describe('PricingHistoryPage', () => {
   });
 
   it('shows pagination controls when total exceeds page size', () => {
-    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: mockHistoryMultiPage, isLoading: false } as any);
+    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: mockHistoryMultiPage, isLoading: false } as unknown as HistoryResult);
 
     renderPage();
 
@@ -122,7 +125,7 @@ describe('PricingHistoryPage', () => {
   });
 
   it('calls export API with pageSize 1000 when export button is clicked', async () => {
-    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: mockHistory, isLoading: false } as any);
+    vi.mocked(pricingQueries.usePricingHistory).mockReturnValue({ data: mockHistory, isLoading: false } as unknown as HistoryResult);
     vi.mocked(pricingApi.pricingAdapterApi.getHistory).mockResolvedValue(mockHistory);
 
     renderPage();

@@ -33,7 +33,7 @@ export function PaymentCreatePage() {
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       currency: 'EUR',
-    } as any,
+    },
   });
 
   const selectedBookingId = watch('bookingId');

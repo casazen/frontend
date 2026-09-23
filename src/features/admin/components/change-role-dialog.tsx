@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -32,13 +32,16 @@ interface ChangeRoleDialogProps {
 export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogProps) {
   const { t } = useTranslation();
   const [selectedRole, setSelectedRole] = useState<UserRole>(user?.role ?? 'Guest');
+  const [roleSourceUser, setRoleSourceUser] = useState(user);
   const { mutate: changeRole, isPending } = useChangeUserRole();
 
-  useEffect(() => {
+  // Reset the selection when the dialog is pointed at another user (adjusting state during render).
+  if (user !== roleSourceUser) {
+    setRoleSourceUser(user);
     if (user) {
       setSelectedRole(user.role);
     }
-  }, [user]);
+  }
 
   const displayName = user ? formatUserDisplayName(user) : '';
 

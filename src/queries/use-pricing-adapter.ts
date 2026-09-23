@@ -44,7 +44,7 @@ export function useSavePricingAdapterConfig(propertyId: string) {
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
       const previous = queryClient.getQueryData([PRICING_KEY, 'config', propertyId]);
-      queryClient.setQueryData([PRICING_KEY, 'config', propertyId], (old: any) =>
+      queryClient.setQueryData<PricingAdapterConfig>([PRICING_KEY, 'config', propertyId], (old) =>
         old ? { ...old, ...data } : old
       );
       return { previous };
@@ -68,7 +68,7 @@ export function useDisablePricingAdapter(propertyId: string) {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
       const previous = queryClient.getQueryData([PRICING_KEY, 'config', propertyId]);
-      queryClient.setQueryData([PRICING_KEY, 'config', propertyId], (old: any) =>
+      queryClient.setQueryData<PricingAdapterConfig>([PRICING_KEY, 'config', propertyId], (old) =>
         old ? { ...old, isEnabled: false } : old
       );
       return { previous };

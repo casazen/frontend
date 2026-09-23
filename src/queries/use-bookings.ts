@@ -11,7 +11,7 @@ import i18n from '@/i18n/config';
 
 const BOOKINGS_KEY = 'bookings';
 
-export function useBookings(params?: Record<string, any>) {
+export function useBookings(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, params],
     queryFn: () => bookingsApi.getAll(params),

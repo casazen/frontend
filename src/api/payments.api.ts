@@ -8,7 +8,7 @@ import type {
 } from '@/types';
 
 export const paymentsApi = {
-  getAll: (params?: Record<string, any>) =>
+  getAll: (params?: Record<string, unknown>) =>
     ApiClient.get<Payment[]>('/payments', params),
 
   getById: (id: string) => ApiClient.get<Payment>(`/payments/${id}`),
@@ -30,7 +30,7 @@ export const paymentsApi = {
   getRevenue: async (params?: RevenueParams): Promise<RevenueAnalytics> => {
     const propertyId = params?.propertyId;
 
-    const queryParams: Record<string, any> = {};
+    const queryParams: Record<string, string> = {};
     if (propertyId) queryParams.propertyId = propertyId;
 
     const payments = await ApiClient.get<Payment[]>('/payments', queryParams);

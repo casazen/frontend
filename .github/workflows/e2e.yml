@@ -48,7 +48,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    needs: []
+    # The `secrets` context is not allowed in `steps[*].if`: GitHub rejects the whole workflow
+    # (runs fail with 0 jobs). Expose the secrets as job env and test `env.*` in the step conditions.
+    env:
+      E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
+      E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,33 +68,29 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: API regression smoke
-        if: ${{ secrets.E2E_AUTH0_EMAIL != '' }}
+        if: env.E2E_AUTH0_EMAIL != ''
         run: E2E_STAGING=1 npm run test:e2e -- --project=staging
         env:
           CI: true
           E2E_STAGING: '1'
           E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
-          E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
-          E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
           VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
           VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
           VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
 
       - name: Golden Journey / L3 staging project
-        if: ${{ secrets.E2E_AUTH0_EMAIL != '' }}
+        if: env.E2E_AUTH0_EMAIL != ''
         run: E2E_STAGING=1 npm run test:e2e -- --project=staging-gj
         env:
           CI: true
           E2E_STAGING: '1'
           E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
-          E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
-          E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
           VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
           VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
           VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
 
       - name: Skip notice when secrets missing
-        if: ${{ secrets.E2E_AUTH0_EMAIL == '' }}
+        if: env.E2E_AUTH0_EMAIL == ''
         run: |
           echo "::warning::E2E_AUTH0_EMAIL secret not set — staging E2E skipped. Configure repo secrets for L3 gates."
 

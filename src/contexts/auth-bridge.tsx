@@ -34,6 +34,8 @@ export type AuthBridgeValue = {
 
 const AuthBridgeContext = createContext<AuthBridgeValue | null>(null);
 
+// Context hook colocated with its providers; fast refresh falls back to a full reload for this file.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuthBridge(): AuthBridgeValue {
   const ctx = useContext(AuthBridgeContext);
   if (!ctx) {
@@ -43,11 +45,9 @@ export function useAuthBridge(): AuthBridgeValue {
 }
 
 function DemoAuthBridge({ children }: { children: ReactNode }) {
-  const demoUser = useMemo(
-    () => getDemoUser(),
-    // Re-read when E2E profile query changes
-    [typeof window !== 'undefined' ? window.location.href : ''],
-  );
+  // Re-read the persona when the E2E `?demoProfile=` URL changes.
+  const href = typeof window !== 'undefined' ? window.location.href : '';
+  const demoUser = useMemo(() => getDemoUser(href), [href]);
 
   const getAccessToken = useCallback(async () => 'demo-token', []);
   const refreshAccessToken = useCallback(async () => 'demo-token', []);

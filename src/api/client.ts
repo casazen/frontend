@@ -21,11 +21,14 @@ function unwrap<T>(responseData: ApiResponse<T> | T): T {
   return responseData as T;
 }
 
+/** Query-string parameters; any plain object (interfaces included) serialised by axios. */
+type QueryParams = object;
+
 export class ApiClient {
   /**
    * GET request - handles both wrapped and unwrapped backend responses
    */
-  static async get<T>(url: string, params?: Record<string, any>): Promise<T> {
+  static async get<T>(url: string, params?: QueryParams): Promise<T> {
     const response = await axios.get<ApiResponse<T> | T>(url, { params });
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
@@ -35,7 +38,7 @@ export class ApiClient {
    */
   static async getPaginated<T>(
     url: string,
-    params?: Record<string, any>
+    params?: QueryParams
   ): Promise<PaginatedResponse<T>> {
     const response = await axios.get<PaginatedResponse<T>>(url, { params });
     return response.data;
@@ -44,7 +47,7 @@ export class ApiClient {
   /**
    * POST request - handles both wrapped and unwrapped backend responses
    */
-  static async post<T>(url: string, data?: any): Promise<T> {
+  static async post<T>(url: string, data?: unknown): Promise<T> {
     const response = await axios.post<ApiResponse<T> | T>(url, data);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
@@ -52,7 +55,7 @@ export class ApiClient {
   /**
    * PUT request - handles both wrapped and unwrapped backend responses
    */
-  static async put<T>(url: string, data?: any): Promise<T> {
+  static async put<T>(url: string, data?: unknown): Promise<T> {
     const response = await axios.put<ApiResponse<T> | T>(url, data);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
@@ -60,7 +63,7 @@ export class ApiClient {
   /**
    * PATCH request - handles both wrapped and unwrapped backend responses
    */
-  static async patch<T>(url: string, data?: any): Promise<T> {
+  static async patch<T>(url: string, data?: unknown): Promise<T> {
     const response = await axios.patch<ApiResponse<T> | T>(url, data);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }

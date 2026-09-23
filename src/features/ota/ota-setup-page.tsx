@@ -33,7 +33,7 @@ export function OtaSetupPage() {
     defaultValues: {
       isActive: true,
       credentials: {},
-    } as any,
+    },
   });
 
   const selectedPlatform = watch('platform');

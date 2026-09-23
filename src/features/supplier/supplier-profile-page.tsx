@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
@@ -50,7 +50,12 @@ export function SupplierProfilePage() {
     setNewPhotoPreviews([]);
   };
 
-  useEffect(() => { hydrate(); }, [profile]);
+  // Re-hydrate the form whenever the server profile (re)loads (adjusting state during render).
+  const [hydratedProfile, setHydratedProfile] = useState<typeof profile>(undefined);
+  if (profile !== hydratedProfile) {
+    setHydratedProfile(profile);
+    hydrate();
+  }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);

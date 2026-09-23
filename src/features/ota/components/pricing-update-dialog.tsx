@@ -47,7 +47,7 @@ export function PricingUpdateDialog({
     resolver: zodResolver(pricingUpdateSchema),
     defaultValues: {
       platforms: [],
-    } as any,
+    },
   });
 
   const selectedPlatforms = watch('platforms') || [];

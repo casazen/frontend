@@ -4,14 +4,14 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useCallback, useRef } from 'react';
 
+const LAYERS: { value: AppLayer; key: string }[] = [
+  { value: 'short-stay', key: 'shell.layerShortStay' },
+  { value: 'long-term', key: 'shell.layerLongTerm' },
+];
+
 export function LayerSwitcher() {
   const { t } = useTranslation();
   const { activeLayer, setLayer, canSwitchLayer } = useAppLayerContext();
-
-  const LAYERS: { value: AppLayer; key: string }[] = [
-    { value: 'short-stay', key: 'shell.layerShortStay' },
-    { value: 'long-term', key: 'shell.layerLongTerm' },
-  ];
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleKeyDown = useCallback(

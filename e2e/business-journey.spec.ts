@@ -8,7 +8,6 @@ import {
 import { mockPricingApiDefaults } from './helpers/api-mock';
 import { PROPERTY_ID, configEnabled } from './fixtures/pricing.fixtures';
 
-const NEW_PROP = 'prop-biz-e2e-001';
 const BOOKING_ID = 'book-biz-e2e-001';
 const PAYMENT_ID = 'pay-biz-e2e-001';
 

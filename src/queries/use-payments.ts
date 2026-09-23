@@ -6,7 +6,7 @@ import i18n from '@/i18n/config';
 
 const PAYMENTS_KEY = 'payments';
 
-export function usePayments(params?: Record<string, any>) {
+export function usePayments(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [PAYMENTS_KEY, params],
     queryFn: () => paymentsApi.getAll(params),

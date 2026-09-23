@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -43,14 +43,16 @@ export function PricingConfigCard({
     config?.includePublicHolidays ?? true
   );
 
-  // Sync local form state when server data changes
-  useEffect(() => {
+  // Sync local form state when server data changes (adjusting state during render)
+  const [syncedConfig, setSyncedConfig] = useState(config);
+  if (config !== syncedConfig) {
+    setSyncedConfig(config);
     if (config) {
       setFrequency(config.adaptationFrequency);
       setIncludeSeasonality(config.includeSeasonality);
       setIncludePublicHolidays(config.includePublicHolidays);
     }
-  }, [config]);
+  }
 
   function handleSave() {
     onSave({

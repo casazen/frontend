@@ -59,10 +59,10 @@ function buildDemoUser(profile: ExtendedDemoProfile) {
 
 const DEMO_PROFILE_STORAGE_KEY = 'casazen:demo-profile';
 
-function resolveRuntimeDemoProfile(): ExtendedDemoProfile | null {
+function resolveRuntimeDemoProfile(href?: string): ExtendedDemoProfile | null {
   if (typeof window === 'undefined') return null;
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URL(href ?? window.location.href).searchParams;
   const fromQuery = params.get('demoProfile');
   if (fromQuery && fromQuery in demoProfiles) {
     sessionStorage.setItem(DEMO_PROFILE_STORAGE_KEY, fromQuery);
@@ -82,9 +82,12 @@ function resolveRuntimeDemoProfile(): ExtendedDemoProfile | null {
   return null;
 }
 
-/** Demo persona: `?demoProfile=` query (E2E), `window.__E2E_DEMO_PROFILE`, or `VITE_DEMO_PROFILE`. */
-export function getDemoUser() {
-  const runtime = resolveRuntimeDemoProfile();
+/**
+ * Demo persona: `?demoProfile=` query (E2E), `window.__E2E_DEMO_PROFILE`, or `VITE_DEMO_PROFILE`.
+ * `href` is the URL whose query is read (default: the current location).
+ */
+export function getDemoUser(href?: string) {
+  const runtime = resolveRuntimeDemoProfile(href);
   return buildDemoUser(runtime ?? resolveDemoProfile());
 }
 

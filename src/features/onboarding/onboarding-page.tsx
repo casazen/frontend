@@ -44,6 +44,10 @@ export function OnboardingPage() {
     if (profileLoading || !profile) return;
 
     if (profile.rentalType) {
+      // Wizard state is re-synced from the server profile in the same pass that decides the
+      // redirect, on every change of these inputs; moving it into render would change when the
+      // in-progress selection is reset, so the effect is kept as is.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedType(profile.rentalType);
     }
 

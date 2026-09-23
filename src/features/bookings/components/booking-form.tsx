@@ -35,7 +35,7 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
       numberOfGuests: booking.numberOfGuests,
       guest: booking.guest,
       specialRequests: booking.specialRequests,
-    } : {} as any,
+    } : {},
   });
 
   return (

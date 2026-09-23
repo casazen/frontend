@@ -4,7 +4,6 @@ import {
   configEnabled,
   configDisabled,
   historyPage1,
-  historyPage2,
   historyAfterSync,
   previewDataMinimal,
 } from './fixtures/pricing.fixtures';
