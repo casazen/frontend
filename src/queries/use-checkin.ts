@@ -4,6 +4,8 @@ import { bookingsApi } from '@/api/bookings.api';
 import type { PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
+import { retryTransientErrors } from '@/lib/query-client';
 
 const CHECKIN_KEY = 'checkin';
 const CHECKIN_SESSION_KEY = 'checkin-session';
@@ -13,7 +15,7 @@ export function useCheckInContext(token: string) {
     queryKey: [CHECKIN_KEY, token],
     queryFn: () => publicCheckinApi.getContext(token),
     enabled: !!token,
-    retry: 1,
+    retry: retryTransientErrors(1),
   });
 }
 
@@ -26,8 +28,8 @@ export function useSubmitGuestCheckIn(token: string) {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
       toast.success(i18n.t('toast.checkInDataSaved'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.checkInDataSaveFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkInDataSaveFailed'));
     },
   });
 }
@@ -49,8 +51,8 @@ export function useResendCheckInLink(bookingId: string) {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
       toast.success(i18n.t('checkin.resendSuccess'));
     },
-    onError: () => {
-      toast.error(i18n.t('checkin.resendError'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('checkin.resendError'));
     },
   });
 }

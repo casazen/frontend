@@ -31,11 +31,11 @@ export const propertiesApi = {
     if (params.city) apiParams.city = params.city;
     if (params.minBedrooms !== undefined) apiParams.bedrooms = params.minBedrooms;
     if (params.maxPrice !== undefined) apiParams.maxPrice = params.maxPrice;
-    return ApiClient.get<PublicPropertyDto[]>('/properties/search', apiParams);
+    return ApiClient.get<PublicPropertyDto[]>('/properties/search', apiParams, { public: true });
   },
 
   getPublicProperty: (id: string) =>
-    ApiClient.get<PublicPropertyDetailDto>(`/properties/${id}/public`),
+    ApiClient.get<PublicPropertyDetailDto>(`/properties/${id}/public`, undefined, { public: true }),
 
   getDocuments: (id: string) =>
     ApiClient.get<PropertyDocument[]>(`/properties/${id}/documents`),

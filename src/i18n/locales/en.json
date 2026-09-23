@@ -2305,6 +2305,7 @@
     "signInButton": "Sign in with Auth0"
   },
   "toast": {
+    "connectOnboardingFailed": "Unable to start the Stripe connection",
     "propertyCreated": "Property created successfully",
     "propertyCreateFailed": "Failed to create property",
     "propertyUpdated": "Property updated successfully",
@@ -2417,6 +2418,22 @@
       "description": "Data pack for your accountant (not a tax return).",
       "link": "Open reports",
       "totals": "Gross {{gross}} EUR — net {{net}} EUR"
+    }
+  },
+  "apiErrors": {
+    "network": "Unable to reach the server. Check your connection and try again.",
+    "sessionExpired": "Your session has expired. Sign in again to continue.",
+    "forbidden": "You do not have permission to perform this action.",
+    "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
+    "codes": {
+      "planLimitReached": "You have reached your plan limit",
+      "planRequired": "This feature requires a higher plan.",
+      "noOrgContext": "Your account is not linked to any organization.",
+      "duplicatePropertyAddress": "This address is already used by an active property.",
+      "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
+      "billingGateClosed": "Billing is not available yet.",
+      "duplicateInvite": "A pending invite already exists for this email.",
+      "inviteEmailFailed": "The invite email could not be sent. Try again later."
     }
   }
 }

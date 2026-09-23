@@ -14,6 +14,7 @@ import {
 import type { CreateServiceRequestDto, MatchSupplierDto } from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
 
@@ -71,7 +72,7 @@ export function useCreateServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       toast.success(i18n.t('serviceRequest.created'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.createFailed')),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.createFailed')),
   });
 }
 
@@ -84,7 +85,7 @@ export function useTakeServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       toast.success(i18n.t('serviceRequest.taken'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
   });
 }
 
@@ -97,7 +98,7 @@ export function useCompleteServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       toast.success(i18n.t('serviceRequest.completed'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
   });
 }
 
@@ -110,7 +111,7 @@ export function useRejectServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       toast.success(i18n.t('serviceRequest.rejected'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
   });
 }
 
@@ -122,6 +123,6 @@ export function useMarkServiceRequestPaid() {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       toast.success(i18n.t('serviceRequest.markedPaid'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
   });
 }

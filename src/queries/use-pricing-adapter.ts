@@ -7,6 +7,7 @@ import type {
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const PRICING_KEY = 'pricing-adapter';
 
@@ -44,14 +45,14 @@ export function useSavePricingAdapterConfig(propertyId: string) {
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
       const previous = queryClient.getQueryData([PRICING_KEY, 'config', propertyId]);
-      queryClient.setQueryData([PRICING_KEY, 'config', propertyId], (old: any) =>
+      queryClient.setQueryData<PricingAdapterConfig>([PRICING_KEY, 'config', propertyId], (old) =>
         old ? { ...old, ...data } : old
       );
       return { previous };
     },
-    onError: (_err, _data, context) => {
+    onError: (error, _data, context) => {
       queryClient.setQueryData([PRICING_KEY, 'config', propertyId], context?.previous);
-      toast.error(i18n.t('toast.pricingConfigSaveFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingConfigSaveFailed'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
@@ -68,14 +69,14 @@ export function useDisablePricingAdapter(propertyId: string) {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
       const previous = queryClient.getQueryData([PRICING_KEY, 'config', propertyId]);
-      queryClient.setQueryData([PRICING_KEY, 'config', propertyId], (old: any) =>
+      queryClient.setQueryData<PricingAdapterConfig>([PRICING_KEY, 'config', propertyId], (old) =>
         old ? { ...old, isEnabled: false } : old
       );
       return { previous };
     },
-    onError: (_err, _data, context) => {
+    onError: (error, _data, context) => {
       queryClient.setQueryData([PRICING_KEY, 'config', propertyId], context?.previous);
-      toast.error(i18n.t('toast.pricingDisableFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingDisableFailed'));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
@@ -104,8 +105,8 @@ export function useTriggerPricingSync(propertyId: string) {
       queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'history', propertyId] });
       toast.success(i18n.t('toast.pricingSyncStarted'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.pricingSyncFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingSyncFailed'));
     },
   });
 }

@@ -3,6 +3,7 @@ import { AdminSeoApi } from '@/api/admin-seo.api';
 import type { SeoGenerateRequest, SeoPagesQuery, UpdateSeoReviewStatusRequest } from '@/types/seo.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const ADMIN_SEO_KEY = 'admin-seo';
 
@@ -30,8 +31,8 @@ export function useApproveAllSeoDrafts() {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
       toast.success(i18n.t('toast.seoApproved', { count: result.approvedCount }));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.seoApproveFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.seoApproveFailed'));
     },
   });
 }
@@ -52,8 +53,8 @@ export function useGenerateSeoPages() {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
       toast.success(i18n.t('toast.seoGenerated', { jobId: result.jobId, estimatedPages: result.estimatedPages }));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.seoGenerateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.seoGenerateFailed'));
     },
   });
 }
@@ -73,8 +74,8 @@ export function useUpdateSeoReviewStatus() {
       queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
       toast.success(i18n.t('toast.seoReviewUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.seoReviewUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.seoReviewUpdateFailed'));
     },
   });
 }

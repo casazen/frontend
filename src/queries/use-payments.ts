@@ -3,10 +3,11 @@ import { paymentsApi } from '@/api/payments.api';
 import type { CreatePaymentDto, RevenueParams } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const PAYMENTS_KEY = 'payments';
 
-export function usePayments(params?: Record<string, any>) {
+export function usePayments(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [PAYMENTS_KEY, params],
     queryFn: () => paymentsApi.getAll(params),
@@ -37,8 +38,8 @@ export function useCreatePayment() {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       toast.success(i18n.t('toast.paymentCreated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.paymentCreateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.paymentCreateFailed'));
     },
   });
 }
@@ -53,8 +54,8 @@ export function useProcessPayment() {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, id] });
       toast.success(i18n.t('toast.paymentProcessed'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.paymentProcessFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.paymentProcessFailed'));
     },
   });
 }
@@ -71,8 +72,8 @@ export function useRefundPayment() {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, 'revenue'] });
       toast.success(i18n.t('toast.paymentRefunded'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.paymentRefundFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.paymentRefundFailed'));
     },
   });
 }

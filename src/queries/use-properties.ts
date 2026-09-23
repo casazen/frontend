@@ -8,6 +8,7 @@ import type {
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
@@ -51,7 +52,7 @@ export function useCreateProperty() {
       // Plan-limit (403/409) is surfaced as an Italian message + upgrade CTA by the call site
       // (create page inline alert / list dialog toast), so skip the generic error toast here.
       if (isPlanLimitError(error)) return;
-      toast.error(i18n.t('toast.propertyCreateFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyCreateFailed'));
     },
   });
 }
@@ -68,8 +69,8 @@ export function useUpdateProperty() {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.id, 'detail'] });
       toast.success(i18n.t('toast.propertyUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.propertyUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyUpdateFailed'));
     },
   });
 }
@@ -83,8 +84,8 @@ export function useDeleteProperty() {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
       toast.success(i18n.t('toast.propertyDeleted'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.propertyDeleteFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyDeleteFailed'));
     },
   });
 }
@@ -122,9 +123,8 @@ export function useUploadPropertyDocument() {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       toast.success(i18n.t('toast.documentUploaded'));
     },
-    onError: (error: Error & { response?: { data?: { error?: string } } }) => {
-      const message = error.response?.data?.error ?? i18n.t('toast.documentUploadFailed');
-      toast.error(message);
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.documentUploadFailed'));
     },
   });
 }
@@ -139,8 +139,8 @@ export function useDeletePropertyDocument() {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       toast.success(i18n.t('toast.documentDeleted'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.documentDeleteFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.documentDeleteFailed'));
     },
   });
 }

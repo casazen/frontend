@@ -1,17 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ConnectApi } from '@/api/connect.api';
-import { AxiosError } from 'axios';
 import { toast } from 'sonner';
-
-function connectErrorMessage(error: unknown): string {
-  if (error instanceof AxiosError) {
-    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
-    if (detail)
-      return detail;
-  }
-
-  return 'Impossibile avviare la connessione con Stripe';
-}
+import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 export const CONNECT_STATUS_KEY = ['connect', 'status'] as const;
 
@@ -38,7 +29,7 @@ export function useStartConnectOnboarding() {
       window.location.assign(data.url);
     },
     onError: (error) => {
-      toast.error(connectErrorMessage(error));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.connectOnboardingFailed'));
     },
   });
 }

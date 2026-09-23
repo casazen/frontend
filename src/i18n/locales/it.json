@@ -2402,6 +2402,7 @@
     }
   },
   "toast": {
+    "connectOnboardingFailed": "Impossibile avviare la connessione con Stripe",
     "propertyCreated": "Immobile creato con successo",
     "propertyCreateFailed": "Impossibile creare l'immobile",
     "propertyUpdated": "Immobile aggiornato con successo",
@@ -2514,6 +2515,22 @@
       "description": "Pacchetto dati per il commercialista (non una dichiarazione).",
       "link": "Apri i report",
       "totals": "Lordo {{gross}} € — netto {{net}} €"
+    }
+  },
+  "apiErrors": {
+    "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
+    "sessionExpired": "La sessione è scaduta. Accedi di nuovo per continuare.",
+    "forbidden": "Non hai i permessi per eseguire questa operazione.",
+    "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
+    "codes": {
+      "planLimitReached": "Hai raggiunto il limite del tuo piano",
+      "planRequired": "Questa funzione richiede un piano superiore.",
+      "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
+      "duplicatePropertyAddress": "Indirizzo già usato da un immobile attivo.",
+      "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
+      "billingGateClosed": "La fatturazione non è ancora disponibile.",
+      "duplicateInvite": "Esiste già un invito in attesa per questa email.",
+      "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi."
     }
   }
 }

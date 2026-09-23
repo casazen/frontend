@@ -8,10 +8,12 @@ import type {
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
+import { retryTransientErrors } from '@/lib/query-client';
 
 const BOOKINGS_KEY = 'bookings';
 
-export function useBookings(params?: Record<string, any>) {
+export function useBookings(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, params],
     queryFn: () => bookingsApi.getAll(params),
@@ -36,7 +38,7 @@ export function useBookingCalendar(params?: {
     queryKey: [BOOKINGS_KEY, 'calendar', params],
     queryFn: () => bookingsApi.getCalendar(params!),
     enabled: !!params?.propertyId && !!params?.startDate && !!params?.endDate,
-    retry: 1,
+    retry: retryTransientErrors(1),
   });
 }
 
@@ -49,8 +51,8 @@ export function useCreateBooking() {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       toast.success(i18n.t('toast.bookingCreated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.bookingCreateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingCreateFailed'));
     },
   });
 }
@@ -66,8 +68,8 @@ export function useUpdateBooking() {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
       toast.success(i18n.t('toast.bookingUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.bookingUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingUpdateFailed'));
     },
   });
 }
@@ -81,8 +83,8 @@ export function useDeleteBooking() {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       toast.success(i18n.t('toast.bookingDeleted'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.bookingDeleteFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingDeleteFailed'));
     },
   });
 }
@@ -98,8 +100,8 @@ export function useCheckIn() {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
       toast.success(i18n.t('toast.guestCheckedIn'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.checkInGuestFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkInGuestFailed'));
     },
   });
 }
@@ -115,8 +117,8 @@ export function useCheckOut() {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
       toast.success(i18n.t('toast.guestCheckedOut'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.checkOutGuestFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkOutGuestFailed'));
     },
   });
 }
