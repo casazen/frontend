@@ -22,7 +22,7 @@ import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
 import { useServiceRequests } from '@/queries/use-service-requests';
-import { CheckInSessionBadge } from './components/checkin-session-badge';
+import { CheckInLinkPanel } from './components/checkin-link-panel';
 import type { Booking } from '@/types';
 
 type BookingTab = 'details' | 'guest' | 'payment' | 'alloggiati';
@@ -267,7 +267,7 @@ export function BookingDetailPage() {
             <CardContent className="space-y-3">
               <div className="pb-3 border-b">
                 <div className="text-sm text-muted-foreground mb-2">{t('checkin.sessionLabel')}</div>
-                <CheckInSessionBadge bookingId={booking.id} />
+                <CheckInLinkPanel bookingId={booking.id} canWrite={canWrite} />
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">{t('booking.detailPage.guestName')}</div>

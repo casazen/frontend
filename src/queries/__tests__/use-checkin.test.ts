@@ -58,3 +58,42 @@ describe('useResendCheckInLink onError (A9-09 FE)', () => {
     expect(toast.error).toHaveBeenCalledWith(i18n.t('checkin.resendError'));
   });
 });
+
+describe('useResendCheckInLink onSuccess (CO-09, A5-26)', () => {
+  async function resend(emailStatus: 'Queued' | 'Failed', emailError: string | null = null) {
+    vi.mocked(bookingsApi.resendCheckInLink).mockResolvedValueOnce({
+      checkInLink: 'https://casazen.test/checkin/abc',
+      expiresAt: '2026-10-08T08:00:00Z',
+      emailStatus,
+      emailError,
+    });
+    const { result } = renderHook(() => useResendCheckInLink('b1'), { wrapper });
+    await act(async () => {
+      result.current.mutate();
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  }
+
+  it('onSuccess_emailFailed_showsTheReasonAndNeverSaysResent', async () => {
+    await resend('Failed', 'provider_not_configured');
+
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith(
+      i18n.t('checkin.link.toast.emailFailed', { reason: i18n.t('checkin.link.emailError.providerNotConfigured') }),
+    );
+  });
+
+  it('onSuccess_unknownEmailError_usesTheGenericReason', async () => {
+    await resend('Failed', 'something_new');
+
+    expect(toast.error).toHaveBeenCalledWith(
+      i18n.t('checkin.link.toast.emailFailed', { reason: i18n.t('checkin.link.emailError.unknown') }),
+    );
+  });
+
+  it('onSuccess_emailQueued_saysQueued', async () => {
+    await resend('Queued');
+
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('checkin.link.toast.emailQueued'));
+  });
+});

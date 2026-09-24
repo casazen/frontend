@@ -13,7 +13,7 @@ import type {
 } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
-import type { CheckInSessionStatusDto, ResendCheckInLinkResponse } from '@/types/public-checkin.types';
+import type { CheckInLinkResponse, CheckInSessionStatusDto } from '@/types/public-checkin.types';
 
 export const bookingsApi = {
   getAll: (params?: Record<string, unknown>) =>
@@ -61,12 +61,14 @@ export const bookingsApi = {
   checkIn: (id: string, data?: CheckInDto) =>
     ApiClient.post<Booking>(`/bookings/${id}/check-in`, data),
 
-  generateCheckInToken: (id: string) =>
-    ApiClient.post<{ token: string }>(`/bookings/${id}/check-in-token`),
-
   getCheckInSession: (id: string) =>
     ApiClient.get<CheckInSessionStatusDto>(`/bookings/${id}/checkin-session`),
 
+  /** New check-in link to copy and send another way (no email); the previous link stops working. */
+  createCheckInLink: (id: string) =>
+    ApiClient.post<CheckInLinkResponse>(`/bookings/${id}/checkin/link`),
+
+  /** New check-in link emailed to the guest (also the reminder); the link comes back whatever happens to the email. */
   resendCheckInLink: (id: string) =>
-    ApiClient.post<ResendCheckInLinkResponse>(`/bookings/${id}/checkin/resend-link`),
+    ApiClient.post<CheckInLinkResponse>(`/bookings/${id}/checkin/resend-link`),
 };

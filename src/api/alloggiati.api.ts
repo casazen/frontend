@@ -4,6 +4,7 @@ import type {
   AlloggiatiStatusDto,
   AlloggiatiSummaryDto,
   MarkAlloggiatiSentManuallyRequest,
+  StayGuestDocumentNumberDto,
 } from '@/types/alloggiati.types';
 import type { AlloggiatiCodeEntryDto, AlloggiatiCodeList, StayGuestSubmit } from '@/types/public-checkin.types';
 
@@ -17,6 +18,16 @@ export const alloggiatiApi = {
   /** Per-guest data to copy on the Questura portal, in the order of the Alloggiati record. */
   getGuestSummary: (bookingId: string) =>
     ApiClient.get<AlloggiatiGuestSummaryDto>(`/alloggiati/${bookingId}/guest-summary`),
+
+  /**
+   * Full document numbers of the guests of the stay (the summary shows them masked); `position` limits the answer to
+   * one guest. Every request is audited by the API.
+   */
+  getDocumentNumbers: (bookingId: string, position?: number) =>
+    ApiClient.get<StayGuestDocumentNumberDto[]>(
+      `/alloggiati/${bookingId}/stay-guests/document-numbers`,
+      position === undefined ? undefined : { position },
+    ),
 
   /** Replaces the guests of the stay (host entry); answers the updated per-guest summary. */
   replaceStayGuests: (bookingId: string, guests: StayGuestSubmit[]) =>
