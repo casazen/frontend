@@ -86,6 +86,14 @@ function translateCode(code: string, t: TranslateFn): string | undefined {
   return translated && translated !== key ? translated : undefined;
 }
 
+/**
+ * Translation of a stable backend error `code` stored in a resource (e.g. the `lastErrorCode` of an iCal feed),
+ * or `undefined` when the frontend has no text for it (`apiErrors.codes.<camelCase code>`).
+ */
+export function translateErrorCode(code: string | null | undefined, t: TranslateFn): string | undefined {
+  return code && CODE_PATTERN.test(code) ? translateCode(code, t) : undefined;
+}
+
 /** HTTP status of a failed API call, or undefined when no response was received. */
 export function getHttpStatus(error: unknown): number | undefined {
   return isAxiosError(error) ? error.response?.status : undefined;

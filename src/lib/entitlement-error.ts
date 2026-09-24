@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 // Re-exported from i18n-labels.ts — canonical home for i18n-aware label functions
 export { getPlanLimitMessage, getPlanUpgradeCta } from './i18n-labels';
 
-/** Target route for plan management (MVP until Stripe billing). */
+/** Plan page: plans and Stripe checkout (PL-12). */
 export const PLAN_UPGRADE_PATH = '/app/short-rent/settings/plan';
 
 interface EntitlementErrorBody {

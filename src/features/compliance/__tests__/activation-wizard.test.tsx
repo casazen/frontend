@@ -25,6 +25,10 @@ vi.mock('@/components/layout/app-shell', () => ({
 vi.mock('@/components/shared/breadcrumb', () => ({ Breadcrumb: () => null }));
 vi.mock('@/features/properties/components/document-upload-dialog', () => ({ DocumentUploadDialog: () => null }));
 vi.mock('@/features/properties/components/ical-settings', () => ({ IcalSettings: () => null }));
+vi.mock('@/features/compliance/components/safety-checklist-form', () => ({
+  SafetyChecklistForm: ({ propertyId }: { propertyId: string }) =>
+    createElement('p', { 'data-testid': 'safety-checklist-form' }, propertyId),
+}));
 vi.mock('@/features/properties/components/property-form', () => ({
   PropertyForm: ({ onSubmit }: { onSubmit: (data: object) => void }) =>
     createElement('button', { type: 'button', onClick: () => onSubmit({}) }, 'save-base-data'),
@@ -112,6 +116,8 @@ describe('PropertyActivationWizard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Salva e continua/ }));
     fireEvent.click(await screen.findByRole('button', { name: /Continua/ }));
+    // Safety step: the D.L. 145/2023 checklist form of the property (CO-07).
+    expect(await screen.findByTestId('safety-checklist-form')).toHaveTextContent('prop-1');
     fireEvent.click(await screen.findByRole('button', { name: /Continua/ }));
 
     const warning = await screen.findByTestId('activation-tourist-tax-missing');
@@ -128,9 +134,8 @@ describe('PropertyActivationWizard', () => {
     fireEvent.click(await screen.findByLabelText(/Confermo che l'immobile soddisfa/));
     fireEvent.click(screen.getByTestId('activation-complete-button'));
 
-    await waitFor(() =>
-      expect(completeActivation).toHaveBeenCalledWith(expect.objectContaining({ tosAccepted: true })),
-    );
+    // The safety checklist is saved in its own step: completing never sends (and overwrites) it.
+    await waitFor(() => expect(completeActivation).toHaveBeenCalledWith({ tosAccepted: true }));
     expect(await screen.findByText('property-detail')).toBeInTheDocument();
   });
 

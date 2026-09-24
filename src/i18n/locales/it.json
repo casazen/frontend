@@ -183,7 +183,8 @@
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
-    "plan": "Piano e Fatturazione",
+    "plan": "Piano",
+    "billing": "Fatturazione",
     "bookings": "Prenotazioni",
     "marketplace": "Marketplace",
     "calendar": "Calendario",
@@ -1671,17 +1672,49 @@
   },
   "ical": {
     "title": "Calendario OTA",
-    "description": "Importa il calendario Airbnb o Booking.com e condividi la disponibilità CasaZen via iCal.",
+    "description": "Collega i calendari iCal di Airbnb, Booking.com e degli altri canali: le date prenotate lì risultano occupate sul tuo sito. Condividi la disponibilità CasaZen con il link di esportazione.",
+    "feedsTitle": "Calendari collegati",
+    "feedsLoadError": "Impossibile caricare i calendari collegati.",
+    "retry": "Riprova",
+    "noFeeds": "Nessun calendario collegato: aggiungi il link iCal di Airbnb, Booking.com o di un altro canale.",
+    "channels": {
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Other": "Altro"
+    },
+    "status": {
+      "Success": "Sincronizzato",
+      "PartialFailure": "Sincronizzato in parte",
+      "Failure": "Errore",
+      "Syncing": "Sincronizzazione in corso",
+      "never": "Mai sincronizzato"
+    },
+    "syncNow": "Sincronizza ora",
+    "syncing": "Sincronizzazione…",
+    "remove": "Scollega",
+    "removeTitle": "Scollegare il calendario?",
+    "removeDescription": "Le date bloccate importate da {{name}} tornano libere sul tuo sito. Gli altri calendari non cambiano.",
+    "removeConfirm": "Scollega",
+    "cancel": "Annulla",
+    "addTitle": "Collega un calendario",
+    "channelLabel": "Canale",
+    "feedLabelLabel": "Etichetta (facoltativa)",
+    "feedLabelPlaceholder": "Es. Airbnb - camera 2",
     "importUrlLabel": "URL import (HTTPS)",
+    "importUrlPlaceholder": "https://www.airbnb.it/calendar/ical/…",
     "importHint": "Incolla l'URL iCal dalla tua OTA. Serve aiuto?",
     "helpLink": "Come trovare il link iCal",
-    "saveImport": "Salva e sincronizza",
-    "syncStatus": "Stato sincronizzazione",
+    "addFeed": "Aggiungi e sincronizza",
+    "feedAdded": "Calendario collegato: la prima sincronizzazione è in corso.",
+    "feedAddFailed": "Impossibile collegare il calendario.",
+    "feedRemoved": "Calendario scollegato.",
+    "feedRemoveFailed": "Impossibile scollegare il calendario.",
+    "feedSyncFailed": "Impossibile avviare la sincronizzazione.",
     "lastSync": "Ultima sync: {{date}}",
     "neverSynced": "Mai sincronizzato",
-    "statusValue": "Stato: {{status}}",
     "exportUrlLabel": "URL export per le OTA",
     "exportHint": "Incolla questo URL su Airbnb/Booking per esportare prenotazioni e blocchi CasaZen.",
+    "exportLoadError": "Impossibile caricare il link di esportazione.",
     "copy": "Copia",
     "copied": "Copiato",
     "legendBooking": "Prenotazione",
@@ -1978,8 +2011,6 @@
     "currentUsage": "Utilizzo attuale:",
     "unlimited": "illimitate",
     "planUsage": "{{propertyCount}} proprietà su {{maxProperties}}",
-    "switchToPlan": "Passa a questo piano",
-    "stripeBillingNote": "Il pagamento ricorrente con carta sarà disponibile con l'integrazione Stripe ({{planCount}} piani configurati).",
     "connectStatusDisconnected": "Non collegato",
     "connectStatusPending": "In verifica",
     "connectStatusActive": "Attivo",
@@ -1992,6 +2023,7 @@
     "bookingSiteNotActiveDescription": "Completa la verifica Stripe per abilitare il checkout sul sito prenotazioni. Gli ospiti non potranno pagare finché l'account non è attivo.",
     "stripeConnectionStatus": "Stato connessione Stripe",
     "connectStripe": "Collega Stripe",
+    "connectRetry": "Riprova",
     "completeVerification": "Completa la verifica",
     "loadingPayments": "Caricamento stato pagamenti…",
     "stripeStatusError": "Impossibile caricare lo stato Stripe. Riprova tra poco.",
@@ -2095,6 +2127,97 @@
     },
     "upToProperties_one": "Fino a {{count}} proprietà",
     "upToProperties_other": "Fino a {{count}} proprietà"
+  },
+  "billing": {
+    "plans": {
+      "pricePerMonth": "{{price}} al mese",
+      "priceAtCheckout": "Il prezzo è indicato nella pagina di pagamento Stripe.",
+      "changeInPortal": "Cambia dal portale",
+      "unavailable": "Non disponibile",
+      "unavailableHint": "Questo piano non è acquistabile al momento.",
+      "loadError": "Impossibile caricare i piani o lo stato dell'abbonamento.",
+      "emptyTitle": "Nessun piano disponibile",
+      "emptyDescription": "Al momento non ci sono piani acquistabili. Riprova più tardi o contatta l'assistenza.",
+      "liveSubscription": "Hai già un abbonamento: per cambiare piano, aggiornare la carta o scaricare le fatture usa il portale di fatturazione Stripe.",
+      "stripeNote": "Il pagamento avviene su Stripe: CasaZen non vede i dati della tua carta.",
+      "billingLink": "Abbonamento e dati di fatturazione"
+    },
+    "checkout": {
+      "title": "Abbonamento {{plan}}",
+      "description": "Indica il paese di fatturazione e, se ce l'hai, la Partita IVA. Poi completerai il pagamento su Stripe.",
+      "submit": "Procedi al pagamento",
+      "redirecting": "Reindirizzamento a Stripe…",
+      "failed": "Impossibile avviare il pagamento. Riprova.",
+      "return": {
+        "confirming": "Stiamo verificando il pagamento con Stripe…",
+        "confirmed": "Pagamento confermato: il piano {{plan}} è attivo.",
+        "pending": "Non abbiamo ancora ricevuto la conferma del pagamento da Stripe. Se hai completato il pagamento, il piano si aggiornerà a breve.",
+        "refresh": "Aggiorna lo stato",
+        "canceled": "Pagamento annullato: non è stato effettuato alcun addebito. Puoi scegliere di nuovo un piano quando vuoi."
+      }
+    },
+    "settings": {
+      "title": "Fatturazione",
+      "description": "Abbonamento, pagamenti e dati di fatturazione della tua organizzazione.",
+      "subscriptionTitle": "Abbonamento",
+      "plan": "Piano",
+      "status": "Stato",
+      "nextDue": "Prossima scadenza",
+      "noneTitle": "Nessun abbonamento a pagamento",
+      "noneDescription": "Stai usando il piano {{plan}} senza abbonamento. Scegli un piano per abbonarti.",
+      "choosePlan": "Scegli un piano",
+      "changePlan": "Cambia piano",
+      "loadError": "Impossibile caricare l'abbonamento.",
+      "statusHint": {
+        "active": "Il rinnovo è automatico. Carta, fatture e disdetta sono nel portale di fatturazione.",
+        "trialing": "Periodo di prova in corso: alla scadenza il pagamento parte in automatico."
+      }
+    },
+    "status": {
+      "active": "Attivo",
+      "trialing": "In prova",
+      "pastDue": "Pagamento in ritardo",
+      "incomplete": "Pagamento da completare",
+      "unpaid": "Non pagato",
+      "canceled": "Scaduto",
+      "none": "Nessun abbonamento"
+    },
+    "notice": {
+      "pastDue": "L'ultimo pagamento non è riuscito. Aggiorna il metodo di pagamento dal portale di fatturazione: il piano resta attivo solo per un breve periodo di tolleranza.",
+      "incomplete": "Il primo pagamento non è stato completato, quindi il piano a pagamento non è attivo. Completa il pagamento dal portale di fatturazione.",
+      "unpaid": "L'abbonamento è sospeso per mancato pagamento e il piano a pagamento non è attivo. Paga la fattura aperta dal portale di fatturazione per riattivarlo.",
+      "canceled": "L'abbonamento è terminato e il piano a pagamento non è più attivo. Scegli un piano per abbonarti di nuovo."
+    },
+    "portal": {
+      "managePayments": "Gestisci pagamenti",
+      "manage": "Apri il portale di fatturazione",
+      "open": "Apri il portale di fatturazione",
+      "completePayment": "Completa il pagamento",
+      "opening": "Apertura del portale…",
+      "noCustomer": "Il portale di fatturazione sarà disponibile dopo il primo pagamento: scegli prima un piano.",
+      "failed": "Impossibile aprire il portale di fatturazione. Riprova."
+    },
+    "profile": {
+      "title": "Dati di fatturazione",
+      "description": "Paese e Partita IVA dell'organizzazione, usati per le fatture dell'abbonamento.",
+      "country": "Paese",
+      "countryPlaceholder": "Seleziona il paese",
+      "vatId": "Partita IVA (facoltativa)",
+      "vatIdHint": "La Partita IVA sarà verificata prima di essere usata in fattura.",
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "saved": "Dati di fatturazione salvati.",
+      "saveFailed": "Impossibile salvare i dati di fatturazione. Riprova.",
+      "vatRejected": "La Partita IVA non è stata accettata: controlla il numero o salva senza Partita IVA.",
+      "validation": {
+        "countryRequired": "Seleziona il paese di fatturazione.",
+        "vatIdInvalid": "La Partita IVA può contenere solo lettere e numeri (da 4 a 20 caratteri)."
+      }
+    },
+    "adminRequired": {
+      "title": "Riservato all'amministratore dell'organizzazione",
+      "description": "Piano e fatturazione sono gestiti dall'amministratore della tua organizzazione: contatta l'amministratore per cambiarli."
+    }
   },
   "profile": {
     "title": "Il mio profilo",
@@ -3379,13 +3502,7 @@
       "cinGuidance": "Come ottenere il codice CIN",
       "saveAndContinue": "Salva e continua",
       "continue": "Continua",
-      "documentsHint": "Carica i documenti obbligatori (licenza, assicurazione, certificati di sicurezza).",
-      "safetyHint": "Conferma che le attrezzature di sicurezza obbligatorie sono presenti e conformi.",
-      "safety": {
-        "smokeDetector": "Rilevatore di fumo installato e funzionante",
-        "fireExtinguisher": "Estintore presente e ispezionato",
-        "gasCompliance": "Certificato conformità impianto gas in archivio"
-      },
+      "documentsHint": "Carica i documenti richiesti per l'attivazione. Le prove di sicurezza (foto o documenti) sono facoltative e si allegano nella checklist di sicurezza.",
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
       "backToEdit": "Torna alla modifica immobile",
       "complete": "Completa attivazione",
@@ -3464,6 +3581,132 @@
       "arrivalMissingHint": "L'arrivo di {{guest}} non risulta registrato. Se l'ospite è arrivato, registra l'arrivo e procedi con il check-out.",
       "registerArrivalAndProceed": "Registra arrivo e procedi",
       "registeringArrival": "Registrazione dell'arrivo…"
+    },
+    "safety": {
+      "loading": "Caricamento della checklist di sicurezza...",
+      "loadFailed": "Impossibile caricare la checklist di sicurezza.",
+      "retry": "Riprova",
+      "intro": "Obblighi dell'art. 13-ter, c. 7, del D.L. 145/2023 (convertito dalla L. 191/2023) per le unità in locazione breve o per finalità turistiche. Le voci che non riguardano il tuo immobile risultano \"non applicabili\" in base alle risposte sull'immobile.",
+      "disclaimer": "CasaZen registra quanto dichiari: non verifica l'immobile e non ne certifica la conformità. I requisiti di sicurezza li dichiari in BDSR con la richiesta del CIN (art. 13-ter, c. 3).",
+      "importedFromLegacy": "Abbiamo importato le risposte della vecchia checklist (rilevatore di fumo, estintore, certificato gas). Rivedi le voci segnate \"Da rivedere\", completa quelle mancanti e conferma di nuovo.",
+      "complete": "Checklist completa: nessun punto bloccante.",
+      "blockersTitle": "Punti da completare prima dell'attivazione (ultimo salvataggio):",
+      "itemsTitle": "Dotazioni e requisiti",
+      "toReview": "Da rivedere",
+      "confirm": "Confermo che queste informazioni sono vere e corrispondono a quanto ho dichiarato in BDSR. So che CasaZen non verifica e non certifica la conformità dell'immobile.",
+      "confirmedAt": "Checklist confermata il {{date}}.",
+      "save": "Salva checklist",
+      "saved": "Checklist di sicurezza salvata",
+      "saveFailed": "Impossibile salvare la checklist di sicurezza",
+      "answer": {
+        "yes": "Sì",
+        "no": "No"
+      },
+      "facts": {
+        "title": "L'immobile",
+        "entrepreneurial": "Gestisci la locazione in forma imprenditoriale?",
+        "entrepreneurialHint": "Per esempio con partita IVA, come società o per la presunzione legata al numero di appartamenti (art. 1, c. 595, L. 178/2020). Solo in questo caso servono i requisiti di sicurezza degli impianti (art. 13-ter, c. 7, primo periodo).",
+        "gasSupply": "L'unità ha un impianto o una fornitura di gas (rete, GPL o bombole)?",
+        "appliances": "Apparecchi a combustione nell'unità",
+        "noAppliances": "Nessun apparecchio a combustione",
+        "detectorsExempt": "Rilevatori di gas e di monossido di carbonio non applicabili: l'unità non ha impianto a gas né apparecchi a combustione (esonero indicato nelle FAQ del Ministero del Turismo). Gli estintori restano obbligatori.",
+        "combustionWithoutGas": "Con un apparecchio a combustione (per esempio camino o stufa) il rischio di monossido di carbonio non è escluso: i rilevatori restano obbligatori anche senza gas.",
+        "floorCount": "Numero di piani dell'unità",
+        "floorArea": "m² di pavimento del piano {{floor}} (facoltativo)",
+        "minimumExtinguishers": "Estintori minimi richiesti: {{minimum}} (uno ogni 200 m² di pavimento o frazione, minimo uno per piano)."
+      },
+      "appliance": {
+        "Boiler": "Caldaia",
+        "WaterHeater": "Scaldabagno",
+        "GasHob": "Piano cottura a gas",
+        "Stove": "Stufa",
+        "Fireplace": "Camino",
+        "Other": "Altro apparecchio a combustione"
+      },
+      "requirement": {
+        "Required": "Obbligatorio",
+        "Optional": "Consigliato, non obbligatorio per legge",
+        "NotApplicable": "Non applicabile",
+        "Undetermined": "Dipende dalle risposte sull'immobile"
+      },
+      "notApplicable": {
+        "NoGasNoCombustion": "Non applicabile: l'unità non ha impianto a gas né apparecchi a combustione.",
+        "NotEntrepreneurial": "Non applicabile: la locazione non è gestita in forma imprenditoriale."
+      },
+      "detectorType": {
+        "Battery": "A batteria",
+        "Mains": "Alimentato dalla rete elettrica",
+        "FixedSystem": "Impianto fisso (D.M. 37/2008)"
+      },
+      "items": {
+        "FireExtinguishers": {
+          "title": "Estintori portatili",
+          "reference": "Sempre obbligatori: a norma di legge, in posizioni accessibili e visibili, in particolare vicino agli accessi e alle aree di maggior pericolo (art. 13-ter, c. 7, secondo periodo).",
+          "faq": "Secondo le FAQ del Ministero del Turismo: capacità estinguente di almeno 13A, carica di almeno 6 kg o 6 litri, controllo periodico secondo la norma UNI 9994-1.",
+          "dateLabel": "Data dell'ultimo controllo periodico"
+        },
+        "GasDetector": {
+          "title": "Rilevatore di gas combustibili",
+          "reference": "Dispositivo funzionante, anche removibile (art. 13-ter, c. 7, secondo periodo; FAQ del Ministero del Turismo).",
+          "dateLabel": "Data dell'ultimo test"
+        },
+        "CoDetector": {
+          "title": "Rilevatore di monossido di carbonio (CO)",
+          "reference": "Dispositivo funzionante, anche removibile (art. 13-ter, c. 7, secondo periodo; FAQ del Ministero del Turismo).",
+          "dateLabel": "Data dell'ultimo test"
+        },
+        "SystemsCompliance": {
+          "title": "Impianti conformi",
+          "reference": "Impianti presenti (elettrico, gas, termico, idrico) conformi alla normativa statale e regionale, con dichiarazione di conformità o di rispondenza (D.M. 37/2008). Solo per la gestione in forma imprenditoriale (art. 13-ter, c. 7, primo periodo).",
+          "dateLabel": "Data della dichiarazione di conformità"
+        },
+        "BdsrDeclaration": {
+          "title": "Dichiarazione in BDSR",
+          "reference": "Hai dichiarato i requisiti di sicurezza nella Banca Dati delle Strutture Ricettive con la richiesta o l'aggiornamento del CIN (art. 13-ter, c. 3).",
+          "dateLabel": "Data della dichiarazione in BDSR"
+        },
+        "SmokeDetector": {
+          "title": "Rilevatore di fumo",
+          "reference": "Consigliato: l'art. 13-ter non lo prevede.",
+          "dateLabel": "Data dell'ultimo test"
+        },
+        "EmergencyInstructions": {
+          "title": "Istruzioni e numeri di emergenza per gli ospiti",
+          "reference": "Consigliate: l'art. 13-ter non le prevede."
+        }
+      },
+      "fields": {
+        "extinguisherCount": "Numero di estintori",
+        "deviceCount": "Numero di dispositivi (facoltativo)",
+        "location": "Dove si trovano (facoltativo)",
+        "detectorType": "Tipo di dispositivo",
+        "notSpecified": "Non indicato",
+        "dateHint": "Facoltativa. Serve per i promemoria: non è una scadenza di legge.",
+        "sensorEndOfLife": "Fine vita del sensore, dal manuale del produttore (facoltativo)",
+        "notes": "Note (facoltative)",
+        "evidence": "Prova (facoltativa): foto o documento",
+        "evidenceAttached": "Documento allegato",
+        "removeEvidence": "Rimuovi",
+        "uploadEvidence": "Carica prova",
+        "evidenceHint": "PDF, Word o immagine. Resta riservata: la vedono solo gli utenti della tua organizzazione."
+      },
+      "blockers": {
+        "safety_entrepreneurial_unanswered": "Indica se gestisci la locazione in forma imprenditoriale: da questo dipendono i requisiti di sicurezza degli impianti.",
+        "safety_gas_unanswered": "Indica se l'unità ha gas e quali apparecchi a combustione ci sono: da questo dipendono i rilevatori di gas e di monossido di carbonio.",
+        "safety_floors_unanswered": "Indica il numero di piani dell'unità: serve a calcolare gli estintori minimi (almeno uno per piano).",
+        "safety_extinguishers_missing": "Estintori portatili: obbligatori in tutte le unità in locazione breve o turistica (art. 13-ter, c. 7).",
+        "safety_extinguishers_below_minimum": "Estintori insufficienti: ne hai indicati {{declared}}, ne servono almeno {{minimum}}.",
+        "safety_extinguishers_review": "Estintori: la risposta viene dalla vecchia checklist. Confermala indicando il numero di estintori e i piani dell'unità.",
+        "safety_gas_detector_missing": "Rilevatore di gas combustibili: obbligatorio, perché l'unità ha gas o apparecchi a combustione (art. 13-ter, c. 7).",
+        "safety_co_detector_missing": "Rilevatore di monossido di carbonio: obbligatorio, perché l'unità ha gas o apparecchi a combustione (art. 13-ter, c. 7).",
+        "safety_systems_compliance_missing": "Impianti conformi: obbligatori per la gestione in forma imprenditoriale (art. 13-ter, c. 7, primo periodo).",
+        "safety_systems_compliance_review": "Impianti: la vecchia checklist indicava un certificato di conformità dell'impianto gas. Conferma la risposta.",
+        "safety_bdsr_declaration_missing": "Conferma di aver dichiarato in BDSR i requisiti di sicurezza, con la richiesta o l'aggiornamento del CIN (art. 13-ter, c. 3).",
+        "safety_confirmation_missing": "Conferma la checklist di sicurezza con le risposte attuali."
+      },
+      "warnings": {
+        "safety_floor_areas_missing": "Senza i m² di ogni piano il minimo è calcolato solo sui piani. La legge chiede un estintore ogni 200 m² di pavimento o frazione, con un minimo di uno per piano."
+      }
     }
   },
   "toast": {
@@ -3511,8 +3754,6 @@
     "profileUpdateFailed": "Impossibile aggiornare il profilo",
     "roleUpdated": "Ruolo aggiornato con successo",
     "roleUpdateFailed": "Impossibile aggiornare il ruolo",
-    "planUpdated": "Piano aggiornato con successo",
-    "planUpdateFailed": "Impossibile aggiornare il piano",
     "userDeactivated": "Utente disattivato con successo",
     "userDeactivateFailed": "Impossibile disattivare l'utente",
     "userDeactivatedAuth0NotSynced": "Utente disattivato: non può più usare CasaZen. Auth0 però non è stato aggiornato: ripeti la disattivazione più tardi.",
@@ -3618,6 +3859,9 @@
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
+      "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
+      "billingPlanUnavailable": "Questo piano non è acquistabile al momento. Riprova più tardi o contatta l'assistenza.",
+      "billingReturnUrlNotConfigured": "Il pagamento dei piani non è ancora configurato in questo ambiente.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
       "checkinAlreadySubmitted": "Il check-in è già stato completato.",
@@ -3708,6 +3952,11 @@
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
       "checkoutPaymentNotResumable": "Non c'è un pagamento da completare per questa prenotazione: è già in corso, completato oppure la prenotazione è chiusa.",
       "paymentProviderError": "Il servizio di pagamento non ha risposto correttamente. Riprova tra qualche minuto.",
+      "stripeConnectUnavailable": "Stripe non risponde in questo momento. Il tuo account Stripe collegato non è stato modificato: riprova tra qualche istante.",
+      "stripeConnectNotConfigured": "I pagamenti Stripe non sono configurati correttamente sul server. Il tuo account collegato non è stato modificato: contatta l'assistenza CasaZen.",
+      "stripeConnectFailed": "Stripe ha rifiutato la richiesta. Il tuo account collegato non è stato modificato: riprova più tardi o contatta l'assistenza CasaZen.",
+      "stripeConnectAccountUnavailable": "L'account Stripe collegato non è più disponibile: riprova per collegarne uno nuovo.",
+      "connectReturnUrlNotConfigured": "L'indirizzo pubblico dell'app non è configurato sul server: il collegamento con Stripe non può essere avviato.",
       "bookingAlreadyCheckedOut": "Il check-out di questa prenotazione è già registrato: ricarica la pagina.",
       "bookingArrivalNotRegistered": "L'arrivo dell'ospite non è stato registrato: conferma l'arrivo per procedere con il check-out.",
       "bookingNotConfirmed": "L'arrivo si registra solo per una prenotazione confermata.",
@@ -3725,7 +3974,16 @@
       "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite.",
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
-      "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione."
+      "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione.",
+      "icalInvalidUrl": "L'indirizzo del calendario non è valido: usa un link https pubblico (per esempio il link di esportazione iCal di Airbnb o Booking.com).",
+      "icalUnreachable": "Non è stato possibile scaricare il calendario: verifica che il link sia corretto e accessibile pubblicamente.",
+      "icalTooLarge": "Il calendario è troppo grande per essere importato.",
+      "icalInvalidFormat": "Il link non restituisce un calendario iCal valido.",
+      "icalSyncFailed": "La sincronizzazione del calendario non è riuscita: verrà ritentata automaticamente.",
+      "icalFeedNotFound": "Calendario non trovato: potrebbe essere già stato scollegato.",
+      "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
+      "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
+      "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo."
     }
   },
   "validation": {

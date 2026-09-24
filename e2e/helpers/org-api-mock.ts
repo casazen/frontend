@@ -233,27 +233,45 @@ export async function mockPlansCatalog(page: Page): Promise<void> {
   });
 }
 
-/** Mocks PUT /api/orgs/me/plan and returns updated entitlement. */
-export async function mockUpdateMyPlan(page: Page): Promise<void> {
-  await page.route('**/api/orgs/me/plan', async (route) => {
-    if (route.request().method() !== 'PUT') {
+const DEFAULT_BILLING_PLANS = [
+  { tier: 'Starter', displayName: 'Starter', priceMonthly: 29, currency: 'EUR', unitAllowance: 3, features: [], purchasable: true },
+  { tier: 'Pro', displayName: 'Pro', priceMonthly: 79, currency: 'EUR', unitAllowance: 50, features: [], purchasable: true },
+  { tier: 'Scale', displayName: 'Scale', priceMonthly: 199, currency: 'EUR', unitAllowance: -1, features: [], purchasable: true },
+];
+
+/** Mocks GET /api/billing/plans (plans page, PL-12). */
+export async function mockBillingPlans(page: Page): Promise<void> {
+  await page.route('**/api/billing/plans', async (route) => {
+    if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
     }
 
-    const payload = route.request().postDataJSON() as { planTier?: PlanTier };
-    const tier = payload.planTier ?? 'Starter';
-    const maxProperties = tier === 'Pro' ? 50 : tier === 'Scale' ? 999999 : 3;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(DEFAULT_BILLING_PLANS) });
+  });
+}
+
+/** Mocks GET /api/billing/subscription with the given status (`none` = never subscribed). */
+export async function mockBillingSubscription(
+  page: Page,
+  options: { planTier?: PlanTier; status?: string } = {},
+): Promise<void> {
+  await page.route('**/api/billing/subscription', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
 
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        orgId: 'org-e2e-0001',
-        planTier: tier,
-        limits: { maxProperties },
-        usage: { properties: 1 },
-        canAddProperty: true,
+        planTier: options.planTier ?? 'Starter',
+        status: options.status ?? 'none',
+        currentPeriodEnd: null,
+        seats: 1,
+        billingCountry: null,
+        vatId: null,
       }),
     });
   });
