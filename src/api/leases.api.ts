@@ -7,6 +7,7 @@ import type {
   LeaseDetail,
   LeaseRegistration,
   LeaseSummary,
+  ManualRegistrationInput,
   RliChecklist,
   SigningInitiatedResult,
   TriggerRegistrationResult,
@@ -44,8 +45,17 @@ export const leasesApi = {
   triggerRegistration: (id: string, body: { tosVersion: string; attestationAccepted: boolean }) =>
     ApiClient.post<TriggerRegistrationResult>(`/leases/${id}/registration`, body),
 
-  getRegistration: (id: string) =>
-    ApiClient.get<LeaseRegistration>(`/leases/${id}/registration`),
+  /** LT-01: the landlord registered the contract on the official channel and declares number, date and receipt. */
+  declareManualRegistration: async (id: string, input: ManualRegistrationInput): Promise<LeaseRegistration> => {
+    const formData = new FormData();
+    formData.append('registrationCode', input.registrationCode);
+    formData.append('registrationDate', input.registrationDate);
+    formData.append('receipt', input.receipt);
+    const response = await axios.post<LeaseRegistration>(`/leases/${id}/registration/manual`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 
   getRliAdvisory: (id: string) =>
     ApiClient.get<CedolareAdvisory>(`/leases/${id}/rli/advisory`),

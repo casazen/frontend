@@ -35,6 +35,9 @@ export interface UserDetail extends UserSummary {
   // Tenant boundary (#202, AC9). Nullable: a brand-new user pre-backfill has no org yet.
   orgId?: string | null;
   org?: Org | null;
+  // Supplier org the account is linked to (invite, registration or claim, SU-02). For a supplier-only user it is also
+  // `orgId`. A linked supplier goes to the supplier console, never to the host onboarding.
+  supplierOrgId?: string | null;
 }
 
 export interface UpdateProfileRequest {

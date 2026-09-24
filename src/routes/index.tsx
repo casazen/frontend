@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { LoginPage } from '@/pages/login-page';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
+import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { ContextLayout } from '@/components/layout/context-layout';
@@ -123,6 +124,12 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <SupplierRegisterPage />,
+  },
+  {
+    // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
+    // onboarding redirect (SU-02).
+    path: '/register/claim',
+    element: <SupplierClaimPage />,
   },
   {
     path: '/search',
