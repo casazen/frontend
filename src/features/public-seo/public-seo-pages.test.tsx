@@ -27,7 +27,7 @@ const { page } = vi.hoisted(() => {
     canonicalUrl: 'https://example.test/p/affitti-brevi/lombardia/como',
     lastRefreshedAt: null,
     disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
-    cta: { complianceCheckerUrl: '/tools/verifica-conformita', signupUrl: '/signup' },
+    cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
     touristTaxRates: [],
   };
   return { page };

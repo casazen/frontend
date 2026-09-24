@@ -136,13 +136,13 @@ function continueButton() {
   return screen.getByRole('button', { name: 'Continua' });
 }
 
-function fillGuest() {
+function fillGuest(paymentOption: string | RegExp = 'Paga subito') {
   fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Mario' } });
   fireEvent.change(screen.getByLabelText('Cognome'), { target: { value: 'Rossi' } });
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'mario.rossi@example.com' } });
   fireEvent.change(screen.getByLabelText('Telefono'), { target: { value: '+49 30 1234567' } });
   fireEvent.change(screen.getByLabelText('Paese di residenza'), { target: { value: 'DE' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Paga subito' }));
+  fireEvent.click(screen.getByRole('button', { name: paymentOption }));
   fireEvent.click(screen.getByRole('checkbox'));
 }
 
@@ -309,6 +309,79 @@ describe('CheckoutPage', () => {
 
     expect(await screen.findByTestId('checkout-error')).toHaveTextContent(
       'Impossibile avviare il checkout. Verifica i dati e riprova.',
+    );
+  });
+
+  it('CheckoutPage_PayOnSite_ShowsRequestWaitingForHostNotAConfirmedBooking', async () => {
+    // BK-06 (D5): "pay at the property" sends a request; it is valid only once the host accepts it.
+    mutateAsync.mockResolvedValue({
+      bookingId: 'bk-onsite-0001',
+      clientSecret: '',
+      connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_test' },
+      amount: 550,
+      currency: 'EUR',
+      touristTaxAmount: 0,
+      basePrice: 550,
+      freeRefundDeadline: `${addDays(checkIn, -7)}T00:00:00Z`,
+      paymentOption: 'OnSite',
+      emailConfirmationExpiresAt: '2026-10-01T10:15:00Z',
+    } satisfies DirectBookingResponse);
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+    // The option says up front that it is a request the host must accept.
+    expect(screen.getByRole('button', { name: /Paga in struttura/ })).toHaveTextContent(
+      "Richiesta da confermare: la prenotazione è valida solo dopo l'accettazione dell'host.",
+    );
+    fillGuest(/Paga in struttura/);
+    await waitFor(() => expect(continueButton()).toBeEnabled());
+
+    fireEvent.click(continueButton());
+
+    const sent = await screen.findByTestId('checkout-onsite-request-sent');
+    expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ paymentOption: 'OnSite' }));
+    expect(sent).toHaveTextContent("Richiesta inviata: in attesa di conferma dell'host");
+    expect(sent).toHaveTextContent('mario.rossi@example.com');
+    // Deadline of the email confirmation, in Italian time.
+    expect(sent).toHaveTextContent('1 ottobre alle ore 12:15 (ora italiana)');
+    expect(sent).toHaveTextContent('bk-onsite-0001');
+    expect(screen.queryByText('Prenotazione confermata!')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkout-confirmation')).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_PaymentsNotReady_ShowsTheReasonNotTheGenericError', async () => {
+    // R-11: with Stripe Connect not configured the guest reads why, in their language.
+    mutateAsync.mockRejectedValue(
+      problemError(409, {
+        code: 'direct_booking_payments_not_ready',
+        detail: 'This property does not accept online bookings yet. Please contact the host directly.',
+      }),
+    );
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+    fillGuest(/Paga in struttura/);
+    await waitFor(() => expect(continueButton()).toBeEnabled());
+
+    fireEvent.click(continueButton());
+
+    expect(await screen.findByTestId('checkout-error')).toHaveTextContent(
+      "Questa struttura non accetta ancora prenotazioni online. Contatta direttamente l'host.",
+    );
+    expect(screen.queryByText(/Impossibile avviare il checkout/)).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_OnSiteStayTooLong_ShowsServerLimit', async () => {
+    mutateAsync.mockRejectedValue(
+      problemError(422, {
+        code: 'onsite_request_too_many_nights',
+        detail: 'Con il pagamento in struttura puoi richiedere al massimo 30 notti.',
+      }),
+    );
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+    fillGuest(/Paga in struttura/);
+    await waitFor(() => expect(continueButton()).toBeEnabled());
+
+    fireEvent.click(continueButton());
+
+    expect(await screen.findByTestId('checkout-error')).toHaveTextContent(
+      'Con il pagamento in struttura puoi richiedere al massimo 30 notti.',
     );
   });
 

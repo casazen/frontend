@@ -9,6 +9,8 @@ import type {
   OnboardingRequest,
   OnboardingResponse,
   UserActivationResponse,
+  SignupAttribution,
+  SignupAttributionResult,
 } from '@/types';
 
 interface GetUsersParams {
@@ -61,4 +63,8 @@ export const UsersApi = {
 
   putOnboarding: (body: OnboardingRequest): Promise<OnboardingResponse> =>
     ApiClient.put<OnboardingResponse>('/users/onboarding', body),
+
+  /** SE-03: where the signup came from, sent once after the first onboarding (the backend keeps the first one). */
+  recordSignupAttribution: (body: SignupAttribution): Promise<SignupAttributionResult> =>
+    ApiClient.post<SignupAttributionResult>('/users/me/signup-attribution', body),
 };

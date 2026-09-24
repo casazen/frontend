@@ -22,6 +22,7 @@ import { SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { isDemoMode } from '@/config/demo.config';
 import { applyDemoOnboardingProfile } from '@/lib/demo-onboarding';
+import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-attribution';
 import { RentalTypeCard } from './components/rental-type-card';
 import { ConsentsStep } from './components/consents-step';
 import { RolesPendingPanel } from './components/roles-pending-panel';
@@ -157,6 +158,13 @@ export function OnboardingPage() {
       setFailedType(rentalType);
       toast.error(getProblemMessage(error, t) ?? t('onboarding.configurationErrorToast'));
       return;
+    }
+
+    if (result.orgProvisioned) {
+      // SE-03: the first onboarding created the org, the attribution captured on /signup can be sent now. Awaited
+      // before leaving (the page reloads); a failure keeps it for the next page load, never blocks the onboarding.
+      markSignupAttributionReady();
+      await syncSignupAttribution();
     }
 
     const target = getPostOnboardingRoute(rentalType, from);
