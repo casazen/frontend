@@ -3,6 +3,7 @@ import { demoUrl } from './helpers/demo-profile';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
+import { mockServiceCategoriesApi } from './helpers/service-categories-mock';
 import type { Page } from '@playwright/test';
 
 const PROPERTY_ID = 'prop-marketplace-e2e';
@@ -36,6 +37,7 @@ async function mockMarketplaceApis(page: Page) {
   await mockPropertiesApi(page, [sampleProperty]);
   await mockCurrentUserWithOrg(page);
   await mockEntitlement(page);
+  await mockServiceCategoriesApi(page);
 
   await page.route('**/api/suppliers**', async (route) => {
     if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
@@ -76,6 +78,7 @@ async function mockMarketplaceApis(page: Page) {
       const body = route.request().postDataJSON() as Record<string, unknown>;
       expect(body.propertyId).toBe(PROPERTY_ID);
       expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
+      expect(body.category).toBe('cleaning');
       expect(body.bookingId).toBeUndefined();
       expect(body.chargeToGuest).toBeUndefined();
 

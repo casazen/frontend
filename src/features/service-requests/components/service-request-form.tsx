@@ -14,9 +14,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Wrench } from 'lucide-react';
 import { useCreateServiceRequest } from '@/queries/use-service-requests';
+import { useServiceCategories } from '@/queries/use-service-categories';
 import type { ServiceRequestUrgency } from '@/types/service-request';
-
-const CATEGORIES = ['cleaning', 'maintenance', 'plumbing', 'laundry'] as const;
+import { ServiceCategorySelect } from './service-category-picker';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -56,19 +56,23 @@ export function ServiceRequestForm({
     }
   };
 
-  const [category, setCategory] = useState<string>(preselectedCategory ?? 'cleaning');
+  // Codes come from the backend catalog (SU-03): a preselection that is not a code (e.g. an old
+  // supplier label) falls back to the first category instead of being sent and rejected.
+  const { data: categoryCodes } = useServiceCategories();
+  const [category, setCategory] = useState<string>(preselectedCategory ?? '');
+  const selectedCategory = categoryCodes?.includes(category) ? category : (categoryCodes?.[0] ?? '');
   const [urgency, setUrgency] = useState<ServiceRequestUrgency>('Normal');
   const [notes, setNotes] = useState('');
 
   const createMutation = useCreateServiceRequest();
 
   const handleSubmit = () => {
-    if (!supplierOrgId) return;
+    if (!supplierOrgId || !selectedCategory) return;
     createMutation.mutate(
       {
         propertyId,
         supplierOrgId,
-        category,
+        category: selectedCategory,
         urgency,
         notes: notes || undefined,
       },
@@ -99,18 +103,7 @@ export function ServiceRequestForm({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="sr-category">{t('serviceRequest.category')}</Label>
-            <select
-              id="sr-category"
-              className={selectClass}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {t(`serviceRequest.categories.${c}`)}
-                </option>
-              ))}
-            </select>
+            <ServiceCategorySelect id="sr-category" value={selectedCategory} onChange={setCategory} />
           </div>
 
           <div className="space-y-2">
@@ -137,7 +130,7 @@ export function ServiceRequestForm({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!supplierOrgId || createMutation.isPending}
+            disabled={!supplierOrgId || !selectedCategory || createMutation.isPending}
             data-testid="submit-service-request"
           >
             {t('serviceRequest.submit')}
