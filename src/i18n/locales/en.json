@@ -2335,7 +2335,10 @@
     "next": "Next",
     "downloadDocumentScan": "Download document scan",
     "documentScanFileName": "guest-document",
-    "documentScanDownloadFailed": "Could not download the document scan."
+    "documentScanDownloadFailed": "Could not download the document scan.",
+    "documentNumberShow": "Show",
+    "documentNumberHide": "Hide",
+    "documentNumberRevealFailed": "Could not show the document number."
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
@@ -3836,6 +3839,7 @@
       "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
       "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
       "guestDocumentScanMissing": "No document scan is available for this guest.",
+      "guestDocumentNumberMissing": "No document number is recorded for this guest.",
       "serviceRequestBookingRequired": "In short-term rentals a supplier request is for a stay: choose the booking.",
       "serviceRequestBookingMismatch": "The booking is not a stay of this property.",
       "serviceRequestBookingNotAllowed": "In long-term rentals a supplier request is for the property, not for a booking."
@@ -3956,5 +3960,37 @@
     "childAgePlaceholder": "Age",
     "childAgeOption_one": "{{count}} year",
     "childAgeOption_other": "{{count}} years"
+  },
+  "questuraCredentials": {
+    "title": "Alloggiati Web credentials (Questura)",
+    "description": "Username, password and web service key (WSKey) of the Alloggiati Web account of this property.",
+    "loading": "Loading the credentials status…",
+    "loadFailed": "Could not check whether the credentials are configured.",
+    "retry": "Retry",
+    "configuredOn": "Configured on {{date}}",
+    "notConfigured": "Not configured",
+    "writeOnlyHint": "The credentials are encrypted and can no longer be viewed once saved: to change them, enter them again. CasaZen does not transmit to Alloggiati Web yet: they will be used for automatic sending once it is available.",
+    "fields": {
+      "username": "Username",
+      "password": "Password",
+      "wsKey": "Web service key (WSKey)"
+    },
+    "save": "Save credentials",
+    "replace": "Replace credentials",
+    "remove": "Remove credentials",
+    "removeConfirm": "Confirm removal",
+    "cancel": "Cancel",
+    "saved": "Alloggiati Web credentials saved.",
+    "saveFailed": "Could not save the credentials.",
+    "removed": "Alloggiati Web credentials removed.",
+    "removeFailed": "Could not remove the credentials.",
+    "errors": {
+      "usernameRequired": "Enter the Alloggiati Web username.",
+      "usernameTooLong": "The username can be at most 100 characters long.",
+      "passwordRequired": "Enter the Alloggiati Web password.",
+      "passwordTooLong": "The password can be at most 200 characters long.",
+      "wsKeyRequired": "Enter the web service key (WSKey).",
+      "wsKeyTooLong": "The web service key can be at most 200 characters long."
+    }
   }
 }

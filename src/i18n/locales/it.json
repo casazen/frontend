@@ -2335,7 +2335,10 @@
     "next": "Successiva",
     "downloadDocumentScan": "Scarica scansione documento",
     "documentScanFileName": "documento-ospite",
-    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento."
+    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento.",
+    "documentNumberShow": "Mostra",
+    "documentNumberHide": "Nascondi",
+    "documentNumberRevealFailed": "Impossibile mostrare il numero di documento."
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -3836,6 +3839,7 @@
       "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
       "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
       "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite.",
+      "guestDocumentNumberMissing": "Nessun numero di documento registrato per questo ospite.",
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
       "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione."
@@ -3956,5 +3960,37 @@
     "childAgePlaceholder": "Età",
     "childAgeOption_one": "{{count}} anno",
     "childAgeOption_other": "{{count}} anni"
+  },
+  "questuraCredentials": {
+    "title": "Credenziali Alloggiati Web (Questura)",
+    "description": "Nome utente, password e chiave del web service (WSKey) dell'account Alloggiati Web di questo immobile.",
+    "loading": "Caricamento dello stato delle credenziali…",
+    "loadFailed": "Impossibile verificare se le credenziali sono configurate.",
+    "retry": "Riprova",
+    "configuredOn": "Configurate il {{date}}",
+    "notConfigured": "Non configurate",
+    "writeOnlyHint": "Le credenziali vengono cifrate e non sono più visibili dopo il salvataggio: per cambiarle inseriscile di nuovo. CasaZen non trasmette ancora ad Alloggiati Web: verranno usate per l'invio automatico quando sarà disponibile.",
+    "fields": {
+      "username": "Nome utente",
+      "password": "Password",
+      "wsKey": "Chiave web service (WSKey)"
+    },
+    "save": "Salva credenziali",
+    "replace": "Sostituisci credenziali",
+    "remove": "Rimuovi credenziali",
+    "removeConfirm": "Conferma rimozione",
+    "cancel": "Annulla",
+    "saved": "Credenziali Alloggiati Web salvate.",
+    "saveFailed": "Impossibile salvare le credenziali.",
+    "removed": "Credenziali Alloggiati Web rimosse.",
+    "removeFailed": "Impossibile rimuovere le credenziali.",
+    "errors": {
+      "usernameRequired": "Inserisci il nome utente di Alloggiati Web.",
+      "usernameTooLong": "Il nome utente può avere al massimo 100 caratteri.",
+      "passwordRequired": "Inserisci la password di Alloggiati Web.",
+      "passwordTooLong": "La password può avere al massimo 200 caratteri.",
+      "wsKeyRequired": "Inserisci la chiave del web service (WSKey).",
+      "wsKeyTooLong": "La chiave del web service può avere al massimo 200 caratteri."
+    }
   }
 }

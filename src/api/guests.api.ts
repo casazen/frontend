@@ -3,6 +3,7 @@ import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   Guest,
+  GuestDocumentNumber,
   GuestSummary,
   GuestListParams,
   CreateGuestDto,
@@ -22,6 +23,13 @@ export const guestsApi = {
   // GET /api/guests/{id}
   getById: (id: string) =>
     ApiClient.get<Guest>(`/guests/${id}`),
+
+  /**
+   * GET /api/guests/{id}/document-number — the full document number (every other answer masks it). Explicit action,
+   * audited by the API: call it only when the host asks to see the number.
+   */
+  getDocumentNumber: (id: string) =>
+    ApiClient.get<GuestDocumentNumber>(`/guests/${id}/document-number`),
 
   // GET /api/guests/email/{email}
   getByEmail: (email: string) =>
