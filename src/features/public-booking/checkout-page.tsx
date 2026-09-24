@@ -1,25 +1,26 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Link, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useOrgPublicProperty } from '@/queries/use-public-org';
 import { useCreateDirectBooking, useDirectBookingQuote } from '@/queries/use-public-booking';
-import { publicBookingApi } from '@/api/public-booking.api';
 import { ConsentCheckbox } from '@/features/public-booking/components/consent-checkbox';
 import { PriceBreakdown } from '@/features/public-booking/components/price-breakdown';
+import { StripeIntentPayment } from '@/features/public-booking/components/stripe-intent-payment';
 import { createCheckoutSchema, type CheckoutFormValues } from '@/features/public-booking/schemas/checkout.schema';
+import type { ClientPaymentStatus } from '@/features/public-booking/checkout-outcome';
+import type { CheckoutOutcomeLocationState } from '@/features/public-booking/checkout-outcome-page';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { isDemoMode } from '@/config/demo.config';
-import { getProblemMessage } from '@/lib/api-errors';
-import { buildOrgBookingPath, buildPropertyPageUrl } from '@/lib/booking-url';
+import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
+import { buildCheckoutOutcomePath, buildOrgBookingPath, buildPropertyPageUrl } from '@/lib/booking-url';
 import { getCountryOptions } from '@/lib/countries';
-import { addDays, formatRomeDateTime, formatStayDate, isStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
+import { findPendingCheckout, savePendingCheckout, type PendingCheckout } from '@/lib/pending-checkout';
+import { addDays, formatStayDate, isStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import { completeChildrenAges, resizeChildrenAges } from '@/lib/tourist-tax';
 import { ChildrenAgesFields } from '@/features/tourist-tax/components/children-ages-fields';
 import type {
@@ -30,7 +31,8 @@ import type {
   PaymentOption,
 } from '@/types';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import { Loader2, CheckCircle2, MailCheck, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { isAxiosError } from 'axios';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
 import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 
@@ -38,6 +40,7 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
+/** Demo builds only (`VITE_DEMO_MODE`): no Stripe; the outcome page still reads the state from the (mocked) API. */
 function DemoPaymentStep({
   onSuccess,
   t,
@@ -53,227 +56,6 @@ function DemoPaymentStep({
       <Button className="w-full" onClick={onSuccess}>
         {t('publicBooking.payNow')}
       </Button>
-    </div>
-  );
-}
-
-function StripePaymentStep({
-  onSuccess,
-  onError,
-  t,
-}: {
-  onSuccess: () => void;
-  onError: (message: string) => void;
-  t: (key: string) => string;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-
-  const handlePay = async () => {
-    if (!stripe || !elements) return;
-
-    setProcessing(true);
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: { return_url: window.location.href },
-      redirect: 'if_required',
-    });
-    setProcessing(false);
-
-    if (error) {
-      onError(error.message ?? t('publicBooking.paymentFailed'));
-      return;
-    }
-
-    onSuccess();
-  };
-
-  return (
-    <div className="space-y-4" data-testid="checkout-payment-step">
-      <PaymentElement />
-      <Button className="w-full" onClick={handlePay} disabled={processing}>
-        {processing ? t('publicBooking.processing') : t('publicBooking.payNow')}
-      </Button>
-    </div>
-  );
-}
-
-function StripeSetupStep({
-  onSuccess,
-  onError,
-  t,
-}: {
-  onSuccess: () => void;
-  onError: (message: string) => void;
-  t: (key: string) => string;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-
-  const handleConfirm = async () => {
-    if (!stripe || !elements) return;
-
-    setProcessing(true);
-    const { error } = await stripe.confirmSetup({
-      elements,
-      confirmParams: { return_url: window.location.href },
-      redirect: 'if_required',
-    });
-    setProcessing(false);
-
-    if (error) {
-      onError(error.message ?? t('publicBooking.paymentSetupError'));
-      return;
-    }
-
-    onSuccess();
-  };
-
-  return (
-    <div className="space-y-4" data-testid="checkout-setup-step">
-      <PaymentElement />
-      <Button className="w-full" onClick={handleConfirm} disabled={processing}>
-        {processing ? t('publicBooking.confirming') : t('publicBooking.confirmPaymentSetup')}
-      </Button>
-    </div>
-  );
-}
-
-function ConfirmationScreen({
-  bookingResult,
-  org,
-  orgSlug,
-  t,
-  i18n,
-}: {
-  bookingResult: DirectBookingResponse;
-  org: PublicOrgDto;
-  orgSlug: string | undefined;
-  t: (key: string, options?: Record<string, unknown>) => string;
-  i18n: { language: string };
-}) {
-  const formatDate = (date: string | Date) => {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric' });
-  };
-
-  const daysUntilDeadline = (deadline: string | Date) => {
-    const d = typeof deadline === 'string' ? new Date(deadline) : deadline;
-    const today = new Date();
-    const diff = d.getTime() - today.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days;
-  };
-
-  const paymentText = (() => {
-    switch (bookingResult.paymentOption) {
-      case 'Immediate':
-        return t('publicBooking.paidOnline');
-      case 'OnCancellationDeadline':
-        return t('publicBooking.paymentDueBy', { date: formatDate(bookingResult.freeRefundDeadline) });
-      default:
-        return '';
-    }
-  })();
-
-  return (
-    <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="checkout-confirmation">
-      <div className="flex justify-center">
-        <div className="rounded-full bg-green-100 p-4">
-          <CheckCircle2 className="h-12 w-12 text-green-600" />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">{t('publicBooking.bookingConfirmed')}</h2>
-        <p className="text-muted-foreground">
-          {t('publicBooking.bookingConfirmedDescription', { orgName: org.displayName })}
-        </p>
-      </div>
-      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.bookingReference')}</p>
-        <p className="font-mono text-lg font-semibold">{bookingResult.bookingId}</p>
-      </div>
-      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.paymentMethod')}</p>
-        <p className="text-sm">{paymentText}</p>
-        {bookingResult.paymentOption === 'OnCancellationDeadline' && (
-          <p className="text-xs text-orange-600 mt-2">
-            {t('publicBooking.freeCancellationUntil', { count: daysUntilDeadline(bookingResult.freeRefundDeadline) })}
-          </p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Link to={`/book/${orgSlug}`} className="block">
-          <Button variant="outline" className="w-full">
-            {t('publicBooking.backToProperties')}
-          </Button>
-        </Link>
-        <Link to={`/book/${orgSlug}/my-bookings`} className="block">
-          <Button className="w-full">
-            {t('publicBooking.viewMyBookings')}
-          </Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/**
- * "Pay at the property" (BK-06, decision D5): the checkout sends a request, never a confirmed booking. The guest confirms
- * the email, then the host accepts or declines.
- */
-function OnSiteRequestSentScreen({
-  bookingResult,
-  org,
-  orgSlug,
-  guestEmail,
-}: {
-  bookingResult: DirectBookingResponse;
-  org: PublicOrgDto;
-  orgSlug: string;
-  guestEmail: string;
-}) {
-  const { t, i18n } = useTranslation();
-  const confirmBy = bookingResult.emailConfirmationExpiresAt
-    ? formatRomeDateTime(bookingResult.emailConfirmationExpiresAt, i18n.language)
-    : '';
-
-  return (
-    <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="checkout-onsite-request-sent">
-      <div className="flex justify-center">
-        <div className="rounded-full bg-amber-100 p-4">
-          <MailCheck className="h-12 w-12 text-amber-700" />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">{t('publicBooking.onSiteRequest.sentTitle')}</h2>
-        <p className="text-muted-foreground">
-          {t('publicBooking.onSiteRequest.sentDescription', { orgName: org.displayName })}
-        </p>
-      </div>
-      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="font-medium">{t('publicBooking.onSiteRequest.nextStepsTitle')}</p>
-        <ol className="list-decimal space-y-2 pl-5 text-sm">
-          <li>
-            {confirmBy
-              ? t('publicBooking.onSiteRequest.stepConfirmEmail', { email: guestEmail, time: confirmBy })
-              : t('publicBooking.onSiteRequest.stepConfirmEmailNoTime', { email: guestEmail })}
-          </li>
-          <li>{t('publicBooking.onSiteRequest.stepHostAnswers')}</li>
-          <li>{t('publicBooking.onSiteRequest.stepPayOnSite')}</li>
-        </ol>
-      </div>
-      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.bookingReference')}</p>
-        <p className="font-mono text-lg font-semibold">{bookingResult.bookingId}</p>
-      </div>
-      <Link to={buildOrgBookingPath(orgSlug)} className="block">
-        <Button variant="outline" className="w-full">
-          {t('publicBooking.backToProperties')}
-        </Button>
-      </Link>
     </div>
   );
 }
@@ -324,6 +106,7 @@ function CheckoutFlow({
   property: PublicPropertyDetailDto;
 }) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { params, setParams } = useBookingSearchParams();
   const [today] = useState(() => todayInRome());
   const schema = useMemo(
@@ -358,9 +141,9 @@ function CheckoutFlow({
   const [paymentOption, setPaymentOption] = useState<PaymentOption | null>(null);
   const [consent, setConsent] = useState(false);
   const [bookingResult, setBookingResult] = useState<DirectBookingResponse | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [requestEmail, setRequestEmail] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  // A 409 on dates this tab has already booked: the guest's own hold (A3-15), offered back instead of a dead end.
+  const [ownPendingCheckout, setOwnPendingCheckout] = useState<PendingCheckout | null>(null);
   // Age of each minor at check-in, asked only when the tourist tax of the comune depends on it (BK-03).
   const [childrenAgesState, setChildrenAges] = useState<(number | null)[]>([]);
 
@@ -397,6 +180,12 @@ function CheckoutFlow({
   const childrenAgesMissing = askChildrenAges && !completeAges;
   const quoteReady =
     !!quoteData && !quote.isFetching && !quote.isError && quoteData.touristTax.status !== 'ChildAgesRequired';
+  // A3-16: the backend says which options apply to this stay. "Paga alla scadenza" only when its charge day is ahead
+  // (not for 10 nights from tomorrow); "Cancellazione gratuita" only if the guest can really cancel (today they cannot).
+  const paymentOptions = quoteData?.paymentOptions;
+  const deferredChargeDate =
+    paymentOptions?.deferredPaymentAvailable === true ? paymentOptions.deferredChargeDate : null;
+  const freeCancellationUntil = paymentOptions?.freeCancellationUntil ?? null;
 
   // Dates and guests coming from the link are checked right away (past dates, too many guests).
   useEffect(() => {
@@ -433,41 +222,26 @@ function CheckoutFlow({
     void trigger('adults');
   };
 
-  const stripePromise = useMemo(() => {
-    if (!bookingResult || isDemoMode) return null;
-    const { publishableKey, stripeAccountId } = bookingResult.connectedAccountPublishableContext;
-    return loadStripe(publishableKey, { stripeAccount: stripeAccountId });
-  }, [bookingResult]);
-
+  // The stay changed and "Paga alla scadenza" no longer applies: the guest chooses again.
+  const deferredUnavailable = paymentOption === 'OnCancellationDeadline' && !!quoteData && !deferredChargeDate;
   useEffect(() => {
-    if (confirmed && bookingResult && bookingResult.paymentOption === 'Immediate') {
-      let attempts = 0;
-      const checkStatus = async () => {
-        try {
-          const status = await publicBookingApi.getBookingStatus(bookingResult.bookingId);
-          if (status.status === 'Confirmed') {
-            return;
-          }
-          attempts++;
-          if (attempts < 15) {
-            setTimeout(checkStatus, 2000);
-          }
-        } catch {
-          // Continue polling
-          attempts++;
-          if (attempts < 15) {
-            setTimeout(checkStatus, 2000);
-          }
-        }
-      };
-      checkStatus();
-    }
-  }, [confirmed, bookingResult]);
+    if (deferredUnavailable) setPaymentOption(null);
+  }, [deferredUnavailable]);
+
+  /**
+   * The outcome page of the booking (BK-07): the real state from the backend, never "confirmed" before the confirmation.
+   * Also the Stripe `return_url`, so a redirect method brings the guest back to this booking.
+   */
+  const outcomePath = bookingResult
+    ? buildCheckoutOutcomePath(orgSlug, bookingResult.bookingId, bookingResult.checkoutToken)
+    : '';
+  const goToOutcome = (state: CheckoutOutcomeLocationState, path = outcomePath) => navigate(path, { state });
 
   const onSubmit = handleSubmit(async (data) => {
     if (!paymentOption) return;
 
     setPaymentError(null);
+    setOwnPendingCheckout(null);
     try {
       const result = await createBooking.mutateAsync({
         propertyId: property.id,
@@ -486,30 +260,40 @@ function CheckoutFlow({
         consent: { dataProcessing: true, consentVersion: DIRECT_CHECKOUT_CONSENT_VERSION },
         paymentOption,
       });
-      setBookingResult(result);
+      savePendingCheckout({
+        bookingId: result.bookingId,
+        token: result.checkoutToken,
+        orgSlug,
+        propertyId: property.id,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+      });
 
       // "Pay at the property" is a request waiting for the email confirmation and the host (D5): nothing to pay here.
       if (result.paymentOption === 'OnSite') {
-        setRequestEmail(data.email);
-        setConfirmed(true);
+        goToOutcome(
+          { guestEmail: data.email },
+          buildCheckoutOutcomePath(orgSlug, result.bookingId, result.checkoutToken),
+        );
+        return;
       }
+      setBookingResult(result);
     } catch (error) {
+      // Every checkout error has its own message (code of the backend ProblemDetails).
       setPaymentError(getProblemMessage(error, t) ?? t('publicBooking.checkoutError'));
+      if (isAxiosError(error) && getProblemCode(error.response?.data) === 'booking_dates_unavailable') {
+        setOwnPendingCheckout(findPendingCheckout(property.id, data.checkIn, data.checkOut));
+      }
     }
   });
 
-  if (confirmed && bookingResult?.paymentOption === 'OnSite') {
-    return (
-      <OnSiteRequestSentScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} guestEmail={requestEmail} />
-    );
-  }
-
-  if (confirmed && bookingResult) {
-    return <ConfirmationScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} t={t} i18n={i18n} />;
-  }
-
-  const freeCancellationDate = formatStayDate(addDays(checkIn, -7), i18n.language, { month: 'long', day: 'numeric' });
-  const deadlineDate = formatStayDate(addDays(checkIn, -7), i18n.language, { month: 'short', day: 'numeric' });
+  const onPaymentSubmitted = (clientStatus: ClientPaymentStatus) => goToOutcome({ clientStatus });
+  const freeCancellationDate = freeCancellationUntil
+    ? formatStayDate(freeCancellationUntil, i18n.language, { month: 'long', day: 'numeric' })
+    : '';
+  const deferredChargeLabel = deferredChargeDate
+    ? formatStayDate(deferredChargeDate, i18n.language, { day: 'numeric', month: 'long' })
+    : '';
 
   return (
     <div className="mx-auto max-w-lg space-y-6" data-testid="direct-checkout-page">
@@ -609,7 +393,7 @@ function CheckoutFlow({
               <div className="space-y-2">
                 <h3 className="font-semibold">{t('publicBooking.paymentMethodTitle')}</h3>
                 {freeCancellationDate && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground" data-testid="checkout-free-cancellation">
                     {t('publicBooking.freeCancellationBy', { date: freeCancellationDate })}
                   </p>
                 )}
@@ -622,13 +406,13 @@ function CheckoutFlow({
                 >
                   {t('publicBooking.payImmediately')}
                 </button>
-                {nights > 7 && deadlineDate && (
+                {deferredChargeLabel && (
                   <button
                     type="button"
                     onClick={() => setPaymentOption('OnCancellationDeadline')}
                     className="w-full p-3 border-2 border-orange-200 rounded-lg hover:bg-orange-50 text-left font-medium transition"
                   >
-                    {t('publicBooking.payOnDeadline', { date: deadlineDate })}
+                    {t('publicBooking.payOnDeadline', { date: deferredChargeLabel })}
                   </button>
                 )}
                 <button
@@ -746,6 +530,22 @@ function CheckoutFlow({
                 {paymentError}
               </p>
             )}
+            {ownPendingCheckout && (
+              <div className="space-y-2 rounded-lg border p-4 text-sm" data-testid="checkout-resume-own-booking">
+                <p>{t('publicBooking.outcome.resumeOwnBooking')}</p>
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    to={buildCheckoutOutcomePath(
+                      ownPendingCheckout.orgSlug,
+                      ownPendingCheckout.bookingId,
+                      ownPendingCheckout.token,
+                    )}
+                  >
+                    {t('publicBooking.outcome.resumeOwnBookingAction')}
+                  </Link>
+                </Button>
+              </div>
+            )}
 
             <Button
               type="submit"
@@ -773,26 +573,24 @@ function CheckoutFlow({
           />
 
           {isDemoMode ? (
-            <DemoPaymentStep onSuccess={() => setConfirmed(true)} t={t} />
-          ) : stripePromise && bookingResult.clientSecret ? (
-            <Elements stripe={stripePromise} options={{ clientSecret: bookingResult.clientSecret }}>
-              <StripePaymentStep
-                onSuccess={() => setConfirmed(true)}
-                onError={setPaymentError}
-                t={t}
-              />
-            </Elements>
-          ) : stripePromise && bookingResult.setupIntentClientSecret ? (
-            <Elements stripe={stripePromise} options={{ clientSecret: bookingResult.setupIntentClientSecret }}>
-              <StripeSetupStep
-                onSuccess={() => setConfirmed(true)}
-                onError={setPaymentError}
-                t={t}
-              />
-            </Elements>
+            <DemoPaymentStep onSuccess={() => onPaymentSubmitted('succeeded')} t={t} />
+          ) : bookingResult.clientSecret || bookingResult.setupIntentClientSecret ? (
+            <StripeIntentPayment
+              publishableKey={bookingResult.connectedAccountPublishableContext.publishableKey}
+              stripeAccountId={bookingResult.connectedAccountPublishableContext.stripeAccountId}
+              clientSecret={bookingResult.clientSecret || bookingResult.setupIntentClientSecret || ''}
+              mode={bookingResult.clientSecret ? 'payment' : 'setup'}
+              returnUrl={`${window.location.origin}${outcomePath}`}
+              onSubmitted={onPaymentSubmitted}
+              onError={setPaymentError}
+            />
           ) : null}
 
-          {paymentError && <p className="text-sm text-destructive">{paymentError}</p>}
+          {paymentError && (
+            <p className="text-sm text-destructive" role="alert" data-testid="checkout-payment-error">
+              {paymentError}
+            </p>
+          )}
         </div>
       )}
     </div>

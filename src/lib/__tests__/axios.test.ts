@@ -131,7 +131,8 @@ describe('request interceptor: explicit public flag (A9-20)', () => {
       publicBookingApi.createDirectBooking({} as never),
       publicBookingApi.getPropertyAvailability('p1', '2026-10-01', '2026-10-05'),
       publicBookingApi.lookupGuestBookings('guest@example.test'),
-      publicBookingApi.getBookingStatus('b1'),
+      publicBookingApi.getCheckoutOutcome('b1', 'tok'),
+      publicBookingApi.resumeCheckoutPayment('b1', 'tok'),
       publicCheckinApi.getContext('tok'),
       publicCheckinApi.submit('tok', {} as never),
       PublicSeoApi.getComplianceGuide('lazio', 'roma'),
@@ -153,7 +154,7 @@ describe('request interceptor: explicit public flag (A9-20)', () => {
       fetchSupplierRegistrationOptions(),
     ]);
 
-    expect(ctx.calls).toHaveLength(23);
+    expect(ctx.calls).toHaveLength(24);
     expect(ctx.getAccessToken).not.toHaveBeenCalled();
     ctx.calls.forEach((_, index) => expect(ctx.authorization(index)).toBeFalsy());
   });
