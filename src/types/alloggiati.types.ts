@@ -97,7 +97,11 @@ export interface AlloggiatiGuestRowDto {
   citizenship: string;
   requiresDocument: boolean;
   documentType: DocumentType | null;
-  documentNumber: string;
+  /**
+   * Document number with only its last characters visible (`*****567`), like on the guest portal; null when none is on
+   * file. The full number comes from `GET /alloggiati/{bookingId}/stay-guests/document-numbers` (audited).
+   */
+  documentNumberMasked: string | null;
   documentIssuePlace: string;
   codes: AlloggiatiRowCodesDto;
   /** Record fields missing or not accepted by the record. */
@@ -106,6 +110,20 @@ export interface AlloggiatiGuestRowDto {
   codesToComplete: AlloggiatiRecordField[];
   /** `member_without_head` or `head_without_members`; null when the guest fits the order of the stay. */
   compositionIssue: 'member_without_head' | 'head_without_members' | 'invalid_type' | null;
+  /** Who entered the data (CO-09): the guest on the portal, the host, or not recorded (booker record, older data). */
+  dataSource: StayGuestDataSource;
+  /** When the data was entered; null for the booker shown before any guest is registered. */
+  enteredAt: string | null;
+}
+
+/** Author of the data of a guest of the stay (API enum `StayGuestDataSource`). */
+export type StayGuestDataSource = 'NotRecorded' | 'GuestPortal' | 'Host';
+
+/** Full document number of a guest (`GET /alloggiati/{bookingId}/stay-guests/document-numbers`). */
+export interface StayGuestDocumentNumberDto {
+  position: number;
+  stayGuestId: string | null;
+  documentNumber: string;
 }
 
 export interface AlloggiatiGuestSummaryDto {

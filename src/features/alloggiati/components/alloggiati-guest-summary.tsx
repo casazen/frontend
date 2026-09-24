@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { AlertTriangle, CheckCircle2, Copy, Loader2, Pencil } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, Eye, Loader2, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { copyTextToClipboard } from '@/lib/utils';
+import { copyTextToClipboard, formatDateTime } from '@/lib/utils';
+import { getProblemMessage } from '@/lib/api-errors';
+import { alloggiatiApi } from '@/api/alloggiati.api';
 import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
 import { useAlloggiatiGuestSummary } from '@/queries/use-alloggiati';
 import type { AlloggiatiGuestRowDto, AlloggiatiRecordField } from '@/types/alloggiati.types';
@@ -47,9 +49,19 @@ function recordFieldsOf(guest: AlloggiatiGuestRowDto): AlloggiatiRecordField[] {
   ];
 }
 
-/** Text to copy on the portal: the value stored in CasaZen, never an invented code. Empty when missing. */
-function fieldValue(guest: AlloggiatiGuestRowDto, field: AlloggiatiRecordField, t: TranslateFn): string {
+/**
+ * Text to copy on the portal: the value stored in CasaZen, never an invented code. Empty when missing. The document
+ * number is masked unless the host asked to see it (`revealedNumber`).
+ */
+function fieldValue(
+  guest: AlloggiatiGuestRowDto,
+  field: AlloggiatiRecordField,
+  t: TranslateFn,
+  revealedNumber?: string,
+): string {
   switch (field) {
+    case 'documentNumber':
+      return revealedNumber ?? guest.documentNumberMasked ?? '';
     case 'type':
       return t(`alloggiati.guestKind.${guest.type}`);
     case 'arrivalDate':
@@ -102,16 +114,21 @@ interface AlloggiatiGuestSummaryProps {
   bookingId: string;
   /** The host may edit the guests (booking.write). */
   canEdit?: boolean;
+  /** The host may see the full document numbers (guest.read): shown masked until he asks. */
+  canRevealDocuments?: boolean;
 }
 
 /**
  * Per-guest data the host copies on the Questura portal (CO-11, decision D6): one card per guest of the stay (CO-12),
  * head of family or group first, with the completeness of each guest and the official codes still to complete.
  */
-export function AlloggiatiGuestSummary({ bookingId, canEdit = false }: AlloggiatiGuestSummaryProps) {
+export function AlloggiatiGuestSummary({ bookingId, canEdit = false, canRevealDocuments = false }: AlloggiatiGuestSummaryProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useAlloggiatiGuestSummary(bookingId);
   const [editing, setEditing] = useState(false);
+  // Full document numbers the host asked to see, by position (CO-09): the summary shows them masked.
+  const [revealed, setRevealed] = useState<Record<number, string>>({});
+  const [revealing, setRevealing] = useState<number | null>(null);
 
   async function copy(text: string) {
     try {
@@ -119,6 +136,24 @@ export function AlloggiatiGuestSummary({ bookingId, canEdit = false }: Alloggiat
       toast.success(t('alloggiati.guestSummary.copied'));
     } catch {
       toast.error(t('alloggiati.guestSummary.copyFailed'));
+    }
+  }
+
+  /** Asks the API for the full number of one guest (audited); null when it cannot be read. */
+  async function reveal(position: number): Promise<string | null> {
+    if (revealed[position]) return revealed[position];
+    setRevealing(position);
+    try {
+      const numbers = await alloggiatiApi.getDocumentNumbers(bookingId, position);
+      const number = numbers.find((n) => n.position === position)?.documentNumber ?? null;
+      if (number) setRevealed((current) => ({ ...current, [position]: number }));
+      else toast.error(t('alloggiati.guestSummary.revealFailed'));
+      return number;
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('alloggiati.guestSummary.revealFailed'));
+      return null;
+    } finally {
+      setRevealing(null);
     }
   }
 
@@ -193,19 +228,29 @@ export function AlloggiatiGuestSummary({ bookingId, canEdit = false }: Alloggiat
       )}
 
       {data.guests.map((guest) => {
+        const index = guest.position;
+        const revealedNumber = revealed[index];
         const rows = recordFieldsOf(guest).map((field) => {
           const codeKey = CODED_FIELDS[field];
           return {
             field,
             label: t(`alloggiati.recordField.${field}`),
-            value: fieldValue(guest, field, t),
+            value: fieldValue(guest, field, t, revealedNumber),
             missing: guest.missingFields.includes(field),
             code: codeKey ? guest.codes[codeKey] : null,
             codeToComplete: guest.codesToComplete.includes(field),
           };
         });
-        const allText = rows.map((row) => `${row.label}: ${row.value}`).join('\n');
-        const index = guest.position;
+        const maskedNumber = guest.requiresDocument && !!guest.documentNumberMasked && !revealedNumber;
+        // "Copia tutto" is an explicit request for the data to paste on the portal: the full number included.
+        const copyAll = async () => {
+          const number = maskedNumber && canRevealDocuments ? await reveal(index) : revealedNumber;
+          await copy(
+            rows
+              .map((row) => `${row.label}: ${row.field === 'documentNumber' ? fieldValue(guest, row.field, t, number ?? undefined) : row.value}`)
+              .join('\n'),
+          );
+        };
 
         return (
           <div key={guest.stayGuestId ?? `position-${index}`} className="rounded-md border" data-testid={`alloggiati-guest-${index}`}>
@@ -215,8 +260,19 @@ export function AlloggiatiGuestSummary({ bookingId, canEdit = false }: Alloggiat
                 <span className="text-muted-foreground">{t(`alloggiati.guestKind.${guest.type}`)}</span>
                 {guest.isMinor && <Badge variant="outline">{t('alloggiati.guestSummary.minor')}</Badge>}
                 <GuestStatusBadge guest={guest} />
+                {guest.dataSource !== 'NotRecorded' && guest.enteredAt && (
+                  <span className="text-xs font-normal text-muted-foreground" data-testid={`alloggiati-guest-${index}-entered-by`}>
+                    {t(`alloggiati.guestSummary.enteredBy.${guest.dataSource}`, { date: formatDateTime(guest.enteredAt) })}
+                  </span>
+                )}
               </span>
-              <Button variant="outline" size="sm" onClick={() => copy(allText)} data-testid={`alloggiati-guest-${index}-copy-all`}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void copyAll()}
+                disabled={revealing === index}
+                data-testid={`alloggiati-guest-${index}-copy-all`}
+              >
                 <Copy className="mr-2 h-3.5 w-3.5" />
                 {t('alloggiati.guestSummary.copyAll')}
               </Button>
@@ -251,15 +307,35 @@ export function AlloggiatiGuestSummary({ bookingId, canEdit = false }: Alloggiat
                             {t('alloggiati.guestSummary.codeToComplete')}
                           </span>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => copy(row.value)}
-                          aria-label={t('alloggiati.guestSummary.copyField', { field: row.label })}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
+                        {row.field === 'documentNumber' && maskedNumber ? (
+                          canRevealDocuments && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7"
+                              onClick={() => void reveal(index)}
+                              disabled={revealing === index}
+                              data-testid={`alloggiati-guest-${index}-reveal-document`}
+                            >
+                              {revealing === index ? (
+                                <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Eye className="mr-1 h-3.5 w-3.5" />
+                              )}
+                              {t('alloggiati.guestSummary.revealDocument')}
+                            </Button>
+                          )
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => copy(row.value)}
+                            aria-label={t('alloggiati.guestSummary.copyField', { field: row.label })}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </>
                     )}
                   </dd>

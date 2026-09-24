@@ -1,4 +1,6 @@
 import { ApiClient } from './client';
+import axios from '@/lib/axios';
+import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   Guest,
   GuestSummary,
@@ -36,4 +38,17 @@ export const guestsApi = {
   // DELETE /api/guests/{id}
   delete: (id: string) =>
     ApiClient.delete<void>(`/guests/${id}`),
+
+  /**
+   * GET /api/guests/{id}/document-scan — the identity document scan the guest uploaded. It lives in the private storage
+   * bucket: fetched through the authenticated endpoint (tenant check, audited), never through a public link.
+   */
+  downloadDocumentScan: async (id: string): Promise<Blob> => {
+    try {
+      const response = await axios.get<Blob>(`/guests/${id}/document-scan`, { responseType: 'blob' });
+      return response.data;
+    } catch (error) {
+      throw await withJsonErrorBody(error);
+    }
+  },
 };
