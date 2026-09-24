@@ -8,9 +8,10 @@ import type {
   CreateBookingDto,
   UpdateBookingDto,
   CheckInDto,
-  CheckOutDto,
+  HostBookingQuotePayload,
   DeclineBookingRequestDto,
 } from '@/types';
+import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInSessionStatusDto, ResendCheckInLinkResponse } from '@/types/public-checkin.types';
 
@@ -26,8 +27,12 @@ export const bookingsApi = {
   create: (data: CreateBookingDto) =>
     ApiClient.post<Booking>('/bookings', data),
 
+  /** Dates, guests and notes only: the backend computes the price again (PC-07). */
   update: (id: string, data: UpdateBookingDto) =>
     ApiClient.put<Booking>(`/bookings/${id}`, data),
+
+  /** Price of a stay the host is entering or changing, tourist tax included (PC-07, BK-03). */
+  quote: (payload: HostBookingQuotePayload) => ApiClient.post<DirectBookingQuote>('/bookings/quote', payload),
 
   /** What cancelling now would do: paid, refundable and minimum refund amounts (BK-02). */
   getCancellationQuote: (id: string) =>
@@ -40,7 +45,10 @@ export const bookingsApi = {
   /** "Pay at the property" requests waiting for the host's answer (BK-06). */
   getApprovalRequests: () => ApiClient.get<BookingApprovalRequest[]>('/bookings/approval-requests'),
 
-  /** Accepts a "pay at the property" request: the booking becomes Confirmed (BK-06). */
+  /**
+   * The host confirms a pending booking, the only confirmation of the console: accepts a "pay at the property" request
+   * (BK-06) or confirms a pending booking entered by hand (PC-07). The booking becomes Confirmed.
+   */
   approveRequest: (id: string) => ApiClient.post<Booking>(`/bookings/${id}/approve`),
 
   /** Declines a "pay at the property" request: cancelled, dates released; `message` goes to the guest (BK-06). */
@@ -52,9 +60,6 @@ export const bookingsApi = {
 
   checkIn: (id: string, data?: CheckInDto) =>
     ApiClient.post<Booking>(`/bookings/${id}/check-in`, data),
-
-  checkOut: (id: string, data?: CheckOutDto) =>
-    ApiClient.post<Booking>(`/bookings/${id}/check-out`, data),
 
   generateCheckInToken: (id: string) =>
     ApiClient.post<{ token: string }>(`/bookings/${id}/check-in-token`),

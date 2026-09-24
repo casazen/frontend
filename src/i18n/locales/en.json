@@ -72,6 +72,7 @@
         "planAction": "Plan",
         "roleAction": "Role",
         "deactivateAction": "Deactivate",
+        "reactivateAction": "Reactivate",
         "empty": "No users found."
       },
       "deactivateDialog": {
@@ -696,6 +697,10 @@
       },
       "numberOfGuests": {
         "min": "At least 1 guest is required"
+      },
+      "numberOfChildren": {
+        "invalid": "Enter a valid number of minors",
+        "lessThanGuests": "At least one adult is needed: minors must be fewer than the guests"
       }
     },
     "list": {
@@ -718,9 +723,10 @@
         "status": "Status",
         "source": "Source"
       },
-      "emptyTitle": "No bookings found",
-      "emptyDescription": "Get started by creating your first booking",
-      "addAction": "Add Booking"
+      "newBooking": "New booking",
+      "filteredByProperty": "Bookings of {{name}}",
+      "filteredByAProperty": "Bookings of one property",
+      "showAll": "Show all"
     },
     "detail": {
       "guestInformation": "Guest Information",
@@ -771,7 +777,24 @@
       "manualNotice": "The booking is saved as confirmed, with source \"Manual\": its dates are taken at once on the booking site and in the exported iCal calendar.",
       "propertiesLoading": "Loading properties...",
       "propertiesLoadError": "Could not load the properties. Reload the page.",
-      "noProperties": "No property available: create a property first."
+      "noProperties": "No property available: create a property first.",
+      "numberOfChildren": "Of whom minors (under 18)",
+      "numberOfChildrenHint": "The tourist tax of the comune exempts or reduces minors by age.",
+      "childrenAgesMissing": "Enter the age of each minor: it is needed to calculate the tourist tax.",
+      "stayLockedSource": "This booking comes from the booking site or a channel: dates and guests are not changed here. You can edit the notes.",
+      "stayLockedStarted": "The stay has already started or ended: dates and guests can no longer be changed. You can edit the notes.",
+      "repriceNotice": "If you change dates or guests the price is calculated again, tourist tax included.",
+      "price": {
+        "loading": "Calculating the price…",
+        "loadError": "The price could not be calculated.",
+        "lodging_one": "{{count}} night × {{perNight}}",
+        "lodging_other": "{{count}} nights × {{perNight}}",
+        "cleaning": "Cleaning",
+        "touristTax": "Tourist tax",
+        "taxNeedsAges": "enter the ages of the minors",
+        "taxNotCalculated": "not calculated (no rate for the comune)",
+        "total": "Total"
+      }
     },
     "create": {
       "title": "Create Booking",
@@ -783,7 +806,9 @@
       "description": "Update booking for {{name}}",
       "loading": "Loading booking...",
       "notFound": "Booking not found",
-      "notFoundDescription": "The booking you're looking for doesn't exist."
+      "notFoundDescription": "The booking you're looking for doesn't exist.",
+      "notEditable": "A cancelled booking cannot be changed.",
+      "backToBooking": "Back to the booking"
     },
     "checkInDialog": {
       "title": "Check In Guest",
@@ -794,18 +819,6 @@
       "cancel": "Cancel",
       "checkingIn": "Checking In...",
       "confirm": "Confirm Check In"
-    },
-    "checkOutDialog": {
-      "title": "Check Out Guest",
-      "description": "Check out {{name}}",
-      "checkOutTime": "Check-out Time",
-      "damages": "Damages (if any)",
-      "damagesPlaceholder": "Describe any damages found...",
-      "notes": "Notes (optional)",
-      "notesPlaceholder": "Any notes about the check-out...",
-      "cancel": "Cancel",
-      "checkingOut": "Checking Out...",
-      "confirm": "Confirm Check Out"
     },
     "detailPage": {
       "loading": "Loading booking...",
@@ -828,26 +841,26 @@
       "guestName": "Name",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
-      "perNight": "/night",
       "alloggiatiWeb": "Alloggiati Web",
       "communicationStatus": "Communication status",
       "confirmation": "Confirmation: ",
       "incompleteGuestData": "Incomplete guest data",
       "noAlloggiatiInfo": "No Alloggiati information available for this booking.",
-      "source": "Source"
+      "source": "Source",
+      "title": "Booking {{code}}",
+      "loadError": "The booking could not be loaded.",
+      "retry": "Retry",
+      "childrenCount_one": "including {{count}} minor",
+      "childrenCount_other": "including {{count}} minors",
+      "cancellationNote": "Cancellation reason (visible only to you)",
+      "lodgingPerNight_one": "Stay: {{count}} night × {{perNight}}",
+      "lodgingPerNight_other": "Stay: {{count}} nights × {{perNight}}",
+      "cleaningFee": "Cleaning",
+      "touristTax": "Tourist tax",
+      "noPriceBreakdown": "Price breakdown not available for this booking."
     },
     "card": {
-      "guest": "Guest",
-      "checkIn": "Check-in",
-      "checkOut": "Check-out",
-      "total": "Total",
-      "view": "View",
-      "checkInAction": "Check In",
-      "checkOutAction": "Check Out",
-      "guests": "guests",
-      "night_one": "night",
-      "night_other": "nights",
-      "bookingPrefix": "Booking #"
+      "checkOutAction": "Check Out"
     },
     "source": {
       "Manual": "Manual",
@@ -896,7 +909,8 @@
         "cancelled": "Booking cancelled.",
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
         "noRefund": "No refund requested."
-      }
+      },
+      "guestNotified": "The guest will get a cancellation email, without the reason."
     },
     "requests": {
       "title": "Requests to approve",
@@ -928,6 +942,17 @@
         "AwaitingGuestEmail": "Waiting for guest email",
         "AwaitingHostApproval": "To approve"
       }
+    },
+    "confirm": {
+      "action": "Confirm booking",
+      "title": "Confirm this booking?",
+      "description": "The dates become taken on the booking site and in the exported iCal calendar, and you can send the guest the check-in link.",
+      "keep": "Not now",
+      "submit": "Confirm",
+      "submitting": "Confirming…",
+      "failed": "The booking could not be confirmed. Please try again.",
+      "success": "Booking confirmed",
+      "pendingNotice": "This booking you entered is still pending: confirm it to take the dates and enable the guest's check-in."
     }
   },
   "ota": {
@@ -1118,6 +1143,13 @@
       "description": "Your account is not associated with any operational workspace. Sign out and sign back in, or contact the administrator for role assignment.",
       "loginAgain": "Sign in again"
     },
+    "accountInactive": {
+      "title": "Account deactivated",
+      "description": "An administrator deactivated your CasaZen account: you can no longer use the app with this account.",
+      "supportWithEmail": "If you think this is a mistake, write to support:",
+      "supportGeneric": "If you think this is a mistake, contact CasaZen support or the person who gave you access.",
+      "logout": "Log out"
+    },
     "auth": {
       "noSectionAccess": "You do not have access to this section",
       "authenticating": "Authenticating...",
@@ -1198,7 +1230,8 @@
       "pricingDescription": "Configure the AI adapter for dynamic pricing for this property.",
       "managePricing": "Manage AI pricing",
       "viewOnPublicSite": "View on public site",
-      "publicSiteHint": "Preview how guests see this property on your direct booking site."
+      "publicSiteHint": "Preview how guests see this property on your direct booking site.",
+      "newBooking": "New booking"
     },
     "info": {
       "title": "Property details",
@@ -2726,7 +2759,7 @@
     "paymentMethodTitle": "Payment method",
     "freeCancellationBy": "Free cancellation by {{date}}",
     "payImmediately": "Pay now",
-    "payOnDeadline": "Pay by {{date}}",
+    "payOnDeadline": "Pay later: your card is saved now and charged on {{date}}",
     "payOnSiteOption": "Pay at property",
     "changePaymentMethod": "Change payment method",
     "firstName": "First name",
@@ -2791,8 +2824,6 @@
     "daysRemaining_other": "{{count}} days remaining",
     "checkoutDates_one": "Dates: {{checkIn}} → {{checkOut}} ({{count}} night)",
     "checkoutDates_other": "Dates: {{checkIn}} → {{checkOut}} ({{count}} nights)",
-    "freeCancellationUntil_one": "Free cancellation up to {{count}} day",
-    "freeCancellationUntil_other": "Free cancellation up to {{count}} days",
     "nightsBreakdown_one": "{{count}} night x {{rate}}",
     "nightsBreakdown_other": "{{count}} nights x {{rate}}",
     "nightsTimesRateTotal_one": "{{count}} night × {{rate}} = {{total}}",
@@ -2849,6 +2880,44 @@
       "sentToHostNoDate": "Your request has been sent to the host. You will receive an email with the answer: the booking is valid only if the host accepts it.",
       "alreadyAccepted": "The host has already accepted your request: the booking is confirmed.",
       "closed": "This request is no longer active: it was declined, cancelled or it has expired."
+    },
+    "outcome": {
+      "loading": "Checking the booking status...",
+      "linkIncomplete": "The booking link is incomplete: open again the confirmation page you got at the end of the booking.",
+      "loadError": "The booking status could not be read.",
+      "retryLoad": "Try again",
+      "checking": "Updating the status automatically...",
+      "refresh": "Refresh status",
+      "processingTitle": "Payment being processed",
+      "processingDescription": "We are waiting for the payment confirmation: the booking is not confirmed yet. This page updates by itself.",
+      "processingSlowDescription": "The confirmation is taking longer than usual: some payment methods (e.g. SEPA direct debit) take a few business days. The booking will be confirmed once the payment is completed: keep this page to check its status.",
+      "failedTitle": "Payment failed",
+      "failedDescription": "The payment did not go through. You can try again, also with another method, until {{time}} (Italian time). Until then the dates stay reserved for you.",
+      "failedDescriptionNoTime": "The payment did not go through. You can try again, also with another method, while the dates stay reserved for you.",
+      "awaitingPaymentTitle": "Payment to complete",
+      "awaitingPaymentDescription": "The booking is not paid yet. Complete the payment by {{time}} (Italian time); after that the dates are released.",
+      "awaitingPaymentDescriptionNoTime": "The booking is not paid yet: complete the payment before the dates are released.",
+      "retryPayment": "Try the payment again",
+      "completePayment": "Complete the payment",
+      "resumeError": "The payment could not be resumed. Try again in a few minutes.",
+      "stepConfirmEmailAnyAddress": "Open the email we sent you and confirm your address. Deadline: {{time}} (Italian time); without confirmation the request is cancelled.",
+      "stepConfirmEmailAnyAddressNoTime": "Open the email we sent you and confirm your address: without confirmation the request is cancelled.",
+      "awaitingHostTitle": "Request sent to the host",
+      "expiredTitle": "Time expired",
+      "expiredPaymentDescription": "The payment was not completed in time and the dates have been released.",
+      "expiredRequestDescription": "The request has expired: the dates are available again.",
+      "latePaymentNote": "If the payment went through at the last moment, the booking will be confirmed if the dates are still free, otherwise the amount will be refunded in full: either way you will get an email.",
+      "bookAgain": "Book again",
+      "declinedTitle": "Request not accepted",
+      "declinedDescription": "The host did not accept your request: the booking is not valid and the dates have been released.",
+      "datesUnavailableTitle": "Dates no longer available",
+      "datesUnavailableDescription": "The payment arrived when the dates were no longer free: the booking is cancelled and the amount is refunded in full. You will get an email once the refund is confirmed.",
+      "cancelledTitle": "Booking cancelled",
+      "cancelledDescription": "This booking has been cancelled. Contact the host for more information.",
+      "deferredCharge": "The saved card will be charged on {{date}}.",
+      "payAtProperty": "Payment at the property.",
+      "resumeOwnBooking": "You already have a booking in progress for these dates in this page: resume it instead of creating a new one.",
+      "resumeOwnBookingAction": "Resume the booking"
     }
   },
   "publicSeo": {
@@ -3208,6 +3277,10 @@
     "planUpdateFailed": "Failed to update plan",
     "userDeactivated": "User deactivated successfully",
     "userDeactivateFailed": "Failed to deactivate user",
+    "userDeactivatedAuth0NotSynced": "User deactivated: it can no longer use CasaZen. Auth0 was not updated though: repeat the deactivation later.",
+    "userReactivated": "User reactivated",
+    "userReactivatedAuth0NotSynced": "User reactivated in CasaZen, but Auth0 was not updated: the user cannot sign in until you repeat the reactivation.",
+    "userReactivateFailed": "Failed to reactivate user",
     "cinCodeUpdated": "CIN code updated successfully",
     "cinCodeUpdateFailed": "Failed to update CIN code",
     "checkInDataSaved": "Check-in data saved successfully",
@@ -3309,6 +3382,10 @@
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
+      "accountInactive": "Your account was deactivated.",
+      "cannotDeactivateSelf": "You cannot deactivate your own account: ask another administrator.",
+      "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
+      "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
@@ -3361,7 +3438,21 @@
       "leaseStipulaAlreadyRecorded": "The signing date (stipula) of this contract is already recorded.",
       "leaseStipulaLeaseNotSigned": "The contract is not signed yet: upload the PDF signed by every party together with the signing date.",
       "contractTemplateNotApproved": "The contract template for this tax regime is not approved: only the BOZZA (draft) preview is available, not valid for signature.",
-      "contractDataMissing": "Data required by the contract template are missing: check the preview."
+      "contractDataMissing": "Data required by the contract template are missing: check the preview.",
+      "bookingGuestsInvalid": "At least one adult is needed: minors must be fewer than the guests.",
+      "bookingNotEditable": "A cancelled booking cannot be changed.",
+      "bookingStayLocked": "The stay has already started or ended: dates and guests can no longer be changed.",
+      "bookingUpdateSourceLocked": "Dates and guests can be changed only on bookings you entered: this one comes from the booking site or a channel. You can edit the notes.",
+      "bookingCheckinInPast": "The check-in cannot be moved to a day already past.",
+      "bookingNotPending": "The booking is no longer waiting for confirmation: reload the page.",
+      "bookingNotConfirmable": "You can confirm only the pending bookings you entered.",
+      "bookingNotCheckedIn": "The check-out can be recorded only for a stay whose check-in was recorded.",
+      "bookingCheckoutTooEarly": "The check-out can be recorded from the departure day.",
+      "directBookingDeferredPaymentUnavailable": "Paying at the deadline is not available for these dates: the arrival is too close. Choose another payment method.",
+      "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
+      "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
+      "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
+      "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes."
     }
   },
   "validation": {

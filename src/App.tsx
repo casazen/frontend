@@ -6,7 +6,13 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { queryClient } from '@/lib/query-client';
-import { NO_ACCESS_PATH, setApiForbiddenHandler, setApiOnboardingRequiredHandler } from '@/lib/axios';
+import {
+  ACCOUNT_INACTIVE_PATH,
+  NO_ACCESS_PATH,
+  setApiAccountInactiveHandler,
+  setApiForbiddenHandler,
+  setApiOnboardingRequiredHandler,
+} from '@/lib/axios';
 import { openOnboardingAfterGate } from '@/lib/onboarding-gate';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
@@ -30,9 +36,17 @@ function AppShell() {
     setApiOnboardingRequiredHandler(() => {
       openOnboardingAfterGate(router, queryClient);
     });
+    // 403 account_inactive (PL-03): the account was deactivated, every request would fail. Show the dedicated page
+    // (support contact + logout) instead of a UI full of errors. It takes precedence over onboarding_required.
+    setApiAccountInactiveHandler(() => {
+      if (router.state.location.pathname !== ACCOUNT_INACTIVE_PATH) {
+        void router.navigate(ACCOUNT_INACTIVE_PATH, { replace: true });
+      }
+    });
     return () => {
       setApiForbiddenHandler(null);
       setApiOnboardingRequiredHandler(null);
+      setApiAccountInactiveHandler(null);
     };
   }, []);
 

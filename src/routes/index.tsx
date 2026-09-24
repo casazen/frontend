@@ -14,6 +14,8 @@ import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
 import { NoAccessPage } from '@/pages/no-access-page';
+import { AccountInactivePage } from '@/pages/account-inactive-page';
+import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
@@ -27,6 +29,7 @@ import { PublicPropertyPage } from '@/features/public-booking/public-property-pa
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
+import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
@@ -140,6 +143,12 @@ export const appRoutes: RouteObject[] = [
         element: <SignupPage />,
       },
       {
+        // Deactivated account (PL-03): under the Auth0 boundary so that its logout button always works, but outside
+        // the protected route, the onboarding guard and the workspace, which would call the API again.
+        path: ACCOUNT_INACTIVE_PATH,
+        element: <AccountInactivePage />,
+      },
+      {
         element: (
           <ProtectedRoute>
             <Outlet />
@@ -180,6 +189,8 @@ export const appRoutes: RouteObject[] = [
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       // Link of the "request received" email of a "pay at the property" request (BK-06).
       { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
+      // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
+      { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)

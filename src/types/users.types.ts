@@ -81,6 +81,21 @@ export interface OnboardingResponse {
 }
 
 /**
+ * Outcome of a deactivation (`DELETE /users/{id}`) or reactivation (`POST /users/{id}/reactivate`), PL-03. The CasaZen
+ * change is always applied; `auth0Synced: false` means Auth0 was not updated (block flag or roles) and repeating the
+ * same action retries it. `auth0SyncError` is the stable code.
+ */
+export interface UserActivationResponse {
+  id: string;
+  isActive: boolean;
+  changed: boolean;
+  auth0Synced: boolean;
+  auth0SyncError?: string | null;
+  message: string;
+  rolesRestored: string[];
+}
+
+/**
  * Body of `POST /users/me/signup-attribution` (SE-03): where the signup came from. Marketing values only, checked
  * against the backend rules by `src/lib/signup-attribution.ts`.
  */

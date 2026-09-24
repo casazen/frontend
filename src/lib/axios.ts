@@ -1,7 +1,7 @@
 import axios, { isAxiosError } from 'axios';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { apiConfig } from '@/config/api.config';
-import { AuthTokenUnavailableError, getProblemCode } from '@/lib/api-errors';
+import { ACCOUNT_INACTIVE_CODE, AuthTokenUnavailableError, getProblemCode } from '@/lib/api-errors';
 
 declare module 'axios' {
   interface AxiosRequestConfig {
@@ -28,6 +28,12 @@ export interface ApiAuthHandlers {
 /** Path of the existing "no access" page used for 403 on protected reads. */
 export const NO_ACCESS_PATH = '/app/no-access';
 
+/**
+ * Page shown on a 403 `account_inactive` (PL-03), for reads and writes alike: outside the workspace and the onboarding
+ * guard, it calls no API.
+ */
+export const ACCOUNT_INACTIVE_PATH = '/account-inactive';
+
 /** A second re-login inside this window means the redirect did not help: stop to avoid a loop. */
 export const RELOGIN_GUARD_MS = 60_000;
 export const RELOGIN_GUARD_STORAGE_KEY = 'cz-api-relogin-at';
@@ -52,6 +58,7 @@ export const ONBOARDING_REQUIRED_CODE = 'onboarding_required';
 
 let authHandlers: ApiAuthHandlers | null = null;
 let forbiddenHandler: (() => void) | null = null;
+let accountInactiveHandler: (() => void) | null = null;
 let onboardingRequiredHandler: (() => void) | null = null;
 let reloginRequested = false;
 
@@ -63,6 +70,11 @@ export function setApiAuthHandlers(handlers: ApiAuthHandlers | null): void {
 /** Registered by the app shell: navigates to the no-access page. */
 export function setApiForbiddenHandler(handler: (() => void) | null): void {
   forbiddenHandler = handler;
+}
+
+/** Registered by the app shell: opens the "account disabled" page on a 403 `account_inactive` (PL-03). */
+export function setApiAccountInactiveHandler(handler: (() => void) | null): void {
+  accountInactiveHandler = handler;
 }
 
 /** Registered by the app shell: opens the onboarding on a 403 `onboarding_required` (PL-02). */
@@ -171,6 +183,10 @@ async function handleResponseError(error: unknown): Promise<AxiosResponse> {
       if (refreshed) return axiosInstance.request(config);
     }
     requestRelogin();
+  } else if (status === 403 && getProblemCode(data) === ACCOUNT_INACTIVE_CODE) {
+    // Deactivated account (PL-03): whatever the method, never the no-access page nor a re-login. Keep this branch
+    // before every other 403 code (onboarding_required included): an inactive account takes precedence.
+    accountInactiveHandler?.();
   } else if (status === 403 && getProblemCode(data) === ONBOARDING_REQUIRED_CODE) {
     onboardingRequiredHandler?.();
   } else if (status === 403 && isAccessDenied(config, data)) {

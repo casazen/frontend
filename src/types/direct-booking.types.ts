@@ -49,6 +49,22 @@ export interface TouristTaxQuote {
   categories: string[];
 }
 
+/**
+ * What the checkout may offer and promise for a stay, decided by the backend (BK-07, A3-16): the page never offers an
+ * option the API refuses, nor a free cancellation the guest cannot use.
+ */
+export interface DirectBookingPaymentOptions {
+  /** "Paga alla scadenza" can be chosen: its charge day is after today in Europe/Rome. */
+  deferredPaymentAvailable: boolean;
+  /** Day (`YYYY-MM-DD`) the saved card is charged; null when the deferred payment is not available. */
+  deferredChargeDate: string | null;
+  /**
+   * Last day (`YYYY-MM-DD`) the guest can cancel for free by themselves; null while the guest has no self-service
+   * cancellation (today: only the host cancels). "Cancellazione gratuita fino a…" is shown only when set.
+   */
+  freeCancellationUntil: string | null;
+}
+
 /** Price computed by the backend: the same numbers the booking records and charges. */
 export interface DirectBookingQuote {
   propertyId: string;
@@ -63,6 +79,7 @@ export interface DirectBookingQuote {
   /** Base price + tourist tax when calculated. */
   totalPrice: number;
   currency: string;
+  paymentOptions: DirectBookingPaymentOptions;
 }
 
 export interface ConnectedAccountPublishableContext {
@@ -88,6 +105,11 @@ export interface DirectBookingResponse {
    * (link sent by email) by this instant; then the host accepts or declines.
    */
   emailConfirmationExpiresAt?: string | null;
+  /**
+   * Token of the outcome page `/book/{orgSlug}/booking/{bookingId}?token=…` (BK-07): the only way to read the real state
+   * of this booking and to pay the same hold again. Given only here.
+   */
+  checkoutToken: string;
 }
 
 /** Answer of `POST /api/public/bookings/{id}/confirm-email` (BK-06). */
@@ -113,10 +135,49 @@ export interface GuestBookingLookupResponse {
   bookings: GuestBookingItem[];
 }
 
-export interface BookingStatusResponse {
+/** Where a checkout stands for the guest (`POST /api/public/bookings/{id}/outcome`, BK-07). */
+export type CheckoutOutcomeState =
+  | 'Confirmed'
+  | 'AwaitingPayment'
+  | 'PaymentProcessing'
+  | 'PaymentFailed'
+  | 'AwaitingGuestEmail'
+  | 'AwaitingHostApproval'
+  | 'Expired'
+  | 'Declined'
+  | 'DatesUnavailable'
+  | 'Cancelled';
+
+/** The real state of a checkout, read with its checkout token. No personal data of the guest. */
+export interface CheckoutOutcome {
   bookingId: string;
-  status: string;
-  paymentOption: string;
+  state: CheckoutOutcomeState;
+  paymentOption: PaymentOption;
+  propertyId: string;
+  propertySlug: string | null;
+  propertyName: string;
+  /** `YYYY-MM-DD` */
+  checkInDate: string;
+  /** `YYYY-MM-DD` */
+  checkOutDate: string;
+  numberOfAdults: number;
+  numberOfChildren: number;
+  totalPrice: number;
+  currency: string;
+  /** Until when the guest can pay, or the request waits for the email / the host (UTC instant); null otherwise. */
+  expiresAt: string | null;
+  /** "Paga alla scadenza": day (`YYYY-MM-DD`) the saved card is charged. */
+  deferredChargeDate: string | null;
+}
+
+/** `POST /api/public/bookings/{id}/payment-session` (BK-07): the same hold, to pay again. */
+export interface CheckoutPaymentSession {
+  bookingId: string;
+  paymentOption: PaymentOption;
+  clientSecret: string | null;
+  setupIntentClientSecret: string | null;
+  connectedAccountPublishableContext: ConnectedAccountPublishableContext;
+  expiresAt: string;
 }
 
 export const DIRECT_CHECKOUT_CONSENT_VERSION = '2026-06-direct-checkout-v1';

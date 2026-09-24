@@ -10,6 +10,7 @@ import { publicBookingApi } from '@/api/public-booking.api';
 import type { GuestBookingItem } from '@/types';
 import { toast } from 'sonner';
 import { FormFieldError } from '@/components/shared/form-field-error';
+import { formatStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
 
 // The message is an i18n key: FormFieldError translates it when rendering.
 const lookupSchema = z.object({
@@ -80,13 +81,8 @@ export function GuestBookingsPage() {
     return d.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric', year: 'numeric' });
   };
 
-  const daysUntilDeadline = (deadline: string | Date) => {
-    const d = typeof deadline === 'string' ? new Date(deadline) : deadline;
-    const today = new Date();
-    const diff = d.getTime() - today.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days;
-  };
+  // The charge day of "Paga alla scadenza" is a calendar day (Europe/Rome), stored as midnight UTC.
+  const chargeDay = (deadline: string) => deadline.slice(0, 10);
 
   return (
     <div className="space-y-8">
@@ -160,14 +156,21 @@ export function GuestBookingsPage() {
                     {getPaymentBadge(booking.paymentOption)}
                   </div>
 
+                  {/* A3-16: the day the card is charged, not a "free cancellation" the guest cannot use (no self-service cancellation). */}
                   {booking.paymentOption === 'OnCancellationDeadline' && (
                     <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                       <p className="text-sm font-medium text-orange-900">
-                        {t('publicBooking.freeCancellationBy', { date: formatDate(booking.freeRefundDeadline) })}
+                        {t('publicBooking.paymentDueBy', {
+                          date: formatStayDate(chargeDay(booking.freeRefundDeadline), i18n.language),
+                        })}
                       </p>
-                      <p className="text-xs text-orange-700 mt-1">
-                        {t('publicBooking.daysRemaining', { count: daysUntilDeadline(booking.freeRefundDeadline) })}
-                      </p>
+                      {nightsBetween(todayInRome(), chargeDay(booking.freeRefundDeadline)) > 0 && (
+                        <p className="text-xs text-orange-700 mt-1">
+                          {t('publicBooking.daysRemaining', {
+                            count: nightsBetween(todayInRome(), chargeDay(booking.freeRefundDeadline)),
+                          })}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
