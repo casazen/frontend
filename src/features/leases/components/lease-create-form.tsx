@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +12,8 @@ import { propertiesApi } from '@/api/properties.api';
 import { useProperties } from '@/queries/use-properties';
 import { leaseFormSchema } from '../schemas/lease.schema';
 import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
+import { getProblemMessage } from '@/lib/api-errors';
+import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import type { LeaseFormValues } from '../schemas/lease.schema';
 import type { CreateLeaseDto } from '@/types';
 import { AlertTriangle } from 'lucide-react';
@@ -23,12 +26,23 @@ const FISCAL_REGIMES = ['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato'] 
 interface LeaseCreateFormProps {
   onSubmit: (data: CreateLeaseDto) => void;
   isLoading?: boolean;
+  /** Property preselected once the list is loaded (link "new lease" of a property page). */
+  defaultPropertyId?: string;
 }
 
-export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
+export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: LeaseCreateFormProps) {
   const { t } = useTranslation();
-  const { data: propertiesData } = useProperties();
+  const {
+    data: propertiesData,
+    isLoading: isLoadingProperties,
+    isError: propertiesFailed,
+    error: propertiesError,
+    refetch: refetchProperties,
+    isFetching: isFetchingProperties,
+  } = useProperties();
   const properties = propertiesData ?? [];
+  // A failed load (e.g. 403) is an explicit error, never an empty list to pick from (A7-06).
+  const noProperties = !isLoadingProperties && !propertiesFailed && propertiesData !== undefined && properties.length === 0;
   const [apeError, setApeError] = useState<string | null>(null);
   const [concordatoRange, setConcordatoRange] = useState<ConcordatoRange | null>(null);
   const [concordatoError, setConcordatoError] = useState<string | null>(null);
@@ -37,6 +51,7 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<LeaseFormValues>({
     resolver: zodResolver(leaseFormSchema),
@@ -51,14 +66,27 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
   const fiscalRegime = watch('fiscalRegime');
   const monthlyRent = watch('monthlyRent');
 
-  const { data: documents, isFetching: isLoadingDocuments } = useQuery({
+  const {
+    data: documents,
+    isFetching: isLoadingDocuments,
+    isError: documentsFailed,
+    error: documentsError,
+    refetch: refetchDocuments,
+  } = useQuery({
     queryKey: ['properties', selectedPropertyId, 'documents'],
     queryFn: () => propertiesApi.getDocuments(selectedPropertyId),
     enabled: !!selectedPropertyId,
   });
 
-  const documentsLoaded = !!selectedPropertyId && !isLoadingDocuments && documents !== undefined;
+  const documentsLoaded = !!selectedPropertyId && !isLoadingDocuments && !documentsFailed && documents !== undefined;
   const hasApeDocument = documents?.some((doc) => doc.documentType === 'Ape') ?? false;
+  const apeMissing = documentsLoaded && !hasApeDocument;
+
+  useEffect(() => {
+    if (defaultPropertyId && propertiesData?.some((property) => property.id === defaultPropertyId)) {
+      setValue('propertyId', defaultPropertyId, { shouldValidate: false });
+    }
+  }, [defaultPropertyId, propertiesData, setValue]);
 
   useEffect(() => {
     if (documentsLoaded && !hasApeDocument) {
@@ -74,6 +102,10 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
   }, [selectedPropertyId, fiscalRegime]);
 
   const handleFormSubmit = (values: LeaseFormValues) => {
+    if (documentsFailed) {
+      return;
+    }
+
     if (!documentsLoaded) {
       setApeError(t('leases.form.waitingDocuments'));
       return;
@@ -115,29 +147,92 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
-            <select
-              id="propertyId"
-              {...register('propertyId')}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">{t('leases.form.selectProperty')}</option>
-              {properties.map((property) => (
-                <option key={property.id} value={property.id}>
-                  {property.name} — {property.city}
-                </option>
-              ))}
-            </select>
+            {propertiesFailed ? (
+              <>
+                <Label>{t('leases.form.propertyLabel')}</Label>
+                <div
+                  role="alert"
+                  data-testid="lease-properties-error"
+                  className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+                >
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span className="flex-1">
+                    {getProblemMessage(propertiesError, t) ?? t('leases.form.propertiesLoadError')}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void refetchProperties()}
+                    disabled={isFetchingProperties}
+                  >
+                    {t('leases.form.retry')}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
+                <select
+                  id="propertyId"
+                  {...register('propertyId')}
+                  aria-busy={isLoadingProperties}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">
+                    {isLoadingProperties ? t('leases.form.propertiesLoading') : t('leases.form.selectProperty')}
+                  </option>
+                  {properties.map((property) => (
+                    <option key={property.id} value={property.id}>
+                      {property.name} — {property.city}
+                    </option>
+                  ))}
+                </select>
+                {noProperties && (
+                  <div
+                    role="status"
+                    data-testid="lease-no-properties"
+                    className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+                  >
+                    <span className="flex-1">{t('leases.form.noProperties')}</span>
+                    <Button asChild variant="outline" size="sm">
+                      <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
             <FormFieldError error={errors.propertyId} />
           </div>
+
+          {documentsFailed && (
+            <div
+              role="alert"
+              data-testid="lease-documents-error"
+              className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span className="flex-1">
+                {getProblemMessage(documentsError, t) ?? t('leases.form.documentsLoadError')}
+              </span>
+              <Button type="button" variant="outline" size="sm" onClick={() => void refetchDocuments()}>
+                {t('leases.form.retry')}
+              </Button>
+            </div>
+          )}
 
           {apeError && (
             <div
               role="alert"
-              className="flex gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+              className="flex flex-wrap gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
             >
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{apeError}</span>
+              <span className="flex-1">{apeError}</span>
+              {apeMissing && (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={longRentPropertyPath(selectedPropertyId)}>{t('leases.form.uploadApe')}</Link>
+                </Button>
+              )}
             </div>
           )}
 
@@ -230,7 +325,10 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
       </Card>
 
       <div className="flex justify-end gap-4">
-        <Button type="submit" disabled={isLoading || isLoadingDocuments || !!apeError}>
+        <Button
+          type="submit"
+          disabled={isLoading || isLoadingDocuments || documentsFailed || propertiesFailed || noProperties || !!apeError}
+        >
           {isLoading ? t('leases.form.creating') : t('leases.form.createDraft')}
         </Button>
       </div>

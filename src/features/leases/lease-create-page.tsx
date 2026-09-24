@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { LeaseCreateForm } from './components/lease-create-form';
@@ -9,6 +9,9 @@ export function LeaseCreatePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const createLease = useCreateLease();
+  // "New lease" from a property page preselects it.
+  const [searchParams] = useSearchParams();
+  const defaultPropertyId = searchParams.get('propertyId') ?? undefined;
 
   const handleSubmit = async (data: CreateLeaseDto) => {
     try {
@@ -28,6 +31,7 @@ export function LeaseCreatePage() {
         <LeaseCreateForm
           onSubmit={handleSubmit}
           isLoading={createLease.isPending}
+          defaultPropertyId={defaultPropertyId}
         />
     </div>
   );

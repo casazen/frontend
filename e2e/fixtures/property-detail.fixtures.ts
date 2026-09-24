@@ -30,6 +30,7 @@ export const propertyDetailFixture: PropertyDetailDto = {
       id: 'doc-e2e-001',
       fileName: 'cin-certificato.pdf',
       fileType: 'pdf',
+      documentType: 'CinCertificate',
       uploadedAt: '2026-05-01T10:00:00Z',
       downloadUrl: '/uploads/properties/cin-certificato.pdf',
     },

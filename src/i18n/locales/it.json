@@ -443,7 +443,14 @@
       "waitingDocuments": "Attendi la verifica dei documenti della proprietà.",
       "concordatoRangeRequired": "Calcola la fascia di canone concordato e inserisci un canone mensile compreso tra il minimo e il massimo.",
       "concordatoRentOutOfRange": "Il canone mensile e' fuori dalla fascia calcolata per questo immobile.",
-      "concordatoRangeHint": "Fascia mensile: {{min}} – {{max}} EUR"
+      "concordatoRangeHint": "Fascia mensile: {{min}} – {{max}} EUR",
+      "propertiesLoading": "Caricamento immobili...",
+      "propertiesLoadError": "Impossibile caricare i tuoi immobili: non puoi ancora scegliere l'immobile del contratto.",
+      "noProperties": "Non hai ancora immobili. Crea un immobile e carica il suo APE per poter creare un contratto.",
+      "createProperty": "Crea immobile",
+      "documentsLoadError": "Impossibile verificare i documenti dell'immobile (APE).",
+      "uploadApe": "Carica l'APE",
+      "retry": "Riprova"
     },
     "signingPanel": {
       "title": "Firma digitale",
@@ -1114,7 +1121,8 @@
       "longitude": "Longitudine",
       "details": {
         "title": "Dettagli immobile",
-        "description": "Capacità e informazioni sui prezzi"
+        "description": "Capacità e informazioni sui prezzi",
+        "longRentDescription": "Camere e bagni dell'immobile"
       },
       "bedrooms": "Camere *",
       "bathrooms": "Bagni *",
@@ -2896,5 +2904,40 @@
     "retry": "Riprova",
     "empty": "Nessuna categoria di servizio disponibile.",
     "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
+  },
+  "longRentProperties": {
+    "retry": "Riprova",
+    "roomsValue": "{{bedrooms}} camere · {{bathrooms}} bagni",
+    "list": {
+      "title": "Immobili",
+      "description": "Gli immobili che affitti con contratti di lungo periodo",
+      "add": "Aggiungi immobile",
+      "loading": "Caricamento immobili...",
+      "loadError": "Impossibile caricare gli immobili.",
+      "emptyTitle": "Nessun immobile",
+      "emptyDescription": "Aggiungi un immobile e carica il suo APE per poter creare un contratto.",
+      "open": "Apri"
+    },
+    "create": {
+      "title": "Nuovo immobile",
+      "description": "Dati dell'immobile da affittare con un contratto di lungo periodo. Dopo il salvataggio potrai caricare l'APE."
+    },
+    "edit": {
+      "title": "Modifica immobile",
+      "description": "Aggiorna i dati di {{name}}"
+    },
+    "detail": {
+      "loading": "Caricamento immobile...",
+      "loadError": "Impossibile caricare l'immobile.",
+      "edit": "Modifica",
+      "newLease": "Nuovo contratto",
+      "infoTitle": "Dati dell'immobile",
+      "address": "Indirizzo",
+      "rooms": "Camere e bagni",
+      "documentsLoading": "Caricamento documenti...",
+      "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
+      "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
+      "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+    }
   }
 }

@@ -443,7 +443,14 @@
       "waitingDocuments": "Please wait while property documents are being verified.",
       "concordatoRangeRequired": "Calculate the agreed-rent band and enter a monthly rent between the minimum and maximum.",
       "concordatoRentOutOfRange": "Monthly rent is outside the calculated band for this property.",
-      "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR"
+      "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR",
+      "propertiesLoading": "Loading properties...",
+      "propertiesLoadError": "Your properties could not be loaded, so the lease property cannot be chosen yet.",
+      "noProperties": "You have no properties yet. Create a property and upload its APE to create a lease.",
+      "createProperty": "Create property",
+      "documentsLoadError": "The property documents (APE) could not be checked.",
+      "uploadApe": "Upload the APE",
+      "retry": "Retry"
     },
     "signingPanel": {
       "title": "Digital signing",
@@ -1114,7 +1121,8 @@
       "longitude": "Longitude",
       "details": {
         "title": "Property Details",
-        "description": "Capacity and pricing information"
+        "description": "Capacity and pricing information",
+        "longRentDescription": "Bedrooms and bathrooms of the property"
       },
       "bedrooms": "Bedrooms *",
       "bathrooms": "Bathrooms *",
@@ -2896,5 +2904,40 @@
     "retry": "Retry",
     "empty": "No service categories available.",
     "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
+  },
+  "longRentProperties": {
+    "retry": "Retry",
+    "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
+    "list": {
+      "title": "Properties",
+      "description": "The properties you let with long-term leases",
+      "add": "Add property",
+      "loading": "Loading properties...",
+      "loadError": "The properties could not be loaded.",
+      "emptyTitle": "No properties",
+      "emptyDescription": "Add a property and upload its APE to create a lease.",
+      "open": "Open"
+    },
+    "create": {
+      "title": "New property",
+      "description": "Details of the property to let with a long-term lease. After saving you can upload the APE."
+    },
+    "edit": {
+      "title": "Edit property",
+      "description": "Update the details of {{name}}"
+    },
+    "detail": {
+      "loading": "Loading property...",
+      "loadError": "The property could not be loaded.",
+      "edit": "Edit",
+      "newLease": "New lease",
+      "infoTitle": "Property details",
+      "address": "Address",
+      "rooms": "Bedrooms and bathrooms",
+      "documentsLoading": "Loading documents...",
+      "documentsLoadError": "The property documents could not be loaded.",
+      "apePresent": "APE on file: you can create a lease for this property.",
+      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    }
   }
 }
