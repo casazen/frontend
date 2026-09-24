@@ -81,6 +81,7 @@ function fill(label: string, value: string) {
 describe('SupplierRegisterPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    localStorage.clear();
     await i18n.changeLanguage('it');
     refreshAccessToken.mockResolvedValue('token');
     vi.mocked(fetchSupplierRegistrationOptions).mockResolvedValue({
@@ -99,7 +100,17 @@ describe('SupplierRegisterPage', () => {
   });
 
   describe('self-serve', () => {
-    it('anonymous_EditableEmailAndPilotComune_RegistersAnonymouslyThenOffersSignup', async () => {
+    it('anonymous_EditableEmailAndPilotComune_RegistersAnonymouslyThenOffersSignupToTheClaim', async () => {
+      const claimToken = 'c'.repeat(64);
+      const claimExpiresAt = '2999-01-01T00:00:00Z';
+      vi.mocked(registerSupplier).mockResolvedValue({
+        orgId: 'org-1',
+        authRedirectUrl: '/supplier/activation',
+        rolesSynced: false,
+        rolesSyncError: null,
+        claimToken,
+        claimExpiresAt,
+      });
       mockAuth({ authenticated: false });
       renderPage('/register');
 
@@ -116,9 +127,22 @@ describe('SupplierRegisterPage', () => {
         { authenticated: false },
       );
 
+      // SU-02: the claim token is kept for the claim page and travels in the login appState.
+      const claim = { token: claimToken, email: 'nuovo@example.com', expiresAt: claimExpiresAt };
+      expect(JSON.parse(localStorage.getItem('cz-supplier-claim') ?? 'null')).toEqual(claim);
+
       fireEvent.click(screen.getByRole('button', { name: t('supplier.register.createAccount') }));
       expect(login).toHaveBeenCalledWith({
+        returnTo: '/register/claim',
+        appState: { supplierClaim: claim },
         authorizationParams: { screen_hint: 'signup', login_hint: 'nuovo@example.com' },
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: t('supplier.register.loginToClaim') }));
+      expect(login).toHaveBeenLastCalledWith({
+        returnTo: '/register/claim',
+        appState: { supplierClaim: claim },
+        authorizationParams: { login_hint: 'nuovo@example.com' },
       });
     });
 

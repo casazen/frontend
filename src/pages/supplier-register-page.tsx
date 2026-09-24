@@ -10,6 +10,12 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { currentReturnTo } from '@/lib/auth-return-to';
+import {
+  parsePendingSupplierClaim,
+  savePendingSupplierClaim,
+  SUPPLIER_CLAIM_PATH,
+  type PendingSupplierClaim,
+} from '@/lib/supplier-claim';
 import { useRegisterSupplier, useSupplierInvite, useSupplierRegistrationOptions } from '@/queries/use-supplier';
 import type { SupplierInvitePreview } from '@/services/supplier-api';
 
@@ -20,7 +26,12 @@ const SELF_SERVE_PATH = '/register';
 /** Invite errors that retrying cannot fix. */
 const FINAL_INVITE_CODES = new Set(['supplier_invite_invalid', 'supplier_invite_expired', 'supplier_invite_used']);
 
-type RegistrationDone = { authenticated: boolean; email: string };
+type RegistrationDone = {
+  authenticated: boolean;
+  email: string;
+  /** Anonymous registration: the claim that links the account created next (SU-02). */
+  claim?: PendingSupplierClaim | null;
+};
 
 /**
  * Supplier registration (SU-01). With `?inviteToken=` the invite is read from the API and email and
@@ -194,7 +205,18 @@ function SelfServeRegistration() {
     register.mutate(
       { payload: values, authenticated: isAuthenticated },
       {
-        onSuccess: () => setDone({ authenticated: isAuthenticated, email: values.email }),
+        onSuccess: (result) => {
+          // Anonymous: keep the claim token until the Auth0 account exists (SU-02, A4-02).
+          const claim = isAuthenticated
+            ? null
+            : parsePendingSupplierClaim({
+                token: result.claimToken,
+                email: values.email,
+                expiresAt: result.claimExpiresAt,
+              });
+          if (claim) savePendingSupplierClaim(claim);
+          setDone({ authenticated: isAuthenticated, email: values.email, claim });
+        },
         onError: (err) => setError(getProblemMessage(err, t) ?? t('supplier.register.errorGeneric')),
       },
     );
@@ -369,6 +391,15 @@ function RegistrationSuccess({ done }: { done: RegistrationDone }) {
   const navigate = useNavigate();
   const [opening, setOpening] = useState(false);
 
+  // Back to the claim page after the Auth0 signup or login; the claim also travels in appState.
+  function loginToClaim(authorizationParams: Record<string, string>) {
+    login({
+      returnTo: SUPPLIER_CLAIM_PATH,
+      appState: done.claim ? { supplierClaim: done.claim } : undefined,
+      authorizationParams: { login_hint: done.email, ...authorizationParams },
+    });
+  }
+
   async function openActivation() {
     setOpening(true);
     // The Supplier role was just added in Auth0: get a token that carries it (best effort, the API
@@ -394,12 +425,11 @@ function RegistrationSuccess({ done }: { done: RegistrationDone }) {
         </Button>
       ) : (
         <>
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={() => login({ authorizationParams: { screen_hint: 'signup', login_hint: done.email } })}
-          >
+          <Button className="w-full" size="lg" onClick={() => loginToClaim({ screen_hint: 'signup' })}>
             {t('supplier.register.createAccount')}
+          </Button>
+          <Button className="w-full" variant="outline" onClick={() => loginToClaim({})}>
+            {t('supplier.register.loginToClaim')}
           </Button>
           <p className="text-center text-xs text-muted-foreground">{t('supplier.register.afterAccount')}</p>
         </>

@@ -26,8 +26,42 @@ export interface Booking {
   guest: BookingGuest;
   specialRequests?: string;
   source?: string;
+  /** Immediate, OnCancellationDeadline or OnSite. */
+  paymentOption?: string;
+  /** Open "pay at the property" request (BK-06): waiting for the guest's email or for the host's answer. */
+  onSiteRequestState?: OnSiteRequestState | null;
+  /** Deadline of an open "pay at the property" request (the host's answer once the email is confirmed). */
+  requestExpiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Where an open "pay at the property" request stands (BK-06, decision D5). */
+export type OnSiteRequestState = 'AwaitingGuestEmail' | 'AwaitingHostApproval';
+
+/** A "pay at the property" request waiting for the host (`GET /api/bookings/approval-requests`). */
+export interface BookingApprovalRequest {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  numberOfGuests: number;
+  numberOfAdults: number;
+  numberOfChildren: number;
+  totalPrice: number;
+  currency: string;
+  specialRequests: string;
+  guest: BookingGuest;
+  emailConfirmedAt: string | null;
+  /** The request expires (and its dates are released) if the host does not answer by then. */
+  respondBy: string | null;
+}
+
+export interface DeclineBookingRequestDto {
+  /** Optional message written in the email to the guest (max 500 characters). */
+  message?: string;
 }
 
 export interface CreateBookingDto {

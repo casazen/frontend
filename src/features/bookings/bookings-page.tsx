@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
+import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -62,6 +63,8 @@ export function BookingsPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader title={t('booking.list.title')} description={t('booking.list.description')} />
+
+        <BookingRequestsPanel />
 
         <Card>
           <CardContent className="pt-4 space-y-4">
@@ -140,9 +143,19 @@ export function BookingsPage() {
                           {b.currency ?? 'EUR'} {b.totalPrice.toLocaleString()}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
-                            {getBookingStatusLabel(b.status, t)}
-                          </Badge>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
+                              {getBookingStatusLabel(b.status, t)}
+                            </Badge>
+                            {b.onSiteRequestState && (
+                              <Badge
+                                variant={b.onSiteRequestState === 'AwaitingHostApproval' ? 'default' : 'outline'}
+                                data-testid="booking-request-badge"
+                              >
+                                {t(`booking.requests.state.${b.onSiteRequestState}`)}
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3" data-testid="booking-source">
                           {b.source ? (
