@@ -1,4 +1,5 @@
 import type { DocumentType, Gender } from './guest.types';
+import type { AlloggiatiCodeTable, StayGuestType } from './public-checkin.types';
 
 /**
  * State of an Alloggiati Web communication (CO-11, decision D6). CasaZen does not transmit yet: `Inviato` needs
@@ -43,39 +44,68 @@ export interface AlloggiatiSummaryDto {
   isShortStay: boolean;
 }
 
-export type AlloggiatiGuestKind = 'SingleGuest' | 'HeadOfFamilyOrGroup';
-
-/** Record fields the host copies on the portal; names match `AlloggiatiGuestRowDto` properties. */
+/**
+ * Record fields the host copies on the portal, in the order of the Alloggiati record. Also the names the API uses in
+ * `missingFields` and `codesToComplete` (`AlloggiatiRecordRules.Field*`).
+ */
 export type AlloggiatiRecordField =
-  | 'kind'
+  | 'type'
   | 'arrivalDate'
   | 'stayDays'
   | 'lastName'
   | 'firstName'
   | 'gender'
   | 'dateOfBirth'
-  | 'placeOfBirth'
+  | 'bornInItaly'
+  | 'birthComune'
+  | 'birthProvince'
+  | 'birthCountry'
   | 'citizenship'
   | 'documentType'
   | 'documentNumber'
   | 'documentIssuePlace';
 
-/** One guest, as stored in CasaZen (text, never a table code). */
+/** Official codes of a guest's line, from the imported tables (null = to complete or not part of the line). */
+export interface AlloggiatiRowCodesDto {
+  type: string | null;
+  birthComune: string | null;
+  birthCountry: string | null;
+  citizenship: string | null;
+  documentType: string | null;
+  documentTypeDescription: string | null;
+  documentIssuePlace: string | null;
+}
+
+/** One guest of the stay, as stored in CasaZen; `codes` are official codes found in the imported tables. */
 export interface AlloggiatiGuestRowDto {
-  guestId: string;
-  kind: AlloggiatiGuestKind;
+  /** Null for the booker shown before any guest is registered. */
+  stayGuestId: string | null;
+  position: number;
+  type: StayGuestType;
+  /** Under 18 on the arrival date; null without a date of birth. */
+  isMinor: boolean | null;
   arrivalDate: string;
   stayDays: number;
   lastName: string;
   firstName: string;
   gender: Gender | null;
   dateOfBirth: string | null;
-  placeOfBirth: string;
+  bornInItaly: boolean | null;
+  birthComune: string;
+  birthProvince: string | null;
+  birthCountry: string;
   citizenship: string;
+  requiresDocument: boolean;
   documentType: DocumentType | null;
   documentNumber: string;
   documentIssuePlace: string;
+  codes: AlloggiatiRowCodesDto;
+  /** Record fields missing or not accepted by the record. */
   missingFields: AlloggiatiRecordField[];
+  /** Record fields whose official code is still to complete: they block only the export. */
+  codesToComplete: AlloggiatiRecordField[];
+  /** `member_without_head` or `head_without_members`; null when the guest fits the order of the stay. */
+  compositionIssue: 'member_without_head' | 'head_without_members' | 'invalid_type' | null;
 }
 
 export interface AlloggiatiGuestSummaryDto {
@@ -85,8 +115,15 @@ export interface AlloggiatiGuestSummaryDto {
   stayDays: number;
   /** The portal accepts at most 30 days per schedina. */
   stayExceedsMaxDays: boolean;
-  /** Guests declared on the booking; only `guests` are registered in CasaZen. */
+  /** Guests declared on the booking; `guests` are the ones registered. */
   declaredGuests: number;
+  /** Every guest has every record field and the order of the guests is valid. */
+  dataComplete: boolean;
+  /** Data complete and every official code found: the record can be exported. */
+  exportReady: boolean;
+  /** Official tables not imported yet. */
+  missingCodeTables: AlloggiatiCodeTable[];
+  /** In record order: a head of family or group before its members. */
   guests: AlloggiatiGuestRowDto[];
 }
 

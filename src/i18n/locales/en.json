@@ -293,18 +293,17 @@
       "exporting": "Exporting...",
       "exportOk": "Pre-filled PDF downloaded. This is not a filing.",
       "exportError": "Export is not available.",
-      "registrationTitle": "Assisted RLI registration",
-      "registrationDescription": "CasaZen does not file unattended. Each submission needs your delega.",
-      "registrationCode": "Registration code",
-      "submitted": "Submitted",
-      "confirmed": "Confirmed",
-      "notSubmitted": "No RLI submission yet.",
-      "submit": "Submit RLI (with delega)",
-      "submitting": "Submitting...",
+      "registrationTitle": "Contract registration (RLI)",
+      "registrationDescription": "Registering the contract with the Agenzia delle Entrate is the landlord's duty: CasaZen does not do it automatically. Here you find the steps and record the registration details and receipt.",
+      "registrationCode": "Registration number or protocol",
+      "submitted": "Sent to the provider on",
+      "confirmed": "Registration saved on",
+      "submit": "Send through the provider (with delega)",
+      "submitting": "Sending...",
       "downloadReceipt": "Download receipt",
       "downloading": "Downloading...",
       "receiptOk": "Receipt downloaded",
-      "receiptError": "Receipt is not available yet",
+      "receiptError": "Unable to download the receipt.",
       "delegaTitle": "Delega and attestation",
       "delegaIntro": "Confirm you are the landlord or an authorized intermediary. Draft wording pending counsel.",
       "tosVersionLabel": "ToS version",
@@ -317,10 +316,61 @@
         "contract_signed": "Contract signed by all parties",
         "delega_captured": "RLI delega / attestation recorded",
         "rli_exported": "RLI dataset exported for review",
-        "rli_submitted": "RLI sent to the filing channel",
-        "rli_registered": "Registration receipt available",
+        "rli_registered": "Contract registered: Agenzia delle Entrate registration details and receipt on file",
         "questura_extra_eu": "Questura notice (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Draft wording pending counsel."
-      }
+      },
+      "registrationDate": "Registration date",
+      "state": {
+        "notSigned": "Not ready to register",
+        "toRegister": "To register",
+        "inProgress": "Registration in progress",
+        "registered": "Registered",
+        "failed": "Registration failed"
+      },
+      "channelLabel": {
+        "Manual": "Declared by the landlord",
+        "Provider": "Through the provider"
+      },
+      "channel": "Channel",
+      "notSignedHint": "You can register the contract once all parties have signed it.",
+      "deadline": "Registration deadline: {{date}}",
+      "manualSteps": {
+        "title": "How to register the contract",
+        "step1": "Download the RLI pre-fill from the checklist and keep the signed contract at hand.",
+        "step2": "Before the deadline, register the contract on an official channel of the Agenzia delle Entrate: the RLI web service in the reserved area (sign in with SPID, CIE, CNS or Entratel/Fisconline credentials), the RLI software with filing through Entratel/Fisconline, an authorised intermediary (for example an accountant, a CAF or a trade association) or an office of the Agenzia.",
+        "step3": "Keep the registration receipt and enter here the registration number or protocol, the date and the receipt PDF.",
+        "officialLink": "Registration of lease contracts on the Agenzia delle Entrate website",
+        "notIntermediary": "CasaZen is not an authorised intermediary and does not file the RLI on your behalf."
+      },
+      "declareManual": "Enter registration details",
+      "retryProvider": "Retry sending to the provider",
+      "inProgressHint": "The provider is working on the filing: the contract is NOT registered yet. The status updates when the receipt of the Agenzia delle Entrate arrives.",
+      "failedHint": "The contract is NOT registered. Register it on the official channel and enter the details.",
+      "failedHintWithRetry": "The contract is NOT registered. You can retry sending it to the provider or register it yourself on the official channel and enter the details.",
+      "failure": {
+        "provider_error": "The provider did not accept the filing (communication or service error).",
+        "provider_rejected": "The provider closed the filing without registering the contract.",
+        "provider_outcome_unknown": "The outcome of the submission is unknown: before retrying, check with the provider or in your tax records that the contract is not already registered.",
+        "simulated_submission": "The previous submission was only simulated: nothing was filed with the Agenzia delle Entrate.",
+        "unknown": "Reason not available."
+      },
+      "failureReason": "Reason",
+      "manualDialog": {
+        "title": "Registration details",
+        "description": "Enter the details of the receipt issued by the Agenzia delle Entrate after the contract was registered.",
+        "codeLabel": "Registration number or protocol",
+        "codeHint": "As written on the receipt.",
+        "dateLabel": "Registration date",
+        "dateInvalid": "Enter a date not later than today ({{today}}).",
+        "receiptLabel": "Registration receipt (PDF, at most 10 MB)",
+        "receiptInvalid": "Upload a PDF file of at most 10 MB.",
+        "confirmation": "I declare that the contract has been registered with the Agenzia delle Entrate and that the attached receipt is the official one.",
+        "cancel": "Cancel",
+        "submit": "Save registration",
+        "saving": "Saving..."
+      },
+      "checklistFailed": "last attempt failed",
+      "checklistGoToRegistration": "Go to registration"
     },
     "canoneConcordato": {
       "title": "Agreed-rent calculator",
@@ -378,13 +428,6 @@
       "RegistrationPending": "Registration pending",
       "SentToProvider": "Sent to provider",
       "Rejected": "Rejected"
-    },
-    "registrationStatusLabel": {
-      "Pending": "Pending",
-      "SentToProvider": "Sent to provider",
-      "Registered": "Registered",
-      "Failed": "Failed",
-      "Exempt": "Exempt"
     },
     "validation": {
       "firstName": {
@@ -468,8 +511,8 @@
       "SigningInitiated": "Signing started",
       "PartySignedDocument": "A party signed",
       "AllPartiesSigned": "Signed by all parties",
-      "RegistrationSubmitted": "RLI registration submitted",
-      "RegistrationConfirmed": "RLI registration confirmed",
+      "RegistrationSubmitted": "RLI filing sent to the provider",
+      "RegistrationConfirmed": "Contract registered (RLI)",
       "RegistrationFailed": "RLI registration failed",
       "ErasureRequested": "Data erasure requested",
       "ImuNotificationExported": "IMU notice exported",
@@ -1864,25 +1907,31 @@
     },
     "guestKind": {
       "SingleGuest": "Single guest",
-      "HeadOfFamilyOrGroup": "Head of family or group (choose on the portal)"
+      "HeadOfFamily": "Head of family",
+      "HeadOfGroup": "Head of group",
+      "FamilyMember": "Family member",
+      "GroupMember": "Group member"
     },
     "recordField": {
-      "kind": "Guest type",
+      "type": "Kind of guest",
       "arrivalDate": "Arrival date",
       "stayDays": "Days of stay",
       "lastName": "Surname",
       "firstName": "Name",
       "gender": "Sex",
       "dateOfBirth": "Date of birth",
-      "placeOfBirth": "Place of birth",
+      "bornInItaly": "Born in Italy or abroad",
+      "birthComune": "Municipality of birth",
+      "birthProvince": "Province of birth",
+      "birthCountry": "Country of birth",
       "citizenship": "Citizenship",
       "documentType": "Document type",
       "documentNumber": "Document number",
-      "documentIssuePlace": "Document place of issue"
+      "documentIssuePlace": "Place of issue of the document"
     },
     "guestSummary": {
       "title": "Data to enter on the Alloggiati Web portal",
-      "description": "In the order of the record. This is the data stored in CasaZen: on the portal pick the matching entries (municipality, country, document type) from its tables.",
+      "description": "One card per guest, in the order of the communication (head of family or group before the members). On the portal pick the matching entries (municipality, country, document type) from its tables.",
       "loading": "Loading guest data…",
       "error": "Unable to load the guest data.",
       "retry": "Retry",
@@ -1894,8 +1943,44 @@
       "copyFailed": "Copy failed",
       "missing": "Missing",
       "stayExceedsMaxDays": "Stay of {{days}} days: the portal accepts at most 30 days per record.",
-      "unregisteredGuests_one": "{{count}} more declared guest is not registered in CasaZen: add them on the portal as family or group member.",
-      "unregisteredGuests_other": "{{count}} more declared guests are not registered in CasaZen: add them on the portal as family or group members."
+      "unregisteredGuests_one": "{{count}} declared guest is not registered yet: ask for the online check-in or add them with “Edit guests”.",
+      "unregisteredGuests_other": "{{count}} declared guests are not registered yet: ask for the online check-in or add them with “Edit guests”.",
+      "guestStatus": {
+        "complete": "Complete",
+        "missing_one": "{{count}} missing field",
+        "missing_other": "{{count}} missing fields",
+        "codesToComplete": "Codes to complete"
+      },
+      "minor": "Minor",
+      "notRequired": "Not required",
+      "codeToComplete": "Code to complete",
+      "code": "code {{code}}",
+      "compositionIssue": {
+        "member_without_head": "This guest must follow their head of family or group.",
+        "head_without_members": "The family or group members of this guest are missing.",
+        "invalid_type": "Invalid kind of guest."
+      },
+      "missingCodeTables": "Alloggiati code tables not imported yet: {{tables}}. The codes stay to complete: they block only the export of the record, not the submission on the portal.",
+      "exportReady": "Data and codes complete: ready for the Alloggiati record.",
+      "codesPending": "Data complete. Some official codes are to complete: they are needed only to export the record.",
+      "dataIncomplete": "Incomplete data: fill in the missing fields before sending.",
+      "legacyPlaceOfBirth": "Previously recorded: “{{place}}” (say whether in Italy or abroad)"
+    },
+    "codeTable": {
+      "Comuni": "municipalities",
+      "Stati": "countries",
+      "Documenti": "document types",
+      "TipiAlloggiato": "kinds of guest"
+    },
+    "italy": "Italy",
+    "editGuests": {
+      "open": "Edit guests",
+      "title": "Guests of the stay",
+      "description": "Enter or correct every guest, minors included. Only the single guest, the head of family or the head of group needs a document. When the Alloggiati tables have been imported, pick the entries from the list to complete the codes.",
+      "save": "Save guests",
+      "cancel": "Cancel",
+      "saved": "Guests of the stay updated",
+      "saveFailed": "Could not save the guests. Try again."
     }
   },
   "guests": {
@@ -2307,13 +2392,16 @@
     },
     "validation": {
       "firstName": {
-        "required": "First name is required"
+        "required": "First name is required",
+        "maxLength": "At most 30 characters"
       },
       "lastName": {
-        "required": "Last name is required"
+        "required": "Last name is required",
+        "maxLength": "At most 50 characters"
       },
       "dateOfBirth": {
-        "required": "Date of birth is required"
+        "required": "Date of birth is required",
+        "future": "The date of birth cannot be in the future"
       },
       "placeOfBirth": {
         "required": "Place of birth is required",
@@ -2331,7 +2419,8 @@
       },
       "documentNumber": {
         "required": "Document number is required",
-        "maxLength": "Document number must be less than 50 characters"
+        "maxLength": "Document number must be less than 50 characters",
+        "invalid": "Letters and digits only, at most 20"
       },
       "documentIssuingCountry": {
         "required": "Issuing country is required",
@@ -2340,7 +2429,35 @@
       "consentAccepted": {
         "required": "You must accept data processing"
       },
-      "invalidValue": "Invalid value"
+      "invalidValue": "Invalid value",
+      "bornInItaly": {
+        "required": "Say whether the guest was born in Italy or abroad"
+      },
+      "birthComune": {
+        "required": "Municipality of birth is required"
+      },
+      "birthProvince": {
+        "invalid": "Enter the two-letter code (e.g. RM)"
+      },
+      "birthCountry": {
+        "required": "Country of birth is required"
+      },
+      "citizenship": {
+        "required": "Citizenship is required"
+      },
+      "label": {
+        "maxLength": "At most 100 characters"
+      },
+      "documentIssuePlace": {
+        "required": "Place of issue is required"
+      },
+      "type": {
+        "memberWithoutHead": "A family or group member must follow the head of family or group",
+        "headWithoutMembers": "Add at least one family or group member, or choose “Single guests”"
+      },
+      "guests": {
+        "count": "Enter from 1 to 30 guests"
+      }
     },
     "loading": "Loading check-in...",
     "invalidLink": "Invalid link",
@@ -2413,7 +2530,38 @@
       "Completo": "Complete",
       "AlloggiatiInviato": "Alloggiati submitted",
       "Scaduto": "Expired"
-    }
+    },
+    "stepGuests": "Guests",
+    "guestsIntro": "Enter every guest staying, minors included: the law (art. 109 TULPS) requires the data of each of them. Only the single guest, the head of family or the head of group needs an identity document.",
+    "guestCountMismatch_one": "The booking states {{count}} guest: check that you entered everyone staying.",
+    "guestCountMismatch_other": "The booking states {{count}} guests: check that you entered everyone staying.",
+    "guestHeading": "Guest {{index}}",
+    "minor": "Minor",
+    "stayKindLabel": "Who is staying *",
+    "stayKind": {
+      "SingleGuest": "Single guests (each with their own document)",
+      "HeadOfFamily": "Family: head of family and family members",
+      "HeadOfGroup": "Group: head of group and group members"
+    },
+    "stayKindHint": "For a family or a group the first guest is the head of family or group: only they need a document.",
+    "bornInLabel": "Place of birth *",
+    "selectBornIn": "Select",
+    "bornIn": {
+      "yes": "In Italy",
+      "no": "Abroad"
+    },
+    "birthComune": "Municipality of birth *",
+    "birthProvince": "Province (two letters) *",
+    "birthCountry": "Country of birth *",
+    "citizenship": "Citizenship *",
+    "removeGuest": "Remove guest",
+    "addGuest": "Add guest",
+    "documentIntro": "Identity document of the single guest or of the head of family or group. Family and group members do not need one.",
+    "documentOf": "Document of {{name}}",
+    "documentIssuePlace": "Place of issue *",
+    "documentIssuePlaceHint": "The municipality if issued in Italy, the country if issued abroad.",
+    "codeSelected": "Alloggiati code: {{code}}",
+    "codeSearchFailed": "Official list unavailable right now: type the full name."
   },
   "publicSite": {
     "skipToContent": "Skip to content",
@@ -2906,8 +3054,8 @@
     "leaseCreateFailed": "Failed to create lease",
     "signingInitiated": "Signing initiated successfully",
     "signingInitiateFailed": "Failed to initiate signing",
-    "registrationSubmitted": "Registration submitted successfully",
-    "registrationSubmitFailed": "Failed to submit registration",
+    "registrationSubmitted": "Filing sent to the provider: the contract is not registered yet.",
+    "registrationSubmitFailed": "Sending to the provider failed: the contract is not registered.",
     "profileUpdated": "Profile updated successfully",
     "profileUpdateFailed": "Failed to update profile",
     "roleUpdated": "Role updated successfully",
@@ -2946,7 +3094,9 @@
     "seoApproved_one": "{{count}} SEO page approved successfully",
     "seoApproved_other": "{{count}} SEO pages approved successfully",
     "alloggiatiMarkedSent": "Manual submission recorded",
-    "alloggiatiMarkSentFailed": "Could not record the manual submission"
+    "alloggiatiMarkSentFailed": "Could not record the manual submission",
+    "manualRegistrationSaved": "Registration saved: the contract is now registered.",
+    "manualRegistrationFailed": "Unable to save the registration."
   },
   "fiscal": {
     "page": {
@@ -3020,7 +3170,18 @@
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
       "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
-      "subdomainsNotConfigured": "CasaZen subdomains are not available yet: use the CasaZen path or a custom domain."
+      "subdomainsNotConfigured": "CasaZen subdomains are not available yet: use the CasaZen path or a custom domain.",
+      "rliProviderUnavailable": "Sending through a provider is not available: register the contract on the official channel and enter the details.",
+      "rliProviderFailed": "The provider did not accept the filing: the contract is NOT registered. Retry later or register it yourself on the official channel.",
+      "rliDelegaRequired": "The landlord's delega and attestation are required before sending to the provider.",
+      "rliLeaseNotSigned": "The contract must be signed by all parties before it can be registered.",
+      "rliSignedPdfMissing": "Sending through the provider needs the PDF of the signed contract.",
+      "rliAlreadyRegistered": "This contract is already registered.",
+      "rliRegistrationInProgress": "A provider registration is in progress: wait for its outcome.",
+      "rliReceiptInvalid": "The receipt must be a PDF file of at most 10 MB.",
+      "rliRegistrationCodeInvalid": "Enter the registration number or protocol (at most 100 characters).",
+      "rliRegistrationDateInFuture": "The registration date cannot be later than today.",
+      "rliReceiptNotAvailable": "The receipt is not available: the contract is not registered yet."
     }
   },
   "validation": {
