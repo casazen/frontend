@@ -21,10 +21,19 @@ vi.mock('@/components/layout/page-header', () => ({
 const milano: TouristTaxRate = {
   id: 'rate-milano',
   city: 'Milano',
+  istatCode: '015146',
   regionCode: 'LOM',
+  accommodationCategory: null,
+  seasonStart: null,
+  seasonEnd: null,
+  calculationMethod: 'PerPersonPerNight',
   ratePerPersonPerNight: 9.5,
+  percentOfNightlyPrice: null,
+  capPerPersonPerNight: null,
   maxNights: 14,
   minimumAge: 18,
+  reducedRateMaxAge: null,
+  reducedRatePerPersonPerNight: null,
   isActive: true,
   effectiveFrom: '2026-01-01T00:00:00Z',
   effectiveTo: null,
@@ -122,6 +131,49 @@ describe('AdminTaxRatesPage', () => {
     });
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(toast.success).toHaveBeenCalledWith('Aliquota creata con successo');
+  });
+
+  it('create_PercentageRateWithSeason_SendsPercentCapAndSeasonWithoutFixedAmount', async () => {
+    vi.mocked(touristTaxApi.create).mockResolvedValue({ ...manual, id: 'new-id' });
+    renderPage();
+    await screen.findByTestId('tax-rate-source-rate-milano');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nuova aliquota' }));
+    fireEvent.change(dialog().getByLabelText('Città *'), { target: { value: 'Rimini' } });
+    fireEvent.change(dialog().getByLabelText('Regione *'), { target: { value: 'EMR' } });
+    fireEvent.change(dialog().getByLabelText('Tipo di tariffa *'), { target: { value: 'PercentOfNightlyPrice' } });
+    fireEvent.change(await dialog().findByLabelText('Percentuale del prezzo (%) *'), { target: { value: '5.5' } });
+    fireEvent.change(dialog().getByLabelText('Tetto per persona per notte (€)'), { target: { value: '3' } });
+    fireEvent.change(dialog().getByLabelText('Stagione dal (MM-GG)'), { target: { value: '06-01' } });
+    fireEvent.change(dialog().getByLabelText('Stagione al (MM-GG)'), { target: { value: '09-30' } });
+    fireEvent.change(dialog().getByLabelText('In vigore dal *'), { target: { value: '2027-01-01' } });
+    fireEvent.click(dialog().getByRole('button', { name: 'Crea' }));
+
+    await waitFor(() => expect(touristTaxApi.create).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(touristTaxApi.create).mock.calls[0][0]).toMatchObject({
+      city: 'Rimini',
+      calculationMethod: 'PercentOfNightlyPrice',
+      ratePerPersonPerNight: 0,
+      percentOfNightlyPrice: 5.5,
+      capPerPersonPerNight: 3,
+      seasonStart: '06-01',
+      seasonEnd: '09-30',
+      reducedRateMaxAge: null,
+    });
+  });
+
+  it('create_SeasonWithOneBound_ShowsSeasonErrorAndSendsNothing', async () => {
+    renderPage();
+    await screen.findByTestId('tax-rate-source-rate-milano');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nuova aliquota' }));
+    fireEvent.change(dialog().getByLabelText('Città *'), { target: { value: 'Lecco' } });
+    fireEvent.change(dialog().getByLabelText('Regione *'), { target: { value: 'LOM' } });
+    fireEvent.change(dialog().getByLabelText('Stagione dal (MM-GG)'), { target: { value: '02-01' } });
+    fireEvent.click(dialog().getByRole('button', { name: 'Crea' }));
+
+    expect(await dialog().findByText(/Indica inizio e fine stagione/)).toBeInTheDocument();
+    expect(touristTaxApi.create).not.toHaveBeenCalled();
   });
 
   it('create_ApiValidationError_ShowsServerMessageAndKeepsDialogOpen', async () => {

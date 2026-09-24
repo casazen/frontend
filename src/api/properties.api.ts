@@ -6,7 +6,6 @@ import type {
   CreatePropertyDto,
   UpdatePropertyDto,
   PropertySearchParams,
-  PropertyDocument,
   PropertyDetailDto,
   PropertyDocumentDto,
   PublicPropertyDto,
@@ -39,7 +38,7 @@ export const propertiesApi = {
     ApiClient.get<PublicPropertyDetailDto>(`/properties/${id}/public`, undefined, { public: true }),
 
   getDocuments: (id: string) =>
-    ApiClient.get<PropertyDocument[]>(`/properties/${id}/documents`),
+    ApiClient.get<PropertyDocumentDto[]>(`/properties/${id}/documents`),
 
   getDetail: (id: string) =>
     ApiClient.get<PropertyDetailDto>(`/properties/${id}/detail`),

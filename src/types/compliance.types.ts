@@ -1,4 +1,4 @@
-import type { TouristTaxRateVerification } from '@/types/tourist-tax.types';
+import type { TouristTaxRateRule, TouristTaxRateVerification } from '@/types/tourist-tax.types';
 
 export type PropertyComplianceStatus = 'Pending' | 'Active' | 'Suspended';
 
@@ -23,12 +23,11 @@ export interface ActivationTouristTax {
   rate: ActivationTouristTaxRate | null;
   /** Slug of the public page `/p/tassa-soggiorno/:comune`, only when it exists. */
   publicPageSlug: string | null;
+  /** True when the comune has rates only per accommodation category, unknown for the property (BK-03). */
+  categoryRequired?: boolean;
 }
 
-export interface ActivationTouristTaxRate {
-  ratePerPersonPerNight: number;
-  maxNights: number | null;
-  minimumAge: number;
+export interface ActivationTouristTaxRate extends TouristTaxRateRule {
   effectiveFrom: string;
   effectiveTo: string | null;
   sourceUrl: string | null;
