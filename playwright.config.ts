@@ -13,6 +13,18 @@ const isStagingRun = process.env.E2E_STAGING === '1';
 const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
 const isProdSmokeRun = process.env.E2E_PROD_SMOKE === '1';
 
+/**
+ * Auth0 tenant of a real-login run (E2E_LOCAL / E2E_STAGING): no default tenant in code (PL-11, A1-32). The test
+ * tenant is set per run, never the production one (backend docs/runbooks/auth0.md section 1).
+ */
+function requiredAuth0Env(name: 'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID'): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is required for E2E_LOCAL / E2E_STAGING runs: set it to the Auth0 test tenant.`);
+  }
+  return value;
+}
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -146,10 +158,8 @@ export default defineConfig({
           VITE_HTTPS: '0',
           VITE_API_BASE_URL:
             process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api',
-          VITE_AUTH0_DOMAIN:
-            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
-          VITE_AUTH0_CLIENT_ID:
-            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
+          VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
           VITE_AUTH0_AUDIENCE:
             process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
         },
@@ -164,10 +174,8 @@ export default defineConfig({
           VITE_HTTPS: '0',
           VITE_API_BASE_URL:
             process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
-          VITE_AUTH0_DOMAIN:
-            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
-          VITE_AUTH0_CLIENT_ID:
-            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
+          VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
           VITE_AUTH0_AUDIENCE:
             process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
         },

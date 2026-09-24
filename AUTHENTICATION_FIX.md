@@ -141,8 +141,8 @@ After testing frontend authentication:
 ## Environment Variables Required
 
 ```env
-VITE_AUTH0_DOMAIN=dev-mp6wadq7j6bophl5.us.auth0.com
-VITE_AUTH0_CLIENT_ID=xmZPesTR04r349c14n77MgJ2iSCeFaJb
+VITE_AUTH0_DOMAIN=<login domain of your development/test Auth0 tenant>
+VITE_AUTH0_CLIENT_ID=<SPA client id of that tenant>
 VITE_AUTH0_AUDIENCE=https://casazen-api
 VITE_API_BASE_URL=http://localhost:5000/api
 VITE_DEMO_MODE=false
