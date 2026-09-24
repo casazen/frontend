@@ -11,7 +11,6 @@ interface PaymentsListProps {
   onEdit?: (payment: Payment) => void;
   onDelete?: (payment: Payment) => void;
   onView?: (payment: Payment) => void;
-  onProcess?: (payment: Payment) => void;
   onRefund?: (payment: Payment) => void;
   onAdd?: () => void;
 }
@@ -22,7 +21,6 @@ export function PaymentsList({
   onEdit,
   onDelete,
   onView,
-  onProcess,
   onRefund,
   onAdd,
 }: PaymentsListProps) {
@@ -60,7 +58,6 @@ export function PaymentsList({
           onEdit={onEdit}
           onDelete={onDelete}
           onView={onView}
-          onProcess={onProcess}
           onRefund={onRefund}
         />
       ))}

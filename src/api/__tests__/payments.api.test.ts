@@ -32,28 +32,32 @@ beforeEach(() => {
 });
 
 describe('paymentsApi contract sync (#17)', () => {
-  it('process calls POST /payments/:id/process with no body', async () => {
-    vi.mocked(ApiClient.post).mockResolvedValueOnce(mockPayment);
-
-    await paymentsApi.process(paymentId);
-
-    expect(ApiClient.post).toHaveBeenCalledWith(`/payments/${paymentId}/process`);
+  it('has no process call: payments are collected only through Stripe (A9-15)', () => {
+    expect('process' in paymentsApi).toBe(false);
   });
 
-  it('refund calls POST /payments/:id/refund with amount query param', async () => {
-    vi.mocked(ApiClient.post).mockResolvedValueOnce(mockPayment);
+  it('refund sends amount and reason as JSON body to POST /payments/:id/refund', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ id: 'r1', status: 'Pending' });
 
-    await paymentsApi.refund(paymentId, 50);
+    await paymentsApi.refund(paymentId, { amount: 50, reason: 'Guasto' });
 
-    expect(ApiClient.post).toHaveBeenCalledWith(`/payments/${paymentId}/refund?amount=50`);
+    expect(ApiClient.post).toHaveBeenCalledWith(`/payments/${paymentId}/refund`, { amount: 50, reason: 'Guasto' });
   });
 
-  it('refund omits query param for full refund', async () => {
-    vi.mocked(ApiClient.post).mockResolvedValueOnce(mockPayment);
+  it('refund without amount asks for everything still refundable', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ id: 'r1', status: 'Succeeded' });
 
     await paymentsApi.refund(paymentId);
 
-    expect(ApiClient.post).toHaveBeenCalledWith(`/payments/${paymentId}/refund`);
+    expect(ApiClient.post).toHaveBeenCalledWith(`/payments/${paymentId}/refund`, {});
+  });
+
+  it('getRefunds calls GET /payments/:id/refunds', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce({ refunds: [] });
+
+    await paymentsApi.getRefunds(paymentId);
+
+    expect(ApiClient.get).toHaveBeenCalledWith(`/payments/${paymentId}/refunds`);
   });
 
   it('getRevenue loads payments and builds analytics client-side', async () => {

@@ -1,6 +1,9 @@
 import { ApiClient } from './client';
 import type {
   Booking,
+  BookingCancellationQuote,
+  CancelBookingDto,
+  CancelBookingResult,
   CreateBookingDto,
   UpdateBookingDto,
   CheckInDto,
@@ -24,7 +27,13 @@ export const bookingsApi = {
   update: (id: string, data: UpdateBookingDto) =>
     ApiClient.put<Booking>(`/bookings/${id}`, data),
 
-  delete: (id: string) => ApiClient.delete<void>(`/bookings/${id}`),
+  /** What cancelling now would do: paid, refundable and minimum refund amounts (BK-02). */
+  getCancellationQuote: (id: string) =>
+    ApiClient.get<BookingCancellationQuote>(`/bookings/${id}/cancellation`),
+
+  /** Cancels the booking: unpaid intents canceled on Stripe, `refundAmount` refunded (BK-02). */
+  cancel: (id: string, data: CancelBookingDto = {}) =>
+    ApiClient.post<CancelBookingResult>(`/bookings/${id}/cancel`, data),
 
   getCalendar: (params: { propertyId: string; startDate: string; endDate: string; timezone?: string }) =>
     ApiClient.get<CalendarResponseDto>('/bookings/calendar', params),

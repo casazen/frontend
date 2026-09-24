@@ -2,7 +2,10 @@ import { ApiClient } from './client';
 import { buildRevenueAnalytics } from '@/lib/revenue-analytics';
 import type {
   Payment,
+  PaymentRefund,
+  PaymentRefundsResponse,
   CreatePaymentDto,
+  RefundPaymentDto,
   RevenueParams,
   RevenueAnalytics,
 } from '@/types';
@@ -16,16 +19,14 @@ export const paymentsApi = {
   create: (data: CreatePaymentDto) =>
     ApiClient.post<Payment>('/payments', data),
 
-  process: (id: string) =>
-    ApiClient.post<Payment>(`/payments/${id}/process`),
+  /**
+   * Refund on Stripe (BK-02). The answer is the refund as Stripe left it: only `Succeeded` means
+   * the money went back; `Pending` is confirmed later (poll `getRefunds`).
+   */
+  refund: (id: string, data: RefundPaymentDto = {}) =>
+    ApiClient.post<PaymentRefund>(`/payments/${id}/refund`, data),
 
-  refund: (id: string, amount?: number) => {
-    const url =
-      amount !== undefined
-        ? `/payments/${id}/refund?amount=${encodeURIComponent(String(amount))}`
-        : `/payments/${id}/refund`;
-    return ApiClient.post<Payment>(url);
-  },
+  getRefunds: (id: string) => ApiClient.get<PaymentRefundsResponse>(`/payments/${id}/refunds`),
 
   getRevenue: async (params?: RevenueParams): Promise<RevenueAnalytics> => {
     const propertyId = params?.propertyId;
