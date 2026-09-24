@@ -19,10 +19,10 @@ import { isDemoMode } from '@/config/demo.config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { buildOrgBookingPath, buildPropertyPageUrl } from '@/lib/booking-url';
 import { getCountryOptions } from '@/lib/countries';
-import { addDays, formatStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
+import { addDays, formatRomeDateTime, formatStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import type { DirectBookingResponse, PublicOrgDto, PublicPropertyDetailDto, PaymentOption } from '@/types';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, MailCheck } from 'lucide-react';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
 import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 
@@ -165,8 +165,6 @@ function ConfirmationScreen({
         return t('publicBooking.paidOnline');
       case 'OnCancellationDeadline':
         return t('publicBooking.paymentDueBy', { date: formatDate(bookingResult.freeRefundDeadline) });
-      case 'OnSite':
-        return t('publicBooking.payOnSite');
       default:
         return '';
     }
@@ -210,6 +208,64 @@ function ConfirmationScreen({
           </Button>
         </Link>
       </div>
+    </div>
+  );
+}
+
+/**
+ * "Pay at the property" (BK-06, decision D5): the checkout sends a request, never a confirmed booking. The guest confirms
+ * the email, then the host accepts or declines.
+ */
+function OnSiteRequestSentScreen({
+  bookingResult,
+  org,
+  orgSlug,
+  guestEmail,
+}: {
+  bookingResult: DirectBookingResponse;
+  org: PublicOrgDto;
+  orgSlug: string;
+  guestEmail: string;
+}) {
+  const { t, i18n } = useTranslation();
+  const confirmBy = bookingResult.emailConfirmationExpiresAt
+    ? formatRomeDateTime(bookingResult.emailConfirmationExpiresAt, i18n.language)
+    : '';
+
+  return (
+    <div className="mx-auto max-w-lg space-y-6 text-center" data-testid="checkout-onsite-request-sent">
+      <div className="flex justify-center">
+        <div className="rounded-full bg-amber-100 p-4">
+          <MailCheck className="h-12 w-12 text-amber-700" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">{t('publicBooking.onSiteRequest.sentTitle')}</h2>
+        <p className="text-muted-foreground">
+          {t('publicBooking.onSiteRequest.sentDescription', { orgName: org.displayName })}
+        </p>
+      </div>
+      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
+        <p className="font-medium">{t('publicBooking.onSiteRequest.nextStepsTitle')}</p>
+        <ol className="list-decimal space-y-2 pl-5 text-sm">
+          <li>
+            {confirmBy
+              ? t('publicBooking.onSiteRequest.stepConfirmEmail', { email: guestEmail, time: confirmBy })
+              : t('publicBooking.onSiteRequest.stepConfirmEmailNoTime', { email: guestEmail })}
+          </li>
+          <li>{t('publicBooking.onSiteRequest.stepHostAnswers')}</li>
+          <li>{t('publicBooking.onSiteRequest.stepPayOnSite')}</li>
+        </ol>
+      </div>
+      <div className="bg-card rounded-lg p-4 space-y-2 text-left">
+        <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.bookingReference')}</p>
+        <p className="font-mono text-lg font-semibold">{bookingResult.bookingId}</p>
+      </div>
+      <Link to={buildOrgBookingPath(orgSlug)} className="block">
+        <Button variant="outline" className="w-full">
+          {t('publicBooking.backToProperties')}
+        </Button>
+      </Link>
     </div>
   );
 }
@@ -295,6 +351,7 @@ function CheckoutFlow({
   const [consent, setConsent] = useState(false);
   const [bookingResult, setBookingResult] = useState<DirectBookingResponse | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [requestEmail, setRequestEmail] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const values = watch();
@@ -393,13 +450,21 @@ function CheckoutFlow({
       });
       setBookingResult(result);
 
-      if (paymentOption === 'OnSite') {
+      // "Pay at the property" is a request waiting for the email confirmation and the host (D5): nothing to pay here.
+      if (result.paymentOption === 'OnSite') {
+        setRequestEmail(data.email);
         setConfirmed(true);
       }
     } catch (error) {
       setPaymentError(getProblemMessage(error, t) ?? t('publicBooking.checkoutError'));
     }
   });
+
+  if (confirmed && bookingResult?.paymentOption === 'OnSite') {
+    return (
+      <OnSiteRequestSentScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} guestEmail={requestEmail} />
+    );
+  }
 
   if (confirmed && bookingResult) {
     return <ConfirmationScreen bookingResult={bookingResult} org={org} orgSlug={orgSlug} t={t} i18n={i18n} />;
@@ -525,6 +590,9 @@ function CheckoutFlow({
                   className="w-full p-3 border-2 border-purple-200 rounded-lg hover:bg-purple-50 text-left font-medium transition"
                 >
                   {t('publicBooking.payOnSiteOption')}
+                  <span className="block text-xs font-normal text-muted-foreground">
+                    {t('publicBooking.onSiteRequest.optionHint')}
+                  </span>
                 </button>
               </div>
             </div>
@@ -624,13 +692,7 @@ function CheckoutFlow({
             currency={bookingResult.currency}
           />
 
-          {bookingResult.paymentOption === 'OnSite' ? (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm font-medium text-green-800">
-                ✓ {t('publicBooking.bookingConfirmedOnSite')}
-              </p>
-            </div>
-          ) : isDemoMode ? (
+          {isDemoMode ? (
             <DemoPaymentStep onSuccess={() => setConfirmed(true)} t={t} />
           ) : stripePromise && bookingResult.clientSecret ? (
             <Elements stripe={stripePromise} options={{ clientSecret: bookingResult.clientSecret }}>

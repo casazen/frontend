@@ -782,6 +782,37 @@
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
         "noRefund": "No refund requested."
       }
+    },
+    "requests": {
+      "title": "Requests to approve",
+      "description": "Bookings paid at the property: they are valid only if you accept them. Without an answer by the deadline the request expires and the dates become available again. While pending they are not sent to the portals through iCal.",
+      "loading": "Loading requests...",
+      "loadError": "Unable to load the requests to approve.",
+      "retry": "Retry",
+      "empty": "No request waiting for approval.",
+      "badge": "Pay at property",
+      "stay_one": "{{property}}: from {{checkIn}} to {{checkOut}} ({{count}} night)",
+      "stay_other": "{{property}}: from {{checkIn}} to {{checkOut}} ({{count}} nights)",
+      "guestsAndTotal_one": "{{count}} guest · total {{total}} to be paid at the property",
+      "guestsAndTotal_other": "{{count}} guests · total {{total}} to be paid at the property",
+      "specialRequests": "Guest requests: {{text}}",
+      "respondBy": "Answer by {{date}} (Italian time)",
+      "approve": "Accept",
+      "approving": "Accepting...",
+      "decline": "Decline",
+      "declining": "Declining...",
+      "confirmDecline": "Confirm decline",
+      "cancelDecline": "Cancel",
+      "declineMessageLabel": "Message to the guest (optional)",
+      "declineMessagePlaceholder": "E.g. the property is not available on those dates",
+      "approved": "Request accepted: the booking is confirmed.",
+      "approveFailed": "Unable to accept the request. Please try again.",
+      "declined": "Request declined: the dates are available again.",
+      "declineFailed": "Unable to decline the request. Please try again.",
+      "state": {
+        "AwaitingGuestEmail": "Waiting for guest email",
+        "AwaitingHostApproval": "To approve"
+      }
     }
   },
   "ota": {
@@ -2422,7 +2453,6 @@
     "paymentMethod": "PAYMENT METHOD",
     "paidOnline": "Paid online",
     "paymentDueBy": "Payment due by {{date}}",
-    "payOnSite": "Pay at property",
     "backToProperties": "Back to properties",
     "backToProperty": "Back to property",
     "backToOrg": "Back to {{orgName}}",
@@ -2443,7 +2473,6 @@
     "continue": "Continue",
     "preparingPayment": "Preparing payment...",
     "checkoutError": "Unable to start checkout. Please check your data and try again.",
-    "bookingConfirmedOnSite": "Booking confirmed. Pay at property.",
     "myBookingsTitle": "My bookings",
     "myBookingsDescription": "Enter your email address to view your bookings",
     "search": "Search",
@@ -2526,6 +2555,27 @@
       "emailInvalid": "Enter a valid email address",
       "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
       "countryRequired": "Select your country of residence"
+    },
+    "onSiteRequest": {
+      "optionHint": "Request to be confirmed: the booking is valid only once the host accepts it.",
+      "sentTitle": "Request sent: waiting for the host's confirmation",
+      "sentDescription": "The booking is not confirmed yet: {{orgName}} must accept your request. You will pay at the property.",
+      "nextStepsTitle": "What happens next",
+      "stepConfirmEmail": "Open the email we sent to {{email}} and confirm your address by {{time}} (Italian time): without confirmation the request is cancelled.",
+      "stepConfirmEmailNoTime": "Open the email we sent to {{email}} and confirm your address: without confirmation the request is cancelled.",
+      "stepHostAnswers": "The host receives the request and accepts or declines it. You will receive an email with the answer.",
+      "stepPayOnSite": "If the host accepts it, the booking is confirmed and you will pay directly at the property.",
+      "linkIncomplete": "The confirmation link is incomplete: open the link you received by email again.",
+      "confirmTitle": "Confirm your booking request",
+      "confirmDescription": "By confirming your email address the request is sent to {{orgName}}, who will accept or decline it. Until then the booking is not confirmed.",
+      "confirmAction": "Confirm and send the request",
+      "confirming": "Confirming...",
+      "confirmError": "The request could not be confirmed. Please try again in a few minutes.",
+      "confirmedTitle": "Email confirmed",
+      "sentToHost": "Your request has been sent to the host, who can answer by {{date}} (Italian time). You will receive an email with the answer: the booking is valid only if the host accepts it.",
+      "sentToHostNoDate": "Your request has been sent to the host. You will receive an email with the answer: the booking is valid only if the host accepts it.",
+      "alreadyAccepted": "The host has already accepted your request: the booking is confirmed.",
+      "closed": "This request is no longer active: it was declined, cancelled or it has expired."
     }
   },
   "publicSeo": {
@@ -2950,7 +3000,18 @@
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
       "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
-      "consentsRequired": "To create your organization you must accept the required legal documents."
+      "consentsRequired": "To create your organization you must accept the required legal documents.",
+      "directBookingPaymentsNotReady": "This property does not accept online bookings yet. Please contact the host directly.",
+      "directBookingInvalidStay": "Invalid stay dates: the arrival cannot be in the past and the departure must be after the arrival.",
+      "directBookingConsentRequired": "To book you must consent to the processing of your personal data.",
+      "directBookingConsentOutdated": "The privacy notice has been updated: reload the page and give your consent again.",
+      "directBookingInvalidPaymentOption": "Invalid payment method.",
+      "onsiteRequestLinkInvalid": "Invalid confirmation link: open the link you received by email.",
+      "onsiteRequestExpired": "The request has expired: the dates are available again. You can send a new request.",
+      "onsiteRequestNotPending": "The request is no longer pending: it has already been accepted, declined or cancelled.",
+      "onsiteRequestEmailNotConfirmed": "The guest has not confirmed their email address yet: the request cannot be accepted or declined yet.",
+      "onsiteRequestDatesBlocked": "The dates now overlap a calendar block imported from a portal (e.g. Airbnb, Booking.com): the request cannot be accepted, decline it.",
+      "bookingNotOnsiteRequest": "This booking is not a request with payment at the property."
     }
   },
   "validation": {

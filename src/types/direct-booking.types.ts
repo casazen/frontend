@@ -41,6 +41,19 @@ export interface DirectBookingResponse {
   basePrice: number;
   freeRefundDeadline: string;
   paymentOption: PaymentOption;
+  /**
+   * "Pay at the property" only (BK-06): the booking is a request, not confirmed. The guest must confirm the email
+   * (link sent by email) by this instant; then the host accepts or declines.
+   */
+  emailConfirmationExpiresAt?: string | null;
+}
+
+/** Answer of `POST /api/public/bookings/{id}/confirm-email` (BK-06). */
+export interface OnSiteRequestConfirmation {
+  bookingId: string;
+  status: string;
+  state: 'AwaitingGuestEmail' | 'AwaitingHostApproval' | null;
+  requestExpiresAt: string | null;
 }
 
 export interface GuestBookingItem {

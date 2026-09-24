@@ -1,6 +1,7 @@
 import { ApiClient } from './client';
 import type {
   Booking,
+  BookingApprovalRequest,
   BookingCancellationQuote,
   CancelBookingDto,
   CancelBookingResult,
@@ -8,6 +9,7 @@ import type {
   UpdateBookingDto,
   CheckInDto,
   CheckOutDto,
+  DeclineBookingRequestDto,
 } from '@/types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInSessionStatusDto, ResendCheckInLinkResponse } from '@/types/public-checkin.types';
@@ -34,6 +36,16 @@ export const bookingsApi = {
   /** Cancels the booking: unpaid intents canceled on Stripe, `refundAmount` refunded (BK-02). */
   cancel: (id: string, data: CancelBookingDto = {}) =>
     ApiClient.post<CancelBookingResult>(`/bookings/${id}/cancel`, data),
+
+  /** "Pay at the property" requests waiting for the host's answer (BK-06). */
+  getApprovalRequests: () => ApiClient.get<BookingApprovalRequest[]>('/bookings/approval-requests'),
+
+  /** Accepts a "pay at the property" request: the booking becomes Confirmed (BK-06). */
+  approveRequest: (id: string) => ApiClient.post<Booking>(`/bookings/${id}/approve`),
+
+  /** Declines a "pay at the property" request: cancelled, dates released; `message` goes to the guest (BK-06). */
+  declineRequest: (id: string, data: DeclineBookingRequestDto = {}) =>
+    ApiClient.post<Booking>(`/bookings/${id}/decline`, data),
 
   getCalendar: (params: { propertyId: string; startDate: string; endDate: string; timezone?: string }) =>
     ApiClient.get<CalendarResponseDto>('/bookings/calendar', params),
