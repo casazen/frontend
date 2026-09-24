@@ -8,6 +8,7 @@ import {
   getVisibleNavEntries,
   isEntryFeatureEnabled,
 } from '../route-manifest';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 
 describe('route-manifest nav helpers', () => {
   const allowAll = () => true;
@@ -34,6 +35,25 @@ describe('route-manifest nav helpers', () => {
     expect(stripe?.navKey).toBe('nav.stripeConnect');
     expect(stripe?.navGroup).toBe('account');
     expect(plan?.navGroup).toBe('account');
+  });
+
+  // TN-3 / PL-12: plan and billing are in the menu only for the org billing administrator.
+  it('shows the plan and billing entries only to the org billing administrator', () => {
+    const billingPaths = ['/app/short-rent/settings/plan', '/app/short-rent/settings/billing'];
+    for (const path of billingPaths) {
+      expect(ROUTE_MANIFEST.find((e) => e.path === path)?.orgBillingAdmin).toBe(true);
+    }
+
+    const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
+    const hidden = getVisibleNavEntries('short-rent', notBillingAdmin).map((e) => e.path);
+    expect(hidden.filter((path) => billingPaths.includes(path))).toEqual([]);
+    expect(hidden).toContain('/app/short-rent/settings/payments');
+
+    const visible = getSecondaryNavEntries('short-rent', allowAll).map((e) => e.path);
+    expect(visible).toEqual(expect.arrayContaining(billingPaths));
+    const billing = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/billing');
+    expect(billing?.navKey).toBe('nav.billing');
+    expect(billing?.navGroup).toBe('account');
   });
 
   it('hides OTA when ota.read permission is missing', () => {
