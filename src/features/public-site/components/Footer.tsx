@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
+import { usePlatformLegalLinks } from '@/queries/use-legal';
 
 interface FooterProps {
   displayName?: string;
@@ -12,6 +13,7 @@ interface FooterProps {
 
 export function Footer({ displayName, contactEmail, showPoweredBy = false, showSeoHubLink = false }: FooterProps) {
   const { t } = useTranslation();
+  const { privacyUrl, termsUrl } = usePlatformLegalLinks();
   const year = new Date().getFullYear();
 
   return (
@@ -23,12 +25,17 @@ export function Footer({ displayName, contactEmail, showPoweredBy = false, showS
               {t('publicSite.seoHub')}
             </Link>
           ) : null}
-          <a href="https://casazen.app/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--cz-public-primary)]">
-            {t('publicSite.privacy')}
-          </a>
-          <a href="https://casazen.app/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--cz-public-primary)]">
-            {t('publicSite.terms')}
-          </a>
+          {/* D3: no domain in code; the documents are the ones configured on the backend (hidden until then). */}
+          {privacyUrl ? (
+            <a href={privacyUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--cz-public-primary)]" data-testid="footer-privacy">
+              {t('publicSite.privacy')}
+            </a>
+          ) : null}
+          {termsUrl ? (
+            <a href={termsUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--cz-public-primary)]" data-testid="footer-terms">
+              {t('publicSite.terms')}
+            </a>
+          ) : null}
           {contactEmail ? (
             <a href={`mailto:${contactEmail}`} className="underline hover:text-[var(--cz-public-primary)]">
               {contactEmail}

@@ -6,6 +6,7 @@ import type {
   UpdateBookingDto,
   CheckInDto,
   CheckOutDto,
+  DeclineBookingRequestDto,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -27,6 +28,52 @@ export function useBooking(id: string) {
     queryKey: [BOOKINGS_KEY, id],
     queryFn: () => bookingsApi.getById(id),
     enabled: !!id,
+  });
+}
+
+/** "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). */
+export function useBookingApprovalRequests() {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, 'approval-requests'],
+    queryFn: () => bookingsApi.getApprovalRequests(),
+    retry: retryTransientErrors(1),
+  });
+}
+
+/** Accepts a "pay at the property" request: the booking becomes Confirmed. */
+export function useApproveBookingRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => bookingsApi.approveRequest(id),
+    onSuccess: () => {
+      toast.success(i18n.t('booking.requests.approved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('booking.requests.approveFailed'));
+    },
+    // Also after a 409 (answered elsewhere, expired): the list shows the current state.
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
+    },
+  });
+}
+
+/** Declines a "pay at the property" request: cancelled, dates released, guest emailed. */
+export function useDeclineBookingRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: DeclineBookingRequestDto }) => bookingsApi.declineRequest(id, data),
+    onSuccess: () => {
+      toast.success(i18n.t('booking.requests.declined'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('booking.requests.declineFailed'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
+    },
   });
 }
 

@@ -2,8 +2,12 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
+import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
+import { SignupPage } from '@/pages/signup-page';
+import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
+import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { ContextLayout } from '@/components/layout/context-layout';
@@ -22,6 +26,7 @@ import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
+import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
@@ -115,14 +120,49 @@ const workspaceRoutes: RouteObject[] = [
   })),
 ];
 
-export const router = createBrowserRouter([
+/** Route table of the app (exported for the routing tests; the app uses `router`). */
+export const appRoutes: RouteObject[] = [
   {
-    path: '/login',
-    element: <LoginPage />,
+    // Pages that need Auth0: reached client-side from a public page (no Auth0 loaded), they reload themselves.
+    element: <AuthProviderBoundary />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <SupplierRegisterPage />,
+      },
+      {
+        // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
+        path: SIGNUP_PATH,
+        element: <SignupPage />,
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: '/onboarding',
+            element: <OnboardingPage />,
+          },
+          {
+            element: <OnboardingGuard />,
+            children: workspaceRoutes,
+          },
+        ],
+      },
+    ],
   },
   {
-    path: '/register',
-    element: <SupplierRegisterPage />,
+    // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
+    // onboarding redirect (SU-02).
+    path: '/register/claim',
+    element: <SupplierClaimPage />,
   },
   {
     path: '/search',
@@ -138,6 +178,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
+      // Link of the "request received" email of a "pay at the property" request (BK-06).
+      { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)
@@ -177,24 +219,10 @@ export const router = createBrowserRouter([
     element: <IcalHelpPage />,
   },
   {
-    element: (
-      <ProtectedRoute>
-        <Outlet />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: '/onboarding',
-        element: <OnboardingPage />,
-      },
-      {
-        element: <OnboardingGuard />,
-        children: workspaceRoutes,
-      },
-    ],
-  },
-  {
+    // Public 404 (A8-03): never a redirect to the login.
     path: '*',
     element: <CatchAllRedirect />,
   },
-]);
+];
+
+export const router = createBrowserRouter(appRoutes);

@@ -16,6 +16,11 @@ const state = vi.hoisted(() => ({
   guide: null as SeoPagePublic | null,
 }));
 
+// Footer legal links come from the backend configuration (SE-03, D3): no domain in the frontend.
+vi.mock('@/queries/use-legal', () => ({
+  usePlatformLegalLinks: () => ({ privacyUrl: 'https://legal.example.test/privacy', termsUrl: undefined }),
+}));
+
 vi.mock('@/queries/use-public-seo', () => ({
   usePublishedSeoPages: () => ({ ...state.hub, refetch: state.refetch, isFetching: false }),
   useComplianceGuide: () => ({ data: state.guide, isLoading: false, isError: false }),
@@ -142,7 +147,7 @@ describe('ComplianceGuidePage canonical', () => {
       canonicalUrl: `${PUBLIC_SITE}/p/affitti-brevi/lombardia/como`,
       lastRefreshedAt: null,
       disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
-      cta: { complianceCheckerUrl: '/tools/verifica-conformita', signupUrl: '/signup' },
+      cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
       touristTaxRates: [],
     };
 
@@ -168,6 +173,19 @@ describe('Footer hub link', () => {
 
     expect(screen.getByTestId('footer-seo-hub')).toHaveAttribute('href', '/p/affitti-brevi');
     expect(screen.getByTestId('footer-seo-hub')).toHaveTextContent(i18n.t('publicSite.seoHub'));
+  });
+
+  it('Footer_LegalLinks_UseTheConfiguredDocumentsAndHideTheMissingOnes', () => {
+    render(
+      <MemoryRouter>
+        <Footer displayName="CasaZen" showSeoHubLink />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('footer-privacy')).toHaveAttribute('href', 'https://legal.example.test/privacy');
+    // Terms not configured on the backend: no link to a page that does not exist.
+    expect(screen.queryByTestId('footer-terms')).not.toBeInTheDocument();
+    expect(document.querySelector('a[href*="casazen"]')).toBeNull();
   });
 
   it('Footer_HostBookingSite_DoesNotLinkTheHub', () => {

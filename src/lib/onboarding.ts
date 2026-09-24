@@ -14,17 +14,33 @@ export function getHomeRouteForRentalType(rentalType: RentalType): string {
   }
 }
 
-export function getHomeRouteForUser(user: UserWithRoles): string {
+/** Where a supplier-only user lands: the activation wizard (an active supplier is sent on to the dashboard). */
+export const SUPPLIER_HOME_ROUTE = '/app/supplier/activation';
+
+type SupplierLinkProfile = { orgId?: string | null; supplierOrgId?: string | null } | null | undefined;
+
+/**
+ * True when `/users/me` says the account is linked to a supplier profile (invite, registration or claim, SU-02).
+ * Unlike the Supplier role it does not wait for a fresh access token (`rolesSynced: false`).
+ */
+export function isLinkedSupplier(profile: SupplierLinkProfile): boolean {
+  return !!profile?.supplierOrgId;
+}
+
+function hasHostRole(roles: string[]): boolean {
+  return roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
+}
+
+export function getHomeRouteForUser(user: UserWithRoles, profile?: SupplierLinkProfile): string {
   if (isAdmin(user)) {
     return '/app/admin';
   }
 
   const roles = getUserRoles(user);
-  const isHost =
-    roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
+  const isHost = hasHostRole(roles);
 
-  if (roles.includes(ROLE_SUPPLIER) && !isHost) {
-    return '/supplier/inbox';
+  if ((roles.includes(ROLE_SUPPLIER) || isLinkedSupplier(profile)) && !isHost) {
+    return SUPPLIER_HOME_ROUTE;
   }
 
   if (roles.includes(ROLE_LONG_TERM_LANDLORD) && !roles.includes(ROLE_PROPERTY_OWNER)) {
@@ -54,13 +70,13 @@ export function needsOrgSetup(profile?: { orgId?: string | null } | null): boole
  */
 export function isExemptFromHostOnboarding(roles: string[]): boolean {
   if (roles.includes(ROLE_ADMIN)) return true;
-  const isHost = roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
-  return roles.includes(ROLE_SUPPLIER) && !isHost;
+  return roles.includes(ROLE_SUPPLIER) && !hasHostRole(roles);
 }
 
 /** Profile fields that decide the onboarding (`GET /users/me`). */
 export interface OnboardingProfile {
   orgId?: string | null;
+  supplierOrgId?: string | null;
   onboardingCompletedAt?: string | null;
   rentalType?: RentalType | null;
   /** Backend gate (PL-02): host features withheld until the onboarding and the current consents. */
@@ -73,6 +89,12 @@ export function needsOnboarding(user: UserWithRoles, profile?: OnboardingProfile
 
   // Admins and supplier-only users skip it even without an org (#285 used to trap admins here).
   if (isExemptFromHostOnboarding(resolvedRoles)) {
+    return false;
+  }
+
+  // A supplier linked in the database goes to its console, never to the host onboarding (A4-02), even while the
+  // Supplier role is not in the access token yet. A host org can still be set up from `/onboarding`.
+  if (isLinkedSupplier(profile)) {
     return false;
   }
 

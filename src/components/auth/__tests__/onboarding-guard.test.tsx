@@ -81,6 +81,11 @@ function OnboardingProbe() {
   return <p data-testid="onboarding-page">onboarding from {from}</p>;
 }
 
+function WorkspaceProbe() {
+  const location = useLocation();
+  return <p data-testid="workspace">workspace {location.pathname}</p>;
+}
+
 function renderGuard(path = '/app/short-rent/properties') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -88,8 +93,9 @@ function renderGuard(path = '/app/short-rent/properties') {
       <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route path="/onboarding" element={<OnboardingProbe />} />
+          <Route path="/register/claim" element={<p data-testid="claim-page">claim</p>} />
           <Route element={<OnboardingGuard />}>
-            <Route path="/app/*" element={<p data-testid="workspace">workspace</p>} />
+            <Route path="/app/*" element={<WorkspaceProbe />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -265,5 +271,92 @@ describe('OnboardingGuard (PL-01)', () => {
     renderGuard('/app/admin');
 
     expect(await screen.findByTestId('workspace')).toBeInTheDocument();
+  });
+});
+
+describe('OnboardingGuard supplier (SU-02)', () => {
+  const pendingClaim = {
+    token: 'a'.repeat(64),
+    email: 'fornitore@example.com',
+    expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+  };
+
+  beforeEach(() => {
+    demo.enabled = false;
+    sessionStorage.clear();
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it('OnboardingGuard_LinkedSupplierWithoutRoleInToken_RendersSupplierConsole', async () => {
+    // Claimed, but the Auth0 Supplier role is not in the token yet (rolesSynced: false).
+    mockAuth({ tokenRoles: Promise.resolve([]) });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ role: 'PropertyOwner', orgId: 'supplier-org', supplierOrgId: 'supplier-org' }),
+    );
+
+    renderGuard('/app/supplier/activation');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('/app/supplier/activation');
+    expect(screen.queryByTestId('onboarding-page')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingGuard_NoOrgNoRolesNoClaimToken_RedirectsToHostOnboarding', async () => {
+    mockAuth({ tokenRoles: Promise.resolve([]) });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderGuard('/app/short-rent');
+
+    expect(await screen.findByTestId('onboarding-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('claim-page')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingGuard_PendingSupplierClaim_RedirectsToClaimPageNotHostOnboarding', async () => {
+    localStorage.setItem('cz-supplier-claim', JSON.stringify(pendingClaim));
+    mockAuth({ tokenRoles: Promise.resolve([]) });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderGuard('/app/short-rent');
+
+    expect(await screen.findByTestId('claim-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-page')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingGuard_ExpiredPendingClaim_IsDroppedAndOnboardingOpens', async () => {
+    localStorage.setItem('cz-supplier-claim', JSON.stringify({ ...pendingClaim, expiresAt: '2020-01-01T00:00:00Z' }));
+    mockAuth({ tokenRoles: Promise.resolve([]) });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderGuard('/app/short-rent');
+
+    expect(await screen.findByTestId('onboarding-page')).toBeInTheDocument();
+    expect(localStorage.getItem('cz-supplier-claim')).toBeNull();
+  });
+
+  it('OnboardingGuard_LinkedSupplierWithLeftoverClaim_RendersConsole', async () => {
+    localStorage.setItem('cz-supplier-claim', JSON.stringify(pendingClaim));
+    mockAuth({ roles: ['Supplier'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ orgId: 'supplier-org', supplierOrgId: 'supplier-org' }));
+
+    renderGuard('/app/supplier/inbox');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('/app/supplier/inbox');
+    expect(screen.queryByTestId('claim-page')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingGuard_HostWithSupplierProfile_KeepsHostWorkspace', async () => {
+    mockAuth({ roles: ['PropertyOwner', 'Supplier'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ orgId: 'host-org', supplierOrgId: 'supplier-org', onboardingCompletedAt: '2026-06-16T12:00:00Z' }),
+    );
+
+    renderGuard('/app/short-rent/properties');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('/app/short-rent/properties');
   });
 });

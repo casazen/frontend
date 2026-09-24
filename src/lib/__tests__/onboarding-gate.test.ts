@@ -28,7 +28,7 @@ describe('openOnboardingAfterGate (PL-02)', () => {
   });
 
   it('openOnboardingAfterGate_AdminOrSupplierArea_StaysPut', () => {
-    for (const pathname of ['/app/admin', '/app/admin/users', '/supplier/inbox']) {
+    for (const pathname of ['/app/admin', '/app/admin/users', '/app/supplier/inbox', '/supplier/inbox']) {
       const { router, queryClient } = setup(pathname);
 
       expect(openOnboardingAfterGate(router, queryClient)).toBe(false);

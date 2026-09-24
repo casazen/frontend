@@ -9,7 +9,7 @@ import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 
 vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/api/users.api', () => ({
-  UsersApi: { getMe: vi.fn(), postOnboarding: vi.fn(), putOnboarding: vi.fn() },
+  UsersApi: { getMe: vi.fn(), postOnboarding: vi.fn(), putOnboarding: vi.fn(), recordSignupAttribution: vi.fn() },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -40,6 +40,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
 import { OnboardingPage } from '../onboarding-page';
+import { captureSignupAttribution, readPendingSignupAttribution } from '@/lib/signup-attribution';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
 const refreshAccessToken = vi.fn(async () => 'fresh-token');
@@ -100,6 +101,9 @@ function renderPage(entry: string | { pathname: string; search?: string; state?:
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/app/admin" element={<p data-testid="admin-area">admin</p>} />
           <Route path="/app/short-rent" element={<p data-testid="short-rent-home">home</p>} />
+          <Route path="/app/supplier/activation" element={<p data-testid="supplier-activation">activation</p>} />
+          <Route path="/register" element={<p data-testid="supplier-register">register</p>} />
+          <Route path="/register/claim" element={<p data-testid="supplier-claim">claim</p>} />
           <Route path="/" element={<p data-testid="root">root</p>} />
         </Routes>
       </MemoryRouter>
@@ -122,6 +126,7 @@ describe('OnboardingPage (PL-01)', () => {
     cleanup();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   it('OnboardingPage_HostRolesWithoutOrg_PostsWithConsentsAndReturnsToOrigin', async () => {
@@ -140,6 +145,45 @@ describe('OnboardingPage (PL-01)', () => {
     });
     expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('OnboardingPage_FirstOnboardingCreatesTheOrg_SendsTheSignupAttributionBeforeLeaving', async () => {
+    // SE-03: captured on /signup before the Auth0 signup.
+    captureSignupAttribution(
+      { pathname: '/signup', search: '?comune=como&utm_source=seo-compliance&utm_medium=cta', origin: 'https://site.test' },
+      '',
+    );
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ orgProvisioned: true }));
+    vi.mocked(UsersApi.recordSignupAttribution).mockResolvedValue({ recorded: true });
+
+    renderPage();
+    await chooseShortTermWithConsents();
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    expect(UsersApi.recordSignupAttribution).toHaveBeenCalledWith({
+      utmSource: 'seo-compliance',
+      utmMedium: 'cta',
+      comune: 'como',
+      landingPath: '/signup',
+    });
+    expect(readPendingSignupAttribution()).toBeNull();
+  });
+
+  it('OnboardingPage_AttributionCannotBeSent_OnboardingStillCompletes', async () => {
+    captureSignupAttribution({ pathname: '/signup', search: '?utm_source=google', origin: 'https://site.test' }, '');
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ orgProvisioned: true }));
+    vi.mocked(UsersApi.recordSignupAttribution).mockRejectedValue(httpError(503));
+
+    renderPage();
+    await chooseShortTermWithConsents();
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    // Kept for the next page load (the onboarding guard sends it again).
+    expect(readPendingSignupAttribution()).toEqual({ utmSource: 'google', landingPath: '/signup' });
   });
 
   it('OnboardingPage_RolesNotSynced_ShowsPendingPanelAndRenewsSession', async () => {
@@ -314,5 +358,74 @@ describe('OnboardingPage (PL-01)', () => {
 
     expect(await screen.findByTestId('profile-load-error')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: i18n.t('onboarding.choose') })).not.toBeInTheDocument();
+  });
+});
+
+describe('OnboardingPage supplier option (SU-02)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('location', { ...window.location, assign });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it('OnboardingPage_UserWithoutOrgOrToken_OffersSupplierRegistration', async () => {
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderPage();
+
+    const option = await screen.findByTestId('onboarding-supplier-option');
+    expect(option).toHaveTextContent(i18n.t('onboarding.supplierOption.title'));
+    fireEvent.click(screen.getByTestId('onboarding-supplier-register'));
+
+    expect(await screen.findByTestId('supplier-register')).toBeInTheDocument();
+    expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_SupplierOptionClaimLink_OpensTheClaimPage', async () => {
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('onboarding-supplier-claim'));
+
+    expect(await screen.findByTestId('supplier-claim')).toBeInTheDocument();
+  });
+
+  it('OnboardingPage_LinkedSupplierWithoutRoleInToken_GoesToSupplierConsole', async () => {
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ orgId: 'supplier-org', supplierOrgId: 'supplier-org' }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-activation')).toBeInTheDocument();
+    expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_LinkedSupplierWithHostFeaturesWithheld_StillGoesToSupplierConsole (PL-02)', async () => {
+    // A supplier never completed the host onboarding: the backend flag must not keep it in the host wizard.
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ orgId: 'supplier-org', supplierOrgId: 'supplier-org', onboardingRequired: true, consentsAccepted: false }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-activation')).toBeInTheDocument();
+  });
+
+  it('OnboardingPage_EditMode_HidesSupplierOption', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
+
+    renderPage('/onboarding?mode=edit');
+
+    expect(await screen.findByTestId('plan-selection-grid')).toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-supplier-option')).not.toBeInTheDocument();
   });
 });

@@ -9,7 +9,7 @@ export const ME_QUERY_KEY = ['me'] as const;
  * Areas that never wait for the host onboarding (PL-01): the admin console and the supplier console. A host endpoint
  * called from there answers `onboarding_required` as an error of that call, without leaving the page.
  */
-const EXEMPT_PREFIXES = ['/app/admin', '/supplier'];
+const EXEMPT_PREFIXES = ['/app/admin', '/app/supplier', '/supplier'];
 
 interface GateRouter {
   state: { location: { pathname: string; search: string } };
