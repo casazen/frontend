@@ -72,6 +72,7 @@
         "planAction": "Piano",
         "roleAction": "Ruolo",
         "deactivateAction": "Disattiva",
+        "reactivateAction": "Riattiva",
         "empty": "Nessun utente trovato."
       },
       "deactivateDialog": {
@@ -1091,6 +1092,13 @@
       "title": "Nessun accesso disponibile",
       "description": "Il tuo account non e associato ad alcun workspace operativo. Esci e accedi di nuovo, oppure contatta l'amministratore per l'assegnazione dei ruoli.",
       "loginAgain": "Accedi di nuovo"
+    },
+    "accountInactive": {
+      "title": "Account disattivato",
+      "description": "Un amministratore ha disattivato il tuo account CasaZen: con questo account non puoi più usare l'app.",
+      "supportWithEmail": "Se pensi che si tratti di un errore, scrivi al supporto:",
+      "supportGeneric": "Se pensi che si tratti di un errore, contatta il supporto CasaZen o la persona che ti ha dato accesso.",
+      "logout": "Esci"
     },
     "auth": {
       "noSectionAccess": "Non hai accesso a questa sezione",
@@ -3225,6 +3233,10 @@
     "planUpdateFailed": "Impossibile aggiornare il piano",
     "userDeactivated": "Utente disattivato con successo",
     "userDeactivateFailed": "Impossibile disattivare l'utente",
+    "userDeactivatedAuth0NotSynced": "Utente disattivato: non può più usare CasaZen. Auth0 però non è stato aggiornato: ripeti la disattivazione più tardi.",
+    "userReactivated": "Utente riattivato",
+    "userReactivatedAuth0NotSynced": "Utente riattivato in CasaZen, ma Auth0 non è stato aggiornato: non potrà accedere finché non ripeti la riattivazione.",
+    "userReactivateFailed": "Impossibile riattivare l'utente",
     "cinCodeUpdated": "Codice CIN aggiornato con successo",
     "cinCodeUpdateFailed": "Impossibile aggiornare il codice CIN",
     "checkInDataSaved": "Dati check-in salvati con successo",
@@ -3321,6 +3333,10 @@
       "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
       "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo.",
       "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori.",
+      "accountInactive": "Il tuo account è stato disattivato.",
+      "cannotDeactivateSelf": "Non puoi disattivare il tuo account: chiedi a un altro amministratore.",
+      "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",
+      "userInactive": "L'utente è disattivato: riattivalo prima di cambiarne il ruolo.",
       "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
       "supplierInviteInvalid": "Invito non valido: il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito.",
       "supplierInviteExpired": "Questo invito è scaduto. Chiedi al team CasaZen di inviartene uno nuovo.",

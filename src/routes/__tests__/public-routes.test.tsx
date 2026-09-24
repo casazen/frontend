@@ -157,4 +157,17 @@ describe('public routes without Auth0 (SE-03)', () => {
     expect(replace).toHaveBeenCalledWith('/app/short-rent/bookings');
     expect(router.state.location.pathname).toBe('/app/short-rent/bookings');
   });
+
+  it('AccountInactivePageReachedClientSide_FromAPublicPage_ReloadsWithAuth0SoThatLogoutWorks', async () => {
+    const router = renderPublicApp('/p/affitti-brevi');
+    await screen.findByTestId('public-site-shell');
+
+    await act(async () => {
+      await router.navigate('/account-inactive');
+    });
+
+    // Without Auth0 the logout of the page would do nothing (PL-03).
+    expect(replace).toHaveBeenCalledWith('/account-inactive');
+    expect(router.state.location.pathname).toBe('/account-inactive');
+  });
 });

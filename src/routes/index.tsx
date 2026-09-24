@@ -14,6 +14,8 @@ import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
 import { NoAccessPage } from '@/pages/no-access-page';
+import { AccountInactivePage } from '@/pages/account-inactive-page';
+import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
@@ -139,6 +141,12 @@ export const appRoutes: RouteObject[] = [
         // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
         path: SIGNUP_PATH,
         element: <SignupPage />,
+      },
+      {
+        // Deactivated account (PL-03): under the Auth0 boundary so that its logout button always works, but outside
+        // the protected route, the onboarding guard and the workspace, which would call the API again.
+        path: ACCOUNT_INACTIVE_PATH,
+        element: <AccountInactivePage />,
       },
       {
         element: (

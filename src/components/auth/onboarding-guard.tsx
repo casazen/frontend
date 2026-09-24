@@ -7,6 +7,8 @@ import { ProfileLoadError } from '@/components/auth/profile-load-error';
 import { isLinkedSupplier, isProfileLoadFailure, needsOnboarding } from '@/lib/onboarding';
 import { readPendingSupplierClaim, SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { useMe } from '@/queries/use-users';
+import { isAccountInactiveError } from '@/lib/api-errors';
+import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { useSignupAttributionSync } from '@/hooks/use-signup-attribution-sync';
 
 /**
@@ -34,6 +36,11 @@ export function OnboardingGuard() {
   // The decision depends on the absence of roles (e.g. "not an admin"): wait until they are known.
   if (authLoading || (isAuthenticated && ((profileLoading && !profile) || !rolesResolved))) {
     return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
+  }
+
+  // Deactivated account (PL-03): the dedicated page, never the profile error with a retry that would fail again.
+  if (isAuthenticated && isAccountInactiveError(profileError)) {
+    return <Navigate to={ACCOUNT_INACTIVE_PATH} replace />;
   }
 
   if (isAuthenticated && !profile && isProfileLoadFailure(profileError)) {

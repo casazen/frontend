@@ -4,6 +4,7 @@ import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
 import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
+import { isAccountInactiveError } from '@/lib/api-errors';
 import {
   deriveContextsFromAccessToken,
   deriveContextsFromRoles,
@@ -128,6 +129,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         if (!mounted) return;
+        // Deactivated account (PL-03): the API handler opens the dedicated page; the roles still in the token must not
+        // bring back a workspace whose every call is refused.
+        if (isAccountInactiveError(error)) {
+          applyResolvedContext([], null, setContexts, setActiveContextState);
+          return;
+        }
         console.warn('[Workspace] GET /api/me/contexts failed — using JWT fallback', error);
         const fallback = await resolveContextsFromAuth(authUser, getAccessToken);
         applyResolvedContext(fallback, readStoredContext(), setContexts, setActiveContextState);
