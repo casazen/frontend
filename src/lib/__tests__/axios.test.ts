@@ -114,7 +114,9 @@ describe('request interceptor: explicit public flag (A9-20)', () => {
     const { propertiesApi } = await import('@/api/properties.api');
     const { DomainApi } = await import('@/api/domain.api');
     const { publicSupplierApi } = await import('@/api/public-supplier.api');
-    const { registerSupplier } = await import('@/services/supplier-api');
+    const { registerSupplier, lookupSupplierInvite, fetchSupplierRegistrationOptions } = await import(
+      '@/services/supplier-api'
+    );
 
     await Promise.all([
       publicOrgApi.getPublicOrg('demo'),
@@ -137,12 +139,30 @@ describe('request interceptor: explicit public flag (A9-20)', () => {
       propertiesApi.getPublicProperty('p1'),
       DomainApi.resolveHost('example.test'),
       publicSupplierApi.getShowcase('mario-rossi'),
-      registerSupplier({ email: 'a@example.test', legalName: 'A', phone: '1', comuneCode: 'H501' }),
+      registerSupplier(
+        { email: 'a@example.test', legalName: 'A', phone: '1', comuneCode: 'H501' },
+        { authenticated: false },
+      ),
+      lookupSupplierInvite('tok'),
+      fetchSupplierRegistrationOptions(),
     ]);
 
-    expect(ctx.calls).toHaveLength(21);
+    expect(ctx.calls).toHaveLength(23);
     expect(ctx.getAccessToken).not.toHaveBeenCalled();
     ctx.calls.forEach((_, index) => expect(ctx.authorization(index)).toBeFalsy());
+  });
+
+  it('registerSupplier_signedIn_sendsBearerTokenSoTheAccountIsLinked', async () => {
+    const ctx = await load(() => ({ status: 201, data: { orgId: 'o1' } }));
+    const { registerSupplier } = await import('@/services/supplier-api');
+
+    await registerSupplier(
+      { email: 'a@example.test', legalName: 'A', phone: '1', comuneCode: 'H501', inviteToken: 'tok' },
+      { authenticated: true },
+    );
+
+    expect(ctx.authorization(0)).toBe('Bearer cached-token');
+    expect(ctx.calls[0]?.data).toContain('"inviteToken":"tok"');
   });
 
   it('supplierShowcase_getShowcase_usesApiBaseUrlNotRelativeFetch', async () => {

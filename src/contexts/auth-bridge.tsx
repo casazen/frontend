@@ -1,4 +1,4 @@
-import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
+import { Auth0Provider, useAuth0, type AppState } from '@auth0/auth0-react';
 import {
   createContext,
   useCallback,
@@ -18,6 +18,8 @@ const AUTH_PARAMS = {
 
 type LoginOptions = {
   authorizationParams?: Record<string, string>;
+  /** Path of this app to open after the login (e.g. back to an invite page); default: the app root. */
+  returnTo?: string;
 };
 
 export type AuthBridgeValue = {
@@ -126,6 +128,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
           ...AUTH_PARAMS,
           ...options?.authorizationParams,
         },
+        ...(options?.returnTo ? { appState: { returnTo: options.returnTo } } : {}),
       });
     },
     [loginWithRedirect],
@@ -187,13 +190,20 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   return <AuthBridgeContext.Provider value={value}>{children}</AuthBridgeContext.Provider>;
 }
 
-export function AuthAppProviders({ children }: { children: ReactNode }) {
+export function AuthAppProviders({
+  children,
+  onRedirectCallback,
+}: {
+  children: ReactNode;
+  /** Called by the SDK after the Auth0 redirect, with the `appState` passed to `login` (e.g. `returnTo`). */
+  onRedirectCallback?: (appState?: AppState) => void;
+}) {
   if (isDemoMode) {
     return <DemoAuthBridge>{children}</DemoAuthBridge>;
   }
 
   return (
-    <Auth0Provider {...authConfig}>
+    <Auth0Provider {...authConfig} onRedirectCallback={onRedirectCallback}>
       <Auth0AuthBridge>{children}</Auth0AuthBridge>
     </Auth0Provider>
   );
