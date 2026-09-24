@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MoreHorizontal, Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProperties, useUpdateProperty, useCreateProperty } from '@/queries/use-properties';
 import { useCinCompliance } from '@/queries/use-cin';
@@ -21,8 +21,10 @@ import { CinDeadlineBanner } from '@/features/cin';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PropertyForm } from './components/property-form';
 import { isPlanLimitError, getPlanLimitMessage } from '@/lib/entitlement-error';
-import type { Property } from '@/types';
-import type { PropertyFormValues } from './schemas/property.schema';
+import { getAmenityLabel } from '@/lib/i18n-labels';
+import { formatCurrency } from '@/lib/utils';
+import type { CreatePropertyDto, Property } from '@/types';
+import { formatPropertyLocation } from './property-location';
 
 export function PropertiesPage() {
   const { t } = useTranslation();
@@ -43,7 +45,7 @@ export function PropertiesPage() {
     }
   };
 
-  const handleCreateProperty = async (data: PropertyFormValues) => {
+  const handleCreateProperty = async (data: CreatePropertyDto) => {
     try {
       await createProperty.mutateAsync(data);
       setIsDialogOpen(false);
@@ -118,7 +120,7 @@ export function PropertiesPage() {
                         t('property.table.priceNight'),
                         t('property.table.amenities'),
                         t('property.table.status'),
-                        '',
+                        t('property.table.actions'),
                       ].map((h) => (
                         <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
                       ))}
@@ -132,18 +134,21 @@ export function PropertiesPage() {
                             {p.name}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{formatPropertyLocation(p)}</td>
                         <td className="px-4 py-3 text-muted-foreground">
                           {t('property.table.bedroomsCount', { count: p.bedrooms })}
                           {' · '}
                           {t('property.table.bathroomsCount', { count: p.bathrooms })}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
-                        <td className="px-4 py-3 font-medium">{p.currency === 'EUR' ? '€' : '$'}{p.nightlyRate}</td>
+                        <td className="px-4 py-3 font-medium">
+                          {/* Amounts are in euros (the API has no currency per property); 0 = no short-stay rate. */}
+                          {p.nightlyRate > 0 ? formatCurrency(p.nightlyRate) : t('property.table.noRate')}
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1">
                             {(p.amenities || []).slice(0, 3).map((a) => (
-                              <Badge key={a} variant="secondary" className="text-xs">{a}</Badge>
+                              <Badge key={a} variant="secondary" className="text-xs">{getAmenityLabel(a, t)}</Badge>
                             ))}
                             {(p.amenities || []).length > 3 && (
                               <Badge variant="outline" className="text-xs">+{p.amenities.length - 3}</Badge>
@@ -166,8 +171,14 @@ export function PropertiesPage() {
                             >
                               {p.isActive ? t('property.table.pause') : t('property.table.activate')}
                             </Button>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button asChild variant="ghost" size="icon">
+                              <Link
+                                to={`/app/short-rent/properties/${p.id}/edit`}
+                                aria-label={t('property.table.editAria', { name: p.name })}
+                                title={t('property.table.edit')}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Link>
                             </Button>
                           </div>
                         </td>
