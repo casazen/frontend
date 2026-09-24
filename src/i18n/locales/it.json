@@ -910,7 +910,14 @@
       "authenticating": "Autenticazione in corso...",
       "loadingWorkspace": "Caricamento dell'area di lavoro..."
     },
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "profileLoadError": {
+      "title": "Impossibile caricare il tuo profilo",
+      "description": "Il tuo account non è stato modificato. Riprova tra qualche istante.",
+      "retry": "Riprova",
+      "retrying": "Nuovo tentativo...",
+      "signInAgain": "Accedi di nuovo"
+    }
   },
   "common": {
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
@@ -2473,7 +2480,19 @@
     "acceptPrivacy": "Accetto l'{{title}} (v{{version}})",
     "acceptDpa": "Accetto il {{title}} (v{{version}})",
     "subprocessorsAcknowledged": "Ho preso visione dell'elenco dei responsabili del trattamento (v{{version}})",
-    "marketingOptIn": "Desidero ricevere aggiornamenti e novita' (opzionale)"
+    "marketingOptIn": "Desidero ricevere aggiornamenti e novita' (opzionale)",
+    "skipDescription": "Non ti serve un'organizzazione host per usare l'area di amministrazione o la console fornitori.",
+    "skipForNow": "Salta per ora",
+    "rolesPending": {
+      "title": "Configurazione completata",
+      "description": "Il tuo spazio di lavoro è pronto, ma non siamo riusciti ad aggiornare i permessi del tuo account di accesso. Verranno applicati al prossimo accesso, oppure subito con un nuovo tentativo.",
+      "hint": "Puoi continuare anche adesso: rinnovando l'accesso ricevi i permessi aggiornati appena disponibili.",
+      "retry": "Riprova ad applicare i permessi",
+      "retrying": "Nuovo tentativo...",
+      "renewAndContinue": "Rinnova l'accesso e continua",
+      "renewing": "Rinnovo dell'accesso...",
+      "stillPending": "I permessi non sono ancora stati applicati. Riprova più tardi o rinnova l'accesso."
+    }
   },
   "breadcrumb": {
     "home": "Home",
@@ -2821,7 +2840,8 @@
       "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
       "bookingInvalidDates": "La data di check-out deve essere successiva alla data di check-in.",
       "bookingTooManyGuests": "Il numero di ospiti supera la capienza massima dell'immobile.",
-      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco."
+      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco.",
+      "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori."
     }
   },
   "validation": {

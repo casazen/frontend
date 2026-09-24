@@ -1,10 +1,11 @@
+import { isDemoMode } from './demo.config';
+
 // Environment configuration with validation
 const auth0Domain =
   import.meta.env.VITE_AUTH0_DOMAIN ||
   (import.meta.env.DEV ? 'dev-mp6wadq7j6bophl5.us.auth0.com' : '');
 
 const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID || '';
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 if (import.meta.env.PROD && !isDemoMode && !auth0Domain) {
   throw new Error(

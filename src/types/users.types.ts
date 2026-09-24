@@ -56,6 +56,15 @@ export interface OnboardingRequest {
 export interface OnboardingResponse {
   rolesAssigned: string[];
   rentalType: RentalType;
+  orgId?: string;
+  orgProvisioned?: boolean;
+  consentsRecorded?: boolean;
+  /**
+   * False when the backend saved the choice (org, memberships) but could not apply the roles in Auth0 (FD-14):
+   * the new access token has no new roles until a later sync or login. `rolesSyncError` carries the code.
+   */
+  rolesSynced?: boolean;
+  rolesSyncError?: string | null;
 }
 
 export interface PagedResult<T> {

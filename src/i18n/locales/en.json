@@ -910,7 +910,14 @@
       "authenticating": "Authenticating...",
       "loadingWorkspace": "Loading workspace..."
     },
-    "close": "Close"
+    "close": "Close",
+    "profileLoadError": {
+      "title": "We could not load your profile",
+      "description": "Your account has not been changed. Please try again in a moment.",
+      "retry": "Try again",
+      "retrying": "Retrying...",
+      "signInAgain": "Sign in again"
+    }
   },
   "common": {
     "planLimitMessage": "You have reached your plan limit",
@@ -2473,7 +2480,19 @@
     "acceptPrivacy": "I accept the {{title}} (v{{version}})",
     "acceptDpa": "I accept the {{title}} (v{{version}})",
     "subprocessorsAcknowledged": "I have reviewed the list of data processors (v{{version}})",
-    "marketingOptIn": "I would like to receive updates and news (optional)"
+    "marketingOptIn": "I would like to receive updates and news (optional)",
+    "skipDescription": "You do not need a host organization to use the administration area or the supplier console.",
+    "skipForNow": "Skip for now",
+    "rolesPending": {
+      "title": "Setup complete",
+      "description": "Your workspace is ready, but we could not update the permissions of your sign-in account. They will be applied at your next sign-in, or right away with a new attempt.",
+      "hint": "You can continue now: renewing your sign-in gives you the updated permissions as soon as they are available.",
+      "retry": "Retry applying the permissions",
+      "retrying": "Retrying...",
+      "renewAndContinue": "Renew sign-in and continue",
+      "renewing": "Renewing sign-in...",
+      "stillPending": "The permissions have not been applied yet. Try again later or renew your sign-in."
+    }
   },
   "breadcrumb": {
     "home": "Home",
@@ -2821,7 +2840,8 @@
       "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
       "bookingInvalidDates": "The check-out date must be after the check-in date.",
       "bookingTooManyGuests": "The number of guests exceeds the capacity of the property.",
-      "invalidServiceCategory": "Invalid service category: choose one from the list."
+      "invalidServiceCategory": "Invalid service category: choose one from the list.",
+      "consentsRequired": "To create your organization you must accept the required legal documents."
     }
   },
   "validation": {
