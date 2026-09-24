@@ -7,11 +7,10 @@ import {
   fetchSuppliersByComune,
   fetchSuppliersByProperty,
   markServiceRequestPaid,
-  matchSupplier,
   rejectServiceRequest,
   takeServiceRequest,
 } from '@/api/service-requests.api';
-import type { CreateServiceRequestDto, MatchSupplierDto } from '@/types/service-request';
+import type { CreateServiceRequestDto } from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -30,12 +29,6 @@ export function useServiceRequests(params?: {
     queryKey: [SERVICE_REQUESTS_KEY, params],
     queryFn: () => fetchServiceRequests(params),
     enabled: !!params?.listAll || !!params?.propertyId || !!params?.bookingId,
-  });
-}
-
-export function useMatchSupplier() {
-  return useMutation({
-    mutationFn: (payload: MatchSupplierDto) => matchSupplier(payload),
   });
 }
 

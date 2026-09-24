@@ -30,6 +30,14 @@ export function getBookingStatusLabel(status: string, t: TranslateFn): string {
   return key ? t(key) : status;
 }
 
+/**
+ * Label of the booking source (`Manual` for bookings entered by the host, `Direct` for the booking site,
+ * OTA names otherwise). An unknown value is shown as it is.
+ */
+export function getBookingSourceLabel(source: string | null | undefined, t: TranslateFn): string {
+  return translateEnumValue('booking.source', source, t);
+}
+
 export function getOtaConnectionStatusLabel(status: OtaConnectionStatus, t: TranslateFn): string {
   return t(`ota.status.${status}`);
 }
@@ -81,7 +89,21 @@ export function getFiscalRegimeLabel(regime: string, t: TranslateFn): string {
 }
 
 export function getLeaseStatusLabel(status: string, t: TranslateFn): string {
-  return t(`leases.statusLabel.${status}`);
+  return translateEnumValue('leases.statusLabel', status, t);
+}
+
+/** Timeline entry of a lease (`LeaseEventType`). */
+export function getLeaseEventTypeLabel(eventType: string, t: TranslateFn): string {
+  return translateEnumValue('leases.eventType', eventType, t);
+}
+
+/**
+ * RLI checklist item: the translation of its stable key in the UI language, or the label the server
+ * localized from `Accept-Language` for a key this frontend does not know yet.
+ */
+export function getRliChecklistItemLabel(item: { key: string; label: string }, t: TranslateFn): string {
+  const key = `leases.rli.checklistItem.${item.key}`;
+  return i18n.exists(key) ? t(key) : item.label;
 }
 
 export function getRegistrationStatusLabel(status: string, t: TranslateFn): string {

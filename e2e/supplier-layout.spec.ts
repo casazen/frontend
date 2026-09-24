@@ -13,10 +13,12 @@ test.describe('Supplier layout standardization', () => {
       await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
       await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier Profile Activation/i })).toBeVisible();
 
-      // Step 1: categories + comuni
-      await page.getByRole('button', { name: 'Pulizie' }).click();
+      // Step 1: categories + comuni. The wizard saves category codes, never labels (SU-03, A4-05).
+      await page.getByTestId('service-category-cleaning').click();
       await page.locator('#comuni').fill('H501');
+      const profileSave = page.waitForRequest((r) => r.url().includes('/api/supplier/profile') && r.method() === 'PUT');
       await page.getByRole('button', { name: /Continua|Continue/i }).click();
+      expect((await profileSave).postDataJSON().categories).toEqual(['cleaning']);
 
       // Step 2: ToS + activate
       await page.locator('#tos').click();

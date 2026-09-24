@@ -11,6 +11,10 @@ export interface SubprocessorItem {
   purpose: string;
   region: string;
   website?: string | null;
+  /** Legal basis of a transfer outside the EEA, when there is one. */
+  transferMechanism?: string | null;
+  /** Location or transfer basis still to be completed (e.g. an AI provider just activated, FD-21). */
+  detailsPending?: boolean;
 }
 
 export interface SubprocessorsDocument {

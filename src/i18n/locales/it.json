@@ -115,6 +115,7 @@
       "newInvite": "Nuovo invito",
       "email": "Email",
       "comuneCode": "Codice comune",
+      "categories": "Categorie di servizio (opzionale)",
       "message": "Messaggio (opzionale)",
       "sendInvite": "Invia invito",
       "toast": {
@@ -311,7 +312,15 @@
       "confirmSubmit": "Autorizza e invia",
       "cancel": "Annulla",
       "extraEuTitle": "Cessione di fabbricato — comunicazione in Questura",
-      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale."
+      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale.",
+      "checklistItem": {
+        "contract_signed": "Contratto firmato da tutte le parti",
+        "delega_captured": "Delega / attestazione RLI registrata",
+        "rli_exported": "Dataset RLI esportato per revisione",
+        "rli_submitted": "RLI inviato al canale di filing",
+        "rli_registered": "Ricevuta di registrazione disponibile",
+        "questura_extra_eu": "Comunicazione Questura (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Bozza da confermare con legale."
+      }
     },
     "canoneConcordato": {
       "title": "Calcolo canone concordato",
@@ -363,11 +372,12 @@
     "statusLabel": {
       "Draft": "Bozza",
       "AwaitingSignature": "In attesa di firma",
+      "PartiallySigned": "Firmato parzialmente",
       "Signed": "Firmato",
+      "RegistrationPending": "Registrazione in attesa",
+      "SentToProvider": "Inviato al provider",
       "Registered": "Registrato",
-      "Terminated": "Terminato",
-      "Renewed": "Rinnovato",
-      "Cancelled": "Annullato"
+      "Rejected": "Rifiutato"
     },
     "registrationStatusLabel": {
       "Pending": "In attesa",
@@ -445,7 +455,26 @@
       "Landlord": "Locatore",
       "Tenant": "Conduttore"
     },
-    "monthlyRentValue": "{{amount}}/mese"
+    "monthlyRentValue": "{{amount}}/mese",
+    "eventType": {
+      "Created": "Bozza creata",
+      "SigningInitiated": "Firma avviata",
+      "PartySignedDocument": "Una parte ha firmato",
+      "AllPartiesSigned": "Firmato da tutte le parti",
+      "RegistrationSubmitted": "Registrazione RLI inviata",
+      "RegistrationConfirmed": "Registrazione RLI confermata",
+      "RegistrationFailed": "Registrazione RLI non riuscita",
+      "ErasureRequested": "Richiesta di cancellazione dei dati",
+      "ImuNotificationExported": "Comunicazione IMU esportata",
+      "ImuNotificationMarkedSent": "Comunicazione IMU segnata come inviata",
+      "RegistrationAuthorized": "Delega RLI registrata",
+      "RliExported": "Precompilazione RLI esportata",
+      "DeadlineReminderSent": "Promemoria di scadenza inviato"
+    },
+    "detailLoadError": "Impossibile caricare il contratto. Riprova.",
+    "retry": "Riprova",
+    "contactEmailMasked": "Email di contatto",
+    "noParties": "Nessuna parte registrata."
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -571,7 +600,8 @@
         "nights": "Notti",
         "guests": "Ospiti",
         "total": "Totale",
-        "status": "Stato"
+        "status": "Stato",
+        "source": "Origine"
       },
       "emptyTitle": "Nessuna prenotazione trovata",
       "emptyDescription": "Inizia creando la tua prima prenotazione",
@@ -622,7 +652,11 @@
       "cancel": "Annulla",
       "saving": "Salvataggio...",
       "update": "Aggiorna prenotazione",
-      "create": "Crea prenotazione"
+      "create": "Crea prenotazione",
+      "manualNotice": "La prenotazione viene registrata come confermata, con origine \"Manuale\": le date risultano subito occupate sul sito di prenotazione e nel calendario iCal esportato.",
+      "propertiesLoading": "Caricamento immobili...",
+      "propertiesLoadError": "Impossibile caricare gli immobili. Ricarica la pagina.",
+      "noProperties": "Nessun immobile disponibile: crea prima un immobile."
     },
     "create": {
       "title": "Nuova prenotazione",
@@ -684,7 +718,8 @@
       "communicationStatus": "Stato comunicazione",
       "confirmation": "Conferma: ",
       "incompleteGuestData": "Dati ospite incompleti",
-      "noAlloggiatiInfo": "Nessuna informazione Alloggiati disponibile per questa prenotazione."
+      "noAlloggiatiInfo": "Nessuna informazione Alloggiati disponibile per questa prenotazione.",
+      "source": "Origine"
     },
     "card": {
       "guest": "Ospite",
@@ -698,6 +733,16 @@
       "night_one": "notte",
       "night_other": "notti",
       "bookingPrefix": "Prenotazione #"
+    },
+    "source": {
+      "Manual": "Manuale",
+      "Direct": "Sito diretto",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Expedia": "Expedia",
+      "Vrbo": "Vrbo",
+      "TripAdvisor": "Tripadvisor",
+      "Agoda": "Agoda"
     },
     "cancel": {
       "action": "Annulla prenotazione",
@@ -932,7 +977,14 @@
       "authenticating": "Autenticazione in corso...",
       "loadingWorkspace": "Caricamento dell'area di lavoro..."
     },
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "profileLoadError": {
+      "title": "Impossibile caricare il tuo profilo",
+      "description": "Il tuo account non è stato modificato. Riprova tra qualche istante.",
+      "retry": "Riprova",
+      "retrying": "Nuovo tentativo...",
+      "signInAgain": "Accedi di nuovo"
+    }
   },
   "common": {
     "planLimitMessage": "Hai raggiunto il limite del tuo piano",
@@ -1266,18 +1318,12 @@
   "serviceRequest": {
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
-    "aiMatchDescription": "L'AI CasaZen seleziona il fornitore migliore per la tua proprietà e il tipo di intervento.",
     "propertyScopedDescription": "Invia una richiesta di servizio al fornitore selezionato per questa proprietà.",
-    "aiRecommendation": "Raccomandazione AI",
-    "matching": "Ricerca del fornitore migliore...",
     "selectedSupplier": "Fornitore selezionato",
-    "externalFallbackIntro": "Nessun fornitore CasaZen disponibile nelle vicinanze. Ecco le attività locali più votate su Google:",
-    "noExternalResults": "Nessun risultato esterno. Prova un'altra categoria o contatta il supporto.",
     "website": "Sito web",
     "category": "Categoria",
     "supplier": "Fornitore",
     "selectSupplier": "Seleziona fornitore",
-    "noSuppliers": "Nessun fornitore attivo in questa zona.",
     "urgency": "Urgenza",
     "urgencyNormal": "Normale",
     "urgencyHigh": "Alta",
@@ -1305,7 +1351,13 @@
       "cleaning": "Pulizie",
       "maintenance": "Manutenzione",
       "plumbing": "Idraulico",
-      "laundry": "Lavanderia"
+      "laundry": "Lavanderia",
+      "linen": "Biancheria",
+      "check-in": "Check-in ospiti",
+      "gardening": "Giardinaggio",
+      "events": "Eventi",
+      "rental": "Noleggio",
+      "excursions": "Escursioni"
     },
     "status": {
       "Richiesto": "Richiesto",
@@ -1344,6 +1396,7 @@
     "allCategories": "Tutte le categorie",
     "suppliersTitle": "Fornitori disponibili",
     "noSuppliers": "Nessun fornitore trovato per questa proprietà.",
+    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "selectSupplierHint": "Seleziona un fornitore per vedere i dettagli e richiedere un servizio.",
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
@@ -2505,7 +2558,21 @@
     "acceptPrivacy": "Accetto l'{{title}} (v{{version}})",
     "acceptDpa": "Accetto il {{title}} (v{{version}})",
     "subprocessorsAcknowledged": "Ho preso visione dell'elenco dei responsabili del trattamento (v{{version}})",
-    "marketingOptIn": "Desidero ricevere aggiornamenti e novita' (opzionale)"
+    "subprocessorTransfer": "trasferimento extra-UE: {{mechanism}}",
+    "subprocessorDetailsPending": "sede e base giuridica del trasferimento in corso di definizione",
+    "marketingOptIn": "Desidero ricevere aggiornamenti e novita' (opzionale)",
+    "skipDescription": "Non ti serve un'organizzazione host per usare l'area di amministrazione o la console fornitori.",
+    "skipForNow": "Salta per ora",
+    "rolesPending": {
+      "title": "Configurazione completata",
+      "description": "Il tuo spazio di lavoro è pronto, ma non siamo riusciti ad aggiornare i permessi del tuo account di accesso. Verranno applicati al prossimo accesso, oppure subito con un nuovo tentativo.",
+      "hint": "Puoi continuare anche adesso: rinnovando l'accesso ricevi i permessi aggiornati appena disponibili.",
+      "retry": "Riprova ad applicare i permessi",
+      "retrying": "Nuovo tentativo...",
+      "renewAndContinue": "Rinnova l'accesso e continua",
+      "renewing": "Rinnovo dell'accesso...",
+      "stillPending": "I permessi non sono ancora stati applicati. Riprova più tardi o rinnova l'accesso."
+    }
   },
   "breadcrumb": {
     "home": "Home",
@@ -2842,7 +2909,13 @@
       "alloggiatiManualDateBeforeArrival": "La data di invio non può precedere la data di check-in.",
       "alloggiatiManualDateInFuture": "La data di invio non può essere successiva a oggi.",
       "alloggiatiAlreadySent": "La comunicazione Alloggiati di questa prenotazione risulta già inviata.",
-      "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco."
+      "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco.",
+      "bookingDatesUnavailable": "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
+      "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
+      "bookingInvalidDates": "La data di check-out deve essere successiva alla data di check-in.",
+      "bookingTooManyGuests": "Il numero di ospiti supera la capienza massima dell'immobile.",
+      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco.",
+      "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori."
     }
   },
   "validation": {
@@ -2886,5 +2959,12 @@
     "notFoundDescription": "Questa pagina fornitore non esiste o non è più attiva.",
     "availableDays_one": "{{count}} giorno disponibile nelle prossime 2 settimane",
     "availableDays_other": "{{count}} giorni disponibili nelle prossime 2 settimane"
+  },
+  "serviceCategories": {
+    "loading": "Caricamento categorie…",
+    "loadError": "Impossibile caricare le categorie di servizio.",
+    "retry": "Riprova",
+    "empty": "Nessuna categoria di servizio disponibile.",
+    "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
   }
 }

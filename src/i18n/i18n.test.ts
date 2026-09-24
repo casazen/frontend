@@ -14,6 +14,7 @@ import {
   readPersistedLocale,
 } from '@/lib/i18n-labels';
 import { COMMON_AMENITIES } from '@/features/properties/schemas/property.schema';
+import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -202,7 +203,10 @@ describe('keys used in code', () => {
       ...['Admin', 'PropertyOwner', 'LongTermLandlord', 'Supplier', 'PropertyManager', 'Guest', 'Staff'].map((r) => `roles.${r}`),
       ...['Starter', 'Pro', 'Scale'].map((p) => `plan.tier.${p}`),
       ...['Richiesto', 'PresoInCarico', 'InCorso', 'Completato', 'Pagato', 'Rifiutato'].map((s) => `serviceRequest.status.${s}`),
-      ...['cleaning', 'maintenance', 'plumbing', 'laundry'].map((c) => `serviceRequest.categories.${c}`),
+      // Codes of GET /api/service-categories (backend ServiceCategories.All, SU-03).
+      ...['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in', 'gardening', 'events', 'rental', 'excursions'].map(
+        (c) => `serviceRequest.categories.${c}`,
+      ),
       ...['Inviato', 'InCompilazione', 'Completo', 'AlloggiatiInviato', 'Scaduto'].map((s) => `checkin.status.${s}`),
       ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'Rifiutato', 'Errore'].map(
         (s) => `alloggiati.statusLabel.${s}`,
@@ -230,6 +234,8 @@ describe('keys used in code', () => {
       ...['Pending', 'Active', 'Suspended'].map((s) => `supplier.statusLabel.${s}`),
       ...['Pending', 'Active', 'Suspended'].map((s) => `compliance.status.${s}`),
       ...['Landlord', 'Tenant'].map((r) => `leases.partyRole.${r}`),
+      ...LEASE_STATUSES.map((s) => `leases.statusLabel.${s}`),
+      ...LEASE_EVENT_TYPES.map((e) => `leases.eventType.${e}`),
       ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'].map((s) => `compliance.activation.steps.${s}`),
     ];
     const missing = expected.filter((key) => !itKeys.has(key) || !enKeys.has(key));
