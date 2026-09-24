@@ -8,6 +8,7 @@ import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { queryClient } from '@/lib/query-client';
 import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
+import { safeReturnTo } from '@/lib/auth-return-to';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { router } from '@/routes';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
@@ -33,6 +34,20 @@ function AppShell() {
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );
+}
+
+/**
+ * After the Auth0 redirect: open the `returnTo` path passed to `login` through the router (a bare
+ * `history.replaceState` would not re-render the route), otherwise only drop `code`/`state` from the
+ * URL as the SDK does by default.
+ */
+function handleAuthRedirect(appState?: { returnTo?: unknown }) {
+  const returnTo = safeReturnTo(appState?.returnTo);
+  if (returnTo) {
+    void router.navigate(returnTo, { replace: true });
+    return;
+  }
+  window.history.replaceState({}, document.title, window.location.pathname);
 }
 
 function App() {
@@ -62,7 +77,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthAppProviders>
+      <AuthAppProviders onRedirectCallback={handleAuthRedirect}>
         <AppShell />
       </AuthAppProviders>
     </ErrorBoundary>
