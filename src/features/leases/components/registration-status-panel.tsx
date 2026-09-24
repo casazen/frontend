@@ -21,8 +21,11 @@ interface RegistrationStatusPanelProps {
   leaseId: string;
   leaseStatus: LeaseStatus;
   registration?: LeaseRegistration | null;
-  /** Legal deadline of the registration as computed by the API (LT-04); shown, never recomputed here. */
-  registrationDeadline: string;
+  /**
+   * Legal deadline of the registration as computed by the API (LT-04: min(stipula, start) + 30 days); shown, never
+   * recomputed here. Null while it is to be determined.
+   */
+  registrationDeadline: string | null;
   /** The provider path exists (flag on and configured provider, from the RLI checklist). */
   providerFilingAvailable: boolean;
   onSubmitToProvider?: () => void;
@@ -50,6 +53,9 @@ export function RegistrationStatusPanel({
   const state = getRliRegistrationState(leaseStatus, registration);
   const canRegister = state === 'toRegister' || state === 'failed';
   const canUseProvider = canRegister && providerFilingAvailable && !!onSubmitToProvider;
+  const deadlineText = registrationDeadline
+    ? t('leases.rli.deadline', { date: formatDate(registrationDeadline) })
+    : t('leases.rli.deadlineToBeDetermined');
 
   const handleDownloadReceipt = async () => {
     setIsDownloading(true);
@@ -100,7 +106,8 @@ export function RegistrationStatusPanel({
 
         {canRegister && (
           <>
-            <p className="font-medium">{t('leases.rli.deadline', { date: formatDate(registrationDeadline) })}</p>
+            <p className="font-medium" data-testid="rli-registration-deadline">{deadlineText}</p>
+            {!registrationDeadline && <p className="text-muted-foreground">{t('leases.rli.deadlineRule')}</p>}
             <div className="space-y-2 rounded-md border p-3" data-testid="rli-manual-steps">
               <p className="font-medium">{t('leases.rli.manualSteps.title')}</p>
               <ol className="list-decimal space-y-1 pl-5">
@@ -154,7 +161,7 @@ export function RegistrationStatusPanel({
                 {t('leases.rli.submitted')} {formatDateTime(registration.submittedAt)}
               </p>
             )}
-            <p className="text-muted-foreground">{t('leases.rli.deadline', { date: formatDate(registrationDeadline) })}</p>
+            <p className="text-muted-foreground">{deadlineText}</p>
           </div>
         )}
 

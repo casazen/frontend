@@ -107,6 +107,39 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(screen.queryByText(/inviat[oa] con successo/i)).not.toBeInTheDocument();
   });
 
+  it('render_SignedBeforeStart_ShowsStipulaAndDeadlineFromTheApi', async () => {
+    // LT-04 (A7-04): signed 1/8, start 1/10 → the API computes 31/8; the page shows it, never StartDate + 30.
+    mockApi(() =>
+      signedLease({ stipulaDate: '2026-08-01T00:00:00Z', registrationDeadline: '2026-08-31T00:00:00Z' }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('lease-stipula-date')).toHaveTextContent(formatDate('2026-08-01T00:00:00Z'));
+    expect(screen.getByTestId('lease-registration-deadline')).toHaveTextContent(formatDate('2026-08-31T00:00:00Z'));
+    const panel = await registrationPanel();
+    expect(panel.getByTestId('rli-registration-deadline')).toHaveTextContent(
+      `Scadenza per la registrazione: ${formatDate('2026-08-31T00:00:00Z')}`,
+    );
+  });
+
+  it('render_SignedWithoutStipula_DeadlineToBeDetermined', async () => {
+    mockApi(
+      () => signedLease({ stipulaDate: null, registrationDeadline: null }),
+      checklist({ registrationDeadline: null, daysRemaining: null }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('lease-registration-deadline')).toHaveTextContent('Da determinare');
+    expect(screen.getByTestId('lease-stipula-date')).toHaveTextContent('Non ancora disponibile');
+    const panel = await registrationPanel();
+    expect(panel.getByTestId('rli-registration-deadline')).toHaveTextContent(
+      'Scadenza per la registrazione: da determinare',
+    );
+    expect(screen.queryByText(/1970/)).not.toBeInTheDocument();
+  });
+
   it('declareManual_CompleteForm_PostsMultipartAndConfirmsHonestly', async () => {
     let current = signedLease();
     mockApi(() => current);
