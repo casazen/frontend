@@ -30,6 +30,14 @@ export function getBookingStatusLabel(status: string, t: TranslateFn): string {
   return key ? t(key) : status;
 }
 
+/**
+ * Label of the booking source (`Manual` for bookings entered by the host, `Direct` for the booking site,
+ * OTA names otherwise). An unknown value is shown as it is.
+ */
+export function getBookingSourceLabel(source: string | null | undefined, t: TranslateFn): string {
+  return translateEnumValue('booking.source', source, t);
+}
+
 export function getOtaConnectionStatusLabel(status: OtaConnectionStatus, t: TranslateFn): string {
   return t(`ota.status.${status}`);
 }
