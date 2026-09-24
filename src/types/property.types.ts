@@ -154,10 +154,11 @@ export interface BookingsSummaryDto {
   nextCheckOut: string | null;
 }
 
+/** Seasonal price suggestions of the property: on/off, last computation, next due Europe/Rome date (yyyy-MM-dd). */
 export interface PricingAdapterSummaryDto {
   isEnabled: boolean;
   lastAdaptedAt: string | null;
-  nextScheduledRunAt: string | null;
+  nextRunOn: string | null;
 }
 
 export interface PropertyDetailDto {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pricingAdapterApi } from '../pricing-adapter.api';
 import { ApiClient } from '../client';
-import type { PricingAdapterConfig, PricingHistoryPagedResponse, PricingPreviewResponse } from '@/types';
+import type { PricingAdapterConfig, SavePricingAdapterConfigRequest, SeasonalSuggestionsResponse } from '@/types';
 
 vi.mock('../client');
 
@@ -12,36 +12,36 @@ const mockConfig: PricingAdapterConfig = {
   isEnabled: true,
   adaptationFrequency: 'daily',
   includeSeasonality: true,
+  highSeasonMonths: [6, 7, 8],
+  highSeasonMultiplier: 1.3,
+  lowSeasonMonths: [1, 2, 11, 12],
+  lowSeasonMultiplier: 0.8,
   includePublicHolidays: false,
-  lastAdaptedAt: null,
-  nextScheduledRunAt: '2026-05-12T02:00:00Z',
+  holidayMultiplier: 1.5,
+  lastAdaptedAt: '2026-05-11T02:00:00Z',
+  nextRunOn: '2026-05-12',
   createdAt: '2026-05-11T00:00:00Z',
   updatedAt: '2026-05-11T00:00:00Z',
 };
 
-const mockHistory: PricingHistoryPagedResponse = {
-  items: [
-    {
-      id: 'hist-1',
-      propertyId: PROPERTY_ID,
-      adaptationDate: '2026-05-10T02:00:00Z',
-      previousPrice: 100,
-      newPrice: 120,
-      changeReason: 'Seasonal peak detected',
-      aiConfidence: 0.87,
-      otasSynced: 'Airbnb,Booking.com',
-      syncStatus: 'synced',
-      createdAt: '2026-05-10T02:05:00Z',
-    },
-  ],
-  total: 1,
-  page: 1,
+const request: SavePricingAdapterConfigRequest = {
+  isEnabled: true,
+  adaptationFrequency: 'daily',
+  includeSeasonality: true,
+  highSeasonMonths: [6, 7, 8],
+  highSeasonMultiplier: 1.3,
+  lowSeasonMonths: [1, 2, 11, 12],
+  lowSeasonMultiplier: 0.8,
+  includePublicHolidays: false,
+  holidayMultiplier: 1.5,
 };
 
-const mockPreview: PricingPreviewResponse = {
-  prices: [
-    { date: '2026-05-12', suggestedPrice: 115, basePrice: 100, reason: 'Weekend uplift' },
-  ],
+const mockSuggestions: SeasonalSuggestionsResponse = {
+  isEnabled: true,
+  currentBasePrice: 180,
+  computedAt: '2026-05-11T02:00:00Z',
+  nextRunOn: '2026-05-12',
+  items: [{ date: '2026-06-01', basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null }],
 };
 
 beforeEach(() => {
@@ -49,82 +49,53 @@ beforeEach(() => {
 });
 
 describe('pricingAdapterApi', () => {
-  describe('saveConfig', () => {
-    it('calls POST /pricing-adapter/config/:propertyId with request body', async () => {
-      vi.mocked(ApiClient.post).mockResolvedValueOnce(mockConfig);
-      const req = { isEnabled: true, adaptationFrequency: 'daily' as const, includeSeasonality: true, includePublicHolidays: false };
+  it('saveConfig_Request_PostsRulesToConfigEndpoint', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce(mockConfig);
 
-      const result = await pricingAdapterApi.saveConfig(PROPERTY_ID, req);
+    const result = await pricingAdapterApi.saveConfig(PROPERTY_ID, request);
 
-      expect(ApiClient.post).toHaveBeenCalledWith(`/pricing-adapter/config/${PROPERTY_ID}`, req);
-      expect(result).toEqual(mockConfig);
-    });
+    expect(ApiClient.post).toHaveBeenCalledWith(`/pricing-adapter/config/${PROPERTY_ID}`, request);
+    expect(result).toEqual(mockConfig);
   });
 
-  describe('getConfig', () => {
-    it('calls GET /pricing-adapter/config/:propertyId', async () => {
-      vi.mocked(ApiClient.get).mockResolvedValueOnce(mockConfig);
+  it('getConfig_PropertyId_GetsConfigEndpoint', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce(mockConfig);
 
-      const result = await pricingAdapterApi.getConfig(PROPERTY_ID);
+    const result = await pricingAdapterApi.getConfig(PROPERTY_ID);
 
-      expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/config/${PROPERTY_ID}`);
-      expect(result).toEqual(mockConfig);
-    });
+    expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/config/${PROPERTY_ID}`);
+    expect(result).toEqual(mockConfig);
   });
 
-  describe('disableConfig', () => {
-    it('calls DELETE /pricing-adapter/config/:propertyId', async () => {
-      vi.mocked(ApiClient.delete).mockResolvedValueOnce(undefined);
+  it('getConfig_RequestFails_PropagatesTheError', async () => {
+    vi.mocked(ApiClient.get).mockRejectedValueOnce(new Error('404'));
 
-      await pricingAdapterApi.disableConfig(PROPERTY_ID);
-
-      expect(ApiClient.delete).toHaveBeenCalledWith(`/pricing-adapter/config/${PROPERTY_ID}`);
-    });
+    await expect(pricingAdapterApi.getConfig(PROPERTY_ID)).rejects.toThrow('404');
   });
 
-  describe('getHistory', () => {
-    it('calls GET /pricing-adapter/history/:propertyId without params', async () => {
-      vi.mocked(ApiClient.get).mockResolvedValueOnce(mockHistory);
+  it('disableConfig_PropertyId_DeletesConfig', async () => {
+    vi.mocked(ApiClient.delete).mockResolvedValueOnce(undefined);
 
-      const result = await pricingAdapterApi.getHistory(PROPERTY_ID);
+    await pricingAdapterApi.disableConfig(PROPERTY_ID);
 
-      expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/history/${PROPERTY_ID}`, undefined);
-      expect(result).not.toBeNull();
-      expect(result!.items).toHaveLength(1);
-      expect(result!.total).toBe(1);
-    });
-
-    it('forwards pagination params to GET /pricing-adapter/history/:propertyId', async () => {
-      vi.mocked(ApiClient.get).mockResolvedValueOnce(mockHistory);
-      const params = { page: 2, pageSize: 20, from: '2026-01-01' };
-
-      await pricingAdapterApi.getHistory(PROPERTY_ID, params);
-
-      expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/history/${PROPERTY_ID}`, params);
-    });
+    expect(ApiClient.delete).toHaveBeenCalledWith(`/pricing-adapter/config/${PROPERTY_ID}`);
   });
 
-  describe('triggerSync', () => {
-    it('calls POST /pricing-adapter/sync/:propertyId and returns jobId', async () => {
-      vi.mocked(ApiClient.post).mockResolvedValueOnce({ jobId: 'job-abc' });
+  it('getSuggestions_PropertyId_GetsSuggestionsEndpoint', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce(mockSuggestions);
 
-      const result = await pricingAdapterApi.triggerSync(PROPERTY_ID);
+    const result = await pricingAdapterApi.getSuggestions(PROPERTY_ID);
 
-      expect(ApiClient.post).toHaveBeenCalledWith(`/pricing-adapter/sync/${PROPERTY_ID}`);
-      expect(result.jobId).toBe('job-abc');
-    });
+    expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/suggestions/${PROPERTY_ID}`);
+    expect(result.items[0].suggestedPrice).toBe(234);
   });
 
-  describe('getPreview', () => {
-    it('calls GET /pricing-adapter/preview/:propertyId', async () => {
-      vi.mocked(ApiClient.get).mockResolvedValueOnce(mockPreview);
+  it('recalculate_PropertyId_PostsRecalculateEndpoint', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ status: 'Computed', days: 90, computedAt: '2026-05-11T10:00:00Z' });
 
-      const result = await pricingAdapterApi.getPreview(PROPERTY_ID);
+    const result = await pricingAdapterApi.recalculate(PROPERTY_ID);
 
-      expect(ApiClient.get).toHaveBeenCalledWith(`/pricing-adapter/preview/${PROPERTY_ID}`);
-      expect(result).not.toBeNull();
-      expect(result!.prices).toHaveLength(1);
-      expect(result!.prices[0].date).toBe('2026-05-12');
-    });
+    expect(ApiClient.post).toHaveBeenCalledWith(`/pricing-adapter/recalculate/${PROPERTY_ID}`);
+    expect(result.days).toBe(90);
   });
 });
