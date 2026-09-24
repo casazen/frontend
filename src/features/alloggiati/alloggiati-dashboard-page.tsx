@@ -1,42 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAlloggiatiSummary } from '@/queries/use-alloggiati';
-import { alloggiatiApi } from '@/api/alloggiati.api';
 import { AlloggiatiStatusBadge } from './components/alloggiati-status-badge';
-import { formatDate } from '@/lib/utils';
-import { AlertTriangle, Send, Loader2 } from 'lucide-react';
-import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
-import { getProblemMessage } from '@/lib/api-errors';
-
-const ALLOGGIATI_KEY = 'alloggiati';
-
-function canSendToAlloggiati(status: AlloggiatiWebStatus): boolean {
-  return status !== 'Confirmed';
-}
+import { MarkSentManuallyButton } from './components/resend-button';
+import { formatRecordDate, formatRomeDateTime, isAlloggiatiSent } from './alloggiati-status.utils';
+import { AlertTriangle } from 'lucide-react';
 
 export function AlloggiatiDashboardPage() {
-  const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { data: rows, isLoading } = useAlloggiatiSummary();
-
-  const sendMutation = useMutation({
-    mutationFn: (bookingId: string) => alloggiatiApi.sendReport(bookingId),
-    onSuccess: (_, bookingId) => {
-      queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY] });
-      queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status', bookingId] });
-      toast.success(t('toast.alloggiatiSent'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, t) ?? t('toast.alloggiatiSendFailed'));
-    },
-  });
+  const { t, i18n } = useTranslation();
+  const { data: rows, isLoading, isError, refetch } = useAlloggiatiSummary();
 
   if (isLoading) {
     return <LoadingScreen message={t('alloggiati.loading')} />;
@@ -52,7 +29,20 @@ export function AlloggiatiDashboardPage() {
           description={t('alloggiati.description')}
         />
 
-        {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground" data-testid="alloggiati-manual-banner">
+          {t('alloggiati.manualBanner')}
+        </p>
+
+        {isError ? (
+          <Card>
+            <CardContent className="space-y-3 py-12 text-center" data-testid="alloggiati-dashboard-error">
+              <p className="text-destructive">{t('alloggiati.summaryError')}</p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                {t('alloggiati.guestSummary.retry')}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : items.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               {t('alloggiati.noPendingReport')}
@@ -85,7 +75,7 @@ export function AlloggiatiDashboardPage() {
                       >
                         <td className="py-3 pr-4 font-medium">{row.guestName}</td>
                         <td className="py-3 pr-4">{row.propertyName}</td>
-                        <td className="py-3 pr-4">{formatDate(row.checkInDate)}</td>
+                        <td className="py-3 pr-4">{formatRecordDate(row.checkInDate)}</td>
                         <td className="py-3 pr-4">
                           <AlloggiatiStatusBadge status={row.status} isOverdue={row.isOverdue} />
                           {!row.dataComplete && (
@@ -93,32 +83,29 @@ export function AlloggiatiDashboardPage() {
                           )}
                         </td>
                         <td className="py-3 pr-4">
-                          {row.isOverdue ? (
+                          {isAlloggiatiSent(row.status) ? (
+                            <span className="text-muted-foreground">-</span>
+                          ) : row.isOverdue ? (
                             <span className="inline-flex items-center gap-1 text-destructive">
                               <AlertTriangle className="h-3.5 w-3.5" />
-                              {t('alloggiati.over24h')}
+                              {t('alloggiati.overdue')}
                             </span>
                           ) : (
-                            <span>{t('alloggiati.hoursRemaining', { hours: Math.round(row.hoursUntilDeadline) })}</span>
+                            <span>
+                              {formatRomeDateTime(row.deadlineAt, i18n.language)}
+                              {row.isShortStay && (
+                                <span className="ml-1 text-xs text-muted-foreground">({t('alloggiati.shortStayTerm')})</span>
+                              )}
+                            </span>
                           )}
                         </td>
                         <td className="py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {canSendToAlloggiati(row.status) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => sendMutation.mutate(row.bookingId)}
-                                disabled={sendMutation.isPending}
-                              >
-                                {sendMutation.isPending && sendMutation.variables === row.bookingId ? (
-                                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                  <Send className="mr-1 h-3.5 w-3.5" />
-                                )}
-                                {t('alloggiati.send')}
-                              </Button>
-                            )}
+                            <MarkSentManuallyButton
+                              bookingId={row.bookingId}
+                              status={row.status}
+                              checkInDate={row.checkInDate}
+                            />
                             <Link
                               to={`/app/short-rent/bookings/${row.bookingId}`}
                               className="text-primary hover:underline"

@@ -13,9 +13,7 @@ import { formatDate, formatCurrency } from '@/lib/utils';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { Edit, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react';
-import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
-import { AlloggiatiStatusBadge } from '@/features/alloggiati/components/alloggiati-status-badge';
-import { ResendButton } from '@/features/alloggiati/components/resend-button';
+import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import { CheckInSessionBadge } from './components/checkin-session-badge';
@@ -30,7 +28,6 @@ export function BookingDetailPage() {
   const { data: serviceRequests } = useServiceRequests(
     booking ? { propertyId: booking.propertyId } : undefined,
   );
-  const { data: alloggiatiStatus } = useAlloggiatiStatus(id!);
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -242,47 +239,8 @@ export function BookingDetailPage() {
           </Card>
         )}
 
-        {activeTab === 'alloggiati' && alloggiatiStatus && (
-          <Card data-testid="booking-alloggiati-section">
-            <CardHeader>
-              <CardTitle>{t('booking.detailPage.alloggiatiWeb')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('booking.detailPage.communicationStatus')}</span>
-                <AlloggiatiStatusBadge
-                  status={alloggiatiStatus.status}
-                  isOverdue={alloggiatiStatus.isOverdue}
-                />
-              </div>
-              {alloggiatiStatus.confirmationNumber && (
-                <div className="text-sm">
-                  <span className="text-muted-foreground">{t('booking.detailPage.confirmation')}</span>
-                  {alloggiatiStatus.confirmationNumber}
-                </div>
-              )}
-              {alloggiatiStatus.errorMessage && (
-                <p className="text-sm text-destructive">{alloggiatiStatus.errorMessage}</p>
-              )}
-              {!alloggiatiStatus.dataComplete && (
-                <p className="text-sm text-muted-foreground">{t('booking.detailPage.incompleteGuestData')}</p>
-              )}
-              <ResendButton bookingId={id!} status={alloggiatiStatus.status} />
-            </CardContent>
-          </Card>
-        )}
-
-        {activeTab === 'alloggiati' && !alloggiatiStatus && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('booking.detailPage.alloggiatiWeb')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t('booking.detailPage.noAlloggiatiInfo')}
-              </p>
-            </CardContent>
-          </Card>
+        {activeTab === 'alloggiati' && (
+          <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
         )}
       </div>
     </AppShell>

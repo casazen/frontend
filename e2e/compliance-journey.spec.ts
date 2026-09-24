@@ -266,7 +266,7 @@ test.describe('Italian Compliance Golden Path', () => {
       expect(authHeader).toBeUndefined();
     });
 
-    test('dashboard shows Alloggiati status with overdue badge', async ({ page }) => {
+    test('dashboard shows Alloggiati to send manually with overdue badge', async ({ page }) => {
       await mockAlloggiatiApi(page);
 
       await page.goto(demoUrl('/app/short-rent/alloggiati', 'short-stay'));
@@ -274,22 +274,25 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('alloggiati-dashboard')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByText('Alloggiati Web')).toBeVisible();
       await expect(page.getByTestId(`alloggiati-row-${DEMO_BOOKING_ID}`)).toBeVisible();
-      await expect(page.getByText('In attesa')).toBeVisible();
-      await expect(page.getByText('Scaduto')).toBeVisible();
+      await expect(page.getByTestId('alloggiati-status-badge').first()).toHaveText('Da inviare manualmente');
+      await expect(page.getByTestId('alloggiati-overdue-badge')).toHaveText('Scadenza superata');
     });
 
-    test('resend available on failed Alloggiati booking detail', async ({ page }) => {
+    test('booking detail: host marks the Alloggiati record as sent manually', async ({ page }) => {
       await mockAlloggiatiApi(page);
       await mockBookingDetailApi(page);
 
       await page.goto(demoUrl(`/app/short-rent/bookings/${DEMO_BOOKING_ID}`, 'short-stay'));
+      await page.getByRole('button', { name: 'Alloggiati', exact: true }).click();
 
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByTestId('alloggiati-status-badge')).toHaveText('Errore');
-      await expect(page.getByTestId('alloggiati-resend-button')).toBeVisible();
+      await expect(page.getByTestId('alloggiati-status-badge')).toHaveText('Da inviare manualmente');
+      await expect(page.getByTestId('alloggiati-guest-summary')).toContainText('CA12345AB');
 
       await page.getByTestId('alloggiati-resend-button').click();
-      await expect(page.getByText('Comunicazione Alloggiati inviata con successo')).toBeVisible({ timeout: 10_000 });
+      await page.getByTestId('alloggiati-sent-confirm').click();
+      await page.getByTestId('alloggiati-mark-sent-confirm').click();
+      await expect(page.getByText('Invio manuale registrato')).toBeVisible({ timeout: 10_000 });
     });
   });
 
