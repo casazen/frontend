@@ -116,10 +116,6 @@ export function CalendarPage() {
     }
   };
 
-  const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-    console.log('Selected slot:', slotInfo);
-  };
-
   return (
     <AppShell>
       <div className="space-y-6">
@@ -177,7 +173,6 @@ export function CalendarPage() {
                 bookings={bookings}
                 icalEvents={icalEvents}
                 onSelectEvent={handleSelectEvent}
-                onSelectSlot={handleSelectSlot}
               />
             )}
           </>

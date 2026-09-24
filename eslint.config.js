@@ -29,9 +29,12 @@ export default defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    // Exception: tests may stub or spy on the global fetch.
+    // Exception: tests may stub or spy on the global fetch and log freely.
     ignores: ['src/**/__tests__/**', 'src/**/*.test.{ts,tsx}', 'src/test/**'],
     rules: {
+      // No debug logging in the shipped bundle (A9-36, A1-34): console.log/info/debug may leak tokens or personal
+      // data into the browser console of every user. warn/error stay for real problems, without secrets.
+      'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-restricted-globals': ['error', { name: 'fetch', message: NO_DIRECT_FETCH }],
       'no-restricted-properties': [
         'error',
