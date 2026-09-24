@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -20,6 +20,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * the RLI checklist says `providerFilingAvailable` (flag on and a configured provider); otherwise manual registration.
    */
   rliProvider: false,
+  /**
+   * LT-02 / D15: contract signature through an e-signature provider, off (no provider client exists yet). The lease page
+   * does not read it: it offers the provider only when `GET /leases/:id/signers` says `providerSigningAvailable` (flag on
+   * and a configured provider); otherwise the contract is signed offline (download, sign, upload with the stipula date).
+   */
+  eSignProvider: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

@@ -5,7 +5,12 @@ import { AlertCircle, CheckCircle2, Clock, Loader2, MailCheck, RefreshCw, XCircl
 import { Button } from '@/components/ui/button';
 import { useCheckoutOutcome, useResumeCheckoutPayment } from '@/queries/use-public-booking';
 import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
-import { buildCheckoutOutcomePath, buildOrgBookingPath, buildPropertyPageUrl } from '@/lib/booking-url';
+import {
+  buildCheckoutOutcomePath,
+  buildGuestBookingsPath,
+  buildOrgBookingPath,
+  buildPropertyPageUrl,
+} from '@/lib/booking-url';
 import { clearPendingCheckout } from '@/lib/pending-checkout';
 import { formatRomeDateTime, formatStayDate, nightsBetween } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
@@ -264,7 +269,7 @@ function OutcomeScreen({
                 ? t('publicBooking.outcome.payAtProperty')
                 : t('publicBooking.paidOnline')}
           </InfoCard>
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
           <BackToProperties orgSlug={orgSlug} />
         </OutcomeLayout>
       );
@@ -279,7 +284,7 @@ function OutcomeScreen({
           </Heading>
           {!pollingStopped && <Polling />}
           {summary}
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
           {refreshButton}
         </OutcomeLayout>
       );
@@ -316,7 +321,7 @@ function OutcomeScreen({
             onSubmitted={onPaymentSubmitted}
             onUnavailable={onRefresh}
           />
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
         </OutcomeLayout>
       );
 
@@ -343,7 +348,7 @@ function OutcomeScreen({
             </ol>
           </div>
           {summary}
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
           {refreshButton}
           <BackToProperties orgSlug={orgSlug} />
         </OutcomeLayout>
@@ -358,7 +363,7 @@ function OutcomeScreen({
               : t('publicBooking.onSiteRequest.sentToHostNoDate')}
           </Heading>
           {summary}
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
           {refreshButton}
           <BackToProperties orgSlug={orgSlug} />
         </OutcomeLayout>
@@ -399,7 +404,7 @@ function OutcomeScreen({
             {t('publicBooking.outcome.datesUnavailableDescription')}
           </Heading>
           {summary}
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
           <BackToProperties orgSlug={orgSlug} />
         </OutcomeLayout>
       );
@@ -411,7 +416,7 @@ function OutcomeScreen({
             {t('publicBooking.outcome.cancelledDescription')}
           </Heading>
           {summary}
-          <BookingReference bookingId={outcome.bookingId} />
+          <BookingReference bookingCode={outcome.bookingCode} orgSlug={orgSlug} />
           <BackToProperties orgSlug={orgSlug} />
         </OutcomeLayout>
       );
@@ -543,12 +548,20 @@ function StaySummary({ outcome }: { outcome: CheckoutOutcome }) {
   );
 }
 
-function BookingReference({ bookingId }: { bookingId: string }) {
+/**
+ * The booking code of the confirmation email (BK-11), with the link to "Le mie prenotazioni" filled in with it: the page
+ * still asks for the email before showing the booking.
+ */
+function BookingReference({ bookingCode, orgSlug }: { bookingCode: string; orgSlug: string }) {
   const { t } = useTranslation();
   return (
-    <div className="bg-card rounded-lg p-4 space-y-2 text-left">
-      <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.bookingReference')}</p>
-      <p className="font-mono text-lg font-semibold break-all">{bookingId}</p>
+    <div className="bg-card rounded-lg p-4 space-y-2 text-left" data-testid="checkout-outcome-booking-code">
+      <p className="text-xs font-medium text-muted-foreground">{t('publicBooking.outcome.bookingCode')}</p>
+      <p className="font-mono text-lg font-semibold tracking-wider">{bookingCode}</p>
+      <p className="text-xs text-muted-foreground">{t('publicBooking.outcome.bookingCodeHint')}</p>
+      <Link to={buildGuestBookingsPath(orgSlug, bookingCode)} className="text-sm font-medium underline">
+        {t('publicBooking.viewMyBookings')}
+      </Link>
     </div>
   );
 }

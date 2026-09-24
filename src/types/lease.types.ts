@@ -27,6 +27,7 @@ export const LEASE_EVENT_TYPES = [
   'RegistrationAuthorized',
   'RliExported',
   'DeadlineReminderSent',
+  'StipulaDeclared',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
@@ -150,18 +151,54 @@ export interface CreateLeaseDto {
   parties: CreateLeasePartyDto[];
 }
 
-export interface SignerInfo {
+/**
+ * How a party signs the contract (LT-02): `Offline` on paper or with the party's own digital signature, recorded when the
+ * landlord uploads the signed PDF; `Provider` through the e-signature provider, with a personal link.
+ */
+export type LeaseSignatureMethod = 'Offline' | 'Provider';
+
+export type LeaseSignerStatus = 'Pending' | 'Signed';
+
+/** A party as signer, persisted by the API (A7-16): the provider link survives a page refresh. */
+export interface LeaseSigner {
   partyId: string;
   role: PartyRole;
-  name: string;
-  signingUrl: string;
-  expiresAt: string;
+  firstName: string;
+  lastName: string;
+  method: LeaseSignatureMethod;
+  status: LeaseSignerStatus;
+  /** Provider link, only while pending and only for a caller who may sign the lease. */
+  signingUrl: string | null;
+  signingUrlExpiresAt: string | null;
+  /** Computed by the API at read time. */
+  signingUrlExpired: boolean;
+  /** Provider signature instant, or the declared stipula date for an offline signature. */
+  signedAt: string | null;
 }
 
+/** `GET /leases/:id/signers`: the signature panel. */
+export interface LeaseSigningState {
+  /** The e-signature provider path exists (backend flag `ESignProvider` on and a configured provider). */
+  providerSigningAvailable: boolean;
+  /** The final contract to sign can be downloaded now (approved template, complete data, not signed yet). */
+  contractAvailable: boolean;
+  /** Why it cannot: `contract_template_not_approved`, `contract_data_missing`, `lease_already_signed`. */
+  contractUnavailableCode: string | null;
+  signers: LeaseSigner[];
+}
+
+/** `POST /leases/:id/signed-document` (multipart): the contract signed by every party and the stipula date. */
+export interface OfflineSignatureInput {
+  /** `YYYY-MM-DD`: the day the last party signed, not later than today in Europe/Rome. */
+  stipulaDate: string;
+  signedContract: File;
+}
+
+/** `POST /leases/:id/signing` (provider path only). */
 export interface SigningInitiatedResult {
   leaseId: string;
   status: LeaseStatus;
-  signers: SignerInfo[];
+  signers: LeaseSigner[];
 }
 
 export interface TriggerRegistrationResult {

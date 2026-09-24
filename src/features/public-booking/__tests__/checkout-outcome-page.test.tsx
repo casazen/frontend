@@ -59,6 +59,7 @@ function outcome(state: CheckoutOutcomeState, overrides: Partial<CheckoutOutcome
     currency: 'EUR',
     expiresAt: WAITING_STATES.includes(state) ? '2026-09-24T10:30:00Z' : null,
     deferredChargeDate: null,
+    bookingCode: 'K7M4Q-9XP2H',
     ...overrides,
   };
 }
@@ -155,7 +156,14 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     const confirmed = await screen.findByTestId('checkout-confirmation');
     expect(confirmed).toHaveTextContent('Trastevere Suite');
     expect(confirmed).toHaveTextContent('La carta salvata verrà addebitata il 17 ottobre 2026.');
-    expect(confirmed).toHaveTextContent(BOOKING_ID);
+    // BK-11: the code of the confirmation email, not the booking id, with "Le mie prenotazioni" filled in with it.
+    const reference = within(confirmed).getByTestId('checkout-outcome-booking-code');
+    expect(reference).toHaveTextContent('K7M4Q-9XP2H');
+    expect(confirmed).not.toHaveTextContent(BOOKING_ID);
+    expect(within(reference).getByRole('link', { name: 'Visualizza le mie prenotazioni' })).toHaveAttribute(
+      'href',
+      '/book/demo-casazen/my-bookings?code=K7M4Q-9XP2H',
+    );
     await waitFor(() =>
       expect(findPendingCheckout('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-10-24', '2026-10-27')).toBeNull(),
     );
