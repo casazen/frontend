@@ -181,7 +181,6 @@ function SubscriptionCard({ subscription, effectiveTier }: SubscriptionCardProps
   );
 }
 
-
 function BillingProfileCard({ subscription }: { subscription: BillingSubscription }) {
   const { t } = useTranslation();
   const updateProfile = useUpdateBillingProfile();
