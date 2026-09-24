@@ -6,6 +6,7 @@ import { formatDateTime } from '@/lib/utils';
 import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
 import { Download, FileText, Loader2, Trash2 } from 'lucide-react';
 import { DocumentUploadDialog } from './document-upload-dialog';
+import { ApeIdentificationForm } from './ape-identification-form';
 import { useDeletePropertyDocument, useDownloadPropertyDocument } from '@/queries/use-properties';
 
 interface PropertyDocumentsSectionProps {
@@ -48,6 +49,7 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
                         {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
                         {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
                       </p>
+                      {doc.documentType === 'Ape' && <ApeIdentificationForm propertyId={propertyId} document={doc} />}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">

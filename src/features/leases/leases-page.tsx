@@ -10,7 +10,7 @@ import { useLeases } from '@/queries/use-leases';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
 import { LeaseStatusBadge } from './components/lease-status-badge';
-import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
+import { getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
 import type { LeaseSummary } from '@/types';
 
 function getPropertyLabel(lease: LeaseSummary): string {
@@ -100,7 +100,7 @@ export function LeasesPage() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">{t('leases.regimeLabel')}</span>
-                  <span className="font-medium">{getFiscalRegimeLabel(lease.fiscalRegime, t)}</span>
+                  <span className="font-medium">{getLeaseTypeAndRegimeLabel(lease, t)}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">{t('leases.partiesLabel')}</span>

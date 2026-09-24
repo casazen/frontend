@@ -68,6 +68,61 @@ describe('LeaseDetailPage', () => {
     expect(screen.getByText('Rejected')).toBeInTheDocument();
   });
 
+  it('render_ConcordatoLeaseWithIndicativeRange_ShowsTheServerRangeWithWarning', async () => {
+    // LT-10 (A7-12, A7-23): the range the API computed at creation, indicative with Partial data, rent outside it.
+    mockLease(() =>
+      Promise.resolve({
+        data: buildDetail({
+          fiscalRegime: 'CanoneConcordato',
+          contractType: 'Concordato',
+          taxRegime: 'Ordinario',
+          monthlyRent: 900,
+          securityDeposit: 2700,
+          concordatoAssessment: {
+            sqm: 65,
+            garageSqm: 0,
+            balconySqm: 0,
+            otherAppurtenanceSqm: 0,
+            privateGreenSqm: 0,
+            typeAElementCount: 2,
+            typeBElementCount: 3,
+            typeCElementCount: 0,
+            typeDElementCount: 0,
+            qualifyingTypeDElementCount: 0,
+            stoveHeating: false,
+            isFurnished: false,
+            airConditioning: false,
+            zoneName: null,
+            cadastralSheet: null,
+            contractYears: 3,
+            usableSqm: 65,
+            zone: 'Unica',
+            subFascia: 2,
+            canoneMinAnnuo: 1300,
+            canoneMaxAnnuo: 5525,
+            canoneMinMensile: 108.34,
+            canoneMaxMensile: 460.41,
+            dataCompleteness: 'Partial',
+            indicative: true,
+            rentWithinRange: false,
+            calculatedAt: '2026-09-24T10:00:00Z',
+          },
+        }),
+      }),
+    );
+
+    renderPage();
+
+    const panel = await screen.findByTestId('concordato-assessment');
+    expect(within(panel).getByTestId('concordato-assessment-indicative')).toHaveTextContent(
+      i18n.t('leases.concordatoAssessment.indicative'),
+    );
+    expect(within(panel).getByTestId('concordato-assessment-outside')).toBeInTheDocument();
+    expect(within(panel).getByText(/460,41/)).toBeInTheDocument();
+    expect(screen.getByTestId('lease-type-regime')).toHaveTextContent('Canone concordato (3+2) · Regime ordinario');
+    expect(screen.getByText(/2\.?700,00/)).toBeInTheDocument();
+  });
+
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail({ parties: [], events: [] }) }));
 
