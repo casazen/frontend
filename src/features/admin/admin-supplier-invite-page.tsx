@@ -9,20 +9,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import i18n from '@/i18n/config';
 import { useInviteSupplier } from '@/queries/use-supplier';
+import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
+import { useServiceCategories } from '@/queries/use-service-categories';
+import { keepKnownCategories } from '@/lib/service-categories';
+import { getProblemMessage } from '@/lib/api-errors';
 
 export function AdminSupplierInvitePage() {
   const { t } = useTranslation();
   const invite = useInviteSupplier();
   const [email, setEmail] = useState('');
   const [comuneCode, setComuneCode] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
   const [message, setMessage] = useState('');
+  const { data: categoryCodes } = useServiceCategories();
 
   const submit = async () => {
     try {
       const result = await invite.mutateAsync({
         email,
         comuneCode,
-        categories: ['Pulizie'],
+        // Optional: an invite without categories leaves the choice to the supplier's wizard.
+        categories: categories.length > 0 ? keepKnownCategories(categories, categoryCodes) : undefined,
         message: message || undefined,
       });
       toast.success(t('admin.supplierInvite.toast.success', {
@@ -30,6 +37,7 @@ export function AdminSupplierInvitePage() {
       }));
       setEmail('');
       setComuneCode('');
+      setCategories([]);
       setMessage('');
     } catch (error) {
       const code = isAxiosError(error)
@@ -40,7 +48,7 @@ export function AdminSupplierInvitePage() {
       } else if (code === 'invite_email_failed') {
         toast.error(t('admin.supplierInvite.toast.emailFailed'));
       } else {
-        toast.error(t('admin.supplierInvite.toast.error'));
+        toast.error(getProblemMessage(error, t) ?? t('admin.supplierInvite.toast.error'));
       }
     }
   };
@@ -75,6 +83,12 @@ export function AdminSupplierInvitePage() {
               onChange={(e) => setComuneCode(e.target.value)}
               placeholder="H501"
             />
+          </div>
+          <div>
+            <Label>{t('admin.supplierInvite.categories')}</Label>
+            <div className="mt-2">
+              <ServiceCategoryPicker value={categories} onChange={setCategories} disabled={invite.isPending} />
+            </div>
           </div>
           <div>
             <Label htmlFor="message">{t('admin.supplierInvite.message')}</Label>

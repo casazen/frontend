@@ -2,11 +2,9 @@ import { ApiClient } from '@/api/client';
 import axios from '@/lib/axios';
 import type {
   CreateServiceRequestDto,
-  MatchSupplierDto,
   ServiceRequest,
   ServiceRequestListResponse,
   SupplierListResponse,
-  SupplierMatchResponse,
 } from '@/types/service-request';
 
 export async function fetchServiceRequests(params?: {
@@ -54,9 +52,4 @@ export async function fetchSuppliersByComune(comune: string, category?: string):
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
   return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category });
-}
-
-export async function matchSupplier(payload: MatchSupplierDto): Promise<SupplierMatchResponse> {
-  const { data } = await axios.post<SupplierMatchResponse>('/service-requests/match-supplier', payload);
-  return data;
 }

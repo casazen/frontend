@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
-import { getBookingStatusLabel } from '@/lib/i18n-labels';
+import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -116,6 +116,7 @@ export function BookingsPage() {
                         t('booking.list.columns.guests'),
                         t('booking.list.columns.total'),
                         t('booking.list.columns.status'),
+                        t('booking.list.columns.source'),
                         '',
                       ].map((h) => (
                         <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
@@ -143,6 +144,13 @@ export function BookingsPage() {
                             {getBookingStatusLabel(b.status, t)}
                           </Badge>
                         </td>
+                        <td className="px-4 py-3" data-testid="booking-source">
+                          {b.source ? (
+                            <Badge variant={b.source === 'Manual' ? 'outline' : 'secondary'}>
+                              {getBookingSourceLabel(b.source, t)}
+                            </Badge>
+                          ) : null}
+                        </td>
                         <td className="px-4 py-3">
                           <Button
                             variant="ghost"
@@ -159,7 +167,7 @@ export function BookingsPage() {
                     ))}
                     {filtered.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                        <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
                           {t('booking.list.noResults')}
                         </td>
                       </tr>

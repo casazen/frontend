@@ -20,8 +20,10 @@ import type { SupplierProfile } from '@/types/supplier';
 import { Calendar, Smartphone, CheckCircle2, ArrowRight, Link2, Loader2 } from 'lucide-react';
 import { IcalHelpTooltip } from './components/ical-help-tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-
-const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
+import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
+import { useServiceCategories } from '@/queries/use-service-categories';
+import { keepKnownCategories } from '@/lib/service-categories';
+import { getProblemMessage } from '@/lib/api-errors';
 
 interface Step1Props {
   profile: SupplierProfile;
@@ -31,26 +33,23 @@ interface Step1Props {
 function Step1Registration({ profile, onNext }: Step1Props) {
   const { t } = useTranslation();
   const updateProfile = useUpdateSupplierProfile();
+  const { data: categoryCodes } = useServiceCategories();
 
   const [categories, setCategories] = useState<string[]>(profile.categories ?? []);
   const [comuneInput, setComuneInput] = useState((profile.comuni ?? []).join(', '));
   const [saving, setSaving] = useState(false);
 
-  const toggleCategory = (c: string) => {
-    setCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
-  };
-
   const handleSaveAndNext = async () => {
     setSaving(true);
     try {
       await updateProfile.mutateAsync({
-        categories,
+        categories: keepKnownCategories(categories, categoryCodes),
         comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
       });
       toast.success(t('supplier.progressSaved'));
       onNext();
-    } catch {
-      toast.error(t('supplier.progressSaveError'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('supplier.progressSaveError'));
     } finally {
       setSaving(false);
     }
@@ -66,19 +65,7 @@ function Step1Registration({ profile, onNext }: Step1Props) {
           <div>
             <Label>{t('supplier.serviceCategories')}</Label>
             <p className="mb-2 text-xs text-muted-foreground">{t('supplier.categoriesHint')}</p>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORY_OPTIONS.map((category) => (
-                <Button
-                  key={category}
-                  type="button"
-                  size="sm"
-                  variant={categories.includes(category) ? 'default' : 'outline'}
-                  onClick={() => toggleCategory(category)}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
+            <ServiceCategoryPicker value={categories} onChange={setCategories} disabled={saving} />
           </div>
 
           <div>

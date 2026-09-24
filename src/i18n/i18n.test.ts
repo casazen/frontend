@@ -203,7 +203,10 @@ describe('keys used in code', () => {
       ...['Admin', 'PropertyOwner', 'LongTermLandlord', 'Supplier', 'PropertyManager', 'Guest', 'Staff'].map((r) => `roles.${r}`),
       ...['Starter', 'Pro', 'Scale'].map((p) => `plan.tier.${p}`),
       ...['Richiesto', 'PresoInCarico', 'InCorso', 'Completato', 'Pagato', 'Rifiutato'].map((s) => `serviceRequest.status.${s}`),
-      ...['cleaning', 'maintenance', 'plumbing', 'laundry'].map((c) => `serviceRequest.categories.${c}`),
+      // Codes of GET /api/service-categories (backend ServiceCategories.All, SU-03).
+      ...['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in', 'gardening', 'events', 'rental', 'excursions'].map(
+        (c) => `serviceRequest.categories.${c}`,
+      ),
       ...['Inviato', 'InCompilazione', 'Completo', 'AlloggiatiInviato', 'Scaduto'].map((s) => `checkin.status.${s}`),
       ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'Rifiutato', 'Errore'].map(
         (s) => `alloggiati.statusLabel.${s}`,

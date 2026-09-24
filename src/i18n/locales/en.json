@@ -115,6 +115,7 @@
       "newInvite": "New invitation",
       "email": "Email",
       "comuneCode": "Municipality code",
+      "categories": "Service categories (optional)",
       "message": "Message (optional)",
       "sendInvite": "Send invitation",
       "toast": {
@@ -599,7 +600,8 @@
         "nights": "Nights",
         "guests": "Guests",
         "total": "Total",
-        "status": "Status"
+        "status": "Status",
+        "source": "Source"
       },
       "emptyTitle": "No bookings found",
       "emptyDescription": "Get started by creating your first booking",
@@ -650,7 +652,11 @@
       "cancel": "Cancel",
       "saving": "Saving...",
       "update": "Update Booking",
-      "create": "Create Booking"
+      "create": "Create Booking",
+      "manualNotice": "The booking is saved as confirmed, with source \"Manual\": its dates are taken at once on the booking site and in the exported iCal calendar.",
+      "propertiesLoading": "Loading properties...",
+      "propertiesLoadError": "Could not load the properties. Reload the page.",
+      "noProperties": "No property available: create a property first."
     },
     "create": {
       "title": "Create Booking",
@@ -712,7 +718,8 @@
       "communicationStatus": "Communication status",
       "confirmation": "Confirmation: ",
       "incompleteGuestData": "Incomplete guest data",
-      "noAlloggiatiInfo": "No Alloggiati information available for this booking."
+      "noAlloggiatiInfo": "No Alloggiati information available for this booking.",
+      "source": "Source"
     },
     "card": {
       "guest": "Guest",
@@ -726,6 +733,16 @@
       "night_one": "night",
       "night_other": "nights",
       "bookingPrefix": "Booking #"
+    },
+    "source": {
+      "Manual": "Manual",
+      "Direct": "Direct site",
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Expedia": "Expedia",
+      "Vrbo": "Vrbo",
+      "TripAdvisor": "Tripadvisor",
+      "Agoda": "Agoda"
     }
   },
   "ota": {
@@ -1255,18 +1272,12 @@
   "serviceRequest": {
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
-    "aiMatchDescription": "CasaZen AI picks the best supplier for your property and intervention type.",
     "propertyScopedDescription": "Send a service request to the selected supplier for this property.",
-    "aiRecommendation": "AI recommendation",
-    "matching": "Finding the best supplier...",
     "selectedSupplier": "Selected supplier",
-    "externalFallbackIntro": "No CasaZen suppliers available nearby. Here are top-rated local businesses from Google:",
-    "noExternalResults": "No external results found. Try a different category or contact support.",
     "website": "Website",
     "category": "Category",
     "supplier": "Supplier",
     "selectSupplier": "Select supplier",
-    "noSuppliers": "No active suppliers in this area.",
     "urgency": "Urgency",
     "urgencyNormal": "Normal",
     "urgencyHigh": "High",
@@ -1294,7 +1305,13 @@
       "cleaning": "Cleaning",
       "maintenance": "Maintenance",
       "plumbing": "Plumbing",
-      "laundry": "Laundry"
+      "laundry": "Laundry",
+      "linen": "Linen",
+      "check-in": "Guest check-in",
+      "gardening": "Gardening",
+      "events": "Events",
+      "rental": "Rental",
+      "excursions": "Excursions"
     },
     "status": {
       "Richiesto": "Requested",
@@ -1333,6 +1350,7 @@
     "allCategories": "All categories",
     "suppliersTitle": "Available suppliers",
     "noSuppliers": "No suppliers found for this property.",
+    "suppliersLoadError": "Could not load the suppliers. Please try again later.",
     "selectSupplierHint": "Select a supplier to view details and request a service.",
     "requestsTitle": "Your requests",
     "requestsDescription": "All service requests across your properties.",
@@ -2477,6 +2495,8 @@
     "acceptPrivacy": "I accept the {{title}} (v{{version}})",
     "acceptDpa": "I accept the {{title}} (v{{version}})",
     "subprocessorsAcknowledged": "I have reviewed the list of data processors (v{{version}})",
+    "subprocessorTransfer": "transfer outside the EEA: {{mechanism}}",
+    "subprocessorDetailsPending": "location and legal basis of the transfer being defined",
     "marketingOptIn": "I would like to receive updates and news (optional)"
   },
   "breadcrumb": {
@@ -2820,7 +2840,12 @@
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
       "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
-      "touristTaxRateNotFound": "This rate no longer exists: reload the list."
+      "touristTaxRateNotFound": "This rate no longer exists: reload the list.",
+      "bookingDatesUnavailable": "The selected dates are not available: they overlap another booking or a calendar block.",
+      "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
+      "bookingInvalidDates": "The check-out date must be after the check-in date.",
+      "bookingTooManyGuests": "The number of guests exceeds the capacity of the property.",
+      "invalidServiceCategory": "Invalid service category: choose one from the list."
     }
   },
   "validation": {
@@ -2864,5 +2889,12 @@
     "notFoundDescription": "This supplier page does not exist or is no longer active.",
     "availableDays_one": "{{count}} day available in the next 2 weeks",
     "availableDays_other": "{{count}} days available in the next 2 weeks"
+  },
+  "serviceCategories": {
+    "loading": "Loading categories…",
+    "loadError": "Could not load the service categories.",
+    "retry": "Retry",
+    "empty": "No service categories available.",
+    "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
   }
 }

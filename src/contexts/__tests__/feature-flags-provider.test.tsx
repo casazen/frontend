@@ -57,9 +57,11 @@ describe('FeatureFlagsProvider', () => {
 
 describe('parseFeatureFlags', () => {
   it('turns on only the known flags set to true', () => {
-    expect(parseFeatureFlags({ otaPartnerApi: true, somethingElse: true })).toEqual({ otaPartnerApi: true });
-    expect(parseFeatureFlags({ otaPartnerApi: 'true' })).toEqual({ otaPartnerApi: false });
-    expect(parseFeatureFlags(null)).toEqual({ otaPartnerApi: false });
-    expect(parseFeatureFlags({})).toEqual({ otaPartnerApi: false });
+    const allOff = { otaPartnerApi: false, aiSupplierDiscovery: false };
+    expect(parseFeatureFlags({ otaPartnerApi: true, somethingElse: true })).toEqual({ ...allOff, otaPartnerApi: true });
+    expect(parseFeatureFlags({ aiSupplierDiscovery: true })).toEqual({ ...allOff, aiSupplierDiscovery: true });
+    expect(parseFeatureFlags({ otaPartnerApi: 'true', aiSupplierDiscovery: 1 })).toEqual(allOff);
+    expect(parseFeatureFlags(null)).toEqual(allOff);
+    expect(parseFeatureFlags({})).toEqual(allOff);
   });
 });

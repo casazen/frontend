@@ -16,12 +16,19 @@ interface BookingFormProps {
   booking?: Booking;
   onSubmit: (data: BookingFormValues) => void;
   isLoading?: boolean;
+  /** Message of the last failed save (e.g. 409 on overlapping dates), shown until the next submit. */
+  submitError?: string | null;
 }
 
-export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) {
+export function BookingForm({ booking, onSubmit, isLoading, submitError }: BookingFormProps) {
   const { t } = useTranslation();
-  const { data: propertiesData } = useProperties();
+  const {
+    data: propertiesData,
+    isLoading: propertiesLoading,
+    isError: propertiesError,
+  } = useProperties();
   const properties = propertiesData ?? [];
+  const noProperties = !propertiesLoading && !propertiesError && properties.length === 0;
 
   const {
     register,
@@ -41,6 +48,15 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {!booking && (
+        <p
+          data-testid="booking-manual-notice"
+          className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
+        >
+          {t('booking.form.manualNotice')}
+        </p>
+      )}
+
       {/* Booking Details */}
       <Card>
         <CardHeader>
@@ -54,15 +70,27 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
               id="propertyId"
               {...register('propertyId')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              disabled={!!booking}
+              disabled={!!booking || propertiesLoading || propertiesError}
             >
-              <option value="">{t('booking.form.selectProperty')}</option>
+              <option value="">
+                {propertiesLoading ? t('booking.form.propertiesLoading') : t('booking.form.selectProperty')}
+              </option>
               {properties.map((property) => (
                 <option key={property.id} value={property.id}>
                   {property.name} - {property.city}
                 </option>
               ))}
             </select>
+            {propertiesError && (
+              <p role="alert" className="text-sm text-destructive" data-testid="booking-properties-error">
+                {t('booking.form.propertiesLoadError')}
+              </p>
+            )}
+            {noProperties && (
+              <p className="text-sm text-muted-foreground" data-testid="booking-properties-empty">
+                {t('booking.form.noProperties')}
+              </p>
+            )}
             <FormFieldError error={errors.propertyId} />
           </div>
 
@@ -175,6 +203,16 @@ export function BookingForm({ booking, onSubmit, isLoading }: BookingFormProps) 
           </div>
         </CardContent>
       </Card>
+
+      {submitError && (
+        <div
+          role="alert"
+          data-testid="booking-submit-error"
+          className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          {submitError}
+        </div>
+      )}
 
       {/* Form Actions */}
       <div className="flex justify-end gap-4">
