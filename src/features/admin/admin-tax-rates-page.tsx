@@ -12,8 +12,28 @@ import { TaxRateForm } from './components/tax-rate-form';
 import { touristTaxApi } from '@/api/tourist-tax.api';
 import { formatDate } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
-import { Plus, Pencil, Trash2, Loader2, RefreshCw, Coins } from 'lucide-react';
-import type { TouristTaxRate, CreateTouristTaxRateDto, UpdateTouristTaxRateDto } from '@/types';
+import { Plus, Pencil, Trash2, Loader2, RefreshCw, Coins, ExternalLink } from 'lucide-react';
+import type {
+  TouristTaxRate,
+  CreateTouristTaxRateDto,
+  UpdateTouristTaxRateDto,
+  TouristTaxRateVerification,
+} from '@/types';
+
+const VERIFICATION_BADGE: Record<TouristTaxRateVerification, string> = {
+  Official: 'border-green-300 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200',
+  Deduced: 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200',
+  ThirdParty: 'border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200',
+};
+
+/** Host name of the source, as link text (the full URL is in the title and the href). */
+function sourceLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 export function AdminTaxRatesPage() {
   const { t } = useTranslation();
@@ -68,11 +88,12 @@ export function AdminTaxRatesPage() {
     },
   });
 
-  const handleSubmit = async (data: CreateTouristTaxRateDto | UpdateTouristTaxRateDto) => {
+  // Rejects on API errors (already shown by onError) so the form stays open.
+  const handleSubmit = async (data: CreateTouristTaxRateDto) => {
     if (editingRate) {
-      await updateMutation.mutateAsync({ id: editingRate.id, data: data as UpdateTouristTaxRateDto });
+      await updateMutation.mutateAsync({ id: editingRate.id, data });
     } else {
-      await createMutation.mutateAsync(data as CreateTouristTaxRateDto);
+      await createMutation.mutateAsync(data);
     }
   };
 
@@ -163,6 +184,12 @@ export function AdminTaxRatesPage() {
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                         {t('taxRates.effectiveFrom')}
                       </th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                        {t('taxRates.source')}
+                      </th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                        {t('taxRates.verification')}
+                      </th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                         {t('taxRates.actions')}
                       </th>
@@ -183,7 +210,35 @@ export function AdminTaxRatesPage() {
                           {rate.maxNights ?? '—'}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">
-                          {formatDate(rate.effectiveFrom)}
+                          {formatDate(String(rate.effectiveFrom).slice(0, 10))}
+                        </td>
+                        <td className="px-4 py-3" data-testid={`tax-rate-source-${rate.id}`}>
+                          {rate.sourceUrl ? (
+                            <a
+                              href={rate.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={rate.sourceUrl}
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              {sourceLabel(rate.sourceUrl)}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground">{t('taxRates.noSource')}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3" data-testid={`tax-rate-verification-${rate.id}`}>
+                          {rate.verificationLevel ? (
+                            <span
+                              className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${VERIFICATION_BADGE[rate.verificationLevel]}`}
+                              title={t(`taxRates.verificationHints.${rate.verificationLevel}`)}
+                            >
+                              {t(`taxRates.verificationLevels.${rate.verificationLevel}`)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">{t('taxRates.verificationLevels.none')}</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
@@ -238,10 +293,13 @@ export function AdminTaxRatesPage() {
         confirmLabel={t('taxRates.deleteAction')}
         variant="destructive"
         onConfirm={async () => {
-          if (deletingRate) {
+          if (!deletingRate) return;
+          try {
             await deleteMutation.mutateAsync(deletingRate.id);
-            setDeletingRate(null);
+          } catch {
+            // Already shown by onError (getProblemMessage); the dialog closes either way.
           }
+          setDeletingRate(null);
         }}
         isLoading={deleteMutation.isPending}
       />

@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ChevronRight, ClipboardList, Home, LogOut, Users } from 'lucide-react';
+import { AlertCircle, ChevronRight, ClipboardList, Home, LogOut, Send, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useComplianceSummary } from '@/features/compliance/use-compliance';
 import { normalizeComplianceRouteLink } from '@/lib/compliance-routes';
+import { ALLOGGIATI_ATTENTION_CLASS } from '@/features/alloggiati/alloggiati-status.utils';
 import type { ComplianceSummarySection } from '@/types/compliance.types';
 
 interface SummaryRowProps {
@@ -14,10 +15,13 @@ interface SummaryRowProps {
   title: string;
   section: ComplianceSummarySection;
   testId: string;
+  /** `attention` (orange): the host must act, nothing is wrong yet. Default: red. */
+  tone?: 'destructive' | 'attention';
 }
 
-function SummaryRow({ icon, title, section, testId }: SummaryRowProps) {
+function SummaryRow({ icon, title, section, testId, tone = 'destructive' }: SummaryRowProps) {
   const { t } = useTranslation();
+  const hasItems = section.count > 0;
 
   return (
     <div className="space-y-2" data-testid={testId}>
@@ -26,7 +30,11 @@ function SummaryRow({ icon, title, section, testId }: SummaryRowProps) {
           {icon}
           <span>{title}</span>
         </div>
-        <Badge variant={section.count > 0 ? 'destructive' : 'outline'} data-testid={`${testId}-count`}>
+        <Badge
+          variant={hasItems ? (tone === 'attention' ? 'warning' : 'destructive') : 'outline'}
+          className={hasItems && tone === 'attention' ? ALLOGGIATI_ATTENTION_CLASS : undefined}
+          data-testid={`${testId}-count`}
+        >
           {section.count}
         </Badge>
       </div>
@@ -45,6 +53,11 @@ function SummaryRow({ icon, title, section, testId }: SummaryRowProps) {
             </li>
           ))}
         </ul>
+      )}
+      {section.count > section.items.length && (
+        <p className="text-xs text-muted-foreground px-2" data-testid={`${testId}-more`}>
+          {t('compliance.summary.moreItems', { count: section.count - section.items.length })}
+        </p>
       )}
       {section.count === 0 && (
         <p className="text-xs text-muted-foreground px-2">{t('compliance.summary.none')}</p>
@@ -81,7 +94,8 @@ export function ComplianceSummaryWidget() {
     data.propertiesPending.count +
     data.guestCheckInsIncomplete.count +
     data.checkoutsDue.count +
-    data.alloggiatiFailures.count;
+    data.alloggiatiFailures.count +
+    data.alloggiatiManualRequired.count;
 
   return (
     <Card data-testid="compliance-summary-widget">
@@ -119,6 +133,13 @@ export function ComplianceSummaryWidget() {
               title={t('compliance.summary.checkoutsDue')}
               section={data.checkoutsDue}
               testId="compliance-summary-checkouts"
+            />
+            <SummaryRow
+              icon={<Send className="h-4 w-4 text-muted-foreground" />}
+              title={t('compliance.summary.alloggiatiManualRequired')}
+              section={data.alloggiatiManualRequired}
+              testId="compliance-summary-alloggiati-manual"
+              tone="attention"
             />
             <SummaryRow
               icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}

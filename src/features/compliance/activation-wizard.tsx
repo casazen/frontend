@@ -28,6 +28,7 @@ import { useProperty, usePropertyDetail, useUpdateProperty } from '@/queries/use
 import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { DocumentUploadDialog } from '@/features/properties/components/document-upload-dialog';
 import { IcalSettings } from '@/features/properties/components/ical-settings';
+import { TouristTaxStepInfo } from '@/features/compliance/components/tourist-tax-step-info';
 import type { ComplianceWizardStep, PropertySafetyChecklist } from '@/types/compliance.types';
 import type { PropertyFormValues } from '@/features/properties/schemas/property.schema';
 import { PropertyForm } from '@/features/properties/components/property-form';
@@ -136,6 +137,9 @@ export function PropertyActivationWizard() {
 
   const steps = activation.steps;
   const currentStep = steps.find((s) => s.id === currentStepId) ?? steps[0];
+  // The tourist tax step shows its own translated warning and rate (TouristTaxStepInfo).
+  const headerMessage =
+    currentStep.id === 'tourist-tax' && currentStep.touristTax ? null : currentStep.message;
   const currentIdx = stepIndex(currentStepId);
   const nextStepId = STEP_ORDER[currentIdx + 1];
 
@@ -186,10 +190,10 @@ export function PropertyActivationWizard() {
         <Card>
           <CardHeader>
             <CardTitle>{stepLabel(currentStep)}</CardTitle>
-            {currentStep.message && (
+            {headerMessage && (
               <CardDescription className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
-                <span>{currentStep.message}</span>
+                <span>{headerMessage}</span>
               </CardDescription>
             )}
           </CardHeader>
@@ -214,15 +218,18 @@ export function PropertyActivationWizard() {
                     placeholder={t('property.form.cin.placeholder')}
                   />
                 </div>
-                <a
-                  href="https://www.casazen.app/help/cin"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                >
-                  {t('compliance.activation.cinGuidance')}
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                {currentStep.linkUrl && (
+                  <a
+                    href={currentStep.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    data-testid="activation-cin-guidance"
+                  >
+                    {t('compliance.activation.cinGuidance')}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
                 <Button onClick={() => void handleCinSave()} disabled={updateCin.isPending}>
                   {updateCin.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('compliance.activation.saveAndContinue')}
@@ -277,12 +284,7 @@ export function PropertyActivationWizard() {
 
             {currentStepId === 'tourist-tax' && (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  {t('compliance.activation.touristTaxHint', { city: property.city })}
-                </p>
-                <Button variant="outline" asChild>
-                  <Link to="/app/admin/compliance/tax-rates">{t('compliance.activation.touristTaxAdmin')}</Link>
-                </Button>
+                <TouristTaxStepInfo touristTax={currentStep.touristTax} city={property.city} />
                 <Button variant="outline" onClick={goNext}>
                   {t('compliance.activation.continue')}
                   <ArrowRight className="ml-2 h-4 w-4" />
