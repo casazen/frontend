@@ -273,10 +273,72 @@
     "registrationDeadlineToBeDetermined": "To be determined",
     "created": "Created",
     "parties": "Parties",
-    "signing": "Signing",
-    "signingDescription": "Generate the contract PDF and send signing links to all parties.",
-    "initiating": "Initiating...",
-    "initiateSigning": "Initiate signing",
+    "signature": {
+      "title": "Contract signature",
+      "description": "The contract counts as signed only when CasaZen records the signature of every party: with the signed PDF uploaded here, or with the confirmation of the e-signature provider.",
+      "state": {
+        "toSign": "To be signed",
+        "inProgress": "E-signature in progress",
+        "signed": "Signed"
+      },
+      "loading": "Loading the signature status...",
+      "loadError": "Could not load the signature status. Try again.",
+      "noSigners": "No party recorded in the contract.",
+      "signersTitle": "Signers",
+      "signerPending": "To sign",
+      "signerSigned": "Signed",
+      "methodOffline": "Signs on paper or with their own digital signature",
+      "methodProvider": "E-signature through the provider",
+      "signedOn": "Signed on {{date}}",
+      "linkExpires": "Link valid until {{date}}",
+      "linkExpired": "Link expired",
+      "openLink": "Open signing link",
+      "providerInProgress": "The e-signature provider created a personal link for each party: share it with that party. The contract will count as signed only when the provider reports the signature of every party.",
+      "offlineTitle": "Sign on paper or with a digital signature",
+      "offlineAlternativeTitle": "Alternatively: sign on paper or with a digital signature",
+      "offlineSteps": {
+        "step1": "Download the contract to sign (PDF).",
+        "step2": "Have every party sign it: on paper by hand, or with their own digital signature or advanced electronic signature.",
+        "step3": "Upload here the PDF signed by every party and enter the signing date (stipula), the day the last party signed."
+      },
+      "offlineNotVerified": "CasaZen stores the PDF you upload but does not verify the signatures it contains.",
+      "contractUnavailable": {
+        "templateNotApproved": "The contract template for this tax regime is not approved yet: you can only download the preview marked BOZZA (draft), which is not valid for signature.",
+        "dataMissing": "Some data required by the contract template are missing: open the preview to see which.",
+        "other": "The contract to sign is not available right now."
+      },
+      "downloadContract": "Download contract to sign",
+      "downloadPreview": "Preview (not valid for signature)",
+      "uploadSigned": "Upload signed contract",
+      "providerTitle": "Electronic signature",
+      "providerDescription": "Send the contract to the e-signature provider, which creates a personal link for each party. The contract will count as signed only when the provider reports the signature of every party.",
+      "providerStart": "Send for e-signature",
+      "stipulaRecorded": "Signing date (stipula): {{date}}",
+      "stipulaMissing": "The signing date (stipula) of this contract is not recorded: the RLI registration deadline stays to be determined until you declare it.",
+      "declareStipula": "Declare signing date",
+      "downloadSigned": "Download signed contract",
+      "signedPdfNotAvailable": "The signed contract was not uploaded to CasaZen.",
+      "downloadFailed": "Download failed. Try again.",
+      "stipulaDateLabel": "Signing date (stipula)",
+      "stipulaDateHint": "The day the last party signed. The RLI registration deadline counts from this date, or from the start date if earlier.",
+      "stipulaDateInvalid": "Enter a valid date not later than today ({{today}}).",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "uploadDialog": {
+        "title": "Upload the signed contract",
+        "description": "Upload the PDF of the contract signed by every party and enter the signing date: only then will the contract count as signed.",
+        "fileLabel": "Signed contract (PDF, at most 20 MB)",
+        "fileInvalid": "The file must be a PDF of at most 20 MB.",
+        "confirmation": "I declare that the file is the contract signed by every party and that the date entered is the signing date.",
+        "submit": "Save the signature"
+      },
+      "stipulaDialog": {
+        "title": "Declare the signing date",
+        "description": "This contract is signed but CasaZen did not record when. Enter the day the last party signed: the date can be declared only once.",
+        "confirmation": "I declare that the date entered is the day every party had signed the contract.",
+        "submit": "Save the signing date"
+      }
+    },
     "timeline": "Timeline",
     "fiscalCodeMasked": "Tax code",
     "rli": {
@@ -503,12 +565,6 @@
       "uploadApe": "Upload the APE",
       "retry": "Retry"
     },
-    "signingPanel": {
-      "title": "Digital signing",
-      "description": "Share each signing link with the corresponding party. Links expire at the indicated time.",
-      "expires": "Expires {{date}}",
-      "openLink": "Open signing link"
-    },
     "partyRole": {
       "Landlord": "Landlord",
       "Tenant": "Tenant"
@@ -527,7 +583,8 @@
       "ImuNotificationMarkedSent": "IMU notice marked as sent",
       "RegistrationAuthorized": "RLI delega recorded",
       "RliExported": "RLI pre-fill exported",
-      "DeadlineReminderSent": "Deadline reminder sent"
+      "DeadlineReminderSent": "Deadline reminder sent",
+      "StipulaDeclared": "Signing date declared"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
@@ -3140,7 +3197,6 @@
     "pricingSyncFailed": "Pricing sync failed",
     "leaseDraftCreated": "Lease draft created successfully",
     "leaseCreateFailed": "Failed to create lease",
-    "signingInitiated": "Signing initiated successfully",
     "signingInitiateFailed": "Failed to initiate signing",
     "registrationSubmitted": "Filing sent to the provider: the contract is not registered yet.",
     "registrationSubmitFailed": "Sending to the provider failed: the contract is not registered.",
@@ -3184,7 +3240,12 @@
     "alloggiatiMarkedSent": "Manual submission recorded",
     "alloggiatiMarkSentFailed": "Could not record the manual submission",
     "manualRegistrationSaved": "Registration saved: the contract is now registered.",
-    "manualRegistrationFailed": "Unable to save the registration."
+    "manualRegistrationFailed": "Unable to save the registration.",
+    "signingLinksCreated": "Signing links created: the contract is not signed yet",
+    "offlineSignatureSaved": "Signed contract saved",
+    "offlineSignatureFailed": "Could not save the signed contract",
+    "stipulaDeclared": "Signing date saved",
+    "stipulaDeclareFailed": "Could not save the signing date"
   },
   "fiscal": {
     "page": {
@@ -3289,7 +3350,18 @@
       "onsiteRequestNotPending": "The request is no longer pending: it has already been accepted, declined or cancelled.",
       "onsiteRequestEmailNotConfirmed": "The guest has not confirmed their email address yet: the request cannot be accepted or declined yet.",
       "onsiteRequestDatesBlocked": "The dates now overlap a calendar block imported from a portal (e.g. Airbnb, Booking.com): the request cannot be accepted, decline it.",
-      "bookingNotOnsiteRequest": "This booking is not a request with payment at the property."
+      "bookingNotOnsiteRequest": "This booking is not a request with payment at the property.",
+      "esignProviderUnavailable": "Electronic signature through a provider is not available: download the contract, have every party sign it on paper or with their own digital signature and upload the signed PDF with the signing date.",
+      "esignProviderFailed": "The e-signature provider did not accept the request: no signing link was created and the contract is NOT signed. Try again later or use the paper/PDF signature.",
+      "leaseSigningNotDraft": "Electronic signing can only start on a draft contract.",
+      "leaseAlreadySigned": "The contract is already signed by every party.",
+      "leaseSignedContractInvalid": "The signed contract must be a PDF file of at most 20 MB.",
+      "leaseSignedContractNotAvailable": "The signed contract is not available: it has not been uploaded yet.",
+      "leaseStipulaDateInFuture": "The signing date (stipula) cannot be later than today.",
+      "leaseStipulaAlreadyRecorded": "The signing date (stipula) of this contract is already recorded.",
+      "leaseStipulaLeaseNotSigned": "The contract is not signed yet: upload the PDF signed by every party together with the signing date.",
+      "contractTemplateNotApproved": "The contract template for this tax regime is not approved: only the BOZZA (draft) preview is available, not valid for signature.",
+      "contractDataMissing": "Data required by the contract template are missing: check the preview."
     }
   },
   "validation": {

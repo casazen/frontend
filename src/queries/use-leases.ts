@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { leasesApi } from '@/api/leases.api';
-import type { CreateLeaseDto, ManualRegistrationInput } from '@/types';
+import type { CreateLeaseDto, ManualRegistrationInput, OfflineSignatureInput } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -43,6 +43,16 @@ export function useCreateLease() {
   });
 }
 
+/** LT-02: the signature panel (persisted signers, provider availability, final contract availability). */
+export function useLeaseSigning(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, id, 'signing'],
+    queryFn: () => leasesApi.getSigningState(id),
+    enabled: !!id,
+  });
+}
+
+/** Provider path only: the API sends the contract to the e-signature provider and returns the signing links. */
 export function useInitiateSigning() {
   const queryClient = useQueryClient();
 
@@ -51,10 +61,47 @@ export function useInitiateSigning() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
-      toast.success(i18n.t('toast.signingInitiated'));
+      // Links created, nothing signed yet: the toast says so.
+      toast.success(i18n.t('toast.signingLinksCreated'));
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.signingInitiateFailed'));
+    },
+  });
+}
+
+/** LT-02 offline signature: upload of the contract signed by every party with the stipula date. */
+export function useDeclareOfflineSignature() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: OfflineSignatureInput }) =>
+      leasesApi.declareOfflineSignature(id, input),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+      toast.success(i18n.t('toast.offlineSignatureSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.offlineSignatureFailed'));
+    },
+  });
+}
+
+/** LT-02: stipula date of a lease signed before CasaZen recorded it. */
+export function useDeclareStipula() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, stipulaDate }: { id: string; stipulaDate: string }) =>
+      leasesApi.declareStipula(id, stipulaDate),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+      toast.success(i18n.t('toast.stipulaDeclared'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.stipulaDeclareFailed'));
     },
   });
 }

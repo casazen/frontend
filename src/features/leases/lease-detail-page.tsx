@@ -1,17 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ArrowLeft, Loader2, PenLine } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  useInitiateSigning,
-  useLease,
-  useRliChecklist,
-  useTriggerRegistration,
-} from '@/queries/use-leases';
+import { useLease, useRliChecklist, useTriggerRegistration } from '@/queries/use-leases';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { LeaseStatusBadge } from './components/lease-status-badge';
@@ -25,7 +20,6 @@ import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
 import { RliChecklist } from './components/rli-checklist';
 import { DelegaCaptureDialog } from './components/delega-capture-dialog';
 import { getFiscalRegimeLabel, getLeaseEventTypeLabel, getLeasePartyRoleLabel } from '@/lib/i18n-labels';
-import type { SignerInfo } from '@/types';
 
 export function LeaseDetailPage() {
   const { t } = useTranslation();
@@ -33,9 +27,7 @@ export function LeaseDetailPage() {
   const navigate = useNavigate();
   const { data: lease, isLoading, isError, error, refetch, isFetching } = useLease(id!);
   const { data: checklist } = useRliChecklist(id!);
-  const initiateSigning = useInitiateSigning();
   const triggerRegistration = useTriggerRegistration();
-  const [signers, setSigners] = useState<SignerInfo[]>([]);
   const [delegaOpen, setDelegaOpen] = useState(false);
 
   if (isLoading) {
@@ -84,22 +76,7 @@ export function LeaseDetailPage() {
     lease.hasExtraEUTenant ||
     parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
 
-  const activeSigners = signers.length > 0 ? signers : [];
-  const showSigningPanel =
-    activeSigners.length > 0 ||
-    lease.status === 'AwaitingSignature' ||
-    lease.status === 'PartiallySigned';
-
   // The mutations report their own errors (toast with the server's reason): only swallow the rejection.
-  const handleInitiateSigning = async () => {
-    try {
-      const result = await initiateSigning.mutateAsync(lease.id);
-      setSigners(result.signers);
-    } catch {
-      // Reported by useInitiateSigning.onError.
-    }
-  };
-
   const handleSubmitToProvider = () => {
     setDelegaOpen(true);
   };
@@ -212,38 +189,8 @@ export function LeaseDetailPage() {
               </CardContent>
             </Card>
 
-            {lease.status === 'Draft' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('leases.signing')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {t('leases.signingDescription')}
-                  </p>
-                  <Button
-                    onClick={handleInitiateSigning}
-                    disabled={initiateSigning.isPending}
-                  >
-                    {initiateSigning.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('leases.initiating')}
-                      </>
-                    ) : (
-                      <>
-                        <PenLine className="mr-2 h-4 w-4" />
-                        {t('leases.initiateSigning')}
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {showSigningPanel && activeSigners.length > 0 && (
-              <LeaseSigningPanel signers={activeSigners} />
-            )}
+            {/* LT-02: offline signature by default, provider only when the API says it is available. */}
+            <LeaseSigningPanel lease={lease} />
 
             <CedolareDecisionPanel leaseId={lease.id} />
             <RliChecklist leaseId={lease.id} />

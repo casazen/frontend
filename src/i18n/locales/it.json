@@ -273,10 +273,72 @@
     "registrationDeadlineToBeDetermined": "Da determinare",
     "created": "Creato",
     "parties": "Parti",
-    "signing": "Firma",
-    "signingDescription": "Genera il contratto PDF e invia i link di firma a tutte le parti.",
-    "initiating": "Avvio...",
-    "initiateSigning": "Avvia firma",
+    "signature": {
+      "title": "Firma del contratto",
+      "description": "Il contratto risulta firmato solo quando CasaZen registra la firma di tutte le parti: con il PDF firmato caricato qui, oppure con la conferma del provider di firma elettronica.",
+      "state": {
+        "toSign": "Da firmare",
+        "inProgress": "Firma elettronica in corso",
+        "signed": "Firmato"
+      },
+      "loading": "Caricamento dello stato della firma...",
+      "loadError": "Impossibile caricare lo stato della firma. Riprova.",
+      "noSigners": "Nessuna parte registrata nel contratto.",
+      "signersTitle": "Firmatari",
+      "signerPending": "Da firmare",
+      "signerSigned": "Firmato",
+      "methodOffline": "Firma su carta o con la propria firma digitale",
+      "methodProvider": "Firma elettronica tramite provider",
+      "signedOn": "Firmato il {{date}}",
+      "linkExpires": "Link valido fino al {{date}}",
+      "linkExpired": "Link scaduto",
+      "openLink": "Apri link di firma",
+      "providerInProgress": "Il provider di firma elettronica ha creato un link personale per ogni parte: condividilo con la parte corrispondente. Il contratto risulterà firmato solo quando il provider comunicherà la firma di tutte le parti.",
+      "offlineTitle": "Firma su carta o con firma digitale",
+      "offlineAlternativeTitle": "In alternativa: firma su carta o con firma digitale",
+      "offlineSteps": {
+        "step1": "Scarica il contratto da firmare (PDF).",
+        "step2": "Fallo firmare da tutte le parti: su carta, con firma autografa, oppure con la loro firma digitale o firma elettronica avanzata.",
+        "step3": "Carica qui il PDF firmato da tutte le parti e indica la data di stipula, cioè il giorno in cui ha firmato l'ultima parte."
+      },
+      "offlineNotVerified": "CasaZen conserva il PDF che carichi ma non verifica le firme che contiene.",
+      "contractUnavailable": {
+        "templateNotApproved": "Il modello di contratto per questo regime fiscale non è ancora approvato: puoi scaricare solo l'anteprima con la dicitura BOZZA, che non è valida per la firma.",
+        "dataMissing": "Mancano alcuni dati richiesti dal modello di contratto: apri l'anteprima per vedere quali.",
+        "other": "Il contratto da firmare non è disponibile in questo momento."
+      },
+      "downloadContract": "Scarica contratto da firmare",
+      "downloadPreview": "Anteprima (non valida per la firma)",
+      "uploadSigned": "Carica contratto firmato",
+      "providerTitle": "Firma elettronica",
+      "providerDescription": "Invia il contratto al provider di firma elettronica, che crea un link personale per ogni parte. Il contratto risulterà firmato solo quando il provider comunicherà la firma di tutte le parti.",
+      "providerStart": "Invia per firma elettronica",
+      "stipulaRecorded": "Data di stipula: {{date}}",
+      "stipulaMissing": "La data di stipula di questo contratto non è registrata: la scadenza per la registrazione RLI resta da determinare finché non la dichiari.",
+      "declareStipula": "Dichiara data di stipula",
+      "downloadSigned": "Scarica contratto firmato",
+      "signedPdfNotAvailable": "Il contratto firmato non è stato caricato in CasaZen.",
+      "downloadFailed": "Download non riuscito. Riprova.",
+      "stipulaDateLabel": "Data di stipula",
+      "stipulaDateHint": "Il giorno in cui ha firmato l'ultima parte. La scadenza per la registrazione RLI si calcola da questa data o dalla decorrenza, se anteriore.",
+      "stipulaDateInvalid": "Inserisci una data valida non successiva a oggi ({{today}}).",
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "uploadDialog": {
+        "title": "Carica il contratto firmato",
+        "description": "Carica il PDF del contratto firmato da tutte le parti e indica la data di stipula: solo allora il contratto risulterà firmato.",
+        "fileLabel": "Contratto firmato (PDF, massimo 20 MB)",
+        "fileInvalid": "Il file deve essere un PDF di al massimo 20 MB.",
+        "confirmation": "Dichiaro che il file è il contratto firmato da tutte le parti e che la data indicata è quella della stipula.",
+        "submit": "Salva la firma"
+      },
+      "stipulaDialog": {
+        "title": "Dichiara la data di stipula",
+        "description": "Questo contratto risulta firmato ma CasaZen non ha registrato quando. Indica il giorno in cui ha firmato l'ultima parte: la data si può dichiarare una sola volta.",
+        "confirmation": "Dichiaro che la data indicata è quella in cui tutte le parti hanno firmato il contratto.",
+        "submit": "Salva la data di stipula"
+      }
+    },
     "timeline": "Cronologia",
     "fiscalCodeMasked": "Codice fiscale",
     "rli": {
@@ -503,12 +565,6 @@
       "uploadApe": "Carica l'APE",
       "retry": "Riprova"
     },
-    "signingPanel": {
-      "title": "Firma digitale",
-      "description": "Condividi ogni link di firma con la parte corrispondente. I link scadono all'orario indicato.",
-      "expires": "Scade il {{date}}",
-      "openLink": "Apri link di firma"
-    },
     "partyRole": {
       "Landlord": "Locatore",
       "Tenant": "Conduttore"
@@ -527,7 +583,8 @@
       "ImuNotificationMarkedSent": "Comunicazione IMU segnata come inviata",
       "RegistrationAuthorized": "Delega RLI registrata",
       "RliExported": "Precompilazione RLI esportata",
-      "DeadlineReminderSent": "Promemoria di scadenza inviato"
+      "DeadlineReminderSent": "Promemoria di scadenza inviato",
+      "StipulaDeclared": "Data di stipula dichiarata"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -3140,7 +3197,6 @@
     "pricingSyncFailed": "Sync prezzi fallito",
     "leaseDraftCreated": "Bozza contratto creata con successo",
     "leaseCreateFailed": "Impossibile creare il contratto",
-    "signingInitiated": "Firma avviata con successo",
     "signingInitiateFailed": "Impossibile avviare la firma",
     "registrationSubmitted": "Pratica inviata al provider: il contratto non è ancora registrato.",
     "registrationSubmitFailed": "Invio al provider non riuscito: il contratto non è registrato.",
@@ -3184,7 +3240,12 @@
     "alloggiatiMarkedSent": "Invio manuale registrato",
     "alloggiatiMarkSentFailed": "Impossibile registrare l'invio manuale",
     "manualRegistrationSaved": "Registrazione salvata: il contratto risulta registrato.",
-    "manualRegistrationFailed": "Impossibile salvare la registrazione."
+    "manualRegistrationFailed": "Impossibile salvare la registrazione.",
+    "signingLinksCreated": "Link di firma creati: il contratto non è ancora firmato",
+    "offlineSignatureSaved": "Contratto firmato salvato",
+    "offlineSignatureFailed": "Impossibile salvare il contratto firmato",
+    "stipulaDeclared": "Data di stipula salvata",
+    "stipulaDeclareFailed": "Impossibile salvare la data di stipula"
   },
   "fiscal": {
     "page": {
@@ -3289,7 +3350,18 @@
       "onsiteRequestNotPending": "La richiesta non è più in attesa: è già stata accettata, rifiutata o annullata.",
       "onsiteRequestEmailNotConfirmed": "L'ospite non ha ancora confermato il suo indirizzo email: la richiesta non può ancora essere accettata o rifiutata.",
       "onsiteRequestDatesBlocked": "Le date si sovrappongono ora a un blocco del calendario importato da un portale (es. Airbnb, Booking.com): la richiesta non può essere accettata, rifiutala.",
-      "bookingNotOnsiteRequest": "Questa prenotazione non è una richiesta con pagamento in struttura."
+      "bookingNotOnsiteRequest": "Questa prenotazione non è una richiesta con pagamento in struttura.",
+      "esignProviderUnavailable": "La firma elettronica tramite provider non è disponibile: scarica il contratto, fallo firmare a tutte le parti su carta o con la loro firma digitale e carica il PDF firmato con la data di stipula.",
+      "esignProviderFailed": "Il provider di firma elettronica non ha accettato la richiesta: nessun link di firma è stato creato e il contratto NON è firmato. Riprova più tardi oppure usa la firma su carta o PDF.",
+      "leaseSigningNotDraft": "La firma elettronica si può avviare solo su un contratto in bozza.",
+      "leaseAlreadySigned": "Il contratto risulta già firmato da tutte le parti.",
+      "leaseSignedContractInvalid": "Il contratto firmato deve essere un file PDF di al massimo 20 MB.",
+      "leaseSignedContractNotAvailable": "Il contratto firmato non è disponibile: non è stato ancora caricato.",
+      "leaseStipulaDateInFuture": "La data di stipula non può essere successiva a oggi.",
+      "leaseStipulaAlreadyRecorded": "La data di stipula di questo contratto è già registrata.",
+      "leaseStipulaLeaseNotSigned": "Il contratto non è ancora firmato: carica il PDF firmato da tutte le parti insieme alla data di stipula.",
+      "contractTemplateNotApproved": "Il modello di contratto per questo regime fiscale non è approvato: è disponibile solo l'anteprima BOZZA, non valida per la firma.",
+      "contractDataMissing": "Mancano dati richiesti dal modello di contratto: controlla l'anteprima."
     }
   },
   "validation": {

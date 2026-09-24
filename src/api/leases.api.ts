@@ -6,8 +6,10 @@ import type {
   CreateLeaseDto,
   LeaseDetail,
   LeaseRegistration,
+  LeaseSigningState,
   LeaseSummary,
   ManualRegistrationInput,
+  OfflineSignatureInput,
   RliChecklist,
   SigningInitiatedResult,
   TriggerRegistrationResult,
@@ -39,8 +41,49 @@ export const leasesApi = {
   create: async (data: CreateLeaseDto): Promise<LeaseDetail> =>
     expectObjectWithId<LeaseDetail>(await ApiClient.post<unknown>('/leases', data), '/leases'),
 
+  /** LT-02: signers (persisted), provider availability and whether the final contract can be downloaded. */
+  getSigningState: async (id: string): Promise<LeaseSigningState> => {
+    const data = await ApiClient.get<unknown>(`/leases/${id}/signers`);
+    if (!isRecord(data) || !Array.isArray(data.signers)) throw new UnexpectedApiResponseError('/leases/:id/signers');
+    return data as unknown as LeaseSigningState;
+  },
+
+  /** Provider path only (flag on and configured provider): sends the final contract to the e-signature provider. */
   initiateSigning: (id: string) =>
     ApiClient.post<SigningInitiatedResult>(`/leases/${id}/signing`),
+
+  /** The final contract to sign offline (approved template only; 422 otherwise). */
+  downloadContract: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/contract.pdf`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /** Preview marked BOZZA (or ANTEPRIMA): never valid for signature. */
+  downloadContractPreview: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/contract/preview`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /** LT-02 offline signature: the PDF signed by every party plus the stipula date. The lease becomes Signed. */
+  declareOfflineSignature: async (id: string, input: OfflineSignatureInput): Promise<LeaseDetail> => {
+    const formData = new FormData();
+    formData.append('stipulaDate', input.stipulaDate);
+    formData.append('signedContract', input.signedContract);
+    const response = await axios.post<LeaseDetail>(`/leases/${id}/signed-document`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /** The contract signed by every party, from the private storage (authenticated download). */
+  downloadSignedContract: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/signed-document`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /** Stipula date of a lease signed before CasaZen recorded it (legacy leases): fixes the RLI deadline. */
+  declareStipula: (id: string, stipulaDate: string) =>
+    ApiClient.post<LeaseDetail>(`/leases/${id}/stipula`, { stipulaDate }),
 
   triggerRegistration: (id: string, body: { tosVersion: string; attestationAccepted: boolean }) =>
     ApiClient.post<TriggerRegistrationResult>(`/leases/${id}/registration`, body),
