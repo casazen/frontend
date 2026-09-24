@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CalendarSync, Copy, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { CalendarSync, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,20 +15,22 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { translateErrorCode } from '@/lib/api-errors';
+import { getProblemMessage, translateErrorCode } from '@/lib/api-errors';
 import { formatDateTime } from '@/lib/utils';
 import {
   useAddPropertyIcalFeed,
-  usePropertyIcalExportUrl,
   usePropertyIcalFeeds,
   useRemovePropertyIcalFeed,
   useSyncPropertyIcalFeed,
 } from '@/queries/use-property-ical';
 import type { PropertyIcalFeed, PropertyIcalFeedChannel, PropertyIcalImportStatus } from '@/types/property-ical';
+import { IcalExportSection } from './ical-export-section';
 
 interface IcalSettingsProps {
   propertyId: string;
 }
+
+type TranslateFn = (key: string) => string;
 
 const LABEL_MAX_LENGTH = 60;
 const CHANNELS: PropertyIcalFeedChannel[] = ['Airbnb', 'BookingCom', 'Other'];
@@ -41,27 +43,30 @@ const STATUS_BADGE: Record<PropertyIcalImportStatus, BadgeProps['variant']> = {
 };
 
 /**
- * iCal calendars of a property (PC-11): the import feeds (Airbnb, Booking.com, others), each with its own state and
- * "sync now" / "disconnect", the form to link another one, and the export link for the OTAs.
+ * iCal calendars of a property (PC-11, PC-13): the import feeds (Airbnb, Booking.com, others), each with its translated
+ * state, last sync and error, "sync now" and "disconnect"; the form to link another one; the export link for the OTAs.
+ * Every failed action shows a toast and the same message inline, next to where it happened.
  */
 export function IcalSettings({ propertyId }: IcalSettingsProps) {
   const { t } = useTranslation();
   const feeds = usePropertyIcalFeeds(propertyId);
-  const exportUrl = usePropertyIcalExportUrl(propertyId);
-  const [feedToRemove, setFeedToRemove] = useState<PropertyIcalFeed | null>(null);
-  const [copied, setCopied] = useState(false);
   const removeFeed = useRemovePropertyIcalFeed(propertyId);
+  const [feedToRemove, setFeedToRemove] = useState<PropertyIcalFeed | null>(null);
 
-  const handleCopyExport = async () => {
-    if (!exportUrl.data?.exportUrl) return;
-    await navigator.clipboard.writeText(exportUrl.data.exportUrl);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+  const openRemove = (feed: PropertyIcalFeed) => {
+    removeFeed.reset();
+    setFeedToRemove(feed);
   };
 
+  const closeRemove = () => {
+    setFeedToRemove(null);
+    removeFeed.reset();
+  };
+
+  // The dialog closes only once the feed is gone; on error it stays open with the reason.
   const confirmRemove = () => {
     if (!feedToRemove) return;
-    removeFeed.mutate(feedToRemove.id, { onSettled: () => setFeedToRemove(null) });
+    removeFeed.mutate(feedToRemove.id, { onSuccess: () => setFeedToRemove(null) });
   };
 
   return (
@@ -98,7 +103,7 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
                   key={feed.id}
                   propertyId={propertyId}
                   feed={feed}
-                  onRemove={() => setFeedToRemove(feed)}
+                  onRemove={() => openRemove(feed)}
                   removing={removeFeed.isPending && removeFeed.variables === feed.id}
                 />
               ))}
@@ -108,24 +113,10 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
 
         <AddFeedForm propertyId={propertyId} />
 
-        <div className="space-y-2">
-          <Label htmlFor="property-ical-export">{t('ical.exportUrlLabel')}</Label>
-          <div className="flex gap-2">
-            <Input id="property-ical-export" readOnly value={exportUrl.data?.exportUrl ?? ''} />
-            <Button type="button" variant="outline" onClick={() => void handleCopyExport()} disabled={!exportUrl.data?.exportUrl}>
-              <Copy className="h-4 w-4" />
-              {copied ? t('ical.copied') : t('ical.copy')}
-            </Button>
-          </div>
-          {exportUrl.isError ? (
-            <p className="text-xs text-destructive">{t('ical.exportLoadError')}</p>
-          ) : (
-            <p className="text-xs text-muted-foreground">{t('ical.exportHint')}</p>
-          )}
-        </div>
+        <IcalExportSection propertyId={propertyId} />
       </CardContent>
 
-      <Dialog open={feedToRemove !== null} onOpenChange={(open) => !open && setFeedToRemove(null)}>
+      <Dialog open={feedToRemove !== null} onOpenChange={(open) => !open && closeRemove()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('ical.removeTitle')}</DialogTitle>
@@ -133,8 +124,13 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
               {feedToRemove && t('ical.removeDescription', { name: feedName(feedToRemove, t) })}
             </DialogDescription>
           </DialogHeader>
+          {removeFeed.isError && (
+            <p className="text-sm text-destructive" role="alert">
+              {getProblemMessage(removeFeed.error, t) ?? t('ical.feedRemoveFailed')}
+            </p>
+          )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setFeedToRemove(null)}>
+            <Button type="button" variant="outline" onClick={closeRemove}>
               {t('ical.cancel')}
             </Button>
             <Button type="button" variant="destructive" onClick={confirmRemove} disabled={removeFeed.isPending}>
@@ -148,7 +144,7 @@ export function IcalSettings({ propertyId }: IcalSettingsProps) {
   );
 }
 
-function feedName(feed: PropertyIcalFeed, t: (key: string) => string): string {
+function feedName(feed: PropertyIcalFeed, t: TranslateFn): string {
   return feed.label?.trim() || t(`ical.channels.${feed.channel}`);
 }
 
@@ -165,7 +161,7 @@ function FeedRow({ propertyId, feed, onRemove, removing }: FeedRowProps) {
   const status = feed.lastImportStatus ?? null;
   const syncing = status === 'Syncing' || syncFeed.isPending;
   // The error of the last completed sync, translated from its stable code (the backend text only as a fallback).
-  const error =
+  const lastError =
     status === 'Failure' || status === 'PartialFailure'
       ? translateErrorCode(feed.lastErrorCode, t) ?? feed.lastError ?? undefined
       : undefined;
@@ -182,16 +178,24 @@ function FeedRow({ propertyId, feed, onRemove, removing }: FeedRowProps) {
             <p className="truncate font-mono text-xs text-muted-foreground">{feed.maskedImportUrl}</p>
           )}
         </div>
-        <Badge variant={status ? STATUS_BADGE[status] : 'outline'}>
-          {t(status ? `ical.status.${status}` : 'ical.status.never')}
-        </Badge>
+        <div aria-live="polite">
+          <Badge variant={status ? STATUS_BADGE[status] : 'outline'} data-testid="ical-feed-status">
+            {status === 'Syncing' && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+            {t(status ? `ical.status.${status}` : 'ical.status.never')}
+          </Badge>
+        </div>
       </div>
       <p className="text-xs text-muted-foreground">
         {feed.lastImportAt ? t('ical.lastSync', { date: formatDateTime(feed.lastImportAt) }) : t('ical.neverSynced')}
         {' · '}
         {t('ical.blockCount', { count: feed.blockCount })}
       </p>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {lastError && <p className="text-sm text-destructive">{lastError}</p>}
+      {syncFeed.isError && (
+        <p className="text-sm text-destructive" role="alert">
+          {getProblemMessage(syncFeed.error, t) ?? t('ical.feedSyncFailed')}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" size="sm" onClick={() => syncFeed.mutate(feed.id)} disabled={syncing}>
           <RefreshCw className={syncing ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
@@ -212,6 +216,13 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
   const [channel, setChannel] = useState<PropertyIcalFeedChannel>('Airbnb');
   const [label, setLabel] = useState('');
   const [importUrl, setImportUrl] = useState('');
+  const errorId = 'property-ical-add-error';
+
+  // A new attempt hides the error of the previous one.
+  const edit = (update: () => void) => {
+    if (addFeed.isError) addFeed.reset();
+    update();
+  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -220,6 +231,7 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
     addFeed.mutate(
       { channel, label: label.trim() || undefined, importUrl: url },
       {
+        // The fields empty only on success: on error the host corrects the URL (e.g. http:// → https://).
         onSuccess: () => {
           setImportUrl('');
           setLabel('');
@@ -239,7 +251,7 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
           <select
             id="property-ical-channel"
             value={channel}
-            onChange={(e) => setChannel(e.target.value as PropertyIcalFeedChannel)}
+            onChange={(e) => edit(() => setChannel(e.target.value as PropertyIcalFeedChannel))}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {CHANNELS.map((value) => (
@@ -255,7 +267,7 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
             id="property-ical-label"
             value={label}
             maxLength={LABEL_MAX_LENGTH}
-            onChange={(e) => setLabel(e.target.value)}
+            onChange={(e) => edit(() => setLabel(e.target.value))}
             placeholder={t('ical.feedLabelPlaceholder')}
           />
         </div>
@@ -268,9 +280,16 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
           inputMode="url"
           autoComplete="off"
           value={importUrl}
-          onChange={(e) => setImportUrl(e.target.value)}
+          onChange={(e) => edit(() => setImportUrl(e.target.value))}
           placeholder={t('ical.importUrlPlaceholder')}
+          aria-invalid={addFeed.isError || undefined}
+          aria-describedby={addFeed.isError ? errorId : undefined}
         />
+        {addFeed.isError && (
+          <p id={errorId} className="text-sm text-destructive" role="alert">
+            {getProblemMessage(addFeed.error, t) ?? t('ical.feedAddFailed')}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground">
           {t('ical.importHint')}{' '}
           <Link to="/help/ical" className="text-primary hover:underline">
