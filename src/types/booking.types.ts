@@ -1,3 +1,5 @@
+import type { PaymentRefund } from './payment.types';
+
 // ✅ Fixed: Backend uses PascalCase enum values
 export type BookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
 
@@ -59,4 +61,45 @@ export interface CheckOutDto {
   actualCheckOutTime?: string;
   notes?: string;
   damages?: string;
+}
+
+/** Rule of the model that sets the minimum refund of a cancellation (BK-02). */
+export type CancellationRefundRule = 'None' | 'FreeCancellationDeadline' | 'PropertyCancellationPolicy';
+
+/** GET /bookings/:id/cancellation */
+export interface BookingCancellationQuote {
+  bookingId: string;
+  status: BookingStatus;
+  cancellable: boolean;
+  currency: string;
+  /** Paid through Stripe. */
+  paidAmount: number;
+  refundedAmount: number;
+  pendingRefundAmount: number;
+  /** Maximum refund now. */
+  refundableAmount: number;
+  /** Minimum refund now under `rule` (0 without a rule). */
+  minimumRefundAmount: number;
+  rule: CancellationRefundRule;
+  freeCancellationUntil?: string | null;
+  cancellationPolicyName?: string | null;
+  /** Paid outside Stripe (cash, bank transfer): CasaZen cannot refund it. */
+  offlinePaidAmount: number;
+  /** An unpaid PaymentIntent or a saved card will be canceled on Stripe. */
+  hasUncollectedIntent: boolean;
+  /** Something paid through Stripe can still be refunded: `refundAmount` is required. */
+  requiresRefundDecision: boolean;
+}
+
+/** POST /bookings/:id/cancel */
+export interface CancelBookingDto {
+  refundAmount?: number;
+  reason?: string;
+}
+
+export interface CancelBookingResult {
+  bookingId: string;
+  status: BookingStatus;
+  refunds: PaymentRefund[];
+  canceledIntents: number;
 }

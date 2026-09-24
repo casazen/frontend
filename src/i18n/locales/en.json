@@ -312,7 +312,15 @@
       "confirmSubmit": "Authorize and submit",
       "cancel": "Cancel",
       "extraEuTitle": "Questura notification required",
-      "extraEuBody": "This lease includes a non-EU tenant. Check the Questura communication (Art. 7 D.Lgs 286/1998). CasaZen does not send it. Draft wording pending counsel."
+      "extraEuBody": "This lease includes a non-EU tenant. Check the Questura communication (Art. 7 D.Lgs 286/1998). CasaZen does not send it. Draft wording pending counsel.",
+      "checklistItem": {
+        "contract_signed": "Contract signed by all parties",
+        "delega_captured": "RLI delega / attestation recorded",
+        "rli_exported": "RLI dataset exported for review",
+        "rli_submitted": "RLI sent to the filing channel",
+        "rli_registered": "Registration receipt available",
+        "questura_extra_eu": "Questura notice (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Draft wording pending counsel."
+      }
     },
     "canoneConcordato": {
       "title": "Agreed-rent calculator",
@@ -364,11 +372,12 @@
     "statusLabel": {
       "Draft": "Draft",
       "AwaitingSignature": "Awaiting signature",
+      "PartiallySigned": "Partially signed",
       "Signed": "Signed",
+      "RegistrationPending": "Registration pending",
+      "SentToProvider": "Sent to provider",
       "Registered": "Registered",
-      "Terminated": "Terminated",
-      "Renewed": "Renewed",
-      "Cancelled": "Cancelled"
+      "Rejected": "Rejected"
     },
     "registrationStatusLabel": {
       "Pending": "Pending",
@@ -446,7 +455,26 @@
       "Landlord": "Landlord",
       "Tenant": "Tenant"
     },
-    "monthlyRentValue": "{{amount}}/mo"
+    "monthlyRentValue": "{{amount}}/mo",
+    "eventType": {
+      "Created": "Draft created",
+      "SigningInitiated": "Signing started",
+      "PartySignedDocument": "A party signed",
+      "AllPartiesSigned": "Signed by all parties",
+      "RegistrationSubmitted": "RLI registration submitted",
+      "RegistrationConfirmed": "RLI registration confirmed",
+      "RegistrationFailed": "RLI registration failed",
+      "ErasureRequested": "Data erasure requested",
+      "ImuNotificationExported": "IMU notice exported",
+      "ImuNotificationMarkedSent": "IMU notice marked as sent",
+      "RegistrationAuthorized": "RLI delega recorded",
+      "RliExported": "RLI pre-fill exported",
+      "DeadlineReminderSent": "Deadline reminder sent"
+    },
+    "detailLoadError": "Unable to load the lease. Please try again.",
+    "retry": "Retry",
+    "contactEmailMasked": "Contact email",
+    "noParties": "No parties recorded."
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -715,6 +743,45 @@
       "Vrbo": "Vrbo",
       "TripAdvisor": "Tripadvisor",
       "Agoda": "Agoda"
+    },
+    "cancel": {
+      "action": "Cancel booking",
+      "title": "Cancel booking",
+      "description": "The booking will be cancelled and its dates will be available again.",
+      "loading": "Working out payments and refunds…",
+      "loadError": "Could not load the payments of the booking.",
+      "notCancellable": "This booking cannot be cancelled: it is already cancelled or the stay has ended.",
+      "uncollectedIntent": "The payment the guest has not completed yet will be canceled on Stripe: the guest will no longer be able to pay this booking.",
+      "offlinePaid": "{{amount}} paid outside Stripe (cash, bank transfer): refund it separately.",
+      "paid": "Paid with Stripe",
+      "refunded": "Already refunded",
+      "inProgress": "Refunds waiting for Stripe",
+      "refundable": "Refundable now",
+      "refundChoice": "Refund to the guest",
+      "rule": {
+        "freeCancellation": "The guest was shown free cancellation until {{date}}: the refund must be full.",
+        "policy": "Cancellation terms “{{name}}”: minimum refund {{amount}}.",
+        "none": "No cancellation terms apply: you choose how much to refund, up to {{amount}}."
+      },
+      "refundFull": "Full refund ({{amount}})",
+      "refundPartial": "Partial refund",
+      "partialLabel": "Amount to refund",
+      "partialHint": "From {{min}} to {{max}}. With 0 the guest gets no refund.",
+      "reason": "Reason (visible only to you)",
+      "keep": "Keep booking",
+      "confirm": "Cancel booking",
+      "submitting": "Cancelling…",
+      "close": "Close",
+      "failed": "The booking was not cancelled. Try again.",
+      "errors": {
+        "amountInvalid": "Enter a valid amount, with at most two decimals.",
+        "amountOutOfRange": "The amount must be between {{min}} and {{max}}."
+      },
+      "result": {
+        "cancelled": "Booking cancelled.",
+        "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
+        "noRefund": "No refund requested."
+      }
     }
   },
   "ota": {
@@ -910,7 +977,14 @@
       "authenticating": "Authenticating...",
       "loadingWorkspace": "Loading workspace..."
     },
-    "close": "Close"
+    "close": "Close",
+    "profileLoadError": {
+      "title": "We could not load your profile",
+      "description": "Your account has not been changed. Please try again in a moment.",
+      "retry": "Try again",
+      "retrying": "Retrying...",
+      "signInAgain": "Sign in again"
+    }
   },
   "common": {
     "planLimitMessage": "You have reached your plan limit",
@@ -2022,7 +2096,8 @@
       "Completed": "Completed",
       "Failed": "Failed",
       "Refunded": "Refunded",
-      "PartiallyRefunded": "Partially Refunded"
+      "PartiallyRefunded": "Partially Refunded",
+      "Canceled": "Canceled"
     },
     "method": {
       "CreditCard": "Credit Card",
@@ -2037,9 +2112,6 @@
       },
       "amount": {
         "min": "Amount must be greater than 0"
-      },
-      "paymentMethodId": {
-        "required": "Payment method is required"
       }
     },
     "list": {
@@ -2108,32 +2180,52 @@
       "creating": "Creating...",
       "create": "Create Payment"
     },
-    "process": {
-      "title": "Process Payment",
-      "description": "Process payment of {{amount}}",
-      "amount": "Amount",
-      "method": "Method",
-      "paymentMethodId": "Payment Method ID *",
-      "paymentMethodIdPlaceholder": "pm_1234567890...",
-      "paymentMethodIdHint": "Stripe payment method ID (e.g., from Stripe Elements)",
-      "saveCard": "Save card for future payments",
-      "cancel": "Cancel",
-      "processing": "Processing...",
-      "confirm": "Process Payment"
-    },
     "refund": {
-      "title": "Refund Payment",
-      "description": "Refund payment of {{amount}}",
-      "originalAmount": "Original Amount",
-      "alreadyRefunded": "Already Refunded",
-      "refundableAmount": "Refundable Amount",
-      "refundAmountLabel": "Refund Amount (leave empty for full refund)",
-      "refundAmountHint": "Enter a custom amount or leave empty to refund {{amount}}",
-      "reason": "Reason for Refund",
-      "reasonPlaceholder": "Explain why this payment is being refunded...",
+      "action": "Refund",
+      "title": "Refund payment",
+      "description": "The refund is created on Stripe and goes back to the payment method the guest used.",
+      "loading": "Loading amounts…",
+      "loadError": "Could not load the refundable amounts.",
+      "originalAmount": "Amount paid",
+      "alreadyRefunded": "Already refunded (confirmed by Stripe)",
+      "inProgress": "Refunds waiting for Stripe",
+      "refundableAmount": "Refundable amount",
+      "amountLabel": "Amount to refund",
+      "amountHint": "Leave empty to refund the whole refundable amount ({{amount}}).",
+      "reason": "Reason (visible only to you)",
+      "reasonPlaceholder": "E.g. a fault in the property, guest request…",
       "cancel": "Cancel",
-      "processingRefund": "Processing Refund...",
-      "confirm": "Confirm Refund"
+      "close": "Close",
+      "confirm": "Refund on Stripe",
+      "submitting": "Sending to Stripe…",
+      "notOnline": "This payment did not go through Stripe: refund it outside CasaZen.",
+      "nothingToRefund": "There is nothing left to refund on this payment.",
+      "failedGeneric": "The refund was not sent. Try again.",
+      "errors": {
+        "amountInvalid": "Enter an amount greater than zero, with at most two decimals.",
+        "amountTooHigh": "The amount is more than what can still be refunded ({{amount}})."
+      },
+      "result": {
+        "succeeded": "Refund of {{amount}} confirmed by Stripe.",
+        "pending": "Refund of {{amount}} sent: Stripe has not confirmed it yet. The status updates by itself.",
+        "failed": "Stripe did not make the refund of {{amount}}: nothing was given back to the guest.",
+        "failedReason": "Reason given by Stripe: {{reason}}"
+      },
+      "status": {
+        "Pending": "Waiting for Stripe",
+        "RequiresAction": "Waiting for an action on Stripe",
+        "Succeeded": "Confirmed",
+        "Failed": "Failed",
+        "Canceled": "Canceled"
+      },
+      "origin": {
+        "Host": "From the payment page",
+        "BookingCancellation": "Booking cancellation",
+        "Stripe": "From the Stripe Dashboard"
+      },
+      "listTitle": "Refunds",
+      "listEmpty": "No refunds for this payment.",
+      "listLoadError": "Could not load the refunds."
     },
     "revenue": {
       "stats": {
@@ -2164,7 +2256,6 @@
       "title": "Payment #{{id}}",
       "stripeId": "Stripe ID: {{id}}",
       "view": "View",
-      "process": "Process",
       "refund": "Refund"
     }
   },
@@ -2494,7 +2585,19 @@
     "subprocessorsAcknowledged": "I have reviewed the list of data processors (v{{version}})",
     "subprocessorTransfer": "transfer outside the EEA: {{mechanism}}",
     "subprocessorDetailsPending": "location and legal basis of the transfer being defined",
-    "marketingOptIn": "I would like to receive updates and news (optional)"
+    "marketingOptIn": "I would like to receive updates and news (optional)",
+    "skipDescription": "You do not need a host organization to use the administration area or the supplier console.",
+    "skipForNow": "Skip for now",
+    "rolesPending": {
+      "title": "Setup complete",
+      "description": "Your workspace is ready, but we could not update the permissions of your sign-in account. They will be applied at your next sign-in, or right away with a new attempt.",
+      "hint": "You can continue now: renewing your sign-in gives you the updated permissions as soon as they are available.",
+      "retry": "Retry applying the permissions",
+      "retrying": "Retrying...",
+      "renewAndContinue": "Renew sign-in and continue",
+      "renewing": "Renewing sign-in...",
+      "stillPending": "The permissions have not been applied yet. Try again later or renew your sign-in."
+    }
   },
   "breadcrumb": {
     "home": "Home",
@@ -2706,18 +2809,12 @@
     "bookingCreateFailed": "Failed to create booking",
     "bookingUpdated": "Booking updated successfully",
     "bookingUpdateFailed": "Failed to update booking",
-    "bookingDeleted": "Booking deleted successfully",
-    "bookingDeleteFailed": "Failed to delete booking",
     "guestCheckedIn": "Check-in completed successfully",
     "checkInGuestFailed": "Failed to complete check-in",
     "guestCheckedOut": "Check-out completed successfully",
     "checkOutGuestFailed": "Failed to complete check-out",
     "paymentCreated": "Payment created successfully",
     "paymentCreateFailed": "Failed to create payment",
-    "paymentProcessed": "Payment processed successfully",
-    "paymentProcessFailed": "Failed to process payment",
-    "paymentRefunded": "Refund processed successfully",
-    "paymentRefundFailed": "Failed to process refund",
     "otaIntegrationCreated": "OTA integration created successfully",
     "otaIntegrationCreateFailed": "Failed to create OTA integration",
     "otaIntegrationUpdated": "OTA integration updated successfully",
@@ -2852,7 +2949,8 @@
       "supplierAccountEmailMissing": "Your account has no email, so the registration cannot be verified.",
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
-      "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation."
+      "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
+      "consentsRequired": "To create your organization you must accept the required legal documents."
     }
   },
   "validation": {

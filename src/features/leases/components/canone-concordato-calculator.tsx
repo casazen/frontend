@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCanoneConcordatoEligibility } from '@/queries/use-canone-concordato';
 import { formatCurrency } from '@/lib/utils';
+import { getProblemMessage } from '@/lib/api-errors';
 import type { CanoneConcordatoEligibility } from '@/api/canone-concordato.api';
 
 export interface ConcordatoRange {
@@ -35,20 +36,28 @@ export function CanoneConcordatoCalculator({ propertyId, onRangeChange }: Props)
   const [result, setResult] = useState<CanoneConcordatoEligibility | null>(null);
 
   const handleCalculate = async () => {
-    const data = await eligibility.mutateAsync({
-      propertyId,
-      query: {
-        sqm: Number(sqm),
-        typeACount: Number(typeACount),
-        typeBCount: Number(typeBCount),
-        typeCCount: Number(typeCCount),
-        typeDCount: Number(typeDCount),
-        furnished,
-        years: Number(years),
-        zone: zone.trim() || undefined,
-        foglio: foglio.trim() || undefined,
-      },
-    });
+    let data: CanoneConcordatoEligibility;
+    try {
+      data = await eligibility.mutateAsync({
+        propertyId,
+        query: {
+          sqm: Number(sqm),
+          typeACount: Number(typeACount),
+          typeBCount: Number(typeBCount),
+          typeCCount: Number(typeCCount),
+          typeDCount: Number(typeDCount),
+          furnished,
+          years: Number(years),
+          zone: zone.trim() || undefined,
+          foglio: foglio.trim() || undefined,
+        },
+      });
+    } catch {
+      // Shown below from eligibility.error; the previous band no longer applies.
+      setResult(null);
+      onRangeChange?.(null);
+      return;
+    }
     setResult(data);
     if (data.available && data.canoneMinMensile != null && data.canoneMaxMensile != null) {
       onRangeChange?.({ minMonthly: data.canoneMinMensile, maxMonthly: data.canoneMaxMensile });
@@ -111,7 +120,9 @@ export function CanoneConcordatoCalculator({ propertyId, onRangeChange }: Props)
         </div>
 
         {eligibility.isError && (
-          <p className="text-sm text-destructive">{t('leases.canoneConcordato.error')}</p>
+          <p className="text-sm text-destructive" role="alert">
+            {getProblemMessage(eligibility.error, t) ?? t('leases.canoneConcordato.error')}
+          </p>
         )}
 
         {result && !result.available && (

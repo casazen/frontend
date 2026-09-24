@@ -15,6 +15,7 @@ const PAY_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | '
   Failed: 'destructive',
   Refunded: 'outline',
   PartiallyRefunded: 'outline',
+  Canceled: 'outline',
 };
 
 function formatDate(d: string) {

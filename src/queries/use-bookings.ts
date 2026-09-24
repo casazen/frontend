@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bookingsApi } from '@/api/bookings.api';
 import type {
+  CancelBookingDto,
   CreateBookingDto,
   UpdateBookingDto,
   CheckInDto,
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { retryTransientErrors } from '@/lib/query-client';
+import { PAYMENTS_KEY } from './use-payments';
 
 const BOOKINGS_KEY = 'bookings';
 
@@ -74,17 +76,28 @@ export function useUpdateBooking() {
   });
 }
 
-export function useDeleteBooking() {
+export function useBookingCancellationQuote(id: string, enabled = true) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, id, 'cancellation'],
+    queryFn: () => bookingsApi.getCancellationQuote(id),
+    enabled: enabled && !!id,
+    // Always the current amounts: a refund or a payment may have changed them meanwhile.
+    staleTime: 0,
+  });
+}
+
+/**
+ * Cancels the booking with its money on Stripe (BK-02). No toast: the dialog shows the outcome of
+ * each refund as Stripe left it, and the error.
+ */
+export function useCancelBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => bookingsApi.delete(id),
-    onSuccess: () => {
+    mutationFn: ({ id, data }: { id: string; data: CancelBookingDto }) => bookingsApi.cancel(id, data),
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      toast.success(i18n.t('toast.bookingDeleted'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingDeleteFailed'));
+      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
     },
   });
 }

@@ -17,6 +17,21 @@ export class AuthTokenUnavailableError extends Error {
   }
 }
 
+/**
+ * Thrown when a request succeeded but its body is not the JSON shape the endpoint returns, e.g. the
+ * SPA `index.html` served for `/api/*` by a misconfigured rewrite or dev server. Callers treat it as
+ * a load error instead of rendering (and crashing on) an unexpected value.
+ */
+export class UnexpectedApiResponseError extends Error {
+  readonly url: string;
+
+  constructor(url: string) {
+    super(`Unexpected response body from ${url}`);
+    this.name = 'UnexpectedApiResponseError';
+    this.url = url;
+  }
+}
+
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_VALIDATION_MESSAGES = 3;
 const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
