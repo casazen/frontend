@@ -64,16 +64,59 @@ export async function inviteSupplier(payload: {
   return data;
 }
 
-export async function registerSupplier(payload: {
+export interface SupplierRegisterPayload {
   email: string;
   legalName: string;
   phone: string;
   comuneCode: string;
   inviteToken?: string;
-}): Promise<{ orgId: string; authRedirectUrl: string }> {
-  const { data } = await axios.post<{ orgId: string; authRedirectUrl: string }>('/suppliers/register', payload, {
-    public: true,
+}
+
+export interface SupplierRegisterResult {
+  orgId: string;
+  authRedirectUrl: string;
+  rolesSynced: boolean;
+  rolesSyncError: string | null;
+}
+
+/**
+ * `POST /api/suppliers/register`. Signed in (`authenticated`), the bearer token is sent so the account
+ * is checked against the email/invite and linked to the new org; an invite can only be accepted
+ * signed in. Anonymous only for self-serve.
+ */
+export async function registerSupplier(
+  payload: SupplierRegisterPayload,
+  options: { authenticated: boolean },
+): Promise<SupplierRegisterResult> {
+  const { data } = await axios.post<SupplierRegisterResult>('/suppliers/register', payload, {
+    public: !options.authenticated,
   });
+  return data;
+}
+
+export interface SupplierInvitePreview {
+  email: string;
+  comuneCode: string;
+  /** Name of the comune when it is a configured pilot comune; otherwise show the code. */
+  comuneName: string | null;
+  categories: string[];
+  expiresAt: string;
+}
+
+/** Invite of a link token (anonymous; the token travels in the body, not in the URL). */
+export async function lookupSupplierInvite(token: string): Promise<SupplierInvitePreview> {
+  const { data } = await axios.post<SupplierInvitePreview>('/suppliers/invites/lookup', { token }, { public: true });
+  return data;
+}
+
+export interface SupplierRegistrationOptions {
+  /** False while no pilot comune is configured: suppliers join by invite only. */
+  selfServeEnabled: boolean;
+  pilotComuni: { code: string; name: string }[];
+}
+
+export async function fetchSupplierRegistrationOptions(): Promise<SupplierRegistrationOptions> {
+  const { data } = await axios.get<SupplierRegistrationOptions>('/suppliers/registration-options', { public: true });
   return data;
 }
 
