@@ -2394,6 +2394,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "poweredBy": "Powered by CasaZen",
+    "seoHub": "Guides for hosts",
     "preview": "Preview site",
     "explore": "Explore",
     "viewProperties": "View properties",
@@ -2529,6 +2530,16 @@
     }
   },
   "publicSeo": {
+    "hub": {
+      "title": "Short-term rental guides",
+      "metaTitle": "Short-term rental guides by municipality | CasaZen",
+      "metaDescription": "The guides and tourist tax calculators published on CasaZen, municipality by municipality.",
+      "guidesHeading": "Guides by municipality",
+      "calculatorsHeading": "Tourist tax calculation",
+      "empty": "No guides have been published yet.",
+      "loadError": "Unable to load the guides. Please try again shortly.",
+      "retry": "Try again"
+    },
     "notFound": "Page not found",
     "guideNotAvailable": "The guide for this municipality is not yet available.",
     "calculatorNotAvailable": "The calculator for this municipality is not yet available.",

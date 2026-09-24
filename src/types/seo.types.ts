@@ -30,11 +30,29 @@ export interface SeoPagePublic {
   regionCode: string;
   regionSlug: string;
   comuneSlug: string;
-  canonicalUrl: string;
+  /** On the configured public domain (backend `App__PublicSiteBaseUrl`); null only when it is not configured. */
+  canonicalUrl: string | null;
   lastRefreshedAt: string | null;
   disclaimers: SeoDisclaimers;
   cta: SeoCta;
   touristTaxRate: PublicTouristTaxRateSummary | null;
+}
+
+/** A page listed by the public hub `/p/affitti-brevi`: the same pages as the sitemap. */
+export interface SeoPublishedPage {
+  pageType: SeoPageType;
+  title: string;
+  comuneName: string;
+  regionSlug: string;
+  comuneSlug: string;
+  /** Route of the page in this app (`/p/...`). */
+  path: string;
+}
+
+export interface SeoPublishedPages {
+  /** Canonical URL of the hub on the public domain; null only when the backend has no public URL configured. */
+  canonicalUrl: string | null;
+  pages: SeoPublishedPage[];
 }
 
 export interface PublicTouristTaxCalculateRequest {

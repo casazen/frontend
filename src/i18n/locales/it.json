@@ -2394,6 +2394,7 @@
     "privacy": "Privacy Policy",
     "terms": "Termini di servizio",
     "poweredBy": "Powered by CasaZen",
+    "seoHub": "Guide per gli host",
     "preview": "Anteprima sito",
     "explore": "Esplora",
     "viewProperties": "Scopri le strutture",
@@ -2529,6 +2530,16 @@
     }
   },
   "publicSeo": {
+    "hub": {
+      "title": "Guide per gli affitti brevi",
+      "metaTitle": "Guide per gli affitti brevi per comune | CasaZen",
+      "metaDescription": "Le guide e i calcolatori della tassa di soggiorno pubblicati su CasaZen, comune per comune.",
+      "guidesHeading": "Guide per comune",
+      "calculatorsHeading": "Calcolo della tassa di soggiorno",
+      "empty": "Non ci sono ancora guide pubblicate.",
+      "loadError": "Impossibile caricare le guide. Riprova tra poco.",
+      "retry": "Riprova"
+    },
     "notFound": "Pagina non trovata",
     "guideNotAvailable": "La guida per questo comune non e' ancora disponibile.",
     "calculatorNotAvailable": "Il calcolatore per questo comune non e' ancora disponibile.",
