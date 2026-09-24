@@ -55,6 +55,19 @@ export const mockOrgProperties: PublicPropertyDto[] = [
 ];
 
 export async function mockBrandedBookingApi(page: Page): Promise<void> {
+  // Without it the demo server answers with index.html and the widget cannot read booked dates.
+  await page.route('**/api/public/bookings/property/*/availability*', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ propertyId: mockOrgPropertyId, startDate: '', endDate: '', bookedDates: [] }),
+    });
+  });
+
   await page.route('**/api/public/orgs/**', async (route) => {
     const url = route.request().url();
     const method = route.request().method();

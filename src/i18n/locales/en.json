@@ -1874,7 +1874,15 @@
       "cityRequired": "The city is required",
       "regionRequired": "The region is required",
       "rateMin": "The rate must be greater than 0",
-      "effectiveFromRequired": "The effective date is required"
+      "effectiveFromRequired": "The effective date is required",
+      "cityTooLong": "The municipality name can be at most 100 characters",
+      "regionTooLong": "The region code can be at most 10 characters",
+      "rateMax": "The rate cannot exceed €1000",
+      "maxNightsRange": "Enter a whole number of nights between 1 and 365, or leave it empty",
+      "minimumAgeRange": "Enter an age between 0 and 120 (0 if there are no exemptions)",
+      "effectiveToBeforeFrom": "The end date cannot be earlier than the start date",
+      "notesTooLong": "Notes can be at most 500 characters",
+      "sourceUrlInvalid": "Enter a full web address (http or https)"
     },
     "toast": {
       "created": "Tax rate created successfully",
@@ -1883,6 +1891,20 @@
       "updateFailed": "Unable to update the tax rate",
       "deleted": "Tax rate deleted successfully",
       "deleteFailed": "Unable to delete the tax rate"
+    },
+    "source": "Source",
+    "noSource": "Not stated",
+    "verification": "Verification",
+    "verificationLevels": {
+      "none": "Not stated",
+      "Official": "Official (U)",
+      "Deduced": "Deduced (D)",
+      "ThirdParty": "Third party (T)"
+    },
+    "verificationHints": {
+      "Official": "Read in a page or an act of the municipality.",
+      "Deduced": "Derived from official or third-party data: to be confirmed.",
+      "ThirdParty": "From software vendors, blogs or press: a hint, not a source. Confirm it before use."
     }
   },
   "finance": {
@@ -2349,7 +2371,27 @@
     "ospiti_one": "up to {{count}} guest",
     "ospiti_other": "up to {{count}} guests",
     "maxGuestsExceeded_one": "Maximum {{count}} guest for this property",
-    "maxGuestsExceeded_other": "Maximum {{count}} guests for this property"
+    "maxGuestsExceeded_other": "Maximum {{count}} guests for this property",
+    "stayTitle": "Your stay",
+    "country": "Country of residence",
+    "countryPlaceholder": "Select a country",
+    "guestsCapacityHint_one": "Up to {{count}} guest, children included",
+    "guestsCapacityHint_other": "Up to {{count}} guests, children included",
+    "validation": {
+      "checkInRequired": "Select the check-in date",
+      "checkInPast": "The check-in date cannot be in the past",
+      "checkOutRequired": "Select the check-out date",
+      "checkOutAfterCheckIn": "Check-out must be after check-in",
+      "adultsMin": "At least one adult is required",
+      "childrenMin": "The number of children cannot be negative",
+      "tooManyGuests": "The number of guests exceeds the capacity of the property",
+      "firstNameRequired": "Enter your first name",
+      "lastNameRequired": "Enter your last name",
+      "emailRequired": "Enter your email address",
+      "emailInvalid": "Enter a valid email address",
+      "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
+      "countryRequired": "Select your country of residence"
+    }
   },
   "publicSeo": {
     "notFound": "Page not found",
@@ -2535,8 +2577,6 @@
         "fireExtinguisher": "Fire extinguisher present and inspected",
         "gasCompliance": "Gas system compliance certificate on file"
       },
-      "touristTaxHint": "Configure the tourist tax rates for {{city}} before accepting guests.",
-      "touristTaxAdmin": "Open tourist tax settings",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
       "backToEdit": "Back to property editing",
       "complete": "Complete activation",
@@ -2550,6 +2590,23 @@
         "safety": "Safety checklist",
         "tourist-tax": "Tourist tax",
         "ical": "Calendar sync"
+      },
+      "touristTax": {
+        "rateTitle": "Tourist tax in {{city}}",
+        "amount": "Rate per person per night",
+        "maxNights": "Maximum taxed nights",
+        "noMaxNights": "No limit",
+        "exemption": "Age exemption",
+        "exemptUnder_one": "Guests under {{count}} year old are exempt",
+        "exemptUnder_other": "Guests under {{count}} years old are exempt",
+        "noAgeExemption": "No age exemption",
+        "effectiveFrom": "In force since",
+        "source": "Official source of the municipality",
+        "disclaimer": "Rate recorded in CasaZen: before collecting it, check exemptions and updates on the municipality's website.",
+        "missingTitle": "The municipality of {{city}} has no rate in CasaZen yet.",
+        "cityMissing": "Enter the property's city in the basic details to see the rate.",
+        "missingHint": "You can still complete the activation. Check with the municipality whether the tourist tax is due and at which rate.",
+        "publicPage": "Guide to the tourist tax in {{city}}"
       }
     },
     "checkout": {
@@ -2733,7 +2790,8 @@
       "alloggiatiTransmissionUnavailable": "CasaZen does not transmit to Alloggiati Web yet: send the record on the Questura portal and mark it as sent manually.",
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
-      "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent."
+      "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
+      "touristTaxRateNotFound": "This rate no longer exists: reload the list."
     }
   },
   "validation": {

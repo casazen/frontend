@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
+import { buildPropertyCheckoutUrl } from '@/lib/booking-url';
+import { addDays, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 import type { PublicPropertyDetailDto } from '@/types';
 
@@ -17,26 +19,19 @@ interface BookingWidgetProps {
   property: PublicPropertyDetailDto;
   availability?: Availability;
   orgSlug: string;
-  querySuffix?: string;
-}
-
-function nightsBetween(checkIn: string, checkOut: string): number {
-  if (!checkIn || !checkOut) return 0;
-  const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
-  return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0;
 }
 
 function WidgetForm({
   property,
   availability,
   orgSlug,
-  querySuffix = '',
   compact = false,
   onCheckout,
 }: BookingWidgetProps & { compact?: boolean; onCheckout?: () => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { params, setParams } = useBookingSearchParams();
+  const [today] = useState(() => todayInRome());
 
   const checkIn = params.checkIn;
   const checkOut = params.checkOut;
@@ -59,16 +54,11 @@ function WidgetForm({
     return true;
   }, [checkIn, checkOut, availability]);
 
-  const canCheckout = nights > 0 && dateRangeAvailable && guests >= 1 && guests <= property.maxGuests;
+  const checkInPast = !!checkIn && checkIn < today;
+  const canCheckout = nights > 0 && !checkInPast && dateRangeAvailable && guests >= 1 && guests <= property.maxGuests;
 
   const handleCheckout = () => {
-    const qs = querySuffix || [
-      checkIn ? `checkIn=${checkIn}` : '',
-      checkOut ? `checkOut=${checkOut}` : '',
-      guests !== 2 ? `guests=${guests}` : '',
-    ].filter(Boolean).join('&');
-    const segment = (property as { slug?: string | null }).slug?.trim() || property.id;
-    navigate(`/book/${orgSlug}/property/${segment}/checkout${qs ? `?${qs}` : ''}`);
+    navigate(buildPropertyCheckoutUrl(orgSlug, property, params));
     onCheckout?.();
   };
 
@@ -81,6 +71,7 @@ function WidgetForm({
           <Input
             id="check-in"
             type="date"
+            min={today}
             value={checkIn}
             onChange={(e) => setParams({ checkIn: e.target.value })}
           />
@@ -90,6 +81,7 @@ function WidgetForm({
           <Input
             id="check-out"
             type="date"
+            min={addDays(checkIn && checkIn >= today ? checkIn : today, 1)}
             value={checkOut}
             onChange={(e) => setParams({ checkOut: e.target.value })}
           />
@@ -107,6 +99,10 @@ function WidgetForm({
           onChange={(e) => setParams({ guests: Number(e.target.value) })}
         />
       </div>
+
+      {checkInPast ? (
+        <p className="text-sm text-red-600">{t('publicBooking.validation.checkInPast')}</p>
+      ) : null}
 
       {(checkIn && isDateBooked(checkIn)) || (checkOut && isDateBooked(checkOut)) || (checkIn && checkOut && !dateRangeAvailable) ? (
         <p className="flex items-center gap-1 text-sm text-red-600">

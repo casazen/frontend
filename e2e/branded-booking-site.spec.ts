@@ -7,6 +7,7 @@ import {
   mockOrgPropertySlug,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
+import { futureStay } from './helpers/direct-checkout-mock';
 
 test.describe('Branded booking site (#215)', () => {
   test.beforeEach(async ({ page }) => {
@@ -74,11 +75,13 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page.getByText('Regolamento')).toBeVisible();
     expect(authHeader).toBeUndefined();
 
-    await page.locator('#check-in').fill('2026-07-01');
-    await page.locator('#check-out').fill('2026-07-04');
+    const { checkIn, checkOut } = futureStay(20, 3);
+    await page.locator('#check-in').fill(checkIn);
+    await page.locator('#check-out').fill(checkOut);
     await page.getByRole('button', { name: 'Procedi al checkout' }).click();
 
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible();
+    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -134,21 +137,36 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     await expect(breadcrumb.getByText('Trastevere Suite')).toBeVisible();
   });
 
-  test('AC3: URL params persist on property detail and checkout', async ({ page }) => {
+  test('AC3: legacy camelCase params persist on property detail and checkout in the deep link form', async ({ page }) => {
+    const { checkIn, checkOut } = futureStay(40, 4);
     await page.goto(
-      `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}?checkIn=2026-08-01&checkOut=2026-08-05&guests=3`,
+      `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}?checkIn=${checkIn}&checkOut=${checkOut}&guests=3`,
     );
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator('#check-in')).toHaveValue('2026-08-01');
-    await expect(page.locator('#check-out')).toHaveValue('2026-08-05');
+    await expect(page.locator('#check-in')).toHaveValue(checkIn);
+    await expect(page.locator('#check-out')).toHaveValue(checkOut);
     await expect(page.locator('#guests')).toHaveValue('3');
 
     await page.getByRole('button', { name: 'Procedi al checkout' }).click();
-    await expect(page).toHaveURL(/checkIn=2026-08-01/);
-    await expect(page).toHaveURL(/checkOut=2026-08-05/);
-    await expect(page).toHaveURL(/guests=3/);
+    await expect(page).toHaveURL(new RegExp(`/checkout\\?checkin=${checkIn}&checkout=${checkOut}&guests=3$`));
     await expect(page.getByTestId('public-breadcrumb')).toContainText('Checkout');
+    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
+    await expect(page.locator('#adults')).toHaveValue('3');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('(4 notti)');
+  });
+
+  test('AC15: itinerary deep link (checkin/checkout/guests) pre-fills the booking widget', async ({ page }) => {
+    const { checkIn, checkOut } = futureStay(60, 2);
+    await page.goto(
+      `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}?checkin=${checkIn}&checkout=${checkOut}&guests=2`,
+    );
+
+    await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#check-in')).toHaveValue(checkIn);
+    await expect(page.locator('#check-out')).toHaveValue(checkOut);
+    await expect(page.locator('#guests')).toHaveValue('2');
+    await expect(page.getByTestId('booking-widget')).toContainText('2 notti');
   });
 
   test('AC4: single-property org redirects landing to property detail', async ({ page }) => {
@@ -165,13 +183,14 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
       });
     });
 
-    await page.goto(`/book/${DEMO_ORG_SLUG}?checkIn=2026-09-01&checkOut=2026-09-03`);
+    const { checkIn, checkOut } = futureStay(10, 2);
+    await page.goto(`/book/${DEMO_ORG_SLUG}?checkin=${checkIn}&checkout=${checkOut}`);
 
     await expect(page).toHaveURL(
       new RegExp(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}`),
       { timeout: 15_000 },
     );
-    await expect(page).toHaveURL(/checkIn=2026-09-01/);
+    await expect(page).toHaveURL(new RegExp(`checkin=${checkIn}&checkout=${checkOut}`));
     await expect(page.getByTestId('public-property-page')).toBeVisible();
   });
 });

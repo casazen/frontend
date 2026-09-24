@@ -6,7 +6,6 @@ import { PublicCinLabel } from '@/features/properties/components/public-cin-labe
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
-import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 import type { PublicOrgDto } from '@/types';
 import { Bed, Bath, Loader2, Users } from 'lucide-react';
 
@@ -24,7 +23,6 @@ export function PublicPropertyPage() {
   const { org } = useOutletContext<PublicBookingContext>();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
   const { data: availability } = usePropertyAvailability(propertySlugOrId);
-  const { toQueryString } = useBookingSearchParams();
 
   if (isLoading) {
     return (
@@ -46,7 +44,6 @@ export function PublicPropertyPage() {
   }
 
   const basePath = `/book/${orgSlug}`;
-  const query = toQueryString();
 
   return (
     <div className="space-y-6 md:space-y-8" data-testid="public-property-page">
@@ -114,7 +111,7 @@ export function PublicPropertyPage() {
         </div>
 
         <Suspense fallback={null}>
-          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} querySuffix={query} />
+          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} />
         </Suspense>
       </div>
     </div>
