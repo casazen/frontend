@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
@@ -10,13 +11,18 @@ import { usePayment } from '@/queries/use-payments';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { PAYMENT_STATUS_VARIANTS } from './schemas/payment.schema';
 import { getPaymentStatusLabel, getPaymentMethodLabel } from '@/lib/i18n-labels';
-import { Edit } from 'lucide-react';
+import { Edit, Undo2 } from 'lucide-react';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { RefundDialog } from './components/refund-dialog';
+import { PaymentRefundsCard } from './components/payment-refunds-card';
 
 export function PaymentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: payment, isLoading } = usePayment(id!);
+  const { hasPermission } = useWorkspace();
+  const [refundOpen, setRefundOpen] = useState(false);
 
   if (isLoading) {
     return <LoadingScreen message={t('payment.detail.loading')} />;
@@ -36,6 +42,12 @@ export function PaymentDetailPage() {
   const statusLabel = getPaymentStatusLabel(payment.status, t);
   const statusVariant = PAYMENT_STATUS_VARIANTS[payment.status] || PAYMENT_STATUS_VARIANTS.Pending;
   const methodLabel = getPaymentMethodLabel(payment.method, t);
+  // Refunds go to Stripe (BK-02): only collected Stripe payments, only with payment.write.
+  const isStripePayment = Boolean(payment.stripePaymentIntentId);
+  const canRefund =
+    isStripePayment &&
+    (payment.status === 'Completed' || payment.status === 'PartiallyRefunded') &&
+    hasPermission('short-rent', 'payment.write');
 
   return (
     <AppShell>
@@ -44,10 +56,18 @@ export function PaymentDetailPage() {
           title={`${t('payment.detail.title')}${payment.id.slice(0, 8)}`}
           description={t('payment.detail.description')}
           action={
-            <Button onClick={() => navigate(`/payments/${id}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              {t('payment.detail.editPayment')}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {canRefund && (
+                <Button variant="outline" onClick={() => setRefundOpen(true)}>
+                  <Undo2 className="mr-2 h-4 w-4" />
+                  {t('payment.refund.action')}
+                </Button>
+              )}
+              <Button onClick={() => navigate(`/payments/${id}/edit`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                {t('payment.detail.editPayment')}
+              </Button>
+            </div>
           }
         />
 
@@ -140,6 +160,8 @@ export function PaymentDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {isStripePayment && <PaymentRefundsCard paymentId={payment.id} currency={payment.currency} />}
+
             <Card>
               <CardHeader>
                 <CardTitle>{t('payment.detail.bookingDetails')}</CardTitle>
@@ -170,6 +192,7 @@ export function PaymentDetailPage() {
           </div>
         </div>
       </div>
+      {(canRefund || refundOpen) && <RefundDialog payment={payment} open={refundOpen} onOpenChange={setRefundOpen} />}
     </AppShell>
   );
 }

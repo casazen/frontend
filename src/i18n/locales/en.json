@@ -698,6 +698,45 @@
       "night_one": "night",
       "night_other": "nights",
       "bookingPrefix": "Booking #"
+    },
+    "cancel": {
+      "action": "Cancel booking",
+      "title": "Cancel booking",
+      "description": "The booking will be cancelled and its dates will be available again.",
+      "loading": "Working out payments and refunds…",
+      "loadError": "Could not load the payments of the booking.",
+      "notCancellable": "This booking cannot be cancelled: it is already cancelled or the stay has ended.",
+      "uncollectedIntent": "The payment the guest has not completed yet will be canceled on Stripe: the guest will no longer be able to pay this booking.",
+      "offlinePaid": "{{amount}} paid outside Stripe (cash, bank transfer): refund it separately.",
+      "paid": "Paid with Stripe",
+      "refunded": "Already refunded",
+      "inProgress": "Refunds waiting for Stripe",
+      "refundable": "Refundable now",
+      "refundChoice": "Refund to the guest",
+      "rule": {
+        "freeCancellation": "The guest was shown free cancellation until {{date}}: the refund must be full.",
+        "policy": "Cancellation terms “{{name}}”: minimum refund {{amount}}.",
+        "none": "No cancellation terms apply: you choose how much to refund, up to {{amount}}."
+      },
+      "refundFull": "Full refund ({{amount}})",
+      "refundPartial": "Partial refund",
+      "partialLabel": "Amount to refund",
+      "partialHint": "From {{min}} to {{max}}. With 0 the guest gets no refund.",
+      "reason": "Reason (visible only to you)",
+      "keep": "Keep booking",
+      "confirm": "Cancel booking",
+      "submitting": "Cancelling…",
+      "close": "Close",
+      "failed": "The booking was not cancelled. Try again.",
+      "errors": {
+        "amountInvalid": "Enter a valid amount, with at most two decimals.",
+        "amountOutOfRange": "The amount must be between {{min}} and {{max}}."
+      },
+      "result": {
+        "cancelled": "Booking cancelled.",
+        "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
+        "noRefund": "No refund requested."
+      }
     }
   },
   "ota": {
@@ -1979,7 +2018,8 @@
       "Completed": "Completed",
       "Failed": "Failed",
       "Refunded": "Refunded",
-      "PartiallyRefunded": "Partially Refunded"
+      "PartiallyRefunded": "Partially Refunded",
+      "Canceled": "Canceled"
     },
     "method": {
       "CreditCard": "Credit Card",
@@ -1994,9 +2034,6 @@
       },
       "amount": {
         "min": "Amount must be greater than 0"
-      },
-      "paymentMethodId": {
-        "required": "Payment method is required"
       }
     },
     "list": {
@@ -2065,32 +2102,52 @@
       "creating": "Creating...",
       "create": "Create Payment"
     },
-    "process": {
-      "title": "Process Payment",
-      "description": "Process payment of {{amount}}",
-      "amount": "Amount",
-      "method": "Method",
-      "paymentMethodId": "Payment Method ID *",
-      "paymentMethodIdPlaceholder": "pm_1234567890...",
-      "paymentMethodIdHint": "Stripe payment method ID (e.g., from Stripe Elements)",
-      "saveCard": "Save card for future payments",
-      "cancel": "Cancel",
-      "processing": "Processing...",
-      "confirm": "Process Payment"
-    },
     "refund": {
-      "title": "Refund Payment",
-      "description": "Refund payment of {{amount}}",
-      "originalAmount": "Original Amount",
-      "alreadyRefunded": "Already Refunded",
-      "refundableAmount": "Refundable Amount",
-      "refundAmountLabel": "Refund Amount (leave empty for full refund)",
-      "refundAmountHint": "Enter a custom amount or leave empty to refund {{amount}}",
-      "reason": "Reason for Refund",
-      "reasonPlaceholder": "Explain why this payment is being refunded...",
+      "action": "Refund",
+      "title": "Refund payment",
+      "description": "The refund is created on Stripe and goes back to the payment method the guest used.",
+      "loading": "Loading amounts…",
+      "loadError": "Could not load the refundable amounts.",
+      "originalAmount": "Amount paid",
+      "alreadyRefunded": "Already refunded (confirmed by Stripe)",
+      "inProgress": "Refunds waiting for Stripe",
+      "refundableAmount": "Refundable amount",
+      "amountLabel": "Amount to refund",
+      "amountHint": "Leave empty to refund the whole refundable amount ({{amount}}).",
+      "reason": "Reason (visible only to you)",
+      "reasonPlaceholder": "E.g. a fault in the property, guest request…",
       "cancel": "Cancel",
-      "processingRefund": "Processing Refund...",
-      "confirm": "Confirm Refund"
+      "close": "Close",
+      "confirm": "Refund on Stripe",
+      "submitting": "Sending to Stripe…",
+      "notOnline": "This payment did not go through Stripe: refund it outside CasaZen.",
+      "nothingToRefund": "There is nothing left to refund on this payment.",
+      "failedGeneric": "The refund was not sent. Try again.",
+      "errors": {
+        "amountInvalid": "Enter an amount greater than zero, with at most two decimals.",
+        "amountTooHigh": "The amount is more than what can still be refunded ({{amount}})."
+      },
+      "result": {
+        "succeeded": "Refund of {{amount}} confirmed by Stripe.",
+        "pending": "Refund of {{amount}} sent: Stripe has not confirmed it yet. The status updates by itself.",
+        "failed": "Stripe did not make the refund of {{amount}}: nothing was given back to the guest.",
+        "failedReason": "Reason given by Stripe: {{reason}}"
+      },
+      "status": {
+        "Pending": "Waiting for Stripe",
+        "RequiresAction": "Waiting for an action on Stripe",
+        "Succeeded": "Confirmed",
+        "Failed": "Failed",
+        "Canceled": "Canceled"
+      },
+      "origin": {
+        "Host": "From the payment page",
+        "BookingCancellation": "Booking cancellation",
+        "Stripe": "From the Stripe Dashboard"
+      },
+      "listTitle": "Refunds",
+      "listEmpty": "No refunds for this payment.",
+      "listLoadError": "Could not load the refunds."
     },
     "revenue": {
       "stats": {
@@ -2121,7 +2178,6 @@
       "title": "Payment #{{id}}",
       "stripeId": "Stripe ID: {{id}}",
       "view": "View",
-      "process": "Process",
       "refund": "Refund"
     }
   },
@@ -2661,18 +2717,12 @@
     "bookingCreateFailed": "Failed to create booking",
     "bookingUpdated": "Booking updated successfully",
     "bookingUpdateFailed": "Failed to update booking",
-    "bookingDeleted": "Booking deleted successfully",
-    "bookingDeleteFailed": "Failed to delete booking",
     "guestCheckedIn": "Check-in completed successfully",
     "checkInGuestFailed": "Failed to complete check-in",
     "guestCheckedOut": "Check-out completed successfully",
     "checkOutGuestFailed": "Failed to complete check-out",
     "paymentCreated": "Payment created successfully",
     "paymentCreateFailed": "Failed to create payment",
-    "paymentProcessed": "Payment processed successfully",
-    "paymentProcessFailed": "Failed to process payment",
-    "paymentRefunded": "Refund processed successfully",
-    "paymentRefundFailed": "Failed to process refund",
     "otaIntegrationCreated": "OTA integration created successfully",
     "otaIntegrationCreateFailed": "Failed to create OTA integration",
     "otaIntegrationUpdated": "OTA integration updated successfully",

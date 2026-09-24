@@ -698,6 +698,45 @@
       "night_one": "notte",
       "night_other": "notti",
       "bookingPrefix": "Prenotazione #"
+    },
+    "cancel": {
+      "action": "Annulla prenotazione",
+      "title": "Annulla prenotazione",
+      "description": "La prenotazione verrà annullata e le date torneranno disponibili.",
+      "loading": "Calcolo di pagamenti e rimborsi…",
+      "loadError": "Impossibile caricare i pagamenti della prenotazione.",
+      "notCancellable": "Questa prenotazione non si può annullare: è già annullata o il soggiorno è concluso.",
+      "uncollectedIntent": "Il pagamento non ancora completato dall'ospite verrà annullato su Stripe: l'ospite non potrà più pagare questa prenotazione.",
+      "offlinePaid": "{{amount}} pagati fuori da Stripe (contanti, bonifico): il rimborso va gestito a parte.",
+      "paid": "Pagato con Stripe",
+      "refunded": "Già rimborsato",
+      "inProgress": "Rimborsi in attesa di Stripe",
+      "refundable": "Rimborsabile ora",
+      "refundChoice": "Rimborso all'ospite",
+      "rule": {
+        "freeCancellation": "All'ospite è stata mostrata la cancellazione gratuita fino al {{date}}: il rimborso deve essere totale.",
+        "policy": "Condizioni di cancellazione «{{name}}»: rimborso minimo {{amount}}.",
+        "none": "Nessuna condizione di cancellazione si applica: scegli tu quanto rimborsare, fino a {{amount}}."
+      },
+      "refundFull": "Rimborso totale ({{amount}})",
+      "refundPartial": "Rimborso parziale",
+      "partialLabel": "Importo da rimborsare",
+      "partialHint": "Da {{min}} a {{max}}. Con 0 l'ospite non riceve alcun rimborso.",
+      "reason": "Motivo (visibile solo a te)",
+      "keep": "Non annullare",
+      "confirm": "Annulla prenotazione",
+      "submitting": "Annullamento in corso…",
+      "close": "Chiudi",
+      "failed": "La prenotazione non è stata annullata. Riprova.",
+      "errors": {
+        "amountInvalid": "Inserisci un importo valido, con al massimo due decimali.",
+        "amountOutOfRange": "L'importo deve essere tra {{min}} e {{max}}."
+      },
+      "result": {
+        "cancelled": "Prenotazione annullata.",
+        "intentsCanceled": "Il pagamento non completato è stato annullato su Stripe.",
+        "noRefund": "Nessun rimborso richiesto."
+      }
     }
   },
   "ota": {
@@ -1979,7 +2018,8 @@
       "Completed": "Completato",
       "Failed": "Fallito",
       "Refunded": "Rimborsato",
-      "PartiallyRefunded": "Parzialmente rimborsato"
+      "PartiallyRefunded": "Parzialmente rimborsato",
+      "Canceled": "Annullato"
     },
     "method": {
       "CreditCard": "Carta di credito",
@@ -1994,9 +2034,6 @@
       },
       "amount": {
         "min": "L'importo deve essere maggiore di 0"
-      },
-      "paymentMethodId": {
-        "required": "Il metodo di pagamento e' obbligatorio"
       }
     },
     "list": {
@@ -2065,32 +2102,52 @@
       "creating": "Creazione...",
       "create": "Crea pagamento"
     },
-    "process": {
-      "title": "Elabora pagamento",
-      "description": "Elabora pagamento di {{amount}}",
-      "amount": "Importo",
-      "method": "Metodo",
-      "paymentMethodId": "ID metodo di pagamento *",
-      "paymentMethodIdPlaceholder": "pm_1234567890...",
-      "paymentMethodIdHint": "ID metodo di pagamento Stripe (es. da Stripe Elements)",
-      "saveCard": "Salva carta per pagamenti futuri",
-      "cancel": "Annulla",
-      "processing": "Elaborazione...",
-      "confirm": "Elabora pagamento"
-    },
     "refund": {
+      "action": "Rimborsa",
       "title": "Rimborsa pagamento",
-      "description": "Rimborsa pagamento di {{amount}}",
-      "originalAmount": "Importo originale",
-      "alreadyRefunded": "Gia rimborsato",
+      "description": "Il rimborso viene creato su Stripe e torna sul metodo di pagamento usato dall'ospite.",
+      "loading": "Caricamento degli importi…",
+      "loadError": "Impossibile caricare gli importi rimborsabili.",
+      "originalAmount": "Importo pagato",
+      "alreadyRefunded": "Già rimborsato (confermato da Stripe)",
+      "inProgress": "Rimborsi in attesa di Stripe",
       "refundableAmount": "Importo rimborsabile",
-      "refundAmountLabel": "Importo rimborso (lascia vuoto per rimborso totale)",
-      "refundAmountHint": "Inserisci un importo personalizzato o lascia vuoto per rimborsare {{amount}}",
-      "reason": "Motivo del rimborso",
-      "reasonPlaceholder": "Spiega perche questo pagamento viene rimborsato...",
+      "amountLabel": "Importo da rimborsare",
+      "amountHint": "Lascia vuoto per rimborsare tutto l'importo rimborsabile ({{amount}}).",
+      "reason": "Motivo (visibile solo a te)",
+      "reasonPlaceholder": "Es. guasto nell'alloggio, richiesta dell'ospite…",
       "cancel": "Annulla",
-      "processingRefund": "Elaborazione rimborso...",
-      "confirm": "Conferma rimborso"
+      "close": "Chiudi",
+      "confirm": "Rimborsa su Stripe",
+      "submitting": "Invio a Stripe…",
+      "notOnline": "Questo pagamento non è passato da Stripe: il rimborso va fatto fuori da CasaZen.",
+      "nothingToRefund": "Non c'è più nulla da rimborsare su questo pagamento.",
+      "failedGeneric": "Il rimborso non è stato inviato. Riprova.",
+      "errors": {
+        "amountInvalid": "Inserisci un importo maggiore di zero, con al massimo due decimali.",
+        "amountTooHigh": "L'importo supera quanto si può ancora rimborsare ({{amount}})."
+      },
+      "result": {
+        "succeeded": "Rimborso di {{amount}} confermato da Stripe.",
+        "pending": "Rimborso di {{amount}} inviato: Stripe non l'ha ancora confermato. Lo stato si aggiorna da solo.",
+        "failed": "Stripe non ha eseguito il rimborso di {{amount}}: all'ospite non è stato restituito nulla.",
+        "failedReason": "Motivo indicato da Stripe: {{reason}}"
+      },
+      "status": {
+        "Pending": "In attesa di Stripe",
+        "RequiresAction": "In attesa di un'azione su Stripe",
+        "Succeeded": "Confermato",
+        "Failed": "Non riuscito",
+        "Canceled": "Annullato"
+      },
+      "origin": {
+        "Host": "Dalla pagina del pagamento",
+        "BookingCancellation": "Annullamento della prenotazione",
+        "Stripe": "Dalla dashboard Stripe"
+      },
+      "listTitle": "Rimborsi",
+      "listEmpty": "Nessun rimborso per questo pagamento.",
+      "listLoadError": "Impossibile caricare i rimborsi."
     },
     "revenue": {
       "stats": {
@@ -2121,7 +2178,6 @@
       "title": "Pagamento #{{id}}",
       "stripeId": "ID Stripe: {{id}}",
       "view": "Visualizza",
-      "process": "Elabora",
       "refund": "Rimborsa"
     }
   },
@@ -2661,18 +2717,12 @@
     "bookingCreateFailed": "Impossibile creare la prenotazione",
     "bookingUpdated": "Prenotazione aggiornata con successo",
     "bookingUpdateFailed": "Impossibile aggiornare la prenotazione",
-    "bookingDeleted": "Prenotazione eliminata con successo",
-    "bookingDeleteFailed": "Impossibile eliminare la prenotazione",
     "guestCheckedIn": "Check-in effettuato con successo",
     "checkInGuestFailed": "Impossibile completare il check-in",
     "guestCheckedOut": "Check-out effettuato con successo",
     "checkOutGuestFailed": "Impossibile completare il check-out",
     "paymentCreated": "Pagamento creato con successo",
     "paymentCreateFailed": "Impossibile creare il pagamento",
-    "paymentProcessed": "Pagamento elaborato con successo",
-    "paymentProcessFailed": "Impossibile elaborare il pagamento",
-    "paymentRefunded": "Rimborso effettuato con successo",
-    "paymentRefundFailed": "Impossibile effettuare il rimborso",
     "otaIntegrationCreated": "Integrazione OTA creata con successo",
     "otaIntegrationCreateFailed": "Impossibile creare l'integrazione OTA",
     "otaIntegrationUpdated": "Integrazione OTA aggiornata con successo",

@@ -12,7 +12,9 @@ import { useBooking } from '@/queries/use-bookings';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
-import { Edit, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react';
+import { Edit, Calendar, Users, Mail, Phone, MapPin, XCircle } from 'lucide-react';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
 import { useServiceRequests } from '@/queries/use-service-requests';
@@ -24,6 +26,8 @@ export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<BookingTab>('details');
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const { hasPermission } = useWorkspace();
   const { data: booking, isLoading } = useBooking(id!);
   const { data: serviceRequests } = useServiceRequests(
     booking ? { propertyId: booking.propertyId } : undefined,
@@ -46,6 +50,10 @@ export function BookingDetailPage() {
   }
 
   const statusLabel = getBookingStatusLabel(booking.status, t);
+  // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves.
+  const canCancel =
+    (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn') &&
+    hasPermission('short-rent', 'booking.write');
   const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
   const nights = Math.ceil(
     (new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime()) / (1000 * 60 * 60 * 24)
@@ -68,6 +76,12 @@ export function BookingDetailPage() {
           description={`${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}
           action={
             <div className="flex flex-wrap gap-2">
+              {canCancel && (
+                <Button variant="outline" onClick={() => setCancelOpen(true)} data-testid="open-cancel-booking">
+                  <XCircle className="mr-2 h-4 w-4" />
+                  {t('booking.cancel.action')}
+                </Button>
+              )}
               <Button variant="outline" asChild>
                 <Link to={`/app/short-rent/bookings/${id}/checkout`} data-testid="open-checkout-wizard">
                   {t('booking.card.checkOutAction')}
@@ -243,6 +257,9 @@ export function BookingDetailPage() {
           <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
         )}
       </div>
+      {(canCancel || cancelOpen) && (
+        <CancelBookingDialog bookingId={booking.id} open={cancelOpen} onOpenChange={setCancelOpen} />
+      )}
     </AppShell>
   );
 }
