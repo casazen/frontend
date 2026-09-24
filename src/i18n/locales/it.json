@@ -115,6 +115,7 @@
       "newInvite": "Nuovo invito",
       "email": "Email",
       "comuneCode": "Codice comune",
+      "categories": "Categorie di servizio (opzionale)",
       "message": "Messaggio (opzionale)",
       "sendInvite": "Invia invito",
       "toast": {
@@ -1282,7 +1283,13 @@
       "cleaning": "Pulizie",
       "maintenance": "Manutenzione",
       "plumbing": "Idraulico",
-      "laundry": "Lavanderia"
+      "laundry": "Lavanderia",
+      "linen": "Biancheria",
+      "check-in": "Check-in ospiti",
+      "gardening": "Giardinaggio",
+      "events": "Eventi",
+      "rental": "Noleggio",
+      "excursions": "Escursioni"
     },
     "status": {
       "Richiesto": "Richiesto",
@@ -1321,6 +1328,7 @@
     "allCategories": "Tutte le categorie",
     "suppliersTitle": "Fornitori disponibili",
     "noSuppliers": "Nessun fornitore trovato per questa proprietà.",
+    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "selectSupplierHint": "Seleziona un fornitore per vedere i dettagli e richiedere un servizio.",
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
@@ -2812,7 +2820,8 @@
       "bookingDatesUnavailable": "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
       "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
       "bookingInvalidDates": "La data di check-out deve essere successiva alla data di check-in.",
-      "bookingTooManyGuests": "Il numero di ospiti supera la capienza massima dell'immobile."
+      "bookingTooManyGuests": "Il numero di ospiti supera la capienza massima dell'immobile.",
+      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco."
     }
   },
   "validation": {
@@ -2856,5 +2865,12 @@
     "notFoundDescription": "Questa pagina fornitore non esiste o non è più attiva.",
     "availableDays_one": "{{count}} giorno disponibile nelle prossime 2 settimane",
     "availableDays_other": "{{count}} giorni disponibili nelle prossime 2 settimane"
+  },
+  "serviceCategories": {
+    "loading": "Caricamento categorie…",
+    "loadError": "Impossibile caricare le categorie di servizio.",
+    "retry": "Riprova",
+    "empty": "Nessuna categoria di servizio disponibile.",
+    "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
   }
 }

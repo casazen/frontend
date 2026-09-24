@@ -6,10 +6,16 @@ import i18n from '@/i18n/config';
 import type { SupplierMatchResponse } from '@/types/service-request';
 import { ServiceRequestForm } from '../service-request-form';
 
-const { matchSupplier, createServiceRequest } = vi.hoisted(() => ({
+const { matchSupplier, createServiceRequest, fetchServiceCategories } = vi.hoisted(() => ({
   matchSupplier: vi.fn(),
   createServiceRequest: vi.fn(),
+  fetchServiceCategories: vi.fn(),
 }));
+
+// The category list comes from the backend catalog (SU-03), fetched through the real query hook.
+vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories }));
+
+const CATALOG = ['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in'];
 
 // Real TanStack mutations around mocked network calls: the form's hooks behave as in the app.
 vi.mock('@/queries/use-service-requests', async () => {
@@ -36,7 +42,7 @@ const MATCH: SupplierMatchResponse = {
 };
 
 function renderForm(props: Partial<React.ComponentProps<typeof ServiceRequestForm>> = {}) {
-  const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
@@ -54,6 +60,7 @@ describe('ServiceRequestForm', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     matchSupplier.mockResolvedValue(MATCH);
+    fetchServiceCategories.mockResolvedValue(CATALOG);
     await i18n.changeLanguage('en');
   });
 
@@ -92,6 +99,30 @@ describe('ServiceRequestForm', () => {
       urgency: 'Normal',
       notes: 'Keys at the front desk',
     });
+  });
+
+  it('ServiceRequestForm_CatalogLoaded_OffersEveryCodeWithTranslatedLabel', async () => {
+    renderForm();
+
+    const category = (await screen.findByLabelText(i18n.t('serviceRequest.category'))) as HTMLSelectElement;
+    expect(Array.from(category.options).map((o) => o.value)).toEqual(CATALOG);
+    expect(Array.from(category.options).map((o) => o.textContent)).toContain('Guest check-in');
+  });
+
+  it('ServiceRequestForm_PreselectedCategoryNotACode_UsesFirstCatalogCode', async () => {
+    renderForm({ preselectedCategory: 'Pulizie' });
+
+    await waitFor(() => expect(matchSupplier).toHaveBeenCalledTimes(1));
+    expect(matchPayload(0).category).toBe('cleaning');
+  });
+
+  it('ServiceRequestForm_CatalogFails_ShowsErrorWithoutMatchingOrSubmitting', async () => {
+    fetchServiceCategories.mockRejectedValue(new Error('network'));
+    renderForm();
+
+    expect(await screen.findByTestId('service-categories-error')).toHaveTextContent(i18n.t('serviceCategories.loadError'));
+    expect(matchSupplier).not.toHaveBeenCalled();
+    expect(screen.getByTestId('submit-service-request')).toBeDisabled();
   });
 
   it('ServiceRequestForm_PreselectedSupplier_SkipsMatchAndKeepsSupplier', async () => {
