@@ -284,6 +284,72 @@ describe('OnboardingPage (PL-01)', () => {
     expect(await screen.findByTestId('admin-area')).toBeInTheDocument();
   });
 
+  it('OnboardingPage_ConsentsOfAnOldVersion_ShowsOnlyTheConsentsAndPostsTheSameRentalType', async () => {
+    // PL-02: onboarding completed, a legal document changed since (backend consentsAccepted=false).
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({
+      ...ONBOARDED,
+      onboardingRequired: true,
+      consentsAccepted: false,
+    });
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response());
+
+    renderPage({ pathname: '/onboarding', state: { from: '/app/short-rent/guests' } });
+
+    expect(await screen.findByText(i18n.t('onboarding.consentsRenewalTitle'))).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: i18n.t('onboarding.choose') })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('accept-consents'));
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent/guests'));
+    expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
+      rentalType: 'ShortTerm',
+      planTier: 'Starter',
+      consents: CONSENTS,
+    });
+    expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_HostWithOrgButOnboardingRequired_StaysOnTheWizard', async () => {
+    // Org created before PL-02 without the onboarding: the roles and the org no longer skip the wizard.
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ orgId: 'org-legacy', onboardingRequired: true, consentsAccepted: false }),
+    );
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ orgId: 'org-legacy' }));
+
+    renderPage();
+    await chooseShortTermWithConsents();
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
+    expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
+      rentalType: 'ShortTerm',
+      planTier: 'Starter',
+      consents: CONSENTS,
+    });
+  });
+
+  it('OnboardingPage_OnboardedHostWithCurrentConsents_GoesHome', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({ ...ONBOARDED, onboardingRequired: false, consentsAccepted: true });
+
+    renderPage();
+
+    expect(await screen.findByTestId('short-rent-home')).toBeInTheDocument();
+  });
+
+  it('OnboardingPage_AdminWithOrgAndOnboardingRequired_CanSkipToTheAdminArea', async () => {
+    mockAuth(['Admin']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ role: 'Admin', orgId: 'org-admin', onboardingRequired: true, consentsAccepted: false }),
+    );
+
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('onboarding.skipForNow') }));
+
+    expect(await screen.findByTestId('admin-area')).toBeInTheDocument();
+  });
+
   it('OnboardingPage_ProfileServerError_ShowsRetryInsteadOfTheWizard', async () => {
     mockAuth(['PropertyOwner']);
     vi.mocked(UsersApi.getMe).mockRejectedValue(httpError(500));
@@ -339,6 +405,18 @@ describe('OnboardingPage supplier option (SU-02)', () => {
 
     expect(await screen.findByTestId('supplier-activation')).toBeInTheDocument();
     expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_LinkedSupplierWithHostFeaturesWithheld_StillGoesToSupplierConsole (PL-02)', async () => {
+    // A supplier never completed the host onboarding: the backend flag must not keep it in the host wizard.
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ orgId: 'supplier-org', supplierOrgId: 'supplier-org', onboardingRequired: true, consentsAccepted: false }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-activation')).toBeInTheDocument();
   });
 
   it('OnboardingPage_EditMode_HidesSupplierOption', async () => {

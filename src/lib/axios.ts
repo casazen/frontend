@@ -44,8 +44,15 @@ const INTERACTIVE_LOGIN_ERRORS = new Set([
 /** 403 bodies with these codes (or none) mean "no access"; any other code is a business rule. */
 const GENERIC_FORBIDDEN_CODES = new Set(['forbidden', 'access_denied']);
 
+/**
+ * 403 `code` of the backend host onboarding gate (PL-02): the host features wait for the onboarding and the current
+ * legal consents. Handled for reads and writes alike by the onboarding handler, never as "no access".
+ */
+export const ONBOARDING_REQUIRED_CODE = 'onboarding_required';
+
 let authHandlers: ApiAuthHandlers | null = null;
 let forbiddenHandler: (() => void) | null = null;
+let onboardingRequiredHandler: (() => void) | null = null;
 let reloginRequested = false;
 
 /** Registered by the auth bridge (Auth0 or demo); `null` when no auth provider is mounted. */
@@ -56,6 +63,11 @@ export function setApiAuthHandlers(handlers: ApiAuthHandlers | null): void {
 /** Registered by the app shell: navigates to the no-access page. */
 export function setApiForbiddenHandler(handler: (() => void) | null): void {
   forbiddenHandler = handler;
+}
+
+/** Registered by the app shell: opens the onboarding on a 403 `onboarding_required` (PL-02). */
+export function setApiOnboardingRequiredHandler(handler: (() => void) | null): void {
+  onboardingRequiredHandler = handler;
 }
 
 function readLastRelogin(): number | null {
@@ -159,6 +171,8 @@ async function handleResponseError(error: unknown): Promise<AxiosResponse> {
       if (refreshed) return axiosInstance.request(config);
     }
     requestRelogin();
+  } else if (status === 403 && getProblemCode(data) === ONBOARDING_REQUIRED_CODE) {
+    onboardingRequiredHandler?.();
   } else if (status === 403 && isAccessDenied(config, data)) {
     forbiddenHandler?.();
   }

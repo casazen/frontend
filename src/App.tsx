@@ -6,7 +6,8 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { queryClient } from '@/lib/query-client';
-import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
+import { NO_ACCESS_PATH, setApiForbiddenHandler, setApiOnboardingRequiredHandler } from '@/lib/axios';
+import { openOnboardingAfterGate } from '@/lib/onboarding-gate';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { recordLandingTouch } from '@/lib/signup-attribution';
@@ -24,7 +25,15 @@ function AppShell() {
         void router.navigate(NO_ACCESS_PATH, { replace: true });
       }
     });
-    return () => setApiForbiddenHandler(null);
+    // 403 onboarding_required (PL-02): the backend withholds the host features until the onboarding and the current
+    // consents; open the onboarding (the wizard shows the consents step), never the no-access page.
+    setApiOnboardingRequiredHandler(() => {
+      openOnboardingAfterGate(router, queryClient);
+    });
+    return () => {
+      setApiForbiddenHandler(null);
+      setApiOnboardingRequiredHandler(null);
+    };
   }, []);
 
   return (

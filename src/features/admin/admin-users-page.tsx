@@ -54,6 +54,7 @@ export function AdminUsersPage() {
             <option value="Guest">{t('roles.Guest')}</option>
             <option value="Staff">{t('roles.Staff')}</option>
             <option value="LongTermLandlord">{t('roles.LongTermLandlord')}</option>
+            <option value="None">{t('roles.None')}</option>
           </select>
         </CardContent>
       </Card>

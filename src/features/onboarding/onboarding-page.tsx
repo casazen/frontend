@@ -16,7 +16,9 @@ import {
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
+  needsConsentRenewal,
   needsOrgSetup,
+  SUPPLIER_HOME_ROUTE,
 } from '@/lib/onboarding';
 import { SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
@@ -78,12 +80,16 @@ export function OnboardingPage() {
   const linkedSupplier = isLinkedSupplier(profile);
   const homeRoute = getHomeRouteForUser({ [ROLES_CLAIM]: roles }, profile);
   const isOrgBackfill = hasRoles && !hasOrg;
-  // A1-01: PUT (no consents) only when the backend already has a completed onboarding with an org. Any other case,
-  // with JWT roles or not, creates the first org: consents step and POST.
-  const isUpdate = canEditOnboarding(profile) && !consentsForced;
+  // PL-02: the backend withholds the host features until the onboarding and the current consents.
+  const hostAccessWithheld = profile?.onboardingRequired === true;
+  // A completed onboarding whose legal documents changed: only the consents step, then the same rental type.
+  const renewsConsents = needsConsentRenewal(profile) && !isEditMode;
+  // A1-01: PUT (no consents) only when the backend already has a completed onboarding with an org and current consents.
+  // Any other case, with JWT roles or not, goes through the consents step and the POST.
+  const isUpdate = canEditOnboarding(profile) && !consentsForced && !needsConsentRenewal(profile);
   const needsConsentsStep = !isUpdate;
   // Admins and supplier-only users do not need a host org: they may leave the wizard.
-  const canSkip = !hasOrg && !isEditMode && isExemptFromHostOnboarding(roles);
+  const canSkip = !isEditMode && isExemptFromHostOnboarding(roles) && (!hasOrg || hostAccessWithheld);
 
   useEffect(() => {
     if (profileLoading || !profile || pendingRoles || isLeaving) return;
@@ -93,8 +99,14 @@ export function OnboardingPage() {
       return;
     }
 
-    // A linked supplier belongs to the supplier console, never to the host wizard (A4-02).
-    if (!isEditMode && hasOrg && (hasRoles || linkedSupplier)) {
+    // A linked supplier belongs to the supplier console, never to the host wizard (A4-02). A host whose host features
+    // are withheld by the backend (PL-02) stays here: its home would answer onboarding_required again.
+    if (
+      !isEditMode &&
+      hasOrg &&
+      (hasRoles || linkedSupplier) &&
+      (!hostAccessWithheld || homeRoute === SUPPLIER_HOME_ROUTE)
+    ) {
       navigate(homeRoute, { replace: true });
       return;
     }
@@ -109,7 +121,24 @@ export function OnboardingPage() {
     if (isEditMode && profile.rentalType) {
       setStep('plan');
     }
-  }, [navigate, profile, profileLoading, hasOrg, hasRoles, linkedSupplier, homeRoute, isEditMode, pendingRoles, isLeaving]);
+
+    if (renewsConsents) {
+      setStep((current) => (current === 'role' ? 'consents' : current));
+    }
+  }, [
+    navigate,
+    profile,
+    profileLoading,
+    hasOrg,
+    hasRoles,
+    linkedSupplier,
+    homeRoute,
+    hostAccessWithheld,
+    isEditMode,
+    pendingRoles,
+    isLeaving,
+    renewsConsents,
+  ]);
 
   const leaveTo = async (target: string) => {
     setIsLeaving(true);
@@ -122,7 +151,11 @@ export function OnboardingPage() {
     window.location.assign(target);
   };
 
-  const finishOnboarding = async (rentalType: RentalType, planTier: PlanTier) => {
+  const finishOnboarding = async (
+    rentalType: RentalType,
+    planTier: PlanTier,
+    acceptedConsents: OnboardingConsentsPayload | null = consents,
+  ) => {
     setSelectedType(rentalType);
     setFailedType(null);
 
@@ -133,7 +166,7 @@ export function OnboardingPage() {
       return;
     }
 
-    if (needsConsentsStep && !consents) {
+    if (needsConsentsStep && !acceptedConsents) {
       toast.error(t('onboarding.consentRequiredToast'));
       setStep('consents');
       return;
@@ -145,7 +178,7 @@ export function OnboardingPage() {
         rentalType,
         planTier,
         isUpdate,
-        consents: needsConsentsStep ? consents ?? undefined : undefined,
+        consents: needsConsentsStep ? acceptedConsents ?? undefined : undefined,
       });
     } catch (error) {
       if (isAxiosError(error) && getProblemCode(error.response?.data) === CONSENTS_REQUIRED_CODE) {
@@ -231,14 +264,18 @@ export function OnboardingPage() {
         ? t('onboarding.editOperatorType')
         : t('onboarding.howToUse')
       : step === 'consents'
-        ? t('onboarding.acceptLegalDocs')
+        ? renewsConsents
+          ? t('onboarding.consentsRenewalTitle')
+          : t('onboarding.acceptLegalDocs')
         : t('onboarding.choosePlan');
 
   const subheading =
     step === 'role'
       ? t('onboarding.roleDescription')
       : step === 'consents'
-        ? t('onboarding.consentsDescription')
+        ? renewsConsents
+          ? t('onboarding.consentsRenewalDescription')
+          : t('onboarding.consentsDescription')
         : isOrgBackfill
           ? t('onboarding.planOrgDescription')
           : t('onboarding.planDefaultDescription');
@@ -291,6 +328,11 @@ export function OnboardingPage() {
             onBack={() => setStep('role')}
             onContinue={(payload) => {
               setConsents(payload);
+              if (renewsConsents && selectedType) {
+                // Same rental type and plan: only the new document versions are recorded (PL-02).
+                void finishOnboarding(selectedType, selectedPlan, payload);
+                return;
+              }
               setStep('plan');
             }}
             isLoading={completeOnboarding.isPending}
