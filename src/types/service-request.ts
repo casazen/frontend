@@ -8,10 +8,21 @@ export type ServiceRequestStatus =
 
 export type ServiceRequestUrgency = 'Normal' | 'High' | 'Emergency';
 
+/**
+ * Rental context a request was opened in (decision D2): short-rent requests are for one stay (`bookingId`), long-rent
+ * requests for the property.
+ */
+export type ServiceRequestRentalContext = 'ShortRent' | 'LongRent';
+
+/** Workspace context of a service request screen (`/app/short-rent/…` or `/app/long-rent/…`). */
+export type ServiceRequestContextKey = 'short-rent' | 'long-rent';
+
 export interface ServiceRequest {
   id: string;
   orgId: string;
+  /** The stay (short-rent). Null for long-rent requests and for older short-rent ones not traced to a stay. */
   bookingId?: string | null;
+  rentalContext?: ServiceRequestRentalContext;
   propertyId: string;
   propertyName?: string | null;
   supplierOrgId: string;
@@ -48,14 +59,23 @@ export interface ServiceRequestListResponse {
   pageSize: number;
 }
 
+/** Short-rent request (`POST /service-requests`, D2): for one stay of the property, `bookingId` required. */
 export interface CreateServiceRequestDto {
   propertyId: string;
-  bookingId?: string;
+  bookingId: string;
   supplierOrgId: string;
   category: string;
   urgency?: ServiceRequestUrgency;
   notes?: string;
-  chargeToGuest?: boolean;
+}
+
+/** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */
+export interface CreateLongRentServiceRequestDto {
+  propertyId: string;
+  supplierOrgId: string;
+  category: string;
+  urgency?: ServiceRequestUrgency;
+  notes?: string;
 }
 
 export interface SupplierPicker {

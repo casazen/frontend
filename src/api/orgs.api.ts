@@ -1,5 +1,5 @@
 import { ApiClient } from '@/api/client';
-import type { Entitlement, PlanCatalogEntry, PlanTier } from '@/types';
+import type { Entitlement, PlanCatalogEntry } from '@/types';
 
 export const OrgsApi = {
   getPlans: (): Promise<PlanCatalogEntry[]> =>
@@ -7,7 +7,4 @@ export const OrgsApi = {
 
   getMyEntitlement: (): Promise<Entitlement> =>
     ApiClient.get<Entitlement>('/orgs/me/entitlement'),
-
-  updateMyPlan: (planTier: PlanTier): Promise<Entitlement> =>
-    ApiClient.put<Entitlement>('/orgs/me/plan', { planTier }),
 };

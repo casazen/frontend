@@ -29,10 +29,31 @@ export interface Property {
   isActive: boolean;
   complianceStatus?: string | null;
   slug?: string | null;
+  /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
+  cadastralSheet?: string | null;
+  cadastralParcel?: string | null;
+  cadastralSubaltern?: string | null;
+  cadastralCategory?: string | null;
+  cadastralIncome?: number | null;
   ownerId: string;
   orgId?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/** `PUT /properties/:id/cadastral` (LT-10): empty values clear the field; only lengths are checked. */
+export interface PropertyCadastralData {
+  sheet: string | null;
+  parcel: string | null;
+  subaltern: string | null;
+  category: string | null;
+  income: number | null;
+}
+
+/** `PUT /properties/:id/documents/:docId/ape` (LT-10): what is printed on the APE. */
+export interface ApeIdentification {
+  code: string;
+  energyClass: string;
 }
 
 export interface CreatePropertyDto {
@@ -135,6 +156,9 @@ export interface PropertyDocumentDto {
   documentType: PropertyDocumentType;
   uploadedAt: string;
   downloadUrl: string;
+  /** APE documents only (LT-10): code and energy class printed on it; null until the landlord enters them. */
+  apeCode?: string | null;
+  apeEnergyClass?: string | null;
 }
 
 export interface OtaIntegrationSummaryDto {

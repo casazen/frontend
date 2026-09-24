@@ -183,7 +183,8 @@
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
-    "plan": "Plan & Billing",
+    "plan": "Plan",
+    "billing": "Billing",
     "bookings": "Bookings",
     "marketplace": "Marketplace",
     "calendar": "Calendar",
@@ -449,12 +450,11 @@
       "zone": "Zone",
       "zonePlaceholder": "e.g. Unica, Centrale",
       "foglio": "Cadastral sheet",
-      "years": "Duration (years)",
       "typeA": "Type A features",
       "typeB": "Type B features",
       "typeC": "Type C features",
       "typeD": "Type D features",
-      "furnished": "Furnished dwelling",
+      "furnished": "Fully furnished",
       "calculate": "Calculate band",
       "calculating": "Calculating...",
       "error": "Unable to calculate. Try again.",
@@ -470,7 +470,7 @@
       "ataPending": "Pending official ATA list verification",
       "attestationRequired": "Non-assisted contracts need a conformity attestation. CasaZen does not issue it.",
       "guidanceTitle": "Associations for attestation",
-      "guidanceIntro": "Contact a signatory organization directly. CasaZen does not send requests and does not attest conformity.",
+      "guidanceIntro": "The attestation of conformity is valid only when issued jointly by two signatory organizations: one of the owners and one of the tenants. Contact them directly: CasaZen sends no requests and does not attest conformity.",
       "guidanceLoading": "Loading contacts...",
       "guidanceEmpty": "No contacts available for this municipality.",
       "roleOwners": "Landlords",
@@ -482,7 +482,35 @@
       "exportError": "Export is not available.",
       "markSent": "Mark as sent",
       "markSentOk": "Notice marked as sent.",
-      "markSentError": "Could not update the sent status."
+      "markSentError": "Could not update the sent status.",
+      "garageSqm": "Garage or covered parking space (sqm)",
+      "balconySqm": "Balconies and terraces (sqm)",
+      "otherAppurtenanceSqm": "Open parking space, cellar, attic or other appurtenances (sqm)",
+      "privateGreenSqm": "Exclusive green areas (sqm)",
+      "qualifyingTypeD": "Of which D elements valid for sub-fascia 3",
+      "airConditioning": "Air conditioning (on at least half of the surface)",
+      "stoveHeating": "Heating by stoves in the single rooms",
+      "datesRequired": "Enter the start and end dates of the lease: the term used in the calculation comes from the dates.",
+      "reason": {
+        "data_unavailable": "No data for this comune: check the rent with a local association.",
+        "zone_required": "Enter the zone or the cadastral sheet: the comune has more zones in the agreement.",
+        "zone_not_found": "The zone or cadastral sheet entered is not in the agreement for this comune.",
+        "invalid_surface": "Invalid surface.",
+        "surface_out_of_bands": "The surface is not in the bands of the agreement.",
+        "invalid_element_counts": "The D elements valid for sub-fascia 3 cannot be more than the D elements.",
+        "term_too_short": "A 3+2 lease must last at least 3 years: check the dates."
+      },
+      "warning": {
+        "subfascia3_max_needs_more_d": "Sub-fascia 3 with fewer than 4 D elements: the agreement allows the maximum of sub-fascia 3 only with at least 4 D elements. The maximum shown may be too high.",
+        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied."
+      },
+      "indicativeTitle": "Indicative range: data to be checked",
+      "indicativeWarning": "The territorial agreement data are not yet confirmed by a lawyer or a signatory organization (validity and filing of the agreement). The range is a reference and does not block the lease: check the rent with a signatory organization.",
+      "lastVerified": "Tables checked against the official text on {{date}}.",
+      "source": "Official text of the agreement",
+      "bandBetween": "band from {{min}} (excluded) to {{max}} sqm",
+      "bandOver": "band over {{min}} sqm",
+      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates)."
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Flat-rate tax (Cedolare Secca)",
@@ -529,6 +557,9 @@
       },
       "monthlyRent": {
         "positive": "Monthly rent must be greater than zero"
+      },
+      "securityDeposit": {
+        "min": "The security deposit cannot be negative."
       }
     },
     "createPageTitle": "Create lease",
@@ -555,8 +586,8 @@
       "createDraft": "Create lease draft",
       "apeMissingError": "An APE (energy performance certificate) document must be uploaded for this property before creating a lease.",
       "waitingDocuments": "Please wait while property documents are being verified.",
-      "concordatoRangeRequired": "Calculate the agreed-rent band and enter a monthly rent between the minimum and maximum.",
-      "concordatoRentOutOfRange": "Monthly rent is outside the calculated band for this property.",
+      "concordatoRangeRequired": "Calculate the agreed-rent range: the monthly rent is compared with the range returned by the server.",
+      "concordatoRentOutOfRange": "The monthly rent is outside the range calculated for this property.",
       "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR",
       "propertiesLoading": "Loading properties...",
       "propertiesLoadError": "Your properties could not be loaded, so the lease property cannot be chosen yet.",
@@ -564,7 +595,17 @@
       "createProperty": "Create property",
       "documentsLoadError": "The property documents (APE) could not be checked.",
       "uploadApe": "Upload the APE",
-      "retry": "Retry"
+      "retry": "Retry",
+      "contractTypeLabel": "Contract type *",
+      "taxRegimeLabel": "Tax regime *",
+      "securityDepositLabel": "Security deposit (€)",
+      "termRule": {
+        "Libero": "Free rent: at least 4 years (4+4).",
+        "Concordato": "Agreed rent: at least 3 years (3+2); the rent must be within the range of the territorial agreement.",
+        "Transitorio": "Transitional: from 1 to 18 months. CasaZen checks only the term: the transitional needs must be stated and documented in the contract, and there is no contract template for this type yet."
+      },
+      "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
+      "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -590,7 +631,25 @@
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
     "contactEmailMasked": "Contact email",
-    "noParties": "No parties recorded."
+    "noParties": "No parties recorded.",
+    "contractTypeLabel": {
+      "Libero": "Free rent (4+4)",
+      "Concordato": "Agreed rent (3+2)",
+      "Transitorio": "Transitional"
+    },
+    "taxRegimeLabel": {
+      "CedolareSecca": "Cedolare secca",
+      "Ordinario": "Ordinary regime"
+    },
+    "taxRegimeUnknown": "tax regime not stated",
+    "securityDeposit": "Security deposit",
+    "securityDepositMissing": "Not stated",
+    "concordatoAssessment": {
+      "title": "Agreed-rent range",
+      "indicative": "Indicative range: the territorial agreement data are not confirmed. The lease was created without blocks: check the rent with a signatory organization.",
+      "rentOutside": "The rent of the lease is outside this range.",
+      "calculatedAt": "Calculated by the server on {{date}}."
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -1272,7 +1331,14 @@
       "empty": "No documents uploaded.",
       "download": "Download",
       "downloading": "Downloading",
-      "delete": "Delete"
+      "delete": "Delete",
+      "apeIdentification": "Code {{code}} · energy class {{energyClass}}",
+      "apeIdentificationMissing": "APE code and energy class not entered: the contract needs them.",
+      "apeIdentificationEdit": "Enter code and class",
+      "apeCode": "APE code",
+      "apeEnergyClass": "Energy class",
+      "apeIdentificationSave": "Save",
+      "apeIdentificationCancel": "Cancel"
     },
     "cin": {
       "badge": {
@@ -1546,7 +1612,6 @@
   "serviceRequest": {
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
-    "propertyScopedDescription": "Send a service request to the selected supplier for this property.",
     "selectedSupplier": "Selected supplier",
     "website": "Website",
     "category": "Category",
@@ -1594,7 +1659,25 @@
       "Completato": "Completed",
       "Pagato": "Paid",
       "Rifiutato": "Declined"
-    }
+    },
+    "stayScopedDescription": "In short-term rentals the request is for a stay: you find it in the booking detail, on the web and in the app.",
+    "longRentScopedDescription": "In long-term rentals the request is for the property.",
+    "stay": "Stay",
+    "staySelectPlaceholder": "Choose the stay",
+    "stayOption": "{{guest}} · {{from}} → {{to}}",
+    "staysLoading": "Loading the stays…",
+    "staysLoadError": "Could not load the property's stays.",
+    "noStays": "No stays for this property: in short-term rentals a supplier request is for a stay.",
+    "suppliersLoading": "Loading suppliers…",
+    "suppliersLoadError": "Could not load the suppliers.",
+    "noSuppliers": "No active supplier for this category in the property's comune.",
+    "listLoading": "Loading requests…",
+    "listLoadError": "Could not load the supplier requests.",
+    "retry": "Retry",
+    "emptyForStay": "No supplier requests for this stay.",
+    "emptyForProperty": "No supplier requests for this property.",
+    "viewStay": "Go to the stay",
+    "noStayLegacy": "No stay (earlier request)"
   },
   "ical": {
     "title": "OTA Calendar",
@@ -1905,8 +1988,6 @@
     "currentUsage": "Current usage:",
     "unlimited": "unlimited",
     "planUsage": "{{propertyCount}} properties of {{maxProperties}}",
-    "switchToPlan": "Switch to this plan",
-    "stripeBillingNote": "Recurring card payment will be available with Stripe integration ({{planCount}} plans configured).",
     "connectStatusDisconnected": "Not connected",
     "connectStatusPending": "Verifying",
     "connectStatusActive": "Active",
@@ -1919,6 +2000,7 @@
     "bookingSiteNotActiveDescription": "Complete Stripe verification to enable checkout on your booking site. Guests cannot pay until the account is active.",
     "stripeConnectionStatus": "Stripe connection status",
     "connectStripe": "Connect Stripe",
+    "connectRetry": "Try again",
     "completeVerification": "Complete verification",
     "loadingPayments": "Loading payment status...",
     "stripeStatusError": "Could not load Stripe status. Please try again shortly.",
@@ -2022,6 +2104,97 @@
     },
     "upToProperties_one": "Up to {{count}} property",
     "upToProperties_other": "Up to {{count}} properties"
+  },
+  "billing": {
+    "plans": {
+      "pricePerMonth": "{{price}} per month",
+      "priceAtCheckout": "The price is shown on the Stripe payment page.",
+      "changeInPortal": "Change in the portal",
+      "unavailable": "Not available",
+      "unavailableHint": "This plan cannot be purchased right now.",
+      "loadError": "Unable to load the plans or the subscription status.",
+      "emptyTitle": "No plans available",
+      "emptyDescription": "No plan can be purchased right now. Try again later or contact support.",
+      "liveSubscription": "You already have a subscription: use the Stripe billing portal to change plan, update your card or download invoices.",
+      "stripeNote": "Payment happens on Stripe: CasaZen never sees your card details.",
+      "billingLink": "Subscription and billing details"
+    },
+    "checkout": {
+      "title": "{{plan}} subscription",
+      "description": "Enter the billing country and, if you have one, the VAT number. You will then complete the payment on Stripe.",
+      "submit": "Continue to payment",
+      "redirecting": "Redirecting to Stripe…",
+      "failed": "Unable to start the payment. Try again.",
+      "return": {
+        "confirming": "Checking the payment with Stripe…",
+        "confirmed": "Payment confirmed: the {{plan}} plan is active.",
+        "pending": "We have not received the payment confirmation from Stripe yet. If you completed the payment, your plan will be updated shortly.",
+        "refresh": "Refresh status",
+        "canceled": "Payment canceled: you have not been charged. You can choose a plan again at any time."
+      }
+    },
+    "settings": {
+      "title": "Billing",
+      "description": "Subscription, payments and billing details of your organization.",
+      "subscriptionTitle": "Subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "nextDue": "Next due date",
+      "noneTitle": "No paid subscription",
+      "noneDescription": "You are on the {{plan}} plan without a subscription. Choose a plan to subscribe.",
+      "choosePlan": "Choose a plan",
+      "changePlan": "Change plan",
+      "loadError": "Unable to load the subscription.",
+      "statusHint": {
+        "active": "Renewal is automatic. Card, invoices and cancellation are in the billing portal.",
+        "trialing": "Trial period in progress: when it ends, the payment starts automatically."
+      }
+    },
+    "status": {
+      "active": "Active",
+      "trialing": "Trial",
+      "pastDue": "Payment overdue",
+      "incomplete": "Payment to complete",
+      "unpaid": "Unpaid",
+      "canceled": "Expired",
+      "none": "No subscription"
+    },
+    "notice": {
+      "pastDue": "The last payment failed. Update the payment method in the billing portal: the plan stays active only for a short grace period.",
+      "incomplete": "The first payment was not completed, so the paid plan is not active. Complete the payment in the billing portal.",
+      "unpaid": "The subscription is suspended for non-payment and the paid plan is not active. Pay the open invoice in the billing portal to reactivate it.",
+      "canceled": "The subscription has ended and the paid plan is no longer active. Choose a plan to subscribe again."
+    },
+    "portal": {
+      "managePayments": "Manage payments",
+      "manage": "Open the billing portal",
+      "open": "Open the billing portal",
+      "completePayment": "Complete the payment",
+      "opening": "Opening the portal…",
+      "noCustomer": "The billing portal will be available after the first payment: choose a plan first.",
+      "failed": "Unable to open the billing portal. Try again."
+    },
+    "profile": {
+      "title": "Billing details",
+      "description": "Country and VAT number of the organization, used for the subscription invoices.",
+      "country": "Country",
+      "countryPlaceholder": "Select the country",
+      "vatId": "VAT number (optional)",
+      "vatIdHint": "The VAT number will be verified before it is used on invoices.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Billing details saved.",
+      "saveFailed": "Unable to save the billing details. Try again.",
+      "vatRejected": "The VAT number was not accepted: check the number or save without a VAT number.",
+      "validation": {
+        "countryRequired": "Select the billing country.",
+        "vatIdInvalid": "The VAT number can contain only letters and digits (4 to 20 characters)."
+      }
+    },
+    "adminRequired": {
+      "title": "Reserved for the organization administrator",
+      "description": "Plan and billing are managed by the administrator of your organization: contact the administrator to change them."
+    }
   },
   "profile": {
     "title": "My Profile",
@@ -3306,13 +3479,7 @@
       "cinGuidance": "How to obtain the CIN code",
       "saveAndContinue": "Save and continue",
       "continue": "Continue",
-      "documentsHint": "Upload the mandatory documents (licence, insurance, safety certificates).",
-      "safetyHint": "Confirm that the mandatory safety equipment is present and compliant.",
-      "safety": {
-        "smokeDetector": "Smoke detector installed and working",
-        "fireExtinguisher": "Fire extinguisher present and inspected",
-        "gasCompliance": "Gas system compliance certificate on file"
-      },
+      "documentsHint": "Upload the documents required for the activation. Safety proofs (photos or documents) are optional and are attached in the safety checklist.",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
       "backToEdit": "Back to property editing",
       "complete": "Complete activation",
@@ -3391,6 +3558,132 @@
       "arrivalMissingHint": "The arrival of {{guest}} was not registered. If the guest arrived, register the arrival and go on with the check-out.",
       "registerArrivalAndProceed": "Register arrival and continue",
       "registeringArrival": "Registering the arrival…"
+    },
+    "safety": {
+      "loading": "Loading the safety checklist...",
+      "loadFailed": "Unable to load the safety checklist.",
+      "retry": "Try again",
+      "intro": "Obligations of art. 13-ter, par. 7, of Decree-Law 145/2023 (converted by Law 191/2023) for units let for short stays or for tourism. Items that do not concern your property are \"not applicable\" based on your answers about the property.",
+      "disclaimer": "CasaZen records what you declare: it does not inspect the property and does not certify its compliance. You declare the safety requirements in the BDSR with the CIN request (art. 13-ter, par. 3).",
+      "importedFromLegacy": "We imported the answers of the old checklist (smoke detector, extinguisher, gas certificate). Review the items marked \"To review\", complete the missing ones and confirm again.",
+      "complete": "Checklist complete: nothing is blocking.",
+      "blockersTitle": "To complete before the activation (last save):",
+      "itemsTitle": "Equipment and requirements",
+      "toReview": "To review",
+      "confirm": "I confirm that this information is true and matches what I declared in the BDSR. I know that CasaZen does not check or certify the compliance of the property.",
+      "confirmedAt": "Checklist confirmed on {{date}}.",
+      "save": "Save checklist",
+      "saved": "Safety checklist saved",
+      "saveFailed": "Unable to save the safety checklist",
+      "answer": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "facts": {
+        "title": "The property",
+        "entrepreneurial": "Do you run the rental as a business?",
+        "entrepreneurialHint": "For example with a VAT number, as a company or under the presumption based on the number of flats (art. 1, par. 595, Law 178/2020). Only in this case are the safety requirements of the systems needed (art. 13-ter, par. 7, first sentence).",
+        "gasSupply": "Does the unit have a gas system or supply (mains, LPG or cylinders)?",
+        "appliances": "Combustion appliances in the unit",
+        "noAppliances": "No combustion appliance",
+        "detectorsExempt": "Gas and carbon monoxide detectors not applicable: the unit has no gas system and no combustion appliance (exemption stated in the FAQ of the Ministry of Tourism). Fire extinguishers remain required.",
+        "combustionWithoutGas": "With a combustion appliance (for example a fireplace or a stove) the carbon monoxide risk is not ruled out: the detectors remain required even without gas.",
+        "floorCount": "Number of floors of the unit",
+        "floorArea": "Floor area of floor {{floor}} in m² (optional)",
+        "minimumExtinguishers": "Minimum number of extinguishers: {{minimum}} (one every 200 m² of floor or fraction, at least one per floor)."
+      },
+      "appliance": {
+        "Boiler": "Boiler",
+        "WaterHeater": "Water heater",
+        "GasHob": "Gas hob",
+        "Stove": "Stove",
+        "Fireplace": "Fireplace",
+        "Other": "Other combustion appliance"
+      },
+      "requirement": {
+        "Required": "Required",
+        "Optional": "Recommended, not required by law",
+        "NotApplicable": "Not applicable",
+        "Undetermined": "Depends on your answers about the property"
+      },
+      "notApplicable": {
+        "NoGasNoCombustion": "Not applicable: the unit has no gas system and no combustion appliance.",
+        "NotEntrepreneurial": "Not applicable: the rental is not run as a business."
+      },
+      "detectorType": {
+        "Battery": "Battery powered",
+        "Mains": "Mains powered",
+        "FixedSystem": "Fixed system (Ministerial Decree 37/2008)"
+      },
+      "items": {
+        "FireExtinguishers": {
+          "title": "Portable fire extinguishers",
+          "reference": "Always required: compliant with the law, in accessible and visible positions, especially near the entrances and the most dangerous areas (art. 13-ter, par. 7, second sentence).",
+          "faq": "According to the FAQ of the Ministry of Tourism: extinguishing capacity of at least 13A, charge of at least 6 kg or 6 litres, periodic check under the UNI 9994-1 standard.",
+          "dateLabel": "Date of the last periodic check"
+        },
+        "GasDetector": {
+          "title": "Combustible gas detector",
+          "reference": "Working device, also removable (art. 13-ter, par. 7, second sentence; FAQ of the Ministry of Tourism).",
+          "dateLabel": "Date of the last test"
+        },
+        "CoDetector": {
+          "title": "Carbon monoxide (CO) detector",
+          "reference": "Working device, also removable (art. 13-ter, par. 7, second sentence; FAQ of the Ministry of Tourism).",
+          "dateLabel": "Date of the last test"
+        },
+        "SystemsCompliance": {
+          "title": "Compliant systems",
+          "reference": "Systems in the unit (electrical, gas, heating, water) compliant with national and regional rules, with a declaration of conformity or of correspondence (Ministerial Decree 37/2008). Only when the rental is run as a business (art. 13-ter, par. 7, first sentence).",
+          "dateLabel": "Date of the declaration of conformity"
+        },
+        "BdsrDeclaration": {
+          "title": "Declaration in the BDSR",
+          "reference": "You declared the safety requirements in the national database of accommodation (BDSR) with the CIN request or update (art. 13-ter, par. 3).",
+          "dateLabel": "Date of the declaration in the BDSR"
+        },
+        "SmokeDetector": {
+          "title": "Smoke detector",
+          "reference": "Recommended: art. 13-ter does not require it.",
+          "dateLabel": "Date of the last test"
+        },
+        "EmergencyInstructions": {
+          "title": "Emergency instructions and numbers for guests",
+          "reference": "Recommended: art. 13-ter does not require them."
+        }
+      },
+      "fields": {
+        "extinguisherCount": "Number of extinguishers",
+        "deviceCount": "Number of devices (optional)",
+        "location": "Where they are (optional)",
+        "detectorType": "Type of device",
+        "notSpecified": "Not specified",
+        "dateHint": "Optional. Used for reminders: it is not a legal deadline.",
+        "sensorEndOfLife": "End of life of the sensor, from the manufacturer's manual (optional)",
+        "notes": "Notes (optional)",
+        "evidence": "Proof (optional): photo or document",
+        "evidenceAttached": "Attached document",
+        "removeEvidence": "Remove",
+        "uploadEvidence": "Upload proof",
+        "evidenceHint": "PDF, Word or image. It stays private: only the users of your organisation can see it."
+      },
+      "blockers": {
+        "safety_entrepreneurial_unanswered": "State whether you run the rental as a business: the safety requirements of the systems depend on it.",
+        "safety_gas_unanswered": "State whether the unit has gas and which combustion appliances it has: the gas and carbon monoxide detectors depend on it.",
+        "safety_floors_unanswered": "Enter the number of floors of the unit: it is needed for the minimum number of extinguishers (at least one per floor).",
+        "safety_extinguishers_missing": "Portable fire extinguishers: required in every unit let for short stays or for tourism (art. 13-ter, par. 7).",
+        "safety_extinguishers_below_minimum": "Not enough extinguishers: you entered {{declared}}, at least {{minimum}} are needed.",
+        "safety_extinguishers_review": "Fire extinguishers: the answer comes from the old checklist. Confirm it by entering the number of extinguishers and the floors of the unit.",
+        "safety_gas_detector_missing": "Combustible gas detector: required, because the unit has gas or combustion appliances (art. 13-ter, par. 7).",
+        "safety_co_detector_missing": "Carbon monoxide detector: required, because the unit has gas or combustion appliances (art. 13-ter, par. 7).",
+        "safety_systems_compliance_missing": "Compliant systems: required when the rental is run as a business (art. 13-ter, par. 7, first sentence).",
+        "safety_systems_compliance_review": "Systems: the old checklist stated a compliance certificate of the gas system. Confirm the answer.",
+        "safety_bdsr_declaration_missing": "Confirm that you declared the safety requirements in the BDSR, with the CIN request or update (art. 13-ter, par. 3).",
+        "safety_confirmation_missing": "Confirm the safety checklist with the current answers."
+      },
+      "warnings": {
+        "safety_floor_areas_missing": "Without the m² of each floor the minimum is based on the floors only. The law requires one extinguisher every 200 m² of floor or fraction, with at least one per floor."
+      }
     }
   },
   "toast": {
@@ -3436,8 +3729,6 @@
     "profileUpdateFailed": "Failed to update profile",
     "roleUpdated": "Role updated successfully",
     "roleUpdateFailed": "Failed to update role",
-    "planUpdated": "Plan updated successfully",
-    "planUpdateFailed": "Failed to update plan",
     "userDeactivated": "User deactivated successfully",
     "userDeactivateFailed": "Failed to deactivate user",
     "userDeactivatedAuth0NotSynced": "User deactivated: it can no longer use CasaZen. Auth0 was not updated though: repeat the deactivation later.",
@@ -3484,7 +3775,11 @@
     "stipulaDeclareFailed": "Could not save the signing date",
     "pricingRecalculated": "Suggestions recalculated",
     "pricingRecalculateFailed": "Could not recalculate the suggestions",
-    "pricingBasePriceMissing": "Set the property's nightly rate to get suggestions"
+    "pricingBasePriceMissing": "Set the property's nightly rate to get suggestions",
+    "cadastralSaved": "Cadastral data saved",
+    "cadastralSaveFailed": "Could not save the cadastral data",
+    "apeIdentificationSaved": "APE details saved",
+    "apeIdentificationSaveFailed": "Could not save the APE details"
   },
   "fiscal": {
     "page": {
@@ -3529,6 +3824,9 @@
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
+      "alreadySubscribed": "You already have a subscription: use the billing portal to change plan or complete the payment.",
+      "billingPlanUnavailable": "This plan cannot be purchased right now. Try again later or contact support.",
+      "billingReturnUrlNotConfigured": "Plan payments are not configured in this environment yet.",
       "duplicateInvite": "A pending invite already exists for this email.",
       "inviteEmailFailed": "The invite email could not be sent. Try again later.",
       "checkinAlreadySubmitted": "The check-in has already been completed.",
@@ -3619,6 +3917,11 @@
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
       "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
       "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes.",
+      "stripeConnectUnavailable": "Stripe is not responding right now. Your connected Stripe account was not changed: try again in a moment.",
+      "stripeConnectNotConfigured": "Stripe payments are not configured correctly on the server. Your connected account was not changed: contact CasaZen support.",
+      "stripeConnectFailed": "Stripe refused the request. Your connected account was not changed: try again later or contact CasaZen support.",
+      "stripeConnectAccountUnavailable": "The connected Stripe account is no longer available: try again to connect a new one.",
+      "connectReturnUrlNotConfigured": "The public address of the app is not configured on the server: the Stripe connection cannot be started.",
       "bookingAlreadyCheckedOut": "The check-out of this booking is already recorded: reload the page.",
       "bookingArrivalNotRegistered": "The guest's arrival was not registered: confirm the arrival to go on with the check-out.",
       "bookingNotConfirmed": "The arrival can be registered only for a confirmed booking.",
@@ -3634,7 +3937,10 @@
       "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
       "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
       "guestDocumentScanMissing": "No document scan is available for this guest.",
-      "pricingSuggestionsNotEnabled": "Turn on the seasonal suggestions before recalculating them."
+      "pricingSuggestionsNotEnabled": "Turn on the seasonal suggestions before recalculating them.",
+      "serviceRequestBookingRequired": "In short-term rentals a supplier request is for a stay: choose the booking.",
+      "serviceRequestBookingMismatch": "The booking is not a stay of this property.",
+      "serviceRequestBookingNotAllowed": "In long-term rentals a supplier request is for the property, not for a booking."
     }
   },
   "validation": {
@@ -3719,6 +4025,20 @@
       "documentsLoadError": "The property documents could not be loaded.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    },
+    "cadastral": {
+      "title": "Cadastral data",
+      "edit": "Edit",
+      "missing": "Cadastral data missing: the contract states them and cannot be generated without them.",
+      "sheet": "Sheet (foglio)",
+      "parcel": "Parcel (particella)",
+      "subaltern": "Subaltern (subalterno)",
+      "category": "Cadastral category",
+      "categoryPlaceholder": "e.g. A/2",
+      "income": "Cadastral income (€)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "notSet": "Not set"
     }
   },
   "touristTaxRules": {

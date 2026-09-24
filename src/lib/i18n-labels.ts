@@ -94,6 +94,29 @@ export function getFiscalRegimeLabel(regime: string, t: TranslateFn): string {
   return t(`leases.fiscalRegimeLabel.${regime}`);
 }
 
+/** Contract type of a lease (LT-10): libero 4+4, concordato 3+2, transitorio. */
+export function getLeaseContractTypeLabel(contractType: string, t: TranslateFn): string {
+  return translateEnumValue('leases.contractTypeLabel', contractType, t);
+}
+
+/** Tax regime of a lease (LT-10), separate from the contract type. */
+export function getLeaseTaxRegimeLabel(taxRegime: string, t: TranslateFn): string {
+  return translateEnumValue('leases.taxRegimeLabel', taxRegime, t);
+}
+
+/**
+ * "Canone concordato · Cedolare secca": contract type and tax regime of a lease, or the legacy combined label when the
+ * API did not send the contract type; "regime non indicato" for an old concordato lease without a tax regime.
+ */
+export function getLeaseTypeAndRegimeLabel(
+  lease: { contractType?: string | null; taxRegime?: string | null; fiscalRegime: string },
+  t: TranslateFn,
+): string {
+  if (!lease.contractType) return getFiscalRegimeLabel(lease.fiscalRegime, t);
+  const regime = lease.taxRegime ? getLeaseTaxRegimeLabel(lease.taxRegime, t) : t('leases.taxRegimeUnknown');
+  return `${getLeaseContractTypeLabel(lease.contractType, t)} · ${regime}`;
+}
+
 export function getLeaseStatusLabel(status: string, t: TranslateFn): string {
   return translateEnumValue('leases.statusLabel', status, t);
 }

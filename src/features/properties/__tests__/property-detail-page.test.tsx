@@ -2,14 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PropertyDetailPage } from '../property-detail-page';
 import * as propertyQueries from '@/queries/use-properties';
 import type { PropertyDetailDto } from '@/types';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { fetchServiceRequests } from '@/api/service-requests.api';
+import i18n from '@/i18n/config';
 
 vi.mock('@/queries/use-properties');
+vi.mock('@/api/service-requests.api', () => ({
+  fetchServiceRequests: vi.fn(),
+  markServiceRequestPaid: vi.fn(),
+  markLongRentServiceRequestPaid: vi.fn(),
+}));
 vi.mock('@/queries/use-cin', () => ({
   useUpdatePropertyCin: () => ({
     mutateAsync: vi.fn(),
@@ -98,7 +105,11 @@ function renderPage(otaPartnerApi = false) {
         createElement(
           MemoryRouter,
           { initialEntries: [`/properties/${PROPERTY_ID}`] },
-          createElement(PropertyDetailPage)
+          createElement(
+            Routes,
+            null,
+            createElement(Route, { path: '/properties/:id', element: createElement(PropertyDetailPage) })
+          )
         )
       )
     )
@@ -107,6 +118,7 @@ function renderPage(otaPartnerApi = false) {
 
 describe('PropertyDetailPage', () => {
   beforeEach(() => {
+    vi.mocked(fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
       data: mockDetail,
       isLoading: false,
@@ -170,5 +182,48 @@ describe('PropertyDetailPage', () => {
     expect(screen.getByTestId('ical-settings')).toBeInTheDocument();
     expect(screen.queryByText('Integrazioni OTA')).not.toBeInTheDocument();
     expect(screen.queryByText('Booking.com')).not.toBeInTheDocument();
+  });
+
+  // SU-07 (D2): the property overview lists every stay's requests, each linked to its stay.
+  it('PropertyDetailPage_ServiceRequests_ListedByPropertyWithTheirStay', async () => {
+    const request = {
+      orgId: 'org-1',
+      rentalContext: 'ShortRent' as const,
+      propertyId: PROPERTY_ID,
+      supplierOrgId: 'sup-1',
+      category: 'cleaning',
+      urgency: 'Normal' as const,
+      status: 'Richiesto' as const,
+      chargeToGuest: false,
+      createdAt: '2026-09-24T08:00:00Z',
+      updatedAt: '2026-09-24T08:00:00Z',
+    };
+    vi.mocked(fetchServiceRequests).mockResolvedValue({
+      items: [
+        { ...request, id: 'sr-stay', bookingId: 'booking-1' },
+        { ...request, id: 'sr-old', bookingId: null },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 50,
+    });
+
+    renderPage();
+
+    expect(await screen.findByTestId('service-request-stay-sr-stay')).toHaveAttribute(
+      'href',
+      '/app/short-rent/bookings/booking-1',
+    );
+    expect(screen.getByTestId('service-request-no-stay-sr-old')).toHaveTextContent(i18n.t('serviceRequest.noStayLegacy'));
+    expect(fetchServiceRequests).toHaveBeenCalledWith({ propertyId: PROPERTY_ID, pageSize: 50 });
+  });
+
+  it('PropertyDetailPage_ServiceRequestsFail_ShowsTheErrorNotAnEmptyList', async () => {
+    vi.mocked(fetchServiceRequests).mockRejectedValue(new Error('network'));
+
+    renderPage();
+
+    expect(await screen.findByTestId('service-requests-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('service-requests-empty')).not.toBeInTheDocument();
   });
 });

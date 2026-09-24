@@ -78,11 +78,20 @@ test.describe('Golden Journey supplier mobile (AC13 F1–F2)', () => {
       propertyId = rows[0].id;
     }
 
+    // Short-rent requests are for a stay (SU-07, D2): the seeded booking, else a live stay of the property.
+    let bookingId = seed.bookingId;
+    if (!bookingId) {
+      const stays = await request.get(`${API}/bookings?propertyId=${propertyId}`, { headers: auth });
+      expect(stays.status()).toBe(200);
+      bookingId = ((await stays.json()) as { id: string; status: string }[]).find((b) => b.status !== 'Cancelled')?.id;
+      expect(bookingId, 'host stay for F1–F2 SR (short-rent requests are for a stay)').toBeTruthy();
+    }
+
     const sr = await request.post(`${API}/service-requests`, {
       headers: auth,
       data: {
         propertyId,
-        bookingId: seed.bookingId,
+        bookingId,
         supplierOrgId: supplier.orgId,
         category: 'cleaning',
         notes: `F1-F2 ${Date.now()}`,

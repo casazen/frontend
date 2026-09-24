@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { LeaseStatus } from '@/types';
+import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type FiscalRegime, type LeaseStatus } from '@/types';
 import type { RliRegistrationState } from '@/lib/rli-registration-state';
 
 const partySchema = z.object({
@@ -19,10 +19,13 @@ const partySchema = z.object({
 export const leaseFormSchema = z
   .object({
     propertyId: z.string().min(1, 'leases.validation.propertyId.required'),
-    fiscalRegime: z.enum(['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato']),
+    // LT-10 (A7-13): contract type and tax regime are separate; the term rules of each type are checked by the API.
+    contractType: z.enum(LEASE_CONTRACT_TYPES),
+    taxRegime: z.enum(LEASE_TAX_REGIMES),
     startDate: z.string().min(1, 'leases.validation.startDate.required'),
     endDate: z.string().min(1, 'leases.validation.endDate.required'),
     monthlyRent: z.number().positive('leases.validation.monthlyRent.positive'),
+    securityDeposit: z.number().min(0, 'leases.validation.securityDeposit.min').optional(),
     landlord: partySchema,
     tenant: partySchema.extend({ role: z.literal('Tenant') }),
   })
@@ -34,7 +37,7 @@ export const leaseFormSchema = z
 export type LeaseFormValues = z.infer<typeof leaseFormSchema>;
 
 /** @deprecated Use getFiscalRegimeLabel from @/lib/i18n-labels */
-export const FISCAL_REGIME_I18N_KEYS: Record<LeaseFormValues['fiscalRegime'], string> = {
+export const FISCAL_REGIME_I18N_KEYS: Record<FiscalRegime, string> = {
   CedolareSecca: 'leases.fiscalRegimeLabel.CedolareSecca',
   RegimeOrdinario: 'leases.fiscalRegimeLabel.RegimeOrdinario',
   CanoneConcordato: 'leases.fiscalRegimeLabel.CanoneConcordato',
