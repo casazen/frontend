@@ -10,6 +10,7 @@ import {
 import { authConfig } from '@/config/auth.config';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { setApiAuthHandlers } from '@/lib/axios';
+import { SIGNUP_PATH } from '@/lib/signup-attribution';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -23,6 +24,11 @@ type LoginOptions = {
 };
 
 export type AuthBridgeValue = {
+  /**
+   * `anonymous`: the app was opened on a public path and Auth0 is not loaded (see `isPublicUnauthenticatedPath`); a page
+   * that needs it must be loaded again (`AuthProviderBoundary`).
+   */
+  kind: 'auth0' | 'anonymous' | 'demo';
   isLoading: boolean;
   isAuthenticated: boolean;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
@@ -62,6 +68,7 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthBridgeValue>(
     () => ({
+      kind: 'demo',
       isLoading: false,
       isAuthenticated: true,
       user: demoUser,
@@ -79,15 +86,20 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
   return <AuthBridgeContext.Provider value={value}>{children}</AuthBridgeContext.Provider>;
 }
 
-/** Public booking / SEO paths — no Auth0 SPA SDK (works on http://LAN-IP). */
+/**
+ * Public booking / SEO paths — no Auth0 SPA SDK (works on http://LAN-IP). A visitor here is never sent to the login:
+ * `login` is only the answer to a click, and it opens the page that starts Auth0 directly (A8-03): `/signup` for a
+ * signup, which goes straight to the Auth0 signup screen, instead of the login page and a second click.
+ */
 function AnonymousAuthBridge({ children }: { children: ReactNode }) {
   const value = useMemo<AuthBridgeValue>(
     () => ({
+      kind: 'anonymous',
       isLoading: false,
       isAuthenticated: false,
       user: undefined,
-      login: () => {
-        window.location.assign('/login');
+      login: (options?: LoginOptions) => {
+        window.location.assign(options?.authorizationParams?.screen_hint === 'signup' ? SIGNUP_PATH : '/login');
       },
       logout: () => undefined,
       logoutToLogin: () => window.location.replace('/login'),
@@ -164,6 +176,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthBridgeValue>(
     () => ({
+      kind: 'auth0',
       isLoading,
       isAuthenticated,
       user,

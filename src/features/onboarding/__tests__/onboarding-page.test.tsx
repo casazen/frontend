@@ -9,7 +9,7 @@ import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 
 vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/api/users.api', () => ({
-  UsersApi: { getMe: vi.fn(), postOnboarding: vi.fn(), putOnboarding: vi.fn() },
+  UsersApi: { getMe: vi.fn(), postOnboarding: vi.fn(), putOnboarding: vi.fn(), recordSignupAttribution: vi.fn() },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -40,6 +40,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
 import { OnboardingPage } from '../onboarding-page';
+import { captureSignupAttribution, readPendingSignupAttribution } from '@/lib/signup-attribution';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
 const refreshAccessToken = vi.fn(async () => 'fresh-token');
@@ -122,6 +123,7 @@ describe('OnboardingPage (PL-01)', () => {
     cleanup();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   it('OnboardingPage_HostRolesWithoutOrg_PostsWithConsentsAndReturnsToOrigin', async () => {
@@ -140,6 +142,45 @@ describe('OnboardingPage (PL-01)', () => {
     });
     expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('OnboardingPage_FirstOnboardingCreatesTheOrg_SendsTheSignupAttributionBeforeLeaving', async () => {
+    // SE-03: captured on /signup before the Auth0 signup.
+    captureSignupAttribution(
+      { pathname: '/signup', search: '?comune=como&utm_source=seo-compliance&utm_medium=cta', origin: 'https://site.test' },
+      '',
+    );
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ orgProvisioned: true }));
+    vi.mocked(UsersApi.recordSignupAttribution).mockResolvedValue({ recorded: true });
+
+    renderPage();
+    await chooseShortTermWithConsents();
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    expect(UsersApi.recordSignupAttribution).toHaveBeenCalledWith({
+      utmSource: 'seo-compliance',
+      utmMedium: 'cta',
+      comune: 'como',
+      landingPath: '/signup',
+    });
+    expect(readPendingSignupAttribution()).toBeNull();
+  });
+
+  it('OnboardingPage_AttributionCannotBeSent_OnboardingStillCompletes', async () => {
+    captureSignupAttribution({ pathname: '/signup', search: '?utm_source=google', origin: 'https://site.test' }, '');
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ orgProvisioned: true }));
+    vi.mocked(UsersApi.recordSignupAttribution).mockRejectedValue(httpError(503));
+
+    renderPage();
+    await chooseShortTermWithConsents();
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    // Kept for the next page load (the onboarding guard sends it again).
+    expect(readPendingSignupAttribution()).toEqual({ utmSource: 'google', landingPath: '/signup' });
   });
 
   it('OnboardingPage_RolesNotSynced_ShowsPendingPanelAndRenewsSession', async () => {

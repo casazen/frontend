@@ -2,7 +2,10 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
+import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
+import { SignupPage } from '@/pages/signup-page';
+import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
@@ -115,14 +118,43 @@ const workspaceRoutes: RouteObject[] = [
   })),
 ];
 
-export const router = createBrowserRouter([
+/** Route table of the app (exported for the routing tests; the app uses `router`). */
+export const appRoutes: RouteObject[] = [
   {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/register',
-    element: <SupplierRegisterPage />,
+    // Pages that need Auth0: reached client-side from a public page (no Auth0 loaded), they reload themselves.
+    element: <AuthProviderBoundary />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <SupplierRegisterPage />,
+      },
+      {
+        // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
+        path: SIGNUP_PATH,
+        element: <SignupPage />,
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: '/onboarding',
+            element: <OnboardingPage />,
+          },
+          {
+            element: <OnboardingGuard />,
+            children: workspaceRoutes,
+          },
+        ],
+      },
+    ],
   },
   {
     path: '/search',
@@ -177,24 +209,10 @@ export const router = createBrowserRouter([
     element: <IcalHelpPage />,
   },
   {
-    element: (
-      <ProtectedRoute>
-        <Outlet />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: '/onboarding',
-        element: <OnboardingPage />,
-      },
-      {
-        element: <OnboardingGuard />,
-        children: workspaceRoutes,
-      },
-    ],
-  },
-  {
+    // Public 404 (A8-03): never a redirect to the login.
     path: '*',
     element: <CatchAllRedirect />,
   },
-]);
+];
+
+export const router = createBrowserRouter(appRoutes);

@@ -6,6 +6,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
 import { isProfileLoadFailure, needsOnboarding } from '@/lib/onboarding';
 import { useMe } from '@/queries/use-users';
+import { useSignupAttributionSync } from '@/hooks/use-signup-attribution-sync';
 
 /**
  * Sends to `/onboarding` only the users who need it (A1-01): hosts without an org or without a completed
@@ -18,6 +19,14 @@ export function OnboardingGuard() {
   const { isLoading: authLoading, isAuthenticated, user } = useAuth();
   const { roles, isResolved: rolesResolved } = useUserRoleState();
   const { data: profile, isLoading: profileLoading, error: profileError, refetch, isFetching } = useMe();
+  const passes =
+    !authLoading &&
+    isAuthenticated &&
+    !!profile &&
+    rolesResolved &&
+    !needsOnboarding(user, profile, roles);
+  // SE-03: a signup attribution is sent (or forgotten) only once the user is past the onboarding.
+  useSignupAttributionSync(passes);
 
   // The decision depends on the absence of roles (e.g. "not an admin"): wait until they are known.
   if (authLoading || (isAuthenticated && ((profileLoading && !profile) || !rolesResolved))) {
