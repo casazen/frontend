@@ -1823,7 +1823,15 @@
       "cityRequired": "La città è obbligatoria",
       "regionRequired": "La regione è obbligatoria",
       "rateMin": "La tariffa deve essere maggiore di 0",
-      "effectiveFromRequired": "La data di entrata in vigore è obbligatoria"
+      "effectiveFromRequired": "La data di entrata in vigore è obbligatoria",
+      "cityTooLong": "Il nome del comune può avere al massimo 100 caratteri",
+      "regionTooLong": "Il codice regione può avere al massimo 10 caratteri",
+      "rateMax": "La tariffa non può superare 1000 €",
+      "maxNightsRange": "Inserisci un numero intero di notti tra 1 e 365, oppure lascia vuoto",
+      "minimumAgeRange": "Inserisci un'età tra 0 e 120 anni (0 se non ci sono esenzioni)",
+      "effectiveToBeforeFrom": "La data di fine validità non può precedere la data di inizio",
+      "notesTooLong": "Le note possono avere al massimo 500 caratteri",
+      "sourceUrlInvalid": "Inserisci un indirizzo web completo (http o https)"
     },
     "toast": {
       "created": "Aliquota creata con successo",
@@ -1832,6 +1840,20 @@
       "updateFailed": "Impossibile aggiornare l'aliquota",
       "deleted": "Aliquota eliminata con successo",
       "deleteFailed": "Impossibile eliminare l'aliquota"
+    },
+    "source": "Fonte",
+    "noSource": "Non indicata",
+    "verification": "Verifica",
+    "verificationLevels": {
+      "none": "Non indicata",
+      "Official": "Ufficiale (U)",
+      "Deduced": "Dedotta (D)",
+      "ThirdParty": "Fonte terza (T)"
+    },
+    "verificationHints": {
+      "Official": "Letta in una pagina o in un atto del comune.",
+      "Deduced": "Ricavata da dati ufficiali o di terzi: da confermare.",
+      "ThirdParty": "Da gestionali, blog o stampa: è un indizio, non una fonte. Da confermare prima dell'uso."
     }
   },
   "finance": {
@@ -2476,8 +2498,6 @@
         "fireExtinguisher": "Estintore presente e ispezionato",
         "gasCompliance": "Certificato conformità impianto gas in archivio"
       },
-      "touristTaxHint": "Configura le aliquote di soggiorno per {{city}} prima di accettare ospiti.",
-      "touristTaxAdmin": "Apri impostazioni tassa di soggiorno",
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
       "backToEdit": "Torna alla modifica immobile",
       "complete": "Completa attivazione",
@@ -2491,6 +2511,23 @@
         "safety": "Checklist sicurezza",
         "tourist-tax": "Imposta di soggiorno",
         "ical": "Sincronizzazione calendario"
+      },
+      "touristTax": {
+        "rateTitle": "Imposta di soggiorno a {{city}}",
+        "amount": "Tariffa per persona per notte",
+        "maxNights": "Notti tassate al massimo",
+        "noMaxNights": "Nessun limite",
+        "exemption": "Esenzione per età",
+        "exemptUnder_one": "Esenti gli ospiti con meno di {{count}} anno",
+        "exemptUnder_other": "Esenti gli ospiti con meno di {{count}} anni",
+        "noAgeExemption": "Nessuna esenzione per età",
+        "effectiveFrom": "In vigore dal",
+        "source": "Fonte ufficiale del comune",
+        "disclaimer": "Tariffa registrata in CasaZen: prima di riscuoterla verifica esenzioni e aggiornamenti sul sito del comune.",
+        "missingTitle": "Il comune di {{city}} non ha ancora una tariffa in CasaZen.",
+        "cityMissing": "Inserisci la città dell'immobile nei dati base per vedere la tariffa.",
+        "missingHint": "Puoi completare comunque l'attivazione. Verifica con il comune se l'imposta di soggiorno è dovuta e con quale tariffa.",
+        "publicPage": "Guida all'imposta di soggiorno a {{city}}"
       }
     },
     "checkout": {
@@ -2669,7 +2706,8 @@
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
       "invalidCinFormat": "Il CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
       "duplicateCin": "Questo CIN è già associato a un altro immobile.",
-      "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo."
+      "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo.",
+      "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco."
     }
   },
   "validation": {
