@@ -2868,6 +2868,19 @@
       "payAtProperty": "Payment at the property.",
       "resumeOwnBooking": "You already have a booking in progress for these dates in this page: resume it instead of creating a new one.",
       "resumeOwnBookingAction": "Resume the booking"
+    },
+    "availability": {
+      "title": "Availability",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "loading": "Loading availability…",
+      "loadError": "The availability could not be loaded.",
+      "checkedAtCheckout": "The dates you choose will still be checked before payment.",
+      "retry": "Try again",
+      "legendFree": "Free",
+      "legendBooked": "Booked",
+      "dayFree": "{{date}}: free",
+      "dayBooked": "{{date}}: booked"
     }
   },
   "publicSeo": {
@@ -3400,7 +3413,9 @@
       "bookingArrivalTooEarly": "The arrival can be registered from the check-in day.",
       "bookingArrivalAfterDeparture": "The departure day has passed: record the check-out of the stay, which registers the arrival too.",
       "checkoutDepartureNotConfirmed": "Confirm that the guest has left the property.",
-      "checkoutServiceRequestInvalid": "The supplier request could not be created: check that the supplier is active and works in the property's comune. The check-out was not recorded."
+      "checkoutServiceRequestInvalid": "The supplier request could not be created: check that the supplier is active and works in the property's comune. The check-out was not recorded.",
+      "publicPropertyNotFound": "This property is not available for online booking.",
+      "availabilityRangeInvalid": "The requested date range is not valid."
     }
   },
   "validation": {

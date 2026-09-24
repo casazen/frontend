@@ -2868,6 +2868,19 @@
       "payAtProperty": "Pagamento in struttura.",
       "resumeOwnBooking": "Hai già una prenotazione in corso per queste date in questa pagina: riprendila invece di crearne una nuova.",
       "resumeOwnBookingAction": "Riprendi la prenotazione"
+    },
+    "availability": {
+      "title": "Disponibilità",
+      "previousMonth": "Mese precedente",
+      "nextMonth": "Mese successivo",
+      "loading": "Caricamento della disponibilità…",
+      "loadError": "Non è stato possibile caricare la disponibilità.",
+      "checkedAtCheckout": "Le date scelte verranno comunque verificate prima del pagamento.",
+      "retry": "Riprova",
+      "legendFree": "Libero",
+      "legendBooked": "Occupato",
+      "dayFree": "{{date}}: libero",
+      "dayBooked": "{{date}}: occupato"
     }
   },
   "publicSeo": {
@@ -3400,7 +3413,9 @@
       "bookingArrivalTooEarly": "L'arrivo si può registrare dal giorno di check-in.",
       "bookingArrivalAfterDeparture": "Il giorno di partenza è passato: registra il check-out del soggiorno, che registra anche l'arrivo.",
       "checkoutDepartureNotConfirmed": "Conferma che l'ospite ha lasciato la struttura.",
-      "checkoutServiceRequestInvalid": "Impossibile creare la richiesta al fornitore: verifica che il fornitore sia attivo e operi nel comune della struttura. Il check-out non è stato registrato."
+      "checkoutServiceRequestInvalid": "Impossibile creare la richiesta al fornitore: verifica che il fornitore sia attivo e operi nel comune della struttura. Il check-out non è stato registrato.",
+      "publicPropertyNotFound": "Questo alloggio non è disponibile per la prenotazione online.",
+      "availabilityRangeInvalid": "L'intervallo di date richiesto non è valido."
     }
   },
   "validation": {
