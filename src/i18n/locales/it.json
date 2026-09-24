@@ -810,15 +810,22 @@
       "notEditable": "Una prenotazione annullata non si può modificare.",
       "backToBooking": "Torna alla prenotazione"
     },
-    "checkInDialog": {
-      "title": "Check-in ospite",
-      "description": "Check-in di {{name}}",
-      "checkInTime": "Orario check-in",
-      "notes": "Note (opzionale)",
-      "notesPlaceholder": "Eventuali note sul check-in...",
-      "cancel": "Annulla",
-      "checkingIn": "Check-in in corso...",
-      "confirm": "Conferma check-in"
+    "arrival": {
+      "action": "Registra arrivo",
+      "title": "Registra arrivo",
+      "description": "Confermi che {{guest}} è arrivato nella struttura? La prenotazione passa a \"Check-in effettuato\".",
+      "lateNotice": "Il giorno di check-in era il {{date}}: puoi registrare l'arrivo anche adesso. Il termine per Alloggiati Web resta calcolato dal giorno di check-in.",
+      "guestDataChecking": "Verifica dei dati degli ospiti…",
+      "guestDataComplete": "I dati degli ospiti per Alloggiati Web sono completi.",
+      "guestDataIncomplete": "Mancano dati degli ospiti per la comunicazione ad Alloggiati Web. Puoi registrare l'arrivo lo stesso e completarli subito dopo.",
+      "guestDataUnknown": "Impossibile verificare i dati degli ospiti: puoi procedere e controllarli nella scheda Alloggiati.",
+      "completeGuestData": "Completa i dati degli ospiti",
+      "keep": "Annulla",
+      "submit": "Registra arrivo",
+      "submitting": "Registrazione…",
+      "failed": "Impossibile registrare l'arrivo.",
+      "registered": "Arrivo registrato.",
+      "registeredDataIncomplete": "Arrivo registrato. Completa i dati degli ospiti per Alloggiati Web."
     },
     "detailPage": {
       "loading": "Caricamento prenotazione...",
@@ -2147,7 +2154,13 @@
       "exportReady": "Dati e codici completi: pronti per il tracciato Alloggiati.",
       "codesPending": "Dati completi. Alcuni codici ufficiali sono da completare: servono solo per l'esportazione del tracciato.",
       "dataIncomplete": "Dati incompleti: completa i campi mancanti prima dell'invio.",
-      "legacyPlaceOfBirth": "Registrato in precedenza: «{{place}}» (indica se in Italia o all'estero)"
+      "legacyPlaceOfBirth": "Registrato in precedenza: «{{place}}» (indica se in Italia o all'estero)",
+      "revealDocument": "Mostra",
+      "revealFailed": "Impossibile mostrare il numero del documento.",
+      "enteredBy": {
+        "GuestPortal": "Inseriti dall'ospite il {{date}}",
+        "Host": "Inseriti dall'host il {{date}}"
+      }
     },
     "codeTable": {
       "Comuni": "comuni",
@@ -2163,7 +2176,9 @@
       "save": "Salva ospiti",
       "cancel": "Annulla",
       "saved": "Ospiti del soggiorno aggiornati",
-      "saveFailed": "Impossibile salvare gli ospiti. Riprova."
+      "saveFailed": "Impossibile salvare gli ospiti. Riprova.",
+      "loadingDocuments": "Caricamento dei documenti…",
+      "documentsLoadFailed": "Impossibile caricare i numeri dei documenti. Riprova."
     }
   },
   "guests": {
@@ -2234,7 +2249,10 @@
     "loadError": "Impossibile caricare gli ospiti.",
     "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} ospiti)",
     "previous": "Precedente",
-    "next": "Successiva"
+    "next": "Successiva",
+    "downloadDocumentScan": "Scarica scansione documento",
+    "documentScanFileName": "documento-ospite",
+    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento."
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -2557,11 +2575,7 @@
     }
   },
   "checkin": {
-    "sendLink": "Invia link check-in",
-    "linkGenerated": "Link check-in generato",
     "copyLink": "Copia link",
-    "sendEmail": "Invia via email",
-    "guestEmail": "Email dell'ospite",
     "documentType": {
       "Passport": "Passaporto",
       "IdentityCard": "Carta d'identita'",
@@ -2676,16 +2690,7 @@
     "saving": "Salvataggio...",
     "saveData": "Salva dati",
     "linkCopied": "Link copiato",
-    "emailSubject": "Check-in CasaZen",
-    "emailClientOpening": "Apertura client email...",
-    "generateLink": "Genera link",
-    "generateLinkDescription": "Genera un link di check-in da inviare all'ospite per la compilazione dei dati.",
-    "generateLinkHelper": "Clicca il pulsante per generare un link di check-in univoco.",
-    "enterGuestEmailHelper": "Inserisci l'email dell'ospite per inviare il link tramite il tuo client di posta.",
-    "close": "Chiudi",
-    "guestEmailPlaceholder": "ospite@esempio.com",
     "generateError": "Impossibile generare il link di check-in. Riprova.",
-    "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen",
     "firstName": "Nome *",
     "lastName": "Cognome *",
     "stepPersonal": "Dati anagrafici",
@@ -2703,9 +2708,7 @@
     "marketingConsent": "Acconsento a ricevere comunicazioni promozionali (facoltativo).",
     "sessionLabel": "Stato check-in ospite",
     "sessionLoading": "Caricamento stato sessione...",
-    "noSession": "Nessuna sessione check-in attiva.",
     "resendLink": "Invia sollecito",
-    "resendSuccess": "Link check-in reinviato all'ospite.",
     "resendError": "Impossibile reinviare il link check-in.",
     "status": {
       "Inviato": "Link inviato",
@@ -2744,7 +2747,44 @@
     "documentIssuePlace": "Luogo di rilascio *",
     "documentIssuePlaceHint": "Il comune se rilasciato in Italia, lo Stato se rilasciato all'estero.",
     "codeSelected": "Codice Alloggiati: {{code}}",
-    "codeSearchFailed": "Elenco ufficiale non disponibile in questo momento: scrivi il nome per esteso."
+    "codeSearchFailed": "Elenco ufficiale non disponibile in questo momento: scrivi il nome per esteso.",
+    "link": {
+      "none": "Nessun link di check-in generato.",
+      "loadError": "Impossibile caricare lo stato del link di check-in.",
+      "retry": "Riprova",
+      "expiresAt": "Scade il {{date}}",
+      "expired": "Il link è scaduto: invia un sollecito o genera un nuovo link da copiare.",
+      "completed": "L'ospite ha completato il check-in. Per correggere i dati usa la scheda Alloggiati.",
+      "notEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
+      "sendByEmail": "Invia link via email",
+      "generateToCopy": "Genera link da copiare",
+      "replaceWarning": "Un nuovo link sostituisce quello attuale, che smette di funzionare.",
+      "copyTitle": "Link di check-in",
+      "copyHint": "Copialo e invialo all'ospite (WhatsApp, SMS…). Valido fino al {{date}}.",
+      "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
+      "email": {
+        "sent": "Email con il link consegnata al servizio di invio.",
+        "sentAt": "Email con il link inviata il {{date}}.",
+        "queued": "Email con il link in coda di invio…",
+        "failed": "Email non inviata: {{reason}}. Copia il link o invia un nuovo sollecito.",
+        "notRequested": "Link generato da copiare: nessuna email inviata."
+      },
+      "emailError": {
+        "noRecipient": "l'ospite non ha un indirizzo email",
+        "providerNotConfigured": "il servizio email non è configurato",
+        "queueFailed": "l'invio non è stato messo in coda",
+        "rejected": "l'indirizzo è stato rifiutato dal servizio email",
+        "notDelivered": "il servizio email non ha risposto dopo più tentativi",
+        "linkUnavailable": "l'indirizzo del sito pubblico non è configurato",
+        "linkNotUsable": "il link era già stato sostituito o era scaduto",
+        "unknown": "motivo sconosciuto"
+      },
+      "toast": {
+        "emailQueued": "Nuovo link generato: l'email all'ospite è in coda di invio.",
+        "emailFailed": "Nuovo link generato, ma l'email non è partita: {{reason}}. Copia il link e invialo all'ospite.",
+        "generated": "Nuovo link generato: copialo e invialo all'ospite."
+      }
+    }
   },
   "publicSite": {
     "skipToContent": "Vai al contenuto",
@@ -3302,7 +3342,7 @@
       "loading": "Caricamento check-out...",
       "notFound": "Prenotazione non trovata",
       "unavailable": "Check-out non disponibile",
-      "unavailableHint": "Completa il check-in della prenotazione prima di chiudere il soggiorno.",
+      "unavailableHint": "Il check-out si registra dal giorno di arrivo, per una prenotazione confermata o con l'arrivo registrato.",
       "alreadyDone": "Check-out già completato",
       "alreadyDoneHint": "Questa prenotazione è già in stato check-out.",
       "loadError": "Impossibile caricare la prenotazione",
@@ -3334,7 +3374,14 @@
         "supplier-selection": "Seleziona servizi di turnover se necessario.",
         "payment": "Salda pagamenti e depositi.",
         "property-ready": "Segna l'immobile pronto per la prossima prenotazione."
-      }
+      },
+      "starting": "Preparazione del check-out…",
+      "startFailed": "Impossibile avviare il check-out.",
+      "retry": "Riprova",
+      "arrivalMissingTitle": "Arrivo non registrato",
+      "arrivalMissingHint": "L'arrivo di {{guest}} non risulta registrato. Se l'ospite è arrivato, registra l'arrivo e procedi con il check-out.",
+      "registerArrivalAndProceed": "Registra arrivo e procedi",
+      "registeringArrival": "Registrazione dell'arrivo…"
     }
   },
   "toast": {
@@ -3349,8 +3396,6 @@
     "bookingCreateFailed": "Impossibile creare la prenotazione",
     "bookingUpdated": "Prenotazione aggiornata con successo",
     "bookingUpdateFailed": "Impossibile aggiornare la prenotazione",
-    "guestCheckedIn": "Check-in effettuato con successo",
-    "checkInGuestFailed": "Impossibile completare il check-in",
     "guestCheckedOut": "Check-out effettuato con successo",
     "checkOutGuestFailed": "Impossibile completare il check-out",
     "paymentCreated": "Pagamento creato con successo",
@@ -3557,17 +3602,28 @@
       "bookingCheckinInPast": "Il check-in non può essere spostato a un giorno già passato.",
       "bookingNotPending": "La prenotazione non è più in attesa di conferma: ricarica la pagina.",
       "bookingNotConfirmable": "Puoi confermare solo le prenotazioni in attesa inserite da te.",
-      "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno con check-in registrato.",
-      "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di partenza.",
+      "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno confermato o con l'arrivo registrato.",
+      "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di arrivo.",
       "directBookingDeferredPaymentUnavailable": "Il pagamento alla scadenza non è disponibile per queste date: l'arrivo è troppo vicino. Scegli un altro metodo di pagamento.",
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
       "checkoutPaymentNotResumable": "Non c'è un pagamento da completare per questa prenotazione: è già in corso, completato oppure la prenotazione è chiusa.",
       "paymentProviderError": "Il servizio di pagamento non ha risposto correttamente. Riprova tra qualche minuto.",
+      "bookingAlreadyCheckedOut": "Il check-out di questa prenotazione è già registrato: ricarica la pagina.",
+      "bookingArrivalNotRegistered": "L'arrivo dell'ospite non è stato registrato: conferma l'arrivo per procedere con il check-out.",
+      "bookingNotConfirmed": "L'arrivo si registra solo per una prenotazione confermata.",
+      "bookingAlreadyCheckedIn": "L'arrivo di questa prenotazione è già registrato: ricarica la pagina.",
+      "bookingArrivalTooEarly": "L'arrivo si può registrare dal giorno di check-in.",
+      "bookingArrivalAfterDeparture": "Il giorno di partenza è passato: registra il check-out del soggiorno, che registra anche l'arrivo.",
+      "checkoutDepartureNotConfirmed": "Conferma che l'ospite ha lasciato la struttura.",
+      "checkoutServiceRequestInvalid": "Impossibile creare la richiesta al fornitore: verifica che il fornitore sia attivo e operi nel comune della struttura. Il check-out non è stato registrato.",
       "guestBookingNotFound": "Nessuna prenotazione corrisponde a questo codice e a questo indirizzo email. Controlla il codice nell'email di conferma e usa l'indirizzo email con cui hai prenotato.",
       "guestCheckInLinkUnavailable": "Il link per il check-in online non può essere inviato ora: la prenotazione non è confermata, il check-in è già completato oppure non è ancora il momento.",
       "publicPropertyNotFound": "Questo alloggio non è disponibile per la prenotazione online.",
-      "availabilityRangeInvalid": "L'intervallo di date richiesto non è valido."
+      "availabilityRangeInvalid": "L'intervallo di date richiesto non è valido.",
+      "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
+      "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
+      "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite."
     }
   },
   "validation": {
