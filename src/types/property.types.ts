@@ -1,26 +1,31 @@
+/**
+ * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
+ * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
+ */
 export interface Property {
   id: string;
   name: string;
   description: string;
   address: string;
   city: string;
-  country: string;
-  postalCode: string;  // ✅ Fixed: was zipCode
+  postalCode: string;
   latitude?: number;
   longitude?: number;
+  /** 0 = studio flat (monolocale). */
   bedrooms: number;
+  /** Whole number, at least 1. */
   bathrooms: number;
   maxGuests: number;
-  nightlyRate: number;  // ✅ Fixed: was pricePerNight
-  cleaningFee: number;  // ✅ Added - missing from backend
-  damageDeposit: number;  // ✅ Added - missing from backend
-  currency: string;
+  nightlyRate: number;
+  cleaningFee: number;
+  damageDeposit: number;
   amenities: string[];
-  photoUrls: string[];  // ✅ Fixed: was images
-  houseRules: string;  // ✅ Added - missing from backend
-  cinCode: string | null;  // ✅ Added - Italian compliance
-  timezone: string;  // ✅ Added - missing from backend
-  cancellationPolicyId: string | null;  // ✅ Added - missing from backend
+  photoUrls: string[];
+  houseRules: string;
+  cinCode: string | null;
+  /** IANA time zone, e.g. `Europe/Rome`. */
+  timezone: string;
+  cancellationPolicyId: string | null;
   isActive: boolean;
   complianceStatus?: string | null;
   slug?: string | null;
@@ -31,6 +36,7 @@ export interface Property {
   cadastralCategory?: string | null;
   cadastralIncome?: number | null;
   ownerId: string;
+  orgId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,23 +61,40 @@ export interface CreatePropertyDto {
   description: string;
   address: string;
   city: string;
-  country: string;
-  postalCode: string;  // ✅ Fixed: was zipCode
+  postalCode: string;
   latitude?: number;
   longitude?: number;
   bedrooms: number;
   bathrooms: number;
   maxGuests: number;
-  nightlyRate: number;  // ✅ Fixed: was pricePerNight
-  currency?: string;
+  nightlyRate: number;
+  cleaningFee?: number;
+  damageDeposit?: number;
   amenities?: string[];
-  photoUrls?: string[];  // ✅ Fixed: was images
+  photoUrls?: string[];
+  houseRules?: string;
   cinCode?: string | null;
+  timezone?: string;
+  cancellationPolicyId?: string | null;
   slug?: string | null;
   isActive?: boolean;
 }
 
+/**
+ * Body of `PUT /properties/{id}`, which has PATCH semantics (A2-04): a field left out keeps its stored value;
+ * `cinCode`, `slug` and `cancellationPolicyId` sent as `null` are cleared.
+ */
 export type UpdatePropertyDto = Partial<CreatePropertyDto>;
+
+/** A cancellation policy a property can reference (`GET /properties/cancellation-policies`). */
+export interface CancellationPolicyOption {
+  id: string;
+  name: string;
+  description: string;
+  fullRefundHours: number;
+  partialRefundPercent: number;
+  partialRefundHours: number;
+}
 
 export type PropertyDocumentType =
   | 'CinCertificate'

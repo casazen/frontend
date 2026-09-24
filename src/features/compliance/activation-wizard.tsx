@@ -30,7 +30,7 @@ import { DocumentUploadDialog } from '@/features/properties/components/document-
 import { IcalSettings } from '@/features/properties/components/ical-settings';
 import { TouristTaxStepInfo } from '@/features/compliance/components/tourist-tax-step-info';
 import type { ComplianceWizardStep, PropertySafetyChecklist } from '@/types/compliance.types';
-import type { PropertyFormValues } from '@/features/properties/schemas/property.schema';
+import type { CreatePropertyDto } from '@/types';
 import { PropertyForm } from '@/features/properties/components/property-form';
 
 const STEP_ORDER = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'] as const;
@@ -147,7 +147,7 @@ export function PropertyActivationWizard() {
     if (nextStepId) setCurrentStepId(nextStepId);
   };
 
-  const handleBaseDataSave = async (data: PropertyFormValues) => {
+  const handleBaseDataSave = async (data: CreatePropertyDto) => {
     await updateProperty.mutateAsync({ id: propertyId, data });
     await refetch();
     goNext();

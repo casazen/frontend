@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useProperty, useUpdateProperty } from '@/queries/use-properties';
 import { PropertyForm } from '../components/property-form';
-import type { PropertyFormValues } from '../schemas/property.schema';
+import type { CreatePropertyDto } from '@/types';
 import { LoadErrorCard } from './load-error-card';
 import { longRentPropertyPath } from './paths';
 
@@ -16,7 +16,7 @@ export function LongRentPropertyEditPage() {
   const { data: property, isLoading, isError, error, refetch, isFetching } = useProperty(id);
   const updateProperty = useUpdateProperty();
 
-  const handleSubmit = async (data: PropertyFormValues) => {
+  const handleSubmit = async (data: CreatePropertyDto) => {
     try {
       await updateProperty.mutateAsync({ id, data });
       navigate(longRentPropertyPath(id));

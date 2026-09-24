@@ -32,6 +32,16 @@ export function useProperty(id: string) {
   });
 }
 
+/** Cancellation policies a short-stay property can reference (global catalog). */
+export function useCancellationPolicies(enabled = true) {
+  return useQuery({
+    queryKey: [PROPERTIES_KEY, 'cancellation-policies'],
+    queryFn: () => propertiesApi.getCancellationPolicies(),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 /** Documents of a property (APE included), shared cache with the lease form. */
 export function usePropertyDocuments(id: string | undefined) {
   return useQuery({
