@@ -298,3 +298,24 @@ describe('response interceptor: 403 → no-access page (A9-22)', () => {
     expect(ctx.onForbidden).not.toHaveBeenCalled();
   });
 });
+
+describe('logging (A1-34, A9-36)', () => {
+  it('request_authenticatedCallsAndRefresh_neverWriteToTheConsole', async () => {
+    const spies = (['log', 'info', 'debug', 'warn', 'error'] as const).map((method) =>
+      vi.spyOn(console, method).mockImplementation(() => {}),
+    );
+    try {
+      const ctx = await load((config, callIndex) => (callIndex === 0 ? { status: 401 } : { status: 200, data: config.url }));
+
+      await ctx.api.get('/properties');
+      await ctx.api.get('/bookings');
+
+      // 401, refresh, replay, then a second call: every path that handles the token ran.
+      expect(ctx.refreshAccessToken).toHaveBeenCalledTimes(1);
+      expect(ctx.calls).toHaveLength(3);
+      for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+    }
+  });
+});

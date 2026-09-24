@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
+import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { queryClient } from '@/lib/query-client';
 import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
@@ -26,7 +27,9 @@ function AppShell() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nLocaleSync />
-      <RouterProvider router={router} />
+      <FeatureFlagsProvider>
+        <RouterProvider router={router} />
+      </FeatureFlagsProvider>
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );

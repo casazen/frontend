@@ -37,7 +37,11 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
     return {
       path: relativePath,
       element: (
-        <ContextRouteGuard contextKey={contextKey} requiredPermissions={entry.requiredPermissions}>
+        <ContextRouteGuard
+          contextKey={contextKey}
+          requiredPermissions={entry.requiredPermissions}
+          featureFlag={entry.featureFlag}
+        >
           <ManifestRoute entry={entry} />
         </ContextRouteGuard>
       ),

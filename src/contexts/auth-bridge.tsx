@@ -63,10 +63,9 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
       isLoading: false,
       isAuthenticated: true,
       user: demoUser,
-      login: () => {
-        console.log('Demo mode: login simulation');
-      },
-      logout: () => console.log('Demo mode: logout simulation'),
+      // Demo mode: the demo user is always signed in, login and logout have nothing to do.
+      login: () => {},
+      logout: () => {},
       logoutToLogin: () => window.location.replace('/login'),
       forceReauth: () => window.location.replace('/login'),
       getAccessToken,

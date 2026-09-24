@@ -11,6 +11,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { usePropertyDetail } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { Edit, ArrowRight, Sparkles, ExternalLink, Wrench } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { PropertyCinBadge } from './components/property-cin-badge';
@@ -35,6 +36,8 @@ export function PropertyDetailPage() {
   const { data: property, isLoading, isError } = usePropertyDetail(id!);
   const { org } = useCurrentUser();
   const updateCin = useUpdatePropertyCin();
+  // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
+  const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
 
   if (isLoading) {
     return <LoadingScreen message={t('property.detail.loading')} />;
@@ -54,7 +57,7 @@ export function PropertyDetailPage() {
   const tabs: { key: PropertyTab; label: string }[] = [
     { key: 'info', label: t('property.detail.tabs.info') },
     { key: 'pricing', label: t('property.detail.tabs.pricing') },
-    { key: 'ota', label: t('property.detail.tabs.ota') },
+    { key: 'ota', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical') },
     { key: 'documents', label: t('property.detail.tabs.documents') },
     { key: 'cin', label: t('property.detail.tabs.cin') },
   ];
@@ -205,7 +208,7 @@ export function PropertyDetailPage() {
         {activeTab === 'ota' && (
           <div className="space-y-6">
             <IcalSettings propertyId={property.id} />
-            <PropertyOtaSummary integrations={property.otaIntegrations} />
+            {otaEnabled && <PropertyOtaSummary integrations={property.otaIntegrations} />}
           </div>
         )}
 

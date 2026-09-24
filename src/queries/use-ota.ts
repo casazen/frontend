@@ -12,10 +12,11 @@ import { getProblemMessage } from '@/lib/api-errors';
 
 const OTA_KEY = 'ota';
 
-export function useOtaIntegrations(params?: Record<string, unknown>) {
+export function useOtaIntegrations(params?: Record<string, unknown>, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [OTA_KEY, params],
     queryFn: () => otaApi.getAll(params),
+    enabled: options?.enabled ?? true,
   });
 }
 

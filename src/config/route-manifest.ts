@@ -1,3 +1,5 @@
+import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+
 export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 
 export type NavGroup =
@@ -27,6 +29,8 @@ export interface RouteManifestEntry {
   isDefault?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
+  /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
+  featureFlag?: FeatureFlagKey;
 }
 
 export const NAV_GROUP_ORDER: NavGroup[] = [
@@ -324,6 +328,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Repeat',
     component: async () => ({ default: (await import('@/features/ota/ota-page')).OtaPage }),
     legacyPaths: ['/ota'],
+    featureFlag: 'otaPartnerApi',
   },
   {
     path: '/app/short-rent/ota/create',
@@ -331,6 +336,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['ota.write'],
     component: async () => ({ default: (await import('@/features/ota/ota-setup-page')).OtaSetupPage }),
     legacyPaths: ['/ota/create'],
+    featureFlag: 'otaPartnerApi',
   },
   {
     path: '/app/short-rent/vetrina',
@@ -569,6 +575,11 @@ function isNavEntry(entry: RouteManifestEntry): boolean {
   return !!(entry.navKey || entry.navLabel);
 }
 
+/** Entries behind a feature flag need the flag on; without flags (not loaded) they are hidden. */
+export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Partial<FeatureFlags>): boolean {
+  return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
+}
+
 function hasEntryPermission(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
@@ -596,20 +607,23 @@ export function getNavEntries(contextKey: AppContextKey): RouteManifestEntry[] {
 export function getVisibleNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): RouteManifestEntry[] {
   return ROUTE_MANIFEST.filter(
     (entry) =>
       entry.context === contextKey &&
       isNavEntry(entry) &&
-      hasEntryPermission(entry, hasPermission),
+      hasEntryPermission(entry, hasPermission) &&
+      isEntryFeatureEnabled(entry, features),
   ).sort((a, b) => (a.navOrder ?? 99) - (b.navOrder ?? 99));
 }
 
 export function getPrimaryNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): RouteManifestEntry[] {
-  return getVisibleNavEntries(contextKey, hasPermission).filter(
+  return getVisibleNavEntries(contextKey, hasPermission, features).filter(
     (entry) => entry.navPlacement === 'primary',
   );
 }
@@ -617,8 +631,9 @@ export function getPrimaryNavEntries(
 export function getSecondaryNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): RouteManifestEntry[] {
-  return getVisibleNavEntries(contextKey, hasPermission).filter(
+  return getVisibleNavEntries(contextKey, hasPermission, features).filter(
     (entry) => entry.navPlacement === 'secondary',
   );
 }
@@ -626,9 +641,10 @@ export function getSecondaryNavEntries(
 export function getSecondaryNavByGroup(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): Map<NavGroup, RouteManifestEntry[]> {
   const grouped = new Map<NavGroup, RouteManifestEntry[]>();
-  for (const entry of getSecondaryNavEntries(contextKey, hasPermission)) {
+  for (const entry of getSecondaryNavEntries(contextKey, hasPermission, features)) {
     if (!entry.navGroup) continue;
     const list = grouped.get(entry.navGroup) ?? [];
     list.push(entry);
@@ -641,9 +657,10 @@ export function getSecondaryNavByGroup(
 export function getDesktopNavByGroup(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): Map<NavGroup, RouteManifestEntry[]> {
   const grouped = new Map<NavGroup, RouteManifestEntry[]>();
-  for (const entry of getVisibleNavEntries(contextKey, hasPermission)) {
+  for (const entry of getVisibleNavEntries(contextKey, hasPermission, features)) {
     if (!entry.navGroup) continue;
     const list = grouped.get(entry.navGroup) ?? [];
     list.push(entry);
@@ -656,9 +673,10 @@ export function getDesktopNavByGroup(
 export function getDrawerNavByGroup(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): Map<NavGroup, RouteManifestEntry[]> {
-  const secondary = getSecondaryNavEntries(contextKey, hasPermission);
-  const entries = secondary.length > 0 ? secondary : getVisibleNavEntries(contextKey, hasPermission);
+  const secondary = getSecondaryNavEntries(contextKey, hasPermission, features);
+  const entries = secondary.length > 0 ? secondary : getVisibleNavEntries(contextKey, hasPermission, features);
   const grouped = new Map<NavGroup, RouteManifestEntry[]>();
   for (const entry of entries) {
     if (!entry.navGroup) continue;

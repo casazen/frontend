@@ -9,6 +9,7 @@ import { useBookings } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
 import { usePayments } from '@/queries/use-payments';
 import { useOtaIntegrations } from '@/queries/use-ota';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getBookingStatusLabel, getOtaConnectionStatusLabel } from '@/lib/i18n-labels';
 import { ComplianceSummaryWidget } from '@/features/compliance/compliance-summary-widget';
 import type { OtaIntegration, OtaPlatform } from '@/types';
@@ -48,7 +49,9 @@ export function DashboardPage() {
   const { data: bookings } = useBookings();
   const { data: properties } = useProperties();
   const { data: payments } = usePayments();
-  const { data: otaIntegrations } = useOtaIntegrations();
+  // OTA partner API in freeze (D10): no widget and no request while the flag is off.
+  const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
+  const { data: otaIntegrations } = useOtaIntegrations(undefined, { enabled: otaEnabled });
 
   const paymentList = Array.isArray(payments) ? payments : [];
   const bookingList = Array.isArray(bookings) ? bookings : [];
@@ -107,7 +110,7 @@ export function DashboardPage() {
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className={otaEnabled ? 'grid gap-4 md:grid-cols-2' : 'grid gap-4'}>
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboard.recentBookings.title')}</CardTitle>
@@ -167,54 +170,56 @@ export function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('dashboard.otaStatus.title')}</CardTitle>
-              <CardDescription>{t('dashboard.otaStatus.description')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {otaList.length === 0 ? (
-                <div className="py-4 text-center text-sm text-muted-foreground">
-                  {t('dashboard.otaStatus.empty')}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {otaList.map((integration) => {
-                    const status = getOtaConnectionStatus(integration);
-                    return (
-                      <div key={integration.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {status === 'connected' && (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          )}
-                          {status === 'warning' && (
-                            <AlertCircle className="h-4 w-4 text-yellow-500" />
-                          )}
-                          {status === 'disconnected' && (
-                            <Wifi className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <span className="text-sm font-medium">
-                            {PLATFORM_LABELS[integration.platform] ?? integration.platform}
-                          </span>
+          {otaEnabled && (
+            <Card data-testid="dashboard-ota-status">
+              <CardHeader>
+                <CardTitle>{t('dashboard.otaStatus.title')}</CardTitle>
+                <CardDescription>{t('dashboard.otaStatus.description')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {otaList.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    {t('dashboard.otaStatus.empty')}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {otaList.map((integration) => {
+                      const status = getOtaConnectionStatus(integration);
+                      return (
+                        <div key={integration.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {status === 'connected' && (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            )}
+                            {status === 'warning' && (
+                              <AlertCircle className="h-4 w-4 text-yellow-500" />
+                            )}
+                            {status === 'disconnected' && (
+                              <Wifi className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <span className="text-sm font-medium">
+                              {PLATFORM_LABELS[integration.platform] ?? integration.platform}
+                            </span>
+                          </div>
+                          <Badge
+                            variant={
+                              status === 'connected'
+                                ? 'outline'
+                                : status === 'warning'
+                                  ? 'secondary'
+                                  : 'destructive'
+                            }
+                          >
+                            {getOtaConnectionStatusLabel(status, t)}
+                          </Badge>
                         </div>
-                        <Badge
-                          variant={
-                            status === 'connected'
-                              ? 'outline'
-                              : status === 'warning'
-                                ? 'secondary'
-                                : 'destructive'
-                          }
-                        >
-                          {getOtaConnectionStatusLabel(status, t)}
-                        </Badge>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </AppShell>

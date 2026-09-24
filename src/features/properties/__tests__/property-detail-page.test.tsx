@@ -6,6 +6,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { PropertyDetailPage } from '../property-detail-page';
 import * as propertyQueries from '@/queries/use-properties';
 import type { PropertyDetailDto } from '@/types';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 
 vi.mock('@/queries/use-properties');
 vi.mock('@/queries/use-cin', () => ({
@@ -22,6 +24,9 @@ vi.mock('@/components/layout/app-shell', () => ({
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title, action }: { title: string; action?: React.ReactNode }) =>
     createElement('div', null, createElement('h1', null, title), action),
+}));
+vi.mock('../components/ical-settings', () => ({
+  IcalSettings: () => createElement('div', { 'data-testid': 'ical-settings' }),
 }));
 vi.mock('@/components/shared/loading-screen', () => ({
   LoadingScreen: ({ message }: { message: string }) =>
@@ -78,16 +83,20 @@ const mockDetail: PropertyDetailDto = {
   },
 };
 
-function renderPage() {
+function renderPage(otaPartnerApi = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     createElement(
       QueryClientProvider,
       { client: queryClient },
       createElement(
-        MemoryRouter,
-        { initialEntries: [`/properties/${PROPERTY_ID}`] },
-        createElement(PropertyDetailPage)
+        FeatureFlagsContext.Provider,
+        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi }, isLoading: false } },
+        createElement(
+          MemoryRouter,
+          { initialEntries: [`/properties/${PROPERTY_ID}`] },
+          createElement(PropertyDetailPage)
+        )
       )
     )
   );
@@ -129,8 +138,22 @@ describe('PropertyDetailPage', () => {
   });
 
   it('AC12: does not render apiKey in OTA section', () => {
-    renderPage();
+    renderPage(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Canali OTA' }));
+    expect(screen.getByText('Integrazioni OTA')).toBeInTheDocument();
     expect(screen.queryByText(/apikey/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/apisecret/i)).not.toBeInTheDocument();
+  });
+
+  // FD-20 / D10: with the OTA partner API off the tab keeps only the iCal calendars.
+  it('shows only the iCal calendars, without the OTA card, when the otaPartnerApi flag is off', () => {
+    renderPage(false);
+    expect(screen.queryByRole('button', { name: 'Canali OTA' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Calendari iCal' }));
+
+    expect(screen.getByTestId('ical-settings')).toBeInTheDocument();
+    expect(screen.queryByText('Integrazioni OTA')).not.toBeInTheDocument();
+    expect(screen.queryByText('Booking.com')).not.toBeInTheDocument();
   });
 });
