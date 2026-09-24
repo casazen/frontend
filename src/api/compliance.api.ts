@@ -8,6 +8,8 @@ import type {
   ComplianceActivationCompleteResult,
   ComplianceActivationResult,
   ComplianceSummaryResult,
+  SafetyChecklist,
+  SaveSafetyChecklistCommand,
 } from '@/types/compliance.types';
 
 export async function fetchComplianceActivation(propertyId: string): Promise<ComplianceActivationResult> {
@@ -20,6 +22,22 @@ export async function completeComplianceActivation(
 ): Promise<ComplianceActivationCompleteResult> {
   const { data } = await axios.post<ComplianceActivationCompleteResult>(
     `/properties/${propertyId}/compliance/activation/complete`,
+    payload,
+  );
+  return data;
+}
+
+/** D.L. 145/2023 safety checklist of the property (CO-07), with its blockers and items "not applicable". */
+export async function fetchSafetyChecklist(propertyId: string): Promise<SafetyChecklist> {
+  return ApiClient.get<SafetyChecklist>(`/properties/${propertyId}/compliance/safety-checklist`);
+}
+
+export async function saveSafetyChecklist(
+  propertyId: string,
+  payload: SaveSafetyChecklistCommand,
+): Promise<SafetyChecklist> {
+  const { data } = await axios.put<SafetyChecklist>(
+    `/properties/${propertyId}/compliance/safety-checklist`,
     payload,
   );
   return data;

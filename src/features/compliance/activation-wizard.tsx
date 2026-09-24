@@ -29,13 +29,12 @@ import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { DocumentUploadDialog } from '@/features/properties/components/document-upload-dialog';
 import { IcalSettings } from '@/features/properties/components/ical-settings';
 import { TouristTaxStepInfo } from '@/features/compliance/components/tourist-tax-step-info';
-import type { ComplianceWizardStep, PropertySafetyChecklist } from '@/types/compliance.types';
+import { SafetyChecklistForm } from '@/features/compliance/components/safety-checklist-form';
+import type { ComplianceWizardStep } from '@/types/compliance.types';
 import type { PropertyFormValues } from '@/features/properties/schemas/property.schema';
 import { PropertyForm } from '@/features/properties/components/property-form';
 
 const STEP_ORDER = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'] as const;
-
-const SAFETY_ITEMS = ['smokeDetector', 'fireExtinguisher', 'gasCompliance'] as const;
 
 const STEP_ICON_COLOR = {
   complete: 'text-green-600',
@@ -114,11 +113,6 @@ export function PropertyActivationWizard() {
 
   const [currentStepId, setCurrentStepId] = useState<string>('base-data');
   const [cinCode, setCinCode] = useState('');
-  const [safety, setSafety] = useState<PropertySafetyChecklist>({
-    smokeDetector: false,
-    fireExtinguisher: false,
-    gasCompliance: false,
-  });
   const [tosAccepted, setTosAccepted] = useState(false);
 
   if (propertyLoading || activationLoading) {
@@ -160,15 +154,8 @@ export function PropertyActivationWizard() {
   };
 
   const handleComplete = async () => {
-    const result = await completeActivation.mutateAsync({
-      safetyChecklist: {
-        ...safety,
-        acknowledgedAt: safety.smokeDetector && safety.fireExtinguisher && safety.gasCompliance
-          ? new Date().toISOString()
-          : null,
-      },
-      tosAccepted,
-    });
+    // The safety checklist is saved in its own step (CO-07): completing never overwrites it.
+    const result = await completeActivation.mutateAsync({ tosAccepted });
     await refetch();
     if (result.complianceStatus === 'Active') {
       navigate(`/app/short-rent/properties/${propertyId}`);
@@ -260,21 +247,8 @@ export function PropertyActivationWizard() {
             )}
 
             {currentStepId === 'safety' && (
-              <div className="space-y-4 max-w-lg">
-                <p className="text-sm text-muted-foreground">{t('compliance.activation.safetyHint')}</p>
-                {SAFETY_ITEMS.map((key) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`safety-${key}`}
-                      data-testid={`safety-${key}`}
-                      checked={safety[key]}
-                      onCheckedChange={(checked) =>
-                        setSafety((prev) => ({ ...prev, [key]: checked === true }))
-                      }
-                    />
-                    <Label htmlFor={`safety-${key}`}>{t(`compliance.activation.safety.${key}`)}</Label>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                <SafetyChecklistForm propertyId={propertyId} onSaved={() => void refetch()} />
                 <Button variant="outline" onClick={goNext}>
                   {t('compliance.activation.continue')}
                   <ArrowRight className="ml-2 h-4 w-4" />

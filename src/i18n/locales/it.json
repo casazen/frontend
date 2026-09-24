@@ -3225,13 +3225,7 @@
       "cinGuidance": "Come ottenere il codice CIN",
       "saveAndContinue": "Salva e continua",
       "continue": "Continua",
-      "documentsHint": "Carica i documenti obbligatori (licenza, assicurazione, certificati di sicurezza).",
-      "safetyHint": "Conferma che le attrezzature di sicurezza obbligatorie sono presenti e conformi.",
-      "safety": {
-        "smokeDetector": "Rilevatore di fumo installato e funzionante",
-        "fireExtinguisher": "Estintore presente e ispezionato",
-        "gasCompliance": "Certificato conformità impianto gas in archivio"
-      },
+      "documentsHint": "Carica i documenti richiesti per l'attivazione. Le prove di sicurezza (foto o documenti) sono facoltative e si allegano nella checklist di sicurezza.",
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
       "backToEdit": "Torna alla modifica immobile",
       "complete": "Completa attivazione",
@@ -3302,6 +3296,132 @@
         "supplier-selection": "Seleziona servizi di turnover se necessario.",
         "payment": "Salda pagamenti e depositi.",
         "property-ready": "Segna l'immobile pronto per la prossima prenotazione."
+      }
+    },
+    "safety": {
+      "loading": "Caricamento della checklist di sicurezza...",
+      "loadFailed": "Impossibile caricare la checklist di sicurezza.",
+      "retry": "Riprova",
+      "intro": "Obblighi dell'art. 13-ter, c. 7, del D.L. 145/2023 (convertito dalla L. 191/2023) per le unità in locazione breve o per finalità turistiche. Le voci che non riguardano il tuo immobile risultano \"non applicabili\" in base alle risposte sull'immobile.",
+      "disclaimer": "CasaZen registra quanto dichiari: non verifica l'immobile e non ne certifica la conformità. I requisiti di sicurezza li dichiari in BDSR con la richiesta del CIN (art. 13-ter, c. 3).",
+      "importedFromLegacy": "Abbiamo importato le risposte della vecchia checklist (rilevatore di fumo, estintore, certificato gas). Rivedi le voci segnate \"Da rivedere\", completa quelle mancanti e conferma di nuovo.",
+      "complete": "Checklist completa: nessun punto bloccante.",
+      "blockersTitle": "Punti da completare prima dell'attivazione (ultimo salvataggio):",
+      "itemsTitle": "Dotazioni e requisiti",
+      "toReview": "Da rivedere",
+      "confirm": "Confermo che queste informazioni sono vere e corrispondono a quanto ho dichiarato in BDSR. So che CasaZen non verifica e non certifica la conformità dell'immobile.",
+      "confirmedAt": "Checklist confermata il {{date}}.",
+      "save": "Salva checklist",
+      "saved": "Checklist di sicurezza salvata",
+      "saveFailed": "Impossibile salvare la checklist di sicurezza",
+      "answer": {
+        "yes": "Sì",
+        "no": "No"
+      },
+      "facts": {
+        "title": "L'immobile",
+        "entrepreneurial": "Gestisci la locazione in forma imprenditoriale?",
+        "entrepreneurialHint": "Per esempio con partita IVA, come società o per la presunzione legata al numero di appartamenti (art. 1, c. 595, L. 178/2020). Solo in questo caso servono i requisiti di sicurezza degli impianti (art. 13-ter, c. 7, primo periodo).",
+        "gasSupply": "L'unità ha un impianto o una fornitura di gas (rete, GPL o bombole)?",
+        "appliances": "Apparecchi a combustione nell'unità",
+        "noAppliances": "Nessun apparecchio a combustione",
+        "detectorsExempt": "Rilevatori di gas e di monossido di carbonio non applicabili: l'unità non ha impianto a gas né apparecchi a combustione (esonero indicato nelle FAQ del Ministero del Turismo). Gli estintori restano obbligatori.",
+        "combustionWithoutGas": "Con un apparecchio a combustione (per esempio camino o stufa) il rischio di monossido di carbonio non è escluso: i rilevatori restano obbligatori anche senza gas.",
+        "floorCount": "Numero di piani dell'unità",
+        "floorArea": "m² di pavimento del piano {{floor}} (facoltativo)",
+        "minimumExtinguishers": "Estintori minimi richiesti: {{minimum}} (uno ogni 200 m² di pavimento o frazione, minimo uno per piano)."
+      },
+      "appliance": {
+        "Boiler": "Caldaia",
+        "WaterHeater": "Scaldabagno",
+        "GasHob": "Piano cottura a gas",
+        "Stove": "Stufa",
+        "Fireplace": "Camino",
+        "Other": "Altro apparecchio a combustione"
+      },
+      "requirement": {
+        "Required": "Obbligatorio",
+        "Optional": "Consigliato, non obbligatorio per legge",
+        "NotApplicable": "Non applicabile",
+        "Undetermined": "Dipende dalle risposte sull'immobile"
+      },
+      "notApplicable": {
+        "NoGasNoCombustion": "Non applicabile: l'unità non ha impianto a gas né apparecchi a combustione.",
+        "NotEntrepreneurial": "Non applicabile: la locazione non è gestita in forma imprenditoriale."
+      },
+      "detectorType": {
+        "Battery": "A batteria",
+        "Mains": "Alimentato dalla rete elettrica",
+        "FixedSystem": "Impianto fisso (D.M. 37/2008)"
+      },
+      "items": {
+        "FireExtinguishers": {
+          "title": "Estintori portatili",
+          "reference": "Sempre obbligatori: a norma di legge, in posizioni accessibili e visibili, in particolare vicino agli accessi e alle aree di maggior pericolo (art. 13-ter, c. 7, secondo periodo).",
+          "faq": "Secondo le FAQ del Ministero del Turismo: capacità estinguente di almeno 13A, carica di almeno 6 kg o 6 litri, controllo periodico secondo la norma UNI 9994-1.",
+          "dateLabel": "Data dell'ultimo controllo periodico"
+        },
+        "GasDetector": {
+          "title": "Rilevatore di gas combustibili",
+          "reference": "Dispositivo funzionante, anche removibile (art. 13-ter, c. 7, secondo periodo; FAQ del Ministero del Turismo).",
+          "dateLabel": "Data dell'ultimo test"
+        },
+        "CoDetector": {
+          "title": "Rilevatore di monossido di carbonio (CO)",
+          "reference": "Dispositivo funzionante, anche removibile (art. 13-ter, c. 7, secondo periodo; FAQ del Ministero del Turismo).",
+          "dateLabel": "Data dell'ultimo test"
+        },
+        "SystemsCompliance": {
+          "title": "Impianti conformi",
+          "reference": "Impianti presenti (elettrico, gas, termico, idrico) conformi alla normativa statale e regionale, con dichiarazione di conformità o di rispondenza (D.M. 37/2008). Solo per la gestione in forma imprenditoriale (art. 13-ter, c. 7, primo periodo).",
+          "dateLabel": "Data della dichiarazione di conformità"
+        },
+        "BdsrDeclaration": {
+          "title": "Dichiarazione in BDSR",
+          "reference": "Hai dichiarato i requisiti di sicurezza nella Banca Dati delle Strutture Ricettive con la richiesta o l'aggiornamento del CIN (art. 13-ter, c. 3).",
+          "dateLabel": "Data della dichiarazione in BDSR"
+        },
+        "SmokeDetector": {
+          "title": "Rilevatore di fumo",
+          "reference": "Consigliato: l'art. 13-ter non lo prevede.",
+          "dateLabel": "Data dell'ultimo test"
+        },
+        "EmergencyInstructions": {
+          "title": "Istruzioni e numeri di emergenza per gli ospiti",
+          "reference": "Consigliate: l'art. 13-ter non le prevede."
+        }
+      },
+      "fields": {
+        "extinguisherCount": "Numero di estintori",
+        "deviceCount": "Numero di dispositivi (facoltativo)",
+        "location": "Dove si trovano (facoltativo)",
+        "detectorType": "Tipo di dispositivo",
+        "notSpecified": "Non indicato",
+        "dateHint": "Facoltativa. Serve per i promemoria: non è una scadenza di legge.",
+        "sensorEndOfLife": "Fine vita del sensore, dal manuale del produttore (facoltativo)",
+        "notes": "Note (facoltative)",
+        "evidence": "Prova (facoltativa): foto o documento",
+        "evidenceAttached": "Documento allegato",
+        "removeEvidence": "Rimuovi",
+        "uploadEvidence": "Carica prova",
+        "evidenceHint": "PDF, Word o immagine. Resta riservata: la vedono solo gli utenti della tua organizzazione."
+      },
+      "blockers": {
+        "safety_entrepreneurial_unanswered": "Indica se gestisci la locazione in forma imprenditoriale: da questo dipendono i requisiti di sicurezza degli impianti.",
+        "safety_gas_unanswered": "Indica se l'unità ha gas e quali apparecchi a combustione ci sono: da questo dipendono i rilevatori di gas e di monossido di carbonio.",
+        "safety_floors_unanswered": "Indica il numero di piani dell'unità: serve a calcolare gli estintori minimi (almeno uno per piano).",
+        "safety_extinguishers_missing": "Estintori portatili: obbligatori in tutte le unità in locazione breve o turistica (art. 13-ter, c. 7).",
+        "safety_extinguishers_below_minimum": "Estintori insufficienti: ne hai indicati {{declared}}, ne servono almeno {{minimum}}.",
+        "safety_extinguishers_review": "Estintori: la risposta viene dalla vecchia checklist. Confermala indicando il numero di estintori e i piani dell'unità.",
+        "safety_gas_detector_missing": "Rilevatore di gas combustibili: obbligatorio, perché l'unità ha gas o apparecchi a combustione (art. 13-ter, c. 7).",
+        "safety_co_detector_missing": "Rilevatore di monossido di carbonio: obbligatorio, perché l'unità ha gas o apparecchi a combustione (art. 13-ter, c. 7).",
+        "safety_systems_compliance_missing": "Impianti conformi: obbligatori per la gestione in forma imprenditoriale (art. 13-ter, c. 7, primo periodo).",
+        "safety_systems_compliance_review": "Impianti: la vecchia checklist indicava un certificato di conformità dell'impianto gas. Conferma la risposta.",
+        "safety_bdsr_declaration_missing": "Conferma di aver dichiarato in BDSR i requisiti di sicurezza, con la richiesta o l'aggiornamento del CIN (art. 13-ter, c. 3).",
+        "safety_confirmation_missing": "Conferma la checklist di sicurezza con le risposte attuali."
+      },
+      "warnings": {
+        "safety_floor_areas_missing": "Senza i m² di ogni piano il minimo è calcolato solo sui piani. La legge chiede un estintore ogni 200 m² di pavimento o frazione, con un minimo di uno per piano."
       }
     }
   },
