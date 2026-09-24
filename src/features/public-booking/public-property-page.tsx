@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
-import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
+import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
@@ -68,8 +68,12 @@ export function PublicPropertyPage() {
                   {property.city}
                   {property.postalCode ? ` (${property.postalCode})` : ''}
                 </p>
+                <PublicCinLabel
+                  cinStatus={property.cinStatus}
+                  cinCode={property.cinCode}
+                  className="text-[var(--cz-public-muted)]"
+                />
               </div>
-              <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
             </div>
 
             <AiContentNotice visible={false} />

@@ -211,7 +211,7 @@ export function PropertyActivationWizard() {
                     data-testid="activation-cin-input"
                     value={cinCode || property.cinCode || ''}
                     onChange={(e) => setCinCode(e.target.value)}
-                    placeholder="IT-12345-0123456789"
+                    placeholder={t('property.form.cin.placeholder')}
                   />
                 </div>
                 <a
