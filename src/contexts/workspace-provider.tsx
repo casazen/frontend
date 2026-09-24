@@ -5,6 +5,7 @@ import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
 import { isAccountInactiveError } from '@/lib/api-errors';
+import { isOrgBillingAdmin, ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import {
   deriveContextsFromAccessToken,
   deriveContextsFromRoles,
@@ -199,6 +200,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       const ctx = contexts.find((c) => c.contextKey === contextKey);
       if (!ctx) return false;
       if (!permission) return true;
+      if (permission === ORG_BILLING_ADMIN_PERMISSION) return isOrgBillingAdmin(contexts);
       return ctx.permissions.includes(permission);
     },
     [contexts],

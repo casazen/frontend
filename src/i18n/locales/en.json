@@ -183,7 +183,8 @@
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
-    "plan": "Plan & Billing",
+    "plan": "Plan",
+    "billing": "Billing",
     "bookings": "Bookings",
     "marketplace": "Marketplace",
     "calendar": "Calendar",
@@ -2010,8 +2011,6 @@
     "currentUsage": "Current usage:",
     "unlimited": "unlimited",
     "planUsage": "{{propertyCount}} properties of {{maxProperties}}",
-    "switchToPlan": "Switch to this plan",
-    "stripeBillingNote": "Recurring card payment will be available with Stripe integration ({{planCount}} plans configured).",
     "connectStatusDisconnected": "Not connected",
     "connectStatusPending": "Verifying",
     "connectStatusActive": "Active",
@@ -2128,6 +2127,97 @@
     },
     "upToProperties_one": "Up to {{count}} property",
     "upToProperties_other": "Up to {{count}} properties"
+  },
+  "billing": {
+    "plans": {
+      "pricePerMonth": "{{price}} per month",
+      "priceAtCheckout": "The price is shown on the Stripe payment page.",
+      "changeInPortal": "Change in the portal",
+      "unavailable": "Not available",
+      "unavailableHint": "This plan cannot be purchased right now.",
+      "loadError": "Unable to load the plans or the subscription status.",
+      "emptyTitle": "No plans available",
+      "emptyDescription": "No plan can be purchased right now. Try again later or contact support.",
+      "liveSubscription": "You already have a subscription: use the Stripe billing portal to change plan, update your card or download invoices.",
+      "stripeNote": "Payment happens on Stripe: CasaZen never sees your card details.",
+      "billingLink": "Subscription and billing details"
+    },
+    "checkout": {
+      "title": "{{plan}} subscription",
+      "description": "Enter the billing country and, if you have one, the VAT number. You will then complete the payment on Stripe.",
+      "submit": "Continue to payment",
+      "redirecting": "Redirecting to Stripe…",
+      "failed": "Unable to start the payment. Try again.",
+      "return": {
+        "confirming": "Checking the payment with Stripe…",
+        "confirmed": "Payment confirmed: the {{plan}} plan is active.",
+        "pending": "We have not received the payment confirmation from Stripe yet. If you completed the payment, your plan will be updated shortly.",
+        "refresh": "Refresh status",
+        "canceled": "Payment canceled: you have not been charged. You can choose a plan again at any time."
+      }
+    },
+    "settings": {
+      "title": "Billing",
+      "description": "Subscription, payments and billing details of your organization.",
+      "subscriptionTitle": "Subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "nextDue": "Next due date",
+      "noneTitle": "No paid subscription",
+      "noneDescription": "You are on the {{plan}} plan without a subscription. Choose a plan to subscribe.",
+      "choosePlan": "Choose a plan",
+      "changePlan": "Change plan",
+      "loadError": "Unable to load the subscription.",
+      "statusHint": {
+        "active": "Renewal is automatic. Card, invoices and cancellation are in the billing portal.",
+        "trialing": "Trial period in progress: when it ends, the payment starts automatically."
+      }
+    },
+    "status": {
+      "active": "Active",
+      "trialing": "Trial",
+      "pastDue": "Payment overdue",
+      "incomplete": "Payment to complete",
+      "unpaid": "Unpaid",
+      "canceled": "Expired",
+      "none": "No subscription"
+    },
+    "notice": {
+      "pastDue": "The last payment failed. Update the payment method in the billing portal: the plan stays active only for a short grace period.",
+      "incomplete": "The first payment was not completed, so the paid plan is not active. Complete the payment in the billing portal.",
+      "unpaid": "The subscription is suspended for non-payment and the paid plan is not active. Pay the open invoice in the billing portal to reactivate it.",
+      "canceled": "The subscription has ended and the paid plan is no longer active. Choose a plan to subscribe again."
+    },
+    "portal": {
+      "managePayments": "Manage payments",
+      "manage": "Open the billing portal",
+      "open": "Open the billing portal",
+      "completePayment": "Complete the payment",
+      "opening": "Opening the portal…",
+      "noCustomer": "The billing portal will be available after the first payment: choose a plan first.",
+      "failed": "Unable to open the billing portal. Try again."
+    },
+    "profile": {
+      "title": "Billing details",
+      "description": "Country and VAT number of the organization, used for the subscription invoices.",
+      "country": "Country",
+      "countryPlaceholder": "Select the country",
+      "vatId": "VAT number (optional)",
+      "vatIdHint": "The VAT number will be verified before it is used on invoices.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Billing details saved.",
+      "saveFailed": "Unable to save the billing details. Try again.",
+      "vatRejected": "The VAT number was not accepted: check the number or save without a VAT number.",
+      "validation": {
+        "countryRequired": "Select the billing country.",
+        "vatIdInvalid": "The VAT number can contain only letters and digits (4 to 20 characters)."
+      }
+    },
+    "adminRequired": {
+      "title": "Reserved for the organization administrator",
+      "description": "Plan and billing are managed by the administrator of your organization: contact the administrator to change them."
+    }
   },
   "profile": {
     "title": "My Profile",
@@ -3664,8 +3754,6 @@
     "profileUpdateFailed": "Failed to update profile",
     "roleUpdated": "Role updated successfully",
     "roleUpdateFailed": "Failed to update role",
-    "planUpdated": "Plan updated successfully",
-    "planUpdateFailed": "Failed to update plan",
     "userDeactivated": "User deactivated successfully",
     "userDeactivateFailed": "Failed to deactivate user",
     "userDeactivatedAuth0NotSynced": "User deactivated: it can no longer use CasaZen. Auth0 was not updated though: repeat the deactivation later.",
@@ -3758,6 +3846,9 @@
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
+      "alreadySubscribed": "You already have a subscription: use the billing portal to change plan or complete the payment.",
+      "billingPlanUnavailable": "This plan cannot be purchased right now. Try again later or contact support.",
+      "billingReturnUrlNotConfigured": "Plan payments are not configured in this environment yet.",
       "duplicateInvite": "A pending invite already exists for this email.",
       "inviteEmailFailed": "The invite email could not be sent. Try again later.",
       "checkinAlreadySubmitted": "The check-in has already been completed.",

@@ -23,12 +23,18 @@ export function ChangeOrgPlanDialog({ user, open, onOpenChange }: ChangeOrgPlanD
   const updatePlan = useAdminUpdateOrgPlan();
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
 
-  const handleSelect = async (tier: PlanTier) => {
+  // A refused change (409 managed_by_stripe or subscription_required, FD-18) is reported by the hook's onError with
+  // getProblemMessage; the dialog stays open on the current plan. mutate: no promise left unhandled.
+  const handleSelect = (tier: PlanTier) => {
     if (!user?.orgId) return;
     setSelectedTier(tier);
-    await updatePlan.mutateAsync({ orgId: user.orgId, planTier: tier });
-    onOpenChange(false);
-    setSelectedTier(null);
+    updatePlan.mutate(
+      { orgId: user.orgId, planTier: tier },
+      {
+        onSuccess: () => onOpenChange(false),
+        onSettled: () => setSelectedTier(null),
+      },
+    );
   };
 
   if (!user?.orgId) {
@@ -60,7 +66,7 @@ export function ChangeOrgPlanDialog({ user, open, onOpenChange }: ChangeOrgPlanD
         <PlanSelectionGrid
           selectedTier={selectedTier}
           currentTier={currentTier}
-          onSelect={(tier) => void handleSelect(tier)}
+          onSelect={handleSelect}
           isLoading={updatePlan.isPending}
           actionLabel={t('admin.users.planDialog.actionLabel')}
         />
