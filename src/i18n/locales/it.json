@@ -450,12 +450,11 @@
       "zone": "Zona",
       "zonePlaceholder": "es. Unica, Centrale",
       "foglio": "Foglio catastale",
-      "years": "Durata (anni)",
       "typeA": "Elementi tipo A",
       "typeB": "Elementi tipo B",
       "typeC": "Elementi tipo C",
       "typeD": "Elementi tipo D",
-      "furnished": "Alloggio arredato",
+      "furnished": "Arredo completo",
       "calculate": "Calcola fascia",
       "calculating": "Calcolo in corso...",
       "error": "Impossibile calcolare. Riprova.",
@@ -471,7 +470,7 @@
       "ataPending": "In attesa della lista ufficiale ATA",
       "attestationRequired": "I contratti non assistiti richiedono l'attestazione di conformita. CasaZen non la rilascia.",
       "guidanceTitle": "Associazioni per l'attestazione",
-      "guidanceIntro": "Contatta direttamente un'organizzazione firmataria. CasaZen non invia richieste e non attesta la conformita.",
+      "guidanceIntro": "L'attestazione di conformità è valida solo se rilasciata insieme da due organizzazioni firmatarie: una della proprietà e una degli inquilini. Contattale direttamente: CasaZen non invia richieste e non attesta la conformità.",
       "guidanceLoading": "Caricamento contatti...",
       "guidanceEmpty": "Nessun contatto disponibile per questo comune.",
       "roleOwners": "Proprieta",
@@ -483,7 +482,35 @@
       "exportError": "Esportazione non disponibile.",
       "markSent": "Segna come inviata",
       "markSentOk": "Comunicazione segnata come inviata.",
-      "markSentError": "Impossibile aggiornare lo stato di invio."
+      "markSentError": "Impossibile aggiornare lo stato di invio.",
+      "garageSqm": "Box o posto auto coperto (mq)",
+      "balconySqm": "Balconi e terrazze (mq)",
+      "otherAppurtenanceSqm": "Posto auto scoperto, cantina, soffitta o altre pertinenze (mq)",
+      "privateGreenSqm": "Aree verdi esclusive (mq)",
+      "qualifyingTypeD": "Di cui elementi D validi per la sub-fascia 3",
+      "airConditioning": "Aria condizionata (su almeno metà della superficie)",
+      "stoveHeating": "Riscaldamento a stufe nei singoli locali",
+      "datesRequired": "Inserisci le date di inizio e fine del contratto: la durata usata nel calcolo viene dalle date.",
+      "reason": {
+        "data_unavailable": "Dato non disponibile per questo comune: verifica il canone con un'associazione di categoria locale.",
+        "zone_required": "Indica la zona o il foglio catastale: il comune ha più zone nell'accordo.",
+        "zone_not_found": "La zona o il foglio catastale indicati non sono previsti dall'accordo per questo comune.",
+        "invalid_surface": "Superficie non valida.",
+        "surface_out_of_bands": "La superficie non rientra nelle fasce dell'accordo.",
+        "invalid_element_counts": "Gli elementi D validi per la sub-fascia 3 non possono essere più degli elementi D.",
+        "term_too_short": "Il contratto 3+2 deve durare almeno 3 anni: controlla le date."
+      },
+      "warning": {
+        "subfascia3_max_needs_more_d": "Sub-fascia 3 con meno di 4 elementi D: l'accordo consente il massimo della sub-fascia 3 solo con almeno 4 elementi D. Il massimo mostrato potrebbe essere troppo alto.",
+        "no_duration_uplift_over_6_years": "Durata oltre 6 anni: l'accordo non prevede maggiorazioni, non ne è stata applicata nessuna."
+      },
+      "indicativeTitle": "Range indicativo: dati da verificare",
+      "indicativeWarning": "I dati dell'accordo territoriale non sono ancora confermati da un legale o da un'organizzazione firmataria (vigenza e deposito dell'accordo). Il range è un riferimento e non blocca la creazione del contratto: verifica il canone con un'organizzazione firmataria.",
+      "lastVerified": "Tabelle confrontate con il testo ufficiale il {{date}}.",
+      "source": "Testo ufficiale dell'accordo",
+      "bandBetween": "fascia da {{min}} (escluso) a {{max}} mq",
+      "bandOver": "fascia oltre {{min}} mq",
+      "computedWith": "Calcolato su {{sqm}} mq utili e {{years}} anni di durata (dalle date del contratto)."
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Cedolare secca",
@@ -530,6 +557,9 @@
       },
       "monthlyRent": {
         "positive": "Il canone mensile deve essere maggiore di zero"
+      },
+      "securityDeposit": {
+        "min": "Il deposito cauzionale non può essere negativo."
       }
     },
     "createPageTitle": "Nuovo contratto",
@@ -556,8 +586,8 @@
       "createDraft": "Crea bozza contratto",
       "apeMissingError": "Un documento APE (certificato di prestazione energetica) deve essere caricato per questa proprietà prima di creare un contratto.",
       "waitingDocuments": "Attendi la verifica dei documenti della proprietà.",
-      "concordatoRangeRequired": "Calcola la fascia di canone concordato e inserisci un canone mensile compreso tra il minimo e il massimo.",
-      "concordatoRentOutOfRange": "Il canone mensile e' fuori dalla fascia calcolata per questo immobile.",
+      "concordatoRangeRequired": "Calcola il range del canone concordato: il canone mensile viene confrontato con il range restituito dal server.",
+      "concordatoRentOutOfRange": "Il canone mensile è fuori dal range calcolato per questo immobile.",
       "concordatoRangeHint": "Fascia mensile: {{min}} – {{max}} EUR",
       "propertiesLoading": "Caricamento immobili...",
       "propertiesLoadError": "Impossibile caricare i tuoi immobili: non puoi ancora scegliere l'immobile del contratto.",
@@ -565,7 +595,17 @@
       "createProperty": "Crea immobile",
       "documentsLoadError": "Impossibile verificare i documenti dell'immobile (APE).",
       "uploadApe": "Carica l'APE",
-      "retry": "Riprova"
+      "retry": "Riprova",
+      "contractTypeLabel": "Tipo di contratto *",
+      "taxRegimeLabel": "Regime fiscale *",
+      "securityDepositLabel": "Deposito cauzionale (€)",
+      "termRule": {
+        "Libero": "Canone libero: durata di almeno 4 anni (4+4).",
+        "Concordato": "Canone concordato: durata di almeno 3 anni (3+2); il canone deve rientrare nel range dell'accordo territoriale.",
+        "Transitorio": "Transitorio: durata da 1 a 18 mesi. CasaZen controlla solo la durata: le esigenze transitorie vanno indicate e documentate nel contratto, e per questo tipo non c'è ancora un modello di contratto."
+      },
+      "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
+      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -591,7 +631,25 @@
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
     "contactEmailMasked": "Email di contatto",
-    "noParties": "Nessuna parte registrata."
+    "noParties": "Nessuna parte registrata.",
+    "contractTypeLabel": {
+      "Libero": "Canone libero (4+4)",
+      "Concordato": "Canone concordato (3+2)",
+      "Transitorio": "Transitorio"
+    },
+    "taxRegimeLabel": {
+      "CedolareSecca": "Cedolare secca",
+      "Ordinario": "Regime ordinario"
+    },
+    "taxRegimeUnknown": "regime fiscale non indicato",
+    "securityDeposit": "Deposito cauzionale",
+    "securityDepositMissing": "Non indicato",
+    "concordatoAssessment": {
+      "title": "Range del canone concordato",
+      "indicative": "Range indicativo: i dati dell'accordo territoriale non sono confermati. Il contratto è stato creato senza blocchi: verifica il canone con un'organizzazione firmataria.",
+      "rentOutside": "Il canone del contratto è fuori da questo range.",
+      "calculatedAt": "Calcolato dal server il {{date}}."
+    }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -1204,7 +1262,12 @@
       "bedroomsCount_one": "{{count}} camera",
       "bedroomsCount_other": "{{count}} camere",
       "bathroomsCount_one": "{{count}} bagno",
-      "bathroomsCount_other": "{{count}} bagni"
+      "bathroomsCount_other": "{{count}} bagni",
+      "bedroomsCount_zero": "Monolocale",
+      "actions": "Azioni",
+      "edit": "Modifica",
+      "editAria": "Modifica {{name}}",
+      "noRate": "Non impostato"
     },
     "detail": {
       "loading": "Caricamento proprietà...",
@@ -1268,7 +1331,14 @@
       "empty": "Nessun documento caricato.",
       "download": "Scarica",
       "downloading": "Download in corso",
-      "delete": "Elimina"
+      "delete": "Elimina",
+      "apeIdentification": "Codice {{code}} · classe energetica {{energyClass}}",
+      "apeIdentificationMissing": "Codice e classe energetica dell'APE non indicati: servono per il contratto.",
+      "apeIdentificationEdit": "Indica codice e classe",
+      "apeCode": "Codice APE",
+      "apeEnergyClass": "Classe energetica",
+      "apeIdentificationSave": "Salva",
+      "apeIdentificationCancel": "Annulla"
     },
     "cin": {
       "badge": {
@@ -1341,7 +1411,6 @@
       },
       "address": "Indirizzo *",
       "city": "Città *",
-      "country": "Paese *",
       "postalCode": "CAP *",
       "latitude": "Latitudine",
       "longitude": "Longitudine",
@@ -1354,7 +1423,6 @@
       "bathrooms": "Bagni *",
       "maxGuests": "Ospiti max *",
       "nightlyRate": "Prezzo per notte *",
-      "currency": "Valuta",
       "amenities": {
         "title": "Servizi",
         "description": "Seleziona tutti i servizi disponibili nell'immobile"
@@ -1374,7 +1442,6 @@
         "description": "Descrivi la tua proprietà...",
         "address": "Via Roma 123",
         "city": "Milano",
-        "country": "IT",
         "postalCode": "20121",
         "latitude": "45.4642",
         "longitude": "9.1900",
@@ -1382,7 +1449,25 @@
         "bathrooms": "2",
         "maxGuests": "6",
         "nightlyRate": "150",
-        "currency": "EUR"
+        "houseRules": "Es. niente feste, check-in dalle 15:00"
+      },
+      "bedroomsHint": "0 per un monolocale",
+      "cleaningFee": "Pulizie (€)",
+      "damageDeposit": "Deposito cauzionale (€)",
+      "amountsInEuro": "Importi in euro.",
+      "stayRules": {
+        "title": "Regole del soggiorno",
+        "description": "Regole della casa, fuso orario e policy di cancellazione dell'immobile"
+      },
+      "houseRules": "Regole della casa",
+      "timezone": "Fuso orario",
+      "cancellationPolicy": {
+        "label": "Policy di cancellazione",
+        "none": "Nessuna policy",
+        "current": "Policy attuale",
+        "loading": "Caricamento delle policy di cancellazione…",
+        "loadError": "Impossibile caricare le policy di cancellazione: la policy attuale resta invariata.",
+        "empty": "Nessuna policy di cancellazione disponibile."
       }
     },
     "validation": {
@@ -1400,17 +1485,17 @@
       "city": {
         "required": "La citta' e' obbligatoria"
       },
-      "country": {
-        "required": "Il paese e' obbligatorio"
-      },
       "postalCode": {
         "required": "Il CAP e' obbligatorio"
       },
       "bedrooms": {
-        "min": "Almeno 1 camera e' obbligatoria"
+        "min": "Le camere devono essere un numero intero, 0 per un monolocale",
+        "max": "Al massimo 100 camere"
       },
       "bathrooms": {
-        "min": "Almeno 0.5 bagni sono obbligatori"
+        "min": "Almeno 1 bagno",
+        "integer": "I bagni devono essere un numero intero",
+        "max": "Al massimo 50 bagni"
       },
       "maxGuests": {
         "min": "Almeno 1 ospite di capacita' e' obbligatorio"
@@ -1424,6 +1509,18 @@
       "slug": {
         "format": "Lo slug può contenere solo lettere minuscole, numeri e trattini (es. la-mia-struttura)",
         "maxLength": "Lo slug deve essere al massimo 80 caratteri"
+      },
+      "cleaningFee": {
+        "range": "Il costo delle pulizie deve essere tra 0 e 10.000 €"
+      },
+      "damageDeposit": {
+        "range": "Il deposito cauzionale deve essere tra 0 e 50.000 €"
+      },
+      "houseRules": {
+        "maxLength": "Le regole della casa possono avere al massimo 1000 caratteri"
+      },
+      "timezone": {
+        "required": "Scegli un fuso orario"
       }
     },
     "slug": {
@@ -2212,7 +2309,13 @@
       "exportReady": "Dati e codici completi: pronti per il tracciato Alloggiati.",
       "codesPending": "Dati completi. Alcuni codici ufficiali sono da completare: servono solo per l'esportazione del tracciato.",
       "dataIncomplete": "Dati incompleti: completa i campi mancanti prima dell'invio.",
-      "legacyPlaceOfBirth": "Registrato in precedenza: «{{place}}» (indica se in Italia o all'estero)"
+      "legacyPlaceOfBirth": "Registrato in precedenza: «{{place}}» (indica se in Italia o all'estero)",
+      "revealDocument": "Mostra",
+      "revealFailed": "Impossibile mostrare il numero del documento.",
+      "enteredBy": {
+        "GuestPortal": "Inseriti dall'ospite il {{date}}",
+        "Host": "Inseriti dall'host il {{date}}"
+      }
     },
     "codeTable": {
       "Comuni": "comuni",
@@ -2228,7 +2331,9 @@
       "save": "Salva ospiti",
       "cancel": "Annulla",
       "saved": "Ospiti del soggiorno aggiornati",
-      "saveFailed": "Impossibile salvare gli ospiti. Riprova."
+      "saveFailed": "Impossibile salvare gli ospiti. Riprova.",
+      "loadingDocuments": "Caricamento dei documenti…",
+      "documentsLoadFailed": "Impossibile caricare i numeri dei documenti. Riprova."
     }
   },
   "guests": {
@@ -2299,7 +2404,10 @@
     "loadError": "Impossibile caricare gli ospiti.",
     "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} ospiti)",
     "previous": "Precedente",
-    "next": "Successiva"
+    "next": "Successiva",
+    "downloadDocumentScan": "Scarica scansione documento",
+    "documentScanFileName": "documento-ospite",
+    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento."
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -2622,11 +2730,7 @@
     }
   },
   "checkin": {
-    "sendLink": "Invia link check-in",
-    "linkGenerated": "Link check-in generato",
     "copyLink": "Copia link",
-    "sendEmail": "Invia via email",
-    "guestEmail": "Email dell'ospite",
     "documentType": {
       "Passport": "Passaporto",
       "IdentityCard": "Carta d'identita'",
@@ -2741,16 +2845,7 @@
     "saving": "Salvataggio...",
     "saveData": "Salva dati",
     "linkCopied": "Link copiato",
-    "emailSubject": "Check-in CasaZen",
-    "emailClientOpening": "Apertura client email...",
-    "generateLink": "Genera link",
-    "generateLinkDescription": "Genera un link di check-in da inviare all'ospite per la compilazione dei dati.",
-    "generateLinkHelper": "Clicca il pulsante per generare un link di check-in univoco.",
-    "enterGuestEmailHelper": "Inserisci l'email dell'ospite per inviare il link tramite il tuo client di posta.",
-    "close": "Chiudi",
-    "guestEmailPlaceholder": "ospite@esempio.com",
     "generateError": "Impossibile generare il link di check-in. Riprova.",
-    "checkinEmailBody": "Gentile ospite,\n\nClicca sul link sottostante per completare il check-in:\n\n{{url}}\n\nCasaZen",
     "firstName": "Nome *",
     "lastName": "Cognome *",
     "stepPersonal": "Dati anagrafici",
@@ -2768,9 +2863,7 @@
     "marketingConsent": "Acconsento a ricevere comunicazioni promozionali (facoltativo).",
     "sessionLabel": "Stato check-in ospite",
     "sessionLoading": "Caricamento stato sessione...",
-    "noSession": "Nessuna sessione check-in attiva.",
     "resendLink": "Invia sollecito",
-    "resendSuccess": "Link check-in reinviato all'ospite.",
     "resendError": "Impossibile reinviare il link check-in.",
     "status": {
       "Inviato": "Link inviato",
@@ -2809,7 +2902,44 @@
     "documentIssuePlace": "Luogo di rilascio *",
     "documentIssuePlaceHint": "Il comune se rilasciato in Italia, lo Stato se rilasciato all'estero.",
     "codeSelected": "Codice Alloggiati: {{code}}",
-    "codeSearchFailed": "Elenco ufficiale non disponibile in questo momento: scrivi il nome per esteso."
+    "codeSearchFailed": "Elenco ufficiale non disponibile in questo momento: scrivi il nome per esteso.",
+    "link": {
+      "none": "Nessun link di check-in generato.",
+      "loadError": "Impossibile caricare lo stato del link di check-in.",
+      "retry": "Riprova",
+      "expiresAt": "Scade il {{date}}",
+      "expired": "Il link è scaduto: invia un sollecito o genera un nuovo link da copiare.",
+      "completed": "L'ospite ha completato il check-in. Per correggere i dati usa la scheda Alloggiati.",
+      "notEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
+      "sendByEmail": "Invia link via email",
+      "generateToCopy": "Genera link da copiare",
+      "replaceWarning": "Un nuovo link sostituisce quello attuale, che smette di funzionare.",
+      "copyTitle": "Link di check-in",
+      "copyHint": "Copialo e invialo all'ospite (WhatsApp, SMS…). Valido fino al {{date}}.",
+      "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
+      "email": {
+        "sent": "Email con il link consegnata al servizio di invio.",
+        "sentAt": "Email con il link inviata il {{date}}.",
+        "queued": "Email con il link in coda di invio…",
+        "failed": "Email non inviata: {{reason}}. Copia il link o invia un nuovo sollecito.",
+        "notRequested": "Link generato da copiare: nessuna email inviata."
+      },
+      "emailError": {
+        "noRecipient": "l'ospite non ha un indirizzo email",
+        "providerNotConfigured": "il servizio email non è configurato",
+        "queueFailed": "l'invio non è stato messo in coda",
+        "rejected": "l'indirizzo è stato rifiutato dal servizio email",
+        "notDelivered": "il servizio email non ha risposto dopo più tentativi",
+        "linkUnavailable": "l'indirizzo del sito pubblico non è configurato",
+        "linkNotUsable": "il link era già stato sostituito o era scaduto",
+        "unknown": "motivo sconosciuto"
+      },
+      "toast": {
+        "emailQueued": "Nuovo link generato: l'email all'ospite è in coda di invio.",
+        "emailFailed": "Nuovo link generato, ma l'email non è partita: {{reason}}. Copia il link e invialo all'ospite.",
+        "generated": "Nuovo link generato: copialo e invialo all'ospite."
+      }
+    }
   },
   "publicSite": {
     "skipToContent": "Vai al contenuto",
@@ -3497,7 +3627,11 @@
     "offlineSignatureSaved": "Contratto firmato salvato",
     "offlineSignatureFailed": "Impossibile salvare il contratto firmato",
     "stipulaDeclared": "Data di stipula salvata",
-    "stipulaDeclareFailed": "Impossibile salvare la data di stipula"
+    "stipulaDeclareFailed": "Impossibile salvare la data di stipula",
+    "cadastralSaved": "Dati catastali salvati",
+    "cadastralSaveFailed": "Impossibile salvare i dati catastali",
+    "apeIdentificationSaved": "Estremi dell'APE salvati",
+    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE"
   },
   "fiscal": {
     "page": {
@@ -3646,7 +3780,10 @@
       "guestBookingNotFound": "Nessuna prenotazione corrisponde a questo codice e a questo indirizzo email. Controlla il codice nell'email di conferma e usa l'indirizzo email con cui hai prenotato.",
       "guestCheckInLinkUnavailable": "Il link per il check-in online non può essere inviato ora: la prenotazione non è confermata, il check-in è già completato oppure non è ancora il momento.",
       "publicPropertyNotFound": "Questo alloggio non è disponibile per la prenotazione online.",
-      "availabilityRangeInvalid": "L'intervallo di date richiesto non è valido."
+      "availabilityRangeInvalid": "L'intervallo di date richiesto non è valido.",
+      "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
+      "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
+      "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite."
     }
   },
   "validation": {
@@ -3731,6 +3868,20 @@
       "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+    },
+    "cadastral": {
+      "title": "Dati catastali",
+      "edit": "Modifica",
+      "missing": "Mancano dati catastali: il contratto li riporta e senza di essi non può essere generato.",
+      "sheet": "Foglio",
+      "parcel": "Particella",
+      "subaltern": "Subalterno",
+      "category": "Categoria catastale",
+      "categoryPlaceholder": "es. A/2",
+      "income": "Rendita catastale (€)",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "notSet": "Non indicato"
     }
   },
   "touristTaxRules": {

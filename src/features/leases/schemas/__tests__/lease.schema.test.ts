@@ -3,7 +3,8 @@ import { leaseFormSchema } from '../lease.schema';
 
 const validForm = {
   propertyId: '11111111-1111-1111-1111-111111111111',
-  fiscalRegime: 'CedolareSecca' as const,
+  contractType: 'Libero' as const,
+  taxRegime: 'CedolareSecca' as const,
   startDate: '2026-09-01',
   endDate: '2030-08-31',
   monthlyRent: 1200,

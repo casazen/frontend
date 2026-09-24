@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProperty, usePropertyDocuments } from '@/queries/use-properties';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
+import { PropertyCadastralCard } from '../components/property-cadastral-card';
 import { LoadErrorCard } from './load-error-card';
 import { longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
 
@@ -80,6 +81,8 @@ export function LongRentPropertyDetailPage() {
           {property.description && <p className="text-muted-foreground sm:col-span-2">{property.description}</p>}
         </CardContent>
       </Card>
+
+      <PropertyCadastralCard key={property.updatedAt} property={property} />
 
       {documents.isLoading ? (
         <LoadingScreen message={t('longRentProperties.detail.documentsLoading')} />
