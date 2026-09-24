@@ -55,6 +55,10 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     count: 0,
     items: [],
   },
+  alloggiatiManualRequired: {
+    count: 0,
+    items: [],
+  },
 };
 
 export const demoCheckoutWizard: CheckoutWizardStartResult = {

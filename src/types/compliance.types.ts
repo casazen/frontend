@@ -73,7 +73,10 @@ export interface ComplianceSummaryResult {
   propertiesPending: ComplianceSummarySection;
   guestCheckInsIncomplete: ComplianceSummarySection;
   checkoutsDue: ComplianceSummarySection;
+  /** Alloggiati communications in error or rejected. */
   alloggiatiFailures: ComplianceSummarySection;
+  /** Alloggiati communications the host must send on the Questura portal: CasaZen does not transmit (CO-11). */
+  alloggiatiManualRequired: ComplianceSummarySection;
 }
 
 export interface CheckoutWizardStep {

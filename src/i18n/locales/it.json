@@ -1700,26 +1700,77 @@
     "checkIn": "Check-in",
     "status": "Stato",
     "statusLabel": {
-      "Pending": "In attesa",
-      "Submitted": "Inviato",
-      "Confirmed": "Confermato",
-      "Failed": "Errore",
-      "Expired": "Scaduto"
+      "DaInviare": "Da inviare",
+      "DaInviareManualmente": "Da inviare manualmente",
+      "InviatoManualmente": "Inviato manualmente",
+      "Inviato": "Inviato (ricevuta)",
+      "Rifiutato": "Rifiutato",
+      "Errore": "Errore"
     },
     "deadline": "Scadenza",
     "incompleteData": "Dati incompleti",
-    "over24h": "Oltre 24h",
-    "hoursRemaining": "{{hours}}h rimanenti",
     "details": "Dettagli",
-    "expired": "Scaduto",
-    "statusPending": "In attesa",
-    "statusSubmitted": "Inviato",
-    "statusConfirmed": "Confermato",
-    "statusFailed": "Errore",
-    "send": "Invia",
-    "sent": "Inviato",
-    "resend": "Reinvia",
-    "alreadyConfirmed": "Comunicazione già inviata e confermata"
+    "overdue": "Scadenza superata",
+    "ordinaryTerm": "24 ore dall'arrivo",
+    "shortStayTerm": "soggiorno breve: 6 ore dall'arrivo",
+    "manualBanner": "CasaZen non trasmette ancora ad Alloggiati Web: invia ogni schedina dal portale della Questura e registra qui l'invio.",
+    "manualNotice": "CasaZen non trasmette ancora ad Alloggiati Web. Inserisci la schedina sul portale Alloggiati Web della Questura con i dati qui sotto, poi segna l'invio.",
+    "waitingArrivalNotice": "La comunicazione si invia dal giorno di arrivo: il portale accetta come data di arrivo solo oggi o ieri.",
+    "declaredNotice": "Invio dichiarato dall'host: conserva la ricevuta rilasciata dal portale Alloggiati Web.",
+    "failureNotice": {
+      "Errore": "Errore nella preparazione della comunicazione: inviala dal portale della Questura.",
+      "Rifiutato": "Il portale ha rifiutato la comunicazione: correggi i dati e inviala di nuovo dal portale della Questura."
+    },
+    "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
+    "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
+    "markSentManually": "Segna come inviato manualmente",
+    "markSentAvailableFromArrival": "Disponibile dal giorno di arrivo",
+    "sentOn": "Inviato il {{date}}",
+    "markedSentOn": "Inviato manualmente il {{date}}",
+    "markSentDialog": {
+      "title": "Segna come inviato manualmente",
+      "description": "Usalo solo dopo aver inserito la schedina sul portale Alloggiati Web della Questura. CasaZen registra la tua dichiarazione: non trasmette nulla e non riceve la ricevuta.",
+      "dateLabel": "Data di invio sul portale",
+      "dateRange": "Scegli una data tra il {{from}} e il {{to}}.",
+      "confirmation": "Confermo di aver inviato la schedina di questo soggiorno sul portale Alloggiati Web.",
+      "cancel": "Annulla",
+      "submit": "Conferma invio"
+    },
+    "guestKind": {
+      "SingleGuest": "Ospite singolo",
+      "HeadOfFamilyOrGroup": "Capo famiglia o capo gruppo (scegli sul portale)"
+    },
+    "recordField": {
+      "kind": "Tipo alloggiato",
+      "arrivalDate": "Data di arrivo",
+      "stayDays": "Giorni di permanenza",
+      "lastName": "Cognome",
+      "firstName": "Nome",
+      "gender": "Sesso",
+      "dateOfBirth": "Data di nascita",
+      "placeOfBirth": "Luogo di nascita",
+      "citizenship": "Cittadinanza",
+      "documentType": "Tipo documento",
+      "documentNumber": "Numero documento",
+      "documentIssuePlace": "Luogo di rilascio del documento"
+    },
+    "guestSummary": {
+      "title": "Dati da inserire sul portale Alloggiati Web",
+      "description": "Nell'ordine della schedina. Sono i dati registrati in CasaZen: sul portale scegli le voci corrispondenti (comune, stato, tipo documento) dalle sue tabelle.",
+      "loading": "Caricamento dati ospite…",
+      "error": "Impossibile caricare i dati dell'ospite.",
+      "retry": "Riprova",
+      "empty": "Nessun ospite registrato per questa prenotazione.",
+      "guestHeading": "Ospite {{index}}",
+      "copyAll": "Copia tutto",
+      "copyField": "Copia {{field}}",
+      "copied": "Copiato negli appunti",
+      "copyFailed": "Copia non riuscita",
+      "missing": "Mancante",
+      "stayExceedsMaxDays": "Soggiorno di {{days}} giorni: il portale accetta al massimo 30 giorni per schedina.",
+      "unregisteredGuests_one": "{{count}} altro ospite dichiarato non è registrato in CasaZen: inseriscilo sul portale come familiare o membro del gruppo.",
+      "unregisteredGuests_other": "Altri {{count}} ospiti dichiarati non sono registrati in CasaZen: inseriscili sul portale come familiari o membri del gruppo."
+    }
   },
   "guests": {
     "title": "Ospiti",
@@ -2498,7 +2549,10 @@
       "propertiesPending": "Immobili in attesa di attivazione",
       "guestCheckIns": "Check-in ospiti incompleti",
       "checkoutsDue": "Check-out in scadenza",
-      "alloggiatiFailures": "Errori Alloggiati"
+      "alloggiatiFailures": "Errori Alloggiati",
+      "alloggiatiManualRequired": "Alloggiati da inviare manualmente",
+      "moreItems_one": "e {{count}} altro",
+      "moreItems_other": "e altri {{count}}"
     },
     "properties": {
       "openWizard": "Wizard attivazione",
@@ -2654,8 +2708,6 @@
     "userDeactivateFailed": "Impossibile disattivare l'utente",
     "cinCodeUpdated": "Codice CIN aggiornato con successo",
     "cinCodeUpdateFailed": "Impossibile aggiornare il codice CIN",
-    "alloggiatiSent": "Comunicazione Alloggiati inviata con successo",
-    "alloggiatiSendFailed": "Impossibile inviare la comunicazione Alloggiati",
     "checkInDataSaved": "Dati check-in salvati con successo",
     "checkInDataSaveFailed": "Impossibile salvare i dati del check-in",
     "checkInDocumentUploaded": "Documento check-in caricato con successo",
@@ -2682,7 +2734,9 @@
     "consentUpdateFailed": "Impossibile aggiornare il consenso",
     "otaValidationFailed": "Validazione credenziali OTA fallita: {{errors}}",
     "seoApproved_one": "{{count}} pagina SEO approvata con successo",
-    "seoApproved_other": "{{count}} pagine SEO approvate con successo"
+    "seoApproved_other": "{{count}} pagine SEO approvate con successo",
+    "alloggiatiMarkedSent": "Invio manuale registrato",
+    "alloggiatiMarkSentFailed": "Impossibile registrare l'invio manuale"
   },
   "fiscal": {
     "page": {
@@ -2733,6 +2787,10 @@
       "invalidCinFormat": "Il CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
       "duplicateCin": "Questo CIN è già associato a un altro immobile.",
       "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo.",
+      "alloggiatiTransmissionUnavailable": "CasaZen non trasmette ancora ad Alloggiati Web: invia la schedina dal portale della Questura e segna l'invio come manuale.",
+      "alloggiatiManualDateBeforeArrival": "La data di invio non può precedere la data di check-in.",
+      "alloggiatiManualDateInFuture": "La data di invio non può essere successiva a oggi.",
+      "alloggiatiAlreadySent": "La comunicazione Alloggiati di questa prenotazione risulta già inviata.",
       "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco."
     }
   },

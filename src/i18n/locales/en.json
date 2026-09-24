@@ -1700,26 +1700,77 @@
     "checkIn": "Check-in",
     "status": "Status",
     "statusLabel": {
-      "Pending": "Pending",
-      "Submitted": "Submitted",
-      "Confirmed": "Confirmed",
-      "Failed": "Failed",
-      "Expired": "Expired"
+      "DaInviare": "To send",
+      "DaInviareManualmente": "To send manually",
+      "InviatoManualmente": "Sent manually",
+      "Inviato": "Sent (receipt)",
+      "Rifiutato": "Rejected",
+      "Errore": "Error"
     },
     "deadline": "Deadline",
     "incompleteData": "Incomplete data",
-    "over24h": "Over 24h",
-    "hoursRemaining": "{{hours}}h remaining",
     "details": "Details",
-    "expired": "Expired",
-    "statusPending": "Pending",
-    "statusSubmitted": "Submitted",
-    "statusConfirmed": "Confirmed",
-    "statusFailed": "Failed",
-    "send": "Send",
-    "sent": "Sent",
-    "resend": "Resend",
-    "alreadyConfirmed": "Report already sent and confirmed"
+    "overdue": "Deadline passed",
+    "ordinaryTerm": "24 hours from arrival",
+    "shortStayTerm": "short stay: 6 hours from arrival",
+    "manualBanner": "CasaZen does not transmit to Alloggiati Web yet: send each record on the Questura portal and record the submission here.",
+    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, then mark it as sent.",
+    "waitingArrivalNotice": "The communication is sent from the arrival day: the portal accepts only today or yesterday as arrival date.",
+    "declaredNotice": "Submission declared by the host: keep the receipt issued by the Alloggiati Web portal.",
+    "failureNotice": {
+      "Errore": "Error while preparing the communication: send it on the Questura portal.",
+      "Rifiutato": "The portal rejected the communication: fix the data and send it again on the Questura portal."
+    },
+    "statusError": "Unable to load the status of the Alloggiati communication.",
+    "summaryError": "Unable to load the Alloggiati communications.",
+    "markSentManually": "Mark as sent manually",
+    "markSentAvailableFromArrival": "Available from the arrival day",
+    "sentOn": "Sent on {{date}}",
+    "markedSentOn": "Sent manually on {{date}}",
+    "markSentDialog": {
+      "title": "Mark as sent manually",
+      "description": "Use it only after entering the record on the Questura Alloggiati Web portal. CasaZen records your statement: it transmits nothing and receives no receipt.",
+      "dateLabel": "Date sent on the portal",
+      "dateRange": "Choose a date between {{from}} and {{to}}.",
+      "confirmation": "I confirm I sent the record of this stay on the Alloggiati Web portal.",
+      "cancel": "Cancel",
+      "submit": "Confirm submission"
+    },
+    "guestKind": {
+      "SingleGuest": "Single guest",
+      "HeadOfFamilyOrGroup": "Head of family or group (choose on the portal)"
+    },
+    "recordField": {
+      "kind": "Guest type",
+      "arrivalDate": "Arrival date",
+      "stayDays": "Days of stay",
+      "lastName": "Surname",
+      "firstName": "Name",
+      "gender": "Sex",
+      "dateOfBirth": "Date of birth",
+      "placeOfBirth": "Place of birth",
+      "citizenship": "Citizenship",
+      "documentType": "Document type",
+      "documentNumber": "Document number",
+      "documentIssuePlace": "Document place of issue"
+    },
+    "guestSummary": {
+      "title": "Data to enter on the Alloggiati Web portal",
+      "description": "In the order of the record. This is the data stored in CasaZen: on the portal pick the matching entries (municipality, country, document type) from its tables.",
+      "loading": "Loading guest data…",
+      "error": "Unable to load the guest data.",
+      "retry": "Retry",
+      "empty": "No guest registered for this booking.",
+      "guestHeading": "Guest {{index}}",
+      "copyAll": "Copy all",
+      "copyField": "Copy {{field}}",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Copy failed",
+      "missing": "Missing",
+      "stayExceedsMaxDays": "Stay of {{days}} days: the portal accepts at most 30 days per record.",
+      "unregisteredGuests_one": "{{count}} more declared guest is not registered in CasaZen: add them on the portal as family or group member.",
+      "unregisteredGuests_other": "{{count}} more declared guests are not registered in CasaZen: add them on the portal as family or group members."
+    }
   },
   "guests": {
     "title": "Guests",
@@ -2498,7 +2549,10 @@
       "propertiesPending": "Properties awaiting activation",
       "guestCheckIns": "Incomplete guest check-ins",
       "checkoutsDue": "Check-outs due",
-      "alloggiatiFailures": "Alloggiati errors"
+      "alloggiatiFailures": "Alloggiati errors",
+      "alloggiatiManualRequired": "Alloggiati to send manually",
+      "moreItems_one": "and {{count}} more",
+      "moreItems_other": "and {{count}} more"
     },
     "properties": {
       "openWizard": "Activation wizard",
@@ -2654,8 +2708,6 @@
     "userDeactivateFailed": "Failed to deactivate user",
     "cinCodeUpdated": "CIN code updated successfully",
     "cinCodeUpdateFailed": "Failed to update CIN code",
-    "alloggiatiSent": "Alloggiati report sent successfully",
-    "alloggiatiSendFailed": "Failed to send Alloggiati report",
     "checkInDataSaved": "Check-in data saved successfully",
     "checkInDataSaveFailed": "Failed to save check-in data",
     "checkInDocumentUploaded": "Check-in document uploaded successfully",
@@ -2682,7 +2734,9 @@
     "consentUpdateFailed": "Failed to update consent",
     "otaValidationFailed": "OTA credentials validation failed: {{errors}}",
     "seoApproved_one": "{{count}} SEO page approved successfully",
-    "seoApproved_other": "{{count}} SEO pages approved successfully"
+    "seoApproved_other": "{{count}} SEO pages approved successfully",
+    "alloggiatiMarkedSent": "Manual submission recorded",
+    "alloggiatiMarkSentFailed": "Could not record the manual submission"
   },
   "fiscal": {
     "page": {
@@ -2733,6 +2787,10 @@
       "invalidCinFormat": "The CIN is not in the official format (e.g. IT015146C2ABCDEFGH).",
       "duplicateCin": "This CIN is already assigned to another property.",
       "documentFileMissing": "The file of this document is no longer available: please upload it again.",
+      "alloggiatiTransmissionUnavailable": "CasaZen does not transmit to Alloggiati Web yet: send the record on the Questura portal and mark it as sent manually.",
+      "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
+      "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
+      "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
       "touristTaxRateNotFound": "This rate no longer exists: reload the list."
     }
   },

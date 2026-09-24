@@ -12,6 +12,9 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 const NO_DIRECT_FETCH =
   "Use ApiClient (src/api/client.ts) or '@/lib/axios' instead of fetch: base URL, auth and error handling live there."
 
+const NO_UNSANITIZED_HTML =
+  "dangerouslySetInnerHTML must be { __html: sanitizeHtml(html) } with sanitizeHtml from '@/lib/sanitize-html'."
+
 export default defineConfig([
   globalIgnores(['dist']),
   {
@@ -41,6 +44,25 @@ export default defineConfig([
         { object: 'window', property: 'fetch', message: NO_DIRECT_FETCH },
         { object: 'globalThis', property: 'fetch', message: NO_DIRECT_FETCH },
         { object: 'self', property: 'fetch', message: NO_DIRECT_FETCH },
+      ],
+    },
+  },
+  {
+    // XSS (A8-08): HTML injected with dangerouslySetInnerHTML always goes through the DOMPurify
+    // allowlist of '@/lib/sanitize-html', written inline as { __html: sanitizeHtml(...) }.
+    files: ['src/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "JSXAttribute[name.name='dangerouslySetInnerHTML'] > JSXExpressionContainer > ObjectExpression > Property[key.name='__html']:not([value.type='CallExpression'][value.callee.name='sanitizeHtml'])",
+          message: NO_UNSANITIZED_HTML,
+        },
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML'] > JSXExpressionContainer > :not(ObjectExpression)",
+          message: NO_UNSANITIZED_HTML,
+        },
       ],
     },
   },
