@@ -14,6 +14,15 @@ export interface ComplianceWizardStep {
   linkUrl?: string | null;
   /** Only on the `tourist-tax` step. */
   touristTax?: ActivationTouristTax | null;
+  /** What keeps this blocking step incomplete, with stable codes (e.g. `safety_gas_detector_missing`). */
+  blockers?: ActivationBlocker[];
+}
+
+/** One reason why the activation is blocked: stable code, localized message from the API. */
+export interface ActivationBlocker {
+  step: string;
+  code: string;
+  message: string;
 }
 
 /** Tourist tax of the property's comune in the activation wizard: a warning, never a blocker. */
@@ -44,17 +53,105 @@ export interface ComplianceActivationCompleteResult {
   incompleteBlockers: string[];
 }
 
-export interface PropertySafetyChecklist {
-  smokeDetector: boolean;
-  fireExtinguisher: boolean;
-  gasCompliance: boolean;
-  acknowledgedAt?: string | null;
-  acknowledgedBy?: string | null;
+/** The safety checklist is saved on its own endpoint (CO-07), never with the activation. */
+export interface CompletePropertyActivationCommand {
+  tosAccepted?: boolean;
 }
 
-export interface CompletePropertyActivationCommand {
-  safetyChecklist?: PropertySafetyChecklist;
-  tosAccepted?: boolean;
+// ─── D.L. 145/2023 art. 13-ter safety checklist (CO-07) ──────────────────────
+
+/** Items in display order; ids of `.claude/context/regulations/sicurezza.md` in the comments. */
+export const SAFETY_ITEM_CODES = [
+  'FireExtinguishers', // SC-02
+  'GasDetector', // SC-04
+  'CoDetector', // SC-05
+  'SystemsCompliance', // SC-06
+  'BdsrDeclaration', // SC-07
+  'SmokeDetector', // SC-F1, recommended
+  'EmergencyInstructions', // SC-F2, recommended
+] as const;
+export type SafetyItemCode = (typeof SAFETY_ITEM_CODES)[number];
+
+export const COMBUSTION_APPLIANCES = ['Boiler', 'WaterHeater', 'GasHob', 'Stove', 'Fireplace', 'Other'] as const;
+export type CombustionAppliance = (typeof COMBUSTION_APPLIANCES)[number];
+
+export const SAFETY_DETECTOR_TYPES = ['Battery', 'Mains', 'FixedSystem'] as const;
+export type SafetyDetectorType = (typeof SAFETY_DETECTOR_TYPES)[number];
+
+/** Stored answer; `ToReview` only comes from the old checklist and is never sent. */
+export type SafetyItemAnswer = 'Present' | 'Missing' | 'ToReview';
+export type SafetyItemRequirement = 'Required' | 'Optional' | 'NotApplicable' | 'Undetermined';
+export type SafetyItemStatus = 'Present' | 'Missing' | 'NotAnswered' | 'ToReview' | 'NotApplicable';
+export type SafetyNotApplicableReason = 'NoGasNoCombustion' | 'NotEntrepreneurial';
+
+export interface SafetyChecklistFacts {
+  entrepreneurial: boolean | null;
+  hasGasSupply: boolean | null;
+  /** null = not answered, [] = no combustion appliance. */
+  combustionAppliances: CombustionAppliance[] | null;
+  floorCount: number | null;
+  /** m² of floor of each floor of the unit, in order; null when not given. */
+  floorAreasSqm: number[] | null;
+}
+
+export interface SafetyChecklistItem {
+  code: SafetyItemCode;
+  requirement: SafetyItemRequirement;
+  status: SafetyItemStatus;
+  notApplicableReason: SafetyNotApplicableReason | null;
+  answer: SafetyItemAnswer | null;
+  quantity: number | null;
+  location: string | null;
+  detectorType: SafetyDetectorType | null;
+  /** yyyy-MM-dd */
+  checkedOn: string | null;
+  /** yyyy-MM-dd */
+  expiresOn: string | null;
+  evidenceDocumentId: string | null;
+  evidenceFileName: string | null;
+  notes: string | null;
+}
+
+export interface SafetyChecklistIssue {
+  code: string;
+  message: string;
+}
+
+export interface SafetyChecklist {
+  schemaVersion: number;
+  legalBasis: string;
+  declarationTextVersion: string;
+  saved: boolean;
+  importedFromLegacy: boolean;
+  facts: SafetyChecklistFacts;
+  items: SafetyChecklistItem[];
+  minimumExtinguishers: number | null;
+  isComplete: boolean;
+  blockers: SafetyChecklistIssue[];
+  warnings: SafetyChecklistIssue[];
+  confirmedAt: string | null;
+  confirmedTextVersion: string | null;
+  updatedAt: string | null;
+}
+
+export interface SaveSafetyChecklistItem {
+  code: SafetyItemCode;
+  /** "Not applicable" is never sent: it follows from the facts. */
+  answer: 'Present' | 'Missing' | null;
+  quantity: number | null;
+  location: string | null;
+  detectorType: SafetyDetectorType | null;
+  checkedOn: string | null;
+  expiresOn: string | null;
+  evidenceDocumentId: string | null;
+  notes: string | null;
+}
+
+export interface SaveSafetyChecklistCommand {
+  facts: SafetyChecklistFacts;
+  items: SaveSafetyChecklistItem[];
+  /** Final confirmation of these answers by the host (SC-08). */
+  confirm: boolean;
 }
 
 export interface ComplianceSummaryItem {

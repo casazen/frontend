@@ -2,13 +2,46 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getProblemMessage } from '@/lib/api-errors';
 import { CONNECT_STATUS_KEY, useConnectStatus, useStartConnectOnboarding } from '@/queries/use-connect';
-import { resolveConnectUiStatus } from '@/types/connect.types';
+import { isRetryableConnectError, resolveConnectUiStatus } from '@/types/connect.types';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle2, Clock, ExternalLink } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, ExternalLink, RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
+
+interface ConnectErrorAlertProps {
+  message: string;
+  retryable: boolean;
+  retrying: boolean;
+  onRetry: () => void;
+  testId: string;
+}
+
+/**
+ * A failed Connect call. The account linked on Stripe is never changed by a failure (BK-09): the page says what went
+ * wrong and offers "Riprova" when retrying may help, never a "not connected" state it did not read.
+ */
+function ConnectErrorAlert({ message, retryable, retrying, onRetry, testId }: ConnectErrorAlertProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      role="alert"
+      data-testid={testId}
+      className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm"
+    >
+      <p className="text-destructive">{message}</p>
+      {retryable && (
+        <Button variant="outline" size="sm" onClick={onRetry} disabled={retrying}>
+          <RefreshCw className="mr-2 h-4 w-4" aria-hidden />
+          {t('settings.connectRetry')}
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export function ConnectPaymentsPage() {
   const { t } = useTranslation();
@@ -16,7 +49,7 @@ export function ConnectPaymentsPage() {
   const queryClient = useQueryClient();
   const stripeReturn = searchParams.get('stripe_return') === '1' || searchParams.get('stripe_refresh') === '1';
 
-  const { data: status, isLoading, isError } = useConnectStatus(stripeReturn);
+  const { data: status, isLoading, isError, error, refetch, isFetching } = useConnectStatus(stripeReturn);
   const startOnboarding = useStartConnectOnboarding();
 
   useEffect(() => {
@@ -50,7 +83,7 @@ export function ConnectPaymentsPage() {
           description={t('settings.connectDescription')}
         />
 
-        {!status?.chargesEnabled && (
+        {status && !status.chargesEnabled && (
           <div
             role="alert"
             data-testid="connect-checkout-gate-banner"
@@ -64,38 +97,57 @@ export function ConnectPaymentsPage() {
         )}
 
         <div className="rounded-lg border bg-card p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm text-muted-foreground">{t('settings.stripeConnectionStatus')}</p>
-              <div className="mt-1 flex items-center gap-2">
-                {uiStatus === 'active' ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden />
-                ) : uiStatus === 'pending' ? (
-                  <Clock className="h-5 w-5 text-amber-600" aria-hidden />
-                ) : (
-                  <AlertCircle className="h-5 w-5 text-muted-foreground" aria-hidden />
-                )}
-                <Badge variant={STATUS_VARIANT[uiStatus]} data-testid="connect-status-badge">
-                  {STATUS_LABEL[uiStatus]}
-                </Badge>
-              </div>
-            </div>
-
-            {uiStatus !== 'active' && (
-              <Button
-                onClick={() => void startOnboarding.mutateAsync()}
-                disabled={startOnboarding.isPending || isLoading}
-                data-testid="connect-stripe-cta"
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                {uiStatus === 'disconnected' ? t('settings.connectStripe') : t('settings.completeVerification')}
-              </Button>
-            )}
-          </div>
-
           {isLoading && <p className="text-sm text-muted-foreground">{t('settings.loadingPayments')}</p>}
+
           {isError && (
-            <p className="text-sm text-destructive">{t('settings.stripeStatusError')}</p>
+            <ConnectErrorAlert
+              testId="connect-status-error"
+              message={getProblemMessage(error, t) ?? t('settings.stripeStatusError')}
+              retryable={isRetryableConnectError(error)}
+              retrying={isFetching}
+              onRetry={() => void refetch()}
+            />
+          )}
+
+          {status && (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">{t('settings.stripeConnectionStatus')}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  {uiStatus === 'active' ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden />
+                  ) : uiStatus === 'pending' ? (
+                    <Clock className="h-5 w-5 text-amber-600" aria-hidden />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-muted-foreground" aria-hidden />
+                  )}
+                  <Badge variant={STATUS_VARIANT[uiStatus]} data-testid="connect-status-badge">
+                    {STATUS_LABEL[uiStatus]}
+                  </Badge>
+                </div>
+              </div>
+
+              {uiStatus !== 'active' && (
+                <Button
+                  onClick={() => startOnboarding.mutate()}
+                  disabled={startOnboarding.isPending}
+                  data-testid="connect-stripe-cta"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  {uiStatus === 'disconnected' ? t('settings.connectStripe') : t('settings.completeVerification')}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {startOnboarding.isError && (
+            <ConnectErrorAlert
+              testId="connect-onboarding-error"
+              message={getProblemMessage(startOnboarding.error, t) ?? t('toast.connectOnboardingFailed')}
+              retryable={isRetryableConnectError(startOnboarding.error)}
+              retrying={startOnboarding.isPending}
+              onRetry={() => startOnboarding.mutate()}
+            />
           )}
 
           {status?.connectedAccountId && (
