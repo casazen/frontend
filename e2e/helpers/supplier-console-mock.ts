@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { mockServiceCategoriesApi } from './service-categories-mock';
 
 interface SupplierProfile {
   orgId: string;
@@ -62,9 +63,11 @@ export async function mockSupplierConsoleApi(
   const active = options?.active ?? false;
   const inboxItems = options?.inboxItems ?? [];
   const profile: SupplierProfile = active
-    ? { ...demoSupplierProfile, status: 'Active', categories: ['Pulizie'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
+    ? { ...demoSupplierProfile, status: 'Active', categories: ['cleaning'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
     : demoSupplierProfile;
   const activation = active ? demoActivationActive : demoActivationPending;
+
+  await mockServiceCategoriesApi(page);
 
   await page.route('**/api/supplier/**', async (route) => {
     const url = route.request().url();

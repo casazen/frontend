@@ -115,6 +115,7 @@
       "newInvite": "Nuovo invito",
       "email": "Email",
       "comuneCode": "Codice comune",
+      "categories": "Categorie di servizio (opzionale)",
       "message": "Messaggio (opzionale)",
       "sendInvite": "Invia invito",
       "toast": {
@@ -1266,7 +1267,13 @@
       "cleaning": "Pulizie",
       "maintenance": "Manutenzione",
       "plumbing": "Idraulico",
-      "laundry": "Lavanderia"
+      "laundry": "Lavanderia",
+      "linen": "Biancheria",
+      "check-in": "Check-in ospiti",
+      "gardening": "Giardinaggio",
+      "events": "Eventi",
+      "rental": "Noleggio",
+      "excursions": "Escursioni"
     },
     "status": {
       "Richiesto": "Richiesto",
@@ -1305,6 +1312,7 @@
     "allCategories": "Tutte le categorie",
     "suppliersTitle": "Fornitori disponibili",
     "noSuppliers": "Nessun fornitore trovato per questa proprietà.",
+    "suppliersLoadError": "Impossibile caricare i fornitori. Riprova più tardi.",
     "selectSupplierHint": "Seleziona un fornitore per vedere i dettagli e richiedere un servizio.",
     "requestsTitle": "Le tue richieste",
     "requestsDescription": "Tutte le richieste di servizio sulle tue proprietà.",
@@ -2792,7 +2800,8 @@
       "alloggiatiManualDateBeforeArrival": "La data di invio non può precedere la data di check-in.",
       "alloggiatiManualDateInFuture": "La data di invio non può essere successiva a oggi.",
       "alloggiatiAlreadySent": "La comunicazione Alloggiati di questa prenotazione risulta già inviata.",
-      "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco."
+      "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco.",
+      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco."
     }
   },
   "validation": {
@@ -2836,5 +2845,12 @@
     "notFoundDescription": "Questa pagina fornitore non esiste o non è più attiva.",
     "availableDays_one": "{{count}} giorno disponibile nelle prossime 2 settimane",
     "availableDays_other": "{{count}} giorni disponibili nelle prossime 2 settimane"
+  },
+  "serviceCategories": {
+    "loading": "Caricamento categorie…",
+    "loadError": "Impossibile caricare le categorie di servizio.",
+    "retry": "Riprova",
+    "empty": "Nessuna categoria di servizio disponibile.",
+    "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
   }
 }

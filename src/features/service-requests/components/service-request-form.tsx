@@ -16,9 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Wrench, Sparkles, Loader2, Star, MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
 import { useCreateServiceRequest, useMatchSupplier } from '@/queries/use-service-requests';
+import { useServiceCategories } from '@/queries/use-service-categories';
 import type { ServiceRequestUrgency, SupplierMatchCandidate } from '@/types/service-request';
-
-const CATEGORIES = ['cleaning', 'maintenance', 'plumbing', 'laundry'] as const;
+import { ServiceCategorySelect } from './service-category-picker';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -55,7 +55,11 @@ export function ServiceRequestForm({
     }
   };
 
-  const [category, setCategory] = useState<string>(preselectedCategory ?? 'cleaning');
+  // Codes come from the backend catalog (SU-03): a preselection that is not a code (e.g. an old
+  // supplier label) falls back to the first category instead of being sent and rejected.
+  const { data: categoryCodes } = useServiceCategories();
+  const [category, setCategory] = useState<string>(preselectedCategory ?? '');
+  const selectedCategory = categoryCodes?.includes(category) ? category : (categoryCodes?.[0] ?? '');
   const [supplierOrgId, setSupplierOrgId] = useState(preselectedSupplierOrgId ?? '');
   const [urgency, setUrgency] = useState<ServiceRequestUrgency>('Normal');
   const [notes, setNotes] = useState('');
@@ -79,9 +83,9 @@ export function ServiceRequestForm({
 
   // (Re)run the AI match when the dialog opens or the match criteria change.
   useEffect(() => {
-    if (!open) return;
-    onMatchCriteriaChange({ propertyId, category, urgency });
-  }, [open, propertyId, category, urgency]);
+    if (!open || !selectedCategory) return;
+    onMatchCriteriaChange({ propertyId, category: selectedCategory, urgency });
+  }, [open, propertyId, selectedCategory, urgency]);
 
   // Preselect the recommended supplier when the match returns and nothing is selected
   // (adjusting state during render).
@@ -96,12 +100,12 @@ export function ServiceRequestForm({
   };
 
   const handleSubmit = () => {
-    if (!supplierOrgId) return;
+    if (!supplierOrgId || !selectedCategory) return;
     createMutation.mutate(
       {
         propertyId,
         supplierOrgId,
-        category,
+        category: selectedCategory,
         urgency,
         notes: notes || undefined,
       },
@@ -139,21 +143,14 @@ export function ServiceRequestForm({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="sr-category">{t('serviceRequest.category')}</Label>
-            <select
+            <ServiceCategorySelect
               id="sr-category"
-              className={selectClass}
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
+              value={selectedCategory}
+              onChange={(code) => {
+                setCategory(code);
                 if (shouldRunAiMatch) setSupplierOrgId('');
               }}
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {t(`serviceRequest.categories.${c}`)}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           {shouldRunAiMatch && (
@@ -282,7 +279,7 @@ export function ServiceRequestForm({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!supplierOrgId || createMutation.isPending}
+            disabled={!supplierOrgId || !selectedCategory || createMutation.isPending}
             data-testid="submit-service-request"
           >
             {t('serviceRequest.submit')}

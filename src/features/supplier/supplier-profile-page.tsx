@@ -10,9 +10,12 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
 import { Pencil, Check, X, Upload, Trash2, ImageIcon } from 'lucide-react';
 import { displayableMediaUrls } from '@/lib/media-url';
-import { getSupplierStatusLabel } from '@/lib/i18n-labels';
+import { getServiceCategoryLabel, getSupplierStatusLabel } from '@/lib/i18n-labels';
+import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
+import { useServiceCategories } from '@/queries/use-service-categories';
+import { keepKnownCategories } from '@/lib/service-categories';
+import { getProblemMessage } from '@/lib/api-errors';
 
-const CATEGORY_OPTIONS = ['Pulizie', 'Manutenzione', 'Giardinaggio', 'Eventi', 'Noleggio', 'Escursioni'];
 const MAX_PHOTOS = 10;
 
 export function SupplierProfilePage() {
@@ -20,6 +23,7 @@ export function SupplierProfilePage() {
   const { data: profile, isLoading } = useSupplierProfile();
   const updateProfile = useUpdateSupplierProfile();
   const uploadPhotos = useUploadSupplierPhotos();
+  const { data: categoryCodes } = useServiceCategories();
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -110,15 +114,15 @@ export function SupplierProfilePage() {
         legalName: legalName.trim() || undefined,
         vatNumber: vatNumber.trim(),
         phone: phone.trim() || undefined,
-        categories,
+        categories: keepKnownCategories(categories, categoryCodes),
         comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
         bio: bio.trim(),
         photoUrls: existingPhotos,
       });
       toast.success(t('supplier.progressSaved'));
       setEditing(false);
-    } catch {
-      toast.error(t('supplier.progressSaveError'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('supplier.progressSaveError'));
     } finally {
       setSaving(false);
     }
@@ -181,15 +185,8 @@ export function SupplierProfilePage() {
             <CardContent className="space-y-4">
               <div>
                 <Label>{t('supplier.serviceCategories')}</Label>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {CATEGORY_OPTIONS.map((c) => (
-                    <Button key={c} type="button" size="sm"
-                      variant={categories.includes(c) ? 'default' : 'outline'}
-                      onClick={() => setCategories((prev) =>
-                        prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c])}>
-                      {c}
-                    </Button>
-                  ))}
+                <div className="mt-2">
+                  <ServiceCategoryPicker value={categories} onChange={setCategories} disabled={saving} />
                 </div>
               </div>
               <div>
@@ -348,7 +345,7 @@ export function SupplierProfilePage() {
                   {(profile.categories ?? []).length > 0
                     ? profile.categories!.map((c) => (
                         <span key={c} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                          {c}
+                          {getServiceCategoryLabel(c, t)}
                         </span>
                       ))
                     : <span className="text-sm text-muted-foreground">—</span>}
