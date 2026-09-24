@@ -59,7 +59,8 @@ export function ComplianceGuidePage() {
 
       <TouristTaxCalculatorWidget
         comuneSlug={page.comuneSlug}
-        rateSummary={page.touristTaxRate}
+        comuneName={page.comuneName}
+        rates={page.touristTaxRates ?? []}
       />
 
       <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} />
