@@ -19,7 +19,8 @@ import { ImuNotificationExportButton } from './components/imu-notification-expor
 import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
 import { RliChecklist } from './components/rli-checklist';
 import { DelegaCaptureDialog } from './components/delega-capture-dialog';
-import { getFiscalRegimeLabel, getLeaseEventTypeLabel, getLeasePartyRoleLabel } from '@/lib/i18n-labels';
+import { getLeaseEventTypeLabel, getLeasePartyRoleLabel, getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
+import { ConcordatoAssessmentPanel } from './components/concordato-assessment-panel';
 
 export function LeaseDetailPage() {
   const { t } = useTranslation();
@@ -133,7 +134,13 @@ export function LeaseDetailPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.fiscalRegime')}</p>
-                  <p className="font-medium">{getFiscalRegimeLabel(lease.fiscalRegime, t)}</p>
+                  <p className="font-medium" data-testid="lease-type-regime">{getLeaseTypeAndRegimeLabel(lease, t)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t('leases.securityDeposit')}</p>
+                  <p className="font-medium">
+                    {lease.securityDeposit != null ? formatCurrency(lease.securityDeposit) : t('leases.securityDepositMissing')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.stipulaDate')}</p>
@@ -214,7 +221,11 @@ export function LeaseDetailPage() {
               />
             )}
 
-            <CanoneConcordatoCalculator propertyId={lease.propertyId} />
+            {lease.concordatoAssessment ? (
+              <ConcordatoAssessmentPanel assessment={lease.concordatoAssessment} />
+            ) : (
+              <CanoneConcordatoCalculator propertyId={lease.propertyId} startDate={lease.startDate} endDate={lease.endDate} />
+            )}
             <AttestationGuidancePanel propertyId={lease.propertyId} />
             <ImuNotificationExportButton leaseId={lease.id} leaseStatus={lease.status} />
           </div>
