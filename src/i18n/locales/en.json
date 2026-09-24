@@ -2918,6 +2918,19 @@
       "payAtProperty": "Payment at the property.",
       "resumeOwnBooking": "You already have a booking in progress for these dates in this page: resume it instead of creating a new one.",
       "resumeOwnBookingAction": "Resume the booking"
+    },
+    "availability": {
+      "title": "Availability",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "loading": "Loading availability…",
+      "loadError": "The availability could not be loaded.",
+      "checkedAtCheckout": "The dates you choose will still be checked before payment.",
+      "retry": "Try again",
+      "legendFree": "Free",
+      "legendBooked": "Booked",
+      "dayFree": "{{date}}: free",
+      "dayBooked": "{{date}}: booked"
     }
   },
   "publicSeo": {
@@ -3452,7 +3465,9 @@
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
       "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
-      "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes."
+      "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes.",
+      "publicPropertyNotFound": "This property is not available for online booking.",
+      "availabilityRangeInvalid": "The requested date range is not valid."
     }
   },
   "validation": {
