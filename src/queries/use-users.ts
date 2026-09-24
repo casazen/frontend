@@ -124,22 +124,6 @@ export function usePlans() {
   });
 }
 
-export function useUpdateMyPlan() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (planTier: PlanTier) => OrgsApi.updateMyPlan(planTier),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [ME_KEY] });
-      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
-      toast.success(i18n.t('toast.planUpdated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.planUpdateFailed'));
-    },
-  });
-}
-
 export function useCompleteOnboarding() {
   const queryClient = useQueryClient();
 

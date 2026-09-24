@@ -1,4 +1,5 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 
 export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 
@@ -31,6 +32,12 @@ export interface RouteManifestEntry {
   legacyPaths?: string[];
   /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
   featureFlag?: FeatureFlagKey;
+  /**
+   * Plan and billing of the org (backend policy `OrgBillingAdmin`, TN-3): the entry is in the menu only for the org
+   * billing administrator ({@link ORG_BILLING_ADMIN_PERMISSION}). The route stays reachable: the page itself tells
+   * anyone else to contact the administrator (spec-saas-billing AC13).
+   */
+  orgBillingAdmin?: boolean;
 }
 
 export const NAV_GROUP_ORDER: NavGroup[] = [
@@ -159,23 +166,39 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.domain',
     navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 4,
+    navOrder: 5,
     icon: 'Globe',
     component: async () => ({
       default: (await import('@/features/settings/domain/custom-domain-settings-page')).CustomDomainSettingsPage,
     }),
   },
   {
+    // Plans and Stripe checkout; also the return page of the checkout and of the billing portal (backend PL-11).
     path: '/app/short-rent/settings/plan',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
+    requiredPermissions: [],
+    orgBillingAdmin: true,
     navKey: 'nav.plan',
     navGroup: 'account',
     navPlacement: 'secondary',
     navOrder: 2,
     icon: 'CreditCard',
     component: async () => ({
-      default: (await import('@/features/settings/plan-settings-page')).PlanSettingsPage,
+      default: (await import('@/features/billing/plans-page')).PlansPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/settings/billing',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.billing',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'Receipt',
+    component: async () => ({
+      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
     }),
   },
   {
@@ -185,7 +208,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.stripeConnect',
     navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 3,
+    navOrder: 4,
     icon: 'Wallet',
     component: async () => ({
       default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
@@ -623,6 +646,7 @@ function hasEntryPermission(
   hasPermission?: PermissionPredicate,
 ): boolean {
   if (!hasPermission) return true;
+  if (entry.orgBillingAdmin && !hasPermission(entry.context, ORG_BILLING_ADMIN_PERMISSION)) return false;
   return entry.requiredPermissions.every((permission) =>
     hasPermission(entry.context, permission),
   );

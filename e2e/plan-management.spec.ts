@@ -3,6 +3,8 @@ import { demoUrl } from './helpers/demo-profile';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   mockAdminUpdateOrgPlan,
+  mockBillingPlans,
+  mockBillingSubscription,
   mockCurrentUserWithOrg,
   mockEntitlement,
   mockPlansCatalog,
@@ -45,42 +47,43 @@ test.describe('Plan management (#202 extension)', () => {
     });
   }
 
+  // PL-12: a paid plan is bought through Stripe Checkout, never switched for free (FD-18).
   for (const tier of PLAN_TIERS) {
-    test(`owner can switch plan to ${tier} from settings`, async ({ page }) => {
+    test(`owner starts the Stripe checkout of ${tier} from the plan page`, async ({ page }) => {
       await mockCurrentUserWithOrg(page, { name: 'Acme Stays', planTier: 'Starter' });
       await mockEntitlement(page, { planTier: 'Starter', maxProperties: 3, properties: 1 });
+      await mockBillingPlans(page);
+      await mockBillingSubscription(page, { status: 'none' });
 
-      let updatedTier = '';
-      await page.route('**/api/orgs/me/plan', async (route) => {
-        if (route.request().method() !== 'PUT') {
-          await route.fallback();
-          return;
-        }
-        updatedTier = (route.request().postDataJSON() as { planTier?: string }).planTier ?? '';
+      let checkoutRequest: { planTier?: string; billingCountry?: string } | null = null;
+      await page.route('**/api/billing/checkout-session', async (route) => {
+        checkoutRequest = route.request().postDataJSON() as { planTier?: string; billingCountry?: string };
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({
-            orgId: 'org-e2e-0001',
-            planTier: updatedTier,
-            limits: { maxProperties: updatedTier === 'Pro' ? 50 : updatedTier === 'Scale' ? 999999 : 3 },
-            usage: { properties: 1 },
-            canAddProperty: true,
-          }),
+          body: JSON.stringify({ checkoutUrl: 'https://checkout.stripe.com/c/pay/cs_test_e2e' }),
         });
       });
+      await page.route('https://checkout.stripe.com/**', (route) =>
+        route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Stripe Checkout</p>' }),
+      );
 
       await page.goto(demoUrl(PLAN_SETTINGS_URL, 'short-stay'));
 
       await expect(page.getByTestId('plan-usage-summary')).toBeVisible();
       const card = page.getByTestId(`plan-card-${tier}`);
       if (tier === 'Starter') {
-        await expect(card.getByRole('button', { name: 'Piano attuale' })).toBeVisible();
+        await expect(card.getByRole('button', { name: 'Piano attuale' })).toBeDisabled();
         return;
       }
 
-      await card.getByRole('button', { name: 'Passa a questo piano' }).click();
-      await expect.poll(() => updatedTier).toBe(tier);
+      await card.getByRole('button', { name: 'Scegli piano' }).click();
+      const dialog = page.getByTestId('checkout-dialog');
+      await dialog.getByLabel('Paese').selectOption('IT');
+      await dialog.getByRole('button', { name: 'Procedi al pagamento' }).click();
+
+      await expect(page).toHaveURL(/checkout\.stripe\.com/);
+      expect(checkoutRequest).toMatchObject({ planTier: tier, billingCountry: 'IT' });
     });
   }
 

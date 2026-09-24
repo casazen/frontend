@@ -183,7 +183,8 @@
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
-    "plan": "Piano e Fatturazione",
+    "plan": "Piano",
+    "billing": "Fatturazione",
     "bookings": "Prenotazioni",
     "marketplace": "Marketplace",
     "calendar": "Calendario",
@@ -1671,17 +1672,49 @@
   },
   "ical": {
     "title": "Calendario OTA",
-    "description": "Importa il calendario Airbnb o Booking.com e condividi la disponibilità CasaZen via iCal.",
+    "description": "Collega i calendari iCal di Airbnb, Booking.com e degli altri canali: le date prenotate lì risultano occupate sul tuo sito. Condividi la disponibilità CasaZen con il link di esportazione.",
+    "feedsTitle": "Calendari collegati",
+    "feedsLoadError": "Impossibile caricare i calendari collegati.",
+    "retry": "Riprova",
+    "noFeeds": "Nessun calendario collegato: aggiungi il link iCal di Airbnb, Booking.com o di un altro canale.",
+    "channels": {
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Other": "Altro"
+    },
+    "status": {
+      "Success": "Sincronizzato",
+      "PartialFailure": "Sincronizzato in parte",
+      "Failure": "Errore",
+      "Syncing": "Sincronizzazione in corso",
+      "never": "Mai sincronizzato"
+    },
+    "syncNow": "Sincronizza ora",
+    "syncing": "Sincronizzazione…",
+    "remove": "Scollega",
+    "removeTitle": "Scollegare il calendario?",
+    "removeDescription": "Le date bloccate importate da {{name}} tornano libere sul tuo sito. Gli altri calendari non cambiano.",
+    "removeConfirm": "Scollega",
+    "cancel": "Annulla",
+    "addTitle": "Collega un calendario",
+    "channelLabel": "Canale",
+    "feedLabelLabel": "Etichetta (facoltativa)",
+    "feedLabelPlaceholder": "Es. Airbnb - camera 2",
     "importUrlLabel": "URL import (HTTPS)",
+    "importUrlPlaceholder": "https://www.airbnb.it/calendar/ical/…",
     "importHint": "Incolla l'URL iCal dalla tua OTA. Serve aiuto?",
     "helpLink": "Come trovare il link iCal",
-    "saveImport": "Salva e sincronizza",
-    "syncStatus": "Stato sincronizzazione",
+    "addFeed": "Aggiungi e sincronizza",
+    "feedAdded": "Calendario collegato: la prima sincronizzazione è in corso.",
+    "feedAddFailed": "Impossibile collegare il calendario.",
+    "feedRemoved": "Calendario scollegato.",
+    "feedRemoveFailed": "Impossibile scollegare il calendario.",
+    "feedSyncFailed": "Impossibile avviare la sincronizzazione.",
     "lastSync": "Ultima sync: {{date}}",
     "neverSynced": "Mai sincronizzato",
-    "statusValue": "Stato: {{status}}",
     "exportUrlLabel": "URL export per le OTA",
     "exportHint": "Incolla questo URL su Airbnb/Booking per esportare prenotazioni e blocchi CasaZen.",
+    "exportLoadError": "Impossibile caricare il link di esportazione.",
     "copy": "Copia",
     "copied": "Copiato",
     "legendBooking": "Prenotazione",
@@ -1978,8 +2011,6 @@
     "currentUsage": "Utilizzo attuale:",
     "unlimited": "illimitate",
     "planUsage": "{{propertyCount}} proprietà su {{maxProperties}}",
-    "switchToPlan": "Passa a questo piano",
-    "stripeBillingNote": "Il pagamento ricorrente con carta sarà disponibile con l'integrazione Stripe ({{planCount}} piani configurati).",
     "connectStatusDisconnected": "Non collegato",
     "connectStatusPending": "In verifica",
     "connectStatusActive": "Attivo",
@@ -2096,6 +2127,97 @@
     },
     "upToProperties_one": "Fino a {{count}} proprietà",
     "upToProperties_other": "Fino a {{count}} proprietà"
+  },
+  "billing": {
+    "plans": {
+      "pricePerMonth": "{{price}} al mese",
+      "priceAtCheckout": "Il prezzo è indicato nella pagina di pagamento Stripe.",
+      "changeInPortal": "Cambia dal portale",
+      "unavailable": "Non disponibile",
+      "unavailableHint": "Questo piano non è acquistabile al momento.",
+      "loadError": "Impossibile caricare i piani o lo stato dell'abbonamento.",
+      "emptyTitle": "Nessun piano disponibile",
+      "emptyDescription": "Al momento non ci sono piani acquistabili. Riprova più tardi o contatta l'assistenza.",
+      "liveSubscription": "Hai già un abbonamento: per cambiare piano, aggiornare la carta o scaricare le fatture usa il portale di fatturazione Stripe.",
+      "stripeNote": "Il pagamento avviene su Stripe: CasaZen non vede i dati della tua carta.",
+      "billingLink": "Abbonamento e dati di fatturazione"
+    },
+    "checkout": {
+      "title": "Abbonamento {{plan}}",
+      "description": "Indica il paese di fatturazione e, se ce l'hai, la Partita IVA. Poi completerai il pagamento su Stripe.",
+      "submit": "Procedi al pagamento",
+      "redirecting": "Reindirizzamento a Stripe…",
+      "failed": "Impossibile avviare il pagamento. Riprova.",
+      "return": {
+        "confirming": "Stiamo verificando il pagamento con Stripe…",
+        "confirmed": "Pagamento confermato: il piano {{plan}} è attivo.",
+        "pending": "Non abbiamo ancora ricevuto la conferma del pagamento da Stripe. Se hai completato il pagamento, il piano si aggiornerà a breve.",
+        "refresh": "Aggiorna lo stato",
+        "canceled": "Pagamento annullato: non è stato effettuato alcun addebito. Puoi scegliere di nuovo un piano quando vuoi."
+      }
+    },
+    "settings": {
+      "title": "Fatturazione",
+      "description": "Abbonamento, pagamenti e dati di fatturazione della tua organizzazione.",
+      "subscriptionTitle": "Abbonamento",
+      "plan": "Piano",
+      "status": "Stato",
+      "nextDue": "Prossima scadenza",
+      "noneTitle": "Nessun abbonamento a pagamento",
+      "noneDescription": "Stai usando il piano {{plan}} senza abbonamento. Scegli un piano per abbonarti.",
+      "choosePlan": "Scegli un piano",
+      "changePlan": "Cambia piano",
+      "loadError": "Impossibile caricare l'abbonamento.",
+      "statusHint": {
+        "active": "Il rinnovo è automatico. Carta, fatture e disdetta sono nel portale di fatturazione.",
+        "trialing": "Periodo di prova in corso: alla scadenza il pagamento parte in automatico."
+      }
+    },
+    "status": {
+      "active": "Attivo",
+      "trialing": "In prova",
+      "pastDue": "Pagamento in ritardo",
+      "incomplete": "Pagamento da completare",
+      "unpaid": "Non pagato",
+      "canceled": "Scaduto",
+      "none": "Nessun abbonamento"
+    },
+    "notice": {
+      "pastDue": "L'ultimo pagamento non è riuscito. Aggiorna il metodo di pagamento dal portale di fatturazione: il piano resta attivo solo per un breve periodo di tolleranza.",
+      "incomplete": "Il primo pagamento non è stato completato, quindi il piano a pagamento non è attivo. Completa il pagamento dal portale di fatturazione.",
+      "unpaid": "L'abbonamento è sospeso per mancato pagamento e il piano a pagamento non è attivo. Paga la fattura aperta dal portale di fatturazione per riattivarlo.",
+      "canceled": "L'abbonamento è terminato e il piano a pagamento non è più attivo. Scegli un piano per abbonarti di nuovo."
+    },
+    "portal": {
+      "managePayments": "Gestisci pagamenti",
+      "manage": "Apri il portale di fatturazione",
+      "open": "Apri il portale di fatturazione",
+      "completePayment": "Completa il pagamento",
+      "opening": "Apertura del portale…",
+      "noCustomer": "Il portale di fatturazione sarà disponibile dopo il primo pagamento: scegli prima un piano.",
+      "failed": "Impossibile aprire il portale di fatturazione. Riprova."
+    },
+    "profile": {
+      "title": "Dati di fatturazione",
+      "description": "Paese e Partita IVA dell'organizzazione, usati per le fatture dell'abbonamento.",
+      "country": "Paese",
+      "countryPlaceholder": "Seleziona il paese",
+      "vatId": "Partita IVA (facoltativa)",
+      "vatIdHint": "La Partita IVA sarà verificata prima di essere usata in fattura.",
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "saved": "Dati di fatturazione salvati.",
+      "saveFailed": "Impossibile salvare i dati di fatturazione. Riprova.",
+      "vatRejected": "La Partita IVA non è stata accettata: controlla il numero o salva senza Partita IVA.",
+      "validation": {
+        "countryRequired": "Seleziona il paese di fatturazione.",
+        "vatIdInvalid": "La Partita IVA può contenere solo lettere e numeri (da 4 a 20 caratteri)."
+      }
+    },
+    "adminRequired": {
+      "title": "Riservato all'amministratore dell'organizzazione",
+      "description": "Piano e fatturazione sono gestiti dall'amministratore della tua organizzazione: contatta l'amministratore per cambiarli."
+    }
   },
   "profile": {
     "title": "Il mio profilo",
@@ -3672,8 +3794,6 @@
     "profileUpdateFailed": "Impossibile aggiornare il profilo",
     "roleUpdated": "Ruolo aggiornato con successo",
     "roleUpdateFailed": "Impossibile aggiornare il ruolo",
-    "planUpdated": "Piano aggiornato con successo",
-    "planUpdateFailed": "Impossibile aggiornare il piano",
     "userDeactivated": "Utente disattivato con successo",
     "userDeactivateFailed": "Impossibile disattivare l'utente",
     "userDeactivatedAuth0NotSynced": "Utente disattivato: non può più usare CasaZen. Auth0 però non è stato aggiornato: ripeti la disattivazione più tardi.",
@@ -3766,6 +3886,9 @@
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
+      "alreadySubscribed": "Hai già un abbonamento: per cambiare piano o completare il pagamento usa il portale di fatturazione.",
+      "billingPlanUnavailable": "Questo piano non è acquistabile al momento. Riprova più tardi o contatta l'assistenza.",
+      "billingReturnUrlNotConfigured": "Il pagamento dei piani non è ancora configurato in questo ambiente.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
       "checkinAlreadySubmitted": "Il check-in è già stato completato.",
@@ -3879,7 +4002,16 @@
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
       "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione.",
-      "activationTosRequired": "Conferma i requisiti di compliance per completare l'attivazione."
+      "activationTosRequired": "Conferma i requisiti di compliance per completare l'attivazione.",
+      "icalInvalidUrl": "L'indirizzo del calendario non è valido: usa un link https pubblico (per esempio il link di esportazione iCal di Airbnb o Booking.com).",
+      "icalUnreachable": "Non è stato possibile scaricare il calendario: verifica che il link sia corretto e accessibile pubblicamente.",
+      "icalTooLarge": "Il calendario è troppo grande per essere importato.",
+      "icalInvalidFormat": "Il link non restituisce un calendario iCal valido.",
+      "icalSyncFailed": "La sincronizzazione del calendario non è riuscita: verrà ritentata automaticamente.",
+      "icalFeedNotFound": "Calendario non trovato: potrebbe essere già stato scollegato.",
+      "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
+      "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
+      "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo."
     }
   },
   "validation": {
