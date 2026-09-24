@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  TOURIST_TAX_CALCULATION_METHODS,
   TOURIST_TAX_RATE_VERIFICATIONS,
   type TouristTaxRate,
   type CreateTouristTaxRateDto,
@@ -35,15 +36,44 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
+/** `MM-dd` of a real day (29 February included), as the backend `TouristTaxSeason`. */
+function isSeasonDay(value: string): boolean {
+  const match = /^(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  return month >= 1 && month <= 12 && day >= 1 && day <= new Date(Date.UTC(2024, month, 0)).getUTCDate();
+}
+
+const optionalAmount = (max: number, message: string) =>
+  z.number({ error: message }).min(0.01, message).max(max, message).nullable();
+
 // Messages are i18n keys: FormFieldError translates them when rendering.
 const taxRateSchema = z
   .object({
     city: z.string().trim().min(2, 'taxRates.validation.cityRequired').max(100, 'taxRates.validation.cityTooLong'),
     regionCode: z.string().trim().min(2, 'taxRates.validation.regionRequired').max(10, 'taxRates.validation.regionTooLong'),
+    istatCode: z
+      .string()
+      .trim()
+      .refine((value) => value === '' || /^[0-9]{6}$/.test(value), 'taxRates.validation.istatCodeInvalid'),
+    accommodationCategory: z.string().trim().max(100, 'taxRates.validation.categoryTooLong'),
+    seasonStart: z.string().trim(),
+    seasonEnd: z.string().trim(),
+    calculationMethod: z.enum(TOURIST_TAX_CALCULATION_METHODS),
     ratePerPersonPerNight: z
       .number({ error: 'taxRates.validation.rateMin' })
-      .min(0.01, 'taxRates.validation.rateMin')
+      .min(0, 'taxRates.validation.rateMin')
       .max(1000, 'taxRates.validation.rateMax'),
+    percentOfNightlyPrice: optionalAmount(100, 'taxRates.validation.percentRange'),
+    capPerPersonPerNight: optionalAmount(1000, 'taxRates.validation.capRange'),
+    reducedRateMaxAge: z
+      .number({ error: 'taxRates.validation.reducedInvalid' })
+      .int('taxRates.validation.reducedInvalid')
+      .min(0, 'taxRates.validation.reducedInvalid')
+      .max(17, 'taxRates.validation.reducedInvalid')
+      .nullable(),
+    reducedRatePerPersonPerNight: optionalAmount(1000, 'taxRates.validation.reducedInvalid'),
     maxNights: z
       .number({ error: 'taxRates.validation.maxNightsRange' })
       .int('taxRates.validation.maxNightsRange')
@@ -54,7 +84,7 @@ const taxRateSchema = z
       .number({ error: 'taxRates.validation.minimumAgeRange' })
       .int('taxRates.validation.minimumAgeRange')
       .min(0, 'taxRates.validation.minimumAgeRange')
-      .max(120, 'taxRates.validation.minimumAgeRange'),
+      .max(18, 'taxRates.validation.minimumAgeRange'),
     effectiveFrom: z.string().min(1, 'taxRates.validation.effectiveFromRequired'),
     effectiveTo: z.string(),
     notes: z.string().max(500, 'taxRates.validation.notesTooLong'),
@@ -65,9 +95,29 @@ const taxRateSchema = z
       .refine((value) => value === '' || isHttpUrl(value), 'taxRates.validation.sourceUrlInvalid'),
     verificationLevel: z.union([z.literal(''), z.enum(TOURIST_TAX_RATE_VERIFICATIONS)]),
   })
-  .refine((values) => !values.effectiveTo || values.effectiveTo >= values.effectiveFrom, {
-    path: ['effectiveTo'],
-    message: 'taxRates.validation.effectiveToBeforeFrom',
+  .superRefine((values, ctx) => {
+    if (values.effectiveTo && values.effectiveTo < values.effectiveFrom) {
+      ctx.addIssue({ code: 'custom', path: ['effectiveTo'], message: 'taxRates.validation.effectiveToBeforeFrom' });
+    }
+    const percentage = values.calculationMethod === 'PercentOfNightlyPrice';
+    if (!percentage && values.ratePerPersonPerNight < 0.01) {
+      ctx.addIssue({ code: 'custom', path: ['ratePerPersonPerNight'], message: 'taxRates.validation.rateMin' });
+    }
+    if (percentage && values.percentOfNightlyPrice === null) {
+      ctx.addIssue({ code: 'custom', path: ['percentOfNightlyPrice'], message: 'taxRates.validation.percentRange' });
+    }
+    const hasSeason = values.seasonStart !== '' || values.seasonEnd !== '';
+    if (hasSeason && !(isSeasonDay(values.seasonStart) && isSeasonDay(values.seasonEnd))) {
+      ctx.addIssue({ code: 'custom', path: ['seasonStart'], message: 'taxRates.validation.seasonInvalid' });
+    }
+    const hasReducedAge = values.reducedRateMaxAge !== null;
+    const hasReducedAmount = values.reducedRatePerPersonPerNight !== null;
+    if (
+      hasReducedAge !== hasReducedAmount ||
+      (hasReducedAge && (percentage || (values.reducedRateMaxAge ?? 0) < values.minimumAge))
+    ) {
+      ctx.addIssue({ code: 'custom', path: ['reducedRateMaxAge'], message: 'taxRates.validation.reducedInvalid' });
+    }
   });
 
 type TaxRateFormValues = z.infer<typeof taxRateSchema>;
@@ -83,7 +133,16 @@ function toFormValues(existing: TouristTaxRate | null | undefined): TaxRateFormV
     return {
       city: '',
       regionCode: '',
+      istatCode: '',
+      accommodationCategory: '',
+      seasonStart: '',
+      seasonEnd: '',
+      calculationMethod: 'PerPersonPerNight',
       ratePerPersonPerNight: 1,
+      percentOfNightlyPrice: null,
+      capPerPersonPerNight: null,
+      reducedRateMaxAge: null,
+      reducedRatePerPersonPerNight: null,
       maxNights: null,
       minimumAge: 14,
       effectiveFrom: new Date().toISOString().slice(0, 10),
@@ -97,7 +156,16 @@ function toFormValues(existing: TouristTaxRate | null | undefined): TaxRateFormV
   return {
     city: existing.city,
     regionCode: existing.regionCode,
+    istatCode: existing.istatCode ?? '',
+    accommodationCategory: existing.accommodationCategory ?? '',
+    seasonStart: existing.seasonStart ?? '',
+    seasonEnd: existing.seasonEnd ?? '',
+    calculationMethod: existing.calculationMethod ?? 'PerPersonPerNight',
     ratePerPersonPerNight: existing.ratePerPersonPerNight,
+    percentOfNightlyPrice: existing.percentOfNightlyPrice ?? null,
+    capPerPersonPerNight: existing.capPerPersonPerNight ?? null,
+    reducedRateMaxAge: existing.reducedRateMaxAge ?? null,
+    reducedRatePerPersonPerNight: existing.reducedRatePerPersonPerNight ?? null,
     maxNights: existing.maxNights,
     minimumAge: existing.minimumAge,
     effectiveFrom: toDateInput(existing.effectiveFrom),
@@ -123,6 +191,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<TaxRateFormValues>({
@@ -135,11 +204,23 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
     if (open) reset(toFormValues(existing));
   }, [open, existing, reset]);
 
+  const percentage = useWatch({ control, name: 'calculationMethod' }) === 'PercentOfNightlyPrice';
+
   const onFormSubmit = async (values: TaxRateFormValues) => {
+    const isPercentage = values.calculationMethod === 'PercentOfNightlyPrice';
     const payload: CreateTouristTaxRateDto = {
       city: values.city,
       regionCode: values.regionCode,
-      ratePerPersonPerNight: values.ratePerPersonPerNight,
+      istatCode: values.istatCode || null,
+      accommodationCategory: values.accommodationCategory || null,
+      seasonStart: values.seasonStart || null,
+      seasonEnd: values.seasonEnd || null,
+      calculationMethod: values.calculationMethod,
+      ratePerPersonPerNight: isPercentage ? 0 : values.ratePerPersonPerNight,
+      percentOfNightlyPrice: isPercentage ? values.percentOfNightlyPrice : null,
+      capPerPersonPerNight: isPercentage ? values.capPerPersonPerNight : null,
+      reducedRateMaxAge: isPercentage ? null : values.reducedRateMaxAge,
+      reducedRatePerPersonPerNight: isPercentage ? null : values.reducedRatePerPersonPerNight,
       maxNights: values.maxNights,
       minimumAge: values.minimumAge,
       effectiveFrom: values.effectiveFrom,
@@ -183,17 +264,76 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
             <FormFieldError error={errors.regionCode} />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ratePerPersonPerNight">{t('taxRates.ratePerNight')} *</Label>
-            <Input
-              id="ratePerPersonPerNight"
-              type="number"
-              step="0.01"
-              min="0"
-              {...register('ratePerPersonPerNight', { setValueAs: toOptionalNumber })}
-            />
-            <FormFieldError error={errors.ratePerPersonPerNight} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="istatCode">{t('taxRates.istatCode')}</Label>
+              <Input id="istatCode" inputMode="numeric" maxLength={6} {...register('istatCode')} />
+              <FormFieldError error={errors.istatCode} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="accommodationCategory">{t('taxRates.category')}</Label>
+              <Input
+                id="accommodationCategory"
+                placeholder={t('taxRates.categoryPlaceholder')}
+                {...register('accommodationCategory')}
+              />
+              <FormFieldError error={errors.accommodationCategory} />
+            </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="calculationMethod">{t('taxRates.calculationMethod')} *</Label>
+            <select
+              id="calculationMethod"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              {...register('calculationMethod')}
+            >
+              {TOURIST_TAX_CALCULATION_METHODS.map((method) => (
+                <option key={method} value={method}>
+                  {t(`taxRates.calculationMethods.${method}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {percentage ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="percentOfNightlyPrice">{t('taxRates.percentOfNightlyPrice')} *</Label>
+                <Input
+                  id="percentOfNightlyPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register('percentOfNightlyPrice', { setValueAs: toOptionalNumber })}
+                />
+                <FormFieldError error={errors.percentOfNightlyPrice} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="capPerPersonPerNight">{t('taxRates.capPerPersonPerNight')}</Label>
+                <Input
+                  id="capPerPersonPerNight"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register('capPerPersonPerNight', { setValueAs: toOptionalNumber })}
+                />
+                <FormFieldError error={errors.capPerPersonPerNight} />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="ratePerPersonPerNight">{t('taxRates.ratePerNight')} *</Label>
+              <Input
+                id="ratePerPersonPerNight"
+                type="number"
+                step="0.01"
+                min="0"
+                {...register('ratePerPersonPerNight', { setValueAs: toOptionalNumber })}
+              />
+              <FormFieldError error={errors.ratePerPersonPerNight} />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -216,6 +356,46 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
                 {...register('minimumAge', { setValueAs: toOptionalNumber })}
               />
               <FormFieldError error={errors.minimumAge} />
+            </div>
+          </div>
+
+          {!percentage && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="reducedRateMaxAge">{t('taxRates.reducedRateMaxAge')}</Label>
+                <Input
+                  id="reducedRateMaxAge"
+                  type="number"
+                  min="0"
+                  max="17"
+                  {...register('reducedRateMaxAge', { setValueAs: toOptionalNumber })}
+                />
+                <FormFieldError error={errors.reducedRateMaxAge} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reducedRatePerPersonPerNight">{t('taxRates.reducedRatePerPersonPerNight')}</Label>
+                <Input
+                  id="reducedRatePerPersonPerNight"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register('reducedRatePerPersonPerNight', { setValueAs: toOptionalNumber })}
+                />
+                <FormFieldError error={errors.reducedRatePerPersonPerNight} />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="seasonStart">{t('taxRates.seasonStart')}</Label>
+              <Input id="seasonStart" placeholder={t('taxRates.seasonPlaceholder')} maxLength={5} {...register('seasonStart')} />
+              <FormFieldError error={errors.seasonStart} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="seasonEnd">{t('taxRates.seasonEnd')}</Label>
+              <Input id="seasonEnd" placeholder={t('taxRates.seasonPlaceholder')} maxLength={5} {...register('seasonEnd')} />
+              <FormFieldError error={errors.seasonEnd} />
             </div>
           </div>
 

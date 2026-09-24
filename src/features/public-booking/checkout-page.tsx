@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useOrgPublicProperty } from '@/queries/use-public-org';
-import { useCreateDirectBooking } from '@/queries/use-public-booking';
+import { useCreateDirectBooking, useDirectBookingQuote } from '@/queries/use-public-booking';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { ConsentCheckbox } from '@/features/public-booking/components/consent-checkbox';
 import { PriceBreakdown } from '@/features/public-booking/components/price-breakdown';
@@ -19,10 +19,18 @@ import { isDemoMode } from '@/config/demo.config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { buildOrgBookingPath, buildPropertyPageUrl } from '@/lib/booking-url';
 import { getCountryOptions } from '@/lib/countries';
-import { addDays, formatRomeDateTime, formatStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
-import type { DirectBookingResponse, PublicOrgDto, PublicPropertyDetailDto, PaymentOption } from '@/types';
+import { addDays, formatRomeDateTime, formatStayDate, isStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
+import { completeChildrenAges, resizeChildrenAges } from '@/lib/tourist-tax';
+import { ChildrenAgesFields } from '@/features/tourist-tax/components/children-ages-fields';
+import type {
+  DirectBookingQuotePayload,
+  DirectBookingResponse,
+  PublicOrgDto,
+  PublicPropertyDetailDto,
+  PaymentOption,
+} from '@/types';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import { Loader2, CheckCircle2, MailCheck } from 'lucide-react';
+import { Loader2, CheckCircle2, MailCheck, RefreshCw } from 'lucide-react';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
 import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
 
@@ -353,6 +361,8 @@ function CheckoutFlow({
   const [confirmed, setConfirmed] = useState(false);
   const [requestEmail, setRequestEmail] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  // Age of each minor at check-in, asked only when the tourist tax of the comune depends on it (BK-03).
+  const [childrenAgesState, setChildrenAges] = useState<(number | null)[]>([]);
 
   const values = watch();
   const { checkIn, checkOut, adults, children } = values;
@@ -360,6 +370,33 @@ function CheckoutFlow({
   const formValid = schema.safeParse(values).success;
   const nights = nightsBetween(checkIn, checkOut);
   const guestCountsValid = isValidGuestCount(adults, children);
+  const childrenAges = resizeChildrenAges(childrenAgesState, guestCountsValid ? children : 0);
+  const completeAges = completeChildrenAges(childrenAges);
+
+  // The price shown is only the backend's (R-05): the same calculation the booking records and charges.
+  const stayQuotable =
+    isStayDate(checkIn) &&
+    isStayDate(checkOut) &&
+    checkOut > checkIn &&
+    checkIn >= today &&
+    guestCountsValid &&
+    adults + children <= property.maxGuests;
+  const quotePayload: DirectBookingQuotePayload | null = stayQuotable
+    ? {
+        propertyId: property.id,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        numberOfAdults: adults,
+        numberOfChildren: children,
+        ...(completeAges ? { childrenAges: completeAges } : {}),
+      }
+    : null;
+  const quote = useDirectBookingQuote(quotePayload);
+  const quoteData = quotePayload ? quote.data : undefined;
+  const askChildrenAges = children > 0 && quoteData?.touristTax.ageRulesApply === true;
+  const childrenAgesMissing = askChildrenAges && !completeAges;
+  const quoteReady =
+    !!quoteData && !quote.isFetching && !quote.isError && quoteData.touristTax.status !== 'ChildAgesRequired';
 
   // Dates and guests coming from the link are checked right away (past dates, too many guests).
   useEffect(() => {
@@ -438,6 +475,7 @@ function CheckoutFlow({
         checkOutDate: data.checkOut,
         numberOfAdults: data.adults,
         numberOfChildren: data.children,
+        ...(askChildrenAges && completeAges ? { childrenAges: completeAges } : {}),
         guest: {
           firstName: data.firstName,
           lastName: data.lastName,
@@ -472,7 +510,6 @@ function CheckoutFlow({
 
   const freeCancellationDate = formatStayDate(addDays(checkIn, -7), i18n.language, { month: 'long', day: 'numeric' });
   const deadlineDate = formatStayDate(addDays(checkIn, -7), i18n.language, { month: 'short', day: 'numeric' });
-  const touristTaxEstimate = guestCountsValid ? Math.max(0, nights * adults * 2) : 0;
 
   return (
     <div className="mx-auto max-w-lg space-y-6" data-testid="direct-checkout-page">
@@ -555,6 +592,16 @@ function CheckoutFlow({
             <p className="text-xs text-muted-foreground">
               {t('publicBooking.guestsCapacityHint', { count: property.maxGuests })}
             </p>
+            {askChildrenAges && (
+              <ChildrenAgesFields
+                ages={childrenAges}
+                idPrefix="checkout"
+                onChange={(next) => {
+                  setPaymentError(null);
+                  setChildrenAges(next);
+                }}
+              />
+            )}
           </fieldset>
 
           {!paymentOption ? (
@@ -653,15 +700,43 @@ function CheckoutFlow({
               </div>
             </div>
 
-            {nights > 0 && (
-              <PriceBreakdown
-                nights={nights}
-                nightlyRate={property.nightlyRate}
-                cleaningFee={property.cleaningFee}
-                touristTaxAmount={touristTaxEstimate}
-                totalAmount={property.nightlyRate * nights + property.cleaningFee + touristTaxEstimate}
-                currency={property.currency ?? 'EUR'}
-              />
+            {quotePayload &&
+              (quote.isError ? (
+                <div
+                  className="space-y-2 rounded-lg border border-destructive/40 p-4 text-sm"
+                  role="alert"
+                  data-testid="checkout-quote-error"
+                >
+                  <p className="text-destructive">
+                    {getProblemMessage(quote.error, t) ?? t('publicBooking.quoteError')}
+                  </p>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void quote.refetch()}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    {t('publicBooking.quoteRetry')}
+                  </Button>
+                </div>
+              ) : quoteData ? (
+                <PriceBreakdown
+                  nights={quoteData.nights}
+                  nightlyRate={quoteData.nightlyRate}
+                  cleaningFee={quoteData.cleaningFee}
+                  touristTax={quoteData.touristTax}
+                  totalAmount={quoteData.totalPrice}
+                  currency={quoteData.currency}
+                />
+              ) : (
+                <div
+                  className="flex items-center gap-2 rounded-lg border p-4 text-sm text-muted-foreground"
+                  data-testid="checkout-quote-loading"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('publicBooking.quoteLoading')}
+                </div>
+              ))}
+            {childrenAgesMissing && (
+              <p className="text-xs text-muted-foreground" data-testid="checkout-children-ages-missing">
+                {t('publicBooking.childrenAgesMissing')}
+              </p>
             )}
 
             <ConsentCheckbox checked={consent} onCheckedChange={setConsent} />
@@ -675,7 +750,9 @@ function CheckoutFlow({
             <Button
               type="submit"
               className="w-full"
-              disabled={!formValid || !consent || !paymentOption || createBooking.isPending}
+              disabled={
+                !formValid || !consent || !paymentOption || !quoteReady || childrenAgesMissing || createBooking.isPending
+              }
             >
               {createBooking.isPending ? t('publicBooking.preparingPayment') : t('publicBooking.continue')}
             </Button>
@@ -687,7 +764,10 @@ function CheckoutFlow({
             nights={nights}
             nightlyRate={property.nightlyRate}
             cleaningFee={property.cleaningFee}
-            touristTaxAmount={bookingResult.touristTaxAmount}
+            touristTax={{
+              status: bookingResult.touristTaxStatus ?? 'Calculated',
+              amount: bookingResult.touristTaxAmount,
+            }}
             totalAmount={bookingResult.amount}
             currency={bookingResult.currency}
           />

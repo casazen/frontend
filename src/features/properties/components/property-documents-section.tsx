@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { PropertyDocumentDto } from '@/types';
+import type { PropertyDocumentDto, PropertyDocumentType } from '@/types';
 import { formatDateTime } from '@/lib/utils';
+import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
 import { Download, FileText, Loader2, Trash2 } from 'lucide-react';
 import { DocumentUploadDialog } from './document-upload-dialog';
 import { useDeletePropertyDocument, useDownloadPropertyDocument } from '@/queries/use-properties';
@@ -10,9 +11,11 @@ import { useDeletePropertyDocument, useDownloadPropertyDocument } from '@/querie
 interface PropertyDocumentsSectionProps {
   propertyId: string;
   documents: PropertyDocumentDto[];
+  /** Type preselected in the upload dialog (the long-term property page asks for the APE first). */
+  defaultUploadType?: PropertyDocumentType;
 }
 
-export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocumentsSectionProps) {
+export function PropertyDocumentsSection({ propertyId, documents, defaultUploadType }: PropertyDocumentsSectionProps) {
   const { t } = useTranslation();
   const deleteMutation = useDeletePropertyDocument();
   // Private bucket: download through the authenticated API (token), saved from the blob.
@@ -22,7 +25,7 @@ export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocu
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>{t('property.documents.title')}</CardTitle>
-        <DocumentUploadDialog propertyId={propertyId} />
+        <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />
       </CardHeader>
       <CardContent>
         {documents.length === 0 ? (
@@ -42,6 +45,7 @@ export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocu
                     <div className="min-w-0">
                       <p className="font-medium truncate">{doc.fileName}</p>
                       <p className="text-xs text-muted-foreground">
+                        {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
                         {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
                       </p>
                     </div>

@@ -108,6 +108,8 @@ export interface PropertyDocumentDto {
   id: string;
   fileName: string;
   fileType: string;
+  /** Kind of document: the lease form needs `Ape` on file before a contract can be drafted (A7-06). */
+  documentType: PropertyDocumentType;
   uploadedAt: string;
   downloadUrl: string;
 }

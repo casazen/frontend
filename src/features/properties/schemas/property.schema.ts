@@ -30,6 +30,18 @@ export const propertyFormSchema = z.object({
 
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>;
 
+/**
+ * Long-term (LTR) property: no nightly rate nor short-stay guests (0 = not set, accepted by the API and blocking only
+ * the short-stay listing activation). CIN and slug are not in the long-term form: whatever the property already has is
+ * sent back unchanged and checked by the API, never blocked here by a field the landlord cannot see (A7-06).
+ */
+export const longRentPropertyFormSchema = propertyFormSchema.extend({
+  maxGuests: z.number().int().min(0).max(100),
+  nightlyRate: z.number().min(0).max(100000),
+  cinCode: z.string().optional(),
+  slug: z.string().optional(),
+});
+
 // Exact C# PropertyAmenity enum names — used as API values
 export const COMMON_AMENITIES = [
   'WiFi',

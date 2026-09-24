@@ -372,11 +372,11 @@
     "statusLabel": {
       "Draft": "Draft",
       "AwaitingSignature": "Awaiting signature",
-      "PartiallySigned": "Partially signed",
       "Signed": "Signed",
+      "Registered": "Registered",
+      "PartiallySigned": "Partially signed",
       "RegistrationPending": "Registration pending",
       "SentToProvider": "Sent to provider",
-      "Registered": "Registered",
       "Rejected": "Rejected"
     },
     "registrationStatusLabel": {
@@ -443,7 +443,14 @@
       "waitingDocuments": "Please wait while property documents are being verified.",
       "concordatoRangeRequired": "Calculate the agreed-rent band and enter a monthly rent between the minimum and maximum.",
       "concordatoRentOutOfRange": "Monthly rent is outside the calculated band for this property.",
-      "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR"
+      "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR",
+      "propertiesLoading": "Loading properties...",
+      "propertiesLoadError": "Your properties could not be loaded, so the lease property cannot be chosen yet.",
+      "noProperties": "You have no properties yet. Create a property and upload its APE to create a lease.",
+      "createProperty": "Create property",
+      "documentsLoadError": "The property documents (APE) could not be checked.",
+      "uploadApe": "Upload the APE",
+      "retry": "Retry"
     },
     "signingPanel": {
       "title": "Digital signing",
@@ -1191,7 +1198,8 @@
       "longitude": "Longitude",
       "details": {
         "title": "Property Details",
-        "description": "Capacity and pricing information"
+        "description": "Capacity and pricing information",
+        "longRentDescription": "Bedrooms and bathrooms of the property"
       },
       "bedrooms": "Bedrooms *",
       "bathrooms": "Bathrooms *",
@@ -1526,6 +1534,22 @@
     "register": {
       "title": "Supplier registration",
       "description": "Register as a service supplier for CasaZen hosts.",
+      "successTitle": "Registration complete",
+      "successDescription": "Your supplier profile has been created. Now create your account with the email {{email}} to access the supplier console.",
+      "createAccount": "Create your account",
+      "afterAccount": "After creating your account, complete your profile in the activation steps: until you activate it, hosts cannot see it.",
+      "email": "Email *",
+      "comune": "Municipality *",
+      "legalName": "Business name / Company name *",
+      "legalNamePlaceholder": "e.g. Rossi Cleaning Services",
+      "phone": "Phone *",
+      "phonePlaceholder": "e.g. +39 123 456 7890",
+      "errorFields": "Please fill in all required fields.",
+      "errorGeneric": "An error occurred during registration. Please try again.",
+      "registering": "Registering...",
+      "complete": "Complete registration",
+      "existingAccount": "Already have an account? Sign in before registering: the profile will be linked to your account right away.",
+      "login": "Sign in",
       "inviteDescription": "You have been invited to CasaZen as a supplier. Fill in your details to accept the invitation.",
       "loading": "Loading…",
       "inviteLoading": "Checking the invitation…",
@@ -1549,24 +1573,8 @@
       "comuneWithCode": "{{name}} ({{code}})",
       "emailAccountHint": "This is the email of your account.",
       "emailInviteHint": "The invitation is valid only for this email.",
-      "successTitle": "Registration complete",
       "successSignedIn": "Your supplier profile has been created and linked to your account. Complete it in the activation steps: until you activate it, hosts cannot see it.",
-      "successDescription": "Your supplier profile has been created. Now create your account with the email {{email}} to access the supplier console.",
-      "completeProfile": "Complete your profile",
-      "createAccount": "Create your account",
-      "afterAccount": "After creating your account, complete your profile in the activation steps: until you activate it, hosts cannot see it.",
-      "email": "Email *",
-      "comune": "Municipality *",
-      "legalName": "Business name / Company name *",
-      "legalNamePlaceholder": "e.g. Rossi Cleaning Services",
-      "phone": "Phone *",
-      "phonePlaceholder": "e.g. +39 123 456 7890",
-      "errorFields": "Please fill in all required fields.",
-      "errorGeneric": "An error occurred during registration. Please try again.",
-      "registering": "Registering...",
-      "complete": "Complete registration",
-      "existingAccount": "Already have an account? Sign in before registering: the profile will be linked to your account right away.",
-      "login": "Sign in"
+      "completeProfile": "Complete your profile"
     },
     "completedJobs": "Completed jobs",
     "upcomingJobs": "Upcoming jobs",
@@ -2028,10 +2036,16 @@
       "regionTooLong": "The region code can be at most 10 characters",
       "rateMax": "The rate cannot exceed €1000",
       "maxNightsRange": "Enter a whole number of nights between 1 and 365, or leave it empty",
-      "minimumAgeRange": "Enter an age between 0 and 120 (0 if there are no exemptions)",
+      "minimumAgeRange": "Enter an age between 0 and 18 (0 if there are no exemptions, 18 if every minor is exempt)",
       "effectiveToBeforeFrom": "The end date cannot be earlier than the start date",
       "notesTooLong": "Notes can be at most 500 characters",
-      "sourceUrlInvalid": "Enter a full web address (http or https)"
+      "sourceUrlInvalid": "Enter a full web address (http or https)",
+      "istatCodeInvalid": "The ISTAT code must have 6 digits",
+      "categoryTooLong": "The category can be at most 100 characters",
+      "percentRange": "Enter a percentage between 0.01 and 100",
+      "capRange": "The cap must be between 0.01 and 1000 €",
+      "reducedInvalid": "Enter both the age (between the exemption age and 17) and the reduced amount, fixed-amount rates only",
+      "seasonInvalid": "Enter the start and end of the season as MM-DD (e.g. 02-01 and 12-31), or leave both empty"
     },
     "toast": {
       "created": "Tax rate created successfully",
@@ -2054,7 +2068,22 @@
       "Official": "Read in a page or an act of the municipality.",
       "Deduced": "Derived from official or third-party data: to be confirmed.",
       "ThirdParty": "From software vendors, blogs or press: a hint, not a source. Confirm it before use."
-    }
+    },
+    "istatCode": "ISTAT code",
+    "category": "Accommodation category",
+    "categoryPlaceholder": "Empty = every accommodation of the municipality",
+    "calculationMethod": "Rate type",
+    "calculationMethods": {
+      "PerPersonPerNight": "Fixed amount per person per night",
+      "PercentOfNightlyPrice": "Percentage of the price per person per night"
+    },
+    "percentOfNightlyPrice": "Percentage of the price (%)",
+    "capPerPersonPerNight": "Cap per person per night (€)",
+    "reducedRateMaxAge": "Reduced rate up to age (included)",
+    "reducedRatePerPersonPerNight": "Reduced rate per person per night (€)",
+    "seasonStart": "Season from (MM-DD)",
+    "seasonEnd": "Season to (MM-DD)",
+    "seasonPlaceholder": "MM-DD"
   },
   "finance": {
     "payments": "Payments",
@@ -2212,22 +2241,22 @@
       "create": "Create Payment"
     },
     "refund": {
-      "action": "Refund",
       "title": "Refund payment",
       "description": "The refund is created on Stripe and goes back to the payment method the guest used.",
-      "loading": "Loading amounts…",
-      "loadError": "Could not load the refundable amounts.",
       "originalAmount": "Amount paid",
       "alreadyRefunded": "Already refunded (confirmed by Stripe)",
-      "inProgress": "Refunds waiting for Stripe",
       "refundableAmount": "Refundable amount",
-      "amountLabel": "Amount to refund",
-      "amountHint": "Leave empty to refund the whole refundable amount ({{amount}}).",
       "reason": "Reason (visible only to you)",
       "reasonPlaceholder": "E.g. a fault in the property, guest request…",
       "cancel": "Cancel",
-      "close": "Close",
       "confirm": "Refund on Stripe",
+      "action": "Refund",
+      "loading": "Loading amounts…",
+      "loadError": "Could not load the refundable amounts.",
+      "inProgress": "Refunds waiting for Stripe",
+      "amountLabel": "Amount to refund",
+      "amountHint": "Leave empty to refund the whole refundable amount ({{amount}}).",
+      "close": "Close",
       "submitting": "Sending to Stripe…",
       "notOnline": "This payment did not go through Stripe: refund it outside CasaZen.",
       "nothingToRefund": "There is nothing left to refund on this payment.",
@@ -2425,6 +2454,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "poweredBy": "Powered by CasaZen",
+    "seoHub": "Guides for hosts",
     "preview": "Preview site",
     "explore": "Explore",
     "viewProperties": "View properties",
@@ -2556,6 +2586,14 @@
       "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
       "countryRequired": "Select your country of residence"
     },
+    "touristTaxIncluded": "Tourist tax (included in the total)",
+    "touristTaxUnavailable": "Rate not available",
+    "touristTaxUnavailableHint": "CasaZen does not have the tourist tax rate for this accommodation yet: it is not included in the total. If it is due, the host will ask you for it.",
+    "touristTaxAgesRequired": "Enter the ages of the minors",
+    "quoteLoading": "Calculating the price…",
+    "quoteError": "Unable to calculate the price. Please try again.",
+    "quoteRetry": "Try again",
+    "childrenAgesMissing": "Enter the age of every minor: it is needed to calculate the tourist tax.",
     "onSiteRequest": {
       "optionHint": "Request to be confirmed: the booking is valid only once the host accepts it.",
       "sentTitle": "Request sent: waiting for the host's confirmation",
@@ -2579,13 +2617,21 @@
     }
   },
   "publicSeo": {
+    "hub": {
+      "title": "Short-term rental guides",
+      "metaTitle": "Short-term rental guides by municipality | CasaZen",
+      "metaDescription": "The guides and tourist tax calculators published on CasaZen, municipality by municipality.",
+      "guidesHeading": "Guides by municipality",
+      "calculatorsHeading": "Tourist tax calculation",
+      "empty": "No guides have been published yet.",
+      "loadError": "Unable to load the guides. Please try again shortly.",
+      "retry": "Try again"
+    },
     "notFound": "Page not found",
     "guideNotAvailable": "The guide for this municipality is not yet available.",
     "calculatorNotAvailable": "The calculator for this municipality is not yet available.",
     "calculateTax": "Calculate tourist tax",
-    "officialRate": "Official rate: {{rate}}",
     "estimatedTax": "Estimated tax: {{amount}}",
-    "nightsAndPeople": "{{nights}} · {{adults}}{{children}}",
     "calculate": "Calculate",
     "calculating": "Calculating...",
     "calculationError": "Unable to calculate tax. Please check the entered data.",
@@ -2593,12 +2639,21 @@
     "tryCasaZenDescription": "Verify your short-term rental compliance or register for free.",
     "verifyCompliance": "Verify compliance",
     "registerFree": "Register for free",
-    "nightsCount_one": "{{count}} night",
-    "nightsCount_other": "{{count}} nights",
-    "adultsCount_one": "{{count}} adult",
-    "adultsCount_other": "{{count}} adults",
-    "childrenLabel_one": " · {{count}} child",
-    "childrenLabel_other": " · {{count}} children"
+    "rateUnavailableTitle": "Rate not yet available for {{comuneName}}",
+    "rateUnavailableHint": "CasaZen does not have the tourist tax rate of this municipality yet and cannot calculate it: check the rate and exemptions on the municipality's website.",
+    "categoryLabel": "Accommodation category",
+    "categoryPlaceholder": "Select the category",
+    "nightlyPriceLabel": "Price of one night of the accommodation (cleaning and other services excluded)",
+    "taxableNights_one": "Stay of {{count}} night, taxed nights: {{taxable}}",
+    "taxableNights_other": "Stay of {{count}} nights, taxed nights: {{taxable}}",
+    "estimateDisclaimer": "Estimate with the rates recorded in CasaZen: check exemptions and updates on the municipality's website.",
+    "quoteStatus": {
+      "Calculated": "Tax calculated.",
+      "RateUnavailable": "Rate not available for these dates: check the municipality's website.",
+      "CategoryRequired": "Select the accommodation category to calculate the tax.",
+      "ChildAgesRequired": "Enter the age of every minor to calculate the tax.",
+      "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
+    }
   },
   "onboarding": {
     "casaZen": "CasaZen",
@@ -2805,7 +2860,9 @@
         "missingTitle": "The municipality of {{city}} has no rate in CasaZen yet.",
         "cityMissing": "Enter the property's city in the basic details to see the rate.",
         "missingHint": "You can still complete the activation. Check with the municipality whether the tourist tax is due and at which rate.",
-        "publicPage": "Guide to the tourist tax in {{city}}"
+        "publicPage": "Guide to the tourist tax in {{city}}",
+        "reducedRate": "Reduced rate",
+        "categoryRequiredTitle": "In {{city}} the rate depends on the accommodation category: the automatic calculation is not available yet."
       }
     },
     "checkout": {
@@ -2990,6 +3047,9 @@
       "bookingInvalidDates": "The check-out date must be after the check-in date.",
       "bookingTooManyGuests": "The number of guests exceeds the capacity of the property.",
       "invalidServiceCategory": "Invalid service category: choose one from the list.",
+      "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
+      "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
+      "consentsRequired": "To create your organization you must accept the required legal documents.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
       "supplierInviteUsed": "This invitation has already been used. If you already have a supplier account, sign in.",
@@ -3000,7 +3060,6 @@
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
       "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
-      "consentsRequired": "To create your organization you must accept the required legal documents.",
       "directBookingPaymentsNotReady": "This property does not accept online bookings yet. Please contact the host directly.",
       "directBookingInvalidStay": "Invalid stay dates: the arrival cannot be in the past and the departure must be after the arrival.",
       "directBookingConsentRequired": "To book you must consent to the processing of your personal data.",
@@ -3062,5 +3121,58 @@
     "retry": "Retry",
     "empty": "No service categories available.",
     "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
+  },
+  "longRentProperties": {
+    "retry": "Retry",
+    "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
+    "list": {
+      "title": "Properties",
+      "description": "The properties you let with long-term leases",
+      "add": "Add property",
+      "loading": "Loading properties...",
+      "loadError": "The properties could not be loaded.",
+      "emptyTitle": "No properties",
+      "emptyDescription": "Add a property and upload its APE to create a lease.",
+      "open": "Open"
+    },
+    "create": {
+      "title": "New property",
+      "description": "Details of the property to let with a long-term lease. After saving you can upload the APE."
+    },
+    "edit": {
+      "title": "Edit property",
+      "description": "Update the details of {{name}}"
+    },
+    "detail": {
+      "loading": "Loading property...",
+      "loadError": "The property could not be loaded.",
+      "edit": "Edit",
+      "newLease": "New lease",
+      "infoTitle": "Property details",
+      "address": "Address",
+      "rooms": "Bedrooms and bathrooms",
+      "documentsLoading": "Loading documents...",
+      "documentsLoadError": "The property documents could not be loaded.",
+      "apePresent": "APE on file: you can create a lease for this property.",
+      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    }
+  },
+  "touristTaxRules": {
+    "perPersonPerNight": "{{amount}} per person per night",
+    "percent": "{{percent}}% of the price per person per night",
+    "percentWithCap": "{{percent}}% of the price per person per night, at most {{cap}}",
+    "percentShortWithCap": "{{percent}}% (max {{cap}})",
+    "maxNights_one": "at most {{count}} taxed night",
+    "maxNights_other": "at most {{count}} taxed nights",
+    "exemptUnder_one": "exempt under {{count}} year",
+    "exemptUnder_other": "exempt under {{count}} years",
+    "reduced": "{{amount}} from {{from}} to {{to}} years",
+    "season": "from {{from}} to {{to}}",
+    "childAgesTitle": "Ages of the minors at check-in",
+    "childAgesHint": "The tourist tax of this municipality depends on the age of the minors.",
+    "childAgeLabel": "Minor {{index}}",
+    "childAgePlaceholder": "Age",
+    "childAgeOption_one": "{{count}} year",
+    "childAgeOption_other": "{{count}} years"
   }
 }

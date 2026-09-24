@@ -1,6 +1,8 @@
 import { ApiClient } from './client';
 import type {
   CreateDirectBookingPayload,
+  DirectBookingQuote,
+  DirectBookingQuotePayload,
   DirectBookingResponse,
   GuestBookingLookupResponse,
   BookingStatusResponse,
@@ -17,6 +19,10 @@ export interface PropertyAvailability {
 export const publicBookingApi = {
   createDirectBooking: (payload: CreateDirectBookingPayload) =>
     ApiClient.post<DirectBookingResponse>('/public/bookings', payload, { public: true }),
+
+  /** Price of the stay computed by the backend, tourist tax included (BK-03): the amounts the booking records. */
+  quoteDirectBooking: (payload: DirectBookingQuotePayload) =>
+    ApiClient.post<DirectBookingQuote>('/public/bookings/quote', payload, { public: true }),
 
   getPropertyAvailability: (propertyId: string, startDate?: string, endDate?: string) => {
     const params = new URLSearchParams();

@@ -132,6 +132,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         displayName={isOrgMode ? org?.displayName : 'CasaZen'}
         contactEmail={org?.contactEmail}
         showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
+        showSeoHubLink={!isOrgMode}
       />
 
       {isOrgMode ? <CookieConsentBanner /> : null}

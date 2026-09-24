@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 interface SeoMetaInput {
   title: string;
   description?: string;
-  canonicalUrl?: string;
+  /** Absolute URL on the public domain, from the backend (`App__PublicSiteBaseUrl`); never built in the browser. */
+  canonicalUrl?: string | null;
 }
 
 function upsertMeta(name: string, content: string, attribute: 'name' | 'property' = 'name') {
