@@ -92,9 +92,3 @@ export function getDemoUser(href?: string) {
 }
 
 export const demoUser = buildDemoUser(resolveDemoProfile());
-
-console.log('🎭 Demo mode:', isDemoMode ? 'ENABLED' : 'DISABLED');
-if (isDemoMode) {
-  const profile = resolveDemoProfile();
-  console.log('🎭 Demo profile:', profile, demoProfiles[profile].roles);
-}
