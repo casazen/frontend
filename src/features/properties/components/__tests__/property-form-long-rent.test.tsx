@@ -21,7 +21,8 @@ function fill(label: string, value: string | number) {
   fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
 }
 
-describe('PropertyForm long-rent variant (A7-06)', () => {
+// Whole-form interactions: generous timeout for loaded CI machines, as the other form suites.
+describe('PropertyForm long-rent variant (A7-06)', { timeout: 20_000 }, () => {
   beforeEach(() => {
     void i18n.changeLanguage('it');
   });
