@@ -640,6 +640,10 @@
       },
       "numberOfGuests": {
         "min": "Almeno 1 ospite e' obbligatorio"
+      },
+      "numberOfChildren": {
+        "invalid": "Indica un numero di minori valido",
+        "lessThanGuests": "Serve almeno un adulto: i minori devono essere meno degli ospiti"
       }
     },
     "list": {
@@ -662,9 +666,10 @@
         "status": "Stato",
         "source": "Origine"
       },
-      "emptyTitle": "Nessuna prenotazione trovata",
-      "emptyDescription": "Inizia creando la tua prima prenotazione",
-      "addAction": "Aggiungi prenotazione"
+      "newBooking": "Nuova prenotazione",
+      "filteredByProperty": "Prenotazioni di {{name}}",
+      "filteredByAProperty": "Prenotazioni di una proprietà",
+      "showAll": "Mostra tutte"
     },
     "detail": {
       "guestInformation": "Informazioni ospite",
@@ -715,7 +720,24 @@
       "manualNotice": "La prenotazione viene registrata come confermata, con origine \"Manuale\": le date risultano subito occupate sul sito di prenotazione e nel calendario iCal esportato.",
       "propertiesLoading": "Caricamento immobili...",
       "propertiesLoadError": "Impossibile caricare gli immobili. Ricarica la pagina.",
-      "noProperties": "Nessun immobile disponibile: crea prima un immobile."
+      "noProperties": "Nessun immobile disponibile: crea prima un immobile.",
+      "numberOfChildren": "Di cui minori (sotto i 18 anni)",
+      "numberOfChildrenHint": "La tassa di soggiorno del comune prevede esenzioni o riduzioni per età.",
+      "childrenAgesMissing": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
+      "stayLockedSource": "Questa prenotazione arriva dal sito di prenotazione o da un canale: date e ospiti non si modificano qui. Puoi cambiare le note.",
+      "stayLockedStarted": "Il soggiorno è già iniziato o concluso: date e ospiti non si possono più cambiare. Puoi cambiare le note.",
+      "repriceNotice": "Se cambi date o ospiti il prezzo viene ricalcolato, tassa di soggiorno compresa.",
+      "price": {
+        "loading": "Calcolo del prezzo…",
+        "loadError": "Impossibile calcolare il prezzo.",
+        "lodging_one": "{{count}} notte × {{perNight}}",
+        "lodging_other": "{{count}} notti × {{perNight}}",
+        "cleaning": "Pulizia",
+        "touristTax": "Tassa di soggiorno",
+        "taxNeedsAges": "indica l'età dei minori",
+        "taxNotCalculated": "non calcolata (tariffa del comune non disponibile)",
+        "total": "Totale"
+      }
     },
     "create": {
       "title": "Nuova prenotazione",
@@ -727,7 +749,9 @@
       "description": "Aggiorna prenotazione per {{name}}",
       "loading": "Caricamento prenotazione...",
       "notFound": "Prenotazione non trovata",
-      "notFoundDescription": "La prenotazione che stai cercando non esiste."
+      "notFoundDescription": "La prenotazione che stai cercando non esiste.",
+      "notEditable": "Una prenotazione annullata non si può modificare.",
+      "backToBooking": "Torna alla prenotazione"
     },
     "checkInDialog": {
       "title": "Check-in ospite",
@@ -738,18 +762,6 @@
       "cancel": "Annulla",
       "checkingIn": "Check-in in corso...",
       "confirm": "Conferma check-in"
-    },
-    "checkOutDialog": {
-      "title": "Check-out ospite",
-      "description": "Check-out di {{name}}",
-      "checkOutTime": "Orario check-out",
-      "damages": "Danni (se presenti)",
-      "damagesPlaceholder": "Descrivi eventuali danni riscontrati...",
-      "notes": "Note (opzionale)",
-      "notesPlaceholder": "Eventuali note sul check-out...",
-      "cancel": "Annulla",
-      "checkingOut": "Check-out in corso...",
-      "confirm": "Conferma check-out"
     },
     "detailPage": {
       "loading": "Caricamento prenotazione...",
@@ -772,26 +784,26 @@
       "guestName": "Nome",
       "paymentSummaryTitle": "Riepilogo pagamento",
       "total": "Totale",
-      "perNight": "/notte",
       "alloggiatiWeb": "Alloggiati Web",
       "communicationStatus": "Stato comunicazione",
       "confirmation": "Conferma: ",
       "incompleteGuestData": "Dati ospite incompleti",
       "noAlloggiatiInfo": "Nessuna informazione Alloggiati disponibile per questa prenotazione.",
-      "source": "Origine"
+      "source": "Origine",
+      "title": "Prenotazione {{code}}",
+      "loadError": "Impossibile caricare la prenotazione.",
+      "retry": "Riprova",
+      "childrenCount_one": "di cui {{count}} minore",
+      "childrenCount_other": "di cui {{count}} minori",
+      "cancellationNote": "Motivo dell'annullamento (visibile solo a te)",
+      "lodgingPerNight_one": "Soggiorno: {{count}} notte × {{perNight}}",
+      "lodgingPerNight_other": "Soggiorno: {{count}} notti × {{perNight}}",
+      "cleaningFee": "Pulizia",
+      "touristTax": "Tassa di soggiorno",
+      "noPriceBreakdown": "Dettaglio del prezzo non disponibile per questa prenotazione."
     },
     "card": {
-      "guest": "Ospite",
-      "checkIn": "Check-in",
-      "checkOut": "Check-out",
-      "total": "Totale",
-      "view": "Visualizza",
-      "checkInAction": "Check-in",
-      "checkOutAction": "Check-out",
-      "guests": "ospiti",
-      "night_one": "notte",
-      "night_other": "notti",
-      "bookingPrefix": "Prenotazione #"
+      "checkOutAction": "Check-out"
     },
     "source": {
       "Manual": "Manuale",
@@ -840,7 +852,8 @@
         "cancelled": "Prenotazione annullata.",
         "intentsCanceled": "Il pagamento non completato è stato annullato su Stripe.",
         "noRefund": "Nessun rimborso richiesto."
-      }
+      },
+      "guestNotified": "L'ospite riceverà un'email di annullamento, senza il motivo."
     },
     "requests": {
       "title": "Richieste da approvare",
@@ -872,6 +885,17 @@
         "AwaitingGuestEmail": "Attesa conferma email ospite",
         "AwaitingHostApproval": "Da approvare"
       }
+    },
+    "confirm": {
+      "action": "Conferma prenotazione",
+      "title": "Confermare la prenotazione?",
+      "description": "Le date risulteranno occupate sul sito di prenotazione e nel calendario iCal esportato, e potrai inviare all'ospite il link per il check-in.",
+      "keep": "Non ora",
+      "submit": "Conferma",
+      "submitting": "Conferma in corso…",
+      "failed": "Impossibile confermare la prenotazione. Riprova.",
+      "success": "Prenotazione confermata",
+      "pendingNotice": "Questa prenotazione inserita da te è ancora in attesa: confermala per occupare le date e abilitare il check-in dell'ospite."
     }
   },
   "ota": {
@@ -1149,7 +1173,8 @@
       "pricingDescription": "Configura l'adattatore AI per la tariffazione dinamica di questa proprietà.",
       "managePricing": "Gestisci prezzi AI",
       "viewOnPublicSite": "Vedi sul sito pubblico",
-      "publicSiteHint": "Anteprima di come gli ospiti vedono questa struttura sul sito di prenotazione diretta."
+      "publicSiteHint": "Anteprima di come gli ospiti vedono questa struttura sul sito di prenotazione diretta.",
+      "newBooking": "Nuova prenotazione"
     },
     "info": {
       "title": "Dettagli proprietà",
@@ -3342,6 +3367,15 @@
       "onsiteRequestEmailNotConfirmed": "L'ospite non ha ancora confermato il suo indirizzo email: la richiesta non può ancora essere accettata o rifiutata.",
       "onsiteRequestDatesBlocked": "Le date si sovrappongono ora a un blocco del calendario importato da un portale (es. Airbnb, Booking.com): la richiesta non può essere accettata, rifiutala.",
       "bookingNotOnsiteRequest": "Questa prenotazione non è una richiesta con pagamento in struttura.",
+      "bookingGuestsInvalid": "Serve almeno un adulto: i minori devono essere meno degli ospiti.",
+      "bookingNotEditable": "Una prenotazione annullata non si può modificare.",
+      "bookingStayLocked": "Il soggiorno è già iniziato o concluso: date e ospiti non si possono più cambiare.",
+      "bookingUpdateSourceLocked": "Date e ospiti si cambiano solo nelle prenotazioni inserite da te: questa arriva dal sito di prenotazione o da un canale. Puoi modificare le note.",
+      "bookingCheckinInPast": "Il check-in non può essere spostato a un giorno già passato.",
+      "bookingNotPending": "La prenotazione non è più in attesa di conferma: ricarica la pagina.",
+      "bookingNotConfirmable": "Puoi confermare solo le prenotazioni in attesa inserite da te.",
+      "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno con check-in registrato.",
+      "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di partenza.",
       "directBookingDeferredPaymentUnavailable": "Il pagamento alla scadenza non è disponibile per queste date: l'arrivo è troppo vicino. Scegli un altro metodo di pagamento.",
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",

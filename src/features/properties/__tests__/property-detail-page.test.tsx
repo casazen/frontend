@@ -17,6 +17,9 @@ vi.mock('@/queries/use-cin', () => ({
   }),
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: (context: string, permission: string) => context === 'short-rent' && permission === 'booking.write' }),
+}));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'app-shell' }, children),
@@ -128,6 +131,18 @@ describe('PropertyDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'Test Villa' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Dettagli proprietà/i })).toBeInTheDocument();
     expect(screen.getByText(/Attiva/i)).toBeInTheDocument();
+  });
+
+  it('PropertyDetailPage_HostWithBookingWrite_LinksNewBookingAndBookingsOfThisProperty', () => {
+    renderPage();
+    expect(screen.getByTestId('property-new-booking')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings/create?propertyId=${PROPERTY_ID}`,
+    );
+    expect(screen.getByTestId('property-bookings-link')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings?propertyId=${PROPERTY_ID}`,
+    );
   });
 
   it('AC9: CIN badge opens edit dialog on click', () => {

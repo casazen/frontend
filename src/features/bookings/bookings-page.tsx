@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { AppShell } from '@/components/layout/app-shell';
@@ -8,8 +8,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, Plus, X } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
+import { useProperty } from '@/queries/use-properties';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { getProblemMessage } from '@/lib/api-errors';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
 import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
 import type { Booking } from '@/types';
@@ -33,13 +36,24 @@ function getNights(checkIn: string, checkOut: string): number {
   return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
+const BOOKINGS_PATH = '/app/short-rent/bookings';
+
 export function BookingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { hasPermission } = useWorkspace();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
 
-  const { data: bookings, isLoading, isError } = useBookings();
+  // "Bookings of this property" (A2-30): the backend filters by property, so the list and its counts are the
+  // property's only.
+  const propertyId = searchParams.get('propertyId') ?? '';
+  const { data: bookings, isLoading, isError, error } = useBookings(propertyId ? { propertyId } : undefined);
+  const { data: filterProperty } = useProperty(propertyId);
+  const createPath = propertyId
+    ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(propertyId)}`
+    : `${BOOKINGS_PATH}/create`;
 
   const filtered = (bookings ?? []).filter((b) => {
     const matchesTab = activeTab === 'all' || b.status === activeTab;
@@ -62,7 +76,37 @@ export function BookingsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader title={t('booking.list.title')} description={t('booking.list.description')} />
+        <PageHeader
+          title={t('booking.list.title')}
+          description={t('booking.list.description')}
+          action={
+            hasPermission('short-rent', 'booking.write') ? (
+              <Button asChild data-testid="new-booking">
+                <Link to={createPath}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('booking.list.newBooking')}
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        />
+
+        {propertyId && (
+          <div
+            className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-4 py-2 text-sm"
+            data-testid="bookings-property-filter"
+          >
+            <span>
+              {filterProperty?.name
+                ? t('booking.list.filteredByProperty', { name: filterProperty.name })
+                : t('booking.list.filteredByAProperty')}
+            </span>
+            <Link to={BOOKINGS_PATH} className="inline-flex items-center gap-1 text-primary hover:underline">
+              <X className="h-3 w-3" />
+              {t('booking.list.showAll')}
+            </Link>
+          </div>
+        )}
 
         <BookingRequestsPanel />
 
@@ -102,7 +146,9 @@ export function BookingsPage() {
             )}
 
             {isError && (
-              <div className="py-8 text-center text-destructive">{t('booking.list.loadError')}</div>
+              <div role="alert" className="py-8 text-center text-destructive" data-testid="bookings-load-error">
+                {getProblemMessage(error, t) ?? t('booking.list.loadError')}
+              </div>
             )}
 
             {!isLoading && !isError && (
