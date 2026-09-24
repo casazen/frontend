@@ -7,6 +7,7 @@ import {
   type AppContextKey,
 } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { GroupedNavLinks } from './grouped-nav-links';
 import { WorkspaceSwitcher } from './workspace-switcher';
 
@@ -27,11 +28,12 @@ export function ContextSidebar({
 }: ContextSidebarProps) {
   const { t } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck);
-  const grouped = getDesktopNavByGroup(contextKey, permissionCheck);
+  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
+  const grouped = getDesktopNavByGroup(contextKey, permissionCheck, flags);
 
   return (
     <aside role="complementary" aria-label={t('shell.mainNavigation')} className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
