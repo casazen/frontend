@@ -67,6 +67,32 @@ describe('route-manifest nav helpers', () => {
     }
   });
 
+  // A7-06: a long-term landlord manages its properties (and their APE) inside the long-rent context.
+  it('returns primary long-rent tabs with the properties of the landlord', () => {
+    const primary = getPrimaryNavEntries('long-rent', allowAll);
+    expect(primary.map((e) => e.path)).toEqual([
+      '/app/long-rent/leases',
+      '/app/long-rent/properties',
+      '/app/long-rent/profile',
+    ]);
+  });
+
+  it('gates the long-rent property routes on property permissions, never on short-stay ones', () => {
+    const propertyRoutes = ROUTE_MANIFEST.filter((e) => e.path.startsWith('/app/long-rent/properties'));
+    expect(propertyRoutes.map((e) => e.path)).toEqual([
+      '/app/long-rent/properties',
+      '/app/long-rent/properties/new',
+      '/app/long-rent/properties/:id',
+      '/app/long-rent/properties/:id/edit',
+    ]);
+    for (const entry of propertyRoutes) {
+      expect(entry.context).toBe('long-rent');
+      expect(entry.requiredPermissions.every((p) => p.startsWith('property.'))).toBe(true);
+    }
+    const withoutProperty = (_ctx: string, permission: string) => !permission.startsWith('property.');
+    expect(getVisibleNavEntries('long-rent', withoutProperty).some((e) => e.path.includes('/properties'))).toBe(false);
+  });
+
   it('keeps the iCal-based calendar available with the otaPartnerApi flag off', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll, { otaPartnerApi: false });
     expect(primary.some((e) => e.path === '/app/short-rent/bookings/calendar')).toBe(true);

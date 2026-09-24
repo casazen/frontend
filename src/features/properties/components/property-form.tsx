@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { propertyFormSchema, COMMON_AMENITIES } from '../schemas/property.schema';
+import { propertyFormSchema, longRentPropertyFormSchema, COMMON_AMENITIES } from '../schemas/property.schema';
 import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
 import type { Property } from '@/types';
@@ -19,10 +19,16 @@ interface PropertyFormProps {
   onCancel?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
+  /**
+   * `long-rent`: the form of a landlord with long-term leases (A7-06) — no short-stay fields (listing status, slug,
+   * CIN, nightly rate, guests). Values already on the property are kept as they are.
+   */
+  variant?: 'short-rent' | 'long-rent';
 }
 
-export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled }: PropertyFormProps) {
+export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled, variant = 'short-rent' }: PropertyFormProps) {
   const { t } = useTranslation();
+  const shortStay = variant === 'short-rent';
   const {
     register,
     handleSubmit,
@@ -30,7 +36,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
     watch,
     setValue,
   } = useForm<PropertyFormValues>({
-    resolver: zodResolver(propertyFormSchema),
+    resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema),
     defaultValues: property ? {
       name: property.name,
       description: property.description,
@@ -58,6 +64,8 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
       isActive: true,
       cinCode: '',
       slug: '',
+      // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
+      ...(shortStay ? {} : { nightlyRate: 0, maxGuests: 0 }),
     } satisfies Partial<PropertyFormValues>,
   });
 
@@ -89,36 +97,42 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
             <Textarea id="description" {...register('description')} placeholder={t('property.form.placeholder.description')} rows={4} />
             <FormFieldError error={errors.description} />
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked)} />
-            <Label htmlFor="isActive" className="cursor-pointer">{t('property.form.isActive')}</Label>
-          </div>
+          {shortStay && (
+            <>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked)} />
+                <Label htmlFor="isActive" className="cursor-pointer">{t('property.form.isActive')}</Label>
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="slug">{t('property.slug.label')}</Label>
-            <Input
-              id="slug"
-              data-testid="property-slug-input"
-              {...register('slug')}
-              placeholder={t('property.slug.placeholder')}
-            />
-            <FormFieldError error={errors.slug} />
-            <p className="text-xs text-muted-foreground">{t('property.slug.hint')}</p>
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">{t('property.slug.label')}</Label>
+                <Input
+                  id="slug"
+                  data-testid="property-slug-input"
+                  {...register('slug')}
+                  placeholder={t('property.slug.placeholder')}
+                />
+                <FormFieldError error={errors.slug} />
+                <p className="text-xs text-muted-foreground">{t('property.slug.hint')}</p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('property.form.cin.title')}</CardTitle>
-          <CardDescription>{t('property.form.cin.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <Label htmlFor="cinCode">{t('property.form.cin.label')}</Label>
-          <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder={t('property.form.cin.placeholder')} />
-          <FormFieldError error={errors.cinCode} />
-        </CardContent>
-      </Card>
+      {shortStay && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('property.form.cin.title')}</CardTitle>
+            <CardDescription>{t('property.form.cin.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Label htmlFor="cinCode">{t('property.form.cin.label')}</Label>
+            <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder={t('property.form.cin.placeholder')} />
+            <FormFieldError error={errors.cinCode} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -172,10 +186,10 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
       <Card>
         <CardHeader>
           <CardTitle>{t('property.form.details.title')}</CardTitle>
-          <CardDescription>{t('property.form.details.description')}</CardDescription>
+          <CardDescription>{t(shortStay ? 'property.form.details.description' : 'property.form.details.longRentDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className={`grid gap-4 ${shortStay ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <div className="space-y-2">
               <Label htmlFor="bedrooms">{t('property.form.bedrooms')}</Label>
               <Input id="bedrooms" type="number" {...register('bedrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bedrooms')} />
@@ -186,23 +200,27 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
               <Input id="bathrooms" type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bathrooms')} />
               <FormFieldError error={errors.bathrooms} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
-              <Input id="maxGuests" type="number" {...register('maxGuests', { valueAsNumber: true })} placeholder={t('property.form.placeholder.maxGuests')} />
-              <FormFieldError error={errors.maxGuests} />
-            </div>
+            {shortStay && (
+              <div className="space-y-2">
+                <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
+                <Input id="maxGuests" type="number" {...register('maxGuests', { valueAsNumber: true })} placeholder={t('property.form.placeholder.maxGuests')} />
+                <FormFieldError error={errors.maxGuests} />
+              </div>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
-              <Input id="nightlyRate" type="number" step="0.01" {...register('nightlyRate', { valueAsNumber: true })} placeholder={t('property.form.placeholder.nightlyRate')} />
-              <FormFieldError error={errors.nightlyRate} />
+          {shortStay && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
+                <Input id="nightlyRate" type="number" step="0.01" {...register('nightlyRate', { valueAsNumber: true })} placeholder={t('property.form.placeholder.nightlyRate')} />
+                <FormFieldError error={errors.nightlyRate} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="currency">{t('property.form.currency')}</Label>
+                <Input id="currency" {...register('currency')} placeholder={t('property.form.placeholder.currency')} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="currency">{t('property.form.currency')}</Label>
-              <Input id="currency" {...register('currency')} placeholder={t('property.form.placeholder.currency')} />
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 

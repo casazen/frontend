@@ -30,6 +30,15 @@ export function useProperty(id: string) {
   });
 }
 
+/** Documents of a property (APE included), shared cache with the lease form. */
+export function usePropertyDocuments(id: string | undefined) {
+  return useQuery({
+    queryKey: [PROPERTIES_KEY, id, 'documents'],
+    queryFn: () => propertiesApi.getDocuments(id!),
+    enabled: !!id,
+  });
+}
+
 export function usePropertyDetail(id: string) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, id, 'detail'],
@@ -122,6 +131,7 @@ export function useUploadPropertyDocument() {
     }) => propertiesApi.uploadDocument(propertyId, file, documentType),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
       toast.success(i18n.t('toast.documentUploaded'));
     },
     onError: (error) => {
@@ -151,6 +161,7 @@ export function useDeletePropertyDocument() {
       propertiesApi.deleteDocument(propertyId, docId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
       toast.success(i18n.t('toast.documentDeleted'));
     },
     onError: (error) => {

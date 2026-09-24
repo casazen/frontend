@@ -388,6 +388,44 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).LeaseDetailPage }),
     legacyPaths: ['/leases/:id'],
   },
+  // Long-term landlord's properties and their APE (A7-06): the property core only, never the short-stay pages.
+  {
+    path: '/app/long-rent/properties',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.properties',
+    navGroup: 'immobili',
+    navPlacement: 'primary',
+    navOrder: 1.5,
+    icon: 'Home',
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
+    }),
+  },
+  {
+    path: '/app/long-rent/properties/new',
+    context: 'long-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertyCreatePage,
+    }),
+  },
+  {
+    path: '/app/long-rent/properties/:id',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertyDetailPage,
+    }),
+  },
+  {
+    path: '/app/long-rent/properties/:id/edit',
+    context: 'long-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertyEditPage,
+    }),
+  },
   {
     path: '/app/long-rent/profile',
     context: 'long-rent',

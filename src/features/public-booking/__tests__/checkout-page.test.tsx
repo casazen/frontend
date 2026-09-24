@@ -6,8 +6,15 @@ import i18n from '@/i18n/config';
 import { CheckoutPage } from '../checkout-page';
 import * as publicOrgQueries from '@/queries/use-public-org';
 import * as publicBookingQueries from '@/queries/use-public-booking';
-import { addDays, todayInRome } from '@/lib/stay-dates';
-import type { DirectBookingResponse, PublicOrgDto, PublicPropertyDetailDto } from '@/types';
+import { addDays, nightsBetween, todayInRome } from '@/lib/stay-dates';
+import type {
+  DirectBookingQuote,
+  DirectBookingQuotePayload,
+  DirectBookingResponse,
+  PublicOrgDto,
+  PublicPropertyDetailDto,
+  TouristTaxQuote,
+} from '@/types';
 
 vi.mock('@/queries/use-public-org');
 vi.mock('@/queries/use-public-booking');
@@ -55,6 +62,57 @@ const property = {
 const checkIn = addDays(todayInRome(), 30);
 const checkOut = addDays(checkIn, 3);
 const mutateAsync = vi.fn();
+const quoteRefetch = vi.fn();
+
+/** Tourist tax the mocked backend returns for a quote payload (default: 3,00 € per adult per night). */
+type TaxFor = (payload: DirectBookingQuotePayload, nights: number) => TouristTaxQuote;
+const fixedTax: TaxFor = (payload, nights) => ({
+  status: 'Calculated',
+  amount: 3 * payload.numberOfAdults * nights,
+  taxableNights: nights,
+  ageRulesApply: false,
+  categories: [],
+});
+
+/** Mocks `useDirectBookingQuote` like the backend: lodging + cleaning of the property, tax from `taxFor`. */
+function mockQuote(taxFor: TaxFor = fixedTax, state: { isError?: boolean } = {}) {
+  vi.mocked(publicBookingQueries.useDirectBookingQuote).mockImplementation((payload) => {
+    if (!payload || state.isError) {
+      return {
+        data: undefined,
+        isPending: !state.isError,
+        isFetching: false,
+        isError: !!state.isError && !!payload,
+        error: state.isError ? new Error('network') : null,
+        refetch: quoteRefetch,
+      } as unknown as ReturnType<typeof publicBookingQueries.useDirectBookingQuote>;
+    }
+    const nights = nightsBetween(payload.checkInDate, payload.checkOutDate);
+    const touristTax = taxFor(payload, nights);
+    const basePrice = 165 * nights + 55;
+    const data: DirectBookingQuote = {
+      propertyId: payload.propertyId,
+      checkInDate: payload.checkInDate,
+      checkOutDate: payload.checkOutDate,
+      nights,
+      nightlyRate: 165,
+      lodgingTotal: 165 * nights,
+      cleaningFee: 55,
+      basePrice,
+      touristTax,
+      totalPrice: basePrice + (touristTax.status === 'Calculated' ? touristTax.amount ?? 0 : 0),
+      currency: 'EUR',
+    };
+    return {
+      data,
+      isPending: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+      refetch: quoteRefetch,
+    } as unknown as ReturnType<typeof publicBookingQueries.useDirectBookingQuote>;
+  });
+}
 
 function LocationProbe() {
   const location = useLocation();
@@ -112,6 +170,7 @@ describe('CheckoutPage', () => {
       mutateAsync,
       isPending: false,
     } as unknown as ReturnType<typeof publicBookingQueries.useCreateDirectBooking>);
+    mockQuote();
   });
 
   afterEach(() => {
@@ -264,5 +323,101 @@ describe('CheckoutPage', () => {
 
     expect(screen.getByTestId('checkout-property-not-found')).toHaveTextContent('Struttura non trovata.');
     expect(screen.queryByTestId('direct-checkout-page')).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_QuoteFromBackend_ShowsTheBackendTaxAndTotalNotAnEstimate', async () => {
+    // R-05: 3 adults x 3 nights. The old hardcoded 2 € x adults x nights would have shown 18,00 €.
+    mockQuote((payload, nights) => ({
+      status: 'Calculated',
+      amount: 6 * payload.numberOfAdults * nights,
+      taxableNights: nights,
+      ageRulesApply: false,
+      categories: [],
+    }));
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=3`);
+
+    const breakdown = await screen.findByTestId('price-breakdown');
+    expect(within(breakdown).getByTestId('tourist-tax-line')).toHaveTextContent('Tassa di soggiorno (inclusa nel totale)');
+    expect(within(breakdown).getByTestId('tourist-tax-line')).toHaveTextContent('54,00 €');
+    expect(within(breakdown).getByTestId('price-breakdown-total')).toHaveTextContent('604,00 €');
+    expect(breakdown).not.toHaveTextContent('18,00 €');
+    expect(publicBookingQueries.useDirectBookingQuote).toHaveBeenLastCalledWith({
+      propertyId: property.id,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+      numberOfAdults: 3,
+      numberOfChildren: 0,
+    });
+  });
+
+  it('CheckoutPage_RateUnavailable_ShowsExplicitStateAndDoesNotBlockTheCheckout', async () => {
+    mockQuote(() => ({
+      status: 'RateUnavailable',
+      amount: null,
+      taxableNights: 0,
+      ageRulesApply: false,
+      categories: [],
+    }));
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    const breakdown = await screen.findByTestId('price-breakdown');
+    expect(within(breakdown).getByTestId('tourist-tax-line')).toHaveTextContent('Tariffa non disponibile');
+    expect(within(breakdown).getByTestId('tourist-tax-unavailable')).toBeInTheDocument();
+    // No invented tax: the total is lodging + cleaning only.
+    expect(within(breakdown).getByTestId('price-breakdown-total')).toHaveTextContent('550,00 €');
+
+    fillGuest();
+    await waitFor(() => expect(continueButton()).toBeEnabled());
+  });
+
+  it('CheckoutPage_TaxDependsOnAge_AsksTheAgesOfTheMinorsAndSendsThem', async () => {
+    mutateAsync.mockResolvedValue({
+      bookingId: 'b2',
+      clientSecret: 'pi_secret',
+      connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_test' },
+      amount: 586,
+      currency: 'EUR',
+      touristTaxAmount: 36,
+      basePrice: 550,
+      freeRefundDeadline: '2026-10-01T00:00:00Z',
+      paymentOption: 'Immediate',
+      touristTaxStatus: 'Calculated',
+    } satisfies DirectBookingResponse);
+    mockQuote((payload, nights) =>
+      payload.numberOfChildren > 0 && !payload.childrenAges
+        ? { status: 'ChildAgesRequired', amount: null, taxableNights: 0, ageRulesApply: true, categories: [] }
+        : { status: 'Calculated', amount: 6 * payload.numberOfAdults * nights, taxableNights: nights, ageRulesApply: true, categories: [] },
+    );
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=3&children=1`);
+
+    const ageSelect = await screen.findByLabelText('Minore 1');
+    expect(screen.getByTestId('tourist-tax-line')).toHaveTextContent("Indica l'età dei minori");
+    fillGuest();
+    await waitFor(() => expect(screen.getByLabelText('Paese di residenza')).toHaveValue('DE'));
+    expect(continueButton()).toBeDisabled();
+
+    fireEvent.change(ageSelect, { target: { value: '8' } });
+
+    await waitFor(() => expect(screen.getByTestId('tourist-tax-line')).toHaveTextContent('36,00 €'));
+    await waitFor(() => expect(continueButton()).toBeEnabled());
+    fireEvent.click(continueButton());
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
+    expect(mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ numberOfAdults: 2, numberOfChildren: 1, childrenAges: [8] }),
+    );
+  });
+
+  it('CheckoutPage_QuoteFails_ShowsTheErrorAndKeepsContinueDisabled', async () => {
+    mockQuote(fixedTax, { isError: true });
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    expect(await screen.findByTestId('checkout-quote-error')).toHaveTextContent('Impossibile calcolare il prezzo');
+    expect(screen.queryByTestId('price-breakdown')).not.toBeInTheDocument();
+    fillGuest();
+    await waitFor(() => expect(screen.getByLabelText('Paese di residenza')).toHaveValue('DE'));
+    expect(continueButton()).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+    expect(quoteRefetch).toHaveBeenCalled();
   });
 });

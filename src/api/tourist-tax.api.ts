@@ -3,8 +3,6 @@ import type {
   TouristTaxRate,
   CreateTouristTaxRateDto,
   UpdateTouristTaxRateDto,
-  TouristTaxCalculationRequest,
-  TouristTaxCalculationResponse,
 } from '@/types';
 
 export const touristTaxApi = {
@@ -19,10 +17,6 @@ export const touristTaxApi = {
   // GET /api/tourist-tax-rates/city/{city}
   getByCity: (city: string, date?: Date) =>
     ApiClient.get<TouristTaxRate>(`/tourist-tax-rates/city/${city}`, date ? { date: date.toISOString() } : undefined),
-
-  // POST /api/tourist-tax-rates/calculate
-  calculate: (request: TouristTaxCalculationRequest) =>
-    ApiClient.post<TouristTaxCalculationResponse>('/tourist-tax-rates/calculate', request),
 
   // POST /api/tourist-tax-rates (Admin only)
   create: (data: CreateTouristTaxRateDto) =>

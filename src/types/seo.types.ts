@@ -1,3 +1,5 @@
+import type { TouristTaxQuoteStatus, TouristTaxRateRule } from './tourist-tax.types';
+
 export type SeoPageType = 'ComplianceGuide' | 'TouristTaxCalc' | 'SupplierMicrosite';
 export type LegalReviewStatus = 'Draft' | 'Reviewed';
 
@@ -12,11 +14,13 @@ export interface SeoCta {
   signupUrl: string;
 }
 
-export interface PublicTouristTaxRateSummary {
-  ratePerPersonPerNight: number;
-  maxNights: number | null;
-  minimumAge: number;
+/** A rate of the comune in force today, as shown on the public page (one per category or season). */
+export interface PublicTouristTaxRateSummary extends TouristTaxRateRule {
   city: string;
+  accommodationCategory: string | null;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  sourceUrl: string | null;
 }
 
 export interface SeoPagePublic {
@@ -30,11 +34,30 @@ export interface SeoPagePublic {
   regionCode: string;
   regionSlug: string;
   comuneSlug: string;
-  canonicalUrl: string;
+  /** On the configured public domain (backend `App__PublicSiteBaseUrl`); null only when it is not configured. */
+  canonicalUrl: string | null;
   lastRefreshedAt: string | null;
   disclaimers: SeoDisclaimers;
   cta: SeoCta;
-  touristTaxRate: PublicTouristTaxRateSummary | null;
+  /** Rates in force today; empty when CasaZen has no rate for the comune (A8-12). */
+  touristTaxRates: PublicTouristTaxRateSummary[];
+}
+
+/** A page listed by the public hub `/p/affitti-brevi`: the same pages as the sitemap. */
+export interface SeoPublishedPage {
+  pageType: SeoPageType;
+  title: string;
+  comuneName: string;
+  regionSlug: string;
+  comuneSlug: string;
+  /** Route of the page in this app (`/p/...`). */
+  path: string;
+}
+
+export interface SeoPublishedPages {
+  /** Canonical URL of the hub on the public domain; null only when the backend has no public URL configured. */
+  canonicalUrl: string | null;
+  pages: SeoPublishedPage[];
 }
 
 export interface PublicTouristTaxCalculateRequest {
@@ -43,20 +66,25 @@ export interface PublicTouristTaxCalculateRequest {
   numberOfChildren: number;
   checkInDate: string;
   checkOutDate: string;
+  childrenAges?: number[];
+  accommodationCategory?: string;
+  nightlyPrice?: number;
 }
 
 export interface PublicTouristTaxCalculateResponse {
   comuneSlug: string;
   city: string;
-  taxAmount: number;
+  status: TouristTaxQuoteStatus;
+  /** Only when `status` is `Calculated`. */
+  taxAmount: number | null;
   numberOfAdults: number;
   numberOfChildren: number;
   nights: number;
-  ratePerPersonPerNight: number;
-  maxNightsApplied: number;
+  taxableNights: number;
+  ageRulesApply: boolean;
+  categories: string[];
   checkInDate: string;
   checkOutDate: string;
-  disclaimer: string;
 }
 
 export interface SeoRevisionAdmin {

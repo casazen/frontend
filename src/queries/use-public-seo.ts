@@ -4,6 +4,15 @@ import type { PublicTouristTaxCalculateRequest } from '@/types/seo.types';
 
 const PUBLIC_SEO_KEY = 'public-seo';
 
+export function usePublishedSeoPages() {
+  return useQuery({
+    queryKey: [PUBLIC_SEO_KEY, 'published-pages'],
+    queryFn: () => PublicSeoApi.getPublishedPages(),
+    staleTime: 60 * 60 * 1000,
+    retry: false,
+  });
+}
+
 export function useComplianceGuide(region: string, comune: string) {
   return useQuery({
     queryKey: [PUBLIC_SEO_KEY, 'compliance-guide', region, comune],

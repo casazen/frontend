@@ -62,6 +62,12 @@ export function getDocumentTypeLabel(type: string, t: TranslateFn): string {
   return t(`checkin.documentType.${type}`);
 }
 
+/** Label of a property document type (`Ape`, `CinCertificate`...), shared with the upload dialog. */
+export function getPropertyDocumentTypeLabel(type: string, t: TranslateFn): string {
+  if (!type) return '';
+  return translateEnumValue('shared.documentUpload.types', type.charAt(0).toLowerCase() + type.slice(1), t);
+}
+
 export function getGenderLabel(gender: string, t: TranslateFn): string {
   return t(`checkin.gender.${gender}`);
 }

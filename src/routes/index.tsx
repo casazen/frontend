@@ -17,6 +17,7 @@ import { ManifestRoute } from './manifest-route';
 import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
+import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
@@ -26,6 +27,7 @@ import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
@@ -145,6 +147,7 @@ export const router = createBrowserRouter([
   {
     element: <PublicSiteShell mode="default" />,
     children: [
+      { path: SEO_HUB_PATH, element: <SeoHubPage /> },
       { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
       { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
     ],
