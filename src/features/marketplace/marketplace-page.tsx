@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -13,6 +13,7 @@ import { ServiceRequestForm } from '@/features/service-requests/components/servi
 import { ServiceCategorySelect } from '@/features/service-requests/components/service-category-picker';
 import type { SupplierPicker } from '@/types/service-request';
 import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -36,7 +37,13 @@ export function MarketplacePage() {
     selectedPropertyId || undefined,
     categoryFilter || undefined,
   );
-  const { data: requests, isLoading: requestsLoading } = useServiceRequests(
+  const {
+    data: requests,
+    isLoading: requestsLoading,
+    isError: requestsError,
+    error: requestsLoadError,
+    refetch: refetchRequests,
+  } = useServiceRequests(
     selectedPropertyId ? { propertyId: selectedPropertyId } : { listAll: true, page: 1, pageSize: 50 },
   );
 
@@ -186,6 +193,7 @@ export function MarketplacePage() {
                       >
                         {t('serviceRequest.requestSupplier')}
                       </Button>
+                      {/* Short-rent (D2): the form asks which stay of the property the request is for. */}
                       <ServiceRequestForm
                         propertyId={selectedPropertyId}
                         supplierOrgId={selectedSupplier.orgId}
@@ -221,13 +229,23 @@ export function MarketplacePage() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
-            {!requestsLoading && (requests?.items?.length ?? 0) === 0 && (
+            {requestsError && (
+              <div className="space-y-2 py-4" role="alert" data-testid="marketplace-requests-error">
+                <p className="text-sm text-destructive">
+                  {getProblemMessage(requestsLoadError, t) ?? t('serviceRequest.listLoadError')}
+                </p>
+                <Button size="sm" variant="outline" onClick={() => void refetchRequests()}>
+                  {t('serviceRequest.retry')}
+                </Button>
+              </div>
+            )}
+            {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) === 0 && (
               <div className="text-center py-8 space-y-2">
                 <p className="text-muted-foreground">{t('marketplace.noRequests')}</p>
                 <p className="text-sm text-muted-foreground">{t('marketplace.noRequestsHint')}</p>
               </div>
             )}
-            {!requestsLoading && (requests?.items?.length ?? 0) > 0 && (
+            {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) > 0 && (
               <div className="space-y-3" data-testid="marketplace-requests-list">
                 {requests!.items.map((req) => (
                   <div
@@ -243,6 +261,15 @@ export function MarketplacePage() {
                       <div className="text-sm text-muted-foreground">
                         {req.supplierName ?? '—'}
                       </div>
+                      {req.bookingId && (
+                        <Link
+                          to={`/app/short-rent/bookings/${req.bookingId}`}
+                          className="text-xs text-primary hover:underline"
+                          data-testid={`marketplace-request-stay-${req.id}`}
+                        >
+                          {t('marketplace.viewBooking')}
+                        </Link>
+                      )}
                     </div>
                     <Badge variant="secondary">
                       {getServiceRequestStatusLabel(req.status, t)}

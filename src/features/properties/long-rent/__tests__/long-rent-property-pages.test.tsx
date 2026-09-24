@@ -10,6 +10,10 @@ import { LongRentPropertiesPage } from '../long-rent-properties-page';
 import { LongRentPropertyDetailPage } from '../long-rent-property-detail-page';
 
 vi.mock('@/queries/use-properties');
+// Covered by its own tests (long-rent-service-requests.test.tsx): here only the APE and the property core.
+vi.mock('@/features/service-requests/components/long-rent-service-requests', () => ({
+  LongRentServiceRequests: ({ propertyId }: { propertyId: string }) => <div data-testid={`long-rent-requests-${propertyId}`} />,
+}));
 
 const PROPERTY = {
   id: 'prop-1',
@@ -126,6 +130,8 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
       'href',
       '/app/long-rent/leases/new?propertyId=prop-1',
     );
+    // Its supplier requests are for the property (SU-07, D2).
+    expect(screen.getByTestId('long-rent-requests-prop-1')).toBeInTheDocument();
   });
 
   it('LongRentPropertyDetailPage_WithApe_ListsItWithItsType', () => {
