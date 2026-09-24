@@ -1,7 +1,6 @@
-import { getPublicSiteOrigin } from '@/config/public-site';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { isAxiosError } from 'axios';
-import type { BillingSubscriptionStatus, CheckoutSessionRequest } from '@/types';
+import type { BillingSubscriptionStatus } from '@/types';
 
 type TranslateFn = (key: string) => string;
 
@@ -11,12 +10,6 @@ export const ALREADY_SUBSCRIBED_CODE = 'already_subscribed';
 export const BILLING_PLAN_UNAVAILABLE_CODE = 'billing_plan_unavailable';
 /** 409 of the checkout: the billing entry gate (P.IVA and SDI) is closed, nobody can be charged yet. */
 export const BILLING_GATE_CLOSED_CODE = 'billing_gate_closed';
-
-/**
- * Page the backend sends Stripe back to when the client gives no return URL (PL-11): `?checkout=success|cancel` after
- * the checkout, no parameter after the billing portal.
- */
-export const DEFAULT_BILLING_RETURN_PATH = '/app/short-rent/settings/plan';
 
 /** Query parameter of the Stripe Checkout return page. */
 export const CHECKOUT_RETURN_PARAM = 'checkout';
@@ -70,24 +63,6 @@ export function isPaidStatus(status: BillingSubscriptionStatus): boolean {
 export function readCheckoutReturn(params: URLSearchParams): CheckoutReturn | null {
   const value = params.get(CHECKOUT_RETURN_PARAM);
   return value === 'success' || value === 'cancel' ? value : null;
-}
-
-/**
- * Return pages of the checkout for the current page. None on the default page of the backend. On another page (e.g.
- * the plan page of another context) only when the app runs on the public site: the backend refuses any other origin
- * with 400, and a Vercel preview then gets the default pages.
- */
-export function buildCheckoutReturnUrls(
-  pathname: string,
-  origin: string = window.location.origin,
-  publicSiteOrigin: string | null = getPublicSiteOrigin(),
-): Pick<CheckoutSessionRequest, 'successUrl' | 'cancelUrl'> {
-  if (pathname === DEFAULT_BILLING_RETURN_PATH || !publicSiteOrigin || publicSiteOrigin !== origin) return {};
-  const page = `${publicSiteOrigin}${pathname}`;
-  return {
-    successUrl: `${page}?${CHECKOUT_RETURN_PARAM}=success`,
-    cancelUrl: `${page}?${CHECKOUT_RETURN_PARAM}=cancel`,
-  };
 }
 
 /** Leaves the app for a Stripe page (checkout or portal); only absolute http(s) URLs. */

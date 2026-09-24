@@ -10,7 +10,7 @@ import {
   isPlanLimitError,
   getPlanLimitMessage,
   getPlanUpgradeCta,
-  PLAN_UPGRADE_PATH,
+  getPlanUpgradePath,
 } from '@/lib/entitlement-error';
 import type { CreatePropertyDto } from '@/types';
 
@@ -55,7 +55,7 @@ export function PropertyCreatePage() {
           >
             <p className="font-medium text-destructive">{getPlanLimitMessage()}</p>
             <Link
-              to={PLAN_UPGRADE_PATH}
+              to={getPlanUpgradePath('short-rent')}
               className="mt-1 inline-block font-medium text-primary underline underline-offset-2"
             >
               {getPlanUpgradeCta()}

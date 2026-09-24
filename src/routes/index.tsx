@@ -17,7 +17,7 @@ import { NoAccessPage } from '@/pages/no-access-page';
 import { AccountInactivePage } from '@/pages/account-inactive-page';
 import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
-import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
+import { getOrgBillingPageAlternates, ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
 import { CatchAllRedirect } from './catch-all-redirect';
@@ -51,6 +51,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
           contextKey={contextKey}
           requiredPermissions={entry.requiredPermissions}
           featureFlag={entry.featureFlag}
+          alternatePaths={getOrgBillingPageAlternates(entry)}
         >
           <ManifestRoute entry={entry} />
         </ContextRouteGuard>

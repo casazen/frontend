@@ -11,15 +11,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { getProblemMessage } from '@/lib/api-errors';
+import { toBillingReturnPath } from '@/lib/billing-routes';
 import { BILLING_PLANS_QUERY_KEY, useStartCheckout } from '@/queries/use-billing';
 import type { BillingPlan, BillingSubscription } from '@/types';
 import { toBillingProfileRequest, type BillingProfileValues } from '../billing-profile.schema';
-import {
-  ALREADY_SUBSCRIBED_CODE,
-  BILLING_PLAN_UNAVAILABLE_CODE,
-  buildCheckoutReturnUrls,
-  getErrorCode,
-} from '../billing-utils';
+import { ALREADY_SUBSCRIBED_CODE, BILLING_PLAN_UNAVAILABLE_CODE, getErrorCode } from '../billing-utils';
 import { BillingProfileForm } from './billing-profile-form';
 
 interface CheckoutDialogProps {
@@ -34,8 +30,9 @@ interface CheckoutDialogProps {
 
 /**
  * Last step before Stripe Checkout (spec-saas-billing AC10, AC12): country and optional VAT id of the invoice, then
- * `POST /api/billing/checkout-session` and the redirect to Stripe. The outcome is read back from the backend on the
- * return page, never assumed from the redirect.
+ * `POST /api/billing/checkout-session` and the redirect to Stripe. Stripe returns to this same page, in the shell the
+ * user started from (`returnPath`, PL-16). The outcome is read back from the backend on the return page, never assumed
+ * from the redirect.
  */
 export function CheckoutDialog({ plan, subscription, onClose, onAlreadySubscribed }: CheckoutDialogProps) {
   const { t } = useTranslation();
@@ -56,8 +53,9 @@ export function CheckoutDialog({ plan, subscription, onClose, onAlreadySubscribe
   const handleSubmit = (values: BillingProfileValues) => {
     if (!plan) return;
     setError(null);
+    const returnPath = toBillingReturnPath(location.pathname);
     checkout.mutate(
-      { planTier: plan.tier, ...toBillingProfileRequest(values), ...buildCheckoutReturnUrls(location.pathname) },
+      { planTier: plan.tier, ...toBillingProfileRequest(values), ...(returnPath ? { returnPath } : {}) },
       {
         onError: (err) => {
           const code = getErrorCode(err);

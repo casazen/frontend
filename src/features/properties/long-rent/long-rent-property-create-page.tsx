@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
-import { getPlanLimitMessage, isPlanLimitError } from '@/lib/entitlement-error';
+import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
 import { PropertyForm } from '../components/property-form';
 import type { CreatePropertyDto } from '@/types';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from './paths';
@@ -39,9 +39,17 @@ export function LongRentPropertyCreatePage() {
         <div
           role="alert"
           data-testid="plan-limit-alert"
-          className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+          className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm"
         >
-          {getPlanLimitMessage()}
+          <p className="font-medium text-destructive">{getPlanLimitMessage()}</p>
+          {/* The plan page of the long-rent shell (PL-16): never the short-rent one. */}
+          <Link
+            to={getPlanUpgradePath('long-rent')}
+            className="mt-1 inline-block font-medium text-primary underline underline-offset-2"
+            data-testid="plan-upgrade-link"
+          >
+            {getPlanUpgradeCta()}
+          </Link>
         </div>
       )}
 
