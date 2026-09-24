@@ -13,6 +13,7 @@ import { useBookings } from '@/queries/use-bookings';
 import { useProperty } from '@/queries/use-properties';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
+import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -106,6 +107,8 @@ export function BookingsPage() {
           </div>
         )}
 
+        <BookingRequestsPanel />
+
         <Card>
           <CardContent className="pt-4 space-y-4">
             <div className="flex flex-wrap gap-1 border-b pb-3">
@@ -183,9 +186,19 @@ export function BookingsPage() {
                           {b.currency ?? 'EUR'} {b.totalPrice.toLocaleString()}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
-                            {getBookingStatusLabel(b.status, t)}
-                          </Badge>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
+                              {getBookingStatusLabel(b.status, t)}
+                            </Badge>
+                            {b.onSiteRequestState && (
+                              <Badge
+                                variant={b.onSiteRequestState === 'AwaitingHostApproval' ? 'default' : 'outline'}
+                                data-testid="booking-request-badge"
+                              >
+                                {t(`booking.requests.state.${b.onSiteRequestState}`)}
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3" data-testid="booking-source">
                           {b.source ? (

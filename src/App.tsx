@@ -9,6 +9,7 @@ import { queryClient } from '@/lib/query-client';
 import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
+import { recordLandingTouch } from '@/lib/signup-attribution';
 import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { router } from '@/routes';
@@ -60,6 +61,11 @@ function App() {
   const pathname = window.location.pathname;
   const publicPath = isPublicUnauthenticatedPath(pathname);
   const secureOrigin = isSecureAuth0Origin();
+
+  useEffect(() => {
+    // SE-03: first page of the visit (landing path, referrer host, UTM) for the signup attribution.
+    if (publicPath) recordLandingTouch();
+  }, [publicPath]);
 
   // Direct booking & other public surfaces must never load auth0-spa-js
   // (it throws on http://LAN-IP — see Auth0 SPA FAQ secure origin).

@@ -3,6 +3,7 @@ import { DomainApi } from '@/api/domain.api';
 import type { SetOrgDomainRequest } from '@/types/domain.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 export const ORG_DOMAIN_QUERY_KEY = 'org-domain';
 
@@ -23,7 +24,8 @@ export function useSetOrgDomain(orgId?: string) {
       queryClient.invalidateQueries({ queryKey: [ORG_DOMAIN_QUERY_KEY, orgId] });
       toast.success(i18n.t('domain.settings.saved'));
     },
-    onError: () => toast.error(i18n.t('domain.settings.saveFailed')),
+    // e.g. 422 subdomains_not_configured (no PublicHost__BaseDomain, SE-03): the reason, not a generic failure.
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('domain.settings.saveFailed')),
   });
 }
 

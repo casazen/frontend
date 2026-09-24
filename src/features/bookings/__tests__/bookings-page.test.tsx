@@ -11,7 +11,7 @@ import type { Booking, Property } from '@/types';
 import { BookingsPage } from '../bookings-page';
 
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { getAll: vi.fn() },
+  bookingsApi: { getAll: vi.fn(), getApprovalRequests: vi.fn() },
 }));
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { getById: vi.fn() },
@@ -57,6 +57,7 @@ function renderPage(url = '/app/short-rent/bookings') {
 beforeEach(async () => {
   vi.clearAllMocks();
   await i18n.changeLanguage('it');
+  vi.mocked(bookingsApi.getApprovalRequests).mockResolvedValue([]);
 });
 
 describe('BookingsPage', () => {
@@ -73,6 +74,23 @@ describe('BookingsPage', () => {
     const sources = screen.getAllByTestId('booking-source').map((cell) => cell.textContent);
     expect(sources).toEqual([i18n.t('booking.source.Manual'), i18n.t('booking.source.Direct')]);
     expect(screen.getByText(i18n.t('booking.list.columns.source'))).toBeInTheDocument();
+  });
+
+  it('BookingsPage_OnSiteRequests_ShowTheApprovalBadgeAndThePanel', async () => {
+    // BK-06: a "pay at the property" request is Pending until the host answers; the list says what it waits for.
+    await i18n.changeLanguage('it');
+    vi.mocked(bookingsApi.getAll).mockResolvedValue([
+      { ...booking('bk-request', 'Giulia', 'Direct'), status: 'Pending', paymentOption: 'OnSite', onSiteRequestState: 'AwaitingHostApproval' },
+      { ...booking('bk-unconfirmed', 'Luca', 'Direct'), status: 'Pending', paymentOption: 'OnSite', onSiteRequestState: 'AwaitingGuestEmail' },
+      booking('bk-confirmed', 'Mario', 'Manual'),
+    ]);
+
+    renderPage();
+
+    await screen.findByText('Giulia Rossi', undefined, { timeout: 5000 });
+    const badges = screen.getAllByTestId('booking-request-badge').map((badge) => badge.textContent);
+    expect(badges).toEqual(['Da approvare', 'Attesa conferma email ospite']);
+    expect(await screen.findByTestId('booking-requests-panel')).toHaveTextContent('Richieste da approvare');
   });
 
   it('shows the error state, not an empty list, when the API fails', async () => {

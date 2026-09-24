@@ -1,12 +1,21 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DomainApi } from '@/api/domain.api';
+import { getPublicSiteHost } from '@/config/public-site';
 
-const DEFAULT_HOST_SUFFIXES = ['casazen.app', 'casazen.it', 'localhost', 'vercel.app'];
+/** Hosts of the app itself that are never an org site: local development and the Vercel deployments. */
+const APP_HOST_SUFFIXES = ['localhost', 'vercel.app'];
+const LOCAL_ADDRESSES = new Set(['127.0.0.1', '[::1]']);
 
-function isDefaultAppHost(hostname: string): boolean {
+/**
+ * The web app's own host: the public domain (`VITE_PUBLIC_SITE_URL`, no domain written in code, D3), local development
+ * or a Vercel deployment. Any other host may be an org's custom domain or subdomain and is resolved.
+ */
+export function isDefaultAppHost(hostname: string, publicSiteHost: string | null = getPublicSiteHost()): boolean {
   const host = hostname.toLowerCase();
-  return DEFAULT_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
+  if (publicSiteHost && host === publicSiteHost) return true;
+  if (LOCAL_ADDRESSES.has(host)) return true;
+  return APP_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
 }
 
 /**
