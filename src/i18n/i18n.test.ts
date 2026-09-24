@@ -15,6 +15,7 @@ import {
 } from '@/lib/i18n-labels';
 import { COMMON_AMENITIES } from '@/features/properties/schemas/property.schema';
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
+import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -245,6 +246,28 @@ describe('keys used in code', () => {
       ...LEASE_STATUSES.map((s) => `leases.statusLabel.${s}`),
       ...LEASE_EVENT_TYPES.map((e) => `leases.eventType.${e}`),
       ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'].map((s) => `compliance.activation.steps.${s}`),
+      // D.L. 145/2023 safety checklist (CO-07): items, facts and stable codes of the API.
+      ...SAFETY_ITEM_CODES.flatMap((c) => [`compliance.safety.items.${c}.title`, `compliance.safety.items.${c}.reference`]),
+      ...SAFETY_ITEM_CODES.filter((c) => c !== 'EmergencyInstructions').map((c) => `compliance.safety.items.${c}.dateLabel`),
+      ...COMBUSTION_APPLIANCES.map((a) => `compliance.safety.appliance.${a}`),
+      ...SAFETY_DETECTOR_TYPES.map((d) => `compliance.safety.detectorType.${d}`),
+      ...['Required', 'Optional', 'NotApplicable', 'Undetermined'].map((r) => `compliance.safety.requirement.${r}`),
+      ...['NoGasNoCombustion', 'NotEntrepreneurial'].map((r) => `compliance.safety.notApplicable.${r}`),
+      ...[
+        'safety_entrepreneurial_unanswered',
+        'safety_gas_unanswered',
+        'safety_floors_unanswered',
+        'safety_extinguishers_missing',
+        'safety_extinguishers_below_minimum',
+        'safety_extinguishers_review',
+        'safety_gas_detector_missing',
+        'safety_co_detector_missing',
+        'safety_systems_compliance_missing',
+        'safety_systems_compliance_review',
+        'safety_bdsr_declaration_missing',
+        'safety_confirmation_missing',
+      ].map((code) => `compliance.safety.blockers.${code}`),
+      'compliance.safety.warnings.safety_floor_areas_missing',
     ];
     const missing = expected.filter((key) => !itKeys.has(key) || !enKeys.has(key));
     expect(missing).toEqual([]);
