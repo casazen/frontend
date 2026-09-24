@@ -3380,13 +3380,7 @@
       "cinGuidance": "How to obtain the CIN code",
       "saveAndContinue": "Save and continue",
       "continue": "Continue",
-      "documentsHint": "Upload the mandatory documents (licence, insurance, safety certificates).",
-      "safetyHint": "Confirm that the mandatory safety equipment is present and compliant.",
-      "safety": {
-        "smokeDetector": "Smoke detector installed and working",
-        "fireExtinguisher": "Fire extinguisher present and inspected",
-        "gasCompliance": "Gas system compliance certificate on file"
-      },
+      "documentsHint": "Upload the documents required for the activation. Safety proofs (photos or documents) are optional and are attached in the safety checklist.",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
       "backToEdit": "Back to property editing",
       "complete": "Complete activation",
@@ -3465,6 +3459,132 @@
       "arrivalMissingHint": "The arrival of {{guest}} was not registered. If the guest arrived, register the arrival and go on with the check-out.",
       "registerArrivalAndProceed": "Register arrival and continue",
       "registeringArrival": "Registering the arrival…"
+    },
+    "safety": {
+      "loading": "Loading the safety checklist...",
+      "loadFailed": "Unable to load the safety checklist.",
+      "retry": "Try again",
+      "intro": "Obligations of art. 13-ter, par. 7, of Decree-Law 145/2023 (converted by Law 191/2023) for units let for short stays or for tourism. Items that do not concern your property are \"not applicable\" based on your answers about the property.",
+      "disclaimer": "CasaZen records what you declare: it does not inspect the property and does not certify its compliance. You declare the safety requirements in the BDSR with the CIN request (art. 13-ter, par. 3).",
+      "importedFromLegacy": "We imported the answers of the old checklist (smoke detector, extinguisher, gas certificate). Review the items marked \"To review\", complete the missing ones and confirm again.",
+      "complete": "Checklist complete: nothing is blocking.",
+      "blockersTitle": "To complete before the activation (last save):",
+      "itemsTitle": "Equipment and requirements",
+      "toReview": "To review",
+      "confirm": "I confirm that this information is true and matches what I declared in the BDSR. I know that CasaZen does not check or certify the compliance of the property.",
+      "confirmedAt": "Checklist confirmed on {{date}}.",
+      "save": "Save checklist",
+      "saved": "Safety checklist saved",
+      "saveFailed": "Unable to save the safety checklist",
+      "answer": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "facts": {
+        "title": "The property",
+        "entrepreneurial": "Do you run the rental as a business?",
+        "entrepreneurialHint": "For example with a VAT number, as a company or under the presumption based on the number of flats (art. 1, par. 595, Law 178/2020). Only in this case are the safety requirements of the systems needed (art. 13-ter, par. 7, first sentence).",
+        "gasSupply": "Does the unit have a gas system or supply (mains, LPG or cylinders)?",
+        "appliances": "Combustion appliances in the unit",
+        "noAppliances": "No combustion appliance",
+        "detectorsExempt": "Gas and carbon monoxide detectors not applicable: the unit has no gas system and no combustion appliance (exemption stated in the FAQ of the Ministry of Tourism). Fire extinguishers remain required.",
+        "combustionWithoutGas": "With a combustion appliance (for example a fireplace or a stove) the carbon monoxide risk is not ruled out: the detectors remain required even without gas.",
+        "floorCount": "Number of floors of the unit",
+        "floorArea": "Floor area of floor {{floor}} in m² (optional)",
+        "minimumExtinguishers": "Minimum number of extinguishers: {{minimum}} (one every 200 m² of floor or fraction, at least one per floor)."
+      },
+      "appliance": {
+        "Boiler": "Boiler",
+        "WaterHeater": "Water heater",
+        "GasHob": "Gas hob",
+        "Stove": "Stove",
+        "Fireplace": "Fireplace",
+        "Other": "Other combustion appliance"
+      },
+      "requirement": {
+        "Required": "Required",
+        "Optional": "Recommended, not required by law",
+        "NotApplicable": "Not applicable",
+        "Undetermined": "Depends on your answers about the property"
+      },
+      "notApplicable": {
+        "NoGasNoCombustion": "Not applicable: the unit has no gas system and no combustion appliance.",
+        "NotEntrepreneurial": "Not applicable: the rental is not run as a business."
+      },
+      "detectorType": {
+        "Battery": "Battery powered",
+        "Mains": "Mains powered",
+        "FixedSystem": "Fixed system (Ministerial Decree 37/2008)"
+      },
+      "items": {
+        "FireExtinguishers": {
+          "title": "Portable fire extinguishers",
+          "reference": "Always required: compliant with the law, in accessible and visible positions, especially near the entrances and the most dangerous areas (art. 13-ter, par. 7, second sentence).",
+          "faq": "According to the FAQ of the Ministry of Tourism: extinguishing capacity of at least 13A, charge of at least 6 kg or 6 litres, periodic check under the UNI 9994-1 standard.",
+          "dateLabel": "Date of the last periodic check"
+        },
+        "GasDetector": {
+          "title": "Combustible gas detector",
+          "reference": "Working device, also removable (art. 13-ter, par. 7, second sentence; FAQ of the Ministry of Tourism).",
+          "dateLabel": "Date of the last test"
+        },
+        "CoDetector": {
+          "title": "Carbon monoxide (CO) detector",
+          "reference": "Working device, also removable (art. 13-ter, par. 7, second sentence; FAQ of the Ministry of Tourism).",
+          "dateLabel": "Date of the last test"
+        },
+        "SystemsCompliance": {
+          "title": "Compliant systems",
+          "reference": "Systems in the unit (electrical, gas, heating, water) compliant with national and regional rules, with a declaration of conformity or of correspondence (Ministerial Decree 37/2008). Only when the rental is run as a business (art. 13-ter, par. 7, first sentence).",
+          "dateLabel": "Date of the declaration of conformity"
+        },
+        "BdsrDeclaration": {
+          "title": "Declaration in the BDSR",
+          "reference": "You declared the safety requirements in the national database of accommodation (BDSR) with the CIN request or update (art. 13-ter, par. 3).",
+          "dateLabel": "Date of the declaration in the BDSR"
+        },
+        "SmokeDetector": {
+          "title": "Smoke detector",
+          "reference": "Recommended: art. 13-ter does not require it.",
+          "dateLabel": "Date of the last test"
+        },
+        "EmergencyInstructions": {
+          "title": "Emergency instructions and numbers for guests",
+          "reference": "Recommended: art. 13-ter does not require them."
+        }
+      },
+      "fields": {
+        "extinguisherCount": "Number of extinguishers",
+        "deviceCount": "Number of devices (optional)",
+        "location": "Where they are (optional)",
+        "detectorType": "Type of device",
+        "notSpecified": "Not specified",
+        "dateHint": "Optional. Used for reminders: it is not a legal deadline.",
+        "sensorEndOfLife": "End of life of the sensor, from the manufacturer's manual (optional)",
+        "notes": "Notes (optional)",
+        "evidence": "Proof (optional): photo or document",
+        "evidenceAttached": "Attached document",
+        "removeEvidence": "Remove",
+        "uploadEvidence": "Upload proof",
+        "evidenceHint": "PDF, Word or image. It stays private: only the users of your organisation can see it."
+      },
+      "blockers": {
+        "safety_entrepreneurial_unanswered": "State whether you run the rental as a business: the safety requirements of the systems depend on it.",
+        "safety_gas_unanswered": "State whether the unit has gas and which combustion appliances it has: the gas and carbon monoxide detectors depend on it.",
+        "safety_floors_unanswered": "Enter the number of floors of the unit: it is needed for the minimum number of extinguishers (at least one per floor).",
+        "safety_extinguishers_missing": "Portable fire extinguishers: required in every unit let for short stays or for tourism (art. 13-ter, par. 7).",
+        "safety_extinguishers_below_minimum": "Not enough extinguishers: you entered {{declared}}, at least {{minimum}} are needed.",
+        "safety_extinguishers_review": "Fire extinguishers: the answer comes from the old checklist. Confirm it by entering the number of extinguishers and the floors of the unit.",
+        "safety_gas_detector_missing": "Combustible gas detector: required, because the unit has gas or combustion appliances (art. 13-ter, par. 7).",
+        "safety_co_detector_missing": "Carbon monoxide detector: required, because the unit has gas or combustion appliances (art. 13-ter, par. 7).",
+        "safety_systems_compliance_missing": "Compliant systems: required when the rental is run as a business (art. 13-ter, par. 7, first sentence).",
+        "safety_systems_compliance_review": "Systems: the old checklist stated a compliance certificate of the gas system. Confirm the answer.",
+        "safety_bdsr_declaration_missing": "Confirm that you declared the safety requirements in the BDSR, with the CIN request or update (art. 13-ter, par. 3).",
+        "safety_confirmation_missing": "Confirm the safety checklist with the current answers."
+      },
+      "warnings": {
+        "safety_floor_areas_missing": "Without the m² of each floor the minimum is based on the floors only. The law requires one extinguisher every 200 m² of floor or fraction, with at least one per floor."
+      }
     }
   },
   "toast": {

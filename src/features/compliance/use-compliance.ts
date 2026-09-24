@@ -4,11 +4,14 @@ import {
   completeComplianceActivation,
   fetchComplianceActivation,
   fetchComplianceSummary,
+  fetchSafetyChecklist,
+  saveSafetyChecklist,
   startCheckoutWizard,
 } from '@/api/compliance.api';
 import type {
   CheckoutWizardCompleteCommand,
   CompletePropertyActivationCommand,
+  SaveSafetyChecklistCommand,
 } from '@/types/compliance.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -40,6 +43,30 @@ export function useCompleteComplianceActivation(propertyId: string) {
       }
     },
     onError: () => toast.error(i18n.t('compliance.activation.completeFailed')),
+  });
+}
+
+export function useSafetyChecklist(propertyId: string) {
+  return useQuery({
+    queryKey: [COMPLIANCE_KEY, 'safety-checklist', propertyId],
+    queryFn: () => fetchSafetyChecklist(propertyId),
+    enabled: !!propertyId,
+  });
+}
+
+export function useSaveSafetyChecklist(propertyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SaveSafetyChecklistCommand) => saveSafetyChecklist(propertyId, payload),
+    onSuccess: (saved) => {
+      queryClient.setQueryData([COMPLIANCE_KEY, 'safety-checklist', propertyId], saved);
+      queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'activation', propertyId] });
+      toast.success(i18n.t('compliance.safety.saved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('compliance.safety.saveFailed'));
+    },
   });
 }
 
