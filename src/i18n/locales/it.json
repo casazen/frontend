@@ -1907,17 +1907,23 @@
     },
     "guestKind": {
       "SingleGuest": "Ospite singolo",
-      "HeadOfFamilyOrGroup": "Capo famiglia o capo gruppo (scegli sul portale)"
+      "HeadOfFamily": "Capofamiglia",
+      "HeadOfGroup": "Capogruppo",
+      "FamilyMember": "Familiare",
+      "GroupMember": "Membro del gruppo"
     },
     "recordField": {
-      "kind": "Tipo alloggiato",
+      "type": "Tipo alloggiato",
       "arrivalDate": "Data di arrivo",
       "stayDays": "Giorni di permanenza",
       "lastName": "Cognome",
       "firstName": "Nome",
       "gender": "Sesso",
       "dateOfBirth": "Data di nascita",
-      "placeOfBirth": "Luogo di nascita",
+      "bornInItaly": "Nato in Italia o all'estero",
+      "birthComune": "Comune di nascita",
+      "birthProvince": "Provincia di nascita",
+      "birthCountry": "Stato di nascita",
       "citizenship": "Cittadinanza",
       "documentType": "Tipo documento",
       "documentNumber": "Numero documento",
@@ -1925,7 +1931,7 @@
     },
     "guestSummary": {
       "title": "Dati da inserire sul portale Alloggiati Web",
-      "description": "Nell'ordine della schedina. Sono i dati registrati in CasaZen: sul portale scegli le voci corrispondenti (comune, stato, tipo documento) dalle sue tabelle.",
+      "description": "Una scheda per ogni ospite, nell'ordine della comunicazione (capofamiglia o capogruppo prima dei familiari o membri). Sul portale scegli le voci corrispondenti (comune, stato, tipo documento) dalle sue tabelle.",
       "loading": "Caricamento dati ospite…",
       "error": "Impossibile caricare i dati dell'ospite.",
       "retry": "Riprova",
@@ -1937,8 +1943,44 @@
       "copyFailed": "Copia non riuscita",
       "missing": "Mancante",
       "stayExceedsMaxDays": "Soggiorno di {{days}} giorni: il portale accetta al massimo 30 giorni per schedina.",
-      "unregisteredGuests_one": "{{count}} altro ospite dichiarato non è registrato in CasaZen: inseriscilo sul portale come familiare o membro del gruppo.",
-      "unregisteredGuests_other": "Altri {{count}} ospiti dichiarati non sono registrati in CasaZen: inseriscili sul portale come familiari o membri del gruppo."
+      "unregisteredGuests_one": "{{count}} ospite dichiarato non è ancora registrato: chiedi di completare il check-in online o aggiungilo con «Modifica ospiti».",
+      "unregisteredGuests_other": "{{count}} ospiti dichiarati non sono ancora registrati: chiedi di completare il check-in online o aggiungili con «Modifica ospiti».",
+      "guestStatus": {
+        "complete": "Completo",
+        "missing_one": "{{count}} dato mancante",
+        "missing_other": "{{count}} dati mancanti",
+        "codesToComplete": "Codici da completare"
+      },
+      "minor": "Minore",
+      "notRequired": "Non richiesto",
+      "codeToComplete": "Codice da completare",
+      "code": "cod. {{code}}",
+      "compositionIssue": {
+        "member_without_head": "Questo ospite deve seguire il proprio capofamiglia o capogruppo.",
+        "head_without_members": "Mancano i familiari o i membri del gruppo di questo ospite.",
+        "invalid_type": "Tipo di ospite non valido."
+      },
+      "missingCodeTables": "Tabelle codici Alloggiati non ancora importate: {{tables}}. I codici restano da completare: bloccano solo l'esportazione del tracciato, non l'invio dal portale.",
+      "exportReady": "Dati e codici completi: pronti per il tracciato Alloggiati.",
+      "codesPending": "Dati completi. Alcuni codici ufficiali sono da completare: servono solo per l'esportazione del tracciato.",
+      "dataIncomplete": "Dati incompleti: completa i campi mancanti prima dell'invio.",
+      "legacyPlaceOfBirth": "Registrato in precedenza: «{{place}}» (indica se in Italia o all'estero)"
+    },
+    "codeTable": {
+      "Comuni": "comuni",
+      "Stati": "stati",
+      "Documenti": "tipi documento",
+      "TipiAlloggiato": "tipi alloggiato"
+    },
+    "italy": "Italia",
+    "editGuests": {
+      "open": "Modifica ospiti",
+      "title": "Ospiti del soggiorno",
+      "description": "Inserisci o correggi tutti gli ospiti, compresi i minori. Il documento serve solo all'ospite singolo, al capofamiglia o al capogruppo. Se le tabelle Alloggiati sono state importate, scegli le voci dall'elenco per completare i codici.",
+      "save": "Salva ospiti",
+      "cancel": "Annulla",
+      "saved": "Ospiti del soggiorno aggiornati",
+      "saveFailed": "Impossibile salvare gli ospiti. Riprova."
     }
   },
   "guests": {
@@ -2350,13 +2392,16 @@
     },
     "validation": {
       "firstName": {
-        "required": "Nome obbligatorio"
+        "required": "Nome obbligatorio",
+        "maxLength": "Al massimo 30 caratteri"
       },
       "lastName": {
-        "required": "Cognome obbligatorio"
+        "required": "Cognome obbligatorio",
+        "maxLength": "Al massimo 50 caratteri"
       },
       "dateOfBirth": {
-        "required": "Data di nascita obbligatoria"
+        "required": "Data di nascita obbligatoria",
+        "future": "La data di nascita non può essere nel futuro"
       },
       "placeOfBirth": {
         "required": "Luogo di nascita obbligatorio",
@@ -2374,7 +2419,8 @@
       },
       "documentNumber": {
         "required": "Numero documento obbligatorio",
-        "maxLength": "Numero documento deve essere inferiore a 50 caratteri"
+        "maxLength": "Numero documento deve essere inferiore a 50 caratteri",
+        "invalid": "Solo lettere e cifre, al massimo 20"
       },
       "documentIssuingCountry": {
         "required": "Paese di rilascio obbligatorio",
@@ -2383,7 +2429,35 @@
       "consentAccepted": {
         "required": "Devi accettare il trattamento dei dati"
       },
-      "invalidValue": "Valore non valido"
+      "invalidValue": "Valore non valido",
+      "bornInItaly": {
+        "required": "Indica se l'ospite è nato in Italia o all'estero"
+      },
+      "birthComune": {
+        "required": "Comune di nascita obbligatorio"
+      },
+      "birthProvince": {
+        "invalid": "Inserisci la sigla di due lettere (es. RM)"
+      },
+      "birthCountry": {
+        "required": "Stato di nascita obbligatorio"
+      },
+      "citizenship": {
+        "required": "Cittadinanza obbligatoria"
+      },
+      "label": {
+        "maxLength": "Al massimo 100 caratteri"
+      },
+      "documentIssuePlace": {
+        "required": "Luogo di rilascio obbligatorio"
+      },
+      "type": {
+        "memberWithoutHead": "Un familiare o un membro del gruppo deve seguire il capofamiglia o il capogruppo",
+        "headWithoutMembers": "Aggiungi almeno un familiare o un membro del gruppo, oppure scegli «Ospiti singoli»"
+      },
+      "guests": {
+        "count": "Inserisci da 1 a 30 ospiti"
+      }
     },
     "loading": "Caricamento check-in...",
     "invalidLink": "Link non valido",
@@ -2456,7 +2530,38 @@
       "Completo": "Completato",
       "AlloggiatiInviato": "Alloggiati inviato",
       "Scaduto": "Scaduto"
-    }
+    },
+    "stepGuests": "Ospiti",
+    "guestsIntro": "Inserisci tutti gli ospiti che soggiornano, compresi i minori: la legge (art. 109 TULPS) richiede i dati di ciascuno. Il documento serve solo all'ospite singolo, al capofamiglia o al capogruppo.",
+    "guestCountMismatch_one": "La prenotazione indica {{count}} ospite: controlla di aver inserito tutte le persone che soggiornano.",
+    "guestCountMismatch_other": "La prenotazione indica {{count}} ospiti: controlla di aver inserito tutte le persone che soggiornano.",
+    "guestHeading": "Ospite {{index}}",
+    "minor": "Minore",
+    "stayKindLabel": "Chi soggiorna *",
+    "stayKind": {
+      "SingleGuest": "Ospiti singoli (ognuno con il proprio documento)",
+      "HeadOfFamily": "Famiglia: capofamiglia e familiari",
+      "HeadOfGroup": "Gruppo: capogruppo e membri del gruppo"
+    },
+    "stayKindHint": "Per una famiglia o un gruppo il primo ospite è il capofamiglia o il capogruppo: è l'unico a cui serve il documento.",
+    "bornInLabel": "Luogo di nascita *",
+    "selectBornIn": "Seleziona",
+    "bornIn": {
+      "yes": "In Italia",
+      "no": "All'estero"
+    },
+    "birthComune": "Comune di nascita *",
+    "birthProvince": "Provincia (sigla) *",
+    "birthCountry": "Stato di nascita *",
+    "citizenship": "Cittadinanza *",
+    "removeGuest": "Rimuovi ospite",
+    "addGuest": "Aggiungi ospite",
+    "documentIntro": "Documento d'identità dell'ospite singolo o del capofamiglia o capogruppo. Per familiari e membri del gruppo non serve.",
+    "documentOf": "Documento di {{name}}",
+    "documentIssuePlace": "Luogo di rilascio *",
+    "documentIssuePlaceHint": "Il comune se rilasciato in Italia, lo Stato se rilasciato all'estero.",
+    "codeSelected": "Codice Alloggiati: {{code}}",
+    "codeSearchFailed": "Elenco ufficiale non disponibile in questo momento: scrivi il nome per esteso."
   },
   "publicSite": {
     "skipToContent": "Vai al contenuto",
@@ -2466,6 +2571,7 @@
     "privacy": "Privacy Policy",
     "terms": "Termini di servizio",
     "poweredBy": "Powered by CasaZen",
+    "seoHub": "Guide per gli host",
     "preview": "Anteprima sito",
     "explore": "Esplora",
     "viewProperties": "Scopri le strutture",
@@ -2609,6 +2715,16 @@
     "childrenAgesMissing": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno."
   },
   "publicSeo": {
+    "hub": {
+      "title": "Guide per gli affitti brevi",
+      "metaTitle": "Guide per gli affitti brevi per comune | CasaZen",
+      "metaDescription": "Le guide e i calcolatori della tassa di soggiorno pubblicati su CasaZen, comune per comune.",
+      "guidesHeading": "Guide per comune",
+      "calculatorsHeading": "Calcolo della tassa di soggiorno",
+      "empty": "Non ci sono ancora guide pubblicate.",
+      "loadError": "Impossibile caricare le guide. Riprova tra poco.",
+      "retry": "Riprova"
+    },
     "notFound": "Pagina non trovata",
     "guideNotAvailable": "La guida per questo comune non e' ancora disponibile.",
     "calculatorNotAvailable": "Il calcolatore per questo comune non e' ancora disponibile.",
