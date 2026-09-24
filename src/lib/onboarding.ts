@@ -58,11 +58,17 @@ export function isExemptFromHostOnboarding(roles: string[]): boolean {
   return roles.includes(ROLE_SUPPLIER) && !isHost;
 }
 
-export function needsOnboarding(
-  user: UserWithRoles,
-  profile?: { orgId?: string | null; onboardingCompletedAt?: string | null } | null,
-  roles?: string[],
-): boolean {
+/** Profile fields that decide the onboarding (`GET /users/me`). */
+export interface OnboardingProfile {
+  orgId?: string | null;
+  onboardingCompletedAt?: string | null;
+  rentalType?: RentalType | null;
+  /** Backend gate (PL-02): host features withheld until the onboarding and the current consents. */
+  onboardingRequired?: boolean | null;
+  consentsAccepted?: boolean | null;
+}
+
+export function needsOnboarding(user: UserWithRoles, profile?: OnboardingProfile | null, roles?: string[]): boolean {
   const resolvedRoles = roles ?? getUserRoles(user);
 
   // Admins and supplier-only users skip it even without an org (#285 used to trap admins here).
@@ -72,6 +78,11 @@ export function needsOnboarding(
 
   // Hosts without an org (roles assigned by hand in Auth0, org never provisioned) complete it to get one.
   if (needsOrgSetup(profile)) {
+    return true;
+  }
+
+  // PL-02: the backend withholds the host features (onboarding never completed, or legal documents changed).
+  if (profile?.onboardingRequired === true) {
     return true;
   }
 
@@ -101,6 +112,19 @@ export function getPostOnboardingRoute(rentalType: RentalType, from?: string | n
     }
   }
   return getHomeRouteForRentalType(rentalType);
+}
+
+/**
+ * The onboarding was completed but a legal document changed since (backend `consentsAccepted: false`, PL-02): only
+ * the consents step is needed, submitted with the rental type already chosen.
+ */
+export function needsConsentRenewal(profile?: OnboardingProfile | null): boolean {
+  return (
+    !!profile?.orgId &&
+    !!profile.onboardingCompletedAt &&
+    !!profile.rentalType &&
+    profile.consentsAccepted === false
+  );
 }
 
 /**

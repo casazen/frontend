@@ -1856,7 +1856,8 @@
     "Guest": "Guest",
     "Staff": "Staff",
     "LongTermLandlord": "Long-term landlord",
-    "Supplier": "Supplier"
+    "Supplier": "Supplier",
+    "None": "Not activated"
   },
   "alloggiati": {
     "loading": "Loading Alloggiati...",
@@ -2761,6 +2762,8 @@
     "choosePlan": "Choose your plan",
     "roleDescription": "Select the type of operator to personalise your experience.",
     "consentsDescription": "To activate your account, ToS, privacy, DPA and the subprocessor list are required.",
+    "consentsRenewalTitle": "Legal documents updated",
+    "consentsRenewalDescription": "We have updated our legal documents: accept the new versions to keep using the host features.",
     "planOrgDescription": "Set up your organization to start managing properties and bookings.",
     "planDefaultDescription": "Select the initial plan for your organization. You can change it later.",
     "consentRequiredToast": "Accept the mandatory legal documents before continuing.",
@@ -3150,6 +3153,7 @@
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
+      "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
       "supplierInviteUsed": "This invitation has already been used. If you already have a supplier account, sign in.",

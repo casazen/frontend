@@ -108,6 +108,29 @@ describe('OnboardingGuard (PL-01)', () => {
     vi.clearAllMocks();
   });
 
+  it('OnboardingGuard_HostWithOrgAndRolesButOnboardingRequired_RedirectsToOnboarding (PL-02)', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ orgId: 'org-legacy', onboardingRequired: true, consentsAccepted: false }),
+    );
+
+    renderGuard('/app/short-rent/guests');
+
+    expect(await screen.findByTestId('onboarding-page')).toHaveTextContent('onboarding from /app/short-rent/guests');
+    expect(screen.queryByTestId('workspace')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingGuard_AdminWithOnboardingRequired_RendersAdminRoutes (PL-02)', async () => {
+    mockAuth({ roles: ['Admin'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({ role: 'Admin', orgId: 'org-admin', onboardingRequired: true, consentsAccepted: false }),
+    );
+
+    renderGuard('/app/admin');
+
+    expect(await screen.findByTestId('workspace')).toBeInTheDocument();
+  });
+
   it('OnboardingGuard_AdminWithoutOrg_RendersAdminRoutes', async () => {
     mockAuth({ roles: ['Admin'] });
     vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ role: 'Admin' }));
