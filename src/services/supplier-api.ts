@@ -77,6 +77,9 @@ export interface SupplierRegisterResult {
   authRedirectUrl: string;
   rolesSynced: boolean;
   rolesSyncError: string | null;
+  /** Anonymous self-serve only (SU-02): links the account created afterwards through `POST /suppliers/claim`. */
+  claimToken?: string | null;
+  claimExpiresAt?: string | null;
 }
 
 /**
@@ -91,6 +94,25 @@ export async function registerSupplier(
   const { data } = await axios.post<SupplierRegisterResult>('/suppliers/register', payload, {
     public: !options.authenticated,
   });
+  return data;
+}
+
+export interface SupplierClaimResult {
+  orgId: string;
+  /** Where the supplier continues: the activation wizard. */
+  redirectUrl: string;
+  /** False when the Auth0 Supplier role could not be assigned: the console works, a retry assigns it. */
+  rolesSynced: boolean;
+  rolesSyncError: string | null;
+}
+
+/**
+ * `POST /api/suppliers/claim` (signed in, SU-02): links the account to the supplier profile registered without an
+ * account. With `claimToken` the account email must be the registered one; without it the backend accepts only an
+ * email verified by Auth0. Idempotent once linked.
+ */
+export async function claimSupplierProfile(claimToken?: string): Promise<SupplierClaimResult> {
+  const { data } = await axios.post<SupplierClaimResult>('/suppliers/claim', claimToken ? { claimToken } : {});
   return data;
 }
 

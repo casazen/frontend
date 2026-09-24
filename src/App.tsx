@@ -9,6 +9,7 @@ import { queryClient } from '@/lib/query-client';
 import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
+import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { router } from '@/routes';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
@@ -41,7 +42,12 @@ function AppShell() {
  * `history.replaceState` would not re-render the route), otherwise only drop `code`/`state` from the
  * URL as the SDK does by default.
  */
-function handleAuthRedirect(appState?: { returnTo?: unknown }) {
+function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unknown }) {
+  // Supplier registered without an account (SU-02): keep the claim for `/register/claim`, even when it could not be
+  // stored before the redirect.
+  const supplierClaim = parsePendingSupplierClaim(appState?.supplierClaim);
+  if (supplierClaim) savePendingSupplierClaim(supplierClaim);
+
   const returnTo = safeReturnTo(appState?.returnTo);
   if (returnTo) {
     void router.navigate(returnTo, { replace: true });

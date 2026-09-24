@@ -5,6 +5,7 @@ import {
   getHomeRouteForUser,
   getPostOnboardingRoute,
   isExemptFromHostOnboarding,
+  isLinkedSupplier,
   isProfileLoadFailure,
   needsOnboarding,
   needsOrgSetup,
@@ -116,6 +117,24 @@ describe('onboarding helpers', () => {
     expect(getHomeRouteForUser({ roles: ['LongTermLandlord'] })).toBe('/app/long-rent/leases');
     expect(getHomeRouteForUser({ roles: ['PropertyOwner', 'LongTermLandlord'] })).toBe('/app/short-rent');
     expect(getHomeRouteForUser({ roles: ['Admin'] })).toBe('/app/admin');
-    expect(getHomeRouteForUser({ roles: ['Supplier'] })).toBe('/supplier/inbox');
+    // Supplier-only users land on the activation wizard of their console (A4-02); an active supplier moves on.
+    expect(getHomeRouteForUser({ roles: ['Supplier'] })).toBe('/app/supplier/activation');
+  });
+
+  it('getHomeRouteForUser_LinkedSupplierWithoutRoleInToken_ReturnsSupplierConsole', () => {
+    expect(getHomeRouteForUser({ roles: [] }, { orgId: 's-1', supplierOrgId: 's-1' })).toBe('/app/supplier/activation');
+    // A host with a supplier profile keeps the host home; the context switch opens the console.
+    expect(getHomeRouteForUser({ roles: ['PropertyOwner'] }, { orgId: 'h-1', supplierOrgId: 's-1' })).toBe(
+      '/app/short-rent',
+    );
+  });
+
+  it('needsOnboarding_LinkedSupplier_NeverSendsToHostOnboarding', () => {
+    expect(isLinkedSupplier({ supplierOrgId: 's-1' })).toBe(true);
+    expect(isLinkedSupplier({ supplierOrgId: null })).toBe(false);
+    // Linked before the Supplier role reaches the token: no roles, no completed host onboarding.
+    expect(needsOnboarding({}, { orgId: 's-1', supplierOrgId: 's-1', onboardingCompletedAt: null }, [])).toBe(false);
+    // No org, no roles, no supplier link: host onboarding (with the supplier option).
+    expect(needsOnboarding({}, { orgId: null, supplierOrgId: null, onboardingCompletedAt: null }, [])).toBe(true);
   });
 });

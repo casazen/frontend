@@ -100,6 +100,9 @@ function renderPage(entry: string | { pathname: string; search?: string; state?:
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/app/admin" element={<p data-testid="admin-area">admin</p>} />
           <Route path="/app/short-rent" element={<p data-testid="short-rent-home">home</p>} />
+          <Route path="/app/supplier/activation" element={<p data-testid="supplier-activation">activation</p>} />
+          <Route path="/register" element={<p data-testid="supplier-register">register</p>} />
+          <Route path="/register/claim" element={<p data-testid="supplier-claim">claim</p>} />
           <Route path="/" element={<p data-testid="root">root</p>} />
         </Routes>
       </MemoryRouter>
@@ -248,5 +251,62 @@ describe('OnboardingPage (PL-01)', () => {
 
     expect(await screen.findByTestId('profile-load-error')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: i18n.t('onboarding.choose') })).not.toBeInTheDocument();
+  });
+});
+
+describe('OnboardingPage supplier option (SU-02)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('location', { ...window.location, assign });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it('OnboardingPage_UserWithoutOrgOrToken_OffersSupplierRegistration', async () => {
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderPage();
+
+    const option = await screen.findByTestId('onboarding-supplier-option');
+    expect(option).toHaveTextContent(i18n.t('onboarding.supplierOption.title'));
+    fireEvent.click(screen.getByTestId('onboarding-supplier-register'));
+
+    expect(await screen.findByTestId('supplier-register')).toBeInTheDocument();
+    expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_SupplierOptionClaimLink_OpensTheClaimPage', async () => {
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('onboarding-supplier-claim'));
+
+    expect(await screen.findByTestId('supplier-claim')).toBeInTheDocument();
+  });
+
+  it('OnboardingPage_LinkedSupplierWithoutRoleInToken_GoesToSupplierConsole', async () => {
+    mockAuth([]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ orgId: 'supplier-org', supplierOrgId: 'supplier-org' }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-activation')).toBeInTheDocument();
+    expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_EditMode_HidesSupplierOption', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
+
+    renderPage('/onboarding?mode=edit');
+
+    expect(await screen.findByTestId('plan-selection-grid')).toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-supplier-option')).not.toBeInTheDocument();
   });
 });
