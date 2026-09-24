@@ -6,6 +6,7 @@ import {
   type AppContextKey,
 } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useUiStore } from '@/store/ui-store';
 import { GroupedNavLinks } from './grouped-nav-links';
 import { WorkspaceSwitcher } from './workspace-switcher';
@@ -18,6 +19,7 @@ interface MobileNavDrawerProps {
 export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
   const { t } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   const sidebarOpen = useUiStore((state) => state.sidebarOpen);
   const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
 
@@ -31,8 +33,8 @@ export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck);
-  const grouped = getDrawerNavByGroup(contextKey, permissionCheck);
+  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
+  const grouped = getDrawerNavByGroup(contextKey, permissionCheck, flags);
 
   return (
     <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>

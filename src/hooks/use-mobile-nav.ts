@@ -8,6 +8,7 @@ import {
 } from '@/config/route-manifest';
 import { isNavEntryActive } from '@/lib/nav-active';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useUiStore } from '@/store/ui-store';
 
 export type MobileNavTabId = string | 'more';
@@ -15,15 +16,16 @@ export type MobileNavTabId = string | 'more';
 export function useMobileNav(contextKey: AppContextKey) {
   const location = useLocation();
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   const sidebarOpen = useUiStore((state) => state.sidebarOpen);
   const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
 
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck);
-  const primaryEntries = getPrimaryNavEntries(contextKey, permissionCheck);
-  const secondaryEntries = getSecondaryNavEntries(contextKey, permissionCheck);
+  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
+  const primaryEntries = getPrimaryNavEntries(contextKey, permissionCheck, flags);
+  const secondaryEntries = getSecondaryNavEntries(contextKey, permissionCheck, flags);
   const hasSecondary = secondaryEntries.length > 0;
 
   useEffect(() => {
