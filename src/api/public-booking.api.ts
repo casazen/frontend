@@ -5,7 +5,8 @@ import type {
   DirectBookingQuotePayload,
   DirectBookingResponse,
   GuestBookingLookupResponse,
-  BookingStatusResponse,
+  CheckoutOutcome,
+  CheckoutPaymentSession,
   OnSiteRequestConfirmation,
 } from '@/types';
 
@@ -39,8 +40,24 @@ export const publicBookingApi = {
   lookupGuestBookings: (email: string) =>
     ApiClient.post<GuestBookingLookupResponse>('/public/bookings/lookup', { email }, { public: true }),
 
-  getBookingStatus: (bookingId: string) =>
-    ApiClient.get<BookingStatusResponse>(`/public/bookings/${bookingId}/status`, undefined, { public: true }),
+  /**
+   * Real state of a checkout for its outcome page (BK-07). The checkout token goes in the body, never in the URL of the
+   * API call; a wrong id or token answers 404 `checkout_link_invalid`.
+   */
+  getCheckoutOutcome: (bookingId: string, token: string) =>
+    ApiClient.post<CheckoutOutcome>(
+      `/public/bookings/${encodeURIComponent(bookingId)}/outcome`,
+      { token },
+      { public: true },
+    ),
+
+  /** Client secret of the booking's own intent, to pay the same hold again (409 `checkout_hold_expired` once released). */
+  resumeCheckoutPayment: (bookingId: string, token: string) =>
+    ApiClient.post<CheckoutPaymentSession>(
+      `/public/bookings/${encodeURIComponent(bookingId)}/payment-session`,
+      { token },
+      { public: true },
+    ),
 
   /** The guest confirms the email of a "pay at the property" request with the token of the link (BK-06). */
   confirmOnSiteRequestEmail: (bookingId: string, token: string) =>

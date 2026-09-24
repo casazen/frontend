@@ -1,13 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { CheckoutPage } from '../checkout-page';
 import * as publicOrgQueries from '@/queries/use-public-org';
 import * as publicBookingQueries from '@/queries/use-public-booking';
-import { addDays, nightsBetween, todayInRome } from '@/lib/stay-dates';
+import { savePendingCheckout } from '@/lib/pending-checkout';
+import { addDays, formatStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import type {
+  DirectBookingPaymentOptions,
   DirectBookingQuote,
   DirectBookingQuotePayload,
   DirectBookingResponse,
@@ -18,7 +20,29 @@ import type {
 
 vi.mock('@/queries/use-public-org');
 vi.mock('@/queries/use-public-booking');
-vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn(() => new Promise(() => {})) }));
+
+// Stripe is mocked whole: no network, no iframes, the tests drive confirmPayment / confirmSetup.
+const stripe = vi.hoisted(() => ({ confirmPayment: vi.fn(), confirmSetup: vi.fn() }));
+vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn(() => Promise.resolve(null)) }));
+vi.mock('@stripe/react-stripe-js', () => ({
+  Elements: ({ children }: { children: unknown }) => children,
+  PaymentElement: () => null,
+  useStripe: () => stripe,
+  useElements: () => ({}),
+}));
+
+// The ~250 countries of the select make every role query of the page slow in jsdom (flaky under load): two are enough
+// here, the full list has its own tests.
+vi.mock('@/lib/countries', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/countries')>()),
+  getCountryOptions: () => [
+    { code: 'DE', name: 'Germania' },
+    { code: 'IT', name: 'Italia' },
+  ],
+}));
+
+// Explicit conditions only (no fixed waits); a generous ceiling so that a loaded machine does not fail a correct test.
+configure({ asyncUtilTimeout: 5_000 });
 
 // The Radix checkbox of the consent measures itself with ResizeObserver, missing in jsdom.
 class ResizeObserverMock {
@@ -64,6 +88,21 @@ const checkOut = addDays(checkIn, 3);
 const mutateAsync = vi.fn();
 const quoteRefetch = vi.fn();
 
+/**
+ * Payment options like the backend (BK-07, A3-16): "Paga alla scadenza" only when its charge day (check-in − 7) is after
+ * today; no free cancellation promised, the guest cannot cancel by themselves.
+ */
+type OptionsFor = (payload: DirectBookingQuotePayload) => DirectBookingPaymentOptions;
+const backendOptions: OptionsFor = (payload) => {
+  const chargeDate = addDays(payload.checkInDate, -7);
+  const available = chargeDate > todayInRome();
+  return {
+    deferredPaymentAvailable: available,
+    deferredChargeDate: available ? chargeDate : null,
+    freeCancellationUntil: null,
+  };
+};
+
 /** Tourist tax the mocked backend returns for a quote payload (default: 3,00 € per adult per night). */
 type TaxFor = (payload: DirectBookingQuotePayload, nights: number) => TouristTaxQuote;
 const fixedTax: TaxFor = (payload, nights) => ({
@@ -75,7 +114,11 @@ const fixedTax: TaxFor = (payload, nights) => ({
 });
 
 /** Mocks `useDirectBookingQuote` like the backend: lodging + cleaning of the property, tax from `taxFor`. */
-function mockQuote(taxFor: TaxFor = fixedTax, state: { isError?: boolean } = {}) {
+function mockQuote(
+  taxFor: TaxFor = fixedTax,
+  state: { isError?: boolean } = {},
+  optionsFor: OptionsFor = backendOptions,
+) {
   vi.mocked(publicBookingQueries.useDirectBookingQuote).mockImplementation((payload) => {
     if (!payload || state.isError) {
       return {
@@ -102,6 +145,7 @@ function mockQuote(taxFor: TaxFor = fixedTax, state: { isError?: boolean } = {})
       touristTax,
       totalPrice: basePrice + (touristTax.status === 'Calculated' ? touristTax.amount ?? 0 : 0),
       currency: 'EUR',
+      paymentOptions: optionsFor(payload),
     };
     return {
       data,
@@ -119,17 +163,48 @@ function LocationProbe() {
   return <output data-testid="location">{`${location.pathname}${location.search}`}</output>;
 }
 
+/** Stands for the outcome page: shows what the checkout handed over in the history state. */
+function OutcomeProbe() {
+  const location = useLocation();
+  return <output data-testid="outcome-page">{JSON.stringify(location.state ?? {})}</output>;
+}
+
 function renderCheckout(search: string) {
   return render(
     <MemoryRouter initialEntries={[`/book/demo-casazen/property/trastevere-suite/checkout${search}`]}>
       <Routes>
         <Route path="/book/:orgSlug" element={<Outlet context={{ org }} />}>
           <Route path="property/:propertySlugOrId/checkout" element={<CheckoutPage />} />
+          <Route path="booking/:bookingId" element={<OutcomeProbe />} />
         </Route>
       </Routes>
       <LocationProbe />
     </MemoryRouter>,
   );
+}
+
+/** A created hold ("Paga subito" unless overridden) as `POST /public/bookings` answers it. */
+function bookingResponse(overrides: Partial<DirectBookingResponse> = {}): DirectBookingResponse {
+  return {
+    bookingId: 'b1',
+    clientSecret: 'pi_secret',
+    connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_test' },
+    amount: 568,
+    currency: 'EUR',
+    touristTaxAmount: 18,
+    basePrice: 550,
+    freeRefundDeadline: '2026-10-01T00:00:00Z',
+    paymentOption: 'Immediate',
+    checkoutToken: 'tok_b1',
+    ...overrides,
+  };
+}
+
+async function submitCheckout(search: string, paymentOption: string | RegExp = 'Paga subito') {
+  renderCheckout(search);
+  fillGuest(paymentOption);
+  await waitFor(() => expect(continueButton()).toBeEnabled());
+  fireEvent.click(continueButton());
 }
 
 function continueButton() {
@@ -157,9 +232,12 @@ function problemError(status: number, data: unknown): AxiosError {
   });
 }
 
-describe('CheckoutPage', () => {
+describe('CheckoutPage', { timeout: 20_000 }, () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
+    sessionStorage.clear();
+    stripe.confirmPayment.mockReset();
+    stripe.confirmSetup.mockReset();
     vi.mocked(publicOrgQueries.useOrgPublicProperty).mockReturnValue({
       data: property,
       isLoading: false,
@@ -178,17 +256,7 @@ describe('CheckoutPage', () => {
   });
 
   it('CheckoutPage_WidgetDeepLink_PrefillsDatesAndGuestsAndEnablesContinue', async () => {
-    mutateAsync.mockResolvedValue({
-      bookingId: 'b1',
-      clientSecret: 'pi_secret',
-      connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_test' },
-      amount: 568,
-      currency: 'EUR',
-      touristTaxAmount: 18,
-      basePrice: 550,
-      freeRefundDeadline: '2026-10-01T00:00:00Z',
-      paymentOption: 'Immediate',
-    } satisfies DirectBookingResponse);
+    mutateAsync.mockResolvedValue(bookingResponse());
     renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=3`);
 
     expect(screen.getByLabelText('Check-in')).toHaveValue(checkIn);
@@ -222,7 +290,8 @@ describe('CheckoutPage', () => {
         },
       }),
     );
-    expect(await screen.findByTestId('price-breakdown')).toHaveTextContent('568,00 €');
+    expect(await screen.findByTestId('checkout-payment-step')).toBeInTheDocument();
+    expect(screen.getByTestId('price-breakdown')).toHaveTextContent('568,00 €');
     expect(screen.queryByTestId('checkout-guest-step')).not.toBeInTheDocument();
   });
 
@@ -287,16 +356,138 @@ describe('CheckoutPage', () => {
     expect(await screen.findByText('Inserisci un indirizzo email valido')).toBeInTheDocument();
   });
 
-  it('CheckoutPage_DatesUnavailableConflict_ShowsServerMessageNotGenericError', async () => {
-    mutateAsync.mockRejectedValue(problemError(409, { error: 'Property not available for selected dates' }));
-    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
-    fillGuest();
-    await waitFor(() => expect(continueButton()).toBeEnabled());
+  it('CheckoutPage_DatesUnavailableConflict_ShowsTheMessageOfItsCode', async () => {
+    mutateAsync.mockRejectedValue(
+      problemError(409, { code: 'booking_dates_unavailable', detail: 'Dates not available (server text)' }),
+    );
 
+    await submitCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    expect(await screen.findByTestId('checkout-error')).toHaveTextContent(
+      "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
+    );
+    expect(screen.queryByText(/Impossibile avviare il checkout/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkout-resume-own-booking')).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_ConflictWithOwnHoldOfThisTab_OffersToResumeThatBooking', async () => {
+    // A3-15: back on the form after a redirect method, the guest's own hold blocks the dates (409).
+    savePendingCheckout({
+      bookingId: 'b-own',
+      token: 'tok-own',
+      orgSlug: 'demo-casazen',
+      propertyId: property.id,
+      checkIn,
+      checkOut,
+    });
+    mutateAsync.mockRejectedValue(problemError(409, { code: 'booking_dates_unavailable', detail: 'x y' }));
+
+    await submitCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    const resume = await screen.findByTestId('checkout-resume-own-booking');
+    expect(within(resume).getByRole('link', { name: 'Riprendi la prenotazione' })).toHaveAttribute(
+      'href',
+      '/book/demo-casazen/booking/b-own?token=tok-own',
+    );
+  });
+
+  it('CheckoutPage_DeferredPaymentRefused422_ShowsTheMessageOfItsCode', async () => {
+    mutateAsync.mockRejectedValue(
+      problemError(422, { code: 'direct_booking_deferred_payment_unavailable', detail: 'server text in english' }),
+    );
+
+    await submitCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`, /Paga più tardi/);
+
+    expect(await screen.findByTestId('checkout-error')).toHaveTextContent(
+      "Il pagamento alla scadenza non è disponibile per queste date: l'arrivo è troppo vicino.",
+    );
+  });
+
+  it('CheckoutPage_TooManyGuests422_ShowsTheMessageOfItsCode', async () => {
+    mutateAsync.mockRejectedValue(problemError(422, { code: 'booking_too_many_guests', detail: 'x y' }));
+
+    await submitCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    expect(await screen.findByTestId('checkout-error')).toHaveTextContent(
+      "Il numero di ospiti supera la capienza massima dell'immobile.",
+    );
+  });
+
+  it('CheckoutPage_ArrivalTomorrowForTenNights_DoesNotOfferPayAtTheDeadline', async () => {
+    // A3-16: the option used to depend on nights > 7, with a deadline already past.
+    const tomorrow = addDays(todayInRome(), 1);
+    renderCheckout(`?checkin=${tomorrow}&checkout=${addDays(tomorrow, 10)}&guests=2`);
+
+    expect(await screen.findByTestId('price-breakdown')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Paga subito' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Paga più tardi/ })).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_ArrivalInThirtyDays_OffersPayLaterOnTheBackendChargeDate', async () => {
+    mutateAsync.mockResolvedValue(
+      bookingResponse({ clientSecret: '', setupIntentClientSecret: 'seti_secret', paymentOption: 'OnCancellationDeadline' }),
+    );
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    // The button says when the card is charged: the backend's date (check-in − 7 here), in Italian.
+    const chargeDate = formatStayDate(addDays(checkIn, -7), 'it', { day: 'numeric', month: 'long' });
+    expect(await screen.findByRole('button', { name: /Paga più tardi/ })).toHaveTextContent(
+      `la carta viene salvata ora e addebitata il ${chargeDate}`,
+    );
+    fillGuest(/Paga più tardi/);
+    await waitFor(() => expect(continueButton()).toBeEnabled());
     fireEvent.click(continueButton());
 
-    expect(await screen.findByTestId('checkout-error')).toHaveTextContent('Property not available for selected dates');
-    expect(screen.queryByText(/Impossibile avviare il checkout/)).not.toBeInTheDocument();
+    expect(await screen.findByTestId('checkout-setup-step')).toBeInTheDocument();
+    expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ paymentOption: 'OnCancellationDeadline' }));
+  });
+
+  it('CheckoutPage_GuestCannotCancelByThemselves_PromisesNoFreeCancellation', async () => {
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    expect(await screen.findByTestId('price-breakdown')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkout-free-cancellation')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Cancellazione gratuita/)).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_BackendAllowsFreeCancellation_ShowsItsDate', async () => {
+    const until = addDays(checkIn, -7);
+    mockQuote(fixedTax, {}, (payload) => ({ ...backendOptions(payload), freeCancellationUntil: until }));
+    renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    expect(await screen.findByTestId('checkout-free-cancellation')).toHaveTextContent('Cancellazione gratuita fino a');
+  });
+
+  it('CheckoutPage_ImmediatePaymentSucceeds_GoesToTheOutcomePageNotAConfirmation', async () => {
+    // A3-15: "Prenotazione confermata!" used to be shown right after confirmPayment, before the webhook.
+    mutateAsync.mockResolvedValue(bookingResponse());
+    stripe.confirmPayment.mockResolvedValue({ paymentIntent: { status: 'succeeded' } });
+    await submitCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Paga ora' }));
+
+    expect(await screen.findByTestId('outcome-page')).toHaveTextContent('"clientStatus":"succeeded"');
+    expect(screen.getByTestId('location')).toHaveTextContent('/book/demo-casazen/booking/b1?token=tok_b1');
+    // Redirect methods come back to the same outcome page, not to window.location.href.
+    expect(stripe.confirmPayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        redirect: 'if_required',
+        confirmParams: { return_url: `${window.location.origin}/book/demo-casazen/booking/b1?token=tok_b1` },
+      }),
+    );
+    expect(screen.queryByText('Prenotazione confermata!')).not.toBeInTheDocument();
+  });
+
+  it('CheckoutPage_CardDeclined_StaysOnThePaymentStepWithStripeMessage', async () => {
+    mutateAsync.mockResolvedValue(bookingResponse());
+    stripe.confirmPayment.mockResolvedValue({ error: { message: 'La tua carta è stata rifiutata.' } });
+    await submitCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Paga ora' }));
+
+    expect(await screen.findByTestId('checkout-payment-error')).toHaveTextContent('La tua carta è stata rifiutata.');
+    expect(screen.getByTestId('checkout-payment-step')).toBeInTheDocument();
+    expect(screen.queryByTestId('outcome-page')).not.toBeInTheDocument();
   });
 
   it('CheckoutPage_ServerErrorWithoutDetails_ShowsGenericError', async () => {
@@ -314,18 +505,18 @@ describe('CheckoutPage', () => {
 
   it('CheckoutPage_PayOnSite_ShowsRequestWaitingForHostNotAConfirmedBooking', async () => {
     // BK-06 (D5): "pay at the property" sends a request; it is valid only once the host accepts it.
-    mutateAsync.mockResolvedValue({
-      bookingId: 'bk-onsite-0001',
-      clientSecret: '',
-      connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_test' },
-      amount: 550,
-      currency: 'EUR',
-      touristTaxAmount: 0,
-      basePrice: 550,
-      freeRefundDeadline: `${addDays(checkIn, -7)}T00:00:00Z`,
-      paymentOption: 'OnSite',
-      emailConfirmationExpiresAt: '2026-10-01T10:15:00Z',
-    } satisfies DirectBookingResponse);
+    mutateAsync.mockResolvedValue(
+      bookingResponse({
+        bookingId: 'bk-onsite-0001',
+        clientSecret: '',
+        amount: 550,
+        touristTaxAmount: 0,
+        freeRefundDeadline: `${addDays(checkIn, -7)}T00:00:00Z`,
+        paymentOption: 'OnSite',
+        emailConfirmationExpiresAt: '2026-10-01T10:15:00Z',
+        checkoutToken: 'tok-onsite',
+      }),
+    );
     renderCheckout(`?checkin=${checkIn}&checkout=${checkOut}&guests=2`);
     // The option says up front that it is a request the host must accept.
     expect(screen.getByRole('button', { name: /Paga in struttura/ })).toHaveTextContent(
@@ -336,15 +527,14 @@ describe('CheckoutPage', () => {
 
     fireEvent.click(continueButton());
 
-    const sent = await screen.findByTestId('checkout-onsite-request-sent');
+    // The outcome page shows the request state read from the backend (awaiting the email, then the host).
+    const outcome = await screen.findByTestId('outcome-page');
     expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ paymentOption: 'OnSite' }));
-    expect(sent).toHaveTextContent("Richiesta inviata: in attesa di conferma dell'host");
-    expect(sent).toHaveTextContent('mario.rossi@example.com');
-    // Deadline of the email confirmation, in Italian time.
-    expect(sent).toHaveTextContent('1 ottobre alle ore 12:15 (ora italiana)');
-    expect(sent).toHaveTextContent('bk-onsite-0001');
+    expect(screen.getByTestId('location')).toHaveTextContent('/book/demo-casazen/booking/bk-onsite-0001?token=tok-onsite');
+    // The address the email went to, handed over in the history state (never in the URL).
+    expect(outcome).toHaveTextContent('"guestEmail":"mario.rossi@example.com"');
+    expect(screen.getByTestId('location')).not.toHaveTextContent('mario.rossi');
     expect(screen.queryByText('Prenotazione confermata!')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('checkout-confirmation')).not.toBeInTheDocument();
   });
 
   it('CheckoutPage_PaymentsNotReady_ShowsTheReasonNotTheGenericError', async () => {
@@ -444,18 +634,9 @@ describe('CheckoutPage', () => {
   });
 
   it('CheckoutPage_TaxDependsOnAge_AsksTheAgesOfTheMinorsAndSendsThem', async () => {
-    mutateAsync.mockResolvedValue({
-      bookingId: 'b2',
-      clientSecret: 'pi_secret',
-      connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_test' },
-      amount: 586,
-      currency: 'EUR',
-      touristTaxAmount: 36,
-      basePrice: 550,
-      freeRefundDeadline: '2026-10-01T00:00:00Z',
-      paymentOption: 'Immediate',
-      touristTaxStatus: 'Calculated',
-    } satisfies DirectBookingResponse);
+    mutateAsync.mockResolvedValue(
+      bookingResponse({ bookingId: 'b2', amount: 586, touristTaxAmount: 36, touristTaxStatus: 'Calculated' }),
+    );
     mockQuote((payload, nights) =>
       payload.numberOfChildren > 0 && !payload.childrenAges
         ? { status: 'ChildAgesRequired', amount: null, taxableNights: 0, ageRulesApply: true, categories: [] }

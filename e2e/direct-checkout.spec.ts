@@ -54,6 +54,7 @@ test.describe('Direct checkout (#226)', () => {
           basePrice: 551,
           paymentOption: 'Immediate',
           freeRefundDeadline: '2026-06-24T00:00:00Z',
+          checkoutToken: 'tok_e2e_checkout',
         }),
       });
     });
@@ -75,6 +76,8 @@ test.describe('Direct checkout (#226)', () => {
     expect(bookingAuthHeader).toBeUndefined();
 
     await page.getByRole('button', { name: 'Paga ora' }).click();
+    // BK-07: the outcome page of the booking, confirmed only because the (mocked) backend says so.
+    await expect(page).toHaveURL(/\/booking\/cccccccc-cccc-cccc-cccc-cccccccccccc\?token=tok_e2e_checkout$/);
     await expect(page.getByTestId('checkout-confirmation')).toBeVisible();
     await expect(page.getByRole('heading', { name: /Prenotazione confermata/i })).toBeVisible();
   });
@@ -105,7 +108,7 @@ test.describe('Direct checkout (#226)', () => {
     await expect(page).toHaveURL(new RegExp(`checkin=${checkIn}&checkout=${checkOut}`));
   });
 
-  test('A3-34: unavailable dates show the server message instead of the generic error', async ({ page }) => {
+  test('A3-34/A3-15: unavailable dates show the message of their code instead of the generic error', async ({ page }) => {
     await page.route('**/api/public/bookings', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
@@ -114,7 +117,7 @@ test.describe('Direct checkout (#226)', () => {
       await route.fulfill({
         status: 409,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'Property not available for selected dates' }),
+        body: JSON.stringify({ code: 'booking_dates_unavailable', detail: 'Dates not available' }),
       });
     });
 
@@ -128,6 +131,8 @@ test.describe('Direct checkout (#226)', () => {
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Continua' }).click();
 
-    await expect(page.getByTestId('checkout-error')).toHaveText('Property not available for selected dates');
+    await expect(page.getByTestId('checkout-error')).toHaveText(
+      "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
+    );
   });
 });

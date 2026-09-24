@@ -106,3 +106,14 @@ export function buildPropertyCheckoutUrl(orgSlug: string, property: PropertyRef,
     search: buildBookingQuery(params).toString(),
   });
 }
+
+/**
+ * Outcome page of a checkout (BK-07): the real state of the booking, read with its checkout token. Also the Stripe
+ * `return_url` of the redirect payment methods, so the guest comes back to their booking, not to an empty checkout.
+ */
+export function buildCheckoutOutcomePath(orgSlug: string, bookingId: string, token: string): string {
+  return createPath({
+    pathname: `/book/${encodeURIComponent(orgSlug)}/booking/${encodeURIComponent(bookingId)}`,
+    search: new URLSearchParams({ token }).toString(),
+  });
+}

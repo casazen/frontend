@@ -24,6 +24,7 @@ import { PublicPropertyPage } from '@/features/public-booking/public-property-pa
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
+import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
@@ -148,6 +149,8 @@ export const router = createBrowserRouter([
       { path: 'my-bookings', element: <GuestBookingsPage /> },
       // Link of the "request received" email of a "pay at the property" request (BK-06).
       { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
+      // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
+      { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)
