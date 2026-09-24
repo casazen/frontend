@@ -10,7 +10,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useTranslation } from 'react-i18next';
 import { useBooking } from '@/queries/use-bookings';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { formatStayDate } from '@/lib/stay-dates';
+import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
 import { bookingNights, bookingPriceBreakdown, stayDateOf } from './lib/booking-price';
@@ -80,6 +80,12 @@ export function BookingDetailPage() {
   const canCancel =
     canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   const canEdit = canWrite && booking.status !== 'Cancelled';
+  // The check-out wizard accepts a stay with the check-in recorded, or a confirmed one from its departure day
+  // (Europe/Rome): the link is not offered when the wizard would refuse it.
+  const canCheckOut =
+    canWrite &&
+    (booking.status === 'CheckedIn' ||
+      (booking.status === 'Confirmed' && stayDateOf(booking.checkOutDate) <= todayInRome()));
   const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
   const nights = bookingNights(booking);
   const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
@@ -113,11 +119,13 @@ export function BookingDetailPage() {
                   {t('booking.cancel.action')}
                 </Button>
               )}
-              <Button variant="outline" asChild>
-                <Link to={`/app/short-rent/bookings/${booking.id}/checkout`} data-testid="open-checkout-wizard">
-                  {t('booking.card.checkOutAction')}
-                </Link>
-              </Button>
+              {canCheckOut && (
+                <Button variant="outline" asChild>
+                  <Link to={`/app/short-rent/bookings/${booking.id}/checkout`} data-testid="open-checkout-wizard">
+                    {t('booking.card.checkOutAction')}
+                  </Link>
+                </Button>
+              )}
               {canEdit && (
                 <Button onClick={() => navigate(`/app/short-rent/bookings/${booking.id}/edit`)} data-testid="edit-booking">
                   <Edit className="mr-2 h-4 w-4" />

@@ -186,6 +186,36 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByTestId('open-cancel-booking')).not.toBeInTheDocument();
     expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('open-checkout-wizard')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_CheckedInStay_OffersTheCheckOutWizard', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'CheckedIn' }));
+
+    renderPage();
+
+    const link = await screen.findByTestId('open-checkout-wizard', undefined, WAIT);
+    expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/checkout`);
+    expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_ConfirmedStayBeforeTheDepartureDay_DoesNotOfferTheCheckOut', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Confirmed' }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('open-cancel-booking', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('open-checkout-wizard')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_ConfirmedStayPastTheDepartureDay_OffersTheCheckOutWizard', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(
+      booking({ status: 'Confirmed', checkInDate: '2025-03-01T00:00:00Z', checkOutDate: '2025-03-04T00:00:00Z' }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByTestId('open-checkout-wizard', undefined, WAIT)).toBeInTheDocument();
   });
 
   it('BookingDetailPage_PaymentTab_PricePerNightIsLodgingOnlyWithoutTaxAndCleaning', async () => {

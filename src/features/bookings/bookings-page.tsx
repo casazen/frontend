@@ -12,6 +12,7 @@ import { Search, Loader2, Plus, X } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
 import { useProperty } from '@/queries/use-properties';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { getProblemMessage } from '@/lib/api-errors';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
 import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
 import type { Booking } from '@/types';
@@ -48,7 +49,7 @@ export function BookingsPage() {
   // "Bookings of this property" (A2-30): the backend filters by property, so the list and its counts are the
   // property's only.
   const propertyId = searchParams.get('propertyId') ?? '';
-  const { data: bookings, isLoading, isError } = useBookings(propertyId ? { propertyId } : undefined);
+  const { data: bookings, isLoading, isError, error } = useBookings(propertyId ? { propertyId } : undefined);
   const { data: filterProperty } = useProperty(propertyId);
   const createPath = propertyId
     ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(propertyId)}`
@@ -145,7 +146,9 @@ export function BookingsPage() {
             )}
 
             {isError && (
-              <div className="py-8 text-center text-destructive">{t('booking.list.loadError')}</div>
+              <div role="alert" className="py-8 text-center text-destructive" data-testid="bookings-load-error">
+                {getProblemMessage(error, t) ?? t('booking.list.loadError')}
+              </div>
             )}
 
             {!isLoading && !isError && (
