@@ -4,7 +4,8 @@ import type {
   DirectBookingQuote,
   DirectBookingQuotePayload,
   DirectBookingResponse,
-  GuestBookingLookupResponse,
+  GuestBookingDetails,
+  GuestBookingLookupPayload,
   CheckoutOutcome,
   CheckoutPaymentSession,
   OnSiteRequestConfirmation,
@@ -37,8 +38,16 @@ export const publicBookingApi = {
     );
   },
 
-  lookupGuestBookings: (email: string) =>
-    ApiClient.post<GuestBookingLookupResponse>('/public/bookings/lookup', { email }, { public: true }),
+  /**
+   * "Le mie prenotazioni" (BK-11): the booking of this site with its code and the guest's email, in the body (never in the
+   * URL). 404 `guest_booking_not_found` whatever does not match; 429 `rate_limited`.
+   */
+  lookupGuestBooking: (payload: GuestBookingLookupPayload) =>
+    ApiClient.post<GuestBookingDetails>('/public/bookings/lookup', payload, { public: true }),
+
+  /** Emails the online check-in link again to the address of the booking (202); 409 `guest_check_in_link_unavailable`. */
+  sendGuestCheckInLink: (payload: GuestBookingLookupPayload) =>
+    ApiClient.post<void>('/public/bookings/lookup/check-in-link', payload, { public: true }),
 
   /**
    * Real state of a checkout for its outcome page (BK-07). The checkout token goes in the body, never in the URL of the
