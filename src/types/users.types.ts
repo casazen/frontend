@@ -9,7 +9,9 @@ export type UserRole =
   | 'Supplier'
   | 'PropertyManager'
   | 'Guest'
-  | 'Staff';
+  | 'Staff'
+  /** No role yet: a new user until the onboarding (backend PL-02). */
+  | 'None';
 
 export type RentalType = 'ShortTerm' | 'LongTerm' | 'Both';
 
@@ -38,6 +40,14 @@ export interface UserDetail extends UserSummary {
   // Supplier org the account is linked to (invite, registration or claim, SU-02). For a supplier-only user it is also
   // `orgId`. A linked supplier goes to the supplier console, never to the host onboarding.
   supplierOrgId?: string | null;
+  /**
+   * Own profile only (`/users/me`): true while the backend withholds the host features (PL-02), i.e. the onboarding is
+   * not completed or the current Terms, Privacy notice and DPA are not accepted. Host endpoints then answer 403
+   * `onboarding_required`. Missing on older backends.
+   */
+  onboardingRequired?: boolean | null;
+  /** Own profile only: the current Terms, Privacy notice and DPA are accepted (false after a new document version). */
+  consentsAccepted?: boolean | null;
 }
 
 export interface UpdateProfileRequest {

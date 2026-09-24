@@ -10,6 +10,7 @@ import { isDemoMode } from '@/config/demo.config';
 import { getDemoProfile } from '@/lib/demo-profile';
 
 const USERS_KEY = 'users';
+// Same key as ME_QUERY_KEY (lib/onboarding-gate), refreshed on a 403 onboarding_required.
 const ME_KEY = 'me';
 
 /** Query key for the caller's resolved plan entitlement (#202). Exported so writes can invalidate it. */
@@ -75,11 +76,12 @@ export function useCurrentUser() {
 
 /** Resolved plan entitlement (limits + usage) for the caller's org (#202, AC8). */
 export function useEntitlement() {
-  const { org } = useCurrentUser();
+  const { org, user } = useCurrentUser();
   return useQuery({
     queryKey: ENTITLEMENT_QUERY_KEY,
     queryFn: () => OrgsApi.getMyEntitlement(),
-    enabled: !!org?.id,
+    // A host endpoint: not asked while the backend withholds the host features (PL-02), e.g. from the admin shell.
+    enabled: !!org?.id && user?.onboardingRequired !== true,
     retry: false,
   });
 }

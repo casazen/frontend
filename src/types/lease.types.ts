@@ -99,7 +99,10 @@ export interface LeaseSummary {
   startDate: string;
   endDate: string;
   monthlyRent: number;
-  registrationDeadline: string;
+  /** Day every party had signed (the stipula); null until then. */
+  stipulaDate: string | null;
+  /** RLI deadline: min(stipula, start) + 30 days; null while it is to be determined (LT-04). */
+  registrationDeadline: string | null;
   partyCount: number;
   hasExtraEUTenant: boolean;
   createdAt: string;
@@ -116,7 +119,10 @@ export interface LeaseDetail {
   startDate: string;
   endDate: string;
   monthlyRent: number;
-  registrationDeadline: string;
+  /** Day every party had signed (the stipula); null until then. */
+  stipulaDate: string | null;
+  /** RLI deadline: min(stipula, start) + 30 days; null while it is to be determined (LT-04). */
+  registrationDeadline: string | null;
   hasSignedPdf: boolean;
   hasExtraEUTenant: boolean;
   parties: LeaseParty[];
@@ -186,8 +192,10 @@ export interface RliChecklistItem {
 }
 
 export interface RliChecklist {
-  registrationDeadline: string;
-  daysRemaining: number;
+  /** Null while the deadline is to be determined (no stipula yet and start date ahead, or stipula not recorded). */
+  registrationDeadline: string | null;
+  /** Days to the deadline on the Rome calendar: 0 on the deadline day, negative after it; null with no deadline. */
+  daysRemaining: number | null;
   tosVersion: string;
   attestationText: string;
   /** Provider filing exists (backend flag `RliProvider` on and a configured provider); otherwise manual only. */

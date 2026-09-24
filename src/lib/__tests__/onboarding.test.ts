@@ -7,6 +7,7 @@ import {
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
+  needsConsentRenewal,
   needsOnboarding,
   needsOrgSetup,
   canEditOnboarding,
@@ -50,6 +51,29 @@ describe('onboarding helpers', () => {
     expect(needsOnboarding({ roles: ['Supplier'] }, { orgId: null })).toBe(false);
     // A supplier who is also a host needs the host org.
     expect(needsOnboarding({ roles: ['Supplier', 'PropertyOwner'] }, { orgId: null })).toBe(true);
+  });
+
+  it('needsOnboarding_BackendSaysOnboardingRequired_ReturnsTrueForHosts (PL-02)', () => {
+    const legacyHost = { orgId: 'org-1', onboardingCompletedAt: null, onboardingRequired: true };
+    expect(needsOnboarding({ roles: ['PropertyOwner'] }, legacyHost)).toBe(true);
+    const staleConsents = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', onboardingRequired: true };
+    expect(needsOnboarding({ roles: ['PropertyOwner'] }, staleConsents)).toBe(true);
+    // Admins and supplier-only users keep their own area.
+    expect(needsOnboarding({ roles: ['Admin'] }, legacyHost)).toBe(false);
+    expect(needsOnboarding({ roles: ['Supplier'] }, legacyHost)).toBe(false);
+    const done = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', onboardingRequired: false };
+    expect(needsOnboarding({ roles: ['PropertyOwner'] }, done)).toBe(false);
+  });
+
+  it('needsConsentRenewal_OnlyForACompletedOnboardingWithOldConsents (PL-02)', () => {
+    const onboarded = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: 'ShortTerm' as const };
+    expect(needsConsentRenewal({ ...onboarded, consentsAccepted: false })).toBe(true);
+    expect(needsConsentRenewal({ ...onboarded, consentsAccepted: true })).toBe(false);
+    // Older backend without the field: nothing to renew.
+    expect(needsConsentRenewal(onboarded)).toBe(false);
+    expect(needsConsentRenewal({ ...onboarded, onboardingCompletedAt: null, consentsAccepted: false })).toBe(false);
+    expect(needsConsentRenewal({ ...onboarded, orgId: null, consentsAccepted: false })).toBe(false);
+    expect(needsConsentRenewal(null)).toBe(false);
   });
 
   it('isExemptFromHostOnboarding_OnlyAdminsAndSupplierOnlyUsers', () => {

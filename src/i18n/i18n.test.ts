@@ -200,7 +200,9 @@ describe('keys used in code', () => {
   it('enumLabels_ValuesShownToUsers_HaveKeysInBothLocales', () => {
     const expected = [
       ...COMMON_AMENITIES.map((a) => `amenity.${a}`),
-      ...['Admin', 'PropertyOwner', 'LongTermLandlord', 'Supplier', 'PropertyManager', 'Guest', 'Staff'].map((r) => `roles.${r}`),
+      ...['Admin', 'PropertyOwner', 'LongTermLandlord', 'Supplier', 'PropertyManager', 'Guest', 'Staff', 'None'].map(
+        (r) => `roles.${r}`,
+      ),
       ...['Starter', 'Pro', 'Scale'].map((p) => `plan.tier.${p}`),
       ...['Richiesto', 'PresoInCarico', 'InCorso', 'Completato', 'Pagato', 'Rifiutato'].map((s) => `serviceRequest.status.${s}`),
       // Codes of GET /api/service-categories (backend ServiceCategories.All, SU-03).

@@ -35,9 +35,11 @@ async function load(respond: Responder = () => ({ status: 200, data: { ok: true 
   const onSessionExpired = vi.fn();
   const onForbidden = vi.fn();
   const onAccountInactive = vi.fn();
+  const onOnboardingRequired = vi.fn();
   axiosModule.setApiAuthHandlers({ getAccessToken, refreshAccessToken, onSessionExpired });
   axiosModule.setApiForbiddenHandler(onForbidden);
   axiosModule.setApiAccountInactiveHandler(onAccountInactive);
+  axiosModule.setApiOnboardingRequiredHandler(onOnboardingRequired);
 
   const authorization = (index: number) => calls[index]?.headers.get('Authorization');
 
@@ -52,6 +54,7 @@ async function load(respond: Responder = () => ({ status: 200, data: { ok: true 
     onSessionExpired,
     onForbidden,
     onAccountInactive,
+    onOnboardingRequired,
   };
 }
 
@@ -332,6 +335,8 @@ describe('response interceptor: 403 account_inactive → account disabled page (
     expect(ctx.onAccountInactive).toHaveBeenCalledTimes(1);
     expect(ctx.onForbidden).not.toHaveBeenCalled();
     expect(ctx.onSessionExpired).not.toHaveBeenCalled();
+    // An inactive account takes precedence over the onboarding gate (PL-02).
+    expect(ctx.onOnboardingRequired).not.toHaveBeenCalled();
   });
 
   it('response403AccountInactive_write_alsoOpensAccountDisabled', async () => {
@@ -349,6 +354,43 @@ describe('response interceptor: 403 account_inactive → account disabled page (
     await expect(ctx.api.get('/bookings/b1')).rejects.toBeInstanceOf(AxiosError);
     expect(ctx.onForbidden).toHaveBeenCalledTimes(1);
     expect(ctx.onAccountInactive).not.toHaveBeenCalled();
+  });
+});
+
+describe('response interceptor: 403 onboarding_required → onboarding (PL-02)', () => {
+  const ONBOARDING_REQUIRED = { status: 403, data: { code: 'onboarding_required', status: 403 } };
+
+  it('response403OnboardingRequired_read_opensOnboardingNotNoAccess', async () => {
+    const ctx = await load(() => ONBOARDING_REQUIRED);
+
+    await expect(ctx.api.get('/properties')).rejects.toBeInstanceOf(AxiosError);
+    expect(ctx.onOnboardingRequired).toHaveBeenCalledTimes(1);
+    expect(ctx.onForbidden).not.toHaveBeenCalled();
+  });
+
+  it('response403OnboardingRequired_write_opensOnboarding', async () => {
+    const ctx = await load(() => ONBOARDING_REQUIRED);
+
+    await expect(ctx.api.post('/guests', {})).rejects.toBeInstanceOf(AxiosError);
+    expect(ctx.onOnboardingRequired).toHaveBeenCalledTimes(1);
+    expect(ctx.onForbidden).not.toHaveBeenCalled();
+  });
+
+  it('response403GenericForbidden_doesNotOpenOnboarding', async () => {
+    const ctx = await load(() => ({ status: 403, data: { code: 'forbidden' } }));
+
+    await expect(ctx.api.get('/bookings/b1')).rejects.toBeInstanceOf(AxiosError);
+    expect(ctx.onOnboardingRequired).not.toHaveBeenCalled();
+    expect(ctx.onForbidden).toHaveBeenCalledTimes(1);
+  });
+
+  it('response403OnboardingRequired_messageIsTranslated', async () => {
+    const ctx = await load(() => ONBOARDING_REQUIRED);
+    const { default: i18n } = await import('@/i18n/config');
+
+    const error = await ctx.api.post('/bookings', {}).catch((e: unknown) => e);
+
+    expect(ctx.errors.getProblemMessage(error, i18n.t)).toBe(i18n.t('apiErrors.codes.onboardingRequired'));
   });
 });
 
