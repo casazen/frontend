@@ -3570,9 +3570,9 @@
     "loading": "Loading…",
     "recommended": "Recommended",
     "assigned": "Assigned",
-    "primary": "Set as primary property (21%)",
+    "primary": "Designate as the 21% unit",
     "alert": {
-      "piva": "VAT number required from the third STR property.",
+      "piva": "At least one taxpayer lets more than {{max}} apartments short-term this year: a business activity with a VAT number is presumed. Check the regime with your accountant.",
       "wizard": "Open the wizard"
     },
     "wizard": {
@@ -3589,8 +3589,21 @@
       "link": "Open reports",
       "totals": "Gross {{gross}} EUR — net {{net}} EUR"
     },
-    "count_one": "{{count}} active STR property in {{year}}",
-    "count_other": "{{count}} active STR properties in {{year}}"
+    "regime": {
+      "CedolareSecca21": "Cedolare secca flat tax 21% (designated unit)",
+      "CedolareSecca26": "Cedolare secca flat tax 26%",
+      "RegimeOrdinario": "Business, ordinary regime (VAT number)",
+      "RegimeForfettario": "Business, flat-rate regime (VAT number)",
+      "IrpefOrdinaria": "Ordinary IRPEF without a VAT number"
+    },
+    "chooseIrpef": "Choose ordinary IRPEF (no VAT number)",
+    "assignFailed": "Unable to assign the fiscal regime",
+    "taxNote": {
+      "irpefOrdinariaNotComputed": "Ordinary IRPEF without a VAT number: CasaZen does not compute the tax; the taxpayer or the accountant does.",
+      "thresholdExceeded": "The taxpayer is over the short-term rental threshold: business activity presumed, no cedolare secca. Check with your accountant."
+    },
+    "count_one": "{{count}} property with short-term stays in {{year}}",
+    "count_other": "{{count}} properties with short-term stays in {{year}}"
   },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
