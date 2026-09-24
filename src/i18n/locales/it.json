@@ -311,7 +311,15 @@
       "confirmSubmit": "Autorizza e invia",
       "cancel": "Annulla",
       "extraEuTitle": "Cessione di fabbricato — comunicazione in Questura",
-      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale."
+      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale.",
+      "checklistItem": {
+        "contract_signed": "Contratto firmato da tutte le parti",
+        "delega_captured": "Delega / attestazione RLI registrata",
+        "rli_exported": "Dataset RLI esportato per revisione",
+        "rli_submitted": "RLI inviato al canale di filing",
+        "rli_registered": "Ricevuta di registrazione disponibile",
+        "questura_extra_eu": "Comunicazione Questura (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Bozza da confermare con legale."
+      }
     },
     "canoneConcordato": {
       "title": "Calcolo canone concordato",
@@ -363,11 +371,12 @@
     "statusLabel": {
       "Draft": "Bozza",
       "AwaitingSignature": "In attesa di firma",
+      "PartiallySigned": "Firmato parzialmente",
       "Signed": "Firmato",
+      "RegistrationPending": "Registrazione in attesa",
+      "SentToProvider": "Inviato al provider",
       "Registered": "Registrato",
-      "Terminated": "Terminato",
-      "Renewed": "Rinnovato",
-      "Cancelled": "Annullato"
+      "Rejected": "Rifiutato"
     },
     "registrationStatusLabel": {
       "Pending": "In attesa",
@@ -445,7 +454,26 @@
       "Landlord": "Locatore",
       "Tenant": "Conduttore"
     },
-    "monthlyRentValue": "{{amount}}/mese"
+    "monthlyRentValue": "{{amount}}/mese",
+    "eventType": {
+      "Created": "Bozza creata",
+      "SigningInitiated": "Firma avviata",
+      "PartySignedDocument": "Una parte ha firmato",
+      "AllPartiesSigned": "Firmato da tutte le parti",
+      "RegistrationSubmitted": "Registrazione RLI inviata",
+      "RegistrationConfirmed": "Registrazione RLI confermata",
+      "RegistrationFailed": "Registrazione RLI non riuscita",
+      "ErasureRequested": "Richiesta di cancellazione dei dati",
+      "ImuNotificationExported": "Comunicazione IMU esportata",
+      "ImuNotificationMarkedSent": "Comunicazione IMU segnata come inviata",
+      "RegistrationAuthorized": "Delega RLI registrata",
+      "RliExported": "Precompilazione RLI esportata",
+      "DeadlineReminderSent": "Promemoria di scadenza inviato"
+    },
+    "detailLoadError": "Impossibile caricare il contratto. Riprova.",
+    "retry": "Riprova",
+    "contactEmailMasked": "Email di contatto",
+    "noParties": "Nessuna parte registrata."
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",

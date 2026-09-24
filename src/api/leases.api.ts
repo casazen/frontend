@@ -1,22 +1,42 @@
 import axios from '@/lib/axios';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient } from './client';
 import type {
   CedolareAdvisory,
   CreateLeaseDto,
-  LeaseContract,
+  LeaseDetail,
   LeaseRegistration,
+  LeaseSummary,
   RliChecklist,
   SigningInitiatedResult,
   TriggerRegistrationResult,
 } from '@/types';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** The list endpoint returns a JSON array: anything else (HTML fallback, error envelope) is a load error. */
+function expectArray<T>(data: unknown, url: string): T[] {
+  if (!Array.isArray(data)) throw new UnexpectedApiResponseError(url);
+  return data as T[];
+}
+
+/** Single-resource endpoints return a JSON object with an `id`. */
+function expectObjectWithId<T>(data: unknown, url: string): T {
+  if (!isRecord(data) || typeof data.id !== 'string') throw new UnexpectedApiResponseError(url);
+  return data as T;
+}
+
 export const leasesApi = {
-  getAll: (params?: { propertyId?: string; status?: string }) =>
-    ApiClient.get<LeaseContract[]>('/leases', params),
+  getAll: async (params?: { propertyId?: string; status?: string }): Promise<LeaseSummary[]> =>
+    expectArray<LeaseSummary>(await ApiClient.get<unknown>('/leases', params), '/leases'),
 
-  getById: (id: string) => ApiClient.get<LeaseContract>(`/leases/${id}`),
+  getById: async (id: string): Promise<LeaseDetail> =>
+    expectObjectWithId<LeaseDetail>(await ApiClient.get<unknown>(`/leases/${id}`), '/leases/:id'),
 
-  create: (data: CreateLeaseDto) => ApiClient.post<LeaseContract>('/leases', data),
+  create: async (data: CreateLeaseDto): Promise<LeaseDetail> =>
+    expectObjectWithId<LeaseDetail>(await ApiClient.post<unknown>('/leases', data), '/leases'),
 
   initiateSigning: (id: string) =>
     ApiClient.post<SigningInitiatedResult>(`/leases/${id}/signing`),

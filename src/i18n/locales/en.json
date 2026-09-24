@@ -311,7 +311,15 @@
       "confirmSubmit": "Authorize and submit",
       "cancel": "Cancel",
       "extraEuTitle": "Questura notification required",
-      "extraEuBody": "This lease includes a non-EU tenant. Check the Questura communication (Art. 7 D.Lgs 286/1998). CasaZen does not send it. Draft wording pending counsel."
+      "extraEuBody": "This lease includes a non-EU tenant. Check the Questura communication (Art. 7 D.Lgs 286/1998). CasaZen does not send it. Draft wording pending counsel.",
+      "checklistItem": {
+        "contract_signed": "Contract signed by all parties",
+        "delega_captured": "RLI delega / attestation recorded",
+        "rli_exported": "RLI dataset exported for review",
+        "rli_submitted": "RLI sent to the filing channel",
+        "rli_registered": "Registration receipt available",
+        "questura_extra_eu": "Questura notice (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Draft wording pending counsel."
+      }
     },
     "canoneConcordato": {
       "title": "Agreed-rent calculator",
@@ -363,11 +371,12 @@
     "statusLabel": {
       "Draft": "Draft",
       "AwaitingSignature": "Awaiting signature",
+      "PartiallySigned": "Partially signed",
       "Signed": "Signed",
+      "RegistrationPending": "Registration pending",
+      "SentToProvider": "Sent to provider",
       "Registered": "Registered",
-      "Terminated": "Terminated",
-      "Renewed": "Renewed",
-      "Cancelled": "Cancelled"
+      "Rejected": "Rejected"
     },
     "registrationStatusLabel": {
       "Pending": "Pending",
@@ -445,7 +454,26 @@
       "Landlord": "Landlord",
       "Tenant": "Tenant"
     },
-    "monthlyRentValue": "{{amount}}/mo"
+    "monthlyRentValue": "{{amount}}/mo",
+    "eventType": {
+      "Created": "Draft created",
+      "SigningInitiated": "Signing started",
+      "PartySignedDocument": "A party signed",
+      "AllPartiesSigned": "Signed by all parties",
+      "RegistrationSubmitted": "RLI registration submitted",
+      "RegistrationConfirmed": "RLI registration confirmed",
+      "RegistrationFailed": "RLI registration failed",
+      "ErasureRequested": "Data erasure requested",
+      "ImuNotificationExported": "IMU notice exported",
+      "ImuNotificationMarkedSent": "IMU notice marked as sent",
+      "RegistrationAuthorized": "RLI delega recorded",
+      "RliExported": "RLI pre-fill exported",
+      "DeadlineReminderSent": "Deadline reminder sent"
+    },
+    "detailLoadError": "Unable to load the lease. Please try again.",
+    "retry": "Retry",
+    "contactEmailMasked": "Contact email",
+    "noParties": "No parties recorded."
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
