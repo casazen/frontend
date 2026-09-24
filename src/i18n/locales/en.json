@@ -3379,7 +3379,6 @@
       "cinLabel": "CIN code",
       "cinGuidance": "How to obtain the CIN code",
       "saveAndContinue": "Save and continue",
-      "continue": "Continue",
       "documentsHint": "Upload the documents required for the activation. Safety proofs (photos or documents) are optional and are attached in the safety checklist.",
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
       "backToEdit": "Back to property editing",
@@ -3393,7 +3392,8 @@
         "documents": "Required documents",
         "safety": "Safety checklist",
         "tourist-tax": "Tourist tax",
-        "ical": "Calendar sync"
+        "ical": "Calendar sync",
+        "review": "Summary and activation"
       },
       "touristTax": {
         "rateTitle": "Tourist tax in {{city}}",
@@ -3413,6 +3413,46 @@
         "publicPage": "Guide to the tourist tax in {{city}}",
         "reducedRate": "Reduced rate",
         "categoryRequiredTitle": "In {{city}} the rate depends on the accommodation category: the automatic calculation is not available yet."
+      },
+      "loadFailed": "Unable to load the activation wizard.",
+      "refreshFailed": "Unable to refresh the status of the steps: what is shown may be out of date.",
+      "retry": "Retry",
+      "back": "Back",
+      "next": "Next",
+      "goToStep": "Go to “{{step}}”",
+      "progress": "{{done}} of {{total}} required steps completed",
+      "stepStatus": {
+        "complete": "completed",
+        "warning": "recommended",
+        "pending": "to complete"
+      },
+      "stepHint": {
+        "ical": "Recommended: connect the iCal calendar of your OTAs to avoid double bookings."
+      },
+      "documentsLoading": "Loading documents...",
+      "documentsLoadFailed": "Unable to load the documents of the property.",
+      "documentsEmpty": "No document uploaded.",
+      "blockerList": {
+        "blockedTitle": "The property cannot be activated yet: complete the required points listed.",
+        "knownTitle": "Before completing the activation, resolve these points:",
+        "none": "All required steps are complete.",
+        "stepIncomplete": "Complete the step “{{step}}”."
+      },
+      "blockerCodes": {
+        "activation_base_data_incomplete": "Complete the basic details of the property: name, address, city, guests and rate.",
+        "activation_cin_missing": "Enter the CIN code of the property.",
+        "activation_cin_invalid": "The CIN code is not in the official format (e.g. IT015146C2ABCDEFGH).",
+        "activation_documents_missing": "Upload the documents required for the activation.",
+        "safety_extinguishers_below_minimum": "Not enough extinguishers for the minimum required by the floors and m² of the unit."
+      },
+      "review": {
+        "intro": "Check the status of each step: you can go back to any step without losing what you entered.",
+        "stepsTitle": "Steps",
+        "active": "The property is active and visible to guests. Changes are saved only when you save them in their step.",
+        "suspended": "The property is suspended: guests can neither see nor book it until the required points are complete again. Resolve them and complete the activation again.",
+        "unsaved": "Unsaved changes in “{{step}}”: save them before completing.",
+        "blockersHint": "“Complete activation” is enabled when all required points are complete.",
+        "tosHint": "Confirm the compliance requirements to complete the activation."
       }
     },
     "checkout": {
@@ -3838,7 +3878,8 @@
       "guestDocumentScanMissing": "No document scan is available for this guest.",
       "serviceRequestBookingRequired": "In short-term rentals a supplier request is for a stay: choose the booking.",
       "serviceRequestBookingMismatch": "The booking is not a stay of this property.",
-      "serviceRequestBookingNotAllowed": "In long-term rentals a supplier request is for the property, not for a booking."
+      "serviceRequestBookingNotAllowed": "In long-term rentals a supplier request is for the property, not for a booking.",
+      "activationTosRequired": "Confirm the compliance requirements to complete the activation."
     }
   },
   "validation": {
