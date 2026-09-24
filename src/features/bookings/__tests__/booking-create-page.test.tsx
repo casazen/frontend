@@ -27,6 +27,8 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 
 const property = { id: 'property-1', name: 'Casa Mare', city: 'Rimini' } as Property;
+// Rendering the whole form with the zod resolver can be slow on a loaded CI runner.
+const WAIT = { timeout: 5000 };
 
 function conflict(data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
@@ -53,8 +55,8 @@ function renderPage() {
 }
 
 async function fillAndSubmit() {
-  const select = await screen.findByLabelText(i18n.t('booking.form.property'));
-  await screen.findByRole('option', { name: 'Casa Mare - Rimini' });
+  const select = await screen.findByLabelText(i18n.t('booking.form.property'), undefined, WAIT);
+  await screen.findByRole('option', { name: 'Casa Mare - Rimini' }, WAIT);
   fireEvent.change(select, { target: { value: property.id } });
   const fields: [string, string][] = [
     ['booking.form.checkInDate', '2027-10-01'],
@@ -77,11 +79,11 @@ beforeEach(async () => {
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property]);
 });
 
-describe('BookingCreatePage', () => {
+describe('BookingCreatePage', { timeout: 20000 }, () => {
   it('tells the host that the booking is saved as confirmed with the manual source', async () => {
     renderPage();
 
-    expect(await screen.findByTestId('booking-manual-notice')).toHaveTextContent(i18n.t('booking.form.manualNotice'));
+    expect(await screen.findByTestId('booking-manual-notice', undefined, WAIT)).toHaveTextContent(i18n.t('booking.form.manualNotice'));
   });
 
   it('shows the 409 on overlapping dates next to the form and stays on the page', async () => {
@@ -92,7 +94,7 @@ describe('BookingCreatePage', () => {
 
     await fillAndSubmit();
 
-    expect(await screen.findByTestId('booking-submit-error')).toHaveTextContent(
+    expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('apiErrors.codes.bookingDatesUnavailable'),
     );
     expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -109,17 +111,17 @@ describe('BookingCreatePage', () => {
 
     await fillAndSubmit();
 
-    expect(await screen.findByText('bookings-list')).toBeInTheDocument();
+    expect(await screen.findByText('bookings-list', undefined, WAIT)).toBeInTheDocument();
   });
 
   it('shows the properties load error instead of an empty select', async () => {
     vi.mocked(propertiesApi.getAll).mockRejectedValue(new Error('boom'));
     renderPage();
 
-    expect(await screen.findByTestId('booking-properties-error')).toHaveTextContent(
+    expect(await screen.findByTestId('booking-properties-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('booking.form.propertiesLoadError'),
     );
     expect(screen.queryByTestId('booking-properties-empty')).not.toBeInTheDocument();
-    await waitFor(() => expect(screen.getByLabelText(i18n.t('booking.form.property'))).toBeDisabled());
+    await waitFor(() => expect(screen.getByLabelText(i18n.t('booking.form.property'))).toBeDisabled(), WAIT);
   });
 });

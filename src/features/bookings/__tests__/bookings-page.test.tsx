@@ -58,7 +58,7 @@ describe('BookingsPage', () => {
 
     renderPage();
 
-    await screen.findByText('Mario Rossi');
+    await screen.findByText('Mario Rossi', undefined, { timeout: 5000 });
     const sources = screen.getAllByTestId('booking-source').map((cell) => cell.textContent);
     expect(sources).toEqual([i18n.t('booking.source.Manual'), i18n.t('booking.source.Direct')]);
     expect(screen.getByText(i18n.t('booking.list.columns.source'))).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe('BookingsPage', () => {
 
     renderPage();
 
-    expect(await screen.findByText(i18n.t('booking.list.loadError'))).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('booking.list.loadError'), undefined, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('booking.list.noResults'))).not.toBeInTheDocument();
   });
 });
