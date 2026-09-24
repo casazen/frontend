@@ -143,6 +143,12 @@ export const appRoutes: RouteObject[] = [
         element: <SignupPage />,
       },
       {
+        // Deactivated account (PL-03): under the Auth0 boundary so that its logout button always works, but outside
+        // the protected route, the onboarding guard and the workspace, which would call the API again.
+        path: ACCOUNT_INACTIVE_PATH,
+        element: <AccountInactivePage />,
+      },
+      {
         element: (
           <ProtectedRoute>
             <Outlet />
@@ -160,11 +166,6 @@ export const appRoutes: RouteObject[] = [
         ],
       },
     ],
-  },
-  {
-    // Deactivated account (PL-03): outside the onboarding guard and the workspace, which would call the API again.
-    path: ACCOUNT_INACTIVE_PATH,
-    element: <AccountInactivePage />,
   },
   {
     // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
