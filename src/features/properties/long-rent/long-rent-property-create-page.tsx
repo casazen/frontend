@@ -6,7 +6,7 @@ import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import { getPlanLimitMessage, isPlanLimitError } from '@/lib/entitlement-error';
 import { PropertyForm } from '../components/property-form';
-import type { PropertyFormValues } from '../schemas/property.schema';
+import type { CreatePropertyDto } from '@/types';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from './paths';
 
 /** New long-term property: the owner lands on its page to upload the APE right away (A7-06). */
@@ -20,7 +20,7 @@ export function LongRentPropertyCreatePage() {
   // The server enforces the plan limit; the entitlement read only avoids filling a form that cannot be saved.
   const blockedByPlan = planLimitHit || entitlement?.canAddProperty === false;
 
-  const handleSubmit = async (data: PropertyFormValues) => {
+  const handleSubmit = async (data: CreatePropertyDto) => {
     setPlanLimitHit(false);
     try {
       const created = await createProperty.mutateAsync(data);
