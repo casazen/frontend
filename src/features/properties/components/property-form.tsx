@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -7,21 +8,50 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { propertyFormSchema, longRentPropertyFormSchema, COMMON_AMENITIES } from '../schemas/property.schema';
+import {
+  propertyFormSchema,
+  longRentPropertyFormSchema,
+  COMMON_AMENITIES,
+  DEFAULT_PROPERTY_TIMEZONE,
+  propertyFormDefaults,
+  toPropertyPayload,
+} from '../schemas/property.schema';
 import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
-import type { Property } from '@/types';
+import type { CreatePropertyDto, Property } from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
+import { useCancellationPolicies } from '@/queries/use-properties';
+import { getProblemMessage } from '@/lib/api-errors';
+
+const selectClassName =
+  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+
+/** Number inputs: an empty field is NaN, reported by the schema with the field's own message. */
+const asNumber = { valueAsNumber: true } as const;
+
+/** IANA time zones of the browser, Europe/Rome first; the current value is always an option. */
+function timeZoneOptions(current: string | undefined): string[] {
+  let zones: string[] = [];
+  try {
+    zones = Intl.supportedValuesOf('timeZone');
+  } catch {
+    zones = [];
+  }
+  const others = zones.filter((zone) => zone !== DEFAULT_PROPERTY_TIMEZONE && zone !== current);
+  return [...new Set([DEFAULT_PROPERTY_TIMEZONE, ...(current ? [current] : []), ...others])];
+}
 
 interface PropertyFormProps {
   property?: Property;
-  onSubmit: (data: PropertyFormValues) => void;
+  /** The API body: every field the form shows (the update keeps the others, A2-04). */
+  onSubmit: (data: CreatePropertyDto) => void;
   onCancel?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
   /**
    * `long-rent`: the form of a landlord with long-term leases (A7-06) — no short-stay fields (listing status, slug,
-   * CIN, nightly rate, guests). Values already on the property are kept as they are.
+   * CIN, nightly rate, guests, fees, house rules, time zone, cancellation policy). They are not sent, so the values
+   * already on the property are kept as they are.
    */
   variant?: 'short-rent' | 'long-rent';
 }
@@ -37,37 +67,16 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
     setValue,
   } = useForm<PropertyFormValues>({
     resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema),
-    defaultValues: property ? {
-      name: property.name,
-      description: property.description,
-      address: property.address,
-      city: property.city,
-      country: property.country || 'IT',
-      postalCode: property.postalCode,
-      latitude: property.latitude,
-      longitude: property.longitude,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      maxGuests: property.maxGuests,
-      nightlyRate: property.nightlyRate,
-      currency: property.currency || 'EUR',
-      amenities: property.amenities || [],
-      photoUrls: property.photoUrls || [],
-      isActive: property.isActive,
-      cinCode: property.cinCode ?? '',
-      slug: property.slug ?? '',
-    } : {
-      country: 'IT',
-      currency: 'EUR',
-      amenities: [],
-      photoUrls: [],
-      isActive: true,
-      cinCode: '',
-      slug: '',
-      // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
-      ...(shortStay ? {} : { nightlyRate: 0, maxGuests: 0 }),
-    } satisfies Partial<PropertyFormValues>,
+    defaultValues: propertyFormDefaults(property, variant),
   });
+
+  const submit = (values: PropertyFormValues) => onSubmit(toPropertyPayload(values, variant));
+  const currentTimezone = watch('timezone');
+  // Same option elements between renders: the ~400 zones are not re-rendered at every keystroke.
+  const timezoneOptionElements = useMemo(
+    () => timeZoneOptions(currentTimezone).map((zone) => <option key={zone} value={zone}>{zone}</option>),
+    [currentTimezone],
+  );
 
   const selectedAmenities = watch('amenities') || [];
 
@@ -79,8 +88,9 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
     setValue('amenities', updated);
   };
 
+  // noValidate: the schema validates with translated messages; min/step only drive the number spinners.
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(submit)} className="space-y-6" noValidate>
       <Card>
         <CardHeader>
           <CardTitle>{t('property.form.basicInfo.title')}</CardTitle>
@@ -152,17 +162,12 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
               <FormFieldError error={errors.city} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="country">{t('property.form.country')}</Label>
-              <Input id="country" {...register('country')} placeholder={t('property.form.placeholder.country')} />
-              <FormFieldError error={errors.country} />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
               <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
               <Input id="postalCode" {...register('postalCode')} placeholder={t('property.form.placeholder.postalCode')} />
               <FormFieldError error={errors.postalCode} />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="latitude">{t('property.form.latitude')}</Label>
               <Input id="latitude" type="number" step="any" {...register('latitude', { setValueAs: (value) => {
@@ -192,37 +197,75 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
           <div className={`grid gap-4 ${shortStay ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <div className="space-y-2">
               <Label htmlFor="bedrooms">{t('property.form.bedrooms')}</Label>
-              <Input id="bedrooms" type="number" {...register('bedrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bedrooms')} />
+              <Input id="bedrooms" type="number" min={0} max={100} step={1} {...register('bedrooms', asNumber)} placeholder={t('property.form.placeholder.bedrooms')} aria-describedby="bedrooms-hint" />
+              <p id="bedrooms-hint" className="text-xs text-muted-foreground">{t('property.form.bedroomsHint')}</p>
               <FormFieldError error={errors.bedrooms} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="bathrooms">{t('property.form.bathrooms')}</Label>
-              <Input id="bathrooms" type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} placeholder={t('property.form.placeholder.bathrooms')} />
+              <Input id="bathrooms" type="number" min={1} max={50} step={1} {...register('bathrooms', asNumber)} placeholder={t('property.form.placeholder.bathrooms')} />
               <FormFieldError error={errors.bathrooms} />
             </div>
             {shortStay && (
               <div className="space-y-2">
                 <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
-                <Input id="maxGuests" type="number" {...register('maxGuests', { valueAsNumber: true })} placeholder={t('property.form.placeholder.maxGuests')} />
+                <Input id="maxGuests" type="number" {...register('maxGuests', asNumber)} placeholder={t('property.form.placeholder.maxGuests')} />
                 <FormFieldError error={errors.maxGuests} />
               </div>
             )}
           </div>
           {shortStay && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
-                <Input id="nightlyRate" type="number" step="0.01" {...register('nightlyRate', { valueAsNumber: true })} placeholder={t('property.form.placeholder.nightlyRate')} />
+                <Input id="nightlyRate" type="number" min={0} step="0.01" {...register('nightlyRate', asNumber)} placeholder={t('property.form.placeholder.nightlyRate')} />
                 <FormFieldError error={errors.nightlyRate} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="currency">{t('property.form.currency')}</Label>
-                <Input id="currency" {...register('currency')} placeholder={t('property.form.placeholder.currency')} />
+                <Label htmlFor="cleaningFee">{t('property.form.cleaningFee')}</Label>
+                <Input id="cleaningFee" type="number" min={0} step="0.01" {...register('cleaningFee', asNumber)} />
+                <FormFieldError error={errors.cleaningFee} />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="damageDeposit">{t('property.form.damageDeposit')}</Label>
+                <Input id="damageDeposit" type="number" min={0} step="0.01" {...register('damageDeposit', asNumber)} />
+                <FormFieldError error={errors.damageDeposit} />
+              </div>
+              <p className="col-span-3 text-xs text-muted-foreground">{t('property.form.amountsInEuro')}</p>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {shortStay && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('property.form.stayRules.title')}</CardTitle>
+            <CardDescription>{t('property.form.stayRules.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="houseRules">{t('property.form.houseRules')}</Label>
+              <Textarea id="houseRules" {...register('houseRules')} placeholder={t('property.form.placeholder.houseRules')} rows={4} />
+              <FormFieldError error={errors.houseRules} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="timezone">{t('property.form.timezone')}</Label>
+                <select id="timezone" className={selectClassName} {...register('timezone')}>
+                  {timezoneOptionElements}
+                </select>
+                <FormFieldError error={errors.timezone} />
+              </div>
+              <CancellationPolicyField
+                value={watch('cancellationPolicyId') ?? ''}
+                onChange={(value) => setValue('cancellationPolicyId', value, { shouldDirty: true })}
+                error={errors.cancellationPolicyId}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -248,5 +291,57 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
         </Button>
       </div>
     </form>
+  );
+}
+
+interface CancellationPolicyFieldProps {
+  /** Selected policy id, '' for none. */
+  value: string;
+  onChange: (value: string) => void;
+  error?: { message?: string };
+}
+
+/**
+ * Cancellation policy of the property, from the policies of the API. The select is controlled, so the value never
+ * changes while the options load; a load error is shown as such (never as "no policy") and the value is kept.
+ */
+function CancellationPolicyField({ value, onChange, error }: CancellationPolicyFieldProps) {
+  const { t } = useTranslation();
+  const policies = useCancellationPolicies();
+  const options = policies.data ?? [];
+  const selected = options.find((policy) => policy.id === value);
+  const unlistedValue = value !== '' && !selected;
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="cancellationPolicyId">{t('property.form.cancellationPolicy.label')}</Label>
+      <select
+        id="cancellationPolicyId"
+        className={selectClassName}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={policies.isLoading || policies.isError}
+        aria-busy={policies.isLoading}
+      >
+        <option value="">{t('property.form.cancellationPolicy.none')}</option>
+        {unlistedValue && <option value={value}>{t('property.form.cancellationPolicy.current')}</option>}
+        {options.map((policy) => (
+          <option key={policy.id} value={policy.id}>{policy.name}</option>
+        ))}
+      </select>
+      {policies.isLoading && (
+        <p className="text-xs text-muted-foreground">{t('property.form.cancellationPolicy.loading')}</p>
+      )}
+      {policies.isError && (
+        <p role="alert" className="text-sm text-destructive" data-testid="cancellation-policies-error">
+          {getProblemMessage(policies.error, t) ?? t('property.form.cancellationPolicy.loadError')}
+        </p>
+      )}
+      {!policies.isLoading && !policies.isError && options.length === 0 && (
+        <p className="text-xs text-muted-foreground">{t('property.form.cancellationPolicy.empty')}</p>
+      )}
+      {selected?.description && <p className="text-xs text-muted-foreground">{selected.description}</p>}
+      <FormFieldError error={error} />
+    </div>
   );
 }

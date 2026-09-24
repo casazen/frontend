@@ -2,6 +2,7 @@ import { ApiClient } from './client';
 import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
+  CancellationPolicyOption,
   Property,
   CreatePropertyDto,
   UpdatePropertyDto,
@@ -18,11 +19,15 @@ export const propertiesApi = {
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
 
+  getCancellationPolicies: () =>
+    ApiClient.get<CancellationPolicyOption[]>('/properties/cancellation-policies'),
+
   create: (data: CreatePropertyDto) =>
     ApiClient.post<Property>('/properties', data),
 
+  /** PATCH semantics on PUT (A2-04): fields left out keep their stored value. Answers 204. */
   update: (id: string, data: UpdatePropertyDto) =>
-    ApiClient.put<Property>(`/properties/${id}`, data),
+    ApiClient.put<void>(`/properties/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
