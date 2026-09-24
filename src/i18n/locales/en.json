@@ -1800,7 +1800,7 @@
     },
     "modes": {
       "path": "CasaZen path (/book/{slug})",
-      "subdomain": "CasaZen subdomain ({slug}.casazen.it)",
+      "subdomain": "CasaZen subdomain",
       "custom": "Custom domain (Pro)"
     },
     "settings": {
@@ -2813,9 +2813,8 @@
     "calculating": "Calculating...",
     "calculationError": "Unable to calculate tax. Please check the entered data.",
     "tryCasaZen": "Try CasaZen in {{comuneName}}",
-    "tryCasaZenDescription": "Verify your short-term rental compliance or register for free.",
-    "verifyCompliance": "Verify compliance",
-    "registerFree": "Register for free",
+    "tryCasaZenDescription": "Create your CasaZen account and list your home.",
+    "publishYourHome": "List your home",
     "rateUnavailableTitle": "Rate not yet available for {{comuneName}}",
     "rateUnavailableHint": "CasaZen does not have the tourist tax rate of this municipality yet and cannot calculate it: check the rate and exemptions on the municipality's website.",
     "categoryLabel": "Accommodation category",
@@ -2964,6 +2963,17 @@
     "signInMessage": "Sign in to manage your properties, bookings, and payments",
     "signInButton": "Sign in with Auth0",
     "signIn": "Log in"
+  },
+  "signup": {
+    "title": "Sign up to CasaZen",
+    "redirecting": "Taking you to the signup…",
+    "continue": "Continue to sign up"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address is wrong or the page no longer exists.",
+    "home": "Go to the home page",
+    "guides": "Guides for hosts"
   },
   "compliance": {
     "status": {
@@ -3245,6 +3255,7 @@
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
       "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
+      "subdomainsNotConfigured": "CasaZen subdomains are not available yet: use the CasaZen path or a custom domain.",
       "supplierClaimInvalid": "The link is not valid: register your business again or sign in with the account already linked.",
       "supplierClaimExpired": "The link has expired: register your business as a supplier again.",
       "supplierClaimUsed": "This supplier profile is already linked to an account. Sign in with that account.",

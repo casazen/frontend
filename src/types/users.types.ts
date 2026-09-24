@@ -70,6 +70,29 @@ export interface OnboardingResponse {
   rolesSyncError?: string | null;
 }
 
+/**
+ * Body of `POST /users/me/signup-attribution` (SE-03): where the signup came from. Marketing values only, checked
+ * against the backend rules by `src/lib/signup-attribution.ts`.
+ */
+export interface SignupAttribution {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  /** Slug of the comune of the SEO page (or its ISTAT code). */
+  comune?: string;
+  /** Path of the first page of the visit, without query string. */
+  landingPath?: string;
+  /** Host of the site the visitor came from, never the full URL. */
+  referrerHost?: string;
+}
+
+export interface SignupAttributionResult {
+  /** False when the org already had an attribution: the backend keeps the first one. */
+  recorded: boolean;
+}
+
 export interface PagedResult<T> {
   items: T[];
   totalCount: number;

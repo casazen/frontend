@@ -10,7 +10,10 @@ export interface SeoDisclaimers {
 }
 
 export interface SeoCta {
-  complianceCheckerUrl: string;
+  /**
+   * `/signup` of the web app with the comune and the default UTM parameters, on the public domain (backend
+   * `App__PublicSiteBaseUrl`; relative only when that is not configured). SE-03.
+   */
   signupUrl: string;
 }
 
