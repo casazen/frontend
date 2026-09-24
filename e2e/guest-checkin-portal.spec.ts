@@ -13,6 +13,7 @@ test.describe('Guest check-in portal', () => {
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
+            completed: false,
             sessionId: '11111111-1111-1111-1111-111111111111',
             propertyName: 'Villa Demo',
             checkInDate: '2026-07-10T00:00:00Z',
@@ -23,7 +24,8 @@ test.describe('Guest check-in portal', () => {
               lastName: 'Rossi',
               email: 'mario@example.com',
               nationality: 'IT',
-              documentNumber: '',
+              gender: null,
+              documentNumberMasked: null,
               documentIssuingCountry: 'IT',
               placeOfBirth: 'Roma',
             },

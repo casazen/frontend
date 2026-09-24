@@ -2124,7 +2124,8 @@
       },
       "consentAccepted": {
         "required": "Devi accettare il trattamento dei dati"
-      }
+      },
+      "invalidValue": "Valore non valido"
     },
     "loading": "Caricamento check-in...",
     "invalidLink": "Link non valido",
@@ -2149,6 +2150,7 @@
     "documentTypeLabel": "Tipo documento *",
     "selectDocumentType": "Seleziona",
     "documentNumber": "Numero documento *",
+    "documentNumberOnFile": "Documento già registrato: {{masked}}. Per sicurezza inserisci di nuovo il numero completo.",
     "documentExpiry": "Scadenza documento",
     "documentIssuingCountry": "Paese di rilascio *",
     "address": "Indirizzo",
@@ -2178,8 +2180,11 @@
     "next": "Avanti",
     "back": "Indietro",
     "submit": "Invia check-in",
+    "fixHighlightedFields": "Alcuni dati non sono validi: correggi i campi evidenziati e invia di nuovo.",
     "successTitle": "Check-in completato!",
     "successDescription": "I tuoi dati sono stati registrati. Grazie!",
+    "alreadyCompletedTitle": "Check-in già completato",
+    "alreadyCompletedDescription": "I dati di questo soggiorno sono già stati inviati. Per proteggere la tua privacy non vengono più mostrati. Per correggerli contatta il gestore della struttura.",
     "marketingConsent": "Acconsento a ricevere comunicazioni promozionali (facoltativo).",
     "sessionLabel": "Stato check-in ospite",
     "sessionLoading": "Caricamento stato sessione...",
@@ -2704,6 +2709,7 @@
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
       "duplicateInvite": "Esiste già un invito in attesa per questa email.",
       "inviteEmailFailed": "Invio dell'email di invito non riuscito. Riprova più tardi.",
+      "checkinAlreadySubmitted": "Il check-in è già stato completato.",
       "invalidCinFormat": "Il CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
       "duplicateCin": "Questo CIN è già associato a un altro immobile.",
       "documentFileMissing": "Il file di questo documento non è più disponibile: caricalo di nuovo.",

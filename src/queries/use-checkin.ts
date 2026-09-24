@@ -4,6 +4,7 @@ import { bookingsApi } from '@/api/bookings.api';
 import type { PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { isAxiosError } from 'axios';
 import { getProblemMessage } from '@/lib/api-errors';
 import { retryTransientErrors } from '@/lib/query-client';
 
@@ -19,6 +20,13 @@ export function useCheckInContext(token: string) {
   });
 }
 
+/** 400 ValidationProblem with field errors: the check-in page shows them on the fields, not in a toast. */
+function isFieldValidationProblem(error: unknown): boolean {
+  if (!isAxiosError(error) || error.response?.status !== 400) return false;
+  const errors: unknown = (error.response.data as { errors?: unknown } | undefined)?.errors;
+  return typeof errors === 'object' && errors !== null && Object.keys(errors).length > 0;
+}
+
 export function useSubmitGuestCheckIn(token: string) {
   const queryClient = useQueryClient();
 
@@ -29,6 +37,7 @@ export function useSubmitGuestCheckIn(token: string) {
       toast.success(i18n.t('toast.checkInDataSaved'));
     },
     onError: (error) => {
+      if (isFieldValidationProblem(error)) return;
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkInDataSaveFailed'));
     },
   });
