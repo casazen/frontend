@@ -5,6 +5,7 @@ import { useOrgProperties } from '@/queries/use-public-org';
 import { PropertySearchCard } from '@/features/search/components/property-search-card';
 import type { PublicOrgDto, PublicPropertyDto } from '@/types';
 import { displayableMediaUrls } from '@/lib/media-url';
+import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { Loader2 } from 'lucide-react';
 
 const Hero = lazy(() => import('@/features/public-site/components/Hero').then((m) => ({ default: m.Hero })));
@@ -23,16 +24,15 @@ export function OrgLandingPage() {
 
   useEffect(() => {
     if (!isLoading && properties.length === 1) {
-      const query = searchParams.toString();
-      const segment = properties[0].slug?.trim() || properties[0].id;
-      navigate(`/book/${orgSlug}/property/${segment}${query ? `?${query}` : ''}`, { replace: true });
+      navigate(
+        { pathname: buildPropertyBookingPath(orgSlug ?? '', properties[0]), search: searchParams.toString() },
+        { replace: true },
+      );
     }
   }, [isLoading, properties, orgSlug, navigate, searchParams]);
 
   const handleViewDetails = (property: PublicPropertyDto) => {
-    const query = searchParams.toString();
-    const segment = property.slug?.trim() || property.id;
-    navigate(`/book/${orgSlug}/property/${segment}${query ? `?${query}` : ''}`);
+    navigate({ pathname: buildPropertyBookingPath(orgSlug ?? '', property), search: searchParams.toString() });
   };
 
   if (!isLoading && properties.length === 1) {
