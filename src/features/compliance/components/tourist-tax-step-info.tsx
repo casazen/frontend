@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { touristTaxAmountLabel } from '@/lib/tourist-tax';
 import type { ActivationTouristTax } from '@/types/compliance.types';
 
 interface TouristTaxStepInfoProps {
@@ -20,6 +21,7 @@ export function TouristTaxStepInfo({ touristTax, city }: TouristTaxStepInfoProps
   const comune = touristTax?.city || city;
   const rate = touristTax?.rate ?? null;
   const publicPageSlug = touristTax?.publicPageSlug ?? null;
+  const categoryRequired = touristTax?.categoryRequired === true;
 
   return (
     <div className="space-y-4" data-testid="activation-tourist-tax">
@@ -28,7 +30,7 @@ export function TouristTaxStepInfo({ touristTax, city }: TouristTaxStepInfoProps
           <p className="font-medium">{t('compliance.activation.touristTax.rateTitle', { city: comune })}</p>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
             <dt className="text-muted-foreground">{t('compliance.activation.touristTax.amount')}</dt>
-            <dd className="font-medium">{formatCurrency(rate.ratePerPersonPerNight)}</dd>
+            <dd className="font-medium">{touristTaxAmountLabel(rate, t)}</dd>
             <dt className="text-muted-foreground">{t('compliance.activation.touristTax.maxNights')}</dt>
             <dd>{rate.maxNights ?? t('compliance.activation.touristTax.noMaxNights')}</dd>
             <dt className="text-muted-foreground">{t('compliance.activation.touristTax.exemption')}</dt>
@@ -37,6 +39,18 @@ export function TouristTaxStepInfo({ touristTax, city }: TouristTaxStepInfoProps
                 ? t('compliance.activation.touristTax.exemptUnder', { count: rate.minimumAge })
                 : t('compliance.activation.touristTax.noAgeExemption')}
             </dd>
+            {rate.reducedRateMaxAge != null && rate.reducedRatePerPersonPerNight != null && (
+              <>
+                <dt className="text-muted-foreground">{t('compliance.activation.touristTax.reducedRate')}</dt>
+                <dd>
+                  {t('touristTaxRules.reduced', {
+                    amount: formatCurrency(rate.reducedRatePerPersonPerNight),
+                    from: rate.minimumAge,
+                    to: rate.reducedRateMaxAge,
+                  })}
+                </dd>
+              </>
+            )}
             <dt className="text-muted-foreground">{t('compliance.activation.touristTax.effectiveFrom')}</dt>
             <dd>{formatDate(rate.effectiveFrom.slice(0, 10))}</dd>
           </dl>
@@ -63,9 +77,11 @@ export function TouristTaxStepInfo({ touristTax, city }: TouristTaxStepInfoProps
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
           <div className="space-y-1">
             <p className="font-medium">
-              {comune
-                ? t('compliance.activation.touristTax.missingTitle', { city: comune })
-                : t('compliance.activation.touristTax.cityMissing')}
+              {!comune
+                ? t('compliance.activation.touristTax.cityMissing')
+                : categoryRequired
+                  ? t('compliance.activation.touristTax.categoryRequiredTitle', { city: comune })
+                  : t('compliance.activation.touristTax.missingTitle', { city: comune })}
             </p>
             <p>{t('compliance.activation.touristTax.missingHint')}</p>
           </div>

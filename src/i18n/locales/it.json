@@ -1898,10 +1898,16 @@
       "regionTooLong": "Il codice regione può avere al massimo 10 caratteri",
       "rateMax": "La tariffa non può superare 1000 €",
       "maxNightsRange": "Inserisci un numero intero di notti tra 1 e 365, oppure lascia vuoto",
-      "minimumAgeRange": "Inserisci un'età tra 0 e 120 anni (0 se non ci sono esenzioni)",
+      "minimumAgeRange": "Inserisci un'età tra 0 e 18 anni (0 se non ci sono esenzioni, 18 se sono esenti tutti i minori)",
       "effectiveToBeforeFrom": "La data di fine validità non può precedere la data di inizio",
       "notesTooLong": "Le note possono avere al massimo 500 caratteri",
-      "sourceUrlInvalid": "Inserisci un indirizzo web completo (http o https)"
+      "sourceUrlInvalid": "Inserisci un indirizzo web completo (http o https)",
+      "istatCodeInvalid": "Il codice ISTAT deve avere 6 cifre",
+      "categoryTooLong": "La categoria può avere al massimo 100 caratteri",
+      "percentRange": "Inserisci una percentuale tra 0,01 e 100",
+      "capRange": "Il tetto deve essere compreso tra 0,01 e 1000 €",
+      "reducedInvalid": "Indica sia l'età (tra l'età di esenzione e 17 anni) sia l'importo ridotto, solo per tariffe a importo fisso",
+      "seasonInvalid": "Indica inizio e fine stagione nel formato MM-GG (es. 02-01 e 12-31), oppure lascia vuoti entrambi"
     },
     "toast": {
       "created": "Aliquota creata con successo",
@@ -1924,7 +1930,22 @@
       "Official": "Letta in una pagina o in un atto del comune.",
       "Deduced": "Ricavata da dati ufficiali o di terzi: da confermare.",
       "ThirdParty": "Da gestionali, blog o stampa: è un indizio, non una fonte. Da confermare prima dell'uso."
-    }
+    },
+    "istatCode": "Codice ISTAT",
+    "category": "Categoria di struttura",
+    "categoryPlaceholder": "Vuoto = tutti gli alloggi del comune",
+    "calculationMethod": "Tipo di tariffa",
+    "calculationMethods": {
+      "PerPersonPerNight": "Importo fisso per persona per notte",
+      "PercentOfNightlyPrice": "Percentuale del prezzo per persona per notte"
+    },
+    "percentOfNightlyPrice": "Percentuale del prezzo (%)",
+    "capPerPersonPerNight": "Tetto per persona per notte (€)",
+    "reducedRateMaxAge": "Tariffa ridotta fino all'età di (inclusa)",
+    "reducedRatePerPersonPerNight": "Tariffa ridotta per persona per notte (€)",
+    "seasonStart": "Stagione dal (MM-GG)",
+    "seasonEnd": "Stagione al (MM-GG)",
+    "seasonPlaceholder": "MM-GG"
   },
   "finance": {
     "payments": "Pagamenti",
@@ -2410,16 +2431,22 @@
       "emailInvalid": "Inserisci un indirizzo email valido",
       "phoneInvalid": "Inserisci un numero di telefono valido: da 6 a 15 cifre, con + iniziale facoltativo",
       "countryRequired": "Seleziona il paese di residenza"
-    }
+    },
+    "touristTaxIncluded": "Tassa di soggiorno (inclusa nel totale)",
+    "touristTaxUnavailable": "Tariffa non disponibile",
+    "touristTaxUnavailableHint": "CasaZen non ha ancora la tariffa dell'imposta di soggiorno per questo alloggio: non è inclusa nel totale. Se è dovuta, te la chiederà la struttura.",
+    "touristTaxAgesRequired": "Indica l'età dei minori",
+    "quoteLoading": "Calcolo del prezzo…",
+    "quoteError": "Impossibile calcolare il prezzo. Riprova.",
+    "quoteRetry": "Riprova",
+    "childrenAgesMissing": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno."
   },
   "publicSeo": {
     "notFound": "Pagina non trovata",
     "guideNotAvailable": "La guida per questo comune non e' ancora disponibile.",
     "calculatorNotAvailable": "Il calcolatore per questo comune non e' ancora disponibile.",
     "calculateTax": "Calcola la tassa di soggiorno",
-    "officialRate": "Tariffa ufficiale: {{rate}}",
     "estimatedTax": "Tassa stimata: {{amount}}",
-    "nightsAndPeople": "{{nights}} · {{adults}}{{children}}",
     "calculate": "Calcola",
     "calculating": "Calcolo...",
     "calculationError": "Impossibile calcolare la tassa. Verifica i dati inseriti.",
@@ -2427,12 +2454,21 @@
     "tryCasaZenDescription": "Verifica la conformita' del tuo affitto breve o registrati gratuitamente.",
     "verifyCompliance": "Verifica conformita'",
     "registerFree": "Registrati gratis",
-    "nightsCount_one": "{{count}} notte",
-    "nightsCount_other": "{{count}} notti",
-    "adultsCount_one": "{{count}} adulto",
-    "adultsCount_other": "{{count}} adulti",
-    "childrenLabel_one": " · {{count}} bambino",
-    "childrenLabel_other": " · {{count}} bambini"
+    "rateUnavailableTitle": "Tariffa non ancora disponibile per {{comuneName}}",
+    "rateUnavailableHint": "CasaZen non ha ancora la tariffa dell'imposta di soggiorno di questo comune e non può calcolarla: verifica tariffa ed esenzioni sul sito del Comune.",
+    "categoryLabel": "Categoria dell'alloggio",
+    "categoryPlaceholder": "Seleziona la categoria",
+    "nightlyPriceLabel": "Prezzo di una notte dell'alloggio (senza pulizie e altri servizi)",
+    "taxableNights_one": "Soggiorno di {{count}} notte, notti tassate: {{taxable}}",
+    "taxableNights_other": "Soggiorno di {{count}} notti, notti tassate: {{taxable}}",
+    "estimateDisclaimer": "Stima con le tariffe registrate in CasaZen: verifica esenzioni e aggiornamenti sul sito del Comune.",
+    "quoteStatus": {
+      "Calculated": "Tassa calcolata.",
+      "RateUnavailable": "Tariffa non disponibile per queste date: verifica sul sito del Comune.",
+      "CategoryRequired": "Scegli la categoria dell'alloggio per calcolare la tassa.",
+      "ChildAgesRequired": "Indica l'età di ogni minore per calcolare la tassa.",
+      "NightlyPriceRequired": "Indica il prezzo di una notte per calcolare la tassa."
+    }
   },
   "onboarding": {
     "casaZen": "CasaZen",
@@ -2627,7 +2663,9 @@
         "missingTitle": "Il comune di {{city}} non ha ancora una tariffa in CasaZen.",
         "cityMissing": "Inserisci la città dell'immobile nei dati base per vedere la tariffa.",
         "missingHint": "Puoi completare comunque l'attivazione. Verifica con il comune se l'imposta di soggiorno è dovuta e con quale tariffa.",
-        "publicPage": "Guida all'imposta di soggiorno a {{city}}"
+        "publicPage": "Guida all'imposta di soggiorno a {{city}}",
+        "reducedRate": "Tariffa ridotta",
+        "categoryRequiredTitle": "A {{city}} la tariffa dipende dalla categoria della struttura: il calcolo automatico non è ancora disponibile."
       }
     },
     "checkout": {
@@ -2817,7 +2855,9 @@
       "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
       "bookingInvalidDates": "La data di check-out deve essere successiva alla data di check-in.",
       "bookingTooManyGuests": "Il numero di ospiti supera la capienza massima dell'immobile.",
-      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco."
+      "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco.",
+      "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
+      "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo."
     }
   },
   "validation": {
@@ -2868,5 +2908,23 @@
     "retry": "Riprova",
     "empty": "Nessuna categoria di servizio disponibile.",
     "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
+  },
+  "touristTaxRules": {
+    "perPersonPerNight": "{{amount}} a persona per notte",
+    "percent": "{{percent}}% del prezzo per persona per notte",
+    "percentWithCap": "{{percent}}% del prezzo per persona per notte, massimo {{cap}}",
+    "percentShortWithCap": "{{percent}}% (max {{cap}})",
+    "maxNights_one": "massimo {{count}} notte tassata",
+    "maxNights_other": "massimo {{count}} notti tassate",
+    "exemptUnder_one": "esenti sotto {{count}} anno",
+    "exemptUnder_other": "esenti sotto i {{count}} anni",
+    "reduced": "{{amount}} dai {{from}} ai {{to}} anni",
+    "season": "dal {{from}} al {{to}}",
+    "childAgesTitle": "Età dei minori al check-in",
+    "childAgesHint": "La tassa di soggiorno di questo comune dipende dall'età dei minori.",
+    "childAgeLabel": "Minore {{index}}",
+    "childAgePlaceholder": "Età",
+    "childAgeOption_one": "{{count}} anno",
+    "childAgeOption_other": "{{count}} anni"
   }
 }

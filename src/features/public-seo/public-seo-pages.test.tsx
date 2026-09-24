@@ -28,7 +28,7 @@ const { page } = vi.hoisted(() => {
     lastRefreshedAt: null,
     disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
     cta: { complianceCheckerUrl: '/tools/verifica-conformita', signupUrl: '/signup' },
-    touristTaxRate: null,
+    touristTaxRates: [],
   };
   return { page };
 });

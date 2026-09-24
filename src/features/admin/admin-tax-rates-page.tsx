@@ -11,6 +11,7 @@ import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { TaxRateForm } from './components/tax-rate-form';
 import { touristTaxApi } from '@/api/tourist-tax.api';
 import { formatDate } from '@/lib/utils';
+import { touristTaxAmountShort } from '@/lib/tourist-tax';
 import { getProblemMessage } from '@/lib/api-errors';
 import { Plus, Pencil, Trash2, Loader2, RefreshCw, Coins, ExternalLink } from 'lucide-react';
 import type {
@@ -201,10 +202,27 @@ export function AdminTaxRatesPage() {
                         key={rate.id}
                         className="border-b last:border-0 hover:bg-muted/30 transition-colors"
                       >
-                        <td className="px-4 py-3 font-medium">{rate.city}</td>
+                        <td className="px-4 py-3 font-medium">
+                          {rate.city}
+                          {(rate.accommodationCategory || rate.seasonStart) && (
+                            <span className="block text-xs font-normal text-muted-foreground">
+                              {[
+                                rate.accommodationCategory,
+                                rate.seasonStart && rate.seasonEnd
+                                  ? t('touristTaxRules.season', {
+                                      from: rate.seasonStart.split('-').reverse().join('/'),
+                                      to: rate.seasonEnd.split('-').reverse().join('/'),
+                                    })
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground">{rate.regionCode}</td>
                         <td className="px-4 py-3 text-right font-medium">
-                          &euro;{rate.ratePerPersonPerNight.toFixed(2)}
+                          {touristTaxAmountShort(rate, t)}
                         </td>
                         <td className="px-4 py-3 text-center text-muted-foreground">
                           {rate.maxNights ?? '—'}
