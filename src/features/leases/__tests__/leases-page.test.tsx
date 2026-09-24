@@ -31,6 +31,8 @@ describe('LeasesPage', () => {
           propertyId: 'abcdef12-0000-0000-0000-000000000000',
           status: 'PartiallySigned',
           fiscalRegime: 'CanoneConcordato',
+          contractType: 'Concordato',
+          taxRegime: null,
           partyCount: 3,
         }),
       ],
