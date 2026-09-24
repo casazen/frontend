@@ -449,12 +449,11 @@
       "zone": "Zone",
       "zonePlaceholder": "e.g. Unica, Centrale",
       "foglio": "Cadastral sheet",
-      "years": "Duration (years)",
       "typeA": "Type A features",
       "typeB": "Type B features",
       "typeC": "Type C features",
       "typeD": "Type D features",
-      "furnished": "Furnished dwelling",
+      "furnished": "Fully furnished",
       "calculate": "Calculate band",
       "calculating": "Calculating...",
       "error": "Unable to calculate. Try again.",
@@ -470,7 +469,7 @@
       "ataPending": "Pending official ATA list verification",
       "attestationRequired": "Non-assisted contracts need a conformity attestation. CasaZen does not issue it.",
       "guidanceTitle": "Associations for attestation",
-      "guidanceIntro": "Contact a signatory organization directly. CasaZen does not send requests and does not attest conformity.",
+      "guidanceIntro": "The attestation of conformity is valid only when issued jointly by two signatory organizations: one of the owners and one of the tenants. Contact them directly: CasaZen sends no requests and does not attest conformity.",
       "guidanceLoading": "Loading contacts...",
       "guidanceEmpty": "No contacts available for this municipality.",
       "roleOwners": "Landlords",
@@ -482,7 +481,35 @@
       "exportError": "Export is not available.",
       "markSent": "Mark as sent",
       "markSentOk": "Notice marked as sent.",
-      "markSentError": "Could not update the sent status."
+      "markSentError": "Could not update the sent status.",
+      "garageSqm": "Garage or covered parking space (sqm)",
+      "balconySqm": "Balconies and terraces (sqm)",
+      "otherAppurtenanceSqm": "Open parking space, cellar, attic or other appurtenances (sqm)",
+      "privateGreenSqm": "Exclusive green areas (sqm)",
+      "qualifyingTypeD": "Of which D elements valid for sub-fascia 3",
+      "airConditioning": "Air conditioning (on at least half of the surface)",
+      "stoveHeating": "Heating by stoves in the single rooms",
+      "datesRequired": "Enter the start and end dates of the lease: the term used in the calculation comes from the dates.",
+      "reason": {
+        "data_unavailable": "No data for this comune: check the rent with a local association.",
+        "zone_required": "Enter the zone or the cadastral sheet: the comune has more zones in the agreement.",
+        "zone_not_found": "The zone or cadastral sheet entered is not in the agreement for this comune.",
+        "invalid_surface": "Invalid surface.",
+        "surface_out_of_bands": "The surface is not in the bands of the agreement.",
+        "invalid_element_counts": "The D elements valid for sub-fascia 3 cannot be more than the D elements.",
+        "term_too_short": "A 3+2 lease must last at least 3 years: check the dates."
+      },
+      "warning": {
+        "subfascia3_max_needs_more_d": "Sub-fascia 3 with fewer than 4 D elements: the agreement allows the maximum of sub-fascia 3 only with at least 4 D elements. The maximum shown may be too high.",
+        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied."
+      },
+      "indicativeTitle": "Indicative range: data to be checked",
+      "indicativeWarning": "The territorial agreement data are not yet confirmed by a lawyer or a signatory organization (validity and filing of the agreement). The range is a reference and does not block the lease: check the rent with a signatory organization.",
+      "lastVerified": "Tables checked against the official text on {{date}}.",
+      "source": "Official text of the agreement",
+      "bandBetween": "band from {{min}} (excluded) to {{max}} sqm",
+      "bandOver": "band over {{min}} sqm",
+      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates)."
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Flat-rate tax (Cedolare Secca)",
@@ -529,6 +556,9 @@
       },
       "monthlyRent": {
         "positive": "Monthly rent must be greater than zero"
+      },
+      "securityDeposit": {
+        "min": "The security deposit cannot be negative."
       }
     },
     "createPageTitle": "Create lease",
@@ -555,8 +585,8 @@
       "createDraft": "Create lease draft",
       "apeMissingError": "An APE (energy performance certificate) document must be uploaded for this property before creating a lease.",
       "waitingDocuments": "Please wait while property documents are being verified.",
-      "concordatoRangeRequired": "Calculate the agreed-rent band and enter a monthly rent between the minimum and maximum.",
-      "concordatoRentOutOfRange": "Monthly rent is outside the calculated band for this property.",
+      "concordatoRangeRequired": "Calculate the agreed-rent range: the monthly rent is compared with the range returned by the server.",
+      "concordatoRentOutOfRange": "The monthly rent is outside the range calculated for this property.",
       "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR",
       "propertiesLoading": "Loading properties...",
       "propertiesLoadError": "Your properties could not be loaded, so the lease property cannot be chosen yet.",
@@ -564,7 +594,17 @@
       "createProperty": "Create property",
       "documentsLoadError": "The property documents (APE) could not be checked.",
       "uploadApe": "Upload the APE",
-      "retry": "Retry"
+      "retry": "Retry",
+      "contractTypeLabel": "Contract type *",
+      "taxRegimeLabel": "Tax regime *",
+      "securityDepositLabel": "Security deposit (€)",
+      "termRule": {
+        "Libero": "Free rent: at least 4 years (4+4).",
+        "Concordato": "Agreed rent: at least 3 years (3+2); the rent must be within the range of the territorial agreement.",
+        "Transitorio": "Transitional: from 1 to 18 months. CasaZen checks only the term: the transitional needs must be stated and documented in the contract, and there is no contract template for this type yet."
+      },
+      "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
+      "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -590,7 +630,25 @@
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
     "contactEmailMasked": "Contact email",
-    "noParties": "No parties recorded."
+    "noParties": "No parties recorded.",
+    "contractTypeLabel": {
+      "Libero": "Free rent (4+4)",
+      "Concordato": "Agreed rent (3+2)",
+      "Transitorio": "Transitional"
+    },
+    "taxRegimeLabel": {
+      "CedolareSecca": "Cedolare secca",
+      "Ordinario": "Ordinary regime"
+    },
+    "taxRegimeUnknown": "tax regime not stated",
+    "securityDeposit": "Security deposit",
+    "securityDepositMissing": "Not stated",
+    "concordatoAssessment": {
+      "title": "Agreed-rent range",
+      "indicative": "Indicative range: the territorial agreement data are not confirmed. The lease was created without blocks: check the rent with a signatory organization.",
+      "rentOutside": "The rent of the lease is outside this range.",
+      "calculatedAt": "Calculated by the server on {{date}}."
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -810,15 +868,22 @@
       "notEditable": "A cancelled booking cannot be changed.",
       "backToBooking": "Back to the booking"
     },
-    "checkInDialog": {
-      "title": "Check In Guest",
-      "description": "Check in {{name}}",
-      "checkInTime": "Check-in Time",
-      "notes": "Notes (optional)",
-      "notesPlaceholder": "Any notes about the check-in...",
-      "cancel": "Cancel",
-      "checkingIn": "Checking In...",
-      "confirm": "Confirm Check In"
+    "arrival": {
+      "action": "Register arrival",
+      "title": "Register arrival",
+      "description": "Do you confirm that {{guest}} has arrived at the property? The booking becomes \"Checked in\".",
+      "lateNotice": "The check-in day was {{date}}: you can register the arrival now as well. The Alloggiati Web deadline is still counted from the check-in day.",
+      "guestDataChecking": "Checking the guest data…",
+      "guestDataComplete": "The guest data for Alloggiati Web are complete.",
+      "guestDataIncomplete": "Some guest data for the Alloggiati Web communication are missing. You can register the arrival anyway and complete them right after.",
+      "guestDataUnknown": "The guest data could not be checked: you can go on and review them in the Alloggiati tab.",
+      "completeGuestData": "Complete the guest data",
+      "keep": "Cancel",
+      "submit": "Register arrival",
+      "submitting": "Registering…",
+      "failed": "The arrival could not be registered.",
+      "registered": "Arrival registered.",
+      "registeredDataIncomplete": "Arrival registered. Complete the guest data for Alloggiati Web."
     },
     "detailPage": {
       "loading": "Loading booking...",
@@ -1196,7 +1261,12 @@
       "bedroomsCount_one": "{{count}} bedroom",
       "bedroomsCount_other": "{{count}} bedrooms",
       "bathroomsCount_one": "{{count}} bathroom",
-      "bathroomsCount_other": "{{count}} bathrooms"
+      "bathroomsCount_other": "{{count}} bathrooms",
+      "bedroomsCount_zero": "Studio",
+      "actions": "Actions",
+      "edit": "Edit",
+      "editAria": "Edit {{name}}",
+      "noRate": "Not set"
     },
     "detail": {
       "loading": "Loading property...",
@@ -1260,7 +1330,14 @@
       "empty": "No documents uploaded.",
       "download": "Download",
       "downloading": "Downloading",
-      "delete": "Delete"
+      "delete": "Delete",
+      "apeIdentification": "Code {{code}} · energy class {{energyClass}}",
+      "apeIdentificationMissing": "APE code and energy class not entered: the contract needs them.",
+      "apeIdentificationEdit": "Enter code and class",
+      "apeCode": "APE code",
+      "apeEnergyClass": "Energy class",
+      "apeIdentificationSave": "Save",
+      "apeIdentificationCancel": "Cancel"
     },
     "cin": {
       "badge": {
@@ -1333,7 +1410,6 @@
       },
       "address": "Address *",
       "city": "City *",
-      "country": "Country *",
       "postalCode": "ZIP Code *",
       "latitude": "Latitude",
       "longitude": "Longitude",
@@ -1346,7 +1422,6 @@
       "bathrooms": "Bathrooms *",
       "maxGuests": "Max Guests *",
       "nightlyRate": "Price per Night *",
-      "currency": "Currency",
       "amenities": {
         "title": "Amenities",
         "description": "Select all amenities available at the property"
@@ -1366,7 +1441,6 @@
         "description": "Describe your property...",
         "address": "123 Main Street",
         "city": "Miami",
-        "country": "US",
         "postalCode": "33101",
         "latitude": "25.7617",
         "longitude": "-80.1918",
@@ -1374,7 +1448,25 @@
         "bathrooms": "2",
         "maxGuests": "6",
         "nightlyRate": "150",
-        "currency": "USD"
+        "houseRules": "E.g. no parties, check-in from 3:00 pm"
+      },
+      "bedroomsHint": "0 for a studio",
+      "cleaningFee": "Cleaning fee (€)",
+      "damageDeposit": "Damage deposit (€)",
+      "amountsInEuro": "Amounts in euros.",
+      "stayRules": {
+        "title": "Stay rules",
+        "description": "House rules, time zone and cancellation policy of the property"
+      },
+      "houseRules": "House rules",
+      "timezone": "Time zone",
+      "cancellationPolicy": {
+        "label": "Cancellation policy",
+        "none": "No policy",
+        "current": "Current policy",
+        "loading": "Loading cancellation policies…",
+        "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
+        "empty": "No cancellation policy available."
       }
     },
     "validation": {
@@ -1392,17 +1484,17 @@
       "city": {
         "required": "City is required"
       },
-      "country": {
-        "required": "Country is required"
-      },
       "postalCode": {
         "required": "Postal code is required"
       },
       "bedrooms": {
-        "min": "At least 1 bedroom is required"
+        "min": "Bedrooms must be a whole number, 0 for a studio",
+        "max": "At most 100 bedrooms"
       },
       "bathrooms": {
-        "min": "At least 0.5 bathrooms required"
+        "min": "At least 1 bathroom",
+        "integer": "Bathrooms must be a whole number",
+        "max": "At most 50 bathrooms"
       },
       "maxGuests": {
         "min": "At least 1 guest capacity required"
@@ -1416,6 +1508,18 @@
       "slug": {
         "format": "Slug must contain only lowercase letters, numbers and hyphens (e.g. my-property)",
         "maxLength": "Slug must be at most 80 characters"
+      },
+      "cleaningFee": {
+        "range": "The cleaning fee must be between €0 and €10,000"
+      },
+      "damageDeposit": {
+        "range": "The damage deposit must be between €0 and €50,000"
+      },
+      "houseRules": {
+        "maxLength": "House rules can be at most 1000 characters"
+      },
+      "timezone": {
+        "required": "Choose a time zone"
       }
     },
     "slug": {
@@ -2147,7 +2251,13 @@
       "exportReady": "Data and codes complete: ready for the Alloggiati record.",
       "codesPending": "Data complete. Some official codes are to complete: they are needed only to export the record.",
       "dataIncomplete": "Incomplete data: fill in the missing fields before sending.",
-      "legacyPlaceOfBirth": "Previously recorded: “{{place}}” (say whether in Italy or abroad)"
+      "legacyPlaceOfBirth": "Previously recorded: “{{place}}” (say whether in Italy or abroad)",
+      "revealDocument": "Show",
+      "revealFailed": "Could not show the document number.",
+      "enteredBy": {
+        "GuestPortal": "Entered by the guest on {{date}}",
+        "Host": "Entered by the host on {{date}}"
+      }
     },
     "codeTable": {
       "Comuni": "municipalities",
@@ -2163,7 +2273,9 @@
       "save": "Save guests",
       "cancel": "Cancel",
       "saved": "Guests of the stay updated",
-      "saveFailed": "Could not save the guests. Try again."
+      "saveFailed": "Could not save the guests. Try again.",
+      "loadingDocuments": "Loading the documents…",
+      "documentsLoadFailed": "Could not load the document numbers. Try again."
     }
   },
   "guests": {
@@ -2234,7 +2346,10 @@
     "loadError": "Failed to load guests.",
     "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} guests)",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "downloadDocumentScan": "Download document scan",
+    "documentScanFileName": "guest-document",
+    "documentScanDownloadFailed": "Could not download the document scan."
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
@@ -2557,11 +2672,7 @@
     }
   },
   "checkin": {
-    "sendLink": "Send check-in link",
-    "linkGenerated": "Check-in link generated",
     "copyLink": "Copy link",
-    "sendEmail": "Send via email",
-    "guestEmail": "Guest email",
     "documentType": {
       "Passport": "Passport",
       "IdentityCard": "Identity Card",
@@ -2676,16 +2787,7 @@
     "saving": "Saving...",
     "saveData": "Save data",
     "linkCopied": "Link copied",
-    "emailSubject": "Check-in CasaZen",
-    "emailClientOpening": "Opening email client...",
-    "generateLink": "Generate link",
-    "generateLinkDescription": "Generate a check-in link to send to the guest for data entry.",
-    "generateLinkHelper": "Click the button to generate a unique check-in link.",
-    "enterGuestEmailHelper": "Enter the guest's email to send the link via your email client.",
-    "close": "Close",
-    "guestEmailPlaceholder": "guest@example.com",
     "generateError": "Failed to generate check-in link. Please try again.",
-    "checkinEmailBody": "Dear guest,\n\nClick the link below to complete your check-in:\n\n{{url}}\n\nCasaZen",
     "firstName": "First name *",
     "lastName": "Last name *",
     "stepPersonal": "Personal details",
@@ -2703,9 +2805,7 @@
     "marketingConsent": "I agree to receive promotional communications (optional).",
     "sessionLabel": "Guest check-in status",
     "sessionLoading": "Loading session status...",
-    "noSession": "No active check-in session.",
     "resendLink": "Send reminder",
-    "resendSuccess": "Check-in link resent to guest.",
     "resendError": "Failed to resend check-in link.",
     "status": {
       "Inviato": "Link sent",
@@ -2744,7 +2844,44 @@
     "documentIssuePlace": "Place of issue *",
     "documentIssuePlaceHint": "The municipality if issued in Italy, the country if issued abroad.",
     "codeSelected": "Alloggiati code: {{code}}",
-    "codeSearchFailed": "Official list unavailable right now: type the full name."
+    "codeSearchFailed": "Official list unavailable right now: type the full name.",
+    "link": {
+      "none": "No check-in link generated yet.",
+      "loadError": "Could not load the check-in link status.",
+      "retry": "Retry",
+      "expiresAt": "Expires on {{date}}",
+      "expired": "The link has expired: send a reminder or generate a new link to copy.",
+      "completed": "The guest has completed the check-in. To correct the data use the Alloggiati tab.",
+      "notEligible": "The check-in link is available only for confirmed or checked-in bookings.",
+      "sendByEmail": "Send link by email",
+      "generateToCopy": "Generate link to copy",
+      "replaceWarning": "A new link replaces the current one, which stops working.",
+      "copyTitle": "Check-in link",
+      "copyHint": "Copy it and send it to the guest (WhatsApp, SMS…). Valid until {{date}}.",
+      "copyFailed": "Copy failed: select the link and copy it by hand.",
+      "email": {
+        "sent": "Email with the link handed to the email service.",
+        "sentAt": "Email with the link sent on {{date}}.",
+        "queued": "Email with the link queued for sending…",
+        "failed": "Email not sent: {{reason}}. Copy the link or send a new reminder.",
+        "notRequested": "Link generated to copy: no email sent."
+      },
+      "emailError": {
+        "noRecipient": "the guest has no email address",
+        "providerNotConfigured": "the email service is not configured",
+        "queueFailed": "the email could not be queued",
+        "rejected": "the address was refused by the email service",
+        "notDelivered": "the email service did not answer after several attempts",
+        "linkUnavailable": "the public site address is not configured",
+        "linkNotUsable": "the link had already been replaced or had expired",
+        "unknown": "unknown reason"
+      },
+      "toast": {
+        "emailQueued": "New link generated: the email to the guest is queued.",
+        "emailFailed": "New link generated, but the email did not leave: {{reason}}. Copy the link and send it to the guest.",
+        "generated": "New link generated: copy it and send it to the guest."
+      }
+    }
   },
   "publicSite": {
     "skipToContent": "Skip to content",
@@ -3302,7 +3439,7 @@
       "loading": "Loading check-out...",
       "notFound": "Booking not found",
       "unavailable": "Check-out not available",
-      "unavailableHint": "Complete the booking check-in before closing the stay.",
+      "unavailableHint": "The check-out can be recorded from the arrival day, for a confirmed booking or one whose arrival was registered.",
       "alreadyDone": "Check-out already completed",
       "alreadyDoneHint": "This booking is already in check-out status.",
       "loadError": "Unable to load the booking",
@@ -3334,7 +3471,14 @@
         "supplier-selection": "Select turnover services if needed.",
         "payment": "Settle payments and deposits.",
         "property-ready": "Mark the property as ready for the next booking."
-      }
+      },
+      "starting": "Preparing the check-out…",
+      "startFailed": "The check-out could not be started.",
+      "retry": "Retry",
+      "arrivalMissingTitle": "Arrival not registered",
+      "arrivalMissingHint": "The arrival of {{guest}} was not registered. If the guest arrived, register the arrival and go on with the check-out.",
+      "registerArrivalAndProceed": "Register arrival and continue",
+      "registeringArrival": "Registering the arrival…"
     }
   },
   "toast": {
@@ -3349,8 +3493,6 @@
     "bookingCreateFailed": "Failed to create booking",
     "bookingUpdated": "Booking updated successfully",
     "bookingUpdateFailed": "Failed to update booking",
-    "guestCheckedIn": "Check-in completed successfully",
-    "checkInGuestFailed": "Failed to complete check-in",
     "guestCheckedOut": "Check-out completed successfully",
     "checkOutGuestFailed": "Failed to complete check-out",
     "paymentCreated": "Payment created successfully",
@@ -3429,7 +3571,11 @@
     "offlineSignatureSaved": "Signed contract saved",
     "offlineSignatureFailed": "Could not save the signed contract",
     "stipulaDeclared": "Signing date saved",
-    "stipulaDeclareFailed": "Could not save the signing date"
+    "stipulaDeclareFailed": "Could not save the signing date",
+    "cadastralSaved": "Cadastral data saved",
+    "cadastralSaveFailed": "Could not save the cadastral data",
+    "apeIdentificationSaved": "APE details saved",
+    "apeIdentificationSaveFailed": "Could not save the APE details"
   },
   "fiscal": {
     "page": {
@@ -3557,17 +3703,28 @@
       "bookingCheckinInPast": "The check-in cannot be moved to a day already past.",
       "bookingNotPending": "The booking is no longer waiting for confirmation: reload the page.",
       "bookingNotConfirmable": "You can confirm only the pending bookings you entered.",
-      "bookingNotCheckedIn": "The check-out can be recorded only for a stay whose check-in was recorded.",
-      "bookingCheckoutTooEarly": "The check-out can be recorded from the departure day.",
+      "bookingNotCheckedIn": "The check-out can be recorded only for a confirmed stay or one whose arrival was registered.",
+      "bookingCheckoutTooEarly": "The check-out can be recorded from the arrival day.",
       "directBookingDeferredPaymentUnavailable": "Paying at the deadline is not available for these dates: the arrival is too close. Choose another payment method.",
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
       "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
       "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes.",
+      "bookingAlreadyCheckedOut": "The check-out of this booking is already recorded: reload the page.",
+      "bookingArrivalNotRegistered": "The guest's arrival was not registered: confirm the arrival to go on with the check-out.",
+      "bookingNotConfirmed": "The arrival can be registered only for a confirmed booking.",
+      "bookingAlreadyCheckedIn": "The arrival of this booking is already registered: reload the page.",
+      "bookingArrivalTooEarly": "The arrival can be registered from the check-in day.",
+      "bookingArrivalAfterDeparture": "The departure day has passed: record the check-out of the stay, which registers the arrival too.",
+      "checkoutDepartureNotConfirmed": "Confirm that the guest has left the property.",
+      "checkoutServiceRequestInvalid": "The supplier request could not be created: check that the supplier is active and works in the property's comune. The check-out was not recorded.",
       "guestBookingNotFound": "No booking matches this code and email address. Check the code in the confirmation email and use the email address you booked with.",
       "guestCheckInLinkUnavailable": "The online check-in link cannot be sent now: the booking is not confirmed, the check-in is already completed or it is not time yet.",
       "publicPropertyNotFound": "This property is not available for online booking.",
       "availabilityRangeInvalid": "The requested date range is not valid.",
+      "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
+      "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
+      "guestDocumentScanMissing": "No document scan is available for this guest.",
       "icalInvalidUrl": "The calendar address is not valid: use a public https link (for example the iCal export link from Airbnb or Booking.com).",
       "icalUnreachable": "The calendar could not be downloaded: check that the link is correct and publicly accessible.",
       "icalTooLarge": "The calendar is too large to be imported.",
@@ -3661,6 +3818,20 @@
       "documentsLoadError": "The property documents could not be loaded.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    },
+    "cadastral": {
+      "title": "Cadastral data",
+      "edit": "Edit",
+      "missing": "Cadastral data missing: the contract states them and cannot be generated without them.",
+      "sheet": "Sheet (foglio)",
+      "parcel": "Parcel (particella)",
+      "subaltern": "Subaltern (subalterno)",
+      "category": "Cadastral category",
+      "categoryPlaceholder": "e.g. A/2",
+      "income": "Cadastral income (€)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "notSet": "Not set"
     }
   },
   "touristTaxRules": {

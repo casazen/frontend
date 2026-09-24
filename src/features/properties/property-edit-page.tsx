@@ -6,7 +6,7 @@ import { PropertyForm } from './components/property-form';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
 import { useProperty, useUpdateProperty } from '@/queries/use-properties';
-import type { PropertyFormValues } from './schemas/property.schema';
+import type { CreatePropertyDto } from '@/types';
 
 export function PropertyEditPage() {
   const { t } = useTranslation();
@@ -15,7 +15,7 @@ export function PropertyEditPage() {
   const { data: property, isLoading } = useProperty(id!);
   const updateProperty = useUpdateProperty();
 
-  const handleSubmit = async (data: PropertyFormValues) => {
+  const handleSubmit = async (data: CreatePropertyDto) => {
     if (id) {
       await updateProperty.mutateAsync({ id, data });
       navigate('/app/short-rent/properties');

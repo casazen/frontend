@@ -12,11 +12,17 @@ class ResizeObserverMock {
 
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
 
+// The short-stay form lists the cancellation policies of the API.
+vi.mock('@/queries/use-properties', () => ({
+  useCancellationPolicies: () => ({ data: [], isLoading: false, isError: false, error: null }),
+}));
+
 function fill(label: string, value: string | number) {
   fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
 }
 
-describe('PropertyForm long-rent variant (A7-06)', () => {
+// Whole-form interactions: generous timeout for loaded CI machines, as the other form suites.
+describe('PropertyForm long-rent variant (A7-06)', { timeout: 20_000 }, () => {
   beforeEach(() => {
     void i18n.changeLanguage('it');
   });
@@ -52,6 +58,10 @@ describe('PropertyForm long-rent variant (A7-06)', () => {
       nightlyRate: 0,
       maxGuests: 0,
     });
+    // Short-stay fields are not sent: the API keeps what the property has (A2-04).
+    for (const field of ['cinCode', 'slug', 'isActive', 'cleaningFee', 'damageDeposit', 'houseRules', 'timezone', 'cancellationPolicyId']) {
+      expect(onSubmit.mock.calls[0][0]).not.toHaveProperty(field);
+    }
   });
 
   it('PropertyForm_ShortRent_StillRequiresTheNightlyRate', async () => {

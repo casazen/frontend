@@ -111,14 +111,46 @@ export interface AlloggiatiCodeEntryDto {
   province?: string | null;
 }
 
+/** Delivery of the check-in link by email (API enum `GuestCheckInLinkEmailStatus`, CO-09). */
+export type CheckInLinkEmailStatus = 'NotRequested' | 'Queued' | 'Sent' | 'Failed';
+
+/** Stable reasons of a failed link email (API `GuestCheckInLinkEmailErrors`). */
+export const CHECK_IN_LINK_EMAIL_ERRORS = [
+  'no_recipient',
+  'provider_not_configured',
+  'queue_failed',
+  'rejected',
+  'not_delivered',
+  'link_unavailable',
+  'link_not_usable',
+] as const;
+
+/**
+ * The check-in link of a booking as the host sees it (`GET /bookings/{id}/checkin-session`). Every field but
+ * `canIssueLink` is null when no link was ever issued; `status` is `Scaduto` once the link is past its expiry.
+ */
 export interface CheckInSessionStatusDto {
   sessionId?: string | null;
   status?: GuestCheckInSessionStatus | null;
+  issuedAt?: string | null;
+  expiresAt?: string | null;
+  /** When the email was handed to the provider; null when it was not. */
   sentAt?: string | null;
   completedAt?: string | null;
+  /** Null for links issued before the email outcome was recorded. */
+  emailStatus?: CheckInLinkEmailStatus | null;
+  emailError?: string | null;
+  /** The booking accepts a new link (confirmed or checked in, check-in not completed by the guest). */
+  canIssueLink: boolean;
 }
 
-export interface ResendCheckInLinkResponse {
-  success: boolean;
-  message?: string | null;
+/**
+ * A link the host just generated (`POST /bookings/{id}/checkin/link`) or sent (`POST .../checkin/resend-link`): the
+ * link is always returned, with the real state of its email.
+ */
+export interface CheckInLinkResponse {
+  checkInLink: string;
+  expiresAt: string;
+  emailStatus: CheckInLinkEmailStatus;
+  emailError?: string | null;
 }

@@ -2,6 +2,7 @@ import { ApiClient } from './client';
 import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
+  CancellationPolicyOption,
   Property,
   CreatePropertyDto,
   UpdatePropertyDto,
@@ -10,6 +11,8 @@ import type {
   PropertyDocumentDto,
   PublicPropertyDto,
   PublicPropertyDetailDto,
+  PropertyCadastralData,
+  ApeIdentification,
 } from '@/types';
 
 export const propertiesApi = {
@@ -18,11 +21,15 @@ export const propertiesApi = {
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
 
+  getCancellationPolicies: () =>
+    ApiClient.get<CancellationPolicyOption[]>('/properties/cancellation-policies'),
+
   create: (data: CreatePropertyDto) =>
     ApiClient.post<Property>('/properties', data),
 
+  /** PATCH semantics on PUT (A2-04): fields left out keep their stored value. Answers 204. */
   update: (id: string, data: UpdatePropertyDto) =>
-    ApiClient.put<Property>(`/properties/${id}`, data),
+    ApiClient.put<void>(`/properties/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
@@ -57,6 +64,14 @@ export const propertiesApi = {
 
   deleteDocument: (id: string, docId: string) =>
     ApiClient.delete<void>(`/properties/${id}/documents/${docId}`),
+
+  /** Cadastral identification of the unit (LT-10): used by the lease contract. */
+  updateCadastral: (id: string, data: PropertyCadastralData) =>
+    ApiClient.put<void>(`/properties/${id}/cadastral`, data),
+
+  /** Code and energy class printed on an APE document (LT-10): stated in the lease contract. */
+  updateApeIdentification: (id: string, docId: string, data: ApeIdentification) =>
+    ApiClient.put<PropertyDocumentDto>(`/properties/${id}/documents/${docId}/ape`, data),
 
   /**
    * Documents are in the private storage bucket: the file is fetched through the authenticated

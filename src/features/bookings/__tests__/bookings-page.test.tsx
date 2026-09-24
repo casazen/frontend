@@ -1,18 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { propertiesApi } from '@/api/properties.api';
+import { alloggiatiApi } from '@/api/alloggiati.api';
+import { addDays, todayInRome } from '@/lib/stay-dates';
 import type { Booking, Property } from '@/types';
 import { BookingsPage } from '../bookings-page';
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { getAll: vi.fn(), getApprovalRequests: vi.fn() },
+  bookingsApi: { getAll: vi.fn(), getApprovalRequests: vi.fn(), checkIn: vi.fn() },
 }));
+vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { getById: vi.fn() },
 }));
@@ -46,11 +50,18 @@ const booking = (id: string, firstName: string, source: string, propertyId = 'pr
 });
 
 function renderPage(url = '/app/short-rent/bookings') {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
-        createElement(MemoryRouter, { initialEntries: [url] }, createElement(BookingsPage)))),
+        createElement(MemoryRouter, { initialEntries: [url] },
+          createElement(Routes, null,
+            createElement(Route, { path: '/app/short-rent/bookings', element: createElement(BookingsPage) }),
+            createElement(Route, {
+              path: '/app/short-rent/bookings/:id',
+              element: createElement('div', { 'data-testid': 'booking-detail-stub' }),
+            }),
+          )))),
   );
 }
 
@@ -91,6 +102,34 @@ describe('BookingsPage', () => {
     const badges = screen.getAllByTestId('booking-request-badge').map((badge) => badge.textContent);
     expect(badges).toEqual(['Da approvare', 'Attesa conferma email ospite']);
     expect(await screen.findByTestId('booking-requests-panel')).toHaveTextContent('Richieste da approvare');
+  });
+
+  it('BookingsPage_StayInProgressNotCheckedIn_RegistersTheArrivalFromTheRow', async () => {
+    // CO-08: "Registra arrivo" from the list, only for a confirmed stay whose check-in day has come.
+    const today = todayInRome();
+    const inProgress = {
+      ...booking('bk-arrival', 'Mario', 'Manual'),
+      checkInDate: `${today}T00:00:00Z`,
+      checkOutDate: `${addDays(today, 2)}T00:00:00Z`,
+    };
+    vi.mocked(bookingsApi.getAll).mockResolvedValue([inProgress, booking('bk-future', 'Giulia', 'Direct')]);
+    vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
+    vi.mocked(bookingsApi.checkIn).mockResolvedValue({ ...inProgress, status: 'CheckedIn', guestDataComplete: true });
+
+    renderPage();
+
+    await screen.findByText('Giulia Rossi', undefined, WAIT);
+    const buttons = screen.getAllByTestId('booking-row-register-arrival');
+    expect(buttons).toHaveLength(1);
+    fireEvent.click(buttons[0]);
+    const dialog = await screen.findByRole('dialog');
+    // The row click (open the detail) is not triggered by the action.
+    expect(screen.queryByTestId('booking-detail-stub')).not.toBeInTheDocument();
+    expect(await within(dialog).findByTestId('guest-data-complete', undefined, WAIT)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByTestId('register-arrival-submit'));
+
+    await waitFor(() => expect(bookingsApi.checkIn).toHaveBeenCalledWith('bk-arrival'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), WAIT);
   });
 
   it('shows the error state, not an empty list, when the API fails', async () => {

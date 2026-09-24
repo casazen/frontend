@@ -5,6 +5,8 @@ import type {
   UpdatePropertyDto,
   PropertySearchParams,
   PropertyDocumentType,
+  PropertyCadastralData,
+  ApeIdentification,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -27,6 +29,16 @@ export function useProperty(id: string) {
     queryKey: [PROPERTIES_KEY, id],
     queryFn: () => propertiesApi.getById(id),
     enabled: !!id,
+  });
+}
+
+/** Cancellation policies a short-stay property can reference (global catalog). */
+export function useCancellationPolicies(enabled = true) {
+  return useQuery({
+    queryKey: [PROPERTIES_KEY, 'cancellation-policies'],
+    queryFn: () => propertiesApi.getCancellationPolicies(),
+    enabled,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -166,6 +178,41 @@ export function useDeletePropertyDocument() {
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.documentDeleteFailed'));
+    },
+  });
+}
+
+/** LT-10: cadastral identification of the unit (foglio, particella, subalterno, categoria, rendita). */
+export function useUpdatePropertyCadastral() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ propertyId, data }: { propertyId: string; data: PropertyCadastralData }) =>
+      propertiesApi.updateCadastral(propertyId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId] });
+      toast.success(i18n.t('toast.cadastralSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.cadastralSaveFailed'));
+    },
+  });
+}
+
+/** LT-10: code and energy class printed on an APE document. */
+export function useUpdateApeIdentification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ propertyId, docId, data }: { propertyId: string; docId: string; data: ApeIdentification }) =>
+      propertiesApi.updateApeIdentification(propertyId, docId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
+      toast.success(i18n.t('toast.apeIdentificationSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.apeIdentificationSaveFailed'));
     },
   });
 }
