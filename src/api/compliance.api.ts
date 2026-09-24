@@ -1,6 +1,10 @@
+import { isAxiosError } from 'axios';
 import axios from '@/lib/axios';
 import { ApiClient } from '@/api/client';
+import { getProblemCode } from '@/lib/api-errors';
 import type {
+  ActivationBlockedProblem,
+  ActivationBlocker,
   CheckoutWizardCompleteCommand,
   CheckoutWizardCompleteResult,
   CheckoutWizardStartCommand,
@@ -9,6 +13,7 @@ import type {
   ComplianceActivationCompleteResult,
   ComplianceActivationResult,
   ComplianceSummaryResult,
+  PropertyComplianceStatus,
   SafetyChecklist,
   SaveSafetyChecklistCommand,
 } from '@/types/compliance.types';
@@ -26,6 +31,38 @@ export async function completeComplianceActivation(
     payload,
   );
   return data;
+}
+
+/** `code` of the 409 of `POST .../activation/complete` when blocking steps are left (CO-07). */
+export const ACTIVATION_BLOCKED_CODE = 'property_activation_blocked';
+
+const COMPLIANCE_STATUSES: readonly PropertyComplianceStatus[] = ['Pending', 'Active', 'Suspended'];
+
+function toBlocker(value: unknown): ActivationBlocker | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const { step, code, message } = value as Record<string, unknown>;
+  if (typeof step !== 'string' || typeof code !== 'string') return null;
+  return { step, code, message: typeof message === 'string' ? message : '' };
+}
+
+/**
+ * Body of the 409 `property_activation_blocked` (blockers with their step and stable code), or `undefined` for any
+ * other error: those are shown with `getProblemMessage`.
+ */
+export function getActivationBlockedProblem(error: unknown): ActivationBlockedProblem | undefined {
+  if (!isAxiosError(error) || error.response?.status !== 409) return undefined;
+  const data: unknown = error.response.data;
+  if (getProblemCode(data) !== ACTIVATION_BLOCKED_CODE) return undefined;
+
+  const body = data as Record<string, unknown>;
+  const blockers = Array.isArray(body.blockers)
+    ? body.blockers.map(toBlocker).filter((b): b is ActivationBlocker => b !== null)
+    : [];
+  const incompleteBlockers = Array.isArray(body.incompleteBlockers)
+    ? body.incompleteBlockers.filter((s): s is string => typeof s === 'string')
+    : [];
+  const status = COMPLIANCE_STATUSES.find((s) => s === body.complianceStatus) ?? null;
+  return { complianceStatus: status, incompleteBlockers, blockers };
 }
 
 /** D.L. 145/2023 safety checklist of the property (CO-07), with its blockers and items "not applicable". */

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -54,21 +54,35 @@ interface PropertyFormProps {
    * already on the property are kept as they are.
    */
   variant?: 'short-rent' | 'long-rent';
+  /** Called when the form gets or loses unsaved changes (the activation wizard keeps them across its steps). */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled, variant = 'short-rent' }: PropertyFormProps) {
+export function PropertyForm({
+  property,
+  onSubmit,
+  onCancel,
+  isLoading,
+  disabled,
+  variant = 'short-rent',
+  onDirtyChange,
+}: PropertyFormProps) {
   const { t } = useTranslation();
   const shortStay = variant === 'short-rent';
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     watch,
     setValue,
   } = useForm<PropertyFormValues>({
     resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema),
     defaultValues: propertyFormDefaults(property, variant),
   });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const submit = (values: PropertyFormValues) => onSubmit(toPropertyPayload(values, variant));
   const currentTimezone = watch('timezone');
@@ -85,7 +99,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
     const updated = current.includes(amenity)
       ? current.filter((a) => a !== amenity)
       : [...current, amenity];
-    setValue('amenities', updated);
+    setValue('amenities', updated, { shouldDirty: true });
   };
 
   // noValidate: the schema validates with translated messages; min/step only drive the number spinners.
@@ -110,7 +124,7 @@ export function PropertyForm({ property, onSubmit, onCancel, isLoading, disabled
           {shortStay && (
             <>
               <div className="flex items-center space-x-2">
-                <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked)} />
+                <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked, { shouldDirty: true })} />
                 <Label htmlFor="isActive" className="cursor-pointer">{t('property.form.isActive')}</Label>
               </div>
 
