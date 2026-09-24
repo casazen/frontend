@@ -20,7 +20,8 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
-import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
+import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
+import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import { CheckInSessionBadge } from './components/checkin-session-badge';
 import type { Booking } from '@/types';
@@ -35,9 +36,8 @@ export function BookingDetailPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { hasPermission } = useWorkspace();
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id!);
-  const { data: serviceRequests } = useServiceRequests(
-    booking ? { propertyId: booking.propertyId } : undefined,
-  );
+  // The stay's own requests (D2), with the same query as the app's booking screen.
+  const serviceRequests = useServiceRequests(id ? { bookingId: id, pageSize: 50 } : undefined);
   const { t, i18n } = useTranslation();
 
   if (isLoading) {
@@ -80,6 +80,8 @@ export function BookingDetailPage() {
   const canCancel =
     canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   const canEdit = canWrite && booking.status !== 'Cancelled';
+  // A short-rent supplier request is for this stay (D2); the API needs property.write in short-rent.
+  const canRequestSupplier = hasPermission('short-rent', 'property.write') && booking.status !== 'Cancelled';
   // The check-out wizard accepts a stay with the check-in recorded, or a confirmed one from its departure day
   // (Europe/Rome): the link is not offered when the wizard would refuse it.
   const canCheckOut =
@@ -239,7 +241,16 @@ export function BookingDetailPage() {
             </div>
 
             <div className="space-y-6">
-              <ServiceRequestTimeline requests={serviceRequests?.items ?? []} />
+              <ServiceRequestsCard
+                query={serviceRequests}
+                emptyText={t('serviceRequest.emptyForStay')}
+                testId="booking-service-requests"
+                action={
+                  canRequestSupplier ? (
+                    <ServiceRequestForm propertyId={booking.propertyId} bookingId={booking.id} />
+                  ) : undefined
+                }
+              />
               <Card>
                 <CardHeader>
                   <CardTitle>{t('booking.detailPage.timeline')}</CardTitle>

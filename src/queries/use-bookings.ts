@@ -24,6 +24,15 @@ export function useBookings(params?: Record<string, unknown>) {
   });
 }
 
+/** The bookings of one property (same cache entry as `useBookings({ propertyId })`); nothing without a property. */
+export function usePropertyBookings(propertyId?: string) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, { propertyId }],
+    queryFn: () => bookingsApi.getAll({ propertyId }),
+    enabled: !!propertyId,
+  });
+}
+
 export function useBooking(id: string) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, id],

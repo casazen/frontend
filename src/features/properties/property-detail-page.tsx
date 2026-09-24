@@ -25,6 +25,8 @@ import { PropertyOtaSummary } from './components/property-ota-summary';
 import { IcalSettings } from './components/ical-settings';
 import { PropertyBookingsKpi } from './components/property-bookings-kpi';
 import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
+import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
+import { useServiceRequests } from '@/queries/use-service-requests';
 
 type PropertyTab = 'info' | 'pricing' | 'ota' | 'documents' | 'cin';
 
@@ -40,6 +42,8 @@ export function PropertyDetailPage() {
   // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
   const canCreateBooking = useWorkspace().hasPermission('short-rent', 'booking.write');
+  // Overview of the property's short-rent requests, each linked to its stay (D2).
+  const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
 
   if (isLoading) {
     return <LoadingScreen message={t('property.detail.loading')} />;
@@ -181,6 +185,12 @@ export function PropertyDetailPage() {
                 cleaningFee={property.cleaningFee}
                 damageDeposit={property.damageDeposit}
                 timezone={property.timezone}
+              />
+              <ServiceRequestsCard
+                query={serviceRequests}
+                emptyText={t('serviceRequest.emptyForProperty')}
+                showStay
+                testId="property-service-requests"
               />
             </div>
           </div>

@@ -8,6 +8,8 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
+import * as serviceRequestsApi from '@/api/service-requests.api';
+import { fetchServiceCategories } from '@/api/service-categories.api';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import type { Booking } from '@/types';
 import { BookingDetailPage } from '../booking-detail-page';
@@ -16,12 +18,15 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getById: vi.fn(), approveRequest: vi.fn(), getCancellationQuote: vi.fn() },
 }));
-vi.mock('@/features/service-requests/components/service-request-timeline', () => ({
-  ServiceRequestTimeline: () => null,
+// The real service request hooks around mocked network calls (SU-07: which query the stay uses).
+vi.mock('@/api/service-requests.api', () => ({
+  fetchServiceRequests: vi.fn(),
+  createServiceRequest: vi.fn(),
+  fetchSuppliersByProperty: vi.fn(),
+  markServiceRequestPaid: vi.fn(),
+  markLongRentServiceRequestPaid: vi.fn(),
 }));
-vi.mock('@/queries/use-service-requests', () => ({
-  useServiceRequests: () => ({ data: { items: [] } }),
-}));
+vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: vi.fn() }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: () => true }),
 }));
@@ -84,6 +89,8 @@ function renderPage() {
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  vi.mocked(serviceRequestsApi.fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
+  vi.mocked(fetchServiceCategories).mockResolvedValue(['cleaning', 'maintenance']);
   await i18n.changeLanguage('it');
 });
 
@@ -249,5 +256,96 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     renderPage();
 
     expect(await screen.findByText(i18n.t('booking.detailPage.notFound'), undefined, WAIT)).toBeInTheDocument();
+  });
+
+  // ─── SU-07 (D2): a stay's supplier requests, the same ones the app shows ───
+
+  it('BookingDetailPage_ServiceRequests_ListedForThisStayLikeTheApp', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    vi.mocked(serviceRequestsApi.fetchServiceRequests).mockResolvedValue({
+      items: [
+        {
+          id: 'sr-stay',
+          orgId: 'org-1',
+          bookingId: BOOKING_ID,
+          rentalContext: 'ShortRent',
+          propertyId: 'property-1',
+          supplierOrgId: 'sup-1',
+          supplierName: 'Pulizie Express Srl',
+          category: 'cleaning',
+          urgency: 'Normal',
+          status: 'Richiesto',
+          chargeToGuest: false,
+          createdAt: '2026-09-24T08:00:00Z',
+          updatedAt: '2026-09-24T08:00:00Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 50,
+    });
+
+    renderPage();
+
+    expect(await screen.findByTestId('service-request-sr-stay', undefined, WAIT)).toHaveTextContent('Pulizie Express Srl');
+    // By stay, as the app's booking screen: never the whole property (other stays' requests).
+    expect(serviceRequestsApi.fetchServiceRequests).toHaveBeenCalledWith({ bookingId: BOOKING_ID, pageSize: 50 });
+    for (const [params] of vi.mocked(serviceRequestsApi.fetchServiceRequests).mock.calls) {
+      expect(params).not.toHaveProperty('propertyId');
+    }
+  });
+
+  it('BookingDetailPage_ServiceRequestsFail_ShowsTheErrorNotAnEmptyList', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    vi.mocked(serviceRequestsApi.fetchServiceRequests).mockRejectedValue(axiosError(500, { status: 500 }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('service-requests-error', undefined, WAIT)).toHaveTextContent(
+      i18n.t('serviceRequest.listLoadError'),
+    );
+    expect(screen.queryByTestId('service-requests-empty')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_RequestSupplier_SendsThisStayAndItsProperty', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    vi.mocked(serviceRequestsApi.fetchSuppliersByProperty).mockResolvedValue({
+      items: [{ orgId: 'sup-1', legalName: 'Pulizie Express Srl', phone: '', email: '', categories: ['cleaning'], comuni: [], photoUrls: [] }],
+      totalCount: 1,
+      page: 1,
+      pageSize: 1,
+    });
+    vi.mocked(serviceRequestsApi.createServiceRequest).mockResolvedValue({ id: 'sr-new' } as never);
+
+    renderPage();
+
+    expect(await screen.findByTestId('service-requests-empty', undefined, WAIT)).toHaveTextContent(
+      i18n.t('serviceRequest.emptyForStay'),
+    );
+    fireEvent.click(screen.getByTestId('request-supplier-btn'));
+    const dialog = await screen.findByTestId('service-request-dialog');
+    expect(within(dialog).queryByTestId('service-request-stay')).not.toBeInTheDocument();
+    fireEvent.change(await within(dialog).findByTestId('service-request-supplier', undefined, WAIT), {
+      target: { value: 'sup-1' },
+    });
+    await waitFor(() => expect(within(dialog).getByTestId('submit-service-request')).toBeEnabled());
+    fireEvent.click(within(dialog).getByTestId('submit-service-request'));
+
+    await waitFor(() => expect(serviceRequestsApi.createServiceRequest).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(serviceRequestsApi.createServiceRequest).mock.calls[0][0]).toMatchObject({
+      propertyId: 'property-1',
+      bookingId: BOOKING_ID,
+      supplierOrgId: 'sup-1',
+      category: 'cleaning',
+    });
+  });
+
+  it('BookingDetailPage_CancelledStay_DoesNotOfferASupplierRequest', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Cancelled' }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('booking-service-requests', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('request-supplier-btn')).not.toBeInTheDocument();
   });
 });
