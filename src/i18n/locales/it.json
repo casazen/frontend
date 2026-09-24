@@ -1681,17 +1681,49 @@
   },
   "ical": {
     "title": "Calendario OTA",
-    "description": "Importa il calendario Airbnb o Booking.com e condividi la disponibilità CasaZen via iCal.",
+    "description": "Collega i calendari iCal di Airbnb, Booking.com e degli altri canali: le date prenotate lì risultano occupate sul tuo sito. Condividi la disponibilità CasaZen con il link di esportazione.",
+    "feedsTitle": "Calendari collegati",
+    "feedsLoadError": "Impossibile caricare i calendari collegati.",
+    "retry": "Riprova",
+    "noFeeds": "Nessun calendario collegato: aggiungi il link iCal di Airbnb, Booking.com o di un altro canale.",
+    "channels": {
+      "Airbnb": "Airbnb",
+      "BookingCom": "Booking.com",
+      "Other": "Altro"
+    },
+    "status": {
+      "Success": "Sincronizzato",
+      "PartialFailure": "Sincronizzato in parte",
+      "Failure": "Errore",
+      "Syncing": "Sincronizzazione in corso",
+      "never": "Mai sincronizzato"
+    },
+    "syncNow": "Sincronizza ora",
+    "syncing": "Sincronizzazione…",
+    "remove": "Scollega",
+    "removeTitle": "Scollegare il calendario?",
+    "removeDescription": "Le date bloccate importate da {{name}} tornano libere sul tuo sito. Gli altri calendari non cambiano.",
+    "removeConfirm": "Scollega",
+    "cancel": "Annulla",
+    "addTitle": "Collega un calendario",
+    "channelLabel": "Canale",
+    "feedLabelLabel": "Etichetta (facoltativa)",
+    "feedLabelPlaceholder": "Es. Airbnb - camera 2",
     "importUrlLabel": "URL import (HTTPS)",
+    "importUrlPlaceholder": "https://www.airbnb.it/calendar/ical/…",
     "importHint": "Incolla l'URL iCal dalla tua OTA. Serve aiuto?",
     "helpLink": "Come trovare il link iCal",
-    "saveImport": "Salva e sincronizza",
-    "syncStatus": "Stato sincronizzazione",
+    "addFeed": "Aggiungi e sincronizza",
+    "feedAdded": "Calendario collegato: la prima sincronizzazione è in corso.",
+    "feedAddFailed": "Impossibile collegare il calendario.",
+    "feedRemoved": "Calendario scollegato.",
+    "feedRemoveFailed": "Impossibile scollegare il calendario.",
+    "feedSyncFailed": "Impossibile avviare la sincronizzazione.",
     "lastSync": "Ultima sync: {{date}}",
     "neverSynced": "Mai sincronizzato",
-    "statusValue": "Stato: {{status}}",
     "exportUrlLabel": "URL export per le OTA",
     "exportHint": "Incolla questo URL su Airbnb/Booking per esportare prenotazioni e blocchi CasaZen.",
+    "exportLoadError": "Impossibile caricare il link di esportazione.",
     "copy": "Copia",
     "copied": "Copiato",
     "legendBooking": "Prenotazione",
@@ -3478,7 +3510,6 @@
       "cinLabel": "Codice CIN",
       "cinGuidance": "Come ottenere il codice CIN",
       "saveAndContinue": "Salva e continua",
-      "continue": "Continua",
       "documentsHint": "Carica i documenti richiesti per l'attivazione. Le prove di sicurezza (foto o documenti) sono facoltative e si allegano nella checklist di sicurezza.",
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
       "backToEdit": "Torna alla modifica immobile",
@@ -3492,7 +3523,8 @@
         "documents": "Documenti richiesti",
         "safety": "Checklist sicurezza",
         "tourist-tax": "Imposta di soggiorno",
-        "ical": "Sincronizzazione calendario"
+        "ical": "Sincronizzazione calendario",
+        "review": "Riepilogo e attivazione"
       },
       "touristTax": {
         "rateTitle": "Imposta di soggiorno a {{city}}",
@@ -3512,6 +3544,46 @@
         "publicPage": "Guida all'imposta di soggiorno a {{city}}",
         "reducedRate": "Tariffa ridotta",
         "categoryRequiredTitle": "A {{city}} la tariffa dipende dalla categoria della struttura: il calcolo automatico non è ancora disponibile."
+      },
+      "loadFailed": "Impossibile caricare il wizard di attivazione.",
+      "refreshFailed": "Impossibile aggiornare lo stato dei passaggi: quello mostrato potrebbe non essere aggiornato.",
+      "retry": "Riprova",
+      "back": "Indietro",
+      "next": "Avanti",
+      "goToStep": "Vai a «{{step}}»",
+      "progress": "{{done}} di {{total}} passaggi obbligatori completati",
+      "stepStatus": {
+        "complete": "completato",
+        "warning": "consigliato",
+        "pending": "da completare"
+      },
+      "stepHint": {
+        "ical": "Consigliato: collega il calendario iCal delle OTA per evitare doppie prenotazioni."
+      },
+      "documentsLoading": "Caricamento documenti...",
+      "documentsLoadFailed": "Impossibile caricare i documenti dell'immobile.",
+      "documentsEmpty": "Nessun documento caricato.",
+      "blockerList": {
+        "blockedTitle": "L'immobile non può ancora essere attivato: completa i punti obbligatori elencati.",
+        "knownTitle": "Prima di completare l'attivazione risolvi questi punti:",
+        "none": "Tutti i passaggi obbligatori sono completi.",
+        "stepIncomplete": "Completa il passaggio «{{step}}»."
+      },
+      "blockerCodes": {
+        "activation_base_data_incomplete": "Completa i dati base dell'immobile: nome, indirizzo, città, ospiti e tariffa.",
+        "activation_cin_missing": "Inserisci il codice CIN dell'immobile.",
+        "activation_cin_invalid": "Il codice CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
+        "activation_documents_missing": "Carica i documenti richiesti per l'attivazione.",
+        "safety_extinguishers_below_minimum": "Estintori insufficienti rispetto al minimo richiesto per i piani e i m² dell'unità."
+      },
+      "review": {
+        "intro": "Controlla lo stato di ogni passaggio: puoi tornare a qualsiasi passaggio senza perdere i dati inseriti.",
+        "stepsTitle": "Passaggi",
+        "active": "L'immobile è attivo e visibile agli ospiti. Le modifiche vengono salvate solo quando le salvi nel loro passaggio.",
+        "suspended": "L'immobile è sospeso: non è visibile né prenotabile dagli ospiti finché i punti obbligatori non sono di nuovo completi. Risolvili e completa di nuovo l'attivazione.",
+        "unsaved": "Modifiche non salvate in «{{step}}»: salvale prima di completare.",
+        "blockersHint": "«Completa attivazione» si abilita quando tutti i punti obbligatori sono completi.",
+        "tosHint": "Conferma i requisiti di compliance per completare l'attivazione."
       }
     },
     "checkout": {
@@ -3940,7 +4012,17 @@
       "pricingSuggestionsNotEnabled": "Attiva i suggerimenti stagionali prima di ricalcolarli.",
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
-      "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione."
+      "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione.",
+      "activationTosRequired": "Conferma i requisiti di compliance per completare l'attivazione.",
+      "icalInvalidUrl": "L'indirizzo del calendario non è valido: usa un link https pubblico (per esempio il link di esportazione iCal di Airbnb o Booking.com).",
+      "icalUnreachable": "Non è stato possibile scaricare il calendario: verifica che il link sia corretto e accessibile pubblicamente.",
+      "icalTooLarge": "Il calendario è troppo grande per essere importato.",
+      "icalInvalidFormat": "Il link non restituisce un calendario iCal valido.",
+      "icalSyncFailed": "La sincronizzazione del calendario non è riuscita: verrà ritentata automaticamente.",
+      "icalFeedNotFound": "Calendario non trovato: potrebbe essere già stato scollegato.",
+      "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
+      "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
+      "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo."
     }
   },
   "validation": {

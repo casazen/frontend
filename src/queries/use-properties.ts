@@ -24,11 +24,13 @@ export function useProperties(params?: Record<string, string | number | boolean 
   });
 }
 
-export function useProperty(id: string) {
+/** `fresh`: read again from the server on mount even when cached (a form that starts from the stored values). */
+export function useProperty(id: string, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, id],
     queryFn: () => propertiesApi.getById(id),
     enabled: !!id,
+    ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
   });
 }
 
@@ -51,11 +53,12 @@ export function usePropertyDocuments(id: string | undefined) {
   });
 }
 
-export function usePropertyDetail(id: string) {
+export function usePropertyDetail(id: string, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, id, 'detail'],
     queryFn: () => propertiesApi.getDetail(id),
     enabled: !!id,
+    ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
   });
 }
 
@@ -144,6 +147,8 @@ export function useUploadPropertyDocument() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
+      // The required documents are a step of the activation wizard (A5-18).
+      queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', variables.propertyId] });
       toast.success(i18n.t('toast.documentUploaded'));
     },
     onError: (error) => {
@@ -174,6 +179,8 @@ export function useDeletePropertyDocument() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
+      // The required documents are a step of the activation wizard (A5-18).
+      queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', variables.propertyId] });
       toast.success(i18n.t('toast.documentDeleted'));
     },
     onError: (error) => {
