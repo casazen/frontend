@@ -83,4 +83,41 @@ describe('PropertyDocumentsSection (FD-07, A2-03/A2-31)', () => {
 
     expect(screen.getByText('Nessun documento caricato.')).toBeInTheDocument();
   });
+
+  it('apeWithoutIdentification_editAndSave_sendsCodeAndClass', async () => {
+    // LT-10: the contract states the APE code and energy class; they are entered on the APE document.
+    mockDownload();
+    const mutateAsync = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(propertyQueries.useUpdateApeIdentification).mockReturnValue({
+      mutateAsync,
+      isPending: false,
+    } as unknown as ReturnType<typeof propertyQueries.useUpdateApeIdentification>);
+    const ape: PropertyDocumentDto = {
+      id: 'doc-ape',
+      fileName: 'ape.pdf',
+      fileType: 'pdf',
+      documentType: 'Ape',
+      uploadedAt: '2026-09-03T10:00:00Z',
+      downloadUrl: `/api/properties/${PROPERTY_ID}/documents/doc-ape/download`,
+      apeCode: null,
+      apeEnergyClass: null,
+    };
+    render(<PropertyDocumentsSection propertyId={PROPERTY_ID} documents={[ape]} />);
+
+    expect(screen.getByTestId('ape-identification-doc-ape')).toHaveTextContent(
+      "Codice e classe energetica dell'APE non indicati",
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Indica codice e classe' }));
+    fireEvent.change(screen.getByLabelText('Codice APE'), { target: { value: ' 1510800012345 ' } });
+    fireEvent.change(screen.getByLabelText('Classe energetica'), { target: { value: 'b' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva' }));
+
+    await vi.waitFor(() =>
+      expect(mutateAsync).toHaveBeenCalledWith({
+        propertyId: PROPERTY_ID,
+        docId: 'doc-ape',
+        data: { code: '1510800012345', energyClass: 'b' },
+      }),
+    );
+  });
 });

@@ -10,6 +10,8 @@ import type {
   PropertyDocumentDto,
   PublicPropertyDto,
   PublicPropertyDetailDto,
+  PropertyCadastralData,
+  ApeIdentification,
 } from '@/types';
 
 export const propertiesApi = {
@@ -57,6 +59,14 @@ export const propertiesApi = {
 
   deleteDocument: (id: string, docId: string) =>
     ApiClient.delete<void>(`/properties/${id}/documents/${docId}`),
+
+  /** Cadastral identification of the unit (LT-10): used by the lease contract. */
+  updateCadastral: (id: string, data: PropertyCadastralData) =>
+    ApiClient.put<void>(`/properties/${id}/cadastral`, data),
+
+  /** Code and energy class printed on an APE document (LT-10): stated in the lease contract. */
+  updateApeIdentification: (id: string, docId: string, data: ApeIdentification) =>
+    ApiClient.put<PropertyDocumentDto>(`/properties/${id}/documents/${docId}/ape`, data),
 
   /**
    * Documents are in the private storage bucket: the file is fetched through the authenticated

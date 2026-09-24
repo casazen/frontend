@@ -449,12 +449,11 @@
       "zone": "Zona",
       "zonePlaceholder": "es. Unica, Centrale",
       "foglio": "Foglio catastale",
-      "years": "Durata (anni)",
       "typeA": "Elementi tipo A",
       "typeB": "Elementi tipo B",
       "typeC": "Elementi tipo C",
       "typeD": "Elementi tipo D",
-      "furnished": "Alloggio arredato",
+      "furnished": "Arredo completo",
       "calculate": "Calcola fascia",
       "calculating": "Calcolo in corso...",
       "error": "Impossibile calcolare. Riprova.",
@@ -470,7 +469,7 @@
       "ataPending": "In attesa della lista ufficiale ATA",
       "attestationRequired": "I contratti non assistiti richiedono l'attestazione di conformita. CasaZen non la rilascia.",
       "guidanceTitle": "Associazioni per l'attestazione",
-      "guidanceIntro": "Contatta direttamente un'organizzazione firmataria. CasaZen non invia richieste e non attesta la conformita.",
+      "guidanceIntro": "L'attestazione di conformità è valida solo se rilasciata insieme da due organizzazioni firmatarie: una della proprietà e una degli inquilini. Contattale direttamente: CasaZen non invia richieste e non attesta la conformità.",
       "guidanceLoading": "Caricamento contatti...",
       "guidanceEmpty": "Nessun contatto disponibile per questo comune.",
       "roleOwners": "Proprieta",
@@ -482,7 +481,35 @@
       "exportError": "Esportazione non disponibile.",
       "markSent": "Segna come inviata",
       "markSentOk": "Comunicazione segnata come inviata.",
-      "markSentError": "Impossibile aggiornare lo stato di invio."
+      "markSentError": "Impossibile aggiornare lo stato di invio.",
+      "garageSqm": "Box o posto auto coperto (mq)",
+      "balconySqm": "Balconi e terrazze (mq)",
+      "otherAppurtenanceSqm": "Posto auto scoperto, cantina, soffitta o altre pertinenze (mq)",
+      "privateGreenSqm": "Aree verdi esclusive (mq)",
+      "qualifyingTypeD": "Di cui elementi D validi per la sub-fascia 3",
+      "airConditioning": "Aria condizionata (su almeno metà della superficie)",
+      "stoveHeating": "Riscaldamento a stufe nei singoli locali",
+      "datesRequired": "Inserisci le date di inizio e fine del contratto: la durata usata nel calcolo viene dalle date.",
+      "reason": {
+        "data_unavailable": "Dato non disponibile per questo comune: verifica il canone con un'associazione di categoria locale.",
+        "zone_required": "Indica la zona o il foglio catastale: il comune ha più zone nell'accordo.",
+        "zone_not_found": "La zona o il foglio catastale indicati non sono previsti dall'accordo per questo comune.",
+        "invalid_surface": "Superficie non valida.",
+        "surface_out_of_bands": "La superficie non rientra nelle fasce dell'accordo.",
+        "invalid_element_counts": "Gli elementi D validi per la sub-fascia 3 non possono essere più degli elementi D.",
+        "term_too_short": "Il contratto 3+2 deve durare almeno 3 anni: controlla le date."
+      },
+      "warning": {
+        "subfascia3_max_needs_more_d": "Sub-fascia 3 con meno di 4 elementi D: l'accordo consente il massimo della sub-fascia 3 solo con almeno 4 elementi D. Il massimo mostrato potrebbe essere troppo alto.",
+        "no_duration_uplift_over_6_years": "Durata oltre 6 anni: l'accordo non prevede maggiorazioni, non ne è stata applicata nessuna."
+      },
+      "indicativeTitle": "Range indicativo: dati da verificare",
+      "indicativeWarning": "I dati dell'accordo territoriale non sono ancora confermati da un legale o da un'organizzazione firmataria (vigenza e deposito dell'accordo). Il range è un riferimento e non blocca la creazione del contratto: verifica il canone con un'organizzazione firmataria.",
+      "lastVerified": "Tabelle confrontate con il testo ufficiale il {{date}}.",
+      "source": "Testo ufficiale dell'accordo",
+      "bandBetween": "fascia da {{min}} (escluso) a {{max}} mq",
+      "bandOver": "fascia oltre {{min}} mq",
+      "computedWith": "Calcolato su {{sqm}} mq utili e {{years}} anni di durata (dalle date del contratto)."
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Cedolare secca",
@@ -529,6 +556,9 @@
       },
       "monthlyRent": {
         "positive": "Il canone mensile deve essere maggiore di zero"
+      },
+      "securityDeposit": {
+        "min": "Il deposito cauzionale non può essere negativo."
       }
     },
     "createPageTitle": "Nuovo contratto",
@@ -555,8 +585,8 @@
       "createDraft": "Crea bozza contratto",
       "apeMissingError": "Un documento APE (certificato di prestazione energetica) deve essere caricato per questa proprietà prima di creare un contratto.",
       "waitingDocuments": "Attendi la verifica dei documenti della proprietà.",
-      "concordatoRangeRequired": "Calcola la fascia di canone concordato e inserisci un canone mensile compreso tra il minimo e il massimo.",
-      "concordatoRentOutOfRange": "Il canone mensile e' fuori dalla fascia calcolata per questo immobile.",
+      "concordatoRangeRequired": "Calcola il range del canone concordato: il canone mensile viene confrontato con il range restituito dal server.",
+      "concordatoRentOutOfRange": "Il canone mensile è fuori dal range calcolato per questo immobile.",
       "concordatoRangeHint": "Fascia mensile: {{min}} – {{max}} EUR",
       "propertiesLoading": "Caricamento immobili...",
       "propertiesLoadError": "Impossibile caricare i tuoi immobili: non puoi ancora scegliere l'immobile del contratto.",
@@ -564,7 +594,17 @@
       "createProperty": "Crea immobile",
       "documentsLoadError": "Impossibile verificare i documenti dell'immobile (APE).",
       "uploadApe": "Carica l'APE",
-      "retry": "Riprova"
+      "retry": "Riprova",
+      "contractTypeLabel": "Tipo di contratto *",
+      "taxRegimeLabel": "Regime fiscale *",
+      "securityDepositLabel": "Deposito cauzionale (€)",
+      "termRule": {
+        "Libero": "Canone libero: durata di almeno 4 anni (4+4).",
+        "Concordato": "Canone concordato: durata di almeno 3 anni (3+2); il canone deve rientrare nel range dell'accordo territoriale.",
+        "Transitorio": "Transitorio: durata da 1 a 18 mesi. CasaZen controlla solo la durata: le esigenze transitorie vanno indicate e documentate nel contratto, e per questo tipo non c'è ancora un modello di contratto."
+      },
+      "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
+      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -590,7 +630,25 @@
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
     "contactEmailMasked": "Email di contatto",
-    "noParties": "Nessuna parte registrata."
+    "noParties": "Nessuna parte registrata.",
+    "contractTypeLabel": {
+      "Libero": "Canone libero (4+4)",
+      "Concordato": "Canone concordato (3+2)",
+      "Transitorio": "Transitorio"
+    },
+    "taxRegimeLabel": {
+      "CedolareSecca": "Cedolare secca",
+      "Ordinario": "Regime ordinario"
+    },
+    "taxRegimeUnknown": "regime fiscale non indicato",
+    "securityDeposit": "Deposito cauzionale",
+    "securityDepositMissing": "Non indicato",
+    "concordatoAssessment": {
+      "title": "Range del canone concordato",
+      "indicative": "Range indicativo: i dati dell'accordo territoriale non sono confermati. Il contratto è stato creato senza blocchi: verifica il canone con un'organizzazione firmataria.",
+      "rentOutside": "Il canone del contratto è fuori da questo range.",
+      "calculatedAt": "Calcolato dal server il {{date}}."
+    }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -1260,7 +1318,14 @@
       "empty": "Nessun documento caricato.",
       "download": "Scarica",
       "downloading": "Download in corso",
-      "delete": "Elimina"
+      "delete": "Elimina",
+      "apeIdentification": "Codice {{code}} · classe energetica {{energyClass}}",
+      "apeIdentificationMissing": "Codice e classe energetica dell'APE non indicati: servono per il contratto.",
+      "apeIdentificationEdit": "Indica codice e classe",
+      "apeCode": "Codice APE",
+      "apeEnergyClass": "Classe energetica",
+      "apeIdentificationSave": "Salva",
+      "apeIdentificationCancel": "Annulla"
     },
     "cin": {
       "badge": {
@@ -3397,7 +3462,11 @@
     "offlineSignatureSaved": "Contratto firmato salvato",
     "offlineSignatureFailed": "Impossibile salvare il contratto firmato",
     "stipulaDeclared": "Data di stipula salvata",
-    "stipulaDeclareFailed": "Impossibile salvare la data di stipula"
+    "stipulaDeclareFailed": "Impossibile salvare la data di stipula",
+    "cadastralSaved": "Dati catastali salvati",
+    "cadastralSaveFailed": "Impossibile salvare i dati catastali",
+    "apeIdentificationSaved": "Estremi dell'APE salvati",
+    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE"
   },
   "fiscal": {
     "page": {
@@ -3620,6 +3689,20 @@
       "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+    },
+    "cadastral": {
+      "title": "Dati catastali",
+      "edit": "Modifica",
+      "missing": "Mancano dati catastali: il contratto li riporta e senza di essi non può essere generato.",
+      "sheet": "Foglio",
+      "parcel": "Particella",
+      "subaltern": "Subalterno",
+      "category": "Categoria catastale",
+      "categoryPlaceholder": "es. A/2",
+      "income": "Rendita catastale (€)",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "notSet": "Non indicato"
     }
   },
   "touristTaxRules": {

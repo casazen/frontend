@@ -449,12 +449,11 @@
       "zone": "Zone",
       "zonePlaceholder": "e.g. Unica, Centrale",
       "foglio": "Cadastral sheet",
-      "years": "Duration (years)",
       "typeA": "Type A features",
       "typeB": "Type B features",
       "typeC": "Type C features",
       "typeD": "Type D features",
-      "furnished": "Furnished dwelling",
+      "furnished": "Fully furnished",
       "calculate": "Calculate band",
       "calculating": "Calculating...",
       "error": "Unable to calculate. Try again.",
@@ -470,7 +469,7 @@
       "ataPending": "Pending official ATA list verification",
       "attestationRequired": "Non-assisted contracts need a conformity attestation. CasaZen does not issue it.",
       "guidanceTitle": "Associations for attestation",
-      "guidanceIntro": "Contact a signatory organization directly. CasaZen does not send requests and does not attest conformity.",
+      "guidanceIntro": "The attestation of conformity is valid only when issued jointly by two signatory organizations: one of the owners and one of the tenants. Contact them directly: CasaZen sends no requests and does not attest conformity.",
       "guidanceLoading": "Loading contacts...",
       "guidanceEmpty": "No contacts available for this municipality.",
       "roleOwners": "Landlords",
@@ -482,7 +481,35 @@
       "exportError": "Export is not available.",
       "markSent": "Mark as sent",
       "markSentOk": "Notice marked as sent.",
-      "markSentError": "Could not update the sent status."
+      "markSentError": "Could not update the sent status.",
+      "garageSqm": "Garage or covered parking space (sqm)",
+      "balconySqm": "Balconies and terraces (sqm)",
+      "otherAppurtenanceSqm": "Open parking space, cellar, attic or other appurtenances (sqm)",
+      "privateGreenSqm": "Exclusive green areas (sqm)",
+      "qualifyingTypeD": "Of which D elements valid for sub-fascia 3",
+      "airConditioning": "Air conditioning (on at least half of the surface)",
+      "stoveHeating": "Heating by stoves in the single rooms",
+      "datesRequired": "Enter the start and end dates of the lease: the term used in the calculation comes from the dates.",
+      "reason": {
+        "data_unavailable": "No data for this comune: check the rent with a local association.",
+        "zone_required": "Enter the zone or the cadastral sheet: the comune has more zones in the agreement.",
+        "zone_not_found": "The zone or cadastral sheet entered is not in the agreement for this comune.",
+        "invalid_surface": "Invalid surface.",
+        "surface_out_of_bands": "The surface is not in the bands of the agreement.",
+        "invalid_element_counts": "The D elements valid for sub-fascia 3 cannot be more than the D elements.",
+        "term_too_short": "A 3+2 lease must last at least 3 years: check the dates."
+      },
+      "warning": {
+        "subfascia3_max_needs_more_d": "Sub-fascia 3 with fewer than 4 D elements: the agreement allows the maximum of sub-fascia 3 only with at least 4 D elements. The maximum shown may be too high.",
+        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied."
+      },
+      "indicativeTitle": "Indicative range: data to be checked",
+      "indicativeWarning": "The territorial agreement data are not yet confirmed by a lawyer or a signatory organization (validity and filing of the agreement). The range is a reference and does not block the lease: check the rent with a signatory organization.",
+      "lastVerified": "Tables checked against the official text on {{date}}.",
+      "source": "Official text of the agreement",
+      "bandBetween": "band from {{min}} (excluded) to {{max}} sqm",
+      "bandOver": "band over {{min}} sqm",
+      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates)."
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Flat-rate tax (Cedolare Secca)",
@@ -529,6 +556,9 @@
       },
       "monthlyRent": {
         "positive": "Monthly rent must be greater than zero"
+      },
+      "securityDeposit": {
+        "min": "The security deposit cannot be negative."
       }
     },
     "createPageTitle": "Create lease",
@@ -555,8 +585,8 @@
       "createDraft": "Create lease draft",
       "apeMissingError": "An APE (energy performance certificate) document must be uploaded for this property before creating a lease.",
       "waitingDocuments": "Please wait while property documents are being verified.",
-      "concordatoRangeRequired": "Calculate the agreed-rent band and enter a monthly rent between the minimum and maximum.",
-      "concordatoRentOutOfRange": "Monthly rent is outside the calculated band for this property.",
+      "concordatoRangeRequired": "Calculate the agreed-rent range: the monthly rent is compared with the range returned by the server.",
+      "concordatoRentOutOfRange": "The monthly rent is outside the range calculated for this property.",
       "concordatoRangeHint": "Monthly band: {{min}} – {{max}} EUR",
       "propertiesLoading": "Loading properties...",
       "propertiesLoadError": "Your properties could not be loaded, so the lease property cannot be chosen yet.",
@@ -564,7 +594,17 @@
       "createProperty": "Create property",
       "documentsLoadError": "The property documents (APE) could not be checked.",
       "uploadApe": "Upload the APE",
-      "retry": "Retry"
+      "retry": "Retry",
+      "contractTypeLabel": "Contract type *",
+      "taxRegimeLabel": "Tax regime *",
+      "securityDepositLabel": "Security deposit (€)",
+      "termRule": {
+        "Libero": "Free rent: at least 4 years (4+4).",
+        "Concordato": "Agreed rent: at least 3 years (3+2); the rent must be within the range of the territorial agreement.",
+        "Transitorio": "Transitional: from 1 to 18 months. CasaZen checks only the term: the transitional needs must be stated and documented in the contract, and there is no contract template for this type yet."
+      },
+      "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
+      "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -590,7 +630,25 @@
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
     "contactEmailMasked": "Contact email",
-    "noParties": "No parties recorded."
+    "noParties": "No parties recorded.",
+    "contractTypeLabel": {
+      "Libero": "Free rent (4+4)",
+      "Concordato": "Agreed rent (3+2)",
+      "Transitorio": "Transitional"
+    },
+    "taxRegimeLabel": {
+      "CedolareSecca": "Cedolare secca",
+      "Ordinario": "Ordinary regime"
+    },
+    "taxRegimeUnknown": "tax regime not stated",
+    "securityDeposit": "Security deposit",
+    "securityDepositMissing": "Not stated",
+    "concordatoAssessment": {
+      "title": "Agreed-rent range",
+      "indicative": "Indicative range: the territorial agreement data are not confirmed. The lease was created without blocks: check the rent with a signatory organization.",
+      "rentOutside": "The rent of the lease is outside this range.",
+      "calculatedAt": "Calculated by the server on {{date}}."
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -1260,7 +1318,14 @@
       "empty": "No documents uploaded.",
       "download": "Download",
       "downloading": "Downloading",
-      "delete": "Delete"
+      "delete": "Delete",
+      "apeIdentification": "Code {{code}} · energy class {{energyClass}}",
+      "apeIdentificationMissing": "APE code and energy class not entered: the contract needs them.",
+      "apeIdentificationEdit": "Enter code and class",
+      "apeCode": "APE code",
+      "apeEnergyClass": "Energy class",
+      "apeIdentificationSave": "Save",
+      "apeIdentificationCancel": "Cancel"
     },
     "cin": {
       "badge": {
@@ -3397,7 +3462,11 @@
     "offlineSignatureSaved": "Signed contract saved",
     "offlineSignatureFailed": "Could not save the signed contract",
     "stipulaDeclared": "Signing date saved",
-    "stipulaDeclareFailed": "Could not save the signing date"
+    "stipulaDeclareFailed": "Could not save the signing date",
+    "cadastralSaved": "Cadastral data saved",
+    "cadastralSaveFailed": "Could not save the cadastral data",
+    "apeIdentificationSaved": "APE details saved",
+    "apeIdentificationSaveFailed": "Could not save the APE details"
   },
   "fiscal": {
     "page": {
@@ -3620,6 +3689,20 @@
       "documentsLoadError": "The property documents could not be loaded.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    },
+    "cadastral": {
+      "title": "Cadastral data",
+      "edit": "Edit",
+      "missing": "Cadastral data missing: the contract states them and cannot be generated without them.",
+      "sheet": "Sheet (foglio)",
+      "parcel": "Parcel (particella)",
+      "subaltern": "Subaltern (subalterno)",
+      "category": "Cadastral category",
+      "categoryPlaceholder": "e.g. A/2",
+      "income": "Cadastral income (€)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "notSet": "Not set"
     }
   },
   "touristTaxRules": {

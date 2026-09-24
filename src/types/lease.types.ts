@@ -32,7 +32,63 @@ export const LEASE_EVENT_TYPES = [
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
 
+/**
+ * Legacy combined value (contract type + tax regime) still returned by the API; the lease form sends `contractType` and
+ * `taxRegime` (LT-10, A7-13).
+ */
 export type FiscalRegime = 'CedolareSecca' | 'RegimeOrdinario' | 'CanoneConcordato';
+
+/** Contract type (backend `LeaseContractType`): libero 4+4, concordato 3+2, transitorio 1-18 months. */
+export const LEASE_CONTRACT_TYPES = ['Libero', 'Concordato', 'Transitorio'] as const;
+export type LeaseContractType = (typeof LEASE_CONTRACT_TYPES)[number];
+
+/** Tax regime chosen by the landlord (backend `LeaseTaxRegime`), independent of the contract type. */
+export const LEASE_TAX_REGIMES = ['CedolareSecca', 'Ordinario'] as const;
+export type LeaseTaxRegime = (typeof LEASE_TAX_REGIMES)[number];
+
+export type DataCompleteness = 'Complete' | 'Partial' | 'Missing';
+
+/**
+ * Characteristics of the unit for the canone concordato range (LT-10). No year count: the backend computes the term from
+ * the lease dates.
+ */
+export interface ConcordatoCharacteristics {
+  sqm: number;
+  garageSqm: number;
+  balconySqm: number;
+  otherAppurtenanceSqm: number;
+  privateGreenSqm: number;
+  typeAElementCount: number;
+  typeBElementCount: number;
+  typeCElementCount: number;
+  typeDElementCount: number;
+  qualifyingTypeDElementCount: number;
+  stoveHeating: boolean;
+  isFurnished: boolean;
+  airConditioning: boolean;
+  zoneName?: string | null;
+  cadastralSheet?: string | null;
+}
+
+/**
+ * Canone concordato data stored with a lease: the declared characteristics and the range the backend computed at
+ * creation. `indicative`: the agreement data are not confirmed (Partial), the range is a guide and did not block the
+ * lease (A7-23); `rentWithinRange` false is then a warning.
+ */
+export interface LeaseConcordatoAssessment extends ConcordatoCharacteristics {
+  contractYears: number;
+  usableSqm: number;
+  zone: string;
+  subFascia: number;
+  canoneMinAnnuo: number;
+  canoneMaxAnnuo: number;
+  canoneMinMensile: number;
+  canoneMaxMensile: number;
+  dataCompleteness: DataCompleteness;
+  indicative: boolean;
+  rentWithinRange: boolean;
+  calculatedAt: string;
+}
 
 export type PartyRole = 'Landlord' | 'Tenant';
 
@@ -97,6 +153,9 @@ export interface LeaseSummary {
   property?: LeasePropertySummary | null;
   status: LeaseStatus;
   fiscalRegime: FiscalRegime;
+  contractType: LeaseContractType;
+  /** Null only for canone concordato leases created before LT-10 (the old value did not say it). */
+  taxRegime: LeaseTaxRegime | null;
   startDate: string;
   endDate: string;
   monthlyRent: number;
@@ -117,9 +176,15 @@ export interface LeaseDetail {
   property?: LeasePropertySummary | null;
   status: LeaseStatus;
   fiscalRegime: FiscalRegime;
+  contractType: LeaseContractType;
+  /** Null only for canone concordato leases created before LT-10 (the old value did not say it). */
+  taxRegime: LeaseTaxRegime | null;
   startDate: string;
   endDate: string;
   monthlyRent: number;
+  securityDeposit: number | null;
+  /** Canone concordato leases only. */
+  concordatoAssessment: LeaseConcordatoAssessment | null;
   /** Day every party had signed (the stipula); null until then. */
   stipulaDate: string | null;
   /** RLI deadline: min(stipula, start) + 30 days; null while it is to be determined (LT-04). */
@@ -142,13 +207,20 @@ export interface CreateLeasePartyDto {
   contactEmail: string;
 }
 
+/**
+ * `POST /leases` (LT-10): contract type and tax regime, the dates (the backend derives the term), the deposit and, for a
+ * canone concordato lease, the characteristics the backend computes and checks the range with.
+ */
 export interface CreateLeaseDto {
   propertyId: string;
-  fiscalRegime: FiscalRegime;
+  contractType: LeaseContractType;
+  taxRegime: LeaseTaxRegime;
   startDate: string;
   endDate: string;
   monthlyRent: number;
+  securityDeposit?: number | null;
   parties: CreateLeasePartyDto[];
+  canoneConcordato?: ConcordatoCharacteristics;
 }
 
 /**
