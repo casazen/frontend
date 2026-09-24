@@ -12,7 +12,8 @@ import { usePropertyDetail } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { Edit, ArrowRight, Sparkles, ExternalLink, Wrench } from 'lucide-react';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { Edit, ArrowRight, Sparkles, ExternalLink, Wrench, Plus } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { PropertyCinBadge } from './components/property-cin-badge';
 import { PropertyCinDialog } from './components/property-cin-dialog';
@@ -38,6 +39,7 @@ export function PropertyDetailPage() {
   const updateCin = useUpdatePropertyCin();
   // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
+  const canCreateBooking = useWorkspace().hasPermission('short-rent', 'booking.write');
 
   if (isLoading) {
     return <LoadingScreen message={t('property.detail.loading')} />;
@@ -113,12 +115,26 @@ export function PropertyDetailPage() {
           </Card>
         ) : null}
 
-        <Link
-          to={`/app/short-rent/bookings?propertyId=${property.id}`}
-          className="text-primary hover:underline text-sm inline-block"
-        >
-          {t('property.detail.bookingsLink')} &#8594;
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            to={`/app/short-rent/bookings?propertyId=${property.id}`}
+            className="text-primary hover:underline text-sm inline-block"
+            data-testid="property-bookings-link"
+          >
+            {t('property.detail.bookingsLink')} &#8594;
+          </Link>
+          {canCreateBooking && (
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                to={`/app/short-rent/bookings/create?propertyId=${property.id}`}
+                data-testid="property-new-booking"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {t('property.detail.newBooking')}
+              </Link>
+            </Button>
+          )}
+        </div>
 
         <div className="flex gap-1 border-b mb-6">
           {tabs.map((tab) => (

@@ -7,8 +7,9 @@ import type {
   CreateBookingDto,
   UpdateBookingDto,
   CheckInDto,
-  CheckOutDto,
+  HostBookingQuotePayload,
 } from '@/types';
+import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInSessionStatusDto, ResendCheckInLinkResponse } from '@/types/public-checkin.types';
 
@@ -24,8 +25,15 @@ export const bookingsApi = {
   create: (data: CreateBookingDto) =>
     ApiClient.post<Booking>('/bookings', data),
 
+  /** Dates, guests and notes only: the backend computes the price again (PC-07). */
   update: (id: string, data: UpdateBookingDto) =>
     ApiClient.put<Booking>(`/bookings/${id}`, data),
+
+  /** Confirms a pending booking entered by the host (PC-07). */
+  confirm: (id: string) => ApiClient.post<Booking>(`/bookings/${id}/confirm`),
+
+  /** Price of a stay the host is entering or changing, tourist tax included (PC-07, BK-03). */
+  quote: (payload: HostBookingQuotePayload) => ApiClient.post<DirectBookingQuote>('/bookings/quote', payload),
 
   /** What cancelling now would do: paid, refundable and minimum refund amounts (BK-02). */
   getCancellationQuote: (id: string) =>
@@ -40,9 +48,6 @@ export const bookingsApi = {
 
   checkIn: (id: string, data?: CheckInDto) =>
     ApiClient.post<Booking>(`/bookings/${id}/check-in`, data),
-
-  checkOut: (id: string, data?: CheckOutDto) =>
-    ApiClient.post<Booking>(`/bookings/${id}/check-out`, data),
 
   generateCheckInToken: (id: string) =>
     ApiClient.post<{ token: string }>(`/bookings/${id}/check-in-token`),

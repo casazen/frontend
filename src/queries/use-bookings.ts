@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { bookingsApi } from '@/api/bookings.api';
 import type {
+  Booking,
   CancelBookingDto,
   CreateBookingDto,
   UpdateBookingDto,
   CheckInDto,
-  CheckOutDto,
+  HostBookingQuotePayload,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -59,20 +60,54 @@ export function useCreateBooking() {
   });
 }
 
+/** Stores the booking returned by an action and refreshes every booking list. */
+function applyBookingChange(queryClient: QueryClient, booking: Booking) {
+  queryClient.setQueryData([BOOKINGS_KEY, booking.id], booking);
+  queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
+}
+
+/**
+ * Changes dates, guests and notes (PC-07). No error toast: the edit form shows the error next to the fields (e.g. 409
+ * on overlapping dates).
+ */
 export function useUpdateBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateBookingDto }) =>
       bookingsApi.update(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
+    onSuccess: (booking) => {
+      applyBookingChange(queryClient, booking);
       toast.success(i18n.t('toast.bookingUpdated'));
     },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingUpdateFailed'));
+  });
+}
+
+/** Confirms a pending booking entered by the host (PC-07). The dialog shows the error. */
+export function useConfirmBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => bookingsApi.confirm(id),
+    onSuccess: (booking) => {
+      applyBookingChange(queryClient, booking);
+      toast.success(i18n.t('booking.confirm.success'));
     },
+  });
+}
+
+/**
+ * Price of the stay in the host form, tourist tax included (BK-03): it also says whether the ages of the minors
+ * matter (`touristTax.ageRulesApply`).
+ */
+export function useHostBookingQuote(payload: HostBookingQuotePayload | null) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, 'quote', payload],
+    queryFn: () => bookingsApi.quote(payload!),
+    enabled: payload !== null,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+    retry: false,
   });
 }
 
@@ -115,23 +150,6 @@ export function useCheckIn() {
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkInGuestFailed'));
-    },
-  });
-}
-
-export function useCheckOut() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data?: CheckOutDto }) =>
-      bookingsApi.checkOut(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
-      toast.success(i18n.t('toast.guestCheckedOut'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkOutGuestFailed'));
     },
   });
 }

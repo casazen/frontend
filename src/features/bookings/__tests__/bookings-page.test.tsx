@@ -6,22 +6,32 @@ import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
-import type { Booking } from '@/types';
+import { propertiesApi } from '@/api/properties.api';
+import type { Booking, Property } from '@/types';
 import { BookingsPage } from '../bookings-page';
 
 vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getAll: vi.fn() },
 }));
+vi.mock('@/api/properties.api', () => ({
+  propertiesApi: { getById: vi.fn() },
+}));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: () => true }),
+}));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
+  PageHeader: ({ title, action }: { title: string; action?: React.ReactNode }) =>
+    createElement('div', null, createElement('h1', null, title), action),
 }));
 
-const booking = (id: string, firstName: string, source: string): Booking => ({
+const WAIT = { timeout: 5000 };
+
+const booking = (id: string, firstName: string, source: string, propertyId = 'property-1'): Booking => ({
   id,
-  propertyId: 'property-1',
+  propertyId,
   userId: 'auth0|host',
   checkInDate: '2027-10-01T00:00:00Z',
   checkOutDate: '2027-10-05T00:00:00Z',
@@ -35,17 +45,18 @@ const booking = (id: string, firstName: string, source: string): Booking => ({
   updatedAt: '2026-09-24T08:00:00Z',
 });
 
-function renderPage() {
+function renderPage(url = '/app/short-rent/bookings') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
-        createElement(MemoryRouter, null, createElement(BookingsPage)))),
+        createElement(MemoryRouter, { initialEntries: [url] }, createElement(BookingsPage)))),
   );
 }
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  await i18n.changeLanguage('it');
 });
 
 describe('BookingsPage', () => {
@@ -58,19 +69,50 @@ describe('BookingsPage', () => {
 
     renderPage();
 
-    await screen.findByText('Mario Rossi', undefined, { timeout: 5000 });
+    await screen.findByText('Mario Rossi', undefined, WAIT);
     const sources = screen.getAllByTestId('booking-source').map((cell) => cell.textContent);
     expect(sources).toEqual([i18n.t('booking.source.Manual'), i18n.t('booking.source.Direct')]);
     expect(screen.getByText(i18n.t('booking.list.columns.source'))).toBeInTheDocument();
   });
 
   it('shows the error state, not an empty list, when the API fails', async () => {
-    await i18n.changeLanguage('it');
     vi.mocked(bookingsApi.getAll).mockRejectedValue(new Error('boom'));
 
     renderPage();
 
-    expect(await screen.findByText(i18n.t('booking.list.loadError'), undefined, { timeout: 5000 })).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('booking.list.loadError'), undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('booking.list.noResults'))).not.toBeInTheDocument();
+  });
+
+  it('BookingsPage_PropertyIdInTheUrl_AsksTheBackendForThatPropertyAndOffersANewBookingForIt', async () => {
+    vi.mocked(bookingsApi.getAll).mockResolvedValue([booking('bk-1', 'Mario', 'Manual')]);
+    vi.mocked(propertiesApi.getById).mockResolvedValue({ id: 'property-1', name: 'Casa Mare' } as Property);
+
+    renderPage('/app/short-rent/bookings?propertyId=property-1');
+
+    await screen.findByText('Mario Rossi', undefined, WAIT);
+    expect(bookingsApi.getAll).toHaveBeenCalledWith({ propertyId: 'property-1' });
+    expect(await screen.findByText(i18n.t('booking.list.filteredByProperty', { name: 'Casa Mare' }), undefined, WAIT))
+      .toBeInTheDocument();
+    expect(screen.getByRole('link', { name: i18n.t('booking.list.showAll') })).toHaveAttribute('href', '/app/short-rent/bookings');
+    expect(screen.getByRole('link', { name: i18n.t('booking.list.newBooking') })).toHaveAttribute(
+      'href',
+      '/app/short-rent/bookings/create?propertyId=property-1',
+    );
+  });
+
+  it('BookingsPage_NoPropertyInTheUrl_ListsEveryBookingWithoutFilter', async () => {
+    vi.mocked(bookingsApi.getAll).mockResolvedValue([booking('bk-1', 'Mario', 'Manual')]);
+
+    renderPage();
+
+    await screen.findByText('Mario Rossi', undefined, WAIT);
+    expect(bookingsApi.getAll).toHaveBeenCalledWith(undefined);
+    expect(screen.queryByTestId('bookings-property-filter')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: i18n.t('booking.list.newBooking') })).toHaveAttribute(
+      'href',
+      '/app/short-rent/bookings/create',
+    );
+    expect(propertiesApi.getById).not.toHaveBeenCalled();
   });
 });

@@ -588,6 +588,10 @@
       },
       "numberOfGuests": {
         "min": "At least 1 guest is required"
+      },
+      "numberOfChildren": {
+        "invalid": "Enter a valid number of minors",
+        "lessThanGuests": "At least one adult is needed: minors must be fewer than the guests"
       }
     },
     "list": {
@@ -610,9 +614,10 @@
         "status": "Status",
         "source": "Source"
       },
-      "emptyTitle": "No bookings found",
-      "emptyDescription": "Get started by creating your first booking",
-      "addAction": "Add Booking"
+      "newBooking": "New booking",
+      "filteredByProperty": "Bookings of {{name}}",
+      "filteredByAProperty": "Bookings of one property",
+      "showAll": "Show all"
     },
     "detail": {
       "guestInformation": "Guest Information",
@@ -663,7 +668,24 @@
       "manualNotice": "The booking is saved as confirmed, with source \"Manual\": its dates are taken at once on the booking site and in the exported iCal calendar.",
       "propertiesLoading": "Loading properties...",
       "propertiesLoadError": "Could not load the properties. Reload the page.",
-      "noProperties": "No property available: create a property first."
+      "noProperties": "No property available: create a property first.",
+      "numberOfChildren": "Of whom minors (under 18)",
+      "numberOfChildrenHint": "The tourist tax of the comune exempts or reduces minors by age.",
+      "childrenAgesMissing": "Enter the age of each minor: it is needed to calculate the tourist tax.",
+      "stayLockedSource": "This booking comes from the booking site or a channel: dates and guests are not changed here. You can edit the notes.",
+      "stayLockedStarted": "The stay has already started or ended: dates and guests can no longer be changed. You can edit the notes.",
+      "repriceNotice": "If you change dates or guests the price is calculated again, tourist tax included.",
+      "price": {
+        "loading": "Calculating the price…",
+        "loadError": "The price could not be calculated.",
+        "lodging_one": "{{count}} night × {{perNight}}",
+        "lodging_other": "{{count}} nights × {{perNight}}",
+        "cleaning": "Cleaning",
+        "touristTax": "Tourist tax",
+        "taxNeedsAges": "enter the ages of the minors",
+        "taxNotCalculated": "not calculated (no rate for the comune)",
+        "total": "Total"
+      }
     },
     "create": {
       "title": "Create Booking",
@@ -675,7 +697,9 @@
       "description": "Update booking for {{name}}",
       "loading": "Loading booking...",
       "notFound": "Booking not found",
-      "notFoundDescription": "The booking you're looking for doesn't exist."
+      "notFoundDescription": "The booking you're looking for doesn't exist.",
+      "notEditable": "A cancelled booking cannot be changed.",
+      "backToBooking": "Back to the booking"
     },
     "checkInDialog": {
       "title": "Check In Guest",
@@ -686,18 +710,6 @@
       "cancel": "Cancel",
       "checkingIn": "Checking In...",
       "confirm": "Confirm Check In"
-    },
-    "checkOutDialog": {
-      "title": "Check Out Guest",
-      "description": "Check out {{name}}",
-      "checkOutTime": "Check-out Time",
-      "damages": "Damages (if any)",
-      "damagesPlaceholder": "Describe any damages found...",
-      "notes": "Notes (optional)",
-      "notesPlaceholder": "Any notes about the check-out...",
-      "cancel": "Cancel",
-      "checkingOut": "Checking Out...",
-      "confirm": "Confirm Check Out"
     },
     "detailPage": {
       "loading": "Loading booking...",
@@ -720,26 +732,26 @@
       "guestName": "Name",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
-      "perNight": "/night",
       "alloggiatiWeb": "Alloggiati Web",
       "communicationStatus": "Communication status",
       "confirmation": "Confirmation: ",
       "incompleteGuestData": "Incomplete guest data",
       "noAlloggiatiInfo": "No Alloggiati information available for this booking.",
-      "source": "Source"
+      "source": "Source",
+      "title": "Booking {{code}}",
+      "loadError": "The booking could not be loaded.",
+      "retry": "Retry",
+      "childrenCount_one": "including {{count}} minor",
+      "childrenCount_other": "including {{count}} minors",
+      "cancellationNote": "Cancellation reason (visible only to you)",
+      "lodgingPerNight_one": "Stay: {{count}} night × {{perNight}}",
+      "lodgingPerNight_other": "Stay: {{count}} nights × {{perNight}}",
+      "cleaningFee": "Cleaning",
+      "touristTax": "Tourist tax",
+      "noPriceBreakdown": "Price breakdown not available for this booking."
     },
     "card": {
-      "guest": "Guest",
-      "checkIn": "Check-in",
-      "checkOut": "Check-out",
-      "total": "Total",
-      "view": "View",
-      "checkInAction": "Check In",
-      "checkOutAction": "Check Out",
-      "guests": "guests",
-      "night_one": "night",
-      "night_other": "nights",
-      "bookingPrefix": "Booking #"
+      "checkOutAction": "Check Out"
     },
     "source": {
       "Manual": "Manual",
@@ -788,7 +800,19 @@
         "cancelled": "Booking cancelled.",
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
         "noRefund": "No refund requested."
-      }
+      },
+      "guestNotified": "The guest will get a cancellation email, without the reason."
+    },
+    "confirm": {
+      "action": "Confirm booking",
+      "title": "Confirm this booking?",
+      "description": "The dates become taken on the booking site and in the exported iCal calendar, and you can send the guest the check-in link.",
+      "keep": "Not now",
+      "submit": "Confirm",
+      "submitting": "Confirming…",
+      "failed": "The booking could not be confirmed. Please try again.",
+      "success": "Booking confirmed",
+      "pendingNotice": "This booking you entered is still pending: confirm it to take the dates and enable the guest's check-in."
     }
   },
   "ota": {
@@ -1059,7 +1083,8 @@
       "pricingDescription": "Configure the AI adapter for dynamic pricing for this property.",
       "managePricing": "Manage AI pricing",
       "viewOnPublicSite": "View on public site",
-      "publicSiteHint": "Preview how guests see this property on your direct booking site."
+      "publicSiteHint": "Preview how guests see this property on your direct booking site.",
+      "newBooking": "New booking"
     },
     "info": {
       "title": "Property details",
@@ -3114,7 +3139,16 @@
       "supplierAccountEmailMissing": "Your account has no email, so the registration cannot be verified.",
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
-      "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation."
+      "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
+      "bookingGuestsInvalid": "At least one adult is needed: minors must be fewer than the guests.",
+      "bookingNotEditable": "A cancelled booking cannot be changed.",
+      "bookingStayLocked": "The stay has already started or ended: dates and guests can no longer be changed.",
+      "bookingUpdateSourceLocked": "Dates and guests can be changed only on bookings you entered: this one comes from the booking site or a channel. You can edit the notes.",
+      "bookingCheckinInPast": "The check-in cannot be moved to a day already past.",
+      "bookingNotPending": "The booking is no longer waiting for confirmation: reload the page.",
+      "bookingNotConfirmable": "You can confirm only the pending bookings you entered.",
+      "bookingNotCheckedIn": "The check-out can be recorded only for a stay whose check-in was recorded.",
+      "bookingCheckoutTooEarly": "The check-out can be recorded from the departure day."
     }
   },
   "validation": {

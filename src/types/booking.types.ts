@@ -20,27 +20,61 @@ export interface Booking {
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
+  /** Adults and minors among `numberOfGuests` (every guest an adult when the split is unknown). */
+  numberOfAdults?: number;
+  numberOfChildren?: number;
   totalPrice: number;
+  /** Lodging plus `cleaningFee`, tourist tax excluded. */
+  basePrice?: number;
+  /** Cleaning fee included in `basePrice`: the lodging is `basePrice - cleaningFee`. */
+  cleaningFee?: number;
+  touristTax?: number;
   currency: string;
   status: BookingStatus;
   guest: BookingGuest;
   specialRequests?: string;
   source?: string;
+  /** Reason written by the host when cancelling (host only). */
+  cancellationNote?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+/** POST /bookings: booking entered by the host (Confirmed, source Manual). */
 export interface CreateBookingDto {
   propertyId: string;
   checkInDate: string;
   checkOutDate: string;
+  /** All guests, minors included. */
   numberOfGuests: number;
+  /** Minors among `numberOfGuests`: asked when the tourist tax of the comune depends on their age. */
+  numberOfChildren?: number;
+  childrenAges?: number[];
   guest: BookingGuest;
   specialRequests?: string;
 }
 
-export interface UpdateBookingDto extends Partial<CreateBookingDto> {
-  status?: BookingStatus;
+/**
+ * PUT /bookings/:id — only what the host may change (PC-07). Status, prices and guest are never sent: the status
+ * changes through its own actions and the price is computed by the backend.
+ */
+export interface UpdateBookingDto {
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfGuests: number;
+  numberOfChildren?: number;
+  childrenAges?: number[];
+  specialRequests?: string;
+}
+
+/** POST /bookings/quote — price of a stay the host is entering or changing (tourist tax of BK-03 included). */
+export interface HostBookingQuotePayload {
+  propertyId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfGuests: number;
+  numberOfChildren?: number;
+  childrenAges?: number[];
 }
 
 export interface BookingCalendarEvent {
@@ -55,12 +89,6 @@ export interface BookingCalendarEvent {
 export interface CheckInDto {
   actualCheckInTime?: string;
   notes?: string;
-}
-
-export interface CheckOutDto {
-  actualCheckOutTime?: string;
-  notes?: string;
-  damages?: string;
 }
 
 /** Rule of the model that sets the minimum refund of a cancellation (BK-02). */

@@ -164,6 +164,7 @@ export function CancelBookingDialog({ bookingId, open, onOpenChange }: CancelBoo
                   onChange={(e) => setReason(e.target.value)}
                   rows={2}
                 />
+                <p className="text-xs text-muted-foreground">{t('booking.cancel.guestNotified')}</p>
               </div>
 
               {cancel.isError && (

@@ -10,11 +10,12 @@ import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { propertiesApi } from '@/api/properties.api';
 import type { Booking, Property } from '@/types';
+import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import { BookingCreatePage } from '../booking-create-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { create: vi.fn() },
+  bookingsApi: { create: vi.fn(), quote: vi.fn() },
 }));
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { getAll: vi.fn() },
@@ -41,20 +42,49 @@ function conflict(data: unknown): AxiosError {
   });
 }
 
-function renderPage() {
+/** Quote of the backend (BK-03): Firenze-like rates exempt minors by age when `ageRules` is true. */
+function hostQuote(ageRules: boolean, status: DirectBookingQuote['touristTax']['status'] = 'Calculated'): DirectBookingQuote {
+  return {
+    propertyId: property.id,
+    checkInDate: '2027-10-01',
+    checkOutDate: '2027-10-05',
+    nights: 4,
+    nightlyRate: 100,
+    lodgingTotal: 400,
+    cleaningFee: 50,
+    basePrice: 450,
+    touristTax: {
+      status,
+      amount: status === 'Calculated' ? 24 : null,
+      taxableNights: 4,
+      ageRulesApply: ageRules,
+      categories: [],
+    },
+    totalPrice: status === 'Calculated' ? 474 : 450,
+    currency: 'EUR',
+  } as DirectBookingQuote;
+}
+
+function renderPage(url = '/app/short-rent/bookings/new') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
-        createElement(MemoryRouter, { initialEntries: ['/app/short-rent/bookings/new'] },
+        createElement(MemoryRouter, { initialEntries: [url] },
           createElement(Routes, null,
             createElement(Route, { path: '/app/short-rent/bookings/new', element: createElement(BookingCreatePage) }),
             createElement(Route, { path: '/app/short-rent/bookings', element: createElement('p', null, 'bookings-list') }),
+            createElement(Route, { path: '/app/short-rent/properties/:id', element: createElement('p', null, 'property-page') }),
           )))),
   );
 }
 
 async function fillAndSubmit() {
+  await fillForm();
+  fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
+}
+
+async function fillForm() {
   const select = await screen.findByLabelText(i18n.t('booking.form.property'), undefined, WAIT);
   await screen.findByRole('option', { name: 'Casa Mare - Rimini' }, WAIT);
   fireEvent.change(select, { target: { value: property.id } });
@@ -70,13 +100,13 @@ async function fillAndSubmit() {
   ];
   for (const [label, value] of fields)
     fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
-  fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
 }
 
 beforeEach(async () => {
   vi.clearAllMocks();
   await i18n.changeLanguage('it');
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property]);
+  vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(false, 'RateUnavailable'));
 });
 
 describe('BookingCreatePage', { timeout: 20000 }, () => {
@@ -112,6 +142,48 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     await fillAndSubmit();
 
     expect(await screen.findByText('bookings-list', undefined, WAIT)).toBeInTheDocument();
+  });
+
+  it('BookingCreatePage_RatesExemptMinorsByAge_AsksMinorsAndAgesAndSendsThem', async () => {
+    vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(true));
+    vi.mocked(bookingsApi.create).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as Booking);
+    renderPage();
+
+    await fillForm();
+    const children = await screen.findByLabelText(i18n.t('booking.form.numberOfChildren'), undefined, WAIT);
+    expect(await screen.findByTestId('booking-price-total', undefined, WAIT)).toHaveTextContent('474,00');
+    fireEvent.change(children, { target: { value: '1' } });
+    const age = await screen.findByLabelText(i18n.t('touristTaxRules.childAgeLabel', { index: 1 }), undefined, WAIT);
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
+    expect(await screen.findByTestId('booking-ages-missing', undefined, WAIT)).toBeInTheDocument();
+    expect(bookingsApi.create).not.toHaveBeenCalled();
+
+    fireEvent.change(age, { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
+
+    await waitFor(() => expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
+      numberOfGuests: 2,
+      numberOfChildren: 1,
+      childrenAges: [8],
+    })), WAIT);
+    expect(bookingsApi.quote).toHaveBeenCalledWith(expect.objectContaining({
+      propertyId: property.id,
+      numberOfGuests: 2,
+      numberOfChildren: 1,
+      childrenAges: [8],
+    }));
+  });
+
+  it('BookingCreatePage_OpenedFromAProperty_PreselectsItAndCancelGoesBackToIt', async () => {
+    renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}`);
+
+    await screen.findByRole('option', { name: 'Casa Mare - Rimini' }, WAIT);
+    await waitFor(() => expect(screen.getByLabelText(i18n.t('booking.form.property'))).toHaveValue(property.id), WAIT);
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.cancel') }));
+
+    expect(await screen.findByText('property-page', undefined, WAIT)).toBeInTheDocument();
+    expect(bookingsApi.create).not.toHaveBeenCalled();
   });
 
   it('shows the properties load error instead of an empty select', async () => {
