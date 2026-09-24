@@ -14,11 +14,11 @@ export function useAlloggiatiSummary(propertyId?: string) {
   });
 }
 
-export function useAlloggiatiStatus(bookingId: string) {
+export function useAlloggiatiStatus(bookingId: string, enabled = true) {
   return useQuery({
     queryKey: [ALLOGGIATI_KEY, 'status', bookingId],
     queryFn: () => alloggiatiApi.getStatus(bookingId),
-    enabled: !!bookingId,
+    enabled: !!bookingId && enabled,
   });
 }
 

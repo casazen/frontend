@@ -3,6 +3,7 @@ import { ApiClient } from '@/api/client';
 import type {
   CheckoutWizardCompleteCommand,
   CheckoutWizardCompleteResult,
+  CheckoutWizardStartCommand,
   CheckoutWizardStartResult,
   CompletePropertyActivationCommand,
   ComplianceActivationCompleteResult,
@@ -47,9 +48,18 @@ export async function fetchComplianceSummary(): Promise<ComplianceSummaryResult>
   return ApiClient.get<ComplianceSummaryResult>('/compliance/summary');
 }
 
-export async function startCheckoutWizard(bookingId: string): Promise<CheckoutWizardStartResult> {
+/**
+ * Opens the check-out wizard (same rules as `POST /bookings/:id/check-out`, CO-08). `registerArrival` confirms that the
+ * guest arrived: a confirmed booking whose arrival was never registered is checked in first ("registra arrivo e
+ * procedi"); without it the API answers 409 `booking_arrival_not_registered`.
+ */
+export async function startCheckoutWizard(
+  bookingId: string,
+  payload: CheckoutWizardStartCommand = {},
+): Promise<CheckoutWizardStartResult> {
   const { data } = await axios.post<CheckoutWizardStartResult>(
     `/bookings/${bookingId}/checkout-wizard/start`,
+    payload,
   );
   return data;
 }

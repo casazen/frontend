@@ -77,12 +77,38 @@ export function useComplianceSummary() {
   });
 }
 
+const checkoutStartKey = (bookingId: string) => [COMPLIANCE_KEY, 'checkout', bookingId];
+
+/**
+ * Opens the check-out wizard of a stay whose arrival is registered (CO-08): the API checks the same rules as the
+ * completion and records when the wizard was opened. Started once per page: never refetched in the background.
+ */
 export function useStartCheckoutWizard(bookingId: string, enabled = true) {
   return useQuery({
-    queryKey: [COMPLIANCE_KEY, 'checkout', bookingId],
+    queryKey: checkoutStartKey(bookingId),
     queryFn: () => startCheckoutWizard(bookingId),
     enabled: !!bookingId && enabled,
     retry: false,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * "Registra arrivo e procedi" (CO-08): the host confirms that the guest arrived; the API registers the arrival of the
+ * confirmed booking and opens the check-out wizard in the same transaction. No toast: the page shows the error.
+ */
+export function useRegisterArrivalAndStartCheckout(bookingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => startCheckoutWizard(bookingId, { registerArrival: true }),
+    onSuccess: (result) => {
+      queryClient.setQueryData(checkoutStartKey(bookingId), result);
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['alloggiati'] });
+      queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'summary'] });
+    },
   });
 }
 
@@ -93,11 +119,13 @@ export function useCompleteCheckoutWizard(bookingId: string) {
     mutationFn: (payload: CheckoutWizardCompleteCommand) =>
       completeCheckoutWizard(bookingId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+      // The cockpit changes; the wizard start of this stay is never fetched again (it would answer 409 now).
+      queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['bookings', bookingId] });
+      queryClient.invalidateQueries({ queryKey: ['alloggiati'] });
       toast.success(i18n.t('compliance.checkout.completed'));
     },
-    onError: () => toast.error(i18n.t('compliance.checkout.completeFailed')),
+    onError: (error) =>
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('compliance.checkout.completeFailed')),
   });
 }
