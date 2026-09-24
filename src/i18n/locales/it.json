@@ -1602,7 +1602,6 @@
   "serviceRequest": {
     "requestSupplier": "Richiedi fornitore",
     "requestDescription": "Invia una richiesta di servizio a un fornitore attivo nel comune della proprietà.",
-    "propertyScopedDescription": "Invia una richiesta di servizio al fornitore selezionato per questa proprietà.",
     "selectedSupplier": "Fornitore selezionato",
     "website": "Sito web",
     "category": "Categoria",
@@ -1650,7 +1649,25 @@
       "Completato": "Completato",
       "Pagato": "Pagato",
       "Rifiutato": "Rifiutato"
-    }
+    },
+    "stayScopedDescription": "Negli affitti brevi la richiesta è legata a un soggiorno: la ritrovi nel dettaglio della prenotazione, sul web e nell'app.",
+    "longRentScopedDescription": "Negli affitti lunghi la richiesta è legata all'immobile.",
+    "stay": "Soggiorno",
+    "staySelectPlaceholder": "Scegli il soggiorno",
+    "stayOption": "{{guest}} · {{from}} → {{to}}",
+    "staysLoading": "Caricamento dei soggiorni…",
+    "staysLoadError": "Impossibile caricare i soggiorni dell'immobile.",
+    "noStays": "Nessun soggiorno per questo immobile: negli affitti brevi la richiesta al fornitore si fa per un soggiorno.",
+    "suppliersLoading": "Caricamento dei fornitori…",
+    "suppliersLoadError": "Impossibile caricare i fornitori.",
+    "noSuppliers": "Nessun fornitore attivo per questa categoria nel comune dell'immobile.",
+    "listLoading": "Caricamento delle richieste…",
+    "listLoadError": "Impossibile caricare le richieste fornitore.",
+    "retry": "Riprova",
+    "emptyForStay": "Nessuna richiesta fornitore per questo soggiorno.",
+    "emptyForProperty": "Nessuna richiesta fornitore per questo immobile.",
+    "viewStay": "Vai al soggiorno",
+    "noStayLegacy": "Senza soggiorno (richiesta precedente)"
   },
   "ical": {
     "title": "Calendario OTA",
@@ -3812,7 +3829,10 @@
       "availabilityRangeInvalid": "L'intervallo di date richiesto non è valido.",
       "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
       "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
-      "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite."
+      "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite.",
+      "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
+      "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
+      "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione."
     }
   },
   "validation": {
