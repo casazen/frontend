@@ -2292,7 +2292,27 @@
     "ospiti_one": "fino a {{count}} ospite",
     "ospiti_other": "fino a {{count}} ospiti",
     "maxGuestsExceeded_one": "Massimo {{count}} ospite per questa struttura",
-    "maxGuestsExceeded_other": "Massimo {{count}} ospiti per questa struttura"
+    "maxGuestsExceeded_other": "Massimo {{count}} ospiti per questa struttura",
+    "stayTitle": "Il tuo soggiorno",
+    "country": "Paese di residenza",
+    "countryPlaceholder": "Seleziona il paese",
+    "guestsCapacityHint_one": "Massimo {{count}} ospite, bambini inclusi",
+    "guestsCapacityHint_other": "Massimo {{count}} ospiti, bambini inclusi",
+    "validation": {
+      "checkInRequired": "Seleziona la data di check-in",
+      "checkInPast": "La data di check-in non può essere nel passato",
+      "checkOutRequired": "Seleziona la data di check-out",
+      "checkOutAfterCheckIn": "Il check-out deve essere successivo al check-in",
+      "adultsMin": "Serve almeno un adulto",
+      "childrenMin": "Il numero di bambini non può essere negativo",
+      "tooManyGuests": "Il numero di ospiti supera la capienza della struttura",
+      "firstNameRequired": "Inserisci il nome",
+      "lastNameRequired": "Inserisci il cognome",
+      "emailRequired": "Inserisci l'indirizzo email",
+      "emailInvalid": "Inserisci un indirizzo email valido",
+      "phoneInvalid": "Inserisci un numero di telefono valido: da 6 a 15 cifre, con + iniziale facoltativo",
+      "countryRequired": "Seleziona il paese di residenza"
+    }
   },
   "publicSeo": {
     "notFound": "Pagina non trovata",
