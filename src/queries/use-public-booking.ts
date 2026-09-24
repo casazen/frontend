@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { isTransientRequestError } from '@/lib/api-errors';
-import type { CreateDirectBookingPayload, DirectBookingQuotePayload } from '@/types';
+import type { CreateDirectBookingPayload, DirectBookingQuotePayload, GuestBookingLookupPayload } from '@/types';
 
 /** Confirms the email of a "pay at the property" request (BK-06); errors are shown by the page. */
 export function useConfirmOnSiteRequestEmail() {
@@ -52,5 +52,19 @@ export function useResumeCheckoutPayment() {
   return useMutation({
     mutationFn: ({ bookingId, token }: { bookingId: string; token: string }) =>
       publicBookingApi.resumeCheckoutPayment(bookingId, token),
+  });
+}
+
+/** "Le mie prenotazioni" (BK-11): one lookup per submit of the form; errors (404 included) are shown by the page. */
+export function useGuestBookingLookup() {
+  return useMutation({
+    mutationFn: (payload: GuestBookingLookupPayload) => publicBookingApi.lookupGuestBooking(payload),
+  });
+}
+
+/** Emails the online check-in link of the booking found by {@link useGuestBookingLookup} again. */
+export function useSendGuestCheckInLink() {
+  return useMutation({
+    mutationFn: (payload: GuestBookingLookupPayload) => publicBookingApi.sendGuestCheckInLink(payload),
   });
 }

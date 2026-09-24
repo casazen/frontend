@@ -15,6 +15,7 @@ vi.mock('../components/canone-concordato-calculator', () => ({ CanoneConcordatoC
 vi.mock('../components/attestation-guidance-panel', () => ({ AttestationGuidancePanel: () => null }));
 vi.mock('../components/imu-notification-export-button', () => ({ ImuNotificationExportButton: () => null }));
 vi.mock('../components/delega-capture-dialog', () => ({ DelegaCaptureDialog: () => null }));
+vi.mock('../components/lease-signing-panel', () => ({ LeaseSigningPanel: () => null }));
 
 const get = vi.mocked(axios.get);
 

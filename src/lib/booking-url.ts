@@ -117,3 +117,14 @@ export function buildCheckoutOutcomePath(orgSlug: string, bookingId: string, tok
     search: new URLSearchParams({ token }).toString(),
   });
 }
+
+/**
+ * "Le mie prenotazioni" of the booking site (BK-11). With `bookingCode` the page opens with the code filled in and still
+ * asks for the email before showing anything.
+ */
+export function buildGuestBookingsPath(orgSlug: string, bookingCode?: string | null): string {
+  return createPath({
+    pathname: `/book/${encodeURIComponent(orgSlug)}/my-bookings`,
+    search: bookingCode ? new URLSearchParams({ code: bookingCode }).toString() : '',
+  });
+}

@@ -120,19 +120,60 @@ export interface OnSiteRequestConfirmation {
   requestExpiresAt: string | null;
 }
 
-export interface GuestBookingItem {
-  bookingId: string;
-  propertyName: string;
-  propertyCity: string;
-  checkInDate: string;
-  checkOutDate: string;
-  status: string;
-  paymentOption: string;
-  freeRefundDeadline: string;
+/** Body of "Le mie prenotazioni" (BK-11): the booking site, the booking code of the confirmation email, the guest's email. */
+export interface GuestBookingLookupPayload {
+  orgSlug: string;
+  bookingCode: string;
+  email: string;
 }
 
-export interface GuestBookingLookupResponse {
-  bookings: GuestBookingItem[];
+/** State of a booking for its guest: the checkout outcome states plus the stay in progress / over. */
+export type GuestBookingStatus =
+  | CheckoutOutcomeState
+  | 'StayInProgress'
+  | 'StayCompleted';
+
+/** Online check-in of the booking (CO-02): the link is only emailed, never shown. */
+export type GuestCheckInAccessStatus = 'NotApplicable' | 'NotYetOpen' | 'Open' | 'Completed';
+
+/**
+ * One booking as its guest sees it (`POST /api/public/bookings/lookup`, BK-11). No personal data: amounts in `currency`
+ * as recorded on the booking; the host contact is the one of the booking site.
+ */
+export interface GuestBookingDetails {
+  /** `XXXXX-XXXXX` */
+  bookingCode: string;
+  status: GuestBookingStatus;
+  paymentOption: PaymentOption;
+  propertyId: string;
+  propertySlug: string | null;
+  propertyName: string;
+  propertyCity: string | null;
+  /** `YYYY-MM-DD` */
+  checkInDate: string;
+  /** `YYYY-MM-DD` */
+  checkOutDate: string;
+  numberOfAdults: number;
+  numberOfChildren: number;
+  lodging: number;
+  cleaningFee: number;
+  touristTax: number;
+  totalPrice: number;
+  paidAmount: number;
+  refundedAmount: number;
+  currency: string;
+  /** Until when the guest can pay, or the request waits (UTC instant); null otherwise. */
+  expiresAt: string | null;
+  /** "Paga alla scadenza": day (`YYYY-MM-DD`) the saved card is charged. */
+  deferredChargeDate: string | null;
+  host: { name: string | null; email: string | null };
+  checkIn: {
+    status: GuestCheckInAccessStatus;
+    /** `NotYetOpen`: day (`YYYY-MM-DD`) the link is emailed. */
+    opensOn: string | null;
+    /** When the link that still works was emailed (UTC instant). */
+    linkSentAt: string | null;
+  };
 }
 
 /** Where a checkout stands for the guest (`POST /api/public/bookings/{id}/outcome`, BK-07). */
@@ -168,6 +209,8 @@ export interface CheckoutOutcome {
   expiresAt: string | null;
   /** "Paga alla scadenza": day (`YYYY-MM-DD`) the saved card is charged. */
   deferredChargeDate: string | null;
+  /** Booking code of "Le mie prenotazioni" (`XXXXX-XXXXX`, BK-11): the one of the confirmation email. */
+  bookingCode: string;
 }
 
 /** `POST /api/public/bookings/{id}/payment-session` (BK-07): the same hold, to pay again. */

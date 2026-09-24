@@ -261,9 +261,10 @@ describe('plurals', () => {
     expect(tEn('publicBooking.nightsBreakdown', { count: 3, rate: '€120' })).toBe('3 nights x €120');
   });
 
-  it('bookingsCount_SingleBooking_IsNotBuiltWithSuffix', () => {
-    expect(i18n.getFixedT('it')('publicBooking.bookingsCount', { count: 1 })).toBe('Trovata 1 prenotazione');
-    expect(i18n.getFixedT('it')('publicBooking.bookingsCount', { count: 2 })).toBe('Trovate 2 prenotazioni');
+  it('guestsCount_OneAndManyGuests_IsNotBuiltWithSuffix', () => {
+    expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 ospite');
+    expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 2 })).toBe('2 ospiti');
+    expect(i18n.getFixedT('en')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 guest');
   });
 });
 
