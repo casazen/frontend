@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { bookingsApi } from '@/api/bookings.api';
-import type { PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
+import { CHECK_IN_LINK_EMAIL_ERRORS, type PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
@@ -43,25 +43,60 @@ export function useSubmitGuestCheckIn(token: string) {
   });
 }
 
+/** While the link email is queued, the host view polls its real outcome (sent or failed). */
+export const CHECKIN_EMAIL_POLL_MS = 5000;
+
 export function useBookingCheckInSession(bookingId: string) {
   return useQuery({
     queryKey: [CHECKIN_SESSION_KEY, bookingId],
     queryFn: () => bookingsApi.getCheckInSession(bookingId),
     enabled: !!bookingId,
+    refetchInterval: (query) => (query.state.data?.emailStatus === 'Queued' ? CHECKIN_EMAIL_POLL_MS : false),
   });
 }
 
+/** Translated reason of a failed link email (`no_recipient` → `checkin.link.emailError.noRecipient`; unknown codes get a generic reason). */
+export function checkInEmailErrorLabel(code: string | null | undefined, t: (key: string) => string): string {
+  const known = code && (CHECK_IN_LINK_EMAIL_ERRORS as readonly string[]).includes(code);
+  const key = known ? code.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase()) : 'unknown';
+  return t(`checkin.link.emailError.${key}`);
+}
+
+/**
+ * Sends a new link by email (also the reminder). The toast says what really happened: the email is queued, or it could
+ * not be sent and the host copies the link, which the response always carries (A5-26).
+ */
 export function useResendCheckInLink(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => bookingsApi.resendCheckInLink(bookingId),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
-      toast.success(i18n.t('checkin.resendSuccess'));
+      if (data.emailStatus === 'Failed') {
+        toast.error(i18n.t('checkin.link.toast.emailFailed', { reason: checkInEmailErrorLabel(data.emailError, i18n.t) }));
+      } else {
+        toast.success(i18n.t('checkin.link.toast.emailQueued'));
+      }
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('checkin.resendError'));
+    },
+  });
+}
+
+/** Generates a new link to copy, without email. */
+export function useCreateCheckInLink(bookingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => bookingsApi.createCheckInLink(bookingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+      toast.success(i18n.t('checkin.link.toast.generated'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('checkin.generateError'));
     },
   });
 }

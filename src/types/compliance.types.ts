@@ -100,8 +100,16 @@ export interface CheckoutWizardCompleteResult {
   bookingStatus: string;
 }
 
+/** Body of `POST /bookings/:id/checkout-wizard/start` (CO-08). */
+export interface CheckoutWizardStartCommand {
+  /** The host confirms that the guest arrived: registers the arrival of a confirmed booking first. */
+  registerArrival?: boolean;
+}
+
 export interface CheckoutWizardCompleteCommand {
   confirmDeparture: boolean;
   supplierOrgId?: string | null;
   serviceNotes?: string | null;
+  /** The host confirms that the guest arrived: registers the arrival with the check-out. */
+  registerArrival?: boolean;
 }

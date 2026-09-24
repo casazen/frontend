@@ -5,7 +5,6 @@ import type {
   CancelBookingDto,
   CreateBookingDto,
   UpdateBookingDto,
-  CheckInDto,
   HostBookingQuotePayload,
   DeclineBookingRequestDto,
 } from '@/types';
@@ -196,19 +195,19 @@ export function useCancelBooking() {
   });
 }
 
+/**
+ * "Registra arrivo" (CO-08, A5-08). No toast: the dialog shows the error and, on success, whether the guest data for
+ * Alloggiati still have to be completed. The Alloggiati status and the compliance cockpit change with the arrival.
+ */
 export function useCheckIn() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data?: CheckInDto }) =>
-      bookingsApi.checkIn(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY, variables.id] });
-      toast.success(i18n.t('toast.guestCheckedIn'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.checkInGuestFailed'));
+    mutationFn: (id: string) => bookingsApi.checkIn(id),
+    onSuccess: (booking) => {
+      applyBookingChange(queryClient, booking);
+      queryClient.invalidateQueries({ queryKey: ['alloggiati'] });
+      queryClient.invalidateQueries({ queryKey: ['compliance'] });
     },
   });
 }

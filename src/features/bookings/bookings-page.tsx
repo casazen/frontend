@@ -15,6 +15,8 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
 import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
+import { CheckInDialog } from '@/features/bookings/components/check-in-dialog';
+import { canRegisterArrival } from '@/features/bookings/lib/stay-actions';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -45,6 +47,9 @@ export function BookingsPage() {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
+  // "Registra arrivo" from the list (CO-08): the same dialog as the booking detail.
+  const [arrivalBooking, setArrivalBooking] = useState<Booking | null>(null);
+  const canWrite = hasPermission('short-rent', 'booking.write');
 
   // "Bookings of this property" (A2-30): the backend filters by property, so the list and its counts are the
   // property's only.
@@ -80,7 +85,7 @@ export function BookingsPage() {
           title={t('booking.list.title')}
           description={t('booking.list.description')}
           action={
-            hasPermission('short-rent', 'booking.write') ? (
+            canWrite ? (
               <Button asChild data-testid="new-booking">
                 <Link to={createPath}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -211,16 +216,31 @@ export function BookingsPage() {
                           ) : null}
                         </td>
                         <td className="px-4 py-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openBooking(b);
-                            }}
-                          >
-                            {t('booking.list.view')}
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {canWrite && canRegisterArrival(b) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                data-testid="booking-row-register-arrival"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setArrivalBooking(b);
+                                }}
+                              >
+                                {t('booking.arrival.action')}
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openBooking(b);
+                              }}
+                            >
+                              {t('booking.list.view')}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -238,6 +258,13 @@ export function BookingsPage() {
           </CardContent>
         </Card>
       </div>
+      <CheckInDialog
+        booking={arrivalBooking}
+        open={arrivalBooking !== null}
+        onOpenChange={(open) => {
+          if (!open) setArrivalBooking(null);
+        }}
+      />
     </AppShell>
   );
 }

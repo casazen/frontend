@@ -10,13 +10,20 @@ import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import * as serviceRequestsApi from '@/api/service-requests.api';
 import { fetchServiceCategories } from '@/api/service-categories.api';
+import { alloggiatiApi } from '@/api/alloggiati.api';
+import { toast } from 'sonner';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
+import { addDays, todayInRome } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 import { BookingDetailPage } from '../booking-detail-page';
 
-vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { getById: vi.fn(), approveRequest: vi.fn(), getCancellationQuote: vi.fn() },
+  bookingsApi: { getById: vi.fn(), approveRequest: vi.fn(), getCancellationQuote: vi.fn(), checkIn: vi.fn() },
+}));
+vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
+vi.mock('@/features/alloggiati/components/alloggiati-booking-panel', () => ({
+  AlloggiatiBookingPanel: () => createElement('div', { 'data-testid': 'alloggiati-panel-stub' }),
 }));
 // The real service request hooks around mocked network calls (SU-07: which query the stay uses).
 vi.mock('@/api/service-requests.api', () => ({
@@ -75,12 +82,15 @@ function axiosError(status: number, data: unknown): AxiosError {
   });
 }
 
-function renderPage() {
+/** Stay dates (ISO, midnight UTC) relative to today in Europe/Rome. */
+const stayDay = (days: number) => `${addDays(todayInRome(), days)}T00:00:00Z`;
+
+function renderPage(url = `/app/short-rent/bookings/${BOOKING_ID}`) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
-        createElement(MemoryRouter, { initialEntries: [`/app/short-rent/bookings/${BOOKING_ID}`] },
+        createElement(MemoryRouter, { initialEntries: [url] },
           createElement(Routes, null,
             createElement(Route, { path: '/app/short-rent/bookings/:id', element: createElement(BookingDetailPage) }),
           )))),
@@ -197,7 +207,10 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
   });
 
   it('BookingDetailPage_CheckedInStay_OffersTheCheckOutWizard', async () => {
-    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'CheckedIn' }));
+    // Before the departure day too: an early departure is checked out like any other (CO-08).
+    vi.mocked(bookingsApi.getById).mockResolvedValue(
+      booking({ status: 'CheckedIn', checkInDate: stayDay(-1), checkOutDate: stayDay(3) }),
+    );
 
     renderPage();
 
@@ -223,6 +236,86 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     renderPage();
 
     expect(await screen.findByTestId('open-checkout-wizard', undefined, WAIT)).toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_ConfirmedStayRegisteredLate_RegistersTheArrivalAndWarnsAboutMissingGuestData', async () => {
+    // CO-08: the check-in day was yesterday; the host registers the arrival today, with the guest data incomplete.
+    const stay = { checkInDate: stayDay(-1), checkOutDate: stayDay(2) };
+    vi.mocked(bookingsApi.getById)
+      .mockResolvedValueOnce(booking({ status: 'Confirmed', ...stay }))
+      .mockResolvedValue(booking({ status: 'CheckedIn', ...stay }));
+    vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: false } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
+    vi.mocked(bookingsApi.checkIn).mockResolvedValue({ ...booking({ status: 'CheckedIn', ...stay }), guestDataComplete: false });
+
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('open-register-arrival', undefined, WAIT));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByTestId('register-arrival-late')).toBeInTheDocument();
+    const incomplete = await within(dialog).findByTestId('guest-data-incomplete', undefined, WAIT);
+    expect(within(incomplete).getByTestId('guest-data-complete-link')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
+    );
+    // Missing data never block the arrival.
+    fireEvent.click(within(dialog).getByTestId('register-arrival-submit'));
+
+    await waitFor(() => expect(bookingsApi.checkIn).toHaveBeenCalledWith(BOOKING_ID));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), WAIT);
+    expect(toast.warning).toHaveBeenCalledWith(
+      i18n.t('booking.arrival.registeredDataIncomplete'),
+      expect.objectContaining({ action: expect.objectContaining({ label: i18n.t('booking.arrival.completeGuestData') }) }),
+    );
+    await waitFor(
+      () => expect(screen.getByTestId('booking-detail-status')).toHaveTextContent(getBookingStatusLabel('CheckedIn', i18n.t)),
+      WAIT,
+    );
+    expect(screen.queryByTestId('open-register-arrival')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_RegisterArrivalRejected_ShowsTheApiErrorInTheDialog', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Confirmed', checkInDate: stayDay(0), checkOutDate: stayDay(3) }));
+    vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
+    vi.mocked(bookingsApi.checkIn).mockRejectedValue(
+      axiosError(409, { status: 409, code: 'booking_already_checked_in', detail: 'Già registrato.' }),
+    );
+
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('open-register-arrival', undefined, WAIT));
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByTestId('guest-data-complete', undefined, WAIT)).toBeInTheDocument();
+    expect(within(dialog).queryByTestId('register-arrival-late')).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByTestId('register-arrival-submit'));
+
+    expect(await within(dialog).findByRole('alert', undefined, WAIT)).toHaveTextContent(
+      i18n.t('apiErrors.codes.bookingAlreadyCheckedIn'),
+    );
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['a future stay', { status: 'Confirmed' as const, checkInDate: stayDay(1), checkOutDate: stayDay(3) }],
+    ['a stay whose departure day has passed', { status: 'Confirmed' as const, checkInDate: stayDay(-3), checkOutDate: stayDay(-1) }],
+    ['a checked-in stay', { status: 'CheckedIn' as const, checkInDate: stayDay(-1), checkOutDate: stayDay(1) }],
+  ])('BookingDetailPage_RegisterArrival_NotOfferedFor %s', async (_, stay) => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking(stay));
+
+    renderPage();
+
+    expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('open-register-arrival')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_TabInTheUrl_OpensTheAlloggiatiTab', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    renderPage(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
+
+    expect(await screen.findByTestId('alloggiati-panel-stub', undefined, WAIT)).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('booking-tab-details'));
+    expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-panel-stub')).not.toBeInTheDocument();
   });
 
   it('BookingDetailPage_PaymentTab_PricePerNightIsLodgingOnlyWithoutTaxAndCleaning', async () => {

@@ -99,7 +99,11 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
         )}
 
         <div className="border-t pt-4">
-          <AlloggiatiGuestSummary bookingId={bookingId} canEdit={hasPermission('short-rent', 'booking.write')} />
+          <AlloggiatiGuestSummary
+            bookingId={bookingId}
+            canEdit={hasPermission('short-rent', 'booking.write')}
+            canRevealDocuments={hasPermission('short-rent', 'guest.read')}
+          />
         </div>
       </CardContent>
     </Card>
