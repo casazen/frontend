@@ -3,6 +3,7 @@ import { Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { AlloggiatiStatusBadge } from './alloggiati-status-badge';
 import { AlloggiatiGuestSummary } from './alloggiati-guest-summary';
 import { MarkSentManuallyButton } from './resend-button';
@@ -15,11 +16,13 @@ interface AlloggiatiBookingPanelProps {
 
 /**
  * Alloggiati tab of the booking detail (CO-11): honest status, legal deadline in Europe/Rome, per-guest data to
- * copy on the Questura portal and the manual-submission declaration.
+ * copy on the Questura portal (one card per guest of the stay with its completeness, CO-12) and the
+ * manual-submission declaration.
  */
 export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBookingPanelProps) {
   const { t, i18n } = useTranslation();
   const { data: status, isLoading, isError, refetch } = useAlloggiatiStatus(bookingId);
+  const { hasPermission } = useWorkspace();
 
   return (
     <Card data-testid="booking-alloggiati-section">
@@ -96,7 +99,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
         )}
 
         <div className="border-t pt-4">
-          <AlloggiatiGuestSummary bookingId={bookingId} />
+          <AlloggiatiGuestSummary bookingId={bookingId} canEdit={hasPermission('short-rent', 'booking.write')} />
         </div>
       </CardContent>
     </Card>

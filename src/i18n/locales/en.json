@@ -1885,25 +1885,31 @@
     },
     "guestKind": {
       "SingleGuest": "Single guest",
-      "HeadOfFamilyOrGroup": "Head of family or group (choose on the portal)"
+      "HeadOfFamily": "Head of family",
+      "HeadOfGroup": "Head of group",
+      "FamilyMember": "Family member",
+      "GroupMember": "Group member"
     },
     "recordField": {
-      "kind": "Guest type",
+      "type": "Kind of guest",
       "arrivalDate": "Arrival date",
       "stayDays": "Days of stay",
       "lastName": "Surname",
       "firstName": "Name",
       "gender": "Sex",
       "dateOfBirth": "Date of birth",
-      "placeOfBirth": "Place of birth",
+      "bornInItaly": "Born in Italy or abroad",
+      "birthComune": "Municipality of birth",
+      "birthProvince": "Province of birth",
+      "birthCountry": "Country of birth",
       "citizenship": "Citizenship",
       "documentType": "Document type",
       "documentNumber": "Document number",
-      "documentIssuePlace": "Document place of issue"
+      "documentIssuePlace": "Place of issue of the document"
     },
     "guestSummary": {
       "title": "Data to enter on the Alloggiati Web portal",
-      "description": "In the order of the record. This is the data stored in CasaZen: on the portal pick the matching entries (municipality, country, document type) from its tables.",
+      "description": "One card per guest, in the order of the communication (head of family or group before the members). On the portal pick the matching entries (municipality, country, document type) from its tables.",
       "loading": "Loading guest data…",
       "error": "Unable to load the guest data.",
       "retry": "Retry",
@@ -1915,8 +1921,44 @@
       "copyFailed": "Copy failed",
       "missing": "Missing",
       "stayExceedsMaxDays": "Stay of {{days}} days: the portal accepts at most 30 days per record.",
-      "unregisteredGuests_one": "{{count}} more declared guest is not registered in CasaZen: add them on the portal as family or group member.",
-      "unregisteredGuests_other": "{{count}} more declared guests are not registered in CasaZen: add them on the portal as family or group members."
+      "unregisteredGuests_one": "{{count}} declared guest is not registered yet: ask for the online check-in or add them with “Edit guests”.",
+      "unregisteredGuests_other": "{{count}} declared guests are not registered yet: ask for the online check-in or add them with “Edit guests”.",
+      "guestStatus": {
+        "complete": "Complete",
+        "missing_one": "{{count}} missing field",
+        "missing_other": "{{count}} missing fields",
+        "codesToComplete": "Codes to complete"
+      },
+      "minor": "Minor",
+      "notRequired": "Not required",
+      "codeToComplete": "Code to complete",
+      "code": "code {{code}}",
+      "compositionIssue": {
+        "member_without_head": "This guest must follow their head of family or group.",
+        "head_without_members": "The family or group members of this guest are missing.",
+        "invalid_type": "Invalid kind of guest."
+      },
+      "missingCodeTables": "Alloggiati code tables not imported yet: {{tables}}. The codes stay to complete: they block only the export of the record, not the submission on the portal.",
+      "exportReady": "Data and codes complete: ready for the Alloggiati record.",
+      "codesPending": "Data complete. Some official codes are to complete: they are needed only to export the record.",
+      "dataIncomplete": "Incomplete data: fill in the missing fields before sending.",
+      "legacyPlaceOfBirth": "Previously recorded: “{{place}}” (say whether in Italy or abroad)"
+    },
+    "codeTable": {
+      "Comuni": "municipalities",
+      "Stati": "countries",
+      "Documenti": "document types",
+      "TipiAlloggiato": "kinds of guest"
+    },
+    "italy": "Italy",
+    "editGuests": {
+      "open": "Edit guests",
+      "title": "Guests of the stay",
+      "description": "Enter or correct every guest, minors included. Only the single guest, the head of family or the head of group needs a document. When the Alloggiati tables have been imported, pick the entries from the list to complete the codes.",
+      "save": "Save guests",
+      "cancel": "Cancel",
+      "saved": "Guests of the stay updated",
+      "saveFailed": "Could not save the guests. Try again."
     }
   },
   "guests": {
@@ -2328,13 +2370,16 @@
     },
     "validation": {
       "firstName": {
-        "required": "First name is required"
+        "required": "First name is required",
+        "maxLength": "At most 30 characters"
       },
       "lastName": {
-        "required": "Last name is required"
+        "required": "Last name is required",
+        "maxLength": "At most 50 characters"
       },
       "dateOfBirth": {
-        "required": "Date of birth is required"
+        "required": "Date of birth is required",
+        "future": "The date of birth cannot be in the future"
       },
       "placeOfBirth": {
         "required": "Place of birth is required",
@@ -2352,7 +2397,8 @@
       },
       "documentNumber": {
         "required": "Document number is required",
-        "maxLength": "Document number must be less than 50 characters"
+        "maxLength": "Document number must be less than 50 characters",
+        "invalid": "Letters and digits only, at most 20"
       },
       "documentIssuingCountry": {
         "required": "Issuing country is required",
@@ -2361,7 +2407,35 @@
       "consentAccepted": {
         "required": "You must accept data processing"
       },
-      "invalidValue": "Invalid value"
+      "invalidValue": "Invalid value",
+      "bornInItaly": {
+        "required": "Say whether the guest was born in Italy or abroad"
+      },
+      "birthComune": {
+        "required": "Municipality of birth is required"
+      },
+      "birthProvince": {
+        "invalid": "Enter the two-letter code (e.g. RM)"
+      },
+      "birthCountry": {
+        "required": "Country of birth is required"
+      },
+      "citizenship": {
+        "required": "Citizenship is required"
+      },
+      "label": {
+        "maxLength": "At most 100 characters"
+      },
+      "documentIssuePlace": {
+        "required": "Place of issue is required"
+      },
+      "type": {
+        "memberWithoutHead": "A family or group member must follow the head of family or group",
+        "headWithoutMembers": "Add at least one family or group member, or choose “Single guests”"
+      },
+      "guests": {
+        "count": "Enter from 1 to 30 guests"
+      }
     },
     "loading": "Loading check-in...",
     "invalidLink": "Invalid link",
@@ -2434,7 +2508,38 @@
       "Completo": "Complete",
       "AlloggiatiInviato": "Alloggiati submitted",
       "Scaduto": "Expired"
-    }
+    },
+    "stepGuests": "Guests",
+    "guestsIntro": "Enter every guest staying, minors included: the law (art. 109 TULPS) requires the data of each of them. Only the single guest, the head of family or the head of group needs an identity document.",
+    "guestCountMismatch_one": "The booking states {{count}} guest: check that you entered everyone staying.",
+    "guestCountMismatch_other": "The booking states {{count}} guests: check that you entered everyone staying.",
+    "guestHeading": "Guest {{index}}",
+    "minor": "Minor",
+    "stayKindLabel": "Who is staying *",
+    "stayKind": {
+      "SingleGuest": "Single guests (each with their own document)",
+      "HeadOfFamily": "Family: head of family and family members",
+      "HeadOfGroup": "Group: head of group and group members"
+    },
+    "stayKindHint": "For a family or a group the first guest is the head of family or group: only they need a document.",
+    "bornInLabel": "Place of birth *",
+    "selectBornIn": "Select",
+    "bornIn": {
+      "yes": "In Italy",
+      "no": "Abroad"
+    },
+    "birthComune": "Municipality of birth *",
+    "birthProvince": "Province (two letters) *",
+    "birthCountry": "Country of birth *",
+    "citizenship": "Citizenship *",
+    "removeGuest": "Remove guest",
+    "addGuest": "Add guest",
+    "documentIntro": "Identity document of the single guest or of the head of family or group. Family and group members do not need one.",
+    "documentOf": "Document of {{name}}",
+    "documentIssuePlace": "Place of issue *",
+    "documentIssuePlaceHint": "The municipality if issued in Italy, the country if issued abroad.",
+    "codeSelected": "Alloggiati code: {{code}}",
+    "codeSearchFailed": "Official list unavailable right now: type the full name."
   },
   "publicSite": {
     "skipToContent": "Skip to content",
