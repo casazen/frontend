@@ -120,9 +120,12 @@ export interface BookingCalendarEvent {
   eventType?: 'booking' | 'ical-block';
 }
 
-export interface CheckInDto {
-  actualCheckInTime?: string;
-  notes?: string;
+/**
+ * Answer of `POST /bookings/:id/check-in` ("Registra arrivo", CO-08): the booking, now checked in, and whether the guest
+ * data of the stay are complete for Alloggiati Web. Incomplete data never block the arrival.
+ */
+export interface ArrivalRegisteredBooking extends Booking {
+  guestDataComplete: boolean;
 }
 
 /** Rule of the model that sets the minimum refund of a cancellation (BK-02). */

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -10,29 +10,50 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useTranslation } from 'react-i18next';
 import { useBooking } from '@/queries/use-bookings';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import { formatStayDate, todayInRome } from '@/lib/stay-dates';
+import { formatStayDate } from '@/lib/stay-dates';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
 import { bookingNights, bookingPriceBreakdown, stayDateOf } from './lib/booking-price';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
-import { CheckCircle2, Edit, Calendar, Users, Mail, Phone, MapPin, XCircle } from 'lucide-react';
+import { CheckCircle2, DoorOpen, Edit, Calendar, Users, Mail, Phone, MapPin, XCircle } from 'lucide-react';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
+import { CheckInDialog } from './components/check-in-dialog';
+import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
 import type { Booking } from '@/types';
 
-type BookingTab = 'details' | 'guest' | 'payment' | 'alloggiati';
+const BOOKING_TABS = ['details', 'guest', 'payment', 'alloggiati'] as const;
+type BookingTab = (typeof BOOKING_TABS)[number];
+
+function isBookingTab(value: string | null): value is BookingTab {
+  return BOOKING_TABS.includes(value as BookingTab);
+}
 
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<BookingTab>('details');
+  // The tab is in the URL (`?tab=alloggiati`): the "complete the guest data" links of the arrival open it (CO-08).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: BookingTab = isBookingTab(tabParam) ? tabParam : 'details';
+  const setActiveTab = (tab: BookingTab) =>
+    setSearchParams(
+      (params) => {
+        const next = new URLSearchParams(params);
+        if (tab === 'details') next.delete('tab');
+        else next.set('tab', tab);
+        return next;
+      },
+      { replace: true },
+    );
   const [cancelOpen, setCancelOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id!);
   const { data: serviceRequests } = useServiceRequests(
@@ -80,12 +101,11 @@ export function BookingDetailPage() {
   const canCancel =
     canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   const canEdit = canWrite && booking.status !== 'Cancelled';
-  // The check-out wizard accepts a stay with the check-in recorded, or a confirmed one from its departure day
-  // (Europe/Rome): the link is not offered when the wizard would refuse it.
-  const canCheckOut =
-    canWrite &&
-    (booking.status === 'CheckedIn' ||
-      (booking.status === 'Confirmed' && stayDateOf(booking.checkOutDate) <= todayInRome()));
+  // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
+  const canCheckIn = canWrite && canRegisterArrival(booking);
+  // The check-out wizard accepts a stay with the arrival registered, or a confirmed one from its departure day, whose
+  // arrival it registers with "registra arrivo e procedi": the link is not offered when the wizard would refuse it.
+  const canCheckOut = canWrite && canOpenCheckOut(booking);
   const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
   const nights = bookingNights(booking);
   const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
@@ -107,6 +127,12 @@ export function BookingDetailPage() {
           description={`${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}
           action={
             <div className="flex flex-wrap gap-2">
+              {canCheckIn && (
+                <Button onClick={() => setArrivalOpen(true)} data-testid="open-register-arrival">
+                  <DoorOpen className="mr-2 h-4 w-4" />
+                  {t('booking.arrival.action')}
+                </Button>
+              )}
               {canConfirm && (
                 <Button onClick={() => setConfirmOpen(true)} data-testid="open-confirm-booking">
                   <CheckCircle2 className="mr-2 h-4 w-4" />
@@ -147,6 +173,8 @@ export function BookingDetailPage() {
           {tabs.map((tab) => (
             <button
               key={tab.key}
+              data-testid={`booking-tab-${tab.key}`}
+              aria-pressed={activeTab === tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.key
@@ -309,6 +337,9 @@ export function BookingDetailPage() {
       )}
       {(canConfirm || confirmOpen) && (
         <ConfirmBookingDialog bookingId={booking.id} open={confirmOpen} onOpenChange={setConfirmOpen} />
+      )}
+      {(canCheckIn || arrivalOpen) && (
+        <CheckInDialog booking={booking} open={arrivalOpen} onOpenChange={setArrivalOpen} />
       )}
     </AppShell>
   );

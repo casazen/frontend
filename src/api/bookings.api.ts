@@ -7,7 +7,7 @@ import type {
   CancelBookingResult,
   CreateBookingDto,
   UpdateBookingDto,
-  CheckInDto,
+  ArrivalRegisteredBooking,
   HostBookingQuotePayload,
   DeclineBookingRequestDto,
 } from '@/types';
@@ -58,8 +58,11 @@ export const bookingsApi = {
   getCalendar: (params: { propertyId: string; startDate: string; endDate: string; timezone?: string }) =>
     ApiClient.get<CalendarResponseDto>('/bookings/calendar', params),
 
-  checkIn: (id: string, data?: CheckInDto) =>
-    ApiClient.post<Booking>(`/bookings/${id}/check-in`, data),
+  /**
+   * "Registra arrivo" (CO-08): a confirmed booking becomes checked in, from its check-in day to its check-out day
+   * (Europe/Rome), late registrations included. Says whether the guest data for Alloggiati are complete.
+   */
+  checkIn: (id: string) => ApiClient.post<ArrivalRegisteredBooking>(`/bookings/${id}/check-in`),
 
   getCheckInSession: (id: string) =>
     ApiClient.get<CheckInSessionStatusDto>(`/bookings/${id}/checkin-session`),
