@@ -34,8 +34,10 @@ async function load(respond: Responder = () => ({ status: 200, data: { ok: true 
   const refreshAccessToken = vi.fn(async (): Promise<string | undefined> => 'fresh-token');
   const onSessionExpired = vi.fn();
   const onForbidden = vi.fn();
+  const onAccountInactive = vi.fn();
   axiosModule.setApiAuthHandlers({ getAccessToken, refreshAccessToken, onSessionExpired });
   axiosModule.setApiForbiddenHandler(onForbidden);
+  axiosModule.setApiAccountInactiveHandler(onAccountInactive);
 
   const authorization = (index: number) => calls[index]?.headers.get('Authorization');
 
@@ -49,6 +51,7 @@ async function load(respond: Responder = () => ({ status: 200, data: { ok: true 
     refreshAccessToken,
     onSessionExpired,
     onForbidden,
+    onAccountInactive,
   };
 }
 
@@ -316,6 +319,36 @@ describe('response interceptor: 403 → no-access page (A9-22)', () => {
 
     await expect(ctx.api.get('/public/orgs/demo', { public: true })).rejects.toBeInstanceOf(AxiosError);
     expect(ctx.onForbidden).not.toHaveBeenCalled();
+  });
+});
+
+describe('response interceptor: 403 account_inactive → account disabled page (PL-03)', () => {
+  const inactive = { status: 403, data: { status: 403, code: 'account_inactive', detail: 'Account disattivato' } };
+
+  it('response403AccountInactive_read_opensAccountDisabledNotNoAccess', async () => {
+    const ctx = await load(() => inactive);
+
+    await expect(ctx.api.get('/users/me')).rejects.toBeInstanceOf(AxiosError);
+    expect(ctx.onAccountInactive).toHaveBeenCalledTimes(1);
+    expect(ctx.onForbidden).not.toHaveBeenCalled();
+    expect(ctx.onSessionExpired).not.toHaveBeenCalled();
+  });
+
+  it('response403AccountInactive_write_alsoOpensAccountDisabled', async () => {
+    const ctx = await load(() => inactive);
+
+    await expect(ctx.api.post('/properties', {})).rejects.toBeInstanceOf(AxiosError);
+    await expect(ctx.api.delete('/users/auth0%7Cother')).rejects.toBeInstanceOf(AxiosError);
+    expect(ctx.onAccountInactive).toHaveBeenCalledTimes(2);
+    expect(ctx.onForbidden).not.toHaveBeenCalled();
+  });
+
+  it('response403OtherCodes_doNotOpenAccountDisabled', async () => {
+    const ctx = await load(() => ({ status: 403, data: { code: 'forbidden' } }));
+
+    await expect(ctx.api.get('/bookings/b1')).rejects.toBeInstanceOf(AxiosError);
+    expect(ctx.onForbidden).toHaveBeenCalledTimes(1);
+    expect(ctx.onAccountInactive).not.toHaveBeenCalled();
   });
 });
 

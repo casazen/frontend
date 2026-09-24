@@ -11,6 +11,8 @@ import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
 import { NoAccessPage } from '@/pages/no-access-page';
+import { AccountInactivePage } from '@/pages/account-inactive-page';
+import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
@@ -124,6 +126,11 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <SupplierRegisterPage />,
+  },
+  {
+    // Deactivated account (PL-03): outside the onboarding guard and the workspace, which would call the API again.
+    path: ACCOUNT_INACTIVE_PATH,
+    element: <AccountInactivePage />,
   },
   {
     // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host

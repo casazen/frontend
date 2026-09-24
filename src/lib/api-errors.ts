@@ -91,6 +91,21 @@ export function getHttpStatus(error: unknown): number | undefined {
   return isAxiosError(error) ? error.response?.status : undefined;
 }
 
+/**
+ * 403 `code` sent by the backend for every request of a deactivated account (PL-03). It takes precedence over any
+ * other 403: the app opens the "account disabled" page instead of showing the error.
+ */
+export const ACCOUNT_INACTIVE_CODE = 'account_inactive';
+
+/** True for the 403 `account_inactive` of a deactivated account (see {@link ACCOUNT_INACTIVE_CODE}). */
+export function isAccountInactiveError(error: unknown): boolean {
+  return (
+    isAxiosError(error) &&
+    error.response?.status === 403 &&
+    getProblemCode(error.response.data) === ACCOUNT_INACTIVE_CODE
+  );
+}
+
 /** Stable machine-readable `code` of an error body (ProblemDetails extension or legacy `{ code }`). */
 export function getProblemCode(data: unknown): string | undefined {
   if (!isRecord(data)) return undefined;

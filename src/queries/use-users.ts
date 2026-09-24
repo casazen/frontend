@@ -168,12 +168,36 @@ export function useDeactivateUser() {
 
   return useMutation({
     mutationFn: (id: string) => UsersApi.deactivateUser(id),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
-      toast.success(i18n.t('toast.userDeactivated'));
+      // PL-03: the user is deactivated in CasaZen either way; Auth0 may still have to be updated by a retry.
+      if (result?.auth0Synced === false) {
+        toast.warning(i18n.t('toast.userDeactivatedAuth0NotSynced'));
+      } else {
+        toast.success(i18n.t('toast.userDeactivated'));
+      }
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.userDeactivateFailed'));
+    },
+  });
+}
+
+export function useReactivateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => UsersApi.reactivateUser(id),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      if (result?.auth0Synced === false) {
+        toast.warning(i18n.t('toast.userReactivatedAuth0NotSynced'));
+      } else {
+        toast.success(i18n.t('toast.userReactivated'));
+      }
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.userReactivateFailed'));
     },
   });
 }

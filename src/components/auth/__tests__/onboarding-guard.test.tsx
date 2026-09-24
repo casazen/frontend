@@ -94,6 +94,7 @@ function renderGuard(path = '/app/short-rent/properties') {
         <Routes>
           <Route path="/onboarding" element={<OnboardingProbe />} />
           <Route path="/register/claim" element={<p data-testid="claim-page">claim</p>} />
+          <Route path="/account-inactive" element={<p data-testid="account-inactive-page">account disabled</p>} />
           <Route element={<OnboardingGuard />}>
             <Route path="/app/*" element={<WorkspaceProbe />} />
           </Route>
@@ -335,5 +336,21 @@ describe('OnboardingGuard supplier (SU-02)', () => {
     renderGuard('/app/short-rent/properties');
 
     expect(await screen.findByTestId('workspace')).toHaveTextContent('/app/short-rent/properties');
+  });
+
+  it('OnboardingGuard_AccountInactive_OpensAccountDisabledPageInsteadOfRetry', async () => {
+    mockAuth({ roles: ['Admin'] });
+    vi.mocked(UsersApi.getMe).mockRejectedValue(
+      new AxiosError('request failed', 'ERR_BAD_REQUEST', undefined, undefined, {
+        status: 403,
+        data: { status: 403, code: 'account_inactive', detail: 'Account disattivato' },
+      } as AxiosResponse),
+    );
+
+    renderGuard('/app/admin/users');
+
+    expect(await screen.findByTestId('account-inactive-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('workspace')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: i18n.t('shared.profileLoadError.retry') })).not.toBeInTheDocument();
   });
 });
