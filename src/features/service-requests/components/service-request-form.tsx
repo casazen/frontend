@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -12,12 +12,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Wrench, Sparkles, Loader2, Star, MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
-import { useCreateServiceRequest, useMatchSupplier } from '@/queries/use-service-requests';
+import { Wrench } from 'lucide-react';
+import { useCreateServiceRequest } from '@/queries/use-service-requests';
 import { useServiceCategories } from '@/queries/use-service-categories';
-import type { ServiceRequestUrgency, SupplierMatchCandidate } from '@/types/service-request';
+import type { ServiceRequestUrgency } from '@/types/service-request';
 import { ServiceCategorySelect } from './service-category-picker';
 
 const selectClass =
@@ -25,22 +23,25 @@ const selectClass =
 
 interface ServiceRequestFormProps {
   propertyId: string;
-  preselectedSupplierOrgId?: string;
+  supplierOrgId: string;
   preselectedCategory?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
-  skipAiMatch?: boolean;
 }
 
+/**
+ * Manual service request to a supplier the host has already chosen (marketplace). The AI supplier match and the
+ * external "nearby businesses" suggestions were removed (FD-21, D11: AI supplier discovery off): the form never calls
+ * `match-supplier` and the host's notes only go to the chosen supplier.
+ */
 export function ServiceRequestForm({
   propertyId,
-  preselectedSupplierOrgId,
+  supplierOrgId,
   preselectedCategory,
   open: openProp,
   onOpenChange,
   hideTrigger = false,
-  skipAiMatch = false,
 }: ServiceRequestFormProps) {
   const { t } = useTranslation();
   const [openInternal, setOpenInternal] = useState(false);
@@ -60,44 +61,10 @@ export function ServiceRequestForm({
   const { data: categoryCodes } = useServiceCategories();
   const [category, setCategory] = useState<string>(preselectedCategory ?? '');
   const selectedCategory = categoryCodes?.includes(category) ? category : (categoryCodes?.[0] ?? '');
-  const [supplierOrgId, setSupplierOrgId] = useState(preselectedSupplierOrgId ?? '');
   const [urgency, setUrgency] = useState<ServiceRequestUrgency>('Normal');
   const [notes, setNotes] = useState('');
 
-  const matchMutation = useMatchSupplier();
   const createMutation = useCreateServiceRequest();
-
-  const shouldRunAiMatch = !skipAiMatch && !preselectedSupplierOrgId;
-
-  // Reads the latest notes/preselection without re-running the match on every keystroke.
-  const onMatchCriteriaChange = useEffectEvent(
-    (criteria: { propertyId: string; category: string; urgency: ServiceRequestUrgency }) => {
-      if (!shouldRunAiMatch) {
-        if (preselectedSupplierOrgId) setSupplierOrgId(preselectedSupplierOrgId);
-        return;
-      }
-      setSupplierOrgId('');
-      matchMutation.mutate({ ...criteria, notes: notes || undefined });
-    },
-  );
-
-  // (Re)run the AI match when the dialog opens or the match criteria change.
-  useEffect(() => {
-    if (!open || !selectedCategory) return;
-    onMatchCriteriaChange({ propertyId, category: selectedCategory, urgency });
-  }, [open, propertyId, selectedCategory, urgency]);
-
-  // Preselect the recommended supplier when the match returns and nothing is selected
-  // (adjusting state during render).
-  const recommendedOrgId =
-    open && shouldRunAiMatch ? matchMutation.data?.recommended?.orgId : undefined;
-  if (recommendedOrgId && !supplierOrgId) {
-    setSupplierOrgId(recommendedOrgId);
-  }
-
-  const selectCandidate = (candidate: SupplierMatchCandidate) => {
-    setSupplierOrgId(candidate.orgId);
-  };
 
   const handleSubmit = () => {
     if (!supplierOrgId || !selectedCategory) return;
@@ -113,13 +80,10 @@ export function ServiceRequestForm({
         onSuccess: () => {
           setOpen(false);
           setNotes('');
-          if (!preselectedSupplierOrgId) setSupplierOrgId('');
         },
       },
     );
   };
-
-  const match = matchMutation.data;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -134,123 +98,13 @@ export function ServiceRequestForm({
       <DialogContent className="max-h-[90vh] overflow-y-auto" data-testid="service-request-dialog">
         <DialogHeader>
           <DialogTitle>{t('serviceRequest.requestSupplier')}</DialogTitle>
-          <DialogDescription>
-            {shouldRunAiMatch
-              ? t('serviceRequest.aiMatchDescription')
-              : t('serviceRequest.propertyScopedDescription')}
-          </DialogDescription>
+          <DialogDescription>{t('serviceRequest.propertyScopedDescription')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="sr-category">{t('serviceRequest.category')}</Label>
-            <ServiceCategorySelect
-              id="sr-category"
-              value={selectedCategory}
-              onChange={(code) => {
-                setCategory(code);
-                if (shouldRunAiMatch) setSupplierOrgId('');
-              }}
-            />
+            <ServiceCategorySelect id="sr-category" value={selectedCategory} onChange={setCategory} />
           </div>
-
-          {shouldRunAiMatch && (
-            <div className="space-y-2">
-              <Label>{t('serviceRequest.aiRecommendation')}</Label>
-              {matchMutation.isPending && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t('serviceRequest.matching')}
-                </div>
-              )}
-              {matchMutation.isError && (
-                <p className="text-sm text-destructive">{t('serviceRequest.createFailed')}</p>
-              )}
-              {match?.recommended && (
-                <Card
-                  className={`cursor-pointer border-2 ${supplierOrgId === match.recommended.orgId ? 'border-primary' : 'border-transparent'}`}
-                  onClick={() => selectCandidate(match.recommended!)}
-                  data-testid="ai-recommended-supplier"
-                >
-                  <CardContent className="pt-4 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 font-medium">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        {match.recommended.legalName}
-                      </div>
-                      <Badge variant="secondary">{match.recommended.matchScore}%</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{match.recommended.matchReason}</p>
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {match.recommended.phone}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {match.recommended.email}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {(match?.alternatives?.length ?? 0) > 0 && (
-                <div className="space-y-2">
-                  {(match?.alternatives ?? []).map((alt) => (
-                    <Card
-                      key={alt.orgId}
-                      className={`cursor-pointer ${supplierOrgId === alt.orgId ? 'ring-2 ring-primary' : ''}`}
-                      onClick={() => selectCandidate(alt)}
-                    >
-                      <CardContent className="py-3 flex justify-between items-center">
-                        <span className="font-medium text-sm">{alt.legalName}</span>
-                        <Badge variant="outline">{alt.matchScore}%</Badge>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-              {match?.usedExternalFallback && (match.externalSuggestions?.length ?? 0) > 0 && (
-                <div className="space-y-2 pt-2">
-                  <p className="text-sm text-muted-foreground">{t('serviceRequest.externalFallbackIntro')}</p>
-                  {match.externalSuggestions.map((ext, idx) => (
-                    <Card key={`${ext.name}-${idx}`}>
-                      <CardContent className="pt-4 space-y-1">
-                        <div className="font-medium">{ext.name}</div>
-                        <p className="text-xs text-muted-foreground flex items-start gap-1">
-                          <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                          {ext.address}
-                        </p>
-                        {ext.rating != null && (
-                          <p className="text-xs flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                            {ext.rating}
-                            {ext.reviewCount != null ? ` (${ext.reviewCount})` : ''}
-                          </p>
-                        )}
-                        {ext.googleMapsUrl && (
-                          <a
-                            href={ext.googleMapsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary inline-flex items-center gap-1"
-                          >
-                            Google Maps
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-              {match && !match.recommended && !match.usedExternalFallback && !matchMutation.isPending && (
-                <p className="text-sm text-muted-foreground">{t('serviceRequest.noSuppliers')}</p>
-              )}
-              {match?.usedExternalFallback && (match.externalSuggestions?.length ?? 0) === 0 && !matchMutation.isPending && (
-                <p className="text-sm text-muted-foreground">{t('serviceRequest.noExternalResults')}</p>
-              )}
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="sr-urgency">{t('serviceRequest.urgency')}</Label>
@@ -258,10 +112,7 @@ export function ServiceRequestForm({
               id="sr-urgency"
               className={selectClass}
               value={urgency}
-              onChange={(e) => {
-                setUrgency(e.target.value as ServiceRequestUrgency);
-                if (shouldRunAiMatch) setSupplierOrgId('');
-              }}
+              onChange={(e) => setUrgency(e.target.value as ServiceRequestUrgency)}
             >
               <option value="Normal">{t('serviceRequest.urgencyNormal')}</option>
               <option value="High">{t('serviceRequest.urgencyHigh')}</option>

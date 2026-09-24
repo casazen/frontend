@@ -1,12 +1,35 @@
-export type LeaseStatus =
-  | 'Draft'
-  | 'AwaitingSignature'
-  | 'PartiallySigned'
-  | 'Signed'
-  | 'RegistrationPending'
-  | 'SentToProvider'
-  | 'Registered'
-  | 'Rejected';
+/** Every value of the backend enum `Casazen.Core.Entities.Enums.LeaseStatus`, in order. */
+export const LEASE_STATUSES = [
+  'Draft',
+  'AwaitingSignature',
+  'PartiallySigned',
+  'Signed',
+  'RegistrationPending',
+  'SentToProvider',
+  'Registered',
+  'Rejected',
+] as const;
+
+export type LeaseStatus = (typeof LEASE_STATUSES)[number];
+
+/** Every value of the backend enum `Casazen.Core.Entities.Enums.LeaseEventType` (timeline entries). */
+export const LEASE_EVENT_TYPES = [
+  'Created',
+  'SigningInitiated',
+  'PartySignedDocument',
+  'AllPartiesSigned',
+  'RegistrationSubmitted',
+  'RegistrationConfirmed',
+  'RegistrationFailed',
+  'ErasureRequested',
+  'ImuNotificationExported',
+  'ImuNotificationMarkedSent',
+  'RegistrationAuthorized',
+  'RliExported',
+  'DeadlineReminderSent',
+] as const;
+
+export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
 
 export type FiscalRegime = 'CedolareSecca' | 'RegimeOrdinario' | 'CanoneConcordato';
 
@@ -14,27 +37,28 @@ export type PartyRole = 'Landlord' | 'Tenant';
 
 export type RegistrationStatus = 'Pending' | 'SentToProvider' | 'Registered' | 'Failed';
 
+/**
+ * A party as returned by the lease detail API: fiscal code and email arrive already masked from the
+ * server (GDPR, A7-17); the clear values never reach the browser.
+ */
 export interface LeaseParty {
   id: string;
   role: PartyRole;
   firstName: string;
   lastName: string;
-  fiscalCode: string;
-  citizenship: string;
-  contactEmail: string;
+  fiscalCodeMasked: string;
+  contactEmailMasked: string;
   isExtraEU: boolean;
 }
 
 export interface LeaseEvent {
+  /** A `LeaseEventType`; typed as string because a newer backend may add values. */
   eventType: string;
   occurredAt: string;
 }
 
 export interface LeaseRegistration {
-  id: string;
-  leaseContractId: string;
   status: RegistrationStatus;
-  externalRegistrationId?: string | null;
   registrationCode?: string | null;
   submittedAt?: string | null;
   confirmedAt?: string | null;
@@ -46,21 +70,39 @@ export interface LeasePropertySummary {
   city?: string;
 }
 
-export interface LeaseContract {
+/** Row of `GET /leases`: no personal data of the parties, only their number. */
+export interface LeaseSummary {
   id: string;
   propertyId: string;
+  property?: LeasePropertySummary | null;
   status: LeaseStatus;
   fiscalRegime: FiscalRegime;
   startDate: string;
   endDate: string;
   monthlyRent: number;
   registrationDeadline: string;
-  signedPdfStoragePath?: string | null;
+  partyCount: number;
+  hasExtraEUTenant: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** `GET /leases/:id` (and the `POST /leases` response). */
+export interface LeaseDetail {
+  id: string;
+  propertyId: string;
+  property?: LeasePropertySummary | null;
+  status: LeaseStatus;
+  fiscalRegime: FiscalRegime;
+  startDate: string;
+  endDate: string;
+  monthlyRent: number;
+  registrationDeadline: string;
+  hasSignedPdf: boolean;
+  hasExtraEUTenant: boolean;
   parties: LeaseParty[];
   registration?: LeaseRegistration | null;
-  events?: LeaseEvent[];
-  hasExtraEUTenant?: boolean;
-  property?: LeasePropertySummary | null;
+  events: LeaseEvent[];
   createdAt: string;
   updatedAt: string;
 }

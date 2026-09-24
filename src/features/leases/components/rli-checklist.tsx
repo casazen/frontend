@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useExportRli, useRliChecklist } from '@/queries/use-leases';
+import { getProblemMessage } from '@/lib/api-errors';
+import { getRliChecklistItemLabel } from '@/lib/i18n-labels';
 
 interface Props {
   leaseId: string;
@@ -11,7 +13,7 @@ interface Props {
 
 export function RliChecklist({ leaseId }: Props) {
   const { t } = useTranslation();
-  const { data, isLoading, isError } = useRliChecklist(leaseId);
+  const { data, isLoading, isError, error } = useRliChecklist(leaseId);
   const exportRli = useExportRli();
 
   const handleExport = async () => {
@@ -24,8 +26,8 @@ export function RliChecklist({ leaseId }: Props) {
       anchor.click();
       URL.revokeObjectURL(url);
       toast.success(t('leases.rli.exportOk'));
-    } catch {
-      toast.error(t('leases.rli.exportError'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('leases.rli.exportError'));
     }
   };
 
@@ -36,7 +38,11 @@ export function RliChecklist({ leaseId }: Props) {
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
         {isLoading && <p>{t('leases.rli.checklistLoading')}</p>}
-        {isError && <p className="text-destructive">{t('leases.rli.checklistError')}</p>}
+        {isError && (
+          <p className="text-destructive" role="alert">
+            {getProblemMessage(error, t) ?? t('leases.rli.checklistError')}
+          </p>
+        )}
         {data && (
           <>
             <p>
@@ -49,7 +55,7 @@ export function RliChecklist({ leaseId }: Props) {
                 {data.items.map((item) => (
                   <li key={item.key} className="flex gap-2">
                     <span aria-hidden>{item.done ? '✓' : '○'}</span>
-                    <span>{item.label}</span>
+                    <span>{getRliChecklistItemLabel(item, t)}</span>
                   </li>
                 ))}
               </ul>

@@ -89,7 +89,21 @@ export function getFiscalRegimeLabel(regime: string, t: TranslateFn): string {
 }
 
 export function getLeaseStatusLabel(status: string, t: TranslateFn): string {
-  return t(`leases.statusLabel.${status}`);
+  return translateEnumValue('leases.statusLabel', status, t);
+}
+
+/** Timeline entry of a lease (`LeaseEventType`). */
+export function getLeaseEventTypeLabel(eventType: string, t: TranslateFn): string {
+  return translateEnumValue('leases.eventType', eventType, t);
+}
+
+/**
+ * RLI checklist item: the translation of its stable key in the UI language, or the label the server
+ * localized from `Accept-Language` for a key this frontend does not know yet.
+ */
+export function getRliChecklistItemLabel(item: { key: string; label: string }, t: TranslateFn): string {
+  const key = `leases.rli.checklistItem.${item.key}`;
+  return i18n.exists(key) ? t(key) : item.label;
 }
 
 export function getRegistrationStatusLabel(status: string, t: TranslateFn): string {

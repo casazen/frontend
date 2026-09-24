@@ -188,12 +188,11 @@ export function MarketplacePage() {
                       </Button>
                       <ServiceRequestForm
                         propertyId={selectedPropertyId}
-                        preselectedSupplierOrgId={selectedSupplier.orgId}
+                        supplierOrgId={selectedSupplier.orgId}
                         preselectedCategory={categoryFilter || selectedSupplier.categories[0]}
                         open={formOpen}
                         onOpenChange={setFormOpen}
                         hideTrigger
-                        skipAiMatch
                       />
                     </>
                   )}

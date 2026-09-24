@@ -74,10 +74,6 @@ async function mockMarketplaceApis(page: Page) {
       });
       return;
     }
-    if (method === 'POST' && route.request().url().includes('/match-supplier')) {
-      await route.fallback();
-      return;
-    }
     if (method === 'POST') {
       const body = route.request().postDataJSON() as Record<string, unknown>;
       expect(body.propertyId).toBe(PROPERTY_ID);
@@ -127,7 +123,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('service-request-dialog')).toBeVisible();
 
     const createResp = page.waitForResponse(
-      (r) => r.request().method() === 'POST' && r.url().includes('/api/service-requests') && !r.url().includes('match-supplier'),
+      (r) => r.request().method() === 'POST' && r.url().includes('/api/service-requests'),
     );
     await page.getByTestId('submit-service-request').click();
     expect((await createResp).status()).toBe(201);
