@@ -7,6 +7,7 @@ import { LoginPage } from '@/pages/login-page';
 import { SignupPage } from '@/pages/signup-page';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
+import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { ContextLayout } from '@/components/layout/context-layout';
@@ -25,6 +26,7 @@ import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
+import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
@@ -157,6 +159,12 @@ export const appRoutes: RouteObject[] = [
     ],
   },
   {
+    // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
+    // onboarding redirect (SU-02).
+    path: '/register/claim',
+    element: <SupplierClaimPage />,
+  },
+  {
     path: '/search',
     element: (
       <WorkspaceProvider>
@@ -170,6 +178,8 @@ export const appRoutes: RouteObject[] = [
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
+      // Link of the "request received" email of a "pay at the property" request (BK-06).
+      { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)

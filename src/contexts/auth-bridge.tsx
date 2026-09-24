@@ -21,6 +21,11 @@ type LoginOptions = {
   authorizationParams?: Record<string, string>;
   /** Path of this app to open after the login (e.g. back to an invite page); default: the app root. */
   returnTo?: string;
+  /**
+   * Extra values carried through the redirect in the SDK `appState` (kept in this browser, never sent to Auth0) and
+   * handed back to `onRedirectCallback`, e.g. the pending supplier claim (SU-02).
+   */
+  appState?: Record<string, unknown>;
 };
 
 export type AuthBridgeValue = {
@@ -135,12 +140,16 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     (options?: LoginOptions) => {
+      const appState = {
+        ...options?.appState,
+        ...(options?.returnTo ? { returnTo: options.returnTo } : {}),
+      };
       void loginWithRedirect({
         authorizationParams: {
           ...AUTH_PARAMS,
           ...options?.authorizationParams,
         },
-        ...(options?.returnTo ? { appState: { returnTo: options.returnTo } } : {}),
+        ...(Object.keys(appState).length > 0 ? { appState } : {}),
       });
     },
     [loginWithRedirect],

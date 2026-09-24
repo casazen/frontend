@@ -4,14 +4,17 @@ import { useAuth } from '@/hooks/use-auth';
 import { useUserRoleState } from '@/hooks/use-user-roles';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
-import { isProfileLoadFailure, needsOnboarding } from '@/lib/onboarding';
+import { isLinkedSupplier, isProfileLoadFailure, needsOnboarding } from '@/lib/onboarding';
+import { readPendingSupplierClaim, SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { useMe } from '@/queries/use-users';
 import { useSignupAttributionSync } from '@/hooks/use-signup-attribution-sync';
 
 /**
  * Sends to `/onboarding` only the users who need it (A1-01): hosts without an org or without a completed
- * onboarding. Platform admins and supplier-only users pass without an org. A failed profile load is shown as an
- * error with retry, never as "not onboarded" (A1-19).
+ * onboarding. Platform admins and supplier-only users pass without an org, and so does an account linked to a supplier
+ * profile (`supplierOrgId`, SU-02) even before the Supplier role reaches its token. A supplier who registered without
+ * an account and still holds the claim token goes to `/register/claim` first (A4-02). A failed profile load is shown
+ * as an error with retry, never as "not onboarded" (A1-19).
  */
 export function OnboardingGuard() {
   const { t } = useTranslation();
@@ -35,6 +38,10 @@ export function OnboardingGuard() {
 
   if (isAuthenticated && !profile && isProfileLoadFailure(profileError)) {
     return <ProfileLoadError error={profileError} onRetry={() => void refetch()} isRetrying={isFetching} />;
+  }
+
+  if (isAuthenticated && !isLinkedSupplier(profile) && readPendingSupplierClaim()) {
+    return <Navigate to={SUPPLIER_CLAIM_PATH} replace />;
   }
 
   if (isAuthenticated && needsOnboarding(user, profile, roles)) {

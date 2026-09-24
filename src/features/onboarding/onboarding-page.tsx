@@ -14,9 +14,11 @@ import {
   getHomeRouteForUser,
   getPostOnboardingRoute,
   isExemptFromHostOnboarding,
+  isLinkedSupplier,
   isProfileLoadFailure,
   needsOrgSetup,
 } from '@/lib/onboarding';
+import { SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { isDemoMode } from '@/config/demo.config';
 import { applyDemoOnboardingProfile } from '@/lib/demo-onboarding';
@@ -24,6 +26,7 @@ import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-
 import { RentalTypeCard } from './components/rental-type-card';
 import { ConsentsStep } from './components/consents-step';
 import { RolesPendingPanel } from './components/roles-pending-panel';
+import { SupplierOptionCard } from './components/supplier-option-card';
 import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
 import { Button } from '@/components/ui/button';
@@ -71,6 +74,9 @@ export function OnboardingPage() {
   const roles = useUserRoles();
   const hasRoles = roles.length > 0;
   const hasOrg = !needsOrgSetup(profile);
+  // Linked in the database (invite, registration, claim) even when the Supplier role is not in the token yet.
+  const linkedSupplier = isLinkedSupplier(profile);
+  const homeRoute = getHomeRouteForUser({ [ROLES_CLAIM]: roles }, profile);
   const isOrgBackfill = hasRoles && !hasOrg;
   // A1-01: PUT (no consents) only when the backend already has a completed onboarding with an org. Any other case,
   // with JWT roles or not, creates the first org: consents step and POST.
@@ -87,8 +93,9 @@ export function OnboardingPage() {
       return;
     }
 
-    if (!isEditMode && hasOrg && hasRoles) {
-      navigate(getHomeRouteForUser({ [ROLES_CLAIM]: roles }), { replace: true });
+    // A linked supplier belongs to the supplier console, never to the host wizard (A4-02).
+    if (!isEditMode && hasOrg && (hasRoles || linkedSupplier)) {
+      navigate(homeRoute, { replace: true });
       return;
     }
 
@@ -102,7 +109,7 @@ export function OnboardingPage() {
     if (isEditMode && profile.rentalType) {
       setStep('plan');
     }
-  }, [navigate, profile, profileLoading, hasOrg, hasRoles, isEditMode, roles, pendingRoles, isLeaving]);
+  }, [navigate, profile, profileLoading, hasOrg, hasRoles, linkedSupplier, homeRoute, isEditMode, pendingRoles, isLeaving]);
 
   const leaveTo = async (target: string) => {
     setIsLeaving(true);
@@ -259,13 +266,20 @@ export function OnboardingPage() {
           </div>
         ) : null}
 
+        {step === 'role' && !isEditMode && !linkedSupplier ? (
+          <SupplierOptionCard
+            onRegister={() => navigate('/register')}
+            onClaim={() => navigate(SUPPLIER_CLAIM_PATH)}
+          />
+        ) : null}
+
         {step === 'role' && canSkip ? (
           <div className="space-y-2" data-testid="onboarding-skip">
             <p className="text-sm text-muted-foreground">{t('onboarding.skipDescription')}</p>
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate(getHomeRouteForUser({ [ROLES_CLAIM]: roles }), { replace: true })}
+              onClick={() => navigate(homeRoute, { replace: true })}
             >
               {t('onboarding.skipForNow')}
             </Button>

@@ -6,6 +6,7 @@ import type {
   DirectBookingResponse,
   GuestBookingLookupResponse,
   BookingStatusResponse,
+  OnSiteRequestConfirmation,
 } from '@/types';
 
 export interface PropertyAvailability {
@@ -40,4 +41,12 @@ export const publicBookingApi = {
 
   getBookingStatus: (bookingId: string) =>
     ApiClient.get<BookingStatusResponse>(`/public/bookings/${bookingId}/status`, undefined, { public: true }),
+
+  /** The guest confirms the email of a "pay at the property" request with the token of the link (BK-06). */
+  confirmOnSiteRequestEmail: (bookingId: string, token: string) =>
+    ApiClient.post<OnSiteRequestConfirmation>(
+      `/public/bookings/${bookingId}/confirm-email`,
+      { token },
+      { public: true },
+    ),
 };

@@ -48,6 +48,22 @@ export function nightsBetween(checkIn: string, checkOut: string): number {
   return nights > 0 ? nights : 0;
 }
 
+/**
+ * A UTC instant (ISO string, e.g. a deadline) shown as date and time in Europe/Rome, the time zone of every deadline
+ * of the stays; an empty string when invalid.
+ */
+export function formatRomeDateTime(instant: string, locale: string): string {
+  const date = new Date(instant);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: STAY_TIME_ZONE,
+  }).format(date);
+}
+
 /** Stay date formatted for display (no time zone shift), or an empty string when invalid. */
 export function formatStayDate(
   date: string,
