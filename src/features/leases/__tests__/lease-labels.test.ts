@@ -15,7 +15,6 @@ const CHECKLIST_KEYS = [
   'contract_signed',
   'delega_captured',
   'rli_exported',
-  'rli_submitted',
   'rli_registered',
   'questura_extra_eu',
 ];

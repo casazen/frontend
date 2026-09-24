@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -15,6 +15,11 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * match flow was unreachable and has been removed (FD-21); gate any new AI supplier UI on this flag.
    */
   aiSupplierDiscovery: false,
+  /**
+   * LT-01 / D15: RLI filing through a provider, off. The lease page does not read it: it offers the provider only when
+   * the RLI checklist says `providerFilingAvailable` (flag on and a configured provider); otherwise manual registration.
+   */
+  rliProvider: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

@@ -6,9 +6,21 @@ import { Button } from '@/components/ui/button';
 import { useExportRli, useRliChecklist } from '@/queries/use-leases';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getRliChecklistItemLabel } from '@/lib/i18n-labels';
+import { RLI_REGISTRATION_PANEL_ID } from '@/lib/rli-registration-state';
+import type { RliChecklistItem } from '@/types';
 
 interface Props {
   leaseId: string;
+}
+
+type ChecklistItemState = 'done' | 'failed' | 'todo';
+
+/** Marks of the checklist (symbols, not text): ✓ only for a step that happened. */
+const CHECKLIST_MARKS: Record<ChecklistItemState, string> = { done: '✓', failed: '✗', todo: '○' };
+
+function checklistItemState(item: RliChecklistItem): ChecklistItemState {
+  if (item.done) return 'done';
+  return item.failed ? 'failed' : 'todo';
 }
 
 export function RliChecklist({ leaseId }: Props) {
@@ -52,12 +64,37 @@ export function RliChecklist({ leaseId }: Props) {
               <p className="text-muted-foreground">{t('leases.rli.checklistEmpty')}</p>
             ) : (
               <ul className="space-y-2">
-                {data.items.map((item) => (
-                  <li key={item.key} className="flex gap-2">
-                    <span aria-hidden>{item.done ? '✓' : '○'}</span>
-                    <span>{getRliChecklistItemLabel(item, t)}</span>
-                  </li>
-                ))}
+                {data.items.map((item) => {
+                  const state = checklistItemState(item);
+                  return (
+                    <li
+                      key={item.key}
+                      className="flex gap-2"
+                      data-testid={`rli-checklist-item-${item.key}`}
+                      data-state={state}
+                    >
+                      {/* The tick only for a step that really happened (LT-01): a failed attempt is never ticked. */}
+                      <span aria-hidden className={state === 'failed' ? 'text-destructive' : undefined}>
+                        {CHECKLIST_MARKS[state]}
+                      </span>
+                      <span>
+                        {getRliChecklistItemLabel(item, t)}
+                        {state === 'failed' && (
+                          <>
+                            {' '}
+                            <span className="text-destructive">({t('leases.rli.checklistFailed')})</span>{' '}
+                            <a
+                              href={`#${RLI_REGISTRATION_PANEL_ID}`}
+                              className="text-primary underline-offset-4 hover:underline"
+                            >
+                              {t('leases.rli.checklistGoToRegistration')}
+                            </a>
+                          </>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
             <Button type="button" variant="outline" disabled={exportRli.isPending} onClick={handleExport}>

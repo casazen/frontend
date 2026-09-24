@@ -112,8 +112,15 @@ export function getRliChecklistItemLabel(item: { key: string; label: string }, t
   return i18n.exists(key) ? t(key) : item.label;
 }
 
-export function getRegistrationStatusLabel(status: string, t: TranslateFn): string {
-  return t(`leases.registrationStatusLabel.${status}`);
+/** State of the RLI registration of a lease (`toRegister`, `inProgress`, ..., see `getRliRegistrationState`). */
+export function getRliRegistrationStateLabel(state: string, t: TranslateFn): string {
+  return translateEnumValue('leases.rli.state', state, t);
+}
+
+/** Why the last RLI registration attempt failed (stable code from the API), or a generic text for an unknown code. */
+export function getRliFailureLabel(code: string | null | undefined, t: TranslateFn): string {
+  const key = `leases.rli.failure.${code}`;
+  return code && i18n.exists(key) ? t(key) : t('leases.rli.failure.unknown');
 }
 
 export function getLeasePartyRoleLabel(role: string, t: TranslateFn): string {

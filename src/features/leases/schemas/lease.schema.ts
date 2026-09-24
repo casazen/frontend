@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { LeaseStatus } from '@/types';
+import type { RliRegistrationState } from '@/lib/rli-registration-state';
 
 const partySchema = z.object({
   role: z.enum(['Landlord', 'Tenant']),
@@ -50,9 +51,11 @@ export const LEASE_STATUS_VARIANTS: Record<LeaseStatus, 'default' | 'secondary' 
   Rejected: 'destructive',
 };
 
-export const REGISTRATION_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
-  Pending: 'secondary',
-  SentToProvider: 'outline',
-  Registered: 'success',
-  Failed: 'destructive',
+/** Badge of the RLI registration state (LT-01): only "registered" is green. */
+export const RLI_REGISTRATION_STATE_VARIANTS: Record<RliRegistrationState, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
+  notSigned: 'secondary',
+  toRegister: 'outline',
+  inProgress: 'outline',
+  registered: 'success',
+  failed: 'destructive',
 };
