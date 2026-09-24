@@ -9,16 +9,33 @@ import { formatCurrency } from '@/lib/utils';
 import { buildPropertyCheckoutUrl } from '@/lib/booking-url';
 import { addDays, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
+import { AvailabilityCalendar, type AvailabilityStatus } from '@/features/public-site/components/AvailabilityCalendar';
 import type { PublicPropertyDetailDto } from '@/types';
 
-interface Availability {
-  bookedDates: string[];
+/** Public availability of the property (BK-05), as loaded by the page. */
+export interface WidgetAvailability {
+  status: AvailabilityStatus;
+  /** Taken nights (`YYYY-MM-DD`); only meaningful when `status` is `ready`. */
+  bookedDates?: string[];
+  /** End of the loaded range (`YYYY-MM-DD`, excluded). */
+  endDate?: string;
+  /** Why the load failed, when `status` is `error`. */
+  errorMessage?: string;
+  onRetry: () => void;
 }
 
 interface BookingWidgetProps {
   property: PublicPropertyDetailDto;
-  availability?: Availability;
+  availability: WidgetAvailability;
   orgSlug: string;
+}
+
+/** True when a night of [checkIn, checkOut) is taken: the check-out day itself can be taken (same-day turnover). */
+function stayHasTakenNight(checkIn: string, checkOut: string, booked: ReadonlySet<string>): boolean {
+  for (let night = checkIn; night && night < checkOut; night = addDays(night, 1)) {
+    if (booked.has(night)) return true;
+  }
+  return false;
 }
 
 function WidgetForm({
@@ -41,21 +58,16 @@ function WidgetForm({
   const lodgingTotal = property.nightlyRate * nights;
   const estimatedTotal = lodgingTotal + property.cleaningFee;
 
-  const isDateBooked = (dateStr: string) => availability?.bookedDates.includes(dateStr) ?? false;
-  const dateRangeAvailable = useMemo(() => {
-    if (!checkIn || !checkOut || !availability) return true;
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    const current = new Date(start);
-    while (current < end) {
-      if (availability.bookedDates.includes(current.toISOString().split('T')[0])) return false;
-      current.setDate(current.getDate() + 1);
-    }
-    return true;
-  }, [checkIn, checkOut, availability]);
+  const bookedDates = useMemo(() => new Set(availability.bookedDates ?? []), [availability.bookedDates]);
+  // Known only once the availability has loaded; the checkout checks the same nights again (409 when taken meanwhile).
+  const selectionTaken = useMemo(() => {
+    if (availability.status !== 'ready' || !checkIn) return false;
+    if (nights > 0) return stayHasTakenNight(checkIn, checkOut, bookedDates);
+    return bookedDates.has(checkIn);
+  }, [availability.status, bookedDates, checkIn, checkOut, nights]);
 
   const checkInPast = !!checkIn && checkIn < today;
-  const canCheckout = nights > 0 && !checkInPast && dateRangeAvailable && guests >= 1 && guests <= property.maxGuests;
+  const canCheckout = nights > 0 && !checkInPast && !selectionTaken && guests >= 1 && guests <= property.maxGuests;
 
   const handleCheckout = () => {
     navigate(buildPropertyCheckoutUrl(orgSlug, property, params));
@@ -88,6 +100,15 @@ function WidgetForm({
         </div>
       </div>
 
+      <AvailabilityCalendar
+        bookedDates={bookedDates}
+        status={availability.status}
+        errorMessage={availability.errorMessage}
+        onRetry={availability.onRetry}
+        today={today}
+        rangeEnd={availability.endDate}
+      />
+
       <div className="space-y-1">
         <Label htmlFor="guests">{t('publicBooking.guestsLabel')}</Label>
         <Input
@@ -104,8 +125,8 @@ function WidgetForm({
         <p className="text-sm text-red-600">{t('publicBooking.validation.checkInPast')}</p>
       ) : null}
 
-      {(checkIn && isDateBooked(checkIn)) || (checkOut && isDateBooked(checkOut)) || (checkIn && checkOut && !dateRangeAvailable) ? (
-        <p className="flex items-center gap-1 text-sm text-red-600">
+      {selectionTaken ? (
+        <p className="flex items-center gap-1 text-sm text-red-600" data-testid="booking-widget-dates-taken">
           <AlertCircle className="h-4 w-4" />
           {t('publicBooking.dateRangeBooked')}
         </p>
