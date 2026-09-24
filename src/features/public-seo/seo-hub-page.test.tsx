@@ -143,7 +143,7 @@ describe('ComplianceGuidePage canonical', () => {
       lastRefreshedAt: null,
       disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
       cta: { complianceCheckerUrl: '/tools/verifica-conformita', signupUrl: '/signup' },
-      touristTaxRate: null,
+      touristTaxRates: [],
     };
 
     render(
