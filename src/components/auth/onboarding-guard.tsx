@@ -1,27 +1,35 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/use-auth';
-import { useUserRoles } from '@/hooks/use-user-roles';
+import { useUserRoleState } from '@/hooks/use-user-roles';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { needsOnboarding } from '@/lib/onboarding';
+import { ProfileLoadError } from '@/components/auth/profile-load-error';
+import { isProfileLoadFailure, needsOnboarding } from '@/lib/onboarding';
 import { useMe } from '@/queries/use-users';
 
+/**
+ * Sends to `/onboarding` only the users who need it (A1-01): hosts without an org or without a completed
+ * onboarding. Platform admins and supplier-only users pass without an org. A failed profile load is shown as an
+ * error with retry, never as "not onboarded" (A1-19).
+ */
 export function OnboardingGuard() {
   const { t } = useTranslation();
+  const location = useLocation();
   const { isLoading: authLoading, isAuthenticated, user } = useAuth();
-  const roles = useUserRoles();
-  const { data: profile, isLoading: profileLoading, isError: profileError } = useMe();
+  const { roles, isResolved: rolesResolved } = useUserRoleState();
+  const { data: profile, isLoading: profileLoading, error: profileError, refetch, isFetching } = useMe();
 
-  if (authLoading || (isAuthenticated && profileLoading && !profile)) {
+  // The decision depends on the absence of roles (e.g. "not an admin"): wait until they are known.
+  if (authLoading || (isAuthenticated && ((profileLoading && !profile) || !rolesResolved))) {
     return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
   }
 
-  if (isAuthenticated && profileError && !profile) {
-    return <Navigate to="/onboarding" replace />;
+  if (isAuthenticated && !profile && isProfileLoadFailure(profileError)) {
+    return <ProfileLoadError error={profileError} onRetry={() => void refetch()} isRetrying={isFetching} />;
   }
 
   if (isAuthenticated && needsOnboarding(user, profile, roles)) {
-    return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/onboarding" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   return <Outlet />;

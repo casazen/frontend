@@ -1,6 +1,7 @@
 import type { RentalType } from '@/types';
 import { getUserRoles, isAdmin, ROLE_ADMIN, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
 import type { UserWithRoles } from '@/lib/auth-roles';
+import { getHttpStatus } from '@/lib/api-errors';
 
 export function getHomeRouteForRentalType(rentalType: RentalType): string {
   switch (rentalType) {
@@ -33,9 +34,28 @@ export function getHomeRouteForUser(user: UserWithRoles): string {
   return '/app/short-rent';
 }
 
+/**
+ * True when `GET /users/me` failed for a reason that says nothing about the onboarding (5xx, network, session):
+ * the UI offers a retry instead of the wizard (A1-19). Only a 404 (no profile at all) counts as "not onboarded".
+ */
+export function isProfileLoadFailure(error: unknown): boolean {
+  return error != null && getHttpStatus(error) !== 404;
+}
+
 /** True when the caller has no tenant org yet (blocks property create, plan, entitlement). */
 export function needsOrgSetup(profile?: { orgId?: string | null } | null): boolean {
   return !profile?.orgId;
+}
+
+/**
+ * Platform admins and supplier-only users do not need a host org, so they are never sent through the host
+ * onboarding (A1-01): the admin reaches the admin routes, the supplier its console. Both can still open
+ * `/onboarding` themselves to set up a host org.
+ */
+export function isExemptFromHostOnboarding(roles: string[]): boolean {
+  if (roles.includes(ROLE_ADMIN)) return true;
+  const isHost = roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
+  return roles.includes(ROLE_SUPPLIER) && !isHost;
 }
 
 export function needsOnboarding(
@@ -45,7 +65,12 @@ export function needsOnboarding(
 ): boolean {
   const resolvedRoles = roles ?? getUserRoles(user);
 
-  // Org backfill takes priority — e.g. admin with timestamp but no tenant (#285)
+  // Admins and supplier-only users skip it even without an org (#285 used to trap admins here).
+  if (isExemptFromHostOnboarding(resolvedRoles)) {
+    return false;
+  }
+
+  // Hosts without an org (roles assigned by hand in Auth0, org never provisioned) complete it to get one.
   if (needsOrgSetup(profile)) {
     return true;
   }
@@ -55,10 +80,27 @@ export function needsOnboarding(
     return false;
   }
 
-  if (resolvedRoles.includes(ROLE_ADMIN)) {
-    return false;
-  }
   return resolvedRoles.length === 0;
+}
+
+const RENTAL_TYPE_CONTEXT_PREFIXES: Record<RentalType, string[]> = {
+  ShortTerm: ['/app/short-rent'],
+  LongTerm: ['/app/long-rent'],
+  Both: ['/app/short-rent', '/app/long-rent'],
+};
+
+/**
+ * Where to go once the onboarding is done: back to the page the guard redirected from when it belongs to a
+ * context the chosen rental type opens, otherwise the home of that rental type.
+ */
+export function getPostOnboardingRoute(rentalType: RentalType, from?: string | null): string {
+  if (from) {
+    const prefixes = RENTAL_TYPE_CONTEXT_PREFIXES[rentalType] ?? [];
+    if (prefixes.some((prefix) => from === prefix || from.startsWith(`${prefix}/`))) {
+      return from;
+    }
+  }
+  return getHomeRouteForRentalType(rentalType);
 }
 
 /**

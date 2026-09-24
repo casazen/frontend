@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { LeaseStatus } from '@/types';
 
 const partySchema = z.object({
   role: z.enum(['Landlord', 'Tenant']),
@@ -38,7 +39,7 @@ export const FISCAL_REGIME_I18N_KEYS: Record<LeaseFormValues['fiscalRegime'], st
   CanoneConcordato: 'leases.fiscalRegimeLabel.CanoneConcordato',
 };
 
-export const LEASE_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
+export const LEASE_STATUS_VARIANTS: Record<LeaseStatus, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
   Draft: 'secondary',
   AwaitingSignature: 'outline',
   PartiallySigned: 'outline',

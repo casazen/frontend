@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
-import type { RentalType, UpdateProfileRequest, PlanTier } from '@/types';
+import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
+import { isDemoMode } from '@/config/demo.config';
+import { getDemoProfile } from '@/lib/demo-profile';
 
 const USERS_KEY = 'users';
 const ME_KEY = 'me';
@@ -36,10 +38,23 @@ export function useUser(id: string) {
   });
 }
 
+/**
+ * Demo mode (A1-18): Playwright mocks `/users/me`, but anywhere else the API rejects the demo token. The profile of
+ * the demo persona then stands in for it, so the onboarding guard never loops on an error it cannot fix.
+ */
+async function fetchMe(): Promise<UserDetail> {
+  if (!isDemoMode) return UsersApi.getMe();
+  try {
+    return await UsersApi.getMe();
+  } catch {
+    return getDemoProfile();
+  }
+}
+
 export function useMe() {
   return useQuery({
     queryKey: [ME_KEY],
-    queryFn: () => UsersApi.getMe(),
+    queryFn: fetchMe,
     refetchOnMount: 'always',
   });
 }

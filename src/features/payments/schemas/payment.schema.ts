@@ -10,19 +10,7 @@ export const paymentFormSchema = z.object({
   manualWithholdingTax: z.number().optional(),
 });
 
-export const processPaymentSchema = z.object({
-  paymentMethodId: z.string().min(1, 'payment.validation.paymentMethodId.required'),
-  saveCard: z.boolean().optional(),
-});
-
-export const refundPaymentSchema = z.object({
-  amount: z.number().min(0.01).optional(),
-  reason: z.string().optional(),
-});
-
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
-export type ProcessPaymentFormValues = z.infer<typeof processPaymentSchema>;
-export type RefundPaymentFormValues = z.infer<typeof refundPaymentSchema>;
 
 // Payment status labels are now resolved via getPaymentStatusLabel() from @/lib/i18n-labels.
 // Payment method labels are now resolved via getPaymentMethodLabel() from @/lib/i18n-labels.
@@ -34,6 +22,7 @@ export const PAYMENT_STATUS_VARIANTS: Record<string, 'default' | 'success' | 'wa
   Failed: 'destructive',
   Refunded: 'secondary',
   PartiallyRefunded: 'secondary',
+  Canceled: 'secondary',
   PENDING: 'warning',
   PROCESSING: 'default',
   COMPLETED: 'success',

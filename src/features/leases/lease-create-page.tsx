@@ -11,8 +11,12 @@ export function LeaseCreatePage() {
   const createLease = useCreateLease();
 
   const handleSubmit = async (data: CreateLeaseDto) => {
-    const lease = await createLease.mutateAsync(data);
-    navigate(`/app/long-rent/leases/${lease.id}`);
+    try {
+      const lease = await createLease.mutateAsync(data);
+      navigate(`/app/long-rent/leases/${lease.id}`);
+    } catch {
+      // useCreateLease.onError shows the server's reason; the form stays filled in to fix and resubmit.
+    }
   };
 
   return (
