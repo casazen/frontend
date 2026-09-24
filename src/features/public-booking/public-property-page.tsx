@@ -6,6 +6,8 @@ import { PublicCinLabel } from '@/features/properties/components/public-cin-labe
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
+import type { WidgetAvailability } from '@/features/public-site/components/BookingWidget';
+import { getProblemMessage } from '@/lib/api-errors';
 import type { PublicOrgDto } from '@/types';
 import { Bed, Bath, Loader2, Users } from 'lucide-react';
 
@@ -22,7 +24,8 @@ export function PublicPropertyPage() {
   const { orgSlug, propertySlugOrId } = useParams<{ orgSlug: string; propertySlugOrId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
-  const { data: availability } = usePropertyAvailability(propertySlugOrId);
+  // By the id of the loaded property: the URL may carry its slug, the availability takes the id (BK-05, R-03).
+  const availabilityQuery = usePropertyAvailability(property?.id);
 
   if (isLoading) {
     return (
@@ -44,6 +47,14 @@ export function PublicPropertyPage() {
   }
 
   const basePath = `/book/${orgSlug}`;
+  // An error is never shown as "every night free": the calendar shows the error and a retry (BK-05).
+  const availability: WidgetAvailability = {
+    status: availabilityQuery.isError ? 'error' : availabilityQuery.data ? 'ready' : 'loading',
+    bookedDates: availabilityQuery.data?.bookedDates,
+    endDate: availabilityQuery.data?.endDate.slice(0, 10),
+    errorMessage: availabilityQuery.isError ? getProblemMessage(availabilityQuery.error, t) : undefined,
+    onRetry: () => void availabilityQuery.refetch(),
+  };
 
   return (
     <div className="space-y-6 md:space-y-8" data-testid="public-property-page">

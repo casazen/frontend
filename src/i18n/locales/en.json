@@ -2927,6 +2927,19 @@
       "hostContact": "For any question contact {{name}}:",
       "hostContactNoName": "For any question contact the host:",
       "hostContactDirectly": "For any question contact the host of the property directly."
+    },
+    "availability": {
+      "title": "Availability",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "loading": "Loading availability…",
+      "loadError": "The availability could not be loaded.",
+      "checkedAtCheckout": "The dates you choose will still be checked before payment.",
+      "retry": "Try again",
+      "legendFree": "Free",
+      "legendBooked": "Booked",
+      "dayFree": "{{date}}: free",
+      "dayBooked": "{{date}}: booked"
     }
   },
   "publicSeo": {
@@ -3448,7 +3461,9 @@
       "checkoutPaymentNotResumable": "There is no payment to complete for this booking: it is already in progress, completed, or the booking is closed.",
       "paymentProviderError": "The payment service did not answer correctly. Try again in a few minutes.",
       "guestBookingNotFound": "No booking matches this code and email address. Check the code in the confirmation email and use the email address you booked with.",
-      "guestCheckInLinkUnavailable": "The online check-in link cannot be sent now: the booking is not confirmed, the check-in is already completed or it is not time yet."
+      "guestCheckInLinkUnavailable": "The online check-in link cannot be sent now: the booking is not confirmed, the check-in is already completed or it is not time yet.",
+      "publicPropertyNotFound": "This property is not available for online booking.",
+      "availabilityRangeInvalid": "The requested date range is not valid."
     }
   },
   "validation": {

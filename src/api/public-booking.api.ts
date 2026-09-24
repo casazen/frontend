@@ -13,8 +13,11 @@ import type {
 
 export interface PropertyAvailability {
   propertyId: string;
+  /** First night of the range (included). */
   startDate: string;
+  /** End of the range (excluded). */
   endDate: string;
+  /** Taken nights (`YYYY-MM-DD`), in order; a taken night can still be a check-out day. */
   bookedDates: string[];
 }
 
@@ -26,17 +29,17 @@ export const publicBookingApi = {
   quoteDirectBooking: (payload: DirectBookingQuotePayload) =>
     ApiClient.post<DirectBookingQuote>('/public/bookings/quote', payload, { public: true }),
 
-  getPropertyAvailability: (propertyId: string, startDate?: string, endDate?: string) => {
-    const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
-    const queryString = params.toString();
-    return ApiClient.get<PropertyAvailability>(
-      `/public/bookings/property/${propertyId}/availability${queryString ? `?${queryString}` : ''}`,
-      undefined,
+  /**
+   * Nights already taken on the booking site (BK-05): bookings, checkout holds, "pay at the property" requests and iCal or
+   * manual blocks, by the same rule the checkout applies. Takes the property **id** (never the slug of the page URL);
+   * 404 `public_property_not_found` when the property is not published. Without dates: one year from today.
+   */
+  getPropertyAvailability: (propertyId: string, startDate?: string, endDate?: string) =>
+    ApiClient.get<PropertyAvailability>(
+      `/public/bookings/property/${encodeURIComponent(propertyId)}/availability`,
+      { startDate, endDate },
       { public: true },
-    );
-  },
+    ),
 
   /**
    * "Le mie prenotazioni" (BK-11): the booking of this site with its code and the guest's email, in the body (never in the

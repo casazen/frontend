@@ -28,6 +28,7 @@ export function useOrgPublicProperty(slug: string | undefined, propertyId: strin
   });
 }
 
+/** Public availability of a property by its **id** (BK-05): wait for the property detail, never pass the URL slug. */
 export function usePropertyAvailability(propertyId: string | undefined, startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: ['property-availability', propertyId, startDate, endDate],
