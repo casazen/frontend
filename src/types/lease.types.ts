@@ -37,6 +37,9 @@ export type PartyRole = 'Landlord' | 'Tenant';
 
 export type RegistrationStatus = 'Pending' | 'SentToProvider' | 'Registered' | 'Failed';
 
+/** How the RLI registration is made (LT-01): declared by the landlord, or filed by a provider. */
+export type RegistrationChannel = 'Manual' | 'Provider';
+
 /**
  * A party as returned by the lease detail API: fiscal code and email arrive already masked from the
  * server (GDPR, A7-17); the clear values never reach the browser.
@@ -57,11 +60,27 @@ export interface LeaseEvent {
   occurredAt: string;
 }
 
+/** RLI registration of a lease. The receipt is downloaded through the API only (`hasReceipt`). */
 export interface LeaseRegistration {
   status: RegistrationStatus;
+  channel: RegistrationChannel;
+  /** Registration number or protocol of the Agenzia delle Entrate. */
   registrationCode?: string | null;
+  /** Date of the registration (date-only, UTC midnight). */
+  registrationDate?: string | null;
   submittedAt?: string | null;
   confirmedAt?: string | null;
+  /** Stable code of the last failure (`provider_error`, `provider_rejected`...), only when `status` is Failed. */
+  failureCode?: string | null;
+  hasReceipt: boolean;
+}
+
+/** `POST /leases/:id/registration/manual` (multipart): what the landlord reads on the receipt, plus the PDF. */
+export interface ManualRegistrationInput {
+  registrationCode: string;
+  /** `YYYY-MM-DD`, not later than today in Europe/Rome. */
+  registrationDate: string;
+  receipt: File;
 }
 
 export interface LeasePropertySummary {
@@ -160,7 +179,10 @@ export interface CedolareAdvisory {
 export interface RliChecklistItem {
   key: string;
   label: string;
+  /** The step happened (the registration item only with the registration recorded and its receipt). */
   done: boolean;
+  /** The last attempt of the step failed. */
+  failed?: boolean;
 }
 
 export interface RliChecklist {
@@ -168,6 +190,8 @@ export interface RliChecklist {
   daysRemaining: number;
   tosVersion: string;
   attestationText: string;
+  /** Provider filing exists (backend flag `RliProvider` on and a configured provider); otherwise manual only. */
+  providerFilingAvailable: boolean;
   items: RliChecklistItem[];
 }
 

@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   useInitiateSigning,
   useLease,
-  useLeaseRegistration,
   useRliChecklist,
   useTriggerRegistration,
 } from '@/queries/use-leases';
@@ -33,7 +32,6 @@ export function LeaseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: lease, isLoading, isError, error, refetch, isFetching } = useLease(id!);
-  const { data: registration } = useLeaseRegistration(id!, lease?.status);
   const { data: checklist } = useRliChecklist(id!);
   const initiateSigning = useInitiateSigning();
   const triggerRegistration = useTriggerRegistration();
@@ -102,7 +100,7 @@ export function LeaseDetailPage() {
     }
   };
 
-  const handleRegister = async () => {
+  const handleSubmitToProvider = () => {
     setDelegaOpen(true);
   };
 
@@ -118,11 +116,13 @@ export function LeaseDetailPage() {
       });
       setDelegaOpen(false);
     } catch {
-      // Reported by useTriggerRegistration.onError; the dialog stays open to retry.
+      // Reported by useTriggerRegistration.onError (the lease is reloaded with the recorded failure).
+      setDelegaOpen(false);
     }
   };
 
-  const registrationData = registration ?? lease.registration;
+  // The provider path exists only when the API says so (flag on and configured provider, LT-01); otherwise manual.
+  const providerFilingAvailable = checklist?.providerFilingAvailable === true;
 
   return (
     <div className="space-y-6">
@@ -240,19 +240,22 @@ export function LeaseDetailPage() {
             <RegistrationStatusPanel
               leaseId={lease.id}
               leaseStatus={lease.status}
-              registration={registrationData}
-              canRegister={lease.status === 'Signed'}
-              onRegister={handleRegister}
-              isRegistering={triggerRegistration.isPending}
+              registration={lease.registration}
+              registrationDeadline={lease.registrationDeadline}
+              providerFilingAvailable={providerFilingAvailable}
+              onSubmitToProvider={handleSubmitToProvider}
+              isSubmittingToProvider={triggerRegistration.isPending}
             />
-            <DelegaCaptureDialog
-              open={delegaOpen}
-              onOpenChange={setDelegaOpen}
-              tosVersion={checklist?.tosVersion ?? '2026-08-rli-delega-bozza'}
-              attestationText={checklist?.attestationText ?? ''}
-              isSubmitting={triggerRegistration.isPending}
-              onConfirm={handleDelegaConfirm}
-            />
+            {providerFilingAvailable && checklist && (
+              <DelegaCaptureDialog
+                open={delegaOpen}
+                onOpenChange={setDelegaOpen}
+                tosVersion={checklist.tosVersion}
+                attestationText={checklist.attestationText}
+                isSubmitting={triggerRegistration.isPending}
+                onConfirm={handleDelegaConfirm}
+              />
+            )}
 
             <CanoneConcordatoCalculator propertyId={lease.propertyId} />
             <AttestationGuidancePanel propertyId={lease.propertyId} />

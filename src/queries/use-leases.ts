@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { leasesApi } from '@/api/leases.api';
-import type { CreateLeaseDto, LeaseStatus } from '@/types';
+import type { CreateLeaseDto, ManualRegistrationInput } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
+import { isRliRegistrationInProgress } from '@/lib/rli-registration-state';
 
 const LEASES_KEY = 'leases';
 
@@ -14,32 +15,16 @@ export function useLeases(params?: { propertyId?: string; status?: string }) {
   });
 }
 
+/**
+ * Lease detail (with its registration). While a provider works on the RLI registration the detail is polled, so the
+ * outcome (registered or failed) shows up without a reload.
+ */
 export function useLease(id: string) {
   return useQuery({
     queryKey: [LEASES_KEY, id],
     queryFn: () => leasesApi.getById(id),
     enabled: !!id,
-  });
-}
-
-const REGISTRATION_STATUSES: LeaseStatus[] = [
-  'SentToProvider',
-  'RegistrationPending',
-  'Registered',
-  'Rejected',
-];
-
-export function useLeaseRegistration(id: string, leaseStatus?: LeaseStatus) {
-  const shouldFetch = !!leaseStatus && REGISTRATION_STATUSES.includes(leaseStatus);
-  const shouldPoll =
-    leaseStatus === 'SentToProvider' || leaseStatus === 'RegistrationPending';
-
-  return useQuery({
-    queryKey: [LEASES_KEY, id, 'registration'],
-    queryFn: () => leasesApi.getRegistration(id),
-    enabled: !!id && shouldFetch,
-    refetchInterval: shouldPoll ? 30_000 : false,
-    retry: false,
+    refetchInterval: (query) => (isRliRegistrationInProgress(query.state.data?.status) ? 30_000 : false),
   });
 }
 
@@ -90,12 +75,32 @@ export function useTriggerRegistration() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'registration'] });
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'rli'] });
+      // Sent to the provider is not registered: the toast says so (A7-01).
       toast.success(i18n.t('toast.registrationSubmitted'));
     },
-    onError: (error) => {
+    onError: (error, { id }) => {
+      // A provider failure is recorded by the server (registration failed, lease signed): show the new state.
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.registrationSubmitFailed'));
+    },
+  });
+}
+
+/** LT-01: manual registration (number or protocol, date and receipt PDF declared by the landlord). */
+export function useDeclareManualRegistration() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: ManualRegistrationInput }) =>
+      leasesApi.declareManualRegistration(id, input),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+      toast.success(i18n.t('toast.manualRegistrationSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.manualRegistrationFailed'));
     },
   });
 }
