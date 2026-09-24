@@ -1,0 +1,125 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { createElement } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import { AxiosError, AxiosHeaders } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import i18n from '@/i18n/config';
+import { bookingsApi } from '@/api/bookings.api';
+import { propertiesApi } from '@/api/properties.api';
+import type { Booking, Property } from '@/types';
+import { BookingCreatePage } from '../booking-create-page';
+
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('@/api/bookings.api', () => ({
+  bookingsApi: { create: vi.fn() },
+}));
+vi.mock('@/api/properties.api', () => ({
+  propertiesApi: { getAll: vi.fn() },
+}));
+vi.mock('@/components/layout/app-shell', () => ({
+  AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
+}));
+vi.mock('@/components/layout/page-header', () => ({
+  PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
+}));
+
+const property = { id: 'property-1', name: 'Casa Mare', city: 'Rimini' } as Property;
+
+function conflict(data: unknown): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
+    status: 409,
+    data,
+    statusText: '',
+    headers: {},
+    config,
+  });
+}
+
+function renderPage() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(
+    createElement(I18nextProvider, { i18n },
+      createElement(QueryClientProvider, { client },
+        createElement(MemoryRouter, { initialEntries: ['/app/short-rent/bookings/new'] },
+          createElement(Routes, null,
+            createElement(Route, { path: '/app/short-rent/bookings/new', element: createElement(BookingCreatePage) }),
+            createElement(Route, { path: '/app/short-rent/bookings', element: createElement('p', null, 'bookings-list') }),
+          )))),
+  );
+}
+
+async function fillAndSubmit() {
+  const select = await screen.findByLabelText(i18n.t('booking.form.property'));
+  await screen.findByRole('option', { name: 'Casa Mare - Rimini' });
+  fireEvent.change(select, { target: { value: property.id } });
+  const fields: [string, string][] = [
+    ['booking.form.checkInDate', '2027-10-01'],
+    ['booking.form.checkOutDate', '2027-10-05'],
+    ['booking.form.numberOfGuests', '2'],
+    ['booking.form.firstName', 'Mario'],
+    ['booking.form.lastName', 'Rossi'],
+    ['booking.form.email', 'mario.rossi@example.com'],
+    ['booking.form.phone', '+393331234567'],
+    ['booking.form.country', 'Italia'],
+  ];
+  for (const [label, value] of fields)
+    fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
+  fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
+}
+
+beforeEach(async () => {
+  vi.clearAllMocks();
+  await i18n.changeLanguage('it');
+  vi.mocked(propertiesApi.getAll).mockResolvedValue([property]);
+});
+
+describe('BookingCreatePage', () => {
+  it('tells the host that the booking is saved as confirmed with the manual source', async () => {
+    renderPage();
+
+    expect(await screen.findByTestId('booking-manual-notice')).toHaveTextContent(i18n.t('booking.form.manualNotice'));
+  });
+
+  it('shows the 409 on overlapping dates next to the form and stays on the page', async () => {
+    vi.mocked(bookingsApi.create).mockRejectedValue(
+      conflict({ status: 409, code: 'booking_dates_unavailable', detail: "L'immobile non è disponibile." }),
+    );
+    renderPage();
+
+    await fillAndSubmit();
+
+    expect(await screen.findByTestId('booking-submit-error')).toHaveTextContent(
+      i18n.t('apiErrors.codes.bookingDatesUnavailable'),
+    );
+    expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
+      propertyId: property.id,
+      checkInDate: '2027-10-01',
+      checkOutDate: '2027-10-05',
+    }));
+    expect(screen.queryByText('bookings-list')).not.toBeInTheDocument();
+  });
+
+  it('goes back to the list once the booking is created', async () => {
+    vi.mocked(bookingsApi.create).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as Booking);
+    renderPage();
+
+    await fillAndSubmit();
+
+    expect(await screen.findByText('bookings-list')).toBeInTheDocument();
+  });
+
+  it('shows the properties load error instead of an empty select', async () => {
+    vi.mocked(propertiesApi.getAll).mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    expect(await screen.findByTestId('booking-properties-error')).toHaveTextContent(
+      i18n.t('booking.form.propertiesLoadError'),
+    );
+    expect(screen.queryByTestId('booking-properties-empty')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText(i18n.t('booking.form.property'))).toBeDisabled());
+  });
+});

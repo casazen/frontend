@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useBooking } from '@/queries/use-bookings';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
-import { getBookingStatusLabel } from '@/lib/i18n-labels';
+import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
 import { Edit, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
@@ -111,9 +111,20 @@ export function BookingDetailPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>{t('booking.detailPage.bookingDetailsTitle')}</CardTitle>
-                    <Badge variant={statusVariant} className="text-base px-3 py-1">
-                      {statusLabel}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {booking.source && (
+                        <Badge
+                          variant="outline"
+                          title={t('booking.detailPage.source')}
+                          data-testid="booking-detail-source"
+                        >
+                          {getBookingSourceLabel(booking.source, t)}
+                        </Badge>
+                      )}
+                      <Badge variant={statusVariant} className="text-base px-3 py-1">
+                        {statusLabel}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
