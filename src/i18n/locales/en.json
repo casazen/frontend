@@ -1227,18 +1227,12 @@
   "serviceRequest": {
     "requestSupplier": "Request supplier",
     "requestDescription": "Send a service request to an active supplier in your property's area.",
-    "aiMatchDescription": "CasaZen AI picks the best supplier for your property and intervention type.",
     "propertyScopedDescription": "Send a service request to the selected supplier for this property.",
-    "aiRecommendation": "AI recommendation",
-    "matching": "Finding the best supplier...",
     "selectedSupplier": "Selected supplier",
-    "externalFallbackIntro": "No CasaZen suppliers available nearby. Here are top-rated local businesses from Google:",
-    "noExternalResults": "No external results found. Try a different category or contact support.",
     "website": "Website",
     "category": "Category",
     "supplier": "Supplier",
     "selectSupplier": "Select supplier",
-    "noSuppliers": "No active suppliers in this area.",
     "urgency": "Urgency",
     "urgencyNormal": "Normal",
     "urgencyHigh": "High",
@@ -2449,6 +2443,8 @@
     "acceptPrivacy": "I accept the {{title}} (v{{version}})",
     "acceptDpa": "I accept the {{title}} (v{{version}})",
     "subprocessorsAcknowledged": "I have reviewed the list of data processors (v{{version}})",
+    "subprocessorTransfer": "transfer outside the EEA: {{mechanism}}",
+    "subprocessorDetailsPending": "location and legal basis of the transfer being defined",
     "marketingOptIn": "I would like to receive updates and news (optional)"
   },
   "breadcrumb": {

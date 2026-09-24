@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -10,6 +10,11 @@ export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   /** D10: Airbnb / Booking.com partner API in freeze. iCal is not behind this flag. */
   otaPartnerApi: false,
+  /**
+   * D11: AI supplier discovery in freeze (backend `match-supplier` 404 while off). No UI reads it today: the web AI
+   * match flow was unreachable and has been removed (FD-21); gate any new AI supplier UI on this flag.
+   */
+  aiSupplierDiscovery: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
