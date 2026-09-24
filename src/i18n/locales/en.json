@@ -1504,8 +1504,9 @@
       "title": "Supplier registration",
       "description": "Register as a service supplier for CasaZen hosts.",
       "successTitle": "Registration complete",
-      "successDescription": "Your supplier profile has been created. Now create your account with the email {{email}} to access the supplier console.",
+      "successDescription": "Your supplier profile has been created. Now create your account with the email {{email}}, or sign in if you already have one: the profile will be linked to your account.",
       "createAccount": "Create your account",
+      "loginToClaim": "I already have an account: sign in",
       "afterAccount": "After creating your account, complete your profile in the activation steps: until you activate it, hosts cannot see it.",
       "email": "Email *",
       "comune": "Municipality *",
@@ -1544,6 +1545,26 @@
       "emailInviteHint": "The invitation is valid only for this email.",
       "successSignedIn": "Your supplier profile has been created and linked to your account. Complete it in the activation steps: until you activate it, hosts cannot see it.",
       "completeProfile": "Complete your profile"
+    },
+    "claim": {
+      "title": "Link your supplier profile",
+      "signInWithEmail": "Create the account, or sign in, with the email {{email}}: it is the one you registered with and it is needed to link the profile.",
+      "signInDescription": "Sign in with your business account to link the supplier profile registered with the same email.",
+      "createAccount": "Create account",
+      "login": "I already have an account: sign in",
+      "loading": "Loading…",
+      "linking": "Linking your supplier profile…",
+      "successTitle": "Profile linked",
+      "successDescription": "Your supplier profile is linked to your account. Complete it in the activation steps: until you activate it, hosts cannot see it.",
+      "completeProfile": "Complete your profile",
+      "errorTitle": "Profile not linked",
+      "errorGeneric": "We could not link the supplier profile. Please try again.",
+      "switchAccount": "Sign in with {{email}}",
+      "verifyEmailHint": "Open the link in the verification email we sent you, then press Retry.",
+      "retry": "Retry",
+      "openConsole": "Go to the supplier console",
+      "registerAgain": "Register as a supplier",
+      "skip": "Continue without linking"
     },
     "completedJobs": "Completed jobs",
     "upcomingJobs": "Upcoming jobs",
@@ -2643,6 +2664,12 @@
     "marketingOptIn": "I would like to receive updates and news (optional)",
     "skipDescription": "You do not need a host organization to use the administration area or the supplier console.",
     "skipForNow": "Skip for now",
+    "supplierOption": {
+      "title": "I am a supplier",
+      "description": "Do you offer services to hosts (cleaning, maintenance, check-in…)? You do not need a host organization: register your business as a supplier.",
+      "register": "Register as a supplier",
+      "claim": "Already registered your business? Link the profile"
+    },
     "rolesPending": {
       "title": "Setup complete",
       "description": "Your workspace is ready, but we could not update the permissions of your sign-in account. They will be applied at your next sign-in, or right away with a new attempt.",
@@ -3009,7 +3036,15 @@
       "supplierAccountEmailMissing": "Your account has no email, so the registration cannot be verified.",
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
-      "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation."
+      "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
+      "supplierClaimInvalid": "The link is not valid: register your business again or sign in with the account already linked.",
+      "supplierClaimExpired": "The link has expired: register your business as a supplier again.",
+      "supplierClaimUsed": "This supplier profile is already linked to an account. Sign in with that account.",
+      "supplierClaimEmailMismatch": "The profile was registered with another email: sign in with the account of that email.",
+      "supplierClaimEmailUnverified": "To link the profile without the registration link, verify your email first.",
+      "supplierClaimNotFound": "There is no supplier profile to link for your email: register your business.",
+      "supplierClaimAmbiguous": "Several supplier profiles use your email: contact CasaZen support to link the right one.",
+      "supplierAccountAlreadyLinked": "Your account is already linked to another supplier profile."
     }
   },
   "validation": {
