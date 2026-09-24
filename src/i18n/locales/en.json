@@ -2320,7 +2320,27 @@
     "ospiti_one": "up to {{count}} guest",
     "ospiti_other": "up to {{count}} guests",
     "maxGuestsExceeded_one": "Maximum {{count}} guest for this property",
-    "maxGuestsExceeded_other": "Maximum {{count}} guests for this property"
+    "maxGuestsExceeded_other": "Maximum {{count}} guests for this property",
+    "stayTitle": "Your stay",
+    "country": "Country of residence",
+    "countryPlaceholder": "Select a country",
+    "guestsCapacityHint_one": "Up to {{count}} guest, children included",
+    "guestsCapacityHint_other": "Up to {{count}} guests, children included",
+    "validation": {
+      "checkInRequired": "Select the check-in date",
+      "checkInPast": "The check-in date cannot be in the past",
+      "checkOutRequired": "Select the check-out date",
+      "checkOutAfterCheckIn": "Check-out must be after check-in",
+      "adultsMin": "At least one adult is required",
+      "childrenMin": "The number of children cannot be negative",
+      "tooManyGuests": "The number of guests exceeds the capacity of the property",
+      "firstNameRequired": "Enter your first name",
+      "lastNameRequired": "Enter your last name",
+      "emailRequired": "Enter your email address",
+      "emailInvalid": "Enter a valid email address",
+      "phoneInvalid": "Enter a valid phone number: 6 to 15 digits, with an optional leading +",
+      "countryRequired": "Select your country of residence"
+    }
   },
   "publicSeo": {
     "notFound": "Page not found",

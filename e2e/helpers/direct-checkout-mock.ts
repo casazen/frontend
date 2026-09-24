@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
 import type { DirectBookingResponse } from '../../src/types';
+import { addDays, todayInRome } from '../../src/lib/stay-dates';
+
+/** A stay starting `daysAhead` days after today in Europe/Rome: fixed dates would end up in the past. */
+export function futureStay(daysAhead = 30, nights = 3): { checkIn: string; checkOut: string } {
+  const checkIn = addDays(todayInRome(), daysAhead);
+  return { checkIn, checkOut: addDays(checkIn, nights) };
+}
 
 export const DIRECT_CHECKOUT_CONSENT_VERSION = '2026-06-direct-checkout-v1';
 
