@@ -752,15 +752,22 @@
       "notEditable": "Una prenotazione annullata non si può modificare.",
       "backToBooking": "Torna alla prenotazione"
     },
-    "checkInDialog": {
-      "title": "Check-in ospite",
-      "description": "Check-in di {{name}}",
-      "checkInTime": "Orario check-in",
-      "notes": "Note (opzionale)",
-      "notesPlaceholder": "Eventuali note sul check-in...",
-      "cancel": "Annulla",
-      "checkingIn": "Check-in in corso...",
-      "confirm": "Conferma check-in"
+    "arrival": {
+      "action": "Registra arrivo",
+      "title": "Registra arrivo",
+      "description": "Confermi che {{guest}} è arrivato nella struttura? La prenotazione passa a \"Check-in effettuato\".",
+      "lateNotice": "Il giorno di check-in era il {{date}}: puoi registrare l'arrivo anche adesso. Il termine per Alloggiati Web resta calcolato dal giorno di check-in.",
+      "guestDataChecking": "Verifica dei dati degli ospiti…",
+      "guestDataComplete": "I dati degli ospiti per Alloggiati Web sono completi.",
+      "guestDataIncomplete": "Mancano dati degli ospiti per la comunicazione ad Alloggiati Web. Puoi registrare l'arrivo lo stesso e completarli subito dopo.",
+      "guestDataUnknown": "Impossibile verificare i dati degli ospiti: puoi procedere e controllarli nella scheda Alloggiati.",
+      "completeGuestData": "Completa i dati degli ospiti",
+      "keep": "Annulla",
+      "submit": "Registra arrivo",
+      "submitting": "Registrazione…",
+      "failed": "Impossibile registrare l'arrivo.",
+      "registered": "Arrivo registrato.",
+      "registeredDataIncomplete": "Arrivo registrato. Completa i dati degli ospiti per Alloggiati Web."
     },
     "detailPage": {
       "loading": "Caricamento prenotazione...",
@@ -3126,7 +3133,7 @@
       "loading": "Caricamento check-out...",
       "notFound": "Prenotazione non trovata",
       "unavailable": "Check-out non disponibile",
-      "unavailableHint": "Completa il check-in della prenotazione prima di chiudere il soggiorno.",
+      "unavailableHint": "Il check-out si registra dal giorno di arrivo, per una prenotazione confermata o con l'arrivo registrato.",
       "alreadyDone": "Check-out già completato",
       "alreadyDoneHint": "Questa prenotazione è già in stato check-out.",
       "loadError": "Impossibile caricare la prenotazione",
@@ -3158,7 +3165,14 @@
         "supplier-selection": "Seleziona servizi di turnover se necessario.",
         "payment": "Salda pagamenti e depositi.",
         "property-ready": "Segna l'immobile pronto per la prossima prenotazione."
-      }
+      },
+      "starting": "Preparazione del check-out…",
+      "startFailed": "Impossibile avviare il check-out.",
+      "retry": "Riprova",
+      "arrivalMissingTitle": "Arrivo non registrato",
+      "arrivalMissingHint": "L'arrivo di {{guest}} non risulta registrato. Se l'ospite è arrivato, registra l'arrivo e procedi con il check-out.",
+      "registerArrivalAndProceed": "Registra arrivo e procedi",
+      "registeringArrival": "Registrazione dell'arrivo…"
     }
   },
   "toast": {
@@ -3173,8 +3187,6 @@
     "bookingCreateFailed": "Impossibile creare la prenotazione",
     "bookingUpdated": "Prenotazione aggiornata con successo",
     "bookingUpdateFailed": "Impossibile aggiornare la prenotazione",
-    "guestCheckedIn": "Check-in effettuato con successo",
-    "checkInGuestFailed": "Impossibile completare il check-in",
     "guestCheckedOut": "Check-out effettuato con successo",
     "checkOutGuestFailed": "Impossibile completare il check-out",
     "paymentCreated": "Pagamento creato con successo",
@@ -3358,13 +3370,21 @@
       "bookingCheckinInPast": "Il check-in non può essere spostato a un giorno già passato.",
       "bookingNotPending": "La prenotazione non è più in attesa di conferma: ricarica la pagina.",
       "bookingNotConfirmable": "Puoi confermare solo le prenotazioni in attesa inserite da te.",
-      "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno con check-in registrato.",
-      "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di partenza.",
+      "bookingNotCheckedIn": "Il check-out si registra solo per un soggiorno confermato o con l'arrivo registrato.",
+      "bookingCheckoutTooEarly": "Il check-out si può registrare dal giorno di arrivo.",
       "directBookingDeferredPaymentUnavailable": "Il pagamento alla scadenza non è disponibile per queste date: l'arrivo è troppo vicino. Scegli un altro metodo di pagamento.",
       "checkoutLinkInvalid": "Link della prenotazione non valido: apri di nuovo la pagina di conferma ricevuta al termine della prenotazione.",
       "checkoutHoldExpired": "Il tempo per completare il pagamento è scaduto e le date sono state liberate. Puoi prenotare di nuovo se sono ancora disponibili.",
       "checkoutPaymentNotResumable": "Non c'è un pagamento da completare per questa prenotazione: è già in corso, completato oppure la prenotazione è chiusa.",
-      "paymentProviderError": "Il servizio di pagamento non ha risposto correttamente. Riprova tra qualche minuto."
+      "paymentProviderError": "Il servizio di pagamento non ha risposto correttamente. Riprova tra qualche minuto.",
+      "bookingAlreadyCheckedOut": "Il check-out di questa prenotazione è già registrato: ricarica la pagina.",
+      "bookingArrivalNotRegistered": "L'arrivo dell'ospite non è stato registrato: conferma l'arrivo per procedere con il check-out.",
+      "bookingNotConfirmed": "L'arrivo si registra solo per una prenotazione confermata.",
+      "bookingAlreadyCheckedIn": "L'arrivo di questa prenotazione è già registrato: ricarica la pagina.",
+      "bookingArrivalTooEarly": "L'arrivo si può registrare dal giorno di check-in.",
+      "bookingArrivalAfterDeparture": "Il giorno di partenza è passato: registra il check-out del soggiorno, che registra anche l'arrivo.",
+      "checkoutDepartureNotConfirmed": "Conferma che l'ospite ha lasciato la struttura.",
+      "checkoutServiceRequestInvalid": "Impossibile creare la richiesta al fornitore: verifica che il fornitore sia attivo e operi nel comune della struttura. Il check-out non è stato registrato."
     }
   },
   "validation": {
