@@ -14,7 +14,7 @@ import { BookingDetailPage } from '../booking-detail-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { getById: vi.fn(), confirm: vi.fn(), getCancellationQuote: vi.fn() },
+  bookingsApi: { getById: vi.fn(), approveRequest: vi.fn(), getCancellationQuote: vi.fn() },
 }));
 vi.mock('@/features/service-requests/components/service-request-timeline', () => ({
   ServiceRequestTimeline: () => null,
@@ -104,7 +104,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     vi.mocked(bookingsApi.getById)
       .mockResolvedValueOnce(booking({ status: 'Pending' }))
       .mockResolvedValue(booking({ status: 'Confirmed' }));
-    vi.mocked(bookingsApi.confirm).mockResolvedValue(booking({ status: 'Confirmed' }));
+    vi.mocked(bookingsApi.approveRequest).mockResolvedValue(booking({ status: 'Confirmed' }));
 
     renderPage();
 
@@ -113,7 +113,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('booking.confirm.submit') }));
 
-    await waitFor(() => expect(bookingsApi.confirm).toHaveBeenCalledWith(BOOKING_ID));
+    await waitFor(() => expect(bookingsApi.approveRequest).toHaveBeenCalledWith(BOOKING_ID));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), WAIT);
     await waitFor(
       () => expect(screen.getByTestId('booking-detail-status')).toHaveTextContent(getBookingStatusLabel('Confirmed', i18n.t)),
@@ -122,9 +122,34 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
   });
 
+  it('BookingDetailPage_PayAtThePropertyRequestAwaitingTheHost_IsConfirmedThroughTheSameAction', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(
+      booking({ status: 'Pending', source: 'Direct', paymentOption: 'OnSite', onSiteRequestState: 'AwaitingHostApproval' }),
+    );
+    vi.mocked(bookingsApi.approveRequest).mockResolvedValue(booking({ status: 'Confirmed', source: 'Direct' }));
+
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('open-confirm-booking', undefined, WAIT));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('booking.confirm.submit') }));
+
+    await waitFor(() => expect(bookingsApi.approveRequest).toHaveBeenCalledWith(BOOKING_ID));
+    expect(screen.queryByTestId('booking-pending-manual')).not.toBeInTheDocument();
+  });
+
+  it('BookingDetailPage_CheckoutHoldWaitingForPayment_CannotBeConfirmedByTheHost', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Pending', source: 'Direct', paymentOption: 'Immediate' }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('open-cancel-booking', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
+  });
+
   it('BookingDetailPage_ConfirmRejected_ShowsTheApiErrorInTheDialog', async () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Pending' }));
-    vi.mocked(bookingsApi.confirm).mockRejectedValue(
+    vi.mocked(bookingsApi.approveRequest).mockRejectedValue(
       axiosError(409, { status: 409, code: 'booking_dates_unavailable', detail: 'Date non disponibili.' }),
     );
 

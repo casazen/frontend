@@ -71,8 +71,11 @@ export function BookingDetailPage() {
 
   const canWrite = hasPermission('short-rent', 'booking.write');
   const statusLabel = getBookingStatusLabel(booking.status, t);
-  // Pending bookings entered by hand, left by the old code (PC-07): the host confirms them here.
-  const canConfirm = canWrite && booking.status === 'Pending' && booking.source === 'Manual';
+  // One confirmation for every pending booking the host can confirm (PC-07 with BK-06): the ones entered by hand and
+  // left Pending by the old code, and the "pay at the property" requests waiting for the host's answer.
+  const pendingManual = booking.status === 'Pending' && booking.source === 'Manual';
+  const canConfirm =
+    canWrite && (pendingManual || (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval'));
   // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves.
   const canCancel =
     canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
@@ -172,7 +175,7 @@ export function BookingDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {canConfirm && (
+                  {canConfirm && pendingManual && (
                     <p className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" data-testid="booking-pending-manual">
                       {t('booking.confirm.pendingNotice')}
                     </p>

@@ -130,12 +130,15 @@ export function useUpdateBooking() {
   });
 }
 
-/** Confirms a pending booking entered by the host (PC-07). The dialog shows the error. */
+/**
+ * Confirmation of a pending booking from its detail page (PC-07): same endpoint as the requests panel of BK-06
+ * (`approveRequest`), without the error toast because the dialog shows the error.
+ */
 export function useConfirmBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => bookingsApi.confirm(id),
+    mutationFn: (id: string) => bookingsApi.approveRequest(id),
     onSuccess: (booking) => {
       applyBookingChange(queryClient, booking);
       toast.success(i18n.t('booking.confirm.success'));

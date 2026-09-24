@@ -31,9 +31,6 @@ export const bookingsApi = {
   update: (id: string, data: UpdateBookingDto) =>
     ApiClient.put<Booking>(`/bookings/${id}`, data),
 
-  /** Confirms a pending booking entered by the host (PC-07). */
-  confirm: (id: string) => ApiClient.post<Booking>(`/bookings/${id}/confirm`),
-
   /** Price of a stay the host is entering or changing, tourist tax included (PC-07, BK-03). */
   quote: (payload: HostBookingQuotePayload) => ApiClient.post<DirectBookingQuote>('/bookings/quote', payload),
 
@@ -48,7 +45,10 @@ export const bookingsApi = {
   /** "Pay at the property" requests waiting for the host's answer (BK-06). */
   getApprovalRequests: () => ApiClient.get<BookingApprovalRequest[]>('/bookings/approval-requests'),
 
-  /** Accepts a "pay at the property" request: the booking becomes Confirmed (BK-06). */
+  /**
+   * The host confirms a pending booking, the only confirmation of the console: accepts a "pay at the property" request
+   * (BK-06) or confirms a pending booking entered by hand (PC-07). The booking becomes Confirmed.
+   */
   approveRequest: (id: string) => ApiClient.post<Booking>(`/bookings/${id}/approve`),
 
   /** Declines a "pay at the property" request: cancelled, dates released; `message` goes to the guest (BK-06). */
