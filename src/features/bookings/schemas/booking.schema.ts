@@ -48,14 +48,8 @@ export function bookingFormSchema(mode: 'create' | 'edit') {
   });
 }
 
-export const checkInFormSchema = z.object({
-  actualCheckInTime: z.string().optional(),
-  notes: z.string().optional(),
-});
-
 export type GuestFormValues = z.infer<typeof guestSchema>;
 export type BookingFormValues = z.infer<typeof bookingFieldsSchema>;
-export type CheckInFormValues = z.infer<typeof checkInFormSchema>;
 
 // Booking status labels are now resolved via getBookingStatusLabel() from @/lib/i18n-labels.
 // Booking status variants stay here as a UI-only concern (no i18n needed).

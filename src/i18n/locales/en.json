@@ -810,15 +810,22 @@
       "notEditable": "A cancelled booking cannot be changed.",
       "backToBooking": "Back to the booking"
     },
-    "checkInDialog": {
-      "title": "Check In Guest",
-      "description": "Check in {{name}}",
-      "checkInTime": "Check-in Time",
-      "notes": "Notes (optional)",
-      "notesPlaceholder": "Any notes about the check-in...",
-      "cancel": "Cancel",
-      "checkingIn": "Checking In...",
-      "confirm": "Confirm Check In"
+    "arrival": {
+      "action": "Register arrival",
+      "title": "Register arrival",
+      "description": "Do you confirm that {{guest}} has arrived at the property? The booking becomes \"Checked in\".",
+      "lateNotice": "The check-in day was {{date}}: you can register the arrival now as well. The Alloggiati Web deadline is still counted from the check-in day.",
+      "guestDataChecking": "Checking the guest data…",
+      "guestDataComplete": "The guest data for Alloggiati Web are complete.",
+      "guestDataIncomplete": "Some guest data for the Alloggiati Web communication are missing. You can register the arrival anyway and complete them right after.",
+      "guestDataUnknown": "The guest data could not be checked: you can go on and review them in the Alloggiati tab.",
+      "completeGuestData": "Complete the guest data",
+      "keep": "Cancel",
+      "submit": "Register arrival",
+      "submitting": "Registering…",
+      "failed": "The arrival could not be registered.",
+      "registered": "Arrival registered.",
+      "registeredDataIncomplete": "Arrival registered. Complete the guest data for Alloggiati Web."
     },
     "detailPage": {
       "loading": "Loading booking...",
@@ -2116,7 +2123,13 @@
       "exportReady": "Data and codes complete: ready for the Alloggiati record.",
       "codesPending": "Data complete. Some official codes are to complete: they are needed only to export the record.",
       "dataIncomplete": "Incomplete data: fill in the missing fields before sending.",
-      "legacyPlaceOfBirth": "Previously recorded: “{{place}}” (say whether in Italy or abroad)"
+      "legacyPlaceOfBirth": "Previously recorded: “{{place}}” (say whether in Italy or abroad)",
+      "revealDocument": "Show",
+      "revealFailed": "Could not show the document number.",
+      "enteredBy": {
+        "GuestPortal": "Entered by the guest on {{date}}",
+        "Host": "Entered by the host on {{date}}"
+      }
     },
     "codeTable": {
       "Comuni": "municipalities",
@@ -2132,7 +2145,9 @@
       "save": "Save guests",
       "cancel": "Cancel",
       "saved": "Guests of the stay updated",
-      "saveFailed": "Could not save the guests. Try again."
+      "saveFailed": "Could not save the guests. Try again.",
+      "loadingDocuments": "Loading the documents…",
+      "documentsLoadFailed": "Could not load the document numbers. Try again."
     }
   },
   "guests": {
@@ -2203,7 +2218,10 @@
     "loadError": "Failed to load guests.",
     "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} guests)",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "downloadDocumentScan": "Download document scan",
+    "documentScanFileName": "guest-document",
+    "documentScanDownloadFailed": "Could not download the document scan."
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
@@ -2526,11 +2544,7 @@
     }
   },
   "checkin": {
-    "sendLink": "Send check-in link",
-    "linkGenerated": "Check-in link generated",
     "copyLink": "Copy link",
-    "sendEmail": "Send via email",
-    "guestEmail": "Guest email",
     "documentType": {
       "Passport": "Passport",
       "IdentityCard": "Identity Card",
@@ -2645,16 +2659,7 @@
     "saving": "Saving...",
     "saveData": "Save data",
     "linkCopied": "Link copied",
-    "emailSubject": "Check-in CasaZen",
-    "emailClientOpening": "Opening email client...",
-    "generateLink": "Generate link",
-    "generateLinkDescription": "Generate a check-in link to send to the guest for data entry.",
-    "generateLinkHelper": "Click the button to generate a unique check-in link.",
-    "enterGuestEmailHelper": "Enter the guest's email to send the link via your email client.",
-    "close": "Close",
-    "guestEmailPlaceholder": "guest@example.com",
     "generateError": "Failed to generate check-in link. Please try again.",
-    "checkinEmailBody": "Dear guest,\n\nClick the link below to complete your check-in:\n\n{{url}}\n\nCasaZen",
     "firstName": "First name *",
     "lastName": "Last name *",
     "stepPersonal": "Personal details",
@@ -2672,9 +2677,7 @@
     "marketingConsent": "I agree to receive promotional communications (optional).",
     "sessionLabel": "Guest check-in status",
     "sessionLoading": "Loading session status...",
-    "noSession": "No active check-in session.",
     "resendLink": "Send reminder",
-    "resendSuccess": "Check-in link resent to guest.",
     "resendError": "Failed to resend check-in link.",
     "status": {
       "Inviato": "Link sent",
@@ -2713,7 +2716,44 @@
     "documentIssuePlace": "Place of issue *",
     "documentIssuePlaceHint": "The municipality if issued in Italy, the country if issued abroad.",
     "codeSelected": "Alloggiati code: {{code}}",
-    "codeSearchFailed": "Official list unavailable right now: type the full name."
+    "codeSearchFailed": "Official list unavailable right now: type the full name.",
+    "link": {
+      "none": "No check-in link generated yet.",
+      "loadError": "Could not load the check-in link status.",
+      "retry": "Retry",
+      "expiresAt": "Expires on {{date}}",
+      "expired": "The link has expired: send a reminder or generate a new link to copy.",
+      "completed": "The guest has completed the check-in. To correct the data use the Alloggiati tab.",
+      "notEligible": "The check-in link is available only for confirmed or checked-in bookings.",
+      "sendByEmail": "Send link by email",
+      "generateToCopy": "Generate link to copy",
+      "replaceWarning": "A new link replaces the current one, which stops working.",
+      "copyTitle": "Check-in link",
+      "copyHint": "Copy it and send it to the guest (WhatsApp, SMS…). Valid until {{date}}.",
+      "copyFailed": "Copy failed: select the link and copy it by hand.",
+      "email": {
+        "sent": "Email with the link handed to the email service.",
+        "sentAt": "Email with the link sent on {{date}}.",
+        "queued": "Email with the link queued for sending…",
+        "failed": "Email not sent: {{reason}}. Copy the link or send a new reminder.",
+        "notRequested": "Link generated to copy: no email sent."
+      },
+      "emailError": {
+        "noRecipient": "the guest has no email address",
+        "providerNotConfigured": "the email service is not configured",
+        "queueFailed": "the email could not be queued",
+        "rejected": "the address was refused by the email service",
+        "notDelivered": "the email service did not answer after several attempts",
+        "linkUnavailable": "the public site address is not configured",
+        "linkNotUsable": "the link had already been replaced or had expired",
+        "unknown": "unknown reason"
+      },
+      "toast": {
+        "emailQueued": "New link generated: the email to the guest is queued.",
+        "emailFailed": "New link generated, but the email did not leave: {{reason}}. Copy the link and send it to the guest.",
+        "generated": "New link generated: copy it and send it to the guest."
+      }
+    }
   },
   "publicSite": {
     "skipToContent": "Skip to content",
@@ -3271,7 +3311,7 @@
       "loading": "Loading check-out...",
       "notFound": "Booking not found",
       "unavailable": "Check-out not available",
-      "unavailableHint": "Complete the booking check-in before closing the stay.",
+      "unavailableHint": "The check-out can be recorded from the arrival day, for a confirmed booking or one whose arrival was registered.",
       "alreadyDone": "Check-out already completed",
       "alreadyDoneHint": "This booking is already in check-out status.",
       "loadError": "Unable to load the booking",
@@ -3303,7 +3343,14 @@
         "supplier-selection": "Select turnover services if needed.",
         "payment": "Settle payments and deposits.",
         "property-ready": "Mark the property as ready for the next booking."
-      }
+      },
+      "starting": "Preparing the check-out…",
+      "startFailed": "The check-out could not be started.",
+      "retry": "Retry",
+      "arrivalMissingTitle": "Arrival not registered",
+      "arrivalMissingHint": "The arrival of {{guest}} was not registered. If the guest arrived, register the arrival and go on with the check-out.",
+      "registerArrivalAndProceed": "Register arrival and continue",
+      "registeringArrival": "Registering the arrival…"
     }
   },
   "toast": {
@@ -3318,8 +3365,6 @@
     "bookingCreateFailed": "Failed to create booking",
     "bookingUpdated": "Booking updated successfully",
     "bookingUpdateFailed": "Failed to update booking",
-    "guestCheckedIn": "Check-in completed successfully",
-    "checkInGuestFailed": "Failed to complete check-in",
     "guestCheckedOut": "Check-out completed successfully",
     "checkOutGuestFailed": "Failed to complete check-out",
     "paymentCreated": "Payment created successfully",
@@ -3526,8 +3571,8 @@
       "bookingCheckinInPast": "The check-in cannot be moved to a day already past.",
       "bookingNotPending": "The booking is no longer waiting for confirmation: reload the page.",
       "bookingNotConfirmable": "You can confirm only the pending bookings you entered.",
-      "bookingNotCheckedIn": "The check-out can be recorded only for a stay whose check-in was recorded.",
-      "bookingCheckoutTooEarly": "The check-out can be recorded from the departure day.",
+      "bookingNotCheckedIn": "The check-out can be recorded only for a confirmed stay or one whose arrival was registered.",
+      "bookingCheckoutTooEarly": "The check-out can be recorded from the arrival day.",
       "directBookingDeferredPaymentUnavailable": "Paying at the deadline is not available for these dates: the arrival is too close. Choose another payment method.",
       "checkoutLinkInvalid": "Invalid booking link: open again the confirmation page you got at the end of the booking.",
       "checkoutHoldExpired": "The time to complete the payment has run out and the dates have been released. You can book again if they are still available.",
@@ -3538,10 +3583,21 @@
       "stripeConnectFailed": "Stripe refused the request. Your connected account was not changed: try again later or contact CasaZen support.",
       "stripeConnectAccountUnavailable": "The connected Stripe account is no longer available: try again to connect a new one.",
       "connectReturnUrlNotConfigured": "The public address of the app is not configured on the server: the Stripe connection cannot be started.",
+      "bookingAlreadyCheckedOut": "The check-out of this booking is already recorded: reload the page.",
+      "bookingArrivalNotRegistered": "The guest's arrival was not registered: confirm the arrival to go on with the check-out.",
+      "bookingNotConfirmed": "The arrival can be registered only for a confirmed booking.",
+      "bookingAlreadyCheckedIn": "The arrival of this booking is already registered: reload the page.",
+      "bookingArrivalTooEarly": "The arrival can be registered from the check-in day.",
+      "bookingArrivalAfterDeparture": "The departure day has passed: record the check-out of the stay, which registers the arrival too.",
+      "checkoutDepartureNotConfirmed": "Confirm that the guest has left the property.",
+      "checkoutServiceRequestInvalid": "The supplier request could not be created: check that the supplier is active and works in the property's comune. The check-out was not recorded.",
       "guestBookingNotFound": "No booking matches this code and email address. Check the code in the confirmation email and use the email address you booked with.",
       "guestCheckInLinkUnavailable": "The online check-in link cannot be sent now: the booking is not confirmed, the check-in is already completed or it is not time yet.",
       "publicPropertyNotFound": "This property is not available for online booking.",
-      "availabilityRangeInvalid": "The requested date range is not valid."
+      "availabilityRangeInvalid": "The requested date range is not valid.",
+      "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
+      "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
+      "guestDocumentScanMissing": "No document scan is available for this guest."
     }
   },
   "validation": {

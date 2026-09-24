@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -14,7 +14,10 @@ import { guestsApi } from '@/api/guests.api';
 import { bookingsApi } from '@/api/bookings.api';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
-import { ArrowLeft, RefreshCw, User, MapPin, FileText, Shield, Calendar, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowLeft, RefreshCw, User, MapPin, FileText, Shield, Calendar, Loader2, Download } from 'lucide-react';
+import { getProblemMessage } from '@/lib/api-errors';
+import { saveBlobAs } from '@/lib/file-download';
 
 const BOOKING_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   Confirmed: 'default',
@@ -302,6 +305,7 @@ export function GuestDetailPage() {
                   <p className="text-sm">{t('guests.noDocument')}</p>
                 </div>
               )}
+              {guest.hasDocumentScan && <DocumentScanDownload guestId={guest.id} />}
             </CardContent>
           </Card>
         )}
@@ -321,5 +325,38 @@ export function GuestDetailPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+const SCAN_EXTENSIONS: Record<string, string> = {
+  'application/pdf': '.pdf',
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+};
+
+/** Download of the identity document scan uploaded by the guest (private storage, authenticated and audited). */
+function DocumentScanDownload({ guestId }: { guestId: string }) {
+  const { t } = useTranslation();
+  const download = useMutation({
+    mutationFn: () => guestsApi.downloadDocumentScan(guestId),
+    onSuccess: (blob) => saveBlobAs(blob, `${t('guests.documentScanFileName')}${SCAN_EXTENSIONS[blob.type] ?? ''}`),
+    onError: (error) => {
+      toast.error(getProblemMessage(error, t) ?? t('guests.documentScanDownloadFailed'));
+    },
+  });
+
+  return (
+    <div className="flex justify-end pt-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => download.mutate()}
+        disabled={download.isPending}
+        data-testid="guest-document-scan-download"
+      >
+        {download.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+        {t('guests.downloadDocumentScan')}
+      </Button>
+    </div>
   );
 }
