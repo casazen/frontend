@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProperty, usePropertyDocuments } from '@/queries/use-properties';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
+import { LongRentServiceRequests } from '@/features/service-requests/components/long-rent-service-requests';
 import { PropertyCadastralCard } from '../components/property-cadastral-card';
 import { LoadErrorCard } from './load-error-card';
 import { longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
 
 /**
  * A long-term property with its APE (A7-06): the documents live in the private bucket and download through the
- * authenticated API (FD-07). The lease form requires an APE on file.
+ * authenticated API (FD-07). The lease form requires an APE on file. Its supplier requests are for the property (D2).
  */
 export function LongRentPropertyDetailPage() {
   const { t } = useTranslation();
@@ -113,6 +114,8 @@ export function LongRentPropertyDetailPage() {
           <PropertyDocumentsSection propertyId={property.id} documents={documents.data} defaultUploadType="Ape" />
         </>
       )}
+
+      <LongRentServiceRequests propertyId={property.id} />
     </div>
   );
 }
