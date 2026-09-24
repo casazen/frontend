@@ -1,5 +1,10 @@
 import type { Page } from '@playwright/test';
-import type { AlloggiatiStatusDto, AlloggiatiSummaryDto, CheckInContextDto } from '../../src/types/alloggiati.types';
+import type {
+  AlloggiatiGuestSummaryDto,
+  AlloggiatiStatusDto,
+  AlloggiatiSummaryDto,
+  CheckInContextDto,
+} from '../../src/types/alloggiati.types';
 
 export const DEMO_CHECKIN_TOKEN = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const DEMO_BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -31,37 +36,70 @@ export const demoAlloggiatiSummary: AlloggiatiSummaryDto[] = [
     bookingId: DEMO_BOOKING_ID,
     guestName: 'Mario Rossi',
     propertyName: 'Appartamento Centro',
-    checkInDate: '2026-07-01T14:00:00Z',
-    status: 'Pending',
+    checkInDate: '2026-07-01T00:00:00Z',
+    status: 'DaInviareManualmente',
     dataComplete: true,
     isOverdue: false,
     hoursUntilDeadline: 18,
+    deadlineAt: '2026-07-01T22:00:00Z',
+    isShortStay: false,
   },
   {
     bookingId: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
     guestName: 'Luigi Verdi',
     propertyName: 'Monolocale Mare',
-    checkInDate: '2026-06-08T14:00:00Z',
-    status: 'Failed',
+    checkInDate: '2026-06-08T00:00:00Z',
+    status: 'DaInviareManualmente',
     dataComplete: true,
     isOverdue: true,
-    hoursUntilDeadline: -2,
+    hoursUntilDeadline: 0,
+    deadlineAt: '2026-06-08T22:00:00Z',
+    isShortStay: false,
   },
 ];
 
 export function demoAlloggiatiStatus(overrides: Partial<AlloggiatiStatusDto> = {}): AlloggiatiStatusDto {
   return {
     bookingId: DEMO_BOOKING_ID,
-    status: 'Pending',
+    status: 'DaInviareManualmente',
     confirmationNumber: null,
-    errorMessage: null,
+    errorCode: null,
     reportedAt: null,
+    deadlineAt: '2026-07-01T22:00:00Z',
+    isShortStay: false,
     hoursUntilDeadline: 18,
     isOverdue: false,
     dataComplete: true,
     ...overrides,
   };
 }
+
+export const demoAlloggiatiGuestSummary: AlloggiatiGuestSummaryDto = {
+  bookingId: DEMO_BOOKING_ID,
+  status: 'DaInviareManualmente',
+  arrivalDate: '2026-07-01T00:00:00Z',
+  stayDays: 3,
+  stayExceedsMaxDays: false,
+  declaredGuests: 2,
+  guests: [
+    {
+      guestId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+      kind: 'HeadOfFamilyOrGroup',
+      arrivalDate: '2026-07-01T00:00:00Z',
+      stayDays: 3,
+      lastName: 'Rossi',
+      firstName: 'Mario',
+      gender: 'Male',
+      dateOfBirth: '1985-03-10T00:00:00Z',
+      placeOfBirth: 'Milano',
+      citizenship: 'Italiana',
+      documentType: 'IdentityCard',
+      documentNumber: 'CA12345AB',
+      documentIssuePlace: 'Comune di Milano',
+      missingFields: [],
+    },
+  ],
+};
 
 export async function mockCheckInApi(page: Page): Promise<void> {
   await page.route(`**/api/checkin/${DEMO_CHECKIN_TOKEN}`, async (route) => {
@@ -122,19 +160,35 @@ export async function mockAlloggiatiApi(page: Page): Promise<void> {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(demoAlloggiatiStatus({ status: 'Failed', errorMessage: 'Errore simulato' })),
+      body: JSON.stringify(demoAlloggiatiStatus()),
     });
   });
 
-  await page.route(`**/api/alloggiati/${DEMO_BOOKING_ID}/send`, async (route) => {
-    if (route.request().method() !== 'POST') {
+  await page.route(`**/api/alloggiati/${DEMO_BOOKING_ID}/guest-summary`, async (route) => {
+    if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
     }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(demoAlloggiatiStatus({ status: 'Submitted', errorMessage: null })),
+      body: JSON.stringify(demoAlloggiatiGuestSummary),
+    });
+  });
+
+  // Same contract as the backend (CO-11): the host declares the manual submission, never "Inviato".
+  await page.route(`**/api/alloggiati/${DEMO_BOOKING_ID}/mark-sent-manually`, async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback();
+      return;
+    }
+    const { sentOn } = route.request().postDataJSON() as { sentOn: string };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        demoAlloggiatiStatus({ status: 'InviatoManualmente', reportedAt: `${sentOn}T00:00:00Z` }),
+      ),
     });
   });
 }

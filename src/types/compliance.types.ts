@@ -1,3 +1,5 @@
+import type { TouristTaxRateVerification } from '@/types/tourist-tax.types';
+
 export type PropertyComplianceStatus = 'Pending' | 'Active' | 'Suspended';
 
 export type ComplianceStepStatus = 'pending' | 'complete' | 'warning';
@@ -8,6 +10,29 @@ export interface ComplianceWizardStep {
   status: ComplianceStepStatus;
   blocker: boolean;
   message?: string | null;
+  /** External guidance link of the step (CIN: configured on the backend). */
+  linkUrl?: string | null;
+  /** Only on the `tourist-tax` step. */
+  touristTax?: ActivationTouristTax | null;
+}
+
+/** Tourist tax of the property's comune in the activation wizard: a warning, never a blocker. */
+export interface ActivationTouristTax {
+  city: string;
+  /** Rate in force today, or null when CasaZen has no rate for the comune. */
+  rate: ActivationTouristTaxRate | null;
+  /** Slug of the public page `/p/tassa-soggiorno/:comune`, only when it exists. */
+  publicPageSlug: string | null;
+}
+
+export interface ActivationTouristTaxRate {
+  ratePerPersonPerNight: number;
+  maxNights: number | null;
+  minimumAge: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  sourceUrl: string | null;
+  verificationLevel: TouristTaxRateVerification | null;
 }
 
 export interface ComplianceActivationResult {
@@ -48,7 +73,10 @@ export interface ComplianceSummaryResult {
   propertiesPending: ComplianceSummarySection;
   guestCheckInsIncomplete: ComplianceSummarySection;
   checkoutsDue: ComplianceSummarySection;
+  /** Alloggiati communications in error or rejected. */
   alloggiatiFailures: ComplianceSummarySection;
+  /** Alloggiati communications the host must send on the Questura portal: CasaZen does not transmit (CO-11). */
+  alloggiatiManualRequired: ComplianceSummarySection;
 }
 
 export interface CheckoutWizardStep {

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,28 +14,105 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { TouristTaxRate, CreateTouristTaxRateDto, UpdateTouristTaxRateDto } from '@/types';
+import {
+  TOURIST_TAX_RATE_VERIFICATIONS,
+  type TouristTaxRate,
+  type CreateTouristTaxRateDto,
+  type TouristTaxRateVerification,
+} from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
 
+/** Empty inputs become null instead of NaN (`valueAsNumber` would block optional fields). */
+const toOptionalNumber = (value: unknown) =>
+  value === '' || value === null || value === undefined ? null : Number(value);
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
 // Messages are i18n keys: FormFieldError translates them when rendering.
-const taxRateSchema = z.object({
-  city: z.string().min(2, 'taxRates.validation.cityRequired'),
-  regionCode: z.string().min(2, 'taxRates.validation.regionRequired'),
-  ratePerPersonPerNight: z.number().min(0.01, 'taxRates.validation.rateMin'),
-  maxNights: z.number().min(0).optional().nullable(),
-  minimumAge: z.number().min(0).optional(),
-  effectiveFrom: z.string().min(1, 'taxRates.validation.effectiveFromRequired'),
-  effectiveTo: z.string().optional().nullable(),
-  notes: z.string().optional(),
-  isActive: z.boolean().optional(),
-});
+const taxRateSchema = z
+  .object({
+    city: z.string().trim().min(2, 'taxRates.validation.cityRequired').max(100, 'taxRates.validation.cityTooLong'),
+    regionCode: z.string().trim().min(2, 'taxRates.validation.regionRequired').max(10, 'taxRates.validation.regionTooLong'),
+    ratePerPersonPerNight: z
+      .number({ error: 'taxRates.validation.rateMin' })
+      .min(0.01, 'taxRates.validation.rateMin')
+      .max(1000, 'taxRates.validation.rateMax'),
+    maxNights: z
+      .number({ error: 'taxRates.validation.maxNightsRange' })
+      .int('taxRates.validation.maxNightsRange')
+      .min(1, 'taxRates.validation.maxNightsRange')
+      .max(365, 'taxRates.validation.maxNightsRange')
+      .nullable(),
+    minimumAge: z
+      .number({ error: 'taxRates.validation.minimumAgeRange' })
+      .int('taxRates.validation.minimumAgeRange')
+      .min(0, 'taxRates.validation.minimumAgeRange')
+      .max(120, 'taxRates.validation.minimumAgeRange'),
+    effectiveFrom: z.string().min(1, 'taxRates.validation.effectiveFromRequired'),
+    effectiveTo: z.string(),
+    notes: z.string().max(500, 'taxRates.validation.notesTooLong'),
+    sourceUrl: z
+      .string()
+      .trim()
+      .max(500, 'taxRates.validation.sourceUrlInvalid')
+      .refine((value) => value === '' || isHttpUrl(value), 'taxRates.validation.sourceUrlInvalid'),
+    verificationLevel: z.union([z.literal(''), z.enum(TOURIST_TAX_RATE_VERIFICATIONS)]),
+  })
+  .refine((values) => !values.effectiveTo || values.effectiveTo >= values.effectiveFrom, {
+    path: ['effectiveTo'],
+    message: 'taxRates.validation.effectiveToBeforeFrom',
+  });
 
 type TaxRateFormValues = z.infer<typeof taxRateSchema>;
+
+/** `YYYY-MM-DD` of a date sent by the API (UTC midnight of the calendar date). */
+function toDateInput(value: Date | string | null | undefined): string {
+  if (!value) return '';
+  return (typeof value === 'string' ? value : value.toISOString()).slice(0, 10);
+}
+
+function toFormValues(existing: TouristTaxRate | null | undefined): TaxRateFormValues {
+  if (!existing) {
+    return {
+      city: '',
+      regionCode: '',
+      ratePerPersonPerNight: 1,
+      maxNights: null,
+      minimumAge: 14,
+      effectiveFrom: new Date().toISOString().slice(0, 10),
+      effectiveTo: '',
+      notes: '',
+      sourceUrl: '',
+      verificationLevel: '',
+    };
+  }
+
+  return {
+    city: existing.city,
+    regionCode: existing.regionCode,
+    ratePerPersonPerNight: existing.ratePerPersonPerNight,
+    maxNights: existing.maxNights,
+    minimumAge: existing.minimumAge,
+    effectiveFrom: toDateInput(existing.effectiveFrom),
+    effectiveTo: toDateInput(existing.effectiveTo),
+    notes: existing.notes ?? '',
+    sourceUrl: existing.sourceUrl ?? '',
+    verificationLevel: existing.verificationLevel ?? '',
+  };
+}
 
 interface TaxRateFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CreateTouristTaxRateDto | UpdateTouristTaxRateDto) => Promise<void>;
+  /** Rejects when the API call fails: the dialog then stays open with the values typed. */
+  onSubmit: (data: CreateTouristTaxRateDto) => Promise<void>;
   isLoading?: boolean;
   existing?: TouristTaxRate | null;
 }
@@ -49,53 +127,34 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
     reset,
   } = useForm<TaxRateFormValues>({
     resolver: zodResolver(taxRateSchema),
-    defaultValues: existing
-      ? {
-          city: existing.city,
-          regionCode: existing.regionCode,
-          ratePerPersonPerNight: existing.ratePerPersonPerNight,
-          maxNights: existing.maxNights,
-          minimumAge: existing.minimumAge,
-          effectiveFrom:
-            typeof existing.effectiveFrom === 'string'
-              ? existing.effectiveFrom.slice(0, 10)
-              : '',
-          effectiveTo:
-            typeof existing.effectiveTo === 'string'
-              ? existing.effectiveTo.slice(0, 10)
-              : existing.effectiveTo
-                ? String(existing.effectiveTo).slice(0, 10)
-                : '',
-          notes: existing.notes ?? '',
-          isActive: existing.isActive,
-        }
-      : {
-          city: '',
-          regionCode: '',
-          ratePerPersonPerNight: 1.0,
-          maxNights: null,
-          minimumAge: 14,
-          effectiveFrom: new Date().toISOString().slice(0, 10),
-          effectiveTo: null,
-          notes: '',
-          isActive: true,
-        },
+    defaultValues: toFormValues(existing),
   });
 
+  // The dialog stays mounted: load the rate being edited (or empty values) every time it opens.
+  useEffect(() => {
+    if (open) reset(toFormValues(existing));
+  }, [open, existing, reset]);
+
   const onFormSubmit = async (values: TaxRateFormValues) => {
-    const payload: CreateTouristTaxRateDto | UpdateTouristTaxRateDto = {
+    const payload: CreateTouristTaxRateDto = {
       city: values.city,
       regionCode: values.regionCode,
       ratePerPersonPerNight: values.ratePerPersonPerNight,
-      maxNights: values.maxNights ?? undefined,
+      maxNights: values.maxNights,
       minimumAge: values.minimumAge,
       effectiveFrom: values.effectiveFrom,
-      effectiveTo: values.effectiveTo || undefined,
-      notes: values.notes || undefined,
-      isActive: values.isActive ?? true,
+      effectiveTo: values.effectiveTo || null,
+      notes: values.notes || null,
+      sourceUrl: values.sourceUrl || null,
+      verificationLevel: (values.verificationLevel || null) as TouristTaxRateVerification | null,
+      isActive: existing?.isActive ?? true,
     };
-    await onSubmit(payload);
-    reset();
+    try {
+      await onSubmit(payload);
+    } catch {
+      // The page shows the API error (getProblemMessage); keep the dialog open to fix the values.
+      return;
+    }
     onOpenChange(false);
   };
 
@@ -111,7 +170,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="city">{t('taxRates.city')} *</Label>
             <Input id="city" {...register('city')} />
@@ -131,7 +190,7 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
               type="number"
               step="0.01"
               min="0"
-              {...register('ratePerPersonPerNight', { valueAsNumber: true })}
+              {...register('ratePerPersonPerNight', { setValueAs: toOptionalNumber })}
             />
             <FormFieldError error={errors.ratePerPersonPerNight} />
           </div>
@@ -142,19 +201,19 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
               <Input
                 id="maxNights"
                 type="number"
-                min="0"
-                {...register('maxNights', { valueAsNumber: true })}
+                min="1"
+                {...register('maxNights', { setValueAs: toOptionalNumber })}
               />
               <FormFieldError error={errors.maxNights} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="minimumAge">{t('taxRates.minimumAge')}</Label>
+              <Label htmlFor="minimumAge">{t('taxRates.minimumAge')} *</Label>
               <Input
                 id="minimumAge"
                 type="number"
                 min="0"
-                {...register('minimumAge', { valueAsNumber: true })}
+                {...register('minimumAge', { setValueAs: toOptionalNumber })}
               />
               <FormFieldError error={errors.minimumAge} />
             </div>
@@ -177,11 +236,36 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
               type="date"
               {...register('effectiveTo')}
             />
+            <FormFieldError error={errors.effectiveTo} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sourceUrl">{t('taxRates.source')}</Label>
+            <Input id="sourceUrl" type="url" placeholder="https://" {...register('sourceUrl')} />
+            <FormFieldError error={errors.sourceUrl} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="verificationLevel">{t('taxRates.verification')}</Label>
+            <select
+              id="verificationLevel"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              {...register('verificationLevel')}
+            >
+              <option value="">{t('taxRates.verificationLevels.none')}</option>
+              {TOURIST_TAX_RATE_VERIFICATIONS.map((level) => (
+                <option key={level} value={level}>
+                  {t(`taxRates.verificationLevels.${level}`)}
+                </option>
+              ))}
+            </select>
+            <FormFieldError error={errors.verificationLevel} />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">{t('taxRates.notes')}</Label>
             <Input id="notes" {...register('notes')} />
+            <FormFieldError error={errors.notes} />
           </div>
 
           <DialogFooter>

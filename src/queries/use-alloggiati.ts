@@ -21,18 +21,27 @@ export function useAlloggiatiStatus(bookingId: string) {
   });
 }
 
-export function useResendAlloggiatiReport() {
+export function useAlloggiatiGuestSummary(bookingId: string) {
+  return useQuery({
+    queryKey: [ALLOGGIATI_KEY, 'guest-summary', bookingId],
+    queryFn: () => alloggiatiApi.getGuestSummary(bookingId),
+    enabled: !!bookingId,
+  });
+}
+
+export function useMarkAlloggiatiSentManually() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (bookingId: string) => alloggiatiApi.sendReport(bookingId),
-    onSuccess: (_, bookingId) => {
+    mutationFn: ({ bookingId, sentOn }: { bookingId: string; sentOn: string }) =>
+      alloggiatiApi.markSentManually(bookingId, { sentOn }),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY] });
-      queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status', bookingId] });
-      toast.success(i18n.t('toast.alloggiatiSent'));
+      queryClient.invalidateQueries({ queryKey: ['compliance'] });
+      toast.success(i18n.t('toast.alloggiatiMarkedSent'));
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.alloggiatiSendFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.alloggiatiMarkSentFailed'));
     },
   });
 }
