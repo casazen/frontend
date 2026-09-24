@@ -9,7 +9,9 @@ export type UserRole =
   | 'Supplier'
   | 'PropertyManager'
   | 'Guest'
-  | 'Staff';
+  | 'Staff'
+  /** No role yet: a new user until the onboarding (backend PL-02). */
+  | 'None';
 
 export type RentalType = 'ShortTerm' | 'LongTerm' | 'Both';
 
@@ -38,6 +40,14 @@ export interface UserDetail extends UserSummary {
   // Supplier org the account is linked to (invite, registration or claim, SU-02). For a supplier-only user it is also
   // `orgId`. A linked supplier goes to the supplier console, never to the host onboarding.
   supplierOrgId?: string | null;
+  /**
+   * Own profile only (`/users/me`): true while the backend withholds the host features (PL-02), i.e. the onboarding is
+   * not completed or the current Terms, Privacy notice and DPA are not accepted. Host endpoints then answer 403
+   * `onboarding_required`. Missing on older backends.
+   */
+  onboardingRequired?: boolean | null;
+  /** Own profile only: the current Terms, Privacy notice and DPA are accepted (false after a new document version). */
+  consentsAccepted?: boolean | null;
 }
 
 export interface UpdateProfileRequest {
@@ -68,6 +78,29 @@ export interface OnboardingResponse {
    */
   rolesSynced?: boolean;
   rolesSyncError?: string | null;
+}
+
+/**
+ * Body of `POST /users/me/signup-attribution` (SE-03): where the signup came from. Marketing values only, checked
+ * against the backend rules by `src/lib/signup-attribution.ts`.
+ */
+export interface SignupAttribution {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  /** Slug of the comune of the SEO page (or its ISTAT code). */
+  comune?: string;
+  /** Path of the first page of the visit, without query string. */
+  landingPath?: string;
+  /** Host of the site the visitor came from, never the full URL. */
+  referrerHost?: string;
+}
+
+export interface SignupAttributionResult {
+  /** False when the org already had an attribution: the backend keeps the first one. */
+  recorded: boolean;
 }
 
 export interface PagedResult<T> {

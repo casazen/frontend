@@ -268,6 +268,9 @@
     "monthlyRent": "Canone mensile",
     "fiscalRegime": "Regime fiscale",
     "registrationDeadline": "Scadenza registrazione",
+    "stipulaDate": "Data di stipula",
+    "stipulaDateMissing": "Non ancora disponibile",
+    "registrationDeadlineToBeDetermined": "Da determinare",
     "created": "Creato",
     "parties": "Parti",
     "signing": "Firma",
@@ -289,6 +292,11 @@
       "checklistError": "Impossibile caricare la checklist.",
       "checklistEmpty": "Nessuna attivita in elenco.",
       "countdown": "Giorni alla scadenza: {{days}}",
+      "countdownToday": "La scadenza per la registrazione è oggi.",
+      "countdownOverdue_one": "Scadenza superata da {{count}} giorno.",
+      "countdownOverdue_other": "Scadenza superata da {{count}} giorni.",
+      "deadlineToBeDetermined": "Scadenza per la registrazione: da determinare",
+      "deadlineRule": "La registrazione va fatta entro 30 giorni dalla firma di tutte le parti (stipula) o dalla data di inizio del contratto, se anteriore.",
       "export": "Esporta precompilazione RLI",
       "exporting": "Esportazione...",
       "exportOk": "PDF precompilato scaricato. Non e un deposito.",
@@ -1792,7 +1800,7 @@
     },
     "modes": {
       "path": "Percorso CasaZen (/book/{slug})",
-      "subdomain": "Sottodominio CasaZen ({slug}.casazen.it)",
+      "subdomain": "Sottodominio CasaZen",
       "custom": "Dominio personalizzato (Pro)"
     },
     "settings": {
@@ -1908,7 +1916,8 @@
     "Guest": "Ospite",
     "Staff": "Staff",
     "LongTermLandlord": "Locatore lungo termine",
-    "Supplier": "Fornitore"
+    "Supplier": "Fornitore",
+    "None": "Da attivare"
   },
   "alloggiati": {
     "loading": "Caricamento Alloggiati…",
@@ -2841,9 +2850,8 @@
     "calculating": "Calcolo...",
     "calculationError": "Impossibile calcolare la tassa. Verifica i dati inseriti.",
     "tryCasaZen": "Prova CasaZen a {{comuneName}}",
-    "tryCasaZenDescription": "Verifica la conformita' del tuo affitto breve o registrati gratuitamente.",
-    "verifyCompliance": "Verifica conformita'",
-    "registerFree": "Registrati gratis",
+    "tryCasaZenDescription": "Crea il tuo account CasaZen e pubblica la tua casa.",
+    "publishYourHome": "Pubblica la tua casa",
     "rateUnavailableTitle": "Tariffa non ancora disponibile per {{comuneName}}",
     "rateUnavailableHint": "CasaZen non ha ancora la tariffa dell'imposta di soggiorno di questo comune e non può calcolarla: verifica tariffa ed esenzioni sul sito del Comune.",
     "categoryLabel": "Categoria dell'alloggio",
@@ -2868,6 +2876,8 @@
     "choosePlan": "Scegli il tuo piano",
     "roleDescription": "Scegli il tipo di operatore per personalizzare la tua esperienza.",
     "consentsDescription": "Per attivare il tuo account sono richiesti ToS, privacy, DPA e l'elenco subprocessori.",
+    "consentsRenewalTitle": "Documenti legali aggiornati",
+    "consentsRenewalDescription": "Abbiamo aggiornato i documenti legali: accetta le nuove versioni per continuare a usare le funzioni per host.",
     "planOrgDescription": "Configura la tua organizzazione per iniziare a gestire proprieta' e prenotazioni.",
     "planDefaultDescription": "Seleziona il piano iniziale per la tua organizzazione. Potrai modificarlo in seguito.",
     "consentRequiredToast": "Accetta i documenti legali obbligatori prima di continuare.",
@@ -2992,6 +3002,17 @@
     "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
     "signInButton": "Accedi con Auth0",
     "signIn": "Accedi"
+  },
+  "signup": {
+    "title": "Registrati su CasaZen",
+    "redirecting": "Ti stiamo portando alla registrazione…",
+    "continue": "Continua la registrazione"
+  },
+  "notFound": {
+    "title": "Pagina non trovata",
+    "description": "L'indirizzo è sbagliato o la pagina non esiste più.",
+    "home": "Vai alla pagina iniziale",
+    "guides": "Guide per gli host"
   },
   "compliance": {
     "status": {
@@ -3263,6 +3284,7 @@
       "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
       "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo.",
       "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori.",
+      "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
       "supplierInviteInvalid": "Invito non valido: il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito.",
       "supplierInviteExpired": "Questo invito è scaduto. Chiedi al team CasaZen di inviartene uno nuovo.",
       "supplierInviteUsed": "Questo invito è già stato usato. Se hai già un account fornitore, accedi.",
@@ -3273,6 +3295,7 @@
       "supplierAccountEmailMismatch": "L'email della registrazione deve essere quella del tuo account.",
       "supplierSelfServeUnavailable": "La registrazione autonoma dei fornitori non è ancora disponibile: puoi entrare solo con un invito.",
       "supplierComuneNotPilot": "La registrazione autonoma non è disponibile per questo comune: scegli un comune dell'elenco o chiedi un invito.",
+      "subdomainsNotConfigured": "I sottodomini CasaZen non sono ancora disponibili: usa il percorso CasaZen o un dominio personalizzato.",
       "supplierClaimInvalid": "Il collegamento non è valido: registra di nuovo la tua attività o accedi con l'account già collegato.",
       "supplierClaimExpired": "Il collegamento è scaduto: registra di nuovo la tua attività come fornitore.",
       "supplierClaimUsed": "Questo profilo fornitore è già collegato a un account. Accedi con quell'account.",

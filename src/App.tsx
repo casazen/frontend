@@ -6,9 +6,11 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { queryClient } from '@/lib/query-client';
-import { NO_ACCESS_PATH, setApiForbiddenHandler } from '@/lib/axios';
+import { NO_ACCESS_PATH, setApiForbiddenHandler, setApiOnboardingRequiredHandler } from '@/lib/axios';
+import { openOnboardingAfterGate } from '@/lib/onboarding-gate';
 import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
+import { recordLandingTouch } from '@/lib/signup-attribution';
 import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { router } from '@/routes';
@@ -23,7 +25,15 @@ function AppShell() {
         void router.navigate(NO_ACCESS_PATH, { replace: true });
       }
     });
-    return () => setApiForbiddenHandler(null);
+    // 403 onboarding_required (PL-02): the backend withholds the host features until the onboarding and the current
+    // consents; open the onboarding (the wizard shows the consents step), never the no-access page.
+    setApiOnboardingRequiredHandler(() => {
+      openOnboardingAfterGate(router, queryClient);
+    });
+    return () => {
+      setApiForbiddenHandler(null);
+      setApiOnboardingRequiredHandler(null);
+    };
   }, []);
 
   return (
@@ -60,6 +70,11 @@ function App() {
   const pathname = window.location.pathname;
   const publicPath = isPublicUnauthenticatedPath(pathname);
   const secureOrigin = isSecureAuth0Origin();
+
+  useEffect(() => {
+    // SE-03: first page of the visit (landing path, referrer host, UTM) for the signup attribution.
+    if (publicPath) recordLandingTouch();
+  }, [publicPath]);
 
   // Direct booking & other public surfaces must never load auth0-spa-js
   // (it throws on http://LAN-IP — see Auth0 SPA FAQ secure origin).

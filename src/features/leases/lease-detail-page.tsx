@@ -159,8 +159,18 @@ export function LeaseDetailPage() {
                   <p className="font-medium">{getFiscalRegimeLabel(lease.fiscalRegime, t)}</p>
                 </div>
                 <div>
+                  <p className="text-muted-foreground">{t('leases.stipulaDate')}</p>
+                  <p className="font-medium" data-testid="lease-stipula-date">
+                    {lease.stipulaDate ? formatDate(lease.stipulaDate) : t('leases.stipulaDateMissing')}
+                  </p>
+                </div>
+                <div>
                   <p className="text-muted-foreground">{t('leases.registrationDeadline')}</p>
-                  <p className="font-medium">{formatDate(lease.registrationDeadline)}</p>
+                  <p className="font-medium" data-testid="lease-registration-deadline">
+                    {lease.registrationDeadline
+                      ? formatDate(lease.registrationDeadline)
+                      : t('leases.registrationDeadlineToBeDetermined')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.created')}</p>
