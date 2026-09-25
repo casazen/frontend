@@ -7,6 +7,8 @@ import type {
   UpdateBookingDto,
   HostBookingQuotePayload,
   DeclineBookingRequestDto,
+  CreateOtaStayDto,
+  ResolveOtaReviewDto,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -208,6 +210,36 @@ export function useCheckIn() {
       applyBookingChange(queryClient, booking);
       queryClient.invalidateQueries({ queryKey: ['alloggiati'] });
       queryClient.invalidateQueries({ queryKey: ['compliance'] });
+    },
+  });
+}
+
+/**
+ * "Crea soggiorno OTA" from an iCal block (CO-21). No error toast: the form shows the error next to the fields (e.g. 409
+ * when the block is already a stay or overlaps a booking). The calendar and the booking lists change.
+ */
+export function useCreateOtaStay() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ blockId, data }: { blockId: string; data: CreateOtaStayDto }) => bookingsApi.createOtaStay(blockId, data),
+    onSuccess: (booking) => {
+      applyBookingChange(queryClient, booking);
+      queryClient.invalidateQueries({ queryKey: ['compliance'] });
+      toast.success(i18n.t('booking.otaStay.created'));
+    },
+  });
+}
+
+/** "Segna come verificato" of an OTA stay (CO-21). No error toast: the notice shows the error. */
+export function useResolveOtaReview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data?: ResolveOtaReviewDto }) => bookingsApi.resolveOtaReview(id, data),
+    onSuccess: (booking) => {
+      applyBookingChange(queryClient, booking);
+      toast.success(i18n.t('booking.otaReview.resolved'));
     },
   });
 }

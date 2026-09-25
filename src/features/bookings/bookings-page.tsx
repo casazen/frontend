@@ -17,6 +17,7 @@ import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels'
 import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
 import { CheckInDialog } from '@/features/bookings/components/check-in-dialog';
 import { canRegisterArrival } from '@/features/bookings/lib/stay-actions';
+import { bookingChannelText, needsOtaReview } from '@/features/bookings/lib/ota-stay';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -206,6 +207,11 @@ export function BookingsPage() {
                                 {t(`booking.requests.state.${b.onSiteRequestState}`)}
                               </Badge>
                             )}
+                            {needsOtaReview(b) && (
+                              <Badge variant="destructive" data-testid="booking-ota-review-badge">
+                                {t('booking.otaReview.badge')}
+                              </Badge>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3" data-testid="booking-source">
@@ -214,6 +220,11 @@ export function BookingsPage() {
                               {getBookingSourceLabel(b.source, t)}
                             </Badge>
                           ) : null}
+                          {bookingChannelText(b, t) && (
+                            <div className="mt-1 text-xs text-muted-foreground" data-testid="booking-channel">
+                              {bookingChannelText(b, t)}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">

@@ -4,6 +4,7 @@ import type {
   CalendarSyncStatus,
   SupplierAvailabilityResponse,
   SupplierDashboard,
+  SupplierInboxParams,
   SupplierInboxResponse,
   SupplierKpiPeriod,
   SupplierKpis,
@@ -11,6 +12,7 @@ import type {
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
 import axios from '@/lib/axios';
+import type { SupplierServiceRequestDetail } from '@/types/service-request';
 
 export async function fetchSupplierActivation(): Promise<ActivationStatus> {
   return ApiClient.get<ActivationStatus>('/supplier/profile/activation');
@@ -34,11 +36,26 @@ export async function updateSupplierProfile(
   return ApiClient.put<SupplierProfile>('/supplier/profile', payload);
 }
 
-export async function fetchSupplierInbox(status = 'open', page = 1, pageSize = 20): Promise<SupplierInboxResponse> {
-  const { data } = await axios.get<SupplierInboxResponse>('/supplier/inbox', {
-    params: { status, page, pageSize },
+/** A page of the supplier inbox, paginated and filtered by the server (SU-08). Empty `from`/`to` are not sent. */
+export async function fetchSupplierInbox({
+  status,
+  from,
+  to,
+  page = 1,
+  pageSize = 20,
+}: SupplierInboxParams): Promise<SupplierInboxResponse> {
+  return ApiClient.get<SupplierInboxResponse>('/supplier/inbox', {
+    status,
+    page,
+    pageSize,
+    ...(from ? { from } : {}),
+    ...(to ? { to } : {}),
   });
-  return data;
+}
+
+/** One request sent to the caller's supplier org, with its history (404 for another supplier's request). */
+export async function fetchSupplierInboxItem(id: string): Promise<SupplierServiceRequestDetail> {
+  return ApiClient.get<SupplierServiceRequestDetail>(`/supplier/inbox/${encodeURIComponent(id)}`);
 }
 
 export async function fetchSupplierAvailability(
@@ -157,8 +174,14 @@ export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {
   return ApiClient.get<CalendarSyncStatus>('/supplier/calendar/status');
 }
 
+/** Saves the iCal URL and queues its first sync: 202 with `lastSyncStatus: 'Syncing'` (SU-15). */
 export async function setIcalFeed(icalFeedUrl: string): Promise<CalendarSyncStatus> {
   return ApiClient.put<CalendarSyncStatus>('/supplier/calendar/ical', { icalFeedUrl });
+}
+
+/** "Sync now": 202 with `lastSyncStatus: 'Syncing'` (nothing more is queued if a sync is already queued). */
+export async function syncSupplierCalendarNow(): Promise<CalendarSyncStatus> {
+  return ApiClient.post<CalendarSyncStatus>('/supplier/calendar/sync');
 }
 
 export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: string[] }> {

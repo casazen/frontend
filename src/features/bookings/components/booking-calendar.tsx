@@ -27,7 +27,7 @@ const localizer = dateFnsLocalizer({
   locales: CALENDAR_LOCALES,
 });
 
-type LegendKey = 'Confirmed' | 'Pending' | 'CheckedIn' | 'CheckedOut' | 'block';
+type LegendKey = 'Confirmed' | 'Pending' | 'CheckedIn' | 'CheckedOut' | 'toReview' | 'block';
 
 /**
  * One style per kind of entry, used by the events and by the legend. Pending requests (BK-06: "pay at the property"
@@ -38,21 +38,23 @@ const EVENT_STYLES: Record<LegendKey, CSSProperties> = {
   Pending: { backgroundColor: '#fef3c7', color: '#78350f', border: '1px dashed #b45309' },
   CheckedIn: { backgroundColor: '#047857', color: '#ffffff', border: '1px solid #047857' },
   CheckedOut: { backgroundColor: '#6b7280', color: '#ffffff', border: '1px solid #6b7280' },
+  // OTA stay created from an iCal block that a sync marked "da verificare" (CO-21): the reservation changed on the channel.
+  toReview: { backgroundColor: '#fff7ed', color: '#9a3412', border: '2px solid #ea580c' },
   block: { backgroundColor: '#9333ea', color: '#ffffff', border: '1px solid #9333ea' },
 };
-// TODO(CO-21): OTA stays "da verificare" (created by the host from an iCal block) get their own style and legend entry
-// once CO-21 publishes the field that marks them in GET /api/bookings/calendar.
 
 const LEGEND: { key: LegendKey; labelKey: string }[] = [
   { key: 'Confirmed', labelKey: 'booking.calendar.legend.confirmed' },
   { key: 'Pending', labelKey: 'booking.calendar.legend.pending' },
   { key: 'CheckedIn', labelKey: 'booking.calendar.legend.checkedIn' },
   { key: 'CheckedOut', labelKey: 'booking.calendar.legend.checkedOut' },
+  { key: 'toReview', labelKey: 'booking.calendar.legend.toReview' },
   { key: 'block', labelKey: 'booking.calendar.legend.block' },
 ];
 
 function styleKey(event: HostCalendarEvent): LegendKey {
   if (event.kind === 'block') return 'block';
+  if (event.otaReviewReason) return 'toReview';
   return event.status === 'Pending' || event.status === 'CheckedIn' || event.status === 'CheckedOut'
     ? event.status
     : 'Confirmed';
@@ -133,7 +135,9 @@ export function BookingCalendar({
       const what =
         event.kind === 'block'
           ? t('booking.calendar.block.tooltip', { source: blockSourceLabel(event, t) })
-          : `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)}`;
+          : event.otaReviewReason
+            ? `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)} · ${t('booking.otaReview.badge')}`
+            : `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)}`;
       return `${what} · ${dates}`;
     },
     [t, i18n.language],
