@@ -24,6 +24,7 @@ import { PropertyAmenitiesGrid } from './components/property-amenities-grid';
 import { PropertyDocumentsSection } from './components/property-documents-section';
 import { PropertyOtaSummary } from './components/property-ota-summary';
 import { IcalSettings } from './components/ical-settings';
+import { QuesturaCredentialsCard } from './components/questura-credentials-card';
 import { PropertyBookingsKpi } from './components/property-bookings-kpi';
 import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
@@ -61,7 +62,10 @@ export function PropertyDetailPage() {
   const updateCin = useUpdatePropertyCin();
   // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
-  const canCreateBooking = useWorkspace().hasPermission('short-rent', 'booking.write');
+  const { hasPermission } = useWorkspace();
+  const canCreateBooking = hasPermission('short-rent', 'booking.write');
+  // Alloggiati Web credentials are write-only; the API also checks ownership or the org-wide role (TN-3).
+  const canEditQuesturaCredentials = hasPermission('short-rent', 'property.write');
   // Overview of the property's short-rent requests, each linked to its stay (D2).
   const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
 
@@ -338,6 +342,8 @@ export function PropertyDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <QuesturaCredentialsCard propertyId={property.id} canEdit={canEditQuesturaCredentials} />
           </div>
         )}
       </div>

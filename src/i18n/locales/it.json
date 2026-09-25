@@ -2150,8 +2150,6 @@
       "registerAgain": "Registrati come fornitore",
       "skip": "Continua senza collegare"
     },
-    "completedJobs": "Lavori completati",
-    "upcomingJobs": "Prossimi incarichi",
     "availabilityRate": "Tasso disponibilità",
     "profileCompleted": "Profilo completato",
     "profileCompletion": "Profilo completo al {{percent}}%",
@@ -2172,7 +2170,12 @@
     "icalFeedUrlDescription": "Incolla l'URL del tuo calendario iCal. Supportiamo Apple Calendar, Outlook, Airbnb e Booking.com.",
     "icalFeedUrlLabel": "URL feed iCal",
     "saveAndSync": "Salva e sincronizza",
-    "syncSuccess": "Sincronizzazione avviata",
+    "syncSuccess": "Sincronizzazione avviata: il calendario si aggiorna tra pochi istanti",
+    "syncInProgress": "Sincronizzazione in corso…",
+    "syncCompleted": "Sincronizzato",
+    "syncNow": "Sincronizza ora",
+    "icalSaveError": "Impossibile salvare l'URL del calendario",
+    "calendarStatusLoadError": "Impossibile caricare lo stato del calendario.",
     "syncError": "Errore durante la sincronizzazione",
     "icalConnected": "Feed iCal connesso",
     "editIcalUrl": "Modifica URL iCal",
@@ -2259,8 +2262,31 @@
       "vatNumber": "es. IT12345678901",
       "phone": "es. +39 123 456 7890"
     },
-    "totalJobsCount_one": "{{count}} incarico totale",
-    "totalJobsCount_other": "{{count}} incarichi totali"
+    "dashboardLoadError": "Impossibile caricare la dashboard fornitore.",
+    "retry": "Riprova",
+    "kpi": {
+      "title": "Incarichi",
+      "periodLabel": "Periodo",
+      "periods": {
+        "CurrentMonth": "Questo mese",
+        "PreviousMonth": "Mese scorso",
+        "Last30Days": "Ultimi 30 giorni",
+        "CurrentYear": "Quest'anno"
+      },
+      "periodRange": "Dal {{from}} al {{to}} (ora italiana)",
+      "completed": "Completati",
+      "rejected": "Rifiutati",
+      "inPeriod": "Nel periodo",
+      "awaitingAcceptance": "Da prendere in carico",
+      "upcoming": "In arrivo",
+      "now": "Adesso",
+      "totalRequests_one": "{{count}} richiesta ricevuta in totale",
+      "totalRequests_other": "{{count}} richieste ricevute in totale",
+      "loadError": "Impossibile caricare gli indicatori degli incarichi.",
+      "empty": "Non hai ancora ricevuto richieste dagli host.",
+      "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
+      "openInbox": "Apri gli incarichi"
+    }
   },
   "settings": {
     "planTitle": "Il tuo piano",
@@ -2715,7 +2741,10 @@
     "next": "Successiva",
     "downloadDocumentScan": "Scarica scansione documento",
     "documentScanFileName": "documento-ospite",
-    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento."
+    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento.",
+    "documentNumberShow": "Mostra",
+    "documentNumberHide": "Nascondi",
+    "documentNumberRevealFailed": "Impossibile mostrare il numero di documento."
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -4282,6 +4311,7 @@
       "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
       "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
       "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite.",
+      "guestDocumentNumberMissing": "Nessun numero di documento registrato per questo ospite.",
       "pricingSuggestionsNotEnabled": "Attiva i suggerimenti stagionali prima di ricalcolarli.",
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
@@ -4337,16 +4367,6 @@
     "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
     "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
     "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
-  },
-  "supplierCheckIn": {
-    "invalidLink": "Link non valido",
-    "linkInvalidOrExpired": "Il link di check-in non è valido o è scaduto",
-    "checkInFailed": "Check-in non riuscito. Assicurati di essere presso l'immobile.",
-    "checkOutFailed": "Check-out non riuscito.",
-    "notFound": "Non trovato",
-    "checkedInAt": "Check-in: {{time}}",
-    "checkInAction": "Check-in",
-    "checkOutAction": "Check-out"
   },
   "supplierShowcase": {
     "notFound": "Fornitore non trovato",
@@ -4427,5 +4447,37 @@
     "childAgePlaceholder": "Età",
     "childAgeOption_one": "{{count}} anno",
     "childAgeOption_other": "{{count}} anni"
+  },
+  "questuraCredentials": {
+    "title": "Credenziali Alloggiati Web (Questura)",
+    "description": "Nome utente, password e chiave del web service (WSKey) dell'account Alloggiati Web di questo immobile.",
+    "loading": "Caricamento dello stato delle credenziali…",
+    "loadFailed": "Impossibile verificare se le credenziali sono configurate.",
+    "retry": "Riprova",
+    "configuredOn": "Configurate il {{date}}",
+    "notConfigured": "Non configurate",
+    "writeOnlyHint": "Le credenziali vengono cifrate e non sono più visibili dopo il salvataggio: per cambiarle inseriscile di nuovo. CasaZen non trasmette ancora ad Alloggiati Web: verranno usate per l'invio automatico quando sarà disponibile.",
+    "fields": {
+      "username": "Nome utente",
+      "password": "Password",
+      "wsKey": "Chiave web service (WSKey)"
+    },
+    "save": "Salva credenziali",
+    "replace": "Sostituisci credenziali",
+    "remove": "Rimuovi credenziali",
+    "removeConfirm": "Conferma rimozione",
+    "cancel": "Annulla",
+    "saved": "Credenziali Alloggiati Web salvate.",
+    "saveFailed": "Impossibile salvare le credenziali.",
+    "removed": "Credenziali Alloggiati Web rimosse.",
+    "removeFailed": "Impossibile rimuovere le credenziali.",
+    "errors": {
+      "usernameRequired": "Inserisci il nome utente di Alloggiati Web.",
+      "usernameTooLong": "Il nome utente può avere al massimo 100 caratteri.",
+      "passwordRequired": "Inserisci la password di Alloggiati Web.",
+      "passwordTooLong": "La password può avere al massimo 200 caratteri.",
+      "wsKeyRequired": "Inserisci la chiave del web service (WSKey).",
+      "wsKeyTooLong": "La chiave del web service può avere al massimo 200 caratteri."
+    }
   }
 }
