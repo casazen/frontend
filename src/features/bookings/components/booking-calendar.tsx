@@ -4,6 +4,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useTranslation } from 'react-i18next';
 import type { Booking } from '@/types';
 import type { BookingCalendarEvent } from '@/types';
+import { needsOtaReview } from '../lib/ota-stay';
 
 const localizer = momentLocalizer(moment);
 
@@ -19,7 +20,10 @@ export function BookingCalendar({ bookings, icalEvents = [], onSelectEvent, onSe
 
   const bookingEvents: BookingCalendarEvent[] = bookings.map((booking) => ({
     id: booking.id,
-    title: `${booking.guest.firstName} ${booking.guest.lastName}`,
+    // An OTA stay "da verificare" (CO-21) says so in the calendar too.
+    title: needsOtaReview(booking)
+      ? `${booking.guest.firstName} ${booking.guest.lastName} · ${t('booking.otaReview.badge')}`
+      : `${booking.guest.firstName} ${booking.guest.lastName}`,
     start: new Date(booking.checkInDate),
     end: new Date(booking.checkOutDate),
     resource: booking,

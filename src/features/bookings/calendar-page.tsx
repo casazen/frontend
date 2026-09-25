@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { BookingCalendar } from './components/booking-calendar';
+import { IcalBlockDialog } from './components/ical-block-dialog';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { useBookingCalendar } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
 import { List } from 'lucide-react';
@@ -57,6 +59,10 @@ function mapCalendarItemToBooking(item: CalendarItemDto): Booking {
     totalPrice: item.totalPrice ?? 0,
     currency: 'EUR',
     status: (item.status ?? 'Confirmed') as Booking['status'],
+    source: item.source,
+    icalFeedId: item.icalFeedId,
+    channelLabel: item.channelLabel,
+    otaReviewReason: item.otaReviewReason,
     guest: {
       firstName,
       lastName: rest.join(' '),
@@ -77,6 +83,7 @@ function mapIcalItemToEvent(item: CalendarItemDto): BookingCalendarEvent {
     end: new Date(item.endDate),
     resource: undefined,
     eventType: 'ical-block',
+    block: item,
   };
 }
 
@@ -86,6 +93,9 @@ export function CalendarPage() {
   const { data: properties, isLoading: propertiesLoading } = useProperties();
   const propertyList = Array.isArray(properties) ? properties : [];
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+  // Detail of a calendar block and "Crea soggiorno OTA" (CO-21).
+  const [selectedBlock, setSelectedBlock] = useState<CalendarItemDto | null>(null);
+  const { hasPermission } = useWorkspace();
 
   const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';
   const { startDate, endDate } = useMemo(() => toMonthRange(new Date()), []);
@@ -113,6 +123,8 @@ export function CalendarPage() {
   const handleSelectEvent = (event: BookingCalendarEvent) => {
     if (event.resource) {
       navigate(`/app/short-rent/bookings/${event.resource.id}`);
+    } else if (event.block) {
+      setSelectedBlock(event.block);
     }
   };
 
@@ -178,6 +190,19 @@ export function CalendarPage() {
           </>
         )}
       </div>
+      <IcalBlockDialog
+        block={selectedBlock}
+        open={selectedBlock !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedBlock(null);
+        }}
+        canWrite={hasPermission('short-rent', 'booking.write')}
+        onStayCreated={(booking) => {
+          setSelectedBlock(null);
+          // The guest tab: the check-in link of the new stay is sent from there (CO-09).
+          navigate(`/app/short-rent/bookings/${booking.id}?tab=guest`);
+        }}
+      />
     </AppShell>
   );
 }

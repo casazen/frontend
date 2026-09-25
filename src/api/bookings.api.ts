@@ -10,6 +10,8 @@ import type {
   ArrivalRegisteredBooking,
   HostBookingQuotePayload,
   DeclineBookingRequestDto,
+  CreateOtaStayDto,
+  ResolveOtaReviewDto,
 } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
@@ -74,4 +76,15 @@ export const bookingsApi = {
   /** New check-in link emailed to the guest (also the reminder); the link comes back whatever happens to the email. */
   resendCheckInLink: (id: string) =>
     ApiClient.post<CheckInLinkResponse>(`/bookings/${id}/checkin/resend-link`),
+
+  /**
+   * "Crea soggiorno OTA" (CO-21, decision D7): the iCal block becomes a confirmed stay with the source of its feed and
+   * the guest given here; check-in link, Alloggiati and cockpit then work as for any stay.
+   */
+  createOtaStay: (blockId: string, data: CreateOtaStayDto) =>
+    ApiClient.post<Booking>(`/ical-blocks/${blockId}/ota-stay`, data),
+
+  /** "Segna come verificato" of an OTA stay "da verificare", optionally with the dates now on the channel (CO-21). */
+  resolveOtaReview: (id: string, data: ResolveOtaReviewDto = {}) =>
+    ApiClient.post<Booking>(`/bookings/${id}/ota-review/resolve`, data),
 };
