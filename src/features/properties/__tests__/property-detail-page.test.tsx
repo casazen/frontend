@@ -10,6 +10,7 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { fetchServiceRequests } from '@/api/service-requests.api';
 import i18n from '@/i18n/config';
+import { AxiosError, AxiosHeaders } from 'axios';
 
 vi.mock('@/queries/use-properties');
 vi.mock('@/api/service-requests.api', () => ({
@@ -93,7 +94,30 @@ const mockDetail: PropertyDetailDto = {
   },
 };
 
-function renderPage(otaPartnerApi = false) {
+function problemError(status: number): AxiosError {
+  const config = { headers: new AxiosHeaders() };
+  return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, {
+    status,
+    statusText: '',
+    headers: {},
+    config,
+    data: { status },
+  });
+}
+
+function mockDetailError(status: number) {
+  const refetch = vi.fn();
+  vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: true,
+    error: problemError(status),
+    refetch,
+  } as unknown as ReturnType<typeof propertyQueries.usePropertyDetail>);
+  return refetch;
+}
+
+function renderPage(otaPartnerApi = false, search = '') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     createElement(
@@ -104,7 +128,7 @@ function renderPage(otaPartnerApi = false) {
         { value: { flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi }, isLoading: false } },
         createElement(
           MemoryRouter,
-          { initialEntries: [`/properties/${PROPERTY_ID}`] },
+          { initialEntries: [`/properties/${PROPERTY_ID}${search}`] },
           createElement(
             Routes,
             null,
@@ -225,5 +249,42 @@ describe('PropertyDetailPage', () => {
 
     expect(await screen.findByTestId('service-requests-error')).toBeInTheDocument();
     expect(screen.queryByTestId('service-requests-empty')).not.toBeInTheDocument();
+  });
+
+  // A2-36: only a 404 is "not found"; any other failure is an error with a retry.
+  it('PropertyDetailPage_ServerError_ShowsTheErrorWithRetryNotNotFound', () => {
+    const refetch = mockDetailError(500);
+
+    renderPage();
+
+    expect(screen.getByTestId('property-load-error')).toHaveTextContent(i18n.t('property.detail.loadError'));
+    expect(screen.queryByText(i18n.t('property.detail.notFound'))).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.detail.retry') }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('PropertyDetailPage_Forbidden_ShowsThePermissionErrorNotNotFound', () => {
+    mockDetailError(403);
+
+    renderPage();
+
+    expect(screen.getByTestId('property-load-error')).toHaveTextContent(i18n.t('apiErrors.forbidden'));
+    expect(screen.queryByTestId('property-not-found')).not.toBeInTheDocument();
+  });
+
+  it('PropertyDetailPage_NotFound_ShowsNotFound', () => {
+    mockDetailError(404);
+
+    renderPage();
+
+    expect(screen.getByTestId('property-not-found')).toHaveTextContent(i18n.t('property.detail.notFound'));
+    expect(screen.queryByTestId('property-load-error')).not.toBeInTheDocument();
+  });
+
+  // PC-16: the iCal widget of the dashboard links to `?tab=ical`.
+  it('PropertyDetailPage_TabInTheUrl_OpensTheIcalCalendars', () => {
+    renderPage(false, '?tab=ical');
+
+    expect(screen.getByTestId('ical-settings')).toBeInTheDocument();
   });
 });

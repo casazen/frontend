@@ -738,23 +738,60 @@
   "dashboard": {
     "title": "Dashboard",
     "description": "Welcome to CASAZEN — your vacation property management platform",
+    "period": {
+      "label": "Period",
+      "currentMonth": "Current month",
+      "last30Days": "Last 30 days",
+      "otherMonths": "Other months",
+      "range": "From {{from}} to {{to}}"
+    },
     "stats": {
-      "totalRevenue": {
-        "title": "Total Revenue",
-        "description": "Completed payments"
+      "occupancy": {
+        "title": "Occupancy",
+        "description_one": "{{occupied}} nights booked out of {{available}} available · {{count}} property",
+        "description_other": "{{occupied}} nights booked out of {{available}} available · {{count}} properties",
+        "descriptionWithClosed_one": "{{occupied}} nights booked out of {{available}} available ({{closed}} closed by you) · {{count}} property",
+        "descriptionWithClosed_other": "{{occupied}} nights booked out of {{available}} available ({{closed}} closed by you) · {{count}} properties"
       },
-      "activeBookings": {
-        "title": "Active Bookings",
-        "description": "Confirmed + checked in"
+      "revenue": {
+        "title": "Revenue for the period",
+        "description_one": "{{count}} confirmed stay, per night in the period, tourist tax excluded",
+        "description_other": "{{count}} confirmed stays, per night in the period, tourist tax excluded"
       },
-      "totalProperties": {
-        "title": "Total Properties",
-        "description": "Active properties"
+      "arrivalsToday": {
+        "title": "Arrivals today",
+        "description": "Check-ins on {{date}}"
       },
-      "occupancyRate": {
-        "title": "Occupancy Rate",
-        "description": "Currently checked in"
+      "departuresToday": {
+        "title": "Departures today",
+        "description": "Check-outs on {{date}}"
       }
+    },
+    "today": {
+      "title": "Today",
+      "description": "Today's arrivals and departures, Italian time",
+      "arrivals": "Arrivals",
+      "departures": "Departures",
+      "noArrivals": "No arrivals today.",
+      "noDepartures": "No departures today."
+    },
+    "upcoming": {
+      "title": "Upcoming check-ins",
+      "description_one": "{{count}} confirmed arrival scheduled",
+      "description_other": "{{count}} confirmed arrivals scheduled",
+      "empty": "No check-ins scheduled."
+    },
+    "moreItems_one": "+{{count}} more",
+    "moreItems_other": "+{{count}} more",
+    "loadError": "Could not load the dashboard indicators.",
+    "retry": "Retry",
+    "ical": {
+      "title": "iCal calendars",
+      "description": "Last sync of the calendars linked to Airbnb, Booking.com and the other channels",
+      "empty": "No iCal calendar linked: add one from a property page, iCal calendars section.",
+      "loadError": "Could not load the state of the iCal calendars.",
+      "failing_one": "{{count}} with errors",
+      "failing_other": "{{count}} with errors"
     },
     "recentBookings": {
       "title": "Recent Bookings",
@@ -762,6 +799,7 @@
       "empty": "No bookings yet.",
       "columns": {
         "guest": "Guest",
+        "property": "Property",
         "dates": "Dates",
         "amount": "Amount",
         "status": "Status"
@@ -1337,6 +1375,8 @@
       "loading": "Loading property...",
       "notFound": "Property not found",
       "notFoundDescription": "The property you are looking for does not exist.",
+      "loadError": "Could not load the property.",
+      "retry": "Retry",
       "tabs": {
         "info": "Info & Photos",
         "pricing": "Seasonal suggestions",
@@ -1437,9 +1477,9 @@
     },
     "bookings": {
       "title": "Bookings summary",
-      "total": "Total bookings",
+      "total": "Confirmed bookings",
       "upcoming": "Upcoming",
-      "active": "Active",
+      "active": "In progress",
       "nextCheckIn": "Next check-in"
     },
     "pricing": {
@@ -2668,6 +2708,7 @@
     "pageDescription": "National identification code management — D.L. 145/2023",
     "requestOnPortal": "Request CIN on the portal",
     "bdsrPortal": "BDSR — Ministry of Tourism",
+    "loadError": "Could not load the CIN status. Please try again later.",
     "status": {
       "Valid": "Valid",
       "Missing": "Missing",
@@ -2677,7 +2718,11 @@
       "valid": "Valid",
       "missing": "Missing",
       "invalid": "Invalid",
-      "daysUntilDeadline": "Days until deadline"
+      "deadline": "Deadline {{deadline}}",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "dueToday": "Today",
+      "passed": "Passed"
     },
     "table": {
       "empty": "No properties found.",
@@ -2691,10 +2736,12 @@
       "title": "CIN compliance required (D.L. 145/2023)",
       "nonCompliantCount_one": "You have {{count}} property without a valid CIN.",
       "nonCompliantCount_other": "You have {{count}} properties without a valid CIN.",
-      "deadlineToday": "The deadline is today.",
       "daysUntilDeadline_one": "{{count}} day left until the {{deadline}} deadline.",
       "daysUntilDeadline_other": "{{count}} days left until the {{deadline}} deadline.",
-      "penalties": "Penalties from €800 to €8,000 per property.",
+      "deadlineToday": "The {{deadline}} deadline is today.",
+      "deadlinePassed": "The {{deadline}} deadline has passed: enter the CIN as soon as possible.",
+      "obligation": "The CIN is mandatory: it must be displayed outside the property and stated in every listing.",
+      "penalties": "Penalties (art. 13-ter, par. 9): €800 to €8,000 for a missing CIN, €500 to €5,000 for not displaying it or not stating it in listings.",
       "requestOnBdsr": "Request the CIN on BDSR"
     }
   },
@@ -4115,7 +4162,8 @@
       "icalFeedNotFound": "Calendar not found: it may have been disconnected already.",
       "icalFeedLimitReached": "This property already has the maximum number of linked calendars: disconnect one before adding another.",
       "icalFeedDuplicate": "This calendar is already linked to the property.",
-      "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks."
+      "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
+      "dashboardInvalidPeriod": "Invalid period: choose the current month, another month or the last 30 days."
     }
   },
   "validation": {

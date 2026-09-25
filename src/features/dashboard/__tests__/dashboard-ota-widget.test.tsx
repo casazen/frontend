@@ -11,9 +11,10 @@ import { otaApi } from '@/api/ota.api';
 vi.mock('@/api/ota.api', () => ({
   otaApi: { getAll: vi.fn() },
 }));
-vi.mock('@/queries/use-bookings', () => ({ useBookings: () => ({ data: [] }) }));
-vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [] }) }));
-vi.mock('@/queries/use-payments', () => ({ usePayments: () => ({ data: [] }) }));
+vi.mock('@/api/dashboard.api', () => ({
+  dashboardApi: { getKpis: vi.fn(() => new Promise(() => {})), getIcalFeeds: vi.fn().mockResolvedValue([]) },
+}));
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
 vi.mock('@/features/compliance/compliance-summary-widget', () => ({
   ComplianceSummaryWidget: () => null,
 }));
@@ -44,7 +45,8 @@ describe('DashboardPage OTA widget', () => {
   it('neither renders the OTA widget nor calls the OTA API when the flag is off', async () => {
     renderDashboard(false);
 
-    expect(screen.getByText('Prenotazioni recenti')).toBeInTheDocument();
+    // The iCal calendars take the place of the OTA channels (PC-16).
+    expect(screen.getByTestId('dashboard-ical-widget')).toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-ota-status')).not.toBeInTheDocument();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(otaApi.getAll).not.toHaveBeenCalled();
