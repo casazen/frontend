@@ -674,6 +674,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'CalendarCheck',
     component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
   },
+  {
+    // Help page for connecting an external calendar via iCal (SU-15), moved inside the supplier shell with its own
+    // sidebar entry (A4-32, #327-AC2/AC4). The public `/help/ical` route stays for the host property iCal settings
+    // page, which links the same component from outside the supplier context.
+    path: '/app/supplier/help/ical',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierHelpIcal',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 2,
+    icon: 'HelpCircle',
+    component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;

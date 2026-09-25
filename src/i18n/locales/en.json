@@ -270,6 +270,7 @@
     "supplierCalendar": "Calendar",
     "supplierInbox": "Requests",
     "supplierAvailability": "Availability",
+    "supplierHelpIcal": "iCal guide",
     "group": {
       "operazioni": "Operations",
       "immobili": "Properties",
