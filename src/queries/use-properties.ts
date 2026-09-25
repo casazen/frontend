@@ -100,6 +100,46 @@ export function useUpdateProperty() {
   });
 }
 
+/**
+ * Dedicated pause/activate actions (A2-05): update every cache the list row, the detail page and the CIN/status
+ * badges read from, so the new state shows without a manual refetch.
+ */
+function invalidatePropertyCaches(queryClient: ReturnType<typeof useQueryClient>, id: string) {
+  queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
+  queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, id] });
+  queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, id, 'detail'] });
+}
+
+export function usePauseProperty() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => propertiesApi.pause(id),
+    onSuccess: (_, id) => {
+      invalidatePropertyCaches(queryClient, id);
+      toast.success(i18n.t('toast.propertyPaused'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyPauseFailed'));
+    },
+  });
+}
+
+export function useActivateProperty() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => propertiesApi.activate(id),
+    onSuccess: (_, id) => {
+      invalidatePropertyCaches(queryClient, id);
+      toast.success(i18n.t('toast.propertyActivated'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyActivateFailed'));
+    },
+  });
+}
+
 export function useDeleteProperty() {
   const queryClient = useQueryClient();
 

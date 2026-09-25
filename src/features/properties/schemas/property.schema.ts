@@ -42,7 +42,6 @@ export const propertyFormSchema = z.object({
   /** '' = no cancellation policy. */
   cancellationPolicyId: z.string(),
   amenities: z.array(z.string()),
-  isActive: z.boolean(),
   // Official CIN format, spaces/hyphens/case ignored: shared with the backend rule (src/lib/cin-format.ts).
   cinCode: optionalCinSchema,
   slug: z
@@ -59,7 +58,7 @@ export type PropertyFormVariant = 'short-rent' | 'long-rent';
 
 /**
  * Long-term (LTR) property: no nightly rate nor short-stay guests (0 = not set, accepted by the API and blocking only
- * the short-stay listing activation). The short-stay fields (CIN, slug, listing status, fees, house rules, time zone,
+ * the short-stay listing activation). The short-stay fields (CIN, slug, fees, house rules, time zone,
  * cancellation policy) are not in the long-term form and are not sent (see {@link toPropertyPayload}): the API keeps
  * what the property has (A7-06, A2-04), never blocked here by a field the landlord cannot see.
  */
@@ -84,7 +83,6 @@ export function propertyFormDefaults(
     houseRules: property?.houseRules ?? '',
     timezone: property?.timezone || DEFAULT_PROPERTY_TIMEZONE,
     cancellationPolicyId: property?.cancellationPolicyId ?? '',
-    isActive: property?.isActive ?? true,
     cinCode: property?.cinCode ?? '',
     slug: property?.slug ?? '',
     amenities: property?.amenities ?? [],
@@ -142,7 +140,6 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     houseRules: values.houseRules,
     timezone: values.timezone,
     cancellationPolicyId: values.cancellationPolicyId || null,
-    isActive: values.isActive,
     cinCode: values.cinCode ?? '',
     slug: values.slug ?? '',
   };

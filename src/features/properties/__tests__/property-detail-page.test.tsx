@@ -67,6 +67,8 @@ const mockDetail: PropertyDetailDto = {
   photoUrls: ['https://ref.supabase.co/storage/v1/object/public/casazen-test-public/properties/p/photos/a.jpg'],
   houseRules: '',
   isActive: true,
+  isPaused: false,
+  pausedAt: null,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
   documents: [],
@@ -141,6 +143,9 @@ function renderPage(otaPartnerApi = false, search = '') {
 }
 
 describe('PropertyDetailPage', () => {
+  let pauseMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
+  let activateMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
+
   beforeEach(() => {
     vi.mocked(fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
@@ -148,6 +153,14 @@ describe('PropertyDetailPage', () => {
       isLoading: false,
       isError: false,
     } as ReturnType<typeof propertyQueries.usePropertyDetail>);
+    pauseMutation = { mutate: vi.fn(), isPending: false };
+    activateMutation = { mutate: vi.fn(), isPending: false };
+    vi.mocked(propertyQueries.usePauseProperty).mockReturnValue(
+      pauseMutation as unknown as ReturnType<typeof propertyQueries.usePauseProperty>,
+    );
+    vi.mocked(propertyQueries.useActivateProperty).mockReturnValue(
+      activateMutation as unknown as ReturnType<typeof propertyQueries.useActivateProperty>,
+    );
     vi.mocked(propertyQueries.useUploadPropertyDocument).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
@@ -166,7 +179,33 @@ describe('PropertyDetailPage', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Test Villa' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Dettagli proprietà/i })).toBeInTheDocument();
-    expect(screen.getByText(/Attiva/i)).toBeInTheDocument();
+    expect(screen.getByTestId('property-pause-status-badge')).toHaveTextContent(i18n.t('property.table.active'));
+  });
+
+  // A2-05: the badge and the action button read `isPaused`, never `isActive` — pausing is a dedicated, reversible
+  // action that never 404s the owner's own detail page (it used to, via the old IsActive filter).
+  it('PropertyDetailPage_PausedProperty_ShowsPausedBadgeAndAnActivateAction', () => {
+    vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
+      data: { ...mockDetail, isPaused: true, pausedAt: '2026-09-20T10:00:00Z' },
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof propertyQueries.usePropertyDetail>);
+
+    renderPage();
+
+    expect(screen.getByTestId('property-pause-status-badge')).toHaveTextContent(i18n.t('property.table.paused'));
+    fireEvent.click(screen.getByTestId('property-pause-toggle'));
+    expect(activateMutation.mutate).toHaveBeenCalledWith(PROPERTY_ID);
+    expect(pauseMutation.mutate).not.toHaveBeenCalled();
+  });
+
+  it('PropertyDetailPage_ActiveProperty_PauseButtonCallsTheDedicatedPauseEndpoint', () => {
+    renderPage();
+
+    fireEvent.click(screen.getByTestId('property-pause-toggle'));
+
+    expect(pauseMutation.mutate).toHaveBeenCalledWith(PROPERTY_ID);
+    expect(activateMutation.mutate).not.toHaveBeenCalled();
   });
 
   it('PropertyDetailPage_HostWithBookingWrite_LinksNewBookingAndBookingsOfThisProperty', () => {

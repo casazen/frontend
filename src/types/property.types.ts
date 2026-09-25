@@ -27,6 +27,10 @@ export interface Property {
   timezone: string;
   cancellationPolicyId: string | null;
   isActive: boolean;
+  /** Host-set pause (A2-05): hidden from public search/bookings until reactivated with `POST /properties/:id/activate`. */
+  isPaused: boolean;
+  /** ISO instant the property was paused; `null` when not paused. */
+  pausedAt: string | null;
   complianceStatus?: string | null;
   slug?: string | null;
   /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
@@ -77,7 +81,6 @@ export interface CreatePropertyDto {
   timezone?: string;
   cancellationPolicyId?: string | null;
   slug?: string | null;
-  isActive?: boolean;
 }
 
 /**
@@ -206,12 +209,22 @@ export interface PropertyDetailDto {
   photoUrls: string[];
   houseRules: string;
   isActive: boolean;
+  /** Host-set pause (A2-05): hidden from public search/bookings until reactivated. */
+  isPaused: boolean;
+  /** ISO instant the property was paused; `null` when not paused. */
+  pausedAt: string | null;
   createdAt: string;
   updatedAt: string;
   documents: PropertyDocumentDto[];
   otaIntegrations: OtaIntegrationSummaryDto[];
   bookingsSummary: BookingsSummaryDto;
   pricingAdapterSummary: PricingAdapterSummaryDto;
+}
+
+/** `POST /properties/:id/pause` and `POST /properties/:id/activate` (A2-05): the pause state right after the change. */
+export interface PropertyPauseStatus {
+  isPaused: boolean;
+  pausedAt: string | null;
 }
 
 export interface PropertySearchParams {

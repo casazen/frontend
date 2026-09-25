@@ -1564,7 +1564,12 @@
       "emptyDescription": "Get started by adding your first vacation rental property",
       "emptyCta": "Add Your First Property",
       "addDialogTitle": "Add New Property",
-      "addDialogDescription": "Create a new vacation rental property"
+      "addDialogDescription": "Create a new vacation rental property",
+      "filterLabel": "Filter by status",
+      "filterAll": "All ({{count}})",
+      "filterActive": "Active ({{count}})",
+      "filterPaused": "Paused ({{count}})",
+      "filterEmpty": "No properties with this status."
     },
     "table": {
       "property": "Property",
@@ -1602,8 +1607,6 @@
         "documents": "Documents",
         "cin": "CIN & Compliance"
       },
-      "active": "Active",
-      "inactive": "Inactive",
       "edit": "Edit",
       "bookingsLink": "Bookings for this property",
       "description": "Description",
@@ -1612,12 +1615,10 @@
       "editCin": "Edit CIN",
       "complianceSummary": "Compliance summary",
       "cinStatus": "CIN status",
-      "propertyActive": "Property active",
+      "propertyActive": "Property status",
       "documents": "Documents",
       "documentsCount_one": "{{count}} uploaded",
       "documentsCount_other": "{{count}} uploaded",
-      "yes": "Yes",
-      "no": "No",
       "pricingTitle": "Seasonal suggestions",
       "pricingDescription": "Suggested nightly prices based on the property's rate and your season and holiday rules. They are proposals: they do not change the prices applied.",
       "managePricing": "Manage suggestions",
@@ -1725,7 +1726,6 @@
       },
       "name": "Property Name *",
       "description": "Description *",
-      "isActive": "Active (visible to guests)",
       "location": {
         "title": "Location",
         "description": "Where is the property located?"
@@ -4326,6 +4326,10 @@
     "propertyCreateFailed": "Failed to create property",
     "propertyUpdated": "Property updated successfully",
     "propertyUpdateFailed": "Failed to update property",
+    "propertyPaused": "Property paused",
+    "propertyPauseFailed": "Failed to pause property",
+    "propertyActivated": "Property reactivated",
+    "propertyActivateFailed": "Failed to reactivate property",
     "propertyDeleted": "Property deleted successfully",
     "propertyDeleteFailed": "Failed to delete property",
     "bookingCreated": "Booking created successfully",
