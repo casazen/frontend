@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/shared/breadcrumb';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { usePropertyDetail } from '@/queries/use-properties';
+import { usePropertyDetail, usePauseProperty, useActivateProperty } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -60,6 +60,8 @@ export function PropertyDetailPage() {
   const { data: property, isLoading, isError, error, refetch } = usePropertyDetail(id!);
   const { org } = useCurrentUser();
   const updateCin = useUpdatePropertyCin();
+  const pauseProperty = usePauseProperty();
+  const activateProperty = useActivateProperty();
   // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
   const { hasPermission } = useWorkspace();
@@ -98,6 +100,15 @@ export function PropertyDetailPage() {
     );
   }
 
+  // Dedicated pause/activate actions (A2-05): reversible, hidden from public bookings only, never the generic update.
+  const togglePause = () => {
+    if (property.isPaused) {
+      activateProperty.mutate(property.id);
+    } else {
+      pauseProperty.mutate(property.id);
+    }
+  };
+
   const tabs: { key: PropertyTab; label: string }[] = [
     { key: 'info', label: t('property.detail.tabs.info') },
     { key: 'pricing', label: t('property.detail.tabs.pricing') },
@@ -121,9 +132,17 @@ export function PropertyDetailPage() {
                 cinCode={property.cinCode}
                 onEdit={() => setCinDialogOpen(true)}
               />
-              <Badge variant={property.isActive ? 'success' : 'secondary'}>
-                {property.isActive ? t('property.detail.active') : t('property.detail.inactive')}
+              <Badge variant={property.isPaused ? 'secondary' : 'success'} data-testid="property-pause-status-badge">
+                {property.isPaused ? t('property.table.paused') : t('property.table.active')}
               </Badge>
+              <Button
+                variant="outline"
+                onClick={togglePause}
+                disabled={pauseProperty.isPending || activateProperty.isPending}
+                data-testid="property-pause-toggle"
+              >
+                {property.isPaused ? t('property.table.activate') : t('property.table.pause')}
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate(`/app/short-rent/marketplace?propertyId=${property.id}`)}
@@ -330,8 +349,8 @@ export function PropertyDetailPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{t('property.detail.propertyActive')}</span>
-                  <Badge variant={property.isActive ? 'success' : 'secondary'}>
-                    {property.isActive ? t('property.detail.yes') : t('property.detail.no')}
+                  <Badge variant={property.isPaused ? 'secondary' : 'success'}>
+                    {property.isPaused ? t('property.table.paused') : t('property.table.active')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">

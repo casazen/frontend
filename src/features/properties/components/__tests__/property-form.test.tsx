@@ -57,6 +57,8 @@ const PROPERTY: Property = {
   timezone: 'Europe/Vienna',
   cancellationPolicyId: 'policy-flex',
   isActive: false,
+  isPaused: false,
+  pausedAt: null,
   complianceStatus: 'Pending',
   slug: 'monolocale-porto',
   ownerId: 'auth0|owner',
@@ -83,7 +85,6 @@ const ROUND_TRIP = {
   houseRules: 'Niente feste dopo le 23',
   timezone: 'Europe/Vienna',
   cancellationPolicyId: 'policy-flex',
-  isActive: false,
   cinCode: 'IT010025C2ABCDEFGH',
   slug: 'monolocale-porto',
 };
@@ -193,6 +194,14 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  // A2-05: "active/paused" is not a field of the generic edit form any more — it's the dedicated pause/activate
+  // action (own endpoint), which never overwrites Name/Address/City and never sends its state through here.
+  it('PropertyForm_HasNoStandaloneActiveCheckbox', () => {
+    renderForm();
+
+    expect(screen.queryByRole('checkbox', { name: /attivo/i })).not.toBeInTheDocument();
+  });
+
   it('PropertyForm_HasNoCountryNorCurrencyField', () => {
     renderForm();
 
@@ -267,7 +276,6 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
       houseRules: '',
       timezone: 'Europe/Rome',
       cancellationPolicyId: null,
-      isActive: true,
     });
     expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('photoUrls');
     expect(screen.getByText(i18n.t('property.form.cancellationPolicy.empty'))).toBeInTheDocument();

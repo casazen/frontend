@@ -3,6 +3,7 @@ import {
   buildBookingQuery,
   buildPropertyCheckoutUrl,
   buildPropertyPageUrl,
+  isPropertyPublishable,
   mergeBookingSearchParams,
   parseBookingSearchParams,
   type BookingSearchParams,
@@ -15,6 +16,25 @@ const stay: BookingSearchParams = { checkIn: '2026-10-01', checkOut: '2026-10-04
 function queryOf(url: string): URLSearchParams {
   return new URL(url, 'https://example.test').searchParams;
 }
+
+describe('isPropertyPublishable', () => {
+  it('isPropertyPublishable_ActiveNotPausedAndCompliant_IsTrue', () => {
+    expect(isPropertyPublishable({ isActive: true, isPaused: false, complianceStatus: 'Active' })).toBe(true);
+  });
+
+  // A2-05: pausing hides the property from the direct-booking site, mirroring the backend's PublicListing.IsPublished.
+  it('isPropertyPublishable_Paused_IsFalseEvenWhenActiveAndCompliant', () => {
+    expect(isPropertyPublishable({ isActive: true, isPaused: true, complianceStatus: 'Active' })).toBe(false);
+  });
+
+  it('isPropertyPublishable_Inactive_IsFalse', () => {
+    expect(isPropertyPublishable({ isActive: false, isPaused: false, complianceStatus: 'Active' })).toBe(false);
+  });
+
+  it('isPropertyPublishable_ComplianceNotActive_IsFalse', () => {
+    expect(isPropertyPublishable({ isActive: true, isPaused: false, complianceStatus: 'Pending' })).toBe(false);
+  });
+});
 
 describe('buildPropertyCheckoutUrl', () => {
   it('buildPropertyCheckoutUrl_WidgetStay_HasOneQuestionMarkAndContractParams', () => {

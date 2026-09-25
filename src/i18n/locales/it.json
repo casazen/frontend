@@ -1563,7 +1563,12 @@
       "emptyDescription": "Inizia aggiungendo la tua prima struttura ricettiva",
       "emptyCta": "Aggiungi il primo immobile",
       "addDialogTitle": "Nuovo immobile",
-      "addDialogDescription": "Crea una nuova struttura ricettiva per affitti brevi"
+      "addDialogDescription": "Crea una nuova struttura ricettiva per affitti brevi",
+      "filterLabel": "Filtra per stato",
+      "filterAll": "Tutti ({{count}})",
+      "filterActive": "Attivi ({{count}})",
+      "filterPaused": "In pausa ({{count}})",
+      "filterEmpty": "Nessun immobile con questo stato."
     },
     "table": {
       "property": "Immobile",
@@ -1601,8 +1606,6 @@
         "documents": "Documenti",
         "cin": "CIN & Compliance"
       },
-      "active": "Attiva",
-      "inactive": "Inattiva",
       "edit": "Modifica",
       "bookingsLink": "Prenotazioni di questa proprietà",
       "description": "Descrizione",
@@ -1611,12 +1614,10 @@
       "editCin": "Modifica CIN",
       "complianceSummary": "Riepilogo compliance",
       "cinStatus": "Stato CIN",
-      "propertyActive": "Proprietà attiva",
+      "propertyActive": "Stato proprietà",
       "documents": "Documenti",
       "documentsCount_one": "{{count}} caricato",
       "documentsCount_other": "{{count}} caricati",
-      "yes": "Sì",
-      "no": "No",
       "pricingTitle": "Suggerimenti stagionali",
       "pricingDescription": "Prezzi suggeriti per notte in base al prezzo della struttura e alle tue regole su stagioni e festività. Sono proposte: non cambiano i prezzi applicati.",
       "managePricing": "Gestisci i suggerimenti",
@@ -1724,7 +1725,6 @@
       },
       "name": "Nome immobile *",
       "description": "Descrizione *",
-      "isActive": "Attivo (visibile agli ospiti)",
       "location": {
         "title": "Posizione",
         "description": "Dove si trova l'immobile?"
@@ -4325,6 +4325,10 @@
     "propertyCreateFailed": "Impossibile creare l'immobile",
     "propertyUpdated": "Immobile aggiornato con successo",
     "propertyUpdateFailed": "Impossibile aggiornare l'immobile",
+    "propertyPaused": "Immobile messo in pausa",
+    "propertyPauseFailed": "Impossibile mettere in pausa l'immobile",
+    "propertyActivated": "Immobile riattivato",
+    "propertyActivateFailed": "Impossibile riattivare l'immobile",
     "propertyDeleted": "Immobile eliminato con successo",
     "propertyDeleteFailed": "Impossibile eliminare l'immobile",
     "bookingCreated": "Prenotazione creata con successo",

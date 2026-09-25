@@ -10,8 +10,9 @@ export function buildOrgBookingPath(orgSlug: string): string {
   return `/book/${orgSlug}`;
 }
 
-export function isPropertyPublishable(property: { isActive: boolean; complianceStatus?: string }): boolean {
-  return property.isActive && property.complianceStatus === 'Active';
+/** Mirrors the backend `PublicListing.IsPublished` (A2-05): a paused property is never publishable either. */
+export function isPropertyPublishable(property: { isActive: boolean; isPaused: boolean; complianceStatus?: string }): boolean {
+  return property.isActive && !property.isPaused && property.complianceStatus === 'Active';
 }
 
 /**
