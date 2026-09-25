@@ -1,5 +1,5 @@
 import type { PaymentRefund } from './payment.types';
-import type { CalendarItemDto, OtaReviewReason } from './calendar.types';
+import type { OtaReviewReason } from './calendar.types';
 
 // ✅ Fixed: Backend uses PascalCase enum values
 export type BookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
@@ -149,17 +149,6 @@ export interface HostBookingQuotePayload {
   numberOfGuests: number;
   numberOfChildren?: number;
   childrenAges?: number[];
-}
-
-export interface BookingCalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  resource?: Booking;
-  eventType?: 'booking' | 'ical-block';
-  /** The calendar block of an `ical-block` event (CO-21: its detail and "Crea soggiorno OTA"). */
-  block?: CalendarItemDto;
 }
 
 /**

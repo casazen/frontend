@@ -22,6 +22,7 @@ import {
   type TouristTaxRateVerification,
 } from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
+import { todayInRome, utcStayDate } from '@/lib/stay-dates';
 
 /** Empty inputs become null instead of NaN (`valueAsNumber` would block optional fields). */
 const toOptionalNumber = (value: unknown) =>
@@ -125,7 +126,7 @@ type TaxRateFormValues = z.infer<typeof taxRateSchema>;
 /** `YYYY-MM-DD` of a date sent by the API (UTC midnight of the calendar date). */
 function toDateInput(value: Date | string | null | undefined): string {
   if (!value) return '';
-  return (typeof value === 'string' ? value : value.toISOString()).slice(0, 10);
+  return typeof value === 'string' ? value.slice(0, 10) : utcStayDate(value);
 }
 
 function toFormValues(existing: TouristTaxRate | null | undefined): TaxRateFormValues {
@@ -145,7 +146,7 @@ function toFormValues(existing: TouristTaxRate | null | undefined): TaxRateFormV
       reducedRatePerPersonPerNight: null,
       maxNights: null,
       minimumAge: 14,
-      effectiveFrom: new Date().toISOString().slice(0, 10),
+      effectiveFrom: todayInRome(),
       effectiveTo: '',
       notes: '',
       sourceUrl: '',

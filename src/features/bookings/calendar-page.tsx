@@ -1,90 +1,101 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useContext, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { BookingCalendar } from './components/booking-calendar';
-import { IcalBlockDialog } from './components/ical-block-dialog';
-import { useWorkspace } from '@/hooks/use-workspace';
 import { useBookingCalendar } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
-import { List } from 'lucide-react';
-import type { Booking, BookingCalendarEvent } from '@/types';
-import type { CalendarBookingDto, CalendarItemDto } from '@/types/calendar.types';
+import { CalendarPlus, List, X } from 'lucide-react';
+import { WorkspaceContext } from '@/contexts/workspace-context';
+import type { Booking } from '@/types';
+import { OtaStayForm } from './components/ota-stay-form';
+import { getProblemMessage } from '@/lib/api-errors';
+import { formatStayDate, todayInRome } from '@/lib/stay-dates';
+import {
+  blockSourceLabel,
+  hostCalendarRange,
+  toHostCalendarEvents,
+  type HostCalendarBlockEvent,
+  type HostCalendarEvent,
+  type HostCalendarView,
+} from './lib/host-calendar';
 
-function toMonthRange(date: Date): { startDate: string; endDate: string } {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1);
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  return {
-    startDate: start.toISOString().slice(0, 10),
-    endDate: end.toISOString().slice(0, 10),
-  };
+interface BlockDetailsProps {
+  block: HostCalendarBlockEvent;
+  onClose: () => void;
+  /** The host may create stays (`booking.write`). */
+  canWrite: boolean;
+  onStayCreated: (booking: Booking) => void;
 }
 
-function mapCalendarBooking(dto: CalendarBookingDto): Booking {
-  const [firstName = '', ...rest] = dto.guestName.split(' ');
-  return {
-    id: dto.id,
-    propertyId: dto.propertyId,
-    userId: '',
-    checkInDate: dto.checkInDate,
-    checkOutDate: dto.checkOutDate,
-    numberOfGuests: dto.numberOfGuests,
-    totalPrice: dto.totalPrice,
-    currency: 'EUR',
-    status: dto.status as Booking['status'],
-    guest: {
-      firstName,
-      lastName: rest.join(' '),
-      email: '',
-      phone: '',
-      country: '',
-    },
-    createdAt: dto.checkInDateUtc,
-    updatedAt: dto.checkOutDateUtc,
-  };
-}
-
-function mapCalendarItemToBooking(item: CalendarItemDto): Booking {
-  const [firstName = '', ...rest] = (item.guestName ?? '').split(' ');
-  return {
-    id: item.id,
-    propertyId: item.propertyId,
-    userId: '',
-    checkInDate: item.startDate,
-    checkOutDate: item.endDate,
-    numberOfGuests: item.numberOfGuests ?? 0,
-    totalPrice: item.totalPrice ?? 0,
-    currency: 'EUR',
-    status: (item.status ?? 'Confirmed') as Booking['status'],
-    source: item.source,
-    icalFeedId: item.icalFeedId,
-    channelLabel: item.channelLabel,
-    otaReviewReason: item.otaReviewReason,
-    guest: {
-      firstName,
-      lastName: rest.join(' '),
-      email: '',
-      phone: '',
-      country: '',
-    },
-    createdAt: item.startDateUtc,
-    updatedAt: item.endDateUtc,
-  };
-}
-
-function mapIcalItemToEvent(item: CalendarItemDto): BookingCalendarEvent {
-  return {
-    id: item.id,
-    title: item.summary || 'OTA',
-    start: new Date(item.startDate),
-    end: new Date(item.endDate),
-    resource: undefined,
-    eventType: 'ical-block',
-    block: item,
-  };
+/**
+ * Dates taken on another channel, opened from the calendar: where they come from and the stay dates. A block is not a
+ * CasaZen booking, so there is no booking detail to open; an imported block can become an OTA stay ("Crea soggiorno
+ * OTA", CO-21, decision D7), from which the guest check-in link, Alloggiati Web and the cockpit start.
+ */
+function BlockDetails({ block, onClose, canWrite, onStayCreated }: BlockDetailsProps) {
+  const { t, i18n } = useTranslation();
+  const [creating, setCreating] = useState(false);
+  return (
+    <section
+      aria-labelledby="calendar-block-title"
+      className="space-y-2 rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <h2 id="calendar-block-title" className="font-medium">
+          {t('booking.calendar.block.title', { source: blockSourceLabel(block, t) })}
+        </h2>
+        <Button variant="ghost" size="sm" onClick={onClose} aria-label={t('booking.calendar.block.close')}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      <p>
+        {t('booking.calendar.dates', {
+          arrival: formatStayDate(block.arrival, i18n.language),
+          departure: formatStayDate(block.departure, i18n.language),
+          count: block.nights,
+        })}
+      </p>
+      {block.summary && <p className="text-muted-foreground">{t('booking.calendar.block.summary', { summary: block.summary })}</p>}
+      <p className="text-muted-foreground">{t('booking.calendar.block.notABooking')}</p>
+      {block.stayId ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-white px-3 py-2">
+          <span>{t('booking.icalBlock.converted')}</span>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/app/short-rent/bookings/${block.stayId}`} data-testid="calendar-block-open-stay">
+              {t('booking.icalBlock.openStay')}
+            </Link>
+          </Button>
+        </div>
+      ) : block.manual ? null : !block.convertible ? (
+        <p className="text-muted-foreground" data-testid="calendar-block-not-convertible">
+          {t('booking.icalBlock.notConvertible')}
+        </p>
+      ) : !canWrite ? (
+        <p className="text-muted-foreground">{t('booking.icalBlock.readOnly')}</p>
+      ) : creating ? (
+        <div className="rounded-md border bg-white p-4">
+          <OtaStayForm
+            blockId={block.id}
+            channel={block.channel}
+            onCreated={onStayCreated}
+            onCancel={() => setCreating(false)}
+          />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-muted-foreground">{t('booking.icalBlock.convertHint')}</p>
+          <Button size="sm" onClick={() => setCreating(true)} data-testid="calendar-block-create-stay">
+            <CalendarPlus className="mr-2 h-4 w-4" />
+            {t('booking.otaStay.action')}
+          </Button>
+        </div>
+      )}
+    </section>
+  );
 }
 
 export function CalendarPage() {
@@ -93,40 +104,45 @@ export function CalendarPage() {
   const { data: properties, isLoading: propertiesLoading } = useProperties();
   const propertyList = Array.isArray(properties) ? properties : [];
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
-  // Detail of a calendar block and "Crea soggiorno OTA" (CO-21).
-  const [selectedBlock, setSelectedBlock] = useState<CalendarItemDto | null>(null);
-  const { hasPermission } = useWorkspace();
+  const [view, setView] = useState<HostCalendarView>('month');
+  // The day around which the view is shown; "today" is the calendar date in Rome (QA-CLOCK-FE).
+  const [shownDate, setShownDate] = useState<string>(() => todayInRome());
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  // "Crea soggiorno OTA" needs booking.write (CO-21); without a workspace (e.g. tests) nothing is offered.
+  const canWriteBookings = useContext(WorkspaceContext)?.hasPermission('short-rent', 'booking.write') ?? false;
 
   const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';
-  const { startDate, endDate } = useMemo(() => toMonthRange(new Date()), []);
+  // First and last stay date of the month, week or day shown, both included (backend MO-06): part of the query key,
+  // so every navigation asks for its own range.
+  const { startDate, endDate } = useMemo(() => hostCalendarRange(view, shownDate), [view, shownDate]);
 
-  const { data: calendarResponse, isLoading: calendarLoading, isError } = useBookingCalendar(
-    activePropertyId
-      ? { propertyId: activePropertyId, startDate, endDate }
-      : undefined,
+  const {
+    data: calendarResponse,
+    isLoading: calendarLoading,
+    isError,
+    error,
+    refetch,
+  } = useBookingCalendar(activePropertyId ? { propertyId: activePropertyId, startDate, endDate } : undefined);
+
+  const events = useMemo(() => toHostCalendarEvents(calendarResponse?.items ?? []), [calendarResponse]);
+  const selectedBlock = events.find(
+    (event): event is HostCalendarBlockEvent => event.kind === 'block' && event.id === selectedBlockId,
   );
 
-  const bookings = useMemo(
-    () => (calendarResponse?.items?.length
-      ? calendarResponse.items.filter((i) => i.type === 'booking').map(mapCalendarItemToBooking)
-      : (calendarResponse?.bookings ?? []).map(mapCalendarBooking)),
-    [calendarResponse],
+  const handleSelectEvent = useCallback(
+    (event: HostCalendarEvent) => {
+      if (event.kind === 'booking') {
+        navigate(`/app/short-rent/bookings/${event.id}`);
+      } else {
+        setSelectedBlockId(event.id);
+      }
+    },
+    [navigate],
   );
 
-  const icalEvents = useMemo(
-    () => (calendarResponse?.items ?? [])
-      .filter((item) => item.type === 'ical-block')
-      .map(mapIcalItemToEvent),
-    [calendarResponse],
-  );
-
-  const handleSelectEvent = (event: BookingCalendarEvent) => {
-    if (event.resource) {
-      navigate(`/app/short-rent/bookings/${event.resource.id}`);
-    } else if (event.block) {
-      setSelectedBlock(event.block);
-    }
-  };
+  const handleNavigate = useCallback((date: string) => {
+    if (date) setShownDate(date);
+  }, []);
 
   return (
     <AppShell>
@@ -143,7 +159,7 @@ export function CalendarPage() {
         />
 
         {propertiesLoading ? (
-          <div className="flex h-[600px] items-center justify-center">
+          <div className="flex h-[600px] items-center justify-center" role="status">
             <p>{t('booking.calendar.loading')}</p>
           </div>
         ) : propertyList.length === 0 ? (
@@ -162,7 +178,10 @@ export function CalendarPage() {
                 id="calendar-property"
                 className="w-full rounded-md border px-3 py-2 text-sm"
                 value={activePropertyId}
-                onChange={(e) => setSelectedPropertyId(e.target.value)}
+                onChange={(e) => {
+                  setSelectedPropertyId(e.target.value);
+                  setSelectedBlockId(null);
+                }}
               >
                 {propertyList.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -172,37 +191,49 @@ export function CalendarPage() {
               </select>
             </div>
 
-            {calendarLoading ? (
-              <div className="flex h-[600px] items-center justify-center">
-                <p>{t('booking.calendar.loading')}</p>
-              </div>
-            ) : isError ? (
-              <div className="flex h-[400px] items-center justify-center text-destructive">
-                {t('booking.calendar.loadError')}
+            {isError ? (
+              // An API error is never shown as an empty calendar.
+              <div
+                role="alert"
+                className="flex h-[400px] flex-col items-center justify-center gap-3 rounded-lg border text-center"
+              >
+                <p className="font-medium text-destructive">{t('booking.calendar.loadError')}</p>
+                {getProblemMessage(error, t) && (
+                  <p className="max-w-md text-sm text-muted-foreground">{getProblemMessage(error, t)}</p>
+                )}
+                <Button variant="outline" onClick={() => void refetch()}>
+                  {t('booking.calendar.retry')}
+                </Button>
               </div>
             ) : (
-              <BookingCalendar
-                bookings={bookings}
-                icalEvents={icalEvents}
-                onSelectEvent={handleSelectEvent}
-              />
+              <>
+                <BookingCalendar
+                  events={calendarLoading ? [] : events}
+                  date={shownDate}
+                  view={view}
+                  onNavigate={handleNavigate}
+                  onView={setView}
+                  onSelectEvent={handleSelectEvent}
+                  loading={calendarLoading}
+                />
+                {selectedBlock && (
+                  <BlockDetails
+                    key={selectedBlock.id}
+                    block={selectedBlock}
+                    onClose={() => setSelectedBlockId(null)}
+                    canWrite={canWriteBookings}
+                    onStayCreated={(booking) => {
+                      setSelectedBlockId(null);
+                      // The guest tab: the check-in link of the new stay is sent from there (CO-09).
+                      navigate(`/app/short-rent/bookings/${booking.id}?tab=guest`);
+                    }}
+                  />
+                )}
+              </>
             )}
           </>
         )}
       </div>
-      <IcalBlockDialog
-        block={selectedBlock}
-        open={selectedBlock !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedBlock(null);
-        }}
-        canWrite={hasPermission('short-rent', 'booking.write')}
-        onStayCreated={(booking) => {
-          setSelectedBlock(null);
-          // The guest tab: the check-in link of the new stay is sent from there (CO-09).
-          navigate(`/app/short-rent/bookings/${booking.id}?tab=guest`);
-        }}
-      />
     </AppShell>
   );
 }
