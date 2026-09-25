@@ -195,6 +195,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23).
+    path: '/app/short-rent/settings/organization',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 6,
+    icon: 'Settings',
+    component: async () => ({
+      default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -482,6 +497,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Receipt',
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
+    }),
+  },
+  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell.
+  {
+    path: '/app/long-rent/settings/organization',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 5,
+    icon: 'Settings',
+    component: async () => ({
+      default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
     }),
   },
   {

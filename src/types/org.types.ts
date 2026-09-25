@@ -42,9 +42,27 @@ export interface PublicOrgDto {
   displayName: string;
   logoUrl: string | null;
   themeColor: string | null;
-  contactEmail: string;
+  /** Only present when the org opted in to publish it (A1-22, A1-23) — off by default (GDPR). */
+  contactEmail: string | null;
   heroImageUrl?: string | null;
   tagline?: string | null;
   publicThemeId?: string | null;
   showPoweredBy?: boolean;
+}
+
+/** The caller org's editable identity (A1-22, A1-23): GET/PUT /api/orgs/me/settings, org billing admin only. */
+export interface OrgSettings {
+  id: string;
+  name: string;
+  slug: string;
+  contactEmail: string;
+  /** Whether contactEmail is shown on the public booking site (PublicOrgDto). Off by default. */
+  contactEmailPublic: boolean;
+}
+
+export interface UpdateOrgSettingsRequest {
+  name: string;
+  slug: string;
+  contactEmail: string;
+  contactEmailPublic: boolean;
 }

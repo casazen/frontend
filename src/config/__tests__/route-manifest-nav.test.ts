@@ -58,9 +58,14 @@ describe('route-manifest nav helpers', () => {
   });
 
   // PL-16 (A1-36): a landlord with only long-term leases reaches plan and billing from the long-rent shell.
-  it('has the plan and billing pages in the long-rent shell for the org billing administrator', () => {
-    const billingPaths = ['/app/long-rent/settings/plan', '/app/long-rent/settings/billing'];
-    for (const path of billingPaths) {
+  // A1-22/A1-23: the org identity settings page is there too, on the same policy.
+  it('has the plan, billing and organization pages in the long-rent shell for the org billing administrator', () => {
+    const orgAdminPaths = [
+      '/app/long-rent/settings/plan',
+      '/app/long-rent/settings/billing',
+      '/app/long-rent/settings/organization',
+    ];
+    for (const path of orgAdminPaths) {
       const entry = ROUTE_MANIFEST.find((e) => e.path === path);
       expect(entry?.context).toBe('long-rent');
       expect(entry?.orgBillingAdmin).toBe(true);
@@ -68,13 +73,13 @@ describe('route-manifest nav helpers', () => {
     }
 
     const secondary = getSecondaryNavEntries('long-rent', allowAll).map((e) => e.path);
-    expect(secondary).toEqual(billingPaths);
+    expect(secondary).toEqual(orgAdminPaths);
     const drawer = [...getDrawerNavByGroup('long-rent', allowAll).values()].flat().map((e) => e.path);
-    expect(drawer).toEqual(billingPaths);
+    expect(drawer).toEqual(orgAdminPaths);
 
     const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
     const visible = getVisibleNavEntries('long-rent', notBillingAdmin).map((e) => e.path);
-    expect(visible.filter((path) => billingPaths.includes(path))).toEqual([]);
+    expect(visible.filter((path) => orgAdminPaths.includes(path))).toEqual([]);
   });
 
   it('maps each plan or billing page to the same page of the other rental shell', () => {

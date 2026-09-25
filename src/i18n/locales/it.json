@@ -251,6 +251,7 @@
     "revenue": "Ricavi",
     "stripeConnect": "Configurazione Stripe",
     "domain": "Dominio pubblico",
+    "organization": "Organizzazione",
     "ota": "OTA",
     "leases": "Contratti",
     "users": "Utenti",
@@ -2513,6 +2514,26 @@
       "copied": "Copiato negli appunti"
     }
   },
+  "orgSettings": {
+    "title": "Impostazioni organizzazione",
+    "description": "Nome, indirizzo pubblico ed email di contatto della tua organizzazione.",
+    "adminRequired": {
+      "title": "Riservato all'amministratore dell'organizzazione",
+      "description": "Queste impostazioni sono gestite dall'amministratore della tua organizzazione: contatta l'amministratore per modificarle."
+    },
+    "loadError": "Impossibile caricare le impostazioni dell'organizzazione.",
+    "formTitle": "Identità organizzazione",
+    "formDescription": "Questi dati sono visibili sul tuo sito di prenotazione pubblico.",
+    "nameLabel": "Nome organizzazione",
+    "slugLabel": "Indirizzo pubblico",
+    "slugHelp": "Solo lettere minuscole, numeri e trattini. Forma l'indirizzo del tuo sito di prenotazione (/book/il-tuo-indirizzo).",
+    "contactEmailLabel": "Email di contatto",
+    "contactEmailPublicLabel": "Mostra l'email di contatto agli ospiti",
+    "contactEmailPublicHelp": "Non pubblicata di default. Attiva questa opzione per mostrarla sul tuo sito di prenotazione pubblico.",
+    "save": "Salva impostazioni",
+    "saved": "Impostazioni organizzazione salvate",
+    "saveFailed": "Impossibile salvare le impostazioni dell'organizzazione"
+  },
   "vetrina": {
     "title": "Vetrina",
     "description": "Il tuo sito di prenotazioni pubblico. Qui puoi vedere come appari ai tuoi ospiti.",
@@ -4599,6 +4620,9 @@
       "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
       "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo.",
       "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori.",
+      "orgSlugTaken": "Questo indirizzo web è già usato da un'altra organizzazione.",
+      "orgSlugReserved": "Questo indirizzo web è riservato alla piattaforma: scegline un altro.",
+      "orgSlugInvalid": "Questo indirizzo web non è valido: usa lettere, numeri e trattini.",
       "accountInactive": "Il tuo account è stato disattivato.",
       "cannotDeactivateSelf": "Non puoi disattivare il tuo account: chiedi a un altro amministratore.",
       "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",

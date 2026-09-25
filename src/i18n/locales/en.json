@@ -251,6 +251,7 @@
     "revenue": "Revenue",
     "stripeConnect": "Payouts",
     "domain": "Public domain",
+    "organization": "Organization",
     "ota": "OTA",
     "leases": "Leases",
     "users": "Users",
@@ -2513,6 +2514,26 @@
       "copied": "Copied to clipboard"
     }
   },
+  "orgSettings": {
+    "title": "Organization settings",
+    "description": "Your organization's name, public address and contact email.",
+    "adminRequired": {
+      "title": "Reserved for the organization administrator",
+      "description": "These settings are managed by your organization's administrator: contact the administrator to change them."
+    },
+    "loadError": "Could not load the organization settings.",
+    "formTitle": "Organization identity",
+    "formDescription": "This information is visible on your public booking site.",
+    "nameLabel": "Organization name",
+    "slugLabel": "Public address",
+    "slugHelp": "Lowercase letters, numbers and hyphens only. Forms the address of your booking site (/book/your-address).",
+    "contactEmailLabel": "Contact email",
+    "contactEmailPublicLabel": "Show the contact email to guests",
+    "contactEmailPublicHelp": "Not published by default. Turn this on to show it on your public booking site.",
+    "save": "Save settings",
+    "saved": "Organization settings saved",
+    "saveFailed": "Could not save the organization settings"
+  },
   "vetrina": {
     "title": "Showcase",
     "description": "Your public booking site. See how your guests view your properties.",
@@ -4599,6 +4620,9 @@
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
+      "orgSlugTaken": "This web address is already used by another organization.",
+      "orgSlugReserved": "This web address is reserved for the platform: choose another one.",
+      "orgSlugInvalid": "This web address is not valid: use letters, numbers and hyphens.",
       "accountInactive": "Your account was deactivated.",
       "cannotDeactivateSelf": "You cannot deactivate your own account: ask another administrator.",
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
