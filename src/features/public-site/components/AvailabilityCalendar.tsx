@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { formatStayDate } from '@/lib/stay-dates';
+import { formatStayDate, toStayDate } from '@/lib/stay-dates';
 
 export type AvailabilityStatus = 'loading' | 'error' | 'ready';
 
@@ -32,8 +32,9 @@ function monthAt(today: string, offset: number): { year: number; month: number }
   return { year: Math.floor(index / 12), month: index % 12 };
 }
 
+/** `YYYY-MM-DD` of a day of the calendar (`month` 0-11), whatever the time zone of the browser. */
 function isoDate(year: number, month: number, day: number): string {
-  return new Date(Date.UTC(year, month, day)).toISOString().slice(0, 10);
+  return toStayDate(new Date(year, month, day));
 }
 
 /**

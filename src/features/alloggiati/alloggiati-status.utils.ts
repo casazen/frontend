@@ -1,5 +1,6 @@
 import i18n from '@/i18n/config';
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
+import { todayInRome } from '@/lib/stay-dates';
 
 const ROME_TIME_ZONE = 'Europe/Rome';
 
@@ -24,14 +25,9 @@ export function canMarkAlloggiatiSentManually(status: AlloggiatiWebStatus): bool
 /** Orange: the host must act. Never the green of a real receipt. */
 export const ALLOGGIATI_ATTENTION_CLASS = 'border-transparent bg-orange-500 text-white hover:bg-orange-600';
 
-/** `yyyy-MM-dd` of today in Europe/Rome. */
+/** `yyyy-MM-dd` of today in Europe/Rome (the shared helper of `@/lib/stay-dates`). */
 export function todayInRomeIso(now: Date = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: ROME_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
+  return todayInRome(now);
 }
 
 /** Date part (`yyyy-MM-dd`) of an API date-only value (midnight UTC), with no time-zone shift. */

@@ -20,6 +20,8 @@ import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
+/** Supplier dashboard KPIs (every period): a supplier transition changes them (SU-11). */
+const SUPPLIER_KPIS_KEY = ['supplier', 'dashboard', 'kpis'];
 
 /**
  * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
@@ -114,6 +116,7 @@ export function useTakeServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
     },
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
@@ -127,6 +130,7 @@ export function useCompleteServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.completed'));
     },
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
@@ -140,6 +144,7 @@ export function useRejectServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.rejected'));
     },
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),

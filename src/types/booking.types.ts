@@ -111,15 +111,6 @@ export interface HostBookingQuotePayload {
   childrenAges?: number[];
 }
 
-export interface BookingCalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  resource?: Booking;
-  eventType?: 'booking' | 'ical-block';
-}
-
 /**
  * Answer of `POST /bookings/:id/check-in` ("Registra arrivo", CO-08): the booking, now checked in, and whether the guest
  * data of the stay are complete for Alloggiati Web. Incomplete data never block the arrival.

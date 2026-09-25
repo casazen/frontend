@@ -446,14 +446,14 @@
       "attestationCheckbox": "Ho letto e accetto l'attestazione di responsabilita del deposito",
       "confirmSubmit": "Autorizza e invia",
       "cancel": "Annulla",
-      "extraEuTitle": "Cessione di fabbricato — comunicazione in Questura",
-      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale.",
+      "extraEuTitle": "Conduttore extra-UE: comunicazione alla Questura entro 48 ore dalla consegna",
+      "extraEuBody": "Il contratto include un conduttore extra-UE: entro 48 ore dalla consegna dell'immobile va inviata la comunicazione scritta all'autorità locale di pubblica sicurezza (art. 7 D.Lgs. 286/1998). CasaZen non la invia: dopo l'invio, segnala la data nella sezione dedicata.",
       "checklistItem": {
         "contract_signed": "Contratto firmato da tutte le parti",
         "delega_captured": "Delega / attestazione RLI registrata",
         "rli_exported": "Dataset RLI esportato per revisione",
         "rli_registered": "Contratto registrato: estremi e ricevuta dell'Agenzia delle Entrate inseriti",
-        "questura_extra_eu": "Comunicazione Questura (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Bozza da confermare con legale."
+        "questura_extra_eu": "Comunicazione alla Questura per il conduttore extra-UE (art. 7 D.Lgs. 286/1998), entro 48 ore dalla consegna dell'immobile"
       },
       "registrationDate": "Data di registrazione",
       "state": {
@@ -506,7 +506,8 @@
         "saving": "Salvataggio..."
       },
       "checklistFailed": "ultimo tentativo non riuscito",
-      "checklistGoToRegistration": "Vai alla registrazione"
+      "checklistGoToRegistration": "Vai alla registrazione",
+      "checklistGoToQuestura": "Vai alla comunicazione"
     },
     "canoneConcordato": {
       "title": "Calcolo canone concordato",
@@ -604,7 +605,8 @@
         "maxLength": "Il codice fiscale deve essere di al massimo 16 caratteri"
       },
       "citizenship": {
-        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)"
+        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)",
+        "format": "La cittadinanza è il codice ISO del paese di 2 lettere (es. IT, DE, US)"
       },
       "contactEmail": {
         "format": "Email valida obbligatoria"
@@ -669,7 +671,8 @@
         "Transitorio": "Transitorio: durata da 1 a 18 mesi. CasaZen controlla solo la durata: le esigenze transitorie vanno indicate e documentate nel contratto, e per questo tipo non c'è ancora un modello di contratto."
       },
       "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
-      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo."
+      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo.",
+      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -690,7 +693,9 @@
       "RegistrationAuthorized": "Delega RLI registrata",
       "RliExported": "Precompilazione RLI esportata",
       "DeadlineReminderSent": "Promemoria di scadenza inviato",
-      "StipulaDeclared": "Data di stipula dichiarata"
+      "StipulaDeclared": "Data di stipula dichiarata",
+      "QuesturaCommunicationMarkedDone": "Comunicazione alla Questura dichiarata",
+      "PropertyDeliveryDateDeclared": "Data di consegna dell'immobile indicata"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -713,6 +718,44 @@
       "indicative": "Range indicativo: i dati dell'accordo territoriale non sono confermati. Il contratto è stato creato senza blocchi: verifica il canone con un'organizzazione firmataria.",
       "rentOutside": "Il canone del contratto è fuori da questo range.",
       "calculatedAt": "Calcolato dal server il {{date}}."
+    },
+    "questura": {
+      "title": "Comunicazione alla Questura (conduttore extra-UE)",
+      "loading": "Caricamento della comunicazione alla Questura...",
+      "error": "Impossibile caricare lo stato della comunicazione alla Questura.",
+      "statusDone": "Comunicazione dichiarata: inviata il {{date}}",
+      "statusTodo": "Da fare entro il {{date}} (48 ore dalla consegna dell'immobile)",
+      "statusToday": "Da fare: le 48 ore dalla consegna scadono oggi, {{date}}",
+      "statusOverdue": "Termine scaduto il {{date}}: la comunicazione non risulta dichiarata",
+      "deliveryDate": "Consegna dell'immobile: {{date}}",
+      "deliveryDateDefault": "È la data di inizio del contratto: se l'immobile è consegnato in un altro giorno, indica la data effettiva.",
+      "changeDeliveryDate": "Modifica data di consegna",
+      "deliveryDateLabel": "Data di consegna dell'immobile",
+      "deliveryDateInvalid": "Inserisci una data valida, non successiva alla fine del contratto ({{end}}).",
+      "saveDeliveryDate": "Salva data di consegna",
+      "useStartDate": "Usa la data di inizio del contratto",
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "instructions": "Entro 48 ore dalla consegna dell'immobile il locatore deve comunicare per iscritto all'autorità locale di pubblica sicurezza di averlo ceduto a un cittadino extra-UE o apolide (art. 7 D.Lgs. 286/1998). La registrazione del contratto non sostituisce questa comunicazione.",
+      "channel": "L'ufficio competente e il modo di invio (sportello, PEC, raccomandata) cambiano da provincia a provincia: verifica sulla pagina della tua Questura. CasaZen non invia la comunicazione.",
+      "sanction": "In caso di omissione è prevista una sanzione da 160 a 1.100 € (art. 7, comma 2-bis, D.Lgs. 286/1998).",
+      "officialInfo": "Informazioni della Polizia di Stato",
+      "markDone": "Segna come comunicata",
+      "downloadReceipt": "Scarica ricevuta",
+      "downloading": "Download...",
+      "receiptError": "Impossibile scaricare la ricevuta.",
+      "dialog": {
+        "title": "Comunicazione alla Questura inviata",
+        "description": "Indica la data in cui hai inviato la comunicazione. Puoi allegare la ricevuta in PDF (per esempio la ricevuta PEC o la ricevuta della raccomandata scansionata).",
+        "dateLabel": "Data di invio",
+        "dateInvalid": "La data non può essere successiva a oggi ({{today}}).",
+        "receiptLabel": "Ricevuta (PDF, facoltativa)",
+        "receiptInvalid": "La ricevuta deve essere un file PDF di al massimo 10 MB.",
+        "confirmation": "Confermo di aver inviato la comunicazione all'autorità locale di pubblica sicurezza.",
+        "submit": "Conferma",
+        "saving": "Salvataggio...",
+        "cancel": "Annulla"
+      }
     }
   },
   "revenue": {
@@ -738,23 +781,60 @@
   "dashboard": {
     "title": "Cruscotto",
     "description": "Benvenuto in CASAZEN — la piattaforma per la gestione degli affitti brevi",
+    "period": {
+      "label": "Periodo",
+      "currentMonth": "Mese corrente",
+      "last30Days": "Ultimi 30 giorni",
+      "otherMonths": "Altri mesi",
+      "range": "Dal {{from}} al {{to}}"
+    },
     "stats": {
-      "totalRevenue": {
-        "title": "Ricavi totali",
-        "description": "Pagamenti completati"
+      "occupancy": {
+        "title": "Occupazione",
+        "description_one": "{{occupied}} notti occupate su {{available}} disponibili · {{count}} immobile",
+        "description_other": "{{occupied}} notti occupate su {{available}} disponibili · {{count}} immobili",
+        "descriptionWithClosed_one": "{{occupied}} notti occupate su {{available}} disponibili ({{closed}} chiuse da te) · {{count}} immobile",
+        "descriptionWithClosed_other": "{{occupied}} notti occupate su {{available}} disponibili ({{closed}} chiuse da te) · {{count}} immobili"
       },
-      "activeBookings": {
-        "title": "Prenotazioni attive",
-        "description": "Confermate + check-in effettuato"
+      "revenue": {
+        "title": "Ricavo del periodo",
+        "description_one": "{{count}} soggiorno confermato, per notte nel periodo, tassa di soggiorno esclusa",
+        "description_other": "{{count}} soggiorni confermati, per notte nel periodo, tassa di soggiorno esclusa"
       },
-      "totalProperties": {
-        "title": "Immobili totali",
-        "description": "Immobili attivi"
+      "arrivalsToday": {
+        "title": "Arrivi oggi",
+        "description": "Check-in del {{date}}"
       },
-      "occupancyRate": {
-        "title": "Tasso di occupazione",
-        "description": "Attualmente in check-in"
+      "departuresToday": {
+        "title": "Partenze oggi",
+        "description": "Check-out del {{date}}"
       }
+    },
+    "today": {
+      "title": "Oggi",
+      "description": "Arrivi e partenze di oggi, ora italiana",
+      "arrivals": "Arrivi",
+      "departures": "Partenze",
+      "noArrivals": "Nessun arrivo oggi.",
+      "noDepartures": "Nessuna partenza oggi."
+    },
+    "upcoming": {
+      "title": "Prossimi check-in",
+      "description_one": "{{count}} arrivo confermato in programma",
+      "description_other": "{{count}} arrivi confermati in programma",
+      "empty": "Nessun check-in in programma."
+    },
+    "moreItems_one": "+{{count}} altro",
+    "moreItems_other": "+{{count}} altri",
+    "loadError": "Impossibile caricare gli indicatori del cruscotto.",
+    "retry": "Riprova",
+    "ical": {
+      "title": "Calendari iCal",
+      "description": "Ultima sincronizzazione dei calendari collegati ad Airbnb, Booking.com e agli altri canali",
+      "empty": "Nessun calendario iCal collegato: aggiungilo dalla scheda di un immobile, sezione Calendari iCal.",
+      "loadError": "Impossibile caricare lo stato dei calendari iCal.",
+      "failing_one": "{{count}} con errori",
+      "failing_other": "{{count}} con errori"
     },
     "recentBookings": {
       "title": "Prenotazioni recenti",
@@ -762,6 +842,7 @@
       "empty": "Nessuna prenotazione.",
       "columns": {
         "guest": "Ospite",
+        "property": "Immobile",
         "dates": "Date",
         "amount": "Importo",
         "status": "Stato"
@@ -790,7 +871,42 @@
       "noPropertiesHint": "Aggiungi una proprietà per visualizzare il calendario prenotazioni.",
       "goToProperties": "Vai alle proprietà",
       "property": "Proprietà",
-      "loadError": "Impossibile caricare il calendario. Riprova più tardi."
+      "loadError": "Impossibile caricare il calendario. Riprova più tardi.",
+      "retry": "Riprova",
+      "guestUnknown": "Ospite senza nome",
+      "dates_one": "{{arrival}} → {{departure}} · {{count}} notte",
+      "dates_other": "{{arrival}} → {{departure}} · {{count}} notti",
+      "legend": {
+        "title": "Legenda del calendario",
+        "confirmed": "Prenotazione confermata",
+        "pending": "Richiesta in attesa di conferma",
+        "checkedIn": "Ospite arrivato",
+        "checkedOut": "Soggiorno concluso",
+        "block": "Date bloccate da un altro canale (iCal)"
+      },
+      "block": {
+        "title": "Date bloccate su {{source}}",
+        "tooltip": "Date bloccate su {{source}}",
+        "summary": "Evento del calendario: {{summary}}",
+        "notABooking": "Queste date arrivano dal calendario iCal collegato: sono occupate su un altro canale e non sono una prenotazione CasaZen. Trovi i dettagli dell'ospite sul canale.",
+        "otherSource": "un altro calendario",
+        "close": "Chiudi"
+      },
+      "toolbar": {
+        "today": "Oggi",
+        "previous": "Indietro",
+        "next": "Avanti",
+        "month": "Mese",
+        "week": "Settimana",
+        "day": "Giorno",
+        "allDay": "Tutto il giorno",
+        "date": "Data",
+        "time": "Ora",
+        "event": "Prenotazione",
+        "noEventsInRange": "Nessuna prenotazione in questo periodo.",
+        "showMore_one": "+{{count}} altra",
+        "showMore_other": "+{{count}} altre"
+      }
     },
     "validation": {
       "firstName": {
@@ -1337,6 +1453,8 @@
       "loading": "Caricamento proprietà...",
       "notFound": "Proprietà non trovata",
       "notFoundDescription": "La proprietà che stai cercando non esiste.",
+      "loadError": "Impossibile caricare la proprietà.",
+      "retry": "Riprova",
       "tabs": {
         "info": "Info & Foto",
         "pricing": "Suggerimenti stagionali",
@@ -1437,9 +1555,9 @@
     },
     "bookings": {
       "title": "Riepilogo prenotazioni",
-      "total": "Totale prenotazioni",
+      "total": "Prenotazioni confermate",
       "upcoming": "In arrivo",
-      "active": "Attive",
+      "active": "In corso",
       "nextCheckIn": "Prossimo check-in"
     },
     "pricing": {
@@ -1789,8 +1907,6 @@
     "exportLoadError": "Impossibile caricare il link di esportazione.",
     "copy": "Copia",
     "copied": "Copiato",
-    "legendBooking": "Prenotazione",
-    "legendIcalBlock": "Blocco OTA (iCal)",
     "blockCount_one": "{{count}} periodo bloccato importato",
     "blockCount_other": "{{count}} periodi bloccati importati",
     "syncStarted": "Sincronizzazione avviata: le date bloccate si aggiornano appena termina.",
@@ -1981,8 +2097,6 @@
       "registerAgain": "Registrati come fornitore",
       "skip": "Continua senza collegare"
     },
-    "completedJobs": "Lavori completati",
-    "upcomingJobs": "Prossimi incarichi",
     "availabilityRate": "Tasso disponibilità",
     "profileCompleted": "Profilo completato",
     "profileCompletion": "Profilo completo al {{percent}}%",
@@ -2090,8 +2204,31 @@
       "vatNumber": "es. IT12345678901",
       "phone": "es. +39 123 456 7890"
     },
-    "totalJobsCount_one": "{{count}} incarico totale",
-    "totalJobsCount_other": "{{count}} incarichi totali"
+    "dashboardLoadError": "Impossibile caricare la dashboard fornitore.",
+    "retry": "Riprova",
+    "kpi": {
+      "title": "Incarichi",
+      "periodLabel": "Periodo",
+      "periods": {
+        "CurrentMonth": "Questo mese",
+        "PreviousMonth": "Mese scorso",
+        "Last30Days": "Ultimi 30 giorni",
+        "CurrentYear": "Quest'anno"
+      },
+      "periodRange": "Dal {{from}} al {{to}} (ora italiana)",
+      "completed": "Completati",
+      "rejected": "Rifiutati",
+      "inPeriod": "Nel periodo",
+      "awaitingAcceptance": "Da prendere in carico",
+      "upcoming": "In arrivo",
+      "now": "Adesso",
+      "totalRequests_one": "{{count}} richiesta ricevuta in totale",
+      "totalRequests_other": "{{count}} richieste ricevute in totale",
+      "loadError": "Impossibile caricare gli indicatori degli incarichi.",
+      "empty": "Non hai ancora ricevuto richieste dagli host.",
+      "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
+      "openInbox": "Apri gli incarichi"
+    }
   },
   "settings": {
     "planTitle": "Il tuo piano",
@@ -3941,7 +4078,11 @@
     "cadastralSaved": "Dati catastali salvati",
     "cadastralSaveFailed": "Impossibile salvare i dati catastali",
     "apeIdentificationSaved": "Estremi dell'APE salvati",
-    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE"
+    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE",
+    "questuraDeliveryDateSaved": "Data di consegna salvata",
+    "questuraDeliveryDateFailed": "Impossibile salvare la data di consegna",
+    "questuraMarkedDone": "Comunicazione alla Questura segnata come inviata",
+    "questuraMarkDoneFailed": "Impossibile salvare la comunicazione alla Questura"
   },
   "fiscal": {
     "page": {
@@ -4126,7 +4267,14 @@
       "icalFeedNotFound": "Calendario non trovato: potrebbe essere già stato scollegato.",
       "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
-      "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo."
+      "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
+      "questuraNotRequired": "Nessun conduttore di questo contratto risulta cittadino extra-UE: la comunicazione alla Questura non è prevista.",
+      "questuraAlreadyMarkedDone": "La comunicazione alla Questura di questo contratto risulta già dichiarata.",
+      "questuraCommunicationDateInFuture": "La data della comunicazione non può essere successiva a oggi.",
+      "questuraReceiptInvalid": "La ricevuta deve essere un file PDF di al massimo 10 MB.",
+      "questuraReceiptNotAvailable": "Non è stata caricata una ricevuta della comunicazione alla Questura.",
+      "questuraDeliveryDateAfterEnd": "La data di consegna dell'immobile non può essere successiva alla fine del contratto.",
+      "dashboardInvalidPeriod": "Periodo non valido: scegli il mese corrente, un altro mese o gli ultimi 30 giorni."
     }
   },
   "validation": {
@@ -4154,16 +4302,6 @@
     "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
     "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
     "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
-  },
-  "supplierCheckIn": {
-    "invalidLink": "Link non valido",
-    "linkInvalidOrExpired": "Il link di check-in non è valido o è scaduto",
-    "checkInFailed": "Check-in non riuscito. Assicurati di essere presso l'immobile.",
-    "checkOutFailed": "Check-out non riuscito.",
-    "notFound": "Non trovato",
-    "checkedInAt": "Check-in: {{time}}",
-    "checkInAction": "Check-in",
-    "checkOutAction": "Check-out"
   },
   "supplierShowcase": {
     "notFound": "Fornitore non trovato",

@@ -18,6 +18,7 @@ import { AttestationGuidancePanel } from './components/attestation-guidance-pane
 import { ImuNotificationExportButton } from './components/imu-notification-export-button';
 import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
 import { RliChecklist } from './components/rli-checklist';
+import { QuesturaCommunicationPanel } from './components/questura-communication-panel';
 import { DelegaCaptureDialog } from './components/delega-capture-dialog';
 import { getLeaseEventTypeLabel, getLeasePartyRoleLabel, getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
 import { ConcordatoAssessmentPanel } from './components/concordato-assessment-panel';
@@ -201,6 +202,8 @@ export function LeaseDetailPage() {
 
             <CedolareDecisionPanel leaseId={lease.id} />
             <RliChecklist leaseId={lease.id} />
+            {/* LT-07: extra-EU tenant, the 48-hour Questura communication is declared by the landlord. */}
+            {showExtraEuBanner && <QuesturaCommunicationPanel leaseId={lease.id} leaseEndDate={lease.endDate} />}
             <RegistrationStatusPanel
               leaseId={lease.id}
               leaseStatus={lease.status}

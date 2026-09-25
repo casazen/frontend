@@ -31,7 +31,6 @@ import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
-import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
@@ -209,10 +208,6 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/s/:slug',
     element: <SupplierShowcasePage />,
-  },
-  {
-    path: '/check-in/:jobId',
-    element: <SupplierCheckInPage />,
   },
   {
     path: '/checkin/:token',

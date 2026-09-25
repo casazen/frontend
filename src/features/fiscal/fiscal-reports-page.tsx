@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { fiscalApi } from '@/api/fiscal.api';
 import { useFiscalAnnualReport, useFiscalWithholdingReport } from '@/queries/use-fiscal';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
+import { todayInRome } from '@/lib/stay-dates';
 
-const TAX_YEAR = new Date().getUTCFullYear() < 2026 ? 2026 : new Date().getUTCFullYear();
+// The current year in Europe/Rome, not in UTC (QA-CLOCK-FE): 1 January starts at midnight in Italy.
+const TAX_YEAR = Math.max(2026, Number(todayInRome().slice(0, 4)));
 
 async function saveBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
