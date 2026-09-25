@@ -828,7 +828,42 @@
       "noPropertiesHint": "Add a property to view the bookings calendar.",
       "goToProperties": "Go to properties",
       "property": "Property",
-      "loadError": "Unable to load the calendar. Please try again later."
+      "loadError": "Unable to load the calendar. Please try again later.",
+      "retry": "Try again",
+      "guestUnknown": "Unnamed guest",
+      "dates_one": "{{arrival}} → {{departure}} · {{count}} night",
+      "dates_other": "{{arrival}} → {{departure}} · {{count}} nights",
+      "legend": {
+        "title": "Calendar legend",
+        "confirmed": "Confirmed booking",
+        "pending": "Request awaiting confirmation",
+        "checkedIn": "Guest arrived",
+        "checkedOut": "Stay completed",
+        "block": "Dates blocked by another channel (iCal)"
+      },
+      "block": {
+        "title": "Dates blocked on {{source}}",
+        "tooltip": "Dates blocked on {{source}}",
+        "summary": "Calendar event: {{summary}}",
+        "notABooking": "These dates come from the linked iCal calendar: they are taken on another channel and are not a CasaZen booking. The guest's details are on the channel.",
+        "otherSource": "another calendar",
+        "close": "Close"
+      },
+      "toolbar": {
+        "today": "Today",
+        "previous": "Back",
+        "next": "Next",
+        "month": "Month",
+        "week": "Week",
+        "day": "Day",
+        "allDay": "All day",
+        "date": "Date",
+        "time": "Time",
+        "event": "Booking",
+        "noEventsInRange": "No bookings in this period.",
+        "showMore_one": "+{{count}} more",
+        "showMore_other": "+{{count}} more"
+      }
     },
     "validation": {
       "firstName": {
@@ -1829,8 +1864,6 @@
     "exportLoadError": "Could not load the export link.",
     "copy": "Copy",
     "copied": "Copied",
-    "legendBooking": "Booking",
-    "legendIcalBlock": "OTA block (iCal)",
     "blockCount_one": "{{count}} blocked period imported",
     "blockCount_other": "{{count}} blocked periods imported",
     "syncStarted": "Sync started: the blocked dates update as soon as it ends.",

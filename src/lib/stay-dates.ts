@@ -85,6 +85,38 @@ export function endOfMonth(date: string): string {
   return utc ? utcStayDate(new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth() + 1, 0))) : '';
 }
 
+/**
+ * First day of the week of `date` (`weekStartsOn`: 0 = Sunday, 1 = Monday), or an empty string when `date` is not a
+ * stay date.
+ */
+export function startOfWeek(date: string, weekStartsOn: number = 1): string {
+  const utc = toUtcDate(date);
+  if (!utc) return '';
+  return addDays(date, -((utc.getUTCDay() - weekStartsOn + 7) % 7));
+}
+
+const API_STAY_DATE = /^(\d{4}-\d{2}-\d{2})(?:T|$)/;
+
+/**
+ * Stay date (`YYYY-MM-DD`) of a date sent by the API: a stay date (`2026-09-30`), a stay date without time zone
+ * (`2026-09-30T00:00:00`, host calendar MO-06) or the stored UTC midnight of the day (`2026-09-30T00:00:00Z`, FD-06).
+ * The day is read as written, never as an instant in the browser's time zone (`new Date('2026-09-30')` is the 29th in
+ * America). An empty string when the value is missing or not a date.
+ */
+export function parseStayDate(value: string | null | undefined): string {
+  const match = value ? API_STAY_DATE.exec(value) : null;
+  return match && isStayDate(match[1]) ? match[1] : '';
+}
+
+/**
+ * Local midnight of a stay date: the `Date` a calendar widget or a date picker shows on that day, whatever the time
+ * zone of the browser (inverse of {@link toStayDate}). null when `date` is not a stay date.
+ */
+export function stayDateToLocalDate(date: string): Date | null {
+  const utc = toUtcDate(date);
+  return utc ? new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate()) : null;
+}
+
 /** Nights between two stay dates; 0 when a date is missing, invalid or not in order. */
 export function nightsBetween(checkIn: string, checkOut: string): number {
   const start = toUtcDate(checkIn);
