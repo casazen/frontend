@@ -60,6 +60,22 @@ export interface ChangeRoleRequest {
   role: UserRole;
 }
 
+/**
+ * Roles an admin can grant or revoke individually (backend `AdminManageableRoles`, A1-17): the ones mapped to a
+ * real app context. `Guest`, `Staff` and `PropertyManager` have none and are not offered in the roles dialog.
+ */
+export const ADMIN_MANAGEABLE_ROLES: UserRole[] = ['Admin', 'PropertyOwner', 'LongTermLandlord', 'Supplier'];
+
+/** Response of `GET|PUT /users/{id}/roles` (A1-17). */
+export interface UserRolesResponse {
+  id: string;
+  roles: UserRole[];
+  /** Roles granted by a PUT (empty on a plain GET or when nothing changed). */
+  rolesGranted: UserRole[];
+  /** Roles revoked by a PUT (empty on a plain GET or when nothing changed). */
+  rolesRevoked: UserRole[];
+}
+
 export interface OnboardingRequest {
   rentalType: RentalType;
   planTier?: PlanTier;

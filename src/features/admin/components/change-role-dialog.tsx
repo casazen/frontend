@@ -9,20 +9,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from 'react-i18next';
-import { useChangeUserRole } from '@/queries/use-users';
+import { useUpdateUserRoles, useUserRoles } from '@/queries/use-users';
 import { formatUserDisplayName } from '@/lib/user-display';
+import { getProblemMessage } from '@/lib/api-errors';
+import { ADMIN_MANAGEABLE_ROLES } from '@/types';
 import type { UserSummary, UserRole } from '@/types';
 import { getRoleLabel } from '@/lib/i18n-labels';
-
-const ALL_ROLES: UserRole[] = [
-  'Admin',
-  'PropertyOwner',
-  'PropertyManager',
-  'Guest',
-  'Staff',
-  'LongTermLandlord',
-];
 
 interface ChangeRoleDialogProps {
   user: UserSummary | null;
@@ -30,29 +24,50 @@ interface ChangeRoleDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Multi-role editor (A1-17): grants/revokes any of ADMIN_MANAGEABLE_ROLES independently, instead of the previous
+ * single dropdown that silently dropped every other role (host+supplier, "Both" landlords) the user held.
+ */
 export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogProps) {
   const { t } = useTranslation();
-  const [selectedRole, setSelectedRole] = useState<UserRole>(user?.role ?? 'Guest');
-  const [roleSourceUser, setRoleSourceUser] = useState(user);
-  const { mutate: changeRole, isPending } = useChangeUserRole();
+  const [selected, setSelected] = useState<Set<UserRole>>(new Set());
+  const [initializedFor, setInitializedFor] = useState<string | null>(null);
 
-  // Reset the selection when the dialog is pointed at another user (adjusting state during render).
-  if (user !== roleSourceUser) {
-    setRoleSourceUser(user);
-    if (user) {
-      setSelectedRole(user.role);
-    }
+  const { data, isLoading, isError, error, refetch } = useUserRoles(user?.id ?? '', open && !!user);
+  const { mutate: updateRoles, isPending } = useUpdateUserRoles();
+
+  // Seed the checkboxes from the fetched roles once per user/open, without fighting further user clicks. Adjusting
+  // state while rendering (not in a useEffect) — see https://react.dev/learn/you-might-not-need-an-effect.
+  if (!open) {
+    if (initializedFor !== null) setInitializedFor(null);
+  } else if (data && initializedFor !== user?.id) {
+    setSelected(new Set(data.roles));
+    setInitializedFor(user?.id ?? null);
   }
 
   const displayName = user ? formatUserDisplayName(user) : '';
 
+  function toggleRole(role: UserRole) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(role)) {
+        next.delete(role);
+      } else {
+        next.add(role);
+      }
+      return next;
+    });
+  }
+
   function handleConfirm() {
     if (!user) return;
-    changeRole(
-      { id: user.id, role: selectedRole },
-      { onSuccess: () => onOpenChange(false) }
+    updateRoles(
+      { id: user.id, roles: Array.from(selected) },
+      { onSuccess: () => onOpenChange(false) },
     );
   }
+
+  const ready = !isLoading && !isError;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,26 +78,46 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
             {t('admin.users.roleDialog.description', { name: displayName })}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
-          <Label htmlFor="role-select">{t('admin.users.roleDialog.label')}</Label>
-          <select
-            id="role-select"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-          >
-            {ALL_ROLES.map((r) => (
-              <option key={r} value={r}>
-                {getRoleLabel(r, t)}
-              </option>
-            ))}
-          </select>
-        </div>
+
+        {isLoading ? (
+          <p className="py-4 text-sm text-muted-foreground">{t('admin.users.roleDialog.loading')}</p>
+        ) : isError ? (
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-destructive">
+              {getProblemMessage(error, t) ?? t('admin.users.roleDialog.loadError')}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              {t('admin.users.roleDialog.retry')}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <Label>{t('admin.users.roleDialog.label')}</Label>
+            <div className="space-y-2">
+              {ADMIN_MANAGEABLE_ROLES.map((role) => (
+                <div key={role} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`role-${role}`}
+                    checked={selected.has(role)}
+                    onCheckedChange={() => toggleRole(role)}
+                  />
+                  <Label htmlFor={`role-${role}`} className="font-normal">
+                    {getRoleLabel(role, t)}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            {selected.size === 0 && (
+              <p className="text-sm text-amber-600">{t('admin.users.roleDialog.noRolesWarning')}</p>
+            )}
+          </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('admin.users.roleDialog.cancel')}
           </Button>
-          <Button onClick={handleConfirm} disabled={isPending}>
+          <Button onClick={handleConfirm} disabled={!ready || isPending}>
             {isPending ? t('admin.users.roleDialog.saving') : t('admin.users.roleDialog.save')}
           </Button>
         </DialogFooter>

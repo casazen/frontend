@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
-import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail } from '@/types';
+import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail, UserRole } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -109,6 +109,31 @@ export function useChangeUserRole() {
       UsersApi.changeRole(id, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      toast.success(i18n.t('toast.roleUpdated'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.roleUpdateFailed'));
+    },
+  });
+}
+
+/** Roles a user currently holds (A1-17), read fresh (not cached) each time the roles dialog opens. */
+export function useUserRoles(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [USERS_KEY, id, 'roles'],
+    queryFn: () => UsersApi.getRoles(id),
+    enabled: enabled && !!id,
+  });
+}
+
+export function useUpdateUserRoles() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, roles }: { id: string; roles: UserRole[] }) => UsersApi.updateRoles(id, roles),
+    onSuccess: (_result, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY, id, 'roles'] });
       toast.success(i18n.t('toast.roleUpdated'));
     },
     onError: (error) => {

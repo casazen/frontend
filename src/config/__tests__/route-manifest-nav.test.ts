@@ -148,4 +148,20 @@ describe('route-manifest nav helpers', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll, { otaPartnerApi: false });
     expect(primary.some((e) => e.path === '/app/short-rent/bookings/calendar')).toBe(true);
   });
+
+  // A1-16: the CIN audit page existed but had no route, so the admin had no menu entry or URL for it.
+  it('makes the admin CIN audit route reachable and visible in the admin menu', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/admin/cin');
+    expect(entry?.context).toBe('admin');
+    expect(entry?.requiredPermissions).toEqual(['admin.cin.read']);
+    expect(entry?.navGroup).toBe('compliance-audit');
+    expect(entry?.legacyPaths).toContain('/admin/cin');
+
+    const visible = getVisibleNavEntries('admin', allowAll).map((e) => e.path);
+    expect(visible).toContain('/app/admin/cin');
+
+    const withoutCinRead = (_ctx: string, permission: string) => permission !== 'admin.cin.read';
+    const hiddenPaths = getVisibleNavEntries('admin', withoutCinRead).map((e) => e.path);
+    expect(hiddenPaths).not.toContain('/app/admin/cin');
+  });
 });

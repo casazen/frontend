@@ -9,6 +9,7 @@ import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
 import { getPlanTierLabel, getRoleLabel } from '@/lib/i18n-labels';
+import { formatDate } from '@/lib/utils';
 import { useReactivateUser } from '@/queries/use-users';
 
 interface UserManagementTableProps {
@@ -44,6 +45,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
               <th className="pb-2 pr-4 font-medium">{t('admin.users.table.role')}</th>
               <th className="pb-2 pr-4 font-medium">{t('admin.users.table.plan')}</th>
               <th className="pb-2 pr-4 font-medium">{t('admin.users.table.status')}</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.createdAt')}</th>
               <th className="pb-2 font-medium">{t('admin.users.table.actions')}</th>
             </tr>
           </thead>
@@ -67,6 +69,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                     <Badge variant="secondary">{t('admin.users.table.inactive')}</Badge>
                   )}
                 </td>
+                <td className="py-3 pr-4 text-muted-foreground">{formatDate(user.createdAt)}</td>
                 <td className="py-3">
                   <div className="flex gap-2">
                     <Button
@@ -108,7 +111,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                <td colSpan={7} className="py-8 text-center text-muted-foreground">
                   {t('admin.users.table.empty')}
                 </td>
               </tr>

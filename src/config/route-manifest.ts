@@ -574,6 +574,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
   },
+  // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed.
+  {
+    path: '/app/admin/cin',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.cinAudit',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 1,
+    icon: 'BadgeCheck',
+    component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
+    legacyPaths: ['/admin/cin'],
+  },
   // Admin Tax Rates
   {
     path: '/app/admin/compliance/tax-rates',
