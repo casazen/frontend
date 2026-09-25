@@ -882,7 +882,8 @@
         "pending": "Request awaiting confirmation",
         "checkedIn": "Guest arrived",
         "checkedOut": "Stay completed",
-        "block": "Dates blocked by another channel (iCal)"
+        "block": "Dates blocked by another channel (iCal)",
+        "toReview": "OTA stay to check"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -960,7 +961,7 @@
         "guests": "Guests",
         "total": "Total",
         "status": "Status",
-        "source": "Source"
+        "source": "Source and channel"
       },
       "newBooking": "New booking",
       "filteredByProperty": "Bookings of {{name}}",
@@ -1199,6 +1200,58 @@
       "failed": "The booking could not be confirmed. Please try again.",
       "success": "Booking confirmed",
       "pendingNotice": "This booking you entered is still pending: confirm it to take the dates and enable the guest's check-in."
+    },
+    "otaStay": {
+      "action": "Create OTA stay",
+      "formHint": "The iCal calendar carries dates only: enter the guest of the reservation. The check-in link, Alloggiati Web and the cockpit start from the stay.",
+      "firstName": "Guest first name",
+      "lastName": "Guest last name",
+      "email": "Guest email",
+      "emailHint": "The check-in link is sent to this address.",
+      "numberOfGuests": "Number of guests (optional)",
+      "totalPrice": "Amount in € (optional)",
+      "totalPriceHint": "The amount shown by the channel. CasaZen does not compute prices for OTA reservations.",
+      "source": "Channel of the reservation",
+      "sourcePlaceholder": "Choose the channel",
+      "submit": "Create stay",
+      "submitting": "Creating…",
+      "cancel": "Cancel",
+      "failed": "Could not create the stay. Try again.",
+      "created": "OTA stay created",
+      "channelIcal": "iCal calendar",
+      "channelWithLabel": "iCal · {{label}}",
+      "validation": {
+        "firstNameRequired": "Enter the guest's first name.",
+        "lastNameRequired": "Enter the guest's last name.",
+        "nameTooLong": "First and last name can have at most 100 characters.",
+        "emailRequired": "Enter the guest's email.",
+        "emailInvalid": "Enter a valid email address.",
+        "guestsInvalid": "The number of guests must be a whole number from 1 to {{max}}.",
+        "amountInvalid": "Enter a valid amount, for example 250 or 250.50.",
+        "sourceRequired": "Choose the channel of the reservation."
+      }
+    },
+    "icalBlock": {
+      "converted": "A stay was created from this block.",
+      "openStay": "Open the stay",
+      "notConvertible": "No stay can be created from this block: the stay is already over.",
+      "readOnly": "You are not allowed to create stays.",
+      "convertHint": "Is it a reservation received on a channel? Create the stay to send the guest the check-in link and handle Alloggiati Web."
+    },
+    "otaReview": {
+      "badge": "To check",
+      "title": "Stay to check",
+      "removed": "The reservation is no longer in the linked {{channel}} calendar: it may have been cancelled or moved on the channel.",
+      "datesChanged": "In the linked {{channel}} calendar the reservation now runs from {{channelCheckIn}} to {{channelCheckOut}}; the stay runs from {{checkIn}} to {{checkOut}}.",
+      "datesChangedNoBlock": "In the linked {{channel}} calendar the dates of the reservation changed.",
+      "nothingChanged": "CasaZen did not change or cancel the stay: its dates stay taken.",
+      "raisedAt": "Found on {{date}}",
+      "removedAction": "Check on the channel: if the reservation was cancelled, cancel the stay; then mark it as verified.",
+      "datesChangedAction": "Check on the channel: if the new dates are right, apply them to the stay; otherwise mark it as verified.",
+      "applyDates": "Apply the channel's dates",
+      "markVerified": "Mark as verified",
+      "resolved": "Stay verified",
+      "failed": "Could not update the stay. Try again."
     }
   },
   "ota": {
@@ -4338,6 +4391,13 @@
       "icalFeedLimitReached": "This property already has the maximum number of linked calendars: disconnect one before adding another.",
       "icalFeedDuplicate": "This calendar is already linked to the property.",
       "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
+      "icalBlockNotFound": "Calendar block not found.",
+      "otaStayBlockNotImported": "Only a block imported from a linked OTA calendar can become a stay.",
+      "otaStayBlockAlreadyConverted": "A stay was already created from this block.",
+      "otaStayBlockOverlapsBooking": "The dates of the block overlap a booking already on the calendar: check the calendar.",
+      "otaStayBlockEnded": "The stay of this block is already over.",
+      "otaStaySourceRequired": "Choose the channel of the reservation.",
+      "otaStayChannelDatesUnavailable": "The block of this stay is no longer in the channel's calendar: there are no dates to apply.",
       "questuraNotRequired": "No tenant of this lease is a non-EU citizen: the Questura communication does not apply.",
       "questuraAlreadyMarkedDone": "The Questura communication of this lease has already been declared.",
       "questuraCommunicationDateInFuture": "The date of the communication cannot be later than today.",

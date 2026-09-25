@@ -1,4 +1,5 @@
 import type { PaymentRefund } from './payment.types';
+import type { OtaReviewReason } from './calendar.types';
 
 // ✅ Fixed: Backend uses PascalCase enum values
 export type BookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
@@ -42,8 +43,47 @@ export interface Booking {
   onSiteRequestState?: OnSiteRequestState | null;
   /** Deadline of an open "pay at the property" request (the host's answer once the email is confirmed). */
   requestExpiresAt?: string | null;
+  /** OTA stay created from an iCal block (CO-21): the feed it came from, kept after the calendar is disconnected. */
+  icalFeedId?: string | null;
+  /** Label of that feed ("camera 2"), shown next to the source. */
+  channelLabel?: string | null;
+  /** OTA stay "da verificare" (CO-21); null when there is nothing to check. */
+  otaReviewReason?: OtaReviewReason | null;
+  otaReviewRaisedAt?: string | null;
+  /** Booking detail only: the linked iCal block with its dates on the channel (check-out day excluded). */
+  channelBlock?: OtaChannelBlock | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** The iCal block of an OTA stay (CO-21). */
+export interface OtaChannelBlock {
+  id: string;
+  startDate: string;
+  endDate: string;
+}
+
+/** OTA sources a stay created from an iCal block of an "other" feed can have (backend `BookingSource`). */
+export const OTA_STAY_SOURCES = ['Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda'] as const;
+export type OtaStaySource = (typeof OTA_STAY_SOURCES)[number];
+
+/** POST /ical-blocks/:blockId/ota-stay — "Crea soggiorno OTA" (CO-21, decision D7). */
+export interface CreateOtaStayDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  /** 1 when omitted. */
+  numberOfGuests?: number;
+  /** Amount shown by the channel, optional: CasaZen never computes one for an OTA stay. */
+  totalPrice?: number;
+  /** Only for a feed of channel "Other". */
+  source?: OtaStaySource;
+}
+
+/** POST /bookings/:id/ota-review/resolve (CO-21). */
+export interface ResolveOtaReviewDto {
+  /** Give the stay the dates its block now has on the channel first. */
+  applyChannelDates?: boolean;
 }
 
 /** Where an open "pay at the property" request stands (BK-06, decision D5). */

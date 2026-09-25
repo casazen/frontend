@@ -882,7 +882,8 @@
         "pending": "Richiesta in attesa di conferma",
         "checkedIn": "Ospite arrivato",
         "checkedOut": "Soggiorno concluso",
-        "block": "Date bloccate da un altro canale (iCal)"
+        "block": "Date bloccate da un altro canale (iCal)",
+        "toReview": "Soggiorno OTA da verificare"
       },
       "block": {
         "title": "Date bloccate su {{source}}",
@@ -960,7 +961,7 @@
         "guests": "Ospiti",
         "total": "Totale",
         "status": "Stato",
-        "source": "Origine"
+        "source": "Origine e canale"
       },
       "newBooking": "Nuova prenotazione",
       "filteredByProperty": "Prenotazioni di {{name}}",
@@ -1199,6 +1200,58 @@
       "failed": "Impossibile confermare la prenotazione. Riprova.",
       "success": "Prenotazione confermata",
       "pendingNotice": "Questa prenotazione inserita da te è ancora in attesa: confermala per occupare le date e abilitare il check-in dell'ospite."
+    },
+    "otaStay": {
+      "action": "Crea soggiorno OTA",
+      "formHint": "Il calendario iCal riporta solo le date: indica l'ospite della prenotazione. Dal soggiorno partono il link di check-in, Alloggiati Web e il cockpit.",
+      "firstName": "Nome ospite",
+      "lastName": "Cognome ospite",
+      "email": "Email ospite",
+      "emailHint": "Il link di check-in viene inviato a questo indirizzo.",
+      "numberOfGuests": "Numero di ospiti (facoltativo)",
+      "totalPrice": "Importo in € (facoltativo)",
+      "totalPriceHint": "L'importo indicato dal canale. CasaZen non calcola prezzi per le prenotazioni OTA.",
+      "source": "Canale della prenotazione",
+      "sourcePlaceholder": "Scegli il canale",
+      "submit": "Crea soggiorno",
+      "submitting": "Creazione…",
+      "cancel": "Annulla",
+      "failed": "Impossibile creare il soggiorno. Riprova.",
+      "created": "Soggiorno OTA creato",
+      "channelIcal": "Calendario iCal",
+      "channelWithLabel": "iCal · {{label}}",
+      "validation": {
+        "firstNameRequired": "Inserisci il nome dell'ospite.",
+        "lastNameRequired": "Inserisci il cognome dell'ospite.",
+        "nameTooLong": "Nome e cognome possono avere al massimo 100 caratteri.",
+        "emailRequired": "Inserisci l'email dell'ospite.",
+        "emailInvalid": "Inserisci un indirizzo email valido.",
+        "guestsInvalid": "Il numero di ospiti deve essere un numero intero da 1 a {{max}}.",
+        "amountInvalid": "Inserisci un importo valido, ad esempio 250 o 250,50.",
+        "sourceRequired": "Scegli il canale della prenotazione."
+      }
+    },
+    "icalBlock": {
+      "converted": "Da questo blocco è stato creato un soggiorno.",
+      "openStay": "Apri il soggiorno",
+      "notConvertible": "Da questo blocco non si può creare un soggiorno: il soggiorno è già terminato.",
+      "readOnly": "Non hai i permessi per creare soggiorni.",
+      "convertHint": "È una prenotazione ricevuta su un canale? Crea il soggiorno per mandare all'ospite il link di check-in e gestire Alloggiati Web."
+    },
+    "otaReview": {
+      "badge": "Da verificare",
+      "title": "Soggiorno da verificare",
+      "removed": "La prenotazione non è più nel calendario {{channel}} collegato: potrebbe essere stata cancellata o spostata sul canale.",
+      "datesChanged": "Sul calendario {{channel}} collegato la prenotazione ha ora le date dal {{channelCheckIn}} al {{channelCheckOut}}; il soggiorno è dal {{checkIn}} al {{checkOut}}.",
+      "datesChangedNoBlock": "Sul calendario {{channel}} collegato sono cambiate le date della prenotazione.",
+      "nothingChanged": "CasaZen non ha modificato né cancellato il soggiorno: le sue date restano occupate.",
+      "raisedAt": "Rilevato il {{date}}",
+      "removedAction": "Controlla sul canale: se la prenotazione è stata cancellata, annulla il soggiorno; poi segnalo come verificato.",
+      "datesChangedAction": "Controlla sul canale: se le nuove date sono giuste, applicale al soggiorno; altrimenti segnalo come verificato.",
+      "applyDates": "Applica le date del canale",
+      "markVerified": "Segna come verificato",
+      "resolved": "Soggiorno verificato",
+      "failed": "Impossibile aggiornare il soggiorno. Riprova."
     }
   },
   "ota": {
@@ -4338,6 +4391,13 @@
       "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
       "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
+      "icalBlockNotFound": "Blocco del calendario non trovato.",
+      "otaStayBlockNotImported": "Solo un blocco importato da un calendario OTA collegato può diventare un soggiorno.",
+      "otaStayBlockAlreadyConverted": "Da questo blocco è già stato creato un soggiorno.",
+      "otaStayBlockOverlapsBooking": "Le date del blocco si sovrappongono a una prenotazione già presente: verifica il calendario.",
+      "otaStayBlockEnded": "Il soggiorno di questo blocco è già terminato.",
+      "otaStaySourceRequired": "Scegli il canale della prenotazione.",
+      "otaStayChannelDatesUnavailable": "Il blocco di questo soggiorno non è più nel calendario del canale: non ci sono date da applicare.",
       "questuraNotRequired": "Nessun conduttore di questo contratto risulta cittadino extra-UE: la comunicazione alla Questura non è prevista.",
       "questuraAlreadyMarkedDone": "La comunicazione alla Questura di questo contratto risulta già dichiarata.",
       "questuraCommunicationDateInFuture": "La data della comunicazione non può essere successiva a oggi.",
