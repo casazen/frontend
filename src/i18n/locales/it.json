@@ -2123,7 +2123,6 @@
     "syncNow": "Sincronizza ora",
     "icalSaveError": "Impossibile salvare l'URL del calendario",
     "calendarStatusLoadError": "Impossibile caricare lo stato del calendario.",
-    "retry": "Riprova",
     "syncError": "Errore durante la sincronizzazione",
     "icalConnected": "Feed iCal connesso",
     "editIcalUrl": "Modifica URL iCal",
