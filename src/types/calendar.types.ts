@@ -37,7 +37,24 @@ export interface CalendarItemDto {
   channel?: string | null;
   /** `ical-block` only: label the host gave to the feed. */
   feedLabel?: string | null;
+  /** `ical-block` only: `ICalImport` or `Manual` (CO-21). */
+  blockSource?: string | null;
+  /** `ical-block` only: its import feed (CO-21). */
+  feedId?: string | null;
+  /** `ical-block` only: the OTA stay created from it, while not cancelled (CO-21). */
+  bookingId?: string | null;
+  /** `ical-block` only: "Crea soggiorno OTA" is offered (CO-21). */
+  convertible?: boolean | null;
+  /** `booking` only: the feed of an OTA stay created from iCal (CO-21). */
+  icalFeedId?: string | null;
+  /** `booking` only: label of that feed when the stay was created (CO-21). */
+  channelLabel?: string | null;
+  /** `booking` only: why the OTA stay is "da verificare" (CO-21). */
+  otaReviewReason?: OtaReviewReason | null;
 }
+
+/** Why an OTA stay created from an iCal block is "da verificare" (CO-21). */
+export type OtaReviewReason = 'BlockRemoved' | 'BlockDatesChanged';
 
 /** Matches backend CalendarResponseDto */
 export interface CalendarResponseDto {

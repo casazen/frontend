@@ -641,6 +641,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),
   },
   {
+    // Detail of one request: where, when, host contact after the take, actions and history (SU-08, A4-14).
+    path: '/app/supplier/inbox/:id',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/supplier-request-detail-page')).SupplierRequestDetailPage,
+    }),
+  },
+  {
     path: '/app/supplier/availability',
     context: 'supplier',
     requiredPermissions: [],
