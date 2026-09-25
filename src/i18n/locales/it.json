@@ -1786,14 +1786,21 @@
     "blockCount_other": "{{count}} periodi bloccati importati",
     "syncStarted": "Sincronizzazione avviata: le date bloccate si aggiornano appena termina.",
     "exportTitle": "Link di esportazione per le OTA",
-    "exportDescription": "Airbnb, Booking.com e gli altri canali leggono da questo link le date occupate su CasaZen, così non le vendono una seconda volta.",
+    "exportDescription": "Airbnb, Booking.com e gli altri canali leggono da questo link le prenotazioni fatte su CasaZen e i tuoi blocchi manuali, così non vendono quelle date una seconda volta.",
+    "exportContentNote": "CasaZen esporta le prenotazioni dirette e manuali (e i tuoi blocchi), non quelle arrivate dalle OTA né le date importate dai loro calendari: ogni OTA va collegata anche alle altre, per esempio il calendario di Booking.com su Airbnb e quello di Airbnb su Booking.com.",
     "exportLoading": "Caricamento del link di esportazione…",
     "exportPrivate": "Tienilo riservato: chiunque abbia il link vede le date occupate.",
     "exportHowTo": "Dove incollarlo",
     "exportAirbnbSteps": "nell'annuncio apri Disponibilità → Sincronizzazione calendari → Importa calendario, incolla il link e dagli un nome (es. CasaZen).",
     "exportBookingSteps": "nell'Extranet apri Tariffe e disponibilità → Sincronizza calendari, aggiungi un calendario da importare e incolla il link.",
     "exportRefreshNote": "Le OTA rileggono il link periodicamente: le modifiche non compaiono subito.",
-    "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano."
+    "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
+    "regenerate": "Rigenera link",
+    "regenerateTitle": "Rigenerare il link di esportazione?",
+    "regenerateDescription": "Il vecchio link smetterà di funzionare subito: aggiornalo su Airbnb, Booking.com e sugli altri canali dove l'hai incollato, altrimenti non vedranno più le date occupate su CasaZen. Serve se il link è finito a qualcuno che non dovrebbe averlo.",
+    "regenerateConfirm": "Rigenera",
+    "regenerated": "Nuovo link creato: aggiornalo su Airbnb e Booking.com.",
+    "regenerateFailed": "Impossibile rigenerare il link di esportazione."
   },
   "marketplace": {
     "title": "Marketplace servizi",

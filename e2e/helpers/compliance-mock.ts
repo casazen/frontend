@@ -20,6 +20,11 @@ export const demoActivationPending: ComplianceActivationResult = {
   ],
 };
 
+/**
+ * The cockpit with the contract of `GET /api/compliance/summary` (CO-04, A5-09): action by name and id of the target,
+ * never a path; labels as the API builds them (property name, guest name). Typed with the app's types, so a change
+ * of the contract breaks this mock too.
+ */
 export const demoComplianceSummary: ComplianceSummaryResult = {
   propertiesPending: {
     count: 1,
@@ -27,7 +32,9 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
       {
         id: DEMO_PROPERTY_ID,
         label: 'Appartamento Centro',
-        routeLink: `/app/properties/${DEMO_PROPERTY_ID}/activation`,
+        action: 'ActivateProperty',
+        propertyId: DEMO_PROPERTY_ID,
+        bookingId: null,
       },
     ],
   },
@@ -36,8 +43,10 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     items: [
       {
         id: DEMO_CHECKOUT_BOOKING_ID,
-        label: 'Appartamento Centro — check-in 2026-07-01',
-        routeLink: `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}`,
+        label: 'Mario Rossi',
+        action: 'CompleteGuestCheckIn',
+        propertyId: null,
+        bookingId: DEMO_CHECKOUT_BOOKING_ID,
       },
     ],
   },
@@ -46,8 +55,10 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     items: [
       {
         id: DEMO_CHECKOUT_BOOKING_ID,
-        label: 'Appartamento Centro — checkout 2026-07-04',
-        routeLink: `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}/checkout`,
+        label: 'Mario Rossi',
+        action: 'CheckOut',
+        propertyId: null,
+        bookingId: DEMO_CHECKOUT_BOOKING_ID,
       },
     ],
   },
@@ -56,8 +67,16 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     items: [],
   },
   alloggiatiManualRequired: {
-    count: 0,
-    items: [],
+    count: 1,
+    items: [
+      {
+        id: DEMO_CHECKOUT_BOOKING_ID,
+        label: 'Mario Rossi',
+        action: 'SendAlloggiati',
+        propertyId: null,
+        bookingId: DEMO_CHECKOUT_BOOKING_ID,
+      },
+    ],
   },
 };
 
