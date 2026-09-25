@@ -432,8 +432,14 @@ function PartyFields({
           id={`${prefix}.citizenship`}
           maxLength={2}
           placeholder="IT"
+          aria-describedby={prefix === 'tenant' ? 'tenant.citizenship-hint' : undefined}
           {...register(`${prefix}.citizenship`)}
         />
+        {prefix === 'tenant' && (
+          <p id="tenant.citizenship-hint" className="text-xs text-muted-foreground">
+            {t('leases.form.citizenshipHint')}
+          </p>
+        )}
         <FormFieldError error={errors?.citizenship} />
       </div>
       <div className="space-y-2 sm:col-span-2">
