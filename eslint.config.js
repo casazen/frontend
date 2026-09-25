@@ -67,14 +67,6 @@ export default defineConfig([
     },
   },
   {
-    // Exception: the SupplierJob QR check-in page is deleted by task SU-11 (decision D12),
-    // so it is not migrated to ApiClient.
-    files: ['src/pages/supplier-check-in.tsx'],
-    rules: {
-      'no-restricted-globals': 'off',
-    },
-  },
-  {
     // i18n (A9-25): user-visible text in JSX goes through t() with keys in it.json and en.json.
     // Warn only: it reports literal JSX text and literal values of user-visible attributes.
     files: ['src/**/*.tsx'],

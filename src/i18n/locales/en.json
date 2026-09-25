@@ -1981,8 +1981,6 @@
       "registerAgain": "Register as a supplier",
       "skip": "Continue without linking"
     },
-    "completedJobs": "Completed jobs",
-    "upcomingJobs": "Upcoming jobs",
     "availabilityRate": "Availability rate",
     "profileCompleted": "Profile completed",
     "profileCompletion": "Profile {{percent}}% complete",
@@ -2090,8 +2088,31 @@
       "vatNumber": "e.g. IT12345678901",
       "phone": "e.g. +39 123 456 7890"
     },
-    "totalJobsCount_one": "{{count}} total assignment",
-    "totalJobsCount_other": "{{count}} total assignments"
+    "dashboardLoadError": "The supplier dashboard could not be loaded.",
+    "retry": "Retry",
+    "kpi": {
+      "title": "Assignments",
+      "periodLabel": "Period",
+      "periods": {
+        "CurrentMonth": "This month",
+        "PreviousMonth": "Last month",
+        "Last30Days": "Last 30 days",
+        "CurrentYear": "This year"
+      },
+      "periodRange": "From {{from}} to {{to}} (Italian time)",
+      "completed": "Completed",
+      "rejected": "Rejected",
+      "inPeriod": "In the period",
+      "awaitingAcceptance": "Waiting to be taken",
+      "upcoming": "Upcoming",
+      "now": "Now",
+      "totalRequests_one": "{{count}} request received in total",
+      "totalRequests_other": "{{count}} requests received in total",
+      "loadError": "The assignment indicators could not be loaded.",
+      "empty": "You have not received any requests from hosts yet.",
+      "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
+      "openInbox": "Open assignments"
+    }
   },
   "settings": {
     "planTitle": "Your plan",
@@ -4143,16 +4164,6 @@
     "currentOrigin": "You are using <code>{{origin}}</code>, which is not a secure origin for Web Crypto.",
     "lanHint": "For LAN development start Vite with HTTPS and open:",
     "publicSites": "Public booking sites (<code>{{path}}</code>) do not use Auth0 and also work over HTTP."
-  },
-  "supplierCheckIn": {
-    "invalidLink": "Invalid link",
-    "linkInvalidOrExpired": "Check-in link is invalid or expired",
-    "checkInFailed": "Check-in failed. Make sure you are at the property.",
-    "checkOutFailed": "Check-out failed.",
-    "notFound": "Not found",
-    "checkedInAt": "Check-in: {{time}}",
-    "checkInAction": "Check-in",
-    "checkOutAction": "Check-out"
   },
   "supplierShowcase": {
     "notFound": "Supplier not found",

@@ -1981,8 +1981,6 @@
       "registerAgain": "Registrati come fornitore",
       "skip": "Continua senza collegare"
     },
-    "completedJobs": "Lavori completati",
-    "upcomingJobs": "Prossimi incarichi",
     "availabilityRate": "Tasso disponibilità",
     "profileCompleted": "Profilo completato",
     "profileCompletion": "Profilo completo al {{percent}}%",
@@ -2090,8 +2088,31 @@
       "vatNumber": "es. IT12345678901",
       "phone": "es. +39 123 456 7890"
     },
-    "totalJobsCount_one": "{{count}} incarico totale",
-    "totalJobsCount_other": "{{count}} incarichi totali"
+    "dashboardLoadError": "Impossibile caricare la dashboard fornitore.",
+    "retry": "Riprova",
+    "kpi": {
+      "title": "Incarichi",
+      "periodLabel": "Periodo",
+      "periods": {
+        "CurrentMonth": "Questo mese",
+        "PreviousMonth": "Mese scorso",
+        "Last30Days": "Ultimi 30 giorni",
+        "CurrentYear": "Quest'anno"
+      },
+      "periodRange": "Dal {{from}} al {{to}} (ora italiana)",
+      "completed": "Completati",
+      "rejected": "Rifiutati",
+      "inPeriod": "Nel periodo",
+      "awaitingAcceptance": "Da prendere in carico",
+      "upcoming": "In arrivo",
+      "now": "Adesso",
+      "totalRequests_one": "{{count}} richiesta ricevuta in totale",
+      "totalRequests_other": "{{count}} richieste ricevute in totale",
+      "loadError": "Impossibile caricare gli indicatori degli incarichi.",
+      "empty": "Non hai ancora ricevuto richieste dagli host.",
+      "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
+      "openInbox": "Apri gli incarichi"
+    }
   },
   "settings": {
     "planTitle": "Il tuo piano",
@@ -4143,16 +4164,6 @@
     "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
     "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
     "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
-  },
-  "supplierCheckIn": {
-    "invalidLink": "Link non valido",
-    "linkInvalidOrExpired": "Il link di check-in non è valido o è scaduto",
-    "checkInFailed": "Check-in non riuscito. Assicurati di essere presso l'immobile.",
-    "checkOutFailed": "Check-out non riuscito.",
-    "notFound": "Non trovato",
-    "checkedInAt": "Check-in: {{time}}",
-    "checkInAction": "Check-in",
-    "checkOutAction": "Check-out"
   },
   "supplierShowcase": {
     "notFound": "Fornitore non trovato",
