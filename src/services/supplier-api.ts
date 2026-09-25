@@ -150,8 +150,14 @@ export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {
   return ApiClient.get<CalendarSyncStatus>('/supplier/calendar/status');
 }
 
+/** Saves the iCal URL and queues its first sync: 202 with `lastSyncStatus: 'Syncing'` (SU-15). */
 export async function setIcalFeed(icalFeedUrl: string): Promise<CalendarSyncStatus> {
   return ApiClient.put<CalendarSyncStatus>('/supplier/calendar/ical', { icalFeedUrl });
+}
+
+/** "Sync now": 202 with `lastSyncStatus: 'Syncing'` (nothing more is queued if a sync is already queued). */
+export async function syncSupplierCalendarNow(): Promise<CalendarSyncStatus> {
+  return ApiClient.post<CalendarSyncStatus>('/supplier/calendar/sync');
 }
 
 export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: string[] }> {

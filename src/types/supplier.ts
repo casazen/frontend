@@ -38,10 +38,18 @@ export interface SupplierAvailabilityResponse {
   dates: UpdateAvailabilityEntry[];
 }
 
+/**
+ * State of the supplier's iCal sync (SU-15): `Syncing` while the queued job has not run yet; the calendar is synced
+ * only once it becomes `Success`.
+ */
+export type SupplierCalendarSyncState = 'None' | 'Syncing' | 'Success' | 'Failure';
+
 export interface CalendarSyncStatus {
   calendarSyncType: string;
   icalFeedUrl?: string | null;
   calendarLastSyncAt?: string | null;
+  lastSyncStatus?: SupplierCalendarSyncState;
+  calendarSyncErrorCode?: string | null;
   calendarSyncError?: string | null;
 }
 

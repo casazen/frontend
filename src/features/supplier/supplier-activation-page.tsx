@@ -119,10 +119,11 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
     setSavingIcal(true);
     try {
       await setIcalFeedMutation.mutateAsync(icalUrl.trim());
+      // The first sync runs in a background job (SU-15): "started", never "synced".
       toast.success(t('supplier.syncSuccess'));
       setShowIcalDialog(false);
-    } catch {
-      toast.error(t('supplier.syncError'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('supplier.icalSaveError'));
     } finally {
       setSavingIcal(false);
     }
