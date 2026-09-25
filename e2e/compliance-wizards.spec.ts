@@ -9,6 +9,40 @@ import {
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 async function mockDashboardApis(page: import('@playwright/test').Page): Promise<void> {
+  await page.route('**/api/dashboard/kpis**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        period: { kind: 'Month', from: '2026-09-01', to: '2026-09-30', nights: 30 },
+        today: '2026-09-25',
+        propertyCount: 1,
+        occupancy: { occupiedNights: 0, availableNights: 30, closedNights: 0, rate: 0 },
+        revenue: { amount: 0, currency: 'EUR', stayCount: 0 },
+        arrivalsToday: { count: 0, items: [] },
+        departuresToday: { count: 0, items: [] },
+        upcomingCheckIns: { count: 0, items: [] },
+        recentBookings: [],
+      }),
+    });
+  });
+
+  await page.route('**/api/dashboard/ical-feeds**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    });
+  });
+
   await page.route('**/api/bookings**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();

@@ -3,32 +3,37 @@ import type {
   AlloggiatiGuestSummaryDto,
   AlloggiatiStatusDto,
   AlloggiatiSummaryDto,
-  CheckInContextDto,
 } from '../../src/types/alloggiati.types';
+import type { PublicCheckInContextDto } from '../../src/types/public-checkin.types';
 
 export const DEMO_CHECKIN_TOKEN = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const DEMO_BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
-export const demoCheckInContext: CheckInContextDto = {
-  bookingId: DEMO_BOOKING_ID,
-  guestId: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+export const demoPublicCheckInContext: PublicCheckInContextDto = {
+  completed: false,
+  status: 'Inviato',
+  sessionId: '11111111-1111-1111-1111-111111111111',
   propertyName: 'Appartamento Centro',
   checkInDate: '2026-07-01T14:00:00Z',
   checkOutDate: '2026-07-04T10:00:00Z',
-  guest: {
-    firstName: 'Mario',
-    lastName: 'Rossi',
-    email: 'mario.rossi@example.com',
-    placeOfBirth: '',
-    nationality: '',
-    documentNumber: '',
-    documentIssuingCountry: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: '',
-  },
-  dataComplete: false,
+  declaredGuests: 1,
+  privacyNoticeVersion: '1.0',
+  guests: [
+    {
+      type: 'SingleGuest',
+      firstName: 'Mario',
+      lastName: 'Rossi',
+      gender: 'Male',
+      dateOfBirth: '1990-05-15',
+      bornInItaly: true,
+      birthComuneName: 'Roma',
+      birthProvince: 'RM',
+      birthCountryName: 'Italia',
+      citizenshipName: 'Italiana',
+      documentType: 'IdentityCard',
+      documentIssuePlaceName: 'Roma',
+    },
+  ],
 };
 
 export const demoAlloggiatiSummary: AlloggiatiSummaryDto[] = [
@@ -102,40 +107,28 @@ export const demoAlloggiatiGuestSummary: AlloggiatiGuestSummaryDto = {
 };
 
 export async function mockCheckInApi(page: Page): Promise<void> {
-  await page.route(`**/api/checkin/${DEMO_CHECKIN_TOKEN}`, async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.fallback();
+  await page.route(`**/api/public/checkin/${DEMO_CHECKIN_TOKEN}`, async (route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(demoPublicCheckInContext),
+      });
       return;
     }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(demoCheckInContext),
-    });
-  });
-
-  await page.route(`**/api/checkin/${DEMO_CHECKIN_TOKEN}/guest-data`, async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.fallback();
+    if (method === 'POST') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          sessionId: demoPublicCheckInContext.sessionId,
+          message: 'ok',
+        }),
+      });
       return;
     }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ dataComplete: true }),
-    });
-  });
-
-  await page.route(`**/api/checkin/${DEMO_CHECKIN_TOKEN}/document`, async (route) => {
-    if (route.request().method() !== 'POST') {
-      await route.fallback();
-      return;
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ documentScanUrl: '/uploads/demo-scan.pdf' }),
-    });
+    await route.fallback();
   });
 }
 

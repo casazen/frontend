@@ -98,8 +98,10 @@ test.describe('Branded booking site (#215)', () => {
     await page.goto(`/book/${DEMO_ORG_SLUG}`);
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
 
-    await expect(page.getByRole('link', { name: 'Privacy Policy' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Termini di servizio' })).toBeVisible();
+    await expect(page.getByTestId('footer-privacy')).toBeVisible();
+    await expect(page.getByTestId('footer-terms')).toBeVisible();
+    await expect(page.getByTestId('footer-privacy')).toHaveText(/Privacy Policy/i);
+    await expect(page.getByTestId('footer-terms')).toHaveText(/Termini di servizio|Terms of Service/i);
   });
 
   test('AC9: AI content notice is hidden when isAiGenerated is false', async ({ page }) => {

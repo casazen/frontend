@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 
 test.describe('Guest check-in portal', () => {
   test('shows invalid link for unknown token', async ({ page }) => {
@@ -19,16 +19,20 @@ test.describe('Guest check-in portal', () => {
             checkInDate: '2026-07-10T00:00:00Z',
             checkOutDate: '2026-07-12T00:00:00Z',
             status: 'Inviato',
-            guestPrefill: {
+            declaredGuests: 1,
+            guests: [{
+              type: 'SingleGuest',
               firstName: 'Mario',
               lastName: 'Rossi',
-              email: 'mario@example.com',
-              nationality: 'IT',
-              gender: null,
-              documentNumberMasked: null,
-              documentIssuingCountry: 'IT',
-              placeOfBirth: 'Roma',
-            },
+              gender: 'Male',
+              dateOfBirth: '1990-05-15',
+              bornInItaly: true,
+              birthComuneName: 'Roma',
+              birthProvince: 'RM',
+              birthCountryName: 'Italia',
+              citizenshipName: 'Italiana',
+              documentIssuePlaceName: 'Roma',
+            }],
           }),
         });
         return;

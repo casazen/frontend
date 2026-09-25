@@ -156,6 +156,8 @@ async function mockLegalDocuments(page: import('@playwright/test').Page): Promis
     effectiveAt: '2026-01-01T00:00:00Z',
     title: 'Test Document',
     summary: 'E2E test document.',
+    // D3: the public footer only renders privacy/terms when the backend sends an http(s) documentUrl.
+    documentUrl: 'https://example.com/legal/document',
   };
 
   await page.route('**/api/legal/tos', async (route) => {
@@ -188,13 +190,21 @@ export const test = base.extend({
   page: async ({ page }, use) => {
     await page.addInitScript(() => {
       if (!localStorage.getItem('casazen.locale')) {
-        localStorage.setItem('casazen.locale', 'en');
+        localStorage.setItem('casazen.locale', 'it');
       }
     });
     await installDemoUserMeMock(page);
     await mockPlansCatalog(page);
     await installDefaultDemoApiMocks(page);
     await mockLegalDocuments(page);
+    await page.route('**/api/public/features', async (route) => {
+      if (route.request().method() !== 'GET') { await route.fallback(); return; }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ otaPartnerApi: false }),
+      });
+    });
     await use(page);
   },
 });

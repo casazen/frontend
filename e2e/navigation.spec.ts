@@ -38,7 +38,7 @@ test.describe('Navigation (#252 / #259)', () => {
     });
 
     test('CIN page uses app shell with sidebar', async ({ page }) => {
-      await page.goto(demoUrl('/app/short-rent/cin', 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await page.goto(demoUrl('/app/short-rent/compliance/cin', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await expect(page.getByRole('complementary', { name: 'Main navigation' })).toBeVisible();
       await expect(page.getByTestId('cin-compliance-page')).toBeVisible();

@@ -17,6 +17,7 @@ import {
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
 import { futureStay, mockDirectBookingResponse } from './helpers/direct-checkout-mock';
+import { demoUrl } from './helpers/demo-profile';
 import { mockCurrentUserWithOrg } from './helpers/org-api-mock';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import type { CreateDirectBookingPayload, Property } from '../src/types';
@@ -65,14 +66,14 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('vetrina page renders property list panel', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText('Trastevere Suite')).toBeVisible();
   });
 
   test('selecting a property shows the preview iframe for that property', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
@@ -86,7 +87,7 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('published badge appears on active+compliant property', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
@@ -96,7 +97,7 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('copy URL button copies property booking URL to clipboard', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
     await page.getByTestId('vetrina-property-copy-url').first().click();
