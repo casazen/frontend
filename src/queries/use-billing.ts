@@ -57,10 +57,13 @@ export function useStartCheckout() {
   });
 }
 
-/** Opens the Stripe billing portal (plan change, payment method, open invoices). */
-export function useOpenBillingPortal() {
+/**
+ * Opens the Stripe billing portal (plan change, payment method, open invoices). `returnPath`: the plan or billing page
+ * the portal links back to, i.e. the calling page (PL-16).
+ */
+export function useOpenBillingPortal(returnPath?: string) {
   return useMutation({
-    mutationFn: () => BillingApi.createPortalSession(),
+    mutationFn: () => BillingApi.createPortalSession(returnPath),
     onSuccess: ({ portalUrl }) => redirectToStripe(portalUrl),
     onError: (error) => {
       toast.error(getPortalErrorMessage(error, i18n.t));

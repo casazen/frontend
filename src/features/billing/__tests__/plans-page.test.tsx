@@ -12,7 +12,7 @@ import { ME_QUERY_KEY } from '@/lib/onboarding-gate';
 import * as userQueries from '@/queries/use-users';
 import type { BillingPlan, BillingSubscription, PlanTier } from '@/types';
 import { CHECKOUT_CONFIRM_POLL_MS, CHECKOUT_CONFIRM_TIMEOUT_MS } from '../billing-utils';
-import { PlansPage } from '../plans-page';
+import { PlansPage, PlansPageContent } from '../plans-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/billing.api', () => ({
@@ -41,6 +41,7 @@ type EntitlementResult = ReturnType<typeof userQueries.useEntitlement>;
 type WorkspaceResult = ReturnType<typeof useWorkspace>;
 
 const PLAN_PATH = '/app/short-rent/settings/plan';
+const LONG_RENT_PLAN_PATH = '/app/long-rent/settings/plan';
 const CHECKOUT_URL = 'https://checkout.stripe.com/c/pay/cs_test_123';
 const PORTAL_URL = 'https://billing.stripe.com/p/session/test_123';
 
@@ -107,15 +108,17 @@ function LocationProbe() {
   return <p data-testid="location">{`${location.pathname}${location.search}`}</p>;
 }
 
-function renderPage(search = '') {
+function renderPage(search = '', path = PLAN_PATH) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const invalidate = vi.spyOn(client, 'invalidateQueries');
   render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[`${PLAN_PATH}${search}`]}>
+        <MemoryRouter initialEntries={[`${path}${search}`]}>
           <Routes>
             <Route path={PLAN_PATH} element={<PlansPage />} />
+            {/* The long-rent route renders the content only: the long-rent shell comes from the context layout. */}
+            <Route path={LONG_RENT_PLAN_PATH} element={<PlansPageContent />} />
             <Route path="/app/short-rent/settings/billing" element={<p>billing page</p>} />
           </Routes>
           <LocationProbe />
@@ -222,12 +225,31 @@ describe('PlansPage', () => {
     await submitCheckout(dialog, 'IT', 'it 123.456.789-01');
 
     await waitFor(() => expect(assign).toHaveBeenCalledWith(CHECKOUT_URL));
-    // Default return page of the backend: no return URL sent from the plan page.
+    // Stripe comes back to this same page (PL-16); the backend builds the URL on its public domain.
     expect(BillingApi.createCheckoutSession).toHaveBeenCalledWith({
       planTier: 'Pro',
       billingCountry: 'IT',
       vatId: 'IT12345678901',
+      returnPath: PLAN_PATH,
     });
+  });
+
+  it('ChoosePlan_FromTheLongRentShell_LandlordPaysAndReturnsToTheLongRentPlanPage', async () => {
+    // PL-16 (A1-36): a landlord with only long-term leases is the billing administrator of its org.
+    mockContexts(['long-rent']);
+    renderPage('', LONG_RENT_PLAN_PATH);
+    const dialog = await openCheckoutFor('Pro');
+
+    await submitCheckout(dialog, 'IT');
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith(CHECKOUT_URL));
+    expect(screen.queryByTestId('billing-admin-required')).not.toBeInTheDocument();
+    expect(BillingApi.createCheckoutSession).toHaveBeenCalledWith({
+      planTier: 'Pro',
+      billingCountry: 'IT',
+      returnPath: LONG_RENT_PLAN_PATH,
+    });
+    expect(screen.getByTestId('billing-settings-link')).toHaveAttribute('href', '/app/long-rent/settings/billing');
   });
 
   it('ChoosePlan_NoCountry_ShowsValidationWithoutCallingTheApi', async () => {
@@ -300,6 +322,7 @@ describe('PlansPage', () => {
     fireEvent.click(planButton('Starter'));
     await waitFor(() => expect(assign).toHaveBeenCalledWith(PORTAL_URL));
     expect(BillingApi.createCheckoutSession).not.toHaveBeenCalled();
+    expect(BillingApi.createPortalSession).toHaveBeenCalledWith(PLAN_PATH);
   });
 
   it('CheckoutReturnSuccess_BackendReportsActive_ConfirmsAndRefreshesThePlan', async () => {
@@ -379,7 +402,7 @@ describe('PlansPage', () => {
   });
 
   it('PlansPage_NotBillingAdmin_AsksToContactTheAdministratorWithoutCallingTheApi', () => {
-    mockContexts(['long-rent']);
+    mockContexts(['supplier']);
     renderPage();
 
     expect(screen.getByTestId('billing-admin-required')).toHaveTextContent(i18n.t('billing.adminRequired.description'));

@@ -279,16 +279,78 @@ export interface TriggerRegistrationResult {
   message: string;
 }
 
+/** ATA status of the property's comune (backend `HighTensionAreaStatus`): only `Verified` grants the concordato reliefs. */
+export type HighTensionAreaStatus = 'NotListed' | 'Unverified' | 'Verified';
+
+/** `Computed`, or `InputRequired` (data CasaZen does not hold), or `NotComputed` (left to the accountant). */
+export type AdvisoryEstimateStatus = 'Computed' | 'InputRequired' | 'NotComputed';
+
+/**
+ * `GET|POST /leases/:id/rli/advisory` (LT-08): cedolare secca against the ordinary regime. Figures come from the
+ * configured parameters; what the backend cannot compute has a status, never an invented amount.
+ */
 export interface CedolareAdvisory {
   leaseRegime: FiscalRegime;
+  contractType: LeaseContractType;
+  /** Regime chosen by the landlord; null for older canone concordato leases. */
+  taxRegime: LeaseTaxRegime | null;
   annualRent: number;
-  cedolareRate: number;
-  cedolareEstimateEur: number;
-  registroRate: number;
-  registroEstimateEur: number;
-  bolloEur: number;
-  ordinaryIrpefNote: string;
-  disclaimer: string;
+  ata: HighTensionAreaStatus;
+  /** Canone concordato in a verified ATA comune: reduced cedolare rate and 70% registration base. */
+  concordatoAtaReliefs: boolean;
+  cedolare: {
+    rate: number;
+    rateBasis: 'Standard' | 'ConcordatoAta';
+    annualTaxEur: number;
+    /** Always 0: no registration tax nor stamp duty with the cedolare. */
+    registroEur: number;
+    bolloEur: number;
+    source: string;
+  };
+  ordinary: {
+    registro: {
+      rate: number;
+      baseShare: number;
+      taxableBaseEur: number;
+      computedEur: number;
+      firstYearMinimumEur: number;
+      minimumApplied: boolean;
+      firstYearEur: number;
+      source: string;
+    };
+    bollo: {
+      status: AdvisoryEstimateStatus;
+      eurPerUnit: number;
+      pagesPerUnit: number;
+      linesPerUnit: number;
+      units: number | null;
+      copies: number | null;
+      amountEur: number | null;
+      /** False when the lines were not given: the amount counts the pages only. */
+      linesConsidered: boolean;
+      source: string;
+    };
+    irpef: {
+      status: AdvisoryEstimateStatus;
+      /** `not_configured`, `brackets_outdated`, `income_over_limit`, `concordato_ata_relief_not_verified`. */
+      reasonCode: string | null;
+      taxYear: number | null;
+      rentFlatReduction: number | null;
+      taxableRentEur: number | null;
+      additionalGrossIrpefEur: number | null;
+      source: string | null;
+    };
+  };
+  /** Note codes, localized under `leases.rli.advisory.note`. */
+  notes: string[];
+}
+
+/** Data of the advisory the backend does not hold: never stored, sent in the body of a POST. */
+export interface CedolareAdvisoryInput {
+  writtenPages?: number;
+  lines?: number;
+  copies?: number;
+  otherTaxableIncomeEur?: number;
 }
 
 export interface RliChecklistItem {

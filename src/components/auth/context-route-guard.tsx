@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { isFeatureEnabled, type FeatureFlagKey } from '@/config/feature-flags';
@@ -11,6 +11,11 @@ interface ContextRouteGuardProps {
   requiredPermissions?: string[];
   /** Route behind a backend feature flag: redirects to the context home while the flag is off. */
   featureFlag?: FeatureFlagKey;
+  /**
+   * The same page in other contexts (plan and billing, PL-16): a user without `contextKey` who works in one of them is
+   * sent there, query string included (e.g. `?checkout=success` of an old Stripe return page), instead of to a home.
+   */
+  alternatePaths?: Partial<Record<AppContextKey, string>>;
   children: React.ReactNode;
 }
 
@@ -18,9 +23,11 @@ export function ContextRouteGuard({
   contextKey,
   requiredPermissions = [],
   featureFlag,
+  alternatePaths,
   children,
 }: ContextRouteGuardProps) {
   const { t } = useTranslation();
+  const { search } = useLocation();
   const { contexts, isReady, getDefaultRoute } = useWorkspace();
   const { flags, isLoading: flagsLoading } = useFeatureFlags();
   const current = contexts.find((ctx) => ctx.contextKey === contextKey);
@@ -34,7 +41,8 @@ export function ContextRouteGuard({
   }
 
   if (!current) {
-    return <Navigate to={contexts[0].defaultRoute} replace />;
+    const alternate = contexts.map((ctx) => alternatePaths?.[ctx.contextKey]).find(Boolean);
+    return <Navigate to={alternate ? `${alternate}${search}` : contexts[0].defaultRoute} replace />;
   }
 
   const hasAllPermissions = requiredPermissions.every((permission) => current.permissions.includes(permission));

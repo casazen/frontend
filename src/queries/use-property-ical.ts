@@ -135,3 +135,22 @@ export function usePropertyIcalExportUrl(propertyId: string | undefined) {
     enabled: Boolean(propertyId),
   });
 }
+
+/**
+ * New export link (PC-12): the old one stops working, so the host pastes the new one on every OTA. Errors: toast
+ * here, inline in the confirmation dialog.
+ */
+export function useRegeneratePropertyIcalExportUrl(propertyId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => propertyIcalApi.regenerateExportUrl(propertyId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(propertyIcalExportKey(propertyId), data);
+      void queryClient.invalidateQueries({ queryKey: ['property-ical', propertyId] });
+      toast.success(i18n.t('ical.regenerated'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('ical.regenerateFailed'));
+    },
+  });
+}

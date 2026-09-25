@@ -344,13 +344,77 @@
     "timeline": "Timeline",
     "fiscalCodeMasked": "Tax code",
     "rli": {
-      "advisoryTitle": "Cedolare secca — information only",
+      "advisory": {
+        "title": "Cedolare secca or ordinary regime: tax information",
+        "disclaimer": "Information, not tax advice: estimates computed with the parameters of the sources listed. CasaZen is not an authorized intermediary under Italian DPR 322/1998: check the choice with an accountant.",
+        "annualRent": "Annual rent: {{amount}}",
+        "chosen": "Chosen regime",
+        "ataLabel": "High housing pressure area (ATA)",
+        "ata": {
+          "Verified": "verified municipality",
+          "Unverified": "candidate municipality, not verified on an official source",
+          "NotListed": "municipality not in CasaZen's list"
+        },
+        "cedolare": {
+          "title": "Cedolare secca",
+          "rate": "Rate",
+          "rateBasis": {
+            "Standard": "Standard cedolare secca rate",
+            "ConcordatoAta": "Canone concordato in a verified high housing pressure municipality"
+          },
+          "tax": "Annual substitute tax",
+          "noRegistroBollo": "No registration tax and no stamp duty. The contract must still be registered by the deadline."
+        },
+        "ordinary": {
+          "title": "Ordinary regime",
+          "registro": "Registration tax (first year)",
+          "registroFormulaFull": "{{rate}} of {{base}} (annual rent)",
+          "registroFormulaReduced": "{{rate}} of {{base}} ({{share}} of the annual rent: canone concordato in a high housing pressure municipality)",
+          "registroMinimum": "The first-year minimum of {{minimum}} applies: the computation would give {{computed}}.",
+          "registroNextYears": "Following years: {{rate}} of the rent of each year, within 30 days of the end of the previous one, with no minimum.",
+          "bollo": "Stamp duty",
+          "bolloRule": "{{amount}} every {{pages}} written pages, and in any case every {{lines}} lines, for each copy to register.",
+          "bolloInputRequired": "Enter pages and copies below to compute it.",
+          "bolloDetail": "{{units}} × {{amount}} per copy, {{copies}} copies",
+          "bolloPagesOnly": "Computed on the pages only: if a copy has more than {{lines}} lines every {{pages}} pages, more stamps are due.",
+          "irpef": "IRPEF",
+          "irpefComputed": "Estimated additional gross IRPEF ({{year}} brackets)",
+          "irpefBase": "Computed on the rent reduced by {{reduction}} ({{taxable}}). Regional and municipal surcharges and tax credits are not included; if the revalued cadastral income is higher than the reduced rent, the income is the cadastral one.",
+          "irpefToAssess": "Comparison with IRPEF: to be assessed with an accountant.",
+          "irpefInputHint": "For an estimate, enter below the IRPEF taxable income from your other sources.",
+          "irpefReason": {
+            "not_configured": "The IRPEF brackets are not configured.",
+            "brackets_outdated": "The IRPEF brackets available are those of {{year}} and must be updated.",
+            "income_over_limit": "With this total income the tax does not depend on the brackets alone.",
+            "concordato_ata_relief_not_verified": "Canone concordato in a high housing pressure municipality has a reduction of the taxable income that CasaZen does not compute."
+          }
+        },
+        "notesTitle": "Good to know",
+        "note": {
+          "ata_unverified": "If the municipality is a high housing pressure area, the cedolare drops to 10% and the registration tax base to 70% of the rent: check it with an accountant.",
+          "ata_not_listed": "If the municipality is a high housing pressure area (for example Bari, Bologna, Catania, Florence, Genoa, Milan, Naples, Palermo, Rome, Turin, Venice, their neighbouring municipalities and the other provincial capitals, plus the municipalities listed by CIPE), the cedolare drops to 10% and the registration tax base to 70% of the rent: check it with an accountant.",
+          "emergency_comuni_not_checked": "The 10% cedolare also applies to canone concordato in municipalities where a state of emergency for a disaster was declared in the 5 years before 28/05/2014: there is no single official list and CasaZen does not check it.",
+          "concordato_attestation_required": "For contracts signed without assistance, the canone concordato reliefs require the certificate of conformity from the organizations that signed the local agreement.",
+          "transitorio_reliefs_to_confirm": "Transitory contract: whether the 10% cedolare and the reduced registration base also apply to transitory contracts in a high housing pressure municipality must be checked with an accountant. The estimate uses the ordinary values.",
+          "short_term_annualized": "Term shorter than a year: the amounts are computed on 12 months of rent. Check the base with an accountant.",
+          "tax_regime_unknown": "The tax regime chosen for this contract is not recorded: both options are shown.",
+          "questura_not_replaced": "With a non-EU tenant, registering the contract does not replace the written notice to the public security authority within 48 hours of handing over the property."
+        },
+        "inputs": {
+          "title": "Data to complete the estimate",
+          "privacy": "Used only for the computation: CasaZen does not store them.",
+          "writtenPages": "Written pages of one copy of the contract",
+          "lines": "Lines of one copy (optional)",
+          "copies": "Copies to register",
+          "otherIncome": "IRPEF taxable income from other sources, in euros per year (optional)",
+          "submit": "Update the estimate",
+          "updating": "Computing...",
+          "invalid": "Check the values: pages from 1 to 1,000, lines from 1 to 100,000, copies from 1 to 20, income from 0 to 100,000,000 €. Enter pages and copies together."
+        },
+        "sources": "Sources"
+      },
       "advisoryLoading": "Loading tax comparison...",
       "advisoryError": "Unable to load tax information.",
-      "cedolareRate": "Cedolare rate",
-      "cedolareEstimate": "Estimated substitute tax (annual)",
-      "registroEstimate": "Estimated registration tax (ordinary regime)",
-      "bollo": "Stamp duty (indicative)",
       "checklistTitle": "RLI registration checklist (30 days)",
       "checklistLoading": "Loading checklist...",
       "checklistError": "Unable to load the checklist.",
@@ -1731,14 +1795,21 @@
     "blockCount_other": "{{count}} blocked periods imported",
     "syncStarted": "Sync started: the blocked dates update as soon as it ends.",
     "exportTitle": "Export link for OTAs",
-    "exportDescription": "Airbnb, Booking.com and your other channels read the dates taken on CasaZen from this link, so they do not sell them twice.",
+    "exportDescription": "Airbnb, Booking.com and your other channels read from this link the bookings made on CasaZen and your manual blocks, so they do not sell those dates twice.",
+    "exportContentNote": "CasaZen exports direct and manual bookings (and your blocks), not the bookings that came from the OTAs nor the dates imported from their calendars: link every OTA to the others too, for example the Booking.com calendar on Airbnb and the Airbnb one on Booking.com.",
     "exportLoading": "Loading the export link…",
     "exportPrivate": "Keep it private: anyone with the link can see the dates taken.",
     "exportHowTo": "Where to paste it",
     "exportAirbnbSteps": "in your listing open Availability → Calendar sync → Import calendar, paste the link and give it a name (e.g. CasaZen).",
     "exportBookingSteps": "in the Extranet open Rates & availability → Sync calendars, add a calendar to import and paste the link.",
     "exportRefreshNote": "OTAs read the link again from time to time: changes do not show up at once.",
-    "copyFailed": "Could not copy: select the link and copy it by hand."
+    "copyFailed": "Could not copy: select the link and copy it by hand.",
+    "regenerate": "Regenerate link",
+    "regenerateTitle": "Regenerate the export link?",
+    "regenerateDescription": "The old link stops working at once: update it on Airbnb, Booking.com and the other channels where you pasted it, or they will no longer see the dates taken on CasaZen. Use it if the link reached someone who should not have it.",
+    "regenerateConfirm": "Regenerate",
+    "regenerated": "New link created: update it on Airbnb and Booking.com.",
+    "regenerateFailed": "Could not regenerate the export link."
   },
   "marketplace": {
     "title": "Service Marketplace",

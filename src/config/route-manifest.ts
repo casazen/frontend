@@ -454,6 +454,36 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/profile/profile-content-page')).ProfileContentPage }),
     legacyPaths: ['/profile'],
   },
+  // Plan and billing of the org for a landlord with only long-term leases (PL-16, A1-36): same pages as in short-rent,
+  // inside the long-rent shell; also the Stripe return pages of a checkout or portal started here.
+  {
+    path: '/app/long-rent/settings/plan',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.plan',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'CreditCard',
+    component: async () => ({
+      default: (await import('@/features/billing/plans-page')).PlansPageContent,
+    }),
+  },
+  {
+    path: '/app/long-rent/settings/billing',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.billing',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 4,
+    icon: 'Receipt',
+    component: async () => ({
+      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
+    }),
+  },
   {
     path: '/app/admin',
     context: 'admin',
@@ -744,4 +774,21 @@ export function getDrawerNavByGroup(
 
 export function getManifestEntry(path: string): RouteManifestEntry | undefined {
   return ROUTE_MANIFEST.find((entry) => entry.path === path);
+}
+
+/**
+ * The same plan or billing page in the other contexts (PL-16), e.g. `/app/long-rent/settings/plan` for
+ * `/app/short-rent/settings/plan`: where a user who opens the page of a context it does not work in (an old link, a
+ * Stripe return page) is sent. Empty for any other entry.
+ */
+export function getOrgBillingPageAlternates(entry: RouteManifestEntry): Partial<Record<AppContextKey, string>> {
+  if (!entry.orgBillingAdmin) return {};
+  const suffix = entry.path.slice(`/app/${entry.context}`.length);
+  const alternates: Partial<Record<AppContextKey, string>> = {};
+  for (const other of ROUTE_MANIFEST) {
+    if (other.orgBillingAdmin && other.context !== entry.context && other.path === `/app/${other.context}${suffix}`) {
+      alternates[other.context] = other.path;
+    }
+  }
+  return alternates;
 }

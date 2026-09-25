@@ -1,6 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { leasesApi } from '@/api/leases.api';
-import type { CreateLeaseDto, ManualRegistrationInput, OfflineSignatureInput } from '@/types';
+import type {
+  CedolareAdvisoryInput,
+  CreateLeaseDto,
+  ManualRegistrationInput,
+  OfflineSignatureInput,
+} from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -152,11 +157,13 @@ export function useDeclareManualRegistration() {
   });
 }
 
-export function useRliAdvisory(id: string) {
+/** Tax advisory of the lease (LT-08), recomputed with the data the landlord enters; the previous result stays shown meanwhile. */
+export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput) {
   return useQuery({
-    queryKey: [LEASES_KEY, id, 'rli', 'advisory'],
-    queryFn: () => leasesApi.getRliAdvisory(id),
+    queryKey: [LEASES_KEY, id, 'rli', 'advisory', input ?? null],
+    queryFn: () => leasesApi.getRliAdvisory(id, input),
     enabled: !!id,
+    placeholderData: keepPreviousData,
   });
 }
 
