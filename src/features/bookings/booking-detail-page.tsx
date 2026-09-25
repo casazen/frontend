@@ -21,19 +21,13 @@ import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
+import { isBookingTab, type BookingTab } from './lib/booking-tabs';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
 import type { Booking } from '@/types';
-
-const BOOKING_TABS = ['details', 'guest', 'payment', 'alloggiati'] as const;
-type BookingTab = (typeof BOOKING_TABS)[number];
-
-function isBookingTab(value: string | null): value is BookingTab {
-  return BOOKING_TABS.includes(value as BookingTab);
-}
 
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
