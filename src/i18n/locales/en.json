@@ -128,32 +128,92 @@
     },
     "seo": {
       "title": "SEO Compliance",
-      "description": "Programmatic pages for short-term rentals and tourist tax",
-      "approveAll": "Approve all",
+      "description": "Programmatic pages for short-term rentals and tourist tax. Every generated text stays a draft until you approve it after reading it.",
       "generateAll": "Generate all",
       "aiBudget": "Platform AI budget",
       "budgetTokens": "{{used}} / {{cap}} tokens this month",
+      "budgetLoading": "Loading the budget…",
+      "budgetError": "Unable to load the AI budget.",
       "loading": "Loading...",
       "loadError": "Unable to load SEO pages. Please try again later.",
+      "filter": {
+        "label": "Review status",
+        "all": "All",
+        "draft": "To review",
+        "reviewed": "Reviewed"
+      },
+      "pagination": "Page {{page}} of {{totalPages}} · {{totalCount}} pages",
+      "previous": "Previous",
+      "next": "Next",
+      "pageType": {
+        "complianceGuide": "Compliance guide",
+        "touristTaxCalc": "Tourist tax",
+        "supplierMicrosite": "Supplier microsite"
+      },
       "table": {
         "comune": "Municipality",
         "type": "Type",
-        "status": "Status",
-        "lastRefresh": "Last refresh",
+        "status": "Publication",
+        "content": "Latest revision",
+        "lastRefresh": "Last generation",
         "actions": "Actions",
-        "approve": "Approve",
+        "review": "Review",
+        "openPublic": "Open public page",
+        "withdraw": "Withdraw",
         "empty": "No SEO pages."
       },
+      "publication": {
+        "published": "Published",
+        "publishedWithPending": "Published · new revision to approve",
+        "notPublished": "Not published"
+      },
+      "contentStatus": {
+        "generated": "Generated text, to review",
+        "generatedPublished": "Published text",
+        "aiProviderNotConfigured": "Content not generated: AI provider not configured",
+        "emptyOutput": "Content not generated: empty answer from the AI provider",
+        "invalidOutput": "Content not generated: invalid answer from the AI provider",
+        "placeholder": "Content not generated: placeholder text withdrawn",
+        "none": "No revision"
+      },
       "confirmDialog": {
-        "title": "Confirm regeneration",
+        "title": "Confirm generation",
         "cancel": "Cancel",
         "confirm": "Confirm",
-        "description_one": "A Hangfire job will be queued to generate SEO pages for {{count}} municipality in the registry (2 pages each) and approve them automatically.",
-        "description_other": "A Hangfire job will be queued to generate SEO pages for all municipalities in the registry ({{count}} municipalities, 2 pages each) and approve them automatically."
+        "description_one": "A job will be queued to generate SEO pages for {{count}} municipality in the registry (2 pages each). The texts stay drafts: each one must be read and approved before it is published.",
+        "description_other": "A job will be queued to generate SEO pages for all municipalities in the registry ({{count}} municipalities, 2 pages each). The texts stay drafts: each one must be read and approved before it is published."
       },
-      "status": {
-        "reviewed": "Reviewed",
-        "draft": "Draft"
+      "review": {
+        "title": "Review: {{title}}",
+        "description": "Read the text as it will appear on the public page before approving it.",
+        "loading": "Loading the revision…",
+        "loadError": "Unable to load the revision. Please try again later.",
+        "pendingHeading": "Text to approve",
+        "publishedHeading": "Text published now",
+        "noPending": "There is no new revision: the published text is the latest generated one.",
+        "notPublished": "The page is not published: no text is visible to the public.",
+        "generatedAt": "Generated on {{date}}",
+        "promptVersion": "Prompt {{version}}",
+        "notPublishable": "This revision has no publishable text and cannot be approved. Configure the AI provider or regenerate the page.",
+        "counselHint": "One of the first 100 pages: the legal review is required before publication.",
+        "confirmCounsel": "I confirm that this text has had the legal review",
+        "confirmReview": "I confirm that I have read and reviewed this text",
+        "noteLabel": "Note for the history (optional)",
+        "notePlaceholder": "E.g. reference of the legal opinion",
+        "approve": "Approve and publish",
+        "close": "Close",
+        "history": "Review history",
+        "historyEmpty": "No approval recorded.",
+        "historyApproved": "Approved by {{actor}} on {{date}}",
+        "historyWithdrawn": "Withdrawn by {{actor}} on {{date}}",
+        "historyNote": "Note: {{note}}"
+      },
+      "withdrawDialog": {
+        "title": "Withdraw the page?",
+        "description": "“{{title}}” goes back to draft: it leaves the public site and the sitemap until you approve a text again.",
+        "noteLabel": "Reason (optional)",
+        "cancel": "Cancel",
+        "confirm": "Withdraw"
       }
     },
     "profile": {
@@ -172,10 +232,6 @@
         "processing": "In progress",
         "enqueued": "Enqueued",
         "unknown": "Unknown"
-      },
-      "seo": {
-        "reviewed": "Reviewed",
-        "draft": "Draft"
       }
     }
   },
@@ -3978,11 +4034,8 @@
     "documentDeleted": "Document deleted successfully",
     "documentDeleteFailed": "Failed to delete document",
     "documentDownloadFailed": "Failed to download document",
-    "seoApproveFailed": "Failed to approve SEO pages",
-    "seoGenerated": "SEO pages generated successfully",
+    "seoGenerated": "Generation queued: {{estimatedPages}} pages to review before publication",
     "seoGenerateFailed": "Failed to generate SEO pages",
-    "seoReviewUpdated": "SEO review updated successfully",
-    "seoReviewUpdateFailed": "Failed to update SEO review",
     "orgPlanUpdated": "Organization plan updated successfully",
     "orgPlanUpdateFailed": "Failed to update organization plan",
     "dataExported": "Data exported successfully",
@@ -3994,8 +4047,6 @@
     "consentUpdated": "Consent updated successfully",
     "consentUpdateFailed": "Failed to update consent",
     "otaValidationFailed": "OTA credentials validation failed: {{errors}}",
-    "seoApproved_one": "{{count}} SEO page approved successfully",
-    "seoApproved_other": "{{count}} SEO pages approved successfully",
     "alloggiatiMarkedSent": "Manual submission recorded",
     "alloggiatiMarkSentFailed": "Could not record the manual submission",
     "manualRegistrationSaved": "Registration saved: the contract is now registered.",
@@ -4011,7 +4062,11 @@
     "cadastralSaved": "Cadastral data saved",
     "cadastralSaveFailed": "Could not save the cadastral data",
     "apeIdentificationSaved": "APE details saved",
-    "apeIdentificationSaveFailed": "Could not save the APE details"
+    "apeIdentificationSaveFailed": "Could not save the APE details",
+    "seoRevisionApproved": "Revision approved: the public page shows the new text",
+    "seoRevisionApproveFailed": "Failed to approve the revision",
+    "seoPageWithdrawn": "Page withdrawn: it is no longer public",
+    "seoPageWithdrawFailed": "Failed to withdraw the page"
   },
   "fiscal": {
     "page": {

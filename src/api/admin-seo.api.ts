@@ -1,14 +1,15 @@
 import { ApiClient } from '@/api/client';
 import type {
+  ApproveSeoRevisionRequest,
   PlatformAiBudget,
-  SeoBulkApproveResult,
   SeoComuneRegistryItem,
   SeoGenerateAccepted,
   SeoGenerateRequest,
   SeoPageAdmin,
+  SeoPageAdminDetail,
   SeoPagesPagedResult,
   SeoPagesQuery,
-  UpdateSeoReviewStatusRequest,
+  WithdrawSeoPageRequest,
 } from '@/types/seo.types';
 
 interface BackendPagedResult<T> {
@@ -27,21 +28,22 @@ export const AdminSeoApi = {
       pageSize: res.pageSize ?? 20,
     })),
 
+  /** Review screen: published and pending text (sanitized) and the review audit. */
+  getPage: (pageId: string): Promise<SeoPageAdminDetail> =>
+    ApiClient.get<SeoPageAdminDetail>(`/admin/seo/pages/${pageId}`),
+
   generatePages: (request: SeoGenerateRequest): Promise<SeoGenerateAccepted> =>
     ApiClient.post<SeoGenerateAccepted>('/admin/seo/generate', request),
 
-  updateReviewStatus: (
-    pageId: string,
-    body: UpdateSeoReviewStatusRequest,
-  ): Promise<SeoPageAdmin> =>
-    ApiClient.patch<SeoPageAdmin>(`/admin/seo/pages/${pageId}/review-status`, body),
+  approveRevision: (pageId: string, body: ApproveSeoRevisionRequest): Promise<SeoPageAdmin> =>
+    ApiClient.post<SeoPageAdmin>(`/admin/seo/pages/${pageId}/approve`, body),
+
+  withdrawPage: (pageId: string, body: WithdrawSeoPageRequest): Promise<SeoPageAdmin> =>
+    ApiClient.post<SeoPageAdmin>(`/admin/seo/pages/${pageId}/withdraw`, body),
 
   getBudget: (): Promise<PlatformAiBudget> =>
     ApiClient.get<PlatformAiBudget>('/admin/seo/budget'),
 
   listComuni: (): Promise<SeoComuneRegistryItem[]> =>
     ApiClient.get<SeoComuneRegistryItem[]>('/admin/seo/comuni'),
-
-  approveAllDrafts: (counselApproved = true): Promise<SeoBulkApproveResult> =>
-    ApiClient.post<SeoBulkApproveResult>('/admin/seo/approve-all-drafts', { counselApproved }),
 };

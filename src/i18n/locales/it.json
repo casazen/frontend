@@ -128,32 +128,92 @@
     },
     "seo": {
       "title": "SEO Compliance",
-      "description": "Pagine programmatiche per affitti brevi e tassa di soggiorno",
-      "approveAll": "Approva tutte",
+      "description": "Pagine programmatiche per affitti brevi e tassa di soggiorno. Ogni testo generato resta in bozza finché non lo approvi dopo averlo letto.",
       "generateAll": "Genera tutti",
       "aiBudget": "Budget AI piattaforma",
       "budgetTokens": "{{used}} / {{cap}} token questo mese",
+      "budgetLoading": "Caricamento del budget…",
+      "budgetError": "Impossibile caricare il budget AI.",
       "loading": "Caricamento…",
       "loadError": "Impossibile caricare le pagine SEO. Riprova più tardi.",
+      "filter": {
+        "label": "Stato della revisione",
+        "all": "Tutte",
+        "draft": "Da revisionare",
+        "reviewed": "Revisionate"
+      },
+      "pagination": "Pagina {{page}} di {{totalPages}} · {{totalCount}} pagine",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "pageType": {
+        "complianceGuide": "Guida adempimenti",
+        "touristTaxCalc": "Tassa di soggiorno",
+        "supplierMicrosite": "Microsite fornitori"
+      },
       "table": {
         "comune": "Comune",
         "type": "Tipo",
-        "status": "Stato",
-        "lastRefresh": "Ultimo refresh",
+        "status": "Pubblicazione",
+        "content": "Ultima revisione",
+        "lastRefresh": "Ultima generazione",
         "actions": "Azioni",
-        "approve": "Approva",
+        "review": "Rivedi",
+        "openPublic": "Apri pagina pubblica",
+        "withdraw": "Ritira",
         "empty": "Nessuna pagina SEO."
       },
+      "publication": {
+        "published": "Pubblicata",
+        "publishedWithPending": "Pubblicata · nuova revisione da approvare",
+        "notPublished": "Non pubblicata"
+      },
+      "contentStatus": {
+        "generated": "Testo generato, da revisionare",
+        "generatedPublished": "Testo pubblicato",
+        "aiProviderNotConfigured": "Contenuto non generato: provider AI non configurato",
+        "emptyOutput": "Contenuto non generato: risposta vuota del provider AI",
+        "invalidOutput": "Contenuto non generato: risposta del provider AI non valida",
+        "placeholder": "Contenuto non generato: testo segnaposto ritirato",
+        "none": "Nessuna revisione"
+      },
       "confirmDialog": {
-        "title": "Conferma rigenerazione",
+        "title": "Conferma generazione",
         "cancel": "Annulla",
         "confirm": "Conferma",
-        "description_one": "Verrà accodato un job Hangfire per generare le pagine SEO di {{count}} comune nel registry (2 pagine ciascuno) e approvarle automaticamente.",
-        "description_other": "Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno) e approvarle automaticamente."
+        "description_one": "Verrà accodato un job per generare le pagine SEO di {{count}} comune nel registry (2 pagine ciascuno). I testi restano in bozza: vanno letti e approvati uno per uno prima della pubblicazione.",
+        "description_other": "Verrà accodato un job per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno). I testi restano in bozza: vanno letti e approvati uno per uno prima della pubblicazione."
       },
-      "status": {
-        "reviewed": "Revisionato",
-        "draft": "Bozza"
+      "review": {
+        "title": "Revisione: {{title}}",
+        "description": "Leggi il testo come apparirà sulla pagina pubblica prima di approvarlo.",
+        "loading": "Caricamento della revisione…",
+        "loadError": "Impossibile caricare la revisione. Riprova più tardi.",
+        "pendingHeading": "Testo da approvare",
+        "publishedHeading": "Testo pubblicato ora",
+        "noPending": "Non c'è una nuova revisione: il testo pubblicato è l'ultimo generato.",
+        "notPublished": "La pagina non è pubblicata: nessun testo è visibile al pubblico.",
+        "generatedAt": "Generato il {{date}}",
+        "promptVersion": "Prompt {{version}}",
+        "notPublishable": "Questa revisione non ha un testo pubblicabile e non si può approvare. Configura il provider AI o rigenera la pagina.",
+        "counselHint": "Pagina tra le prime 100: la revisione legale è obbligatoria prima della pubblicazione.",
+        "confirmCounsel": "Confermo che questo testo ha avuto la revisione legale",
+        "confirmReview": "Confermo di aver letto e revisionato questo testo",
+        "noteLabel": "Nota per lo storico (facoltativa)",
+        "notePlaceholder": "Es. riferimento del parere legale",
+        "approve": "Approva e pubblica",
+        "close": "Chiudi",
+        "history": "Storico della revisione",
+        "historyEmpty": "Nessuna approvazione registrata.",
+        "historyApproved": "Approvata da {{actor}} il {{date}}",
+        "historyWithdrawn": "Ritirata da {{actor}} il {{date}}",
+        "historyNote": "Nota: {{note}}"
+      },
+      "withdrawDialog": {
+        "title": "Ritirare la pagina?",
+        "description": "«{{title}}» torna in bozza: sparisce dal sito pubblico e dalla sitemap finché non approvi di nuovo un testo.",
+        "noteLabel": "Motivo (facoltativo)",
+        "cancel": "Annulla",
+        "confirm": "Ritira"
       }
     },
     "profile": {
@@ -172,10 +232,6 @@
         "processing": "In corso",
         "enqueued": "In coda",
         "unknown": "Sconosciuto"
-      },
-      "seo": {
-        "reviewed": "Revisionato",
-        "draft": "Bozza"
       }
     }
   },
@@ -3978,11 +4034,8 @@
     "documentDeleted": "Documento eliminato con successo",
     "documentDeleteFailed": "Impossibile eliminare il documento",
     "documentDownloadFailed": "Impossibile scaricare il documento",
-    "seoApproveFailed": "Impossibile approvare le pagine SEO",
-    "seoGenerated": "Pagine SEO generate con successo",
+    "seoGenerated": "Generazione accodata: {{estimatedPages}} pagine da revisionare prima della pubblicazione",
     "seoGenerateFailed": "Impossibile generare le pagine SEO",
-    "seoReviewUpdated": "Revisione SEO aggiornata con successo",
-    "seoReviewUpdateFailed": "Impossibile aggiornare la revisione SEO",
     "orgPlanUpdated": "Piano organizzazione aggiornato con successo",
     "orgPlanUpdateFailed": "Impossibile aggiornare il piano organizzazione",
     "dataExported": "Dati esportati con successo",
@@ -3994,8 +4047,6 @@
     "consentUpdated": "Consenso aggiornato con successo",
     "consentUpdateFailed": "Impossibile aggiornare il consenso",
     "otaValidationFailed": "Validazione credenziali OTA fallita: {{errors}}",
-    "seoApproved_one": "{{count}} pagina SEO approvata con successo",
-    "seoApproved_other": "{{count}} pagine SEO approvate con successo",
     "alloggiatiMarkedSent": "Invio manuale registrato",
     "alloggiatiMarkSentFailed": "Impossibile registrare l'invio manuale",
     "manualRegistrationSaved": "Registrazione salvata: il contratto risulta registrato.",
@@ -4011,7 +4062,11 @@
     "cadastralSaved": "Dati catastali salvati",
     "cadastralSaveFailed": "Impossibile salvare i dati catastali",
     "apeIdentificationSaved": "Estremi dell'APE salvati",
-    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE"
+    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE",
+    "seoRevisionApproved": "Revisione approvata: la pagina pubblica mostra il nuovo testo",
+    "seoRevisionApproveFailed": "Impossibile approvare la revisione",
+    "seoPageWithdrawn": "Pagina ritirata: non è più pubblica",
+    "seoPageWithdrawFailed": "Impossibile ritirare la pagina"
   },
   "fiscal": {
     "page": {
