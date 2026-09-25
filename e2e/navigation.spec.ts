@@ -117,8 +117,8 @@ test.describe('Navigation (#252 / #259)', () => {
 
       await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
       const drawer = page.getByRole('dialog');
-      await expect(drawer.getByRole('tab', { name: 'Affitti brevi' })).toBeVisible();
-      await expect(drawer.getByRole('tab', { name: 'Affitti lungo termine' })).toBeVisible();
+      await expect(drawer.getByRole('tab', { name: /Affitti brevi|Short-term rentals/i })).toBeVisible();
+      await expect(drawer.getByRole('tab', { name: /Affitti lungo termine|Long-term rentals/i })).toBeVisible();
     });
 
     test('workspace switcher is not in header on dual-role mobile', async ({ page }) => {

@@ -11,6 +11,15 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { ALLOGGIATI_ATTENTION_CLASS } from '@/features/alloggiati/alloggiati-status.utils';
 import type { ComplianceSummarySection } from '@/types/compliance.types';
 
+const EMPTY_SECTION: ComplianceSummarySection = { count: 0, items: [] };
+
+function normalizeSection(section: ComplianceSummarySection | null | undefined): ComplianceSummarySection {
+  return {
+    count: typeof section?.count === 'number' ? section.count : 0,
+    items: Array.isArray(section?.items) ? section.items : [],
+  };
+}
+
 interface SummaryRowProps {
   icon: React.ReactNode;
   title: string;
@@ -102,13 +111,20 @@ export function ComplianceSummaryWidget() {
     );
   }
 
+  const propertiesPending = normalizeSection(data.propertiesPending);
+  const guestCheckInsIncomplete = normalizeSection(data.guestCheckInsIncomplete);
+  const checkoutsDue = normalizeSection(data.checkoutsDue);
+  const alloggiatiFailures = normalizeSection(data.alloggiatiFailures);
+  const alloggiatiManualRequired = normalizeSection(data.alloggiatiManualRequired);
+  const turnoversPending = normalizeSection(data.turnoversPending ?? EMPTY_SECTION);
+
   const total =
-    data.propertiesPending.count +
-    data.guestCheckInsIncomplete.count +
-    data.checkoutsDue.count +
-    data.alloggiatiFailures.count +
-    data.alloggiatiManualRequired.count +
-    (data.turnoversPending?.count ?? 0);
+    propertiesPending.count +
+    guestCheckInsIncomplete.count +
+    checkoutsDue.count +
+    alloggiatiFailures.count +
+    alloggiatiManualRequired.count +
+    turnoversPending.count;
 
   return (
     <Card data-testid="compliance-summary-widget">
@@ -132,26 +148,26 @@ export function ComplianceSummaryWidget() {
             <SummaryRow
               icon={<Home className="h-4 w-4 text-muted-foreground" />}
               title={t('compliance.summary.propertiesPending')}
-              section={data.propertiesPending}
+              section={propertiesPending}
               testId="compliance-summary-properties"
             />
             <SummaryRow
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
               title={t('compliance.summary.guestCheckIns')}
-              section={data.guestCheckInsIncomplete}
+              section={guestCheckInsIncomplete}
               testId="compliance-summary-checkins"
             />
             <SummaryRow
               icon={<LogOut className="h-4 w-4 text-muted-foreground" />}
               title={t('compliance.summary.checkoutsDue')}
-              section={data.checkoutsDue}
+              section={checkoutsDue}
               testId="compliance-summary-checkouts"
             />
-            {data.turnoversPending && (
+            {turnoversPending.count > 0 && (
               <SummaryRow
                 icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
                 title={t('compliance.summary.turnoversPending')}
-                section={data.turnoversPending}
+                section={turnoversPending}
                 testId="compliance-summary-turnovers"
                 tone="attention"
               />
@@ -159,14 +175,14 @@ export function ComplianceSummaryWidget() {
             <SummaryRow
               icon={<Send className="h-4 w-4 text-muted-foreground" />}
               title={t('compliance.summary.alloggiatiManualRequired')}
-              section={data.alloggiatiManualRequired}
+              section={alloggiatiManualRequired}
               testId="compliance-summary-alloggiati-manual"
               tone="attention"
             />
             <SummaryRow
               icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
               title={t('compliance.summary.alloggiatiFailures')}
-              section={data.alloggiatiFailures}
+              section={alloggiatiFailures}
               testId="compliance-summary-alloggiati"
             />
           </>

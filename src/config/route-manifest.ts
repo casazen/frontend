@@ -281,6 +281,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
+    legacyPaths: ['/app/short-rent/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',

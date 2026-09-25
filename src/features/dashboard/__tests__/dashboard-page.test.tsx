@@ -156,6 +156,15 @@ describe('DashboardPage', () => {
     expect(paymentsApi.getAll).not.toHaveBeenCalled();
   });
 
+  it('DashboardPage_WrappedKpisPayload_StillRendersTheDashboard', async () => {
+    vi.mocked(dashboardApi.getKpis).mockResolvedValue({ data: KPIS } as unknown as DashboardKpis);
+
+    renderDashboard();
+
+    expect(await screen.findByTestId('dashboard-kpis')).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-period-range')).toHaveTextContent('Dal 1 giugno 2026 al 30 giugno 2026');
+  });
+
   it('DashboardPage_NoAvailableNights_ShowsNoPercentageInsteadOfZero', async () => {
     vi.mocked(dashboardApi.getKpis).mockResolvedValue({
       ...KPIS,
@@ -264,6 +273,16 @@ describe('DashboardPage', () => {
     renderDashboard();
 
     expect(await screen.findByTestId('dashboard-ical-empty')).toBeInTheDocument();
+  });
+
+  it('DashboardPage_IcalFeedsWrappedInDataArray_StillRendersTheFeedList', async () => {
+    vi.mocked(dashboardApi.getIcalFeeds).mockResolvedValue({ data: FEEDS } as unknown as DashboardIcalFeed[]);
+
+    renderDashboard();
+
+    const rows = await screen.findAllByTestId('dashboard-ical-feed');
+    expect(rows).toHaveLength(3);
+    expect(screen.getByTestId('dashboard-ical-failing')).toHaveTextContent('1 con errori');
   });
 
   it('DashboardPage_WithoutPropertyRead_HidesTheIcalWidgetAndDoesNotAskForIt', async () => {

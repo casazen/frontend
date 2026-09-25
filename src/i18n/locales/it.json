@@ -249,7 +249,7 @@
     "fiscal": "Regime fiscale",
     "payments": "Incassi",
     "revenue": "Ricavi",
-    "stripeConnect": "Configurazione Stripe",
+    "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "ota": "OTA",
     "leases": "Contratti",
@@ -278,7 +278,7 @@
       "compliance-audit": "Compliance Audit",
       "integrazioni": "Integrazioni",
       "account": "Impostazioni",
-      "reporting": "Report",
+      "reporting": "Finanza",
       "vetrina": "Vetrina",
       "operations": "Amministrazione",
       "amministrazione": "Amministrazione"

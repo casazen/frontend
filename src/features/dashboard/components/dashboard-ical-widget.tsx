@@ -27,6 +27,13 @@ function hasError(feed: DashboardIcalFeed): boolean {
   return feed.lastImportStatus === 'Failure' || feed.lastImportStatus === 'PartialFailure';
 }
 
+function normalizeFeeds(value: unknown): DashboardIcalFeed[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'object' || value === null) return [];
+  const wrapped = (value as { data?: unknown }).data;
+  return Array.isArray(wrapped) ? wrapped : [];
+}
+
 /**
  * iCal calendars of the host's properties (PC-16, in place of the OTA widget of the frozen partner API): per feed the
  * last sync, the translated status and error, and a link to the iCal screen of its property.
@@ -34,7 +41,8 @@ function hasError(feed: DashboardIcalFeed): boolean {
 export function DashboardIcalWidget() {
   const { t } = useTranslation();
   const feeds = useDashboardIcalFeeds();
-  const failing = feeds.data?.filter(hasError).length ?? 0;
+  const rows = normalizeFeeds(feeds.data);
+  const failing = rows.filter(hasError).length;
 
   return (
     <Card data-testid="dashboard-ical-widget">
@@ -68,13 +76,13 @@ export function DashboardIcalWidget() {
               {t('dashboard.retry')}
             </Button>
           </div>
-        ) : !feeds.data?.length ? (
+        ) : !rows.length ? (
           <p className="py-4 text-center text-sm text-muted-foreground" data-testid="dashboard-ical-empty">
             {t('dashboard.ical.empty')}
           </p>
         ) : (
           <ul className="space-y-2">
-            {feeds.data.map((feed) => (
+            {rows.map((feed) => (
               <FeedRow key={feed.feedId} feed={feed} />
             ))}
           </ul>
