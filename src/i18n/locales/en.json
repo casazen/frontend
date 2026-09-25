@@ -344,13 +344,77 @@
     "timeline": "Timeline",
     "fiscalCodeMasked": "Tax code",
     "rli": {
-      "advisoryTitle": "Cedolare secca — information only",
+      "advisory": {
+        "title": "Cedolare secca or ordinary regime: tax information",
+        "disclaimer": "Information, not tax advice: estimates computed with the parameters of the sources listed. CasaZen is not an authorized intermediary under Italian DPR 322/1998: check the choice with an accountant.",
+        "annualRent": "Annual rent: {{amount}}",
+        "chosen": "Chosen regime",
+        "ataLabel": "High housing pressure area (ATA)",
+        "ata": {
+          "Verified": "verified municipality",
+          "Unverified": "candidate municipality, not verified on an official source",
+          "NotListed": "municipality not in CasaZen's list"
+        },
+        "cedolare": {
+          "title": "Cedolare secca",
+          "rate": "Rate",
+          "rateBasis": {
+            "Standard": "Standard cedolare secca rate",
+            "ConcordatoAta": "Canone concordato in a verified high housing pressure municipality"
+          },
+          "tax": "Annual substitute tax",
+          "noRegistroBollo": "No registration tax and no stamp duty. The contract must still be registered by the deadline."
+        },
+        "ordinary": {
+          "title": "Ordinary regime",
+          "registro": "Registration tax (first year)",
+          "registroFormulaFull": "{{rate}} of {{base}} (annual rent)",
+          "registroFormulaReduced": "{{rate}} of {{base}} ({{share}} of the annual rent: canone concordato in a high housing pressure municipality)",
+          "registroMinimum": "The first-year minimum of {{minimum}} applies: the computation would give {{computed}}.",
+          "registroNextYears": "Following years: {{rate}} of the rent of each year, within 30 days of the end of the previous one, with no minimum.",
+          "bollo": "Stamp duty",
+          "bolloRule": "{{amount}} every {{pages}} written pages, and in any case every {{lines}} lines, for each copy to register.",
+          "bolloInputRequired": "Enter pages and copies below to compute it.",
+          "bolloDetail": "{{units}} × {{amount}} per copy, {{copies}} copies",
+          "bolloPagesOnly": "Computed on the pages only: if a copy has more than {{lines}} lines every {{pages}} pages, more stamps are due.",
+          "irpef": "IRPEF",
+          "irpefComputed": "Estimated additional gross IRPEF ({{year}} brackets)",
+          "irpefBase": "Computed on the rent reduced by {{reduction}} ({{taxable}}). Regional and municipal surcharges and tax credits are not included; if the revalued cadastral income is higher than the reduced rent, the income is the cadastral one.",
+          "irpefToAssess": "Comparison with IRPEF: to be assessed with an accountant.",
+          "irpefInputHint": "For an estimate, enter below the IRPEF taxable income from your other sources.",
+          "irpefReason": {
+            "not_configured": "The IRPEF brackets are not configured.",
+            "brackets_outdated": "The IRPEF brackets available are those of {{year}} and must be updated.",
+            "income_over_limit": "With this total income the tax does not depend on the brackets alone.",
+            "concordato_ata_relief_not_verified": "Canone concordato in a high housing pressure municipality has a reduction of the taxable income that CasaZen does not compute."
+          }
+        },
+        "notesTitle": "Good to know",
+        "note": {
+          "ata_unverified": "If the municipality is a high housing pressure area, the cedolare drops to 10% and the registration tax base to 70% of the rent: check it with an accountant.",
+          "ata_not_listed": "If the municipality is a high housing pressure area (for example Bari, Bologna, Catania, Florence, Genoa, Milan, Naples, Palermo, Rome, Turin, Venice, their neighbouring municipalities and the other provincial capitals, plus the municipalities listed by CIPE), the cedolare drops to 10% and the registration tax base to 70% of the rent: check it with an accountant.",
+          "emergency_comuni_not_checked": "The 10% cedolare also applies to canone concordato in municipalities where a state of emergency for a disaster was declared in the 5 years before 28/05/2014: there is no single official list and CasaZen does not check it.",
+          "concordato_attestation_required": "For contracts signed without assistance, the canone concordato reliefs require the certificate of conformity from the organizations that signed the local agreement.",
+          "transitorio_reliefs_to_confirm": "Transitory contract: whether the 10% cedolare and the reduced registration base also apply to transitory contracts in a high housing pressure municipality must be checked with an accountant. The estimate uses the ordinary values.",
+          "short_term_annualized": "Term shorter than a year: the amounts are computed on 12 months of rent. Check the base with an accountant.",
+          "tax_regime_unknown": "The tax regime chosen for this contract is not recorded: both options are shown.",
+          "questura_not_replaced": "With a non-EU tenant, registering the contract does not replace the written notice to the public security authority within 48 hours of handing over the property."
+        },
+        "inputs": {
+          "title": "Data to complete the estimate",
+          "privacy": "Used only for the computation: CasaZen does not store them.",
+          "writtenPages": "Written pages of one copy of the contract",
+          "lines": "Lines of one copy (optional)",
+          "copies": "Copies to register",
+          "otherIncome": "IRPEF taxable income from other sources, in euros per year (optional)",
+          "submit": "Update the estimate",
+          "updating": "Computing...",
+          "invalid": "Check the values: pages from 1 to 1,000, lines from 1 to 100,000, copies from 1 to 20, income from 0 to 100,000,000 €. Enter pages and copies together."
+        },
+        "sources": "Sources"
+      },
       "advisoryLoading": "Loading tax comparison...",
       "advisoryError": "Unable to load tax information.",
-      "cedolareRate": "Cedolare rate",
-      "cedolareEstimate": "Estimated substitute tax (annual)",
-      "registroEstimate": "Estimated registration tax (ordinary regime)",
-      "bollo": "Stamp duty (indicative)",
       "checklistTitle": "RLI registration checklist (30 days)",
       "checklistLoading": "Loading checklist...",
       "checklistError": "Unable to load the checklist.",
@@ -1315,7 +1379,7 @@
       "retry": "Retry",
       "tabs": {
         "info": "Info & Photos",
-        "pricing": "AI Pricing",
+        "pricing": "Seasonal suggestions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
         "documents": "Documents",
@@ -1337,9 +1401,9 @@
       "documentsCount_other": "{{count}} uploaded",
       "yes": "Yes",
       "no": "No",
-      "pricingTitle": "AI Pricing",
-      "pricingDescription": "Configure the AI adapter for dynamic pricing for this property.",
-      "managePricing": "Manage AI pricing",
+      "pricingTitle": "Seasonal suggestions",
+      "pricingDescription": "Suggested nightly prices based on the property's rate and your season and holiday rules. They are proposals: they do not change the prices applied.",
+      "managePricing": "Manage suggestions",
       "viewOnPublicSite": "View on public site",
       "publicSiteHint": "Preview how guests see this property on your direct booking site.",
       "newBooking": "New booking"
@@ -1419,12 +1483,12 @@
       "nextCheckIn": "Next check-in"
     },
     "pricing": {
-      "title": "AI Pricing",
+      "title": "Seasonal suggestions",
       "on": "ON",
       "off": "OFF",
-      "lastAdaptation": "Last adaptation",
-      "nextRun": "Next run",
-      "manage": "Manage AI pricing"
+      "lastAdaptation": "Last computed",
+      "nextRun": "Next update",
+      "manage": "Manage suggestions"
     },
     "edit": {
       "loading": "Loading property...",
@@ -1571,73 +1635,82 @@
   },
   "pricing": {
     "dashboard": {
-      "title": "AI Dynamic Pricing",
-      "description": "Manage automated price adaptation and preview AI-suggested rates.",
-      "loading": "Loading pricing configuration...",
-      "disabledTitle": "AI pricing is disabled",
-      "disabledDescription": "Enable AI dynamic pricing to see the 90-day price preview and let the engine optimise your nightly rates automatically.",
-      "noPreview": "No preview available",
-      "noPreviewDescription": "Run a pricing sync to generate the first 90-day price preview.",
-      "historyTitle": "Price Adaptation History",
-      "fullHistory": "Full History",
-      "from": "From",
-      "to": "To"
-    },
-    "history": {
-      "title": "Pricing Audit Trail",
-      "description": "Full history of AI-driven price adaptations for compliance and review.",
-      "backLabel": "Back to pricing",
-      "exportCsv": "Export CSV",
-      "exporting": "Exporting...",
-      "exportError": "Failed to export pricing history",
-      "from": "From",
-      "to": "To"
+      "title": "Seasonal suggestions",
+      "description": "Suggested prices for the coming nights, computed from the property's nightly rate with seasonal rules you choose.",
+      "loading": "Loading seasonal suggestions...",
+      "disabledTitle": "Seasonal suggestions are off",
+      "disabledDescription": "Turn them on to see, for the next 90 days, the suggested price of every night based on your season and holiday rules.",
+      "noSuggestions": "No suggestions computed",
+      "noSuggestionsDescription": "The suggestions have not been computed yet. Recalculate them now or wait for the next automatic update.",
+      "basePriceMissingTitle": "Nightly rate missing",
+      "basePriceMissingDescription": "Suggestions start from the property's nightly rate, which is not set yet. Set it in the property details.",
+      "editProperty": "Edit property",
+      "configLoadError": "Could not load the suggestions settings.",
+      "suggestionsLoadError": "Could not load the seasonal suggestions.",
+      "retry": "Retry"
     },
     "config": {
-      "title": "AI Dynamic Pricing",
-      "active": "Active",
-      "disabled": "Disabled",
-      "enableLabel": "Enable AI pricing",
-      "enableDescription": "Automatically adjusts nightly rates based on demand, season, and local events.",
-      "frequencyLabel": "Adaptation frequency",
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "factorsLabel": "Pricing factors",
-      "includeSeasonality": "Include seasonality",
-      "includePublicHolidays": "Include public holidays",
-      "lastRun": "Last run",
-      "nextRun": "Next run",
+      "title": "Seasonal suggestions",
+      "active": "On",
+      "disabled": "Off",
+      "enableLabel": "Turn on seasonal suggestions",
+      "enableDescription": "Computes a suggested price for every night from the property's nightly rate and your rules. It does not change the prices applied.",
+      "frequencyLabel": "Suggestions update",
+      "daily": "Every day",
+      "weekly": "Every week",
+      "rulesLabel": "Rules",
+      "exampleRuleNote": "The starting rule is an example (summer +30%, winter −20%, national holidays +50%): adapt it to your property.",
+      "includeSeasonality": "Seasons (months)",
+      "highSeason": "High season",
+      "lowSeason": "Low season",
+      "multiplier": "Multiplier",
+      "multiplierInvalid": "Enter a multiplier between {{min}} and {{max}}.",
+      "includePublicHolidays": "Italian national holidays",
+      "holidaysHint": "New Year's Day, Epiphany, Easter, Easter Monday, 25 April, 1 May, 2 June, Ferragosto, 4 October (from 2026), All Saints, Immaculate Conception, Christmas and Saint Stephen's Day. No local events. A holiday takes precedence over the season.",
+      "lastRun": "Last computed",
+      "nextRun": "Next update",
+      "nextNightlyRun": "At the next nightly run",
       "saving": "Saving...",
-      "save": "Save configuration",
-      "syncing": "Syncing...",
-      "syncNow": "Run sync now"
+      "save": "Save rules",
+      "recalculating": "Computing...",
+      "recalculateNow": "Recalculate now"
     },
-    "preview": {
-      "title": "90-Day Price Preview",
-      "details": "Price Details",
+    "suggestions": {
+      "basePriceLabel": "Base price:",
+      "perNight": "per night",
+      "basePriceHint": "This is the property's nightly rate: quotes and bookings use this price.",
+      "readOnlyNotice": "Suggestions are read-only proposals: CasaZen does not handle different prices per date yet, so they are not applied to quotes and bookings. To change the price, edit the property's nightly rate.",
+      "baseChanged": "The nightly rate changed after the last computation ({{computed}} → {{current}}): recalculate the suggestions.",
+      "computedAt": "Computed on {{date}}",
+      "chartTitle_one": "Suggested price for {{count}} night",
+      "chartTitle_other": "Suggested prices for {{count}} nights",
+      "details": "Details by date",
       "date": "Date",
-      "base": "Base",
-      "aiPrice": "AI Price",
+      "base": "Base price",
+      "suggested": "Suggested",
       "delta": "Δ",
-      "reason": "Reason",
-      "tooltip": {
-        "aiPrice": "AI price",
-        "basePrice": "Base price",
-        "date": "Date:"
-      }
+      "rule": "Rule applied"
     },
-    "historyTable": {
-      "empty": "No price adaptation history found.",
-      "date": "Date",
-      "prevPrice": "Prev Price",
-      "newPrice": "New Price",
-      "reason": "Reason",
-      "confidence": "Confidence",
-      "otaStatus": "OTA Status",
-      "pagination": "Page {{page}} of {{totalPages}} ({{total}} entries)",
-      "prevPage": "Previous page",
-      "nextPage": "Next page",
-      "delta": "Δ%"
+    "rules": {
+      "none": "No rule (base price)",
+      "highSeason": "High season {{multiplier}}",
+      "lowSeason": "Low season {{multiplier}}",
+      "holiday": "Holiday: {{holiday}} {{multiplier}}"
+    },
+    "holidays": {
+      "NewYear": "New Year's Day",
+      "Epiphany": "Epiphany",
+      "EasterSunday": "Easter Sunday",
+      "EasterMonday": "Easter Monday",
+      "Liberation": "Liberation Day",
+      "Labour": "Labour Day",
+      "Republic": "Republic Day",
+      "Assumption": "Assumption Day (Ferragosto)",
+      "SaintFrancis": "Saint Francis of Assisi",
+      "AllSaints": "All Saints' Day",
+      "ImmaculateConception": "Immaculate Conception",
+      "Christmas": "Christmas Day",
+      "SaintStephen": "Saint Stephen's Day"
     }
   },
   "serviceRequest": {
@@ -3443,7 +3516,7 @@
     "revenue": "Revenue",
     "profile": "Profile",
     "settings": "Settings",
-    "pricing": "AI Pricing",
+    "pricing": "Seasonal suggestions",
     "history": "History",
     "taxRates": "Tourist Tax",
     "create": "New",
@@ -3835,12 +3908,10 @@
     "otaPricingUpdateFailed": "Failed to update OTA pricing",
     "otaCredentialsValidated": "OTA credentials validated successfully",
     "otaCredentialsValidationFailed": "OTA credentials validation failed",
-    "pricingConfigSaved": "Pricing configuration saved successfully",
-    "pricingConfigSaveFailed": "Failed to save pricing configuration",
-    "pricingDisabled": "AI pricing disabled successfully",
-    "pricingDisableFailed": "Failed to disable AI pricing",
-    "pricingSyncStarted": "Pricing sync started successfully",
-    "pricingSyncFailed": "Pricing sync failed",
+    "pricingConfigSaved": "Suggestion rules saved",
+    "pricingConfigSaveFailed": "Could not save the suggestion rules",
+    "pricingDisabled": "Seasonal suggestions turned off",
+    "pricingDisableFailed": "Could not turn off the seasonal suggestions",
     "leaseDraftCreated": "Lease draft created successfully",
     "leaseCreateFailed": "Failed to create lease",
     "signingInitiateFailed": "Failed to initiate signing",
@@ -3894,6 +3965,9 @@
     "offlineSignatureFailed": "Could not save the signed contract",
     "stipulaDeclared": "Signing date saved",
     "stipulaDeclareFailed": "Could not save the signing date",
+    "pricingRecalculated": "Suggestions recalculated",
+    "pricingRecalculateFailed": "Could not recalculate the suggestions",
+    "pricingBasePriceMissing": "Set the property's nightly rate to get suggestions",
     "cadastralSaved": "Cadastral data saved",
     "cadastralSaveFailed": "Could not save the cadastral data",
     "apeIdentificationSaved": "APE details saved",
@@ -3907,9 +3981,9 @@
     "loading": "Loading…",
     "recommended": "Recommended",
     "assigned": "Assigned",
-    "primary": "Set as primary property (21%)",
+    "primary": "Designate as the 21% unit",
     "alert": {
-      "piva": "VAT number required from the third STR property.",
+      "piva": "At least one taxpayer lets more than {{max}} apartments short-term this year: a business activity with a VAT number is presumed. Check the regime with your accountant.",
       "wizard": "Open the wizard"
     },
     "wizard": {
@@ -3926,8 +4000,21 @@
       "link": "Open reports",
       "totals": "Gross {{gross}} EUR — net {{net}} EUR"
     },
-    "count_one": "{{count}} active STR property in {{year}}",
-    "count_other": "{{count}} active STR properties in {{year}}"
+    "regime": {
+      "CedolareSecca21": "Cedolare secca flat tax 21% (designated unit)",
+      "CedolareSecca26": "Cedolare secca flat tax 26%",
+      "RegimeOrdinario": "Business, ordinary regime (VAT number)",
+      "RegimeForfettario": "Business, flat-rate regime (VAT number)",
+      "IrpefOrdinaria": "Ordinary IRPEF without a VAT number"
+    },
+    "chooseIrpef": "Choose ordinary IRPEF (no VAT number)",
+    "assignFailed": "Unable to assign the fiscal regime",
+    "taxNote": {
+      "irpefOrdinariaNotComputed": "Ordinary IRPEF without a VAT number: CasaZen does not compute the tax; the taxpayer or the accountant does.",
+      "thresholdExceeded": "The taxpayer is over the short-term rental threshold: business activity presumed, no cedolare secca. Check with your accountant."
+    },
+    "count_one": "{{count}} property with short-term stays in {{year}}",
+    "count_other": "{{count}} properties with short-term stays in {{year}}"
   },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
@@ -4055,6 +4142,7 @@
       "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
       "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
       "guestDocumentScanMissing": "No document scan is available for this guest.",
+      "pricingSuggestionsNotEnabled": "Turn on the seasonal suggestions before recalculating them.",
       "serviceRequestBookingRequired": "In short-term rentals a supplier request is for a stay: choose the booking.",
       "serviceRequestBookingMismatch": "The booking is not a stay of this property.",
       "serviceRequestBookingNotAllowed": "In long-term rentals a supplier request is for the property, not for a booking.",

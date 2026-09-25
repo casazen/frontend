@@ -46,9 +46,12 @@ export interface CheckoutSessionRequest {
   /** ISO 3166-1 alpha-2. */
   billingCountry: string;
   vatId?: string;
-  /** Absolute URL on the public site (`App__PublicSiteBaseUrl`); omitted = the default plan page. */
-  successUrl?: string;
-  cancelUrl?: string;
+  /**
+   * Plan or billing page Stripe returns to, in the shell the user started from (PL-16), e.g.
+   * `/app/long-rent/settings/plan`. The backend accepts only these pages and builds the URLs on its public domain;
+   * omitted = the default plan page.
+   */
+  returnPath?: string;
 }
 
 export interface CheckoutSessionResponse {

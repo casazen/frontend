@@ -1,39 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { pricingAdapterApi } from '@/api/pricing-adapter.api';
-import type {
-  SavePricingAdapterConfigRequest,
-  PricingHistoryQueryParams,
-  PricingAdapterConfig,
-} from '@/types';
+import type { SavePricingAdapterConfigRequest, PricingAdapterConfig } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 
 const PRICING_KEY = 'pricing-adapter';
 
-export function defaultPricingConfig(propertyId: string): PricingAdapterConfig {
-  return {
-    propertyId,
-    isEnabled: false,
-    adaptationFrequency: 'daily',
-    includeSeasonality: true,
-    includePublicHolidays: true,
-    lastAdaptedAt: null,
-    nextScheduledRunAt: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-}
-
 export function usePricingAdapterConfig(propertyId: string) {
   return useQuery({
     queryKey: [PRICING_KEY, 'config', propertyId],
-    queryFn: async () => {
-      const config = await pricingAdapterApi.getConfig(propertyId);
-      return config ?? defaultPricingConfig(propertyId);
-    },
+    queryFn: () => pricingAdapterApi.getConfig(propertyId),
     enabled: !!propertyId,
   });
+}
+
+export function useSeasonalSuggestions(propertyId: string) {
+  return useQuery({
+    queryKey: [PRICING_KEY, 'suggestions', propertyId],
+    queryFn: () => pricingAdapterApi.getSuggestions(propertyId),
+    enabled: !!propertyId,
+  });
+}
+
+function invalidatePricing(queryClient: ReturnType<typeof useQueryClient>, propertyId: string) {
+  queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
+  queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'suggestions', propertyId] });
 }
 
 export function useSavePricingAdapterConfig(propertyId: string) {
@@ -55,7 +47,7 @@ export function useSavePricingAdapterConfig(propertyId: string) {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingConfigSaveFailed'));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
+      invalidatePricing(queryClient, propertyId);
       toast.success(i18n.t('toast.pricingConfigSaved'));
     },
   });
@@ -79,45 +71,28 @@ export function useDisablePricingAdapter(propertyId: string) {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingDisableFailed'));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'config', propertyId] });
+      invalidatePricing(queryClient, propertyId);
       toast.success(i18n.t('toast.pricingDisabled'));
     },
   });
 }
 
-export function usePricingHistory(propertyId: string, params?: PricingHistoryQueryParams) {
-  return useQuery({
-    queryKey: [PRICING_KEY, 'history', propertyId, params],
-    queryFn: async () => {
-      const history = await pricingAdapterApi.getHistory(propertyId, params);
-      return history ?? { items: [], total: 0, page: params?.page ?? 1 };
-    },
-    enabled: !!propertyId,
-  });
-}
-
-export function useTriggerPricingSync(propertyId: string) {
+/** Recomputes the suggestions now, with the same logic as the nightly job. */
+export function useRecalculateSuggestions(propertyId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => pricingAdapterApi.triggerSync(propertyId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PRICING_KEY, 'history', propertyId] });
-      toast.success(i18n.t('toast.pricingSyncStarted'));
+    mutationFn: () => pricingAdapterApi.recalculate(propertyId),
+    onSuccess: (result) => {
+      invalidatePricing(queryClient, propertyId);
+      if (result.status === 'BasePriceMissing') {
+        toast.warning(i18n.t('toast.pricingBasePriceMissing'));
+      } else {
+        toast.success(i18n.t('toast.pricingRecalculated'));
+      }
     },
     onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingSyncFailed'));
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingRecalculateFailed'));
     },
-  });
-}
-
-export function usePricingPreview(propertyId: string) {
-  return useQuery({
-    queryKey: [PRICING_KEY, 'preview', propertyId],
-    queryFn: async () => {
-      const preview = await pricingAdapterApi.getPreview(propertyId);
-      return preview ?? { prices: [] };
-    },
-    enabled: !!propertyId,
   });
 }

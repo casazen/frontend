@@ -3,6 +3,7 @@ import {
   ROUTE_MANIFEST,
   getDesktopNavByGroup,
   getDrawerNavByGroup,
+  getOrgBillingPageAlternates,
   getPrimaryNavEntries,
   getSecondaryNavEntries,
   getVisibleNavEntries,
@@ -54,6 +55,36 @@ describe('route-manifest nav helpers', () => {
     const billing = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/billing');
     expect(billing?.navKey).toBe('nav.billing');
     expect(billing?.navGroup).toBe('account');
+  });
+
+  // PL-16 (A1-36): a landlord with only long-term leases reaches plan and billing from the long-rent shell.
+  it('has the plan and billing pages in the long-rent shell for the org billing administrator', () => {
+    const billingPaths = ['/app/long-rent/settings/plan', '/app/long-rent/settings/billing'];
+    for (const path of billingPaths) {
+      const entry = ROUTE_MANIFEST.find((e) => e.path === path);
+      expect(entry?.context).toBe('long-rent');
+      expect(entry?.orgBillingAdmin).toBe(true);
+      expect(entry?.requiredPermissions).toEqual([]);
+    }
+
+    const secondary = getSecondaryNavEntries('long-rent', allowAll).map((e) => e.path);
+    expect(secondary).toEqual(billingPaths);
+    const drawer = [...getDrawerNavByGroup('long-rent', allowAll).values()].flat().map((e) => e.path);
+    expect(drawer).toEqual(billingPaths);
+
+    const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
+    const visible = getVisibleNavEntries('long-rent', notBillingAdmin).map((e) => e.path);
+    expect(visible.filter((path) => billingPaths.includes(path))).toEqual([]);
+  });
+
+  it('maps each plan or billing page to the same page of the other rental shell', () => {
+    const shortRentPlan = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/plan')!;
+    const longRentBilling = ROUTE_MANIFEST.find((e) => e.path === '/app/long-rent/settings/billing')!;
+    const leases = ROUTE_MANIFEST.find((e) => e.path === '/app/long-rent/leases')!;
+
+    expect(getOrgBillingPageAlternates(shortRentPlan)).toEqual({ 'long-rent': '/app/long-rent/settings/plan' });
+    expect(getOrgBillingPageAlternates(longRentBilling)).toEqual({ 'short-rent': '/app/short-rent/settings/billing' });
+    expect(getOrgBillingPageAlternates(leases)).toEqual({});
   });
 
   it('hides OTA when ota.read permission is missing', () => {

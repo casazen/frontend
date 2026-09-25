@@ -13,7 +13,7 @@ import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { Edit, ArrowRight, Sparkles, ExternalLink, Wrench, Plus } from 'lucide-react';
+import { Edit, ArrowRight, CalendarRange, ExternalLink, Wrench, Plus } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { PropertyCinBadge } from './components/property-cin-badge';
@@ -236,7 +236,7 @@ export function PropertyDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
+                    <CalendarRange className="h-5 w-5" />
                     {t('property.detail.pricingTitle')}
                   </CardTitle>
                 </CardHeader>
