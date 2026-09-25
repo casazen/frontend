@@ -344,13 +344,77 @@
     "timeline": "Cronologia",
     "fiscalCodeMasked": "Codice fiscale",
     "rli": {
-      "advisoryTitle": "Cedolare secca — informativa",
+      "advisory": {
+        "title": "Cedolare secca o regime ordinario: informativa fiscale",
+        "disclaimer": "Informativa, non consulenza fiscale: stime calcolate con i parametri delle fonti indicate. CasaZen non è un intermediario abilitato ai sensi del DPR 322/1998: verifica la scelta con un commercialista.",
+        "annualRent": "Canone annuo: {{amount}}",
+        "chosen": "Regime scelto",
+        "ataLabel": "Alta tensione abitativa (ATA)",
+        "ata": {
+          "Verified": "comune verificato",
+          "Unverified": "comune candidato, non verificato su fonte ufficiale",
+          "NotListed": "comune non presente nell'elenco di CasaZen"
+        },
+        "cedolare": {
+          "title": "Cedolare secca",
+          "rate": "Aliquota",
+          "rateBasis": {
+            "Standard": "Aliquota ordinaria della cedolare secca",
+            "ConcordatoAta": "Canone concordato in comune ad alta tensione abitativa verificato"
+          },
+          "tax": "Imposta sostitutiva annua",
+          "noRegistroBollo": "Imposta di registro e bollo non dovute. Il contratto va comunque registrato entro il termine."
+        },
+        "ordinary": {
+          "title": "Regime ordinario",
+          "registro": "Imposta di registro (prima annualità)",
+          "registroFormulaFull": "{{rate}} di {{base}} (canone annuo)",
+          "registroFormulaReduced": "{{rate}} di {{base}} ({{share}} del canone annuo: canone concordato in comune ad alta tensione abitativa)",
+          "registroMinimum": "Si applica il minimo di {{minimum}} per la prima annualità: il calcolo darebbe {{computed}}.",
+          "registroNextYears": "Annualità successive: {{rate}} del canone di ciascuna annualità, entro 30 giorni dalla scadenza della precedente, senza minimo.",
+          "bollo": "Imposta di bollo",
+          "bolloRule": "{{amount}} ogni {{pages}} facciate scritte, e comunque ogni {{lines}} righe, per ciascuna copia da registrare.",
+          "bolloInputRequired": "Indica facciate e copie qui sotto per calcolarla.",
+          "bolloDetail": "{{units}} × {{amount}} per copia, {{copies}} copie",
+          "bolloPagesOnly": "Calcolata solo sulle facciate: se una copia supera {{lines}} righe ogni {{pages}} facciate servono più contrassegni.",
+          "irpef": "IRPEF",
+          "irpefComputed": "IRPEF lorda aggiuntiva stimata (scaglioni {{year}})",
+          "irpefBase": "Calcolata sul canone ridotto del {{reduction}} ({{taxable}}). Esclusi le addizionali regionali e comunali e le detrazioni; se la rendita catastale rivalutata supera il canone ridotto, il reddito è la rendita.",
+          "irpefToAssess": "Confronto con IRPEF: da valutare con il commercialista.",
+          "irpefInputHint": "Per una stima indica qui sotto il reddito imponibile IRPEF degli altri redditi.",
+          "irpefReason": {
+            "not_configured": "Gli scaglioni IRPEF non sono configurati.",
+            "brackets_outdated": "Gli scaglioni IRPEF disponibili sono quelli del {{year}} e vanno aggiornati.",
+            "income_over_limit": "Con questo reddito complessivo l'imposta non dipende solo dagli scaglioni.",
+            "concordato_ata_relief_not_verified": "Per il canone concordato in comune ad alta tensione abitativa è prevista una riduzione del reddito imponibile che CasaZen non calcola."
+          }
+        },
+        "notesTitle": "Da sapere",
+        "note": {
+          "ata_unverified": "Se il comune risulta ad alta tensione abitativa, la cedolare scende al 10% e la base del registro al 70% del canone: verificalo con il commercialista.",
+          "ata_not_listed": "Se il comune è ad alta tensione abitativa (per esempio Bari, Bologna, Catania, Firenze, Genova, Milano, Napoli, Palermo, Roma, Torino, Venezia, i comuni confinanti e gli altri capoluoghi di provincia, oltre ai comuni individuati dal CIPE), la cedolare scende al 10% e la base del registro al 70% del canone: verificalo con il commercialista.",
+          "emergency_comuni_not_checked": "La cedolare al 10% vale anche per il canone concordato nei comuni per i quali è stato deliberato lo stato di emergenza per calamità nei 5 anni precedenti il 28/05/2014: non esiste un elenco ufficiale unico e CasaZen non lo verifica.",
+          "concordato_attestation_required": "Per i contratti non assistiti le agevolazioni del canone concordato richiedono l'attestazione di conformità delle organizzazioni firmatarie dell'accordo territoriale.",
+          "transitorio_reliefs_to_confirm": "Contratto transitorio: se la cedolare al 10% e la base ridotta del registro valgano anche per i transitori in comune ad alta tensione abitativa va verificato con il commercialista. La stima usa i valori ordinari.",
+          "short_term_annualized": "Durata inferiore a un anno: gli importi sono calcolati su 12 mensilità. Verifica la base con il commercialista.",
+          "tax_regime_unknown": "Per questo contratto non è registrato il regime fiscale scelto: sono mostrate entrambe le opzioni.",
+          "questura_not_replaced": "Con un conduttore extra-UE la registrazione del contratto non sostituisce la comunicazione scritta all'autorità di pubblica sicurezza entro 48 ore dalla consegna dell'immobile."
+        },
+        "inputs": {
+          "title": "Dati per completare la stima",
+          "privacy": "Servono solo per il calcolo: CasaZen non li salva.",
+          "writtenPages": "Facciate scritte di una copia del contratto",
+          "lines": "Righe di una copia (facoltativo)",
+          "copies": "Copie da registrare",
+          "otherIncome": "Reddito imponibile IRPEF degli altri redditi, in euro all'anno (facoltativo)",
+          "submit": "Aggiorna la stima",
+          "updating": "Calcolo in corso...",
+          "invalid": "Controlla i valori: facciate da 1 a 1.000, righe da 1 a 100.000, copie da 1 a 20, reddito da 0 a 100.000.000 €. Facciate e copie vanno indicate insieme."
+        },
+        "sources": "Fonti"
+      },
       "advisoryLoading": "Caricamento confronto fiscale...",
       "advisoryError": "Impossibile caricare l'informativa fiscale.",
-      "cedolareRate": "Aliquota cedolare",
-      "cedolareEstimate": "Stima imposta sostitutiva (annua)",
-      "registroEstimate": "Stima imposta di registro (regime ordinario)",
-      "bollo": "Imposta di bollo (indicativa)",
       "checklistTitle": "Checklist registrazione RLI (30 giorni)",
       "checklistLoading": "Caricamento checklist...",
       "checklistError": "Impossibile caricare la checklist.",

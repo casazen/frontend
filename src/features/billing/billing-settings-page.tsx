@@ -1,4 +1,4 @@
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CreditCard } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { toBillingReturnPath } from '@/lib/billing-routes';
 import { getPlanTierLabel } from '@/lib/i18n-labels';
 import { needsOrgSetup } from '@/lib/onboarding';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
@@ -21,11 +22,21 @@ import { BillingProfileForm } from './components/billing-profile-form';
 import { SubscriptionStatusBadge } from './components/subscription-status-badge';
 import { SubscriptionPaymentNotice } from './components/subscription-status-notice';
 
-/**
- * Subscription, Stripe billing portal and billing profile of the org (spec-saas-billing AC11-AC13, PL-12). Paths to
- * the plan page are relative, so the page does not depend on the short-rent context.
- */
+/** Subscription, billing portal and billing profile of the org (spec-saas-billing AC11-AC13, PL-12) in the short-rent shell. */
 export function BillingSettingsPage() {
+  return (
+    <AppShell>
+      <BillingSettingsContent />
+    </AppShell>
+  );
+}
+
+/**
+ * Content of the billing page, without a shell: the short-rent route wraps it in its shell ({@link BillingSettingsPage}),
+ * the long-rent route gets the long-rent shell from the context layout (PL-16). Paths to the plan page are relative, so
+ * the page does not depend on the context.
+ */
+export function BillingSettingsContent() {
   const { t } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
@@ -69,12 +80,10 @@ export function BillingSettingsPage() {
   };
 
   return (
-    <AppShell>
-      <div className="mx-auto max-w-3xl space-y-6">
-        <PageHeader title={t('billing.settings.title')} description={t('billing.settings.description')} />
-        {renderContent()}
-      </div>
-    </AppShell>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader title={t('billing.settings.title')} description={t('billing.settings.description')} />
+      {renderContent()}
+    </div>
   );
 }
 
@@ -92,7 +101,9 @@ interface SubscriptionCardProps {
 
 function SubscriptionCard({ subscription, effectiveTier }: SubscriptionCardProps) {
   const { t, i18n } = useTranslation();
-  const portal = useOpenBillingPortal();
+  const { pathname } = useLocation();
+  // The portal links back to this page, in the shell the user is in (PL-16).
+  const portal = useOpenBillingPortal(toBillingReturnPath(pathname));
   const { status } = subscription;
   const hintKey = STATUS_HINT_KEY[status];
   const tier = effectiveTier ?? subscription.planTier;
