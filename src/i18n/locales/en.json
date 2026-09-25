@@ -1722,14 +1722,21 @@
     "blockCount_other": "{{count}} blocked periods imported",
     "syncStarted": "Sync started: the blocked dates update as soon as it ends.",
     "exportTitle": "Export link for OTAs",
-    "exportDescription": "Airbnb, Booking.com and your other channels read the dates taken on CasaZen from this link, so they do not sell them twice.",
+    "exportDescription": "Airbnb, Booking.com and your other channels read from this link the bookings made on CasaZen and your manual blocks, so they do not sell those dates twice.",
+    "exportContentNote": "CasaZen exports direct and manual bookings (and your blocks), not the bookings that came from the OTAs nor the dates imported from their calendars: link every OTA to the others too, for example the Booking.com calendar on Airbnb and the Airbnb one on Booking.com.",
     "exportLoading": "Loading the export link…",
     "exportPrivate": "Keep it private: anyone with the link can see the dates taken.",
     "exportHowTo": "Where to paste it",
     "exportAirbnbSteps": "in your listing open Availability → Calendar sync → Import calendar, paste the link and give it a name (e.g. CasaZen).",
     "exportBookingSteps": "in the Extranet open Rates & availability → Sync calendars, add a calendar to import and paste the link.",
     "exportRefreshNote": "OTAs read the link again from time to time: changes do not show up at once.",
-    "copyFailed": "Could not copy: select the link and copy it by hand."
+    "copyFailed": "Could not copy: select the link and copy it by hand.",
+    "regenerate": "Regenerate link",
+    "regenerateTitle": "Regenerate the export link?",
+    "regenerateDescription": "The old link stops working at once: update it on Airbnb, Booking.com and the other channels where you pasted it, or they will no longer see the dates taken on CasaZen. Use it if the link reached someone who should not have it.",
+    "regenerateConfirm": "Regenerate",
+    "regenerated": "New link created: update it on Airbnb and Booking.com.",
+    "regenerateFailed": "Could not regenerate the export link."
   },
   "marketplace": {
     "title": "Service Marketplace",

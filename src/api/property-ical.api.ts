@@ -24,4 +24,8 @@ export const propertyIcalApi = {
 
   getExportUrl: (propertyId: string) =>
     ApiClient.get<PropertyIcalExportUrl>(`/properties/${propertyId}/ical/export-url`),
+
+  /** New token for the export link (PC-12): the old link stops working at once. */
+  regenerateExportUrl: (propertyId: string) =>
+    ApiClient.post<PropertyIcalExportUrl>(`/properties/${propertyId}/ical/export-url/regenerate`),
 };
