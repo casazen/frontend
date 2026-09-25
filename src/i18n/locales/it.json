@@ -3941,9 +3941,9 @@
     "loading": "Caricamento…",
     "recommended": "Raccomandato",
     "assigned": "Assegnato",
-    "primary": "Designa come primo immobile (21%)",
+    "primary": "Designa come unità al 21%",
     "alert": {
-      "piva": "P.IVA obbligatoria dal terzo immobile STR.",
+      "piva": "Almeno un contribuente destina alla locazione breve più di {{max}} appartamenti nell'anno: si presume attività d'impresa, con partita IVA. Verifica il regime con il tuo commercialista.",
       "wizard": "Apri la procedura guidata"
     },
     "wizard": {
@@ -3960,8 +3960,21 @@
       "link": "Apri i report",
       "totals": "Lordo {{gross}} € — netto {{net}} €"
     },
-    "count_one": "{{count}} immobile STR attivo nel {{year}}",
-    "count_other": "{{count}} immobili STR attivi nel {{year}}"
+    "regime": {
+      "CedolareSecca21": "Cedolare secca 21% (unità designata)",
+      "CedolareSecca26": "Cedolare secca 26%",
+      "RegimeOrdinario": "Impresa, regime ordinario (partita IVA)",
+      "RegimeForfettario": "Impresa, regime forfettario (partita IVA)",
+      "IrpefOrdinaria": "IRPEF ordinaria senza partita IVA"
+    },
+    "chooseIrpef": "Scegli IRPEF ordinaria (senza partita IVA)",
+    "assignFailed": "Impossibile assegnare il regime fiscale",
+    "taxNote": {
+      "irpefOrdinariaNotComputed": "IRPEF ordinaria senza partita IVA: CasaZen non calcola l'imposta, il calcolo è a carico del contribuente o del commercialista.",
+      "thresholdExceeded": "Il titolare supera la soglia degli affitti brevi: attività d'impresa presunta, niente cedolare secca. Verifica con il tuo commercialista."
+    },
+    "count_one": "{{count}} immobile con affitti brevi nel {{year}}",
+    "count_other": "{{count}} immobili con affitti brevi nel {{year}}"
   },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
