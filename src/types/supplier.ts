@@ -25,8 +25,25 @@ export interface ActivationStatus {
 }
 
 export interface SupplierInboxResponse {
-  items: import('@/types/service-request').ServiceRequestSummary[];
+  items: import('@/types/service-request').SupplierServiceRequest[];
   total: number;
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * `status` of `GET /supplier/inbox` (SU-08): `open` (waiting, taken, in progress), `history` (completed, paid,
+ * rejected), `all`, or one status.
+ */
+export type SupplierInboxStatus = 'open' | 'history' | 'all' | import('@/types/service-request').ServiceRequestStatus;
+
+/** Filters of the supplier inbox: `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request. */
+export interface SupplierInboxParams {
+  status: SupplierInboxStatus;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface UpdateAvailabilityEntry {
