@@ -11,14 +11,11 @@ import { useProperties } from '@/queries/use-properties';
 import { List } from 'lucide-react';
 import type { Booking, BookingCalendarEvent } from '@/types';
 import type { CalendarBookingDto, CalendarItemDto } from '@/types/calendar.types';
+import { endOfMonth, startOfMonth, todayInRome } from '@/lib/stay-dates';
 
-function toMonthRange(date: Date): { startDate: string; endDate: string } {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1);
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  return {
-    startDate: start.toISOString().slice(0, 10),
-    endDate: end.toISOString().slice(0, 10),
-  };
+/** First and last day (`YYYY-MM-DD`, both included) of the month of `today`, with no time-zone shift. */
+function toMonthRange(today: string): { startDate: string; endDate: string } {
+  return { startDate: startOfMonth(today), endDate: endOfMonth(today) };
 }
 
 function mapCalendarBooking(dto: CalendarBookingDto): Booking {
@@ -88,7 +85,7 @@ export function CalendarPage() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
 
   const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';
-  const { startDate, endDate } = useMemo(() => toMonthRange(new Date()), []);
+  const { startDate, endDate } = useMemo(() => toMonthRange(todayInRome()), []);
 
   const { data: calendarResponse, isLoading: calendarLoading, isError } = useBookingCalendar(
     activePropertyId
