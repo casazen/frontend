@@ -10,9 +10,11 @@ const partySchema = z.object({
     .string()
     .min(11, 'leases.validation.fiscalCode.minLength')
     .max(16, 'leases.validation.fiscalCode.maxLength'),
+  // ISO 3166-1 alpha-2: the API compares it with the 27 EU member states for the Questura communication (LT-07).
   citizenship: z
     .string()
-    .length(2, 'leases.validation.citizenship.length'),
+    .length(2, 'leases.validation.citizenship.length')
+    .regex(/^[A-Za-z]{2}$/, 'leases.validation.citizenship.format'),
   contactEmail: z.string().email('leases.validation.contactEmail.format'),
 });
 

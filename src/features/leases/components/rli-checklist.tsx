@@ -8,6 +8,7 @@ import { useExportRli, useRliChecklist } from '@/queries/use-leases';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getRliChecklistItemLabel } from '@/lib/i18n-labels';
 import { RLI_REGISTRATION_PANEL_ID } from '@/lib/rli-registration-state';
+import { QUESTURA_PANEL_ID } from '@/lib/questura-communication';
 import type { RliChecklist as RliChecklistData, RliChecklistItem } from '@/types';
 
 interface Props {
@@ -98,6 +99,18 @@ export function RliChecklist({ leaseId }: Props) {
                       </span>
                       <span>
                         {getRliChecklistItemLabel(item, t)}
+                        {/* LT-07: ticked only once the landlord declares it in the Questura panel. */}
+                        {item.key === 'questura_extra_eu' && state === 'todo' && (
+                          <>
+                            {' '}
+                            <a
+                              href={`#${QUESTURA_PANEL_ID}`}
+                              className="text-primary underline-offset-4 hover:underline"
+                            >
+                              {t('leases.rli.checklistGoToQuestura')}
+                            </a>
+                          </>
+                        )}
                         {state === 'failed' && (
                           <>
                             {' '}
