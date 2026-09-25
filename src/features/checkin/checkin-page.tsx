@@ -69,12 +69,12 @@ function documentPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
 
 /** Server error path → the form path that shows it, or null when the form has no such field. */
 function toFormPath(path: string, guestCount: number): FormPath | null {
-  if (path === 'gdprConsent') return 'gdprConsent';
+  if (path === 'marketingConsent') return 'marketingConsent';
   return guestFormPathOf(path, guestCount);
 }
 
 function emptyForm(): PublicCheckInFormValues {
-  return { guests: [stayGuestDefaults('SingleGuest')], gdprConsent: false, marketingConsent: false };
+  return { guests: [stayGuestDefaults('SingleGuest')], marketingConsent: false };
 }
 
 export function CheckInPage() {
@@ -97,7 +97,6 @@ export function CheckInPage() {
     if (!context || context.completed) return;
     reset({
       guests: initialStayGuests(context.guests, context.declaredGuests),
-      gdprConsent: false,
       marketingConsent: false,
     });
   }, [context, reset]);
@@ -112,7 +111,6 @@ export function CheckInPage() {
   );
 
   const guests = useWatch({ control, name: 'guests' });
-  const gdprConsent = useWatch({ control, name: 'gdprConsent' });
   const marketingConsent = useWatch({ control, name: 'marketingConsent' });
 
   const changeLeaderType = (type: StayGuestType) => {
@@ -128,7 +126,7 @@ export function CheckInPage() {
     const current = getValues('guests');
     if (currentStep === 1) return personalPaths(current);
     if (currentStep === 2) return documentPaths(current);
-    return ['gdprConsent'];
+    return ['marketingConsent'];
   };
 
   const goNext = async () => {
@@ -271,27 +269,41 @@ export function CheckInPage() {
                 )}
                 {step === 3 && (
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 rounded-md border p-4" data-testid="checkin-gdpr-consent">
-                      <Checkbox
-                        id="gdprConsent"
-                        checked={gdprConsent === true}
-                        onCheckedChange={(v) => setValue('gdprConsent', v === true, { shouldValidate: true })}
-                      />
-                      <Label htmlFor="gdprConsent" className="text-sm leading-relaxed cursor-pointer">
-                        {t('checkin.gdprConsent')}
-                      </Label>
-                    </div>
-                    <FormFieldError id="gdprConsent-error" error={errors.gdprConsent} />
-                    <div className="flex items-start gap-3 rounded-md border p-4">
-                      <Checkbox
-                        id="marketingConsent"
-                        checked={marketingConsent === true}
-                        onCheckedChange={(v) => setValue('marketingConsent', v === true)}
-                      />
-                      <Label htmlFor="marketingConsent" className="text-sm leading-relaxed cursor-pointer">
-                        {t('checkin.marketingConsent')}
-                      </Label>
-                    </div>
+                    {/* CO-15 (A5-15): the Alloggiati registration is a legal obligation, not a consent: notice only, no checkbox. */}
+                    <section
+                      className="rounded-md border p-4 space-y-2 text-sm"
+                      aria-labelledby="checkin-privacy-notice-title"
+                      data-testid="checkin-privacy-notice"
+                    >
+                      <h2 id="checkin-privacy-notice-title" className="font-medium">
+                        {t('checkin.privacyNotice.title')}
+                      </h2>
+                      <p>{t('checkin.privacyNotice.legalObligation')}</p>
+                      <p className="text-muted-foreground">{t('checkin.privacyNotice.body')}</p>
+                      {context.privacyNoticeVersion && (
+                        <p className="text-xs text-muted-foreground">
+                          {t('checkin.privacyNotice.version', { version: context.privacyNoticeVersion })}
+                        </p>
+                      )}
+                    </section>
+                    {context.marketingConsentVersion && (
+                      <div className="flex items-start gap-3 rounded-md border p-4" data-testid="checkin-marketing-consent">
+                        <Checkbox
+                          id="marketingConsent"
+                          checked={marketingConsent === true}
+                          onCheckedChange={(v) => setValue('marketingConsent', v === true)}
+                        />
+                        <div className="space-y-1">
+                          <Label htmlFor="marketingConsent" className="text-sm leading-relaxed cursor-pointer">
+                            {t('checkin.marketingConsent')}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            {t('checkin.marketingConsentVersion', { version: context.marketingConsentVersion })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <FormFieldError id="marketingConsent-error" error={errors.marketingConsent} />
                   </div>
                 )}
                 {submitError && (

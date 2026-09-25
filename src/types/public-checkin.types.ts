@@ -69,6 +69,10 @@ export interface PublicCheckInContextDto {
   guests?: PublicCheckInGuestPrefill[];
   /** Official tables imported: only these offer codes in the form. */
   availableCodeTables?: AlloggiatiCodeTable[];
+  /** Version of the privacy notice shown (art. 13 GDPR); absent when not configured. */
+  privacyNoticeVersion?: string;
+  /** Version of the optional marketing consent text; absent when the consent is not offered. */
+  marketingConsentVersion?: string;
 }
 
 /**
@@ -96,10 +100,12 @@ export interface StayGuestSubmit {
   documentIssuePlaceCode: string | null;
 }
 
-/** Body of `POST /public/checkin/{token}` (API DTO `PublicCheckInSubmitRequest`). */
+/**
+ * Body of `POST /public/checkin/{token}` (API DTO `PublicCheckInSubmitRequest`). No consent for the Alloggiati
+ * registration (legal obligation, CO-15): only the optional marketing consent, offered when the context has its version.
+ */
 export interface PublicCheckInSubmitRequest {
   guests: StayGuestSubmit[];
-  gdprConsent: boolean;
   marketingConsent: boolean;
 }
 

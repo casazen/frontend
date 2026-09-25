@@ -216,11 +216,12 @@ export function guestFormPathOf(serverPath: string, guestCount: number): `guests
     : null;
 }
 
+/**
+ * The guest portal form. No consent is asked for the Alloggiati registration (CO-15, A5-15): it is a legal obligation
+ * (art. 109 TULPS, art. 6.1.c GDPR) and the privacy notice is only shown. The marketing consent is optional.
+ */
 export const publicCheckInFormSchema = z.object({
   guests: stayGuestListSchema,
-  gdprConsent: z.boolean().refine((val) => val === true, {
-    message: 'checkin.validation.consentAccepted.required',
-  }),
   marketingConsent: z.boolean().optional(),
 });
 
@@ -231,7 +232,7 @@ export type PublicCheckInFormValues = z.input<typeof publicCheckInFormSchema>;
  * (`Casazen.Web/DTOs/CheckIn/PublicCheckInDtos.cs`). `satisfies` makes the build fail if the request type misses one;
  * the backend test `PublicCheckInSubmitContractTests` keeps the same lists, so change both together.
  */
-export const PUBLIC_CHECKIN_REQUIRED_FIELDS = ['gdprConsent', 'guests'] as const satisfies readonly (keyof PublicCheckInSubmitRequest)[];
+export const PUBLIC_CHECKIN_REQUIRED_FIELDS = ['guests'] as const satisfies readonly (keyof PublicCheckInSubmitRequest)[];
 
 export const STAY_GUEST_REQUIRED_FIELDS = [
   'bornInItaly',
@@ -316,29 +317,6 @@ export function toStayGuestSubmit(values: StayGuestFormValues): StayGuestSubmit 
 export function toPublicCheckInSubmitRequest(values: PublicCheckInFormValues): PublicCheckInSubmitRequest {
   return {
     guests: values.guests.map(toStayGuestSubmit),
-    gdprConsent: values.gdprConsent,
     marketingConsent: values.marketingConsent ?? false,
   };
 }
-
-export const guestCheckInFormSchema = z.object({
-  dateOfBirth: z.string().min(1, 'checkin.validation.dateOfBirth.required'),
-  placeOfBirth: z.string().min(1, 'checkin.validation.placeOfBirth.required').max(100),
-  nationality: z.string().min(1, 'checkin.validation.nationality.required').max(100),
-  gender: z.enum(['Male', 'Female', 'Other'], { message: 'checkin.validation.gender.required' }),
-  documentType: z.enum(['Passport', 'IdentityCard', 'DriversLicense', 'Other'], {
-    message: 'checkin.validation.documentType.required',
-  }),
-  documentNumber: z.string().min(1, 'checkin.validation.documentNumber.required').max(50),
-  documentExpiryDate: z.string().optional(),
-  documentIssuingCountry: z.string().min(1, 'checkin.validation.documentIssuingCountry.required').max(100),
-  address: z.string().max(500).optional(),
-  city: z.string().max(50).optional(),
-  postalCode: z.string().max(10).optional(),
-  country: z.string().max(100).optional(),
-  consentAccepted: z.boolean().refine((val) => val === true, {
-    message: 'checkin.validation.consentAccepted.required',
-  }),
-});
-
-export type GuestCheckInFormValues = z.infer<typeof guestCheckInFormSchema>;
