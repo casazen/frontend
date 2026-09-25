@@ -8,12 +8,21 @@ export interface CinComplianceItem {
   city: string;
 }
 
+/**
+ * Where today stands with respect to the configured CIN deadline (`Cin:ExposureDeadline` on the backend, CO-20):
+ * `none` when no deadline is configured (only the obligation is shown, without a date).
+ */
+export type CinDeadlineStatus = 'none' | 'upcoming' | 'today' | 'passed';
+
 export interface CinComplianceSummary {
   valid: number;
   missing: number;
   invalid: number;
-  daysUntilDeadline: number;
-  deadline: string;
+  /** Days from today (Europe/Rome) to the deadline: 0 on the day, negative after it, null without a deadline. */
+  daysUntilDeadline: number | null;
+  /** Configured deadline (`YYYY-MM-DD`), null when none is set. */
+  deadline: string | null;
+  deadlineStatus: CinDeadlineStatus;
   hasNonCompliant: boolean;
 }
 

@@ -2708,6 +2708,7 @@
     "pageDescription": "National identification code management — D.L. 145/2023",
     "requestOnPortal": "Request CIN on the portal",
     "bdsrPortal": "BDSR — Ministry of Tourism",
+    "loadError": "Could not load the CIN status. Please try again later.",
     "status": {
       "Valid": "Valid",
       "Missing": "Missing",
@@ -2717,7 +2718,11 @@
       "valid": "Valid",
       "missing": "Missing",
       "invalid": "Invalid",
-      "daysUntilDeadline": "Days until deadline"
+      "deadline": "Deadline {{deadline}}",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "dueToday": "Today",
+      "passed": "Passed"
     },
     "table": {
       "empty": "No properties found.",
@@ -2731,10 +2736,12 @@
       "title": "CIN compliance required (D.L. 145/2023)",
       "nonCompliantCount_one": "You have {{count}} property without a valid CIN.",
       "nonCompliantCount_other": "You have {{count}} properties without a valid CIN.",
-      "deadlineToday": "The deadline is today.",
       "daysUntilDeadline_one": "{{count}} day left until the {{deadline}} deadline.",
       "daysUntilDeadline_other": "{{count}} days left until the {{deadline}} deadline.",
-      "penalties": "Penalties from €800 to €8,000 per property.",
+      "deadlineToday": "The {{deadline}} deadline is today.",
+      "deadlinePassed": "The {{deadline}} deadline has passed: enter the CIN as soon as possible.",
+      "obligation": "The CIN is mandatory: it must be displayed outside the property and stated in every listing.",
+      "penalties": "Penalties (art. 13-ter, par. 9): €800 to €8,000 for a missing CIN, €500 to €5,000 for not displaying it or not stating it in listings.",
       "requestOnBdsr": "Request the CIN on BDSR"
     }
   },
