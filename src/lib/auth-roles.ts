@@ -157,6 +157,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'admin.jobs.read',
         'admin.seo.read',
         'admin.tax.manage',
+        'admin.ltr.manage',
       ],
       defaultRoute: '/app/admin',
     });

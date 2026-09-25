@@ -121,6 +121,18 @@ describe('LeaseDetailPage', () => {
     expect(within(panel).getByText(/460,41/)).toBeInTheDocument();
     expect(screen.getByTestId('lease-type-regime')).toHaveTextContent('Canone concordato (3+2) · Regime ordinario');
     expect(screen.getByText(/2\.?700,00/)).toBeInTheDocument();
+    // A7-24: calculator/guide/IMU only for a canone concordato contract.
+    expect(screen.getByTestId('lease-concordato-sections')).toBeInTheDocument();
+  });
+
+  it('render_LiberoLease_HidesConcordatoCalculatorAndImuSections', async () => {
+    // A7-24: the calculator, the attestation guidance and the IMU button applied to any regime before this fix.
+    mockLease(() => Promise.resolve({ data: buildDetail() })); // contractType: 'Libero' by default
+
+    renderPage();
+
+    await screen.findAllByTestId('lease-party');
+    expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
   });
 
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {

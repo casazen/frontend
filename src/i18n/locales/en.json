@@ -226,7 +226,8 @@
       "vetrina": "Showcase",
       "operations": "Administration",
       "amministrazione": "Administration"
-    }
+    },
+    "ltrReferenceData": "LTR reference data"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -567,7 +568,8 @@
       },
       "warning": {
         "subfascia3_max_needs_more_d": "Sub-fascia 3 with fewer than 4 D elements: the agreement allows the maximum of sub-fascia 3 only with at least 4 D elements. The maximum shown may be too high.",
-        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied."
+        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied.",
+        "agreement_expired": "Agreement formally expired: the research (RS-8, 2026-09) found no more recent agreement. It remains in force until a new one is signed."
       },
       "indicativeTitle": "Indicative range: data to be checked",
       "indicativeWarning": "The territorial agreement data are not yet confirmed by a lawyer or a signatory organization (validity and filing of the agreement). The range is a reference and does not block the lease: check the rent with a signatory organization.",
@@ -575,7 +577,34 @@
       "source": "Official text of the agreement",
       "bandBetween": "band from {{min}} (excluded) to {{max}} sqm",
       "bandOver": "band over {{min}} sqm",
-      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates)."
+      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates).",
+      "sqmRequired": "Enter the surface to calculate the range.",
+      "retry": "Retry",
+      "zoneSelect": "Select a zone",
+      "zoneWithSheets": "{{zone}} (sheets: {{sheets}})",
+      "zonesEmpty": "The agreement defines no zones for this comune.",
+      "zonesError": "Could not load the zones.",
+      "zonesLoading": "Loading zones...",
+      "agreementExpiry": "Agreement formally expired on {{date}}.",
+      "agreementExpiryUntilReplaced": "Agreement formally expired on {{date}}: remains in force until a new one is signed.",
+      "imuStatusLoading": "Checking availability...",
+      "imuStatusError": "Could not check the IMU notification's availability.",
+      "imuEmail": "Email",
+      "imuPec": "PEC",
+      "imuAddress": "Address",
+      "imuRateOfficial": "IMU {{rate}}% ({{year}}, official rate)",
+      "imuRateDerived": "IMU {{rate}}% ({{year}}, derived value — not official)",
+      "imuRateUnknown": "IMU rate unknown: check with the comune.",
+      "imuRateEffective": "effective {{rate}}%",
+      "imuLastVerified": "Verified on {{date}}",
+      "imuNotVerified": "Not verified yet",
+      "imuSource": "Recipient source",
+      "imuRateSource": "Rate source",
+      "imuReason": {
+        "imu_notification_not_concordato": "The IMU notification applies only to canone concordato leases.",
+        "imu_notification_lease_not_registered": "Available only once the lease is registered.",
+        "imu_notification_data_unavailable": "Data unavailable for this comune: check with a local landlord association."
+      }
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Flat-rate tax (Cedolare Secca)",
@@ -882,7 +911,8 @@
         "pending": "Request awaiting confirmation",
         "checkedIn": "Guest arrived",
         "checkedOut": "Stay completed",
-        "block": "Dates blocked by another channel (iCal)"
+        "block": "Dates blocked by another channel (iCal)",
+        "toReview": "OTA stay to check"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -960,7 +990,7 @@
         "guests": "Guests",
         "total": "Total",
         "status": "Status",
-        "source": "Source"
+        "source": "Source and channel"
       },
       "newBooking": "New booking",
       "filteredByProperty": "Bookings of {{name}}",
@@ -1199,6 +1229,58 @@
       "failed": "The booking could not be confirmed. Please try again.",
       "success": "Booking confirmed",
       "pendingNotice": "This booking you entered is still pending: confirm it to take the dates and enable the guest's check-in."
+    },
+    "otaStay": {
+      "action": "Create OTA stay",
+      "formHint": "The iCal calendar carries dates only: enter the guest of the reservation. The check-in link, Alloggiati Web and the cockpit start from the stay.",
+      "firstName": "Guest first name",
+      "lastName": "Guest last name",
+      "email": "Guest email",
+      "emailHint": "The check-in link is sent to this address.",
+      "numberOfGuests": "Number of guests (optional)",
+      "totalPrice": "Amount in € (optional)",
+      "totalPriceHint": "The amount shown by the channel. CasaZen does not compute prices for OTA reservations.",
+      "source": "Channel of the reservation",
+      "sourcePlaceholder": "Choose the channel",
+      "submit": "Create stay",
+      "submitting": "Creating…",
+      "cancel": "Cancel",
+      "failed": "Could not create the stay. Try again.",
+      "created": "OTA stay created",
+      "channelIcal": "iCal calendar",
+      "channelWithLabel": "iCal · {{label}}",
+      "validation": {
+        "firstNameRequired": "Enter the guest's first name.",
+        "lastNameRequired": "Enter the guest's last name.",
+        "nameTooLong": "First and last name can have at most 100 characters.",
+        "emailRequired": "Enter the guest's email.",
+        "emailInvalid": "Enter a valid email address.",
+        "guestsInvalid": "The number of guests must be a whole number from 1 to {{max}}.",
+        "amountInvalid": "Enter a valid amount, for example 250 or 250.50.",
+        "sourceRequired": "Choose the channel of the reservation."
+      }
+    },
+    "icalBlock": {
+      "converted": "A stay was created from this block.",
+      "openStay": "Open the stay",
+      "notConvertible": "No stay can be created from this block: the stay is already over.",
+      "readOnly": "You are not allowed to create stays.",
+      "convertHint": "Is it a reservation received on a channel? Create the stay to send the guest the check-in link and handle Alloggiati Web."
+    },
+    "otaReview": {
+      "badge": "To check",
+      "title": "Stay to check",
+      "removed": "The reservation is no longer in the linked {{channel}} calendar: it may have been cancelled or moved on the channel.",
+      "datesChanged": "In the linked {{channel}} calendar the reservation now runs from {{channelCheckIn}} to {{channelCheckOut}}; the stay runs from {{checkIn}} to {{checkOut}}.",
+      "datesChangedNoBlock": "In the linked {{channel}} calendar the dates of the reservation changed.",
+      "nothingChanged": "CasaZen did not change or cancel the stay: its dates stay taken.",
+      "raisedAt": "Found on {{date}}",
+      "removedAction": "Check on the channel: if the reservation was cancelled, cancel the stay; then mark it as verified.",
+      "datesChangedAction": "Check on the channel: if the new dates are right, apply them to the stay; otherwise mark it as verified.",
+      "applyDates": "Apply the channel's dates",
+      "markVerified": "Mark as verified",
+      "resolved": "Stay verified",
+      "failed": "Could not update the stay. Try again."
     }
   },
   "ota": {
@@ -2027,10 +2109,75 @@
     "profileActivated": "Supplier profile activated",
     "completeAllSteps": "Complete all steps before activating the profile",
     "inboxTitle": "Assignment Inbox",
-    "inboxDescription": "Service requests from hosts (available from marketplace wave 2)",
+    "inboxDescription": "Service requests from hosts: open an assignment to see where, when and whom to contact.",
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
+    "inbox": {
+      "tabsLabel": "Assignments",
+      "tabOpen": "To do",
+      "tabHistory": "History",
+      "loading": "Loading assignments…",
+      "loadError": "Could not load the assignments.",
+      "emptyOpen": "No open assignments.",
+      "emptyHistory": "No assignments in the history for these filters.",
+      "statusFilter": "Status",
+      "statusAllHistory": "All (completed, paid, declined)",
+      "from": "From",
+      "to": "To",
+      "periodHint": "Days in Italian time: completion date for completed or paid jobs, date of the decline for declined ones.",
+      "periodInvalid": "The start date cannot be after the end date.",
+      "clearFilters": "Clear filters",
+      "pageInfo": "Page {{page}} of {{pages}}",
+      "total_one": "{{count}} assignment",
+      "total_other": "{{count}} assignments",
+      "previous": "Previous",
+      "next": "Next",
+      "details": "Details",
+      "dayOf": "Day: {{date}}",
+      "noDate": "Date to be agreed",
+      "receivedOn": "Received on {{date}}",
+      "completedOn": "Completed on {{date}}",
+      "rejectedOn": "Declined on {{date}}"
+    },
+    "request": {
+      "back": "Back to assignments",
+      "loading": "Loading the assignment…",
+      "loadError": "Could not load the assignment.",
+      "notFound": "Assignment not found: it does not exist or was not sent to you.",
+      "whereTitle": "Where",
+      "whenTitle": "When",
+      "hostTitle": "Host contact",
+      "notesTitle": "Host notes",
+      "historyTitle": "History",
+      "actionsTitle": "Actions",
+      "property": "Property",
+      "comune": "Municipality",
+      "postalCode": "Postal code",
+      "address": "Address",
+      "addressAfterTake": "The full address is shown once you accept the request.",
+      "scheduledFor": "Job day",
+      "scheduledForHint": "The guest's check-out day (Italian time).",
+      "noDate": "No date: to be agreed with the host.",
+      "stay": "Stay",
+      "stayDates": "From {{from}} to {{to}}",
+      "longRent": "Long-term rental: the request is for the property, without a stay.",
+      "hostName": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "contactAfterTake": "The host's name and contact details are shown once you accept the request.",
+      "contactRejected": "You declined this request: the host's details are not available.",
+      "noContactDetails": "The host gave no contact details.",
+      "rejectionReason": "Reason for declining",
+      "actorHost": "Host",
+      "actorSupplier": "Your team",
+      "historyReason": "Reason: {{reason}}",
+      "closedCompleted": "Work completed: waiting for the host to mark it as paid.",
+      "closedPaid": "The host marked the work as paid.",
+      "closedRejected": "You declined this request.",
+      "cancel": "Cancel",
+      "rejectReasonHint": "The host sees the reason (at most 500 characters)."
+    },
     "register": {
       "title": "Supplier registration",
       "description": "Register as a service supplier for CasaZen hosts.",
@@ -2117,7 +2264,12 @@
     "icalFeedUrlDescription": "Paste your iCal calendar URL. We support Apple Calendar, Outlook, Airbnb, and Booking.com.",
     "icalFeedUrlLabel": "iCal feed URL",
     "saveAndSync": "Save and sync",
-    "syncSuccess": "Sync started",
+    "syncSuccess": "Sync started: the calendar will update in a few moments",
+    "syncInProgress": "Sync in progress…",
+    "syncCompleted": "Synced",
+    "syncNow": "Sync now",
+    "icalSaveError": "Could not save the calendar URL",
+    "calendarStatusLoadError": "Could not load the calendar status.",
     "syncError": "Sync error",
     "icalConnected": "iCal feed connected",
     "editIcalUrl": "Edit iCal URL",
@@ -4143,7 +4295,7 @@
   },
   "fiscal": {
     "page": {
-      "title": "2026 fiscal regime",
+      "title": "{{year}} fiscal regime",
       "description": "Cedolare secca, VAT number and OTA withholding (L. 199/2025, D.L. 50/2017)."
     },
     "loading": "Loading…",
@@ -4160,12 +4312,92 @@
       "hasPiva": "I have a VAT number",
       "piva": "VAT number",
       "cf": "Tax code",
-      "save": "Save"
+      "save": "Save",
+      "link": "Tax profile",
+      "loadError": "Unable to load the saved tax profile.",
+      "pivaInvalid": "The VAT number has 11 digits.",
+      "cfInvalid": "The tax code has 16 characters (11 digits for a company).",
+      "noChanges": "No changes to save.",
+      "saved": "Tax profile saved",
+      "saveFailed": "Unable to save the tax profile"
     },
     "reports": {
       "title": "Fiscal reports",
       "description": "Data pack for your accountant (not a tax return).",
       "link": "Open reports",
+      "packLabel": "Data pack for your accountant — not a tax return, F24 or official Certificazione Unica",
+      "year": "Tax year",
+      "period": "Period",
+      "periods": {
+        "year": "Whole year",
+        "q1": "1st quarter",
+        "q2": "2nd quarter",
+        "q3": "3rd quarter",
+        "q4": "4th quarter"
+      },
+      "downloadCsv": "Download CSV",
+      "downloadPdf": "Download PDF",
+      "downloadFailed": "Unable to download the report",
+      "loadError": "Unable to load the report.",
+      "notAvailable": "n/a",
+      "total": "Total",
+      "overThreshold": "Over the short-term rental threshold",
+      "annual": {
+        "title": "Summary per property",
+        "description": "Income of the period, tourist tax, withholding and tax estimated according to the regime.",
+        "empty": "No short-term rental property or income in the period."
+      },
+      "withholding": {
+        "title": "Withholding suffered",
+        "description": "Intermediaries' withholding per channel and per payment, to reconcile with the Certificazione Unica.",
+        "empty": "No withholding recorded in the period."
+      },
+      "touristTax": {
+        "title": "Tourist tax per comune and period",
+        "description": "Stays with check-in in the period and the tax recorded at booking, per comune and month.",
+        "empty": "No stay with check-in in the period.",
+        "withoutAmount_one": "{{count}} stay without recorded tax: check it before paying the comune.",
+        "withoutAmount_other": "{{count}} stays without recorded tax: check them before paying the comune.",
+        "note": "Amounts computed by CasaZen at booking with the comune's rates; nights and guests are those of the booking. This is not the statement to the comune."
+      },
+      "col": {
+        "property": "Property",
+        "regime": "Regime",
+        "gross": "Gross collected",
+        "touristTax": "Tourist tax",
+        "commissions": "Commissions",
+        "withholding": "Withholding",
+        "taxable": "Taxable income",
+        "estimatedTax": "Estimated tax",
+        "taxpayer": "Taxpayer",
+        "properties": "Properties",
+        "rental": "Gross rent",
+        "channel": "Channel",
+        "payments": "Payments",
+        "net": "Net",
+        "date": "Date",
+        "booking": "Booking",
+        "comune": "Comune",
+        "month": "Month",
+        "stays": "Stays",
+        "nights": "Nights",
+        "guests": "Guests",
+        "recordedTax": "Recorded tax",
+        "withoutAmount": "Without amount"
+      },
+      "estimateNote": {
+        "irpef": "Not computed (ordinary IRPEF)",
+        "impresa": "Not computed (business regime)",
+        "noRegime": "Not computed (no regime)",
+        "threshold": "Not computed (over the threshold)"
+      },
+      "notes": {
+        "gross": "Gross collected: payments completed in the period, net of refunds; it includes the tourist tax, which is excluded from the taxable income.",
+        "commissions": "Commissions: not recorded in CasaZen (n/a). Take them from the intermediaries' statements; with the cedolare secca they are not deductible.",
+        "estimate": "Tax estimated for the cedolare secca only: gross rent × {{rate}}, or × {{reducedRate}} for the designated unit ({{source}}).",
+        "notEstimated": "Not estimated for ordinary IRPEF, business regimes, properties without a regime and taxpayers with more than {{max}} apartments let short-term ({{source}}).",
+        "withholding": "{{rate}} withholding by the intermediaries ({{source}}), always a prepayment: it is deducted in the tax return."
+      },
       "totals": "Gross {{gross}} EUR — net {{net}} EUR"
     },
     "regime": {
@@ -4175,14 +4407,38 @@
       "RegimeForfettario": "Business, flat-rate regime (VAT number)",
       "IrpefOrdinaria": "Ordinary IRPEF without a VAT number"
     },
-    "chooseIrpef": "Choose ordinary IRPEF (no VAT number)",
     "assignFailed": "Unable to assign the fiscal regime",
     "taxNote": {
       "irpefOrdinariaNotComputed": "Ordinary IRPEF without a VAT number: CasaZen does not compute the tax; the taxpayer or the accountant does.",
-      "thresholdExceeded": "The taxpayer is over the short-term rental threshold: business activity presumed, no cedolare secca. Check with your accountant."
+      "thresholdExceeded": "The taxpayer is over the short-term rental threshold: business activity presumed, no cedolare secca. Check with your accountant.",
+      "regimeNotAssigned": "No regime assigned for this year: choose one to estimate the tax.",
+      "impresaNotComputed": "Business regime: CasaZen does not estimate the tax, which depends on costs and on the profitability coefficient. Your accountant computes it."
     },
     "count_one": "{{count}} property with short-term stays in {{year}}",
-    "count_other": "{{count}} properties with short-term stays in {{year}}"
+    "count_other": "{{count}} properties with short-term stays in {{year}}",
+    "disclaimer": "Informative recommendation, not tax advice. CasaZen does not file tax returns and does not replace an accountant. References: L. 199/2025, D.L. 50/2017.",
+    "loadError": "Unable to load the fiscal regime.",
+    "retry": "Retry",
+    "assignSuccess": "Fiscal regime updated",
+    "notAssigned": "Not assigned",
+    "chooseRegime": "Regime for this year",
+    "selectPlaceholder": "Choose a regime",
+    "unavailable": {
+      "option": "{{regime}} (not available: {{reason}})",
+      "threshold": "taxpayer over the short-term rental threshold",
+      "partitaIva": "no VAT number",
+      "partitaIvaHint": "Business regimes (ordinary and flat-rate) require the VAT number in the tax profile."
+    },
+    "primaryMoves": "The 21% cedolare applies to one unit of the taxpayer only: the unit designated so far will move to 26%.",
+    "taxpayer": {
+      "org": "Taxpayer: the organization's tax profile",
+      "code": "Taxpayer: tax code {{code}}"
+    },
+    "empty": {
+      "title": "No short-term rental properties",
+      "description": "Add a property to choose its fiscal regime and prepare the reports.",
+      "action": "Add a property"
+    }
   },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
@@ -4325,6 +4581,13 @@
       "icalFeedLimitReached": "This property already has the maximum number of linked calendars: disconnect one before adding another.",
       "icalFeedDuplicate": "This calendar is already linked to the property.",
       "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
+      "icalBlockNotFound": "Calendar block not found.",
+      "otaStayBlockNotImported": "Only a block imported from a linked OTA calendar can become a stay.",
+      "otaStayBlockAlreadyConverted": "A stay was already created from this block.",
+      "otaStayBlockOverlapsBooking": "The dates of the block overlap a booking already on the calendar: check the calendar.",
+      "otaStayBlockEnded": "The stay of this block is already over.",
+      "otaStaySourceRequired": "Choose the channel of the reservation.",
+      "otaStayChannelDatesUnavailable": "The block of this stay is no longer in the channel's calendar: there are no dates to apply.",
       "questuraNotRequired": "No tenant of this lease is a non-EU citizen: the Questura communication does not apply.",
       "questuraAlreadyMarkedDone": "The Questura communication of this lease has already been declared.",
       "questuraCommunicationDateInFuture": "The date of the communication cannot be later than today.",
@@ -4470,6 +4733,157 @@
       "passwordTooLong": "The password can be at most 200 characters long.",
       "wsKeyRequired": "Enter the web service key (WSKey).",
       "wsKeyTooLong": "The web service key can be at most 200 characters long."
+    }
+  },
+  "ltrReferenceData": {
+    "title": "LTR reference data",
+    "description": "Territorial rent agreements and comune IMU channels: no deploy needed to update a PEC or a band.",
+    "onlyWithData": "Only with data",
+    "agreementsTitle": "Territorial agreements",
+    "agreementsEmpty": "No territorial agreements.",
+    "imuTitle": "Comune IMU channels",
+    "imuEmpty": "No IMU channels.",
+    "loadError": "Could not load the data.",
+    "retry": "Retry",
+    "edit": "Edit",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "markVerified": "Mark verified",
+    "neverVerified": "Never verified",
+    "lastVerified": "Verified on {{date}} — source: {{source}}",
+    "expiry": "Expires on {{date}}",
+    "expiryUntilReplaced": "Formally expired on {{date}}, remains in force until a new one is signed",
+    "expiryUnknown": "Expiry unknown",
+    "columns": {
+      "comune": "Comune",
+      "status": "Status",
+      "zones": "Zones",
+      "expiry": "Expiry",
+      "verification": "Verification",
+      "actions": "Actions",
+      "recipient": "Recipient",
+      "rate": "Rate"
+    },
+    "completeness": {
+      "Complete": "Complete",
+      "Partial": "Partial",
+      "Missing": "Missing"
+    },
+    "combination": {
+      "Additive": "Additive (1 + sum)",
+      "Multiplicative": "Multiplicative"
+    },
+    "fields": {
+      "dataCompleteness": "Data status",
+      "sourceUrl": "Source URL",
+      "expiresAt": "Formal expiry",
+      "remainsInForceUntilReplaced": "Remains in force until replaced",
+      "expiryNote": "Expiry note"
+    },
+    "rules": {
+      "subFasceTitle": "Sub-bands",
+      "requiredTypeACount": "Required A elements",
+      "subFascia2MinTypeBCount": "Minimum B elements (sub-band 2)",
+      "subFascia3MinTypeCCount": "Minimum C elements (sub-band 3)",
+      "subFascia3MinQualifyingTypeDCount": "Minimum qualifying D elements (sub-band 3)",
+      "subFascia3MaxMinTypeDCount": "Minimum D elements for the maximum (sub-band 3)",
+      "stoveHeatingMinTypeBCount": "Minimum B elements with stove heating",
+      "surfaceTitle": "Surface",
+      "smallSqmMax": "Small-surface threshold (sqm)",
+      "smallSqmUpliftPercent": "Small-surface uplift (%)",
+      "midSqmMin": "Mid-surface threshold, minimum (sqm)",
+      "midSqmMax": "Mid-surface threshold, maximum (sqm)",
+      "midSqmUpliftPercent": "Mid-surface uplift (%)",
+      "largeSqmMin": "Large-surface threshold (sqm)",
+      "largeSqmReductionPercent": "Large-surface reduction (%)",
+      "coefficientsTitle": "Coefficients",
+      "furnishedUpliftPercent": "Furniture uplift (%)",
+      "airConditioningUpliftPercent": "Air conditioning uplift (%)",
+      "duration4UpliftPercent": "4-year term uplift (%)",
+      "duration5UpliftPercent": "5-year term uplift (%)",
+      "duration6UpliftPercent": "6-year term uplift (%)",
+      "appurtenancesTitle": "Appurtenances",
+      "garageAppurtenancePercent": "Garage/covered parking share (%)",
+      "balconyAppurtenancePercent": "Balconies and terraces share (%)",
+      "otherAppurtenancePercent": "Other appurtenances share (%)",
+      "greenAreaAppurtenancePercent": "Exclusive green area share (%)",
+      "coefficientCombination": "How coefficients combine",
+      "subFascia3QualifyingTypeDElements": "Qualifying D elements (e.g. D1,D2,D4,D6,D7,D9)"
+    },
+    "bands": {
+      "title": "Bands",
+      "empty": "No bands.",
+      "edit": "Edit band",
+      "zone": "Zone",
+      "sheets": "Sheets: {{sheets}}",
+      "sheetsLabel": "Cadastral sheets (comma separated)",
+      "surface": "Surface",
+      "minSqm": "Min sqm (exclusive)",
+      "maxSqm": "Max sqm (inclusive)",
+      "subFascia": "Sub-band {{n}}",
+      "min": "Min {{n}}",
+      "max": "Max {{n}}"
+    },
+    "imu": {
+      "editTitle": "IMU channel — {{comune}}",
+      "editDescription": "Recipient, contacts and IMU rate of the comune communication.",
+      "rateUnknown": "Rate unknown",
+      "rate": {
+        "Official": "{{rate}}% ({{year}}, official)",
+        "Derived": "{{rate}}% ({{year}}, derived — not official)"
+      },
+      "rateKind": {
+        "none": "Not set",
+        "Official": "Official",
+        "Derived": "Derived"
+      },
+      "fields": {
+        "recipientOffice": "Recipient office",
+        "email": "Email",
+        "pec": "PEC",
+        "postalAddress": "Postal address",
+        "instructions": "Instructions",
+        "ratePercent": "Rate (%)",
+        "effectiveRatePercent": "Effective rate (%)",
+        "rateYear": "Rate year",
+        "rateKind": "Rate kind",
+        "rateNotes": "Rate notes",
+        "sourceUrl": "Source URL",
+        "rateSourceUrl": "Rate source URL"
+      }
+    },
+    "verify": {
+      "title": "Mark verified — {{subject}}",
+      "description": "Records the date the data was checked against an official source, and the source.",
+      "date": "Verification date",
+      "source": "Source",
+      "sourcePlaceholder": "E.g. the agreement's PDF, a comune deliberation, a call with the ufficio tributi",
+      "confirm": "Confirm",
+      "subject": {
+        "agreement": "territorial agreement of {{comune}}",
+        "imu": "IMU channel of {{comune}}"
+      }
+    },
+    "audit": {
+      "title": "Change log",
+      "empty": "No changes recorded.",
+      "loadError": "Could not load the change log.",
+      "action": {
+        "Updated": "Updated",
+        "MarkedVerified": "Marked verified"
+      }
+    },
+    "agreement": {
+      "title": "Territorial agreement — {{comune}}",
+      "loading": "Territorial agreement",
+      "description": "Status, expiry, source and the rules of the rent calculation. The verification date only changes via “Mark verified”."
+    },
+    "toast": {
+      "saved": "Saved.",
+      "saveFailed": "Save failed.",
+      "verified": "Verification recorded.",
+      "verifyFailed": "Verification failed."
     }
   }
 }

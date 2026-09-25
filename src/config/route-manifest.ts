@@ -586,6 +586,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Coins',
     component: async () => ({ default: (await import('@/features/admin/admin-tax-rates-page')).AdminTaxRatesPage }),
   },
+  // Admin LTR reference data (LT-13, A7-22): territorial agreements and comune IMU channels.
+  {
+    path: '/app/admin/compliance/ltr-reference-data',
+    context: 'admin',
+    requiredPermissions: ['admin.ltr.manage'],
+    navKey: 'nav.ltrReferenceData',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/admin/admin-ltr-reference-data-page')).AdminLtrReferenceDataPage,
+    }),
+  },
   // ============================================================
   // Supplier console
   // ============================================================
@@ -639,6 +653,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 3,
     icon: 'Inbox',
     component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),
+  },
+  {
+    // Detail of one request: where, when, host contact after the take, actions and history (SU-08, A4-14).
+    path: '/app/supplier/inbox/:id',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/supplier-request-detail-page')).SupplierRequestDetailPage,
+    }),
   },
   {
     path: '/app/supplier/availability',

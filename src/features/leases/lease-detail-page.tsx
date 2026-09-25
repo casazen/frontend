@@ -224,13 +224,18 @@ export function LeaseDetailPage() {
               />
             )}
 
-            {lease.concordatoAssessment ? (
-              <ConcordatoAssessmentPanel assessment={lease.concordatoAssessment} />
-            ) : (
-              <CanoneConcordatoCalculator propertyId={lease.propertyId} startDate={lease.startDate} endDate={lease.endDate} />
+            {/* Calculator, attestation guidance and IMU only for a canone concordato contract (A7-24, LT-13). */}
+            {lease.contractType === 'Concordato' && (
+              <div className="space-y-6" data-testid="lease-concordato-sections">
+                {lease.concordatoAssessment ? (
+                  <ConcordatoAssessmentPanel assessment={lease.concordatoAssessment} />
+                ) : (
+                  <CanoneConcordatoCalculator propertyId={lease.propertyId} startDate={lease.startDate} endDate={lease.endDate} />
+                )}
+                <AttestationGuidancePanel propertyId={lease.propertyId} />
+                <ImuNotificationExportButton leaseId={lease.id} />
+              </div>
             )}
-            <AttestationGuidancePanel propertyId={lease.propertyId} />
-            <ImuNotificationExportButton leaseId={lease.id} leaseStatus={lease.status} />
           </div>
 
           <div className="space-y-6">

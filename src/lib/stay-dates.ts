@@ -130,16 +130,21 @@ export function nightsBetween(checkIn: string, checkOut: string): number {
  * A UTC instant (ISO string, e.g. a deadline) shown as date and time in Europe/Rome, the time zone of every deadline
  * of the stays; an empty string when invalid.
  */
-export function formatRomeDateTime(instant: string, locale: string): string {
+export function formatRomeDateTime(
+  instant: string,
+  locale: string,
+  options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' },
+): string {
   const date = new Date(instant);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: STAY_TIME_ZONE,
-  }).format(date);
+  return new Intl.DateTimeFormat(locale, { ...options, timeZone: STAY_TIME_ZONE }).format(date);
+}
+
+/** Europe/Rome calendar date (`YYYY-MM-DD`) of a UTC instant (ISO string), or an empty string when invalid. */
+export function romeDateOf(instant: string | null | undefined): string {
+  if (!instant) return '';
+  const date = new Date(instant);
+  return Number.isNaN(date.getTime()) ? '' : todayInRome(date);
 }
 
 /** Stay date formatted for display (no time zone shift), or an empty string when invalid. */
