@@ -871,7 +871,42 @@
       "noPropertiesHint": "Aggiungi una proprietà per visualizzare il calendario prenotazioni.",
       "goToProperties": "Vai alle proprietà",
       "property": "Proprietà",
-      "loadError": "Impossibile caricare il calendario. Riprova più tardi."
+      "loadError": "Impossibile caricare il calendario. Riprova più tardi.",
+      "retry": "Riprova",
+      "guestUnknown": "Ospite senza nome",
+      "dates_one": "{{arrival}} → {{departure}} · {{count}} notte",
+      "dates_other": "{{arrival}} → {{departure}} · {{count}} notti",
+      "legend": {
+        "title": "Legenda del calendario",
+        "confirmed": "Prenotazione confermata",
+        "pending": "Richiesta in attesa di conferma",
+        "checkedIn": "Ospite arrivato",
+        "checkedOut": "Soggiorno concluso",
+        "block": "Date bloccate da un altro canale (iCal)"
+      },
+      "block": {
+        "title": "Date bloccate su {{source}}",
+        "tooltip": "Date bloccate su {{source}}",
+        "summary": "Evento del calendario: {{summary}}",
+        "notABooking": "Queste date arrivano dal calendario iCal collegato: sono occupate su un altro canale e non sono una prenotazione CasaZen. Trovi i dettagli dell'ospite sul canale.",
+        "otherSource": "un altro calendario",
+        "close": "Chiudi"
+      },
+      "toolbar": {
+        "today": "Oggi",
+        "previous": "Indietro",
+        "next": "Avanti",
+        "month": "Mese",
+        "week": "Settimana",
+        "day": "Giorno",
+        "allDay": "Tutto il giorno",
+        "date": "Data",
+        "time": "Ora",
+        "event": "Prenotazione",
+        "noEventsInRange": "Nessuna prenotazione in questo periodo.",
+        "showMore_one": "+{{count}} altra",
+        "showMore_other": "+{{count}} altre"
+      }
     },
     "validation": {
       "firstName": {
@@ -1872,8 +1907,6 @@
     "exportLoadError": "Impossibile caricare il link di esportazione.",
     "copy": "Copia",
     "copied": "Copiato",
-    "legendBooking": "Prenotazione",
-    "legendIcalBlock": "Blocco OTA (iCal)",
     "blockCount_one": "{{count}} periodo bloccato importato",
     "blockCount_other": "{{count}} periodi bloccati importati",
     "syncStarted": "Sincronizzazione avviata: le date bloccate si aggiornano appena termina.",

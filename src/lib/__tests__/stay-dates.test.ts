@@ -5,7 +5,10 @@ import {
   formatStayDate,
   isStayDate,
   nightsBetween,
+  parseStayDate,
   startOfMonth,
+  startOfWeek,
+  stayDateToLocalDate,
   toStayDate,
   todayInRome,
   utcStayDate,
@@ -144,5 +147,53 @@ describe('UTC calendar helpers (QA-CLOCK-FE)', () => {
   it('addDays_InBrowserTimeZoneWithDaylightSavingChange_ReturnsCalendarDate', () => {
     expect(addDays('2026-03-28', 1)).toBe('2026-03-29');
     expect(addDays('2026-10-24', 2)).toBe('2026-10-26');
+  });
+});
+
+describe('calendar widget helpers (PC-08)', () => {
+  it('startOfWeek_AnyDay_ReturnsMondayOfItsWeek', () => {
+    expect(startOfWeek('2026-09-30')).toBe('2026-09-28');
+    expect(startOfWeek('2026-09-28')).toBe('2026-09-28');
+    expect(startOfWeek('2026-10-04')).toBe('2026-09-28');
+    expect(startOfWeek('2026-01-01')).toBe('2025-12-29');
+  });
+
+  it('startOfWeek_WeekStartingOnSunday_ReturnsTheSundayBefore', () => {
+    expect(startOfWeek('2026-09-30', 0)).toBe('2026-09-27');
+    expect(startOfWeek('invalid')).toBe('');
+  });
+
+  it('parseStayDate_ApiDates_ReturnsTheDayAsWritten', () => {
+    expect(parseStayDate('2026-09-30')).toBe('2026-09-30');
+    expect(parseStayDate('2026-09-30T00:00:00')).toBe('2026-09-30');
+    expect(parseStayDate('2026-09-30T00:00:00Z')).toBe('2026-09-30');
+  });
+
+  it('parseStayDate_MissingOrInvalidValue_ReturnsEmpty', () => {
+    expect(parseStayDate(undefined)).toBe('');
+    expect(parseStayDate(null)).toBe('');
+    expect(parseStayDate('')).toBe('');
+    expect(parseStayDate('2026-02-30T00:00:00')).toBe('');
+    expect(parseStayDate('30/09/2026')).toBe('');
+    expect(parseStayDate('2026-09-301')).toBe('');
+  });
+
+  describe('west of UTC', () => {
+    withBrowserTimeZone('America/Los_Angeles');
+
+    it('stayDateToLocalDate_StayDate_ReturnsLocalMidnightOfThatDay', () => {
+      // new Date('2026-09-30') would be the evening of the 29th in Los Angeles.
+      const date = stayDateToLocalDate('2026-09-30');
+
+      expect(date?.getFullYear()).toBe(2026);
+      expect(date?.getMonth()).toBe(8);
+      expect(date?.getDate()).toBe(30);
+      expect(date?.getHours()).toBe(0);
+      expect(toStayDate(date!)).toBe('2026-09-30');
+    });
+  });
+
+  it('stayDateToLocalDate_InvalidDate_ReturnsNull', () => {
+    expect(stayDateToLocalDate('2026-02-30')).toBeNull();
   });
 });
