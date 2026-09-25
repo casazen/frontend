@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useComplianceSummary } from '@/features/compliance/use-compliance';
-import { normalizeComplianceRouteLink } from '@/lib/compliance-routes';
+import { complianceActionRoute } from '@/lib/compliance-routes';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { ALLOGGIATI_ATTENTION_CLASS } from '@/features/alloggiati/alloggiati-status.utils';
 import type { ComplianceSummarySection } from '@/types/compliance.types';
 
@@ -21,6 +22,7 @@ interface SummaryRowProps {
 
 function SummaryRow({ icon, title, section, testId, tone = 'destructive' }: SummaryRowProps) {
   const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
   const hasItems = section.count > 0;
 
   return (
@@ -40,18 +42,28 @@ function SummaryRow({ icon, title, section, testId, tone = 'destructive' }: Summ
       </div>
       {section.count > 0 && (
         <ul className="space-y-1">
-          {section.items.map((item) => (
-            <li key={`${item.id ?? item.label}-${item.routeLink}`}>
-              <Link
-                to={normalizeComplianceRouteLink(item.routeLink)}
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted/60 transition-colors"
-                data-testid={`${testId}-link`}
-              >
-                <span className="truncate">{item.label}</span>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </Link>
-            </li>
-          ))}
+          {section.items.map((item) => {
+            // Built from the action and its target (CO-04): null when the user can open no page for it.
+            const route = complianceActionRoute(item, hasPermission);
+            return (
+              <li key={`${item.action}-${item.id}`}>
+                {route ? (
+                  <Link
+                    to={route}
+                    className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted/60 transition-colors"
+                    data-testid={`${testId}-link`}
+                  >
+                    <span className="truncate">{item.label}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </Link>
+                ) : (
+                  <span className="block truncate px-2 py-1.5 text-sm" data-testid={`${testId}-item`}>
+                    {item.label}
+                  </span>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
       {section.count > section.items.length && (
