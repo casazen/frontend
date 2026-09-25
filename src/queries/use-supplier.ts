@@ -7,6 +7,7 @@ import {
   fetchSupplierAvailability,
   fetchSupplierDashboard,
   fetchSupplierInbox,
+  fetchSupplierInboxItem,
   fetchSupplierKpis,
   fetchSupplierProfile,
   fetchSupplierRegistrationOptions,
@@ -20,7 +21,12 @@ import {
   uploadSupplierPhotos,
 } from '@/services/supplier-api';
 import type { SupplierRegisterPayload } from '@/services/supplier-api';
-import type { CalendarSyncStatus, SupplierKpiPeriod, UpdateAvailabilityEntry } from '@/types/supplier';
+import type {
+  CalendarSyncStatus,
+  SupplierInboxParams,
+  SupplierKpiPeriod,
+  UpdateAvailabilityEntry,
+} from '@/types/supplier';
 
 /**
  * Light polling while the supplier's calendar is syncing (its job is queued, SU-15): every few seconds during the first
@@ -63,10 +69,24 @@ export function useSupplierProfile() {
   });
 }
 
-export function useSupplierInbox(status = 'open', page = 1) {
+/** A page of the supplier inbox (SU-08): open requests or history, filtered and paginated by the server. */
+export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' }, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ['supplier', 'inbox', status, page],
-    queryFn: () => fetchSupplierInbox(status, page),
+    queryKey: ['supplier', 'inbox', 'list', params],
+    queryFn: () => fetchSupplierInbox(params),
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * One request of the supplier inbox with its history (SU-08). Under `['supplier', 'inbox']`, so take, complete and
+ * reject reload it.
+ */
+export function useSupplierInboxItem(id: string | undefined) {
+  return useQuery({
+    queryKey: ['supplier', 'inbox', 'item', id],
+    queryFn: () => fetchSupplierInboxItem(id!),
+    enabled: !!id,
   });
 }
 

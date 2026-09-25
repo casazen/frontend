@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useContext, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -8,7 +8,10 @@ import { Label } from '@/components/ui/label';
 import { BookingCalendar } from './components/booking-calendar';
 import { useBookingCalendar } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
-import { List, X } from 'lucide-react';
+import { CalendarPlus, List, X } from 'lucide-react';
+import { WorkspaceContext } from '@/contexts/workspace-context';
+import type { Booking } from '@/types';
+import { OtaStayForm } from './components/ota-stay-form';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import {
@@ -20,12 +23,22 @@ import {
   type HostCalendarView,
 } from './lib/host-calendar';
 
+interface BlockDetailsProps {
+  block: HostCalendarBlockEvent;
+  onClose: () => void;
+  /** The host may create stays (`booking.write`). */
+  canWrite: boolean;
+  onStayCreated: (booking: Booking) => void;
+}
+
 /**
  * Dates taken on another channel, opened from the calendar: where they come from and the stay dates. A block is not a
- * CasaZen booking, so there is no booking detail to open.
+ * CasaZen booking, so there is no booking detail to open; an imported block can become an OTA stay ("Crea soggiorno
+ * OTA", CO-21, decision D7), from which the guest check-in link, Alloggiati Web and the cockpit start.
  */
-function BlockDetails({ block, onClose }: { block: HostCalendarBlockEvent; onClose: () => void }) {
+function BlockDetails({ block, onClose, canWrite, onStayCreated }: BlockDetailsProps) {
   const { t, i18n } = useTranslation();
+  const [creating, setCreating] = useState(false);
   return (
     <section
       aria-labelledby="calendar-block-title"
@@ -48,7 +61,39 @@ function BlockDetails({ block, onClose }: { block: HostCalendarBlockEvent; onClo
       </p>
       {block.summary && <p className="text-muted-foreground">{t('booking.calendar.block.summary', { summary: block.summary })}</p>}
       <p className="text-muted-foreground">{t('booking.calendar.block.notABooking')}</p>
-      {/* TODO(CO-21): "Crea soggiorno OTA" from this block (guest check-in, Alloggiati) once CO-21 publishes it. */}
+      {block.stayId ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-white px-3 py-2">
+          <span>{t('booking.icalBlock.converted')}</span>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/app/short-rent/bookings/${block.stayId}`} data-testid="calendar-block-open-stay">
+              {t('booking.icalBlock.openStay')}
+            </Link>
+          </Button>
+        </div>
+      ) : block.manual ? null : !block.convertible ? (
+        <p className="text-muted-foreground" data-testid="calendar-block-not-convertible">
+          {t('booking.icalBlock.notConvertible')}
+        </p>
+      ) : !canWrite ? (
+        <p className="text-muted-foreground">{t('booking.icalBlock.readOnly')}</p>
+      ) : creating ? (
+        <div className="rounded-md border bg-white p-4">
+          <OtaStayForm
+            blockId={block.id}
+            channel={block.channel}
+            onCreated={onStayCreated}
+            onCancel={() => setCreating(false)}
+          />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-muted-foreground">{t('booking.icalBlock.convertHint')}</p>
+          <Button size="sm" onClick={() => setCreating(true)} data-testid="calendar-block-create-stay">
+            <CalendarPlus className="mr-2 h-4 w-4" />
+            {t('booking.otaStay.action')}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
@@ -63,6 +108,8 @@ export function CalendarPage() {
   // The day around which the view is shown; "today" is the calendar date in Rome (QA-CLOCK-FE).
   const [shownDate, setShownDate] = useState<string>(() => todayInRome());
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  // "Crea soggiorno OTA" needs booking.write (CO-21); without a workspace (e.g. tests) nothing is offered.
+  const canWriteBookings = useContext(WorkspaceContext)?.hasPermission('short-rent', 'booking.write') ?? false;
 
   const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';
   // First and last stay date of the month, week or day shown, both included (backend MO-06): part of the query key,
@@ -169,7 +216,19 @@ export function CalendarPage() {
                   onSelectEvent={handleSelectEvent}
                   loading={calendarLoading}
                 />
-                {selectedBlock && <BlockDetails block={selectedBlock} onClose={() => setSelectedBlockId(null)} />}
+                {selectedBlock && (
+                  <BlockDetails
+                    key={selectedBlock.id}
+                    block={selectedBlock}
+                    onClose={() => setSelectedBlockId(null)}
+                    canWrite={canWriteBookings}
+                    onStayCreated={(booking) => {
+                      setSelectedBlockId(null);
+                      // The guest tab: the check-in link of the new stay is sent from there (CO-09).
+                      navigate(`/app/short-rent/bookings/${booking.id}?tab=guest`);
+                    }}
+                  />
+                )}
               </>
             )}
           </>

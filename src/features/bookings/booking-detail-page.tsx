@@ -27,6 +27,8 @@ import { ServiceRequestsCard } from '@/features/service-requests/components/serv
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
+import { OtaReviewNotice } from './components/ota-review-notice';
+import { bookingChannelText } from './lib/ota-stay';
 import type { Booking } from '@/types';
 
 export function BookingDetailPage() {
@@ -104,6 +106,8 @@ export function BookingDetailPage() {
   const canCheckOut = canWrite && canOpenCheckOut(booking);
   const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
   const nights = bookingNights(booking);
+  // OTA stay created from an iCal block (CO-21): its feed next to the source.
+  const channelText = bookingChannelText(booking, t);
   const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
 
   const tabs: { key: BookingTab; label: string }[] = [
@@ -165,6 +169,8 @@ export function BookingDetailPage() {
           {t('booking.detailPage.viewProperty')} &#8594;
         </Link>
 
+        <OtaReviewNotice booking={booking} canWrite={canWrite} />
+
         <div className="flex gap-1 border-b mb-6">
           {tabs.map((tab) => (
             <button
@@ -199,6 +205,11 @@ export function BookingDetailPage() {
                         >
                           {getBookingSourceLabel(booking.source, t)}
                         </Badge>
+                      )}
+                      {channelText && (
+                        <span className="text-xs text-muted-foreground" data-testid="booking-detail-channel">
+                          {channelText}
+                        </span>
                       )}
                       <Badge variant={statusVariant} className="text-base px-3 py-1" data-testid="booking-detail-status">
                         {statusLabel}

@@ -1,6 +1,6 @@
 import { addDays, endOfMonth, nightsBetween, parseStayDate, startOfMonth, startOfWeek, stayDateToLocalDate } from '@/lib/stay-dates';
 import type { TFunction } from 'i18next';
-import type { CalendarItemDto } from '@/types/calendar.types';
+import type { CalendarItemDto, OtaReviewReason } from '@/types/calendar.types';
 
 /**
  * Host calendar of the web console (PC-08, A2-06): the range asked to `GET /api/bookings/calendar` follows the view and
@@ -61,6 +61,8 @@ export interface HostCalendarBookingEvent extends HostCalendarEventBase {
   kind: 'booking';
   status: string;
   guestName: string;
+  /** OTA stay created from an iCal block that a sync marked "da verificare" (CO-21); null otherwise. */
+  otaReviewReason: OtaReviewReason | null;
 }
 
 /**
@@ -72,6 +74,12 @@ export interface HostCalendarBlockEvent extends HostCalendarEventBase {
   channel: HostCalendarChannel | null;
   feedLabel: string | null;
   summary: string | null;
+  /** Entered by hand by the host, not imported from a feed. */
+  manual: boolean;
+  /** The OTA stay the host created from this block (CO-21), while not cancelled. */
+  stayId: string | null;
+  /** "Crea soggiorno OTA" is offered (CO-21): imported, not a stay yet, not over. */
+  convertible: boolean;
 }
 
 export type HostCalendarEvent = HostCalendarBookingEvent | HostCalendarBlockEvent;
@@ -104,7 +112,13 @@ export function toHostCalendarEvents(items: readonly CalendarItemDto[]): HostCal
 
     const base = { id: item.id, arrival, departure, nights: nightsBetween(arrival, parsedDeparture), start, end, allDay: true as const };
     if (item.type === 'booking') {
-      events.push({ ...base, kind: 'booking', status: item.status ?? '', guestName: trimmed(item.guestName) ?? '' });
+      events.push({
+        ...base,
+        kind: 'booking',
+        status: item.status ?? '',
+        guestName: trimmed(item.guestName) ?? '',
+        otaReviewReason: item.status === 'Cancelled' ? null : (item.otaReviewReason ?? null),
+      });
     } else {
       events.push({
         ...base,
@@ -112,6 +126,9 @@ export function toHostCalendarEvents(items: readonly CalendarItemDto[]): HostCal
         channel: toChannel(item.channel),
         feedLabel: trimmed(item.feedLabel),
         summary: trimmed(item.summary),
+        manual: item.blockSource === 'Manual',
+        stayId: item.bookingId ?? null,
+        convertible: item.convertible === true,
       });
     }
   }
