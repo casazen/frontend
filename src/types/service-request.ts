@@ -41,15 +41,68 @@ export interface ServiceRequest {
   updatedAt: string;
 }
 
-export interface ServiceRequestSummary {
+/** The stay of a short-rent request as the supplier sees it (SU-08): dates only, never the guest. */
+export interface SupplierStay {
+  bookingId: string;
+  /** Check-in day, `YYYY-MM-DD` (Europe/Rome). */
+  checkIn: string;
+  /** Check-out day, `YYYY-MM-DD` (Europe/Rome). */
+  checkOut: string;
+}
+
+/** Host contact given to the supplier once it took the request (SU-08). */
+export interface SupplierHostContact {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+}
+
+/**
+ * A request in the supplier console (`GET /supplier/inbox`, SU-08, A4-14). Before the take: comune, zone (postal code),
+ * date and stay dates; from the take on (`contactDisclosed`) also the street address and the host contact.
+ */
+export interface SupplierServiceRequest {
   id: string;
-  propertyId: string;
-  propertyName: string;
+  rentalContext: ServiceRequestRentalContext;
+  status: ServiceRequestStatus;
   category: string;
   urgency: ServiceRequestUrgency;
-  status: ServiceRequestStatus;
   notes?: string | null;
+  rejectionReason?: string | null;
   createdAt: string;
+  updatedAt: string;
+  takenAt?: string | null;
+  completedAt?: string | null;
+  paidAt?: string | null;
+  propertyId: string;
+  propertyName: string;
+  city: string;
+  postalCode?: string | null;
+  /** Street address: null until the supplier takes the request. */
+  address?: string | null;
+  /** Day of the job, `YYYY-MM-DD` (Europe/Rome): the check-out of the stay; null when there is no stay. */
+  scheduledFor?: string | null;
+  stay?: SupplierStay | null;
+  contactDisclosed: boolean;
+  hostContact?: SupplierHostContact | null;
+}
+
+export type ServiceRequestActorParty = 'Host' | 'Supplier';
+
+/** One transition of a service request: the status reached, when (UTC instant) and by whom. */
+export interface ServiceRequestHistoryEntry {
+  status: ServiceRequestStatus;
+  at: string;
+  actor: ServiceRequestActorParty;
+  /** The supplier member who took the request, when known. */
+  actorName?: string | null;
+  /** Rejection reason, on the `Rifiutato` step. */
+  reason?: string | null;
+}
+
+/** `GET /supplier/inbox/{id}`: the request and its history (SU-08). */
+export interface SupplierServiceRequestDetail extends SupplierServiceRequest {
+  history: ServiceRequestHistoryEntry[];
 }
 
 export interface ServiceRequestListResponse {

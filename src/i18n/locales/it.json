@@ -282,7 +282,8 @@
       "vetrina": "Vetrina",
       "operations": "Amministrazione",
       "amministrazione": "Amministrazione"
-    }
+    },
+    "ltrReferenceData": "Dati normativi LTR"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -502,14 +503,14 @@
       "attestationCheckbox": "Ho letto e accetto l'attestazione di responsabilita del deposito",
       "confirmSubmit": "Autorizza e invia",
       "cancel": "Annulla",
-      "extraEuTitle": "Cessione di fabbricato — comunicazione in Questura",
-      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale.",
+      "extraEuTitle": "Conduttore extra-UE: comunicazione alla Questura entro 48 ore dalla consegna",
+      "extraEuBody": "Il contratto include un conduttore extra-UE: entro 48 ore dalla consegna dell'immobile va inviata la comunicazione scritta all'autorità locale di pubblica sicurezza (art. 7 D.Lgs. 286/1998). CasaZen non la invia: dopo l'invio, segnala la data nella sezione dedicata.",
       "checklistItem": {
         "contract_signed": "Contratto firmato da tutte le parti",
         "delega_captured": "Delega / attestazione RLI registrata",
         "rli_exported": "Dataset RLI esportato per revisione",
         "rli_registered": "Contratto registrato: estremi e ricevuta dell'Agenzia delle Entrate inseriti",
-        "questura_extra_eu": "Comunicazione Questura (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Bozza da confermare con legale."
+        "questura_extra_eu": "Comunicazione alla Questura per il conduttore extra-UE (art. 7 D.Lgs. 286/1998), entro 48 ore dalla consegna dell'immobile"
       },
       "registrationDate": "Data di registrazione",
       "state": {
@@ -562,7 +563,8 @@
         "saving": "Salvataggio..."
       },
       "checklistFailed": "ultimo tentativo non riuscito",
-      "checklistGoToRegistration": "Vai alla registrazione"
+      "checklistGoToRegistration": "Vai alla registrazione",
+      "checklistGoToQuestura": "Vai alla comunicazione"
     },
     "canoneConcordato": {
       "title": "Calcolo canone concordato",
@@ -622,7 +624,8 @@
       },
       "warning": {
         "subfascia3_max_needs_more_d": "Sub-fascia 3 con meno di 4 elementi D: l'accordo consente il massimo della sub-fascia 3 solo con almeno 4 elementi D. Il massimo mostrato potrebbe essere troppo alto.",
-        "no_duration_uplift_over_6_years": "Durata oltre 6 anni: l'accordo non prevede maggiorazioni, non ne è stata applicata nessuna."
+        "no_duration_uplift_over_6_years": "Durata oltre 6 anni: l'accordo non prevede maggiorazioni, non ne è stata applicata nessuna.",
+        "agreement_expired": "Accordo scaduto formalmente: la ricerca (RS-8, 2026-09) non ha trovato un accordo più recente. L'accordo resta in vigore fino alla sottoscrizione di uno nuovo."
       },
       "indicativeTitle": "Range indicativo: dati da verificare",
       "indicativeWarning": "I dati dell'accordo territoriale non sono ancora confermati da un legale o da un'organizzazione firmataria (vigenza e deposito dell'accordo). Il range è un riferimento e non blocca la creazione del contratto: verifica il canone con un'organizzazione firmataria.",
@@ -630,7 +633,34 @@
       "source": "Testo ufficiale dell'accordo",
       "bandBetween": "fascia da {{min}} (escluso) a {{max}} mq",
       "bandOver": "fascia oltre {{min}} mq",
-      "computedWith": "Calcolato su {{sqm}} mq utili e {{years}} anni di durata (dalle date del contratto)."
+      "computedWith": "Calcolato su {{sqm}} mq utili e {{years}} anni di durata (dalle date del contratto).",
+      "sqmRequired": "Indica la superficie per calcolare il range.",
+      "retry": "Riprova",
+      "zoneSelect": "Seleziona una zona",
+      "zoneWithSheets": "{{zone}} (fogli: {{sheets}})",
+      "zonesEmpty": "L'accordo non definisce zone per questo comune.",
+      "zonesError": "Impossibile caricare le zone.",
+      "zonesLoading": "Caricamento zone...",
+      "agreementExpiry": "Accordo scaduto formalmente il {{date}}.",
+      "agreementExpiryUntilReplaced": "Accordo scaduto formalmente il {{date}}: resta in vigore fino a un nuovo accordo.",
+      "imuStatusLoading": "Verifica disponibilità...",
+      "imuStatusError": "Impossibile verificare la disponibilità della comunicazione IMU.",
+      "imuEmail": "Email",
+      "imuPec": "PEC",
+      "imuAddress": "Indirizzo",
+      "imuRateOfficial": "IMU {{rate}}% ({{year}}, aliquota ufficiale)",
+      "imuRateDerived": "IMU {{rate}}% ({{year}}, valore derivato — non ufficiale)",
+      "imuRateUnknown": "Aliquota IMU non nota: verifica con il Comune.",
+      "imuRateEffective": "effettiva {{rate}}%",
+      "imuLastVerified": "Verificato il {{date}}",
+      "imuNotVerified": "Non ancora verificato",
+      "imuSource": "Fonte destinatario",
+      "imuRateSource": "Fonte aliquota",
+      "imuReason": {
+        "imu_notification_not_concordato": "La comunicazione IMU vale solo per i contratti a canone concordato.",
+        "imu_notification_lease_not_registered": "Disponibile solo dopo la registrazione del contratto.",
+        "imu_notification_data_unavailable": "Dato non disponibile per questo comune: verifica con l'associazione di categoria locale."
+      }
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Cedolare secca",
@@ -660,7 +690,8 @@
         "maxLength": "Il codice fiscale deve essere di al massimo 16 caratteri"
       },
       "citizenship": {
-        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)"
+        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)",
+        "format": "La cittadinanza è il codice ISO del paese di 2 lettere (es. IT, DE, US)"
       },
       "contactEmail": {
         "format": "Email valida obbligatoria"
@@ -725,7 +756,8 @@
         "Transitorio": "Transitorio: durata da 1 a 18 mesi. CasaZen controlla solo la durata: le esigenze transitorie vanno indicate e documentate nel contratto, e per questo tipo non c'è ancora un modello di contratto."
       },
       "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
-      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo."
+      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo.",
+      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -746,7 +778,9 @@
       "RegistrationAuthorized": "Delega RLI registrata",
       "RliExported": "Precompilazione RLI esportata",
       "DeadlineReminderSent": "Promemoria di scadenza inviato",
-      "StipulaDeclared": "Data di stipula dichiarata"
+      "StipulaDeclared": "Data di stipula dichiarata",
+      "QuesturaCommunicationMarkedDone": "Comunicazione alla Questura dichiarata",
+      "PropertyDeliveryDateDeclared": "Data di consegna dell'immobile indicata"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -769,6 +803,44 @@
       "indicative": "Range indicativo: i dati dell'accordo territoriale non sono confermati. Il contratto è stato creato senza blocchi: verifica il canone con un'organizzazione firmataria.",
       "rentOutside": "Il canone del contratto è fuori da questo range.",
       "calculatedAt": "Calcolato dal server il {{date}}."
+    },
+    "questura": {
+      "title": "Comunicazione alla Questura (conduttore extra-UE)",
+      "loading": "Caricamento della comunicazione alla Questura...",
+      "error": "Impossibile caricare lo stato della comunicazione alla Questura.",
+      "statusDone": "Comunicazione dichiarata: inviata il {{date}}",
+      "statusTodo": "Da fare entro il {{date}} (48 ore dalla consegna dell'immobile)",
+      "statusToday": "Da fare: le 48 ore dalla consegna scadono oggi, {{date}}",
+      "statusOverdue": "Termine scaduto il {{date}}: la comunicazione non risulta dichiarata",
+      "deliveryDate": "Consegna dell'immobile: {{date}}",
+      "deliveryDateDefault": "È la data di inizio del contratto: se l'immobile è consegnato in un altro giorno, indica la data effettiva.",
+      "changeDeliveryDate": "Modifica data di consegna",
+      "deliveryDateLabel": "Data di consegna dell'immobile",
+      "deliveryDateInvalid": "Inserisci una data valida, non successiva alla fine del contratto ({{end}}).",
+      "saveDeliveryDate": "Salva data di consegna",
+      "useStartDate": "Usa la data di inizio del contratto",
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "instructions": "Entro 48 ore dalla consegna dell'immobile il locatore deve comunicare per iscritto all'autorità locale di pubblica sicurezza di averlo ceduto a un cittadino extra-UE o apolide (art. 7 D.Lgs. 286/1998). La registrazione del contratto non sostituisce questa comunicazione.",
+      "channel": "L'ufficio competente e il modo di invio (sportello, PEC, raccomandata) cambiano da provincia a provincia: verifica sulla pagina della tua Questura. CasaZen non invia la comunicazione.",
+      "sanction": "In caso di omissione è prevista una sanzione da 160 a 1.100 € (art. 7, comma 2-bis, D.Lgs. 286/1998).",
+      "officialInfo": "Informazioni della Polizia di Stato",
+      "markDone": "Segna come comunicata",
+      "downloadReceipt": "Scarica ricevuta",
+      "downloading": "Download...",
+      "receiptError": "Impossibile scaricare la ricevuta.",
+      "dialog": {
+        "title": "Comunicazione alla Questura inviata",
+        "description": "Indica la data in cui hai inviato la comunicazione. Puoi allegare la ricevuta in PDF (per esempio la ricevuta PEC o la ricevuta della raccomandata scansionata).",
+        "dateLabel": "Data di invio",
+        "dateInvalid": "La data non può essere successiva a oggi ({{today}}).",
+        "receiptLabel": "Ricevuta (PDF, facoltativa)",
+        "receiptInvalid": "La ricevuta deve essere un file PDF di al massimo 10 MB.",
+        "confirmation": "Confermo di aver inviato la comunicazione all'autorità locale di pubblica sicurezza.",
+        "submit": "Conferma",
+        "saving": "Salvataggio...",
+        "cancel": "Annulla"
+      }
     }
   },
   "revenue": {
@@ -895,7 +967,8 @@
         "pending": "Richiesta in attesa di conferma",
         "checkedIn": "Ospite arrivato",
         "checkedOut": "Soggiorno concluso",
-        "block": "Date bloccate da un altro canale (iCal)"
+        "block": "Date bloccate da un altro canale (iCal)",
+        "toReview": "Soggiorno OTA da verificare"
       },
       "block": {
         "title": "Date bloccate su {{source}}",
@@ -973,7 +1046,7 @@
         "guests": "Ospiti",
         "total": "Totale",
         "status": "Stato",
-        "source": "Origine"
+        "source": "Origine e canale"
       },
       "newBooking": "Nuova prenotazione",
       "filteredByProperty": "Prenotazioni di {{name}}",
@@ -1212,6 +1285,58 @@
       "failed": "Impossibile confermare la prenotazione. Riprova.",
       "success": "Prenotazione confermata",
       "pendingNotice": "Questa prenotazione inserita da te è ancora in attesa: confermala per occupare le date e abilitare il check-in dell'ospite."
+    },
+    "otaStay": {
+      "action": "Crea soggiorno OTA",
+      "formHint": "Il calendario iCal riporta solo le date: indica l'ospite della prenotazione. Dal soggiorno partono il link di check-in, Alloggiati Web e il cockpit.",
+      "firstName": "Nome ospite",
+      "lastName": "Cognome ospite",
+      "email": "Email ospite",
+      "emailHint": "Il link di check-in viene inviato a questo indirizzo.",
+      "numberOfGuests": "Numero di ospiti (facoltativo)",
+      "totalPrice": "Importo in € (facoltativo)",
+      "totalPriceHint": "L'importo indicato dal canale. CasaZen non calcola prezzi per le prenotazioni OTA.",
+      "source": "Canale della prenotazione",
+      "sourcePlaceholder": "Scegli il canale",
+      "submit": "Crea soggiorno",
+      "submitting": "Creazione…",
+      "cancel": "Annulla",
+      "failed": "Impossibile creare il soggiorno. Riprova.",
+      "created": "Soggiorno OTA creato",
+      "channelIcal": "Calendario iCal",
+      "channelWithLabel": "iCal · {{label}}",
+      "validation": {
+        "firstNameRequired": "Inserisci il nome dell'ospite.",
+        "lastNameRequired": "Inserisci il cognome dell'ospite.",
+        "nameTooLong": "Nome e cognome possono avere al massimo 100 caratteri.",
+        "emailRequired": "Inserisci l'email dell'ospite.",
+        "emailInvalid": "Inserisci un indirizzo email valido.",
+        "guestsInvalid": "Il numero di ospiti deve essere un numero intero da 1 a {{max}}.",
+        "amountInvalid": "Inserisci un importo valido, ad esempio 250 o 250,50.",
+        "sourceRequired": "Scegli il canale della prenotazione."
+      }
+    },
+    "icalBlock": {
+      "converted": "Da questo blocco è stato creato un soggiorno.",
+      "openStay": "Apri il soggiorno",
+      "notConvertible": "Da questo blocco non si può creare un soggiorno: il soggiorno è già terminato.",
+      "readOnly": "Non hai i permessi per creare soggiorni.",
+      "convertHint": "È una prenotazione ricevuta su un canale? Crea il soggiorno per mandare all'ospite il link di check-in e gestire Alloggiati Web."
+    },
+    "otaReview": {
+      "badge": "Da verificare",
+      "title": "Soggiorno da verificare",
+      "removed": "La prenotazione non è più nel calendario {{channel}} collegato: potrebbe essere stata cancellata o spostata sul canale.",
+      "datesChanged": "Sul calendario {{channel}} collegato la prenotazione ha ora le date dal {{channelCheckIn}} al {{channelCheckOut}}; il soggiorno è dal {{checkIn}} al {{checkOut}}.",
+      "datesChangedNoBlock": "Sul calendario {{channel}} collegato sono cambiate le date della prenotazione.",
+      "nothingChanged": "CasaZen non ha modificato né cancellato il soggiorno: le sue date restano occupate.",
+      "raisedAt": "Rilevato il {{date}}",
+      "removedAction": "Controlla sul canale: se la prenotazione è stata cancellata, annulla il soggiorno; poi segnalo come verificato.",
+      "datesChangedAction": "Controlla sul canale: se le nuove date sono giuste, applicale al soggiorno; altrimenti segnalo come verificato.",
+      "applyDates": "Applica le date del canale",
+      "markVerified": "Segna come verificato",
+      "resolved": "Soggiorno verificato",
+      "failed": "Impossibile aggiornare il soggiorno. Riprova."
     }
   },
   "ota": {
@@ -2040,10 +2165,75 @@
     "profileActivated": "Profilo fornitore attivato",
     "completeAllSteps": "Completa tutti i passaggi prima di attivare il profilo",
     "inboxTitle": "Inbox incarichi",
-    "inboxDescription": "Richieste di servizio dai host (disponibile dalla wave 2 marketplace)",
+    "inboxDescription": "Le richieste di servizio degli host: apri un incarico per vedere dove, quando e chi contattare.",
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
+    "inbox": {
+      "tabsLabel": "Incarichi",
+      "tabOpen": "Da fare",
+      "tabHistory": "Storico",
+      "loading": "Caricamento degli incarichi…",
+      "loadError": "Impossibile caricare gli incarichi.",
+      "emptyOpen": "Nessun incarico aperto.",
+      "emptyHistory": "Nessun incarico nello storico per questi filtri.",
+      "statusFilter": "Stato",
+      "statusAllHistory": "Tutti (completati, pagati, rifiutati)",
+      "from": "Dal",
+      "to": "Al",
+      "periodHint": "Giorni in ora italiana: data di completamento per i lavori completati o pagati, data del rifiuto per quelli rifiutati.",
+      "periodInvalid": "La data di inizio non può essere successiva alla data di fine.",
+      "clearFilters": "Azzera filtri",
+      "pageInfo": "Pagina {{page}} di {{pages}}",
+      "total_one": "{{count}} incarico",
+      "total_other": "{{count}} incarichi",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "details": "Dettagli",
+      "dayOf": "Giorno: {{date}}",
+      "noDate": "Data da concordare",
+      "receivedOn": "Ricevuto il {{date}}",
+      "completedOn": "Completato il {{date}}",
+      "rejectedOn": "Rifiutato il {{date}}"
+    },
+    "request": {
+      "back": "Torna agli incarichi",
+      "loading": "Caricamento dell'incarico…",
+      "loadError": "Impossibile caricare l'incarico.",
+      "notFound": "Incarico non trovato: non esiste o non è stato inviato a te.",
+      "whereTitle": "Dove",
+      "whenTitle": "Quando",
+      "hostTitle": "Contatto dell'host",
+      "notesTitle": "Note dell'host",
+      "historyTitle": "Storico",
+      "actionsTitle": "Azioni",
+      "property": "Immobile",
+      "comune": "Comune",
+      "postalCode": "CAP",
+      "address": "Indirizzo",
+      "addressAfterTake": "L'indirizzo completo è visibile dopo la presa in carico.",
+      "scheduledFor": "Giorno del lavoro",
+      "scheduledForHint": "Giorno del check-out dell'ospite (ora italiana).",
+      "noDate": "Nessuna data: da concordare con l'host.",
+      "stay": "Soggiorno",
+      "stayDates": "Dal {{from}} al {{to}}",
+      "longRent": "Affitto lungo: la richiesta riguarda l'immobile, senza un soggiorno.",
+      "hostName": "Nome",
+      "phone": "Telefono",
+      "email": "Email",
+      "contactAfterTake": "Nome e recapiti dell'host sono visibili dopo la presa in carico.",
+      "contactRejected": "Hai rifiutato questa richiesta: i dati dell'host non sono disponibili.",
+      "noContactDetails": "L'host non ha indicato recapiti.",
+      "rejectionReason": "Motivo del rifiuto",
+      "actorHost": "Host",
+      "actorSupplier": "Il tuo team",
+      "historyReason": "Motivo: {{reason}}",
+      "closedCompleted": "Lavoro completato: in attesa che l'host lo segni come pagato.",
+      "closedPaid": "L'host ha segnato il lavoro come pagato.",
+      "closedRejected": "Hai rifiutato questa richiesta.",
+      "cancel": "Annulla",
+      "rejectReasonHint": "L'host vede il motivo (massimo 500 caratteri)."
+    },
     "register": {
       "title": "Registrazione fornitore",
       "description": "Registrati come fornitore di servizi per gli host di CasaZen.",
@@ -2110,8 +2300,6 @@
       "registerAgain": "Registrati come fornitore",
       "skip": "Continua senza collegare"
     },
-    "completedJobs": "Lavori completati",
-    "upcomingJobs": "Prossimi incarichi",
     "availabilityRate": "Tasso disponibilità",
     "profileCompleted": "Profilo completato",
     "profileCompletion": "Profilo completo al {{percent}}%",
@@ -2132,7 +2320,12 @@
     "icalFeedUrlDescription": "Incolla l'URL del tuo calendario iCal. Supportiamo Apple Calendar, Outlook, Airbnb e Booking.com.",
     "icalFeedUrlLabel": "URL feed iCal",
     "saveAndSync": "Salva e sincronizza",
-    "syncSuccess": "Sincronizzazione avviata",
+    "syncSuccess": "Sincronizzazione avviata: il calendario si aggiorna tra pochi istanti",
+    "syncInProgress": "Sincronizzazione in corso…",
+    "syncCompleted": "Sincronizzato",
+    "syncNow": "Sincronizza ora",
+    "icalSaveError": "Impossibile salvare l'URL del calendario",
+    "calendarStatusLoadError": "Impossibile caricare lo stato del calendario.",
     "syncError": "Errore durante la sincronizzazione",
     "icalConnected": "Feed iCal connesso",
     "editIcalUrl": "Modifica URL iCal",
@@ -2219,8 +2412,31 @@
       "vatNumber": "es. IT12345678901",
       "phone": "es. +39 123 456 7890"
     },
-    "totalJobsCount_one": "{{count}} incarico totale",
-    "totalJobsCount_other": "{{count}} incarichi totali"
+    "dashboardLoadError": "Impossibile caricare la dashboard fornitore.",
+    "retry": "Riprova",
+    "kpi": {
+      "title": "Incarichi",
+      "periodLabel": "Periodo",
+      "periods": {
+        "CurrentMonth": "Questo mese",
+        "PreviousMonth": "Mese scorso",
+        "Last30Days": "Ultimi 30 giorni",
+        "CurrentYear": "Quest'anno"
+      },
+      "periodRange": "Dal {{from}} al {{to}} (ora italiana)",
+      "completed": "Completati",
+      "rejected": "Rifiutati",
+      "inPeriod": "Nel periodo",
+      "awaitingAcceptance": "Da prendere in carico",
+      "upcoming": "In arrivo",
+      "now": "Adesso",
+      "totalRequests_one": "{{count}} richiesta ricevuta in totale",
+      "totalRequests_other": "{{count}} richieste ricevute in totale",
+      "loadError": "Impossibile caricare gli indicatori degli incarichi.",
+      "empty": "Non hai ancora ricevuto richieste dagli host.",
+      "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
+      "openInbox": "Apri gli incarichi"
+    }
   },
   "settings": {
     "planTitle": "Il tuo piano",
@@ -2675,7 +2891,10 @@
     "next": "Successiva",
     "downloadDocumentScan": "Scarica scansione documento",
     "documentScanFileName": "documento-ospite",
-    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento."
+    "documentScanDownloadFailed": "Impossibile scaricare la scansione del documento.",
+    "documentNumberShow": "Mostra",
+    "documentNumberHide": "Nascondi",
+    "documentNumberRevealFailed": "Impossibile mostrare il numero di documento."
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -4066,11 +4285,15 @@
     "seoRevisionApproved": "Revisione approvata: la pagina pubblica mostra il nuovo testo",
     "seoRevisionApproveFailed": "Impossibile approvare la revisione",
     "seoPageWithdrawn": "Pagina ritirata: non è più pubblica",
-    "seoPageWithdrawFailed": "Impossibile ritirare la pagina"
+    "seoPageWithdrawFailed": "Impossibile ritirare la pagina",
+    "questuraDeliveryDateSaved": "Data di consegna salvata",
+    "questuraDeliveryDateFailed": "Impossibile salvare la data di consegna",
+    "questuraMarkedDone": "Comunicazione alla Questura segnata come inviata",
+    "questuraMarkDoneFailed": "Impossibile salvare la comunicazione alla Questura"
   },
   "fiscal": {
     "page": {
-      "title": "Regime fiscale 2026",
+      "title": "Regime fiscale {{year}}",
       "description": "Cedolare secca, Partita IVA e ritenute OTA (L. 199/2025, D.L. 50/2017)."
     },
     "loading": "Caricamento…",
@@ -4087,12 +4310,92 @@
       "hasPiva": "Ho una Partita IVA",
       "piva": "Partita IVA",
       "cf": "Codice fiscale",
-      "save": "Salva"
+      "save": "Salva",
+      "link": "Profilo fiscale",
+      "loadError": "Impossibile caricare il profilo fiscale salvato.",
+      "pivaInvalid": "La partita IVA ha 11 cifre.",
+      "cfInvalid": "Il codice fiscale ha 16 caratteri (11 cifre per una società).",
+      "noChanges": "Nessuna modifica da salvare.",
+      "saved": "Profilo fiscale salvato",
+      "saveFailed": "Impossibile salvare il profilo fiscale"
     },
     "reports": {
       "title": "Report fiscali",
       "description": "Pacchetto dati per il commercialista (non una dichiarazione).",
       "link": "Apri i report",
+      "packLabel": "Pacchetto dati per il commercialista — non è una dichiarazione, F24 o Certificazione Unica ufficiale",
+      "year": "Anno d'imposta",
+      "period": "Periodo",
+      "periods": {
+        "year": "Anno intero",
+        "q1": "1° trimestre",
+        "q2": "2° trimestre",
+        "q3": "3° trimestre",
+        "q4": "4° trimestre"
+      },
+      "downloadCsv": "Scarica CSV",
+      "downloadPdf": "Scarica PDF",
+      "downloadFailed": "Impossibile scaricare il report",
+      "loadError": "Impossibile caricare il report.",
+      "notAvailable": "n.d.",
+      "total": "Totale",
+      "overThreshold": "Oltre la soglia degli affitti brevi",
+      "annual": {
+        "title": "Riepilogo per immobile",
+        "description": "Incassi del periodo, tassa di soggiorno, ritenute e imposta stimata secondo il regime.",
+        "empty": "Nessun immobile con affitti brevi o incassi nel periodo."
+      },
+      "withholding": {
+        "title": "Ritenute subite",
+        "description": "Ritenute degli intermediari per canale e per pagamento, da riconciliare con la Certificazione Unica.",
+        "empty": "Nessuna ritenuta registrata nel periodo."
+      },
+      "touristTax": {
+        "title": "Tassa di soggiorno per comune e periodo",
+        "description": "Soggiorni con check-in nel periodo e imposta registrata alla prenotazione, per comune e mese.",
+        "empty": "Nessun soggiorno con check-in nel periodo.",
+        "withoutAmount_one": "{{count}} soggiorno senza imposta registrata: verificalo prima del versamento.",
+        "withoutAmount_other": "{{count}} soggiorni senza imposta registrata: verificali prima del versamento.",
+        "note": "Importi calcolati da CasaZen alla prenotazione con le tariffe del comune; notti e ospiti sono quelli della prenotazione. Non è la dichiarazione al comune."
+      },
+      "col": {
+        "property": "Immobile",
+        "regime": "Regime",
+        "gross": "Incassato lordo",
+        "touristTax": "Tassa di soggiorno",
+        "commissions": "Commissioni",
+        "withholding": "Ritenute",
+        "taxable": "Imponibile",
+        "estimatedTax": "Imposta stimata",
+        "taxpayer": "Titolare",
+        "properties": "Immobili",
+        "rental": "Canone lordo",
+        "channel": "Canale",
+        "payments": "Pagamenti",
+        "net": "Netto",
+        "date": "Data",
+        "booking": "Prenotazione",
+        "comune": "Comune",
+        "month": "Mese",
+        "stays": "Soggiorni",
+        "nights": "Notti",
+        "guests": "Ospiti",
+        "recordedTax": "Imposta registrata",
+        "withoutAmount": "Senza importo"
+      },
+      "estimateNote": {
+        "irpef": "Non calcolata (IRPEF ordinaria)",
+        "impresa": "Non calcolata (regime d'impresa)",
+        "noRegime": "Non calcolata (nessun regime)",
+        "threshold": "Non calcolata (oltre la soglia)"
+      },
+      "notes": {
+        "gross": "Incassato lordo: pagamenti completati nel periodo, al netto dei rimborsi; comprende la tassa di soggiorno, che è esclusa dall'imponibile.",
+        "commissions": "Commissioni: non registrate in CasaZen (n.d.). Riportale dagli estratti conto degli intermediari; con la cedolare secca non sono deducibili.",
+        "estimate": "Imposta stimata solo per la cedolare secca: canone lordo × {{rate}}, o × {{reducedRate}} per l'unità designata ({{source}}).",
+        "notEstimated": "Non stimata per IRPEF ordinaria, regimi d'impresa, immobili senza regime e titolari con più di {{max}} appartamenti in affitto breve ({{source}}).",
+        "withholding": "Ritenuta del {{rate}} degli intermediari ({{source}}), sempre a titolo d'acconto: si scomputa in dichiarazione."
+      },
       "totals": "Lordo {{gross}} € — netto {{net}} €"
     },
     "regime": {
@@ -4102,14 +4405,38 @@
       "RegimeForfettario": "Impresa, regime forfettario (partita IVA)",
       "IrpefOrdinaria": "IRPEF ordinaria senza partita IVA"
     },
-    "chooseIrpef": "Scegli IRPEF ordinaria (senza partita IVA)",
     "assignFailed": "Impossibile assegnare il regime fiscale",
     "taxNote": {
       "irpefOrdinariaNotComputed": "IRPEF ordinaria senza partita IVA: CasaZen non calcola l'imposta, il calcolo è a carico del contribuente o del commercialista.",
-      "thresholdExceeded": "Il titolare supera la soglia degli affitti brevi: attività d'impresa presunta, niente cedolare secca. Verifica con il tuo commercialista."
+      "thresholdExceeded": "Il titolare supera la soglia degli affitti brevi: attività d'impresa presunta, niente cedolare secca. Verifica con il tuo commercialista.",
+      "regimeNotAssigned": "Nessun regime assegnato per quest'anno: scegline uno per stimare l'imposta.",
+      "impresaNotComputed": "Regime d'impresa: CasaZen non stima l'imposta, che dipende da costi e coefficiente di redditività. Il calcolo è a cura del commercialista."
     },
     "count_one": "{{count}} immobile con affitti brevi nel {{year}}",
-    "count_other": "{{count}} immobili con affitti brevi nel {{year}}"
+    "count_other": "{{count}} immobili con affitti brevi nel {{year}}",
+    "disclaimer": "Raccomandazione informativa, non consulenza fiscale. CasaZen non presenta dichiarazioni e non sostituisce un commercialista. Riferimenti: L. 199/2025, D.L. 50/2017.",
+    "loadError": "Impossibile caricare il regime fiscale.",
+    "retry": "Riprova",
+    "assignSuccess": "Regime fiscale aggiornato",
+    "notAssigned": "Non assegnato",
+    "chooseRegime": "Regime per quest'anno",
+    "selectPlaceholder": "Scegli un regime",
+    "unavailable": {
+      "option": "{{regime}} (non disponibile: {{reason}})",
+      "threshold": "titolare oltre la soglia degli affitti brevi",
+      "partitaIva": "manca la partita IVA",
+      "partitaIvaHint": "I regimi d'impresa (ordinario e forfettario) richiedono la partita IVA nel profilo fiscale."
+    },
+    "primaryMoves": "La cedolare al 21% vale per una sola unità del titolare: l'unità designata finora passerà al 26%.",
+    "taxpayer": {
+      "org": "Titolare: profilo fiscale dell'organizzazione",
+      "code": "Titolare: codice fiscale {{code}}"
+    },
+    "empty": {
+      "title": "Nessun immobile con affitti brevi",
+      "description": "Aggiungi un immobile per scegliere il regime fiscale e preparare i report.",
+      "action": "Aggiungi un immobile"
+    }
   },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
@@ -4237,6 +4564,7 @@
       "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
       "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
       "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite.",
+      "guestDocumentNumberMissing": "Nessun numero di documento registrato per questo ospite.",
       "pricingSuggestionsNotEnabled": "Attiva i suggerimenti stagionali prima di ricalcolarli.",
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
@@ -4251,6 +4579,19 @@
       "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
       "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
+      "icalBlockNotFound": "Blocco del calendario non trovato.",
+      "otaStayBlockNotImported": "Solo un blocco importato da un calendario OTA collegato può diventare un soggiorno.",
+      "otaStayBlockAlreadyConverted": "Da questo blocco è già stato creato un soggiorno.",
+      "otaStayBlockOverlapsBooking": "Le date del blocco si sovrappongono a una prenotazione già presente: verifica il calendario.",
+      "otaStayBlockEnded": "Il soggiorno di questo blocco è già terminato.",
+      "otaStaySourceRequired": "Scegli il canale della prenotazione.",
+      "otaStayChannelDatesUnavailable": "Il blocco di questo soggiorno non è più nel calendario del canale: non ci sono date da applicare.",
+      "questuraNotRequired": "Nessun conduttore di questo contratto risulta cittadino extra-UE: la comunicazione alla Questura non è prevista.",
+      "questuraAlreadyMarkedDone": "La comunicazione alla Questura di questo contratto risulta già dichiarata.",
+      "questuraCommunicationDateInFuture": "La data della comunicazione non può essere successiva a oggi.",
+      "questuraReceiptInvalid": "La ricevuta deve essere un file PDF di al massimo 10 MB.",
+      "questuraReceiptNotAvailable": "Non è stata caricata una ricevuta della comunicazione alla Questura.",
+      "questuraDeliveryDateAfterEnd": "La data di consegna dell'immobile non può essere successiva alla fine del contratto.",
       "dashboardInvalidPeriod": "Periodo non valido: scegli il mese corrente, un altro mese o gli ultimi 30 giorni."
     }
   },
@@ -4279,16 +4620,6 @@
     "currentOrigin": "Stai usando <code>{{origin}}</code>, che non è un'origine sicura per Web Crypto.",
     "lanHint": "Per lo sviluppo in LAN avvia Vite con HTTPS e apri:",
     "publicSites": "I siti di prenotazione pubblica (<code>{{path}}</code>) non usano Auth0 e funzionano anche su HTTP."
-  },
-  "supplierCheckIn": {
-    "invalidLink": "Link non valido",
-    "linkInvalidOrExpired": "Il link di check-in non è valido o è scaduto",
-    "checkInFailed": "Check-in non riuscito. Assicurati di essere presso l'immobile.",
-    "checkOutFailed": "Check-out non riuscito.",
-    "notFound": "Non trovato",
-    "checkedInAt": "Check-in: {{time}}",
-    "checkInAction": "Check-in",
-    "checkOutAction": "Check-out"
   },
   "supplierShowcase": {
     "notFound": "Fornitore non trovato",
@@ -4369,5 +4700,188 @@
     "childAgePlaceholder": "Età",
     "childAgeOption_one": "{{count}} anno",
     "childAgeOption_other": "{{count}} anni"
+  },
+  "questuraCredentials": {
+    "title": "Credenziali Alloggiati Web (Questura)",
+    "description": "Nome utente, password e chiave del web service (WSKey) dell'account Alloggiati Web di questo immobile.",
+    "loading": "Caricamento dello stato delle credenziali…",
+    "loadFailed": "Impossibile verificare se le credenziali sono configurate.",
+    "retry": "Riprova",
+    "configuredOn": "Configurate il {{date}}",
+    "notConfigured": "Non configurate",
+    "writeOnlyHint": "Le credenziali vengono cifrate e non sono più visibili dopo il salvataggio: per cambiarle inseriscile di nuovo. CasaZen non trasmette ancora ad Alloggiati Web: verranno usate per l'invio automatico quando sarà disponibile.",
+    "fields": {
+      "username": "Nome utente",
+      "password": "Password",
+      "wsKey": "Chiave web service (WSKey)"
+    },
+    "save": "Salva credenziali",
+    "replace": "Sostituisci credenziali",
+    "remove": "Rimuovi credenziali",
+    "removeConfirm": "Conferma rimozione",
+    "cancel": "Annulla",
+    "saved": "Credenziali Alloggiati Web salvate.",
+    "saveFailed": "Impossibile salvare le credenziali.",
+    "removed": "Credenziali Alloggiati Web rimosse.",
+    "removeFailed": "Impossibile rimuovere le credenziali.",
+    "errors": {
+      "usernameRequired": "Inserisci il nome utente di Alloggiati Web.",
+      "usernameTooLong": "Il nome utente può avere al massimo 100 caratteri.",
+      "passwordRequired": "Inserisci la password di Alloggiati Web.",
+      "passwordTooLong": "La password può avere al massimo 200 caratteri.",
+      "wsKeyRequired": "Inserisci la chiave del web service (WSKey).",
+      "wsKeyTooLong": "La chiave del web service può avere al massimo 200 caratteri."
+    }
+  },
+  "ltrReferenceData": {
+    "title": "Dati normativi LTR",
+    "description": "Accordi territoriali del canone concordato e canali IMU dei Comuni: nessun deploy per aggiornare una PEC o una fascia.",
+    "onlyWithData": "Solo con dati",
+    "agreementsTitle": "Accordi territoriali",
+    "agreementsEmpty": "Nessun accordo territoriale.",
+    "imuTitle": "Canali IMU dei Comuni",
+    "imuEmpty": "Nessun canale IMU.",
+    "loadError": "Impossibile caricare i dati.",
+    "retry": "Riprova",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "markVerified": "Segna verificato",
+    "neverVerified": "Mai verificato",
+    "lastVerified": "Verificato il {{date}} — fonte: {{source}}",
+    "expiry": "Scade il {{date}}",
+    "expiryUntilReplaced": "Scaduto formalmente il {{date}}, resta in vigore fino a un nuovo accordo",
+    "expiryUnknown": "Scadenza non nota",
+    "columns": {
+      "comune": "Comune",
+      "status": "Stato",
+      "zones": "Zone",
+      "expiry": "Scadenza",
+      "verification": "Verifica",
+      "actions": "Azioni",
+      "recipient": "Destinatario",
+      "rate": "Aliquota"
+    },
+    "completeness": {
+      "Complete": "Completo",
+      "Partial": "Parziale",
+      "Missing": "Assente"
+    },
+    "combination": {
+      "Additive": "Additiva (1 + somma)",
+      "Multiplicative": "Moltiplicativa"
+    },
+    "fields": {
+      "dataCompleteness": "Stato dei dati",
+      "sourceUrl": "URL della fonte",
+      "expiresAt": "Scadenza formale",
+      "remainsInForceUntilReplaced": "Resta in vigore fino a un nuovo accordo",
+      "expiryNote": "Nota sulla scadenza"
+    },
+    "rules": {
+      "subFasceTitle": "Sub-fasce",
+      "requiredTypeACount": "Elementi A richiesti",
+      "subFascia2MinTypeBCount": "Elementi B minimi (sub-fascia 2)",
+      "subFascia3MinTypeCCount": "Elementi C minimi (sub-fascia 3)",
+      "subFascia3MinQualifyingTypeDCount": "Elementi D qualificanti minimi (sub-fascia 3)",
+      "subFascia3MaxMinTypeDCount": "Elementi D minimi per il massimo (sub-fascia 3)",
+      "stoveHeatingMinTypeBCount": "Elementi B minimi con riscaldamento a stufe",
+      "surfaceTitle": "Superficie",
+      "smallSqmMax": "Soglia piccola superficie (mq)",
+      "smallSqmUpliftPercent": "Maggiorazione piccola superficie (%)",
+      "midSqmMin": "Soglia media superficie, minimo (mq)",
+      "midSqmMax": "Soglia media superficie, massimo (mq)",
+      "midSqmUpliftPercent": "Maggiorazione media superficie (%)",
+      "largeSqmMin": "Soglia grande superficie (mq)",
+      "largeSqmReductionPercent": "Riduzione grande superficie (%)",
+      "coefficientsTitle": "Coefficienti",
+      "furnishedUpliftPercent": "Maggiorazione arredo (%)",
+      "airConditioningUpliftPercent": "Maggiorazione climatizzazione (%)",
+      "duration4UpliftPercent": "Maggiorazione durata 4 anni (%)",
+      "duration5UpliftPercent": "Maggiorazione durata 5 anni (%)",
+      "duration6UpliftPercent": "Maggiorazione durata 6 anni (%)",
+      "appurtenancesTitle": "Pertinenze",
+      "garageAppurtenancePercent": "Quota box/posto auto coperto (%)",
+      "balconyAppurtenancePercent": "Quota balconi e terrazzi (%)",
+      "otherAppurtenancePercent": "Quota altre pertinenze (%)",
+      "greenAreaAppurtenancePercent": "Quota area verde esclusiva (%)",
+      "coefficientCombination": "Combinazione dei coefficienti",
+      "subFascia3QualifyingTypeDElements": "Elementi D qualificanti (es. D1,D2,D4,D6,D7,D9)"
+    },
+    "bands": {
+      "title": "Fasce",
+      "empty": "Nessuna fascia.",
+      "edit": "Modifica fascia",
+      "zone": "Zona",
+      "sheets": "Fogli: {{sheets}}",
+      "sheetsLabel": "Fogli catastali (separati da virgola)",
+      "surface": "Superficie",
+      "minSqm": "Mq minimo (escluso)",
+      "maxSqm": "Mq massimo (incluso)",
+      "subFascia": "Sub-fascia {{n}}",
+      "min": "Min {{n}}",
+      "max": "Max {{n}}"
+    },
+    "imu": {
+      "editTitle": "Canale IMU — {{comune}}",
+      "editDescription": "Destinatario, contatti e aliquota IMU della comunicazione al Comune.",
+      "rateUnknown": "Aliquota non nota",
+      "rate": {
+        "Official": "{{rate}}% ({{year}}, ufficiale)",
+        "Derived": "{{rate}}% ({{year}}, derivata — non ufficiale)"
+      },
+      "rateKind": {
+        "none": "Non impostato",
+        "Official": "Ufficiale",
+        "Derived": "Derivata"
+      },
+      "fields": {
+        "recipientOffice": "Ufficio destinatario",
+        "email": "Email",
+        "pec": "PEC",
+        "postalAddress": "Indirizzo postale",
+        "instructions": "Istruzioni",
+        "ratePercent": "Aliquota (%)",
+        "effectiveRatePercent": "Aliquota effettiva (%)",
+        "rateYear": "Anno aliquota",
+        "rateKind": "Tipo di aliquota",
+        "rateNotes": "Note sull'aliquota",
+        "sourceUrl": "URL della fonte",
+        "rateSourceUrl": "URL fonte aliquota"
+      }
+    },
+    "verify": {
+      "title": "Segna verificato — {{subject}}",
+      "description": "Registra la data del controllo rispetto a una fonte ufficiale e la fonte stessa.",
+      "date": "Data verifica",
+      "source": "Fonte",
+      "sourcePlaceholder": "Es. PDF dell'accordo, delibera comunale, telefonata con l'ufficio tributi",
+      "confirm": "Conferma",
+      "subject": {
+        "agreement": "accordo territoriale di {{comune}}",
+        "imu": "canale IMU di {{comune}}"
+      }
+    },
+    "audit": {
+      "title": "Registro delle modifiche",
+      "empty": "Nessuna modifica registrata.",
+      "loadError": "Impossibile caricare il registro.",
+      "action": {
+        "Updated": "Modificato",
+        "MarkedVerified": "Verificato"
+      }
+    },
+    "agreement": {
+      "title": "Accordo territoriale — {{comune}}",
+      "loading": "Accordo territoriale",
+      "description": "Stato, scadenza, fonte e regole del calcolo del canone. La data di verifica si aggiorna solo con «Segna verificato»."
+    },
+    "toast": {
+      "saved": "Salvato.",
+      "saveFailed": "Salvataggio non riuscito.",
+      "verified": "Verifica registrata.",
+      "verifyFailed": "Verifica non riuscita."
+    }
   }
 }

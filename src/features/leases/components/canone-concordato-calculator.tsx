@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCanoneConcordatoEligibility } from '@/queries/use-canone-concordato';
+import { useCanoneConcordatoEligibility, useCanoneConcordatoZones } from '@/queries/use-canone-concordato';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { CanoneConcordatoEligibility } from '@/api/canone-concordato.api';
@@ -39,7 +39,10 @@ const REASON_CODES = [
   'term_too_short',
 ];
 
-const WARNING_CODES = ['subfascia3_max_needs_more_d', 'no_duration_uplift_over_6_years'];
+const WARNING_CODES = ['subfascia3_max_needs_more_d', 'no_duration_uplift_over_6_years', 'agreement_expired'];
+
+const SELECT_CLASS =
+  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50';
 
 function toNumber(value: string): number {
   const parsed = Number(value.replace(',', '.'));
@@ -57,15 +60,17 @@ function toDateOnly(value: string | undefined): string {
 export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onRangeChange, onCharacteristicsChange }: Props) {
   const { t } = useTranslation();
   const eligibility = useCanoneConcordatoEligibility();
-  const [sqm, setSqm] = useState('65');
+  const zones = useCanoneConcordatoZones(propertyId);
+  // No pre-filled unit (A7-24): surface empty, every count at 0, until the landlord describes the unit.
+  const [sqm, setSqm] = useState('');
   const [garageSqm, setGarageSqm] = useState('0');
   const [balconySqm, setBalconySqm] = useState('0');
   const [otherSqm, setOtherSqm] = useState('0');
   const [greenSqm, setGreenSqm] = useState('0');
   const [zone, setZone] = useState('');
   const [foglio, setFoglio] = useState('');
-  const [typeACount, setTypeACount] = useState('2');
-  const [typeBCount, setTypeBCount] = useState('3');
+  const [typeACount, setTypeACount] = useState('0');
+  const [typeBCount, setTypeBCount] = useState('0');
   const [typeCCount, setTypeCCount] = useState('0');
   const [typeDCount, setTypeDCount] = useState('0');
   const [qualifyingDCount, setQualifyingDCount] = useState('0');
@@ -76,6 +81,10 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
   const start = toDateOnly(startDate);
   const end = toDateOnly(endDate);
   const datesReady = start.length === 10 && end.length === 10;
+  const surfaceReady = toNumber(sqm) > 0;
+  const zoneOptions = zones.data?.zones ?? [];
+  // A comune with a single zone (Seveso: the whole territory) needs no choice.
+  const selectedZone = zoneOptions.length === 1 ? zoneOptions[0].name : zone;
 
   const characteristics = useMemo<ConcordatoCharacteristics>(
     () => ({
@@ -92,11 +101,11 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
       stoveHeating,
       isFurnished: furnished,
       airConditioning,
-      zoneName: zone.trim() || null,
+      zoneName: selectedZone.trim() || null,
       cadastralSheet: foglio.trim() || null,
     }),
     [sqm, garageSqm, balconySqm, otherSqm, greenSqm, typeACount, typeBCount, typeCCount, typeDCount,
-      qualifyingDCount, stoveHeating, furnished, airConditioning, zone, foglio],
+      qualifyingDCount, stoveHeating, furnished, airConditioning, selectedZone, foglio],
   );
 
   // A range belongs to the exact inputs and dates it was computed with (A7-12): it is shown, and reported to the form,
@@ -193,11 +202,11 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
             <Input id={id('sqm')} type="number" min={1} step="0.01" value={sqm} onChange={(e) => setSqm(e.target.value)} required />
           </Field>
           <Field id={id('zone')} label={t('leases.canoneConcordato.zone')}>
-            <Input
+            <ZoneSelect
               id={id('zone')}
-              value={zone}
-              onChange={(e) => setZone(e.target.value)}
-              placeholder={t('leases.canoneConcordato.zonePlaceholder')}
+              zones={zones}
+              value={selectedZone}
+              onChange={setZone}
             />
           </Field>
           <Field id={id('foglio')} label={t('leases.canoneConcordato.foglio')}>
@@ -255,7 +264,16 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
                 {t('leases.canoneConcordato.datesRequired')}
               </p>
             )}
-            <Button type="button" onClick={() => void handleCalculate()} disabled={eligibility.isPending || !datesReady}>
+            {!surfaceReady && (
+              <p className="text-sm text-muted-foreground" data-testid="concordato-sqm-required">
+                {t('leases.canoneConcordato.sqmRequired')}
+              </p>
+            )}
+            <Button
+              type="button"
+              onClick={() => void handleCalculate()}
+              disabled={eligibility.isPending || !datesReady || !surfaceReady}
+            >
               {eligibility.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -295,6 +313,16 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
                   {result.lastVerifiedAt && (
                     <p className="text-muted-foreground">
                       {t('leases.canoneConcordato.lastVerified', { date: formatDate(result.lastVerifiedAt) })}
+                    </p>
+                  )}
+                  {result.agreementExpiresAt && (
+                    <p className="text-muted-foreground" data-testid="concordato-agreement-expiry">
+                      {t(
+                        result.agreementRemainsInForceUntilReplaced
+                          ? 'leases.canoneConcordato.agreementExpiryUntilReplaced'
+                          : 'leases.canoneConcordato.agreementExpiry',
+                        { date: formatDate(result.agreementExpiresAt) },
+                      )}
                     </p>
                   )}
                   {result.sourceUrl && (
@@ -357,6 +385,68 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Zones of the agreement from the API (A7-24): never free text, so the value always matches the agreement. Loading,
+ * error and "no zones" are distinct states; with no agreement data the calculator still answers "data unavailable".
+ */
+function ZoneSelect({
+  id,
+  zones,
+  value,
+  onChange,
+}: {
+  id: string;
+  zones: ReturnType<typeof useCanoneConcordatoZones>;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const { t } = useTranslation();
+  const options = zones.data?.zones ?? [];
+
+  if (zones.isError) {
+    return (
+      <div className="space-y-1" role="alert" data-testid="concordato-zones-error">
+        <p className="text-sm text-destructive">
+          {getProblemMessage(zones.error, t) ?? t('leases.canoneConcordato.zonesError')}
+        </p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void zones.refetch()}>
+          {t('leases.canoneConcordato.retry')}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <select
+        id={id}
+        className={SELECT_CLASS}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={zones.isLoading || options.length <= 1}
+      >
+        {options.length !== 1 && (
+          <option value="">
+            {zones.isLoading ? t('leases.canoneConcordato.zonesLoading') : t('leases.canoneConcordato.zoneSelect')}
+          </option>
+        )}
+        {options.map((zone) => (
+          <option key={zone.name} value={zone.name}>
+            {zone.cadastralSheets.length > 0
+              ? t('leases.canoneConcordato.zoneWithSheets', { zone: zone.name, sheets: zone.cadastralSheets.join(', ') })
+              : zone.name}
+          </option>
+        ))}
+      </select>
+      {zones.data && options.length === 0 && (
+        <p className="text-sm text-muted-foreground" data-testid="concordato-zones-empty">
+          {t('leases.canoneConcordato.zonesEmpty')}
+        </p>
+      )}
+    </>
   );
 }
 
