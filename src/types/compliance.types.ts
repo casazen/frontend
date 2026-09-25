@@ -48,9 +48,19 @@ export interface ComplianceActivationResult {
   steps: ComplianceWizardStep[];
 }
 
+/** 200 of `POST .../activation/complete`: the property is active (blocking steps left answer 409). */
 export interface ComplianceActivationCompleteResult {
   complianceStatus: PropertyComplianceStatus;
+  incompleteBlockers?: string[] | null;
+}
+
+/** Body of the 409 `property_activation_blocked` of `POST .../activation/complete` (CO-07). */
+export interface ActivationBlockedProblem {
+  complianceStatus: PropertyComplianceStatus | null;
+  /** Ids of the blocking steps left. */
   incompleteBlockers: string[];
+  /** Every blocker with its step and stable code. */
+  blockers: ActivationBlocker[];
 }
 
 /** The safety checklist is saved on its own endpoint (CO-07), never with the activation. */

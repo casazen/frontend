@@ -5,6 +5,7 @@ import {
   fetchComplianceActivation,
   fetchComplianceSummary,
   fetchSafetyChecklist,
+  getActivationBlockedProblem,
   saveSafetyChecklist,
   startCheckoutWizard,
 } from '@/api/compliance.api';
@@ -19,11 +20,17 @@ import { getProblemMessage } from '@/lib/api-errors';
 
 const COMPLIANCE_KEY = 'compliance';
 
+/**
+ * Steps of the activation wizard. Always read again from the server when the wizard opens (A5-18): the steps and the
+ * blockers change with edits made elsewhere (property page, CIN, documents, another device).
+ */
 export function useComplianceActivation(propertyId: string) {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'activation', propertyId],
     queryFn: () => fetchComplianceActivation(propertyId),
     enabled: !!propertyId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
@@ -42,15 +49,22 @@ export function useCompleteComplianceActivation(propertyId: string) {
         toast.warning(i18n.t('compliance.activation.blockersRemain'));
       }
     },
-    onError: () => toast.error(i18n.t('compliance.activation.completeFailed')),
+    onError: (error) => {
+      // 409 property_activation_blocked: the wizard lists the blockers with a link to their step (A5-18 b).
+      if (getActivationBlockedProblem(error)) return;
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('compliance.activation.completeFailed'));
+    },
   });
 }
 
+/** Saved safety checklist: read again from the server every time the form opens, never from a stale cache. */
 export function useSafetyChecklist(propertyId: string) {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'safety-checklist', propertyId],
     queryFn: () => fetchSafetyChecklist(propertyId),
     enabled: !!propertyId,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 

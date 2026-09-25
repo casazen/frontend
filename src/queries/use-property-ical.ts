@@ -2,22 +2,65 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tansta
 import { toast } from 'sonner';
 import { propertyIcalApi } from '@/api/property-ical.api';
 import i18n from '@/i18n/config';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import type { PropertyIcalFeed, PropertyIcalFeedCreateRequest } from '@/types/property-ical';
 
-/** While a feed is syncing (its job is queued), its state is read again every few seconds. */
-const SYNCING_REFETCH_MS = 5_000;
+/**
+ * Light polling while a feed is syncing (its job is queued): every few seconds during the first minute, when the
+ * download usually ends, then slower until the 15-minute job settles it.
+ */
+const SYNCING_FAST_REFETCH_MS = 3_000;
+const SYNCING_SLOW_REFETCH_MS = 15_000;
+const SYNCING_FAST_WINDOW_MS = 60_000;
+
+/** Calendar views of the bookings (`useBookingCalendar`): the imported blocks come and go with the feeds. */
+const BOOKING_CALENDAR_KEY = ['bookings', 'calendar'] as const;
 
 export const propertyIcalFeedsKey = (propertyId: string | undefined) => ['property-ical-feeds', propertyId] as const;
+export const propertyIcalExportKey = (propertyId: string | undefined) => ['property-ical-export', propertyId] as const;
 
-/** Import feeds of a property (PC-11: Airbnb, Booking.com, ... each with its own sync state). */
+const isSyncing = (feed: PropertyIcalFeed) => feed.lastImportStatus === 'Syncing';
+
+// When each feeds query started to see a feed in `Syncing` (keyed by the query object, dropped with it).
+const syncingSince = new WeakMap<object, number>();
+
+/** Next poll of the feeds list: none when no feed is syncing, otherwise fast first and then slower. */
+export function syncingRefetchInterval(
+  query: { state: { data?: PropertyIcalFeed[] } },
+  now: number = Date.now(),
+): number | false {
+  if (!query.state.data?.some(isSyncing)) {
+    syncingSince.delete(query);
+    return false;
+  }
+  const since = syncingSince.get(query) ?? now;
+  syncingSince.set(query, since);
+  return now - since < SYNCING_FAST_WINDOW_MS ? SYNCING_FAST_REFETCH_MS : SYNCING_SLOW_REFETCH_MS;
+}
+
+/** True when a feed that was syncing has finished (successfully or not): its blocks may have changed. */
+function syncEnded(previous: PropertyIcalFeed[] | undefined, next: PropertyIcalFeed[]): boolean {
+  return (previous ?? []).some(
+    (before) => isSyncing(before) && next.some((after) => after.id === before.id && !isSyncing(after)),
+  );
+}
+
+/**
+ * Import feeds of a property (PC-11: Airbnb, Booking.com, ... each with its own sync state). Polled while a feed is
+ * `Syncing`; when a sync ends the booking calendars are refreshed with the new blocks (PC-13).
+ */
 export function usePropertyIcalFeeds(propertyId: string | undefined) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: propertyIcalFeedsKey(propertyId),
-    queryFn: () => propertyIcalApi.getFeeds(propertyId!),
+    queryFn: async () => {
+      const previous = queryClient.getQueryData<PropertyIcalFeed[]>(propertyIcalFeedsKey(propertyId));
+      const feeds = await propertyIcalApi.getFeeds(propertyId!);
+      if (syncEnded(previous, feeds)) void queryClient.invalidateQueries({ queryKey: BOOKING_CALENDAR_KEY });
+      return feeds;
+    },
     enabled: Boolean(propertyId),
-    refetchInterval: (query) =>
-      query.state.data?.some((feed: PropertyIcalFeed) => feed.lastImportStatus === 'Syncing') ? SYNCING_REFETCH_MS : false,
+    refetchInterval: syncingRefetchInterval,
   });
 }
 
@@ -28,6 +71,12 @@ function invalidateIcal(queryClient: QueryClient, propertyId: string) {
   void queryClient.invalidateQueries({ queryKey: ['bookings'] });
 }
 
+// 404 `ical_feed_not_found`: the feed was already removed (another tab, another user): show the list as it is now.
+function refreshFeedsWhenGone(queryClient: QueryClient, propertyId: string, error: unknown) {
+  if (getHttpStatus(error) === 404) void queryClient.invalidateQueries({ queryKey: propertyIcalFeedsKey(propertyId) });
+}
+
+/** Links a calendar. Errors: toast here, inline message in the form (`error` of the mutation, PC-13). */
 export function useAddPropertyIcalFeed(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -42,6 +91,7 @@ export function useAddPropertyIcalFeed(propertyId: string) {
   });
 }
 
+/** Disconnects a calendar: its blocks are deleted with it. Errors: toast here, inline in the confirmation dialog. */
 export function useRemovePropertyIcalFeed(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -51,19 +101,28 @@ export function useRemovePropertyIcalFeed(propertyId: string) {
       toast.success(i18n.t('ical.feedRemoved'));
     },
     onError: (error) => {
+      refreshFeedsWhenGone(queryClient, propertyId, error);
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('ical.feedRemoveFailed'));
     },
   });
 }
 
+/**
+ * "Sync now" of one feed: the answer (the feed in `Syncing`) replaces it in the list at once, which starts the
+ * polling; the calendar is refreshed when the sync ends. Errors: toast here, inline in the feed row.
+ */
 export function useSyncPropertyIcalFeed(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (feedId: string) => propertyIcalApi.syncFeed(propertyId, feedId),
-    onSuccess: () => {
-      invalidateIcal(queryClient, propertyId);
+    onSuccess: (feed) => {
+      queryClient.setQueryData<PropertyIcalFeed[]>(propertyIcalFeedsKey(propertyId), (feeds) =>
+        feeds?.map((current) => (current.id === feed.id ? { ...current, ...feed } : current)),
+      );
+      toast.success(i18n.t('ical.syncStarted'));
     },
     onError: (error) => {
+      refreshFeedsWhenGone(queryClient, propertyId, error);
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('ical.feedSyncFailed'));
     },
   });
@@ -71,7 +130,7 @@ export function useSyncPropertyIcalFeed(propertyId: string) {
 
 export function usePropertyIcalExportUrl(propertyId: string | undefined) {
   return useQuery({
-    queryKey: ['property-ical-export', propertyId],
+    queryKey: propertyIcalExportKey(propertyId),
     queryFn: () => propertyIcalApi.getExportUrl(propertyId!),
     enabled: Boolean(propertyId),
   });
