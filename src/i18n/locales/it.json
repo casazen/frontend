@@ -446,14 +446,14 @@
       "attestationCheckbox": "Ho letto e accetto l'attestazione di responsabilita del deposito",
       "confirmSubmit": "Autorizza e invia",
       "cancel": "Annulla",
-      "extraEuTitle": "Cessione di fabbricato — comunicazione in Questura",
-      "extraEuBody": "Il contratto include un conduttore extra-UE. Verificare la comunicazione (Art. 7 D.Lgs 286/1998) entro i termini. CasaZen non invia la comunicazione. Bozza da confermare con legale.",
+      "extraEuTitle": "Conduttore extra-UE: comunicazione alla Questura entro 48 ore dalla consegna",
+      "extraEuBody": "Il contratto include un conduttore extra-UE: entro 48 ore dalla consegna dell'immobile va inviata la comunicazione scritta all'autorità locale di pubblica sicurezza (art. 7 D.Lgs. 286/1998). CasaZen non la invia: dopo l'invio, segnala la data nella sezione dedicata.",
       "checklistItem": {
         "contract_signed": "Contratto firmato da tutte le parti",
         "delega_captured": "Delega / attestazione RLI registrata",
         "rli_exported": "Dataset RLI esportato per revisione",
         "rli_registered": "Contratto registrato: estremi e ricevuta dell'Agenzia delle Entrate inseriti",
-        "questura_extra_eu": "Comunicazione Questura (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Bozza da confermare con legale."
+        "questura_extra_eu": "Comunicazione alla Questura per il conduttore extra-UE (art. 7 D.Lgs. 286/1998), entro 48 ore dalla consegna dell'immobile"
       },
       "registrationDate": "Data di registrazione",
       "state": {
@@ -506,7 +506,8 @@
         "saving": "Salvataggio..."
       },
       "checklistFailed": "ultimo tentativo non riuscito",
-      "checklistGoToRegistration": "Vai alla registrazione"
+      "checklistGoToRegistration": "Vai alla registrazione",
+      "checklistGoToQuestura": "Vai alla comunicazione"
     },
     "canoneConcordato": {
       "title": "Calcolo canone concordato",
@@ -604,7 +605,8 @@
         "maxLength": "Il codice fiscale deve essere di al massimo 16 caratteri"
       },
       "citizenship": {
-        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)"
+        "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)",
+        "format": "La cittadinanza è il codice ISO del paese di 2 lettere (es. IT, DE, US)"
       },
       "contactEmail": {
         "format": "Email valida obbligatoria"
@@ -669,7 +671,8 @@
         "Transitorio": "Transitorio: durata da 1 a 18 mesi. CasaZen controlla solo la durata: le esigenze transitorie vanno indicate e documentate nel contratto, e per questo tipo non c'è ancora un modello di contratto."
       },
       "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
-      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo."
+      "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo.",
+      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -690,7 +693,9 @@
       "RegistrationAuthorized": "Delega RLI registrata",
       "RliExported": "Precompilazione RLI esportata",
       "DeadlineReminderSent": "Promemoria di scadenza inviato",
-      "StipulaDeclared": "Data di stipula dichiarata"
+      "StipulaDeclared": "Data di stipula dichiarata",
+      "QuesturaCommunicationMarkedDone": "Comunicazione alla Questura dichiarata",
+      "PropertyDeliveryDateDeclared": "Data di consegna dell'immobile indicata"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -713,6 +718,44 @@
       "indicative": "Range indicativo: i dati dell'accordo territoriale non sono confermati. Il contratto è stato creato senza blocchi: verifica il canone con un'organizzazione firmataria.",
       "rentOutside": "Il canone del contratto è fuori da questo range.",
       "calculatedAt": "Calcolato dal server il {{date}}."
+    },
+    "questura": {
+      "title": "Comunicazione alla Questura (conduttore extra-UE)",
+      "loading": "Caricamento della comunicazione alla Questura...",
+      "error": "Impossibile caricare lo stato della comunicazione alla Questura.",
+      "statusDone": "Comunicazione dichiarata: inviata il {{date}}",
+      "statusTodo": "Da fare entro il {{date}} (48 ore dalla consegna dell'immobile)",
+      "statusToday": "Da fare: le 48 ore dalla consegna scadono oggi, {{date}}",
+      "statusOverdue": "Termine scaduto il {{date}}: la comunicazione non risulta dichiarata",
+      "deliveryDate": "Consegna dell'immobile: {{date}}",
+      "deliveryDateDefault": "È la data di inizio del contratto: se l'immobile è consegnato in un altro giorno, indica la data effettiva.",
+      "changeDeliveryDate": "Modifica data di consegna",
+      "deliveryDateLabel": "Data di consegna dell'immobile",
+      "deliveryDateInvalid": "Inserisci una data valida, non successiva alla fine del contratto ({{end}}).",
+      "saveDeliveryDate": "Salva data di consegna",
+      "useStartDate": "Usa la data di inizio del contratto",
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "instructions": "Entro 48 ore dalla consegna dell'immobile il locatore deve comunicare per iscritto all'autorità locale di pubblica sicurezza di averlo ceduto a un cittadino extra-UE o apolide (art. 7 D.Lgs. 286/1998). La registrazione del contratto non sostituisce questa comunicazione.",
+      "channel": "L'ufficio competente e il modo di invio (sportello, PEC, raccomandata) cambiano da provincia a provincia: verifica sulla pagina della tua Questura. CasaZen non invia la comunicazione.",
+      "sanction": "In caso di omissione è prevista una sanzione da 160 a 1.100 € (art. 7, comma 2-bis, D.Lgs. 286/1998).",
+      "officialInfo": "Informazioni della Polizia di Stato",
+      "markDone": "Segna come comunicata",
+      "downloadReceipt": "Scarica ricevuta",
+      "downloading": "Download...",
+      "receiptError": "Impossibile scaricare la ricevuta.",
+      "dialog": {
+        "title": "Comunicazione alla Questura inviata",
+        "description": "Indica la data in cui hai inviato la comunicazione. Puoi allegare la ricevuta in PDF (per esempio la ricevuta PEC o la ricevuta della raccomandata scansionata).",
+        "dateLabel": "Data di invio",
+        "dateInvalid": "La data non può essere successiva a oggi ({{today}}).",
+        "receiptLabel": "Ricevuta (PDF, facoltativa)",
+        "receiptInvalid": "La ricevuta deve essere un file PDF di al massimo 10 MB.",
+        "confirmation": "Confermo di aver inviato la comunicazione all'autorità locale di pubblica sicurezza.",
+        "submit": "Conferma",
+        "saving": "Salvataggio...",
+        "cancel": "Annulla"
+      }
     }
   },
   "revenue": {
@@ -4064,7 +4107,11 @@
     "cadastralSaved": "Dati catastali salvati",
     "cadastralSaveFailed": "Impossibile salvare i dati catastali",
     "apeIdentificationSaved": "Estremi dell'APE salvati",
-    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE"
+    "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE",
+    "questuraDeliveryDateSaved": "Data di consegna salvata",
+    "questuraDeliveryDateFailed": "Impossibile salvare la data di consegna",
+    "questuraMarkedDone": "Comunicazione alla Questura segnata come inviata",
+    "questuraMarkDoneFailed": "Impossibile salvare la comunicazione alla Questura"
   },
   "fiscal": {
     "page": {
@@ -4256,6 +4303,12 @@
       "otaStayBlockEnded": "Il soggiorno di questo blocco è già terminato.",
       "otaStaySourceRequired": "Scegli il canale della prenotazione.",
       "otaStayChannelDatesUnavailable": "Il blocco di questo soggiorno non è più nel calendario del canale: non ci sono date da applicare.",
+      "questuraNotRequired": "Nessun conduttore di questo contratto risulta cittadino extra-UE: la comunicazione alla Questura non è prevista.",
+      "questuraAlreadyMarkedDone": "La comunicazione alla Questura di questo contratto risulta già dichiarata.",
+      "questuraCommunicationDateInFuture": "La data della comunicazione non può essere successiva a oggi.",
+      "questuraReceiptInvalid": "La ricevuta deve essere un file PDF di al massimo 10 MB.",
+      "questuraReceiptNotAvailable": "Non è stata caricata una ricevuta della comunicazione alla Questura.",
+      "questuraDeliveryDateAfterEnd": "La data di consegna dell'immobile non può essere successiva alla fine del contratto.",
       "dashboardInvalidPeriod": "Periodo non valido: scegli il mese corrente, un altro mese o gli ultimi 30 giorni."
     }
   },

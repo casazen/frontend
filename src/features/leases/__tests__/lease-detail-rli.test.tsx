@@ -316,6 +316,37 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
+  it('render_ExtraEuTenantAfterReminder_QuesturaItemNotTickedWithPanelAndBanner', async () => {
+    // LT-07 (A7-08): the API keeps the item to do until the landlord declares the communication.
+    const tenant = { ...buildDetail().parties[1], isExtraEU: true };
+    mockApi(
+      () => signedLease({ hasExtraEUTenant: true, parties: [buildDetail().parties[0], tenant] }),
+      checklist({
+        items: [
+          { key: 'contract_signed', label: 'x', done: true },
+          { key: 'rli_registered', label: 'x', done: false },
+          { key: 'questura_extra_eu', label: 'x', done: false },
+        ],
+        questura: {
+          deliveryDate: '2026-10-01T00:00:00Z',
+          deliveryDateDeclared: false,
+          deadline: '2026-10-03T00:00:00Z',
+          daysRemaining: -8,
+          communicationDate: null,
+          hasReceipt: false,
+        },
+      }),
+    );
+
+    renderPage();
+
+    const item = await screen.findByTestId('rli-checklist-item-questura_extra_eu');
+    expect(item).toHaveAttribute('data-state', 'todo');
+    expect(within(item).getByRole('link', { name: 'Vai alla comunicazione' })).toHaveAttribute('href', '#questura-communication');
+    expect(await screen.findByTestId('questura-state')).toHaveAttribute('data-state', 'overdue');
+    expect(screen.getByText('Conduttore extra-UE: comunicazione alla Questura entro 48 ore dalla consegna')).toBeInTheDocument();
+  });
+
   it('render_EnglishUi_TranslatesTheRegistrationPanel', async () => {
     await i18n.changeLanguage('en');
     mockApi(() => signedLease());

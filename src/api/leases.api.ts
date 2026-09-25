@@ -11,6 +11,7 @@ import type {
   LeaseSummary,
   ManualRegistrationInput,
   OfflineSignatureInput,
+  QuesturaCommunicationInput,
   RliChecklist,
   SigningInitiatedResult,
   TriggerRegistrationResult,
@@ -109,6 +110,27 @@ export const leasesApi = {
 
   getRliChecklist: (id: string) =>
     ApiClient.get<RliChecklist>(`/leases/${id}/rli/checklist`),
+
+  /** LT-07: delivery date of the property (`YYYY-MM-DD`), or null to use the start date again. Returns the checklist. */
+  declareQuesturaDeliveryDate: (id: string, deliveryDate: string | null) =>
+    ApiClient.put<RliChecklist>(`/leases/${id}/rli/questura/delivery-date`, { deliveryDate }),
+
+  /** LT-07: the landlord sent the Questura communication and declares its date (and optionally the receipt PDF). */
+  markQuesturaCommunicationDone: async (id: string, input: QuesturaCommunicationInput): Promise<RliChecklist> => {
+    const formData = new FormData();
+    formData.append('communicationDate', input.communicationDate);
+    if (input.receipt) formData.append('receipt', input.receipt);
+    const response = await axios.post<RliChecklist>(`/leases/${id}/rli/questura/mark-done`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /** The receipt of the Questura communication, from the private storage (authenticated download). */
+  downloadQuesturaReceipt: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/rli/questura/receipt`, { responseType: 'blob' });
+    return response.data;
+  },
 
   exportRli: async (id: string): Promise<Blob> => {
     const response = await axios.get(`/leases/${id}/rli/export`, {
