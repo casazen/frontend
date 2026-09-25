@@ -125,11 +125,15 @@ function fillDocument(index: number) {
   change(card, /^Luogo di rilascio/, 'Firenze');
 }
 
+/** Last step: the privacy notice is only shown (legal obligation, no checkbox to tick), then the form is sent. */
 async function acceptAndSubmit() {
-  fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
-  await screen.findByTestId('checkin-gdpr-consent');
-  fireEvent.click(within(screen.getByTestId('checkin-gdpr-consent')).getByRole('checkbox'));
+  await goToConsents();
   fireEvent.click(screen.getByTestId('checkin-submit'));
+}
+
+async function goToConsents() {
+  fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+  await screen.findByTestId('checkin-privacy-notice');
 }
 
 async function submitSingleGuest() {
@@ -151,6 +155,64 @@ beforeEach(() => {
 });
 
 describe('CheckInPage', () => {
+  it('consentStep_alloggiatiIsALegalObligation_showsTheNoticeWithoutAnyRequiredCheckbox', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, privacyNoticeVersion: 'notice-2026-10' });
+    vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
+    renderPage();
+    await screen.findByTestId('checkin-page');
+    fillGuest(0, { firstName: 'Giulia' });
+    await goToDocuments();
+    fillDocument(0);
+    await goToConsents();
+
+    const notice = screen.getByTestId('checkin-privacy-notice');
+    expect(notice).toHaveTextContent('obbligo di legge (art. 109 TULPS)');
+    expect(notice).toHaveTextContent("art. 6, par. 1, lett. c) del GDPR e non richiede il tuo consenso");
+    expect(notice).toHaveTextContent('Versione dell’informativa: notice-2026-10');
+    expect(within(notice).queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+
+    fireEvent.click(screen.getByTestId('checkin-submit'));
+
+    await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
+    const [, payload] = vi.mocked(publicCheckinApi.submit).mock.calls[0];
+    expect(payload).not.toHaveProperty('gdprConsent');
+    expect(payload.marketingConsent).toBe(false);
+  });
+
+  it('marketingConsent_offeredWithAVersion_isOptionalAndSentOnlyWhenTicked', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, marketingConsentVersion: 'marketing-2026-10' });
+    vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
+    renderPage();
+    await screen.findByTestId('checkin-page');
+    fillGuest(0, { firstName: 'Giulia' });
+    await goToDocuments();
+    fillDocument(0);
+    await goToConsents();
+
+    const marketing = screen.getByTestId('checkin-marketing-consent');
+    expect(marketing).toHaveTextContent('Facoltativo. Versione del testo: marketing-2026-10');
+    const checkbox = within(marketing).getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
+    fireEvent.click(checkbox);
+    fireEvent.click(screen.getByTestId('checkin-submit'));
+
+    await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(publicCheckinApi.submit).mock.calls[0][1].marketingConsent).toBe(true);
+  });
+
+  it('marketingConsent_versionNotConfigured_isNotOffered', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    renderPage();
+    await screen.findByTestId('checkin-page');
+    fillGuest(0, { firstName: 'Giulia' });
+    await goToDocuments();
+    fillDocument(0);
+    await goToConsents();
+
+    expect(screen.queryByTestId('checkin-marketing-consent')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkin-privacy-notice')).not.toHaveTextContent('Versione dell’informativa');
+  });
+
   it('genderSelect_openSession_offersOnlyAlloggiatiValues', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
     await screen.findByTestId('stay-guest-0');

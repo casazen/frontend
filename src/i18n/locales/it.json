@@ -128,32 +128,92 @@
     },
     "seo": {
       "title": "SEO Compliance",
-      "description": "Pagine programmatiche per affitti brevi e tassa di soggiorno",
-      "approveAll": "Approva tutte",
+      "description": "Pagine programmatiche per affitti brevi e tassa di soggiorno. Ogni testo generato resta in bozza finché non lo approvi dopo averlo letto.",
       "generateAll": "Genera tutti",
       "aiBudget": "Budget AI piattaforma",
       "budgetTokens": "{{used}} / {{cap}} token questo mese",
+      "budgetLoading": "Caricamento del budget…",
+      "budgetError": "Impossibile caricare il budget AI.",
       "loading": "Caricamento…",
       "loadError": "Impossibile caricare le pagine SEO. Riprova più tardi.",
+      "filter": {
+        "label": "Stato della revisione",
+        "all": "Tutte",
+        "draft": "Da revisionare",
+        "reviewed": "Revisionate"
+      },
+      "pagination": "Pagina {{page}} di {{totalPages}} · {{totalCount}} pagine",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "pageType": {
+        "complianceGuide": "Guida adempimenti",
+        "touristTaxCalc": "Tassa di soggiorno",
+        "supplierMicrosite": "Microsite fornitori"
+      },
       "table": {
         "comune": "Comune",
         "type": "Tipo",
-        "status": "Stato",
-        "lastRefresh": "Ultimo refresh",
+        "status": "Pubblicazione",
+        "content": "Ultima revisione",
+        "lastRefresh": "Ultima generazione",
         "actions": "Azioni",
-        "approve": "Approva",
+        "review": "Rivedi",
+        "openPublic": "Apri pagina pubblica",
+        "withdraw": "Ritira",
         "empty": "Nessuna pagina SEO."
       },
+      "publication": {
+        "published": "Pubblicata",
+        "publishedWithPending": "Pubblicata · nuova revisione da approvare",
+        "notPublished": "Non pubblicata"
+      },
+      "contentStatus": {
+        "generated": "Testo generato, da revisionare",
+        "generatedPublished": "Testo pubblicato",
+        "aiProviderNotConfigured": "Contenuto non generato: provider AI non configurato",
+        "emptyOutput": "Contenuto non generato: risposta vuota del provider AI",
+        "invalidOutput": "Contenuto non generato: risposta del provider AI non valida",
+        "placeholder": "Contenuto non generato: testo segnaposto ritirato",
+        "none": "Nessuna revisione"
+      },
       "confirmDialog": {
-        "title": "Conferma rigenerazione",
+        "title": "Conferma generazione",
         "cancel": "Annulla",
         "confirm": "Conferma",
-        "description_one": "Verrà accodato un job Hangfire per generare le pagine SEO di {{count}} comune nel registry (2 pagine ciascuno) e approvarle automaticamente.",
-        "description_other": "Verrà accodato un job Hangfire per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno) e approvarle automaticamente."
+        "description_one": "Verrà accodato un job per generare le pagine SEO di {{count}} comune nel registry (2 pagine ciascuno). I testi restano in bozza: vanno letti e approvati uno per uno prima della pubblicazione.",
+        "description_other": "Verrà accodato un job per generare le pagine SEO di tutti i comuni nel registry ({{count}} comuni, 2 pagine ciascuno). I testi restano in bozza: vanno letti e approvati uno per uno prima della pubblicazione."
       },
-      "status": {
-        "reviewed": "Revisionato",
-        "draft": "Bozza"
+      "review": {
+        "title": "Revisione: {{title}}",
+        "description": "Leggi il testo come apparirà sulla pagina pubblica prima di approvarlo.",
+        "loading": "Caricamento della revisione…",
+        "loadError": "Impossibile caricare la revisione. Riprova più tardi.",
+        "pendingHeading": "Testo da approvare",
+        "publishedHeading": "Testo pubblicato ora",
+        "noPending": "Non c'è una nuova revisione: il testo pubblicato è l'ultimo generato.",
+        "notPublished": "La pagina non è pubblicata: nessun testo è visibile al pubblico.",
+        "generatedAt": "Generato il {{date}}",
+        "promptVersion": "Prompt {{version}}",
+        "notPublishable": "Questa revisione non ha un testo pubblicabile e non si può approvare. Configura il provider AI o rigenera la pagina.",
+        "counselHint": "Pagina tra le prime 100: la revisione legale è obbligatoria prima della pubblicazione.",
+        "confirmCounsel": "Confermo che questo testo ha avuto la revisione legale",
+        "confirmReview": "Confermo di aver letto e revisionato questo testo",
+        "noteLabel": "Nota per lo storico (facoltativa)",
+        "notePlaceholder": "Es. riferimento del parere legale",
+        "approve": "Approva e pubblica",
+        "close": "Chiudi",
+        "history": "Storico della revisione",
+        "historyEmpty": "Nessuna approvazione registrata.",
+        "historyApproved": "Approvata da {{actor}} il {{date}}",
+        "historyWithdrawn": "Ritirata da {{actor}} il {{date}}",
+        "historyNote": "Nota: {{note}}"
+      },
+      "withdrawDialog": {
+        "title": "Ritirare la pagina?",
+        "description": "«{{title}}» torna in bozza: sparisce dal sito pubblico e dalla sitemap finché non approvi di nuovo un testo.",
+        "noteLabel": "Motivo (facoltativo)",
+        "cancel": "Annulla",
+        "confirm": "Ritira"
       }
     },
     "profile": {
@@ -172,10 +232,6 @@
         "processing": "In corso",
         "enqueued": "In coda",
         "unknown": "Sconosciuto"
-      },
-      "seo": {
-        "reviewed": "Revisionato",
-        "draft": "Bozza"
       }
     }
   },
@@ -2777,8 +2833,6 @@
     "anonymize": "Anonimizza",
     "delete": "Cancella dati",
     "deleteConfirm": "Sei sicuro di voler cancellare tutti i dati di questo ospite? Questa azione e' irreversibile.",
-    "consentMarketing": "Consenso marketing",
-    "retention": "Conservazione dati fino al",
     "noDocument": "Nessun documento caricato",
     "notFound": "Ospite non trovato",
     "notFoundDescription": "L'ospite che stai cercando non esiste o non può essere caricato.",
@@ -2807,9 +2861,7 @@
     "documentExpiryDate": "Data scadenza",
     "documentIssuingCountry": "Paese rilascio",
     "gdprTab": {
-      "dataConsent": "Consenso trattamento dati",
       "processingPurpose": "Finalità trattamento",
-      "marketingConsentDescription": "Consenso al trattamento dei dati per finalità di marketing",
       "anonymized": "Anonimizzato",
       "deleted": "Cancellato",
       "erasureRequested": "Richiesta cancellazione:",
@@ -2821,13 +2873,71 @@
       "anonymizeError": "Impossibile anonimizzare i dati",
       "deleteSuccess": "Dati cancellati con successo",
       "deleteError": "Impossibile cancellare i dati",
-      "consentSuccess": "Consenso aggiornato con successo",
-      "consentError": "Impossibile aggiornare il consenso",
       "anonymizeTitle": "Anonimizza dati",
       "anonymizeDescription": "Questa azione renderà anonimi tutti i dati personali dell'ospite. Non sarà più possibile identificarlo. Continuare?",
       "anonymizeConfirm": "Anonimizza",
       "deleteTitle": "Cancella dati",
-      "deleteConfirmLabel": "Cancella definitivamente"
+      "deleteConfirmLabel": "Cancella definitivamente",
+      "loading": "Caricamento dei dati GDPR…",
+      "loadError": "Impossibile caricare i dati GDPR dell’ospite.",
+      "retry": "Riprova",
+      "privacyNotice": "Informativa privacy",
+      "privacyNoticeVersion": "Versione {{version}} del {{date}}",
+      "privacyNoticeNone": "Nessuna informativa registrata",
+      "marketingTitle": "Consenso marketing",
+      "marketingGranted": "Dato dall’ospite il {{date}} (testo versione {{version}})",
+      "marketingGrantedNoVersion": "Dato dall’ospite il {{date}} (versione del testo non registrata)",
+      "marketingNotGranted": "Non dato",
+      "marketingOnlyGuest": "Solo l’ospite può dare il consenso marketing, dal portale del check-in. Puoi solo revocarlo su sua richiesta documentata.",
+      "withdrawButton": "Revoca su richiesta dell’ospite",
+      "withdrawTitle": "Revoca del consenso marketing",
+      "withdrawDescription": "Registra la richiesta dell’ospite: data e canale (per esempio «email del 02/09/2026»). Non inserire altri dati personali.",
+      "withdrawNoteLabel": "Richiesta dell’ospite",
+      "withdrawNotePlaceholder": "Email del 02/09/2026",
+      "withdrawConfirm": "Revoca consenso",
+      "withdrawSuccess": "Consenso marketing revocato",
+      "withdrawError": "Impossibile revocare il consenso marketing",
+      "historyTitle": "Storico di informativa e consensi",
+      "historyEmpty": "Nessun evento registrato",
+      "historyVersion": "versione {{version}}",
+      "historyNoVersion": "versione non registrata",
+      "purpose": {
+        "PrivacyNotice": "Informativa privacy",
+        "Marketing": "Consenso marketing"
+      },
+      "action": {
+        "NoticePresented": "Informativa mostrata",
+        "Granted": "Consenso dato",
+        "Withdrawn": "Consenso revocato",
+        "Expired": "Consenso scaduto"
+      },
+      "source": {
+        "GuestPortal": "dall’ospite nel portale del check-in",
+        "HostOnGuestRequest": "dall’host su richiesta dell’ospite",
+        "RetentionPolicy": "automatico, per il periodo di conservazione"
+      },
+      "retentionTitle": "Conservazione per categoria di dati",
+      "category": {
+        "DocumentScans": "Scansioni del documento",
+        "AlloggiatiData": "Dati Alloggiati Web (nascita, cittadinanza, documento, accompagnatori)",
+        "Marketing": "Consenso marketing",
+        "FiscalData": "Dati fiscali (anagrafica e contatti)"
+      },
+      "retentionNotConfigured": "Periodo non configurato: nessuna cancellazione automatica",
+      "retentionPeriod": "{{period}} – fonte: {{source}}",
+      "period": {
+        "years_one": "{{count}} anno",
+        "years_other": "{{count}} anni",
+        "months_one": "{{count}} mese",
+        "months_other": "{{count}} mesi",
+        "days_one": "{{count}} giorno",
+        "days_other": "{{count}} giorni"
+      },
+      "retentionDue": "Applicata dal {{date}}",
+      "retentionNoReference": "Non applicabile a questo ospite",
+      "retentionApplied": "Ultima applicazione il {{date}}",
+      "alloggiatiDataErasedOn": "Dati Alloggiati cancellati il {{date}}",
+      "openBookings": "L’ospite ha prenotazioni in corso o future: cancellazione e anonimizzazione saranno possibili quando saranno concluse o annullate."
     },
     "loadError": "Impossibile caricare gli ospiti.",
     "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} ospiti)",
@@ -3216,9 +3326,6 @@
         "required": "Paese di rilascio obbligatorio",
         "maxLength": "Paese di rilascio deve essere inferiore a 100 caratteri"
       },
-      "consentAccepted": {
-        "required": "Devi accettare il trattamento dei dati"
-      },
       "invalidValue": "Valore non valido",
       "bornInItaly": {
         "required": "Indica se l'ospite è nato in Italia o all'estero"
@@ -3279,7 +3386,6 @@
     "city": "Citta'",
     "postalCode": "CAP",
     "country": "Paese di residenza",
-    "gdprConsent": "Acconsento al trattamento dei miei dati personali per adempiere all'obbligo di comunicazione alla Questura (Art. 109 TULPS), in conformita' con l'informativa privacy dell'operatore.",
     "saving": "Salvataggio...",
     "saveData": "Salva dati",
     "linkCopied": "Link copiato",
@@ -3288,7 +3394,7 @@
     "lastName": "Cognome *",
     "stepPersonal": "Dati anagrafici",
     "stepDocument": "Documento d'identita'",
-    "stepConsents": "Consensi",
+    "stepConsents": "Informativa e consensi",
     "stepOf": "Passo {{step}} di {{total}}",
     "next": "Avanti",
     "back": "Indietro",
@@ -3298,7 +3404,14 @@
     "successDescription": "I tuoi dati sono stati registrati. Grazie!",
     "alreadyCompletedTitle": "Check-in già completato",
     "alreadyCompletedDescription": "I dati di questo soggiorno sono già stati inviati. Per proteggere la tua privacy non vengono più mostrati. Per correggerli contatta il gestore della struttura.",
-    "marketingConsent": "Acconsento a ricevere comunicazioni promozionali (facoltativo).",
+    "marketingConsent": "[SEGNAPOSTO – testo del consenso fornito dal titolare] Acconsento a ricevere comunicazioni promozionali (facoltativo).",
+    "marketingConsentVersion": "Facoltativo. Versione del testo: {{version}}",
+    "privacyNotice": {
+      "title": "Informativa sul trattamento dei dati personali (art. 13 GDPR)",
+      "legalObligation": "La comunicazione dei dati di ogni ospite alla Questura tramite Alloggiati Web è un obbligo di legge (art. 109 TULPS): il trattamento si basa sull'art. 6, par. 1, lett. c) del GDPR e non richiede il tuo consenso. Senza questi dati il soggiorno non può essere registrato.",
+      "body": "[SEGNAPOSTO – il testo completo dell'informativa sarà fornito dal titolare del trattamento: identità del titolare, finalità, basi giuridiche, destinatari (Questura), periodo di conservazione e diritti dell'interessato.]",
+      "version": "Versione dell’informativa: {{version}}"
+    },
     "sessionLabel": "Stato check-in ospite",
     "sessionLoading": "Caricamento stato sessione...",
     "resendLink": "Invia sollecito",
@@ -4266,11 +4379,8 @@
     "documentDeleted": "Documento eliminato con successo",
     "documentDeleteFailed": "Impossibile eliminare il documento",
     "documentDownloadFailed": "Impossibile scaricare il documento",
-    "seoApproveFailed": "Impossibile approvare le pagine SEO",
-    "seoGenerated": "Pagine SEO generate con successo",
+    "seoGenerated": "Generazione accodata: {{estimatedPages}} pagine da revisionare prima della pubblicazione",
     "seoGenerateFailed": "Impossibile generare le pagine SEO",
-    "seoReviewUpdated": "Revisione SEO aggiornata con successo",
-    "seoReviewUpdateFailed": "Impossibile aggiornare la revisione SEO",
     "orgPlanUpdated": "Piano organizzazione aggiornato con successo",
     "orgPlanUpdateFailed": "Impossibile aggiornare il piano organizzazione",
     "dataExported": "Dati esportati con successo",
@@ -4282,8 +4392,6 @@
     "consentUpdated": "Consenso aggiornato con successo",
     "consentUpdateFailed": "Impossibile aggiornare il consenso",
     "otaValidationFailed": "Validazione credenziali OTA fallita: {{errors}}",
-    "seoApproved_one": "{{count}} pagina SEO approvata con successo",
-    "seoApproved_other": "{{count}} pagine SEO approvate con successo",
     "alloggiatiMarkedSent": "Invio manuale registrato",
     "alloggiatiMarkSentFailed": "Impossibile registrare l'invio manuale",
     "manualRegistrationSaved": "Registrazione salvata: il contratto risulta registrato.",
@@ -4300,6 +4408,10 @@
     "cadastralSaveFailed": "Impossibile salvare i dati catastali",
     "apeIdentificationSaved": "Estremi dell'APE salvati",
     "apeIdentificationSaveFailed": "Impossibile salvare gli estremi dell'APE",
+    "seoRevisionApproved": "Revisione approvata: la pagina pubblica mostra il nuovo testo",
+    "seoRevisionApproveFailed": "Impossibile approvare la revisione",
+    "seoPageWithdrawn": "Pagina ritirata: non è più pubblica",
+    "seoPageWithdrawFailed": "Impossibile ritirare la pagina",
     "questuraDeliveryDateSaved": "Data di consegna salvata",
     "questuraDeliveryDateFailed": "Impossibile salvare la data di consegna",
     "questuraMarkedDone": "Comunicazione alla Questura segnata come inviata",

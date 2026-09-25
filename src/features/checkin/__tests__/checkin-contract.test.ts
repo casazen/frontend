@@ -15,7 +15,7 @@ import {
  * `Casazen.Tests/Fixtures/public-checkin-submit.frontend.json`, which the backend deserializes and validates;
  * the two lists below mirror the `[Required]` properties checked there.
  */
-const BACKEND_REQUIRED_FIELDS = ['gdprConsent', 'guests'];
+const BACKEND_REQUIRED_FIELDS = ['guests'];
 const BACKEND_REQUIRED_GUEST_FIELDS = ['bornInItaly', 'citizenshipName', 'dateOfBirth', 'firstName', 'gender', 'lastName', 'type'];
 
 function isFilled(value: unknown): boolean {
@@ -59,7 +59,6 @@ describe('public check-in request contract', () => {
           documentNumber: 'XX999',
         },
       ],
-      gdprConsent: true,
     });
 
     const payload: Record<string, unknown> = JSON.parse(JSON.stringify(toPublicCheckInSubmitRequest(values)));
@@ -75,7 +74,6 @@ describe('public check-in request contract', () => {
     expect([...ALLOGGIATI_GENDERS]).toEqual(['Male', 'Female']);
     const other = publicCheckInFormSchema.safeParse({
       guests: [{ ...stayGuestDefaults('SingleGuest'), gender: 'Other' }],
-      gdprConsent: true,
     });
     expect(other.success).toBe(false);
     expect(other.error?.issues.some((issue) => issue.path.join('.') === 'guests.0.gender')).toBe(true);

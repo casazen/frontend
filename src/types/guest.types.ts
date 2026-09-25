@@ -46,7 +46,6 @@ export interface Guest {
   consentVersion: string;
   marketingConsent: boolean;
   marketingConsentDate?: Date | string;
-  dataRetentionUntil: Date | string;
   dataRetentionExpiryDate?: Date | string;
   dataProcessingPurpose: string;
   erasureRequested: boolean;
