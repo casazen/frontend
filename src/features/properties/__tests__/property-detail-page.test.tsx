@@ -89,7 +89,7 @@ const mockDetail: PropertyDetailDto = {
   pricingAdapterSummary: {
     isEnabled: false,
     lastAdaptedAt: null,
-    nextScheduledRunAt: null,
+    nextRunOn: null,
   },
 };
 

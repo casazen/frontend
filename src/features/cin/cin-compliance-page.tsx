@@ -9,7 +9,7 @@ import { useCinCompliance } from '@/queries/use-cin';
 
 export function CinCompliancePage() {
   const { t } = useTranslation();
-  const { data, isLoading } = useCinCompliance();
+  const { data, isLoading, isError } = useCinCompliance();
 
   return (
     <AppShell>
@@ -35,7 +35,14 @@ export function CinCompliancePage() {
                 {t('cin.bdsrPortal')}
               </a>
             </p>
-            <CinComplianceTable items={data?.items ?? []} isLoading={isLoading} />
+            {isError ? (
+              // An API error is never shown as "no properties".
+              <p role="alert" className="text-sm text-destructive" data-testid="cin-compliance-error">
+                {t('cin.loadError')}
+              </p>
+            ) : (
+              <CinComplianceTable items={data?.items ?? []} isLoading={isLoading} />
+            )}
           </CardContent>
         </Card>
       </div>

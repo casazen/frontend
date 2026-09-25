@@ -3,6 +3,7 @@ import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient } from './client';
 import type {
   CedolareAdvisory,
+  CedolareAdvisoryInput,
   CreateLeaseDto,
   LeaseDetail,
   LeaseRegistration,
@@ -100,8 +101,11 @@ export const leasesApi = {
     return response.data;
   },
 
-  getRliAdvisory: (id: string) =>
-    ApiClient.get<CedolareAdvisory>(`/leases/${id}/rli/advisory`),
+  /** Without data the plain GET; with data a POST, so that the landlord's income never ends up in a URL. */
+  getRliAdvisory: (id: string, input?: CedolareAdvisoryInput) =>
+    input && Object.values(input).some((value) => value !== undefined)
+      ? ApiClient.post<CedolareAdvisory>(`/leases/${id}/rli/advisory`, input)
+      : ApiClient.get<CedolareAdvisory>(`/leases/${id}/rli/advisory`),
 
   getRliChecklist: (id: string) =>
     ApiClient.get<RliChecklist>(`/leases/${id}/rli/checklist`),

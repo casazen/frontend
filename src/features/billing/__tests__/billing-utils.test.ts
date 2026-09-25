@@ -1,8 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import {
-  buildCheckoutReturnUrls,
-  DEFAULT_BILLING_RETURN_PATH,
   isLiveSubscription,
   isVatIdShapeValid,
   normalizeSubscriptionStatus,
@@ -10,27 +8,9 @@ import {
   redirectToStripe,
 } from '../billing-utils';
 
-const SITE = 'https://app.example.test';
-
 describe('billing-utils', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-  });
-
-  it('buildCheckoutReturnUrls_DefaultPlanPage_SendsNoUrlSoTheBackendDefaultApplies', () => {
-    expect(buildCheckoutReturnUrls(DEFAULT_BILLING_RETURN_PATH, SITE, SITE)).toEqual({});
-  });
-
-  it('buildCheckoutReturnUrls_OtherPageOnThePublicSite_ReturnsToThatPage', () => {
-    expect(buildCheckoutReturnUrls('/app/long-rent/settings/plan', SITE, SITE)).toEqual({
-      successUrl: `${SITE}/app/long-rent/settings/plan?checkout=success`,
-      cancelUrl: `${SITE}/app/long-rent/settings/plan?checkout=cancel`,
-    });
-  });
-
-  it('buildCheckoutReturnUrls_PreviewOrUnknownPublicSite_SendsNoUrlTheBackendWouldRefuse', () => {
-    expect(buildCheckoutReturnUrls('/app/long-rent/settings/plan', 'https://preview.vercel.test', SITE)).toEqual({});
-    expect(buildCheckoutReturnUrls('/app/long-rent/settings/plan', SITE, null)).toEqual({});
   });
 
   it('redirectToStripe_HttpsUrl_LeavesTheApp', () => {
@@ -71,10 +51,12 @@ describe('billing-utils', () => {
     expect(isVatIdShapeValid('A1')).toBe(false);
   });
 
-  it('isOrgBillingAdmin_HostOwnerOrPlatformAdmin_IsBillingAdmin', () => {
+  it('isOrgBillingAdmin_OwnerOfEitherRentalContextOrPlatformAdmin_IsBillingAdmin', () => {
     expect(isOrgBillingAdmin([{ contextKey: 'short-rent' }])).toBe(true);
+    // PL-16 (A1-36): a landlord with only long-term leases manages the plan of its org.
+    expect(isOrgBillingAdmin([{ contextKey: 'long-rent' }])).toBe(true);
     expect(isOrgBillingAdmin([{ contextKey: 'admin' }])).toBe(true);
-    expect(isOrgBillingAdmin([{ contextKey: 'long-rent' }, { contextKey: 'supplier' }])).toBe(false);
+    expect(isOrgBillingAdmin([{ contextKey: 'supplier' }])).toBe(false);
     expect(isOrgBillingAdmin([])).toBe(false);
   });
 });

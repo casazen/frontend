@@ -4,7 +4,11 @@ export type StrFiscalRegime =
   | 'CedolareSecca21'
   | 'CedolareSecca26'
   | 'RegimeOrdinario'
-  | 'RegimeForfettario';
+  | 'RegimeForfettario'
+  | 'IrpefOrdinaria';
+
+/** Stable codes of `FiscalPropertyRow.taxNote` (backend `FiscalTaxNotes`). */
+export type FiscalTaxNote = 'irpef_ordinaria_not_computed' | 'short_stay_threshold_exceeded';
 
 export interface FiscalPropertyRow {
   propertyId: string;
@@ -12,15 +16,36 @@ export interface FiscalPropertyRow {
   recommendedRegime: StrFiscalRegime | null;
   assignedRegime: StrFiscalRegime | null;
   isPrimaryForCedolare: boolean;
+  /** Short-term stays in the tax year: the apartment counts toward its taxpayer's threshold. */
+  shortStayInTaxYear: boolean;
+  /** Index of the property's taxpayer in `FiscalRegimeSnapshot.taxpayers`. */
+  taxpayerIndex: number;
+  /** Rate of the assigned cedolare regime (fraction, from backend configuration). */
+  cedolareRate: number | null;
+  taxNote: FiscalTaxNote | null;
+}
+
+/** One taxpayer (titolare fiscale): the short-rental threshold is per taxpayer, not per org. */
+export interface FiscalTaxpayerSummary {
+  index: number;
+  fiscalCodeMasked: string | null;
+  isOrgTaxProfile: boolean;
+  shortStayApartmentCount: number;
+  thresholdExceeded: boolean;
+  reducedRatePropertyId: string | null;
 }
 
 export interface FiscalRegimeSnapshot {
   taxYear: number;
   strPropertyCount: number;
+  /** At least one taxpayer is over the threshold (business activity presumed). */
   requiresPartitaIva: boolean;
   hasPartitaIva: boolean;
   disclaimer: string;
   properties: FiscalPropertyRow[];
+  maxShortStayApartmentsPerTaxpayer: number;
+  thresholdSource: string;
+  taxpayers: FiscalTaxpayerSummary[];
 }
 
 export interface FiscalTaxProfile {

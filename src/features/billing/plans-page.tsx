@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Info, Loader2, PackageOpen } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { toBillingReturnPath } from '@/lib/billing-routes';
 import { getPlanTierLabel } from '@/lib/i18n-labels';
 import { needsOrgSetup } from '@/lib/onboarding';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
@@ -43,11 +44,24 @@ function isCheckoutSettled(subscription: BillingSubscription | undefined): boole
 }
 
 /**
- * Plans and Stripe Checkout of the org (spec-saas-billing AC10, PL-12). Also the return page of the checkout
- * (`?checkout=success|cancel`) and of the billing portal (backend PL-11): the outcome shown is the subscription read from
- * the backend, never the redirect alone.
+ * Plans and Stripe Checkout of the org (spec-saas-billing AC10, PL-12) in the short-rent shell. Also the default return
+ * page of the checkout (`?checkout=success|cancel`) and of the billing portal (backend PL-11).
  */
 export function PlansPage() {
+  return (
+    <AppShell>
+      <PlansPageContent />
+    </AppShell>
+  );
+}
+
+/**
+ * Content of the plans page, without a shell: the short-rent route wraps it in its shell ({@link PlansPage}), the
+ * long-rent route gets the long-rent shell from the context layout (PL-16). Also the return page of the checkout
+ * (`?checkout=success|cancel`) and of the billing portal started from this page: the outcome shown is the subscription
+ * read from the backend, never the redirect alone.
+ */
+export function PlansPageContent() {
   const { t, i18n } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
@@ -65,7 +79,9 @@ export function PlansPage() {
     pollInterval: (data) =>
       checkoutReturn === 'success' && !confirmTimedOut && !isCheckoutSettled(data) ? CHECKOUT_CONFIRM_POLL_MS : false,
   });
-  const portal = useOpenBillingPortal();
+  const { pathname } = useLocation();
+  // The portal links back to this page, in the shell the user is in (PL-16).
+  const portal = useOpenBillingPortal(toBillingReturnPath(pathname));
   const refreshPlan = useRefreshPlanAfterPayment();
 
   const subscription = subscriptionQuery.data;
@@ -202,78 +218,76 @@ export function PlansPage() {
   };
 
   return (
-    <AppShell>
-      <div className="mx-auto max-w-5xl space-y-6">
-        <PageHeader
-          title={t('settings.planTitle')}
-          description={
-            org ? t('settings.planOrgDescription', { orgName: org.name }) : t('settings.planDefaultDescription')
-          }
-        />
+    <div className="mx-auto max-w-5xl space-y-6">
+      <PageHeader
+        title={t('settings.planTitle')}
+        description={
+          org ? t('settings.planOrgDescription', { orgName: org.name }) : t('settings.planDefaultDescription')
+        }
+      />
 
-        {!isAdmin ? (
-          <BillingAdminRequired />
-        ) : (
-          <>
-            {renderReturnBanner()}
+      {!isAdmin ? (
+        <BillingAdminRequired />
+      ) : (
+        <>
+          {renderReturnBanner()}
 
-            {alreadySubscribed && (
-              <Banner tone="warning" testId="already-subscribed-alert">
-                <span>{t('apiErrors.codes.alreadySubscribed')}</span>
-                <Button type="button" size="sm" onClick={openPortal} disabled={portal.isPending}>
-                  {portal.isPending ? t('billing.portal.opening') : t('billing.portal.open')}
-                </Button>
-              </Banner>
-            )}
+          {alreadySubscribed && (
+            <Banner tone="warning" testId="already-subscribed-alert">
+              <span>{t('apiErrors.codes.alreadySubscribed')}</span>
+              <Button type="button" size="sm" onClick={openPortal} disabled={portal.isPending}>
+                {portal.isPending ? t('billing.portal.opening') : t('billing.portal.open')}
+              </Button>
+            </Banner>
+          )}
 
-            {subscriptionQuery.isSuccess && (
-              <SubscriptionPaymentNotice status={status} onOpenPortal={openPortal} portalPending={portal.isPending} />
-            )}
+          {subscriptionQuery.isSuccess && (
+            <SubscriptionPaymentNotice status={status} onOpenPortal={openPortal} portalPending={portal.isPending} />
+          )}
 
-            {subscriptionQuery.isSuccess && live && !needsPaymentAction(status) && !alreadySubscribed && (
-              <Banner tone="info" testId="live-subscription-notice">
-                <span>{t('billing.plans.liveSubscription')}</span>
-                <Button type="button" size="sm" variant="outline" onClick={openPortal} disabled={portal.isPending}>
-                  {portal.isPending ? t('billing.portal.opening') : t('billing.portal.manage')}
-                </Button>
-              </Banner>
-            )}
+          {subscriptionQuery.isSuccess && live && !needsPaymentAction(status) && !alreadySubscribed && (
+            <Banner tone="info" testId="live-subscription-notice">
+              <span>{t('billing.plans.liveSubscription')}</span>
+              <Button type="button" size="sm" variant="outline" onClick={openPortal} disabled={portal.isPending}>
+                {portal.isPending ? t('billing.portal.opening') : t('billing.portal.manage')}
+              </Button>
+            </Banner>
+          )}
 
-            {entitlement && (
-              <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm" data-testid="plan-usage-summary">
-                <p>
-                  {t('settings.currentUsage')} <strong>{entitlement.usage.properties}</strong>{' '}
-                  {t('settings.planUsage', {
-                    propertyCount: entitlement.usage.properties,
-                    maxProperties:
-                      entitlement.limits.maxProperties >= 1_000_000
-                        ? t('settings.unlimited')
-                        : entitlement.limits.maxProperties,
-                  })}
-                  .
-                </p>
-              </div>
-            )}
+          {entitlement && (
+            <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm" data-testid="plan-usage-summary">
+              <p>
+                {t('settings.currentUsage')} <strong>{entitlement.usage.properties}</strong>{' '}
+                {t('settings.planUsage', {
+                  propertyCount: entitlement.usage.properties,
+                  maxProperties:
+                    entitlement.limits.maxProperties >= 1_000_000
+                      ? t('settings.unlimited')
+                      : entitlement.limits.maxProperties,
+                })}
+                .
+              </p>
+            </div>
+          )}
 
-            {renderPlans()}
+          {renderPlans()}
 
-            <p className="text-sm text-muted-foreground">
-              {t('billing.plans.stripeNote')}{' '}
-              <Link to="../billing" relative="path" className="underline" data-testid="billing-settings-link">
-                {t('billing.plans.billingLink')}
-              </Link>
-            </p>
+          <p className="text-sm text-muted-foreground">
+            {t('billing.plans.stripeNote')}{' '}
+            <Link to="../billing" relative="path" className="underline" data-testid="billing-settings-link">
+              {t('billing.plans.billingLink')}
+            </Link>
+          </p>
 
-            <CheckoutDialog
-              plan={checkoutPlan}
-              subscription={subscription}
-              onClose={() => setCheckoutPlan(null)}
-              onAlreadySubscribed={handleAlreadySubscribed}
-            />
-          </>
-        )}
-      </div>
-    </AppShell>
+          <CheckoutDialog
+            plan={checkoutPlan}
+            subscription={subscription}
+            onClose={() => setCheckoutPlan(null)}
+            onAlreadySubscribed={handleAlreadySubscribed}
+          />
+        </>
+      )}
+    </div>
   );
 }
 

@@ -60,8 +60,15 @@ describe('WorkspaceProvider org billing administrator', () => {
     expect(await screen.findByTestId('short-rent')).toHaveTextContent('true');
   });
 
-  it('hasPermission_LongTermLandlordOnly_IsNotOrgBillingAdmin', async () => {
+  it('hasPermission_LongTermLandlordOnly_IsOrgBillingAdmin', async () => {
+    // PL-16 (A1-36): the backend policy OrgBillingAdmin admits the long-rent owner, so the menu shows plan and billing.
     renderWith([context('long-rent', ['property.read', 'lease.read'])]);
+
+    expect(await screen.findByTestId('long-rent')).toHaveTextContent('true');
+  });
+
+  it('hasPermission_SupplierOnly_IsNotOrgBillingAdmin', async () => {
+    renderWith([context('supplier', ['supplier.inbox.read'])]);
 
     expect(await screen.findByTestId('long-rent')).toHaveTextContent('false');
     expect(screen.getByTestId('short-rent')).toHaveTextContent('false');
