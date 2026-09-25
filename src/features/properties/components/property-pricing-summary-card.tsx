@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PricingAdapterSummaryDto } from '@/types';
-import { formatDateTime } from '@/lib/utils';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { formatDate, formatDateTime } from '@/lib/utils';
+import { ArrowRight, CalendarRange } from 'lucide-react';
 
 interface PropertyPricingSummaryCardProps {
   propertyId: string;
@@ -20,7 +20,7 @@ export function PropertyPricingSummaryCard({ propertyId, summary }: PropertyPric
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5" />
+          <CalendarRange className="h-5 w-5" />
           {t('property.pricing.title')}
         </CardTitle>
         <Badge variant={summary.isEnabled ? 'success' : 'secondary'}>
@@ -35,7 +35,7 @@ export function PropertyPricingSummaryCard({ propertyId, summary }: PropertyPric
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('property.pricing.nextRun')}</span>
-            <span>{summary.nextScheduledRunAt ? formatDateTime(summary.nextScheduledRunAt) : '—'}</span>
+            <span>{summary.nextRunOn ? formatDate(summary.nextRunOn) : '—'}</span>
           </div>
         </div>
         <Button

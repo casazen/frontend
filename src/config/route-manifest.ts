@@ -153,13 +153,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    path: '/app/short-rent/properties/:id/pricing/history',
-    context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    component: async () => ({ default: (await import('@/features/pricing')).PricingHistoryPage }),
-    legacyPaths: ['/properties/:id/pricing/history'],
-  },
-  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],

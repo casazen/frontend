@@ -55,6 +55,6 @@ export const propertyDetailFixture: PropertyDetailDto = {
   pricingAdapterSummary: {
     isEnabled: true,
     lastAdaptedAt: '2026-06-03T02:00:00Z',
-    nextScheduledRunAt: '2026-06-06T02:00:00Z',
+    nextRunOn: '2026-06-06',
   },
 };

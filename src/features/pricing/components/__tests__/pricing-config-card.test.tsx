@@ -11,8 +11,13 @@ const BASE_CONFIG: PricingAdapterConfig = {
   adaptationFrequency: 'daily',
   includeSeasonality: true,
   includePublicHolidays: true,
+  highSeasonMonths: [6, 7, 8],
+  highSeasonMultiplier: 1.3,
+  lowSeasonMonths: [1, 2, 11, 12],
+  lowSeasonMultiplier: 0.8,
+  holidayMultiplier: 1.5,
   lastAdaptedAt: null,
-  nextScheduledRunAt: null,
+  nextRunOn: null,
   createdAt: '2026-05-01T00:00:00Z',
   updatedAt: '2026-05-01T00:00:00Z',
 };
@@ -23,10 +28,10 @@ function card(config: PricingAdapterConfig | undefined) {
       <PricingConfigCard
         config={config}
         isSaving={false}
-        isSyncing={false}
+        isRecalculating={false}
         onToggle={vi.fn()}
         onSave={vi.fn()}
-        onSync={vi.fn()}
+        onRecalculate={vi.fn()}
       />
     </I18nextProvider>
   );
@@ -53,5 +58,22 @@ describe('PricingConfigCard', () => {
     rerender(card(BASE_CONFIG));
 
     expect(screen.getByTestId('frequency-weekly')).toBeChecked();
+  });
+
+  it('PricingConfigCard_ServerRulesChange_ResyncsMonthsAndMultipliers', () => {
+    const { rerender } = render(card(BASE_CONFIG));
+    expect(screen.getByTestId('high-month-8')).toHaveAttribute('aria-pressed', 'true');
+
+    rerender(card({ ...BASE_CONFIG, highSeasonMonths: [7], highSeasonMultiplier: 1.2, updatedAt: '2026-05-02T00:00:00Z' }));
+
+    expect(screen.getByTestId('high-month-8')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('high-season-multiplier')).toHaveValue(1.2);
+  });
+
+  it('PricingConfigCard_EnabledNeverComputed_SaysNextNightlyRun', () => {
+    render(card(BASE_CONFIG));
+
+    expect(screen.getByTestId('next-run')).toHaveTextContent('At the next nightly run');
+    expect(screen.getByTestId('example-rule-note')).toHaveTextContent(/example/);
   });
 });
