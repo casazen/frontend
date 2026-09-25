@@ -43,6 +43,7 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   CheckOut: `/app/short-rent/bookings/${BOOKING_ID}/checkout`,
   SendAlloggiati: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   ResolveAlloggiatiFailure: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
+  ConfirmPropertyReady: `/app/short-rent/bookings/${BOOKING_ID}/checkout`,
 };
 
 describe('complianceActionRoute (CO-04, A5-09)', () => {

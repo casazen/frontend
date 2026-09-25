@@ -3620,7 +3620,8 @@
       "alloggiatiFailures": "Errori Alloggiati",
       "alloggiatiManualRequired": "Alloggiati da inviare manualmente",
       "moreItems_one": "e {{count}} altro",
-      "moreItems_other": "e altri {{count}}"
+      "moreItems_other": "e altri {{count}}",
+      "turnoversPending": "Proprietà da dichiarare pronte"
     },
     "properties": {
       "openWizard": "Wizard attivazione",
@@ -3724,39 +3725,107 @@
       "loadErrorHint": "Verifica di essere collegato all'API locale e di avere accesso a questa prenotazione.",
       "backToBookings": "Torna alle prenotazioni",
       "guestFallback": "Ospite",
-      "quickTitle": "Chiudi soggiorno",
-      "quickHint": "Un tocco per chiudere il check-in. Pulizie e documenti restano opzionali.",
-      "serviceNotesOptional": "Note (opzionale)",
       "title": "Check-out ospite",
       "description": "Completa il check-out per {{guest}}",
-      "confirmDepartureLabel": "Confermo che l'ospite ha lasciato la struttura ed è pronta per il turnover.",
-      "summaryGuestData": "Dati identità ospite conservati secondo obblighi di legge",
-      "summaryAlloggiati": "Stato invio Alloggiati Web verificato",
-      "summaryRetention": "Periodo di conservazione documenti confermato",
-      "supplierHint": "Prenota opzionalmente servizi di turnover dai fornitori del marketplace.",
-      "noSuppliers": "Nessun fornitore disponibile per questo comune.",
+      "confirmDepartureLabel": "Confermo che l'ospite ha lasciato la struttura.",
       "serviceNotes": "Note per il fornitore",
-      "paymentHint": "Verifica pagamenti in sospeso e riscossione tassa di soggiorno prima di chiudere il soggiorno.",
-      "propertyReadyHint": "Conferma che l'immobile è pulito e pronto per il prossimo ospite.",
-      "next": "Passo successivo",
+      "next": "Avanti",
       "backToBooking": "Torna alla prenotazione",
       "complete": "Chiudi soggiorno",
-      "completed": "Check-out completato con successo",
+      "completed": "Check-out completato: la proprietà è pronta per il prossimo ospite.",
       "completeFailed": "Impossibile completare il check-out",
-      "steps": {
-        "confirm-departure": "Conferma che l'ospite ha lasciato la struttura.",
-        "compliance-summary": "Rivedi gli obblighi di compliance per questo soggiorno.",
-        "supplier-selection": "Seleziona servizi di turnover se necessario.",
-        "payment": "Salda pagamenti e depositi.",
-        "property-ready": "Segna l'immobile pronto per la prossima prenotazione."
-      },
       "starting": "Preparazione del check-out…",
       "startFailed": "Impossibile avviare il check-out.",
       "retry": "Riprova",
       "arrivalMissingTitle": "Arrivo non registrato",
       "arrivalMissingHint": "L'arrivo di {{guest}} non risulta registrato. Se l'ospite è arrivato, registra l'arrivo e procedi con il check-out.",
       "registerArrivalAndProceed": "Registra arrivo e procedi",
-      "registeringArrival": "Registrazione dell'arrivo…"
+      "registeringArrival": "Registrazione dell'arrivo…",
+      "back": "Indietro",
+      "completedNotReady": "Check-out completato. La proprietà resta da dichiarare pronta nel riepilogo compliance.",
+      "progress": "Passaggi completati: {{done}} su {{total}}",
+      "progressSaveFailed": "Impossibile salvare l'avanzamento del check-out.",
+      "closedLoadError": "Impossibile caricare il riepilogo del check-out.",
+      "propertyReadyConfirmed": "Proprietà dichiarata pronta per il prossimo ospite.",
+      "propertyReadyFailed": "Impossibile dichiarare la proprietà pronta.",
+      "steps": {
+        "stay-summary": {
+          "title": "Riepilogo soggiorno",
+          "hint": "Controlla il soggiorno e conferma che l'ospite è partito."
+        },
+        "alloggiati": {
+          "title": "Alloggiati Web",
+          "hint": "Stato della comunicazione degli ospiti alla Questura."
+        },
+        "cleaning": {
+          "title": "Pulizie",
+          "hint": "Richiedi le pulizie a un fornitore del comune della proprietà, oppure salta questo passaggio."
+        },
+        "tourist-tax": {
+          "title": "Imposta di soggiorno",
+          "hint": "Indica come è stata riscossa l'imposta di soggiorno."
+        },
+        "property-ready": {
+          "title": "Proprietà pronta",
+          "hint": "Conferma se la proprietà è pronta per il prossimo ospite."
+        }
+      },
+      "stay": {
+        "guest": "Ospite",
+        "property": "Proprietà",
+        "dates": "Soggiorno",
+        "datesValue_one": "{{from}} → {{to}} ({{count}} notte)",
+        "datesValue_other": "{{from}} → {{to}} ({{count}} notti)",
+        "guests": "Ospiti",
+        "guestsValue_one": "{{count}} ospite, di cui minori: {{children}}",
+        "guestsValue_other": "{{count}} ospiti, di cui minori: {{children}}",
+        "source": "Provenienza"
+      },
+      "alloggiati": {
+        "status": "Stato:",
+        "sentHint": "La comunicazione di questo soggiorno risulta inviata.",
+        "toSendHint": "La comunicazione di questo soggiorno non risulta inviata. CasaZen non la trasmette: inviala sul portale Alloggiati Web e registrala come inviata. Il check-out non è bloccato.",
+        "failedHint": "La comunicazione di questo soggiorno è in errore o respinta: correggila e inviala di nuovo sul portale. Il check-out non è bloccato.",
+        "overdue": "Scadenza superata il {{deadline}}.",
+        "dataIncomplete": "Mancano dati degli ospiti.",
+        "open": "Apri la sezione Alloggiati della prenotazione"
+      },
+      "cleaning": {
+        "existingTitle": "Richieste già inviate per questo soggiorno",
+        "question": "Vuoi richiedere le pulizie a un fornitore?",
+        "request": "Sì, invia una richiesta a un fornitore",
+        "skip": "No, salta questo passaggio",
+        "noSuppliers": "Nessun fornitore attivo per questa categoria a {{city}}. Puoi saltare questo passaggio."
+      },
+      "touristTax": {
+        "recorded": "Imposta di soggiorno registrata alla prenotazione: {{amount}}.",
+        "notRecorded": "CasaZen non ha un importo dell'imposta per questo soggiorno (prenotazione da canale o comune senza tariffa): verifica l'importo con il regolamento del comune.",
+        "paidOnline": "L'imposta era inclusa nel pagamento online della prenotazione.",
+        "question": "Come è stata riscossa l'imposta?",
+        "collection": {
+          "CollectedOnline": "Riscossa online, con il pagamento della prenotazione",
+          "CollectedAtProperty": "Riscossa in struttura",
+          "NotCollected": "Non riscossa",
+          "NotDue": "Non dovuta per questo soggiorno"
+        },
+        "notCollectedHint": "Un'imposta dovuta e non riscossa va gestita secondo il regolamento del comune."
+      },
+      "propertyReady": {
+        "question": "La proprietà è pronta per il prossimo ospite?",
+        "yes": "Sì, è pronta",
+        "no": "Non ancora",
+        "notReadyHint": "Il soggiorno viene chiuso comunque: la proprietà resta nel riepilogo compliance finché non la dichiari pronta.",
+        "notes": "Note sulla proprietà (opzionale)"
+      },
+      "closed": {
+        "cleaningRequested": "Pulizie: richiesta inviata al fornitore.",
+        "cleaningSkipped": "Pulizie: passaggio saltato.",
+        "cleaningNone": "Pulizie: nessuna scelta registrata.",
+        "touristTaxNotDeclared": "Imposta di soggiorno: riscossione non indicata.",
+        "propertyReady": "Proprietà dichiarata pronta il {{date}}.",
+        "propertyNotReady": "La proprietà non è ancora stata dichiarata pronta per il prossimo ospite.",
+        "confirmReady": "Dichiara la proprietà pronta"
+      }
     },
     "safety": {
       "loading": "Caricamento della checklist di sicurezza...",
@@ -4163,7 +4232,11 @@
       "icalFeedLimitReached": "Hai già collegato il numero massimo di calendari per questa proprietà: scollegane uno prima di aggiungerne un altro.",
       "icalFeedDuplicate": "Questo calendario è già collegato alla proprietà.",
       "icalFeedInvalidLabel": "L'etichetta del calendario può contenere al massimo 60 caratteri, senza a capo.",
-      "dashboardInvalidPeriod": "Periodo non valido: scegli il mese corrente, un altro mese o gli ultimi 30 giorni."
+      "dashboardInvalidPeriod": "Periodo non valido: scegli il mese corrente, un altro mese o gli ultimi 30 giorni.",
+      "checkoutWizardNotStarted": "Avvia il check-out prima di completarlo: riapri la procedura di check-out del soggiorno.",
+      "checkoutCleaningChoiceInvalid": "Scegli se richiedere le pulizie a un fornitore (indicando il fornitore) oppure saltarle.",
+      "checkoutStepInvalid": "Passaggio del check-out non valido.",
+      "checkoutNotCompleted": "La proprietà si dichiara pronta dopo il check-out del soggiorno."
     }
   },
   "validation": {

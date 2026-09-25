@@ -1,3 +1,4 @@
+import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
 import type { TouristTaxRateRule, TouristTaxRateVerification } from '@/types/tourist-tax.types';
 
 export type PropertyComplianceStatus = 'Pending' | 'Active' | 'Suspended';
@@ -175,6 +176,7 @@ export const COMPLIANCE_COCKPIT_ACTIONS = [
   'CheckOut',
   'SendAlloggiati',
   'ResolveAlloggiatiFailure',
+  'ConfirmPropertyReady',
 ] as const;
 export type ComplianceCockpitAction = (typeof COMPLIANCE_COCKPIT_ACTIONS)[number];
 
@@ -202,28 +204,93 @@ export interface ComplianceSummaryResult {
   alloggiatiFailures: ComplianceSummarySection;
   /** Alloggiati communications the host must send on the Questura portal: CasaZen does not transmit (CO-11). */
   alloggiatiManualRequired: ComplianceSummarySection;
+  /** Stays checked out whose property was not declared ready for the next guest (CO-17). */
+  turnoversPending: ComplianceSummarySection;
 }
+
+/** The 5 steps of the check-out wizard, in order (CO-17, A5-24): `steps[].id` and `currentStep` of the API. */
+export const CHECKOUT_WIZARD_STEPS = ['stay-summary', 'alloggiati', 'cleaning', 'tourist-tax', 'property-ready'] as const;
+export type CheckoutWizardStepId = (typeof CHECKOUT_WIZARD_STEPS)[number];
 
 export interface CheckoutWizardStep {
   id: string;
   label: string;
   status: ComplianceStepStatus;
+  blocker?: boolean;
+  message?: string | null;
 }
 
-export interface CheckoutSupplierOption {
-  orgId: string;
-  legalName: string;
-  category?: string | null;
-}
+/** Step 3: request to a supplier of the property's comune, or skipped. */
+export type CheckoutCleaningChoice = 'Request' | 'Skip';
 
-export interface CheckoutWizardStartResult {
+/** Step 4: how the tourist tax of the stay was collected, as declared by the host. */
+export const TOURIST_TAX_COLLECTIONS = ['CollectedOnline', 'CollectedAtProperty', 'NotCollected', 'NotDue'] as const;
+export type TouristTaxCollection = (typeof TOURIST_TAX_COLLECTIONS)[number];
+
+/** The check-out wizard of a stay: `checkout-wizard/start`, `GET checkout-wizard`, progress and property ready (CO-17). */
+export interface CheckoutWizardState {
+  bookingId: string;
+  /** `CheckedIn` while the wizard is open, `CheckedOut` once completed. */
+  bookingStatus: string;
+  /** Step the wizard opens on (saved progress; the last one after the check-out). */
+  currentStep: string;
+  startedAt: string | null;
+  completedAt: string | null;
   steps: CheckoutWizardStep[];
-  suppliers?: CheckoutSupplierOption[];
+  stay: {
+    guestName: string;
+    propertyId: string;
+    propertyName: string;
+    propertyCity: string;
+    /** Stay dates (midnight UTC, no time zone). */
+    checkInDate: string;
+    checkOutDate: string;
+    nights: number;
+    numberOfGuests: number;
+    numberOfAdults: number;
+    numberOfChildren: number;
+    arrivedAt: string | null;
+    source: string;
+    departureConfirmed: boolean;
+  };
+  alloggiati: {
+    status: AlloggiatiWebStatus;
+    /** Sent with a receipt, or declared sent by the host. */
+    sent: boolean;
+    deadlineAt: string;
+    isOverdue: boolean;
+    dataComplete: boolean;
+  };
+  cleaning: {
+    choice: CheckoutCleaningChoice | null;
+    supplierOrgId: string | null;
+    category: string | null;
+    notes: string | null;
+    /** Request created with the check-out, tied to the stay. */
+    requestId: string | null;
+  };
+  touristTax: {
+    /** Tax recorded on the booking when CasaZen priced it; null when CasaZen has no amount (never invented). */
+    recordedAmount: number | null;
+    currency: string;
+    /** Paid online with the booking: "online" is proposed. */
+    collectedWithOnlinePayment: boolean;
+    collection: TouristTaxCollection | null;
+  };
+  propertyReady: {
+    /** While the wizard is open the saved answer; after the check-out true only once declared. */
+    ready: boolean | null;
+    readyAt: string | null;
+    notes: string | null;
+  };
 }
 
 export interface CheckoutWizardCompleteResult {
+  /** True only when the host declared the property ready. */
   propertyReady: boolean;
   bookingStatus: string;
+  serviceRequestId: string | null;
+  wizard: CheckoutWizardState;
 }
 
 /** Body of `POST /bookings/:id/checkout-wizard/start` (CO-08). */
@@ -232,10 +299,29 @@ export interface CheckoutWizardStartCommand {
   registerArrival?: boolean;
 }
 
+/** Answers of the wizard, saved with `PUT /bookings/:id/checkout-wizard/progress` as the host moves (CO-17). */
+export interface CheckoutWizardProgressCommand {
+  currentStep: CheckoutWizardStepId;
+  departureConfirmed: boolean;
+  cleaningChoice: CheckoutCleaningChoice | null;
+  supplierOrgId: string | null;
+  serviceCategory: string | null;
+  serviceNotes: string | null;
+  touristTaxCollection: TouristTaxCollection | null;
+  propertyReady: boolean | null;
+  propertyNotes: string | null;
+}
+
 export interface CheckoutWizardCompleteCommand {
   confirmDeparture: boolean;
   supplierOrgId?: string | null;
   serviceNotes?: string | null;
+  serviceCategory?: string | null;
   /** The host confirms that the guest arrived: registers the arrival with the check-out. */
   registerArrival?: boolean;
+  cleaningChoice?: CheckoutCleaningChoice | null;
+  touristTaxCollection?: TouristTaxCollection | null;
+  /** True only when the host confirms the property is ready; otherwise it stays a turnover in the cockpit. */
+  propertyReady?: boolean | null;
+  propertyNotes?: string | null;
 }

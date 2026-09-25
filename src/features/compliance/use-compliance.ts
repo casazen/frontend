@@ -2,15 +2,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   completeCheckoutWizard,
   completeComplianceActivation,
+  confirmPropertyReady,
+  fetchCheckoutWizard,
   fetchComplianceActivation,
   fetchComplianceSummary,
   fetchSafetyChecklist,
   getActivationBlockedProblem,
+  saveCheckoutProgress,
   saveSafetyChecklist,
   startCheckoutWizard,
 } from '@/api/compliance.api';
 import type {
   CheckoutWizardCompleteCommand,
+  CheckoutWizardProgressCommand,
   CompletePropertyActivationCommand,
   SaveSafetyChecklistCommand,
 } from '@/types/compliance.types';
@@ -126,20 +130,67 @@ export function useRegisterArrivalAndStartCheckout(bookingId: string) {
   });
 }
 
+/**
+ * The wizard of a stay without any change (CO-17): used once the stay is checked out, to show what was declared and
+ * whether the property is still to be declared ready.
+ */
+export function useCheckoutWizard(bookingId: string, enabled = true) {
+  return useQuery({
+    queryKey: [COMPLIANCE_KEY, 'checkout-state', bookingId],
+    queryFn: () => fetchCheckoutWizard(bookingId),
+    enabled: !!bookingId && enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+}
+
+/**
+ * Saves the progress of the wizard as the host moves between the steps (CO-17): the answer replaces the cached start,
+ * so a reload opens the wizard on the same step with the same answers. No toast: the page shows the error.
+ */
+export function useSaveCheckoutProgress(bookingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CheckoutWizardProgressCommand) => saveCheckoutProgress(bookingId, payload),
+    onSuccess: (state) => queryClient.setQueryData(checkoutStartKey(bookingId), state),
+  });
+}
+
 export function useCompleteCheckoutWizard(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: CheckoutWizardCompleteCommand) =>
       completeCheckoutWizard(bookingId, payload),
-    onSuccess: () => {
+    onSuccess: (result) => {
       // The cockpit changes; the wizard start of this stay is never fetched again (it would answer 409 now).
+      queryClient.setQueryData([COMPLIANCE_KEY, 'checkout-state', bookingId], result.wizard);
       queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: ['alloggiati'] });
-      toast.success(i18n.t('compliance.checkout.completed'));
+      queryClient.invalidateQueries({ queryKey: ['service-requests'] });
+      toast.success(
+        i18n.t(result.propertyReady ? 'compliance.checkout.completed' : 'compliance.checkout.completedNotReady'),
+      );
     },
     onError: (error) =>
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('compliance.checkout.completeFailed')),
+  });
+}
+
+/** The host declares the property ready after the check-out: the turnover leaves the cockpit (CO-17). */
+export function useConfirmPropertyReady(bookingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (notes: string | null) => confirmPropertyReady(bookingId, notes),
+    onSuccess: (state) => {
+      queryClient.setQueryData([COMPLIANCE_KEY, 'checkout-state', bookingId], state);
+      queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'summary'] });
+      toast.success(i18n.t('compliance.checkout.propertyReadyConfirmed'));
+    },
+    onError: (error) =>
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('compliance.checkout.propertyReadyFailed')),
   });
 }

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ChevronRight, ClipboardList, Home, LogOut, Send, Users } from 'lucide-react';
+import { AlertCircle, ChevronRight, ClipboardList, Home, LogOut, Send, Sparkles, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -107,7 +107,8 @@ export function ComplianceSummaryWidget() {
     data.guestCheckInsIncomplete.count +
     data.checkoutsDue.count +
     data.alloggiatiFailures.count +
-    data.alloggiatiManualRequired.count;
+    data.alloggiatiManualRequired.count +
+    (data.turnoversPending?.count ?? 0);
 
   return (
     <Card data-testid="compliance-summary-widget">
@@ -146,6 +147,15 @@ export function ComplianceSummaryWidget() {
               section={data.checkoutsDue}
               testId="compliance-summary-checkouts"
             />
+            {data.turnoversPending && (
+              <SummaryRow
+                icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
+                title={t('compliance.summary.turnoversPending')}
+                section={data.turnoversPending}
+                testId="compliance-summary-turnovers"
+                tone="attention"
+              />
+            )}
             <SummaryRow
               icon={<Send className="h-4 w-4 text-muted-foreground" />}
               title={t('compliance.summary.alloggiatiManualRequired')}

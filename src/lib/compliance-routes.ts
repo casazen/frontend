@@ -51,6 +51,13 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     target: 'booking',
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
   },
+  // Stay checked out, property not declared ready (CO-17): the check-out page shows what was declared and the
+  // declaration "ready".
+  ConfirmPropertyReady: {
+    target: 'booking',
+    route: { path: '/app/short-rent/bookings/:id/checkout' },
+    fallback: { path: '/app/short-rent/bookings/:id' },
+  },
 };
 
 function buildRoute(route: ComplianceActionRoute, id: string, hasPermission?: PermissionPredicate): string | null {

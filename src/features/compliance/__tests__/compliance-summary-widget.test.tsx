@@ -30,6 +30,7 @@ const CHECKIN_BOOKING_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const CHECKOUT_BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const MANUAL_BOOKING_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const FAILED_BOOKING_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+const TURNOVER_BOOKING_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 const empty = { count: 0, items: [] };
 
@@ -57,6 +58,18 @@ const cockpit: ComplianceSummaryResult = {
     count: 1,
     items: [
       { id: FAILED_BOOKING_ID, label: 'Carla Neri', action: 'ResolveAlloggiatiFailure', propertyId: null, bookingId: FAILED_BOOKING_ID },
+    ],
+  },
+  turnoversPending: {
+    count: 1,
+    items: [
+      {
+        id: TURNOVER_BOOKING_ID,
+        label: 'Villa Test · Paolo Gialli',
+        action: 'ConfirmPropertyReady',
+        propertyId: null,
+        bookingId: TURNOVER_BOOKING_ID,
+      },
     ],
   },
 };
@@ -104,6 +117,7 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
       checkoutsDue: empty,
       alloggiatiFailures: empty,
       alloggiatiManualRequired: { ...cockpit.alloggiatiManualRequired, count: 12 },
+      turnoversPending: empty,
     };
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summary);
 
@@ -117,6 +131,27 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
     expect(screen.getByTestId('compliance-summary-alloggiati-manual-more')).toHaveTextContent('e altri 11');
     expect(screen.queryByText('Tutte le attività di compliance sono aggiornate.')).not.toBeInTheDocument();
   });
+
+  it('widget_CheckedOutStayWithPropertyNotReady_IsCountedAsATurnoverToClose', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue({
+      propertiesPending: empty,
+      guestCheckInsIncomplete: empty,
+      checkoutsDue: empty,
+      alloggiatiFailures: empty,
+      alloggiatiManualRequired: empty,
+      turnoversPending: cockpit.turnoversPending,
+    });
+
+    renderWidget();
+
+    // CO-17: "check-out completato ma property non pronta" is a pending task, never "all clear".
+    const count = await screen.findByTestId('compliance-summary-turnovers-count');
+    expect(count).toHaveTextContent('1');
+    expect(count.className).toContain('bg-orange-500');
+    expect(screen.getByText('Proprietà da dichiarare pronte')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-summary-turnovers-link')).toHaveTextContent('Villa Test · Paolo Gialli');
+    expect(screen.queryByText('Tutte le attività di compliance sono aggiornate.')).not.toBeInTheDocument();
+  });
 });
 
 describe('ComplianceSummaryWidget links (CO-04, A5-09)', () => {
@@ -126,6 +161,7 @@ describe('ComplianceSummaryWidget links (CO-04, A5-09)', () => {
     ['compliance-summary-checkouts', `/app/short-rent/bookings/${CHECKOUT_BOOKING_ID}/checkout`],
     ['compliance-summary-alloggiati-manual', `/app/short-rent/bookings/${MANUAL_BOOKING_ID}?tab=alloggiati`],
     ['compliance-summary-alloggiati', `/app/short-rent/bookings/${FAILED_BOOKING_ID}?tab=alloggiati`],
+    ['compliance-summary-turnovers', `/app/short-rent/bookings/${TURNOVER_BOOKING_ID}/checkout`],
   ])('widget_ClickOn_%s_NavigatesTo_%s', async (testId, expected) => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(cockpit);
     renderWidget();

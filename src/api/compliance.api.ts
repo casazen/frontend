@@ -7,8 +7,9 @@ import type {
   ActivationBlocker,
   CheckoutWizardCompleteCommand,
   CheckoutWizardCompleteResult,
+  CheckoutWizardProgressCommand,
   CheckoutWizardStartCommand,
-  CheckoutWizardStartResult,
+  CheckoutWizardState,
   CompletePropertyActivationCommand,
   ComplianceActivationCompleteResult,
   ComplianceActivationResult,
@@ -88,16 +89,28 @@ export async function fetchComplianceSummary(): Promise<ComplianceSummaryResult>
 /**
  * Opens the check-out wizard (same rules as `POST /bookings/:id/check-out`, CO-08). `registerArrival` confirms that the
  * guest arrived: a confirmed booking whose arrival was never registered is checked in first ("registra arrivo e
- * procedi"); without it the API answers 409 `booking_arrival_not_registered`.
+ * procedi"); without it the API answers 409 `booking_arrival_not_registered`. Answers the 5 steps with the progress
+ * saved (CO-17).
  */
 export async function startCheckoutWizard(
   bookingId: string,
   payload: CheckoutWizardStartCommand = {},
-): Promise<CheckoutWizardStartResult> {
-  const { data } = await axios.post<CheckoutWizardStartResult>(
-    `/bookings/${bookingId}/checkout-wizard/start`,
-    payload,
-  );
+): Promise<CheckoutWizardState> {
+  const { data } = await axios.post<CheckoutWizardState>(`/bookings/${bookingId}/checkout-wizard/start`, payload);
+  return data;
+}
+
+/** The wizard of a stay without any change: after the check-out, what was declared (CO-17). */
+export async function fetchCheckoutWizard(bookingId: string): Promise<CheckoutWizardState> {
+  return ApiClient.get<CheckoutWizardState>(`/bookings/${bookingId}/checkout-wizard`);
+}
+
+/** Saves the step the host is on and the answers given so far; nothing is created until the completion (CO-17). */
+export async function saveCheckoutProgress(
+  bookingId: string,
+  payload: CheckoutWizardProgressCommand,
+): Promise<CheckoutWizardState> {
+  const { data } = await axios.put<CheckoutWizardState>(`/bookings/${bookingId}/checkout-wizard/progress`, payload);
   return data;
 }
 
@@ -109,5 +122,13 @@ export async function completeCheckoutWizard(
     `/bookings/${bookingId}/checkout-wizard/complete`,
     payload,
   );
+  return data;
+}
+
+/** The host declares ready the property of a stay already checked out (turnover of the cockpit, CO-17). */
+export async function confirmPropertyReady(bookingId: string, notes: string | null): Promise<CheckoutWizardState> {
+  const { data } = await axios.post<CheckoutWizardState>(`/bookings/${bookingId}/checkout-wizard/property-ready`, {
+    notes,
+  });
   return data;
 }
