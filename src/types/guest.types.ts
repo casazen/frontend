@@ -31,7 +31,8 @@ export interface Guest {
   nationality: string;
   gender?: Gender;
   documentType?: DocumentType;
-  documentNumber: string;
+  /** Masked as `*****` plus the last 3 characters (CO-14); the full number only from `guestsApi.getDocumentNumber`. */
+  documentNumberMasked: string | null;
   documentIssueDate?: Date | string;
   documentExpiryDate?: Date | string;
   documentIssuingCountry: string;
@@ -57,6 +58,12 @@ export interface Guest {
 
   createdAt: Date | string;
   updatedAt: Date | string;
+}
+
+/** Full document number of a guest (GET /api/guests/{id}/document-number, audited). */
+export interface GuestDocumentNumber {
+  guestId: string;
+  documentNumber: string;
 }
 
 export interface GuestListParams {

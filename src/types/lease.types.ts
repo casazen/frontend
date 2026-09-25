@@ -28,6 +28,8 @@ export const LEASE_EVENT_TYPES = [
   'RliExported',
   'DeadlineReminderSent',
   'StipulaDeclared',
+  'QuesturaCommunicationMarkedDone',
+  'PropertyDeliveryDateDeclared',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
@@ -372,6 +374,34 @@ export interface RliChecklist {
   /** Provider filing exists (backend flag `RliProvider` on and a configured provider); otherwise manual only. */
   providerFilingAvailable: boolean;
   items: RliChecklistItem[];
+  /** Questura communication for an extra-EU tenant (LT-07); null or absent when no tenant is extra-EU. */
+  questura?: QuesturaCommunicationStatus | null;
+}
+
+/**
+ * Communication to the public-security authority for an extra-EU tenant (art. 7 D.Lgs. 286/1998, LT-07): within 48
+ * hours of the delivery of the property. Dates are date-only values (UTC midnight of the Rome date).
+ */
+export interface QuesturaCommunicationStatus {
+  /** Delivery of the property: the declared date, or the start date of the lease when none was declared. */
+  deliveryDate: string;
+  /** False while `deliveryDate` is the start date used by default. */
+  deliveryDateDeclared: boolean;
+  /** The day the 48 hours from the delivery end at the latest (delivery + 2 days). */
+  deadline: string;
+  /** Days to `deadline` on the Rome calendar: 0 on that day, negative once passed. */
+  daysRemaining: number;
+  /** Date of the communication declared by the landlord; null until the explicit declaration. */
+  communicationDate: string | null;
+  /** A receipt was uploaded with the declaration (download through the API). */
+  hasReceipt: boolean;
+}
+
+/** `POST /leases/:id/rli/questura/mark-done` (multipart): the date it was sent and, optionally, the receipt PDF. */
+export interface QuesturaCommunicationInput {
+  /** `YYYY-MM-DD`, not later than today in Europe/Rome. */
+  communicationDate: string;
+  receipt?: File | null;
 }
 
 export interface TriggerRegistrationRequest {

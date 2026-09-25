@@ -5,6 +5,8 @@ import type {
   SupplierAvailabilityResponse,
   SupplierDashboard,
   SupplierInboxResponse,
+  SupplierKpiPeriod,
+  SupplierKpis,
   SupplierProfile,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
@@ -144,6 +146,11 @@ export async function fetchSupplierRegistrationOptions(): Promise<SupplierRegist
 
 export async function fetchSupplierDashboard(): Promise<SupplierDashboard> {
   return ApiClient.get<SupplierDashboard>('/supplier/dashboard');
+}
+
+/** Service-request KPIs of the supplier org for a Europe/Rome period (SU-11). */
+export async function fetchSupplierKpis(period: SupplierKpiPeriod): Promise<SupplierKpis> {
+  return ApiClient.get<SupplierKpis>('/supplier/dashboard/kpis', { period });
 }
 
 export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {

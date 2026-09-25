@@ -7,6 +7,7 @@ import {
   fetchSupplierAvailability,
   fetchSupplierDashboard,
   fetchSupplierInbox,
+  fetchSupplierKpis,
   fetchSupplierProfile,
   fetchSupplierRegistrationOptions,
   inviteSupplier,
@@ -19,7 +20,7 @@ import {
   uploadSupplierPhotos,
 } from '@/services/supplier-api';
 import type { SupplierRegisterPayload } from '@/services/supplier-api';
-import type { CalendarSyncStatus, UpdateAvailabilityEntry } from '@/types/supplier';
+import type { CalendarSyncStatus, SupplierKpiPeriod, UpdateAvailabilityEntry } from '@/types/supplier';
 
 /**
  * Light polling while the supplier's calendar is syncing (its job is queued, SU-15): every few seconds during the first
@@ -160,6 +161,14 @@ export function useSupplierDashboard() {
   return useQuery({
     queryKey: ['supplier', 'dashboard'],
     queryFn: fetchSupplierDashboard,
+  });
+}
+
+/** Service-request KPIs of the supplier for `period` (SU-11). */
+export function useSupplierKpis(period: SupplierKpiPeriod) {
+  return useQuery({
+    queryKey: ['supplier', 'dashboard', 'kpis', period],
+    queryFn: () => fetchSupplierKpis(period),
   });
 }
 

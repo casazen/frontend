@@ -5,6 +5,7 @@ import type {
   CreateLeaseDto,
   ManualRegistrationInput,
   OfflineSignatureInput,
+  QuesturaCommunicationInput,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -182,6 +183,40 @@ export function useExportRli() {
     mutationFn: (id: string) => leasesApi.exportRli(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id, 'rli'] });
+    },
+  });
+}
+
+/** LT-07: delivery date of the property, from which the 48 hours of the Questura communication count. */
+export function useDeclareQuesturaDeliveryDate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, deliveryDate }: { id: string; deliveryDate: string | null }) =>
+      leasesApi.declareQuesturaDeliveryDate(id, deliveryDate),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+      toast.success(i18n.t('toast.questuraDeliveryDateSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.questuraDeliveryDateFailed'));
+    },
+  });
+}
+
+/** LT-07: the landlord declares the Questura communication (date and optional receipt): only this ticks the item. */
+export function useMarkQuesturaCommunicationDone() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: QuesturaCommunicationInput }) =>
+      leasesApi.markQuesturaCommunicationDone(id, input),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+      toast.success(i18n.t('toast.questuraMarkedDone'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.questuraMarkDoneFailed'));
     },
   });
 }
