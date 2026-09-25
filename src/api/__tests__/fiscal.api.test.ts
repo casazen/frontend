@@ -41,4 +41,25 @@ describe('fiscalApi contract (#3)', () => {
       isPrimaryForCedolare: true,
     });
   });
+
+  it('assignRegime sends the IRPEF ordinaria regime (CO-18)', async () => {
+    vi.mocked(ApiClient.put).mockResolvedValueOnce({
+      propertyId: 'p1',
+      name: 'Casa',
+      recommendedRegime: 'CedolareSecca21',
+      assignedRegime: 'IrpefOrdinaria',
+      isPrimaryForCedolare: false,
+      shortStayInTaxYear: true,
+      taxpayerIndex: 0,
+      cedolareRate: null,
+      taxNote: 'irpef_ordinaria_not_computed',
+    });
+
+    await fiscalApi.assignRegime('p1', { taxYear: 2026, regime: 'IrpefOrdinaria' });
+
+    expect(ApiClient.put).toHaveBeenCalledWith('/fiscal/properties/p1/regime', {
+      taxYear: 2026,
+      regime: 'IrpefOrdinaria',
+    });
+  });
 });

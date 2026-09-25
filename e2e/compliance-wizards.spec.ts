@@ -115,7 +115,7 @@ test.describe('Compliance wizards (#295)', () => {
           pricingAdapterSummary: {
             isEnabled: false,
             lastAdaptedAt: null,
-            nextScheduledRunAt: null,
+            nextRunOn: null,
           },
         }),
       });

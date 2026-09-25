@@ -1382,7 +1382,7 @@
       "notFoundDescription": "La proprietà che stai cercando non esiste.",
       "tabs": {
         "info": "Info & Foto",
-        "pricing": "Prezzi AI",
+        "pricing": "Suggerimenti stagionali",
         "ota": "Canali OTA",
         "ical": "Calendari iCal",
         "documents": "Documenti",
@@ -1404,9 +1404,9 @@
       "documentsCount_other": "{{count}} caricati",
       "yes": "Sì",
       "no": "No",
-      "pricingTitle": "Prezzi AI",
-      "pricingDescription": "Configura l'adattatore AI per la tariffazione dinamica di questa proprietà.",
-      "managePricing": "Gestisci prezzi AI",
+      "pricingTitle": "Suggerimenti stagionali",
+      "pricingDescription": "Prezzi suggeriti per notte in base al prezzo della struttura e alle tue regole su stagioni e festività. Sono proposte: non cambiano i prezzi applicati.",
+      "managePricing": "Gestisci i suggerimenti",
       "viewOnPublicSite": "Vedi sul sito pubblico",
       "publicSiteHint": "Anteprima di come gli ospiti vedono questa struttura sul sito di prenotazione diretta.",
       "newBooking": "Nuova prenotazione"
@@ -1486,12 +1486,12 @@
       "nextCheckIn": "Prossimo check-in"
     },
     "pricing": {
-      "title": "Prezzi AI",
+      "title": "Suggerimenti stagionali",
       "on": "ON",
       "off": "OFF",
-      "lastAdaptation": "Ultimo adattamento",
-      "nextRun": "Prossima esecuzione",
-      "manage": "Gestisci prezzi AI"
+      "lastAdaptation": "Ultimo calcolo",
+      "nextRun": "Prossimo aggiornamento",
+      "manage": "Gestisci i suggerimenti"
     },
     "edit": {
       "loading": "Caricamento proprietà...",
@@ -1638,73 +1638,82 @@
   },
   "pricing": {
     "dashboard": {
-      "title": "AI Dynamic Pricing",
-      "description": "Gestisci l'adattamento automatico dei prezzi e visualizza le tariffe suggerite dall'AI.",
-      "loading": "Caricamento configurazione prezzi...",
-      "disabledTitle": "AI pricing disattivato",
-      "disabledDescription": "Attiva il pricing dinamico AI per vedere l'anteprima dei prezzi a 90 giorni e lasciare che il motore ottimizzi automaticamente le tue tariffe notturne.",
-      "noPreview": "Nessuna anteprima disponibile",
-      "noPreviewDescription": "Esegui una sincronizzazione prezzi per generare la prima anteprima a 90 giorni.",
-      "historyTitle": "Cronologia adattamenti",
-      "fullHistory": "Cronologia completa",
-      "from": "Da",
-      "to": "A"
-    },
-    "history": {
-      "title": "Registro prezzi",
-      "description": "Cronologia completa degli adattamenti di prezzo AI per conformità e revisione.",
-      "backLabel": "Torna ai prezzi",
-      "exportCsv": "Esporta CSV",
-      "exporting": "Esportazione...",
-      "exportError": "Impossibile esportare la cronologia prezzi",
-      "from": "Da",
-      "to": "A"
+      "title": "Suggerimenti stagionali",
+      "description": "Prezzi suggeriti per le prossime notti, calcolati dal prezzo per notte della struttura con regole stagionali che scegli tu.",
+      "loading": "Caricamento dei suggerimenti stagionali...",
+      "disabledTitle": "Suggerimenti stagionali disattivati",
+      "disabledDescription": "Attivali per vedere, per i prossimi 90 giorni, il prezzo suggerito per ogni notte in base alle tue regole su stagioni e festività.",
+      "noSuggestions": "Nessun suggerimento calcolato",
+      "noSuggestionsDescription": "I suggerimenti non sono ancora stati calcolati. Ricalcolali ora oppure attendi il prossimo aggiornamento automatico.",
+      "basePriceMissingTitle": "Manca il prezzo per notte",
+      "basePriceMissingDescription": "I suggerimenti partono dal prezzo per notte della struttura, che non è ancora impostato. Impostalo nella scheda della struttura.",
+      "editProperty": "Modifica la struttura",
+      "configLoadError": "Impossibile caricare la configurazione dei suggerimenti.",
+      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali.",
+      "retry": "Riprova"
     },
     "config": {
-      "title": "AI Dynamic Pricing",
-      "active": "Attivo",
-      "disabled": "Disattivato",
-      "enableLabel": "Attiva AI pricing",
-      "enableDescription": "Regola automaticamente le tariffe notturne in base a domanda, stagione ed eventi locali.",
-      "frequencyLabel": "Frequenza di adattamento",
-      "daily": "Giornaliera",
-      "weekly": "Settimanale",
-      "factorsLabel": "Fattori di prezzo",
-      "includeSeasonality": "Includi stagionalità",
-      "includePublicHolidays": "Includi festività",
-      "lastRun": "Ultima esecuzione",
-      "nextRun": "Prossima esecuzione",
+      "title": "Suggerimenti stagionali",
+      "active": "Attivi",
+      "disabled": "Disattivati",
+      "enableLabel": "Attiva i suggerimenti stagionali",
+      "enableDescription": "Calcola un prezzo suggerito per ogni notte partendo dal prezzo per notte della struttura e dalle tue regole. Non modifica i prezzi applicati.",
+      "frequencyLabel": "Aggiornamento dei suggerimenti",
+      "daily": "Ogni giorno",
+      "weekly": "Ogni settimana",
+      "rulesLabel": "Regole",
+      "exampleRuleNote": "La regola iniziale è un esempio (estate +30%, inverno −20%, festività nazionali +50%): modificala in base alla tua struttura.",
+      "includeSeasonality": "Stagioni (mesi)",
+      "highSeason": "Alta stagione",
+      "lowSeason": "Bassa stagione",
+      "multiplier": "Moltiplicatore",
+      "multiplierInvalid": "Inserisci un moltiplicatore tra {{min}} e {{max}}.",
+      "includePublicHolidays": "Festività nazionali italiane",
+      "holidaysHint": "Capodanno, Epifania, Pasqua, Pasquetta, 25 aprile, 1° maggio, 2 giugno, Ferragosto, 4 ottobre (dal 2026), Ognissanti, Immacolata, Natale e Santo Stefano. Nessun evento locale. Un giorno festivo prevale sulla stagione.",
+      "lastRun": "Ultimo calcolo",
+      "nextRun": "Prossimo aggiornamento",
+      "nextNightlyRun": "Alla prossima esecuzione notturna",
       "saving": "Salvataggio...",
-      "save": "Salva configurazione",
-      "syncing": "Sincronizzazione...",
-      "syncNow": "Avvia sync ora"
+      "save": "Salva regole",
+      "recalculating": "Calcolo in corso...",
+      "recalculateNow": "Ricalcola ora"
     },
-    "preview": {
-      "title": "Anteprima prezzi 90 giorni",
-      "details": "Dettaglio prezzi",
+    "suggestions": {
+      "basePriceLabel": "Prezzo base:",
+      "perNight": "a notte",
+      "basePriceHint": "È il prezzo per notte della struttura: preventivi e prenotazioni usano questo prezzo.",
+      "readOnlyNotice": "I suggerimenti sono proposte in sola lettura: CasaZen non gestisce ancora prezzi diversi per data, quindi non vengono applicati a preventivi e prenotazioni. Per cambiare il prezzo modifica il prezzo per notte della struttura.",
+      "baseChanged": "Il prezzo per notte è cambiato dopo l'ultimo calcolo ({{computed}} → {{current}}): ricalcola i suggerimenti.",
+      "computedAt": "Calcolati il {{date}}",
+      "chartTitle_one": "Prezzo suggerito per {{count}} notte",
+      "chartTitle_other": "Prezzi suggeriti per {{count}} notti",
+      "details": "Dettaglio per data",
       "date": "Data",
-      "base": "Base",
-      "aiPrice": "Prezzo AI",
+      "base": "Prezzo base",
+      "suggested": "Suggerito",
       "delta": "Δ",
-      "reason": "Motivazione",
-      "tooltip": {
-        "aiPrice": "Prezzo AI",
-        "basePrice": "Prezzo base",
-        "date": "Data:"
-      }
+      "rule": "Regola applicata"
     },
-    "historyTable": {
-      "empty": "Nessuna cronologia di adattamento prezzi trovata.",
-      "date": "Data",
-      "prevPrice": "Prezzo prec.",
-      "newPrice": "Nuovo prezzo",
-      "reason": "Motivazione",
-      "confidence": "Confidenza",
-      "otaStatus": "Stato OTA",
-      "pagination": "Pagina {{page}} di {{totalPages}} ({{total}} voci)",
-      "prevPage": "Pagina precedente",
-      "nextPage": "Pagina successiva",
-      "delta": "Δ%"
+    "rules": {
+      "none": "Nessuna regola (prezzo base)",
+      "highSeason": "Alta stagione {{multiplier}}",
+      "lowSeason": "Bassa stagione {{multiplier}}",
+      "holiday": "Festività: {{holiday}} {{multiplier}}"
+    },
+    "holidays": {
+      "NewYear": "Capodanno",
+      "Epiphany": "Epifania",
+      "EasterSunday": "Pasqua",
+      "EasterMonday": "Lunedì dell'Angelo (Pasquetta)",
+      "Liberation": "Festa della Liberazione",
+      "Labour": "Festa del Lavoro",
+      "Republic": "Festa della Repubblica",
+      "Assumption": "Ferragosto",
+      "SaintFrancis": "San Francesco d'Assisi",
+      "AllSaints": "Ognissanti",
+      "ImmaculateConception": "Immacolata Concezione",
+      "Christmas": "Natale",
+      "SaintStephen": "Santo Stefano"
     }
   },
   "serviceRequest": {
@@ -2702,6 +2711,7 @@
     "pageDescription": "Gestione codici identificativi nazionali — D.L. 145/2023",
     "requestOnPortal": "Richiedi il CIN sul portale",
     "bdsrPortal": "BDSR — Ministero del Turismo",
+    "loadError": "Impossibile caricare lo stato dei CIN. Riprova più tardi.",
     "status": {
       "Valid": "Valido",
       "Missing": "Mancante",
@@ -2711,7 +2721,11 @@
       "valid": "Validi",
       "missing": "Mancanti",
       "invalid": "Non validi",
-      "daysUntilDeadline": "Giorni alla scadenza"
+      "deadline": "Scadenza del {{deadline}}",
+      "daysLeft_one": "Manca {{count}} giorno",
+      "daysLeft_other": "Mancano {{count}} giorni",
+      "dueToday": "Oggi",
+      "passed": "Superata"
     },
     "table": {
       "empty": "Nessuna proprietà trovata.",
@@ -2725,10 +2739,12 @@
       "title": "Conformità CIN richiesta (D.L. 145/2023)",
       "nonCompliantCount_one": "Hai {{count}} proprietà senza CIN valido.",
       "nonCompliantCount_other": "Hai {{count}} proprietà senza CIN valido.",
-      "deadlineToday": "La scadenza è oggi.",
       "daysUntilDeadline_one": "Manca {{count}} giorno alla scadenza del {{deadline}}.",
       "daysUntilDeadline_other": "Mancano {{count}} giorni alla scadenza del {{deadline}}.",
-      "penalties": "Sanzioni da €800 a €8.000 per immobile.",
+      "deadlineToday": "La scadenza del {{deadline}} è oggi.",
+      "deadlinePassed": "La scadenza del {{deadline}} è superata: inserisci il CIN al più presto.",
+      "obligation": "Il CIN è obbligatorio: va esposto all'esterno dell'immobile e indicato in ogni annuncio.",
+      "penalties": "Sanzioni (art. 13-ter, c. 9): da €800 a €8.000 per l'assenza del CIN, da €500 a €5.000 per la mancata esposizione o indicazione negli annunci.",
       "requestOnBdsr": "Richiedi il CIN su BDSR"
     }
   },
@@ -3510,7 +3526,7 @@
     "revenue": "Fatturato",
     "profile": "Profilo",
     "settings": "Impostazioni",
-    "pricing": "Prezzi AI",
+    "pricing": "Suggerimenti stagionali",
     "history": "Storico",
     "taxRates": "Tassa di Soggiorno",
     "create": "Nuovo",
@@ -3902,12 +3918,10 @@
     "otaPricingUpdateFailed": "Impossibile aggiornare i prezzi OTA",
     "otaCredentialsValidated": "Credenziali OTA validate con successo",
     "otaCredentialsValidationFailed": "Validazione credenziali OTA fallita",
-    "pricingConfigSaved": "Configurazione prezzi salvata con successo",
-    "pricingConfigSaveFailed": "Impossibile salvare la configurazione prezzi",
-    "pricingDisabled": "Pricing AI disattivato con successo",
-    "pricingDisableFailed": "Impossibile disattivare il pricing AI",
-    "pricingSyncStarted": "Sync prezzi avviato con successo",
-    "pricingSyncFailed": "Sync prezzi fallito",
+    "pricingConfigSaved": "Regole dei suggerimenti salvate",
+    "pricingConfigSaveFailed": "Impossibile salvare le regole dei suggerimenti",
+    "pricingDisabled": "Suggerimenti stagionali disattivati",
+    "pricingDisableFailed": "Impossibile disattivare i suggerimenti stagionali",
     "leaseDraftCreated": "Bozza contratto creata con successo",
     "leaseCreateFailed": "Impossibile creare il contratto",
     "signingInitiateFailed": "Impossibile avviare la firma",
@@ -3961,6 +3975,9 @@
     "offlineSignatureFailed": "Impossibile salvare il contratto firmato",
     "stipulaDeclared": "Data di stipula salvata",
     "stipulaDeclareFailed": "Impossibile salvare la data di stipula",
+    "pricingRecalculated": "Suggerimenti ricalcolati",
+    "pricingRecalculateFailed": "Impossibile ricalcolare i suggerimenti",
+    "pricingBasePriceMissing": "Imposta il prezzo per notte della struttura per ottenere i suggerimenti",
     "cadastralSaved": "Dati catastali salvati",
     "cadastralSaveFailed": "Impossibile salvare i dati catastali",
     "apeIdentificationSaved": "Estremi dell'APE salvati",
@@ -3978,9 +3995,9 @@
     "loading": "Caricamento…",
     "recommended": "Raccomandato",
     "assigned": "Assegnato",
-    "primary": "Designa come primo immobile (21%)",
+    "primary": "Designa come unità al 21%",
     "alert": {
-      "piva": "P.IVA obbligatoria dal terzo immobile STR.",
+      "piva": "Almeno un contribuente destina alla locazione breve più di {{max}} appartamenti nell'anno: si presume attività d'impresa, con partita IVA. Verifica il regime con il tuo commercialista.",
       "wizard": "Apri la procedura guidata"
     },
     "wizard": {
@@ -3997,8 +4014,21 @@
       "link": "Apri i report",
       "totals": "Lordo {{gross}} € — netto {{net}} €"
     },
-    "count_one": "{{count}} immobile STR attivo nel {{year}}",
-    "count_other": "{{count}} immobili STR attivi nel {{year}}"
+    "regime": {
+      "CedolareSecca21": "Cedolare secca 21% (unità designata)",
+      "CedolareSecca26": "Cedolare secca 26%",
+      "RegimeOrdinario": "Impresa, regime ordinario (partita IVA)",
+      "RegimeForfettario": "Impresa, regime forfettario (partita IVA)",
+      "IrpefOrdinaria": "IRPEF ordinaria senza partita IVA"
+    },
+    "chooseIrpef": "Scegli IRPEF ordinaria (senza partita IVA)",
+    "assignFailed": "Impossibile assegnare il regime fiscale",
+    "taxNote": {
+      "irpefOrdinariaNotComputed": "IRPEF ordinaria senza partita IVA: CasaZen non calcola l'imposta, il calcolo è a carico del contribuente o del commercialista.",
+      "thresholdExceeded": "Il titolare supera la soglia degli affitti brevi: attività d'impresa presunta, niente cedolare secca. Verifica con il tuo commercialista."
+    },
+    "count_one": "{{count}} immobile con affitti brevi nel {{year}}",
+    "count_other": "{{count}} immobili con affitti brevi nel {{year}}"
   },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
@@ -4126,6 +4156,7 @@
       "checkinLinkBookingNotEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
       "checkinAlreadyCompleted": "L'ospite ha già completato il check-in: correggi i dati nella scheda Alloggiati.",
       "guestDocumentScanMissing": "Nessuna scansione del documento disponibile per questo ospite.",
+      "pricingSuggestionsNotEnabled": "Attiva i suggerimenti stagionali prima di ricalcolarli.",
       "serviceRequestBookingRequired": "Negli affitti brevi la richiesta al fornitore è legata a un soggiorno: scegli la prenotazione.",
       "serviceRequestBookingMismatch": "La prenotazione indicata non è un soggiorno di questo immobile.",
       "serviceRequestBookingNotAllowed": "Negli affitti lunghi la richiesta al fornitore è legata all'immobile, non a una prenotazione.",

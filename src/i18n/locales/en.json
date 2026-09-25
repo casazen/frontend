@@ -1382,7 +1382,7 @@
       "notFoundDescription": "The property you are looking for does not exist.",
       "tabs": {
         "info": "Info & Photos",
-        "pricing": "AI Pricing",
+        "pricing": "Seasonal suggestions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
         "documents": "Documents",
@@ -1404,9 +1404,9 @@
       "documentsCount_other": "{{count}} uploaded",
       "yes": "Yes",
       "no": "No",
-      "pricingTitle": "AI Pricing",
-      "pricingDescription": "Configure the AI adapter for dynamic pricing for this property.",
-      "managePricing": "Manage AI pricing",
+      "pricingTitle": "Seasonal suggestions",
+      "pricingDescription": "Suggested nightly prices based on the property's rate and your season and holiday rules. They are proposals: they do not change the prices applied.",
+      "managePricing": "Manage suggestions",
       "viewOnPublicSite": "View on public site",
       "publicSiteHint": "Preview how guests see this property on your direct booking site.",
       "newBooking": "New booking"
@@ -1486,12 +1486,12 @@
       "nextCheckIn": "Next check-in"
     },
     "pricing": {
-      "title": "AI Pricing",
+      "title": "Seasonal suggestions",
       "on": "ON",
       "off": "OFF",
-      "lastAdaptation": "Last adaptation",
-      "nextRun": "Next run",
-      "manage": "Manage AI pricing"
+      "lastAdaptation": "Last computed",
+      "nextRun": "Next update",
+      "manage": "Manage suggestions"
     },
     "edit": {
       "loading": "Loading property...",
@@ -1638,73 +1638,82 @@
   },
   "pricing": {
     "dashboard": {
-      "title": "AI Dynamic Pricing",
-      "description": "Manage automated price adaptation and preview AI-suggested rates.",
-      "loading": "Loading pricing configuration...",
-      "disabledTitle": "AI pricing is disabled",
-      "disabledDescription": "Enable AI dynamic pricing to see the 90-day price preview and let the engine optimise your nightly rates automatically.",
-      "noPreview": "No preview available",
-      "noPreviewDescription": "Run a pricing sync to generate the first 90-day price preview.",
-      "historyTitle": "Price Adaptation History",
-      "fullHistory": "Full History",
-      "from": "From",
-      "to": "To"
-    },
-    "history": {
-      "title": "Pricing Audit Trail",
-      "description": "Full history of AI-driven price adaptations for compliance and review.",
-      "backLabel": "Back to pricing",
-      "exportCsv": "Export CSV",
-      "exporting": "Exporting...",
-      "exportError": "Failed to export pricing history",
-      "from": "From",
-      "to": "To"
+      "title": "Seasonal suggestions",
+      "description": "Suggested prices for the coming nights, computed from the property's nightly rate with seasonal rules you choose.",
+      "loading": "Loading seasonal suggestions...",
+      "disabledTitle": "Seasonal suggestions are off",
+      "disabledDescription": "Turn them on to see, for the next 90 days, the suggested price of every night based on your season and holiday rules.",
+      "noSuggestions": "No suggestions computed",
+      "noSuggestionsDescription": "The suggestions have not been computed yet. Recalculate them now or wait for the next automatic update.",
+      "basePriceMissingTitle": "Nightly rate missing",
+      "basePriceMissingDescription": "Suggestions start from the property's nightly rate, which is not set yet. Set it in the property details.",
+      "editProperty": "Edit property",
+      "configLoadError": "Could not load the suggestions settings.",
+      "suggestionsLoadError": "Could not load the seasonal suggestions.",
+      "retry": "Retry"
     },
     "config": {
-      "title": "AI Dynamic Pricing",
-      "active": "Active",
-      "disabled": "Disabled",
-      "enableLabel": "Enable AI pricing",
-      "enableDescription": "Automatically adjusts nightly rates based on demand, season, and local events.",
-      "frequencyLabel": "Adaptation frequency",
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "factorsLabel": "Pricing factors",
-      "includeSeasonality": "Include seasonality",
-      "includePublicHolidays": "Include public holidays",
-      "lastRun": "Last run",
-      "nextRun": "Next run",
+      "title": "Seasonal suggestions",
+      "active": "On",
+      "disabled": "Off",
+      "enableLabel": "Turn on seasonal suggestions",
+      "enableDescription": "Computes a suggested price for every night from the property's nightly rate and your rules. It does not change the prices applied.",
+      "frequencyLabel": "Suggestions update",
+      "daily": "Every day",
+      "weekly": "Every week",
+      "rulesLabel": "Rules",
+      "exampleRuleNote": "The starting rule is an example (summer +30%, winter −20%, national holidays +50%): adapt it to your property.",
+      "includeSeasonality": "Seasons (months)",
+      "highSeason": "High season",
+      "lowSeason": "Low season",
+      "multiplier": "Multiplier",
+      "multiplierInvalid": "Enter a multiplier between {{min}} and {{max}}.",
+      "includePublicHolidays": "Italian national holidays",
+      "holidaysHint": "New Year's Day, Epiphany, Easter, Easter Monday, 25 April, 1 May, 2 June, Ferragosto, 4 October (from 2026), All Saints, Immaculate Conception, Christmas and Saint Stephen's Day. No local events. A holiday takes precedence over the season.",
+      "lastRun": "Last computed",
+      "nextRun": "Next update",
+      "nextNightlyRun": "At the next nightly run",
       "saving": "Saving...",
-      "save": "Save configuration",
-      "syncing": "Syncing...",
-      "syncNow": "Run sync now"
+      "save": "Save rules",
+      "recalculating": "Computing...",
+      "recalculateNow": "Recalculate now"
     },
-    "preview": {
-      "title": "90-Day Price Preview",
-      "details": "Price Details",
+    "suggestions": {
+      "basePriceLabel": "Base price:",
+      "perNight": "per night",
+      "basePriceHint": "This is the property's nightly rate: quotes and bookings use this price.",
+      "readOnlyNotice": "Suggestions are read-only proposals: CasaZen does not handle different prices per date yet, so they are not applied to quotes and bookings. To change the price, edit the property's nightly rate.",
+      "baseChanged": "The nightly rate changed after the last computation ({{computed}} → {{current}}): recalculate the suggestions.",
+      "computedAt": "Computed on {{date}}",
+      "chartTitle_one": "Suggested price for {{count}} night",
+      "chartTitle_other": "Suggested prices for {{count}} nights",
+      "details": "Details by date",
       "date": "Date",
-      "base": "Base",
-      "aiPrice": "AI Price",
+      "base": "Base price",
+      "suggested": "Suggested",
       "delta": "Δ",
-      "reason": "Reason",
-      "tooltip": {
-        "aiPrice": "AI price",
-        "basePrice": "Base price",
-        "date": "Date:"
-      }
+      "rule": "Rule applied"
     },
-    "historyTable": {
-      "empty": "No price adaptation history found.",
-      "date": "Date",
-      "prevPrice": "Prev Price",
-      "newPrice": "New Price",
-      "reason": "Reason",
-      "confidence": "Confidence",
-      "otaStatus": "OTA Status",
-      "pagination": "Page {{page}} of {{totalPages}} ({{total}} entries)",
-      "prevPage": "Previous page",
-      "nextPage": "Next page",
-      "delta": "Δ%"
+    "rules": {
+      "none": "No rule (base price)",
+      "highSeason": "High season {{multiplier}}",
+      "lowSeason": "Low season {{multiplier}}",
+      "holiday": "Holiday: {{holiday}} {{multiplier}}"
+    },
+    "holidays": {
+      "NewYear": "New Year's Day",
+      "Epiphany": "Epiphany",
+      "EasterSunday": "Easter Sunday",
+      "EasterMonday": "Easter Monday",
+      "Liberation": "Liberation Day",
+      "Labour": "Labour Day",
+      "Republic": "Republic Day",
+      "Assumption": "Assumption Day (Ferragosto)",
+      "SaintFrancis": "Saint Francis of Assisi",
+      "AllSaints": "All Saints' Day",
+      "ImmaculateConception": "Immaculate Conception",
+      "Christmas": "Christmas Day",
+      "SaintStephen": "Saint Stephen's Day"
     }
   },
   "serviceRequest": {
@@ -2702,6 +2711,7 @@
     "pageDescription": "National identification code management — D.L. 145/2023",
     "requestOnPortal": "Request CIN on the portal",
     "bdsrPortal": "BDSR — Ministry of Tourism",
+    "loadError": "Could not load the CIN status. Please try again later.",
     "status": {
       "Valid": "Valid",
       "Missing": "Missing",
@@ -2711,7 +2721,11 @@
       "valid": "Valid",
       "missing": "Missing",
       "invalid": "Invalid",
-      "daysUntilDeadline": "Days until deadline"
+      "deadline": "Deadline {{deadline}}",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "dueToday": "Today",
+      "passed": "Passed"
     },
     "table": {
       "empty": "No properties found.",
@@ -2725,10 +2739,12 @@
       "title": "CIN compliance required (D.L. 145/2023)",
       "nonCompliantCount_one": "You have {{count}} property without a valid CIN.",
       "nonCompliantCount_other": "You have {{count}} properties without a valid CIN.",
-      "deadlineToday": "The deadline is today.",
       "daysUntilDeadline_one": "{{count}} day left until the {{deadline}} deadline.",
       "daysUntilDeadline_other": "{{count}} days left until the {{deadline}} deadline.",
-      "penalties": "Penalties from €800 to €8,000 per property.",
+      "deadlineToday": "The {{deadline}} deadline is today.",
+      "deadlinePassed": "The {{deadline}} deadline has passed: enter the CIN as soon as possible.",
+      "obligation": "The CIN is mandatory: it must be displayed outside the property and stated in every listing.",
+      "penalties": "Penalties (art. 13-ter, par. 9): €800 to €8,000 for a missing CIN, €500 to €5,000 for not displaying it or not stating it in listings.",
       "requestOnBdsr": "Request the CIN on BDSR"
     }
   },
@@ -3510,7 +3526,7 @@
     "revenue": "Revenue",
     "profile": "Profile",
     "settings": "Settings",
-    "pricing": "AI Pricing",
+    "pricing": "Seasonal suggestions",
     "history": "History",
     "taxRates": "Tourist Tax",
     "create": "New",
@@ -3902,12 +3918,10 @@
     "otaPricingUpdateFailed": "Failed to update OTA pricing",
     "otaCredentialsValidated": "OTA credentials validated successfully",
     "otaCredentialsValidationFailed": "OTA credentials validation failed",
-    "pricingConfigSaved": "Pricing configuration saved successfully",
-    "pricingConfigSaveFailed": "Failed to save pricing configuration",
-    "pricingDisabled": "AI pricing disabled successfully",
-    "pricingDisableFailed": "Failed to disable AI pricing",
-    "pricingSyncStarted": "Pricing sync started successfully",
-    "pricingSyncFailed": "Pricing sync failed",
+    "pricingConfigSaved": "Suggestion rules saved",
+    "pricingConfigSaveFailed": "Could not save the suggestion rules",
+    "pricingDisabled": "Seasonal suggestions turned off",
+    "pricingDisableFailed": "Could not turn off the seasonal suggestions",
     "leaseDraftCreated": "Lease draft created successfully",
     "leaseCreateFailed": "Failed to create lease",
     "signingInitiateFailed": "Failed to initiate signing",
@@ -3961,6 +3975,9 @@
     "offlineSignatureFailed": "Could not save the signed contract",
     "stipulaDeclared": "Signing date saved",
     "stipulaDeclareFailed": "Could not save the signing date",
+    "pricingRecalculated": "Suggestions recalculated",
+    "pricingRecalculateFailed": "Could not recalculate the suggestions",
+    "pricingBasePriceMissing": "Set the property's nightly rate to get suggestions",
     "cadastralSaved": "Cadastral data saved",
     "cadastralSaveFailed": "Could not save the cadastral data",
     "apeIdentificationSaved": "APE details saved",
@@ -3978,9 +3995,9 @@
     "loading": "Loading…",
     "recommended": "Recommended",
     "assigned": "Assigned",
-    "primary": "Set as primary property (21%)",
+    "primary": "Designate as the 21% unit",
     "alert": {
-      "piva": "VAT number required from the third STR property.",
+      "piva": "At least one taxpayer lets more than {{max}} apartments short-term this year: a business activity with a VAT number is presumed. Check the regime with your accountant.",
       "wizard": "Open the wizard"
     },
     "wizard": {
@@ -3997,8 +4014,21 @@
       "link": "Open reports",
       "totals": "Gross {{gross}} EUR — net {{net}} EUR"
     },
-    "count_one": "{{count}} active STR property in {{year}}",
-    "count_other": "{{count}} active STR properties in {{year}}"
+    "regime": {
+      "CedolareSecca21": "Cedolare secca flat tax 21% (designated unit)",
+      "CedolareSecca26": "Cedolare secca flat tax 26%",
+      "RegimeOrdinario": "Business, ordinary regime (VAT number)",
+      "RegimeForfettario": "Business, flat-rate regime (VAT number)",
+      "IrpefOrdinaria": "Ordinary IRPEF without a VAT number"
+    },
+    "chooseIrpef": "Choose ordinary IRPEF (no VAT number)",
+    "assignFailed": "Unable to assign the fiscal regime",
+    "taxNote": {
+      "irpefOrdinariaNotComputed": "Ordinary IRPEF without a VAT number: CasaZen does not compute the tax; the taxpayer or the accountant does.",
+      "thresholdExceeded": "The taxpayer is over the short-term rental threshold: business activity presumed, no cedolare secca. Check with your accountant."
+    },
+    "count_one": "{{count}} property with short-term stays in {{year}}",
+    "count_other": "{{count}} properties with short-term stays in {{year}}"
   },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
@@ -4126,6 +4156,7 @@
       "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
       "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
       "guestDocumentScanMissing": "No document scan is available for this guest.",
+      "pricingSuggestionsNotEnabled": "Turn on the seasonal suggestions before recalculating them.",
       "serviceRequestBookingRequired": "In short-term rentals a supplier request is for a stay: choose the booking.",
       "serviceRequestBookingMismatch": "The booking is not a stay of this property.",
       "serviceRequestBookingNotAllowed": "In long-term rentals a supplier request is for the property, not for a booking.",

@@ -1,63 +1,77 @@
+/** Seasonal price suggestions ("Suggerimenti stagionali", D4): rules applied to the property's real nightly rate. */
 export type AdaptationFrequency = 'daily' | 'weekly';
 
-export type PricingOtaSyncStatus = 'synced' | 'partial' | 'failed';
+/** Rule that produced a suggestion (backend `SeasonalPriceRule`). */
+export type SeasonalPriceRule = 'None' | 'HighSeason' | 'LowSeason' | 'Holiday';
 
-export interface PricingAdapterConfig {
+/** Italian national public holiday (backend `ItalianHoliday`). */
+export type ItalianHoliday =
+  | 'NewYear'
+  | 'Epiphany'
+  | 'EasterSunday'
+  | 'EasterMonday'
+  | 'Liberation'
+  | 'Labour'
+  | 'Republic'
+  | 'Assumption'
+  | 'SaintFrancis'
+  | 'AllSaints'
+  | 'ImmaculateConception'
+  | 'Christmas'
+  | 'SaintStephen';
+
+/** The host's explicit rules: months or national holidays with a multiplier of the nightly rate. */
+export interface SeasonalPricingRules {
+  includeSeasonality: boolean;
+  highSeasonMonths: number[];
+  highSeasonMultiplier: number;
+  lowSeasonMonths: number[];
+  lowSeasonMultiplier: number;
+  includePublicHolidays: boolean;
+  holidayMultiplier: number;
+}
+
+export interface PricingAdapterConfig extends SeasonalPricingRules {
   propertyId: string;
   isEnabled: boolean;
   adaptationFrequency: AdaptationFrequency;
-  includeSeasonality: boolean;
-  includePublicHolidays: boolean;
+  /** Last computation of the suggestions (UTC instant), null if never computed. */
   lastAdaptedAt: string | null;
-  nextScheduledRunAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+  /** Europe/Rome date (yyyy-MM-dd) of the next automatic computation, null when disabled or never computed. */
+  nextRunOn: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
-export interface SavePricingAdapterConfigRequest {
+export interface SavePricingAdapterConfigRequest extends SeasonalPricingRules {
   isEnabled: boolean;
   adaptationFrequency: AdaptationFrequency;
-  includeSeasonality: boolean;
-  includePublicHolidays: boolean;
 }
 
-export interface PricingHistoryEntry {
-  id: string;
-  propertyId: string;
-  adaptationDate: string;
-  previousPrice: number;
-  newPrice: number;
-  changeReason: string;
-  aiConfidence: number;
-  otasSynced: string;
-  syncStatus: PricingOtaSyncStatus;
-  createdAt: string;
-}
-
-export interface PricingHistoryPagedResponse {
-  items: PricingHistoryEntry[];
-  total: number;
-  page: number;
-}
-
-export interface PricingHistoryQueryParams {
-  from?: string;
-  to?: string;
-  page?: number;
-  pageSize?: number;
-}
-
-export interface PricingPreviewDay {
+export interface SeasonalSuggestion {
+  /** Stay date, yyyy-MM-dd. */
   date: string;
-  suggestedPrice: number;
+  /** The property's nightly rate used as base. */
   basePrice: number;
-  reason: string;
+  suggestedPrice: number;
+  multiplier: number;
+  rule: SeasonalPriceRule;
+  holiday: ItalianHoliday | null;
 }
 
-export interface PricingPreviewResponse {
-  prices: PricingPreviewDay[];
+export interface SeasonalSuggestionsResponse {
+  isEnabled: boolean;
+  /** The property's nightly rate now: the price quotes and bookings use. */
+  currentBasePrice: number;
+  computedAt: string | null;
+  nextRunOn: string | null;
+  items: SeasonalSuggestion[];
 }
 
-export interface TriggerSyncResponse {
-  jobId: string;
+export type SeasonalSuggestionRunStatus = 'Computed' | 'BasePriceMissing';
+
+export interface RecalculateSuggestionsResponse {
+  status: SeasonalSuggestionRunStatus;
+  days: number;
+  computedAt: string | null;
 }

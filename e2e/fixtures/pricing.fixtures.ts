@@ -1,7 +1,7 @@
 import type {
   PricingAdapterConfig,
-  PricingHistoryPagedResponse,
-  PricingPreviewResponse,
+  SeasonalSuggestion,
+  SeasonalSuggestionsResponse,
 } from '../../src/types';
 
 export const PROPERTY_ID = 'prop-e2e-001';
@@ -11,9 +11,14 @@ export const configEnabled: PricingAdapterConfig = {
   isEnabled: true,
   adaptationFrequency: 'daily',
   includeSeasonality: true,
+  highSeasonMonths: [6, 7, 8],
+  highSeasonMultiplier: 1.3,
+  lowSeasonMonths: [1, 2, 11, 12],
+  lowSeasonMultiplier: 0.8,
   includePublicHolidays: true,
+  holidayMultiplier: 1.5,
   lastAdaptedAt: '2026-05-10T02:00:00Z',
-  nextScheduledRunAt: '2026-05-12T02:00:00Z',
+  nextRunOn: '2026-05-11',
   createdAt: '2026-05-01T00:00:00Z',
   updatedAt: '2026-05-10T02:00:00Z',
 };
@@ -22,91 +27,37 @@ export const configDisabled: PricingAdapterConfig = {
   ...configEnabled,
   isEnabled: false,
   lastAdaptedAt: null,
-  nextScheduledRunAt: null,
+  nextRunOn: null,
 };
 
-export const historyPage1: PricingHistoryPagedResponse = {
-  items: [
-    {
-      id: 'hist-1',
-      propertyId: PROPERTY_ID,
-      adaptationDate: '2026-05-10',
-      previousPrice: 100,
-      newPrice: 130,
-      changeReason: 'Weekend peak demand',
-      aiConfidence: 0.92,
-      otasSynced: 'airbnb,booking',
-      syncStatus: 'synced',
-      createdAt: '2026-05-10T08:00:00Z',
-    },
-  ],
-  total: 25,
-  page: 1,
-};
-
-export const historyPage2: PricingHistoryPagedResponse = {
-  items: [
-    {
-      id: 'hist-21',
-      propertyId: PROPERTY_ID,
-      adaptationDate: '2026-04-20',
-      previousPrice: 90,
-      newPrice: 95,
-      changeReason: 'Low season adjustment',
-      aiConfidence: 0.78,
-      otasSynced: 'airbnb',
-      syncStatus: 'partial',
-      createdAt: '2026-04-20T08:00:00Z',
-    },
-  ],
-  total: 25,
-  page: 2,
-};
-
-export const historyAfterSync: PricingHistoryPagedResponse = {
-  items: [
-    {
-      id: 'hist-new',
-      propertyId: PROPERTY_ID,
-      adaptationDate: '2026-05-11',
-      previousPrice: 130,
-      newPrice: 145,
-      changeReason: 'Manual sync triggered',
-      aiConfidence: 0.88,
-      otasSynced: 'airbnb,booking',
-      syncStatus: 'synced',
-      createdAt: '2026-05-11T10:00:00Z',
-    },
-    ...historyPage1.items,
-  ],
-  total: 26,
-  page: 1,
-};
-
-function buildPreviewDays(count: number): PricingPreviewResponse['prices'] {
-  const reasons = ['Weekend uplift', 'Weekday rate', 'Public holiday', 'High demand', 'Low season'];
+/** Suggestions of a property at 180 EUR a night with the example rule, from 2026-05-30. */
+function buildSuggestions(count: number): SeasonalSuggestion[] {
+  const start = Date.UTC(2026, 4, 30);
   return Array.from({ length: count }, (_, index) => {
-    const day = 12 + index;
-    const date = `2026-05-${String(day).padStart(2, '0')}`;
-    const isWeekend = index % 7 === 0 || index % 7 === 6;
-    const basePrice = 100;
-    const suggestedPrice = isWeekend ? 140 + (index % 3) * 5 : 105 + (index % 4) * 3;
-    return {
-      date,
-      suggestedPrice,
-      basePrice,
-      reason: reasons[index % reasons.length],
-    };
+    const date = new Date(start + index * 86_400_000).toISOString().slice(0, 10);
+    const month = Number(date.slice(5, 7));
+    if (date === '2026-06-02') {
+      return { date, basePrice: 180, suggestedPrice: 270, multiplier: 1.5, rule: 'Holiday', holiday: 'Republic' };
+    }
+    if (month >= 6 && month <= 8) {
+      return { date, basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null };
+    }
+    return { date, basePrice: 180, suggestedPrice: 180, multiplier: 1, rule: 'None', holiday: null };
   });
 }
 
-export const previewData: PricingPreviewResponse = {
-  prices: buildPreviewDays(90),
+export const suggestionsData: SeasonalSuggestionsResponse = {
+  isEnabled: true,
+  currentBasePrice: 180,
+  computedAt: '2026-05-30T02:00:00Z',
+  nextRunOn: '2026-05-31',
+  items: buildSuggestions(90),
 };
 
-/** Subset used when tests only need the AC20 minimum (≥ 7 rows). */
-export const previewDataMinimal: PricingPreviewResponse = {
-  prices: buildPreviewDays(7),
+/** Subset used when tests only need a few rows. */
+export const suggestionsDataMinimal: SeasonalSuggestionsResponse = {
+  ...suggestionsData,
+  items: buildSuggestions(7),
 };
 
-export const syncResponse = { jobId: 'job-e2e-sync-001' };
+export const recalculateResponse = { status: 'Computed', days: 90, computedAt: '2026-05-30T10:00:00Z' };
