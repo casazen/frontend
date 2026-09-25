@@ -369,12 +369,15 @@ export function SupplierDashboardPage() {
               <p className="font-medium">
                 {hasSync ? dashboard.calendarSyncStatus.calendarSyncType : t('supplier.notConnected')}
               </p>
-              {hasSync && dashboard.calendarSyncStatus.calendarLastSyncAt && (
+              {hasSync && dashboard.calendarSyncStatus.lastSyncStatus === 'Syncing' && (
+                <p className="text-xs text-muted-foreground">{t('supplier.syncInProgress')}</p>
+              )}
+              {hasSync && dashboard.calendarSyncStatus.lastSyncStatus !== 'Syncing' && dashboard.calendarSyncStatus.calendarLastSyncAt && (
                 <p className="text-xs text-muted-foreground">
                   {t('supplier.lastSync')}: {new Date(dashboard.calendarSyncStatus.calendarLastSyncAt).toLocaleString()}
                 </p>
               )}
-              {hasSync && dashboard.calendarSyncStatus.calendarSyncError && (
+              {hasSync && dashboard.calendarSyncStatus.lastSyncStatus !== 'Syncing' && dashboard.calendarSyncStatus.calendarSyncError && (
                 <p className="text-xs text-red-600">{dashboard.calendarSyncStatus.calendarSyncError}</p>
               )}
             </div>

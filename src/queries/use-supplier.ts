@@ -14,12 +14,40 @@ import {
   lookupSupplierInvite,
   registerSupplier,
   setIcalFeed,
+  syncSupplierCalendarNow,
   updateSupplierAvailability,
   updateSupplierProfile,
   uploadSupplierPhotos,
 } from '@/services/supplier-api';
 import type { SupplierRegisterPayload } from '@/services/supplier-api';
-import type { SupplierKpiPeriod, UpdateAvailabilityEntry } from '@/types/supplier';
+import type { CalendarSyncStatus, SupplierKpiPeriod, UpdateAvailabilityEntry } from '@/types/supplier';
+
+/**
+ * Light polling while the supplier's calendar is syncing (its job is queued, SU-15): every few seconds during the first
+ * minute, when the download usually ends, then slower until the 15-minute job settles it.
+ */
+const SYNCING_FAST_REFETCH_MS = 3_000;
+const SYNCING_SLOW_REFETCH_MS = 15_000;
+const SYNCING_FAST_WINDOW_MS = 60_000;
+
+const CALENDAR_SYNC_KEY = ['supplier', 'calendar-sync'] as const;
+
+// When each status query started to see `Syncing` (keyed by the query object, dropped with it).
+const syncingSince = new WeakMap<object, number>();
+
+/** Next poll of the calendar status: none unless it is `Syncing`, otherwise fast first and then slower. */
+export function supplierSyncRefetchInterval(
+  query: { state: { data?: CalendarSyncStatus } },
+  now: number = Date.now(),
+): number | false {
+  if (query.state.data?.lastSyncStatus !== 'Syncing') {
+    syncingSince.delete(query);
+    return false;
+  }
+  const since = syncingSince.get(query) ?? now;
+  syncingSince.set(query, since);
+  return now - since < SYNCING_FAST_WINDOW_MS ? SYNCING_FAST_REFETCH_MS : SYNCING_SLOW_REFETCH_MS;
+}
 
 export function useSupplierActivation() {
   return useQuery({
@@ -144,19 +172,46 @@ export function useSupplierKpis(period: SupplierKpiPeriod) {
   });
 }
 
+/**
+ * Calendar sync status of the supplier, polled while `Syncing`. When a sync ends the availability and the dashboard are
+ * refreshed: the days of the feed may have changed.
+ */
 export function useCalendarSyncStatus() {
+  const queryClient = useQueryClient();
   return useQuery({
-    queryKey: ['supplier', 'calendar-sync'],
-    queryFn: fetchCalendarSyncStatus,
+    queryKey: CALENDAR_SYNC_KEY,
+    queryFn: async () => {
+      const previous = queryClient.getQueryData<CalendarSyncStatus>(CALENDAR_SYNC_KEY);
+      const next = await fetchCalendarSyncStatus();
+      if (previous?.lastSyncStatus === 'Syncing' && next.lastSyncStatus !== 'Syncing') {
+        void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+        void queryClient.invalidateQueries({ queryKey: ['supplier', 'dashboard'] });
+      }
+      return next;
+    },
+    refetchInterval: supplierSyncRefetchInterval,
   });
 }
 
+/** Saves the iCal URL: the answer (`Syncing`) replaces the status at once, which starts the polling. */
 export function useSetIcalFeed() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: setIcalFeed,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['supplier'] });
+    onSuccess: (status) => {
+      queryClient.setQueryData(CALENDAR_SYNC_KEY, status);
+      void queryClient.invalidateQueries({ queryKey: ['supplier'], predicate: (query) => query.queryKey[1] !== 'calendar-sync' });
+    },
+  });
+}
+
+/** "Sync now" of the supplier's iCal feed (SU-15): the answer (`Syncing`) replaces the status and starts the polling. */
+export function useSyncSupplierCalendarNow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: syncSupplierCalendarNow,
+    onSuccess: (status) => {
+      queryClient.setQueryData(CALENDAR_SYNC_KEY, status);
     },
   });
 }
