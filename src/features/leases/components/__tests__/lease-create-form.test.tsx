@@ -27,6 +27,13 @@ vi.mock('@/api/canone-concordato.api', () => ({
   canoneConcordatoApi: {
     getEligibility: vi.fn(),
     getAttestationGuidance: vi.fn(),
+    // Seveso has a single zone (A7-24): the calculator auto-selects it, no free-text zone.
+    getZones: vi.fn().mockResolvedValue({
+      comune: 'Seveso',
+      available: true,
+      dataCompleteness: 'Complete',
+      zones: [{ name: 'Unica', cadastralSheets: [] }],
+    }),
   },
 }));
 
@@ -65,13 +72,21 @@ function setField(id: string, value: string) {
   fireEvent.change(document.getElementById(id)!, { target: { value } });
 }
 
-/** Property, concordato 3+2 from 1/9/2026 to 31/8/2029, valid parties. */
-function fillConcordatoLease(monthlyRent: string) {
+/**
+ * Property, concordato 3+2 from 1/9/2026 to 31/8/2029, valid parties, unit 65 mq with 2 A- and 3 B-elements. Async:
+ * the calculator mounts only after the contract type change re-renders, and starts empty (A7-24), so the unit fields
+ * are found (and filled) with `findByLabelText` rather than assumed present straight after the synchronous changes.
+ */
+async function fillConcordatoLease(monthlyRent: string) {
   fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
   fireEvent.change(screen.getByLabelText(i18n.t('leases.form.contractTypeLabel')), { target: { value: 'Concordato' } });
   setField('startDate', '2026-09-01');
   setField('endDate', '2029-08-31');
   setField('monthlyRent', monthlyRent);
+  // A7-24: the calculator starts empty (no pre-filled unit), so every test fills the unit it needs explicitly.
+  fireEvent.change(await screen.findByLabelText(i18n.t('leases.canoneConcordato.sqm')), { target: { value: '65' } });
+  fireEvent.change(screen.getByLabelText(i18n.t('leases.canoneConcordato.typeA')), { target: { value: '2' } });
+  fireEvent.change(screen.getByLabelText(i18n.t('leases.canoneConcordato.typeB')), { target: { value: '3' } });
   for (const [prefix, cf] of [['landlord', 'RSSMRA80A01H501U'], ['tenant', 'VRDLGU85B02F205X']] as const) {
     setField(`${prefix}.firstName`, 'Nome');
     setField(`${prefix}.lastName`, 'Cognome');
@@ -163,7 +178,7 @@ describe('LeaseCreateForm canone concordato', () => {
     vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(apiRange());
     const onSubmit = vi.fn();
     const { container } = renderForm(onSubmit);
-    fillConcordatoLease('400');
+    await fillConcordatoLease('400');
 
     fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
 
@@ -201,7 +216,7 @@ describe('LeaseCreateForm canone concordato', () => {
     );
     const onSubmit = vi.fn();
     const { container } = renderForm(onSubmit);
-    fillConcordatoLease('900');
+    await fillConcordatoLease('900');
 
     fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
 
@@ -222,7 +237,7 @@ describe('LeaseCreateForm canone concordato', () => {
     vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(apiRange());
     const onSubmit = vi.fn();
     const { container } = renderForm(onSubmit);
-    fillConcordatoLease('900');
+    await fillConcordatoLease('900');
 
     fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
     await screen.findByTestId('concordato-range');
@@ -240,7 +255,7 @@ describe('LeaseCreateForm canone concordato', () => {
     vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(apiRange());
     const onSubmit = vi.fn();
     const { container } = renderForm(onSubmit);
-    fillConcordatoLease('400');
+    await fillConcordatoLease('400');
     fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
     await screen.findByTestId('concordato-range');
 
@@ -266,7 +281,7 @@ describe('LeaseCreateForm canone concordato', () => {
       }),
     );
     renderForm();
-    fillConcordatoLease('400');
+    await fillConcordatoLease('400');
 
     fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
 
@@ -278,7 +293,7 @@ describe('LeaseCreateForm canone concordato', () => {
   it('LeaseCreateForm_LiberoWithDeposit_SendsTypeRegimeAndDeposit', async () => {
     const onSubmit = vi.fn();
     const { container } = renderForm(onSubmit);
-    fillConcordatoLease('900');
+    await fillConcordatoLease('900');
     fireEvent.change(screen.getByLabelText(i18n.t('leases.form.contractTypeLabel')), { target: { value: 'Libero' } });
     fireEvent.change(screen.getByLabelText(i18n.t('leases.form.taxRegimeLabel')), { target: { value: 'Ordinario' } });
     setField('endDate', '2030-08-31');

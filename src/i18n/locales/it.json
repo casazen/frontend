@@ -226,7 +226,8 @@
       "vetrina": "Vetrina",
       "operations": "Amministrazione",
       "amministrazione": "Amministrazione"
-    }
+    },
+    "ltrReferenceData": "Dati normativi LTR"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -567,7 +568,8 @@
       },
       "warning": {
         "subfascia3_max_needs_more_d": "Sub-fascia 3 con meno di 4 elementi D: l'accordo consente il massimo della sub-fascia 3 solo con almeno 4 elementi D. Il massimo mostrato potrebbe essere troppo alto.",
-        "no_duration_uplift_over_6_years": "Durata oltre 6 anni: l'accordo non prevede maggiorazioni, non ne è stata applicata nessuna."
+        "no_duration_uplift_over_6_years": "Durata oltre 6 anni: l'accordo non prevede maggiorazioni, non ne è stata applicata nessuna.",
+        "agreement_expired": "Accordo scaduto formalmente: la ricerca (RS-8, 2026-09) non ha trovato un accordo più recente. L'accordo resta in vigore fino alla sottoscrizione di uno nuovo."
       },
       "indicativeTitle": "Range indicativo: dati da verificare",
       "indicativeWarning": "I dati dell'accordo territoriale non sono ancora confermati da un legale o da un'organizzazione firmataria (vigenza e deposito dell'accordo). Il range è un riferimento e non blocca la creazione del contratto: verifica il canone con un'organizzazione firmataria.",
@@ -575,7 +577,34 @@
       "source": "Testo ufficiale dell'accordo",
       "bandBetween": "fascia da {{min}} (escluso) a {{max}} mq",
       "bandOver": "fascia oltre {{min}} mq",
-      "computedWith": "Calcolato su {{sqm}} mq utili e {{years}} anni di durata (dalle date del contratto)."
+      "computedWith": "Calcolato su {{sqm}} mq utili e {{years}} anni di durata (dalle date del contratto).",
+      "sqmRequired": "Indica la superficie per calcolare il range.",
+      "retry": "Riprova",
+      "zoneSelect": "Seleziona una zona",
+      "zoneWithSheets": "{{zone}} (fogli: {{sheets}})",
+      "zonesEmpty": "L'accordo non definisce zone per questo comune.",
+      "zonesError": "Impossibile caricare le zone.",
+      "zonesLoading": "Caricamento zone...",
+      "agreementExpiry": "Accordo scaduto formalmente il {{date}}.",
+      "agreementExpiryUntilReplaced": "Accordo scaduto formalmente il {{date}}: resta in vigore fino a un nuovo accordo.",
+      "imuStatusLoading": "Verifica disponibilità...",
+      "imuStatusError": "Impossibile verificare la disponibilità della comunicazione IMU.",
+      "imuEmail": "Email",
+      "imuPec": "PEC",
+      "imuAddress": "Indirizzo",
+      "imuRateOfficial": "IMU {{rate}}% ({{year}}, aliquota ufficiale)",
+      "imuRateDerived": "IMU {{rate}}% ({{year}}, valore derivato — non ufficiale)",
+      "imuRateUnknown": "Aliquota IMU non nota: verifica con il Comune.",
+      "imuRateEffective": "effettiva {{rate}}%",
+      "imuLastVerified": "Verificato il {{date}}",
+      "imuNotVerified": "Non ancora verificato",
+      "imuSource": "Fonte destinatario",
+      "imuRateSource": "Fonte aliquota",
+      "imuReason": {
+        "imu_notification_not_concordato": "La comunicazione IMU vale solo per i contratti a canone concordato.",
+        "imu_notification_lease_not_registered": "Disponibile solo dopo la registrazione del contratto.",
+        "imu_notification_data_unavailable": "Dato non disponibile per questo comune: verifica con l'associazione di categoria locale."
+      }
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Cedolare secca",
@@ -4413,6 +4442,157 @@
       "passwordTooLong": "La password può avere al massimo 200 caratteri.",
       "wsKeyRequired": "Inserisci la chiave del web service (WSKey).",
       "wsKeyTooLong": "La chiave del web service può avere al massimo 200 caratteri."
+    }
+  },
+  "ltrReferenceData": {
+    "title": "Dati normativi LTR",
+    "description": "Accordi territoriali del canone concordato e canali IMU dei Comuni: nessun deploy per aggiornare una PEC o una fascia.",
+    "onlyWithData": "Solo con dati",
+    "agreementsTitle": "Accordi territoriali",
+    "agreementsEmpty": "Nessun accordo territoriale.",
+    "imuTitle": "Canali IMU dei Comuni",
+    "imuEmpty": "Nessun canale IMU.",
+    "loadError": "Impossibile caricare i dati.",
+    "retry": "Riprova",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "markVerified": "Segna verificato",
+    "neverVerified": "Mai verificato",
+    "lastVerified": "Verificato il {{date}} — fonte: {{source}}",
+    "expiry": "Scade il {{date}}",
+    "expiryUntilReplaced": "Scaduto formalmente il {{date}}, resta in vigore fino a un nuovo accordo",
+    "expiryUnknown": "Scadenza non nota",
+    "columns": {
+      "comune": "Comune",
+      "status": "Stato",
+      "zones": "Zone",
+      "expiry": "Scadenza",
+      "verification": "Verifica",
+      "actions": "Azioni",
+      "recipient": "Destinatario",
+      "rate": "Aliquota"
+    },
+    "completeness": {
+      "Complete": "Completo",
+      "Partial": "Parziale",
+      "Missing": "Assente"
+    },
+    "combination": {
+      "Additive": "Additiva (1 + somma)",
+      "Multiplicative": "Moltiplicativa"
+    },
+    "fields": {
+      "dataCompleteness": "Stato dei dati",
+      "sourceUrl": "URL della fonte",
+      "expiresAt": "Scadenza formale",
+      "remainsInForceUntilReplaced": "Resta in vigore fino a un nuovo accordo",
+      "expiryNote": "Nota sulla scadenza"
+    },
+    "rules": {
+      "subFasceTitle": "Sub-fasce",
+      "requiredTypeACount": "Elementi A richiesti",
+      "subFascia2MinTypeBCount": "Elementi B minimi (sub-fascia 2)",
+      "subFascia3MinTypeCCount": "Elementi C minimi (sub-fascia 3)",
+      "subFascia3MinQualifyingTypeDCount": "Elementi D qualificanti minimi (sub-fascia 3)",
+      "subFascia3MaxMinTypeDCount": "Elementi D minimi per il massimo (sub-fascia 3)",
+      "stoveHeatingMinTypeBCount": "Elementi B minimi con riscaldamento a stufe",
+      "surfaceTitle": "Superficie",
+      "smallSqmMax": "Soglia piccola superficie (mq)",
+      "smallSqmUpliftPercent": "Maggiorazione piccola superficie (%)",
+      "midSqmMin": "Soglia media superficie, minimo (mq)",
+      "midSqmMax": "Soglia media superficie, massimo (mq)",
+      "midSqmUpliftPercent": "Maggiorazione media superficie (%)",
+      "largeSqmMin": "Soglia grande superficie (mq)",
+      "largeSqmReductionPercent": "Riduzione grande superficie (%)",
+      "coefficientsTitle": "Coefficienti",
+      "furnishedUpliftPercent": "Maggiorazione arredo (%)",
+      "airConditioningUpliftPercent": "Maggiorazione climatizzazione (%)",
+      "duration4UpliftPercent": "Maggiorazione durata 4 anni (%)",
+      "duration5UpliftPercent": "Maggiorazione durata 5 anni (%)",
+      "duration6UpliftPercent": "Maggiorazione durata 6 anni (%)",
+      "appurtenancesTitle": "Pertinenze",
+      "garageAppurtenancePercent": "Quota box/posto auto coperto (%)",
+      "balconyAppurtenancePercent": "Quota balconi e terrazzi (%)",
+      "otherAppurtenancePercent": "Quota altre pertinenze (%)",
+      "greenAreaAppurtenancePercent": "Quota area verde esclusiva (%)",
+      "coefficientCombination": "Combinazione dei coefficienti",
+      "subFascia3QualifyingTypeDElements": "Elementi D qualificanti (es. D1,D2,D4,D6,D7,D9)"
+    },
+    "bands": {
+      "title": "Fasce",
+      "empty": "Nessuna fascia.",
+      "edit": "Modifica fascia",
+      "zone": "Zona",
+      "sheets": "Fogli: {{sheets}}",
+      "sheetsLabel": "Fogli catastali (separati da virgola)",
+      "surface": "Superficie",
+      "minSqm": "Mq minimo (escluso)",
+      "maxSqm": "Mq massimo (incluso)",
+      "subFascia": "Sub-fascia {{n}}",
+      "min": "Min {{n}}",
+      "max": "Max {{n}}"
+    },
+    "imu": {
+      "editTitle": "Canale IMU — {{comune}}",
+      "editDescription": "Destinatario, contatti e aliquota IMU della comunicazione al Comune.",
+      "rateUnknown": "Aliquota non nota",
+      "rate": {
+        "Official": "{{rate}}% ({{year}}, ufficiale)",
+        "Derived": "{{rate}}% ({{year}}, derivata — non ufficiale)"
+      },
+      "rateKind": {
+        "none": "Non impostato",
+        "Official": "Ufficiale",
+        "Derived": "Derivata"
+      },
+      "fields": {
+        "recipientOffice": "Ufficio destinatario",
+        "email": "Email",
+        "pec": "PEC",
+        "postalAddress": "Indirizzo postale",
+        "instructions": "Istruzioni",
+        "ratePercent": "Aliquota (%)",
+        "effectiveRatePercent": "Aliquota effettiva (%)",
+        "rateYear": "Anno aliquota",
+        "rateKind": "Tipo di aliquota",
+        "rateNotes": "Note sull'aliquota",
+        "sourceUrl": "URL della fonte",
+        "rateSourceUrl": "URL fonte aliquota"
+      }
+    },
+    "verify": {
+      "title": "Segna verificato — {{subject}}",
+      "description": "Registra la data del controllo rispetto a una fonte ufficiale e la fonte stessa.",
+      "date": "Data verifica",
+      "source": "Fonte",
+      "sourcePlaceholder": "Es. PDF dell'accordo, delibera comunale, telefonata con l'ufficio tributi",
+      "confirm": "Conferma",
+      "subject": {
+        "agreement": "accordo territoriale di {{comune}}",
+        "imu": "canale IMU di {{comune}}"
+      }
+    },
+    "audit": {
+      "title": "Registro delle modifiche",
+      "empty": "Nessuna modifica registrata.",
+      "loadError": "Impossibile caricare il registro.",
+      "action": {
+        "Updated": "Modificato",
+        "MarkedVerified": "Verificato"
+      }
+    },
+    "agreement": {
+      "title": "Accordo territoriale — {{comune}}",
+      "loading": "Accordo territoriale",
+      "description": "Stato, scadenza, fonte e regole del calcolo del canone. La data di verifica si aggiorna solo con «Segna verificato»."
+    },
+    "toast": {
+      "saved": "Salvato.",
+      "saveFailed": "Salvataggio non riuscito.",
+      "verified": "Verifica registrata.",
+      "verifyFailed": "Verifica non riuscita."
     }
   }
 }

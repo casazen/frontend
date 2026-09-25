@@ -586,6 +586,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Coins',
     component: async () => ({ default: (await import('@/features/admin/admin-tax-rates-page')).AdminTaxRatesPage }),
   },
+  // Admin LTR reference data (LT-13, A7-22): territorial agreements and comune IMU channels.
+  {
+    path: '/app/admin/compliance/ltr-reference-data',
+    context: 'admin',
+    requiredPermissions: ['admin.ltr.manage'],
+    navKey: 'nav.ltrReferenceData',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/admin/admin-ltr-reference-data-page')).AdminLtrReferenceDataPage,
+    }),
+  },
   // ============================================================
   // Supplier console
   // ============================================================

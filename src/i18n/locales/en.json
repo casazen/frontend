@@ -226,7 +226,8 @@
       "vetrina": "Showcase",
       "operations": "Administration",
       "amministrazione": "Administration"
-    }
+    },
+    "ltrReferenceData": "LTR reference data"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -567,7 +568,8 @@
       },
       "warning": {
         "subfascia3_max_needs_more_d": "Sub-fascia 3 with fewer than 4 D elements: the agreement allows the maximum of sub-fascia 3 only with at least 4 D elements. The maximum shown may be too high.",
-        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied."
+        "no_duration_uplift_over_6_years": "Term over 6 years: the agreement has no uplift for it, none was applied.",
+        "agreement_expired": "Agreement formally expired: the research (RS-8, 2026-09) found no more recent agreement. It remains in force until a new one is signed."
       },
       "indicativeTitle": "Indicative range: data to be checked",
       "indicativeWarning": "The territorial agreement data are not yet confirmed by a lawyer or a signatory organization (validity and filing of the agreement). The range is a reference and does not block the lease: check the rent with a signatory organization.",
@@ -575,7 +577,34 @@
       "source": "Official text of the agreement",
       "bandBetween": "band from {{min}} (excluded) to {{max}} sqm",
       "bandOver": "band over {{min}} sqm",
-      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates)."
+      "computedWith": "Calculated on {{sqm}} usable sqm and a {{years}}-year term (from the lease dates).",
+      "sqmRequired": "Enter the surface to calculate the range.",
+      "retry": "Retry",
+      "zoneSelect": "Select a zone",
+      "zoneWithSheets": "{{zone}} (sheets: {{sheets}})",
+      "zonesEmpty": "The agreement defines no zones for this comune.",
+      "zonesError": "Could not load the zones.",
+      "zonesLoading": "Loading zones...",
+      "agreementExpiry": "Agreement formally expired on {{date}}.",
+      "agreementExpiryUntilReplaced": "Agreement formally expired on {{date}}: remains in force until a new one is signed.",
+      "imuStatusLoading": "Checking availability...",
+      "imuStatusError": "Could not check the IMU notification's availability.",
+      "imuEmail": "Email",
+      "imuPec": "PEC",
+      "imuAddress": "Address",
+      "imuRateOfficial": "IMU {{rate}}% ({{year}}, official rate)",
+      "imuRateDerived": "IMU {{rate}}% ({{year}}, derived value — not official)",
+      "imuRateUnknown": "IMU rate unknown: check with the comune.",
+      "imuRateEffective": "effective {{rate}}%",
+      "imuLastVerified": "Verified on {{date}}",
+      "imuNotVerified": "Not verified yet",
+      "imuSource": "Recipient source",
+      "imuRateSource": "Rate source",
+      "imuReason": {
+        "imu_notification_not_concordato": "The IMU notification applies only to canone concordato leases.",
+        "imu_notification_lease_not_registered": "Available only once the lease is registered.",
+        "imu_notification_data_unavailable": "Data unavailable for this comune: check with a local landlord association."
+      }
     },
     "fiscalRegimeLabel": {
       "CedolareSecca": "Flat-rate tax (Cedolare Secca)",
@@ -4413,6 +4442,157 @@
       "passwordTooLong": "The password can be at most 200 characters long.",
       "wsKeyRequired": "Enter the web service key (WSKey).",
       "wsKeyTooLong": "The web service key can be at most 200 characters long."
+    }
+  },
+  "ltrReferenceData": {
+    "title": "LTR reference data",
+    "description": "Territorial rent agreements and comune IMU channels: no deploy needed to update a PEC or a band.",
+    "onlyWithData": "Only with data",
+    "agreementsTitle": "Territorial agreements",
+    "agreementsEmpty": "No territorial agreements.",
+    "imuTitle": "Comune IMU channels",
+    "imuEmpty": "No IMU channels.",
+    "loadError": "Could not load the data.",
+    "retry": "Retry",
+    "edit": "Edit",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "markVerified": "Mark verified",
+    "neverVerified": "Never verified",
+    "lastVerified": "Verified on {{date}} — source: {{source}}",
+    "expiry": "Expires on {{date}}",
+    "expiryUntilReplaced": "Formally expired on {{date}}, remains in force until a new one is signed",
+    "expiryUnknown": "Expiry unknown",
+    "columns": {
+      "comune": "Comune",
+      "status": "Status",
+      "zones": "Zones",
+      "expiry": "Expiry",
+      "verification": "Verification",
+      "actions": "Actions",
+      "recipient": "Recipient",
+      "rate": "Rate"
+    },
+    "completeness": {
+      "Complete": "Complete",
+      "Partial": "Partial",
+      "Missing": "Missing"
+    },
+    "combination": {
+      "Additive": "Additive (1 + sum)",
+      "Multiplicative": "Multiplicative"
+    },
+    "fields": {
+      "dataCompleteness": "Data status",
+      "sourceUrl": "Source URL",
+      "expiresAt": "Formal expiry",
+      "remainsInForceUntilReplaced": "Remains in force until replaced",
+      "expiryNote": "Expiry note"
+    },
+    "rules": {
+      "subFasceTitle": "Sub-bands",
+      "requiredTypeACount": "Required A elements",
+      "subFascia2MinTypeBCount": "Minimum B elements (sub-band 2)",
+      "subFascia3MinTypeCCount": "Minimum C elements (sub-band 3)",
+      "subFascia3MinQualifyingTypeDCount": "Minimum qualifying D elements (sub-band 3)",
+      "subFascia3MaxMinTypeDCount": "Minimum D elements for the maximum (sub-band 3)",
+      "stoveHeatingMinTypeBCount": "Minimum B elements with stove heating",
+      "surfaceTitle": "Surface",
+      "smallSqmMax": "Small-surface threshold (sqm)",
+      "smallSqmUpliftPercent": "Small-surface uplift (%)",
+      "midSqmMin": "Mid-surface threshold, minimum (sqm)",
+      "midSqmMax": "Mid-surface threshold, maximum (sqm)",
+      "midSqmUpliftPercent": "Mid-surface uplift (%)",
+      "largeSqmMin": "Large-surface threshold (sqm)",
+      "largeSqmReductionPercent": "Large-surface reduction (%)",
+      "coefficientsTitle": "Coefficients",
+      "furnishedUpliftPercent": "Furniture uplift (%)",
+      "airConditioningUpliftPercent": "Air conditioning uplift (%)",
+      "duration4UpliftPercent": "4-year term uplift (%)",
+      "duration5UpliftPercent": "5-year term uplift (%)",
+      "duration6UpliftPercent": "6-year term uplift (%)",
+      "appurtenancesTitle": "Appurtenances",
+      "garageAppurtenancePercent": "Garage/covered parking share (%)",
+      "balconyAppurtenancePercent": "Balconies and terraces share (%)",
+      "otherAppurtenancePercent": "Other appurtenances share (%)",
+      "greenAreaAppurtenancePercent": "Exclusive green area share (%)",
+      "coefficientCombination": "How coefficients combine",
+      "subFascia3QualifyingTypeDElements": "Qualifying D elements (e.g. D1,D2,D4,D6,D7,D9)"
+    },
+    "bands": {
+      "title": "Bands",
+      "empty": "No bands.",
+      "edit": "Edit band",
+      "zone": "Zone",
+      "sheets": "Sheets: {{sheets}}",
+      "sheetsLabel": "Cadastral sheets (comma separated)",
+      "surface": "Surface",
+      "minSqm": "Min sqm (exclusive)",
+      "maxSqm": "Max sqm (inclusive)",
+      "subFascia": "Sub-band {{n}}",
+      "min": "Min {{n}}",
+      "max": "Max {{n}}"
+    },
+    "imu": {
+      "editTitle": "IMU channel — {{comune}}",
+      "editDescription": "Recipient, contacts and IMU rate of the comune communication.",
+      "rateUnknown": "Rate unknown",
+      "rate": {
+        "Official": "{{rate}}% ({{year}}, official)",
+        "Derived": "{{rate}}% ({{year}}, derived — not official)"
+      },
+      "rateKind": {
+        "none": "Not set",
+        "Official": "Official",
+        "Derived": "Derived"
+      },
+      "fields": {
+        "recipientOffice": "Recipient office",
+        "email": "Email",
+        "pec": "PEC",
+        "postalAddress": "Postal address",
+        "instructions": "Instructions",
+        "ratePercent": "Rate (%)",
+        "effectiveRatePercent": "Effective rate (%)",
+        "rateYear": "Rate year",
+        "rateKind": "Rate kind",
+        "rateNotes": "Rate notes",
+        "sourceUrl": "Source URL",
+        "rateSourceUrl": "Rate source URL"
+      }
+    },
+    "verify": {
+      "title": "Mark verified — {{subject}}",
+      "description": "Records the date the data was checked against an official source, and the source.",
+      "date": "Verification date",
+      "source": "Source",
+      "sourcePlaceholder": "E.g. the agreement's PDF, a comune deliberation, a call with the ufficio tributi",
+      "confirm": "Confirm",
+      "subject": {
+        "agreement": "territorial agreement of {{comune}}",
+        "imu": "IMU channel of {{comune}}"
+      }
+    },
+    "audit": {
+      "title": "Change log",
+      "empty": "No changes recorded.",
+      "loadError": "Could not load the change log.",
+      "action": {
+        "Updated": "Updated",
+        "MarkedVerified": "Marked verified"
+      }
+    },
+    "agreement": {
+      "title": "Territorial agreement — {{comune}}",
+      "loading": "Territorial agreement",
+      "description": "Status, expiry, source and the rules of the rent calculation. The verification date only changes via “Mark verified”."
+    },
+    "toast": {
+      "saved": "Saved.",
+      "saveFailed": "Save failed.",
+      "verified": "Verification recorded.",
+      "verifyFailed": "Verification failed."
     }
   }
 }
