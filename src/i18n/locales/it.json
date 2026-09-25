@@ -2588,6 +2588,7 @@
     "pageDescription": "Gestione codici identificativi nazionali — D.L. 145/2023",
     "requestOnPortal": "Richiedi il CIN sul portale",
     "bdsrPortal": "BDSR — Ministero del Turismo",
+    "loadError": "Impossibile caricare lo stato dei CIN. Riprova più tardi.",
     "status": {
       "Valid": "Valido",
       "Missing": "Mancante",
@@ -2597,7 +2598,11 @@
       "valid": "Validi",
       "missing": "Mancanti",
       "invalid": "Non validi",
-      "daysUntilDeadline": "Giorni alla scadenza"
+      "deadline": "Scadenza del {{deadline}}",
+      "daysLeft_one": "Manca {{count}} giorno",
+      "daysLeft_other": "Mancano {{count}} giorni",
+      "dueToday": "Oggi",
+      "passed": "Superata"
     },
     "table": {
       "empty": "Nessuna proprietà trovata.",
@@ -2611,10 +2616,12 @@
       "title": "Conformità CIN richiesta (D.L. 145/2023)",
       "nonCompliantCount_one": "Hai {{count}} proprietà senza CIN valido.",
       "nonCompliantCount_other": "Hai {{count}} proprietà senza CIN valido.",
-      "deadlineToday": "La scadenza è oggi.",
       "daysUntilDeadline_one": "Manca {{count}} giorno alla scadenza del {{deadline}}.",
       "daysUntilDeadline_other": "Mancano {{count}} giorni alla scadenza del {{deadline}}.",
-      "penalties": "Sanzioni da €800 a €8.000 per immobile.",
+      "deadlineToday": "La scadenza del {{deadline}} è oggi.",
+      "deadlinePassed": "La scadenza del {{deadline}} è superata: inserisci il CIN al più presto.",
+      "obligation": "Il CIN è obbligatorio: va esposto all'esterno dell'immobile e indicato in ogni annuncio.",
+      "penalties": "Sanzioni (art. 13-ter, c. 9): da €800 a €8.000 per l'assenza del CIN, da €500 a €5.000 per la mancata esposizione o indicazione negli annunci.",
       "requestOnBdsr": "Richiedi il CIN su BDSR"
     }
   },
