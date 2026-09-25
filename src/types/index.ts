@@ -6,6 +6,7 @@ export * from './payment.types';
 export * from './ota.types';
 export * from './api.types';
 export * from './guest.types';  // ✅ New
+export * from './gdpr.types';
 export * from './tourist-tax.types';  // ✅ New
 export * from './calendar.types';  // ✅ New
 export * from './pricing-adapter.types';
@@ -16,3 +17,4 @@ export * from './org.types';
 export * from './domain.types';
 export * from './direct-booking.types';
 export * from './alloggiati.types';
+export * from './billing.types';

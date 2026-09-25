@@ -14,6 +14,7 @@ import { useBookings } from '@/queries/use-bookings';
 import { paymentFormSchema } from './schemas/payment.schema';
 import { getPaymentMethodLabel } from '@/lib/i18n-labels';
 import type { PaymentFormValues } from './schemas/payment.schema';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 const PAYMENT_METHODS = ['CreditCard', 'BankTransfer', 'PayPal', 'ApplePay', 'GooglePay'] as const;
 
@@ -33,7 +34,7 @@ export function PaymentCreatePage() {
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       currency: 'EUR',
-    } as any,
+    },
   });
 
   const selectedBookingId = watch('bookingId');
@@ -75,9 +76,7 @@ export function PaymentCreatePage() {
                     </option>
                   ))}
                 </select>
-                {errors.bookingId && (
-                  <p className="text-sm text-destructive">{errors.bookingId.message}</p>
-                )}
+                <FormFieldError error={errors.bookingId} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -90,9 +89,7 @@ export function PaymentCreatePage() {
                     {...register('amount', { valueAsNumber: true })}
                     placeholder={t('payment.create.amountPlaceholder')}
                   />
-                  {errors.amount && (
-                    <p className="text-sm text-destructive">{errors.amount.message}</p>
-                  )}
+                  <FormFieldError error={errors.amount} />
                 </div>
 
                 <div className="space-y-2">
@@ -119,9 +116,7 @@ export function PaymentCreatePage() {
                     </option>
                   ))}
                 </select>
-                {errors.method && (
-                  <p className="text-sm text-destructive">{errors.method.message}</p>
-                )}
+                <FormFieldError error={errors.method} />
               </div>
 
               {isOta && (

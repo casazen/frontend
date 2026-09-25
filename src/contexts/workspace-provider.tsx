@@ -4,6 +4,8 @@ import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
 import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
+import { isAccountInactiveError } from '@/lib/api-errors';
+import { isOrgBillingAdmin, ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import {
   deriveContextsFromAccessToken,
   deriveContextsFromRoles,
@@ -78,10 +80,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading: authLoading, getAccessToken } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  // Contexts depend only on the roles: reload them when the role set changes,
+  // not whenever the user object identity changes (e.g. after a token refresh).
   const roleSignature = useMemo(() => {
     const authUser = isDemoMode ? getDemoUser() : user;
     return getUserRoles(authUser).slice().sort().join('|');
-  }, [isDemoMode, user]);
+  }, [user]);
   const [contexts, setContexts] = useState<ContextBootstrapDto[]>([]);
   const [activeContext, setActiveContextState] = useState<AppContextKey | null>(readStoredContext);
   const [isReady, setIsReady] = useState(false);
@@ -95,7 +99,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     const loadContexts = async () => {
-      const authUser = isDemoMode ? getDemoUser() : user;
+      const authUser: UserWithRoles = { roles: roleSignature ? roleSignature.split('|') : [] };
 
       if (isDemoMode) {
         const fallback = deriveContextsFromRoles(authUser);
@@ -126,6 +130,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         if (!mounted) return;
+        // Deactivated account (PL-03): the API handler opens the dedicated page; the roles still in the token must not
+        // bring back a workspace whose every call is refused.
+        if (isAccountInactiveError(error)) {
+          applyResolvedContext([], null, setContexts, setActiveContextState);
+          return;
+        }
         console.warn('[Workspace] GET /api/me/contexts failed — using JWT fallback', error);
         const fallback = await resolveContextsFromAuth(authUser, getAccessToken);
         applyResolvedContext(fallback, readStoredContext(), setContexts, setActiveContextState);
@@ -190,6 +200,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       const ctx = contexts.find((c) => c.contextKey === contextKey);
       if (!ctx) return false;
       if (!permission) return true;
+      if (permission === ORG_BILLING_ADMIN_PERMISSION) return isOrgBillingAdmin(contexts);
       return ctx.permissions.includes(permission);
     },
     [contexts],

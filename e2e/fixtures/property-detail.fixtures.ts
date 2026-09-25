@@ -16,7 +16,7 @@ export const propertyDetailFixture: PropertyDetailDto = {
   nightlyRate: 120,
   cleaningFee: 40,
   damageDeposit: 200,
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
   amenities: ['WiFi', 'AirConditioning', 'Kitchen'],
@@ -30,6 +30,7 @@ export const propertyDetailFixture: PropertyDetailDto = {
       id: 'doc-e2e-001',
       fileName: 'cin-certificato.pdf',
       fileType: 'pdf',
+      documentType: 'CinCertificate',
       uploadedAt: '2026-05-01T10:00:00Z',
       downloadUrl: '/uploads/properties/cin-certificato.pdf',
     },
@@ -54,6 +55,6 @@ export const propertyDetailFixture: PropertyDetailDto = {
   pricingAdapterSummary: {
     isEnabled: true,
     lastAdaptedAt: '2026-06-03T02:00:00Z',
-    nextScheduledRunAt: '2026-06-06T02:00:00Z',
+    nextRunOn: '2026-06-06',
   },
 };

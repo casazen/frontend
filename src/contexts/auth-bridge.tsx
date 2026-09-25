@@ -1,4 +1,4 @@
-import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
+import { Auth0Provider, useAuth0, type AppState } from '@auth0/auth0-react';
 import {
   createContext,
   useCallback,
@@ -9,7 +9,8 @@ import {
 } from 'react';
 import { authConfig } from '@/config/auth.config';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
-import { setAccessTokenGetter } from '@/lib/axios';
+import { setApiAuthHandlers } from '@/lib/axios';
+import { SIGNUP_PATH } from '@/lib/signup-attribution';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -18,9 +19,21 @@ const AUTH_PARAMS = {
 
 type LoginOptions = {
   authorizationParams?: Record<string, string>;
+  /** Path of this app to open after the login (e.g. back to an invite page); default: the app root. */
+  returnTo?: string;
+  /**
+   * Extra values carried through the redirect in the SDK `appState` (kept in this browser, never sent to Auth0) and
+   * handed back to `onRedirectCallback`, e.g. the pending supplier claim (SU-02).
+   */
+  appState?: Record<string, unknown>;
 };
 
 export type AuthBridgeValue = {
+  /**
+   * `anonymous`: the app was opened on a public path and Auth0 is not loaded (see `isPublicUnauthenticatedPath`); a page
+   * that needs it must be loaded again (`AuthProviderBoundary`).
+   */
+  kind: 'auth0' | 'anonymous' | 'demo';
   isLoading: boolean;
   isAuthenticated: boolean;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
@@ -34,6 +47,8 @@ export type AuthBridgeValue = {
 
 const AuthBridgeContext = createContext<AuthBridgeValue | null>(null);
 
+// Context hook colocated with its providers; fast refresh falls back to a full reload for this file.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuthBridge(): AuthBridgeValue {
   const ctx = useContext(AuthBridgeContext);
   if (!ctx) {
@@ -43,28 +58,28 @@ export function useAuthBridge(): AuthBridgeValue {
 }
 
 function DemoAuthBridge({ children }: { children: ReactNode }) {
-  const demoUser = useMemo(
-    () => getDemoUser(),
-    // Re-read when E2E profile query changes
-    [typeof window !== 'undefined' ? window.location.href : ''],
-  );
+  // Re-read the persona when the E2E `?demoProfile=` URL changes.
+  const href = typeof window !== 'undefined' ? window.location.href : '';
+  const demoUser = useMemo(() => getDemoUser(href), [href]);
 
   const getAccessToken = useCallback(async () => 'demo-token', []);
   const refreshAccessToken = useCallback(async () => 'demo-token', []);
 
   useEffect(() => {
-    setAccessTokenGetter(getAccessToken);
-  }, [getAccessToken]);
+    // Demo tokens never expire: no re-login handler.
+    setApiAuthHandlers({ getAccessToken, refreshAccessToken });
+    return () => setApiAuthHandlers(null);
+  }, [getAccessToken, refreshAccessToken]);
 
   const value = useMemo<AuthBridgeValue>(
     () => ({
+      kind: 'demo',
       isLoading: false,
       isAuthenticated: true,
       user: demoUser,
-      login: () => {
-        console.log('Demo mode: login simulation');
-      },
-      logout: () => console.log('Demo mode: logout simulation'),
+      // Demo mode: the demo user is always signed in, login and logout have nothing to do.
+      login: () => {},
+      logout: () => {},
       logoutToLogin: () => window.location.replace('/login'),
       forceReauth: () => window.location.replace('/login'),
       getAccessToken,
@@ -76,15 +91,20 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
   return <AuthBridgeContext.Provider value={value}>{children}</AuthBridgeContext.Provider>;
 }
 
-/** Public booking / SEO paths — no Auth0 SPA SDK (works on http://LAN-IP). */
+/**
+ * Public booking / SEO paths — no Auth0 SPA SDK (works on http://LAN-IP). A visitor here is never sent to the login:
+ * `login` is only the answer to a click, and it opens the page that starts Auth0 directly (A8-03): `/signup` for a
+ * signup, which goes straight to the Auth0 signup screen, instead of the login page and a second click.
+ */
 function AnonymousAuthBridge({ children }: { children: ReactNode }) {
   const value = useMemo<AuthBridgeValue>(
     () => ({
+      kind: 'anonymous',
       isLoading: false,
       isAuthenticated: false,
       user: undefined,
-      login: () => {
-        window.location.assign('/login');
+      login: (options?: LoginOptions) => {
+        window.location.assign(options?.authorizationParams?.screen_hint === 'signup' ? SIGNUP_PATH : '/login');
       },
       logout: () => undefined,
       logoutToLogin: () => window.location.replace('/login'),
@@ -118,21 +138,32 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     [getAccessTokenSilently],
   );
 
-  useEffect(() => {
-    setAccessTokenGetter(getAccessToken);
-  }, [getAccessToken]);
-
   const login = useCallback(
     (options?: LoginOptions) => {
+      const appState = {
+        ...options?.appState,
+        ...(options?.returnTo ? { returnTo: options.returnTo } : {}),
+      };
       void loginWithRedirect({
         authorizationParams: {
           ...AUTH_PARAMS,
           ...options?.authorizationParams,
         },
+        ...(Object.keys(appState).length > 0 ? { appState } : {}),
       });
     },
     [loginWithRedirect],
   );
+
+  useEffect(() => {
+    setApiAuthHandlers({
+      getAccessToken,
+      refreshAccessToken,
+      // 401 after a token refresh (or Auth0 `login_required`): Auth0 redirect, loop-guarded by the client.
+      onSessionExpired: () => login(),
+    });
+    return () => setApiAuthHandlers(null);
+  }, [getAccessToken, refreshAccessToken, login]);
 
   const logout = useCallback(() => {
     auth0Logout({
@@ -154,6 +185,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthBridgeValue>(
     () => ({
+      kind: 'auth0',
       isLoading,
       isAuthenticated,
       user,
@@ -180,13 +212,20 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   return <AuthBridgeContext.Provider value={value}>{children}</AuthBridgeContext.Provider>;
 }
 
-export function AuthAppProviders({ children }: { children: ReactNode }) {
+export function AuthAppProviders({
+  children,
+  onRedirectCallback,
+}: {
+  children: ReactNode;
+  /** Called by the SDK after the Auth0 redirect, with the `appState` passed to `login` (e.g. `returnTo`). */
+  onRedirectCallback?: (appState?: AppState) => void;
+}) {
   if (isDemoMode) {
     return <DemoAuthBridge>{children}</DemoAuthBridge>;
   }
 
   return (
-    <Auth0Provider {...authConfig}>
+    <Auth0Provider {...authConfig} onRedirectCallback={onRedirectCallback}>
       <Auth0AuthBridge>{children}</Auth0AuthBridge>
     </Auth0Provider>
   );

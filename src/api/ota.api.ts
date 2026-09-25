@@ -11,7 +11,7 @@ import type {
 } from '@/types';
 
 export const otaApi = {
-  getAll: (params?: Record<string, any>) =>
+  getAll: (params?: Record<string, unknown>) =>
     ApiClient.get<OtaIntegration[]>('/ota', params),
 
   getById: (id: string) => ApiClient.get<OtaIntegration>(`/ota/${id}`),

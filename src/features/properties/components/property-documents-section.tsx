@@ -1,65 +1,91 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { PropertyDocumentDto } from '@/types';
+import type { PropertyDocumentDto, PropertyDocumentType } from '@/types';
 import { formatDateTime } from '@/lib/utils';
-import { Download, FileText, Trash2 } from 'lucide-react';
+import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
+import { Download, FileText, Loader2, Trash2 } from 'lucide-react';
 import { DocumentUploadDialog } from './document-upload-dialog';
-import { useDeletePropertyDocument } from '@/queries/use-properties';
+import { ApeIdentificationForm } from './ape-identification-form';
+import { useDeletePropertyDocument, useDownloadPropertyDocument } from '@/queries/use-properties';
 
 interface PropertyDocumentsSectionProps {
   propertyId: string;
   documents: PropertyDocumentDto[];
+  /** Type preselected in the upload dialog (the long-term property page asks for the APE first). */
+  defaultUploadType?: PropertyDocumentType;
 }
 
-export function PropertyDocumentsSection({ propertyId, documents }: PropertyDocumentsSectionProps) {
+export function PropertyDocumentsSection({ propertyId, documents, defaultUploadType }: PropertyDocumentsSectionProps) {
   const { t } = useTranslation();
   const deleteMutation = useDeletePropertyDocument();
+  // Private bucket: download through the authenticated API (token), saved from the blob.
+  const downloadMutation = useDownloadPropertyDocument();
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>{t('property.documents.title')}</CardTitle>
-        <DocumentUploadDialog propertyId={propertyId} />
+        <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />
       </CardHeader>
       <CardContent>
         {documents.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('property.documents.empty')}</p>
         ) : (
           <ul className="space-y-2">
-            {documents.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center justify-between rounded-lg border p-3"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{doc.fileName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
-                    </p>
+            {documents.map((doc) => {
+              const downloading =
+                downloadMutation.isPending && downloadMutation.variables?.docId === doc.id;
+              return (
+                <li
+                  key={doc.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{doc.fileName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
+                        {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
+                      </p>
+                      {doc.documentType === 'Ape' && <ApeIdentificationForm propertyId={propertyId} document={doc} />}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" asChild>
-                    <a href={doc.downloadUrl} download={doc.fileName} target="_blank" rel="noreferrer">
-                      <Download className="h-4 w-4" />
-                      <span className="sr-only">{t('property.documents.download')}</span>
-                    </a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => deleteMutation.mutate({ propertyId, docId: doc.id })}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                    <span className="sr-only">{t('property.documents.delete')}</span>
-                  </Button>
-                </div>
-              </li>
-            ))}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={downloading}
+                      aria-busy={downloading}
+                      onClick={() =>
+                        downloadMutation.mutate({ propertyId, docId: doc.id, fileName: doc.fileName })
+                      }
+                    >
+                      {downloading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                      <span className="sr-only">
+                        {downloading
+                          ? t('property.documents.downloading')
+                          : t('property.documents.download')}
+                      </span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate({ propertyId, docId: doc.id })}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <span className="sr-only">{t('property.documents.delete')}</span>
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </CardContent>

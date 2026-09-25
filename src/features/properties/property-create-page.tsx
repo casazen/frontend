@@ -10,9 +10,9 @@ import {
   isPlanLimitError,
   getPlanLimitMessage,
   getPlanUpgradeCta,
-  PLAN_UPGRADE_PATH,
+  getPlanUpgradePath,
 } from '@/lib/entitlement-error';
-import type { PropertyFormValues } from './schemas/property.schema';
+import type { CreatePropertyDto } from '@/types';
 
 export function PropertyCreatePage() {
   const { t } = useTranslation();
@@ -25,7 +25,7 @@ export function PropertyCreatePage() {
   // The server stays the source of truth — a stale client cannot bypass the limit (AC8/AC12).
   const blockedByPlan = planLimitHit || entitlement?.canAddProperty === false;
 
-  const handleSubmit = async (data: PropertyFormValues) => {
+  const handleSubmit = async (data: CreatePropertyDto) => {
     setPlanLimitHit(false);
     try {
       await createProperty.mutateAsync(data);
@@ -55,7 +55,7 @@ export function PropertyCreatePage() {
           >
             <p className="font-medium text-destructive">{getPlanLimitMessage()}</p>
             <Link
-              to={PLAN_UPGRADE_PATH}
+              to={getPlanUpgradePath('short-rent')}
               className="mt-1 inline-block font-medium text-primary underline underline-offset-2"
             >
               {getPlanUpgradeCta()}

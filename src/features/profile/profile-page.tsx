@@ -20,7 +20,7 @@ export function ProfilePage() {
 
   const displayRole = roles.includes('Admin')
     ? 'Admin'
-    : roles[0] ?? profile?.role ?? 'User';
+    : roles[0] ?? profile?.role;
   const displayName =
     user.name ||
     [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') ||

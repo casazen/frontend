@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { displayableMediaUrls } from '@/lib/media-url';
 
 interface PropertyGalleryProps {
   photoUrls: string[];
@@ -10,7 +11,7 @@ interface PropertyGalleryProps {
 export function PropertyGallery({ photoUrls, alt }: PropertyGalleryProps) {
   const { t } = useTranslation();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const photos = photoUrls.length > 0 ? photoUrls : [];
+  const photos = displayableMediaUrls(photoUrls);
 
   if (photos.length === 0) {
     return (

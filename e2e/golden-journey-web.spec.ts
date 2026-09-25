@@ -484,7 +484,16 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
 
     await page.goto(`/app/short-rent/bookings/${bookingId}/checkout`);
     await l3expect(page.getByTestId('checkout-wizard-page')).toBeVisible({ timeout: 20_000 });
+    // CO-17: the 5 steps. The supplier request of step 7 is already tied to the stay, so the cleaning is skipped.
     await page.getByTestId('checkout-confirm-departure').click();
+    await page.getByTestId('checkout-step-next').click();
+    await l3expect(page.getByTestId('checkout-step-panel-alloggiati')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('checkout-step-next').click();
+    await page.getByTestId('checkout-cleaning-skip').click();
+    await page.getByTestId('checkout-step-next').click();
+    await page.getByTestId('checkout-tourist-tax-CollectedAtProperty').click();
+    await page.getByTestId('checkout-step-next').click();
+    await page.getByTestId('checkout-property-ready-yes').click();
     await page.getByTestId('checkout-complete-button').click();
     await l3expect(page.getByText(/Check-out completato/i)).toBeVisible({ timeout: 20_000 });
 
@@ -498,9 +507,12 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     expectSuccessStatus(summary.status(), 'Step 12 compliance summary');
     const summaryBody = (await summary.json()) as {
       checkoutsDue?: { items?: { id?: string }[] };
+      turnoversPending?: { items?: { id?: string }[] };
     };
     const dueIds = (summaryBody.checkoutsDue?.items ?? []).map((item) => item.id);
     l3expect(dueIds, 'Step 12 this booking not in checkouts due').not.toContain(bookingId);
+    const turnoverIds = (summaryBody.turnoversPending?.items ?? []).map((item) => item.id);
+    l3expect(turnoverIds, 'Step 12 property declared ready: no turnover left').not.toContain(bookingId);
 
     await page.goto('/app/short-rent');
     await l3expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 20_000 });

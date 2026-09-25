@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi } from '@/api/payments.api';
-import type { CreatePaymentDto, RevenueParams } from '@/types';
+import type { CreatePaymentDto, PaymentRefund, RefundPaymentDto, RevenueParams } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
-const PAYMENTS_KEY = 'payments';
+export const PAYMENTS_KEY = 'payments';
 
-export function usePayments(params?: Record<string, any>) {
+export function usePayments(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [PAYMENTS_KEY, params],
     queryFn: () => paymentsApi.getAll(params),
@@ -37,42 +38,41 @@ export function useCreatePayment() {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       toast.success(i18n.t('toast.paymentCreated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.paymentCreateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.paymentCreateFailed'));
     },
   });
 }
 
-export function useProcessPayment() {
-  const queryClient = useQueryClient();
+/** Refunds still waiting for Stripe are polled until Stripe confirms or fails them (BK-02). */
+export const REFUND_POLL_INTERVAL_MS = 5000;
 
-  return useMutation({
-    mutationFn: (id: string) => paymentsApi.process(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, id] });
-      toast.success(i18n.t('toast.paymentProcessed'));
-    },
-    onError: () => {
-      toast.error(i18n.t('toast.paymentProcessFailed'));
-    },
+export function isRefundInProgress(refund: PaymentRefund): boolean {
+  return refund.status === 'Pending' || refund.status === 'RequiresAction';
+}
+
+export function usePaymentRefunds(id: string, enabled = true) {
+  return useQuery({
+    queryKey: [PAYMENTS_KEY, id, 'refunds'],
+    queryFn: () => paymentsApi.getRefunds(id),
+    enabled: enabled && !!id,
+    refetchInterval: (query) =>
+      query.state.data?.refunds.some(isRefundInProgress) ? REFUND_POLL_INTERVAL_MS : false,
   });
 }
 
+/**
+ * Refund on Stripe. No toast: the dialog shows what Stripe answered (confirmed, waiting or failed)
+ * and the error, so nothing claims "refunded" before Stripe does.
+ */
 export function useRefundPayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, amount }: { id: string; amount?: number }) =>
-      paymentsApi.refund(id, amount),
-    onSuccess: (_, variables) => {
+    mutationFn: ({ id, data }: { id: string; data: RefundPaymentDto }) => paymentsApi.refund(id, data),
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, variables.id] });
-      queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, 'revenue'] });
-      toast.success(i18n.t('toast.paymentRefunded'));
-    },
-    onError: () => {
-      toast.error(i18n.t('toast.paymentRefundFailed'));
     },
   });
 }

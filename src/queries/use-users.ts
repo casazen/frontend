@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
-import type { RentalType, UpdateProfileRequest, PlanTier } from '@/types';
+import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
+import { isDemoMode } from '@/config/demo.config';
+import { getDemoProfile } from '@/lib/demo-profile';
 
 const USERS_KEY = 'users';
+// Same key as ME_QUERY_KEY (lib/onboarding-gate), refreshed on a 403 onboarding_required.
 const ME_KEY = 'me';
 
 /** Query key for the caller's resolved plan entitlement (#202). Exported so writes can invalidate it. */
@@ -35,10 +39,23 @@ export function useUser(id: string) {
   });
 }
 
+/**
+ * Demo mode (A1-18): Playwright mocks `/users/me`, but anywhere else the API rejects the demo token. The profile of
+ * the demo persona then stands in for it, so the onboarding guard never loops on an error it cannot fix.
+ */
+async function fetchMe(): Promise<UserDetail> {
+  if (!isDemoMode) return UsersApi.getMe();
+  try {
+    return await UsersApi.getMe();
+  } catch {
+    return getDemoProfile();
+  }
+}
+
 export function useMe() {
   return useQuery({
     queryKey: [ME_KEY],
-    queryFn: () => UsersApi.getMe(),
+    queryFn: fetchMe,
     refetchOnMount: 'always',
   });
 }
@@ -59,11 +76,12 @@ export function useCurrentUser() {
 
 /** Resolved plan entitlement (limits + usage) for the caller's org (#202, AC8). */
 export function useEntitlement() {
-  const { org } = useCurrentUser();
+  const { org, user } = useCurrentUser();
   return useQuery({
     queryKey: ENTITLEMENT_QUERY_KEY,
     queryFn: () => OrgsApi.getMyEntitlement(),
-    enabled: !!org?.id,
+    // A host endpoint: not asked while the backend withholds the host features (PL-02), e.g. from the admin shell.
+    enabled: !!org?.id && user?.onboardingRequired !== true,
     retry: false,
   });
 }
@@ -77,8 +95,8 @@ export function useUpdateMe() {
       queryClient.invalidateQueries({ queryKey: [ME_KEY] });
       toast.success(i18n.t('toast.profileUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.profileUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.profileUpdateFailed'));
     },
   });
 }
@@ -93,8 +111,8 @@ export function useChangeUserRole() {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
       toast.success(i18n.t('toast.roleUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.roleUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.roleUpdateFailed'));
     },
   });
 }
@@ -103,22 +121,6 @@ export function usePlans() {
   return useQuery({
     queryKey: ['plans'],
     queryFn: () => OrgsApi.getPlans(),
-  });
-}
-
-export function useUpdateMyPlan() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (planTier: PlanTier) => OrgsApi.updateMyPlan(planTier),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [ME_KEY] });
-      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
-      toast.success(i18n.t('toast.planUpdated'));
-    },
-    onError: () => {
-      toast.error(i18n.t('toast.planUpdateFailed'));
-    },
   });
 }
 
@@ -152,12 +154,36 @@ export function useDeactivateUser() {
 
   return useMutation({
     mutationFn: (id: string) => UsersApi.deactivateUser(id),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
-      toast.success(i18n.t('toast.userDeactivated'));
+      // PL-03: the user is deactivated in CasaZen either way; Auth0 may still have to be updated by a retry.
+      if (result?.auth0Synced === false) {
+        toast.warning(i18n.t('toast.userDeactivatedAuth0NotSynced'));
+      } else {
+        toast.success(i18n.t('toast.userDeactivated'));
+      }
     },
-    onError: () => {
-      toast.error(i18n.t('toast.userDeactivateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.userDeactivateFailed'));
+    },
+  });
+}
+
+export function useReactivateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => UsersApi.reactivateUser(id),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      if (result?.auth0Synced === false) {
+        toast.warning(i18n.t('toast.userReactivatedAuth0NotSynced'));
+      } else {
+        toast.success(i18n.t('toast.userReactivated'));
+      }
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.userReactivateFailed'));
     },
   });
 }

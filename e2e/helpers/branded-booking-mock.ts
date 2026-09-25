@@ -30,7 +30,7 @@ export const mockOrgProperties: PublicPropertyDto[] = [
     cleaningFee: 55,
     amenities: ['Wifi', 'Aria condizionata'],
     photoUrls: ['https://cdn.example.com/trastevere-suite.jpg'],
-    cinCode: 'IT-12345-0123456789',
+    cinCode: 'IT058091C27G5FFZDZ',
     cinStatus: 'Valid',
     timezone: 'Europe/Rome',
   },
@@ -48,13 +48,26 @@ export const mockOrgProperties: PublicPropertyDto[] = [
     cleaningFee: 40,
     amenities: ['Wifi'],
     photoUrls: [],
-    cinCode: 'IT-12345-0987654321',
+    cinCode: 'IT048017B42742QNBZ',
     cinStatus: 'Valid',
     timezone: 'Europe/Rome',
   },
 ];
 
 export async function mockBrandedBookingApi(page: Page): Promise<void> {
+  // Without it the demo server answers with index.html and the widget cannot read booked dates.
+  await page.route('**/api/public/bookings/property/*/availability*', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ propertyId: mockOrgPropertyId, startDate: '', endDate: '', bookedDates: [] }),
+    });
+  });
+
   await page.route('**/api/public/orgs/**', async (route) => {
     const url = route.request().url();
     const method = route.request().method();

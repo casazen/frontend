@@ -8,6 +8,8 @@ import { ChangeRoleDialog } from './change-role-dialog';
 import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
 import type { UserSummary } from '@/types';
+import { getPlanTierLabel, getRoleLabel } from '@/lib/i18n-labels';
+import { useReactivateUser } from '@/queries/use-users';
 
 interface UserManagementTableProps {
   users: UserSummary[];
@@ -19,6 +21,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
   const [planTarget, setPlanTarget] = useState<UserSummary | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<UserSummary | null>(null);
+  const { mutate: reactivate, isPending: isReactivating, variables: reactivatingId } = useReactivateUser();
 
   if (isLoading) {
     return (
@@ -52,10 +55,10 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                 </td>
                 <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
                 <td className="py-3 pr-4">
-                  <Badge variant="outline">{user.role}</Badge>
+                  <Badge variant="outline">{getRoleLabel(user.role, t)}</Badge>
                 </td>
                 <td className="py-3 pr-4">
-                  <Badge variant="secondary">{user.planTier ?? '—'}</Badge>
+                  <Badge variant="secondary">{user.planTier ? getPlanTierLabel(user.planTier, t) : '—'}</Badge>
                 </td>
                 <td className="py-3 pr-4">
                   {user.isActive ? (
@@ -81,13 +84,22 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                     >
                       {t('admin.users.table.roleAction')}
                     </Button>
-                    {user.isActive && (
+                    {user.isActive ? (
                       <Button
                         variant="destructive"
                         size="sm"
                         onClick={() => setDeactivateTarget(user)}
                       >
                         {t('admin.users.table.deactivateAction')}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => reactivate(user.id)}
+                        disabled={isReactivating && reactivatingId === user.id}
+                      >
+                        {t('admin.users.table.reactivateAction')}
                       </Button>
                     )}
                   </div>

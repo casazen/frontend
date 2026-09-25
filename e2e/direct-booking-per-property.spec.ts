@@ -4,7 +4,8 @@
  * AC12: Vetrina page shows a master-detail layout with property list on the left
  *       and a preview iframe on the right.
  * AC13: Property URL uses slug when available, falls back to ID.
- * AC14: Navigating to /book/:orgSlug/property/:slug resolves the property correctly.
+ * AC14: Navigating to /book/:orgSlug/property/:slug resolves the property correctly, and the
+ *       widget hands dates and guests over to the checkout (A3-01).
  */
 import { test, expect } from './test';
 import {
@@ -15,9 +16,11 @@ import {
   mockOrgPropertySlug,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
+import { futureStay, mockDirectBookingResponse } from './helpers/direct-checkout-mock';
+import { demoUrl } from './helpers/demo-profile';
 import { mockCurrentUserWithOrg } from './helpers/org-api-mock';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
-import type { Property } from '../src/types';
+import type { CreateDirectBookingPayload, Property } from '../src/types';
 
 const DEMO_ORG_SLUG_VETRINA = 'acme-stays';
 
@@ -40,7 +43,7 @@ function buildVetrinaProperty(overrides: Partial<Property> = {}): Property {
     amenities: ['WiFi'],
     photoUrls: [],
     houseRules: '',
-    cinCode: 'IT-12345-0123456789',
+    cinCode: 'IT058091C27G5FFZDZ',
     timezone: 'Europe/Rome',
     cancellationPolicyId: null,
     isActive: true,
@@ -63,14 +66,14 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('vetrina page renders property list panel', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText('Trastevere Suite')).toBeVisible();
   });
 
   test('selecting a property shows the preview iframe for that property', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
@@ -84,7 +87,7 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('published badge appears on active+compliant property', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
@@ -94,7 +97,7 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('copy URL button copies property booking URL to clipboard', async ({ page }) => {
-    await page.goto('/app/short-rent/settings/direct-booking');
+    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
     await page.getByTestId('vetrina-property-copy-url').first().click();
@@ -168,15 +171,67 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
   });
 
-  test('checkout navigates with slug in the URL', async ({ page }) => {
+  test('widget checkout carries dates, guests and amount to the checkout (A3-01)', async ({ page }) => {
+    const { checkIn, checkOut } = futureStay(30, 3);
+    let bookingPayload: CreateDirectBookingPayload | undefined;
+    await page.route('**/api/public/bookings', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
+      bookingPayload = route.request().postDataJSON() as CreateDirectBookingPayload;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockDirectBookingResponse()),
+      });
+    });
+
     await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}`);
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    await page.locator('#check-in').fill('2026-07-01');
-    await page.locator('#check-out').fill('2026-07-04');
+    await page.locator('#check-in').fill(checkIn);
+    await page.locator('#check-out').fill(checkOut);
+    await page.locator('#guests').fill('3');
     await page.getByRole('button', { name: 'Procedi al checkout' }).click();
 
-    await expect(page).toHaveURL(new RegExp(`/property/${mockOrgPropertySlug}/checkout`));
+    // One "?" and the deep link parameters (checkin/checkout/guests), not "/checkout??checkIn=…".
+    await expect(page).toHaveURL(
+      new RegExp(`/property/${mockOrgPropertySlug}/checkout\\?checkin=${checkIn}&checkout=${checkOut}&guests=3$`),
+    );
+    expect(page.url()).not.toContain('??');
+
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible();
+    await expect(page.locator('#checkout-check-in')).toHaveValue(checkIn);
+    await expect(page.locator('#checkout-check-out')).toHaveValue(checkOut);
+    await expect(page.locator('#adults')).toHaveValue('3');
+    await expect(page.locator('#children')).toHaveValue('0');
+    await expect(page.getByTestId('checkout-stay-summary')).toContainText('(3 notti)');
+    await expect(page.getByText(/Invalid Date/)).toHaveCount(0);
+
+    // 3 nights × 165 € + 55 € cleaning. The tourist tax is still the provisional estimate of the
+    // page (2 € × adults × nights = 18 €) until the quote endpoint of task BK-03.
+    const breakdown = page.getByTestId('price-breakdown');
+    await expect(breakdown).toContainText('3 notti x 165,00 €');
+    await expect(breakdown).toContainText('495,00 €');
+    await expect(breakdown).toContainText('55,00 €');
+    await expect(breakdown).toContainText('568,00 €');
+
+    await page.getByRole('button', { name: 'Paga subito' }).click();
+    await page.locator('#firstName').fill('Mario');
+    await page.locator('#lastName').fill('Rossi');
+    await page.locator('#email').fill('mario.rossi@example.com');
+    await page.locator('#country').selectOption('IT');
+    await page.getByRole('checkbox').click();
+    await page.getByRole('button', { name: 'Continua' }).click();
+
+    await expect(page.getByTestId('checkout-payment-step')).toBeVisible();
+    expect(bookingPayload).toMatchObject({
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+      numberOfAdults: 3,
+      numberOfChildren: 0,
+      guest: { country: 'IT', email: 'mario.rossi@example.com' },
+    });
   });
 });

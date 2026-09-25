@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -10,9 +10,10 @@ import { Loader2, Store, Phone, Mail } from 'lucide-react';
 import { useServiceRequests, useSuppliersByProperty } from '@/queries/use-service-requests';
 import { useProperties } from '@/queries/use-properties';
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
+import { ServiceCategorySelect } from '@/features/service-requests/components/service-category-picker';
 import type { SupplierPicker } from '@/types/service-request';
-
-const CATEGORIES = ['cleaning', 'maintenance', 'plumbing', 'laundry'] as const;
+import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -28,11 +29,21 @@ export function MarketplacePage() {
   const propertyIdParam = searchParams.get('propertyId') ?? '';
   const [selectedPropertyId, setSelectedPropertyId] = useState(propertyIdParam);
 
-  const { data: suppliers, isLoading: suppliersLoading } = useSuppliersByProperty(
+  const {
+    data: suppliers,
+    isLoading: suppliersLoading,
+    isError: suppliersError,
+  } = useSuppliersByProperty(
     selectedPropertyId || undefined,
     categoryFilter || undefined,
   );
-  const { data: requests, isLoading: requestsLoading } = useServiceRequests(
+  const {
+    data: requests,
+    isLoading: requestsLoading,
+    isError: requestsError,
+    error: requestsLoadError,
+    refetch: refetchRequests,
+  } = useServiceRequests(
     selectedPropertyId ? { propertyId: selectedPropertyId } : { listAll: true, page: 1, pageSize: 50 },
   );
 
@@ -80,22 +91,15 @@ export function MarketplacePage() {
             </select>
           </div>
           <div className="flex-1 min-w-[180px]">
-            <select
-              className={selectClass}
+            <ServiceCategorySelect
               value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
+              onChange={(code) => {
+                setCategoryFilter(code);
                 setSelectedSupplier(null);
               }}
+              emptyOptionLabel={t('marketplace.allCategories')}
               data-testid="marketplace-category-filter"
-            >
-              <option value="">{t('marketplace.allCategories')}</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {t(`serviceRequest.categories.${c}`)}
-                </option>
-              ))}
-            </select>
+            />
           </div>
         </div>
 
@@ -110,7 +114,12 @@ export function MarketplacePage() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
-            {selectedPropertyId && !suppliersLoading && (suppliers?.items?.length ?? 0) === 0 && (
+            {selectedPropertyId && suppliersError && (
+              <p className="text-sm text-destructive py-4" role="alert" data-testid="marketplace-suppliers-error">
+                {t('marketplace.suppliersLoadError')}
+              </p>
+            )}
+            {selectedPropertyId && !suppliersLoading && !suppliersError && (suppliers?.items?.length ?? 0) === 0 && (
               <p className="text-sm text-muted-foreground py-4">{t('marketplace.noSuppliers')}</p>
             )}
             <div
@@ -131,7 +140,7 @@ export function MarketplacePage() {
                     <div className="flex flex-wrap gap-1">
                       {supplier.categories.map((cat) => (
                         <Badge key={cat} variant="secondary" className="text-xs">
-                          {t(`serviceRequest.categories.${cat}`, { defaultValue: cat })}
+                          {getServiceCategoryLabel(cat, t)}
                         </Badge>
                       ))}
                     </div>
@@ -171,7 +180,7 @@ export function MarketplacePage() {
                   <div className="flex flex-wrap gap-1 pt-1">
                     {selectedSupplier.categories.map((cat) => (
                       <Badge key={cat} variant="outline" className="text-xs">
-                        {t(`serviceRequest.categories.${cat}`, { defaultValue: cat })}
+                        {getServiceCategoryLabel(cat, t)}
                       </Badge>
                     ))}
                   </div>
@@ -184,14 +193,14 @@ export function MarketplacePage() {
                       >
                         {t('serviceRequest.requestSupplier')}
                       </Button>
+                      {/* Short-rent (D2): the form asks which stay of the property the request is for. */}
                       <ServiceRequestForm
                         propertyId={selectedPropertyId}
-                        preselectedSupplierOrgId={selectedSupplier.orgId}
+                        supplierOrgId={selectedSupplier.orgId}
                         preselectedCategory={categoryFilter || selectedSupplier.categories[0]}
                         open={formOpen}
                         onOpenChange={setFormOpen}
                         hideTrigger
-                        skipAiMatch
                       />
                     </>
                   )}
@@ -220,13 +229,23 @@ export function MarketplacePage() {
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
-            {!requestsLoading && (requests?.items?.length ?? 0) === 0 && (
+            {requestsError && (
+              <div className="space-y-2 py-4" role="alert" data-testid="marketplace-requests-error">
+                <p className="text-sm text-destructive">
+                  {getProblemMessage(requestsLoadError, t) ?? t('serviceRequest.listLoadError')}
+                </p>
+                <Button size="sm" variant="outline" onClick={() => void refetchRequests()}>
+                  {t('serviceRequest.retry')}
+                </Button>
+              </div>
+            )}
+            {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) === 0 && (
               <div className="text-center py-8 space-y-2">
                 <p className="text-muted-foreground">{t('marketplace.noRequests')}</p>
                 <p className="text-sm text-muted-foreground">{t('marketplace.noRequestsHint')}</p>
               </div>
             )}
-            {!requestsLoading && (requests?.items?.length ?? 0) > 0 && (
+            {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) > 0 && (
               <div className="space-y-3" data-testid="marketplace-requests-list">
                 {requests!.items.map((req) => (
                   <div
@@ -237,14 +256,23 @@ export function MarketplacePage() {
                       <div className="font-medium">
                         {req.propertyName ?? req.propertyId.slice(0, 8)}
                         {' · '}
-                        {t(`serviceRequest.categories.${req.category}`, { defaultValue: req.category })}
+                        {getServiceCategoryLabel(req.category, t)}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {req.supplierName ?? '—'}
                       </div>
+                      {req.bookingId && (
+                        <Link
+                          to={`/app/short-rent/bookings/${req.bookingId}`}
+                          className="text-xs text-primary hover:underline"
+                          data-testid={`marketplace-request-stay-${req.id}`}
+                        >
+                          {t('marketplace.viewBooking')}
+                        </Link>
+                      )}
                     </div>
                     <Badge variant="secondary">
-                      {t(`serviceRequest.status.${req.status}`, { defaultValue: req.status })}
+                      {getServiceRequestStatusLabel(req.status, t)}
                     </Badge>
                   </div>
                 ))}

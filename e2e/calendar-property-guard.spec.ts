@@ -62,7 +62,7 @@ test.describe('Calendar property guard (#282)', () => {
       waitUntil: 'networkidle',
     });
 
-    await expect(page.getByText('Nessuna proprietà disponibile')).toBeVisible();
-    await expect(page.getByText(/Aggiungi una proprietà per visualizzare il calendario/i)).toBeVisible();
+    await expect(page.getByText(/Nessuna proprietà disponibile|No properties available/i)).toBeVisible();
+    await expect(page.getByText(/Aggiungi una proprietà per visualizzare il calendario|Add a property to view the calendar/i)).toBeVisible();
   });
 });

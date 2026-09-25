@@ -1,7 +1,8 @@
 import { ApiClient } from './client';
 import type {
   PropertyIcalExportUrl,
-  PropertyIcalImportUrlRequest,
+  PropertyIcalFeed,
+  PropertyIcalFeedCreateRequest,
   PropertyIcalStatus,
 } from '@/types/property-ical';
 
@@ -9,9 +10,22 @@ export const propertyIcalApi = {
   getStatus: (propertyId: string) =>
     ApiClient.get<PropertyIcalStatus>(`/properties/${propertyId}/ical/status`),
 
-  setImportUrl: (propertyId: string, data: PropertyIcalImportUrlRequest) =>
-    ApiClient.post<PropertyIcalStatus>(`/properties/${propertyId}/ical/import-url`, data),
+  getFeeds: (propertyId: string) =>
+    ApiClient.get<PropertyIcalFeed[]>(`/properties/${propertyId}/ical/feeds`),
+
+  addFeed: (propertyId: string, data: PropertyIcalFeedCreateRequest) =>
+    ApiClient.post<PropertyIcalFeed>(`/properties/${propertyId}/ical/feeds`, data),
+
+  removeFeed: (propertyId: string, feedId: string) =>
+    ApiClient.delete<void>(`/properties/${propertyId}/ical/feeds/${feedId}`),
+
+  syncFeed: (propertyId: string, feedId: string) =>
+    ApiClient.post<PropertyIcalFeed>(`/properties/${propertyId}/ical/feeds/${feedId}/sync`),
 
   getExportUrl: (propertyId: string) =>
     ApiClient.get<PropertyIcalExportUrl>(`/properties/${propertyId}/ical/export-url`),
+
+  /** New token for the export link (PC-12): the old link stops working at once. */
+  regenerateExportUrl: (propertyId: string) =>
+    ApiClient.post<PropertyIcalExportUrl>(`/properties/${propertyId}/ical/export-url/regenerate`),
 };

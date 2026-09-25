@@ -9,6 +9,40 @@ import {
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 async function mockDashboardApis(page: import('@playwright/test').Page): Promise<void> {
+  await page.route('**/api/dashboard/kpis**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        period: { kind: 'Month', from: '2026-09-01', to: '2026-09-30', nights: 30 },
+        today: '2026-09-25',
+        propertyCount: 1,
+        occupancy: { occupiedNights: 0, availableNights: 30, closedNights: 0, rate: 0 },
+        revenue: { amount: 0, currency: 'EUR', stayCount: 0 },
+        arrivalsToday: { count: 0, items: [] },
+        departuresToday: { count: 0, items: [] },
+        upcomingCheckIns: { count: 0, items: [] },
+        recentBookings: [],
+      }),
+    });
+  });
+
+  await page.route('**/api/dashboard/ical-feeds**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    });
+  });
+
   await page.route('**/api/bookings**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -115,7 +149,7 @@ test.describe('Compliance wizards (#295)', () => {
           pricingAdapterSummary: {
             isEnabled: false,
             lastAdaptedAt: null,
-            nextScheduledRunAt: null,
+            nextRunOn: null,
           },
         }),
       });
@@ -157,20 +191,34 @@ test.describe('Compliance wizards (#295)', () => {
     await expect(page.getByTestId('compliance-status-badge')).toHaveText(/Pending|In attesa/i);
   });
 
+  // The mock has the contract of the API (action + target, CO-04): the routes come from the app, not from the mock.
   test('AC13: summary widget rows deep-link to relevant wizards', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
 
     const propertyLink = page.getByTestId('compliance-summary-properties-link').first();
     await propertyLink.click();
-    await expect(page).toHaveURL(new RegExp(`/properties/${DEMO_PROPERTY_ID}/activation`));
+    await expect(page).toHaveURL(new RegExp(`/app/short-rent/properties/${DEMO_PROPERTY_ID}/activation$`));
     await expect(page.getByTestId('property-activation-wizard')).toBeVisible();
 
-    await page.goto(demoUrl('/app/short-rent/compliance', 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('compliance-summary-page')).toBeVisible({ timeout: 15_000 });
+    const openFromCockpit = async (testId: string, url: string) => {
+      await page.goto(demoUrl('/app/short-rent/compliance', 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await expect(page.getByTestId('compliance-summary-page')).toBeVisible({ timeout: 15_000 });
+      await page.getByTestId(testId).first().click();
+      await expect(page).toHaveURL((current) => `${current.pathname}${current.search}` === url);
+    };
 
-    const checkoutLink = page.getByTestId('compliance-summary-checkouts-link').first();
-    await checkoutLink.click();
-    await expect(page).toHaveURL(new RegExp(`/bookings/${DEMO_CHECKOUT_BOOKING_ID}/checkout`));
+    await openFromCockpit(
+      'compliance-summary-checkouts-link',
+      `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}/checkout`,
+    );
+    await openFromCockpit(
+      'compliance-summary-checkins-link',
+      `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}?tab=alloggiati`,
+    );
+    await openFromCockpit(
+      'compliance-summary-alloggiati-manual-link',
+      `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}?tab=alloggiati`,
+    );
   });
 });

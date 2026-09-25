@@ -1,3 +1,6 @@
+import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+
 export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
 
 export type NavGroup =
@@ -27,6 +30,14 @@ export interface RouteManifestEntry {
   isDefault?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
+  /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
+  featureFlag?: FeatureFlagKey;
+  /**
+   * Plan and billing of the org (backend policy `OrgBillingAdmin`, TN-3): the entry is in the menu only for the org
+   * billing administrator ({@link ORG_BILLING_ADMIN_PERMISSION}). The route stays reachable: the page itself tells
+   * anyone else to contact the administrator (spec-saas-billing AC13).
+   */
+  orgBillingAdmin?: boolean;
 }
 
 export const NAV_GROUP_ORDER: NavGroup[] = [
@@ -142,36 +153,45 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    path: '/app/short-rent/properties/:id/pricing/history',
-    context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    component: async () => ({ default: (await import('@/features/pricing')).PricingHistoryPage }),
-    legacyPaths: ['/properties/:id/pricing/history'],
-  },
-  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.domain',
     navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 4,
+    navOrder: 5,
     icon: 'Globe',
     component: async () => ({
       default: (await import('@/features/settings/domain/custom-domain-settings-page')).CustomDomainSettingsPage,
     }),
   },
   {
+    // Plans and Stripe checkout; also the return page of the checkout and of the billing portal (backend PL-11).
     path: '/app/short-rent/settings/plan',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
+    requiredPermissions: [],
+    orgBillingAdmin: true,
     navKey: 'nav.plan',
     navGroup: 'account',
     navPlacement: 'secondary',
     navOrder: 2,
     icon: 'CreditCard',
     component: async () => ({
-      default: (await import('@/features/settings/plan-settings-page')).PlanSettingsPage,
+      default: (await import('@/features/billing/plans-page')).PlansPage,
+    }),
+  },
+  {
+    path: '/app/short-rent/settings/billing',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.billing',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'Receipt',
+    component: async () => ({
+      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
     }),
   },
   {
@@ -181,7 +201,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.stripeConnect',
     navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 3,
+    navOrder: 4,
     icon: 'Wallet',
     component: async () => ({
       default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
@@ -261,6 +281,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
+    legacyPaths: ['/app/short-rent/cin', '/cin', '/admin/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -324,6 +345,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Repeat',
     component: async () => ({ default: (await import('@/features/ota/ota-page')).OtaPage }),
     legacyPaths: ['/ota'],
+    featureFlag: 'otaPartnerApi',
   },
   {
     path: '/app/short-rent/ota/create',
@@ -331,6 +353,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['ota.write'],
     component: async () => ({ default: (await import('@/features/ota/ota-setup-page')).OtaSetupPage }),
     legacyPaths: ['/ota/create'],
+    featureFlag: 'otaPartnerApi',
   },
   {
     path: '/app/short-rent/vetrina',
@@ -382,6 +405,44 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).LeaseDetailPage }),
     legacyPaths: ['/leases/:id'],
   },
+  // Long-term landlord's properties and their APE (A7-06): the property core only, never the short-stay pages.
+  {
+    path: '/app/long-rent/properties',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.properties',
+    navGroup: 'immobili',
+    navPlacement: 'primary',
+    navOrder: 1.5,
+    icon: 'Home',
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
+    }),
+  },
+  {
+    path: '/app/long-rent/properties/new',
+    context: 'long-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertyCreatePage,
+    }),
+  },
+  {
+    path: '/app/long-rent/properties/:id',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertyDetailPage,
+    }),
+  },
+  {
+    path: '/app/long-rent/properties/:id/edit',
+    context: 'long-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/long-rent')).LongRentPropertyEditPage,
+    }),
+  },
   {
     path: '/app/long-rent/profile',
     context: 'long-rent',
@@ -393,6 +454,36 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-content-page')).ProfileContentPage }),
     legacyPaths: ['/profile'],
+  },
+  // Plan and billing of the org for a landlord with only long-term leases (PL-16, A1-36): same pages as in short-rent,
+  // inside the long-rent shell; also the Stripe return pages of a checkout or portal started here.
+  {
+    path: '/app/long-rent/settings/plan',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.plan',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'CreditCard',
+    component: async () => ({
+      default: (await import('@/features/billing/plans-page')).PlansPageContent,
+    }),
+  },
+  {
+    path: '/app/long-rent/settings/billing',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.billing',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 4,
+    icon: 'Receipt',
+    component: async () => ({
+      default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
+    }),
   },
   {
     path: '/app/admin',
@@ -495,6 +586,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 3,
     icon: 'Coins',
     component: async () => ({ default: (await import('@/features/admin/admin-tax-rates-page')).AdminTaxRatesPage }),
+    legacyPaths: ['/app/admin/tourist-tax', '/admin/tourist-tax'],
+  },
+  // Admin LTR reference data (LT-13, A7-22): territorial agreements and comune IMU channels.
+  {
+    path: '/app/admin/compliance/ltr-reference-data',
+    context: 'admin',
+    requiredPermissions: ['admin.ltr.manage'],
+    navKey: 'nav.ltrReferenceData',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/admin/admin-ltr-reference-data-page')).AdminLtrReferenceDataPage,
+    }),
   },
   // ============================================================
   // Supplier console
@@ -551,6 +657,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-inbox-page')).SupplierInboxPage }),
   },
   {
+    // Detail of one request: where, when, host contact after the take, actions and history (SU-08, A4-14).
+    path: '/app/supplier/inbox/:id',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/supplier-request-detail-page')).SupplierRequestDetailPage,
+    }),
+  },
+  {
     path: '/app/supplier/availability',
     context: 'supplier',
     requiredPermissions: [],
@@ -569,11 +684,17 @@ function isNavEntry(entry: RouteManifestEntry): boolean {
   return !!(entry.navKey || entry.navLabel);
 }
 
+/** Entries behind a feature flag need the flag on; without flags (not loaded) they are hidden. */
+export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Partial<FeatureFlags>): boolean {
+  return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
+}
+
 function hasEntryPermission(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
 ): boolean {
   if (!hasPermission) return true;
+  if (entry.orgBillingAdmin && !hasPermission(entry.context, ORG_BILLING_ADMIN_PERMISSION)) return false;
   return entry.requiredPermissions.every((permission) =>
     hasPermission(entry.context, permission),
   );
@@ -596,20 +717,23 @@ export function getNavEntries(contextKey: AppContextKey): RouteManifestEntry[] {
 export function getVisibleNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): RouteManifestEntry[] {
   return ROUTE_MANIFEST.filter(
     (entry) =>
       entry.context === contextKey &&
       isNavEntry(entry) &&
-      hasEntryPermission(entry, hasPermission),
+      hasEntryPermission(entry, hasPermission) &&
+      isEntryFeatureEnabled(entry, features),
   ).sort((a, b) => (a.navOrder ?? 99) - (b.navOrder ?? 99));
 }
 
 export function getPrimaryNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): RouteManifestEntry[] {
-  return getVisibleNavEntries(contextKey, hasPermission).filter(
+  return getVisibleNavEntries(contextKey, hasPermission, features).filter(
     (entry) => entry.navPlacement === 'primary',
   );
 }
@@ -617,8 +741,9 @@ export function getPrimaryNavEntries(
 export function getSecondaryNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): RouteManifestEntry[] {
-  return getVisibleNavEntries(contextKey, hasPermission).filter(
+  return getVisibleNavEntries(contextKey, hasPermission, features).filter(
     (entry) => entry.navPlacement === 'secondary',
   );
 }
@@ -626,9 +751,10 @@ export function getSecondaryNavEntries(
 export function getSecondaryNavByGroup(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): Map<NavGroup, RouteManifestEntry[]> {
   const grouped = new Map<NavGroup, RouteManifestEntry[]>();
-  for (const entry of getSecondaryNavEntries(contextKey, hasPermission)) {
+  for (const entry of getSecondaryNavEntries(contextKey, hasPermission, features)) {
     if (!entry.navGroup) continue;
     const list = grouped.get(entry.navGroup) ?? [];
     list.push(entry);
@@ -641,9 +767,10 @@ export function getSecondaryNavByGroup(
 export function getDesktopNavByGroup(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): Map<NavGroup, RouteManifestEntry[]> {
   const grouped = new Map<NavGroup, RouteManifestEntry[]>();
-  for (const entry of getVisibleNavEntries(contextKey, hasPermission)) {
+  for (const entry of getVisibleNavEntries(contextKey, hasPermission, features)) {
     if (!entry.navGroup) continue;
     const list = grouped.get(entry.navGroup) ?? [];
     list.push(entry);
@@ -656,9 +783,10 @@ export function getDesktopNavByGroup(
 export function getDrawerNavByGroup(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
 ): Map<NavGroup, RouteManifestEntry[]> {
-  const secondary = getSecondaryNavEntries(contextKey, hasPermission);
-  const entries = secondary.length > 0 ? secondary : getVisibleNavEntries(contextKey, hasPermission);
+  const secondary = getSecondaryNavEntries(contextKey, hasPermission, features);
+  const entries = secondary.length > 0 ? secondary : getVisibleNavEntries(contextKey, hasPermission, features);
   const grouped = new Map<NavGroup, RouteManifestEntry[]>();
   for (const entry of entries) {
     if (!entry.navGroup) continue;
@@ -671,4 +799,21 @@ export function getDrawerNavByGroup(
 
 export function getManifestEntry(path: string): RouteManifestEntry | undefined {
   return ROUTE_MANIFEST.find((entry) => entry.path === path);
+}
+
+/**
+ * The same plan or billing page in the other contexts (PL-16), e.g. `/app/long-rent/settings/plan` for
+ * `/app/short-rent/settings/plan`: where a user who opens the page of a context it does not work in (an old link, a
+ * Stripe return page) is sent. Empty for any other entry.
+ */
+export function getOrgBillingPageAlternates(entry: RouteManifestEntry): Partial<Record<AppContextKey, string>> {
+  if (!entry.orgBillingAdmin) return {};
+  const suffix = entry.path.slice(`/app/${entry.context}`.length);
+  const alternates: Partial<Record<AppContextKey, string>> = {};
+  for (const other of ROUTE_MANIFEST) {
+    if (other.orgBillingAdmin && other.context !== entry.context && other.path === `/app/${other.context}${suffix}`) {
+      alternates[other.context] = other.path;
+    }
+  }
+  return alternates;
 }

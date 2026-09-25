@@ -3,15 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMe } from '@/queries/use-users';
-import { RENTAL_TYPE_LABELS } from '@/lib/onboarding';
-import type { RentalType } from '@/types';
+import { getRentalTypeLabel } from '@/lib/i18n-labels';
 
 export function OperatorTypeSection() {
   const { t } = useTranslation();
   const { data: profile, isLoading } = useMe();
 
   const label = profile?.rentalType
-    ? RENTAL_TYPE_LABELS[profile.rentalType as RentalType]
+    ? getRentalTypeLabel(profile.rentalType, t)
     : t('profile.notConfigured');
 
   return (

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/lib/utils';
-import type { Guest } from '@/types';
+import type { GuestSummary } from '@/types';
 
 interface GuestListTableProps {
-  guests: Guest[];
+  guests: GuestSummary[];
 }
 
 export function GuestListTable({ guests }: GuestListTableProps) {

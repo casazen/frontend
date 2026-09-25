@@ -3,24 +3,19 @@ import {
   PROPERTY_ID,
   configEnabled,
   configDisabled,
-  historyPage1,
-  historyPage2,
-  historyAfterSync,
-  previewDataMinimal,
+  suggestionsDataMinimal,
 } from './fixtures/pricing.fixtures';
 import {
   mockPricingApiDefaults,
   mockConfigDisabled,
-  mockHistoryAfterSync,
-  mockDelayedPricingSync,
+  mockDelayedRecalculate,
 } from './helpers/api-mock';
 import { demoUrl } from './helpers/demo-profile';
 import { mockCurrentUserWithOrg, mockEntitlement, mockPlansCatalog } from './helpers/org-api-mock';
 
 const PRICING_URL = `/properties/${PROPERTY_ID}/pricing`;
-const HISTORY_URL = `/properties/${PROPERTY_ID}/pricing/history`;
 
-test.describe('Pricing Adapter verification (AC16–AC20)', () => {
+test.describe('Seasonal suggestions (D4, PC-15)', () => {
   test.beforeEach(async ({ page }) => {
     await mockPlansCatalog(page);
     await mockCurrentUserWithOrg(page);
@@ -28,18 +23,17 @@ test.describe('Pricing Adapter verification (AC16–AC20)', () => {
     await mockPricingApiDefaults(page);
   });
 
-  test('AC16: pricing dashboard shows the AI configuration section', async ({ page }) => {
+  test('page shows the seasonal suggestions settings, no AI wording', async ({ page }) => {
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
-    await expect(page.getByRole('heading', { name: 'AI Dynamic Pricing', level: 1 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'AI Dynamic Pricing', level: 3 })).toBeVisible();
-    await expect(page.getByRole('switch', { name: /enable ai pricing/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /save configuration/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Seasonal suggestions', level: 1 })).toBeVisible();
+    await expect(page.getByRole('switch', { name: /turn on seasonal suggestions/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /save rules/i })).toBeVisible();
+    await expect(page.getByText(/\bAI\b/)).toHaveCount(0);
+    await expect(page.getByText(/confidence/i)).toHaveCount(0);
   });
 
-  test('AC17: enabling AI pricing saves config, shows success toast, and Active badge', async ({
-    page,
-  }) => {
+  test('enabling saves the config, shows success toast and On badge', async ({ page }) => {
     await mockConfigDisabled(page);
 
     let saveCallCount = 0;
@@ -68,88 +62,38 @@ test.describe('Pricing Adapter verification (AC16–AC20)', () => {
 
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
-    const toggle = page.getByRole('switch', { name: /enable ai pricing/i });
+    const toggle = page.getByRole('switch', { name: /turn on seasonal suggestions/i });
     await expect(toggle).not.toBeChecked();
-    await expect(page.getByText('Disabled', { exact: true })).toBeVisible();
+    await expect(page.getByText('Off', { exact: true })).toBeVisible();
 
     await toggle.click();
 
     await expect.poll(() => saveCallCount).toBe(1);
-    await expect(page.getByText('Pricing configuration saved')).toBeVisible();
-    await expect(page.getByText('Active')).toBeVisible();
+    await expect(page.getByText('Suggestion rules saved')).toBeVisible();
+    await expect(page.getByText('On', { exact: true })).toBeVisible();
     await expect(toggle).toBeChecked();
   });
 
-  test('AC18: manual sync shows spinner, success toast, and no console errors', async ({
-    page,
-  }) => {
-    const consoleErrors: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-      }
-    });
-
-    let syncCalled = false;
-    await mockDelayedPricingSync(page, {
-      onSync: () => {
-        syncCalled = true;
+  test('manual recalculation shows spinner and success toast', async ({ page }) => {
+    let recalculateCalled = false;
+    await mockDelayedRecalculate(page, {
+      onRecalculate: () => {
+        recalculateCalled = true;
       },
     });
 
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
-    const syncBtn = page.getByTestId('sync-btn');
-    await expect(syncBtn).toBeVisible();
-
-    const syncResponse = page.waitForResponse(
-      (res) =>
-        res.request().method() === 'POST' &&
-        res.url().includes(`/api/pricing-adapter/sync/${PROPERTY_ID}`),
-      { timeout: 15_000 },
-    );
-    await syncBtn.click();
-    await expect(syncBtn).toContainText('Syncing...', { timeout: 10_000 });
-    expect((await syncResponse).status()).toBe(202);
-    await expect.poll(() => syncCalled).toBe(true);
-    await expect(page.getByText('Pricing sync started — history will update shortly')).toBeVisible();
-    await page
-      .waitForResponse(
-        (res) =>
-          res.request().method() === 'GET' &&
-          res.url().includes(`/api/pricing-adapter/history/${PROPERTY_ID}`),
-        { timeout: 10_000 },
-      )
-      .catch(() => undefined);
-    const relevantErrors = consoleErrors.filter(
-      (msg) =>
-        !msg.includes('No response from server') &&
-        !msg.includes('ERR_CONNECTION_REFUSED') &&
-        !msg.includes('[Auth Debug]'),
-    );
-    expect(relevantErrors).toEqual([]);
+    const button = page.getByTestId('recalculate-btn');
+    await expect(button).toBeVisible();
+    await button.click();
+    await expect(button).toContainText('Computing...', { timeout: 10_000 });
+    await expect.poll(() => recalculateCalled).toBe(true);
+    await expect(page.getByText('Suggestions recalculated')).toBeVisible();
   });
 
-  test('AC19: history table shows date, prices, and AI confidence columns', async ({ page }) => {
-    await page.goto(demoUrl(PRICING_URL, 'short-stay'));
-
-    const historySection = page
-      .getByRole('heading', { name: 'Price Adaptation History' })
-      .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
-
-    await expect(historySection).toBeVisible();
-    await expect(historySection.getByRole('columnheader', { name: 'Date' })).toBeVisible();
-    await expect(historySection.getByRole('columnheader', { name: 'Prev Price' })).toBeVisible();
-    await expect(historySection.getByRole('columnheader', { name: 'New Price' })).toBeVisible();
-    await expect(historySection.getByRole('columnheader', { name: 'Confidence' })).toBeVisible();
-
-    const firstEntry = historyPage1.items[0];
-    await expect(historySection.getByText(firstEntry.changeReason)).toBeVisible();
-    await expect(historySection.getByText('92%')).toBeVisible();
-  });
-
-  test('AC20: preview section renders at least seven future price rows', async ({ page }) => {
-    await page.route(`**/api/pricing-adapter/preview/${PROPERTY_ID}`, (route) => {
+  test('suggestions show the real base price and the rule applied', async ({ page }) => {
+    await page.route(`**/api/pricing-adapter/suggestions/${PROPERTY_ID}`, (route) => {
       if (route.request().method() !== 'GET') {
         route.fallback();
         return;
@@ -157,34 +101,21 @@ test.describe('Pricing Adapter verification (AC16–AC20)', () => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(previewDataMinimal),
+        body: JSON.stringify(suggestionsDataMinimal),
       });
     });
 
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
-    const priceDetailsTable = page
-      .getByRole('heading', { name: 'Price Details' })
-      .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]')
-      .locator('table tbody tr');
-
-    await expect(page.getByRole('heading', { name: '90-Day Price Preview' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Price Details' })).toBeVisible();
-    await expect(priceDetailsTable).toHaveCount(7);
-    await expect(priceDetailsTable.first()).toContainText('2026');
-    await expect(priceDetailsTable.first()).toContainText('€');
-  });
-});
-
-test.describe('Pricing Adapter — additional implemented flows', () => {
-  test.beforeEach(async ({ page }) => {
-    await mockPlansCatalog(page);
-    await mockCurrentUserWithOrg(page);
-    await mockEntitlement(page);
-    await mockPricingApiDefaults(page);
+    await expect(page.getByTestId('current-base-price')).toContainText('180');
+    const rows = page.getByTestId('suggestions-table').locator('tbody tr');
+    await expect(rows).toHaveCount(7);
+    await expect(rows.nth(2)).toContainText('Republic Day');
+    await expect(rows.nth(3)).toContainText('High season ×1.30');
+    await expect(page.getByTestId('read-only-notice')).toBeVisible();
   });
 
-  test('disable AI pricing hides sync control and shows disabled empty state', async ({ page }) => {
+  test('disabling hides the recalculation and shows the disabled state', async ({ page }) => {
     let deleteCallCount = 0;
     await page.route(`**/api/pricing-adapter/config/${PROPERTY_ID}`, async (route) => {
       const method = route.request().method();
@@ -194,7 +125,7 @@ test.describe('Pricing Adapter — additional implemented flows', () => {
         return;
       }
       if (method === 'GET') {
-        const body = deleteCallCount > 0 ? configDisabled : { ...configDisabled, isEnabled: true };
+        const body = deleteCallCount > 0 ? configDisabled : configEnabled;
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -207,19 +138,18 @@ test.describe('Pricing Adapter — additional implemented flows', () => {
 
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
-    const toggle = page.getByRole('switch', { name: /enable ai pricing/i });
+    const toggle = page.getByRole('switch', { name: /turn on seasonal suggestions/i });
     await expect(toggle).toBeChecked();
 
     await toggle.click();
 
-    await expect(page.getByText('AI pricing disabled')).toBeVisible();
+    await expect(page.getByText('Seasonal suggestions turned off')).toBeVisible();
     await expect.poll(() => deleteCallCount).toBe(1);
-    await expect(page.getByText('Disabled', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /run sync now/i })).not.toBeVisible();
-    await expect(page.getByText('AI pricing is disabled')).toBeVisible();
+    await expect(page.getByTestId('recalculate-btn')).not.toBeVisible();
+    await expect(page.getByText('Seasonal suggestions are off')).toBeVisible();
   });
 
-  test('save configuration sends adaptation frequency and pricing factors', async ({ page }) => {
+  test('save sends frequency and explicit rules', async ({ page }) => {
     let savedBody: Record<string, unknown> | null = null;
 
     await page.route(`**/api/pricing-adapter/config/${PROPERTY_ID}`, async (route) => {
@@ -247,59 +177,17 @@ test.describe('Pricing Adapter — additional implemented flows', () => {
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
     await page.getByTestId('frequency-weekly').check();
-    await page.getByTestId('include-seasonality').click();
+    await page.getByTestId('high-month-9').click();
+    await page.getByTestId('holiday-multiplier').fill('1.4');
     await page.getByTestId('include-public-holidays').click();
     await page.getByTestId('save-config-btn').click();
 
-    await expect(page.getByText('Pricing configuration saved')).toBeVisible();
+    await expect(page.getByText('Suggestion rules saved')).toBeVisible();
     expect(savedBody).toMatchObject({
       adaptationFrequency: 'weekly',
-      includeSeasonality: false,
+      highSeasonMonths: [6, 7, 8, 9],
+      holidayMultiplier: 1.4,
       includePublicHolidays: false,
     });
-  });
-
-  test('manual sync updates history list on dashboard', async ({ page }) => {
-    await mockHistoryAfterSync(page);
-
-    await page.goto(demoUrl(PRICING_URL, 'short-stay'));
-    await page.getByRole('button', { name: /run sync now/i }).click();
-    await expect(page.getByText('Pricing sync started — history will update shortly')).toBeVisible();
-    await expect(page.getByText(historyAfterSync.items[0].changeReason)).toBeVisible();
-  });
-
-  test('history date filters are available on the dashboard', async ({ page }) => {
-    await page.goto(demoUrl(PRICING_URL, 'short-stay'));
-
-    await expect(page.getByTestId('history-filter-from')).toBeVisible();
-    await expect(page.getByTestId('history-filter-to')).toBeVisible();
-
-    await page.getByTestId('history-filter-from').fill('2026-05-01');
-    await page.getByTestId('history-filter-to').fill('2026-05-31');
-
-    await expect(page.getByText('Weekend peak demand')).toBeVisible();
-  });
-
-  test('full history page paginates across multiple pages', async ({ page }) => {
-    await page.goto(demoUrl(HISTORY_URL, 'short-stay'));
-
-    await expect(page.getByRole('heading', { name: 'Pricing Audit Trail' })).toBeVisible();
-    await expect(page.getByText('Weekend peak demand')).toBeVisible();
-    await expect(page.getByText(/page 1 of 2/i)).toBeVisible();
-
-    const nextBtn = page.getByLabel('Next page');
-    await nextBtn.click();
-
-    await expect(page.getByText('Low season adjustment')).toBeVisible();
-    await expect(page.getByText(/page 2 of 2/i)).toBeVisible();
-    await expect(page.getByLabel('Next page')).toBeDisabled();
-  });
-
-  test('navigate from dashboard to full history page', async ({ page }) => {
-    await page.goto(demoUrl(PRICING_URL, 'short-stay'));
-
-    await page.getByRole('link', { name: /full history/i }).click();
-    await expect(page).toHaveURL(new RegExp(`/properties/${PROPERTY_ID}/pricing/history`));
-    await expect(page.getByRole('heading', { name: 'Pricing Audit Trail' })).toBeVisible();
   });
 });

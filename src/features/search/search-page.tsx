@@ -6,7 +6,6 @@ import { SearchFilters } from './components/search-filters';
 import { SearchResults } from './components/search-results';
 import { useSearchProperties } from '@/queries/use-properties';
 import type { SearchFiltersFormValues } from './schemas/search.schema';
-import type { PublicPropertyDto } from '@/types';
 
 export function SearchPage() {
   const { t } = useTranslation();
@@ -21,9 +20,8 @@ export function SearchPage() {
     setFilters({});
   };
 
-  const handleViewDetails = (property: PublicPropertyDto) => {
-    console.log('View property details:', property);
-  };
+  // The details link of the public search is task BK-20; until then the button does nothing (no debug log).
+  const handleViewDetails = () => {};
 
   const properties = data ?? [];
 

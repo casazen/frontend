@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -8,11 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/shared/breadcrumb';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { usePropertyDetail } from '@/queries/use-properties';
+import { usePropertyDetail, usePauseProperty, useActivateProperty } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
-import { Edit, ArrowRight, Sparkles, ExternalLink, Wrench } from 'lucide-react';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { Edit, ArrowRight, CalendarRange, ExternalLink, Wrench, Plus } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { PropertyCinBadge } from './components/property-cin-badge';
 import { PropertyCinDialog } from './components/property-cin-dialog';
 import { PropertyPhotoCarousel } from './components/property-photo-carousel';
@@ -21,29 +24,75 @@ import { PropertyAmenitiesGrid } from './components/property-amenities-grid';
 import { PropertyDocumentsSection } from './components/property-documents-section';
 import { PropertyOtaSummary } from './components/property-ota-summary';
 import { IcalSettings } from './components/ical-settings';
+import { QuesturaCredentialsCard } from './components/questura-credentials-card';
 import { PropertyBookingsKpi } from './components/property-bookings-kpi';
 import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
+import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
+import { useServiceRequests } from '@/queries/use-service-requests';
 
-type PropertyTab = 'info' | 'pricing' | 'ota' | 'documents' | 'cin';
+type PropertyTab = 'info' | 'pricing' | 'ical' | 'documents' | 'cin';
+
+const PROPERTY_TABS: readonly PropertyTab[] = ['info', 'pricing', 'ical', 'documents', 'cin'];
+
+function isPropertyTab(value: string | null): value is PropertyTab {
+  return value !== null && (PROPERTY_TABS as readonly string[]).includes(value);
+}
 
 export function PropertyDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<PropertyTab>('info');
-  const { data: property, isLoading, isError } = usePropertyDetail(id!);
+  // The tab is in the URL (`?tab=ical`): the iCal widget of the dashboard opens the calendars of the property (PC-16).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: PropertyTab = isPropertyTab(tabParam) ? tabParam : 'info';
+  const setActiveTab = (tab: PropertyTab) =>
+    setSearchParams(
+      (params) => {
+        const next = new URLSearchParams(params);
+        if (tab === 'info') next.delete('tab');
+        else next.set('tab', tab);
+        return next;
+      },
+      { replace: true },
+    );
+  const { data: property, isLoading, isError, error, refetch } = usePropertyDetail(id!);
   const { org } = useCurrentUser();
   const updateCin = useUpdatePropertyCin();
+  const pauseProperty = usePauseProperty();
+  const activateProperty = useActivateProperty();
+  // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
+  const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
+  const { hasPermission } = useWorkspace();
+  const canCreateBooking = hasPermission('short-rent', 'booking.write');
+  // Alloggiati Web credentials are write-only; the API also checks ownership or the org-wide role (TN-3).
+  const canEditQuesturaCredentials = hasPermission('short-rent', 'property.write');
+  // Overview of the property's short-rent requests, each linked to its stay (D2).
+  const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
 
   if (isLoading) {
     return <LoadingScreen message={t('property.detail.loading')} />;
   }
 
-  if (isError || !property) {
+  // An API error is never shown as "not found" (only a 404 is, A2-36).
+  if (isError && getHttpStatus(error) !== 404) {
     return (
       <AppShell>
-        <div className="text-center py-12">
+        <div className="text-center py-12 space-y-4" role="alert" data-testid="property-load-error">
+          <p className="text-destructive">{getProblemMessage(error, t) ?? t('property.detail.loadError')}</p>
+          <Button variant="outline" onClick={() => void refetch()}>
+            {t('property.detail.retry')}
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!property) {
+    return (
+      <AppShell>
+        <div className="text-center py-12" data-testid="property-not-found">
           <h2 className="text-2xl font-bold mb-2">{t('property.detail.notFound')}</h2>
           <p className="text-muted-foreground">{t('property.detail.notFoundDescription')}</p>
         </div>
@@ -51,10 +100,19 @@ export function PropertyDetailPage() {
     );
   }
 
+  // Dedicated pause/activate actions (A2-05): reversible, hidden from public bookings only, never the generic update.
+  const togglePause = () => {
+    if (property.isPaused) {
+      activateProperty.mutate(property.id);
+    } else {
+      pauseProperty.mutate(property.id);
+    }
+  };
+
   const tabs: { key: PropertyTab; label: string }[] = [
     { key: 'info', label: t('property.detail.tabs.info') },
     { key: 'pricing', label: t('property.detail.tabs.pricing') },
-    { key: 'ota', label: t('property.detail.tabs.ota') },
+    { key: 'ical', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical') },
     { key: 'documents', label: t('property.detail.tabs.documents') },
     { key: 'cin', label: t('property.detail.tabs.cin') },
   ];
@@ -74,9 +132,17 @@ export function PropertyDetailPage() {
                 cinCode={property.cinCode}
                 onEdit={() => setCinDialogOpen(true)}
               />
-              <Badge variant={property.isActive ? 'success' : 'secondary'}>
-                {property.isActive ? t('property.detail.active') : t('property.detail.inactive')}
+              <Badge variant={property.isPaused ? 'secondary' : 'success'} data-testid="property-pause-status-badge">
+                {property.isPaused ? t('property.table.paused') : t('property.table.active')}
               </Badge>
+              <Button
+                variant="outline"
+                onClick={togglePause}
+                disabled={pauseProperty.isPending || activateProperty.isPending}
+                data-testid="property-pause-toggle"
+              >
+                {property.isPaused ? t('property.table.activate') : t('property.table.pause')}
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate(`/app/short-rent/marketplace?propertyId=${property.id}`)}
@@ -110,12 +176,26 @@ export function PropertyDetailPage() {
           </Card>
         ) : null}
 
-        <Link
-          to={`/app/short-rent/bookings?propertyId=${property.id}`}
-          className="text-primary hover:underline text-sm inline-block"
-        >
-          {t('property.detail.bookingsLink')} &#8594;
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            to={`/app/short-rent/bookings?propertyId=${property.id}`}
+            className="text-primary hover:underline text-sm inline-block"
+            data-testid="property-bookings-link"
+          >
+            {t('property.detail.bookingsLink')} &#8594;
+          </Link>
+          {canCreateBooking && (
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                to={`/app/short-rent/bookings/create?propertyId=${property.id}`}
+                data-testid="property-new-booking"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {t('property.detail.newBooking')}
+              </Link>
+            </Button>
+          )}
+        </div>
 
         <div className="flex gap-1 border-b mb-6">
           {tabs.map((tab) => (
@@ -163,6 +243,12 @@ export function PropertyDetailPage() {
                 damageDeposit={property.damageDeposit}
                 timezone={property.timezone}
               />
+              <ServiceRequestsCard
+                query={serviceRequests}
+                emptyText={t('serviceRequest.emptyForProperty')}
+                showStay
+                testId="property-service-requests"
+              />
             </div>
           </div>
         )}
@@ -173,7 +259,7 @@ export function PropertyDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
+                    <CalendarRange className="h-5 w-5" />
                     {t('property.detail.pricingTitle')}
                   </CardTitle>
                 </CardHeader>
@@ -202,10 +288,10 @@ export function PropertyDetailPage() {
           </div>
         )}
 
-        {activeTab === 'ota' && (
+        {activeTab === 'ical' && (
           <div className="space-y-6">
             <IcalSettings propertyId={property.id} />
-            <PropertyOtaSummary integrations={property.otaIntegrations} />
+            {otaEnabled && <PropertyOtaSummary integrations={property.otaIntegrations} />}
           </div>
         )}
 
@@ -263,8 +349,8 @@ export function PropertyDetailPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{t('property.detail.propertyActive')}</span>
-                  <Badge variant={property.isActive ? 'success' : 'secondary'}>
-                    {property.isActive ? t('property.detail.yes') : t('property.detail.no')}
+                  <Badge variant={property.isPaused ? 'secondary' : 'success'}>
+                    {property.isPaused ? t('property.table.paused') : t('property.table.active')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
@@ -275,6 +361,8 @@ export function PropertyDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <QuesturaCredentialsCard propertyId={property.id} canEdit={canEditQuesturaCredentials} />
           </div>
         )}
       </div>

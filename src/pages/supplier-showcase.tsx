@@ -4,24 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Calendar, Wrench } from 'lucide-react';
-
-interface ShowcaseData {
-  slug: string;
-  legalName: string;
-  categories: string[];
-  comuni: string[];
-  bio?: string;
-  photoUrls: string[];
-  availability: { date: string; available: boolean }[];
-}
+import { publicSupplierApi, type SupplierShowcaseDto } from '@/api/public-supplier.api';
+import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 
 export function SupplierShowcasePage() {
   const { t } = useTranslation();
   const { slug } = useParams();
 
-  const { data, isLoading, error } = useQuery<ShowcaseData>({
+  const { data, isLoading, error } = useQuery<SupplierShowcaseDto>({
     queryKey: ['supplier-showcase', slug],
-    queryFn: () => fetch(`/api/public/suppliers/${slug}`).then((r) => (r.ok ? r.json() : Promise.reject(r))),
+    queryFn: () => publicSupplierApi.getShowcase(slug!),
     enabled: !!slug,
   });
 
@@ -40,8 +32,8 @@ export function SupplierShowcasePage() {
       <div className="max-w-lg mx-auto p-4">
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-lg font-medium text-destructive">Supplier not found</p>
-            <p className="mt-2 text-sm text-muted-foreground">This supplier page does not exist or is no longer active.</p>
+            <p className="text-lg font-medium text-destructive">{t('supplierShowcase.notFound')}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{t('supplierShowcase.notFoundDescription')}</p>
           </CardContent>
         </Card>
       </div>
@@ -68,7 +60,7 @@ export function SupplierShowcasePage() {
           <div className="flex flex-wrap gap-1">
             {data.categories?.map((c) => (
               <span key={c} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
-                <Wrench className="h-3 w-3" /> {c}
+                <Wrench className="h-3 w-3" /> {getServiceCategoryLabel(c, t)}
               </span>
             ))}
           </div>
@@ -77,7 +69,7 @@ export function SupplierShowcasePage() {
 
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 text-primary" />
-            <span>{availableDays} days available in the next 2 weeks</span>
+            <span>{t('supplierShowcase.availableDays', { count: availableDays })}</span>
           </div>
         </CardContent>
       </Card>

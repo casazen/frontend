@@ -18,7 +18,7 @@ const mockListItem: PublicPropertyDto = {
   cleaningFee: 50,
   amenities: ['Wifi'],
   photoUrls: ['https://cdn.example.com/photo.jpg'],
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
 };
@@ -41,11 +41,15 @@ describe('propertiesApi public read-model (#212)', () => {
 
     const result = await propertiesApi.search({ city: 'Rome', minBedrooms: 2, maxPrice: 200 });
 
-    expect(ApiClient.get).toHaveBeenCalledWith('/properties/search', {
-      city: 'Rome',
-      bedrooms: 2,
-      maxPrice: 200,
-    });
+    expect(ApiClient.get).toHaveBeenCalledWith(
+      '/properties/search',
+      {
+        city: 'Rome',
+        bedrooms: 2,
+        maxPrice: 200,
+      },
+      { public: true },
+    );
     expect(result).toEqual([mockListItem]);
     expect(result[0]).not.toHaveProperty('ownerId');
   });
@@ -55,7 +59,7 @@ describe('propertiesApi public read-model (#212)', () => {
 
     const result = await propertiesApi.getPublicProperty(mockListItem.id);
 
-    expect(ApiClient.get).toHaveBeenCalledWith(`/properties/${mockListItem.id}/public`);
+    expect(ApiClient.get).toHaveBeenCalledWith(`/properties/${mockListItem.id}/public`, undefined, { public: true });
     expect(result.currency).toBe('EUR');
     expect(result).not.toHaveProperty('ownerId');
   });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useChangeUserRole } from '@/queries/use-users';
 import { formatUserDisplayName } from '@/lib/user-display';
 import type { UserSummary, UserRole } from '@/types';
+import { getRoleLabel } from '@/lib/i18n-labels';
 
 const ALL_ROLES: UserRole[] = [
   'Admin',
@@ -32,13 +33,16 @@ interface ChangeRoleDialogProps {
 export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogProps) {
   const { t } = useTranslation();
   const [selectedRole, setSelectedRole] = useState<UserRole>(user?.role ?? 'Guest');
+  const [roleSourceUser, setRoleSourceUser] = useState(user);
   const { mutate: changeRole, isPending } = useChangeUserRole();
 
-  useEffect(() => {
+  // Reset the selection when the dialog is pointed at another user (adjusting state during render).
+  if (user !== roleSourceUser) {
+    setRoleSourceUser(user);
     if (user) {
       setSelectedRole(user.role);
     }
-  }, [user]);
+  }
 
   const displayName = user ? formatUserDisplayName(user) : '';
 
@@ -69,7 +73,7 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
           >
             {ALL_ROLES.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {getRoleLabel(r, t)}
               </option>
             ))}
           </select>

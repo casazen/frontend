@@ -1,5 +1,6 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
+import { completeOnboardingFromRentalChoice, fillHostBookingGuestContact } from './helpers/onboarding';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   mockCurrentUserWithOrg,
@@ -7,8 +8,8 @@ import {
 } from './helpers/org-api-mock';
 import { mockPricingApiDefaults } from './helpers/api-mock';
 import { PROPERTY_ID, configEnabled } from './fixtures/pricing.fixtures';
+import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
-const NEW_PROP = 'prop-biz-e2e-001';
 const BOOKING_ID = 'book-biz-e2e-001';
 const PAYMENT_ID = 'pay-biz-e2e-001';
 
@@ -16,12 +17,10 @@ test.describe('Business Golden Path', () => {
   test('host onboarding → plan selection → short-rent dashboard', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
+    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen|How do you want to use CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Scegli|Choose/i })).toHaveCount(3);
 
-    await page.getByRole('button', { name: 'Scegli' }).first().click();
-    await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-    await page.getByTestId('onboarding-plan-confirm').click();
+    await completeOnboardingFromRentalChoice(page, 0);
 
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
   });
@@ -33,7 +32,7 @@ test.describe('Business Golden Path', () => {
 
     await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
-    await page.getByRole('button', { name: /Add|Aggiungi/i }).click();
+    await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
     await page.getByLabel(/Property Name|Nome proprietà/i).fill('Casa Business');
     await page.getByLabel(/Description|Descrizione/i).fill('Golden path test property.');
     await page.getByLabel(/Address|Indirizzo/i).fill('Via Garibaldi 42');
@@ -59,18 +58,18 @@ test.describe('Business Golden Path', () => {
     await expect(page.getByText(/CIN mancante|Missing CIN/i)).toBeVisible();
     await expect(page.getByRole('heading', { name: /Dettagli|Details/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /OTA|Integrazioni/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Prezzi|Pricing/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Prezzi|Pricing|Suggerimenti stagionali|Seasonal suggestions/i })).toBeVisible();
   });
 
-  test('pricing AI: enable toggle → save config → verify Active badge', async ({ page }) => {
+  test('seasonal suggestions: enable toggle → save config → verify On badge', async ({ page }) => {
     await mockCurrentUserWithOrg(page);
     await mockEntitlement(page);
     await mockPricingApiDefaults(page);
 
     await page.goto(demoUrl(`/app/short-rent/properties/${PROPERTY_ID}/pricing`, 'short-stay'));
 
-    await expect(page.getByRole('heading', { name: /AI Dynamic Pricing|Prezzi Dinamici AI/i })).toBeVisible();
-    await expect(page.getByRole('switch', { name: /enable|attiva/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Seasonal suggestions|Suggerimenti stagionali/i, level: 1 })).toBeVisible();
+    await expect(page.getByRole('switch', { name: /turn on|attiva/i })).toBeVisible();
 
     // Override config to disabled state first
     await page.route(`**/api/pricing-adapter/config/${PROPERTY_ID}`, async (route) => {
@@ -96,14 +95,15 @@ test.describe('Business Golden Path', () => {
 
     // Reload to get disabled state
     await page.reload();
-    await expect(page.getByRole('switch', { name: /enable|attiva/i })).not.toBeChecked();
+    await expect(page.getByRole('switch', { name: /turn on|attiva/i })).not.toBeChecked();
 
-    await page.getByRole('switch', { name: /enable|attiva/i }).click();
-    await expect(page.getByText(/saved|salvata/i)).toBeVisible();
-    await expect(page.getByText('Active')).toBeVisible();
+    await page.getByRole('switch', { name: /turn on|attiva/i }).click();
+    await expect(page.getByText(/saved|salvate/i)).toBeVisible();
+    await expect(page.getByText(/^(On|Attivi)$/)).toBeVisible();
   });
 
   test('booking create with tourist tax → verify on detail page', async ({ page }) => {
+    await mockPropertiesApi(page, [buildCreatedProperty({ id: PROPERTY_ID })]);
     await mockCurrentUserWithOrg(page);
 
     await page.route('**/api/bookings', async (route) => {
@@ -156,15 +156,38 @@ test.describe('Business Golden Path', () => {
       });
     });
 
+    await page.route('**/api/bookings/quote', async (route) => {
+      if (route.request().method() !== 'POST') { await route.fallback(); return; }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          propertyId: PROPERTY_ID,
+          checkInDate: '2026-08-01',
+          checkOutDate: '2026-08-07',
+          nights: 6,
+          nightlyRate: 150,
+          lodgingTotal: 900,
+          cleaningFee: 0,
+          basePrice: 900,
+          totalPrice: 930,
+          currency: 'EUR',
+          touristTax: { status: 'Calculated', amount: 30, taxableNights: 6, ageRulesApply: false, categories: [] },
+          paymentOptions: { deferredPaymentAvailable: false, deferredChargeDate: null, freeCancellationUntil: null },
+        }),
+      });
+    });
+
     await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
-    await page.getByLabel(/Property|Proprietà/i).selectOption({ index: 1 });
+    await page.locator('#propertyId').selectOption({ index: 1 });
     await page.getByLabel(/Check-in/i).fill('2026-08-01');
     await page.getByLabel(/Check-out/i).fill('2026-08-07');
     await page.getByLabel(/Guests|Ospiti/i).fill('4');
+    await fillHostBookingGuestContact(page);
 
     const resp = page.waitForResponse(
-      (r) => r.request().method() === 'POST' && r.url().includes('/api/bookings'),
+      (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
     );
     await page.getByRole('button', { name: /Create|Crea/i }).click();
     expect((await resp).status()).toBe(201);
@@ -175,6 +198,24 @@ test.describe('Business Golden Path', () => {
 
   test('payment create → process → verify completed', async ({ page }) => {
     await mockCurrentUserWithOrg(page);
+    await page.route('**/api/bookings**', async (route) => {
+      if (route.request().method() !== 'GET') { await route.fallback(); return; }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: BOOKING_ID,
+          propertyId: PROPERTY_ID,
+          status: 'Confirmed',
+          checkInDate: '2026-08-01',
+          checkOutDate: '2026-08-07',
+          numberOfGuests: 4,
+          totalPrice: 930,
+          currency: 'EUR',
+          guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com' },
+        }]),
+      });
+    });
 
     let paymentStatus = 'Pending';
 

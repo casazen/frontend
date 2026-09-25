@@ -8,37 +8,48 @@ export const guestSchema = z.object({
   country: z.string().min(2, 'booking.validation.country.required'),
 });
 
-export const bookingFormSchema = z.object({
+const bookingFieldsSchema = z.object({
   propertyId: z.string().min(1, 'booking.validation.propertyId.required'),
   checkInDate: z.string().min(1, 'booking.validation.checkInDate.required'),
   checkOutDate: z.string().min(1, 'booking.validation.checkOutDate.required'),
-  numberOfGuests: z.number().int().min(1, 'booking.validation.numberOfGuests.min').max(100),
-  guest: guestSchema,
-  specialRequests: z.string().optional(),
-}).refine((data) => {
-  const checkIn = new Date(data.checkInDate);
-  const checkOut = new Date(data.checkOutDate);
-  return checkOut > checkIn;
-}, {
-  message: 'booking.validation.checkOutDate.afterCheckIn',
-  path: ['checkOutDate'],
+  numberOfGuests: z
+    .number({ error: 'booking.validation.numberOfGuests.min' })
+    .int('booking.validation.numberOfGuests.min')
+    .min(1, 'booking.validation.numberOfGuests.min')
+    .max(100),
+  /** Minors among the guests: asked only when the tourist tax of the comune depends on their age (BK-03). */
+  numberOfChildren: z
+    .number({ error: 'booking.validation.numberOfChildren.invalid' })
+    .int('booking.validation.numberOfChildren.invalid')
+    .min(0, 'booking.validation.numberOfChildren.invalid'),
+  /** Contact of the guest: entered when the booking is created, not changed by the edit form. */
+  guest: guestSchema.optional(),
+  specialRequests: z.string().max(1000).optional(),
 });
 
-export const checkInFormSchema = z.object({
-  actualCheckInTime: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export const checkOutFormSchema = z.object({
-  actualCheckOutTime: z.string().optional(),
-  notes: z.string().optional(),
-  damages: z.string().optional(),
-});
+/**
+ * Host booking form. `create` asks for the guest's contact too; `edit` changes dates, guests and notes only (PC-07).
+ */
+export function bookingFormSchema(mode: 'create' | 'edit') {
+  return bookingFieldsSchema.superRefine((data, ctx) => {
+    if (mode === 'create' && !data.guest) {
+      ctx.addIssue({ code: 'custom', path: ['guest', 'firstName'], message: 'booking.validation.firstName.minLength' });
+    }
+    if (data.checkInDate && data.checkOutDate && data.checkOutDate <= data.checkInDate) {
+      ctx.addIssue({ code: 'custom', path: ['checkOutDate'], message: 'booking.validation.checkOutDate.afterCheckIn' });
+    }
+    if (data.numberOfChildren >= data.numberOfGuests) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['numberOfChildren'],
+        message: 'booking.validation.numberOfChildren.lessThanGuests',
+      });
+    }
+  });
+}
 
 export type GuestFormValues = z.infer<typeof guestSchema>;
-export type BookingFormValues = z.infer<typeof bookingFormSchema>;
-export type CheckInFormValues = z.infer<typeof checkInFormSchema>;
-export type CheckOutFormValues = z.infer<typeof checkOutFormSchema>;
+export type BookingFormValues = z.infer<typeof bookingFieldsSchema>;
 
 // Booking status labels are now resolved via getBookingStatusLabel() from @/lib/i18n-labels.
 // Booking status variants stay here as a UI-only concern (no i18n needed).

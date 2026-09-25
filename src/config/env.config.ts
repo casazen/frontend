@@ -1,10 +1,11 @@
-// Environment configuration with validation
-const auth0Domain =
-  import.meta.env.VITE_AUTH0_DOMAIN ||
-  (import.meta.env.DEV ? 'dev-mp6wadq7j6bophl5.us.auth0.com' : '');
+import { isDemoMode } from './demo.config';
+
+// Environment configuration with validation.
+// No default Auth0 tenant (PL-11, A1-32): every environment sets its own (Vercel Preview → test tenant, Production →
+// production tenant; local .env → a development/test tenant), see backend docs/runbooks/auth0.md section 1.
+const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN || '';
 
 const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID || '';
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 if (import.meta.env.PROD && !isDemoMode && !auth0Domain) {
   throw new Error(

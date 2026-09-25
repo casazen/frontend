@@ -18,6 +18,7 @@ import { pricingUpdateSchema, OTA_PLATFORM_ICONS } from '../schemas/ota.schema';
 import { useProperties } from '@/queries/use-properties';
 import type { PricingUpdateFormValues } from '../schemas/ota.schema';
 import type { OtaPlatform } from '@/types';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 interface PricingUpdateDialogProps {
   open: boolean;
@@ -47,7 +48,7 @@ export function PricingUpdateDialog({
     resolver: zodResolver(pricingUpdateSchema),
     defaultValues: {
       platforms: [],
-    } as any,
+    },
   });
 
   const selectedPlatforms = watch('platforms') || [];
@@ -96,9 +97,7 @@ export function PricingUpdateDialog({
                   </option>
                 ))}
               </select>
-              {errors.propertyId && (
-                <p className="text-sm text-destructive">{errors.propertyId.message}</p>
-              )}
+              <FormFieldError error={errors.propertyId} />
             </div>
 
             <div className="space-y-2">
@@ -110,9 +109,7 @@ export function PricingUpdateDialog({
                 {...register('nightlyRate', { valueAsNumber: true })}
                 placeholder="150.00"
               />
-              {errors.nightlyRate && (
-                <p className="text-sm text-destructive">{errors.nightlyRate.message}</p>
-              )}
+              <FormFieldError error={errors.nightlyRate} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

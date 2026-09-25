@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { AppShell } from '@/components/layout/app-shell';
@@ -8,9 +8,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, Plus, X } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
-import { getBookingStatusLabel } from '@/lib/i18n-labels';
+import { useProperty } from '@/queries/use-properties';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { getProblemMessage } from '@/lib/api-errors';
+import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
+import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
+import { CheckInDialog } from '@/features/bookings/components/check-in-dialog';
+import { canRegisterArrival } from '@/features/bookings/lib/stay-actions';
+import { bookingChannelText, needsOtaReview } from '@/features/bookings/lib/ota-stay';
 import type { Booking } from '@/types';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -32,13 +39,27 @@ function getNights(checkIn: string, checkOut: string): number {
   return Math.round(diff / (1000 * 60 * 60 * 24));
 }
 
+const BOOKINGS_PATH = '/app/short-rent/bookings';
+
 export function BookingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { hasPermission } = useWorkspace();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
+  // "Registra arrivo" from the list (CO-08): the same dialog as the booking detail.
+  const [arrivalBooking, setArrivalBooking] = useState<Booking | null>(null);
+  const canWrite = hasPermission('short-rent', 'booking.write');
 
-  const { data: bookings, isLoading, isError } = useBookings();
+  // "Bookings of this property" (A2-30): the backend filters by property, so the list and its counts are the
+  // property's only.
+  const propertyId = searchParams.get('propertyId') ?? '';
+  const { data: bookings, isLoading, isError, error } = useBookings(propertyId ? { propertyId } : undefined);
+  const { data: filterProperty } = useProperty(propertyId);
+  const createPath = propertyId
+    ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(propertyId)}`
+    : `${BOOKINGS_PATH}/create`;
 
   const filtered = (bookings ?? []).filter((b) => {
     const matchesTab = activeTab === 'all' || b.status === activeTab;
@@ -61,7 +82,39 @@ export function BookingsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader title={t('booking.list.title')} description={t('booking.list.description')} />
+        <PageHeader
+          title={t('booking.list.title')}
+          description={t('booking.list.description')}
+          action={
+            canWrite ? (
+              <Button asChild data-testid="new-booking">
+                <Link to={createPath}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('booking.list.newBooking')}
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        />
+
+        {propertyId && (
+          <div
+            className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-4 py-2 text-sm"
+            data-testid="bookings-property-filter"
+          >
+            <span>
+              {filterProperty?.name
+                ? t('booking.list.filteredByProperty', { name: filterProperty.name })
+                : t('booking.list.filteredByAProperty')}
+            </span>
+            <Link to={BOOKINGS_PATH} className="inline-flex items-center gap-1 text-primary hover:underline">
+              <X className="h-3 w-3" />
+              {t('booking.list.showAll')}
+            </Link>
+          </div>
+        )}
+
+        <BookingRequestsPanel />
 
         <Card>
           <CardContent className="pt-4 space-y-4">
@@ -99,7 +152,9 @@ export function BookingsPage() {
             )}
 
             {isError && (
-              <div className="py-8 text-center text-destructive">{t('booking.list.loadError')}</div>
+              <div role="alert" className="py-8 text-center text-destructive" data-testid="bookings-load-error">
+                {getProblemMessage(error, t) ?? t('booking.list.loadError')}
+              </div>
             )}
 
             {!isLoading && !isError && (
@@ -116,6 +171,7 @@ export function BookingsPage() {
                         t('booking.list.columns.guests'),
                         t('booking.list.columns.total'),
                         t('booking.list.columns.status'),
+                        t('booking.list.columns.source'),
                         '',
                       ].map((h) => (
                         <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
@@ -139,27 +195,69 @@ export function BookingsPage() {
                           {b.currency ?? 'EUR'} {b.totalPrice.toLocaleString()}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
-                            {getBookingStatusLabel(b.status, t)}
-                          </Badge>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
+                              {getBookingStatusLabel(b.status, t)}
+                            </Badge>
+                            {b.onSiteRequestState && (
+                              <Badge
+                                variant={b.onSiteRequestState === 'AwaitingHostApproval' ? 'default' : 'outline'}
+                                data-testid="booking-request-badge"
+                              >
+                                {t(`booking.requests.state.${b.onSiteRequestState}`)}
+                              </Badge>
+                            )}
+                            {needsOtaReview(b) && (
+                              <Badge variant="destructive" data-testid="booking-ota-review-badge">
+                                {t('booking.otaReview.badge')}
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3" data-testid="booking-source">
+                          {b.source ? (
+                            <Badge variant={b.source === 'Manual' ? 'outline' : 'secondary'}>
+                              {getBookingSourceLabel(b.source, t)}
+                            </Badge>
+                          ) : null}
+                          {bookingChannelText(b, t) && (
+                            <div className="mt-1 text-xs text-muted-foreground" data-testid="booking-channel">
+                              {bookingChannelText(b, t)}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openBooking(b);
-                            }}
-                          >
-                            {t('booking.list.view')}
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {canWrite && canRegisterArrival(b) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                data-testid="booking-row-register-arrival"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setArrivalBooking(b);
+                                }}
+                              >
+                                {t('booking.arrival.action')}
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openBooking(b);
+                              }}
+                            >
+                              {t('booking.list.view')}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
                     {filtered.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                        <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
                           {t('booking.list.noResults')}
                         </td>
                       </tr>
@@ -171,6 +269,13 @@ export function BookingsPage() {
           </CardContent>
         </Card>
       </div>
+      <CheckInDialog
+        booking={arrivalBooking}
+        open={arrivalBooking !== null}
+        onOpenChange={(open) => {
+          if (!open) setArrivalBooking(null);
+        }}
+      />
     </AppShell>
   );
 }

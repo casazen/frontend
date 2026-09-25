@@ -1,37 +1,136 @@
 import axios from '@/lib/axios';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient } from './client';
 import type {
   CedolareAdvisory,
+  CedolareAdvisoryInput,
   CreateLeaseDto,
-  LeaseContract,
+  LeaseDetail,
   LeaseRegistration,
+  LeaseSigningState,
+  LeaseSummary,
+  ManualRegistrationInput,
+  OfflineSignatureInput,
+  QuesturaCommunicationInput,
   RliChecklist,
   SigningInitiatedResult,
   TriggerRegistrationResult,
 } from '@/types';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** The list endpoint returns a JSON array: anything else (HTML fallback, error envelope) is a load error. */
+function expectArray<T>(data: unknown, url: string): T[] {
+  if (!Array.isArray(data)) throw new UnexpectedApiResponseError(url);
+  return data as T[];
+}
+
+/** Single-resource endpoints return a JSON object with an `id`. */
+function expectObjectWithId<T>(data: unknown, url: string): T {
+  if (!isRecord(data) || typeof data.id !== 'string') throw new UnexpectedApiResponseError(url);
+  return data as T;
+}
+
 export const leasesApi = {
-  getAll: (params?: { propertyId?: string; status?: string }) =>
-    ApiClient.get<LeaseContract[]>('/leases', params),
+  getAll: async (params?: { propertyId?: string; status?: string }): Promise<LeaseSummary[]> =>
+    expectArray<LeaseSummary>(await ApiClient.get<unknown>('/leases', params), '/leases'),
 
-  getById: (id: string) => ApiClient.get<LeaseContract>(`/leases/${id}`),
+  getById: async (id: string): Promise<LeaseDetail> =>
+    expectObjectWithId<LeaseDetail>(await ApiClient.get<unknown>(`/leases/${id}`), '/leases/:id'),
 
-  create: (data: CreateLeaseDto) => ApiClient.post<LeaseContract>('/leases', data),
+  create: async (data: CreateLeaseDto): Promise<LeaseDetail> =>
+    expectObjectWithId<LeaseDetail>(await ApiClient.post<unknown>('/leases', data), '/leases'),
 
+  /** LT-02: signers (persisted), provider availability and whether the final contract can be downloaded. */
+  getSigningState: async (id: string): Promise<LeaseSigningState> => {
+    const data = await ApiClient.get<unknown>(`/leases/${id}/signers`);
+    if (!isRecord(data) || !Array.isArray(data.signers)) throw new UnexpectedApiResponseError('/leases/:id/signers');
+    return data as unknown as LeaseSigningState;
+  },
+
+  /** Provider path only (flag on and configured provider): sends the final contract to the e-signature provider. */
   initiateSigning: (id: string) =>
     ApiClient.post<SigningInitiatedResult>(`/leases/${id}/signing`),
+
+  /** The final contract to sign offline (approved template only; 422 otherwise). */
+  downloadContract: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/contract.pdf`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /** Preview marked BOZZA (or ANTEPRIMA): never valid for signature. */
+  downloadContractPreview: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/contract/preview`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /** LT-02 offline signature: the PDF signed by every party plus the stipula date. The lease becomes Signed. */
+  declareOfflineSignature: async (id: string, input: OfflineSignatureInput): Promise<LeaseDetail> => {
+    const formData = new FormData();
+    formData.append('stipulaDate', input.stipulaDate);
+    formData.append('signedContract', input.signedContract);
+    const response = await axios.post<LeaseDetail>(`/leases/${id}/signed-document`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /** The contract signed by every party, from the private storage (authenticated download). */
+  downloadSignedContract: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/signed-document`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /** Stipula date of a lease signed before CasaZen recorded it (legacy leases): fixes the RLI deadline. */
+  declareStipula: (id: string, stipulaDate: string) =>
+    ApiClient.post<LeaseDetail>(`/leases/${id}/stipula`, { stipulaDate }),
 
   triggerRegistration: (id: string, body: { tosVersion: string; attestationAccepted: boolean }) =>
     ApiClient.post<TriggerRegistrationResult>(`/leases/${id}/registration`, body),
 
-  getRegistration: (id: string) =>
-    ApiClient.get<LeaseRegistration>(`/leases/${id}/registration`),
+  /** LT-01: the landlord registered the contract on the official channel and declares number, date and receipt. */
+  declareManualRegistration: async (id: string, input: ManualRegistrationInput): Promise<LeaseRegistration> => {
+    const formData = new FormData();
+    formData.append('registrationCode', input.registrationCode);
+    formData.append('registrationDate', input.registrationDate);
+    formData.append('receipt', input.receipt);
+    const response = await axios.post<LeaseRegistration>(`/leases/${id}/registration/manual`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 
-  getRliAdvisory: (id: string) =>
-    ApiClient.get<CedolareAdvisory>(`/leases/${id}/rli/advisory`),
+  /** Without data the plain GET; with data a POST, so that the landlord's income never ends up in a URL. */
+  getRliAdvisory: (id: string, input?: CedolareAdvisoryInput) =>
+    input && Object.values(input).some((value) => value !== undefined)
+      ? ApiClient.post<CedolareAdvisory>(`/leases/${id}/rli/advisory`, input)
+      : ApiClient.get<CedolareAdvisory>(`/leases/${id}/rli/advisory`),
 
   getRliChecklist: (id: string) =>
     ApiClient.get<RliChecklist>(`/leases/${id}/rli/checklist`),
+
+  /** LT-07: delivery date of the property (`YYYY-MM-DD`), or null to use the start date again. Returns the checklist. */
+  declareQuesturaDeliveryDate: (id: string, deliveryDate: string | null) =>
+    ApiClient.put<RliChecklist>(`/leases/${id}/rli/questura/delivery-date`, { deliveryDate }),
+
+  /** LT-07: the landlord sent the Questura communication and declares its date (and optionally the receipt PDF). */
+  markQuesturaCommunicationDone: async (id: string, input: QuesturaCommunicationInput): Promise<RliChecklist> => {
+    const formData = new FormData();
+    formData.append('communicationDate', input.communicationDate);
+    if (input.receipt) formData.append('receipt', input.receipt);
+    const response = await axios.post<RliChecklist>(`/leases/${id}/rli/questura/mark-done`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /** The receipt of the Questura communication, from the private storage (authenticated download). */
+  downloadQuesturaReceipt: async (id: string): Promise<Blob> => {
+    const response = await axios.get(`/leases/${id}/rli/questura/receipt`, { responseType: 'blob' });
+    return response.data;
+  },
 
   exportRli: async (id: string): Promise<Blob> => {
     const response = await axios.get(`/leases/${id}/rli/export`, {

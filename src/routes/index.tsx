@@ -2,30 +2,39 @@ import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-r
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
+import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
+import { SignupPage } from '@/pages/signup-page';
+import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
+import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
 import { NoAccessPage } from '@/pages/no-access-page';
+import { AccountInactivePage } from '@/pages/account-inactive-page';
+import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
-import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
+import { getOrgBillingPageAlternates, ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
 import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
+import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
+import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
+import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
-import { SupplierCheckInPage } from '@/pages/supplier-check-in';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
@@ -37,7 +46,12 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
     return {
       path: relativePath,
       element: (
-        <ContextRouteGuard contextKey={contextKey} requiredPermissions={entry.requiredPermissions}>
+        <ContextRouteGuard
+          contextKey={contextKey}
+          requiredPermissions={entry.requiredPermissions}
+          featureFlag={entry.featureFlag}
+          alternatePaths={getOrgBillingPageAlternates(entry)}
+        >
           <ManifestRoute entry={entry} />
         </ContextRouteGuard>
       ),
@@ -109,14 +123,55 @@ const workspaceRoutes: RouteObject[] = [
   })),
 ];
 
-export const router = createBrowserRouter([
+/** Route table of the app (exported for the routing tests; the app uses `router`). */
+export const appRoutes: RouteObject[] = [
   {
-    path: '/login',
-    element: <LoginPage />,
+    // Pages that need Auth0: reached client-side from a public page (no Auth0 loaded), they reload themselves.
+    element: <AuthProviderBoundary />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <SupplierRegisterPage />,
+      },
+      {
+        // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
+        path: SIGNUP_PATH,
+        element: <SignupPage />,
+      },
+      {
+        // Deactivated account (PL-03): under the Auth0 boundary so that its logout button always works, but outside
+        // the protected route, the onboarding guard and the workspace, which would call the API again.
+        path: ACCOUNT_INACTIVE_PATH,
+        element: <AccountInactivePage />,
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: '/onboarding',
+            element: <OnboardingPage />,
+          },
+          {
+            element: <OnboardingGuard />,
+            children: workspaceRoutes,
+          },
+        ],
+      },
+    ],
   },
   {
-    path: '/register',
-    element: <SupplierRegisterPage />,
+    // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
+    // onboarding redirect (SU-02).
+    path: '/register/claim',
+    element: <SupplierClaimPage />,
   },
   {
     path: '/search',
@@ -132,6 +187,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
+      // Link of the "request received" email of a "pay at the property" request (BK-06).
+      { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
+      // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
+      { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)
@@ -141,6 +200,7 @@ export const router = createBrowserRouter([
   {
     element: <PublicSiteShell mode="default" />,
     children: [
+      { path: SEO_HUB_PATH, element: <SeoHubPage /> },
       { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
       { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
     ],
@@ -148,10 +208,6 @@ export const router = createBrowserRouter([
   {
     path: '/s/:slug',
     element: <SupplierShowcasePage />,
-  },
-  {
-    path: '/check-in/:jobId',
-    element: <SupplierCheckInPage />,
   },
   {
     path: '/checkin/:token',
@@ -170,24 +226,10 @@ export const router = createBrowserRouter([
     element: <IcalHelpPage />,
   },
   {
-    element: (
-      <ProtectedRoute>
-        <Outlet />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: '/onboarding',
-        element: <OnboardingPage />,
-      },
-      {
-        element: <OnboardingGuard />,
-        children: workspaceRoutes,
-      },
-    ],
-  },
-  {
+    // Public 404 (A8-03): never a redirect to the login.
     path: '*',
     element: <CatchAllRedirect />,
   },
-]);
+];
+
+export const router = createBrowserRouter(appRoutes);

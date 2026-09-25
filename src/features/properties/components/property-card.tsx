@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Users, Edit, Trash2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { displayableMediaUrls } from '@/lib/media-url';
 import type { Property } from '@/types';
+import { formatPropertyLocation } from '../property-location';
 
 interface PropertyCardProps {
   property: Property;
@@ -15,14 +17,15 @@ interface PropertyCardProps {
 
 export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCardProps) {
   const { t } = useTranslation();
+  const [coverPhoto] = displayableMediaUrls(property.photoUrls);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="p-0">
         <div className="relative h-48 bg-muted">
-          {property.photoUrls && property.photoUrls.length > 0 ? (
+          {coverPhoto ? (
             <img
-              src={property.photoUrls[0]}
+              src={coverPhoto}
               alt={property.name}
               className="h-full w-full object-cover"
             />
@@ -44,7 +47,7 @@ export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCar
 
         <div className="flex items-center text-sm text-muted-foreground mb-3">
           <MapPin className="h-4 w-4 mr-1" />
-          <span className="line-clamp-1">{property.city}, {property.country}</span>
+          <span className="line-clamp-1">{formatPropertyLocation(property)}</span>
         </div>
 
         <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
@@ -69,7 +72,7 @@ export function PropertyCard({ property, onEdit, onDelete, onView }: PropertyCar
         </div>
 
         <div className="text-lg font-bold">
-          {formatCurrency(property.nightlyRate, property.currency)} {t('property.card.perNight')}
+          {formatCurrency(property.nightlyRate)} {t('property.card.perNight')}
         </div>
       </CardContent>
 

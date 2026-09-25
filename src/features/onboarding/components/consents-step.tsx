@@ -96,8 +96,13 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
             </div>
             <ul className="ml-8 list-disc text-sm text-muted-foreground space-y-1">
               {subprocessors.items.map((item) => (
-                <li key={item.name}>
-                  {item.name} — {item.purpose} ({item.region})
+                <li key={item.name} data-testid={`subprocessor-${item.name}`}>
+                  {item.name} — {item.purpose}
+                  {item.region ? ` (${item.region})` : ''}
+                  {item.transferMechanism
+                    ? ` — ${t('onboarding.subprocessorTransfer', { mechanism: item.transferMechanism })}`
+                    : ''}
+                  {item.detailsPending ? ` — ${t('onboarding.subprocessorDetailsPending')}` : ''}
                 </li>
               ))}
             </ul>

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
@@ -10,52 +11,94 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { propertiesApi } from '@/api/properties.api';
 import { useProperties } from '@/queries/use-properties';
 import { leaseFormSchema } from '../schemas/lease.schema';
-import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
+import { getLeaseContractTypeLabel, getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
+import { getProblemMessage } from '@/lib/api-errors';
+import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import type { LeaseFormValues } from '../schemas/lease.schema';
-import type { CreateLeaseDto } from '@/types';
+import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type ConcordatoCharacteristics, type CreateLeaseDto } from '@/types';
 import { AlertTriangle } from 'lucide-react';
 import { CanoneConcordatoCalculator, type ConcordatoRange } from './canone-concordato-calculator';
 import { isRentInConcordatoRange } from '../lib/concordato-rent-range';
+import { FormFieldError } from '@/components/shared/form-field-error';
+
+const SELECT_CLASS =
+  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 interface LeaseCreateFormProps {
   onSubmit: (data: CreateLeaseDto) => void;
   isLoading?: boolean;
+  /** Property preselected once the list is loaded (link "new lease" of a property page). */
+  defaultPropertyId?: string;
 }
 
-export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
+export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: LeaseCreateFormProps) {
   const { t } = useTranslation();
-  const { data: propertiesData } = useProperties();
+  const {
+    data: propertiesData,
+    isLoading: isLoadingProperties,
+    isError: propertiesFailed,
+    error: propertiesError,
+    refetch: refetchProperties,
+    isFetching: isFetchingProperties,
+  } = useProperties();
   const properties = propertiesData ?? [];
+  // A failed load (e.g. 403) is an explicit error, never an empty list to pick from (A7-06).
+  const noProperties = !isLoadingProperties && !propertiesFailed && propertiesData !== undefined && properties.length === 0;
   const [apeError, setApeError] = useState<string | null>(null);
   const [concordatoRange, setConcordatoRange] = useState<ConcordatoRange | null>(null);
+  const [concordatoCharacteristics, setConcordatoCharacteristics] = useState<ConcordatoCharacteristics | null>(null);
   const [concordatoError, setConcordatoError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<LeaseFormValues>({
     resolver: zodResolver(leaseFormSchema),
     defaultValues: {
-      fiscalRegime: 'CedolareSecca',
+      contractType: 'Libero',
+      taxRegime: 'CedolareSecca',
       landlord: { role: 'Landlord' },
       tenant: { role: 'Tenant' },
     } as LeaseFormValues,
   });
 
   const selectedPropertyId = watch('propertyId');
-  const fiscalRegime = watch('fiscalRegime');
+  const contractType = watch('contractType');
+  const isConcordato = contractType === 'Concordato';
+  const startDate = watch('startDate');
+  const endDate = watch('endDate');
   const monthlyRent = watch('monthlyRent');
+  // The range comes from the API (A7-12); with unconfirmed agreement data it is only a guide (A7-23).
+  const rentOutsideRange =
+    isConcordato &&
+    !!concordatoRange &&
+    monthlyRent > 0 &&
+    !isRentInConcordatoRange(monthlyRent, concordatoRange.minMonthly, concordatoRange.maxMonthly);
 
-  const { data: documents, isFetching: isLoadingDocuments } = useQuery({
+  const {
+    data: documents,
+    isFetching: isLoadingDocuments,
+    isError: documentsFailed,
+    error: documentsError,
+    refetch: refetchDocuments,
+  } = useQuery({
     queryKey: ['properties', selectedPropertyId, 'documents'],
     queryFn: () => propertiesApi.getDocuments(selectedPropertyId),
     enabled: !!selectedPropertyId,
   });
 
-  const documentsLoaded = !!selectedPropertyId && !isLoadingDocuments && documents !== undefined;
+  const documentsLoaded = !!selectedPropertyId && !isLoadingDocuments && !documentsFailed && documents !== undefined;
   const hasApeDocument = documents?.some((doc) => doc.documentType === 'Ape') ?? false;
+  const apeMissing = documentsLoaded && !hasApeDocument;
+
+  useEffect(() => {
+    if (defaultPropertyId && propertiesData?.some((property) => property.id === defaultPropertyId)) {
+      setValue('propertyId', defaultPropertyId, { shouldValidate: false });
+    }
+  }, [defaultPropertyId, propertiesData, setValue]);
 
   useEffect(() => {
     if (documentsLoaded && !hasApeDocument) {
@@ -65,12 +108,17 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
     }
   }, [documentsLoaded, hasApeDocument, t]);
 
-  useEffect(() => {
-    setConcordatoRange(null);
+  // A new range (or none, after an input changed) supersedes the message of the last refused submit.
+  const handleRangeChange = useCallback((range: ConcordatoRange | null) => {
+    setConcordatoRange(range);
     setConcordatoError(null);
-  }, [selectedPropertyId, fiscalRegime]);
+  }, []);
 
   const handleFormSubmit = (values: LeaseFormValues) => {
+    if (documentsFailed) {
+      return;
+    }
+
     if (!documentsLoaded) {
       setApeError(t('leases.form.waitingDocuments'));
       return;
@@ -81,9 +129,18 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
       return;
     }
 
-    if (values.fiscalRegime === 'CanoneConcordato') {
-      if (!isRentInConcordatoRange(values.monthlyRent, concordatoRange?.minMonthly, concordatoRange?.maxMonthly)) {
+    if (values.contractType === 'Concordato') {
+      // The API computes the range again from the same data; the form asks for it first so the landlord sees it.
+      if (!concordatoRange || !concordatoCharacteristics) {
         setConcordatoError(t('leases.form.concordatoRangeRequired'));
+        return;
+      }
+      // Verified data: the API refuses a rent outside the range, so the form does too. Partial data: a warning only.
+      if (
+        !concordatoRange.indicative &&
+        !isRentInConcordatoRange(values.monthlyRent, concordatoRange.minMonthly, concordatoRange.maxMonthly)
+      ) {
+        setConcordatoError(t('leases.form.concordatoRentOutOfRange'));
         return;
       }
     }
@@ -92,14 +149,19 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
     setConcordatoError(null);
     onSubmit({
       propertyId: values.propertyId,
-      fiscalRegime: values.fiscalRegime,
+      contractType: values.contractType,
+      taxRegime: values.taxRegime,
       startDate: values.startDate,
       endDate: values.endDate,
       monthlyRent: values.monthlyRent,
+      securityDeposit: values.securityDeposit ?? null,
       parties: [
         { ...values.landlord, role: 'Landlord' },
         { ...values.tenant, role: 'Tenant' },
       ],
+      ...(values.contractType === 'Concordato' && concordatoCharacteristics
+        ? { canoneConcordato: concordatoCharacteristics }
+        : {}),
     });
   };
 
@@ -112,105 +174,195 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
-            <select
-              id="propertyId"
-              {...register('propertyId')}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">{t('leases.form.selectProperty')}</option>
-              {properties.map((property) => (
-                <option key={property.id} value={property.id}>
-                  {property.name} — {property.city}
-                </option>
-              ))}
-            </select>
-            {errors.propertyId && (
-              <p className="text-sm text-destructive">{errors.propertyId.message}</p>
+            {propertiesFailed ? (
+              <>
+                <Label>{t('leases.form.propertyLabel')}</Label>
+                <div
+                  role="alert"
+                  data-testid="lease-properties-error"
+                  className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+                >
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span className="flex-1">
+                    {getProblemMessage(propertiesError, t) ?? t('leases.form.propertiesLoadError')}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void refetchProperties()}
+                    disabled={isFetchingProperties}
+                  >
+                    {t('leases.form.retry')}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
+                <select
+                  id="propertyId"
+                  {...register('propertyId')}
+                  aria-busy={isLoadingProperties}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">
+                    {isLoadingProperties ? t('leases.form.propertiesLoading') : t('leases.form.selectProperty')}
+                  </option>
+                  {properties.map((property) => (
+                    <option key={property.id} value={property.id}>
+                      {property.name} — {property.city}
+                    </option>
+                  ))}
+                </select>
+                {noProperties && (
+                  <div
+                    role="status"
+                    data-testid="lease-no-properties"
+                    className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+                  >
+                    <span className="flex-1">{t('leases.form.noProperties')}</span>
+                    <Button asChild variant="outline" size="sm">
+                      <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
+            <FormFieldError error={errors.propertyId} />
           </div>
+
+          {documentsFailed && (
+            <div
+              role="alert"
+              data-testid="lease-documents-error"
+              className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span className="flex-1">
+                {getProblemMessage(documentsError, t) ?? t('leases.form.documentsLoadError')}
+              </span>
+              <Button type="button" variant="outline" size="sm" onClick={() => void refetchDocuments()}>
+                {t('leases.form.retry')}
+              </Button>
+            </div>
+          )}
 
           {apeError && (
             <div
               role="alert"
-              className="flex gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+              className="flex flex-wrap gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
             >
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{apeError}</span>
+              <span className="flex-1">{apeError}</span>
+              {apeMissing && (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={longRentPropertyPath(selectedPropertyId)}>{t('leases.form.uploadApe')}</Link>
+                </Button>
+              )}
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="fiscalRegime">{t('leases.form.fiscalRegimeLabel')}</Label>
-            <select
-              id="fiscalRegime"
-              {...register('fiscalRegime')}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              {['CedolareSecca', 'RegimeOrdinario', 'CanoneConcordato'].map((value) => (
-                <option key={value} value={value}>
-                  {getFiscalRegimeLabel(value, t)}
-                </option>
-              ))}
-            </select>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="contractType">{t('leases.form.contractTypeLabel')}</Label>
+              <select id="contractType" {...register('contractType')} className={SELECT_CLASS}>
+                {LEASE_CONTRACT_TYPES.map((value) => (
+                  <option key={value} value={value}>
+                    {getLeaseContractTypeLabel(value, t)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="taxRegime">{t('leases.form.taxRegimeLabel')}</Label>
+              <select id="taxRegime" {...register('taxRegime')} className={SELECT_CLASS}>
+                {LEASE_TAX_REGIMES.map((value) => (
+                  <option key={value} value={value}>
+                    {getLeaseTaxRegimeLabel(value, t)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-
-          {fiscalRegime === 'CanoneConcordato' && selectedPropertyId && (
-            <CanoneConcordatoCalculator
-              propertyId={selectedPropertyId}
-              onRangeChange={setConcordatoRange}
-            />
-          )}
-          {concordatoError && (
-            <p role="alert" className="text-sm text-destructive">
-              {concordatoError}
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground" data-testid="lease-term-rule">
+            {t(`leases.form.termRule.${contractType}`)}
+          </p>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">{t('leases.form.startDateLabel')}</Label>
               <Input id="startDate" type="date" {...register('startDate')} />
-              {errors.startDate && (
-                <p className="text-sm text-destructive">{errors.startDate.message}</p>
-              )}
+              <FormFieldError error={errors.startDate} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="endDate">{t('leases.form.endDateLabel')}</Label>
               <Input id="endDate" type="date" {...register('endDate')} />
-              {errors.endDate && (
-                <p className="text-sm text-destructive">{errors.endDate.message}</p>
-              )}
+              <FormFieldError error={errors.endDate} />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="monthlyRent">{t('leases.form.monthlyRentLabel')}</Label>
-            <Input
-              id="monthlyRent"
-              type="number"
-              step="0.01"
-              min="0.01"
-              {...register('monthlyRent', { valueAsNumber: true })}
+          {isConcordato && selectedPropertyId && (
+            <CanoneConcordatoCalculator
+              propertyId={selectedPropertyId}
+              startDate={startDate}
+              endDate={endDate}
+              onRangeChange={handleRangeChange}
+              onCharacteristicsChange={setConcordatoCharacteristics}
             />
-            {errors.monthlyRent && (
-              <p className="text-sm text-destructive">{errors.monthlyRent.message}</p>
-            )}
-            {fiscalRegime === 'CanoneConcordato' && concordatoRange && (
-              <p className="text-sm text-muted-foreground">
-                {t('leases.form.concordatoRangeHint', {
-                  min: concordatoRange.minMonthly.toFixed(2),
-                  max: concordatoRange.maxMonthly.toFixed(2),
+          )}
+          {isConcordato && concordatoError && (
+            <p role="alert" className="text-sm text-destructive">
+              {concordatoError}
+            </p>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="monthlyRent">{t('leases.form.monthlyRentLabel')}</Label>
+              <Input
+                id="monthlyRent"
+                type="number"
+                step="0.01"
+                min="0.01"
+                {...register('monthlyRent', { valueAsNumber: true })}
+              />
+              <FormFieldError error={errors.monthlyRent} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="securityDeposit">{t('leases.form.securityDepositLabel')}</Label>
+              <Input
+                id="securityDeposit"
+                type="number"
+                step="0.01"
+                min="0"
+                {...register('securityDeposit', {
+                  setValueAs: (value: string) => (value === '' || value == null ? undefined : Number(value)),
                 })}
-              </p>
-            )}
-            {fiscalRegime === 'CanoneConcordato' &&
-              concordatoRange &&
-              monthlyRent > 0 &&
-              !isRentInConcordatoRange(monthlyRent, concordatoRange.minMonthly, concordatoRange.maxMonthly) && (
-                <p className="text-sm text-destructive">{t('leases.form.concordatoRentOutOfRange')}</p>
-              )}
+              />
+              <FormFieldError error={errors.securityDeposit} />
+            </div>
           </div>
+          {isConcordato && concordatoRange && (
+            <p className="text-sm text-muted-foreground" data-testid="lease-concordato-range-hint">
+              {t(concordatoRange.indicative ? 'leases.form.concordatoIndicativeRangeHint' : 'leases.form.concordatoRangeHint', {
+                min: concordatoRange.minMonthly.toFixed(2),
+                max: concordatoRange.maxMonthly.toFixed(2),
+              })}
+            </p>
+          )}
+          {rentOutsideRange && concordatoRange && (
+            <p
+              className={`text-sm ${concordatoRange.indicative ? 'text-amber-700' : 'text-destructive'}`}
+              data-testid="lease-concordato-out-of-range"
+            >
+              {t(
+                concordatoRange.indicative
+                  ? 'leases.form.concordatoRentOutsideIndicativeRange'
+                  : 'leases.form.concordatoRentOutOfRange',
+              )}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -235,7 +387,10 @@ export function LeaseCreateForm({ onSubmit, isLoading }: LeaseCreateFormProps) {
       </Card>
 
       <div className="flex justify-end gap-4">
-        <Button type="submit" disabled={isLoading || isLoadingDocuments || !!apeError}>
+        <Button
+          type="submit"
+          disabled={isLoading || isLoadingDocuments || documentsFailed || propertiesFailed || noProperties || !!apeError}
+        >
           {isLoading ? t('leases.form.creating') : t('leases.form.createDraft')}
         </Button>
       </div>
@@ -259,23 +414,17 @@ function PartyFields({
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.firstName`}>{t('leases.form.firstNameLabel')}</Label>
         <Input id={`${prefix}.firstName`} {...register(`${prefix}.firstName`)} />
-        {errors?.firstName && (
-          <p className="text-sm text-destructive">{errors.firstName.message}</p>
-        )}
+        <FormFieldError error={errors?.firstName} />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.lastName`}>{t('leases.form.lastNameLabel')}</Label>
         <Input id={`${prefix}.lastName`} {...register(`${prefix}.lastName`)} />
-        {errors?.lastName && (
-          <p className="text-sm text-destructive">{errors.lastName.message}</p>
-        )}
+        <FormFieldError error={errors?.lastName} />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.fiscalCode`}>{t('leases.form.fiscalCodeLabel')}</Label>
         <Input id={`${prefix}.fiscalCode`} {...register(`${prefix}.fiscalCode`)} />
-        {errors?.fiscalCode && (
-          <p className="text-sm text-destructive">{errors.fiscalCode.message}</p>
-        )}
+        <FormFieldError error={errors?.fiscalCode} />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.citizenship`}>{t('leases.form.citizenshipLabel')}</Label>
@@ -283,11 +432,15 @@ function PartyFields({
           id={`${prefix}.citizenship`}
           maxLength={2}
           placeholder="IT"
+          aria-describedby={prefix === 'tenant' ? 'tenant.citizenship-hint' : undefined}
           {...register(`${prefix}.citizenship`)}
         />
-        {errors?.citizenship && (
-          <p className="text-sm text-destructive">{errors.citizenship.message}</p>
+        {prefix === 'tenant' && (
+          <p id="tenant.citizenship-hint" className="text-xs text-muted-foreground">
+            {t('leases.form.citizenshipHint')}
+          </p>
         )}
+        <FormFieldError error={errors?.citizenship} />
       </div>
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor={`${prefix}.contactEmail`}>{t('leases.form.contactEmailLabel')}</Label>
@@ -296,9 +449,7 @@ function PartyFields({
           type="email"
           {...register(`${prefix}.contactEmail`)}
         />
-        {errors?.contactEmail && (
-          <p className="text-sm text-destructive">{errors.contactEmail.message}</p>
-        )}
+        <FormFieldError error={errors?.contactEmail} />
       </div>
     </>
   );

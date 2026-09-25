@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
@@ -26,12 +26,16 @@ export function CustomDomainSettingsPage() {
   const [subdomain, setSubdomain] = useState('');
   const [customDomain, setCustomDomain] = useState('');
 
-  useEffect(() => {
-    if (!domainConfig) return;
-    setHostMode(domainConfig.publicHostMode);
-    setSubdomain(domainConfig.subdomain ?? '');
-    setCustomDomain(domainConfig.customDomain ?? '');
-  }, [domainConfig]);
+  // Sync the form from the server config whenever it (re)loads (adjusting state during render).
+  const [syncedConfig, setSyncedConfig] = useState(domainConfig);
+  if (domainConfig !== syncedConfig) {
+    setSyncedConfig(domainConfig);
+    if (domainConfig) {
+      setHostMode(domainConfig.publicHostMode);
+      setSubdomain(domainConfig.subdomain ?? '');
+      setCustomDomain(domainConfig.customDomain ?? '');
+    }
+  }
 
   if (user && needsOrgSetup(user)) {
     return <Navigate to="/onboarding" replace />;
@@ -119,7 +123,7 @@ export function CustomDomainSettingsPage() {
                     <Input
                       id="custom-domain"
                       data-testid="custom-domain-input"
-                      placeholder="www.tuovilla.it"
+                      placeholder={t('domain.settings.customDomainPlaceholder')}
                       value={customDomain}
                       onChange={(e) => setCustomDomain(e.target.value)}
                     />

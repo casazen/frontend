@@ -75,7 +75,7 @@ export function Breadcrumb({ items: customItems }: BreadcrumbProps) {
   if (items.length <= 1) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
+    <nav aria-label={t('breadcrumb.ariaLabel')} className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
       <Link to="/app/short-rent" className="hover:text-foreground transition-colors">
         <Home className="h-3.5 w-3.5" />
       </Link>

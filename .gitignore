@@ -40,3 +40,6 @@ e2e/.auth/
 test-results/
 playwright-report/
 
+# TypeScript incremental build info (tsc -b)
+*.tsbuildinfo
+

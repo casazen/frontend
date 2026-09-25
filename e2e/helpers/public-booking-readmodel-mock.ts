@@ -19,7 +19,7 @@ export const mockPublicSearchResults: PublicPropertyDto[] = [
     cleaningFee: 50,
     amenities: ['Wifi', 'Parking'],
     photoUrls: ['https://cdn.example.com/trastevere.jpg'],
-    cinCode: 'IT-12345-0123456789',
+    cinCode: 'IT058091C27G5FFZDZ',
     cinStatus: 'Valid',
     timezone: 'Europe/Rome',
   },

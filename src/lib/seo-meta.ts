@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 interface SeoMetaInput {
   title: string;
   description?: string;
-  canonicalUrl?: string;
+  /** Absolute URL on the public domain, from the backend (`App__PublicSiteBaseUrl`); never built in the browser. */
+  canonicalUrl?: string | null;
 }
 
 function upsertMeta(name: string, content: string, attribute: 'name' | 'property' = 'name') {
@@ -42,8 +43,13 @@ export function applySeoMeta({ title, description, canonicalUrl }: SeoMetaInput)
 }
 
 export function useSeoMeta(meta: SeoMetaInput | null) {
+  // Depend on the primitive fields: callers pass a new object literal on every render.
+  const title = meta?.title;
+  const description = meta?.description;
+  const canonicalUrl = meta?.canonicalUrl;
+
   useEffect(() => {
-    if (!meta) return;
-    applySeoMeta(meta);
-  }, [meta?.title, meta?.description, meta?.canonicalUrl]);
+    if (title === undefined) return;
+    applySeoMeta({ title, description, canonicalUrl });
+  }, [title, description, canonicalUrl]);
 }

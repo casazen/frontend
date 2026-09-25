@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Users, Euro } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
+import { displayableMediaUrls } from '@/lib/media-url';
+import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
 import type { PublicPropertyDto } from '@/types';
 
 interface PropertySearchCardProps {
@@ -14,7 +15,7 @@ interface PropertySearchCardProps {
 
 export function PropertySearchCard({ property, onViewDetails }: PropertySearchCardProps) {
   const { t } = useTranslation();
-  const heroPhoto = property.photoUrls?.[0];
+  const [heroPhoto] = displayableMediaUrls(property.photoUrls);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -44,7 +45,7 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
           </div>
         </div>
 
-        <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
+        <PublicCinLabel cinStatus={property.cinStatus} cinCode={property.cinCode} />
 
         {property.description && (
           <p className="text-sm text-muted-foreground line-clamp-2">
@@ -55,11 +56,11 @@ export function PropertySearchCard({ property, onViewDetails }: PropertySearchCa
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="flex items-center gap-1">
             <Bed className="h-3 w-3" />
-            {property.bedrooms} {property.bedrooms !== 1 ? t('search.card.bed_other') : t('search.card.bed_one')}
+            {property.bedrooms} {t('search.card.bed', { count: property.bedrooms })}
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Bath className="h-3 w-3" />
-            {property.bathrooms} {property.bathrooms !== 1 ? t('search.card.bath_other') : t('search.card.bath_one')}
+            {property.bathrooms} {t('search.card.bath', { count: property.bathrooms })}
           </Badge>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Users className="h-3 w-3" />

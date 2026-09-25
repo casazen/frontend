@@ -2,11 +2,12 @@ import { lazy, Suspense } from 'react';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
-import { PropertyCinBadge } from '@/features/properties/components/property-cin-badge';
+import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
-import { useBookingSearchParams } from '@/features/public-site/hooks/use-booking-search-params';
+import type { WidgetAvailability } from '@/features/public-site/components/BookingWidget';
+import { getProblemMessage } from '@/lib/api-errors';
 import type { PublicOrgDto } from '@/types';
 import { Bed, Bath, Loader2, Users } from 'lucide-react';
 
@@ -23,8 +24,8 @@ export function PublicPropertyPage() {
   const { orgSlug, propertySlugOrId } = useParams<{ orgSlug: string; propertySlugOrId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
-  const { data: availability } = usePropertyAvailability(propertySlugOrId);
-  const { toQueryString } = useBookingSearchParams();
+  // By the id of the loaded property: the URL may carry its slug, the availability takes the id (BK-05, R-03).
+  const availabilityQuery = usePropertyAvailability(property?.id);
 
   if (isLoading) {
     return (
@@ -46,7 +47,14 @@ export function PublicPropertyPage() {
   }
 
   const basePath = `/book/${orgSlug}`;
-  const query = toQueryString();
+  // An error is never shown as "every night free": the calendar shows the error and a retry (BK-05).
+  const availability: WidgetAvailability = {
+    status: availabilityQuery.isError ? 'error' : availabilityQuery.data ? 'ready' : 'loading',
+    bookedDates: availabilityQuery.data?.bookedDates,
+    endDate: availabilityQuery.data?.endDate.slice(0, 10),
+    errorMessage: availabilityQuery.isError ? getProblemMessage(availabilityQuery.error, t) : undefined,
+    onRetry: () => void availabilityQuery.refetch(),
+  };
 
   return (
     <div className="space-y-6 md:space-y-8" data-testid="public-property-page">
@@ -71,8 +79,12 @@ export function PublicPropertyPage() {
                   {property.city}
                   {property.postalCode ? ` (${property.postalCode})` : ''}
                 </p>
+                <PublicCinLabel
+                  cinStatus={property.cinStatus}
+                  cinCode={property.cinCode}
+                  className="text-[var(--cz-public-muted)]"
+                />
               </div>
-              <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
             </div>
 
             <AiContentNotice visible={false} />
@@ -110,7 +122,7 @@ export function PublicPropertyPage() {
         </div>
 
         <Suspense fallback={null}>
-          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} querySuffix={query} />
+          <BookingWidget property={property} availability={availability} orgSlug={orgSlug!} />
         </Suspense>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { mockServiceCategoriesApi } from './service-categories-mock';
 
 interface SupplierProfile {
   orgId: string;
@@ -62,9 +63,11 @@ export async function mockSupplierConsoleApi(
   const active = options?.active ?? false;
   const inboxItems = options?.inboxItems ?? [];
   const profile: SupplierProfile = active
-    ? { ...demoSupplierProfile, status: 'Active', categories: ['Pulizie'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
+    ? { ...demoSupplierProfile, status: 'Active', categories: ['cleaning'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
     : demoSupplierProfile;
   const activation = active ? demoActivationActive : demoActivationPending;
+
+  await mockServiceCategoriesApi(page);
 
   await page.route('**/api/supplier/**', async (route) => {
     const url = route.request().url();
@@ -111,6 +114,25 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    if (url.includes('/dashboard/kpis')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          period: 'CurrentMonth',
+          from: '2026-09-01',
+          to: '2026-09-25',
+          timeZone: 'Europe/Rome',
+          completed: active ? 3 : 0,
+          rejected: 0,
+          awaitingAcceptance: active ? 1 : 0,
+          upcoming: active ? 2 : 0,
+          totalRequests: active ? 6 : 0,
+        }),
+      });
+      return;
+    }
+
     if (url.includes('/dashboard')) {
       await route.fulfill({
         status: 200,
@@ -118,9 +140,6 @@ export async function mockSupplierConsoleApi(
         body: JSON.stringify({
           profileCompletionPercent: active ? 100 : 40,
           status: active ? 'Active' : 'Pending',
-          totalJobs: active ? 5 : 0,
-          completedJobs: active ? 3 : 0,
-          upcomingJobs: active ? 2 : 0,
           availabilityRate: active ? 0.8 : 0,
           calendarSyncStatus: {
             calendarSyncType: 'None',

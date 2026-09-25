@@ -1,75 +1,168 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
+import { FormProvider, useFieldArray, useForm, useWatch, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatDate } from '@/lib/utils';
+import { FormFieldError } from '@/components/shared/form-field-error';
 import { useCheckInContext, useSubmitGuestCheckIn } from '@/queries/use-checkin';
-import { publicCheckInFormSchema, type PublicCheckInFormValues } from './schemas/checkin.schema';
-import { getDocumentTypeLabel } from '@/lib/i18n-labels';
-import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { PublicCheckInGuestPrefill } from '@/types/public-checkin.types';
+import { publicCheckinApi } from '@/api/checkin.api';
+import {
+  MAX_STAY_GUESTS,
+  followerTypeOf,
+  guestFormPathOf,
+  initialStayGuests,
+  publicCheckInFormSchema,
+  requiresDocument,
+  stayGuestDefaults,
+  toPublicCheckInSubmitRequest,
+  type PublicCheckInFormValues,
+  type StayGuestFormValues,
+} from './schemas/checkin.schema';
+import { StayGuestDocumentFields, StayGuestPersonalFields } from './components/stay-guest-fields';
+import type { CodeTableSource } from './components/code-table';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { getServerFieldErrorsByPath } from '@/lib/server-validation-errors';
+import { CheckCircle2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
+import type { StayGuestType } from '@/types/public-checkin.types';
 
-const DOCUMENT_TYPES = ['Passport', 'IdentityCard', 'DriversLicense', 'Other'] as const;
-const selectClassName =
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+type FormPath = FieldPath<PublicCheckInFormValues>;
+
 const COMPLETE_STATUSES = new Set(['Completo', 'AlloggiatiInviato']);
+const TOTAL_STEPS = 3;
 
-function defaultValues(prefill?: PublicCheckInGuestPrefill | null): PublicCheckInFormValues {
-  return {
-    firstName: prefill?.firstName ?? '',
-    lastName: prefill?.lastName ?? '',
-    dateOfBirth: prefill?.dateOfBirth?.slice(0, 10) ?? '',
-    placeOfBirth: prefill?.placeOfBirth ?? '',
-    nationality: prefill?.nationality ?? '',
-    documentType: 'Passport',
-    documentNumber: prefill?.documentNumber ?? '',
-    documentIssuingCountry: prefill?.documentIssuingCountry ?? '',
-    gdprConsent: false,
-    marketingConsent: false,
-  };
+/** Fields of each guest checked before leaving the first step (personal data). */
+const PERSONAL_FIELDS = [
+  'type',
+  'firstName',
+  'lastName',
+  'gender',
+  'dateOfBirth',
+  'bornInItaly',
+  'birthComuneName',
+  'birthProvince',
+  'birthCountryName',
+  'citizenshipName',
+] as const satisfies readonly (keyof StayGuestFormValues)[];
+
+/** Fields of a single guest or head checked before leaving the second step (document). */
+const DOCUMENT_FIELDS = [
+  'documentType',
+  'documentNumber',
+  'documentIssuePlaceName',
+] as const satisfies readonly (keyof StayGuestFormValues)[];
+
+function personalPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
+  return guests.flatMap((_, index) => PERSONAL_FIELDS.map((field) => `guests.${index}.${field}` as FormPath));
+}
+
+function documentPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
+  return guests.flatMap((guest, index) =>
+    requiresDocument(guest.type) ? DOCUMENT_FIELDS.map((field) => `guests.${index}.${field}` as FormPath) : [],
+  );
+}
+
+/** Server error path → the form path that shows it, or null when the form has no such field. */
+function toFormPath(path: string, guestCount: number): FormPath | null {
+  if (path === 'marketingConsent') return 'marketingConsent';
+  return guestFormPathOf(path, guestCount);
+}
+
+function emptyForm(): PublicCheckInFormValues {
+  return { guests: [stayGuestDefaults('SingleGuest')], marketingConsent: false };
 }
 
 export function CheckInPage() {
   const { t } = useTranslation();
   const { token = '' } = useParams<{ token: string }>();
-  const { data: context, isLoading, isError } = useCheckInContext(token);
+  const { data: context, isLoading, isError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<PublicCheckInFormValues>({
     resolver: zodResolver(publicCheckInFormSchema),
-    defaultValues: defaultValues(),
+    defaultValues: emptyForm(),
   });
-
-  const { register, handleSubmit, setValue, watch, trigger, reset } = form;
+  const { control, handleSubmit, setValue, setError, getValues, trigger, reset, formState: { errors } } = form;
+  const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
 
   useEffect(() => {
-    if (context?.guestPrefill) reset(defaultValues(context.guestPrefill));
-  }, [context?.sessionId, context?.guestPrefill, reset]);
+    if (!context || context.completed) return;
+    reset({
+      guests: initialStayGuests(context.guests, context.declaredGuests),
+      marketingConsent: false,
+    });
+  }, [context, reset]);
 
-  const gdprConsent = watch('gdprConsent');
-  const marketingConsent = watch('marketingConsent');
+  const codeSource = useMemo<CodeTableSource>(
+    () => ({
+      scope: `checkin-${token}`,
+      availableTables: context?.availableCodeTables ?? [],
+      search: (list, query) => publicCheckinApi.searchCodes(token, list, query),
+    }),
+    [context?.availableCodeTables, token],
+  );
+
+  const guests = useWatch({ control, name: 'guests' });
+  const marketingConsent = useWatch({ control, name: 'marketingConsent' });
+
+  const changeLeaderType = (type: StayGuestType) => {
+    const follower = followerTypeOf(type);
+    getValues('guests').forEach((_, index) => {
+      if (index > 0) setValue(`guests.${index}.type`, follower, { shouldDirty: true });
+    });
+  };
+
+  const addGuest = () => append(stayGuestDefaults(followerTypeOf(getValues('guests.0.type'))));
+
+  const stepPaths = (currentStep: number): FormPath[] => {
+    const current = getValues('guests');
+    if (currentStep === 1) return personalPaths(current);
+    if (currentStep === 2) return documentPaths(current);
+    return ['marketingConsent'];
+  };
 
   const goNext = async () => {
-    const fieldsByStep: (keyof PublicCheckInFormValues)[][] = [
-      ['firstName', 'lastName', 'dateOfBirth', 'placeOfBirth', 'nationality'],
-      ['documentType', 'documentNumber', 'documentIssuingCountry'],
-      ['gdprConsent'],
-    ];
-    if (await trigger(fieldsByStep[step - 1])) setStep((s) => Math.min(3, s + 1));
+    if (await trigger(stepPaths(step))) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    await submitCheckIn.mutateAsync({ ...values, marketingConsent: values.marketingConsent ?? false });
-    setSubmitted(true);
+    setSubmitError(null);
+    try {
+      await submitCheckIn.mutateAsync(toPublicCheckInSubmitRequest(values));
+      setSubmitted(true);
+    } catch (error) {
+      // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
+      if (getHttpStatus(error) === 409) {
+        await refetch();
+        return;
+      }
+
+      const current = getValues('guests');
+      const serverErrors = getServerFieldErrorsByPath(error, t('checkin.validation.invalidValue'));
+      const invalid = Object.entries(serverErrors)
+        .map(([path, message]) => ({ path: toFormPath(path, current.length), message }))
+        .filter((entry): entry is { path: FormPath; message: string } => entry.path !== null);
+      invalid.forEach(({ path, message }) => setError(path, { type: 'server', message }));
+
+      const firstInvalidStep = [1, 2, 3].find((candidate) => {
+        const paths = stepPaths(candidate);
+        return invalid.some(({ path }) => paths.includes(path));
+      });
+      if (firstInvalidStep) {
+        setStep(firstInvalidStep);
+        setSubmitError(t('checkin.fixHighlightedFields'));
+      } else {
+        setSubmitError(getProblemMessage(error, t) ?? t('toast.checkInDataSaveFailed'));
+      }
+    }
   });
 
   if (isLoading) return <LoadingScreen message={t('checkin.loading')} />;
@@ -87,20 +180,29 @@ export function CheckInPage() {
     );
   }
 
-  if (COMPLETE_STATUSES.has(context.status) || submitted) {
+  if (submitted || context.completed || COMPLETE_STATUSES.has(context.status)) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-muted/30" data-testid="checkin-success">
         <Card className="max-w-md w-full text-center">
           <CardContent className="pt-10 pb-8 space-y-4">
             <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto" />
-            <h1 className="text-2xl font-bold">{t('checkin.successTitle')}</h1>
-            <p className="text-muted-foreground">{t('checkin.successDescription')}</p>
-            <p className="text-sm font-medium">{context.propertyName}</p>
+            <h1 className="text-2xl font-bold">
+              {submitted ? t('checkin.successTitle') : t('checkin.alreadyCompletedTitle')}
+            </h1>
+            <p className="text-muted-foreground">
+              {submitted ? t('checkin.successDescription') : t('checkin.alreadyCompletedDescription')}
+            </p>
+            {context.propertyName && <p className="text-sm font-medium">{context.propertyName}</p>}
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  const declaredGuests = context.declaredGuests ?? 1;
+  const leaders = fields
+    .map((field, index) => ({ field, index }))
+    .filter(({ index }) => guests[index] && requiresDocument(guests[index].type));
 
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4" data-testid="checkin-page">
@@ -108,9 +210,11 @@ export function CheckInPage() {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">{t('checkin.guestCheckIn')}</h1>
           <p className="text-muted-foreground">{context.propertyName}</p>
-          <p className="text-sm text-muted-foreground">
-            {formatDate(context.checkInDate)} – {formatDate(context.checkOutDate)}
-          </p>
+          {context.checkInDate && context.checkOutDate && (
+            <p className="text-sm text-muted-foreground">
+              {formatDate(context.checkInDate)} – {formatDate(context.checkOutDate)}
+            </p>
+          )}
         </div>
         <div className="flex justify-center gap-2" data-testid="checkin-progress">
           {[1, 2, 3].map((n) => (
@@ -120,97 +224,109 @@ export function CheckInPage() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {step === 1 && t('checkin.stepPersonal')}
+              {step === 1 && t('checkin.stepGuests')}
               {step === 2 && t('checkin.stepDocument')}
               {step === 3 && t('checkin.stepConsents')}
             </CardTitle>
-            <CardDescription>{t('checkin.stepOf', { step, total: 3 })}</CardDescription>
+            <CardDescription>{t('checkin.stepOf', { step, total: TOTAL_STEPS })}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={onSubmit} className="space-y-4" data-testid="guest-data-form">
-              {step === 1 && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">{t('checkin.firstName')}</Label>
-                    <Input id="firstName" {...register('firstName')} />
+            <FormProvider {...form}>
+              <form onSubmit={onSubmit} className="space-y-4" data-testid="guest-data-form">
+                {step === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">{t('checkin.guestsIntro')}</p>
+                    {fields.length !== declaredGuests && (
+                      <p className="text-sm text-orange-700" data-testid="checkin-guest-count-mismatch">
+                        {t('checkin.guestCountMismatch', { count: declaredGuests })}
+                      </p>
+                    )}
+                    {fields.map((field, index) => (
+                      <StayGuestPersonalFields
+                        key={field.id}
+                        index={index}
+                        arrivalDate={context.checkInDate}
+                        source={codeSource}
+                        onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
+                        onRemove={index > 0 ? () => remove(index) : undefined}
+                      />
+                    ))}
+                    {fields.length < MAX_STAY_GUESTS && (
+                      <Button type="button" variant="outline" onClick={addGuest} data-testid="checkin-add-guest">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        {t('checkin.addGuest')}
+                      </Button>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">{t('checkin.lastName')}</Label>
-                    <Input id="lastName" {...register('lastName')} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">{t('checkin.birthDate')}</Label>
-                    <Input id="dateOfBirth" type="date" {...register('dateOfBirth')} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="placeOfBirth">{t('checkin.birthPlace')}</Label>
-                    <Input id="placeOfBirth" {...register('placeOfBirth')} />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="nationality">{t('checkin.nationality')}</Label>
-                    <Input id="nationality" {...register('nationality')} />
-                  </div>
-                </div>
-              )}
-              {step === 2 && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="documentType">{t('checkin.documentTypeLabel')}</Label>
-                    <select id="documentType" {...register('documentType')} className={selectClassName}>
-                      {DOCUMENT_TYPES.map((value) => (
-                        <option key={value} value={value}>{getDocumentTypeLabel(value, t)}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="documentNumber">{t('checkin.documentNumber')}</Label>
-                    <Input id="documentNumber" {...register('documentNumber')} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="documentIssuingCountry">{t('checkin.documentIssuingCountry')}</Label>
-                    <Input id="documentIssuingCountry" {...register('documentIssuingCountry')} />
-                  </div>
-                </div>
-              )}
-              {step === 3 && (
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 rounded-md border p-4" data-testid="checkin-gdpr-consent">
-                    <Checkbox
-                      id="gdprConsent"
-                      checked={gdprConsent === true}
-                      onCheckedChange={(v) => setValue('gdprConsent', v === true, { shouldValidate: true })}
-                    />
-                    <Label htmlFor="gdprConsent" className="text-sm leading-relaxed cursor-pointer">
-                      {t('checkin.gdprConsent')}
-                    </Label>
-                  </div>
-                  <div className="flex items-start gap-3 rounded-md border p-4">
-                    <Checkbox
-                      id="marketingConsent"
-                      checked={marketingConsent === true}
-                      onCheckedChange={(v) => setValue('marketingConsent', v === true)}
-                    />
-                    <Label htmlFor="marketingConsent" className="text-sm leading-relaxed cursor-pointer">
-                      {t('checkin.marketingConsent')}
-                    </Label>
-                  </div>
-                </div>
-              )}
-              <div className="flex justify-between pt-4">
-                <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
-                  <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
-                </Button>
-                {step < 3 ? (
-                  <Button type="button" onClick={goNext}>
-                    {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button type="submit" disabled={submitCheckIn.isPending} data-testid="checkin-submit">
-                    {submitCheckIn.isPending ? t('checkin.saving') : t('checkin.submit')}
-                  </Button>
                 )}
-              </div>
-            </form>
+                {step === 2 && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">{t('checkin.documentIntro')}</p>
+                    {leaders.map(({ field, index }) => (
+                      <StayGuestDocumentFields key={field.id} index={index} source={codeSource} />
+                    ))}
+                  </div>
+                )}
+                {step === 3 && (
+                  <div className="space-y-4">
+                    {/* CO-15 (A5-15): the Alloggiati registration is a legal obligation, not a consent: notice only, no checkbox. */}
+                    <section
+                      className="rounded-md border p-4 space-y-2 text-sm"
+                      aria-labelledby="checkin-privacy-notice-title"
+                      data-testid="checkin-privacy-notice"
+                    >
+                      <h2 id="checkin-privacy-notice-title" className="font-medium">
+                        {t('checkin.privacyNotice.title')}
+                      </h2>
+                      <p>{t('checkin.privacyNotice.legalObligation')}</p>
+                      <p className="text-muted-foreground">{t('checkin.privacyNotice.body')}</p>
+                      {context.privacyNoticeVersion && (
+                        <p className="text-xs text-muted-foreground">
+                          {t('checkin.privacyNotice.version', { version: context.privacyNoticeVersion })}
+                        </p>
+                      )}
+                    </section>
+                    {context.marketingConsentVersion && (
+                      <div className="flex items-start gap-3 rounded-md border p-4" data-testid="checkin-marketing-consent">
+                        <Checkbox
+                          id="marketingConsent"
+                          checked={marketingConsent === true}
+                          onCheckedChange={(v) => setValue('marketingConsent', v === true)}
+                        />
+                        <div className="space-y-1">
+                          <Label htmlFor="marketingConsent" className="text-sm leading-relaxed cursor-pointer">
+                            {t('checkin.marketingConsent')}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            {t('checkin.marketingConsentVersion', { version: context.marketingConsentVersion })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <FormFieldError id="marketingConsent-error" error={errors.marketingConsent} />
+                  </div>
+                )}
+                {submitError && (
+                  <p role="alert" className="text-sm text-destructive" data-testid="checkin-submit-error">
+                    {submitError}
+                  </p>
+                )}
+                <div className="flex justify-between pt-4">
+                  <Button type="button" variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
+                    <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
+                  </Button>
+                  {step < TOTAL_STEPS ? (
+                    <Button type="button" onClick={goNext}>
+                      {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button type="submit" disabled={submitCheckIn.isPending} data-testid="checkin-submit">
+                      {submitCheckIn.isPending ? t('checkin.saving') : t('checkin.submit')}
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </FormProvider>
           </CardContent>
         </Card>
       </div>

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Edit, Trash2, RefreshCw, Undo2 } from 'lucide-react';
+import { CreditCard, Edit, Trash2, Undo2 } from 'lucide-react';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { PAYMENT_STATUS_VARIANTS } from '../schemas/payment.schema';
 import { getPaymentStatusLabel, getPaymentMethodLabel } from '@/lib/i18n-labels';
@@ -13,11 +13,10 @@ interface PaymentCardProps {
   onEdit?: (payment: Payment) => void;
   onDelete?: (payment: Payment) => void;
   onView?: (payment: Payment) => void;
-  onProcess?: (payment: Payment) => void;
   onRefund?: (payment: Payment) => void;
 }
 
-export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRefund }: PaymentCardProps) {
+export function PaymentCard({ payment, onEdit, onDelete, onView, onRefund }: PaymentCardProps) {
   const { t } = useTranslation();
   const statusLabel = getPaymentStatusLabel(payment.status, t);
   const statusVariant = PAYMENT_STATUS_VARIANTS[payment.status] || PAYMENT_STATUS_VARIANTS.Pending;
@@ -29,7 +28,7 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold">Payment #{payment.id.slice(0, 8)}</span>
+            <span className="font-semibold">{t('payment.card.title', { id: payment.id.slice(0, 8) })}</span>
           </div>
           <Badge variant={statusVariant}>
             {statusLabel}
@@ -46,18 +45,18 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
 
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-muted-foreground">Method</p>
+            <p className="text-muted-foreground">{t('payment.list.columns.method')}</p>
             <p className="font-medium">{methodLabel}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Date</p>
+            <p className="text-muted-foreground">{t('payment.list.columns.date')}</p>
             <p className="font-medium">{formatDate(payment.createdAt)}</p>
           </div>
         </div>
 
         {payment.refundedAmount && payment.refundedAmount > 0 && (
           <div className="pt-2 border-t">
-            <p className="text-sm text-muted-foreground">Refunded Amount</p>
+            <p className="text-sm text-muted-foreground">{t('payment.detail.refundedAmount')}</p>
             <p className="font-medium text-destructive">
               -{formatCurrency(payment.refundedAmount, payment.currency)}
             </p>
@@ -66,7 +65,7 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
 
         {payment.description && (
           <div className="pt-2 border-t">
-            <p className="text-sm text-muted-foreground">Description</p>
+            <p className="text-sm text-muted-foreground">{t('payment.detail.description')}</p>
             <p className="text-sm">{payment.description}</p>
           </div>
         )}
@@ -74,7 +73,7 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
         {payment.stripePaymentIntentId && (
           <div className="pt-2 border-t">
             <p className="text-xs text-muted-foreground">
-              Stripe ID: {payment.stripePaymentIntentId}
+              {t('payment.card.stripeId', { id: payment.stripePaymentIntentId })}
             </p>
           </div>
         )}
@@ -83,19 +82,13 @@ export function PaymentCard({ payment, onEdit, onDelete, onView, onProcess, onRe
       <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
         {onView && (
           <Button variant="outline" size="sm" className="flex-1" onClick={() => onView(payment)}>
-            View
+            {t('payment.card.view')}
           </Button>
         )}
-        {onProcess && (payment.status === 'Pending' || payment.status === 'Processing') && (
-          <Button variant="outline" size="sm" onClick={() => onProcess(payment)}>
-            <RefreshCw className="h-4 w-4 mr-1" />
-            Process
-          </Button>
-        )}
-        {onRefund && payment.status === 'Completed' && (
+        {onRefund && (payment.status === 'Completed' || payment.status === 'PartiallyRefunded') && payment.stripePaymentIntentId && (
           <Button variant="outline" size="sm" onClick={() => onRefund(payment)}>
             <Undo2 className="h-4 w-4 mr-1" />
-            Refund
+            {t('payment.card.refund')}
           </Button>
         )}
         {onEdit && (

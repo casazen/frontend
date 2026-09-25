@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { getHomeRouteForRentalType, getHomeRouteForUser, needsOnboarding, needsOrgSetup, canEditOnboarding } from '../onboarding';
+import { AxiosError, type AxiosResponse } from 'axios';
+import {
+  getHomeRouteForRentalType,
+  getHomeRouteForUser,
+  getPostOnboardingRoute,
+  isExemptFromHostOnboarding,
+  isLinkedSupplier,
+  isProfileLoadFailure,
+  needsConsentRenewal,
+  needsOnboarding,
+  needsOrgSetup,
+  canEditOnboarding,
+} from '../onboarding';
+
+function httpError(status: number): AxiosError {
+  return new AxiosError('request failed', 'ERR_BAD_RESPONSE', undefined, undefined, {
+    status,
+    data: {},
+  } as AxiosResponse);
+}
 
 describe('onboarding helpers', () => {
   it('maps rental types to home routes', () => {
@@ -18,8 +37,51 @@ describe('onboarding helpers', () => {
     expect(needsOnboarding({ roles: [] })).toBe(true);
     expect(needsOnboarding({ roles: ['PropertyOwner'] }, { orgId: 'org-1' })).toBe(false);
     expect(needsOnboarding({ roles: ['Admin'] }, { orgId: 'org-1' })).toBe(false);
-    expect(needsOnboarding({ roles: ['Admin'] }, { orgId: null })).toBe(true);
     expect(needsOnboarding({ roles: ['PropertyOwner'] }, { orgId: null })).toBe(true);
+    expect(needsOnboarding({ roles: ['LongTermLandlord'] }, { orgId: null, onboardingCompletedAt: null })).toBe(true);
+  });
+
+  it('needsOnboarding_AdminWithoutOrg_ReturnsFalse (A1-01)', () => {
+    expect(needsOnboarding({ roles: ['Admin'] }, { orgId: null })).toBe(false);
+    expect(needsOnboarding({ roles: ['Admin'] }, null)).toBe(false);
+    expect(needsOnboarding({ roles: ['Admin', 'PropertyOwner'] }, { orgId: null })).toBe(false);
+  });
+
+  it('needsOnboarding_SupplierOnlyWithoutOrg_ReturnsFalse', () => {
+    expect(needsOnboarding({ roles: ['Supplier'] }, { orgId: null })).toBe(false);
+    // A supplier who is also a host needs the host org.
+    expect(needsOnboarding({ roles: ['Supplier', 'PropertyOwner'] }, { orgId: null })).toBe(true);
+  });
+
+  it('needsOnboarding_BackendSaysOnboardingRequired_ReturnsTrueForHosts (PL-02)', () => {
+    const legacyHost = { orgId: 'org-1', onboardingCompletedAt: null, onboardingRequired: true };
+    expect(needsOnboarding({ roles: ['PropertyOwner'] }, legacyHost)).toBe(true);
+    const staleConsents = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', onboardingRequired: true };
+    expect(needsOnboarding({ roles: ['PropertyOwner'] }, staleConsents)).toBe(true);
+    // Admins and supplier-only users keep their own area.
+    expect(needsOnboarding({ roles: ['Admin'] }, legacyHost)).toBe(false);
+    expect(needsOnboarding({ roles: ['Supplier'] }, legacyHost)).toBe(false);
+    const done = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', onboardingRequired: false };
+    expect(needsOnboarding({ roles: ['PropertyOwner'] }, done)).toBe(false);
+  });
+
+  it('needsConsentRenewal_OnlyForACompletedOnboardingWithOldConsents (PL-02)', () => {
+    const onboarded = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: 'ShortTerm' as const };
+    expect(needsConsentRenewal({ ...onboarded, consentsAccepted: false })).toBe(true);
+    expect(needsConsentRenewal({ ...onboarded, consentsAccepted: true })).toBe(false);
+    // Older backend without the field: nothing to renew.
+    expect(needsConsentRenewal(onboarded)).toBe(false);
+    expect(needsConsentRenewal({ ...onboarded, onboardingCompletedAt: null, consentsAccepted: false })).toBe(false);
+    expect(needsConsentRenewal({ ...onboarded, orgId: null, consentsAccepted: false })).toBe(false);
+    expect(needsConsentRenewal(null)).toBe(false);
+  });
+
+  it('isExemptFromHostOnboarding_OnlyAdminsAndSupplierOnlyUsers', () => {
+    expect(isExemptFromHostOnboarding(['Admin'])).toBe(true);
+    expect(isExemptFromHostOnboarding(['Supplier'])).toBe(true);
+    expect(isExemptFromHostOnboarding(['Supplier', 'LongTermLandlord'])).toBe(false);
+    expect(isExemptFromHostOnboarding(['PropertyOwner'])).toBe(false);
+    expect(isExemptFromHostOnboarding([])).toBe(false);
   });
 
   it('detects onboarding completion via timestamp (#277)', () => {
@@ -31,13 +93,37 @@ describe('onboarding helpers', () => {
     expect(needsOnboarding({ roles: [] }, { orgId: null, onboardingCompletedAt: null })).toBe(true);
   });
 
-  it('requires org backfill when onboardingCompletedAt set but org missing (#285)', () => {
+  it('requires org backfill when onboardingCompletedAt set but org missing (#285), except for admins', () => {
+    expect(
+      needsOnboarding(
+        { roles: ['PropertyOwner'] },
+        { orgId: null, onboardingCompletedAt: '2026-06-16T12:00:00Z' },
+      ),
+    ).toBe(true);
     expect(
       needsOnboarding(
         { roles: ['Admin'] },
         { orgId: null, onboardingCompletedAt: '2026-06-16T12:00:00Z' },
       ),
-    ).toBe(true);
+    ).toBe(false);
+  });
+
+  it('getPostOnboardingRoute_ReturnsOriginOnlyWithinTheChosenContexts', () => {
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent/properties?tab=1')).toBe('/app/short-rent/properties?tab=1');
+    expect(getPostOnboardingRoute('Both', '/app/long-rent/leases/42')).toBe('/app/long-rent/leases/42');
+    expect(getPostOnboardingRoute('LongTerm', '/app/short-rent/properties')).toBe('/app/long-rent/leases');
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rentals-elsewhere')).toBe('/app/short-rent');
+    expect(getPostOnboardingRoute('ShortTerm', '/app/admin')).toBe('/app/short-rent');
+    expect(getPostOnboardingRoute('LongTerm', null)).toBe('/app/long-rent/leases');
+  });
+
+  it('isProfileLoadFailure_TransientErrorsYes_NotFoundNo (A1-19)', () => {
+    expect(isProfileLoadFailure(httpError(503))).toBe(true);
+    expect(isProfileLoadFailure(httpError(500))).toBe(true);
+    expect(isProfileLoadFailure(new AxiosError('Network Error', AxiosError.ERR_NETWORK))).toBe(true);
+    expect(isProfileLoadFailure(httpError(401))).toBe(true);
+    expect(isProfileLoadFailure(httpError(404))).toBe(false);
+    expect(isProfileLoadFailure(null)).toBe(false);
   });
 
   it('canEditOnboarding requires both timestamp and orgId', () => {
@@ -55,6 +141,24 @@ describe('onboarding helpers', () => {
     expect(getHomeRouteForUser({ roles: ['LongTermLandlord'] })).toBe('/app/long-rent/leases');
     expect(getHomeRouteForUser({ roles: ['PropertyOwner', 'LongTermLandlord'] })).toBe('/app/short-rent');
     expect(getHomeRouteForUser({ roles: ['Admin'] })).toBe('/app/admin');
-    expect(getHomeRouteForUser({ roles: ['Supplier'] })).toBe('/supplier/inbox');
+    // Supplier-only users land on the activation wizard of their console (A4-02); an active supplier moves on.
+    expect(getHomeRouteForUser({ roles: ['Supplier'] })).toBe('/app/supplier/activation');
+  });
+
+  it('getHomeRouteForUser_LinkedSupplierWithoutRoleInToken_ReturnsSupplierConsole', () => {
+    expect(getHomeRouteForUser({ roles: [] }, { orgId: 's-1', supplierOrgId: 's-1' })).toBe('/app/supplier/activation');
+    // A host with a supplier profile keeps the host home; the context switch opens the console.
+    expect(getHomeRouteForUser({ roles: ['PropertyOwner'] }, { orgId: 'h-1', supplierOrgId: 's-1' })).toBe(
+      '/app/short-rent',
+    );
+  });
+
+  it('needsOnboarding_LinkedSupplier_NeverSendsToHostOnboarding', () => {
+    expect(isLinkedSupplier({ supplierOrgId: 's-1' })).toBe(true);
+    expect(isLinkedSupplier({ supplierOrgId: null })).toBe(false);
+    // Linked before the Supplier role reaches the token: no roles, no completed host onboarding.
+    expect(needsOnboarding({}, { orgId: 's-1', supplierOrgId: 's-1', onboardingCompletedAt: null }, [])).toBe(false);
+    // No org, no roles, no supplier link: host onboarding (with the supplier option).
+    expect(needsOnboarding({}, { orgId: null, supplierOrgId: null, onboardingCompletedAt: null }, [])).toBe(true);
   });
 });
