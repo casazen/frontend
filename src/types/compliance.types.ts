@@ -164,10 +164,29 @@ export interface SaveSafetyChecklistCommand {
   confirm: boolean;
 }
 
+/**
+ * What the host must do for a cockpit item: backend enum `ComplianceCockpitAction`, serialized by name (CO-04, A5-09).
+ * The API sends the action and its target, never a path: the route comes from the ROUTE_MANIFEST
+ * (`src/lib/compliance-routes.ts`).
+ */
+export const COMPLIANCE_COCKPIT_ACTIONS = [
+  'ActivateProperty',
+  'CompleteGuestCheckIn',
+  'CheckOut',
+  'SendAlloggiati',
+  'ResolveAlloggiatiFailure',
+] as const;
+export type ComplianceCockpitAction = (typeof COMPLIANCE_COCKPIT_ACTIONS)[number];
+
 export interface ComplianceSummaryItem {
-  id?: string | null;
+  /** Target of the action: equal to `propertyId` or `bookingId`. */
+  id: string;
   label: string;
-  routeLink: string;
+  action: ComplianceCockpitAction;
+  /** Set for `ActivateProperty`, null otherwise. */
+  propertyId: string | null;
+  /** Set for every action on a booking, null for `ActivateProperty`. */
+  bookingId: string | null;
 }
 
 export interface ComplianceSummarySection {
