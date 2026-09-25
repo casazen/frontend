@@ -4238,7 +4238,7 @@
   },
   "fiscal": {
     "page": {
-      "title": "Regime fiscale 2026",
+      "title": "Regime fiscale {{year}}",
       "description": "Cedolare secca, Partita IVA e ritenute OTA (L. 199/2025, D.L. 50/2017)."
     },
     "loading": "Caricamento…",
@@ -4255,12 +4255,92 @@
       "hasPiva": "Ho una Partita IVA",
       "piva": "Partita IVA",
       "cf": "Codice fiscale",
-      "save": "Salva"
+      "save": "Salva",
+      "link": "Profilo fiscale",
+      "loadError": "Impossibile caricare il profilo fiscale salvato.",
+      "pivaInvalid": "La partita IVA ha 11 cifre.",
+      "cfInvalid": "Il codice fiscale ha 16 caratteri (11 cifre per una società).",
+      "noChanges": "Nessuna modifica da salvare.",
+      "saved": "Profilo fiscale salvato",
+      "saveFailed": "Impossibile salvare il profilo fiscale"
     },
     "reports": {
       "title": "Report fiscali",
       "description": "Pacchetto dati per il commercialista (non una dichiarazione).",
       "link": "Apri i report",
+      "packLabel": "Pacchetto dati per il commercialista — non è una dichiarazione, F24 o Certificazione Unica ufficiale",
+      "year": "Anno d'imposta",
+      "period": "Periodo",
+      "periods": {
+        "year": "Anno intero",
+        "q1": "1° trimestre",
+        "q2": "2° trimestre",
+        "q3": "3° trimestre",
+        "q4": "4° trimestre"
+      },
+      "downloadCsv": "Scarica CSV",
+      "downloadPdf": "Scarica PDF",
+      "downloadFailed": "Impossibile scaricare il report",
+      "loadError": "Impossibile caricare il report.",
+      "notAvailable": "n.d.",
+      "total": "Totale",
+      "overThreshold": "Oltre la soglia degli affitti brevi",
+      "annual": {
+        "title": "Riepilogo per immobile",
+        "description": "Incassi del periodo, tassa di soggiorno, ritenute e imposta stimata secondo il regime.",
+        "empty": "Nessun immobile con affitti brevi o incassi nel periodo."
+      },
+      "withholding": {
+        "title": "Ritenute subite",
+        "description": "Ritenute degli intermediari per canale e per pagamento, da riconciliare con la Certificazione Unica.",
+        "empty": "Nessuna ritenuta registrata nel periodo."
+      },
+      "touristTax": {
+        "title": "Tassa di soggiorno per comune e periodo",
+        "description": "Soggiorni con check-in nel periodo e imposta registrata alla prenotazione, per comune e mese.",
+        "empty": "Nessun soggiorno con check-in nel periodo.",
+        "withoutAmount_one": "{{count}} soggiorno senza imposta registrata: verificalo prima del versamento.",
+        "withoutAmount_other": "{{count}} soggiorni senza imposta registrata: verificali prima del versamento.",
+        "note": "Importi calcolati da CasaZen alla prenotazione con le tariffe del comune; notti e ospiti sono quelli della prenotazione. Non è la dichiarazione al comune."
+      },
+      "col": {
+        "property": "Immobile",
+        "regime": "Regime",
+        "gross": "Incassato lordo",
+        "touristTax": "Tassa di soggiorno",
+        "commissions": "Commissioni",
+        "withholding": "Ritenute",
+        "taxable": "Imponibile",
+        "estimatedTax": "Imposta stimata",
+        "taxpayer": "Titolare",
+        "properties": "Immobili",
+        "rental": "Canone lordo",
+        "channel": "Canale",
+        "payments": "Pagamenti",
+        "net": "Netto",
+        "date": "Data",
+        "booking": "Prenotazione",
+        "comune": "Comune",
+        "month": "Mese",
+        "stays": "Soggiorni",
+        "nights": "Notti",
+        "guests": "Ospiti",
+        "recordedTax": "Imposta registrata",
+        "withoutAmount": "Senza importo"
+      },
+      "estimateNote": {
+        "irpef": "Non calcolata (IRPEF ordinaria)",
+        "impresa": "Non calcolata (regime d'impresa)",
+        "noRegime": "Non calcolata (nessun regime)",
+        "threshold": "Non calcolata (oltre la soglia)"
+      },
+      "notes": {
+        "gross": "Incassato lordo: pagamenti completati nel periodo, al netto dei rimborsi; comprende la tassa di soggiorno, che è esclusa dall'imponibile.",
+        "commissions": "Commissioni: non registrate in CasaZen (n.d.). Riportale dagli estratti conto degli intermediari; con la cedolare secca non sono deducibili.",
+        "estimate": "Imposta stimata solo per la cedolare secca: canone lordo × {{rate}}, o × {{reducedRate}} per l'unità designata ({{source}}).",
+        "notEstimated": "Non stimata per IRPEF ordinaria, regimi d'impresa, immobili senza regime e titolari con più di {{max}} appartamenti in affitto breve ({{source}}).",
+        "withholding": "Ritenuta del {{rate}} degli intermediari ({{source}}), sempre a titolo d'acconto: si scomputa in dichiarazione."
+      },
       "totals": "Lordo {{gross}} € — netto {{net}} €"
     },
     "regime": {
@@ -4270,14 +4350,38 @@
       "RegimeForfettario": "Impresa, regime forfettario (partita IVA)",
       "IrpefOrdinaria": "IRPEF ordinaria senza partita IVA"
     },
-    "chooseIrpef": "Scegli IRPEF ordinaria (senza partita IVA)",
     "assignFailed": "Impossibile assegnare il regime fiscale",
     "taxNote": {
       "irpefOrdinariaNotComputed": "IRPEF ordinaria senza partita IVA: CasaZen non calcola l'imposta, il calcolo è a carico del contribuente o del commercialista.",
-      "thresholdExceeded": "Il titolare supera la soglia degli affitti brevi: attività d'impresa presunta, niente cedolare secca. Verifica con il tuo commercialista."
+      "thresholdExceeded": "Il titolare supera la soglia degli affitti brevi: attività d'impresa presunta, niente cedolare secca. Verifica con il tuo commercialista.",
+      "regimeNotAssigned": "Nessun regime assegnato per quest'anno: scegline uno per stimare l'imposta.",
+      "impresaNotComputed": "Regime d'impresa: CasaZen non stima l'imposta, che dipende da costi e coefficiente di redditività. Il calcolo è a cura del commercialista."
     },
     "count_one": "{{count}} immobile con affitti brevi nel {{year}}",
-    "count_other": "{{count}} immobili con affitti brevi nel {{year}}"
+    "count_other": "{{count}} immobili con affitti brevi nel {{year}}",
+    "disclaimer": "Raccomandazione informativa, non consulenza fiscale. CasaZen non presenta dichiarazioni e non sostituisce un commercialista. Riferimenti: L. 199/2025, D.L. 50/2017.",
+    "loadError": "Impossibile caricare il regime fiscale.",
+    "retry": "Riprova",
+    "assignSuccess": "Regime fiscale aggiornato",
+    "notAssigned": "Non assegnato",
+    "chooseRegime": "Regime per quest'anno",
+    "selectPlaceholder": "Scegli un regime",
+    "unavailable": {
+      "option": "{{regime}} (non disponibile: {{reason}})",
+      "threshold": "titolare oltre la soglia degli affitti brevi",
+      "partitaIva": "manca la partita IVA",
+      "partitaIvaHint": "I regimi d'impresa (ordinario e forfettario) richiedono la partita IVA nel profilo fiscale."
+    },
+    "primaryMoves": "La cedolare al 21% vale per una sola unità del titolare: l'unità designata finora passerà al 26%.",
+    "taxpayer": {
+      "org": "Titolare: profilo fiscale dell'organizzazione",
+      "code": "Titolare: codice fiscale {{code}}"
+    },
+    "empty": {
+      "title": "Nessun immobile con affitti brevi",
+      "description": "Aggiungi un immobile per scegliere il regime fiscale e preparare i report.",
+      "action": "Aggiungi un immobile"
+    }
   },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
