@@ -114,6 +114,25 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    if (url.includes('/dashboard/kpis')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          period: 'CurrentMonth',
+          from: '2026-09-01',
+          to: '2026-09-25',
+          timeZone: 'Europe/Rome',
+          completed: active ? 3 : 0,
+          rejected: 0,
+          awaitingAcceptance: active ? 1 : 0,
+          upcoming: active ? 2 : 0,
+          totalRequests: active ? 6 : 0,
+        }),
+      });
+      return;
+    }
+
     if (url.includes('/dashboard')) {
       await route.fulfill({
         status: 200,
@@ -121,9 +140,6 @@ export async function mockSupplierConsoleApi(
         body: JSON.stringify({
           profileCompletionPercent: active ? 100 : 40,
           status: active ? 'Active' : 'Pending',
-          totalJobs: active ? 5 : 0,
-          completedJobs: active ? 3 : 0,
-          upcomingJobs: active ? 2 : 0,
           availabilityRate: active ? 0.8 : 0,
           calendarSyncStatus: {
             calendarSyncType: 'None',

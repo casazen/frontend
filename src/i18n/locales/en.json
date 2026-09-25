@@ -446,14 +446,14 @@
       "attestationCheckbox": "I have read and accept the filing-responsibility attestation",
       "confirmSubmit": "Authorize and submit",
       "cancel": "Cancel",
-      "extraEuTitle": "Questura notification required",
-      "extraEuBody": "This lease includes a non-EU tenant. Check the Questura communication (Art. 7 D.Lgs 286/1998). CasaZen does not send it. Draft wording pending counsel.",
+      "extraEuTitle": "Non-EU tenant: Questura communication within 48 hours of the delivery",
+      "extraEuBody": "This lease includes a non-EU tenant: within 48 hours of the delivery of the property a written communication must be sent to the local public-security authority (art. 7 D.Lgs. 286/1998). CasaZen does not send it: once sent, record its date in the dedicated section.",
       "checklistItem": {
         "contract_signed": "Contract signed by all parties",
         "delega_captured": "RLI delega / attestation recorded",
         "rli_exported": "RLI dataset exported for review",
         "rli_registered": "Contract registered: Agenzia delle Entrate registration details and receipt on file",
-        "questura_extra_eu": "Questura notice (Art. 7 D.Lgs 286/1998) — cessione di fabbricato. Draft wording pending counsel."
+        "questura_extra_eu": "Communication to the Questura for the non-EU tenant (art. 7 D.Lgs. 286/1998), within 48 hours of the delivery of the property"
       },
       "registrationDate": "Registration date",
       "state": {
@@ -506,7 +506,8 @@
         "saving": "Saving..."
       },
       "checklistFailed": "last attempt failed",
-      "checklistGoToRegistration": "Go to registration"
+      "checklistGoToRegistration": "Go to registration",
+      "checklistGoToQuestura": "Go to the communication"
     },
     "canoneConcordato": {
       "title": "Agreed-rent calculator",
@@ -604,7 +605,8 @@
         "maxLength": "Fiscal code must be at most 16 characters"
       },
       "citizenship": {
-        "length": "Use ISO 3166-1 alpha-2 country code (e.g. IT)"
+        "length": "Use ISO 3166-1 alpha-2 country code (e.g. IT)",
+        "format": "Citizenship is the 2-letter ISO country code (e.g. IT, DE, US)"
       },
       "contactEmail": {
         "format": "Valid email is required"
@@ -669,7 +671,8 @@
         "Transitorio": "Transitional: from 1 to 18 months. CasaZen checks only the term: the transitional needs must be stated and documented in the contract, and there is no contract template for this type yet."
       },
       "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
-      "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement."
+      "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement.",
+      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -690,7 +693,9 @@
       "RegistrationAuthorized": "RLI delega recorded",
       "RliExported": "RLI pre-fill exported",
       "DeadlineReminderSent": "Deadline reminder sent",
-      "StipulaDeclared": "Signing date declared"
+      "StipulaDeclared": "Signing date declared",
+      "QuesturaCommunicationMarkedDone": "Questura communication declared",
+      "PropertyDeliveryDateDeclared": "Property delivery date entered"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
@@ -713,6 +718,44 @@
       "indicative": "Indicative range: the territorial agreement data are not confirmed. The lease was created without blocks: check the rent with a signatory organization.",
       "rentOutside": "The rent of the lease is outside this range.",
       "calculatedAt": "Calculated by the server on {{date}}."
+    },
+    "questura": {
+      "title": "Questura communication (non-EU tenant)",
+      "loading": "Loading the Questura communication...",
+      "error": "Unable to load the status of the Questura communication.",
+      "statusDone": "Communication declared: sent on {{date}}",
+      "statusTodo": "To do by {{date}} (48 hours from the delivery of the property)",
+      "statusToday": "To do: the 48 hours from the delivery end today, {{date}}",
+      "statusOverdue": "Deadline passed on {{date}}: the communication is not declared",
+      "deliveryDate": "Delivery of the property: {{date}}",
+      "deliveryDateDefault": "This is the start date of the lease: if the property is delivered on another day, enter the actual date.",
+      "changeDeliveryDate": "Change delivery date",
+      "deliveryDateLabel": "Delivery date of the property",
+      "deliveryDateInvalid": "Enter a valid date, not later than the end of the lease ({{end}}).",
+      "saveDeliveryDate": "Save delivery date",
+      "useStartDate": "Use the start date of the lease",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "instructions": "Within 48 hours of the delivery of the property the landlord must notify the local public-security authority in writing that it was let to a non-EU citizen or stateless person (art. 7 D.Lgs. 286/1998). Registering the contract does not replace this communication.",
+      "channel": "The competent office and how to send it (in person, PEC, registered mail) change from province to province: check the page of your Questura. CasaZen does not send the communication.",
+      "sanction": "Failing to send it carries a fine from €160 to €1,100 (art. 7, paragraph 2-bis, D.Lgs. 286/1998).",
+      "officialInfo": "Information from the Polizia di Stato",
+      "markDone": "Mark as sent",
+      "downloadReceipt": "Download receipt",
+      "downloading": "Downloading...",
+      "receiptError": "Unable to download the receipt.",
+      "dialog": {
+        "title": "Questura communication sent",
+        "description": "Enter the date you sent the communication. You can attach the receipt as a PDF (for example the PEC receipt or the scanned registered-mail receipt).",
+        "dateLabel": "Date sent",
+        "dateInvalid": "The date cannot be later than today ({{today}}).",
+        "receiptLabel": "Receipt (PDF, optional)",
+        "receiptInvalid": "The receipt must be a PDF file of at most 10 MB.",
+        "confirmation": "I confirm I sent the communication to the local public-security authority.",
+        "submit": "Confirm",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      }
     }
   },
   "revenue": {
@@ -828,7 +871,42 @@
       "noPropertiesHint": "Add a property to view the bookings calendar.",
       "goToProperties": "Go to properties",
       "property": "Property",
-      "loadError": "Unable to load the calendar. Please try again later."
+      "loadError": "Unable to load the calendar. Please try again later.",
+      "retry": "Try again",
+      "guestUnknown": "Unnamed guest",
+      "dates_one": "{{arrival}} → {{departure}} · {{count}} night",
+      "dates_other": "{{arrival}} → {{departure}} · {{count}} nights",
+      "legend": {
+        "title": "Calendar legend",
+        "confirmed": "Confirmed booking",
+        "pending": "Request awaiting confirmation",
+        "checkedIn": "Guest arrived",
+        "checkedOut": "Stay completed",
+        "block": "Dates blocked by another channel (iCal)"
+      },
+      "block": {
+        "title": "Dates blocked on {{source}}",
+        "tooltip": "Dates blocked on {{source}}",
+        "summary": "Calendar event: {{summary}}",
+        "notABooking": "These dates come from the linked iCal calendar: they are taken on another channel and are not a CasaZen booking. The guest's details are on the channel.",
+        "otherSource": "another calendar",
+        "close": "Close"
+      },
+      "toolbar": {
+        "today": "Today",
+        "previous": "Back",
+        "next": "Next",
+        "month": "Month",
+        "week": "Week",
+        "day": "Day",
+        "allDay": "All day",
+        "date": "Date",
+        "time": "Time",
+        "event": "Booking",
+        "noEventsInRange": "No bookings in this period.",
+        "showMore_one": "+{{count}} more",
+        "showMore_other": "+{{count}} more"
+      }
     },
     "validation": {
       "firstName": {
@@ -1829,8 +1907,6 @@
     "exportLoadError": "Could not load the export link.",
     "copy": "Copy",
     "copied": "Copied",
-    "legendBooking": "Booking",
-    "legendIcalBlock": "OTA block (iCal)",
     "blockCount_one": "{{count}} blocked period imported",
     "blockCount_other": "{{count}} blocked periods imported",
     "syncStarted": "Sync started: the blocked dates update as soon as it ends.",
@@ -2021,8 +2097,6 @@
       "registerAgain": "Register as a supplier",
       "skip": "Continue without linking"
     },
-    "completedJobs": "Completed jobs",
-    "upcomingJobs": "Upcoming jobs",
     "availabilityRate": "Availability rate",
     "profileCompleted": "Profile completed",
     "profileCompletion": "Profile {{percent}}% complete",
@@ -2130,8 +2204,31 @@
       "vatNumber": "e.g. IT12345678901",
       "phone": "e.g. +39 123 456 7890"
     },
-    "totalJobsCount_one": "{{count}} total assignment",
-    "totalJobsCount_other": "{{count}} total assignments"
+    "dashboardLoadError": "The supplier dashboard could not be loaded.",
+    "retry": "Retry",
+    "kpi": {
+      "title": "Assignments",
+      "periodLabel": "Period",
+      "periods": {
+        "CurrentMonth": "This month",
+        "PreviousMonth": "Last month",
+        "Last30Days": "Last 30 days",
+        "CurrentYear": "This year"
+      },
+      "periodRange": "From {{from}} to {{to}} (Italian time)",
+      "completed": "Completed",
+      "rejected": "Rejected",
+      "inPeriod": "In the period",
+      "awaitingAcceptance": "Waiting to be taken",
+      "upcoming": "Upcoming",
+      "now": "Now",
+      "totalRequests_one": "{{count}} request received in total",
+      "totalRequests_other": "{{count}} requests received in total",
+      "loadError": "The assignment indicators could not be loaded.",
+      "empty": "You have not received any requests from hosts yet.",
+      "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
+      "openInbox": "Open assignments"
+    }
   },
   "settings": {
     "planTitle": "Your plan",
@@ -2586,7 +2683,10 @@
     "next": "Next",
     "downloadDocumentScan": "Download document scan",
     "documentScanFileName": "guest-document",
-    "documentScanDownloadFailed": "Could not download the document scan."
+    "documentScanDownloadFailed": "Could not download the document scan.",
+    "documentNumberShow": "Show",
+    "documentNumberHide": "Hide",
+    "documentNumberRevealFailed": "Could not show the document number."
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
@@ -4047,7 +4147,11 @@
     "cadastralSaved": "Cadastral data saved",
     "cadastralSaveFailed": "Could not save the cadastral data",
     "apeIdentificationSaved": "APE details saved",
-    "apeIdentificationSaveFailed": "Could not save the APE details"
+    "apeIdentificationSaveFailed": "Could not save the APE details",
+    "questuraDeliveryDateSaved": "Delivery date saved",
+    "questuraDeliveryDateFailed": "Unable to save the delivery date",
+    "questuraMarkedDone": "Questura communication marked as sent",
+    "questuraMarkDoneFailed": "Unable to save the Questura communication"
   },
   "fiscal": {
     "page": {
@@ -4218,6 +4322,7 @@
       "checkinLinkBookingNotEligible": "The check-in link is available only for confirmed or checked-in bookings.",
       "checkinAlreadyCompleted": "The guest has already completed the check-in: correct the data in the Alloggiati tab.",
       "guestDocumentScanMissing": "No document scan is available for this guest.",
+      "guestDocumentNumberMissing": "No document number is recorded for this guest.",
       "pricingSuggestionsNotEnabled": "Turn on the seasonal suggestions before recalculating them.",
       "serviceRequestBookingRequired": "In short-term rentals a supplier request is for a stay: choose the booking.",
       "serviceRequestBookingMismatch": "The booking is not a stay of this property.",
@@ -4232,6 +4337,12 @@
       "icalFeedLimitReached": "This property already has the maximum number of linked calendars: disconnect one before adding another.",
       "icalFeedDuplicate": "This calendar is already linked to the property.",
       "icalFeedInvalidLabel": "The calendar label can have at most 60 characters, without line breaks.",
+      "questuraNotRequired": "No tenant of this lease is a non-EU citizen: the Questura communication does not apply.",
+      "questuraAlreadyMarkedDone": "The Questura communication of this lease has already been declared.",
+      "questuraCommunicationDateInFuture": "The date of the communication cannot be later than today.",
+      "questuraReceiptInvalid": "The receipt must be a PDF file of at most 10 MB.",
+      "questuraReceiptNotAvailable": "No receipt of the Questura communication was uploaded.",
+      "questuraDeliveryDateAfterEnd": "The delivery date of the property cannot be later than the end of the lease.",
       "dashboardInvalidPeriod": "Invalid period: choose the current month, another month or the last 30 days.",
       "checkoutWizardNotStarted": "Start the check-out before completing it: open the check-out of the stay again.",
       "checkoutCleaningChoiceInvalid": "Choose whether to request a cleaning from a supplier (with the supplier) or to skip it.",
@@ -4264,16 +4375,6 @@
     "currentOrigin": "You are using <code>{{origin}}</code>, which is not a secure origin for Web Crypto.",
     "lanHint": "For LAN development start Vite with HTTPS and open:",
     "publicSites": "Public booking sites (<code>{{path}}</code>) do not use Auth0 and also work over HTTP."
-  },
-  "supplierCheckIn": {
-    "invalidLink": "Invalid link",
-    "linkInvalidOrExpired": "Check-in link is invalid or expired",
-    "checkInFailed": "Check-in failed. Make sure you are at the property.",
-    "checkOutFailed": "Check-out failed.",
-    "notFound": "Not found",
-    "checkedInAt": "Check-in: {{time}}",
-    "checkInAction": "Check-in",
-    "checkOutAction": "Check-out"
   },
   "supplierShowcase": {
     "notFound": "Supplier not found",
@@ -4354,5 +4455,37 @@
     "childAgePlaceholder": "Age",
     "childAgeOption_one": "{{count}} year",
     "childAgeOption_other": "{{count}} years"
+  },
+  "questuraCredentials": {
+    "title": "Alloggiati Web credentials (Questura)",
+    "description": "Username, password and web service key (WSKey) of the Alloggiati Web account of this property.",
+    "loading": "Loading the credentials status…",
+    "loadFailed": "Could not check whether the credentials are configured.",
+    "retry": "Retry",
+    "configuredOn": "Configured on {{date}}",
+    "notConfigured": "Not configured",
+    "writeOnlyHint": "The credentials are encrypted and can no longer be viewed once saved: to change them, enter them again. CasaZen does not transmit to Alloggiati Web yet: they will be used for automatic sending once it is available.",
+    "fields": {
+      "username": "Username",
+      "password": "Password",
+      "wsKey": "Web service key (WSKey)"
+    },
+    "save": "Save credentials",
+    "replace": "Replace credentials",
+    "remove": "Remove credentials",
+    "removeConfirm": "Confirm removal",
+    "cancel": "Cancel",
+    "saved": "Alloggiati Web credentials saved.",
+    "saveFailed": "Could not save the credentials.",
+    "removed": "Alloggiati Web credentials removed.",
+    "removeFailed": "Could not remove the credentials.",
+    "errors": {
+      "usernameRequired": "Enter the Alloggiati Web username.",
+      "usernameTooLong": "The username can be at most 100 characters long.",
+      "passwordRequired": "Enter the Alloggiati Web password.",
+      "passwordTooLong": "The password can be at most 200 characters long.",
+      "wsKeyRequired": "Enter the web service key (WSKey).",
+      "wsKeyTooLong": "The web service key can be at most 200 characters long."
+    }
   }
 }

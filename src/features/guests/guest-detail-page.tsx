@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { EmptyState } from '@/components/shared/empty-state';
 import { GdprTab } from './components/gdpr-tab';
+import { GuestDocumentNumberRow } from './components/guest-document-number-row';
 import { guestsApi } from '@/api/guests.api';
 import { bookingsApi } from '@/api/bookings.api';
 import { formatDate, formatCurrency } from '@/lib/utils';
@@ -272,16 +273,13 @@ export function GuestDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {guest.documentNumber ? (
+              {guest.documentNumberMasked ? (
                 <>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{t('guests.documentType')}</span>
                     <span className="font-medium">{guest.documentType ?? '—'}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('guests.documentNumber')}</span>
-                    <span className="font-medium">{guest.documentNumber}</span>
-                  </div>
+                  <GuestDocumentNumberRow guestId={guest.id} masked={guest.documentNumberMasked} />
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{t('guests.documentIssueDate')}</span>
                     <span className="font-medium">
