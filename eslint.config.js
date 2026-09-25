@@ -15,6 +15,46 @@ const NO_DIRECT_FETCH =
 const NO_UNSANITIZED_HTML =
   "dangerouslySetInnerHTML must be { __html: sanitizeHtml(html) } with sanitizeHtml from '@/lib/sanitize-html'."
 
+// XSS (A8-08): HTML injected with dangerouslySetInnerHTML always goes through the DOMPurify
+// allowlist of '@/lib/sanitize-html', written inline as { __html: sanitizeHtml(...) }.
+const NO_UNSANITIZED_HTML_SYNTAX = [
+  {
+    selector:
+      "JSXAttribute[name.name='dangerouslySetInnerHTML'] > JSXExpressionContainer > ObjectExpression > Property[key.name='__html']:not([value.type='CallExpression'][value.callee.name='sanitizeHtml'])",
+    message: NO_UNSANITIZED_HTML,
+  },
+  {
+    selector: "JSXAttribute[name.name='dangerouslySetInnerHTML'] > JSXExpressionContainer > :not(ObjectExpression)",
+    message: NO_UNSANITIZED_HTML,
+  },
+]
+
+// Dates (QA-CLOCK-FE): the date part of toISOString() is the UTC date, i.e. yesterday in Rome between
+// midnight and 02:00, and the day before for a local midnight. "Today" and stay dates come from '@/lib/stay-dates'.
+const NO_UTC_DATE_PART =
+  "The date part of an ISO string is the UTC date: use todayInRome(), toStayDate(), utcStayDate() or addDays() from '@/lib/stay-dates'."
+
+const NO_UTC_DATE_PART_SYNTAX = [
+  {
+    // x.toISOString().slice(0, 10), .substring(...), .substr(...), .split('T')
+    selector:
+      "CallExpression[callee.property.name=/^(slice|substring|substr|split)$/][callee.object.type='CallExpression'][callee.object.callee.property.name='toISOString']",
+    message: NO_UTC_DATE_PART,
+  },
+  {
+    // anything.split('T')[0]
+    selector:
+      "MemberExpression[computed=true][property.value=0][object.type='CallExpression'][object.callee.property.name='split'][object.arguments.0.value='T']",
+    message: NO_UTC_DATE_PART,
+  },
+  {
+    // const [date] = anything.split('T')
+    selector:
+      "VariableDeclarator[id.type='ArrayPattern'] > CallExpression.init[callee.property.name='split'][arguments.0.value='T']",
+    message: NO_UTC_DATE_PART,
+  },
+]
+
 export default defineConfig([
   globalIgnores(['dist']),
   {
@@ -48,22 +88,19 @@ export default defineConfig([
     },
   },
   {
-    // XSS (A8-08): HTML injected with dangerouslySetInnerHTML always goes through the DOMPurify
-    // allowlist of '@/lib/sanitize-html', written inline as { __html: sanitizeHtml(...) }.
+    // XSS (A8-08), tests included.
     files: ['src/**/*.tsx'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            "JSXAttribute[name.name='dangerouslySetInnerHTML'] > JSXExpressionContainer > ObjectExpression > Property[key.name='__html']:not([value.type='CallExpression'][value.callee.name='sanitizeHtml'])",
-          message: NO_UNSANITIZED_HTML,
-        },
-        {
-          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML'] > JSXExpressionContainer > :not(ObjectExpression)",
-          message: NO_UNSANITIZED_HTML,
-        },
-      ],
+      'no-restricted-syntax': ['error', ...NO_UNSANITIZED_HTML_SYNTAX],
+    },
+  },
+  {
+    // Dates (QA-CLOCK-FE) in the application code. A later block replaces 'no-restricted-syntax' instead of
+    // merging it, so the XSS selectors are repeated here. Tests may build fixtures freely.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/__tests__/**', 'src/**/*.test.{ts,tsx}', 'src/test/**'],
+    rules: {
+      'no-restricted-syntax': ['error', ...NO_UNSANITIZED_HTML_SYNTAX, ...NO_UTC_DATE_PART_SYNTAX],
     },
   },
   {

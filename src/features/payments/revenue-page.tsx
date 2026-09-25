@@ -12,14 +12,16 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useRevenue } from '@/queries/use-payments';
 import { useProperties } from '@/queries/use-properties';
 import { ArrowLeft } from 'lucide-react';
+import { startOfMonth, todayInRome } from '@/lib/stay-dates';
 
+/** First day of the current month in Europe/Rome. */
 function defaultStartDate(): string {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  return startOfMonth(todayInRome());
 }
 
+/** Today in Europe/Rome. */
 function defaultEndDate(): string {
-  return new Date().toISOString().slice(0, 10);
+  return todayInRome();
 }
 
 export function RevenuePage() {
