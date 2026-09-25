@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fiscalApi, type StrFiscalRegime } from '@/api/fiscal.api';
+import {
+  fiscalApi,
+  type FiscalExportFormat,
+  type FiscalReportKind,
+  type FiscalReportPeriod,
+  type FiscalTaxProfileUpdate,
+  type StrFiscalRegime,
+} from '@/api/fiscal.api';
 
 const KEY = 'fiscal';
 
@@ -33,21 +40,40 @@ export function useFiscalTaxProfile() {
 export function useUpdateFiscalTaxProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: fiscalApi.putTaxProfile,
+    mutationFn: (body: FiscalTaxProfileUpdate) => fiscalApi.putTaxProfile(body),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
 
-export function useFiscalAnnualReport(taxYear: number) {
+export function useFiscalAnnualReport(taxYear: number, period: FiscalReportPeriod) {
   return useQuery({
-    queryKey: [KEY, 'annual', taxYear],
-    queryFn: () => fiscalApi.getAnnual(taxYear),
+    queryKey: [KEY, 'annual', taxYear, period.from, period.to],
+    queryFn: () => fiscalApi.getAnnual(taxYear, period),
   });
 }
 
-export function useFiscalWithholdingReport(taxYear: number) {
+export function useFiscalWithholdingReport(taxYear: number, period: FiscalReportPeriod) {
   return useQuery({
-    queryKey: [KEY, 'withholding', taxYear],
-    queryFn: () => fiscalApi.getWithholding(taxYear),
+    queryKey: [KEY, 'withholding', taxYear, period.from, period.to],
+    queryFn: () => fiscalApi.getWithholding(taxYear, period),
+  });
+}
+
+export function useTouristTaxReport(period: FiscalReportPeriod) {
+  return useQuery({
+    queryKey: [KEY, 'tourist-tax', period.from, period.to],
+    queryFn: () => fiscalApi.getTouristTax(period),
+  });
+}
+
+/** Downloads a report as CSV or PDF (the caller saves the blob and shows the error). */
+export function useDownloadFiscalReport() {
+  return useMutation({
+    mutationFn: (args: {
+      kind: FiscalReportKind;
+      taxYear: number;
+      period: FiscalReportPeriod;
+      format: FiscalExportFormat;
+    }) => fiscalApi.downloadReport(args.kind, args.taxYear, args.period, args.format),
   });
 }
