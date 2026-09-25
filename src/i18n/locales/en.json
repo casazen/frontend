@@ -2625,8 +2625,6 @@
     "anonymize": "Anonymize",
     "delete": "Delete Data",
     "deleteConfirm": "Are you sure you want to delete all data for this guest? This action is irreversible.",
-    "consentMarketing": "Marketing consent",
-    "retention": "Data retention until",
     "noDocument": "No document uploaded",
     "notFound": "Guest not found",
     "notFoundDescription": "The guest you are looking for does not exist or could not be loaded.",
@@ -2655,9 +2653,7 @@
     "documentExpiryDate": "Expiry date",
     "documentIssuingCountry": "Issuing country",
     "gdprTab": {
-      "dataConsent": "Data processing consent",
       "processingPurpose": "Processing purpose",
-      "marketingConsentDescription": "Consent to data processing for marketing purposes",
       "anonymized": "Anonymized",
       "deleted": "Deleted",
       "erasureRequested": "Erasure requested:",
@@ -2669,13 +2665,71 @@
       "anonymizeError": "Failed to anonymize data",
       "deleteSuccess": "Data deleted successfully",
       "deleteError": "Failed to delete data",
-      "consentSuccess": "Consent updated successfully",
-      "consentError": "Failed to update consent",
       "anonymizeTitle": "Anonymize data",
       "anonymizeDescription": "This action will anonymize all personal data of the guest. It will no longer be possible to identify them. Continue?",
       "anonymizeConfirm": "Anonymize",
       "deleteTitle": "Delete data",
-      "deleteConfirmLabel": "Delete permanently"
+      "deleteConfirmLabel": "Delete permanently",
+      "loading": "Loading GDPR data…",
+      "loadError": "Could not load the guest’s GDPR data.",
+      "retry": "Retry",
+      "privacyNotice": "Privacy notice",
+      "privacyNoticeVersion": "Version {{version}} of {{date}}",
+      "privacyNoticeNone": "No notice recorded",
+      "marketingTitle": "Marketing consent",
+      "marketingGranted": "Given by the guest on {{date}} (text version {{version}})",
+      "marketingGrantedNoVersion": "Given by the guest on {{date}} (text version not recorded)",
+      "marketingNotGranted": "Not given",
+      "marketingOnlyGuest": "Only the guest can give the marketing consent, on the check-in portal. You can only withdraw it on the guest’s documented request.",
+      "withdrawButton": "Withdraw on the guest’s request",
+      "withdrawTitle": "Withdraw the marketing consent",
+      "withdrawDescription": "Record the guest’s request: date and channel (for example “email of 02/09/2026”). Do not enter other personal data.",
+      "withdrawNoteLabel": "Guest’s request",
+      "withdrawNotePlaceholder": "Email of 02/09/2026",
+      "withdrawConfirm": "Withdraw consent",
+      "withdrawSuccess": "Marketing consent withdrawn",
+      "withdrawError": "Could not withdraw the marketing consent",
+      "historyTitle": "Privacy notice and consent history",
+      "historyEmpty": "No event recorded",
+      "historyVersion": "version {{version}}",
+      "historyNoVersion": "version not recorded",
+      "purpose": {
+        "PrivacyNotice": "Privacy notice",
+        "Marketing": "Marketing consent"
+      },
+      "action": {
+        "NoticePresented": "Notice shown",
+        "Granted": "Consent given",
+        "Withdrawn": "Consent withdrawn",
+        "Expired": "Consent expired"
+      },
+      "source": {
+        "GuestPortal": "by the guest on the check-in portal",
+        "HostOnGuestRequest": "by the host on the guest’s request",
+        "RetentionPolicy": "automatically, retention period"
+      },
+      "retentionTitle": "Retention per data category",
+      "category": {
+        "DocumentScans": "Document scans",
+        "AlloggiatiData": "Alloggiati Web data (birth, citizenship, document, companions)",
+        "Marketing": "Marketing consent",
+        "FiscalData": "Fiscal data (identity and contacts)"
+      },
+      "retentionNotConfigured": "Period not configured: nothing is deleted automatically",
+      "retentionPeriod": "{{period}} – source: {{source}}",
+      "period": {
+        "years_one": "{{count}} year",
+        "years_other": "{{count}} years",
+        "months_one": "{{count}} month",
+        "months_other": "{{count}} months",
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days"
+      },
+      "retentionDue": "Applied from {{date}}",
+      "retentionNoReference": "Not applicable to this guest",
+      "retentionApplied": "Last applied on {{date}}",
+      "alloggiatiDataErasedOn": "Alloggiati data erased on {{date}}",
+      "openBookings": "The guest has ongoing or future bookings: erasure and anonymization will be possible once they are over or cancelled."
     },
     "loadError": "Failed to load guests.",
     "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} guests)",
@@ -3064,9 +3118,6 @@
         "required": "Issuing country is required",
         "maxLength": "Issuing country must be less than 100 characters"
       },
-      "consentAccepted": {
-        "required": "You must accept data processing"
-      },
       "invalidValue": "Invalid value",
       "bornInItaly": {
         "required": "Say whether the guest was born in Italy or abroad"
@@ -3127,7 +3178,6 @@
     "city": "City",
     "postalCode": "Postal code",
     "country": "Country of residence",
-    "gdprConsent": "I consent to the processing of my personal data to fulfill the obligation of reporting to the Police (Art. 109 TULPS), in compliance with the operator's privacy policy.",
     "saving": "Saving...",
     "saveData": "Save data",
     "linkCopied": "Link copied",
@@ -3136,7 +3186,7 @@
     "lastName": "Last name *",
     "stepPersonal": "Personal details",
     "stepDocument": "Identity document",
-    "stepConsents": "Consents",
+    "stepConsents": "Privacy notice and consents",
     "stepOf": "Step {{step}} of {{total}}",
     "next": "Next",
     "back": "Back",
@@ -3146,7 +3196,14 @@
     "successDescription": "Your details have been recorded. Thank you!",
     "alreadyCompletedTitle": "Check-in already completed",
     "alreadyCompletedDescription": "The details for this stay have already been submitted. To protect your privacy they are no longer shown. To correct them, contact the property manager.",
-    "marketingConsent": "I agree to receive promotional communications (optional).",
+    "marketingConsent": "[PLACEHOLDER – consent text provided by the controller] I agree to receive promotional communications (optional).",
+    "marketingConsentVersion": "Optional. Text version: {{version}}",
+    "privacyNotice": {
+      "title": "Notice on the processing of personal data (art. 13 GDPR)",
+      "legalObligation": "Reporting every guest to the police (Questura) through Alloggiati Web is a legal obligation (art. 109 TULPS): the processing is based on art. 6(1)(c) GDPR and does not require your consent. Without this data the stay cannot be registered.",
+      "body": "[PLACEHOLDER – the full notice will be provided by the data controller: identity of the controller, purposes, legal bases, recipients (police), retention period and rights of the data subject.]",
+      "version": "Notice version: {{version}}"
+    },
     "sessionLabel": "Guest check-in status",
     "sessionLoading": "Loading session status...",
     "resendLink": "Send reminder",
