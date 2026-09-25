@@ -363,7 +363,10 @@ describe('IcalSettings (PC-11, PC-13)', () => {
 
       expect(await within(exportSection).findByRole('button', { name: 'Copiato' })).toBeInTheDocument();
       expect(writeText).toHaveBeenCalledWith(EXPORT_URL);
-      // Where to paste it on the two main OTAs.
+      // What the OTAs read (PC-12: no echo of the OTA bookings) and where to paste it on the two main ones.
+      expect(
+        within(exportSection).getByText(/CasaZen esporta le prenotazioni dirette e manuali.*ogni OTA va collegata anche alle altre/),
+      ).toBeInTheDocument();
       expect(within(exportSection).getByText(/Sincronizzazione calendari → Importa calendario/)).toBeInTheDocument();
       expect(within(exportSection).getByText(/Tariffe e disponibilità → Sincronizza calendari/)).toBeInTheDocument();
     });
@@ -396,6 +399,65 @@ describe('IcalSettings (PC-11, PC-13)', () => {
       fireEvent.click(within(exportSection).getByRole('button', { name: 'Riprova' }));
 
       expect(await within(exportSection).findByDisplayValue(EXPORT_URL)).toBeInTheDocument();
+    });
+  });
+
+  describe('regenerate export link (PC-12)', () => {
+    const NEW_EXPORT_URL = 'https://api.example.com/api/public/ical/token-new.ics';
+
+    async function openRegenerate() {
+      renderSettings();
+      const exportSection = await screen.findByTestId('ical-export');
+      await within(exportSection).findByDisplayValue(EXPORT_URL);
+      fireEvent.click(within(exportSection).getByRole('button', { name: 'Rigenera link' }));
+      return { exportSection, dialog: screen.getByRole('dialog') };
+    }
+
+    it('regenerate_confirmed_WarnsThatTheOldLinkStopsAndShowsTheNewOne', async () => {
+      vi.mocked(propertyIcalApi.regenerateExportUrl).mockResolvedValue({ exportUrl: NEW_EXPORT_URL });
+
+      const { exportSection, dialog } = await openRegenerate();
+      expect(within(dialog).getByText(/Il vecchio link smetterà di funzionare subito: aggiornalo su Airbnb, Booking.com/)).toBeInTheDocument();
+      expect(propertyIcalApi.regenerateExportUrl).not.toHaveBeenCalled();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Rigenera' }));
+
+      expect(await within(exportSection).findByDisplayValue(NEW_EXPORT_URL)).toBeInTheDocument();
+      expect(propertyIcalApi.regenerateExportUrl).toHaveBeenCalledWith(PROPERTY_ID);
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(toast.success).toHaveBeenCalledWith('Nuovo link creato: aggiornalo su Airbnb e Booking.com.');
+    });
+
+    it('regenerate_cancelled_KeepsTheLink', async () => {
+      const { exportSection, dialog } = await openRegenerate();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(propertyIcalApi.regenerateExportUrl).not.toHaveBeenCalled();
+      expect(within(exportSection).getByDisplayValue(EXPORT_URL)).toBeInTheDocument();
+    });
+
+    it('regenerate_serverError_KeepsTheDialogOpenWithTheReasonAndTheOldLink', async () => {
+      vi.mocked(propertyIcalApi.regenerateExportUrl).mockRejectedValue(problem(500));
+
+      const { exportSection, dialog } = await openRegenerate();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Rigenera' }));
+
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent('Impossibile rigenerare il link di esportazione.');
+      expect(toast.error).toHaveBeenCalledWith('Impossibile rigenerare il link di esportazione.');
+      expect(within(exportSection).getByDisplayValue(EXPORT_URL)).toBeInTheDocument();
+    });
+
+    it('regenerate_forbidden_ShowsTheTranslatedReasonAndKeepsTheLink', async () => {
+      vi.mocked(propertyIcalApi.regenerateExportUrl).mockRejectedValue(problem(403, 'forbidden'));
+
+      const { exportSection, dialog } = await openRegenerate();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Rigenera' }));
+
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+        'Non hai i permessi per eseguire questa operazione.',
+      );
+      expect(toast.error).toHaveBeenCalledWith('Non hai i permessi per eseguire questa operazione.');
+      expect(within(exportSection).getByDisplayValue(EXPORT_URL)).toBeInTheDocument();
     });
   });
 });

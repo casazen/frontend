@@ -1,23 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Copy, Loader2 } from 'lucide-react';
+import { Check, Copy, Loader2, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { usePropertyIcalExportUrl } from '@/queries/use-property-ical';
+import { getProblemMessage } from '@/lib/api-errors';
+import { usePropertyIcalExportUrl, useRegeneratePropertyIcalExportUrl } from '@/queries/use-property-ical';
 
 const COPIED_FEEDBACK_MS = 2_000;
 
 /**
- * Export link of a property (PC-13): the URL the OTAs import to see the dates taken on CasaZen, with copy and the
- * steps to paste it on Airbnb and Booking.com.
+ * Export link of a property (PC-13): the URL the OTAs import to see the dates taken on CasaZen, with copy, the steps
+ * to paste it on Airbnb and Booking.com and "regenerate" (PC-12, after a confirmation: the old link stops working).
  */
 export function IcalExportSection({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const exportUrl = usePropertyIcalExportUrl(propertyId);
   const inputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState(false);
+  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
+  const regenerate = useRegeneratePropertyIcalExportUrl(propertyId);
   const url = exportUrl.data?.exportUrl;
 
   useEffect(() => {
@@ -36,6 +47,26 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
       inputRef.current?.select();
       toast.error(t('ical.copyFailed'));
     }
+  };
+
+  const openRegenerate = () => {
+    regenerate.reset();
+    setConfirmRegenerate(true);
+  };
+
+  const closeRegenerate = () => {
+    setConfirmRegenerate(false);
+    regenerate.reset();
+  };
+
+  // The dialog closes only once the new link is there; on error it stays open with the reason.
+  const confirm = () => {
+    regenerate.mutate(undefined, {
+      onSuccess: () => {
+        setConfirmRegenerate(false);
+        setCopied(false);
+      },
+    });
   };
 
   return (
@@ -76,7 +107,13 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
               {copied ? t('ical.copied') : t('ical.copy')}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">{t('ical.exportPrivate')}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">{t('ical.exportPrivate')}</p>
+            <Button type="button" variant="ghost" size="sm" onClick={openRegenerate}>
+              <RotateCw className="mr-2 h-4 w-4" />
+              {t('ical.regenerate')}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -91,8 +128,33 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
             {t('ical.exportBookingSteps')}
           </li>
         </ul>
+        {/* PC-12: no echo, the export never carries the OTA bookings nor the imported blocks. */}
+        <p>{t('ical.exportContentNote')}</p>
         <p>{t('ical.exportRefreshNote')}</p>
       </div>
+
+      <Dialog open={confirmRegenerate} onOpenChange={(open) => !open && closeRegenerate()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('ical.regenerateTitle')}</DialogTitle>
+            <DialogDescription>{t('ical.regenerateDescription')}</DialogDescription>
+          </DialogHeader>
+          {regenerate.isError && (
+            <p className="text-sm text-destructive" role="alert">
+              {getProblemMessage(regenerate.error, t) ?? t('ical.regenerateFailed')}
+            </p>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeRegenerate}>
+              {t('ical.cancel')}
+            </Button>
+            <Button type="button" variant="destructive" onClick={confirm} disabled={regenerate.isPending}>
+              {regenerate.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('ical.regenerateConfirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
