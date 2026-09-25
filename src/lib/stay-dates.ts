@@ -1,10 +1,30 @@
 /**
  * Stay dates are calendar dates without a time (`YYYY-MM-DD`). "Today" is the calendar date in
  * Europe/Rome, whatever the time zone of the guest's browser.
+ *
+ * This is the only place that turns the clock or a `Date` into a calendar date (QA-CLOCK-FE). Never use
+ * `toISOString().slice(0, 10)` or `.split('T')[0]`: they give the UTC date, which is yesterday in Rome between
+ * midnight and 02:00 and the day before for a local midnight. ESLint forbids them in the application code.
  */
 const STAY_TIME_ZONE = 'Europe/Rome';
 const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const ROME_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: STAY_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function pad(value: number, length = 2): string {
+  return String(value).padStart(length, '0');
+}
+
+/** `YYYY-MM-DD` of a calendar date given as year, month (1-12) and day. */
+function formatDateParts(year: number, month: number, day: number): string {
+  return `${pad(year, 4)}-${pad(month)}-${pad(day)}`;
+}
 
 function toUtcDate(value: string): Date | null {
   const match = DATE_ONLY.exec(value);
@@ -22,21 +42,47 @@ export function isStayDate(value: string): boolean {
 
 /** Calendar date (`YYYY-MM-DD`) of `now` in Europe/Rome. */
 export function todayInRome(now: Date = new Date()): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: STAY_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(now);
+  const parts = ROME_DATE_FORMAT.formatToParts(now);
   const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
   return `${part('year')}-${part('month')}-${part('day')}`;
+}
+
+/**
+ * Calendar date of `date` as the browser shows it (local year, month and day): what a date picker or
+ * `new Date(year, month, day)` stands for. A local midnight never moves to the day before, whatever the time zone.
+ * An empty string for an invalid date. For "today" use {@link todayInRome}.
+ */
+export function toStayDate(date: Date): string {
+  if (Number.isNaN(date.getTime())) return '';
+  return formatDateParts(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+/**
+ * Calendar date of a `Date` read in UTC: for a date-only value held as UTC midnight (e.g. `new Date('2026-09-25')`).
+ * An empty string for an invalid date. For "today" use {@link todayInRome}.
+ */
+export function utcStayDate(date: Date): string {
+  if (Number.isNaN(date.getTime())) return '';
+  return formatDateParts(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
 }
 
 /** `date` moved by `days` calendar days, or an empty string when `date` is not a stay date. */
 export function addDays(date: string, days: number): string {
   const utc = toUtcDate(date);
   if (!utc) return '';
-  return new Date(utc.getTime() + days * MS_PER_DAY).toISOString().slice(0, 10);
+  return utcStayDate(new Date(utc.getTime() + days * MS_PER_DAY));
+}
+
+/** First day of the month of `date`, or an empty string when `date` is not a stay date. */
+export function startOfMonth(date: string): string {
+  const utc = toUtcDate(date);
+  return utc ? formatDateParts(utc.getUTCFullYear(), utc.getUTCMonth() + 1, 1) : '';
+}
+
+/** Last day of the month of `date`, or an empty string when `date` is not a stay date. */
+export function endOfMonth(date: string): string {
+  const utc = toUtcDate(date);
+  return utc ? utcStayDate(new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth() + 1, 0))) : '';
 }
 
 /** Nights between two stay dates; 0 when a date is missing, invalid or not in order. */

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { todayInRome } from '@/lib/stay-dates';
 import type {
   AlloggiatiDocumentKind,
   AlloggiatiGender,
@@ -71,13 +72,6 @@ export function normalizeDocumentNumber(value: string): string {
   return value.replace(/\s+/g, '').toUpperCase();
 }
 
-function todayIso(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
-}
-
 /**
  * One guest of the form. Select values are plain strings (empty = not chosen) so that every conditional check below
  * runs in the same pass as the required fields.
@@ -126,7 +120,7 @@ export const stayGuestFormSchema = z
   .superRefine((guest, ctx) => {
     const issue = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
 
-    if (guest.dateOfBirth && guest.dateOfBirth.slice(0, 10) > todayIso()) {
+    if (guest.dateOfBirth && guest.dateOfBirth.slice(0, 10) > todayInRome()) {
       issue('dateOfBirth', 'checkin.validation.dateOfBirth.future');
     }
     if (guest.bornInItaly === 'yes') {

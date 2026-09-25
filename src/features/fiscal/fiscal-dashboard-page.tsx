@@ -9,8 +9,10 @@ import { useFiscalRegime, useAssignFiscalRegime } from '@/queries/use-fiscal';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { FiscalTaxNote, StrFiscalRegime } from '@/api/fiscal.api';
+import { todayInRome } from '@/lib/stay-dates';
 
-const TAX_YEAR = new Date().getUTCFullYear() < 2026 ? 2026 : new Date().getUTCFullYear();
+// The current year in Europe/Rome, not in UTC (QA-CLOCK-FE): 1 January starts at midnight in Italy.
+const TAX_YEAR = Math.max(2026, Number(todayInRome().slice(0, 4)));
 
 const TAX_NOTE_KEYS: Record<FiscalTaxNote, string> = {
   irpef_ordinaria_not_computed: 'fiscal.taxNote.irpefOrdinariaNotComputed',
