@@ -172,6 +172,8 @@ describe('BillingSettingsPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: i18n.t('billing.portal.managePayments') }));
     await waitFor(() => expect(assign).toHaveBeenCalledWith(PORTAL_URL));
+    // The portal links back to this page (PL-16).
+    expect(BillingApi.createPortalSession).toHaveBeenCalledWith(BILLING_PATH);
   });
 
   it('BillingSettingsPage_PastDue_ShowsGraceNoticeWithPaymentAction', async () => {
@@ -285,7 +287,7 @@ describe('BillingSettingsPage', () => {
   });
 
   it('BillingSettingsPage_NotBillingAdmin_AsksToContactTheAdministratorWithoutCallingTheApi', () => {
-    mockContexts(['long-rent']);
+    mockContexts(['supplier']);
     renderPage();
 
     expect(screen.getByTestId('billing-admin-required')).toHaveTextContent(i18n.t('billing.adminRequired.title'));

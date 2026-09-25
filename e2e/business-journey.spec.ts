@@ -58,18 +58,18 @@ test.describe('Business Golden Path', () => {
     await expect(page.getByText(/CIN mancante|Missing CIN/i)).toBeVisible();
     await expect(page.getByRole('heading', { name: /Dettagli|Details/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /OTA|Integrazioni/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Prezzi|Pricing/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Prezzi|Pricing|Suggerimenti stagionali|Seasonal suggestions/i })).toBeVisible();
   });
 
-  test('pricing AI: enable toggle → save config → verify Active badge', async ({ page }) => {
+  test('seasonal suggestions: enable toggle → save config → verify On badge', async ({ page }) => {
     await mockCurrentUserWithOrg(page);
     await mockEntitlement(page);
     await mockPricingApiDefaults(page);
 
     await page.goto(demoUrl(`/app/short-rent/properties/${PROPERTY_ID}/pricing`, 'short-stay'));
 
-    await expect(page.getByRole('heading', { name: /AI Dynamic Pricing|Prezzi Dinamici AI/i })).toBeVisible();
-    await expect(page.getByRole('switch', { name: /enable|attiva/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Seasonal suggestions|Suggerimenti stagionali/i, level: 1 })).toBeVisible();
+    await expect(page.getByRole('switch', { name: /turn on|attiva/i })).toBeVisible();
 
     // Override config to disabled state first
     await page.route(`**/api/pricing-adapter/config/${PROPERTY_ID}`, async (route) => {
@@ -95,11 +95,11 @@ test.describe('Business Golden Path', () => {
 
     // Reload to get disabled state
     await page.reload();
-    await expect(page.getByRole('switch', { name: /enable|attiva/i })).not.toBeChecked();
+    await expect(page.getByRole('switch', { name: /turn on|attiva/i })).not.toBeChecked();
 
-    await page.getByRole('switch', { name: /enable|attiva/i }).click();
-    await expect(page.getByText(/saved|salvata/i)).toBeVisible();
-    await expect(page.getByText('Active')).toBeVisible();
+    await page.getByRole('switch', { name: /turn on|attiva/i }).click();
+    await expect(page.getByText(/saved|salvate/i)).toBeVisible();
+    await expect(page.getByText(/^(On|Attivi)$/)).toBeVisible();
   });
 
   test('booking create with tourist tax → verify on detail page', async ({ page }) => {

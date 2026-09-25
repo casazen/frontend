@@ -9,10 +9,10 @@ import type { ContextBootstrapDto } from '@/api/contexts';
 export const ORG_BILLING_ADMIN_PERMISSION = 'org.billing.admin';
 
 /**
- * Contexts whose membership passes the backend policy: host owner (short-rent) and platform admin. Long-term
- * landlords are not billing administrators yet (task PL-16).
+ * Contexts whose membership passes the backend policy: the owner of either rental context (short-rent host, long-term
+ * landlord, PL-16) and the platform admin.
  */
-const ORG_BILLING_ADMIN_CONTEXTS: ReadonlySet<string> = new Set(['short-rent', 'admin']);
+const ORG_BILLING_ADMIN_CONTEXTS: ReadonlySet<string> = new Set(['short-rent', 'long-rent', 'admin']);
 
 export function isOrgBillingAdmin(contexts: readonly Pick<ContextBootstrapDto, 'contextKey'>[]): boolean {
   return contexts.some((context) => ORG_BILLING_ADMIN_CONTEXTS.has(context.contextKey));
