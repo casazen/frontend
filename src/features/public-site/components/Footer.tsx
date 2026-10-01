@@ -21,7 +21,7 @@ interface FooterProps {
   orgSlug?: string;
 }
 
-const linkClass = 'underline hover:text-[var(--cz-public-primary)]';
+const linkClass = 'underline hover:text-[var(--cz-public-primary-text)]';
 
 export function Footer({ displayName, contactEmail, showPoweredBy = false, showSeoHubLink = false, orgSlug }: FooterProps) {
   const { t } = useTranslation();
@@ -34,7 +34,7 @@ export function Footer({ displayName, contactEmail, showPoweredBy = false, showS
   const termsPath = operatorSite ? orgDocumentPath(operatorSite, 'terms') : LEGAL_DOCUMENT_PATHS.tos;
 
   return (
-    <footer className="border-t border-black/10 py-8 text-sm text-[var(--cz-public-muted)]">
+    <footer className="border-t border-[var(--cz-public-border)] py-8 text-sm text-[var(--cz-public-muted)]">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-4 px-4 text-center">
         <div className="flex flex-wrap justify-center gap-4">
           {showSeoHubLink ? (

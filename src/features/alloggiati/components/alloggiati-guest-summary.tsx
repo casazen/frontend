@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { AlertTriangle, CheckCircle2, Copy, Eye, Loader2, Pencil } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, Download, Eye, Loader2, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { copyTextToClipboard, formatDateTime } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
+import { saveBlobAs } from '@/lib/file-download';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
 import { useAlloggiatiGuestSummary } from '@/queries/use-alloggiati';
 import type { AlloggiatiGuestRowDto, AlloggiatiRecordField } from '@/types/alloggiati.types';
-import { formatRecordDate } from '../alloggiati-status.utils';
+import { formatRecordDate, isoDatePart } from '../alloggiati-status.utils';
 import { StayGuestsEditDialog } from './stay-guests-edit-dialog';
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
@@ -116,19 +117,27 @@ interface AlloggiatiGuestSummaryProps {
   canEdit?: boolean;
   /** The host may see the full document numbers (guest.read): shown masked until he asks. */
   canRevealDocuments?: boolean;
+  /** The host may download the record file (guest.read: it holds the identity documents). */
+  canDownloadRecordFile?: boolean;
 }
 
 /**
  * Per-guest data the host copies on the Questura portal (CO-11, decision D6): one card per guest of the stay (CO-12),
  * head of family or group first, with the completeness of each guest and the official codes still to complete.
  */
-export function AlloggiatiGuestSummary({ bookingId, canEdit = false, canRevealDocuments = false }: AlloggiatiGuestSummaryProps) {
+export function AlloggiatiGuestSummary({
+  bookingId,
+  canEdit = false,
+  canRevealDocuments = false,
+  canDownloadRecordFile = false,
+}: AlloggiatiGuestSummaryProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useAlloggiatiGuestSummary(bookingId);
   const [editing, setEditing] = useState(false);
   // Full document numbers the host asked to see, by position (CO-09): the summary shows them masked.
   const [revealed, setRevealed] = useState<Record<number, string>>({});
   const [revealing, setRevealing] = useState<number | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   async function copy(text: string) {
     try {
@@ -154,6 +163,23 @@ export function AlloggiatiGuestSummary({ bookingId, canEdit = false, canRevealDo
       return null;
     } finally {
       setRevealing(null);
+    }
+  }
+
+  /**
+   * Downloads the record file (CO-13). It is not a communication: nothing is sent and the status does not change, so
+   * the host still uploads it on the portal and declares the submission.
+   */
+  async function downloadRecordFile(arrivalDate: string) {
+    setDownloading(true);
+    try {
+      const blob = await alloggiatiApi.downloadRecordFile(bookingId);
+      saveBlobAs(blob, `alloggiati-${isoDatePart(arrivalDate)}.txt`);
+      toast.success(t('alloggiati.recordFile.downloaded'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('alloggiati.recordFile.failed'));
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -210,6 +236,31 @@ export function AlloggiatiGuestSummary({ bookingId, canEdit = false, canRevealDo
         <p className="text-xs text-muted-foreground" data-testid="alloggiati-missing-code-tables">
           {t('alloggiati.guestSummary.missingCodeTables', { tables: missingTables })}
         </p>
+      )}
+      {canDownloadRecordFile && (
+        <div className="space-y-2 rounded-md border p-3" data-testid="alloggiati-record-file">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h4 className="text-sm font-medium">{t('alloggiati.recordFile.title')}</h4>
+              <p className="text-sm text-muted-foreground">{t('alloggiati.recordFile.description')}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void downloadRecordFile(data.arrivalDate)}
+              disabled={!data.exportReady || data.stayExceedsMaxDays || downloading}
+              data-testid="alloggiati-record-file-download"
+            >
+              {downloading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
+              {t(downloading ? 'alloggiati.recordFile.preparing' : 'alloggiati.recordFile.download')}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {data.exportReady && !data.stayExceedsMaxDays
+              ? t('alloggiati.recordFile.arrivalWindow')
+              : t('alloggiati.recordFile.notReady')}
+          </p>
+        </div>
       )}
       {data.stayExceedsMaxDays && (
         <p className="flex items-start gap-2 text-sm text-orange-600" data-testid="alloggiati-stay-exceeds-max">
