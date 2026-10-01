@@ -1,5 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LegalApi } from '@/api/legal.api';
+
+/** Prefix of the legal document queries (ToS, privacy, DPA, subprocessors). */
+export const LEGAL_QUERY_KEY = ['legal'] as const;
 
 export function useLegalDocuments() {
   const tos = useQuery({ queryKey: ['legal', 'tos'], queryFn: () => LegalApi.getTos() });
@@ -9,9 +13,17 @@ export function useLegalDocuments() {
     queryKey: ['legal', 'subprocessors'],
     queryFn: () => LegalApi.getSubprocessors(),
   });
+  const queries = [tos, privacy, dpa, subprocessors];
 
-  const isLoading = tos.isLoading || privacy.isLoading || dpa.isLoading || subprocessors.isLoading;
-  const isError = tos.isError || privacy.isError || dpa.isError || subprocessors.isError;
+  const isLoading = queries.some((query) => query.isLoading);
+  const isError = queries.some((query) => query.isError);
+  // A1-39: the failed documents are loaded again on request, the others are kept.
+  const isRetrying = queries.some((query) => query.isError && query.isFetching);
+  const retry = () => {
+    queries.forEach((query) => {
+      if (query.isError) void query.refetch();
+    });
+  };
 
   return {
     tos: tos.data,
@@ -20,7 +32,18 @@ export function useLegalDocuments() {
     subprocessors: subprocessors.data,
     isLoading,
     isError,
+    isRetrying,
+    retry,
   };
+}
+
+/**
+ * Drops the cached legal documents and loads them again (A1-39): after a 400 `staleDocuments` the versions held by the
+ * page are outdated, and the consents step must show the current ones (loading state included) before a new attempt.
+ */
+export function useReloadLegalDocuments() {
+  const queryClient = useQueryClient();
+  return useCallback(() => queryClient.resetQueries({ queryKey: LEGAL_QUERY_KEY }), [queryClient]);
 }
 
 const LEGAL_LINKS_STALE_MS = 60 * 60 * 1000;
