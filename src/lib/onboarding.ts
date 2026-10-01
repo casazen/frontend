@@ -1,7 +1,9 @@
 import type { RentalType } from '@/types';
 import { getUserRoles, isAdmin, ROLE_ADMIN, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
 import type { UserWithRoles } from '@/lib/auth-roles';
+import { isAxiosError } from 'axios';
 import { getHttpStatus } from '@/lib/api-errors';
+import { planPagePath } from '@/lib/billing-routes';
 
 export function getHomeRouteForRentalType(rentalType: RentalType): string {
   switch (rentalType) {
@@ -134,6 +136,29 @@ export function getPostOnboardingRoute(rentalType: RentalType, from?: string | n
     }
   }
   return getHomeRouteForRentalType(rentalType);
+}
+
+/**
+ * Plan page of the context a rental type opens (A1-15): the operator type edit does not change the plan, it hands over
+ * to the plan page (Stripe checkout or portal) once saved.
+ */
+export function getPlanPageForRentalType(rentalType: RentalType): string {
+  return planPagePath(rentalType === 'LongTerm' ? 'long-rent' : 'short-rent');
+}
+
+/**
+ * Legal documents whose accepted version is no longer the current one (A1-39): the 400 of `POST/PUT /users/onboarding`
+ * carries them in `staleDocuments` (`tos`, `privacy`, `dpa`, `subprocessors`). The backend sends no ProblemDetails
+ * `code` for this case, so the field itself identifies it. `null` for any other error.
+ */
+export function getStaleConsentDocuments(error: unknown): string[] | null {
+  if (!isAxiosError(error) || error.response?.status !== 400) return null;
+  const data: unknown = error.response.data;
+  if (typeof data !== 'object' || data === null || !('staleDocuments' in data)) return null;
+  const { staleDocuments } = data;
+  if (!Array.isArray(staleDocuments)) return null;
+  const documents = staleDocuments.filter((value): value is string => typeof value === 'string');
+  return documents.length > 0 ? documents : null;
 }
 
 /**

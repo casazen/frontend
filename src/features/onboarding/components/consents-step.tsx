@@ -16,7 +16,16 @@ interface ConsentsStepProps {
 
 export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProps) {
   const { t } = useTranslation();
-  const { tos, privacy, dpa, subprocessors, isLoading: docsLoading, isError } = useLegalDocuments();
+  const {
+    tos,
+    privacy,
+    dpa,
+    subprocessors,
+    isLoading: docsLoading,
+    isError,
+    isRetrying,
+    retry,
+  } = useLegalDocuments();
   const [tosAccepted, setTosAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [dpaAccepted, setDpaAccepted] = useState(false);
@@ -28,10 +37,21 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
   }
 
   if (isError || !tos || !privacy || !dpa || !subprocessors) {
+    // A1-39: never a dead end, the documents can be loaded again or the user can go back.
     return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          {t('onboarding.cannotLoadLegalDocs')}
+      <Card data-testid="onboarding-consents-error">
+        <CardContent className="space-y-4 py-8 text-center">
+          <p role="alert" className="text-muted-foreground">
+            {t('onboarding.cannotLoadLegalDocs')}
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
+              {t('onboarding.back')}
+            </Button>
+            <Button type="button" data-testid="onboarding-consents-retry" onClick={retry} disabled={isRetrying}>
+              {isRetrying ? t('onboarding.loadingLegalDocs') : t('onboarding.retry')}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

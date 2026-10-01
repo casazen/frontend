@@ -13,6 +13,7 @@ import * as userQueries from '@/queries/use-users';
 import type { BillingPlan, BillingSubscription, PlanTier } from '@/types';
 import { CHECKOUT_CONFIRM_POLL_MS, CHECKOUT_CONFIRM_TIMEOUT_MS } from '../billing-utils';
 import { PlansPage, PlansPageContent } from '../plans-page';
+import { toast } from 'sonner';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/billing.api', () => ({
@@ -323,6 +324,27 @@ describe('PlansPage', () => {
     await waitFor(() => expect(assign).toHaveBeenCalledWith(PORTAL_URL));
     expect(BillingApi.createCheckoutSession).not.toHaveBeenCalled();
     expect(BillingApi.createPortalSession).toHaveBeenCalledWith(PLAN_PATH);
+  });
+
+  it('LiveSubscription_PortalFails_ShowsTheErrorAndLetsTheUserTryAgain', async () => {
+    // A1-38: a failed plan action is reported and never leaves the page stuck (no unhandled promise, no frozen choice).
+    mockUser('Pro');
+    vi.mocked(BillingApi.getSubscription).mockResolvedValue(subscription({ planTier: 'Pro', status: 'active' }));
+    vi.mocked(BillingApi.createPortalSession)
+      .mockRejectedValueOnce(problemError(503))
+      .mockResolvedValueOnce({ portalUrl: PORTAL_URL });
+    renderPage();
+    await screen.findByTestId('billing-plans-grid');
+
+    fireEvent.click(planButton('Starter'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('billing.portal.failed')));
+    expect(assign).not.toHaveBeenCalled();
+    await waitFor(() => expect(planButton('Starter')).toBeEnabled());
+    expect(planButton('Pro')).toHaveTextContent(i18n.t('plan.currentPlan'));
+
+    fireEvent.click(planButton('Starter'));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith(PORTAL_URL));
   });
 
   it('CheckoutReturnSuccess_BackendReportsActive_ConfirmsAndRefreshesThePlan', async () => {
