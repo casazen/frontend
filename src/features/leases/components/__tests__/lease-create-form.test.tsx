@@ -87,13 +87,30 @@ async function fillConcordatoLease(monthlyRent: string) {
   fireEvent.change(await screen.findByLabelText(i18n.t('leases.canoneConcordato.sqm')), { target: { value: '65' } });
   fireEvent.change(screen.getByLabelText(i18n.t('leases.canoneConcordato.typeA')), { target: { value: '2' } });
   fireEvent.change(screen.getByLabelText(i18n.t('leases.canoneConcordato.typeB')), { target: { value: '3' } });
-  for (const [prefix, cf] of [['landlord', 'RSSMRA80A01H501U'], ['tenant', 'VRDLGU85B02F205X']] as const) {
-    setField(`${prefix}.firstName`, 'Nome');
-    setField(`${prefix}.lastName`, 'Cognome');
-    setField(`${prefix}.fiscalCode`, cf);
-    setField(`${prefix}.citizenship`, 'IT');
-    setField(`${prefix}.contactEmail`, `${prefix}@example.com`);
-  }
+  fillParty('landlords.0', 'RSSMRA80A01H501U');
+  fillParty('tenants.0', 'VRDLGU85B02F205C');
+}
+
+/** A party with a valid fiscal code (LT-14): `prefix` is `landlords.N` or `tenants.N`. */
+function fillParty(prefix: string, fiscalCode: string) {
+  setField(`${prefix}.firstName`, 'Nome');
+  setField(`${prefix}.lastName`, 'Cognome');
+  setField(`${prefix}.fiscalCode`, fiscalCode);
+  setField(`${prefix}.citizenship`, 'IT');
+  setField(`${prefix}.contactEmail`, `${prefix}@example.com`);
+}
+
+/** A complete Libero 4+4 lease with one landlord and one tenant, ready to submit once the APE check answered. */
+async function fillLiberoLease() {
+  fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
+  setField('startDate', '2026-09-01');
+  setField('endDate', '2030-08-31');
+  setField('monthlyRent', '900');
+  fillParty('landlords.0', 'RSSMRA80A01H501U');
+  fillParty('tenants.0', 'VRDLGU85B02F205C');
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: i18n.t('leases.form.createDraft') })).toBeEnabled(),
+  );
 }
 
 type PropertiesQuery = ReturnType<typeof useProperties>;
@@ -324,7 +341,7 @@ describe('LeaseCreateForm validation messages (A7-25)', () => {
 
     fireEvent.submit(container.querySelector('form')!);
 
-    const key = 'leases.validation.fiscalCode.minLength';
+    const key = 'leases.validation.fiscalCode.required';
     await waitFor(() => {
       expect(screen.getAllByText(i18n.t(key)).length).toBeGreaterThan(0);
     });
@@ -412,5 +429,88 @@ describe('LeaseCreateForm properties of a long-term landlord (A7-06)', () => {
       expect(screen.getByLabelText(i18n.t('leases.form.propertyLabel'))).toHaveValue('prop-1');
     });
     await waitFor(() => expect(propertiesApi.getDocuments).toHaveBeenCalledWith('prop-1'));
+  });
+});
+
+describe('LeaseCreateForm several landlords and tenants (LT-14, A7-28)', () => {
+  beforeEach(() => {
+    void i18n.changeLanguage('it');
+  });
+
+  it('LeaseCreateForm_TwoLandlordsAndTwoTenants_SendsEveryPartyInOrderWithNormalizedFiscalCodes', async () => {
+    const onSubmit = vi.fn();
+    const { container } = renderForm(onSubmit);
+    await fillLiberoLease();
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('leases.form.addLandlord') }));
+    fillParty('landlords.1', ' bncmra70c10f205h ');
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('leases.form.addTenant') }));
+    fillParty('tenants.1', '00123456782');
+    expect(screen.getByText(i18n.t('leases.form.landlordNumber', { n: 2 }))).toBeInTheDocument();
+
+    fireEvent.submit(container.querySelector('form')!);
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    const parties = onSubmit.mock.calls[0][0].parties as Array<{ role: string; fiscalCode: string }>;
+    expect(parties.map((p) => [p.role, p.fiscalCode])).toEqual([
+      ['Landlord', 'RSSMRA80A01H501U'],
+      ['Landlord', 'BNCMRA70C10F205H'],
+      ['Tenant', 'VRDLGU85B02F205C'],
+      ['Tenant', '00123456782'],
+    ]);
+  });
+
+  it('LeaseCreateForm_RemoveSecondLandlord_SendsOnlyTheFirst', async () => {
+    const onSubmit = vi.fn();
+    const { container } = renderForm(onSubmit);
+    await fillLiberoLease();
+    // A single party of a role cannot be removed.
+    expect(
+      screen.queryByRole('button', { name: i18n.t('leases.form.removeLandlord', { n: 1 }) }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('leases.form.addLandlord') }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('leases.form.removeLandlord', { n: 2 }) }));
+    fireEvent.submit(container.querySelector('form')!);
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0].parties.filter((p: { role: string }) => p.role === 'Landlord')).toHaveLength(1);
+  });
+
+  it('LeaseCreateForm_FiscalCodeWithWrongCheckCharacter_ShowsInvalidMessageAndBlocksSubmit', async () => {
+    const onSubmit = vi.fn();
+    const { container } = renderForm(onSubmit);
+    await fillLiberoLease();
+    setField('tenants.0.fiscalCode', 'VRDLGU85B02F205X');
+
+    fireEvent.submit(container.querySelector('form')!);
+
+    expect(await screen.findByText(i18n.t('leases.validation.fiscalCode.invalid'))).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('LeaseCreateForm_SameFiscalCodeForTwoParties_ShowsDuplicateMessageAndBlocksSubmit', async () => {
+    const onSubmit = vi.fn();
+    const { container } = renderForm(onSubmit);
+    await fillLiberoLease();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('leases.form.addTenant') }));
+    fillParty('tenants.1', 'rssmra80a01h501u');
+
+    fireEvent.submit(container.querySelector('form')!);
+
+    expect(await screen.findByText(i18n.t('leases.validation.fiscalCode.duplicate'))).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('LeaseCreateForm_TenTenants_DisablesAddAndExplainsTheLimit', async () => {
+    renderForm();
+    const add = screen.getByRole('button', { name: i18n.t('leases.form.addTenant') });
+
+    for (let i = 1; i < 10; i++) fireEvent.click(add);
+
+    expect(await screen.findByTestId('lease-tenants-max')).toHaveTextContent(
+      i18n.t('leases.form.partiesMax', { max: 10 }),
+    );
+    expect(add).toBeDisabled();
   });
 });

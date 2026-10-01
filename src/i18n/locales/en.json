@@ -702,8 +702,9 @@
         "required": "Last name is required"
       },
       "fiscalCode": {
-        "minLength": "Fiscal code must be at least 11 characters",
-        "maxLength": "Fiscal code must be at most 16 characters"
+        "required": "Fiscal code is required",
+        "invalid": "Invalid fiscal code: check the 16 characters (natural person) or the 11 digits (company).",
+        "duplicate": "This fiscal code is already entered for another party of the lease."
       },
       "citizenship": {
         "length": "Use ISO 3166-1 alpha-2 country code (e.g. IT)",
@@ -727,6 +728,14 @@
       },
       "securityDeposit": {
         "min": "The security deposit cannot be negative."
+      },
+      "landlords": {
+        "required": "Enter at least one landlord.",
+        "max": "You can enter at most 10 landlords."
+      },
+      "tenants": {
+        "required": "Enter at least one tenant.",
+        "max": "You can enter at most 10 tenants."
       }
     },
     "createPageTitle": "Create lease",
@@ -740,10 +749,6 @@
       "startDateLabel": "Start date *",
       "endDateLabel": "End date *",
       "monthlyRentLabel": "Monthly rent (€) *",
-      "landlordTitle": "Landlord",
-      "landlordDescription": "Contract party — property owner or representative",
-      "tenantTitle": "Tenant",
-      "tenantDescription": "Contract party — lessee",
       "firstNameLabel": "First name *",
       "lastNameLabel": "Last name *",
       "fiscalCodeLabel": "Fiscal code *",
@@ -773,7 +778,19 @@
       },
       "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
       "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement.",
-      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication."
+      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication.",
+      "landlordsTitle": "Landlords",
+      "landlordsDescription": "Every owner letting the property (e.g. co-owners or spouses): each one is a party of the contract and of the registration.",
+      "tenantsTitle": "Tenants",
+      "tenantsDescription": "Every tenant renting the property: each one is a party of the contract and of the registration.",
+      "landlordNumber": "Landlord {{n}}",
+      "tenantNumber": "Tenant {{n}}",
+      "addLandlord": "Add landlord",
+      "addTenant": "Add tenant",
+      "removeLandlord": "Remove landlord {{n}}",
+      "removeTenant": "Remove tenant {{n}}",
+      "partiesMax": "You can enter at most {{max}} parties per role.",
+      "fiscalCodeHint": "16 characters for a natural person, 11 digits for a company."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -4785,7 +4802,12 @@
       "checkoutWizardNotStarted": "Start the check-out before completing it: open the check-out of the stay again.",
       "checkoutCleaningChoiceInvalid": "Choose whether to request a cleaning from a supplier (with the supplier) or to skip it.",
       "checkoutStepInvalid": "Invalid check-out step.",
-      "checkoutNotCompleted": "The property is declared ready after the check-out of the stay."
+      "checkoutNotCompleted": "The property is declared ready after the check-out of the stay.",
+      "leasePartyFiscalCodeInvalid": "The fiscal code of a party is not valid.",
+      "leasePartyFiscalCodeDuplicate": "The same fiscal code is given for more than one party of the lease.",
+      "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
+      "leaseLandlordRequired": "The lease needs at least one landlord.",
+      "leaseTenantRequired": "The lease needs at least one tenant."
     }
   },
   "validation": {
