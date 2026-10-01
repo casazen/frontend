@@ -2870,7 +2870,7 @@
     "ordinaryTerm": "24 hours from arrival",
     "shortStayTerm": "short stay: 6 hours from arrival",
     "manualBanner": "CasaZen does not transmit to Alloggiati Web yet: send each record on the Questura portal and record the submission here.",
-    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, then mark it as sent.",
+    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
     "waitingArrivalNotice": "The communication is sent from the arrival day: the portal accepts only today or yesterday as arrival date.",
     "declaredNotice": "Submission declared by the host: keep the receipt issued by the Alloggiati Web portal.",
     "failureNotice": {
@@ -2958,6 +2958,16 @@
         "GuestPortal": "Entered by the guest on {{date}}",
         "Host": "Entered by the host on {{date}}"
       }
+    },
+    "recordFile": {
+      "title": "File for the Alloggiati Web portal",
+      "description": "The text file to upload on the Alloggiati Web portal (menu File): one line per guest, in the order of the communication. Downloading it sends nothing: after uploading it on the portal, mark the submission as manual.",
+      "download": "Download the file",
+      "preparing": "Preparing the file…",
+      "arrivalWindow": "The portal only accepts records with an arrival date of today or yesterday. The file contains identity document data: keep it safe and delete it after sending.",
+      "notReady": "The file is available when the guest data and the official codes are complete and the stay does not exceed 30 days.",
+      "downloaded": "File downloaded: upload it on the Alloggiati Web portal, then mark the submission.",
+      "failed": "Could not generate the Alloggiati file. Try again."
     },
     "codeTable": {
       "Comuni": "municipalities",
@@ -4783,6 +4793,9 @@
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
       "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
+      "alloggiatiFileNotReady": "The Alloggiati file cannot be generated: the guest data is incomplete or an official code is missing.",
+      "alloggiatiFileStayDaysInvalid": "The Alloggiati file cannot be generated: one schedina accepts from 1 to 30 days of stay.",
+      "alloggiatiFileNameNotRepresentable": "The Alloggiati file cannot be generated: the first or last name of a guest has characters the portal does not accept. Write them with letters of the Latin alphabet only, as on the document.",
       "touristTaxRateNotFound": "This rate no longer exists: reload the list.",
       "bookingDatesUnavailable": "The selected dates are not available: they overlap another booking or a calendar block.",
       "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
