@@ -2030,7 +2030,30 @@
     "emptyForStay": "No supplier requests for this stay.",
     "emptyForProperty": "No supplier requests for this property.",
     "viewStay": "Go to the stay",
-    "noStayLegacy": "No stay (earlier request)"
+    "noStayLegacy": "No stay (earlier request)",
+    "requestOtherSupplier": "Request another supplier",
+    "otherSupplierHint": "The supplier that rejected it is not in the list.",
+    "noOtherSuppliers": "No other active supplier for this category in the property's comune.",
+    "timeline": {
+      "actorHost": "Your team",
+      "actorSupplier": "The supplier",
+      "rejectionReason": "Reason for the rejection: {{reason}}",
+      "noRejectionReason": "The supplier gave no reason.",
+      "alreadyReRequested": "Already requested from another supplier.",
+      "waiting": {
+        "Richiesto": "Waiting for the supplier to accept or reject.",
+        "PresoInCarico": "Waiting for the supplier to complete the job.",
+        "Completato": "Job completed: mark it as paid once you have paid the supplier."
+      }
+    },
+    "markPaidDialog": {
+      "title": "Mark as paid",
+      "description": "Do you confirm you paid {{supplier}} for {{category}}? CasaZen does not make the payment: this only records that you already did.",
+      "descriptionNoSupplier": "Do you confirm you paid the supplier for {{category}}? CasaZen does not make the payment: this only records that you already did.",
+      "irreversible": "This cannot be undone and the supplier will be notified.",
+      "cancel": "Cancel",
+      "confirm": "Yes, I paid"
+    }
   },
   "ical": {
     "title": "OTA Calendar",

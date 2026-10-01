@@ -159,7 +159,11 @@ export function useMarkServiceRequestPaid() {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       toast.success(i18n.t('serviceRequest.markedPaid'));
     },
-    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => {
+      // A 409/422 means the request changed meanwhile (already paid from another tab): show it as it is now.
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+    },
   });
 }
 
@@ -171,6 +175,10 @@ export function useMarkLongRentServiceRequestPaid() {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       toast.success(i18n.t('serviceRequest.markedPaid'));
     },
-    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => {
+      // A 409/422 means the request changed meanwhile (already paid from another tab): show it as it is now.
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+    },
   });
 }

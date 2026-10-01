@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -10,16 +10,19 @@ import { Loader2, Store, Phone, Mail } from 'lucide-react';
 import { useServiceRequests, useSuppliersByProperty } from '@/queries/use-service-requests';
 import { useProperties } from '@/queries/use-properties';
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
+import { ServiceRequestTimeline } from '@/features/service-requests/components/service-request-timeline';
 import { ServiceCategorySelect } from '@/features/service-requests/components/service-category-picker';
 import type { SupplierPicker } from '@/types/service-request';
-import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
+import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { getProblemMessage } from '@/lib/api-errors';
+import { useWorkspace } from '@/hooks/use-workspace';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 export function MarketplacePage() {
   const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
   const [searchParams, setSearchParams] = useSearchParams();
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierPicker | null>(null);
@@ -246,36 +249,13 @@ export function MarketplacePage() {
               </div>
             )}
             {!requestsLoading && !requestsError && (requests?.items?.length ?? 0) > 0 && (
-              <div className="space-y-3" data-testid="marketplace-requests-list">
-                {requests!.items.map((req) => (
-                  <div
-                    key={req.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="font-medium">
-                        {req.propertyName ?? req.propertyId.slice(0, 8)}
-                        {' · '}
-                        {getServiceCategoryLabel(req.category, t)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {req.supplierName ?? '—'}
-                      </div>
-                      {req.bookingId && (
-                        <Link
-                          to={`/app/short-rent/bookings/${req.bookingId}`}
-                          className="text-xs text-primary hover:underline"
-                          data-testid={`marketplace-request-stay-${req.id}`}
-                        >
-                          {t('marketplace.viewBooking')}
-                        </Link>
-                      )}
-                    </div>
-                    <Badge variant="secondary">
-                      {getServiceRequestStatusLabel(req.status, t)}
-                    </Badge>
-                  </div>
-                ))}
+              <div data-testid="marketplace-requests-list">
+                <ServiceRequestTimeline
+                  requests={requests!.items}
+                  showStay
+                  showProperty
+                  canManage={hasPermission('short-rent', 'property.write')}
+                />
               </div>
             )}
           </CardContent>
