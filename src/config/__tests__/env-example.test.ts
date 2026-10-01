@@ -1,6 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -8,7 +7,7 @@ import { describe, expect, it } from 'vitest';
  * the backend checklist (`docs/runbooks/deploy-checklist.md` § 4) cannot drift apart. A new variable: add it to
  * `.env.example` (commented out when it is optional) and to the checklist; a removed one: delete its line.
  */
-const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
+const ROOT = process.cwd();
 
 // A variable name not glued to a longer identifier (`FINAL_INVITE_CODES` contains `VITE_CODES`).
 const VARIABLE = /(?<![A-Za-z0-9_])VITE_[A-Z0-9_]+/g;
