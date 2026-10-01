@@ -2641,7 +2641,13 @@
       "placeholder": "#1a6b8f",
       "help": "Usato per pulsanti e link del sito. Codice esadecimale, per esempio #1a6b8f.",
       "usingTheme": "Stai usando il colore del tema.",
-      "useTheme": "Usa il colore del tema"
+      "useTheme": "Usa il colore del tema",
+      "contrast": {
+        "title": "Leggibilità",
+        "buttonLight": "Il testo dei pulsanti sarà bianco (contrasto {{ratio}}:1, conforme a WCAG AA).",
+        "buttonDark": "Il testo dei pulsanti sarà scuro (contrasto {{ratio}}:1, conforme a WCAG AA): il bianco su questo colore sarebbe poco leggibile.",
+        "textAdjusted": "Questo colore è troppo chiaro per essere letto come testo sullo sfondo del tema: link, icone e contorno del focus useranno una variante più scura ({{color}})."
+      }
     },
     "tagline": {
       "label": "Slogan",
@@ -3666,7 +3672,28 @@
     "closeBookingSheet": "Chiudi pannello prenotazione",
     "directBookingTagline": "Prenotazione diretta",
     "subprocessors": "Sub-responsabili",
-    "legalDocuments": "Documenti legali"
+    "legalDocuments": "Documenti legali",
+    "loading": "Caricamento...",
+    "loadingProperties": "Caricamento delle strutture...",
+    "propertiesError": {
+      "title": "Non riusciamo a mostrare le strutture",
+      "description": "Non è un elenco vuoto: il caricamento non è riuscito. Riprova tra un momento."
+    },
+    "emptyProperties": {
+      "description": "Questo operatore non ha ancora strutture prenotabili online.",
+      "contact": "Scrivi a {{email}} per informazioni"
+    },
+    "card": {
+      "guests_one": "{{count}} ospite",
+      "guests_other": "{{count}} ospiti",
+      "bedrooms_one": "{{count}} camera",
+      "bedrooms_other": "{{count}} camere",
+      "bathrooms_one": "{{count}} bagno",
+      "bathrooms_other": "{{count}} bagni",
+      "from": "da",
+      "perNight": "a notte",
+      "details": "Dettagli"
+    }
   },
   "publicBooking": {
     "payNow": "Paga ora",
@@ -3929,7 +3956,9 @@
       "legendBooked": "Occupato",
       "dayFree": "{{date}}: libero",
       "dayBooked": "{{date}}: occupato"
-    }
+    },
+    "orgLoadError": "Non riusciamo a caricare il sito",
+    "orgLoadErrorDescription": "Si è verificato un problema temporaneo. Riprova tra un momento."
   },
   "publicSeo": {
     "hub": {

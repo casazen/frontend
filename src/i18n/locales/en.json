@@ -2641,7 +2641,13 @@
       "placeholder": "#1a6b8f",
       "help": "Used for the site's buttons and links. Hex code, for example #1a6b8f.",
       "usingTheme": "You are using the theme's color.",
-      "useTheme": "Use the theme's color"
+      "useTheme": "Use the theme's color",
+      "contrast": {
+        "title": "Readability",
+        "buttonLight": "Button text will be white (contrast {{ratio}}:1, WCAG AA compliant).",
+        "buttonDark": "Button text will be dark (contrast {{ratio}}:1, WCAG AA compliant): white on this color would be hard to read.",
+        "textAdjusted": "This color is too light to be read as text on the theme background: links, icons and the focus outline will use a darker variant ({{color}})."
+      }
     },
     "tagline": {
       "label": "Tagline",
@@ -3666,7 +3672,28 @@
     "closeBookingSheet": "Close booking panel",
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
-    "legalDocuments": "Legal documents"
+    "legalDocuments": "Legal documents",
+    "loading": "Loading...",
+    "loadingProperties": "Loading properties...",
+    "propertiesError": {
+      "title": "We can't show the properties right now",
+      "description": "This is not an empty list: loading failed. Please try again in a moment."
+    },
+    "emptyProperties": {
+      "description": "This host has no properties available to book online yet.",
+      "contact": "Write to {{email}} for information"
+    },
+    "card": {
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "bathrooms_one": "{{count}} bathroom",
+      "bathrooms_other": "{{count}} bathrooms",
+      "from": "from",
+      "perNight": "per night",
+      "details": "Details"
+    }
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -3929,7 +3956,9 @@
       "legendBooked": "Booked",
       "dayFree": "{{date}}: free",
       "dayBooked": "{{date}}: booked"
-    }
+    },
+    "orgLoadError": "We can't load this site right now",
+    "orgLoadErrorDescription": "A temporary problem occurred. Please try again in a moment."
   },
   "publicSeo": {
     "hub": {
