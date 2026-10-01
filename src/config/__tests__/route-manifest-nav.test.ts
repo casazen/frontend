@@ -82,6 +82,21 @@ describe('route-manifest nav helpers', () => {
     expect(visible.filter((path) => orgAdminPaths.includes(path))).toEqual([]);
   });
 
+  // BK-12: the public-site branding page belongs to the short-rent shell, for the org billing administrator only.
+  it('shows the site appearance page only in the short-rent shell, to the org billing administrator', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/site-appearance');
+    expect(entry?.orgBillingAdmin).toBe(true);
+    expect(entry?.navKey).toBe('nav.siteAppearance');
+    expect(ROUTE_MANIFEST.some((e) => e.path === '/app/long-rent/settings/site-appearance')).toBe(false);
+
+    const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
+    const hidden = getVisibleNavEntries('short-rent', notBillingAdmin).map((e) => e.path);
+    expect(hidden).not.toContain('/app/short-rent/settings/site-appearance');
+    expect(getSecondaryNavEntries('short-rent', allowAll).map((e) => e.path)).toContain(
+      '/app/short-rent/settings/site-appearance',
+    );
+  });
+
   it('maps each plan or billing page to the same page of the other rental shell', () => {
     const shortRentPlan = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/plan')!;
     const longRentBilling = ROUTE_MANIFEST.find((e) => e.path === '/app/long-rent/settings/billing')!;
