@@ -299,7 +299,8 @@
       "operations": "Amministrazione",
       "amministrazione": "Amministrazione"
     },
-    "ltrReferenceData": "Dati normativi LTR"
+    "ltrReferenceData": "Dati normativi LTR",
+    "siteAppearance": "Aspetto sito"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -2616,6 +2617,92 @@
       "slugRequired": "Inserisci l'indirizzo pubblico.",
       "contactEmailRequired": "Inserisci l'email di contatto.",
       "contactEmailInvalid": "Inserisci un'email valida."
+    },
+    "siteAppearanceHint": "Logo, colori e tema del sito pubblico si modificano in Aspetto sito.",
+    "siteAppearanceLink": "Vai ad Aspetto sito"
+  },
+  "siteAppearance": {
+    "title": "Aspetto sito",
+    "description": "Logo, immagine di copertina, colore, slogan e tema del tuo sito di prenotazione pubblico.",
+    "adminRequired": "L'aspetto del sito è gestito dall'amministratore della tua organizzazione: contatta l'amministratore per modificarlo.",
+    "loadError": "Impossibile caricare l'aspetto del sito.",
+    "save": "Salva stile",
+    "saved": "Aspetto del sito salvato",
+    "saveFailed": "Impossibile salvare l'aspetto del sito",
+    "images": {
+      "title": "Immagini",
+      "description": "Le immagini vengono pubblicate subito sul sito. Formati PNG, JPEG o WebP.",
+      "upload": "Carica",
+      "replace": "Sostituisci",
+      "remove": "Rimuovi",
+      "uploadFailed": "Impossibile caricare l'immagine",
+      "removeFailed": "Impossibile rimuovere l'immagine",
+      "logo": {
+        "label": "Logo",
+        "empty": "Nessun logo: il sito mostra il nome",
+        "currentAlt": "Logo attuale",
+        "hint": "Mostrato nell'intestazione. Massimo {{maxMb}} MB, da {{minWidth}}×{{minHeight}} a {{maxWidth}}×{{maxHeight}} pixel; meglio con sfondo trasparente (PNG).",
+        "uploaded": "Logo aggiornato",
+        "removed": "Logo rimosso"
+      },
+      "hero": {
+        "label": "Immagine di copertina",
+        "empty": "Nessuna copertina: il sito usa la prima foto di un immobile",
+        "currentAlt": "Immagine di copertina attuale",
+        "hint": "In alto nella pagina principale, a tutta larghezza. Massimo {{maxMb}} MB, almeno {{minWidth}}×{{minHeight}} pixel (massimo {{maxWidth}}×{{maxHeight}}).",
+        "uploaded": "Immagine di copertina aggiornata",
+        "removed": "Immagine di copertina rimossa"
+      }
+    },
+    "style": {
+      "title": "Stile",
+      "description": "Tema, colore principale e slogan. Le modifiche si vedono nell'anteprima e vanno salvate."
+    },
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "mare": {
+          "name": "Mare",
+          "description": "Luminoso e accogliente, per case al mare e vacanze estive."
+        },
+        "montagna": {
+          "name": "Montagna",
+          "description": "Caldo e naturale, per baite, chalet e agriturismi."
+        },
+        "urban": {
+          "name": "Urban",
+          "description": "Essenziale e moderno, per appartamenti in città."
+        }
+      }
+    },
+    "color": {
+      "label": "Colore principale",
+      "picker": "Scegli il colore principale",
+      "placeholder": "#1a6b8f",
+      "help": "Usato per pulsanti e link del sito. Codice esadecimale, per esempio #1a6b8f.",
+      "usingTheme": "Stai usando il colore del tema.",
+      "useTheme": "Usa il colore del tema"
+    },
+    "tagline": {
+      "label": "Slogan",
+      "placeholder": "Per esempio: Case vacanza a due passi dal mare",
+      "counter": "{{length}} di {{max}} caratteri"
+    },
+    "preview": {
+      "title": "Anteprima",
+      "description": "Così appare l'inizio del tuo sito con le modifiche in corso.",
+      "openSite": "Apri il sito",
+      "identityHint": "Nome e indirizzo del sito si modificano nelle impostazioni dell'organizzazione.",
+      "identityLink": "Vai a Organizzazione"
+    },
+    "errors": {
+      "colorInvalid": "Il colore non è valido: usa un codice esadecimale, per esempio #1a6b8f.",
+      "themeInvalid": "Questo tema non è disponibile per il sito pubblico.",
+      "taglineTooLong": "Lo slogan non può superare i {{maxLength}} caratteri.",
+      "imageEmpty": "Il file selezionato è vuoto.",
+      "imageType": "Formato non supportato: carica un'immagine PNG, JPEG o WebP.",
+      "imageTooLarge": "L'immagine supera la dimensione massima di {{maxMb}} MB.",
+      "imageDimensions": "Dimensioni dell'immagine non valide: servono almeno {{minWidth}}×{{minHeight}} pixel e al massimo {{maxWidth}}×{{maxHeight}}."
     }
   },
   "vetrina": {
@@ -2817,7 +2904,7 @@
     "ordinaryTerm": "24 ore dall'arrivo",
     "shortStayTerm": "soggiorno breve: 6 ore dall'arrivo",
     "manualBanner": "CasaZen non trasmette ancora ad Alloggiati Web: invia ogni schedina dal portale della Questura e registra qui l'invio.",
-    "manualNotice": "CasaZen non trasmette ancora ad Alloggiati Web. Inserisci la schedina sul portale Alloggiati Web della Questura con i dati qui sotto, poi segna l'invio.",
+    "manualNotice": "CasaZen non trasmette ancora ad Alloggiati Web. Inserisci la schedina sul portale Alloggiati Web della Questura con i dati qui sotto oppure caricando il file che puoi scaricare da questa pagina, poi segna l'invio.",
     "waitingArrivalNotice": "La comunicazione si invia dal giorno di arrivo: il portale accetta come data di arrivo solo oggi o ieri.",
     "declaredNotice": "Invio dichiarato dall'host: conserva la ricevuta rilasciata dal portale Alloggiati Web.",
     "failureNotice": {
@@ -2905,6 +2992,16 @@
         "GuestPortal": "Inseriti dall'ospite il {{date}}",
         "Host": "Inseriti dall'host il {{date}}"
       }
+    },
+    "recordFile": {
+      "title": "File per il portale Alloggiati Web",
+      "description": "Il file di testo da caricare sul portale Alloggiati Web (menu File): una riga per ogni ospite, nell'ordine della comunicazione. Scaricarlo non invia nulla: dopo averlo caricato sul portale, segna l'invio come manuale.",
+      "download": "Scarica il file",
+      "preparing": "Preparazione del file…",
+      "arrivalWindow": "Il portale accetta solo schedine con data di arrivo di oggi o di ieri. Il file contiene i dati dei documenti: conservalo con cura ed eliminalo dopo l'invio.",
+      "notReady": "Il file è disponibile quando i dati degli ospiti e i codici ufficiali sono completi e il soggiorno non supera i 30 giorni.",
+      "downloaded": "File scaricato: caricalo sul portale Alloggiati Web e poi segna l'invio.",
+      "failed": "Impossibile generare il file Alloggiati. Riprova."
     },
     "codeTable": {
       "Comuni": "comuni",
@@ -4707,6 +4804,9 @@
       "alloggiatiManualDateBeforeArrival": "La data di invio non può precedere la data di check-in.",
       "alloggiatiManualDateInFuture": "La data di invio non può essere successiva a oggi.",
       "alloggiatiAlreadySent": "La comunicazione Alloggiati di questa prenotazione risulta già inviata.",
+      "alloggiatiFileNotReady": "Il file Alloggiati non può essere generato: i dati degli ospiti sono incompleti oppure manca qualche codice ufficiale.",
+      "alloggiatiFileStayDaysInvalid": "Il file Alloggiati non può essere generato: una schedina accetta da 1 a 30 giorni di permanenza.",
+      "alloggiatiFileNameNotRepresentable": "Il file Alloggiati non può essere generato: il nome o il cognome di un ospite contiene caratteri che il portale non accetta. Scrivili solo con lettere dell'alfabeto latino, come sul documento.",
       "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco.",
       "bookingDatesUnavailable": "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
       "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
