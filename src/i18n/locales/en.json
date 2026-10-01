@@ -285,7 +285,8 @@
       "operations": "Administration",
       "amministrazione": "Administration"
     },
-    "ltrReferenceData": "LTR reference data"
+    "ltrReferenceData": "LTR reference data",
+    "siteAppearance": "Site appearance"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -2545,6 +2546,92 @@
       "slugRequired": "Enter the public address.",
       "contactEmailRequired": "Enter the contact email.",
       "contactEmailInvalid": "Enter a valid email."
+    },
+    "siteAppearanceHint": "The public site's logo, colors and theme are edited in Site appearance.",
+    "siteAppearanceLink": "Go to Site appearance"
+  },
+  "siteAppearance": {
+    "title": "Site appearance",
+    "description": "Logo, cover image, color, tagline and theme of your public booking site.",
+    "adminRequired": "The site appearance is managed by your organization's administrator: contact them to change it.",
+    "loadError": "Could not load the site appearance.",
+    "save": "Save style",
+    "saved": "Site appearance saved",
+    "saveFailed": "Could not save the site appearance",
+    "images": {
+      "title": "Images",
+      "description": "Images are published on the site right away. PNG, JPEG or WebP.",
+      "upload": "Upload",
+      "replace": "Replace",
+      "remove": "Remove",
+      "uploadFailed": "Could not upload the image",
+      "removeFailed": "Could not remove the image",
+      "logo": {
+        "label": "Logo",
+        "empty": "No logo: the site shows the name",
+        "currentAlt": "Current logo",
+        "hint": "Shown in the header. Up to {{maxMb}} MB, from {{minWidth}}×{{minHeight}} to {{maxWidth}}×{{maxHeight}} pixels; best with a transparent background (PNG).",
+        "uploaded": "Logo updated",
+        "removed": "Logo removed"
+      },
+      "hero": {
+        "label": "Cover image",
+        "empty": "No cover: the site uses the first property photo",
+        "currentAlt": "Current cover image",
+        "hint": "At the top of the home page, full width. Up to {{maxMb}} MB, at least {{minWidth}}×{{minHeight}} pixels (at most {{maxWidth}}×{{maxHeight}}).",
+        "uploaded": "Cover image updated",
+        "removed": "Cover image removed"
+      }
+    },
+    "style": {
+      "title": "Style",
+      "description": "Theme, primary color and tagline. Changes show in the preview and must be saved."
+    },
+    "theme": {
+      "label": "Theme",
+      "options": {
+        "mare": {
+          "name": "Sea",
+          "description": "Bright and welcoming, for seaside homes and summer holidays."
+        },
+        "montagna": {
+          "name": "Mountain",
+          "description": "Warm and natural, for cabins, chalets and farm stays."
+        },
+        "urban": {
+          "name": "Urban",
+          "description": "Clean and modern, for city apartments."
+        }
+      }
+    },
+    "color": {
+      "label": "Primary color",
+      "picker": "Pick the primary color",
+      "placeholder": "#1a6b8f",
+      "help": "Used for the site's buttons and links. Hex code, for example #1a6b8f.",
+      "usingTheme": "You are using the theme's color.",
+      "useTheme": "Use the theme's color"
+    },
+    "tagline": {
+      "label": "Tagline",
+      "placeholder": "For example: Holiday homes a short walk from the sea",
+      "counter": "{{length}} of {{max}} characters"
+    },
+    "preview": {
+      "title": "Preview",
+      "description": "How the top of your site looks with the changes in progress.",
+      "openSite": "Open the site",
+      "identityHint": "The site's name and address are edited in the organization settings.",
+      "identityLink": "Go to Organization"
+    },
+    "errors": {
+      "colorInvalid": "The color is not valid: use a hex code, for example #1a6b8f.",
+      "themeInvalid": "This theme is not available for the public site.",
+      "taglineTooLong": "The tagline cannot exceed {{maxLength}} characters.",
+      "imageEmpty": "The selected file is empty.",
+      "imageType": "Unsupported format: upload a PNG, JPEG or WebP image.",
+      "imageTooLarge": "The image exceeds the maximum size of {{maxMb}} MB.",
+      "imageDimensions": "Invalid image size: it must be at least {{minWidth}}×{{minHeight}} pixels and at most {{maxWidth}}×{{maxHeight}}."
     }
   },
   "vetrina": {
