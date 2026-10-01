@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { filtersFromSearchParams, filtersToSearchParams } from '../search-params';
+import { filtersFromSearchParams, filtersToSearchParams, propertyResultPath } from '../search-params';
+import type { PublicPropertyDto } from '@/types';
 
 describe('filtersFromSearchParams', () => {
   it('filtersFromSearchParams_AllKeys_ReadsEveryFilter', () => {
@@ -56,5 +57,26 @@ describe('filtersToSearchParams', () => {
     const filters = { city: 'Lago di Como', minPrice: 40, maxPrice: 180, minBedrooms: 1, minBathrooms: 1, guests: 3 };
 
     expect(filtersFromSearchParams(filtersToSearchParams(filters))).toEqual(filters);
+  });
+});
+
+describe('propertyResultPath', () => {
+  const property = { id: 'p-1', slug: 'casa-del-faro', orgSlug: 'villa-mare' } as PublicPropertyDto;
+
+  it('propertyResultPath_WithOrgSlug_IsThePropertyPageOfThatOrgSite', () => {
+    expect(propertyResultPath(property)).toEqual({ pathname: '/book/villa-mare/property/casa-del-faro', search: '' });
+  });
+
+  it('propertyResultPath_WithGuests_CarriesThemAsTheGuestsOfTheStay', () => {
+    expect(propertyResultPath(property, 3)).toEqual({ pathname: '/book/villa-mare/property/casa-del-faro', search: 'guests=3' });
+  });
+
+  it('propertyResultPath_PropertyWithoutSlug_UsesItsId', () => {
+    expect(propertyResultPath({ ...property, slug: null })?.pathname).toBe('/book/villa-mare/property/p-1');
+  });
+
+  it('propertyResultPath_WithoutOrgSlug_HasNoDestination', () => {
+    expect(propertyResultPath({ ...property, orgSlug: undefined })).toBeUndefined();
+    expect(propertyResultPath({ ...property, orgSlug: '' })).toBeUndefined();
   });
 });

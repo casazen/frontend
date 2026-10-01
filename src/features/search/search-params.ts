@@ -1,3 +1,5 @@
+import { BOOKING_QUERY_KEYS, buildPropertyBookingPath } from '@/lib/booking-url';
+import type { PublicPropertyDto } from '@/types';
 import { SEARCH_LIMITS, type SearchFiltersFormValues } from './schemas/search.schema';
 
 /**
@@ -55,4 +57,17 @@ export function filtersToSearchParams(filters: SearchFiltersFormValues): URLSear
   if (filters.minBathrooms !== undefined) search.set(KEYS.minBathrooms, String(filters.minBathrooms));
   if (filters.guests !== undefined) search.set(KEYS.guests, String(filters.guests));
   return search;
+}
+
+/**
+ * Where a result goes: the property page of its org's booking site, with the number of guests of the search as the
+ * guests of the stay. Without the org slug (an older backend) there is no page to go to: no link, rather than one that
+ * leads nowhere.
+ */
+export function propertyResultPath(property: PublicPropertyDto, guests?: number) {
+  if (!property.orgSlug) return undefined;
+  return {
+    pathname: buildPropertyBookingPath(property.orgSlug, property),
+    search: guests ? new URLSearchParams({ [BOOKING_QUERY_KEYS.guests]: String(guests) }).toString() : '',
+  };
 }

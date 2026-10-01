@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, Search, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PublicPropertyCard } from '@/features/public-site/components/PublicPropertyCard';
-import { buildPropertyBookingPath, BOOKING_QUERY_KEYS } from '@/lib/booking-url';
 import type { PublicPropertyDto } from '@/types';
+import { propertyResultPath } from '../search-params';
 
 interface SearchResultsProps {
   properties: PublicPropertyDto[];
@@ -17,18 +17,6 @@ interface SearchResultsProps {
 }
 
 const SKELETON_CARDS = [0, 1, 2, 3, 4, 5];
-
-/**
- * Where a result goes: the property page of its org's booking site. Without the org slug (an older backend) there is no
- * page to go to, so the card is shown without a link rather than with one that leads nowhere.
- */
-export function propertyResultPath(property: PublicPropertyDto, guests?: number) {
-  if (!property.orgSlug) return undefined;
-  return {
-    pathname: buildPropertyBookingPath(property.orgSlug, property),
-    search: guests ? new URLSearchParams({ [BOOKING_QUERY_KEYS.guests]: String(guests) }).toString() : '',
-  };
-}
 
 /** Results of the public search with their own loading, error and empty states: a failed request is never "no results". */
 export function SearchResults({ properties, isLoading, isError, isFetching, onRetry, onReset, guests }: SearchResultsProps) {
