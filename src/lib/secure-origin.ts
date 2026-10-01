@@ -18,6 +18,7 @@ export function isPublicUnauthenticatedPath(pathname: string): boolean {
     path.startsWith('/s/') ||
     path.startsWith('/check-in') ||
     path.startsWith('/checkin') ||
+    path.startsWith('/rent/pay/') ||
     path.startsWith('/help/')
   );
 }

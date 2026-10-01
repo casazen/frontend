@@ -31,6 +31,7 @@ import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
+import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
 import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
@@ -212,6 +213,11 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/checkin/:token',
     element: <CheckInPage />,
+  },
+  {
+    // Link of the rent payment request email (LT-06): the tenant pays an installment on the landlord's Stripe account.
+    path: '/rent/pay/:installmentId',
+    element: <RentPaymentPage />,
   },
   {
     path: '/supplier',
