@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import i18n from '@/i18n/config';
 import { describeDomainIssue, getDomainState } from '../domain-state';
 
+const t = (key: string) => i18n.t(key);
+
 describe('getDomainState (BK-17)', () => {
   it('getDomainState_Verified_IsVerifiedWhateverTheDetail', () => {
     expect(getDomainState('Verified', null)).toBe('verified');
@@ -30,18 +32,18 @@ describe('getDomainState (BK-17)', () => {
 describe('describeDomainIssue (BK-17)', () => {
   it('describeDomainIssue_KnownCode_IsTranslated', async () => {
     await i18n.changeLanguage('en');
-    const text = describeDomainIssue('dns_not_pointing', 'testo del server', i18n.t.bind(i18n));
+    const text = describeDomainIssue('dns_not_pointing', 'testo del server', t);
     expect(text).toBe(i18n.t('domain.issues.dns_not_pointing'));
     expect(text).not.toBe('testo del server');
   });
 
   it('describeDomainIssue_UnknownCode_FallsBackToTheServerMessage', () => {
-    expect(describeDomainIssue('new_code', ' Messaggio del server ', i18n.t.bind(i18n))).toBe('Messaggio del server');
+    expect(describeDomainIssue('new_code', ' Messaggio del server ', t)).toBe('Messaggio del server');
   });
 
   it('describeDomainIssue_NothingToExplain_IsUndefined', () => {
-    expect(describeDomainIssue(null, null, i18n.t.bind(i18n))).toBeUndefined();
-    expect(describeDomainIssue(undefined, '  ', i18n.t.bind(i18n))).toBeUndefined();
+    expect(describeDomainIssue(null, null, t)).toBeUndefined();
+    expect(describeDomainIssue(undefined, '  ', t)).toBeUndefined();
   });
 
   it('describeDomainIssue_EveryKnownCode_HasATextInBothLanguages', async () => {

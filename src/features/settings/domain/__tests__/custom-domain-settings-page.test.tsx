@@ -24,7 +24,7 @@ const entitlement = vi.hoisted(() => ({ canUseCustomDomain: true }));
 vi.mock('@/queries/use-users', () => ({
   useCurrentUser: () => ({
     org: { id: 'org-1', slug: 'villa-mare' },
-    user: { onboardingRequired: false },
+    user: { orgId: 'org-1', onboardingRequired: false },
   }),
   useEntitlement: () => ({ data: { canUseCustomDomain: entitlement.canUseCustomDomain } }),
 }));
