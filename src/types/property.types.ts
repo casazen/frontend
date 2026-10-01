@@ -123,6 +123,11 @@ export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 export interface PublicPropertyDto {
   id: string;
   slug?: string | null;
+  /**
+   * Current slug of the org that owns the property: with `slug`, the property page of its booking site
+   * (`/book/{orgSlug}/property/{slug}`). Absent only from an older backend (BK-20, A3-27).
+   */
+  orgSlug?: string;
   name: string;
   description: string;
   city: string;
@@ -227,13 +232,15 @@ export interface PropertyPauseStatus {
   pausedAt: string | null;
 }
 
+/**
+ * Filters of the public search, all optional (BK-20, A8-13): `city` is a part of the name, the minimums are inclusive,
+ * `guests` is the number of guests the property must sleep. Every one of them is sent to `GET /api/properties/search`.
+ */
 export interface PropertySearchParams {
   city?: string;
   minPrice?: number;
   maxPrice?: number;
   minBedrooms?: number;
-  maxGuests?: number;
-  amenities?: string[];
-  page?: number;
-  limit?: number;
+  minBathrooms?: number;
+  guests?: number;
 }

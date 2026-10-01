@@ -4070,37 +4070,38 @@
   },
   "search": {
     "page": {
-      "title": "Cerca proprieta",
+      "title": "Cerca strutture",
       "description": "Trova la casa vacanza perfetta",
       "searching": "Ricerca in corso...",
-      "results_one": "{{count}} proprietà trovata",
-      "results_other": "{{count}} proprietà trovate"
+      "results_one": "{{count}} struttura trovata",
+      "results_other": "{{count}} strutture trovate"
     },
     "filters": {
       "title": "Filtri di ricerca",
-      "city": "Citta",
+      "city": "Città",
       "cityPlaceholder": "es. Roma, Milano, Firenze...",
-      "minPrice": "Prezzo min (euro/notte)",
-      "maxPrice": "Prezzo max (euro/notte)",
+      "minPrice": "Prezzo min (€ a notte)",
+      "maxPrice": "Prezzo max (€ a notte)",
       "minBedrooms": "Camere min",
-      "maxBedrooms": "Camere max",
       "minBathrooms": "Bagni min",
-      "maxBathrooms": "Bagni max",
+      "guests": "Ospiti",
       "search": "Cerca",
       "reset": "Azzera"
     },
     "results": {
-      "noProperties": "Nessuna proprieta trovata",
-      "noPropertiesDesc": "Prova a modificare i filtri di ricerca per trovare piu proprieta"
+      "noProperties": "Nessuna struttura trovata",
+      "noPropertiesDesc": "Prova a modificare i filtri di ricerca per trovare più strutture.",
+      "errorTitle": "Non riusciamo a eseguire la ricerca",
+      "errorDescription": "Non è un elenco vuoto: la ricerca non è andata a buon fine. Riprova tra un momento."
     },
-    "card": {
-      "bed_one": "camera",
-      "bed_other": "camere",
-      "bath_one": "bagno",
-      "bath_other": "bagni",
-      "guests": "ospiti",
-      "perNight": "/notte",
-      "details": "Dettagli"
+    "errors": {
+      "invalidNumber": "Inserisci un numero valido.",
+      "negative": "Il valore non può essere negativo.",
+      "tooHigh": "Il valore è troppo alto.",
+      "wholeNumber": "Inserisci un numero intero.",
+      "guestsMin": "Gli ospiti devono essere almeno 1.",
+      "priceRange": "Il prezzo massimo deve essere almeno uguale al minimo.",
+      "cityTooLong": "Il nome della città è troppo lungo."
     }
   },
   "login": {

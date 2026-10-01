@@ -4070,37 +4070,38 @@
   },
   "search": {
     "page": {
-      "title": "Search Properties",
+      "title": "Search properties",
       "description": "Find your perfect vacation rental",
       "searching": "Searching...",
       "results_one": "{{count}} property found",
       "results_other": "{{count}} properties found"
     },
     "filters": {
-      "title": "Search Filters",
+      "title": "Search filters",
       "city": "City",
       "cityPlaceholder": "e.g., Rome, Milan, Florence...",
-      "minPrice": "Min Price (euro/night)",
-      "maxPrice": "Max Price (euro/night)",
-      "minBedrooms": "Min Bedrooms",
-      "maxBedrooms": "Max Bedrooms",
-      "minBathrooms": "Min Bathrooms",
-      "maxBathrooms": "Max Bathrooms",
+      "minPrice": "Min price (€ per night)",
+      "maxPrice": "Max price (€ per night)",
+      "minBedrooms": "Min bedrooms",
+      "minBathrooms": "Min bathrooms",
+      "guests": "Guests",
       "search": "Search",
       "reset": "Reset"
     },
     "results": {
       "noProperties": "No properties found",
-      "noPropertiesDesc": "Try adjusting your search filters to find more properties"
+      "noPropertiesDesc": "Try adjusting your search filters to find more properties.",
+      "errorTitle": "We can't run the search right now",
+      "errorDescription": "This is not an empty list: the search failed. Please try again in a moment."
     },
-    "card": {
-      "bed_one": "bed",
-      "bed_other": "beds",
-      "bath_one": "bath",
-      "bath_other": "baths",
-      "guests": "guests",
-      "perNight": "/night",
-      "details": "Details"
+    "errors": {
+      "invalidNumber": "Enter a valid number.",
+      "negative": "The value cannot be negative.",
+      "tooHigh": "The value is too high.",
+      "wholeNumber": "Enter a whole number.",
+      "guestsMin": "Guests must be at least 1.",
+      "priceRange": "The maximum price must be at least the minimum.",
+      "cityTooLong": "The city name is too long."
     }
   },
   "login": {

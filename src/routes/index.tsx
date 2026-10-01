@@ -178,14 +178,6 @@ export const appRoutes: RouteObject[] = [
     element: <SupplierClaimPage />,
   },
   {
-    path: '/search',
-    element: (
-      <WorkspaceProvider>
-        <SearchPage />
-      </WorkspaceProvider>
-    ),
-  },
-  {
     path: '/book/:orgSlug',
     element: <PublicSiteShell mode="org" />,
     children: [
@@ -204,6 +196,8 @@ export const appRoutes: RouteObject[] = [
   {
     element: <PublicSiteShell mode="default" />,
     children: [
+      // Public search across the booking sites (BK-20): in the public shell, never in the host console.
+      { path: '/search', element: <SearchPage /> },
       { path: SEO_HUB_PATH, element: <SeoHubPage /> },
       { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
       { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
