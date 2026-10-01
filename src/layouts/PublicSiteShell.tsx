@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Menu } from 'lucide-react';
@@ -9,6 +9,7 @@ import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-
 import { Footer } from '@/features/public-site/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { normalizeHexColor, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';
 
 interface PublicSiteShellProps {
@@ -44,10 +45,12 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const { data: org, isLoading, isError } = usePublicOrg(isOrgMode ? orgSlug : undefined);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const themeId = org?.publicThemeId ?? 'mare';
-  const primaryColor = org?.themeColor ?? undefined;
+  const themeId = resolvePublicSiteTheme(org?.publicThemeId);
+  // Only a valid hex color reaches CSS (BK-12); null keeps the theme's own color.
+  const primaryColor = normalizeHexColor(org?.primaryColor ?? org?.themeColor);
   const showBookingCta = isOrgMode && (location.pathname.includes('/property/') || location.pathname === `/book/${orgSlug}` || location.pathname === `/book/${orgSlug}/`);
 
+  // Also on <html> for the content rendered in portals (menu sheet), outside .public-site-root.
   useEffect(() => {
     const root = document.documentElement;
     if (primaryColor) {
@@ -80,6 +83,9 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
     <div
       className="public-site-root flex min-h-screen flex-col"
       data-theme={themeId}
+      // On the root itself: the [data-theme] tokens are declared on this element and would override a value
+      // inherited from <html> (A3-17).
+      style={primaryColor ? ({ '--cz-public-primary': primaryColor } as CSSProperties) : undefined}
       data-testid="public-site-shell"
     >
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">

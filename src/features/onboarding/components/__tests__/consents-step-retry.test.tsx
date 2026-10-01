@@ -67,7 +67,7 @@ describe('ConsentsStep load error (A1-39)', () => {
     fireEvent.click(screen.getByTestId('onboarding-consents-retry'));
 
     expect(await screen.findByTestId('onboarding-consents-step')).toBeInTheDocument();
-    expect(screen.getByLabelText(i18n.t('onboarding.acceptDpa', { title: 'DPA', version: '2026-06-v1' }))).toBeInTheDocument();
+    expect(screen.getByLabelText(i18n.t('onboarding.acceptDpa', { title: i18n.t('legal.documents.dpa.title'), version: '2026-06-v1' }))).toBeInTheDocument();
     // Only the failed document is requested again.
     expect(LegalApi.getDpa).toHaveBeenCalledTimes(2);
     expect(LegalApi.getTos).toHaveBeenCalledTimes(1);

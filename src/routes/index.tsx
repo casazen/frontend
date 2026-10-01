@@ -36,6 +36,10 @@ import { SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
+import { LegalIndexPage } from '@/features/legal/legal-index-page';
+import { DpaPage, PrivacyPage, TermsPage } from '@/features/legal/legal-document-page';
+import { SubprocessorsPage } from '@/features/legal/subprocessors-page';
+import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
@@ -204,6 +208,12 @@ export const appRoutes: RouteObject[] = [
       { path: SEO_HUB_PATH, element: <SeoHubPage /> },
       { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
       { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
+      // CasaZen legal documents (PL-14): public, texts provided by the product owner (D14).
+      { path: LEGAL_INDEX_PATH, element: <LegalIndexPage /> },
+      { path: LEGAL_DOCUMENT_PATHS.tos, element: <TermsPage /> },
+      { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
+      { path: LEGAL_DOCUMENT_PATHS.dpa, element: <DpaPage /> },
+      { path: LEGAL_SUBPROCESSORS_PATH, element: <SubprocessorsPage /> },
     ],
   },
   {
