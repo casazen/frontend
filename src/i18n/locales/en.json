@@ -31,6 +31,7 @@
       "description": "National identification code verification (D.L. 145/2023)",
       "filters": "Filters",
       "loadError": "Unable to load CIN data. Please try again later.",
+      "retry": "Retry",
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} properties)",
       "previous": "Previous",
       "next": "Next",
@@ -57,8 +58,13 @@
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} users)",
       "previous": "Previous",
       "next": "Next",
+      "loadError": "Could not load users. Try again later.",
+      "retry": "Retry",
       "filter": {
-        "allRoles": "All roles"
+        "allRoles": "All roles",
+        "allStatuses": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "table": {
         "name": "Name",
@@ -66,6 +72,7 @@
         "role": "Role",
         "plan": "Plan",
         "status": "Status",
+        "createdAt": "Registered on",
         "actions": "Actions",
         "active": "Active",
         "inactive": "Inactive",
@@ -83,9 +90,13 @@
         "confirm": "Deactivate"
       },
       "roleDialog": {
-        "title": "Change role",
-        "description": "Select the new role for {{name}}.",
-        "label": "Role",
+        "title": "Manage roles",
+        "description": "Select the roles for {{name}}.",
+        "label": "Roles",
+        "loading": "Loading roles…",
+        "loadError": "Could not load the current roles.",
+        "retry": "Retry",
+        "noRolesWarning": "No role selected: the user will lose access to the app's features.",
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save"
@@ -101,6 +112,8 @@
     "jobs": {
       "title": "Background Jobs",
       "description": "Hangfire job status (refreshed every 30 seconds)",
+      "loadError": "Could not load jobs. Try again later.",
+      "retry": "Retry",
       "table": {
         "job": "Job",
         "cron": "Cron",
@@ -258,6 +271,7 @@
     "jobs": "Processes",
     "suppliers": "Suppliers",
     "guests": "Guests",
+    "cinAudit": "CIN Audit",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "more": "More",

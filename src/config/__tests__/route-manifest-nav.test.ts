@@ -153,6 +153,27 @@ describe('route-manifest nav helpers', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll, { otaPartnerApi: false });
     expect(primary.some((e) => e.path === '/app/short-rent/bookings/calendar')).toBe(true);
   });
+
+  // A1-16: the CIN audit page existed but had no route, so the admin had no menu entry or URL for it.
+  it('makes the admin CIN audit route reachable and visible in the admin menu', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/admin/cin');
+    expect(entry?.context).toBe('admin');
+    expect(entry?.requiredPermissions).toEqual(['admin.cin.read']);
+    expect(entry?.navGroup).toBe('compliance-audit');
+    expect(entry?.legacyPaths).toContain('/admin/cin');
+
+    const visible = getVisibleNavEntries('admin', allowAll).map((e) => e.path);
+    expect(visible).toContain('/app/admin/cin');
+
+    const withoutCinRead = (_ctx: string, permission: string) => permission !== 'admin.cin.read';
+    const hiddenPaths = getVisibleNavEntries('admin', withoutCinRead).map((e) => e.path);
+    expect(hiddenPaths).not.toContain('/app/admin/cin');
+
+    // The old /admin/cin URL is the admin audit: no other entry may claim it (the host CIN page used to).
+    const claimants = ROUTE_MANIFEST.filter((e) => e.legacyPaths?.includes('/admin/cin')).map((e) => e.path);
+    expect(claimants).toEqual(['/app/admin/cin']);
+  });
+
   // SU-16 (A4-32, #327-AC2/AC4): the iCal help page lives inside the supplier console, with its own sidebar entry.
   it('puts the iCal help page in the supplier console sidebar', () => {
     const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/supplier/help/ical');
