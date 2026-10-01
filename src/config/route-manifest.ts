@@ -210,6 +210,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Public-site branding: logo, hero, color, tagline, theme (BK-12, A3-17). Short-rent only: it is the booking site.
+    path: '/app/short-rent/settings/site-appearance',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.siteAppearance',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 7,
+    icon: 'Palette',
+    component: async () => ({
+      default: (await import('@/features/settings/site-appearance/site-appearance-page')).SiteAppearancePage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
