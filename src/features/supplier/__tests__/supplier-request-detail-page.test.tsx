@@ -7,9 +7,10 @@ import { AxiosError, AxiosHeaders, type AxiosResponse } from 'axios';
 import i18n from '@/i18n/config';
 import { withBrowserTimeZone } from '@/test/clock';
 import type { SupplierServiceRequestDetail } from '@/types/service-request';
+import type { SupplierProfile } from '@/types/supplier';
 import { SupplierRequestDetailPage } from '../supplier-request-detail-page';
 
-const supplierApi = vi.hoisted(() => ({ fetchSupplierInboxItem: vi.fn() }));
+const supplierApi = vi.hoisted(() => ({ fetchSupplierInboxItem: vi.fn(), fetchSupplierProfile: vi.fn() }));
 const requestsApi = vi.hoisted(() => ({
   takeServiceRequest: vi.fn(),
   completeServiceRequest: vi.fn(),
@@ -67,6 +68,18 @@ const TAKEN_REQUEST: SupplierServiceRequestDetail = {
   ],
 };
 
+/** The supplier profile the console reads its status from (SU-12): an admin may suspend it. */
+const PROFILE: SupplierProfile = {
+  orgId: 'org-1',
+  status: 'Active',
+  legalName: 'Pulizie Rossi Srl',
+  phone: '+39 06 111111',
+  email: 'rossi@example.it',
+  categories: ['cleaning'],
+  comuni: ['H501'],
+  photoUrls: [],
+};
+
 function problem(status: number, code: string, detail: string): AxiosError {
   const response = {
     status,
@@ -98,6 +111,7 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     supplierApi.fetchSupplierInboxItem.mockResolvedValue(NEW_REQUEST);
+    supplierApi.fetchSupplierProfile.mockResolvedValue(PROFILE);
     await i18n.changeLanguage('it');
   });
 
@@ -267,5 +281,59 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
       "The host's name and contact details are shown once you accept the request.",
     );
     expect(screen.getByTestId('supplier-request-back')).toHaveTextContent('Back to assignments');
+  });
+  // ─── SU-12: a suspended supplier performs no action ───
+
+  it('SupplierRequestDetailPage_SuspendedSupplierNewRequest_DisablesTakeAndRejectAndExplainsWhy', async () => {
+    supplierApi.fetchSupplierProfile.mockResolvedValue({ ...PROFILE, status: 'Suspended' });
+    renderPage();
+
+    await screen.findByTestId('supplier-request-detail');
+    await waitFor(() => expect(screen.getByTestId('supplier-request-take')).toBeDisabled());
+    expect(screen.getByTestId('supplier-request-reject')).toBeDisabled();
+    expect(screen.getByTestId('supplier-request-actions-suspended')).toHaveTextContent(
+      "Azioni non disponibili: l'account fornitore è sospeso.",
+    );
+    fireEvent.click(screen.getByTestId('supplier-request-take'));
+    expect(requestsApi.takeServiceRequest).not.toHaveBeenCalled();
+  });
+
+  it('SupplierRequestDetailPage_SuspendedSupplierTakenRequest_DisablesComplete', async () => {
+    supplierApi.fetchSupplierProfile.mockResolvedValue({ ...PROFILE, status: 'Suspended' });
+    supplierApi.fetchSupplierInboxItem.mockResolvedValue(TAKEN_REQUEST);
+    renderPage();
+
+    await screen.findByTestId('supplier-request-detail');
+    await waitFor(() => expect(screen.getByTestId('supplier-request-complete')).toBeDisabled());
+    expect(screen.getByTestId('supplier-request-actions-suspended')).toBeInTheDocument();
+  });
+
+  it('SupplierRequestDetailPage_ClosedRequestOfASuspendedSupplier_ShowsNoSuspensionHintOnTheActions', async () => {
+    supplierApi.fetchSupplierProfile.mockResolvedValue({ ...PROFILE, status: 'Suspended' });
+    supplierApi.fetchSupplierInboxItem.mockResolvedValue({ ...TAKEN_REQUEST, status: 'Completato' });
+    renderPage();
+
+    await screen.findByTestId('supplier-request-closed');
+    expect(screen.queryByTestId('supplier-request-actions-suspended')).not.toBeInTheDocument();
+  });
+
+  it('SupplierRequestDetailPage_ActionRefusedBecauseSuspendedMeanwhile_ReloadsTheStatusAndDisablesTheActions', async () => {
+    requestsApi.takeServiceRequest.mockRejectedValue(
+      problem(
+        422,
+        'service_request_supplier_not_active',
+        'Il tuo account fornitore non è attivo (è sospeso o non ancora attivato): non puoi eseguire azioni sulle richieste. Contatta il supporto CasaZen.',
+      ),
+    );
+    renderPage();
+    const take = await screen.findByTestId('supplier-request-take');
+    expect(take).toBeEnabled();
+    // An admin suspends the supplier while the page is open.
+    supplierApi.fetchSupplierProfile.mockResolvedValue({ ...PROFILE, status: 'Suspended' });
+
+    fireEvent.click(take);
+
+    await waitFor(() => expect(screen.getByTestId('supplier-request-take')).toBeDisabled());
+    expect(screen.getByTestId('supplier-request-actions-suspended')).toBeInTheDocument();
   });
 });

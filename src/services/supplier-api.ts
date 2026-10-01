@@ -13,6 +13,14 @@ import type {
 } from '@/types/supplier';
 import axios from '@/lib/axios';
 import type { SupplierServiceRequestDetail } from '@/types/service-request';
+import type { PagedResult } from '@/types/users.types';
+import type {
+  AdminInvite,
+  AdminInvitesParams,
+  AdminSupplier,
+  AdminSupplierAuditEntry,
+  AdminSuppliersParams,
+} from '@/types/admin-suppliers';
 
 export async function fetchSupplierActivation(): Promise<ActivationStatus> {
   return ApiClient.get<ActivationStatus>('/supplier/profile/activation');
@@ -81,6 +89,52 @@ export async function inviteSupplier(payload: {
 }): Promise<{ inviteId: string; expiresAt: string }> {
   const { data } = await axios.post<{ inviteId: string; expiresAt: string }>('/admin/suppliers/invite', payload);
   return data;
+}
+
+/** A page of the suppliers for the platform admin, filtered and paginated by the server (SU-12). */
+export async function fetchAdminSuppliers({ search, status, page = 1, pageSize = 20 }: AdminSuppliersParams): Promise<PagedResult<AdminSupplier>> {
+  return ApiClient.get<PagedResult<AdminSupplier>>('/admin/suppliers', {
+    page,
+    pageSize,
+    ...(search ? { search } : {}),
+    ...(status ? { status } : {}),
+  });
+}
+
+/** Suspends a supplier: the reason is required and stays internal. */
+export async function suspendSupplier(orgId: string, reason: string): Promise<AdminSupplier> {
+  return ApiClient.post<AdminSupplier>(`/admin/suppliers/${encodeURIComponent(orgId)}/suspend`, { reason });
+}
+
+export async function reactivateSupplier(orgId: string): Promise<AdminSupplier> {
+  return ApiClient.post<AdminSupplier>(`/admin/suppliers/${encodeURIComponent(orgId)}/reactivate`);
+}
+
+/** Audit trail of a supplier (suspensions and reactivations), newest first. */
+export async function fetchSupplierAudit(orgId: string): Promise<AdminSupplierAuditEntry[]> {
+  return ApiClient.get<AdminSupplierAuditEntry[]>(`/admin/suppliers/${encodeURIComponent(orgId)}/audit`);
+}
+
+/** A page of the supplier invites for the platform admin (SU-12). */
+export async function fetchAdminInvites({ search, state, page = 1, pageSize = 20 }: AdminInvitesParams): Promise<PagedResult<AdminInvite>> {
+  return ApiClient.get<PagedResult<AdminInvite>>('/admin/suppliers/invites', {
+    page,
+    pageSize,
+    ...(search ? { search } : {}),
+    ...(state ? { state } : {}),
+  });
+}
+
+/** Sends an invite again: new link and expiry, the old link stops working. */
+export async function resendSupplierInvite(inviteId: string): Promise<{ inviteId: string; expiresAt: string }> {
+  return ApiClient.post<{ inviteId: string; expiresAt: string }>(
+    `/admin/suppliers/invites/${encodeURIComponent(inviteId)}/resend`,
+  );
+}
+
+/** Revokes a pending invite: its link no longer works. */
+export async function revokeSupplierInvite(inviteId: string): Promise<void> {
+  await axios.delete(`/admin/suppliers/invites/${encodeURIComponent(inviteId)}`);
 }
 
 export interface SupplierRegisterPayload {
