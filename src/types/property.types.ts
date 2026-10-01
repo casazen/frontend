@@ -75,7 +75,6 @@ export interface CreatePropertyDto {
   cleaningFee?: number;
   damageDeposit?: number;
   amenities?: string[];
-  photoUrls?: string[];
   houseRules?: string;
   cinCode?: string | null;
   timezone?: string;
@@ -88,6 +87,20 @@ export interface CreatePropertyDto {
  * `cinCode`, `slug` and `cancellationPolicyId` sent as `null` are cleared.
  */
 export type UpdatePropertyDto = Partial<CreatePropertyDto>;
+
+/**
+ * Photo gallery of a property (`GET /properties/{id}/images`, PC-04) and the answer of every change to it: the photo
+ * URLs in display order (absolute public URLs of the storage; the first is the cover that the public pages show first)
+ * and the rules the upload enforces. The photos are never part of `CreatePropertyDto` / `UpdatePropertyDto`: the API
+ * ignores a `photoUrls` sent there.
+ */
+export interface PropertyPhotosDto {
+  photoUrls: string[];
+  maxPhotos: number;
+  maxFilesPerRequest: number;
+  maxFileSizeBytes: number;
+  allowedContentTypes: string[];
+}
 
 /** A cancellation policy a property can reference (`GET /properties/cancellation-policies`). */
 export interface CancellationPolicyOption {
