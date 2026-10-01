@@ -2641,7 +2641,13 @@
       "placeholder": "#1a6b8f",
       "help": "Usato per pulsanti e link del sito. Codice esadecimale, per esempio #1a6b8f.",
       "usingTheme": "Stai usando il colore del tema.",
-      "useTheme": "Usa il colore del tema"
+      "useTheme": "Usa il colore del tema",
+      "contrast": {
+        "title": "Leggibilità",
+        "buttonLight": "Il testo dei pulsanti sarà bianco (contrasto {{ratio}}:1, conforme a WCAG AA).",
+        "buttonDark": "Il testo dei pulsanti sarà scuro (contrasto {{ratio}}:1, conforme a WCAG AA): il bianco su questo colore sarebbe poco leggibile.",
+        "textAdjusted": "Questo colore è troppo chiaro per essere letto come testo sullo sfondo del tema: link, icone e contorno del focus useranno una variante più scura ({{color}})."
+      }
     },
     "tagline": {
       "label": "Slogan",
@@ -2864,7 +2870,7 @@
     "ordinaryTerm": "24 ore dall'arrivo",
     "shortStayTerm": "soggiorno breve: 6 ore dall'arrivo",
     "manualBanner": "CasaZen non trasmette ancora ad Alloggiati Web: invia ogni schedina dal portale della Questura e registra qui l'invio.",
-    "manualNotice": "CasaZen non trasmette ancora ad Alloggiati Web. Inserisci la schedina sul portale Alloggiati Web della Questura con i dati qui sotto, poi segna l'invio.",
+    "manualNotice": "CasaZen non trasmette ancora ad Alloggiati Web. Inserisci la schedina sul portale Alloggiati Web della Questura con i dati qui sotto oppure caricando il file che puoi scaricare da questa pagina, poi segna l'invio.",
     "waitingArrivalNotice": "La comunicazione si invia dal giorno di arrivo: il portale accetta come data di arrivo solo oggi o ieri.",
     "declaredNotice": "Invio dichiarato dall'host: conserva la ricevuta rilasciata dal portale Alloggiati Web.",
     "failureNotice": {
@@ -2952,6 +2958,16 @@
         "GuestPortal": "Inseriti dall'ospite il {{date}}",
         "Host": "Inseriti dall'host il {{date}}"
       }
+    },
+    "recordFile": {
+      "title": "File per il portale Alloggiati Web",
+      "description": "Il file di testo da caricare sul portale Alloggiati Web (menu File): una riga per ogni ospite, nell'ordine della comunicazione. Scaricarlo non invia nulla: dopo averlo caricato sul portale, segna l'invio come manuale.",
+      "download": "Scarica il file",
+      "preparing": "Preparazione del file…",
+      "arrivalWindow": "Il portale accetta solo schedine con data di arrivo di oggi o di ieri. Il file contiene i dati dei documenti: conservalo con cura ed eliminalo dopo l'invio.",
+      "notReady": "Il file è disponibile quando i dati degli ospiti e i codici ufficiali sono completi e il soggiorno non supera i 30 giorni.",
+      "downloaded": "File scaricato: caricalo sul portale Alloggiati Web e poi segna l'invio.",
+      "failed": "Impossibile generare il file Alloggiati. Riprova."
     },
     "codeTable": {
       "Comuni": "comuni",
@@ -3666,7 +3682,28 @@
     "closeBookingSheet": "Chiudi pannello prenotazione",
     "directBookingTagline": "Prenotazione diretta",
     "subprocessors": "Sub-responsabili",
-    "legalDocuments": "Documenti legali"
+    "legalDocuments": "Documenti legali",
+    "loading": "Caricamento...",
+    "loadingProperties": "Caricamento delle strutture...",
+    "propertiesError": {
+      "title": "Non riusciamo a mostrare le strutture",
+      "description": "Non è un elenco vuoto: il caricamento non è riuscito. Riprova tra un momento."
+    },
+    "emptyProperties": {
+      "description": "Questo operatore non ha ancora strutture prenotabili online.",
+      "contact": "Scrivi a {{email}} per informazioni"
+    },
+    "card": {
+      "guests_one": "{{count}} ospite",
+      "guests_other": "{{count}} ospiti",
+      "bedrooms_one": "{{count}} camera",
+      "bedrooms_other": "{{count}} camere",
+      "bathrooms_one": "{{count}} bagno",
+      "bathrooms_other": "{{count}} bagni",
+      "from": "da",
+      "perNight": "a notte",
+      "details": "Dettagli"
+    }
   },
   "publicBooking": {
     "payNow": "Paga ora",
@@ -3929,7 +3966,9 @@
       "legendBooked": "Occupato",
       "dayFree": "{{date}}: libero",
       "dayBooked": "{{date}}: occupato"
-    }
+    },
+    "orgLoadError": "Non riusciamo a caricare il sito",
+    "orgLoadErrorDescription": "Si è verificato un problema temporaneo. Riprova tra un momento."
   },
   "publicSeo": {
     "hub": {
@@ -4755,6 +4794,9 @@
       "alloggiatiManualDateBeforeArrival": "La data di invio non può precedere la data di check-in.",
       "alloggiatiManualDateInFuture": "La data di invio non può essere successiva a oggi.",
       "alloggiatiAlreadySent": "La comunicazione Alloggiati di questa prenotazione risulta già inviata.",
+      "alloggiatiFileNotReady": "Il file Alloggiati non può essere generato: i dati degli ospiti sono incompleti oppure manca qualche codice ufficiale.",
+      "alloggiatiFileStayDaysInvalid": "Il file Alloggiati non può essere generato: una schedina accetta da 1 a 30 giorni di permanenza.",
+      "alloggiatiFileNameNotRepresentable": "Il file Alloggiati non può essere generato: il nome o il cognome di un ospite contiene caratteri che il portale non accetta. Scrivili solo con lettere dell'alfabeto latino, come sul documento.",
       "touristTaxRateNotFound": "Questa tariffa non esiste più: ricarica l'elenco.",
       "bookingDatesUnavailable": "Le date scelte non sono disponibili: si sovrappongono a un'altra prenotazione o a un blocco del calendario.",
       "bookingCreateInvalid": "La prenotazione non può essere creata: il check-in non può essere nel passato e serve almeno un ospite.",
