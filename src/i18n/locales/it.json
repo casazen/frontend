@@ -299,7 +299,8 @@
       "operations": "Amministrazione",
       "amministrazione": "Amministrazione"
     },
-    "ltrReferenceData": "Dati normativi LTR"
+    "ltrReferenceData": "Dati normativi LTR",
+    "siteAppearance": "Aspetto sito"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -2621,6 +2622,92 @@
       "slugRequired": "Inserisci l'indirizzo pubblico.",
       "contactEmailRequired": "Inserisci l'email di contatto.",
       "contactEmailInvalid": "Inserisci un'email valida."
+    },
+    "siteAppearanceHint": "Logo, colori e tema del sito pubblico si modificano in Aspetto sito.",
+    "siteAppearanceLink": "Vai ad Aspetto sito"
+  },
+  "siteAppearance": {
+    "title": "Aspetto sito",
+    "description": "Logo, immagine di copertina, colore, slogan e tema del tuo sito di prenotazione pubblico.",
+    "adminRequired": "L'aspetto del sito è gestito dall'amministratore della tua organizzazione: contatta l'amministratore per modificarlo.",
+    "loadError": "Impossibile caricare l'aspetto del sito.",
+    "save": "Salva stile",
+    "saved": "Aspetto del sito salvato",
+    "saveFailed": "Impossibile salvare l'aspetto del sito",
+    "images": {
+      "title": "Immagini",
+      "description": "Le immagini vengono pubblicate subito sul sito. Formati PNG, JPEG o WebP.",
+      "upload": "Carica",
+      "replace": "Sostituisci",
+      "remove": "Rimuovi",
+      "uploadFailed": "Impossibile caricare l'immagine",
+      "removeFailed": "Impossibile rimuovere l'immagine",
+      "logo": {
+        "label": "Logo",
+        "empty": "Nessun logo: il sito mostra il nome",
+        "currentAlt": "Logo attuale",
+        "hint": "Mostrato nell'intestazione. Massimo {{maxMb}} MB, da {{minWidth}}×{{minHeight}} a {{maxWidth}}×{{maxHeight}} pixel; meglio con sfondo trasparente (PNG).",
+        "uploaded": "Logo aggiornato",
+        "removed": "Logo rimosso"
+      },
+      "hero": {
+        "label": "Immagine di copertina",
+        "empty": "Nessuna copertina: il sito usa la prima foto di un immobile",
+        "currentAlt": "Immagine di copertina attuale",
+        "hint": "In alto nella pagina principale, a tutta larghezza. Massimo {{maxMb}} MB, almeno {{minWidth}}×{{minHeight}} pixel (massimo {{maxWidth}}×{{maxHeight}}).",
+        "uploaded": "Immagine di copertina aggiornata",
+        "removed": "Immagine di copertina rimossa"
+      }
+    },
+    "style": {
+      "title": "Stile",
+      "description": "Tema, colore principale e slogan. Le modifiche si vedono nell'anteprima e vanno salvate."
+    },
+    "theme": {
+      "label": "Tema",
+      "options": {
+        "mare": {
+          "name": "Mare",
+          "description": "Luminoso e accogliente, per case al mare e vacanze estive."
+        },
+        "montagna": {
+          "name": "Montagna",
+          "description": "Caldo e naturale, per baite, chalet e agriturismi."
+        },
+        "urban": {
+          "name": "Urban",
+          "description": "Essenziale e moderno, per appartamenti in città."
+        }
+      }
+    },
+    "color": {
+      "label": "Colore principale",
+      "picker": "Scegli il colore principale",
+      "placeholder": "#1a6b8f",
+      "help": "Usato per pulsanti e link del sito. Codice esadecimale, per esempio #1a6b8f.",
+      "usingTheme": "Stai usando il colore del tema.",
+      "useTheme": "Usa il colore del tema"
+    },
+    "tagline": {
+      "label": "Slogan",
+      "placeholder": "Per esempio: Case vacanza a due passi dal mare",
+      "counter": "{{length}} di {{max}} caratteri"
+    },
+    "preview": {
+      "title": "Anteprima",
+      "description": "Così appare l'inizio del tuo sito con le modifiche in corso.",
+      "openSite": "Apri il sito",
+      "identityHint": "Nome e indirizzo del sito si modificano nelle impostazioni dell'organizzazione.",
+      "identityLink": "Vai a Organizzazione"
+    },
+    "errors": {
+      "colorInvalid": "Il colore non è valido: usa un codice esadecimale, per esempio #1a6b8f.",
+      "themeInvalid": "Questo tema non è disponibile per il sito pubblico.",
+      "taglineTooLong": "Lo slogan non può superare i {{maxLength}} caratteri.",
+      "imageEmpty": "Il file selezionato è vuoto.",
+      "imageType": "Formato non supportato: carica un'immagine PNG, JPEG o WebP.",
+      "imageTooLarge": "L'immagine supera la dimensione massima di {{maxMb}} MB.",
+      "imageDimensions": "Dimensioni dell'immagine non valide: servono almeno {{minWidth}}×{{minHeight}} pixel e al massimo {{maxWidth}}×{{maxHeight}}."
     }
   },
   "vetrina": {
@@ -3622,7 +3709,9 @@
     "breadcrumbLabel": "Percorso di navigazione",
     "breadcrumbCheckout": "Checkout",
     "closeBookingSheet": "Chiudi pannello prenotazione",
-    "directBookingTagline": "Prenotazione diretta"
+    "directBookingTagline": "Prenotazione diretta",
+    "subprocessors": "Sub-responsabili",
+    "legalDocuments": "Documenti legali"
   },
   "publicBooking": {
     "payNow": "Paga ora",
@@ -3983,7 +4072,10 @@
       "renewAndContinue": "Rinnova l'accesso e continua",
       "renewing": "Rinnovo dell'accesso...",
       "stillPending": "I permessi non sono ancora stati applicati. Riprova più tardi o rinnova l'accesso."
-    }
+    },
+    "readDocument": "Leggi il documento",
+    "documentInPreparation": "testo in preparazione",
+    "readSubprocessors": "Vedi l'elenco completo dei sub-responsabili"
   },
   "breadcrumb": {
     "home": "Home",
@@ -5143,6 +5235,60 @@
       "saveFailed": "Salvataggio non riuscito.",
       "verified": "Verifica registrata.",
       "verifyFailed": "Verifica non riuscita."
+    }
+  },
+  "legal": {
+    "loading": "Caricamento del documento",
+    "loadError": "Impossibile caricare il documento. Riprova tra poco.",
+    "retry": "Riprova",
+    "backToIndex": "Documenti legali",
+    "version": "Versione {{version}}",
+    "effectiveAt": "in vigore dal {{date}}",
+    "effectiveAtPending": "data di entrata in vigore non ancora indicata",
+    "inPreparation": "Il testo di questo documento è in preparazione e sarà pubblicato qui.",
+    "onlyItalian": "Questo documento è disponibile solo in italiano.",
+    "openOfficialCopy": "Apri la copia ufficiale del documento",
+    "indexTitle": "Documenti legali",
+    "indexIntro": "Termini, informativa privacy, accordo sul trattamento dei dati ed elenco dei sub-responsabili della piattaforma CasaZen.",
+    "documents": {
+      "tos": {
+        "title": "Termini di Servizio",
+        "summary": "Condizioni generali di utilizzo della piattaforma CasaZen."
+      },
+      "privacy": {
+        "title": "Informativa Privacy",
+        "summary": "Informativa sul trattamento dei dati personali ai sensi del GDPR."
+      },
+      "dpa": {
+        "title": "Data Processing Agreement",
+        "summary": "Accordo sul trattamento dei dati (art. 28 GDPR)."
+      }
+    },
+    "subprocessors": {
+      "title": "Sub-responsabili del trattamento",
+      "summary": "Fornitori che trattano dati personali per conto di CasaZen (art. 28 GDPR).",
+      "intro": "Elenco dei fornitori a cui la piattaforma affida dati personali nella configurazione attuale. I dati non ancora confermati sono indicati come in definizione.",
+      "empty": "Nessun sub-responsabile configurato.",
+      "pending": "in definizione",
+      "columns": {
+        "name": "Fornitore",
+        "purpose": "Finalità",
+        "entity": "Società e sede",
+        "region": "Luogo del trattamento",
+        "transfer": "Trasferimento extra-SEE"
+      },
+      "purposes": {
+        "database": "Database",
+        "storage": "Archiviazione file",
+        "databaseAndStorage": "Database e archiviazione file",
+        "authentication": "Autenticazione",
+        "payments": "Pagamenti",
+        "email": "Email transazionali",
+        "pushNotifications": "Notifiche push all'app",
+        "backendHosting": "Hosting dell'API",
+        "frontendHosting": "Hosting dell'applicazione web",
+        "ai": "Generazione di testi con intelligenza artificiale"
+      }
     }
   }
 }

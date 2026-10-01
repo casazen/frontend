@@ -1,18 +1,50 @@
 import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { LegalApi } from '@/api/legal.api';
+import type { LegalDocumentKey } from '@/types/onboarding.types';
 
 /** Prefix of the legal document queries (ToS, privacy, DPA, subprocessors). */
 export const LEGAL_QUERY_KEY = ['legal'] as const;
 
+/** Language of the legal texts: the UI language (`it` or `en`), the backend falls back to Italian. */
+export function useLegalLanguage(): string {
+  const { i18n } = useTranslation();
+  return (i18n.resolvedLanguage ?? i18n.language ?? 'it').slice(0, 2).toLowerCase();
+}
+
+function fetchLegalDocument(key: LegalDocumentKey, lang: string) {
+  switch (key) {
+    case 'tos':
+      return LegalApi.getTos(lang);
+    case 'privacy':
+      return LegalApi.getPrivacy(lang);
+    case 'dpa':
+      return LegalApi.getDpa(lang);
+  }
+}
+
+function legalDocumentQuery(key: LegalDocumentKey, lang: string) {
+  return { queryKey: ['legal', key, lang] as const, queryFn: () => fetchLegalDocument(key, lang) };
+}
+
+/** One legal document with its text (public page `/legale/*`, PL-14). */
+export function useLegalDocument(key: LegalDocumentKey) {
+  const lang = useLegalLanguage();
+  return useQuery(legalDocumentQuery(key, lang));
+}
+
+/** The subprocessors actually used by the platform (GDPR art. 28, PL-14). */
+export function useSubprocessors() {
+  return useQuery({ queryKey: ['legal', 'subprocessors'], queryFn: () => LegalApi.getSubprocessors() });
+}
+
 export function useLegalDocuments() {
-  const tos = useQuery({ queryKey: ['legal', 'tos'], queryFn: () => LegalApi.getTos() });
-  const privacy = useQuery({ queryKey: ['legal', 'privacy'], queryFn: () => LegalApi.getPrivacy() });
-  const dpa = useQuery({ queryKey: ['legal', 'dpa'], queryFn: () => LegalApi.getDpa() });
-  const subprocessors = useQuery({
-    queryKey: ['legal', 'subprocessors'],
-    queryFn: () => LegalApi.getSubprocessors(),
-  });
+  const lang = useLegalLanguage();
+  const tos = useQuery(legalDocumentQuery('tos', lang));
+  const privacy = useQuery(legalDocumentQuery('privacy', lang));
+  const dpa = useQuery(legalDocumentQuery('dpa', lang));
+  const subprocessors = useSubprocessors();
   const queries = [tos, privacy, dpa, subprocessors];
 
   const isLoading = queries.some((query) => query.isLoading);
@@ -44,36 +76,4 @@ export function useLegalDocuments() {
 export function useReloadLegalDocuments() {
   const queryClient = useQueryClient();
   return useCallback(() => queryClient.resetQueries({ queryKey: LEGAL_QUERY_KEY }), [queryClient]);
-}
-
-const LEGAL_LINKS_STALE_MS = 60 * 60 * 1000;
-
-function httpUrl(value: string | null | undefined): string | undefined {
-  if (!value) return undefined;
-  try {
-    const url = new URL(value);
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-/**
- * Links of the CasaZen Terms and Privacy documents for the public footer (D3, SE-03): the `documentUrl` the backend
- * serves from its configuration (`Legal__Documents__Tos__DocumentUrl`, `…__Privacy__…`, texts provided by the product
- * owner, D14). `undefined` while loading, on error or when not configured: the footer then shows no link rather than a
- * link to a page that does not exist.
- */
-export function usePlatformLegalLinks() {
-  const tos = useQuery({ queryKey: ['legal', 'tos'], queryFn: () => LegalApi.getTos(), staleTime: LEGAL_LINKS_STALE_MS });
-  const privacy = useQuery({
-    queryKey: ['legal', 'privacy'],
-    queryFn: () => LegalApi.getPrivacy(),
-    staleTime: LEGAL_LINKS_STALE_MS,
-  });
-
-  return {
-    termsUrl: httpUrl(tos.data?.documentUrl),
-    privacyUrl: httpUrl(privacy.data?.documentUrl),
-  };
 }
