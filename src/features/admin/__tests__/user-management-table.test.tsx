@@ -9,7 +9,7 @@ import { UserManagementTable } from '../components/user-management-table';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/api/users.api', () => ({
-  UsersApi: { deactivateUser: vi.fn(), reactivateUser: vi.fn(), changeRole: vi.fn() },
+  UsersApi: { deactivateUser: vi.fn(), reactivateUser: vi.fn(), getRoles: vi.fn(), updateRoles: vi.fn() },
 }));
 
 const active: UserSummary = {

@@ -101,28 +101,16 @@ export function useUpdateMe() {
   });
 }
 
-export function useChangeUserRole() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, role }: { id: string; role: string }) =>
-      UsersApi.changeRole(id, role),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
-      toast.success(i18n.t('toast.roleUpdated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.roleUpdateFailed'));
-    },
-  });
-}
-
 /** Roles a user currently holds (A1-17), read fresh (not cached) each time the roles dialog opens. */
 export function useUserRoles(id: string, enabled: boolean) {
   return useQuery({
     queryKey: [USERS_KEY, id, 'roles'],
     queryFn: () => UsersApi.getRoles(id),
     enabled: enabled && !!id,
+    // Overrides the global 5-minute staleTime: an out-of-band change (Auth0 dashboard, onboarding, supplier claim)
+    // must show up the next time the dialog opens, or saving would silently revert it.
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 

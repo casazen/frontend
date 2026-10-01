@@ -31,6 +31,7 @@
       "description": "Verifica dei codici identificativi nazionali (D.L. 145/2023)",
       "filters": "Filtri",
       "loadError": "Impossibile caricare i dati CIN. Riprova più tardi.",
+      "retry": "Riprova",
       "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} proprietà)",
       "previous": "Precedente",
       "next": "Successiva",

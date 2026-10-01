@@ -281,7 +281,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
-    legacyPaths: ['/app/short-rent/cin', '/cin', '/admin/cin'],
+    legacyPaths: ['/app/short-rent/cin', '/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -586,6 +586,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 1,
     icon: 'BadgeCheck',
     component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
+    // The old /admin/cin URL was the admin audit, not the host CIN page: it must land here (A1-16).
     legacyPaths: ['/admin/cin'],
   },
   // Admin Tax Rates

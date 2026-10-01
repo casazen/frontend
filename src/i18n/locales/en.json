@@ -31,6 +31,7 @@
       "description": "National identification code verification (D.L. 145/2023)",
       "filters": "Filters",
       "loadError": "Unable to load CIN data. Please try again later.",
+      "retry": "Retry",
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} properties)",
       "previous": "Previous",
       "next": "Next",

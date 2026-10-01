@@ -56,10 +56,6 @@ export interface UpdateProfileRequest {
   phoneNumber?: string;
 }
 
-export interface ChangeRoleRequest {
-  role: UserRole;
-}
-
 /**
  * Roles an admin can grant or revoke individually (backend `AdminManageableRoles`, A1-17): the ones mapped to a
  * real app context. `Guest`, `Staff` and `PropertyManager` have none and are not offered in the roles dialog.

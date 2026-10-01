@@ -4,7 +4,6 @@ import type {
   UserDetail,
   UserSummary,
   UpdateProfileRequest,
-  ChangeRoleRequest,
   PagedResult,
   OnboardingRequest,
   OnboardingResponse,
@@ -50,9 +49,6 @@ export const UsersApi = {
 
   updateMe: (body: UpdateProfileRequest): Promise<UserDetail> =>
     ApiClient.put<UserDetail>('/users/me', body),
-
-  changeRole: (id: string, role: string): Promise<{ id: string; role: string }> =>
-    ApiClient.put<{ id: string; role: string }>(`/users/${id}/role`, { role } as ChangeRoleRequest),
 
   /** Roles the user currently holds, restricted to the ones an admin can manage (A1-17). */
   getRoles: (id: string): Promise<UserRolesResponse> =>

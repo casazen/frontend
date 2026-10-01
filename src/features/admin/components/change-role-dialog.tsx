@@ -33,14 +33,14 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
   const [selected, setSelected] = useState<Set<UserRole>>(new Set());
   const [initializedFor, setInitializedFor] = useState<string | null>(null);
 
-  const { data, isLoading, isError, error, refetch } = useUserRoles(user?.id ?? '', open && !!user);
+  const { data, isLoading, isFetching, isError, error, refetch } = useUserRoles(user?.id ?? '', open && !!user);
   const { mutate: updateRoles, isPending } = useUpdateUserRoles();
 
   // Seed the checkboxes from the fetched roles once per user/open, without fighting further user clicks. Adjusting
   // state while rendering (not in a useEffect) — see https://react.dev/learn/you-might-not-need-an-effect.
   if (!open) {
     if (initializedFor !== null) setInitializedFor(null);
-  } else if (data && initializedFor !== user?.id) {
+  } else if (data && !isFetching && initializedFor !== user?.id) {
     setSelected(new Set(data.roles));
     setInitializedFor(user?.id ?? null);
   }
@@ -67,7 +67,9 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
     );
   }
 
-  const ready = !isLoading && !isError;
+  // Until the fresh roles of this user are seeded, a save would send a stale (cached) role set.
+  const seeding = !isError && initializedFor !== user?.id;
+  const ready = !isLoading && !isError && !seeding;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,7 +81,7 @@ export function ChangeRoleDialog({ user, open, onOpenChange }: ChangeRoleDialogP
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading ? (
+        {isLoading || seeding ? (
           <p className="py-4 text-sm text-muted-foreground">{t('admin.users.roleDialog.loading')}</p>
         ) : isError ? (
           <div className="space-y-3 py-2">
