@@ -5244,5 +5244,23 @@
         "ai": "Generazione di testi con intelligenza artificiale"
       }
     }
+  },
+  "hostSite": {
+    "loading": "Caricamento del sito…",
+    "notFound": {
+      "title": "Sito non trovato",
+      "description": "Questo indirizzo non corrisponde a nessun sito attivo. Se sei il proprietario, controlla lo stato del dominio nelle impostazioni del sito."
+    },
+    "platformLink": "Vai a CasaZen",
+    "error": {
+      "title": "Impossibile caricare il sito",
+      "description": "Non siamo riusciti a contattare il server. Riprova tra poco.",
+      "retry": "Riprova"
+    },
+    "pageNotFound": {
+      "title": "Pagina non trovata",
+      "description": "La pagina che cerchi non esiste su questo sito.",
+      "home": "Vai alla pagina iniziale"
+    }
   }
 }

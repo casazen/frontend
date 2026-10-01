@@ -3,7 +3,6 @@ import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router-dom
 import { useTranslation } from 'react-i18next';
 import { Loader2, Menu } from 'lucide-react';
 import { usePublicOrg } from '@/queries/use-public-org';
-import { useCustomHostRedirect } from '@/hooks/use-custom-host-redirect';
 import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
@@ -38,7 +37,6 @@ function canonicalOrgPath(pathname: string, slug: string): string {
 }
 
 export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
-  useCustomHostRedirect();
   const { t } = useTranslation();
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const location = useLocation();

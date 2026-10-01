@@ -8,6 +8,12 @@
  * `/p/tassa-soggiorno/:comune` here. People never reach this function: they keep getting the single-page app, so a
  * failure here can only affect crawlers, which retry later.
  *
+ * BK-16 adds the org's own hosts (a subdomain or a verified custom domain): `/` and `/property/:property` there are the org's
+ * landing page and a property (`kind=host`), asked to the backend by the Host of the request, which alone knows which host
+ * serves which org. The same two paths on the web app's own host (the app root, a path nobody serves) are not crawler
+ * pages: the function serves the single-page app there, as without it. A host nobody serves (a custom domain still waiting
+ * for its verification) answers 404 with a noindex page.
+ *
  * The function does not build anything: the backend (`GET {VITE_API_BASE_URL}/public/seo/...`) owns the content and the
  * rules (published data only, `noindex` for what must not be indexed, canonical on `App__PublicSiteBaseUrl`, JSON-LD with
  * real data), so they are tested once, there. Here: the route table, input validation, the Host of the request (the
@@ -20,7 +26,7 @@
  */
 
 /** What a crawler page is (the `kind` of the rewrite in `vercel.json`) and the parameters it needs. */
-export type SeoKind = 'org' | 'property' | 'guide' | 'tourist-tax' | 'hub';
+export type SeoKind = 'org' | 'property' | 'guide' | 'tourist-tax' | 'hub' | 'host';
 
 export interface SeoRoute {
   kind: SeoKind;
@@ -28,6 +34,8 @@ export interface SeoRoute {
   path: string;
   /** Whether the backend needs the Host of the request to decide the indexing. */
   needsHost: boolean;
+  /** `kind=host` only: the path on the org's own host (`/` or `/property/{slug or id}`). */
+  hostPath?: string;
 }
 
 const UPSTREAM_TIMEOUT_MS = 8000;
@@ -35,8 +43,11 @@ const UPSTREAM_TIMEOUT_MS = 8000;
 /** Slugs of orgs, properties, regions and comuni: the same alphabet the backend accepts. */
 const SLUG = /^[A-Za-z0-9-]{1,100}$/;
 
+/** The paths of an org's own host that have a crawler page. */
+const HOST_PAGE_PATH = /^\/(?:property\/[A-Za-z0-9._~%-]{1,150})?$/;
+
 /** A same-host canonical path the backend may redirect to (never a URL on another host). */
-const SAFE_REDIRECT_PATH = /^\/(?:book|p)(?:\/[A-Za-z0-9._~%-]+)*$/;
+const SAFE_REDIRECT_PATH = /^\/(?:(?:book|p)(?:\/[A-Za-z0-9._~%-]+)*|property\/[A-Za-z0-9._~%-]+)?$/;
 
 /** Only a path of the public pages, without dot segments (also percent-encoded: browsers resolve `%2e%2e` too). */
 function isSafeRedirectPath(location: string): boolean {
@@ -75,6 +86,12 @@ export function seoRoute(searchParams: URLSearchParams): SeoRoute | null {
     }
     case 'hub':
       return { kind, path: 'hub', needsHost: false };
+    case 'host': {
+      const hostPath = searchParams.get('path');
+      return hostPath !== null && HOST_PAGE_PATH.test(hostPath)
+        ? { kind, path: 'hosts/page', needsHost: true, hostPath }
+        : null;
+    }
     default:
       return null;
   }
@@ -95,6 +112,7 @@ export function seoUpstreamUrl(apiBaseUrl: string | undefined, route: SeoRoute, 
 
   const url = new URL(`public/seo/${route.path}`, base);
   if (route.needsHost && host) url.searchParams.set('host', host);
+  if (route.hostPath !== undefined) url.searchParams.set('path', route.hostPath);
   return url;
 }
 
@@ -105,6 +123,53 @@ export function seoUpstreamUrl(apiBaseUrl: string | undefined, route: SeoRoute, 
 export function requestHost(headers: Headers): string | null {
   const value = (headers.get('x-forwarded-host') ?? headers.get('host') ?? '').split(',')[0].trim();
   return value ? value : null;
+}
+
+/** Hosts of the app itself, never an org's own site: local development and the Vercel deployments. */
+const APP_HOST_SUFFIXES = ['localhost', 'vercel.app'];
+
+/**
+ * True for the web app's own hosts: the public domain (`VITE_PUBLIC_SITE_URL`, no domain written here, D3), local development
+ * and the Vercel deployments. Same rule as `isDefaultAppHost` of the app: any other host may be an org's own site.
+ */
+export function isAppHost(host: string, publicSiteUrl: string | undefined): boolean {
+  const name = host.split(':')[0].toLowerCase();
+  let publicSiteHost: string | null = null;
+  try {
+    publicSiteHost = publicSiteUrl?.trim() ? new URL(publicSiteUrl.trim()).hostname.toLowerCase() : null;
+  } catch {
+    publicSiteHost = null;
+  }
+  if (publicSiteHost && name === publicSiteHost) return true;
+  if (name === '127.0.0.1' || name === '[::1]') return true;
+  return APP_HOST_SUFFIXES.some((suffix) => name === suffix || name.endsWith(`.${suffix}`));
+}
+
+/** A plain host name (letters, digits, hyphens and dots, optional port): the only kind of value used to build a URL. */
+const PLAIN_HOST = /^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*(:\d{1,5})?$/;
+
+/**
+ * The single-page app (`/index.html` of the same deployment, a static file the rewrites never touch) for a crawler that asked
+ * for a path that is not a crawler page on the app's own host, exactly what it would have got without this function.
+ */
+async function singlePageApp(headers: Headers, host: string): Promise<Response> {
+  const protocol = headers.get('x-forwarded-proto')?.split(',')[0].trim() === 'http' ? 'http' : 'https';
+  if (!PLAIN_HOST.test(host)) return notFound();
+
+  let shell: Response;
+  let body: string;
+  try {
+    shell = await fetch(`${protocol}://${host}/index.html`, { redirect: 'manual', signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
+    body = await shell.text();
+  } catch (error) {
+    return unavailable(error instanceof Error ? error.name : 'request failed');
+  }
+  if (!shell.ok || !body.includes('id="root"')) return unavailable(`index.html answered ${shell.status}`);
+
+  return new Response(body, {
+    status: 200,
+    headers: { ...baseHeaders(), 'Cache-Control': 'public, max-age=0, must-revalidate' },
+  });
 }
 
 function baseHeaders(): Record<string, string> {
@@ -138,7 +203,14 @@ export async function GET(request: Request): Promise<Response> {
   const route = seoRoute(new URL(request.url).searchParams);
   if (!route) return notFound();
 
-  const upstream = seoUpstreamUrl(process.env.VITE_API_BASE_URL, route, requestHost(request.headers));
+  const host = requestHost(request.headers);
+  if (route.kind === 'host') {
+    if (!host) return notFound();
+    // `/` and `/property/…` of the app's own host are not an org's pages: the single-page app, as before.
+    if (isAppHost(host, process.env.VITE_PUBLIC_SITE_URL)) return singlePageApp(request.headers, host);
+  }
+
+  const upstream = seoUpstreamUrl(process.env.VITE_API_BASE_URL, route, host);
   if (!upstream) return unavailable('VITE_API_BASE_URL is missing or not an absolute URL');
 
   let response: Response;

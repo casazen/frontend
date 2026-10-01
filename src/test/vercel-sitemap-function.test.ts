@@ -151,4 +151,44 @@ describe('api/sitemap.ts', () => {
 
     expect((await GET(new Request('https://public-site.example.test/api/sitemap?org=villa-rossi'))).status).toBe(503);
   });
+
+  // BK-16: the Host of the request makes /sitemap.xml the sitemap of an org's own site.
+  it('sitemapUpstreamUrl_GuidesSitemapWithAHost_CarriesTheHost', () => {
+    expect(sitemapUpstreamUrl(API_BASE, 'public/sitemap.xml', 'www.villa-rossi.example.test')?.toString()).toBe(
+      `${API_BASE}/public/sitemap.xml?host=www.villa-rossi.example.test`,
+    );
+  });
+
+  it('sitemapUpstreamUrl_OtherSitemapsWithAHost_NeverCarryIt', () => {
+    expect(sitemapUpstreamUrl(API_BASE, 'public/sitemap-book.xml', 'www.villa-rossi.example.test')?.search).toBe('');
+  });
+
+  it('GET_RequestOnAnOrgHost_AsksTheGuidesSitemapEndpointWithThatHost', async () => {
+    fetchMock.mockResolvedValue(new Response(SITEMAP, { status: 200 }));
+
+    const response = await GET(
+      new Request('https://www.villa-rossi.example.test/api/sitemap', { headers: { 'x-forwarded-host': 'WWW.Villa-Rossi.example.test' } }),
+    );
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${API_BASE}/public/sitemap.xml?host=www.villa-rossi.example.test`);
+    expect(response.status).toBe(200);
+  });
+
+  it('GET_HostThatIsNotAPlainHostName_IsNotForwarded', async () => {
+    fetchMock.mockResolvedValue(new Response(SITEMAP, { status: 200 }));
+
+    await GET(new Request('https://x.example.test/api/sitemap', { headers: { 'x-forwarded-host': 'evil.test/path?a=b' } }));
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${API_BASE}/public/sitemap.xml`);
+  });
+
+  it('GET_OrgHostWithNothingPublished_isA404NotAnOutage', async () => {
+    fetchMock.mockResolvedValue(new Response('', { status: 404 }));
+
+    const response = await GET(
+      new Request('https://www.villa-rossi.example.test/api/sitemap', { headers: { 'x-forwarded-host': 'www.villa-rossi.example.test' } }),
+    );
+
+    expect(response.status).toBe(404);
+  });
 });

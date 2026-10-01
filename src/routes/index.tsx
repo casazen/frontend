@@ -1,4 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { buildHostSiteRoutes } from './host-site-routes';
+import { createHostSiteWindow } from './host-site-window';
+import { getHostSite } from '@/lib/host-site';
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
@@ -242,4 +245,21 @@ export const appRoutes: RouteObject[] = [
   },
 ];
 
-export const router = createBrowserRouter(appRoutes);
+type AppRouter = ReturnType<typeof createBrowserRouter>;
+
+let routerInstance: AppRouter | undefined;
+
+/**
+ * The router of the app, created on first use: the start-up has found out by then whether the host is the app's own or an
+ * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site and shows clean
+ * addresses (`/`, `/property/…`); anywhere else it is the full app.
+ */
+export function getRouter(): AppRouter {
+  if (!routerInstance) {
+    const hostSite = getHostSite();
+    routerInstance = hostSite
+      ? createBrowserRouter(buildHostSiteRoutes(appRoutes), { window: createHostSiteWindow(window, hostSite.slug) })
+      : createBrowserRouter(appRoutes);
+  }
+  return routerInstance;
+}

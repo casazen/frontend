@@ -108,13 +108,16 @@ describe('vercel.json routing', () => {
       ['/p/affitti-brevi', '/api/seo?kind=hub'],
       ['/p/affitti-brevi/lombardia/como', '/api/seo?kind=guide&region=lombardia&comune=como'],
       ['/p/tassa-soggiorno/como', '/api/seo?kind=tourist-tax&comune=como'],
+      // BK-16: the landing page and the properties of an org's own host (the function tells the app's own host apart).
+      ['/', '/api/seo?kind=host&path=/'],
+      ['/property/casa-mare', '/api/seo?kind=host&path=/property/casa-mare'],
     ])('rewrites_%s_forACrawler_goesToTheSeoFunction', (path, destination) => {
       for (const userAgent of CRAWLERS) {
         expect(rewriteFor(path, userAgent), userAgent).toBe(destination);
       }
     });
 
-    it.each(['/book/villa-rossi', '/book/villa-rossi/property/casa-mare', '/p/affitti-brevi', '/p/affitti-brevi/lombardia/como', '/p/tassa-soggiorno/como'])(
+    it.each(['/', '/property/casa-mare', '/book/villa-rossi', '/book/villa-rossi/property/casa-mare', '/p/affitti-brevi', '/p/affitti-brevi/lombardia/como', '/p/tassa-soggiorno/como'])(
       'rewrites_%s_forPeople_keepsServingTheSinglePageApp',
       (path) => {
         // A failure of the function or of the API can only ever affect crawlers.
@@ -129,6 +132,8 @@ describe('vercel.json routing', () => {
       '/book/villa-rossi/property/casa-mare/checkout',
       '/book/villa-rossi/booking/0f6c',
       '/book/villa-rossi/requests/0f6c/confirm',
+      '/property/casa-mare/checkout',
+      '/my-bookings',
       '/p/affitti-brevi/lombardia',
     ])('rewrites_%s_forACrawler_isNotARenderedPage', (path) => {
       // Token and booking pages are disallowed in robots.txt and never rendered for crawlers.
@@ -136,7 +141,7 @@ describe('vercel.json routing', () => {
     });
 
     it('rewrites_everyCrawlerDestination_isAcceptedByTheSeoFunction', () => {
-      for (const path of ['/book/a-b', '/book/a/property/c-d', '/p/affitti-brevi', '/p/affitti-brevi/r/c', '/p/tassa-soggiorno/c']) {
+      for (const path of ['/', '/property/c-d', '/book/a-b', '/book/a/property/c-d', '/p/affitti-brevi', '/p/affitti-brevi/r/c', '/p/tassa-soggiorno/c']) {
         const destination = rewriteFor(path, CRAWLERS[0])!;
         expect(destination.startsWith('/api/seo?')).toBe(true);
         expect(seoRoute(new URL(destination, 'https://site.test').searchParams), destination).not.toBeNull();

@@ -24,6 +24,10 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /book/*/booking/',
       'Disallow: /book/*/requests/',
       'Disallow: /book/*/property/*/checkout',
+      'Disallow: /my-bookings',
+      'Disallow: /booking/',
+      'Disallow: /requests/',
+      'Disallow: /property/*/checkout',
       `Sitemap: ${PUBLIC_SITE}/sitemap.xml`,
       `Sitemap: ${PUBLIC_SITE}/sitemap-book.xml`,
     ]);
@@ -35,7 +39,17 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
     const isDisallowed = (path: string) =>
       DISALLOWED_PATHS.some((rule) => new RegExp(`^${rule.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}`).test(path));
 
-    for (const indexed of ['/book/x', '/book/x/property/villa', '/book/x/sitemap.xml', '/p/affitti-brevi', '/p/affitti-brevi/lombardia/como']) {
+    for (const indexed of [
+      '/book/x',
+      '/book/x/property/villa',
+      '/book/x/sitemap.xml',
+      '/p/affitti-brevi',
+      '/p/affitti-brevi/lombardia/como',
+      // An org's own host: the landing page, a property and the sitemap.
+      '/',
+      '/property/villa',
+      '/sitemap.xml',
+    ]) {
       expect(isDisallowed(indexed), indexed).toBe(false);
     }
     for (const hidden of [
@@ -46,6 +60,10 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/book/x/booking/123',
       '/book/x/requests/123/confirm',
       '/book/x/property/villa/checkout',
+      '/my-bookings',
+      '/booking/0f6c',
+      '/requests/0f6c/confirm',
+      '/property/villa/checkout',
     ]) {
       expect(isDisallowed(hidden), hidden).toBe(true);
     }

@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { GET, HEAD, requestHost, seoRoute, seoUpstreamUrl } from '../../api/seo';
+import { GET, HEAD, isAppHost, requestHost, seoRoute, seoUpstreamUrl } from '../../api/seo';
 
 /**
  * Vercel function that serves crawlers the HTML of the public pages (BK-15): the route table, the validation of what
@@ -42,6 +42,8 @@ describe('seoRoute', () => {
     ['kind=guide&region=lombardia&comune=como', 'guides/lombardia/como', false],
     ['kind=tourist-tax&comune=como', 'tourist-tax/como', false],
     ['kind=hub', 'hub', false],
+    ['kind=host&path=/', 'hosts/page', true],
+    ['kind=host&path=/property/casa-mare', 'hosts/page', true],
   ])('seoRoute_%s_isTheBackendRoute', (query, path, needsHost) => {
     expect(seoRoute(new URLSearchParams(query))).toMatchObject({ path, needsHost });
   });
@@ -61,6 +63,13 @@ describe('seoRoute', () => {
     'kind=guide&region=lombardia',
     'kind=guide&region=lombardia&comune=co%2Fmo',
     'kind=tourist-tax',
+    'kind=host',
+    'kind=host&path=',
+    'kind=host&path=/book/villa-rossi',
+    'kind=host&path=/property/',
+    'kind=host&path=/property/a/b',
+    'kind=host&path=//evil.example.test',
+    'kind=host&path=/property/..%2F..',
   ])('seoRoute_%s_isRejectedBeforeTheBackendIsCalled', (query) => {
     expect(seoRoute(new URLSearchParams(query))).toBeNull();
   });
@@ -95,6 +104,29 @@ describe('seoUpstreamUrl', () => {
       expect(seoUpstreamUrl(apiBase, hub, null)).toBeNull();
     },
   );
+});
+
+describe('isAppHost', () => {
+  const PUBLIC_SITE = 'https://public-site.example.test';
+
+  it.each(['public-site.example.test', 'PUBLIC-SITE.example.test:443', 'localhost', 'localhost:3000', '127.0.0.1', 'casazen-abc.vercel.app'])(
+    'isAppHost_%s_IsTheAppItself',
+    (host) => {
+      expect(isAppHost(host, PUBLIC_SITE)).toBe(true);
+    },
+  );
+
+  it.each(['www.villa-rossi.example.test', 'villa.sites.example.test', 'public-site.example.test.evil.test', 'evil-vercel.app.test'])(
+    'isAppHost_%s_MayBeAnOrgSite',
+    (host) => {
+      expect(isAppHost(host, PUBLIC_SITE)).toBe(false);
+    },
+  );
+
+  it('isAppHost_PublicSiteNotConfigured_OnlyLocalAndVercelHostsAreTheApp', () => {
+    expect(isAppHost('public-site.example.test', undefined)).toBe(false);
+    expect(isAppHost('localhost', undefined)).toBe(true);
+  });
 });
 
 describe('requestHost', () => {
@@ -208,6 +240,80 @@ describe('api/seo.ts GET', () => {
     expect(invalid.status).toBe(404);
     expect(invalid.headers.get('x-robots-tag')).toBe('noindex, nofollow');
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  describe('kind=host (the org own hosts, BK-16)', () => {
+    const HOST_QUERY = 'kind=host&path=/property/casa-mare';
+
+    beforeEach(() => {
+      vi.stubEnv('VITE_PUBLIC_SITE_URL', 'https://public-site.example.test');
+    });
+
+    it('GET_OrgOwnHost_AsksTheBackendWithTheHostAndThePath', async () => {
+      fetchMock.mockResolvedValue(new Response(PAGE, { status: 200 }));
+
+      const response = await GET(request(HOST_QUERY, { 'x-forwarded-host': 'www.villa-rossi.example.test' }));
+
+      expect(String(fetchMock.mock.calls[0][0])).toBe(
+        `${API_BASE}/public/seo/hosts/page?host=www.villa-rossi.example.test&path=%2Fproperty%2Fcasa-mare`,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(PAGE);
+    });
+
+    it('GET_OrgOwnHostUnknownToTheBackend_IsA404NotTheSinglePageApp', async () => {
+      // A custom domain still waiting for its verification: nothing to index, and no app to show.
+      fetchMock.mockResolvedValue(new Response(PAGE, { status: 404, headers: { 'X-Seo-Host': 'unknown' } }));
+
+      const response = await GET(request('kind=host&path=/', { 'x-forwarded-host': 'www.pending.example.test' }));
+
+      expect(response.status).toBe(404);
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it('GET_OrgOwnHostRedirect_IsAPermanentRedirectToThePathOfThatHost', async () => {
+      fetchMock.mockResolvedValue(new Response('', { status: 301, headers: { Location: '/property/casa-mare' } }));
+
+      const response = await GET(request('kind=host&path=/property/0f6c', { 'x-forwarded-host': 'www.villa-rossi.example.test' }));
+
+      expect(response.status).toBe(301);
+      expect(response.headers.get('location')).toBe('/property/casa-mare');
+    });
+
+    it.each(['public-site.example.test', 'casazen-abc.vercel.app', 'localhost:3000'])(
+      'GET_AppOwnHost_%s_ServesTheSinglePageAppAndNeverCallsTheBackend',
+      async (host) => {
+        const shell = '<!doctype html><html lang="it"><body><div id="root"></div></body></html>';
+        fetchMock.mockResolvedValue(new Response(shell, { status: 200 }));
+
+        const response = await GET(request('kind=host&path=/', { 'x-forwarded-host': host }));
+
+        expect(response.status).toBe(200);
+        expect(await response.text()).toBe(shell);
+        expect(fetchMock).toHaveBeenCalledOnce();
+        expect(String(fetchMock.mock.calls[0][0])).toBe(`https://${host}/index.html`);
+      },
+    );
+
+    it('GET_AppOwnHostWhoseIndexCannotBeRead_Is503', async () => {
+      fetchMock.mockResolvedValue(new Response('<html>sign in to Vercel</html>', { status: 401 }));
+
+      const response = await GET(request('kind=host&path=/', { 'x-forwarded-host': 'casazen-abc.vercel.app' }));
+
+      expect(response.status).toBe(503);
+    });
+
+    it('GET_AppOwnHostThatIsNotAPlainHostName_IsNotFetched', async () => {
+      const response = await GET(request('kind=host&path=/', { 'x-forwarded-host': 'localhost/evil?x=' }));
+
+      expect(response.status).toBe(404);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('GET_NoHost_Is404', async () => {
+      expect((await GET(request('kind=host&path=/'))).status).toBe(404);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
   });
 
   it.each(['preview', 'development', undefined])(

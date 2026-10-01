@@ -20,7 +20,8 @@ export const BOOKING_SITEMAP_PATH = '/sitemap-book.xml';
 
 /**
  * Pages that are never worth indexing (BK-15): the host console, the guest check-in links, the login and the guest's own
- * booking pages (they carry a token or a booking code and show nothing public). `*` is the wildcard Google and Bing read.
+ * booking pages (they carry a token or a booking code and show nothing public), on the booking site path and on an org's
+ * own host. `*` is the wildcard Google and Bing read.
  */
 export const DISALLOWED_PATHS = [
   '/app/',
@@ -30,6 +31,12 @@ export const DISALLOWED_PATHS = [
   '/book/*/booking/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
+  // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
+  // not exist on the web app's own host, so one `robots.txt` serves both.
+  '/my-bookings',
+  '/booking/',
+  '/requests/',
+  '/property/*/checkout',
 ] as const;
 
 export interface RobotsTxtInput {

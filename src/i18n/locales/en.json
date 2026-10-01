@@ -5244,5 +5244,23 @@
         "ai": "AI text generation"
       }
     }
+  },
+  "hostSite": {
+    "loading": "Loading the site…",
+    "notFound": {
+      "title": "Site not found",
+      "description": "This address does not match any active site. If you own it, check the domain status in the site settings."
+    },
+    "platformLink": "Go to CasaZen",
+    "error": {
+      "title": "The site could not be loaded",
+      "description": "We could not reach the server. Please try again shortly.",
+      "retry": "Try again"
+    },
+    "pageNotFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist on this site.",
+      "home": "Go to the home page"
+    }
   }
 }

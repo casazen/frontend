@@ -17,6 +17,16 @@
       "destination": "/api/seo?kind=property&orgSlug=:orgSlug&propertySlugOrId=:propertySlugOrId"
     },
     {
+      "source": "/",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*(?:Googlebot|Google-InspectionTool|GoogleOther|Storebot-Google|AdsBot-Google|Mediapartners-Google|[Bb]ingbot|BingPreview|msnbot|Slurp|DuckDuckBot|DuckAssistBot|Baiduspider|YandexBot|Sogou|Exabot|Applebot|PetalBot|Bytespider|Amazonbot|facebookexternalhit|Facebot|[Mm]eta-ExternalAgent|[Mm]eta-ExternalFetcher|Twitterbot|LinkedInBot|Slackbot|Slack-ImgProxy|TelegramBot|Discordbot|WhatsApp|SkypeUriPreview|Pinterestbot|redditbot|Embedly|vkShare|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-User|Claude-SearchBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|MistralAI-User|CCBot|cohere-ai|YouBot|SemrushBot|AhrefsBot|MJ12bot|DotBot|Screaming Frog).*" }],
+      "destination": "/api/seo?kind=host&path=/"
+    },
+    {
+      "source": "/property/:propertySlugOrId",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*(?:Googlebot|Google-InspectionTool|GoogleOther|Storebot-Google|AdsBot-Google|Mediapartners-Google|[Bb]ingbot|BingPreview|msnbot|Slurp|DuckDuckBot|DuckAssistBot|Baiduspider|YandexBot|Sogou|Exabot|Applebot|PetalBot|Bytespider|Amazonbot|facebookexternalhit|Facebot|[Mm]eta-ExternalAgent|[Mm]eta-ExternalFetcher|Twitterbot|LinkedInBot|Slackbot|Slack-ImgProxy|TelegramBot|Discordbot|WhatsApp|SkypeUriPreview|Pinterestbot|redditbot|Embedly|vkShare|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-User|Claude-SearchBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|MistralAI-User|CCBot|cohere-ai|YouBot|SemrushBot|AhrefsBot|MJ12bot|DotBot|Screaming Frog).*" }],
+      "destination": "/api/seo?kind=host&path=/property/:propertySlugOrId"
+    },
+    {
       "source": "/p/affitti-brevi",
       "has": [{ "type": "header", "key": "user-agent", "value": ".*(?:Googlebot|Google-InspectionTool|GoogleOther|Storebot-Google|AdsBot-Google|Mediapartners-Google|[Bb]ingbot|BingPreview|msnbot|Slurp|DuckDuckBot|DuckAssistBot|Baiduspider|YandexBot|Sogou|Exabot|Applebot|PetalBot|Bytespider|Amazonbot|facebookexternalhit|Facebot|[Mm]eta-ExternalAgent|[Mm]eta-ExternalFetcher|Twitterbot|LinkedInBot|Slackbot|Slack-ImgProxy|TelegramBot|Discordbot|WhatsApp|SkypeUriPreview|Pinterestbot|redditbot|Embedly|vkShare|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-User|Claude-SearchBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|MistralAI-User|CCBot|cohere-ai|YouBot|SemrushBot|AhrefsBot|MJ12bot|DotBot|Screaming Frog).*" }],
       "destination": "/api/seo?kind=hub"
