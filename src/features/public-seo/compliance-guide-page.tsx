@@ -5,6 +5,7 @@ import { useComplianceGuide } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
 import { SeoCtaBlock } from './components/seo-cta-block';
+import { FeaturedProperties } from './components/featured-properties';
 import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-widget';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 
@@ -63,7 +64,9 @@ export function ComplianceGuidePage() {
         rates={page.touristTaxRates ?? []}
       />
 
-      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} />
+      <FeaturedProperties comuneSlug={page.comuneSlug} comuneName={page.comuneName} />
+
+      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />
       <SeoDisclaimerFooter disclaimers={page.disclaimers} />
     </main>
   );

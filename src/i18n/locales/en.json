@@ -147,6 +147,20 @@
       "budgetTokens": "{{used}} / {{cap}} tokens this month",
       "budgetLoading": "Loading the budget…",
       "budgetError": "Unable to load the AI budget.",
+      "topComuni": {
+        "title": "Municipalities that convert",
+        "description": "Clicks on the \"Publish your home\" button of the SEO pages, by municipality, in the last {{days}} days.",
+        "loadError": "The municipality statistics could not be loaded.",
+        "retry": "Retry",
+        "empty": "No clicks recorded in the last {{days}} days.",
+        "retention": "Events hold no personal data and are deleted after {{days}} days.",
+        "columns": {
+          "comune": "Municipality",
+          "ctaClicks": "Button clicks",
+          "signupStarts": "Signups started",
+          "signups": "Signups completed"
+        }
+      },
       "loading": "Loading...",
       "loadError": "Unable to load SEO pages. Please try again later.",
       "filter": {
@@ -4000,6 +4014,20 @@
     "taxableNights_one": "Stay of {{count}} night, taxed nights: {{taxable}}",
     "taxableNights_other": "Stay of {{count}} nights, taxed nights: {{taxable}}",
     "estimateDisclaimer": "Estimate with the rates recorded in CasaZen: check exemptions and updates on the municipality's website.",
+    "featured": {
+      "title": "Homes available in {{comuneName}}",
+      "loading": "Loading homes…",
+      "loadError": "The homes of this municipality could not be loaded.",
+      "retry": "Retry",
+      "empty": "There are no bookable homes in {{comuneName}} on CasaZen yet.",
+      "studio": "Studio",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "fromPerNight": "{{price}} per night",
+      "viewAndBook": "View and book"
+    },
     "quoteStatus": {
       "Calculated": "Tax calculated.",
       "RateUnavailable": "Rate not available for these dates: check the municipality's website.",

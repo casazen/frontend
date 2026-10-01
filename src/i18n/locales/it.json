@@ -147,6 +147,20 @@
       "budgetTokens": "{{used}} / {{cap}} token questo mese",
       "budgetLoading": "Caricamento del budget…",
       "budgetError": "Impossibile caricare il budget AI.",
+      "topComuni": {
+        "title": "Comuni che convertono",
+        "description": "Clic sul pulsante \"Pubblica la tua casa\" delle pagine SEO, per comune, negli ultimi {{days}} giorni.",
+        "loadError": "Impossibile caricare le statistiche dei comuni.",
+        "retry": "Riprova",
+        "empty": "Nessun clic registrato negli ultimi {{days}} giorni.",
+        "retention": "Gli eventi non contengono dati personali e vengono eliminati dopo {{days}} giorni.",
+        "columns": {
+          "comune": "Comune",
+          "ctaClicks": "Clic sul pulsante",
+          "signupStarts": "Registrazioni avviate",
+          "signups": "Registrazioni completate"
+        }
+      },
       "loading": "Caricamento…",
       "loadError": "Impossibile caricare le pagine SEO. Riprova più tardi.",
       "filter": {
@@ -4000,6 +4014,20 @@
     "taxableNights_one": "Soggiorno di {{count}} notte, notti tassate: {{taxable}}",
     "taxableNights_other": "Soggiorno di {{count}} notti, notti tassate: {{taxable}}",
     "estimateDisclaimer": "Stima con le tariffe registrate in CasaZen: verifica esenzioni e aggiornamenti sul sito del Comune.",
+    "featured": {
+      "title": "Case disponibili a {{comuneName}}",
+      "loading": "Caricamento delle case…",
+      "loadError": "Impossibile caricare le case di questo comune.",
+      "retry": "Riprova",
+      "empty": "Non ci sono ancora case prenotabili a {{comuneName}} su CasaZen.",
+      "studio": "Monolocale",
+      "bedrooms_one": "{{count}} camera",
+      "bedrooms_other": "{{count}} camere",
+      "guests_one": "{{count}} ospite",
+      "guests_other": "{{count}} ospiti",
+      "fromPerNight": "{{price}} a notte",
+      "viewAndBook": "Vedi e prenota"
+    },
     "quoteStatus": {
       "Calculated": "Tassa calcolata.",
       "RateUnavailable": "Tariffa non disponibile per queste date: verifica sul sito del Comune.",

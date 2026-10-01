@@ -19,6 +19,7 @@ vi.mock('@/api/admin-seo.api', () => ({
     withdrawPage: vi.fn(),
     getBudget: vi.fn(),
     listComuni: vi.fn(),
+    getTopComuni: vi.fn(),
   },
 }));
 vi.mock('@/components/layout/page-header', () => ({
@@ -140,6 +141,13 @@ describe('SeoDashboardPage', () => {
       lastResetAt: '2026-09-01T00:00:00Z',
     });
     vi.mocked(AdminSeoApi.listComuni).mockResolvedValue([]);
+    vi.mocked(AdminSeoApi.getTopComuni).mockResolvedValue({
+      days: 30,
+      from: '2026-09-01T00:00:00Z',
+      to: '2026-10-01T00:00:00Z',
+      retentionDays: 90,
+      items: [{ comuneCode: '013075', comuneName: 'Como', ctaClicks: 5, signupStarts: 2, signups: 1 }],
+    });
     vi.mocked(AdminSeoApi.getPage).mockResolvedValue(comoDetail);
   });
 
@@ -161,6 +169,14 @@ describe('SeoDashboardPage', () => {
     expect(screen.getByTestId('seo-withdraw-page-como')).toBeInTheDocument();
     expect(screen.queryByTestId('seo-open-public-page-roma')).not.toBeInTheDocument();
     expect(screen.queryByTestId('seo-withdraw-page-roma')).not.toBeInTheDocument();
+  });
+
+  it('render_TopComuniWidget_IsOnTheDashboardAndItsFailureDoesNotHideThePages', async () => {
+    vi.mocked(AdminSeoApi.getTopComuni).mockRejectedValue(problemError(500, {}));
+    renderPage();
+
+    expect(await screen.findByTestId('seo-top-comuni-error')).toBeInTheDocument();
+    expect(await screen.findByTestId('seo-pages-table')).toBeInTheDocument();
   });
 
   it('pagination_NextPage_AsksTheServerForTheSecondPage', async () => {

@@ -158,6 +158,22 @@ export function recordLandingTouch(location: PageLocation = window.location, ref
   writeJson(session, LANDING_TOUCH_STORAGE_KEY, touch);
 }
 
+/**
+ * The marketing values of the current visit, for the SEO funnel events (SE-04): the UTM parameters of the page when it
+ * has some, else those of the first page of the visit; the host of the site the visitor came from (the first page's,
+ * or this page's when it is the first). Only values that pass the rules, never a URL or a path.
+ */
+export function readVisitMarketing(
+  location: Pick<PageLocation, 'search' | 'origin'> = window.location,
+  referrer = document.referrer,
+): { utm: UtmValues; referrerHost?: string } {
+  const current = readUtm(location.search);
+  const touch = readLandingTouch();
+  const utm = hasUtm(current) ? current : (touch?.utm ?? {});
+  const referrerHost = touch?.referrerHost ?? externalReferrerHost(referrer, location.origin);
+  return referrerHost ? { utm, referrerHost } : { utm };
+}
+
 function readLandingTouch(): LandingTouch | null {
   const touch = readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY);
   return touch && typeof touch === 'object' ? { ...touch, utm: touch.utm ?? {} } : null;

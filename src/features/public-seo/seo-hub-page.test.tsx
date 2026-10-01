@@ -20,6 +20,14 @@ vi.mock('@/queries/use-public-seo', () => ({
   usePublishedSeoPages: () => ({ ...state.hub, refetch: state.refetch, isFetching: false }),
   useComplianceGuide: () => ({ data: state.guide, isLoading: false, isError: false }),
   useTouristTaxPage: () => ({ data: null, isLoading: false, isError: true }),
+  useFeaturedProperties: () => ({
+    data: { comuneSlug: 'como', comuneName: 'Como', properties: [] },
+    isLoading: false,
+    isError: false,
+    error: null,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
 }));
 

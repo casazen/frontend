@@ -36,6 +36,14 @@ const { page } = vi.hoisted(() => {
 vi.mock('@/queries/use-public-seo', () => ({
   useComplianceGuide: () => ({ data: page, isLoading: false, isError: false }),
   useTouristTaxPage: () => ({ data: page, isLoading: false, isError: false }),
+  useFeaturedProperties: () => ({
+    data: { comuneSlug: 'como', comuneName: 'Como', properties: [] },
+    isLoading: false,
+    isError: false,
+    error: null,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
 }));
 

@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PENDING_ATTRIBUTION_STORAGE_KEY, LANDING_TOUCH_STORAGE_KEY } from '@/lib/signup-attribution';
+import { trackSeoEvent } from '@/lib/seo-events';
+
+vi.mock('@/lib/seo-events', () => ({ trackSeoEvent: vi.fn(() => true) }));
 
 // The real auth bridge over a mocked Auth0 SDK: the test sees the exact loginWithRedirect call of the page.
 const auth0 = vi.hoisted(() => ({
@@ -56,6 +59,7 @@ describe('SignupPage (SE-03, A8-03)', () => {
     auth0.isLoading = false;
     auth0.isAuthenticated = false;
     auth0.loginWithRedirect.mockClear();
+    vi.mocked(trackSeoEvent).mockClear();
   });
 
   afterEach(() => {
@@ -87,6 +91,32 @@ describe('SignupPage (SE-03, A8-03)', () => {
       referrerHost: 'www.google.com',
     });
     expect(screen.queryByTestId('login-page')).not.toBeInTheDocument();
+  });
+
+  // SE-04 (#300 AC3): the signup that came from the SEO page of a comune is counted for it, once.
+  it('SignupPage_ComingFromAComunePage_CountsSignupStartOnceForThatComune', async () => {
+    const { rerender } = renderSignup();
+    await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
+
+    rerender(
+      <AuthAppProviders>
+        <MemoryRouter initialEntries={[SIGNUP_URL]}>
+          <Routes>
+            <Route path="/signup" element={<SignupPage />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthAppProviders>,
+    );
+
+    expect(trackSeoEvent).toHaveBeenCalledTimes(1);
+    expect(trackSeoEvent).toHaveBeenCalledWith('signup_start', 'como');
+  });
+
+  it('SignupPage_WithoutAComune_CountsNothing', async () => {
+    renderSignup('/signup?utm_source=newsletter');
+    await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
+
+    expect(trackSeoEvent).not.toHaveBeenCalled();
   });
 
   it('SignupPage_WhileAuth0Loads_WaitsThenStartsOnlyOnce', async () => {

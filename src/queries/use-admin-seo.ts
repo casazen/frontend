@@ -44,6 +44,15 @@ export function usePlatformAiBudget() {
   });
 }
 
+/** Top comuni of the SEO funnel (SE-04, AC9), read again at every visit: the events arrive all day. */
+export function useSeoTopComuni(days: number) {
+  return useQuery({
+    queryKey: [ADMIN_SEO_KEY, 'top-comuni', days],
+    queryFn: () => AdminSeoApi.getTopComuni(days),
+    refetchOnMount: 'always',
+  });
+}
+
 export function useGenerateSeoPages() {
   const queryClient = useQueryClient();
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { captureSignupAttribution } from '@/lib/signup-attribution';
+import { trackSeoEvent } from '@/lib/seo-events';
 
 /** Auth0 Universal Login parameter that opens the signup screen instead of the login one. */
 const SIGNUP_SCREEN = { screen_hint: 'signup' } as const;
@@ -23,9 +24,15 @@ export function SignupPage() {
   const { pathname, search } = useLocation();
   const { isLoading, isAuthenticated, login } = useAuth();
   const started = useRef(false);
+  const signupCounted = useRef(false);
 
   useEffect(() => {
-    captureSignupAttribution({ pathname, search, origin: window.location.origin });
+    const attribution = captureSignupAttribution({ pathname, search, origin: window.location.origin });
+    // The signup that came from the SEO page of a comune is counted for it (SE-04, AC3): once per visit of this page.
+    if (attribution.comune && !signupCounted.current) {
+      signupCounted.current = true;
+      trackSeoEvent('signup_start', attribution.comune);
+    }
   }, [pathname, search]);
 
   useEffect(() => {

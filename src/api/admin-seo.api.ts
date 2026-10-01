@@ -9,6 +9,7 @@ import type {
   SeoPageAdminDetail,
   SeoPagesPagedResult,
   SeoPagesQuery,
+  SeoTopComuniResponse,
   WithdrawSeoPageRequest,
 } from '@/types/seo.types';
 
@@ -46,4 +47,8 @@ export const AdminSeoApi = {
 
   listComuni: (): Promise<SeoComuneRegistryItem[]> =>
     ApiClient.get<SeoComuneRegistryItem[]>('/admin/seo/comuni'),
+
+  /** Comuni by CTA clicks of the SEO pages in the last `days` days, with their started signups and signups (SE-04, AC9). */
+  getTopComuni: (days = 30): Promise<SeoTopComuniResponse> =>
+    ApiClient.get<SeoTopComuniResponse>('/admin/seo/top-comuni', { days }),
 };
