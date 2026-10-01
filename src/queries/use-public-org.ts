@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicOrgApi } from '@/api/public-org.api';
 import { publicBookingApi } from '@/api/public-booking.api';
+import type { OrgSiteDocumentKind } from '@/types';
 
 export function usePublicOrg(slug: string | undefined) {
   return useQuery({
@@ -24,6 +25,16 @@ export function useOrgPublicProperty(slug: string | undefined, propertyId: strin
     queryKey: ['public-org-property', slug, propertyId],
     queryFn: () => publicOrgApi.getOrgProperty(slug!, propertyId!),
     enabled: Boolean(slug && propertyId),
+    retry: false,
+  });
+}
+
+/** BK-14: the operator's privacy notice or booking terms of an org's public site. */
+export function useOrgDocument(slug: string | undefined, kind: OrgSiteDocumentKind) {
+  return useQuery({
+    queryKey: ['public-org-document', slug, kind],
+    queryFn: () => publicOrgApi.getOrgDocument(slug!, kind),
+    enabled: Boolean(slug),
     retry: false,
   });
 }
