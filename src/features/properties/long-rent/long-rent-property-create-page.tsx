@@ -7,6 +7,7 @@ import { useEntitlement } from '@/queries/use-users';
 import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
 import { PropertyForm } from '../components/property-form';
 import type { CreatePropertyDto } from '@/types';
+import { isDuplicateAddressError } from '../property-errors';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from './paths';
 
 /** New long-term property: the owner lands on its page to upload the APE right away (A7-06). */
@@ -26,8 +27,10 @@ export function LongRentPropertyCreatePage() {
       const created = await createProperty.mutateAsync(data);
       navigate(longRentPropertyPath(created.id));
     } catch (error) {
-      // Other errors are shown by the mutation's toast; the form stays filled in.
+      // Other errors are shown by the mutation's toast; the form stays filled in. A duplicate address goes back to the
+      // form, which shows it under the unit field (PC-06).
       if (isPlanLimitError(error)) setPlanLimitHit(true);
+      else if (isDuplicateAddressError(error)) throw error;
     }
   };
 

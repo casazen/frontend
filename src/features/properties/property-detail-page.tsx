@@ -15,6 +15,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { Edit, ArrowRight, CalendarRange, ExternalLink, Wrench, Plus } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
+import { formatPropertyLocation } from './property-location';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { PropertyCinBadge } from './components/property-cin-badge';
 import { PropertyCinDialog } from './components/property-cin-dialog';
@@ -124,7 +125,7 @@ export function PropertyDetailPage() {
 
         <PageHeader
           title={property.name}
-          description={property.city}
+          description={formatPropertyLocation(property)}
           action={
             <div className="flex items-center gap-3">
               <PropertyCinBadge

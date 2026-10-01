@@ -5,6 +5,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useProperty, useUpdateProperty } from '@/queries/use-properties';
 import { PropertyForm } from '../components/property-form';
 import type { CreatePropertyDto } from '@/types';
+import { isDuplicateAddressError } from '../property-errors';
 import { LoadErrorCard } from './load-error-card';
 import { longRentPropertyPath } from './paths';
 
@@ -20,8 +21,10 @@ export function LongRentPropertyEditPage() {
     try {
       await updateProperty.mutateAsync({ id, data });
       navigate(longRentPropertyPath(id));
-    } catch {
-      // The mutation's toast shows the server's reason; the form stays filled in.
+    } catch (error) {
+      // The mutation's toast shows the server's reason; the form stays filled in. A duplicate address goes back to the
+      // form, which shows it under the unit field (PC-06).
+      if (isDuplicateAddressError(error)) throw error;
     }
   };
 
