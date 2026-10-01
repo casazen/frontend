@@ -5,8 +5,8 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
-import it from '@/i18n/locales/it.json';
-import en from '@/i18n/locales/en.json';
+import itLocale from '@/i18n/locales/it.json';
+import enLocale from '@/i18n/locales/en.json';
 import { onboardingApi } from '@/api/onboarding.api';
 import { ACTIVATION_STEP_REASONS } from '@/types/onboarding.types';
 import type { ActivationStep, OnboardingStatus } from '@/types/onboarding.types';
@@ -296,8 +296,8 @@ describe('activation translations (PL-15)', () => {
   const lookup = (tree: Tree, path: string): unknown => path.split('.').reduce<unknown>((node, part) => (node as Tree | undefined)?.[part], tree);
 
   it.each([
-    ['it', it],
-    ['en', en],
+    ['it', itLocale],
+    ['en', enLocale],
   ])('activationTranslations_%s_CoverEveryReasonStateAndStep', (_lang, locale) => {
     const activation = (locale as unknown as { activation: Tree }).activation;
     for (const reason of ACTIVATION_STEP_REASONS) {
