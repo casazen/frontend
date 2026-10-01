@@ -54,6 +54,33 @@ describe('propertiesApi public read-model (#212)', () => {
     expect(result[0]).not.toHaveProperty('ownerId');
   });
 
+  it('BK-20: search sends every filter of the form, none is dropped', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce([mockListItem]);
+
+    await propertiesApi.search({
+      city: ' Como ',
+      minPrice: 40,
+      maxPrice: 180,
+      minBedrooms: 2,
+      minBathrooms: 1,
+      guests: 4,
+    });
+
+    expect(ApiClient.get).toHaveBeenCalledWith(
+      '/properties/search',
+      { city: 'Como', minPrice: 40, maxPrice: 180, bedrooms: 2, bathrooms: 1, guests: 4 },
+      { public: true },
+    );
+  });
+
+  it('BK-20: search keeps a zero minimum and leaves out blank or missing filters', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce([]);
+
+    await propertiesApi.search({ city: '   ', minPrice: 0, minBedrooms: 0 });
+
+    expect(ApiClient.get).toHaveBeenCalledWith('/properties/search', { minPrice: 0, bedrooms: 0 }, { public: true });
+  });
+
   it('AC10: getPublicProperty calls GET /properties/:id/public', async () => {
     vi.mocked(ApiClient.get).mockResolvedValueOnce(mockDetail);
 

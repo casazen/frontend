@@ -108,3 +108,54 @@ export interface OrgSlugAvailability {
   /** Why it is not available: org_slug_invalid, org_slug_reserved or org_slug_taken; null when available. */
   code: string | null;
 }
+
+/** The operator documents of the public booking site (BK-14, A3-21): the host's own privacy notice and booking terms. */
+export type OrgSiteDocumentKind = 'privacy' | 'terms';
+
+/** How the host provides a document: text written in CasaZen, or the https address of a document hosted elsewhere. */
+export type OrgSiteDocumentSource = 'Text' | 'ExternalUrl';
+
+/** One version of an operator document (GET /api/orgs/me/site-documents), org billing admin only. */
+export interface OrgSiteDocumentVersion {
+  version: number;
+  source: OrgSiteDocumentSource;
+  /** The text as written; null in the history list and for an address. */
+  content: string | null;
+  externalUrl: string | null;
+  publishedAt: string;
+  /** When the host withdrew it; null while the public site shows it. */
+  withdrawnAt: string | null;
+}
+
+export interface OrgSiteDocumentState {
+  kind: OrgSiteDocumentKind;
+  /** True when the public site shows the document (there is a current version and it was not withdrawn). */
+  published: boolean;
+  /** The current (highest) version with its text; null when never published. */
+  current: OrgSiteDocumentVersion | null;
+  /** Recent versions, newest first, without text. */
+  history: OrgSiteDocumentVersion[];
+}
+
+/** Body of PUT /api/orgs/me/site-documents/{kind}: a new version; only the field of `source` is used. */
+export interface PublishOrgSiteDocumentRequest {
+  source: OrgSiteDocumentSource;
+  content?: string;
+  externalUrl?: string;
+}
+
+/**
+ * An operator document as the guest sees it (GET /api/public/orgs/{slug}/documents/{kind}, anonymous). Not published
+ * (never, or withdrawn): `published` false and nothing else set.
+ */
+export interface PublicOrgDocument {
+  kind: OrgSiteDocumentKind;
+  published: boolean;
+  version: number | null;
+  source: OrgSiteDocumentSource | null;
+  /** Sanitized HTML of the text (`source` Text); the page sanitizes it again before rendering. */
+  contentHtml: string | null;
+  /** Absolute https address of the document (`source` ExternalUrl). */
+  externalUrl: string | null;
+  publishedAt: string | null;
+}
