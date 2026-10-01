@@ -164,4 +164,16 @@ describe('route-manifest nav helpers', () => {
     const hiddenPaths = getVisibleNavEntries('admin', withoutCinRead).map((e) => e.path);
     expect(hiddenPaths).not.toContain('/app/admin/cin');
   });
+
+  // SU-16 (A4-32, #327-AC2/AC4): the iCal help page lives inside the supplier console, with its own sidebar entry.
+  it('puts the iCal help page in the supplier console sidebar', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/supplier/help/ical');
+    expect(entry?.context).toBe('supplier');
+    expect(entry?.navKey).toBe('nav.supplierHelpIcal');
+
+    const secondary = getSecondaryNavEntries('supplier', allowAll).map((e) => e.path);
+    expect(secondary).toEqual(['/app/supplier/profile', '/app/supplier/help/ical']);
+    const drawer = [...getDrawerNavByGroup('supplier', allowAll).values()].flat().map((e) => e.path);
+    expect(drawer).toContain('/app/supplier/help/ical');
+  });
 });

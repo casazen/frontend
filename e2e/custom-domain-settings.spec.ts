@@ -79,14 +79,14 @@ test.describe('Custom domain settings (#298)', () => {
   });
 
   test('AC9: domain settings page loads current config', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent/settings/domain'));
+    await page.goto(demoUrl('/app/short-rent/settings/domain', 'short-stay'));
     await expect(page.getByTestId('custom-domain-settings-page')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('domain-current-config')).toBeVisible();
     await expect(page.getByText('villa-demo.casazen.it')).toBeVisible();
   });
 
   test('AC9: saving custom domain shows DNS instructions', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent/settings/domain'));
+    await page.goto(demoUrl('/app/short-rent/settings/domain', 'short-stay'));
     await expect(page.getByTestId('custom-domain-settings-page')).toBeVisible({ timeout: 15_000 });
 
     await page.locator('[data-testid="host-mode-radio"]').selectOption('CustomDomain');
