@@ -195,6 +195,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23).
+    path: '/app/short-rent/settings/organization',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 6,
+    icon: 'Settings',
+    component: async () => ({
+      default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -281,7 +296,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
-    legacyPaths: ['/app/short-rent/cin', '/cin', '/admin/cin'],
+    legacyPaths: ['/app/short-rent/cin', '/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -485,6 +500,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
     }),
   },
+  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell.
+  {
+    path: '/app/long-rent/settings/organization',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 5,
+    icon: 'Settings',
+    component: async () => ({
+      default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
+    }),
+  },
   {
     path: '/app/admin',
     context: 'admin',
@@ -574,6 +604,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
+  },
+  // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed.
+  {
+    path: '/app/admin/cin',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.cinAudit',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 1,
+    icon: 'BadgeCheck',
+    component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
+    // The old /admin/cin URL was the admin audit, not the host CIN page: it must land here (A1-16).
+    legacyPaths: ['/admin/cin'],
   },
   // Admin Tax Rates
   {

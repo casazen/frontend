@@ -31,6 +31,7 @@
       "description": "Verifica dei codici identificativi nazionali (D.L. 145/2023)",
       "filters": "Filtri",
       "loadError": "Impossibile caricare i dati CIN. Riprova più tardi.",
+      "retry": "Riprova",
       "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} proprietà)",
       "previous": "Precedente",
       "next": "Successiva",
@@ -57,8 +58,13 @@
       "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} utenti)",
       "previous": "Precedente",
       "next": "Successiva",
+      "loadError": "Impossibile caricare gli utenti. Riprova più tardi.",
+      "retry": "Riprova",
       "filter": {
-        "allRoles": "Tutti i ruoli"
+        "allRoles": "Tutti i ruoli",
+        "allStatuses": "Tutti gli stati",
+        "active": "Attivi",
+        "inactive": "Inattivi"
       },
       "table": {
         "name": "Nome",
@@ -66,6 +72,7 @@
         "role": "Ruolo",
         "plan": "Piano",
         "status": "Stato",
+        "createdAt": "Registrato il",
         "actions": "Azioni",
         "active": "Attivo",
         "inactive": "Inattivo",
@@ -83,9 +90,13 @@
         "confirm": "Disattiva"
       },
       "roleDialog": {
-        "title": "Cambia ruolo",
-        "description": "Seleziona il nuovo ruolo per {{name}}.",
-        "label": "Ruolo",
+        "title": "Gestisci ruoli",
+        "description": "Seleziona i ruoli di {{name}}.",
+        "label": "Ruoli",
+        "loading": "Caricamento ruoli…",
+        "loadError": "Impossibile caricare i ruoli attuali.",
+        "retry": "Riprova",
+        "noRolesWarning": "Nessun ruolo selezionato: l'utente perderà l'accesso alle funzioni dell'app.",
         "cancel": "Annulla",
         "saving": "Salvataggio...",
         "save": "Salva"
@@ -101,6 +112,8 @@
     "jobs": {
       "title": "Background Jobs",
       "description": "Stato dei job Hangfire (aggiornato ogni 30 secondi)",
+      "loadError": "Impossibile caricare i job. Riprova più tardi.",
+      "retry": "Riprova",
       "table": {
         "job": "Job",
         "cron": "Cron",
@@ -251,12 +264,14 @@
     "revenue": "Ricavi",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
+    "organization": "Organizzazione",
     "ota": "OTA",
     "leases": "Contratti",
     "users": "Utenti",
     "jobs": "Processi",
     "suppliers": "Fornitori",
     "guests": "Ospiti",
+    "cinAudit": "Audit CIN",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "more": "Altro",
@@ -2514,6 +2529,38 @@
       "copied": "Copiato negli appunti"
     }
   },
+  "orgSettings": {
+    "title": "Impostazioni organizzazione",
+    "description": "Nome, indirizzo pubblico ed email di contatto della tua organizzazione.",
+    "adminRequired": {
+      "title": "Riservato all'amministratore dell'organizzazione",
+      "description": "Queste impostazioni sono gestite dall'amministratore della tua organizzazione: contatta l'amministratore per modificarle."
+    },
+    "loadError": "Impossibile caricare le impostazioni dell'organizzazione.",
+    "formTitle": "Identità organizzazione",
+    "formDescription": "Nome e indirizzo sono visibili sul tuo sito di prenotazione pubblico; l'email solo se scegli di mostrarla.",
+    "nameLabel": "Nome organizzazione",
+    "slugLabel": "Indirizzo pubblico",
+    "slugHelp": "Lettere, numeri e trattini (da 3 a 63 caratteri). Forma l'indirizzo del tuo sito di prenotazione (/book/il-tuo-indirizzo).",
+    "slugChecking": "Verifica disponibilità in corso…",
+    "slugAvailable": "Indirizzo disponibile: {{path}}",
+    "slugUnavailable": "Questo indirizzo non è disponibile: scegline un altro.",
+    "slugCheckFailed": "Impossibile verificare la disponibilità ora: verrà controllata al salvataggio.",
+    "slugChangeNotice": "Il vecchio indirizzo ({{previous}}) continuerà a portare al tuo sito e resterà riservato a te. Aggiorna comunque i link che hai condiviso (annunci, QR code, social) con quello nuovo.",
+    "contactEmailLabel": "Email di contatto",
+    "contactEmailHelp": "Qui ricevi le notifiche di CasaZen (prenotazioni, richieste, avvisi).",
+    "contactEmailPublicLabel": "Mostra l'email di contatto agli ospiti",
+    "contactEmailPublicHelp": "Non pubblicata di default. Attiva questa opzione per mostrarla sul tuo sito di prenotazione pubblico.",
+    "save": "Salva impostazioni",
+    "saved": "Impostazioni organizzazione salvate",
+    "saveFailed": "Impossibile salvare le impostazioni dell'organizzazione",
+    "errors": {
+      "nameRequired": "Inserisci il nome dell'organizzazione.",
+      "slugRequired": "Inserisci l'indirizzo pubblico.",
+      "contactEmailRequired": "Inserisci l'email di contatto.",
+      "contactEmailInvalid": "Inserisci un'email valida."
+    }
+  },
   "vetrina": {
     "title": "Vetrina",
     "description": "Il tuo sito di prenotazioni pubblico. Qui puoi vedere come appari ai tuoi ospiti.",
@@ -4612,6 +4659,9 @@
       "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
       "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo.",
       "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori.",
+      "orgSlugTaken": "Questo indirizzo web è già usato, o è stato usato, da un'altra organizzazione.",
+      "orgSlugReserved": "Questo indirizzo web è riservato alla piattaforma: scegline un altro.",
+      "orgSlugInvalid": "Questo indirizzo web non è valido: usa da 3 a 63 caratteri tra lettere, numeri e trattini.",
       "accountInactive": "Il tuo account è stato disattivato.",
       "cannotDeactivateSelf": "Non puoi disattivare il tuo account: chiedi a un altro amministratore.",
       "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",

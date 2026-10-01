@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
-import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail } from '@/types';
+import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail, UserRole } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -101,14 +101,27 @@ export function useUpdateMe() {
   });
 }
 
-export function useChangeUserRole() {
+/** Roles a user currently holds (A1-17), read fresh (not cached) each time the roles dialog opens. */
+export function useUserRoles(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [USERS_KEY, id, 'roles'],
+    queryFn: () => UsersApi.getRoles(id),
+    enabled: enabled && !!id,
+    // Overrides the global 5-minute staleTime: an out-of-band change (Auth0 dashboard, onboarding, supplier claim)
+    // must show up the next time the dialog opens, or saving would silently revert it.
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+}
+
+export function useUpdateUserRoles() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, role }: { id: string; role: string }) =>
-      UsersApi.changeRole(id, role),
-    onSuccess: () => {
+    mutationFn: ({ id, roles }: { id: string; roles: UserRole[] }) => UsersApi.updateRoles(id, roles),
+    onSuccess: (_result, { id }) => {
       queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY, id, 'roles'] });
       toast.success(i18n.t('toast.roleUpdated'));
     },
     onError: (error) => {

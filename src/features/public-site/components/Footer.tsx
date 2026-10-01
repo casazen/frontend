@@ -5,7 +5,7 @@ import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from
 
 interface FooterProps {
   displayName?: string;
-  contactEmail?: string;
+  contactEmail?: string | null;
   showPoweredBy?: boolean;
   /**
    * CasaZen public pages only: the SEO hub and the CasaZen legal documents for hosts (DPA, subprocessors). A host's
