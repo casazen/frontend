@@ -18,6 +18,7 @@ vi.mock('@/api/orgs.api', () => ({
   OrgsApi: {
     getSettings: vi.fn(),
     updateSettings: vi.fn(),
+    checkSlugAvailability: vi.fn(),
   },
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
@@ -99,6 +100,9 @@ describe('OrganizationSettingsPage', () => {
     mockContexts(['short-rent']);
     mockUser();
     vi.mocked(OrgsApi.getSettings).mockResolvedValue(settings());
+    vi.mocked(OrgsApi.checkSlugAvailability).mockImplementation((slug) =>
+      Promise.resolve({ slug, available: true, code: null }),
+    );
   });
 
   afterEach(() => {
@@ -179,6 +183,7 @@ describe('OrganizationSettingsPage', () => {
   });
 
   it('OrganizationSettingsPage_SaveSlugConflict_ShowsTranslatedMessage', async () => {
+    vi.mocked(OrgsApi.getSettings).mockResolvedValue(settings({ contactEmail: 'host@example.com' }));
     vi.mocked(OrgsApi.updateSettings).mockRejectedValue(problemError(409, { code: 'org_slug_taken' }));
     renderPage();
 
@@ -186,5 +191,71 @@ describe('OrganizationSettingsPage', () => {
     fireEvent.click(screen.getByTestId('save-org-settings'));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.orgSlugTaken')));
+  });
+
+  it('OrganizationSettingsPage_MissingFields_ShowsErrorsWithoutCallingTheApi', async () => {
+    renderPage();
+
+    await screen.findByTestId('org-settings-form');
+    fireEvent.change(screen.getByTestId('org-name-input'), { target: { value: '   ' } });
+    fireEvent.change(screen.getByTestId('org-contact-email-input'), { target: { value: 'not-an-email' } });
+    fireEvent.click(screen.getByTestId('save-org-settings'));
+
+    expect(screen.getByTestId('org-name-error')).toHaveTextContent(i18n.t('orgSettings.errors.nameRequired'));
+    expect(screen.getByTestId('org-contact-email-error')).toHaveTextContent(
+      i18n.t('orgSettings.errors.contactEmailInvalid'),
+    );
+    expect(OrgsApi.updateSettings).not.toHaveBeenCalled();
+  });
+
+  it('OrganizationSettingsPage_SlugTakenByAnotherOrg_ShowsReasonAndDisablesSave', async () => {
+    vi.mocked(OrgsApi.checkSlugAvailability).mockResolvedValue({
+      slug: 'villa-presa',
+      available: false,
+      code: 'org_slug_taken',
+    });
+    renderPage();
+
+    await screen.findByTestId('org-settings-form');
+    fireEvent.change(screen.getByTestId('org-slug-input'), { target: { value: 'Villa Presa' } });
+
+    expect(await screen.findByTestId('org-slug-unavailable')).toHaveTextContent(
+      i18n.t('apiErrors.codes.orgSlugTaken'),
+    );
+    expect(OrgsApi.checkSlugAvailability).toHaveBeenCalledWith('Villa Presa');
+    expect(screen.getByTestId('save-org-settings')).toBeDisabled();
+  });
+
+  it('OrganizationSettingsPage_SlugChangedAndAvailable_ShowsNewAddressAndOldLinkNotice', async () => {
+    vi.mocked(OrgsApi.checkSlugAvailability).mockResolvedValue({ slug: 'villa-mare', available: true, code: null });
+    renderPage();
+
+    await screen.findByTestId('org-settings-form');
+    fireEvent.change(screen.getByTestId('org-slug-input'), { target: { value: 'villa-mare' } });
+
+    expect(await screen.findByTestId('org-slug-available')).toHaveTextContent('/book/villa-mare');
+    expect(screen.getByTestId('org-slug-change-notice')).toHaveTextContent('/book/org-auth0-abc123');
+    expect(screen.getByTestId('save-org-settings')).toBeEnabled();
+  });
+
+  it('OrganizationSettingsPage_SlugCheckFails_StillAllowsSaving', async () => {
+    vi.mocked(OrgsApi.checkSlugAvailability).mockRejectedValue(problemError(500));
+    renderPage();
+
+    await screen.findByTestId('org-settings-form');
+    fireEvent.change(screen.getByTestId('org-slug-input'), { target: { value: 'villa-mare' } });
+
+    expect(await screen.findByTestId('org-slug-check-failed')).toBeInTheDocument();
+    expect(screen.getByTestId('save-org-settings')).toBeEnabled();
+  });
+
+  it('OrganizationSettingsPage_SlugUnchanged_DoesNotCheckAvailability', async () => {
+    renderPage();
+
+    await screen.findByTestId('org-settings-form');
+    fireEvent.change(screen.getByTestId('org-name-input'), { target: { value: 'Villa' } });
+
+    expect(screen.queryByTestId('org-slug-change-notice')).not.toBeInTheDocument();
+    expect(OrgsApi.checkSlugAvailability).not.toHaveBeenCalled();
   });
 });

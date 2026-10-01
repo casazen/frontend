@@ -66,3 +66,12 @@ export interface UpdateOrgSettingsRequest {
   contactEmail: string;
   contactEmailPublic: boolean;
 }
+
+/** GET /api/orgs/me/settings/slug-availability (A1-23). */
+export interface OrgSlugAvailability {
+  /** The slug as it would be saved (sanitized). */
+  slug: string;
+  available: boolean;
+  /** Why it is not available: org_slug_invalid, org_slug_reserved or org_slug_taken; null when available. */
+  code: string | null;
+}

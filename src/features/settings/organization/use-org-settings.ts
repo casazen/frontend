@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { OrgsApi } from '@/api/orgs.api';
 import type { UpdateOrgSettingsRequest } from '@/types';
@@ -8,6 +9,9 @@ import { ME_QUERY_KEY } from '@/lib/onboarding-gate';
 
 export const ORG_SETTINGS_QUERY_KEY = ['org-settings'] as const;
 
+/** Delay before the availability of a slug being typed is checked. */
+export const SLUG_CHECK_DEBOUNCE_MS = 400;
+
 /** A1-22, A1-23: name, public slug and contact email opt-in of the caller's org. Org billing admin only (403 otherwise). */
 export function useOrgSettings(enabled = true) {
   return useQuery({
@@ -15,6 +19,27 @@ export function useOrgSettings(enabled = true) {
     queryFn: () => OrgsApi.getSettings(),
     enabled,
     retry: false,
+  });
+}
+
+/** `value`, once it stopped changing for `delayMs`. */
+export function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+  return debounced;
+}
+
+/** A1-23: availability of a new public slug for the caller's org; advisory only, the save checks again. */
+export function useOrgSlugAvailability(slug: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['org-settings', 'slug-availability', slug] as const,
+    queryFn: () => OrgsApi.checkSlugAvailability(slug),
+    enabled: enabled && slug.length > 0,
+    retry: false,
+    staleTime: 30_000,
   });
 }
 
