@@ -16,8 +16,8 @@ interface AlloggiatiBookingPanelProps {
 
 /**
  * Alloggiati tab of the booking detail (CO-11): honest status, legal deadline in Europe/Rome, per-guest data to
- * copy on the Questura portal (one card per guest of the stay with its completeness, CO-12) and the
- * manual-submission declaration.
+ * copy on the Questura portal (one card per guest of the stay with its completeness, CO-12), the record file to upload
+ * on the portal (CO-13) and the manual-submission declaration.
  */
 export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBookingPanelProps) {
   const { t, i18n } = useTranslation();
@@ -103,6 +103,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
             bookingId={bookingId}
             canEdit={hasPermission('short-rent', 'booking.write')}
             canRevealDocuments={hasPermission('short-rent', 'guest.read')}
+            canDownloadRecordFile={hasPermission('short-rent', 'guest.read')}
           />
         </div>
       </CardContent>

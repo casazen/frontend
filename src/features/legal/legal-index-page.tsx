@@ -15,14 +15,14 @@ export function LegalIndexPage() {
       <ul className="mt-6 space-y-4">
         {LEGAL_DOCUMENT_KEYS.map((key) => (
           <li key={key}>
-            <Link to={LEGAL_DOCUMENT_PATHS[key]} className="text-lg underline hover:text-[var(--cz-public-primary)]">
+            <Link to={LEGAL_DOCUMENT_PATHS[key]} className="text-lg underline hover:text-[var(--cz-public-primary-text)]">
               {t(`legal.documents.${key}.title`)}
             </Link>
             <p className="text-sm text-muted-foreground">{t(`legal.documents.${key}.summary`)}</p>
           </li>
         ))}
         <li>
-          <Link to={LEGAL_SUBPROCESSORS_PATH} className="text-lg underline hover:text-[var(--cz-public-primary)]">
+          <Link to={LEGAL_SUBPROCESSORS_PATH} className="text-lg underline hover:text-[var(--cz-public-primary-text)]">
             {t('legal.subprocessors.title')}
           </Link>
           <p className="text-sm text-muted-foreground">{t('legal.subprocessors.summary')}</p>

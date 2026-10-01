@@ -43,7 +43,7 @@ export function SubprocessorsPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-8" data-testid="subprocessors-page">
       <p className="text-sm">
-        <Link to={LEGAL_INDEX_PATH} className="underline hover:text-[var(--cz-public-primary)]">
+        <Link to={LEGAL_INDEX_PATH} className="underline hover:text-[var(--cz-public-primary-text)]">
           {t('legal.backToIndex')}
         </Link>
       </p>
