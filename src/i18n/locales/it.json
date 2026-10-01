@@ -3943,8 +3943,14 @@
       "retry": "Riprova"
     },
     "notFound": "Pagina non trovata",
-    "guideNotAvailable": "La guida per questo comune non e' ancora disponibile.",
-    "calculatorNotAvailable": "Il calcolatore per questo comune non e' ancora disponibile.",
+    "disclaimers": {
+      "lastUpdated": "Ultimo aggiornamento: {{date}}",
+      "lastUpdatedUnknown": "Data di aggiornamento non disponibile",
+      "notLegalAdvice": "Informazione generale, non consulenza legale. L'host resta responsabile degli adempimenti."
+    },
+    "contentLanguageNote": "Il testo di questa pagina è disponibile solo in italiano: le norme che spiega sono italiane.",
+    "guideNotAvailable": "La guida per questo comune non è ancora disponibile.",
+    "calculatorNotAvailable": "Il calcolatore per questo comune non è ancora disponibile.",
     "calculateTax": "Calcola la tassa di soggiorno",
     "estimatedTax": "Tassa stimata: {{amount}}",
     "calculate": "Calcola",
@@ -4066,7 +4072,10 @@
     "ariaLabel": "Percorso di navigazione"
   },
   "aiContentNotice": {
-    "label": "Descrizione generata con AI"
+    "label": "Contenuto generato con AI",
+    "seo": "Testo generato con l'ausilio dell'AI e approvato da un amministratore CasaZen prima della pubblicazione: verifica sempre le fonti ufficiali.",
+    "draft": "Testo generato con l'AI: è una bozza da rivedere prima di approvarla.",
+    "supplierReason": "Motivazione generata con l'AI."
   },
   "search": {
     "page": {

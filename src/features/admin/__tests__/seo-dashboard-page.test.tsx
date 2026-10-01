@@ -204,6 +204,9 @@ describe('SeoDashboardPage', () => {
     expect(pending).toHaveTextContent('Nuovo testo della guida');
     expect(pending.querySelector('img, script')).toBeNull();
     expect(screen.getByTestId('seo-review-published-body')).toHaveTextContent('Vecchio testo approvato');
+    // SE-05 (A8-27): both AI texts carry the AI Act notice, worded for what they are (a draft, an approved page).
+    expect(within(screen.getByTestId('seo-review-pending')).getByTestId('ai-content-notice')).toHaveAttribute('data-kind', 'draft');
+    expect(within(screen.getByTestId('seo-review-published')).getByTestId('ai-content-notice')).toHaveAttribute('data-kind', 'seo');
     expect(screen.getByTestId('seo-review-history')).toHaveTextContent('Approvata da auth0|legale');
     expect(screen.getByTestId('seo-review-history')).toHaveTextContent('Nota: Parere n. 7');
 
@@ -269,6 +272,8 @@ describe('SeoDashboardPage', () => {
     expect(dialog().getByTestId('seo-review-published')).toHaveTextContent('La pagina non è pubblicata');
     expect(dialog().queryByTestId('seo-review-approve')).not.toBeInTheDocument();
     expect(dialog().queryByRole('checkbox')).not.toBeInTheDocument();
+    // No text was generated: nothing AI-written to declare.
+    expect(dialog().queryByTestId('ai-content-notice')).not.toBeInTheDocument();
   });
 
   it('withdraw_AsksConfirmationThenSendsTheReason', async () => {

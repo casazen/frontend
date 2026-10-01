@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { SeoPagePublic } from '@/types/seo.types';
 import { ComplianceGuidePage } from './compliance-guide-page';
@@ -26,7 +26,8 @@ const { page } = vi.hoisted(() => {
     comuneSlug: 'como',
     canonicalUrl: 'https://example.test/p/affitti-brevi/lombardia/como',
     lastRefreshedAt: null,
-    disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
+    aiGenerated: true,
+    contentLanguage: 'it',
     cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
     touristTaxRates: [],
   };
@@ -85,5 +86,55 @@ describe('public SEO pages render the body through the allowlist sanitizer', () 
     );
 
     expectSanitizedBody(screen.getByTestId('tourist-tax-page-body'));
+  });
+});
+
+// SE-05 (A8-27): the AI Act notice is mounted on the public pages and follows the flag of the API, never a constant.
+describe('public SEO pages and the AI Act transparency notice', () => {
+  function renderGuide() {
+    return render(
+      <MemoryRouter initialEntries={['/p/affitti-brevi/lombardia/como']}>
+        <Routes>
+          <Route path="/p/affitti-brevi/:region/:comune" element={<ComplianceGuidePage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  function renderTouristTax() {
+    return render(
+      <MemoryRouter initialEntries={['/p/tassa-soggiorno/como']}>
+        <Routes>
+          <Route path="/p/tassa-soggiorno/:comune" element={<TouristTaxCalculatorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  afterEach(() => {
+    page.aiGenerated = true;
+  });
+
+  it('ComplianceGuidePage_AiGeneratedText_ShowsTheNoticeInTheFooter', () => {
+    renderGuide();
+
+    const footer = screen.getByTestId('seo-disclaimer-footer');
+    expect(within(footer).getByTestId('ai-content-notice')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-guide-body')).toHaveAttribute('lang', 'it');
+  });
+
+  it('TouristTaxCalculatorPage_AiGeneratedText_ShowsTheNoticeInTheFooter', () => {
+    renderTouristTax();
+
+    expect(within(screen.getByTestId('seo-disclaimer-footer')).getByTestId('ai-content-notice')).toBeInTheDocument();
+    expect(screen.getByTestId('tourist-tax-page-body')).toHaveAttribute('lang', 'it');
+  });
+
+  it('ComplianceGuidePage_TextNotGeneratedByAi_ShowsNoNotice', () => {
+    page.aiGenerated = false;
+
+    renderGuide();
+
+    expect(screen.queryByTestId('ai-content-notice')).not.toBeInTheDocument();
   });
 });

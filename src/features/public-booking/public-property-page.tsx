@@ -3,7 +3,6 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
 import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
-import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
 import type { WidgetAvailability } from '@/features/public-site/components/BookingWidget';
@@ -87,7 +86,6 @@ export function PublicPropertyPage() {
               </div>
             </div>
 
-            <AiContentNotice visible={false} />
             <p className="text-[var(--cz-public-muted)]">{property.description}</p>
 
             <div className="flex flex-wrap gap-4 text-sm">
