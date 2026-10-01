@@ -376,11 +376,8 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     fireEvent.click(screen.getByTestId('admin-invite-resend-i-expired'));
     fireEvent.click(within(await screen.findByTestId('admin-confirm-dialog')).getByTestId('admin-confirm-submit'));
 
-    await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        'Esiste già un altro invito in attesa per questa email: revocalo prima di reinviare questo.',
-      ),
-    );
+    // The translation of the stable code wins over the server text (getProblemMessage).
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Esiste già un invito in attesa per questa email.'));
   });
 
   it('AdminSuppliersPage_RevokeInvite_AsksForConfirmationAndCallsTheApi', async () => {
