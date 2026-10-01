@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { propertyImagesApi } from '@/api/property-images.api';
 import type { PropertyPhotosDto } from '@/types';
-import { PropertyPhotoManager, validatePhotoSelection } from '../property-photo-manager';
+import { PropertyPhotoManager } from '../property-photo-manager';
+import { validatePhotoSelection } from '../../photo-selection';
 
 vi.mock('@/api/property-images.api');
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
