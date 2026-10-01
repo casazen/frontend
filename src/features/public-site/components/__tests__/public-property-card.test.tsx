@@ -100,6 +100,21 @@ describe('PublicPropertyCard', () => {
     expect(card.querySelector('img')).toBeNull();
   });
 
+  it('PublicPropertyCard_NoDestination_HasNoLinkAndNoDetailsButton', () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <PublicPropertyCard property={property()} />
+        </MemoryRouter>
+      </I18nextProvider>,
+    );
+
+    const card = screen.getByTestId('public-property-card');
+    expect(within(card).queryByRole('link')).not.toBeInTheDocument();
+    expect(card).toHaveTextContent('Casa del Faro');
+    expect(card).not.toHaveTextContent(i18n.t('publicSite.card.details'));
+  });
+
   it('PublicPropertyCard_InvalidCin_IsNotShownToGuests', () => {
     const card = renderCard({ cinStatus: 'Invalid', cinCode: 'XX' });
 
