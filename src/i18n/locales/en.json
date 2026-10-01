@@ -300,7 +300,8 @@
       "amministrazione": "Administration"
     },
     "ltrReferenceData": "LTR reference data",
-    "siteAppearance": "Site appearance"
+    "siteAppearance": "Site appearance",
+    "siteDocuments": "Site documents"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -1679,6 +1680,7 @@
       "retry": "Retry",
       "tabs": {
         "info": "Info & Photos",
+        "photos": "Photos",
         "pricing": "Seasonal suggestions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
@@ -1724,7 +1726,46 @@
       "prev": "Previous photo",
       "next": "Next photo",
       "unavailable": "Photo unavailable",
-      "alt": "{{name}} - photo {{index}}"
+      "alt": "{{name}} - photo {{index}}",
+      "title": "Property photos",
+      "description": "The first photo is the cover: guests see it first on your booking site and in search results.",
+      "rules": "Up to {{max}} photos in JPEG, PNG or WebP format, {{size}} MB each at most.",
+      "counter": "{{count}} of {{max}} photos",
+      "limitReached": "You have reached the maximum of {{max}} photos: delete a photo to upload more.",
+      "upload": "Upload photos",
+      "uploading": "Uploading…",
+      "uploaded_one": "{{count}} photo uploaded.",
+      "uploaded_other": "{{count}} photos uploaded.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "selectionTooMany": "You can upload at most {{max}} photos at a time.",
+      "selectionOverLimit": "You can add {{remaining}} more photos (maximum {{max}} per property).",
+      "selectionInvalidType": "“{{name}}” is not a JPEG, PNG or WebP image.",
+      "selectionTooLarge": "“{{name}}” is empty or larger than the {{size}} MB limit.",
+      "loading": "Loading photos…",
+      "loadError": "The photos could not be loaded.",
+      "retry": "Try again",
+      "emptyTitle": "No photos",
+      "emptyDescription": "Add photos of the property: guests also choose by looking at the pictures.",
+      "emptyReadOnly": "No photos have been uploaded for this property.",
+      "emptyAction": "Upload the first photo",
+      "cover": "Cover",
+      "setCover": "Set as cover",
+      "coverSet": "Cover photo updated.",
+      "coverFailed": "The cover could not be changed. Please try again.",
+      "moveEarlier": "Move photo {{index}} earlier",
+      "moveLater": "Move photo {{index}} later",
+      "reorderFailed": "The order of the photos could not be changed. Please try again.",
+      "delete": "Delete photo {{index}}",
+      "deleteTitle": "Delete this photo?",
+      "deleteDescription": "The photo will be removed from the gallery and from the booking site. This cannot be undone.",
+      "deleteConfirm": "Delete photo",
+      "cancel": "Cancel",
+      "deleted": "Photo deleted.",
+      "deleteFailed": "The photo could not be deleted. Please try again.",
+      "legacy": "Photo no longer available: delete it and upload it again.",
+      "actionFailed": "The operation failed. Please try again.",
+      "manage": "Manage photos",
+      "add": "Add photos"
     },
     "documents": {
       "title": "Documents",
@@ -2686,7 +2727,13 @@
       "placeholder": "#1a6b8f",
       "help": "Used for the site's buttons and links. Hex code, for example #1a6b8f.",
       "usingTheme": "You are using the theme's color.",
-      "useTheme": "Use the theme's color"
+      "useTheme": "Use the theme's color",
+      "contrast": {
+        "title": "Readability",
+        "buttonLight": "Button text will be white (contrast {{ratio}}:1, WCAG AA compliant).",
+        "buttonDark": "Button text will be dark (contrast {{ratio}}:1, WCAG AA compliant): white on this color would be hard to read.",
+        "textAdjusted": "This color is too light to be read as text on the theme background: links, icons and the focus outline will use a darker variant ({{color}})."
+      }
     },
     "tagline": {
       "label": "Tagline",
@@ -2708,6 +2755,88 @@
       "imageType": "Unsupported format: upload a PNG, JPEG or WebP image.",
       "imageTooLarge": "The image exceeds the maximum size of {{maxMb}} MB.",
       "imageDimensions": "Invalid image size: it must be at least {{minWidth}}×{{minHeight}} pixels and at most {{maxWidth}}×{{maxHeight}}."
+    }
+  },
+  "siteDocuments": {
+    "title": "Site documents",
+    "description": "The privacy notice and booking terms of your site: guests read them before they book.",
+    "adminRequired": "The site documents are managed by your organization's administrator: contact the administrator to change them.",
+    "loadError": "Unable to load the site documents.",
+    "responsibility": {
+      "title": "These are the documents of your site",
+      "body": "You are the data controller of your guests' data. Write the texts yourself or with your advisor: CasaZen does not draft them and does not check their content. CasaZen's own privacy notice and terms are separate documents."
+    },
+    "kinds": {
+      "privacy": {
+        "title": "Privacy notice",
+        "description": "How you process your guests' personal data. The consent a guest gives when booking points to this page."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "description": "The conditions of the booking: payment, cancellation, house rules."
+      }
+    },
+    "status": {
+      "published": "Published: version {{version}} since {{date}}.",
+      "never": "Not published yet. Guests see a notice saying it has not been published yet.",
+      "withdrawn": "Withdrawn on {{date}}. Guests see a notice saying it has not been published yet."
+    },
+    "source": {
+      "label": "How do you want to provide it",
+      "options": {
+        "Text": "I write the text here",
+        "ExternalUrl": "I already have a document online"
+      }
+    },
+    "content": {
+      "label": "Text",
+      "placeholder": "Write or paste the text of the document here.",
+      "counter": "{{length}} of {{max}} characters"
+    },
+    "format": {
+      "summary": "How to format the text",
+      "body": "Separate paragraphs with a blank line. Use # for a title, ## for a subtitle, - for a bullet list, **bold**, *italic* and [text](https://address) for a link. HTML code is not allowed."
+    },
+    "url": {
+      "label": "Address of the document",
+      "placeholder": "https://www.example.com/privacy",
+      "hint": "It must start with https://. Guests see a button that opens it in a new tab."
+    },
+    "actions": {
+      "publishFirst": "Publish",
+      "publishNew": "Publish new version",
+      "withdraw": "Withdraw the document",
+      "withdrawConfirm": "Guests will no longer see this document: they will see a notice saying it has not been published. The versions stay in the history.",
+      "withdrawYes": "Yes, withdraw",
+      "withdrawCancel": "Cancel",
+      "openPublic": "Open the public page"
+    },
+    "history": {
+      "title": "Versions",
+      "item": "Version {{version}} of {{date}}",
+      "source": {
+        "Text": "text",
+        "ExternalUrl": "link to an external document"
+      },
+      "inUse": "in use",
+      "withdrawn": "withdrawn",
+      "replaced": "replaced",
+      "useAsBase": "Use as a base"
+    },
+    "toasts": {
+      "published": "Document published (version {{version}})",
+      "publishFailed": "Unable to publish the document",
+      "withdrawn": "Document withdrawn",
+      "withdrawFailed": "Unable to withdraw the document",
+      "versionLoadFailed": "Unable to load this version"
+    },
+    "errors": {
+      "contentRequired": "Write the text of the document.",
+      "contentTooLong": "The text is longer than {{max}} characters.",
+      "htmlNotAllowed": "The text contains HTML code, which is not allowed: write plain text.",
+      "linkInvalid": "A link is not valid: it must start with https://, http:// or mailto:.",
+      "urlRequired": "Enter the address of the document.",
+      "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
   "vetrina": {
@@ -2909,7 +3038,7 @@
     "ordinaryTerm": "24 hours from arrival",
     "shortStayTerm": "short stay: 6 hours from arrival",
     "manualBanner": "CasaZen does not transmit to Alloggiati Web yet: send each record on the Questura portal and record the submission here.",
-    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, then mark it as sent.",
+    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
     "waitingArrivalNotice": "The communication is sent from the arrival day: the portal accepts only today or yesterday as arrival date.",
     "declaredNotice": "Submission declared by the host: keep the receipt issued by the Alloggiati Web portal.",
     "failureNotice": {
@@ -2997,6 +3126,16 @@
         "GuestPortal": "Entered by the guest on {{date}}",
         "Host": "Entered by the host on {{date}}"
       }
+    },
+    "recordFile": {
+      "title": "File for the Alloggiati Web portal",
+      "description": "The text file to upload on the Alloggiati Web portal (menu File): one line per guest, in the order of the communication. Downloading it sends nothing: after uploading it on the portal, mark the submission as manual.",
+      "download": "Download the file",
+      "preparing": "Preparing the file…",
+      "arrivalWindow": "The portal only accepts records with an arrival date of today or yesterday. The file contains identity document data: keep it safe and delete it after sending.",
+      "notReady": "The file is available when the guest data and the official codes are complete and the stay does not exceed 30 days.",
+      "downloaded": "File downloaded: upload it on the Alloggiati Web portal, then mark the submission.",
+      "failed": "Could not generate the Alloggiati file. Try again."
     },
     "codeTable": {
       "Comuni": "municipalities",
@@ -3711,7 +3850,53 @@
     "closeBookingSheet": "Close booking panel",
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
-    "legalDocuments": "Legal documents"
+    "legalDocuments": "Legal documents",
+    "loading": "Loading...",
+    "loadingProperties": "Loading properties...",
+    "propertiesError": {
+      "title": "We can't show the properties right now",
+      "description": "This is not an empty list: loading failed. Please try again in a moment."
+    },
+    "emptyProperties": {
+      "description": "This host has no properties available to book online yet.",
+      "contact": "Write to {{email}} for information"
+    },
+    "card": {
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "bathrooms_one": "{{count}} bathroom",
+      "bathrooms_other": "{{count}} bathrooms",
+      "from": "from",
+      "perNight": "per night",
+      "details": "Details"
+    },
+    "operatorPrivacy": "Privacy notice",
+    "operatorTerms": "Booking terms",
+    "documents": {
+      "backToSite": "Back to {{name}}",
+      "loading": "Loading the document...",
+      "loadError": "We can't load the document right now. Please try again in a moment.",
+      "seoDescription": "{{title}} of {{name}}",
+      "publishedBy": "Document published by {{name}}",
+      "version": "version {{version}}, published on {{date}}",
+      "contact": "Write to {{email}} for information",
+      "externalIntro": "{{name}} has published this document on another site.",
+      "externalOpen": "Open the document",
+      "externalOpenAt": "Open the document on {{host}}",
+      "externalHint": "It opens in a new tab, outside this site.",
+      "privacy": {
+        "title": "Privacy notice",
+        "notPublishedTitle": "Privacy notice not published yet",
+        "notPublished": "{{name}} has not published its privacy notice on this site yet."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "notPublishedTitle": "Booking terms not published yet",
+        "notPublished": "{{name}} has not published its booking terms on this site yet."
+      }
+    }
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -3780,7 +3965,7 @@
     "checkoutPlaceholderDates": "Selected dates: {{checkIn}} → {{checkOut}}",
     "checkoutPlaceholderPaymentComing": "Payment coming soon",
     "checkoutPlaceholderDescription": "Secure payment for {{orgName}} will be available after the operator activates Stripe Connect. This page will host the direct checkout flow (spec-direct-checkout).",
-    "gdprConsentText": "I consent to the processing of my personal data for booking management, in compliance with the operator's privacy policy.",
+    "gdprConsentText": "I consent to the processing of my personal data to manage the booking, in accordance with the operator's <privacy>privacy notice</privacy>.",
     "emailValidation": "Invalid email",
     "emailPlaceholder": "name@example.com",
     "checkoutDates_one": "Dates: {{checkIn}} → {{checkOut}} ({{count}} night)",
@@ -3974,7 +4159,10 @@
       "legendBooked": "Booked",
       "dayFree": "{{date}}: free",
       "dayBooked": "{{date}}: booked"
-    }
+    },
+    "orgLoadError": "We can't load this site right now",
+    "orgLoadErrorDescription": "A temporary problem occurred. Please try again in a moment.",
+    "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicSeo": {
     "hub": {
@@ -4115,37 +4303,38 @@
   },
   "search": {
     "page": {
-      "title": "Search Properties",
+      "title": "Search properties",
       "description": "Find your perfect vacation rental",
       "searching": "Searching...",
       "results_one": "{{count}} property found",
       "results_other": "{{count}} properties found"
     },
     "filters": {
-      "title": "Search Filters",
+      "title": "Search filters",
       "city": "City",
       "cityPlaceholder": "e.g., Rome, Milan, Florence...",
-      "minPrice": "Min Price (euro/night)",
-      "maxPrice": "Max Price (euro/night)",
-      "minBedrooms": "Min Bedrooms",
-      "maxBedrooms": "Max Bedrooms",
-      "minBathrooms": "Min Bathrooms",
-      "maxBathrooms": "Max Bathrooms",
+      "minPrice": "Min price (€ per night)",
+      "maxPrice": "Max price (€ per night)",
+      "minBedrooms": "Min bedrooms",
+      "minBathrooms": "Min bathrooms",
+      "guests": "Guests",
       "search": "Search",
       "reset": "Reset"
     },
     "results": {
       "noProperties": "No properties found",
-      "noPropertiesDesc": "Try adjusting your search filters to find more properties"
+      "noPropertiesDesc": "Try adjusting your search filters to find more properties.",
+      "errorTitle": "We can't run the search right now",
+      "errorDescription": "This is not an empty list: the search failed. Please try again in a moment."
     },
-    "card": {
-      "bed_one": "bed",
-      "bed_other": "beds",
-      "bath_one": "bath",
-      "bath_other": "baths",
-      "guests": "guests",
-      "perNight": "/night",
-      "details": "Details"
+    "errors": {
+      "invalidNumber": "Enter a valid number.",
+      "negative": "The value cannot be negative.",
+      "tooHigh": "The value is too high.",
+      "wholeNumber": "Enter a whole number.",
+      "guestsMin": "Guests must be at least 1.",
+      "priceRange": "The maximum price must be at least the minimum.",
+      "cityTooLong": "The city name is too long."
     }
   },
   "login": {
@@ -4799,6 +4988,9 @@
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
       "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
+      "alloggiatiFileNotReady": "The Alloggiati file cannot be generated: the guest data is incomplete or an official code is missing.",
+      "alloggiatiFileStayDaysInvalid": "The Alloggiati file cannot be generated: one schedina accepts from 1 to 30 days of stay.",
+      "alloggiatiFileNameNotRepresentable": "The Alloggiati file cannot be generated: the first or last name of a guest has characters the portal does not accept. Write them with letters of the Latin alphabet only, as on the document.",
       "touristTaxRateNotFound": "This rate no longer exists: reload the list.",
       "bookingDatesUnavailable": "The selected dates are not available: they overlap another booking or a calendar block.",
       "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
@@ -4945,7 +5137,14 @@
       "calendarBlockInPast": "Past dates cannot be blocked.",
       "calendarBlockInvalidRange": "The end date must be after the start date.",
       "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
-      "calendarBlockNotFound": "The block no longer exists: refresh the calendar."
+      "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
+      "propertyPhotoNone": "Select at least one photo to upload.",
+      "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
+      "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
+      "propertyPhotoInvalidType": "One of the files is not a valid photo: only JPEG, PNG or WebP images are accepted.",
+      "propertyPhotoInvalidSize": "One of the files is empty or larger than the maximum size allowed.",
+      "propertyPhotoNotFound": "The photo is no longer in the gallery: the list has been refreshed.",
+      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again."
     }
   },
   "validation": {
