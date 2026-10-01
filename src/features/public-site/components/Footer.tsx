@@ -5,7 +5,7 @@ import { usePlatformLegalLinks } from '@/queries/use-legal';
 
 interface FooterProps {
   displayName?: string;
-  contactEmail?: string;
+  contactEmail?: string | null;
   showPoweredBy?: boolean;
   /** CasaZen public pages only: a host's booking site (`/book/*`) is the host's brand and does not link it. */
   showSeoHubLink?: boolean;
