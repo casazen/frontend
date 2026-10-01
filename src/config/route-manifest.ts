@@ -296,6 +296,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
+    legacyPaths: ['/app/short-rent/cin', '/cin', '/admin/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -615,6 +616,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 3,
     icon: 'Coins',
     component: async () => ({ default: (await import('@/features/admin/admin-tax-rates-page')).AdminTaxRatesPage }),
+    legacyPaths: ['/app/admin/tourist-tax', '/admin/tourist-tax'],
   },
   // Admin LTR reference data (LT-13, A7-22): territorial agreements and comune IMU channels.
   {

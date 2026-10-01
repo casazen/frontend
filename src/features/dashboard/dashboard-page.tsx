@@ -52,6 +52,13 @@ function bookingPath(bookingId: string): string {
   return `/app/short-rent/bookings/${bookingId}`;
 }
 
+function normalizeDashboardKpis(value: unknown): DashboardKpis | null {
+  if (typeof value === 'object' && value !== null && 'data' in value) {
+    return normalizeDashboardKpis((value as { data?: unknown }).data);
+  }
+  return typeof value === 'object' && value !== null ? (value as DashboardKpis) : null;
+}
+
 /**
  * Host dashboard (PC-16, A2-29): KPIs of the chosen period computed by the server (occupancy on nights, revenue of the
  * confirmed stays, today's arrivals and departures in Europe/Rome, upcoming check-ins), the iCal calendars in place of
@@ -61,6 +68,7 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState<DashboardPeriodSelection>({ kind: 'Month' });
   const kpis = useDashboardKpis(period);
+  const dashboardKpis = normalizeDashboardKpis(kpis.data);
   const canReadProperties = useWorkspace().hasPermission('short-rent', 'property.read');
   // OTA partner API in freeze (D10): no widget and no request while the flag is off.
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
@@ -87,8 +95,8 @@ export function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
-        ) : kpis.data ? (
-          <DashboardKpisView kpis={kpis.data} refreshing={kpis.isFetching} />
+        ) : dashboardKpis ? (
+          <DashboardKpisView kpis={dashboardKpis} refreshing={kpis.isFetching} />
         ) : null}
 
         <div className={otaEnabled ? 'grid gap-4 md:grid-cols-2' : 'grid gap-4'}>

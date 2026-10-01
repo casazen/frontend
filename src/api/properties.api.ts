@@ -13,6 +13,7 @@ import type {
   PublicPropertyDetailDto,
   PropertyCadastralData,
   ApeIdentification,
+  PropertyPauseStatus,
 } from '@/types';
 
 export const propertiesApi = {
@@ -32,6 +33,14 @@ export const propertiesApi = {
     ApiClient.put<void>(`/properties/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
+
+  /**
+   * Dedicated pause/activate actions (A2-05): reversible, temporary — hidden from public search and new guest
+   * bookings, but the property stays fully visible to its host and keeps its plan slot. Never fails on unrelated
+   * fields (unlike a generic `update`).
+   */
+  pause: (id: string) => ApiClient.post<PropertyPauseStatus>(`/properties/${id}/pause`),
+  activate: (id: string) => ApiClient.post<PropertyPauseStatus>(`/properties/${id}/activate`),
 
   search: (params: PropertySearchParams) => {
     const apiParams: Record<string, string | number | undefined> = {};

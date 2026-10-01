@@ -49,7 +49,7 @@ interface PropertyFormProps {
   isLoading?: boolean;
   disabled?: boolean;
   /**
-   * `long-rent`: the form of a landlord with long-term leases (A7-06) — no short-stay fields (listing status, slug,
+   * `long-rent`: the form of a landlord with long-term leases (A7-06) — no short-stay fields (slug,
    * CIN, nightly rate, guests, fees, house rules, time zone, cancellation policy). They are not sent, so the values
    * already on the property are kept as they are.
    */
@@ -123,11 +123,6 @@ export function PropertyForm({
           </div>
           {shortStay && (
             <>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="isActive" checked={watch('isActive')} onCheckedChange={(checked) => setValue('isActive', !!checked, { shouldDirty: true })} />
-                <Label htmlFor="isActive" className="cursor-pointer">{t('property.form.isActive')}</Label>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="slug">{t('property.slug.label')}</Label>
                 <Input

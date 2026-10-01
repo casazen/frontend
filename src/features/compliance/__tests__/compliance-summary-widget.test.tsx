@@ -110,6 +110,22 @@ afterEach(() => {
 });
 
 describe('ComplianceSummaryWidget (CO-11)', () => {
+  it('widget_PartialSummaryPayload_FallsBackMissingSectionsToZeroInsteadOfCrashing', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue({
+      propertiesPending: cockpit.propertiesPending,
+      guestCheckInsIncomplete: empty,
+      checkoutsDue: empty,
+      alloggiatiManualRequired: cockpit.alloggiatiManualRequired,
+    } as ComplianceSummaryResult);
+
+    renderWidget();
+
+    expect(await screen.findByTestId('compliance-summary-properties-count')).toHaveTextContent('1');
+    expect(screen.getByTestId('compliance-summary-alloggiati-manual-count')).toHaveTextContent('1');
+    expect(screen.getByTestId('compliance-summary-alloggiati-count')).toHaveTextContent('0');
+    expect(screen.queryByText('Tutte le attività di compliance sono aggiornate.')).not.toBeInTheDocument();
+  });
+
   it('widget_AlloggiatiToSendManually_IsCountedInOrangeNotAllClear', async () => {
     const summary: ComplianceSummaryResult = {
       propertiesPending: empty,
