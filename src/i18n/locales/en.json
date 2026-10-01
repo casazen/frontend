@@ -3666,7 +3666,12 @@
     "closeBookingSheet": "Close booking panel",
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
-    "legalDocuments": "Legal documents"
+    "legalDocuments": "Legal documents",
+    "seo": {
+      "orgTitle": "{{name}} — Book direct",
+      "orgDescription": "Book direct with {{name}}.",
+      "propertyTitle": "{{name}} · {{city}} — {{org}}"
+    }
   },
   "publicBooking": {
     "payNow": "Pay now",

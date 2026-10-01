@@ -3666,7 +3666,12 @@
     "closeBookingSheet": "Chiudi pannello prenotazione",
     "directBookingTagline": "Prenotazione diretta",
     "subprocessors": "Sub-responsabili",
-    "legalDocuments": "Documenti legali"
+    "legalDocuments": "Documenti legali",
+    "seo": {
+      "orgTitle": "{{name}} — Prenota direttamente",
+      "orgDescription": "Prenota direttamente da {{name}}.",
+      "propertyTitle": "{{name}} · {{city}} — {{org}}"
+    }
   },
   "publicBooking": {
     "payNow": "Paga ora",
