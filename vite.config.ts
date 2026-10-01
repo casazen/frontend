@@ -5,6 +5,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 import { assertDemoBuildAllowed } from './src/config/demo-build-guard'
 import { buildRobotsTxt } from './src/config/robots-txt'
+import { assertVercelBuildEnv } from './src/config/vercel-build-env'
 
 /** SE-02 (A8-02): `dist/robots.txt`, allowing indexing only on the Vercel production environment. */
 function robotsTxt(content: string): Plugin {
@@ -24,12 +25,18 @@ const useHttpsDev = process.env.VITE_HTTPS === '1';
 export default defineConfig(({ command, mode }) => {
   const viteEnv = loadEnv(mode, process.cwd(), 'VITE_');
   // A9-38: demo mode (no login) only on the dev server or in `npm run build:demo`, never in a normal build.
-  assertDemoBuildAllowed({
+  const demoMode = assertDemoBuildAllowed({
     command,
     mode,
     demoFlag: viteEnv.VITE_DEMO_MODE,
     vercelEnv: process.env.VERCEL_ENV,
   });
+
+  // DEPLOY-CFG: a Vercel preview/production build without its API URL or Auth0 variables fails here (the previous
+  // deployment stays live) instead of calling the production API or opening a blank page.
+  if (command === 'build') {
+    assertVercelBuildEnv({ vercelEnv: process.env.VERCEL_ENV, demoBuild: demoMode, env: viteEnv });
+  }
 
   // SE-02: computed before the build starts, so a production build without VITE_PUBLIC_SITE_URL fails right away.
   const plugins: PluginOption[] = useHttpsDev ? [react(), basicSsl()] : [react()];
