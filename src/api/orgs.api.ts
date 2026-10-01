@@ -5,8 +5,12 @@ import type {
   Entitlement,
   OrgBranding,
   OrgSettings,
+  OrgSiteDocumentKind,
+  OrgSiteDocumentState,
+  OrgSiteDocumentVersion,
   OrgSlugAvailability,
   PlanCatalogEntry,
+  PublishOrgSiteDocumentRequest,
   UpdateOrgBrandingRequest,
   UpdateOrgSettingsRequest,
 } from '@/types';
@@ -49,4 +53,20 @@ export const OrgsApi = {
 
   removeBrandingImage: (kind: BrandingImageKind): Promise<OrgBranding> =>
     ApiClient.delete<OrgBranding>(`/orgs/me/branding/${kind}`),
+
+  /** BK-14: the operator's privacy notice and booking terms (state of both kinds). Org billing admin only. */
+  getSiteDocuments: (): Promise<OrgSiteDocumentState[]> =>
+    ApiClient.get<OrgSiteDocumentState[]>('/orgs/me/site-documents'),
+
+  /** One version with its text, to read it or start the next one from it. */
+  getSiteDocumentVersion: (kind: OrgSiteDocumentKind, version: number): Promise<OrgSiteDocumentVersion> =>
+    ApiClient.get<OrgSiteDocumentVersion>(`/orgs/me/site-documents/${kind}/versions/${version}`),
+
+  /** Publishes a new version (shown right away). */
+  publishSiteDocument: (kind: OrgSiteDocumentKind, payload: PublishOrgSiteDocumentRequest): Promise<OrgSiteDocumentState> =>
+    ApiClient.put<OrgSiteDocumentState>(`/orgs/me/site-documents/${kind}`, payload),
+
+  /** Stops showing the current version: the public site says the operator has not published it. */
+  withdrawSiteDocument: (kind: OrgSiteDocumentKind): Promise<OrgSiteDocumentState> =>
+    ApiClient.delete<OrgSiteDocumentState>(`/orgs/me/site-documents/${kind}`),
 };

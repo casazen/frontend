@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
+import { orgDocumentPath } from '@/lib/org-document-paths';
 
 interface FooterProps {
   displayName?: string;
@@ -13,15 +14,24 @@ interface FooterProps {
    * guest does not leave the booking.
    */
   showSeoHubLink?: boolean;
+  /**
+   * Slug of the org whose booking site this is (BK-14, A3-21): Privacy and Terms then link to the operator's own
+   * documents of that site (`/book/{slug}/privacy`, `/book/{slug}/termini`), not to the CasaZen ones.
+   */
+  orgSlug?: string;
 }
 
 const linkClass = 'underline hover:text-[var(--cz-public-primary)]';
 
-export function Footer({ displayName, contactEmail, showPoweredBy = false, showSeoHubLink = false }: FooterProps) {
+export function Footer({ displayName, contactEmail, showPoweredBy = false, showSeoHubLink = false, orgSlug }: FooterProps) {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
-  // PL-14: the pages always exist (they say "in preparation" until the product owner provides the text, D14).
+  // The pages always exist: the CasaZen ones say "in preparation" until the product owner provides the text (PL-14, D14),
+  // the operator's say "not published" until the host publishes theirs (BK-14).
   const newTab = showSeoHubLink ? {} : { target: '_blank', rel: 'noopener noreferrer' };
+  const operatorSite = !showSeoHubLink && orgSlug ? orgSlug : null;
+  const privacyPath = operatorSite ? orgDocumentPath(operatorSite, 'privacy') : LEGAL_DOCUMENT_PATHS.privacy;
+  const termsPath = operatorSite ? orgDocumentPath(operatorSite, 'terms') : LEGAL_DOCUMENT_PATHS.tos;
 
   return (
     <footer className="border-t border-black/10 py-8 text-sm text-[var(--cz-public-muted)]">
@@ -32,11 +42,11 @@ export function Footer({ displayName, contactEmail, showPoweredBy = false, showS
               {t('publicSite.seoHub')}
             </Link>
           ) : null}
-          <Link to={LEGAL_DOCUMENT_PATHS.privacy} className={linkClass} data-testid="footer-privacy" {...newTab}>
-            {t('publicSite.privacy')}
+          <Link to={privacyPath} className={linkClass} data-testid="footer-privacy" {...newTab}>
+            {operatorSite ? t('publicSite.operatorPrivacy') : t('publicSite.privacy')}
           </Link>
-          <Link to={LEGAL_DOCUMENT_PATHS.tos} className={linkClass} data-testid="footer-terms" {...newTab}>
-            {t('publicSite.terms')}
+          <Link to={termsPath} className={linkClass} data-testid="footer-terms" {...newTab}>
+            {operatorSite ? t('publicSite.operatorTerms') : t('publicSite.terms')}
           </Link>
           {showSeoHubLink ? (
             <>

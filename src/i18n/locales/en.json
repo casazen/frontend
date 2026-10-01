@@ -300,7 +300,8 @@
       "amministrazione": "Administration"
     },
     "ltrReferenceData": "LTR reference data",
-    "siteAppearance": "Site appearance"
+    "siteAppearance": "Site appearance",
+    "siteDocuments": "Site documents"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -2665,6 +2666,88 @@
       "imageDimensions": "Invalid image size: it must be at least {{minWidth}}×{{minHeight}} pixels and at most {{maxWidth}}×{{maxHeight}}."
     }
   },
+  "siteDocuments": {
+    "title": "Site documents",
+    "description": "The privacy notice and booking terms of your site: guests read them before they book.",
+    "adminRequired": "The site documents are managed by your organization's administrator: contact the administrator to change them.",
+    "loadError": "Unable to load the site documents.",
+    "responsibility": {
+      "title": "These are the documents of your site",
+      "body": "You are the data controller of your guests' data. Write the texts yourself or with your advisor: CasaZen does not draft them and does not check their content. CasaZen's own privacy notice and terms are separate documents."
+    },
+    "kinds": {
+      "privacy": {
+        "title": "Privacy notice",
+        "description": "How you process your guests' personal data. The consent a guest gives when booking points to this page."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "description": "The conditions of the booking: payment, cancellation, house rules."
+      }
+    },
+    "status": {
+      "published": "Published: version {{version}} since {{date}}.",
+      "never": "Not published yet. Guests see a notice saying it has not been published yet.",
+      "withdrawn": "Withdrawn on {{date}}. Guests see a notice saying it has not been published yet."
+    },
+    "source": {
+      "label": "How do you want to provide it",
+      "options": {
+        "Text": "I write the text here",
+        "ExternalUrl": "I already have a document online"
+      }
+    },
+    "content": {
+      "label": "Text",
+      "placeholder": "Write or paste the text of the document here.",
+      "counter": "{{length}} of {{max}} characters"
+    },
+    "format": {
+      "summary": "How to format the text",
+      "body": "Separate paragraphs with a blank line. Use # for a title, ## for a subtitle, - for a bullet list, **bold**, *italic* and [text](https://address) for a link. HTML code is not allowed."
+    },
+    "url": {
+      "label": "Address of the document",
+      "placeholder": "https://www.example.com/privacy",
+      "hint": "It must start with https://. Guests see a button that opens it in a new tab."
+    },
+    "actions": {
+      "publishFirst": "Publish",
+      "publishNew": "Publish new version",
+      "withdraw": "Withdraw the document",
+      "withdrawConfirm": "Guests will no longer see this document: they will see a notice saying it has not been published. The versions stay in the history.",
+      "withdrawYes": "Yes, withdraw",
+      "withdrawCancel": "Cancel",
+      "openPublic": "Open the public page"
+    },
+    "history": {
+      "title": "Versions",
+      "item": "Version {{version}} of {{date}}",
+      "source": {
+        "Text": "text",
+        "ExternalUrl": "link to an external document"
+      },
+      "inUse": "in use",
+      "withdrawn": "withdrawn",
+      "replaced": "replaced",
+      "useAsBase": "Use as a base"
+    },
+    "toasts": {
+      "published": "Document published (version {{version}})",
+      "publishFailed": "Unable to publish the document",
+      "withdrawn": "Document withdrawn",
+      "withdrawFailed": "Unable to withdraw the document",
+      "versionLoadFailed": "Unable to load this version"
+    },
+    "errors": {
+      "contentRequired": "Write the text of the document.",
+      "contentTooLong": "The text is longer than {{max}} characters.",
+      "htmlNotAllowed": "The text contains HTML code, which is not allowed: write plain text.",
+      "linkInvalid": "A link is not valid: it must start with https://, http:// or mailto:.",
+      "urlRequired": "Enter the address of the document.",
+      "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
+    }
+  },
   "vetrina": {
     "title": "Showcase",
     "description": "Your public booking site. See how your guests view your properties.",
@@ -3666,7 +3749,32 @@
     "closeBookingSheet": "Close booking panel",
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
-    "legalDocuments": "Legal documents"
+    "legalDocuments": "Legal documents",
+    "operatorPrivacy": "Privacy notice",
+    "operatorTerms": "Booking terms",
+    "documents": {
+      "backToSite": "Back to {{name}}",
+      "loading": "Loading the document...",
+      "loadError": "We can't load the document right now. Please try again in a moment.",
+      "seoDescription": "{{title}} of {{name}}",
+      "publishedBy": "Document published by {{name}}",
+      "version": "version {{version}}, published on {{date}}",
+      "contact": "Write to {{email}} for information",
+      "externalIntro": "{{name}} has published this document on another site.",
+      "externalOpen": "Open the document",
+      "externalOpenAt": "Open the document on {{host}}",
+      "externalHint": "It opens in a new tab, outside this site.",
+      "privacy": {
+        "title": "Privacy notice",
+        "notPublishedTitle": "Privacy notice not published yet",
+        "notPublished": "{{name}} has not published its privacy notice on this site yet."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "notPublishedTitle": "Booking terms not published yet",
+        "notPublished": "{{name}} has not published its booking terms on this site yet."
+      }
+    }
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -3735,7 +3843,7 @@
     "checkoutPlaceholderDates": "Selected dates: {{checkIn}} → {{checkOut}}",
     "checkoutPlaceholderPaymentComing": "Payment coming soon",
     "checkoutPlaceholderDescription": "Secure payment for {{orgName}} will be available after the operator activates Stripe Connect. This page will host the direct checkout flow (spec-direct-checkout).",
-    "gdprConsentText": "I consent to the processing of my personal data for booking management, in compliance with the operator's privacy policy.",
+    "gdprConsentText": "I consent to the processing of my personal data to manage the booking, in accordance with the operator's <privacy>privacy notice</privacy>.",
     "emailValidation": "Invalid email",
     "emailPlaceholder": "name@example.com",
     "checkoutDates_one": "Dates: {{checkIn}} → {{checkOut}} ({{count}} night)",
@@ -3929,7 +4037,8 @@
       "legendBooked": "Booked",
       "dayFree": "{{date}}: free",
       "dayBooked": "{{date}}: booked"
-    }
+    },
+    "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicSeo": {
     "hub": {
