@@ -26,6 +26,8 @@ import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
+import { OrgPrivacyPage, OrgTermsPage } from '@/features/public-booking/org-document-page';
+import { ORG_DOCUMENT_SEGMENTS } from '@/lib/org-document-paths';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
@@ -183,6 +185,11 @@ export const appRoutes: RouteObject[] = [
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
+      // The operator's own privacy notice and booking terms (BK-14, A3-21), not the CasaZen ones (/legale/*).
+      { path: ORG_DOCUMENT_SEGMENTS.privacy, element: <OrgPrivacyPage /> },
+      { path: ORG_DOCUMENT_SEGMENTS.terms, element: <OrgTermsPage /> },
+      // English spelling of the terms address, e.g. typed by hand or linked by older sites.
+      { path: 'terms', element: <Navigate to={`../${ORG_DOCUMENT_SEGMENTS.terms}`} relative="path" replace /> },
       // Link of the "request received" email of a "pay at the property" request (BK-06).
       { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
       // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).

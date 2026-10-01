@@ -159,6 +159,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         contactEmail={org?.contactEmail}
         showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
         showSeoHubLink={!isOrgMode}
+        orgSlug={isOrgMode ? (org?.slug ?? orgSlug) : undefined}
       />
 
       {isOrgMode ? <CookieConsentBanner /> : null}

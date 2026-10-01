@@ -300,7 +300,8 @@
       "amministrazione": "Amministrazione"
     },
     "ltrReferenceData": "Dati normativi LTR",
-    "siteAppearance": "Aspetto sito"
+    "siteAppearance": "Aspetto sito",
+    "siteDocuments": "Documenti sito"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -2671,6 +2672,88 @@
       "imageDimensions": "Dimensioni dell'immagine non valide: servono almeno {{minWidth}}×{{minHeight}} pixel e al massimo {{maxWidth}}×{{maxHeight}}."
     }
   },
+  "siteDocuments": {
+    "title": "Documenti del sito",
+    "description": "Informativa privacy e termini di prenotazione del tuo sito: gli ospiti li leggono prima di prenotare.",
+    "adminRequired": "I documenti del sito sono gestiti dall'amministratore della tua organizzazione: contatta l'amministratore per modificarli.",
+    "loadError": "Impossibile caricare i documenti del sito.",
+    "responsibility": {
+      "title": "Sono i documenti del tuo sito",
+      "body": "Il titolare del trattamento dei dati dei tuoi ospiti sei tu. Scrivi i testi tu o con il tuo consulente: CasaZen non li redige e non ne verifica il contenuto. L'informativa e i termini di CasaZen sono documenti separati."
+    },
+    "kinds": {
+      "privacy": {
+        "title": "Informativa privacy",
+        "description": "Come tratti i dati personali degli ospiti. Il consenso che l'ospite dà prenotando rimanda a questa pagina."
+      },
+      "terms": {
+        "title": "Termini di prenotazione",
+        "description": "Le condizioni della prenotazione: pagamento, cancellazione, regole della casa."
+      }
+    },
+    "status": {
+      "published": "Pubblicato: versione {{version}} dal {{date}}.",
+      "never": "Non ancora pubblicato. Gli ospiti vedono un avviso che dice che non è stato ancora pubblicato.",
+      "withdrawn": "Ritirato il {{date}}. Gli ospiti vedono un avviso che dice che non è stato ancora pubblicato."
+    },
+    "source": {
+      "label": "Come vuoi fornirlo",
+      "options": {
+        "Text": "Scrivo il testo qui",
+        "ExternalUrl": "Ho già un documento online"
+      }
+    },
+    "content": {
+      "label": "Testo",
+      "placeholder": "Scrivi o incolla qui il testo del documento.",
+      "counter": "{{length}} di {{max}} caratteri"
+    },
+    "format": {
+      "summary": "Come formattare il testo",
+      "body": "Separa i paragrafi con una riga vuota. Usa # per un titolo, ## per un sottotitolo, - per un elenco puntato, **grassetto**, *corsivo* e [testo](https://indirizzo) per un link. Il codice HTML non è ammesso."
+    },
+    "url": {
+      "label": "Indirizzo del documento",
+      "placeholder": "https://www.esempio.it/privacy",
+      "hint": "Deve iniziare con https://. Gli ospiti vedono un pulsante che lo apre in una nuova scheda."
+    },
+    "actions": {
+      "publishFirst": "Pubblica",
+      "publishNew": "Pubblica nuova versione",
+      "withdraw": "Ritira il documento",
+      "withdrawConfirm": "Gli ospiti non vedranno più questo documento: vedranno un avviso che dice che non è stato pubblicato. Le versioni restano nello storico.",
+      "withdrawYes": "Sì, ritira",
+      "withdrawCancel": "Annulla",
+      "openPublic": "Apri la pagina pubblica"
+    },
+    "history": {
+      "title": "Versioni",
+      "item": "Versione {{version}} del {{date}}",
+      "source": {
+        "Text": "testo",
+        "ExternalUrl": "link a un documento esterno"
+      },
+      "inUse": "in uso",
+      "withdrawn": "ritirata",
+      "replaced": "sostituita",
+      "useAsBase": "Usa come base"
+    },
+    "toasts": {
+      "published": "Documento pubblicato (versione {{version}})",
+      "publishFailed": "Impossibile pubblicare il documento",
+      "withdrawn": "Documento ritirato",
+      "withdrawFailed": "Impossibile ritirare il documento",
+      "versionLoadFailed": "Impossibile caricare questa versione"
+    },
+    "errors": {
+      "contentRequired": "Scrivi il testo del documento.",
+      "contentTooLong": "Il testo supera i {{max}} caratteri.",
+      "htmlNotAllowed": "Il testo contiene codice HTML, che non è ammesso: scrivi testo semplice.",
+      "linkInvalid": "Un link non è valido: deve iniziare con https://, http:// o mailto:.",
+      "urlRequired": "Inserisci l'indirizzo del documento.",
+      "urlInvalid": "L'indirizzo non è valido: deve essere un indirizzo https:// completo, senza credenziali."
+    }
+  },
   "vetrina": {
     "title": "Vetrina",
     "description": "Il tuo sito di prenotazioni pubblico. Qui puoi vedere come appari ai tuoi ospiti.",
@@ -3703,6 +3786,31 @@
       "from": "da",
       "perNight": "a notte",
       "details": "Dettagli"
+    },
+    "operatorPrivacy": "Informativa privacy",
+    "operatorTerms": "Termini di prenotazione",
+    "documents": {
+      "backToSite": "Torna a {{name}}",
+      "loading": "Caricamento del documento...",
+      "loadError": "Non riusciamo a caricare il documento. Riprova tra un momento.",
+      "seoDescription": "{{title}} di {{name}}",
+      "publishedBy": "Documento pubblicato da {{name}}",
+      "version": "versione {{version}}, pubblicata il {{date}}",
+      "contact": "Scrivi a {{email}} per informazioni",
+      "externalIntro": "{{name}} ha pubblicato questo documento su un altro sito.",
+      "externalOpen": "Apri il documento",
+      "externalOpenAt": "Apri il documento su {{host}}",
+      "externalHint": "Si apre in una nuova scheda, fuori da questo sito.",
+      "privacy": {
+        "title": "Informativa privacy",
+        "notPublishedTitle": "Informativa privacy non ancora pubblicata",
+        "notPublished": "{{name}} non ha ancora pubblicato la propria informativa privacy su questo sito."
+      },
+      "terms": {
+        "title": "Termini di prenotazione",
+        "notPublishedTitle": "Termini di prenotazione non ancora pubblicati",
+        "notPublished": "{{name}} non ha ancora pubblicato i propri termini di prenotazione su questo sito."
+      }
     }
   },
   "publicBooking": {
@@ -3772,7 +3880,7 @@
     "checkoutPlaceholderDates": "Date selezionate: {{checkIn}} → {{checkOut}}",
     "checkoutPlaceholderPaymentComing": "Pagamento in arrivo",
     "checkoutPlaceholderDescription": "Il pagamento sicuro per {{orgName}} sara' disponibile dopo l'attivazione di Stripe Connect da parte dell'operatore. Questa pagina accogliera' il flusso di checkout diretto (spec-direct-checkout).",
-    "gdprConsentText": "Acconsento al trattamento dei miei dati personali per la gestione della prenotazione, in conformita' con l'informativa privacy dell'operatore.",
+    "gdprConsentText": "Acconsento al trattamento dei miei dati personali per la gestione della prenotazione, in conformità con l'<privacy>informativa privacy dell'operatore</privacy>.",
     "emailValidation": "Email non valido",
     "emailPlaceholder": "nome@esempio.com",
     "checkoutDates_one": "Date: {{checkIn}} → {{checkOut}} ({{count}} notte)",
@@ -3968,7 +4076,8 @@
       "dayBooked": "{{date}}: occupato"
     },
     "orgLoadError": "Non riusciamo a caricare il sito",
-    "orgLoadErrorDescription": "Si è verificato un problema temporaneo. Riprova tra un momento."
+    "orgLoadErrorDescription": "Si è verificato un problema temporaneo. Riprova tra un momento.",
+    "termsNote": "Leggi anche i <terms>termini di prenotazione</terms> dell'operatore."
   },
   "publicSeo": {
     "hub": {
