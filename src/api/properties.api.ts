@@ -42,11 +42,15 @@ export const propertiesApi = {
   pause: (id: string) => ApiClient.post<PropertyPauseStatus>(`/properties/${id}/pause`),
   activate: (id: string) => ApiClient.post<PropertyPauseStatus>(`/properties/${id}/activate`),
 
+  /** Public search across orgs (BK-20): every filter of `PropertySearchParams` is sent, none is silently dropped. */
   search: (params: PropertySearchParams) => {
     const apiParams: Record<string, string | number | undefined> = {};
-    if (params.city) apiParams.city = params.city;
-    if (params.minBedrooms !== undefined) apiParams.bedrooms = params.minBedrooms;
+    if (params.city?.trim()) apiParams.city = params.city.trim();
+    if (params.minPrice !== undefined) apiParams.minPrice = params.minPrice;
     if (params.maxPrice !== undefined) apiParams.maxPrice = params.maxPrice;
+    if (params.minBedrooms !== undefined) apiParams.bedrooms = params.minBedrooms;
+    if (params.minBathrooms !== undefined) apiParams.bathrooms = params.minBathrooms;
+    if (params.guests !== undefined) apiParams.guests = params.guests;
     return ApiClient.get<PublicPropertyDto[]>('/properties/search', apiParams, { public: true });
   },
 
