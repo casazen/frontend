@@ -41,13 +41,44 @@ export interface PublicOrgDto {
   slug: string;
   displayName: string;
   logoUrl: string | null;
+  /** Primary color of the site (`#rrggbb`), null for the theme's own color (BK-12). */
+  primaryColor?: string | null;
+  /** Same value as primaryColor, kept by the backend for older clients. */
   themeColor: string | null;
   /** Only present when the org opted in to publish it (A1-22, A1-23) — off by default (GDPR). */
   contactEmail: string | null;
   heroImageUrl?: string | null;
   tagline?: string | null;
+  /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
   publicThemeId?: string | null;
   showPoweredBy?: boolean;
+}
+
+/** Image of the public-site branding with its own upload/remove endpoints (BK-12). */
+export type BrandingImageKind = 'logo' | 'hero';
+
+/** The caller org's public-site branding (BK-12, A3-17): GET/PUT /api/orgs/me/branding, org billing admin only. */
+export interface OrgBranding {
+  /** Absolute public URL, or null (the site shows the display name). */
+  logoUrl: string | null;
+  /** Absolute public URL, or null (the landing uses the first property photo). */
+  heroImageUrl: string | null;
+  /** `#rrggbb`, or null for the theme's own color. */
+  primaryColor: string | null;
+  /** Always one of the supported theme ids. */
+  publicThemeId: string;
+  tagline: string | null;
+  /** Public slug (preview link /book/{slug}), edited in the org settings. */
+  slug: string;
+  displayName: string;
+  showPoweredBy: boolean;
+}
+
+/** Body of PUT /api/orgs/me/branding: text branding, replaced as a whole (null = theme color / default theme / none). */
+export interface UpdateOrgBrandingRequest {
+  primaryColor: string | null;
+  publicThemeId: string;
+  tagline: string | null;
 }
 
 /** The caller org's editable identity (A1-22, A1-23): GET/PUT /api/orgs/me/settings, org billing admin only. */
