@@ -22,6 +22,9 @@ vi.mock('@/api/ota.api', () => ({ otaApi: { getAll: vi.fn().mockResolvedValue([]
 vi.mock('@/features/compliance/compliance-summary-widget', () => ({
   ComplianceSummaryWidget: () => null,
 }));
+vi.mock('@/features/settings/domain/site-address-card', () => ({
+  SiteAddressCard: () => null,
+}));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));

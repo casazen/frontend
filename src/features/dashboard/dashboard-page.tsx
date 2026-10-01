@@ -17,6 +17,7 @@ import { getBookingStatusLabel, getOtaConnectionStatusLabel } from '@/lib/i18n-l
 import { formatStayDate } from '@/lib/stay-dates';
 import { BOOKING_STATUS_VARIANTS } from '@/features/bookings/schemas/booking.schema';
 import { ComplianceSummaryWidget } from '@/features/compliance/compliance-summary-widget';
+import { SiteAddressCard } from '@/features/settings/domain/site-address-card';
 import type { OtaIntegration, OtaPlatform } from '@/types';
 import type { DashboardKpis, DashboardPeriodSelection, DashboardStay, DashboardStayList } from '@/types/dashboard.types';
 import { StatsCard } from './components/stats-card';
@@ -83,6 +84,8 @@ export function DashboardPage() {
         />
 
         <ComplianceSummaryWidget />
+
+        <SiteAddressCard />
 
         {kpis.isLoading ? (
           <DashboardSkeleton />

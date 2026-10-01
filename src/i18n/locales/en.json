@@ -2504,11 +2504,6 @@
     "planSettings": "Plan settings"
   },
   "domain": {
-    "status": {
-      "Pending": "Pending",
-      "Verified": "Verified",
-      "Failed": "Failed"
-    },
     "modes": {
       "path": "CasaZen path (/book/{slug})",
       "subdomain": "CasaZen subdomain",
@@ -2526,25 +2521,84 @@
       "save": "Save domain settings",
       "saved": "Domain settings saved",
       "saveFailed": "Could not save domain settings",
-      "verify": "Verify DNS",
+      "verify": "Check now",
       "verifySuccess": "Domain verified successfully",
-      "verifyFailed": "DNS verification failed — check your records and try again",
+      "verifyFailed": "The check did not work: try again shortly",
       "upgradeCta": "Custom domains are available on Pro.",
       "upgradeLink": "Upgrade plan",
       "currentTitle": "Current configuration",
       "pathUrl": "Path URL",
       "subdomainUrl": "Subdomain URL",
       "customDomainUrl": "Custom domain URL",
-      "customDomainPlaceholder": "www.yourvilla.com"
+      "customDomainPlaceholder": "www.yourvilla.com",
+      "verifying": "Checking…",
+      "loadError": "Unable to load the domain settings.",
+      "retry": "Try again",
+      "planLapsed": "Your plan no longer includes the custom domain: until you go back to Pro the site does not answer on this domain and your guests use the CasaZen path."
     },
     "dns": {
-      "title": "DNS instructions",
-      "description": "Add these records at your DNS provider, then click Verify.",
-      "cname": "CNAME record",
-      "txt": "TXT verification record",
-      "copyCname": "Copy CNAME target",
+      "title": "DNS records to create",
+      "description": "Create these records at the provider of your domain (where you registered it). Then press Check now.",
+      "txt": "1. Ownership TXT record",
+      "txtHint": "Proves the domain is yours. Type TXT.",
+      "cname": "2. CNAME record",
+      "cnameHint": "Points the domain to our service. Type CNAME, for a subdomain such as www.",
+      "aRecord": "Alternatively: A record",
+      "aRecordHint": "For a domain without www (the root of a domain cannot have a CNAME) create a record of type A for each address:",
+      "providerTxt": "3. Service provider TXT record",
+      "providerTxtHint": "Required only because the domain is already used on another account of the provider. Type TXT.",
+      "copyCname": "Copy CNAME value",
       "copyTxt": "Copy TXT value",
-      "copied": "Copied to clipboard"
+      "copyProviderTxt": "Copy the provider TXT value",
+      "copied": "Copied to the clipboard",
+      "copyFailed": "Cannot copy: select the value by hand",
+      "sslNote": "The SSL certificate is generated automatically once the domain is active."
+    },
+    "state": {
+      "verified": "Active",
+      "waitingDns": "Waiting for DNS",
+      "activating": "Activating",
+      "failed": "Not active"
+    },
+    "stateTitle": {
+      "verified": "Your domain is active",
+      "waitingDns": "Waiting for the DNS records",
+      "activating": "Activation in progress",
+      "failed": "The domain cannot be activated"
+    },
+    "stateDescription": {
+      "verified": "Your guests can book from your domain. We keep checking the DNS records: if they are removed, the domain stops being active.",
+      "waitingDns": "Create the DNS records shown below at your provider and wait for them to propagate (it can take a few hours). Then press Check now, or wait for the automatic check.",
+      "activating": "The DNS records are not the problem: we are finishing the activation of the domain on the platform and will retry automatically.",
+      "failed": "The domain cannot be activated. Check that it is spelled correctly or choose another domain."
+    },
+    "issues": {
+      "ownership_txt_missing": "We cannot find the TXT record that proves you own the domain. Check that it was created and wait for the DNS to propagate (it can take a few hours).",
+      "dns_not_pointing": "The domain does not point to our service yet: create the CNAME record shown (for a domain without www, the A records) and wait for the DNS to propagate.",
+      "vercel_verification_pending": "The service provider asks for one more TXT record to confirm the domain: add it (it is in the DNS instructions) and check again.",
+      "vercel_not_configured": "Activating custom domains is not available on the platform yet. Your domain will activate by itself as soon as it is.",
+      "vercel_unauthorized": "We cannot activate the domain right now because of a platform configuration problem. We will retry automatically; if it lasts, contact support.",
+      "vercel_unavailable": "The activation service is not answering right now. We will retry automatically.",
+      "domain_taken": "This domain is already in use by another CasaZen site.",
+      "vercel_domain_in_use": "This domain is already linked to another project or account of the service provider and we cannot activate it. Contact support.",
+      "vercel_rejected": "The service provider does not accept this domain. Check that it is spelled correctly."
+    },
+    "lastCheck": "Last check",
+    "neverChecked": "not checked yet",
+    "verifiedAt": "Active since",
+    "autoCheck": {
+      "active": "We re-check the domain automatically: you do not need to come back here.",
+      "stopped": "The automatic check is paused because the domain has not been configured for too long: press Check now after fixing the DNS records."
+    },
+    "activationUnavailable": "Activating custom domains is not available on the platform yet: the domain will stay on hold until the service is configured. There is nothing different to do on your DNS.",
+    "siteAddress": {
+      "title": "Give your site an address of its own",
+      "suggestion": "Today your guests book on {{url}}. Choose a CasaZen subdomain or, with Pro, your own domain (for example www.yourvilla.com).",
+      "domainTitle": "Domain {{domain}}",
+      "choose": "Choose the address",
+      "manage": "Go to the setup",
+      "dismiss": "Hide the suggestion",
+      "loadError": "We cannot load the address of your site."
     }
   },
   "orgSettings": {
