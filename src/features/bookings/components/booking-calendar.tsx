@@ -27,7 +27,7 @@ const localizer = dateFnsLocalizer({
   locales: CALENDAR_LOCALES,
 });
 
-type LegendKey = 'Confirmed' | 'Pending' | 'CheckedIn' | 'CheckedOut' | 'toReview' | 'block';
+type LegendKey = 'Confirmed' | 'Pending' | 'CheckedIn' | 'CheckedOut' | 'toReview' | 'block' | 'manualBlock';
 
 /**
  * One style per kind of entry, used by the events and by the legend. Pending requests (BK-06: "pay at the property"
@@ -41,6 +41,8 @@ const EVENT_STYLES: Record<LegendKey, CSSProperties> = {
   // OTA stay created from an iCal block that a sync marked "da verificare" (CO-21): the reservation changed on the channel.
   toReview: { backgroundColor: '#fff7ed', color: '#9a3412', border: '2px solid #ea580c' },
   block: { backgroundColor: '#9333ea', color: '#ffffff', border: '1px solid #9333ea' },
+  // Dates closed by the host (PC-09: owner stay, maintenance): not sellable, but not a guest either.
+  manualBlock: { backgroundColor: '#334155', color: '#ffffff', border: '1px solid #334155' },
 };
 
 const LEGEND: { key: LegendKey; labelKey: string }[] = [
@@ -50,10 +52,11 @@ const LEGEND: { key: LegendKey; labelKey: string }[] = [
   { key: 'CheckedOut', labelKey: 'booking.calendar.legend.checkedOut' },
   { key: 'toReview', labelKey: 'booking.calendar.legend.toReview' },
   { key: 'block', labelKey: 'booking.calendar.legend.block' },
+  { key: 'manualBlock', labelKey: 'booking.calendar.legend.manualBlock' },
 ];
 
 function styleKey(event: HostCalendarEvent): LegendKey {
-  if (event.kind === 'block') return 'block';
+  if (event.kind === 'block') return event.manual ? 'manualBlock' : 'block';
   if (event.otaReviewReason) return 'toReview';
   return event.status === 'Pending' || event.status === 'CheckedIn' || event.status === 'CheckedOut'
     ? event.status
@@ -134,7 +137,9 @@ export function BookingCalendar({
       });
       const what =
         event.kind === 'block'
-          ? t('booking.calendar.block.tooltip', { source: blockSourceLabel(event, t) })
+          ? event.manual
+            ? t('booking.calendar.manualBlock.tooltip', { reason: blockSourceLabel(event, t) })
+            : t('booking.calendar.block.tooltip', { source: blockSourceLabel(event, t) })
           : event.otaReviewReason
             ? `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)} · ${t('booking.otaReview.badge')}`
             : `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)}`;
