@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Menu } from 'lucide-react';
 import { usePublicOrg } from '@/queries/use-public-org';
@@ -27,6 +27,12 @@ function scrollToBookingWidget() {
     return;
   }
   document.getElementById('property-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/** The same `/book/:orgSlug/...` path with the org's current slug (segments after the slug are kept as they are). */
+function canonicalOrgPath(pathname: string, slug: string): string {
+  const rest = pathname.split('/').slice(3).join('/');
+  return `/book/${encodeURIComponent(slug)}${rest ? `/${rest}` : ''}`;
 }
 
 export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
@@ -61,6 +67,10 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
       );
     }
     if (isError || !org) return <PublicOrgNotFoundPage />;
+    // A previous slug of the org (PL-04): the backend still resolves it, the address bar moves to the current one.
+    if (org.slug && org.slug !== orgSlug) {
+      return <Navigate to={canonicalOrgPath(location.pathname, org.slug) + location.search + location.hash} replace />;
+    }
   }
 
   const displayName = org?.displayName ?? 'CasaZen';
