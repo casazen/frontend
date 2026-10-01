@@ -687,8 +687,9 @@
         "required": "Il cognome e' obbligatorio"
       },
       "fiscalCode": {
-        "minLength": "Il codice fiscale deve essere di almeno 11 caratteri",
-        "maxLength": "Il codice fiscale deve essere di al massimo 16 caratteri"
+        "required": "Il codice fiscale è obbligatorio",
+        "invalid": "Codice fiscale non valido: controlla i 16 caratteri (persona fisica) o le 11 cifre (società).",
+        "duplicate": "Questo codice fiscale è già inserito per un'altra parte del contratto."
       },
       "citizenship": {
         "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)",
@@ -712,6 +713,14 @@
       },
       "securityDeposit": {
         "min": "Il deposito cauzionale non può essere negativo."
+      },
+      "landlords": {
+        "required": "Inserisci almeno un locatore.",
+        "max": "Puoi inserire al massimo 10 locatori."
+      },
+      "tenants": {
+        "required": "Inserisci almeno un conduttore.",
+        "max": "Puoi inserire al massimo 10 conduttori."
       }
     },
     "createPageTitle": "Nuovo contratto",
@@ -725,10 +734,6 @@
       "startDateLabel": "Data inizio *",
       "endDateLabel": "Data fine *",
       "monthlyRentLabel": "Canone mensile (€) *",
-      "landlordTitle": "Proprietario",
-      "landlordDescription": "Parte contraente — proprietario o rappresentante",
-      "tenantTitle": "Conduttore",
-      "tenantDescription": "Parte contraente — locatario",
       "firstNameLabel": "Nome *",
       "lastNameLabel": "Cognome *",
       "fiscalCodeLabel": "Codice fiscale *",
@@ -758,7 +763,19 @@
       },
       "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
       "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo.",
-      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura."
+      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura.",
+      "landlordsTitle": "Locatori",
+      "landlordsDescription": "Tutti i proprietari che concedono l'immobile (es. comproprietari o coniugi): ciascuno è parte del contratto e della registrazione.",
+      "tenantsTitle": "Conduttori",
+      "tenantsDescription": "Tutti i conduttori che prendono in locazione l'immobile: ciascuno è parte del contratto e della registrazione.",
+      "landlordNumber": "Locatore {{n}}",
+      "tenantNumber": "Conduttore {{n}}",
+      "addLandlord": "Aggiungi locatore",
+      "addTenant": "Aggiungi conduttore",
+      "removeLandlord": "Rimuovi il locatore {{n}}",
+      "removeTenant": "Rimuovi il conduttore {{n}}",
+      "partiesMax": "Puoi inserire al massimo {{max}} parti per ruolo.",
+      "fiscalCodeHint": "16 caratteri per una persona fisica, 11 cifre per una società."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -4730,7 +4747,12 @@
       "checkoutWizardNotStarted": "Avvia il check-out prima di completarlo: riapri la procedura di check-out del soggiorno.",
       "checkoutCleaningChoiceInvalid": "Scegli se richiedere le pulizie a un fornitore (indicando il fornitore) oppure saltarle.",
       "checkoutStepInvalid": "Passaggio del check-out non valido.",
-      "checkoutNotCompleted": "La proprietà si dichiara pronta dopo il check-out del soggiorno."
+      "checkoutNotCompleted": "La proprietà si dichiara pronta dopo il check-out del soggiorno.",
+      "leasePartyFiscalCodeInvalid": "Il codice fiscale di una parte non è valido.",
+      "leasePartyFiscalCodeDuplicate": "Lo stesso codice fiscale è indicato per più parti del contratto.",
+      "leasePartiesTooMany": "Troppe parti per un ruolo: al massimo 10 locatori e 10 conduttori.",
+      "leaseLandlordRequired": "Il contratto deve avere almeno un locatore.",
+      "leaseTenantRequired": "Il contratto deve avere almeno un conduttore."
     }
   },
   "validation": {
