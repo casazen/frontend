@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Info, ShieldAlert } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -27,6 +27,9 @@ import {
 type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'>;
 type FieldErrors = Partial<Record<'name' | 'slug' | 'contactEmail', string>>;
 
+/** Page of the public site's branding: logo, hero, color, tagline, theme (BK-12). */
+const SITE_APPEARANCE_PATH = '/app/short-rent/settings/site-appearance';
+
 /** Route prefix of an org's public booking site (a path, not text to translate). */
 const PUBLIC_PATH_PREFIX = '/book/';
 
@@ -47,7 +50,7 @@ function validate(form: OrgSettingsForm): FieldErrors {
 export function OrganizationSettingsPage() {
   return (
     <AppShell>
-      <OrganizationSettingsContent />
+      <OrganizationSettingsContent showSiteAppearanceLink />
     </AppShell>
   );
 }
@@ -56,7 +59,12 @@ export function OrganizationSettingsPage() {
  * Content of the org settings page, without a shell: the short-rent route wraps it in its shell
  * ({@link OrganizationSettingsPage}), the long-rent route gets the long-rent shell from the context layout.
  */
-export function OrganizationSettingsContent() {
+export function OrganizationSettingsContent({
+  showSiteAppearanceLink = false,
+}: {
+  /** Short-rent shell only: the public booking site (and its branding page) belongs to short-term rentals. */
+  showSiteAppearanceLink?: boolean;
+}) {
   const { t } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
@@ -276,6 +284,16 @@ export function OrganizationSettingsContent() {
           >
             {t('orgSettings.save')}
           </Button>
+
+          {/* The public site's branding has its own page in the short-rent shell (BK-12). */}
+          {showSiteAppearanceLink ? (
+            <p className="border-t pt-4 text-sm text-muted-foreground" data-testid="org-settings-site-appearance-hint">
+              {t('orgSettings.siteAppearanceHint')}{' '}
+              <Link to={SITE_APPEARANCE_PATH} className="underline">
+                {t('orgSettings.siteAppearanceLink')}
+              </Link>
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     );
