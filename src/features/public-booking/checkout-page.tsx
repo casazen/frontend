@@ -523,7 +523,7 @@ function CheckoutFlow({
               </p>
             )}
 
-            <ConsentCheckbox checked={consent} onCheckedChange={setConsent} />
+            <ConsentCheckbox checked={consent} onCheckedChange={setConsent} orgSlug={orgSlug} />
 
             {paymentError && (
               <p className="text-sm text-destructive" role="alert" data-testid="checkout-error">

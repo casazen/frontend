@@ -14,8 +14,10 @@ import { Hero } from '@/features/public-site/components/Hero';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { needsOrgSetup } from '@/lib/onboarding';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { analyzePrimaryColor, publicSiteColorStyle } from '@/lib/public-site-colors';
 import {
   PUBLIC_SITE_THEMES,
+  PUBLIC_SITE_THEME_PALETTES,
   normalizeHexColor,
   resolvePublicSiteTheme,
   type PublicSiteThemeId,
@@ -43,8 +45,13 @@ const ORG_SETTINGS_PATH = '/app/short-rent/settings/organization';
 /** Route prefix of an org's public booking site (a path, not text to translate). */
 const PUBLIC_PATH_PREFIX = '/book/';
 
-/** Swatch shown when the org uses the theme's own color (the `--cz-public-primary` of `public-tokens.css`). */
-const THEME_COLOR_SWATCH = '#e07a5f';
+/** Glyph sample of a font or color (not a word: it is the same in every language). */
+const FONT_SAMPLE = 'Aa';
+
+/** Contrast ratio as shown to the host: truncated, never rounded up (4.46 is not "4.5"), with the locale's separator. */
+function formatRatio(ratio: number, language: string): string {
+  return (Math.floor(ratio * 10) / 10).toLocaleString(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
 
 interface BrandingForm {
   themeId: PublicSiteThemeId;
@@ -83,7 +90,7 @@ export function SiteAppearancePage() {
 }
 
 export function SiteAppearanceContent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
   const { user } = useCurrentUser();
@@ -162,7 +169,10 @@ export function SiteAppearanceContent() {
 
     const branding = brandingQuery.data;
     const previewColor = normalizeHexColor(form.primaryColor);
-    const colorPickerValue = previewColor ?? THEME_COLOR_SWATCH;
+    // The picker needs a color: while the org uses the theme's own color it shows that theme's primary.
+    const colorPickerValue = previewColor ?? PUBLIC_SITE_THEME_PALETTES[form.themeId].primary;
+    const colorStyle = publicSiteColorStyle(previewColor, form.themeId);
+    const colorAnalysis = previewColor ? analyzePrimaryColor(previewColor, form.themeId) : null;
 
     return (
       <div className="grid items-start gap-6 lg:grid-cols-2">
@@ -206,6 +216,7 @@ export function SiteAppearanceContent() {
                         />
                         {t(`siteAppearance.theme.options.${themeId}.name`)}
                       </span>
+                      <ThemeSample themeId={themeId} style={colorStyle} />
                       <span className="text-muted-foreground">
                         {t(`siteAppearance.theme.options.${themeId}.description`)}
                       </span>
@@ -255,6 +266,36 @@ export function SiteAppearanceContent() {
                     {t(fieldErrors.primaryColor)}
                   </p>
                 ) : null}
+                {colorAnalysis ? (
+                  <div
+                    className="space-y-1 rounded-md border bg-muted/40 p-3 text-sm"
+                    data-testid="site-color-contrast"
+                  >
+                    <p className="flex items-center gap-2 font-medium">
+                      <span
+                        className="inline-flex h-6 min-w-12 items-center justify-center rounded px-2 text-xs font-semibold"
+                        style={{ background: colorAnalysis.primary, color: colorAnalysis.onPrimary }}
+                        aria-hidden
+                      >
+                        {FONT_SAMPLE}
+                      </span>
+                      {t('siteAppearance.color.contrast.title')}
+                    </p>
+                    <p data-testid="site-color-contrast-button">
+                      {t(
+                        colorAnalysis.onPrimary === '#ffffff'
+                          ? 'siteAppearance.color.contrast.buttonLight'
+                          : 'siteAppearance.color.contrast.buttonDark',
+                        { ratio: formatRatio(colorAnalysis.onPrimaryRatio, i18n.language) },
+                      )}
+                    </p>
+                    {colorAnalysis.primaryTextAdjusted ? (
+                      <p className="text-muted-foreground" data-testid="site-color-contrast-adjusted">
+                        {t('siteAppearance.color.contrast.textAdjusted', { color: colorAnalysis.primaryText })}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="space-y-2">
@@ -297,7 +338,7 @@ export function SiteAppearanceContent() {
         <SitePreview
           branding={branding}
           themeId={form.themeId}
-          primaryColor={previewColor}
+          colorStyle={colorStyle}
           tagline={form.tagline.trim() || null}
         />
       </div>
@@ -408,10 +449,31 @@ function BrandingImageField({ kind, url }: { kind: BrandingImageKind; url: strin
   );
 }
 
+/**
+ * Miniature of a theme: its page background, display font, text color and primary color (the host's own color when one
+ * is being edited, since that is what the site will look like with this theme). Decorative: the theme name and
+ * description next to it carry the meaning.
+ */
+function ThemeSample({ themeId, style }: { themeId: PublicSiteThemeId; style: CSSProperties | undefined }) {
+  return (
+    <span
+      className="public-site-root pointer-events-none flex items-center justify-between gap-2 rounded border px-3 py-2"
+      data-theme={themeId}
+      style={style}
+      aria-hidden
+      data-testid={`site-theme-sample-${themeId}`}
+    >
+      <span className="public-display text-xl leading-none">{FONT_SAMPLE}</span>
+      <span className="public-site-cta h-5 w-10" />
+    </span>
+  );
+}
+
 interface SitePreviewProps {
   branding: OrgBranding;
   themeId: PublicSiteThemeId;
-  primaryColor: string | null;
+  /** Inline color variables of the host's primary color (`publicSiteColorStyle`), undefined for the theme's own. */
+  colorStyle: CSSProperties | undefined;
   tagline: string | null;
 }
 
@@ -420,7 +482,7 @@ interface SitePreviewProps {
  * (`public-tokens.css`) and same `Hero` component as `/book/{slug}`. Without a hero image the real site shows the first
  * property photo; the preview shows the theme's gradient instead.
  */
-function SitePreview({ branding, themeId, primaryColor, tagline }: SitePreviewProps) {
+function SitePreview({ branding, themeId, colorStyle, tagline }: SitePreviewProps) {
   const { t } = useTranslation();
   const publicPath = `${PUBLIC_PATH_PREFIX}${encodeURIComponent(branding.slug)}`;
 
@@ -446,10 +508,10 @@ function SitePreview({ branding, themeId, primaryColor, tagline }: SitePreviewPr
         <div
           className="public-site-root min-h-0 overflow-hidden rounded-md border"
           data-theme={themeId}
-          style={primaryColor ? ({ '--cz-public-primary': primaryColor } as CSSProperties) : undefined}
+          style={colorStyle}
           data-testid="site-preview-root"
         >
-          <div className="flex items-center justify-between gap-2 border-b border-black/10 bg-[var(--cz-public-surface)] px-4 py-3">
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--cz-public-border)] bg-[var(--cz-public-surface)] px-4 py-3">
             {branding.logoUrl ? (
               <img
                 src={branding.logoUrl}
@@ -460,7 +522,7 @@ function SitePreview({ branding, themeId, primaryColor, tagline }: SitePreviewPr
             ) : (
               <span className="public-display truncate text-base font-semibold">{branding.displayName}</span>
             )}
-            <span className="public-site-cta rounded-[var(--cz-public-radius)] px-3 py-1.5 text-xs font-medium">
+            <span className="public-site-cta px-3 py-1.5 text-xs">
               {t('publicSite.mobileBookingCta')}
             </span>
           </div>

@@ -38,7 +38,7 @@ export function AmenityGrid({ amenities }: AmenityGridProps) {
         const Icon = iconForAmenity(amenity);
         return (
           <li key={amenity} className="public-site-card flex items-center gap-2 px-3 py-2 text-sm">
-            <Icon className="h-4 w-4 shrink-0 text-[var(--cz-public-primary)]" aria-hidden />
+            <Icon className="h-4 w-4 shrink-0 text-[var(--cz-public-primary-text)]" aria-hidden />
             <span>{amenity}</span>
           </li>
         );

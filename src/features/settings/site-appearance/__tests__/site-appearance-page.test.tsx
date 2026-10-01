@@ -160,6 +160,52 @@ describe('SiteAppearancePage', () => {
     expect(screen.getByTestId('site-appearance-open-site')).toHaveAttribute('href', '/book/villa-parco');
   });
 
+  it('SiteAppearancePage_ThemeOptions_ShowASampleOfEachTheme', async () => {
+    renderPage();
+
+    await screen.findByTestId('site-appearance-form');
+    for (const themeId of ['mare', 'montagna', 'urban']) {
+      expect(screen.getByTestId(`site-theme-sample-${themeId}`)).toHaveAttribute('data-theme', themeId);
+    }
+  });
+
+  it('SiteAppearancePage_NoCustomColor_ShowsNoContrastPanelAndPickerShowsTheThemeColor', async () => {
+    renderPage();
+
+    await screen.findByTestId('site-appearance-form');
+    expect(screen.queryByTestId('site-color-contrast')).not.toBeInTheDocument();
+    expect(screen.getByTestId('site-primary-color-picker')).toHaveValue('#b4492f');
+
+    fireEvent.click(screen.getByTestId('site-theme-urban'));
+    expect(screen.getByTestId('site-primary-color-picker')).toHaveValue('#2f3bd1');
+  });
+
+  it('SiteAppearancePage_DarkColor_AnnouncesWhiteButtonTextWithItsContrast', async () => {
+    renderPage();
+
+    await screen.findByTestId('site-appearance-form');
+    fireEvent.change(screen.getByTestId('site-primary-color-input'), { target: { value: '#1a6b8f' } });
+
+    expect(screen.getByTestId('site-color-contrast-button')).toHaveTextContent(/bianco/);
+    expect(screen.getByTestId('site-color-contrast-button')).toHaveTextContent(/\d,\d:1/);
+    expect(screen.queryByTestId('site-color-contrast-adjusted')).not.toBeInTheDocument();
+    const preview = screen.getByTestId('site-preview-root');
+    expect(preview.style.getPropertyValue('--cz-public-on-primary')).toBe('#ffffff');
+  });
+
+  it('SiteAppearancePage_LightColor_AnnouncesDarkButtonTextAndTheDarkerLinkVariant', async () => {
+    renderPage();
+
+    await screen.findByTestId('site-appearance-form');
+    fireEvent.change(screen.getByTestId('site-primary-color-input'), { target: { value: '#f4d03f' } });
+
+    expect(screen.getByTestId('site-color-contrast-button')).toHaveTextContent(/scuro/);
+    expect(screen.getByTestId('site-color-contrast-adjusted')).toBeInTheDocument();
+    const preview = screen.getByTestId('site-preview-root');
+    expect(preview.style.getPropertyValue('--cz-public-on-primary')).not.toBe('#ffffff');
+    expect(preview.style.getPropertyValue('--cz-public-primary')).toBe('#f4d03f');
+  });
+
   it('SiteAppearancePage_Save_SendsNormalizedColorThemeAndTagline', async () => {
     vi.mocked(OrgsApi.updateBranding).mockImplementation((payload) =>
       Promise.resolve(branding({ ...payload, publicThemeId: payload.publicThemeId })),
