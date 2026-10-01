@@ -311,7 +311,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
-    legacyPaths: ['/app/short-rent/cin', '/cin', '/admin/cin'],
+    legacyPaths: ['/app/short-rent/cin', '/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -619,6 +619,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
+  },
+  // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed.
+  {
+    path: '/app/admin/cin',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.cinAudit',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 1,
+    icon: 'BadgeCheck',
+    component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
+    // The old /admin/cin URL was the admin audit, not the host CIN page: it must land here (A1-16).
+    legacyPaths: ['/admin/cin'],
   },
   // Admin Tax Rates
   {

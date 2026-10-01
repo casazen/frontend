@@ -4,11 +4,12 @@ import type {
   UserDetail,
   UserSummary,
   UpdateProfileRequest,
-  ChangeRoleRequest,
   PagedResult,
   OnboardingRequest,
   OnboardingResponse,
   UserActivationResponse,
+  UserRole,
+  UserRolesResponse,
   SignupAttribution,
   SignupAttributionResult,
 } from '@/types';
@@ -49,8 +50,13 @@ export const UsersApi = {
   updateMe: (body: UpdateProfileRequest): Promise<UserDetail> =>
     ApiClient.put<UserDetail>('/users/me', body),
 
-  changeRole: (id: string, role: string): Promise<{ id: string; role: string }> =>
-    ApiClient.put<{ id: string; role: string }>(`/users/${id}/role`, { role } as ChangeRoleRequest),
+  /** Roles the user currently holds, restricted to the ones an admin can manage (A1-17). */
+  getRoles: (id: string): Promise<UserRolesResponse> =>
+    ApiClient.get<UserRolesResponse>(`/users/${encodeURIComponent(id)}/roles`),
+
+  /** Sets the user's exact admin-manageable role set (A1-17): grants and revokes the difference. */
+  updateRoles: (id: string, roles: UserRole[]): Promise<UserRolesResponse> =>
+    ApiClient.put<UserRolesResponse>(`/users/${encodeURIComponent(id)}/roles`, { roles }),
 
   deactivateUser: (id: string): Promise<UserActivationResponse> =>
     ApiClient.delete<UserActivationResponse>(`/users/${encodeURIComponent(id)}`),

@@ -31,6 +31,7 @@
       "description": "National identification code verification (D.L. 145/2023)",
       "filters": "Filters",
       "loadError": "Unable to load CIN data. Please try again later.",
+      "retry": "Retry",
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} properties)",
       "previous": "Previous",
       "next": "Next",
@@ -57,8 +58,13 @@
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} users)",
       "previous": "Previous",
       "next": "Next",
+      "loadError": "Could not load users. Try again later.",
+      "retry": "Retry",
       "filter": {
-        "allRoles": "All roles"
+        "allRoles": "All roles",
+        "allStatuses": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "table": {
         "name": "Name",
@@ -66,6 +72,7 @@
         "role": "Role",
         "plan": "Plan",
         "status": "Status",
+        "createdAt": "Registered on",
         "actions": "Actions",
         "active": "Active",
         "inactive": "Inactive",
@@ -83,9 +90,13 @@
         "confirm": "Deactivate"
       },
       "roleDialog": {
-        "title": "Change role",
-        "description": "Select the new role for {{name}}.",
-        "label": "Role",
+        "title": "Manage roles",
+        "description": "Select the roles for {{name}}.",
+        "label": "Roles",
+        "loading": "Loading roles…",
+        "loadError": "Could not load the current roles.",
+        "retry": "Retry",
+        "noRolesWarning": "No role selected: the user will lose access to the app's features.",
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save"
@@ -101,6 +112,8 @@
     "jobs": {
       "title": "Background Jobs",
       "description": "Hangfire job status (refreshed every 30 seconds)",
+      "loadError": "Could not load jobs. Try again later.",
+      "retry": "Retry",
       "table": {
         "job": "Job",
         "cron": "Cron",
@@ -258,6 +271,7 @@
     "jobs": "Processes",
     "suppliers": "Suppliers",
     "guests": "Guests",
+    "cinAudit": "CIN Audit",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "more": "More",
@@ -689,8 +703,9 @@
         "required": "Last name is required"
       },
       "fiscalCode": {
-        "minLength": "Fiscal code must be at least 11 characters",
-        "maxLength": "Fiscal code must be at most 16 characters"
+        "required": "Fiscal code is required",
+        "invalid": "Invalid fiscal code: check the 16 characters (natural person) or the 11 digits (company).",
+        "duplicate": "This fiscal code is already entered for another party of the lease."
       },
       "citizenship": {
         "length": "Use ISO 3166-1 alpha-2 country code (e.g. IT)",
@@ -714,6 +729,14 @@
       },
       "securityDeposit": {
         "min": "The security deposit cannot be negative."
+      },
+      "landlords": {
+        "required": "Enter at least one landlord.",
+        "max": "You can enter at most 10 landlords."
+      },
+      "tenants": {
+        "required": "Enter at least one tenant.",
+        "max": "You can enter at most 10 tenants."
       }
     },
     "createPageTitle": "Create lease",
@@ -727,10 +750,6 @@
       "startDateLabel": "Start date *",
       "endDateLabel": "End date *",
       "monthlyRentLabel": "Monthly rent (€) *",
-      "landlordTitle": "Landlord",
-      "landlordDescription": "Contract party — property owner or representative",
-      "tenantTitle": "Tenant",
-      "tenantDescription": "Contract party — lessee",
       "firstNameLabel": "First name *",
       "lastNameLabel": "Last name *",
       "fiscalCodeLabel": "Fiscal code *",
@@ -760,7 +779,19 @@
       },
       "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
       "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement.",
-      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication."
+      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication.",
+      "landlordsTitle": "Landlords",
+      "landlordsDescription": "Every owner letting the property (e.g. co-owners or spouses): each one is a party of the contract and of the registration.",
+      "tenantsTitle": "Tenants",
+      "tenantsDescription": "Every tenant renting the property: each one is a party of the contract and of the registration.",
+      "landlordNumber": "Landlord {{n}}",
+      "tenantNumber": "Tenant {{n}}",
+      "addLandlord": "Add landlord",
+      "addTenant": "Add tenant",
+      "removeLandlord": "Remove landlord {{n}}",
+      "removeTenant": "Remove tenant {{n}}",
+      "partiesMax": "You can enter at most {{max}} parties per role.",
+      "fiscalCodeHint": "16 characters for a natural person, 11 digits for a company."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -3633,7 +3664,9 @@
     "breadcrumbLabel": "Breadcrumb",
     "breadcrumbCheckout": "Checkout",
     "closeBookingSheet": "Close booking panel",
-    "directBookingTagline": "Direct booking"
+    "directBookingTagline": "Direct booking",
+    "subprocessors": "Subprocessors",
+    "legalDocuments": "Legal documents"
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -3994,7 +4027,10 @@
       "renewAndContinue": "Renew sign-in and continue",
       "renewing": "Renewing sign-in...",
       "stillPending": "The permissions have not been applied yet. Try again later or renew your sign-in."
-    }
+    },
+    "readDocument": "Read the document",
+    "documentInPreparation": "text being prepared",
+    "readSubprocessors": "See the full list of subprocessors"
   },
   "breadcrumb": {
     "home": "Home",
@@ -4853,7 +4889,12 @@
       "checkoutWizardNotStarted": "Start the check-out before completing it: open the check-out of the stay again.",
       "checkoutCleaningChoiceInvalid": "Choose whether to request a cleaning from a supplier (with the supplier) or to skip it.",
       "checkoutStepInvalid": "Invalid check-out step.",
-      "checkoutNotCompleted": "The property is declared ready after the check-out of the stay."
+      "checkoutNotCompleted": "The property is declared ready after the check-out of the stay.",
+      "leasePartyFiscalCodeInvalid": "The fiscal code of a party is not valid.",
+      "leasePartyFiscalCodeDuplicate": "The same fiscal code is given for more than one party of the lease.",
+      "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
+      "leaseLandlordRequired": "The lease needs at least one landlord.",
+      "leaseTenantRequired": "The lease needs at least one tenant."
     }
   },
   "validation": {
@@ -5143,6 +5184,60 @@
       "saveFailed": "Save failed.",
       "verified": "Verification recorded.",
       "verifyFailed": "Verification failed."
+    }
+  },
+  "legal": {
+    "loading": "Loading the document",
+    "loadError": "The document could not be loaded. Please try again shortly.",
+    "retry": "Try again",
+    "backToIndex": "Legal documents",
+    "version": "Version {{version}}",
+    "effectiveAt": "in force from {{date}}",
+    "effectiveAtPending": "effective date not yet set",
+    "inPreparation": "The text of this document is being prepared and will be published here.",
+    "onlyItalian": "This document is available in Italian only.",
+    "openOfficialCopy": "Open the official copy of the document",
+    "indexTitle": "Legal documents",
+    "indexIntro": "Terms, privacy notice, data processing agreement and list of subprocessors of the CasaZen platform.",
+    "documents": {
+      "tos": {
+        "title": "Terms of Service",
+        "summary": "General terms of use of the CasaZen platform."
+      },
+      "privacy": {
+        "title": "Privacy Notice",
+        "summary": "Notice on the processing of personal data under the GDPR."
+      },
+      "dpa": {
+        "title": "Data Processing Agreement",
+        "summary": "Agreement on data processing (Art. 28 GDPR)."
+      }
+    },
+    "subprocessors": {
+      "title": "Subprocessors",
+      "summary": "Providers that process personal data on behalf of CasaZen (Art. 28 GDPR).",
+      "intro": "List of the providers the platform entrusts with personal data in its current configuration. Details not yet confirmed are marked as being defined.",
+      "empty": "No subprocessor configured.",
+      "pending": "being defined",
+      "columns": {
+        "name": "Provider",
+        "purpose": "Purpose",
+        "entity": "Company and registered office",
+        "region": "Processing location",
+        "transfer": "Transfer outside the EEA"
+      },
+      "purposes": {
+        "database": "Database",
+        "storage": "File storage",
+        "databaseAndStorage": "Database and file storage",
+        "authentication": "Authentication",
+        "payments": "Payments",
+        "email": "Transactional email",
+        "pushNotifications": "Push notifications to the app",
+        "backendHosting": "API hosting",
+        "frontendHosting": "Web app hosting",
+        "ai": "AI text generation"
+      }
     }
   }
 }

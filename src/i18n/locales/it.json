@@ -31,6 +31,7 @@
       "description": "Verifica dei codici identificativi nazionali (D.L. 145/2023)",
       "filters": "Filtri",
       "loadError": "Impossibile caricare i dati CIN. Riprova più tardi.",
+      "retry": "Riprova",
       "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} proprietà)",
       "previous": "Precedente",
       "next": "Successiva",
@@ -57,8 +58,13 @@
       "pagination": "Pagina {{page}} di {{totalPages}} ({{totalCount}} utenti)",
       "previous": "Precedente",
       "next": "Successiva",
+      "loadError": "Impossibile caricare gli utenti. Riprova più tardi.",
+      "retry": "Riprova",
       "filter": {
-        "allRoles": "Tutti i ruoli"
+        "allRoles": "Tutti i ruoli",
+        "allStatuses": "Tutti gli stati",
+        "active": "Attivi",
+        "inactive": "Inattivi"
       },
       "table": {
         "name": "Nome",
@@ -66,6 +72,7 @@
         "role": "Ruolo",
         "plan": "Piano",
         "status": "Stato",
+        "createdAt": "Registrato il",
         "actions": "Azioni",
         "active": "Attivo",
         "inactive": "Inattivo",
@@ -83,9 +90,13 @@
         "confirm": "Disattiva"
       },
       "roleDialog": {
-        "title": "Cambia ruolo",
-        "description": "Seleziona il nuovo ruolo per {{name}}.",
-        "label": "Ruolo",
+        "title": "Gestisci ruoli",
+        "description": "Seleziona i ruoli di {{name}}.",
+        "label": "Ruoli",
+        "loading": "Caricamento ruoli…",
+        "loadError": "Impossibile caricare i ruoli attuali.",
+        "retry": "Riprova",
+        "noRolesWarning": "Nessun ruolo selezionato: l'utente perderà l'accesso alle funzioni dell'app.",
         "cancel": "Annulla",
         "saving": "Salvataggio...",
         "save": "Salva"
@@ -101,6 +112,8 @@
     "jobs": {
       "title": "Background Jobs",
       "description": "Stato dei job Hangfire (aggiornato ogni 30 secondi)",
+      "loadError": "Impossibile caricare i job. Riprova più tardi.",
+      "retry": "Riprova",
       "table": {
         "job": "Job",
         "cron": "Cron",
@@ -258,6 +271,7 @@
     "jobs": "Processi",
     "suppliers": "Fornitori",
     "guests": "Ospiti",
+    "cinAudit": "Audit CIN",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "more": "Altro",
@@ -689,8 +703,9 @@
         "required": "Il cognome e' obbligatorio"
       },
       "fiscalCode": {
-        "minLength": "Il codice fiscale deve essere di almeno 11 caratteri",
-        "maxLength": "Il codice fiscale deve essere di al massimo 16 caratteri"
+        "required": "Il codice fiscale è obbligatorio",
+        "invalid": "Codice fiscale non valido: controlla i 16 caratteri (persona fisica) o le 11 cifre (società).",
+        "duplicate": "Questo codice fiscale è già inserito per un'altra parte del contratto."
       },
       "citizenship": {
         "length": "Usa il codice paese ISO 3166-1 alpha-2 (es. IT)",
@@ -714,6 +729,14 @@
       },
       "securityDeposit": {
         "min": "Il deposito cauzionale non può essere negativo."
+      },
+      "landlords": {
+        "required": "Inserisci almeno un locatore.",
+        "max": "Puoi inserire al massimo 10 locatori."
+      },
+      "tenants": {
+        "required": "Inserisci almeno un conduttore.",
+        "max": "Puoi inserire al massimo 10 conduttori."
       }
     },
     "createPageTitle": "Nuovo contratto",
@@ -727,10 +750,6 @@
       "startDateLabel": "Data inizio *",
       "endDateLabel": "Data fine *",
       "monthlyRentLabel": "Canone mensile (€) *",
-      "landlordTitle": "Proprietario",
-      "landlordDescription": "Parte contraente — proprietario o rappresentante",
-      "tenantTitle": "Conduttore",
-      "tenantDescription": "Parte contraente — locatario",
       "firstNameLabel": "Nome *",
       "lastNameLabel": "Cognome *",
       "fiscalCodeLabel": "Codice fiscale *",
@@ -760,7 +779,19 @@
       },
       "concordatoIndicativeRangeHint": "Range mensile indicativo: {{min}} – {{max}} EUR",
       "concordatoRentOutsideIndicativeRange": "Il canone mensile è fuori dal range indicativo: puoi creare il contratto, ma verifica il canone con un'organizzazione firmataria dell'accordo.",
-      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura."
+      "citizenshipHint": "Codice ISO a 2 lettere (Grecia: GR). Un conduttore non cittadino di uno dei 27 Stati UE richiede la comunicazione alla Questura.",
+      "landlordsTitle": "Locatori",
+      "landlordsDescription": "Tutti i proprietari che concedono l'immobile (es. comproprietari o coniugi): ciascuno è parte del contratto e della registrazione.",
+      "tenantsTitle": "Conduttori",
+      "tenantsDescription": "Tutti i conduttori che prendono in locazione l'immobile: ciascuno è parte del contratto e della registrazione.",
+      "landlordNumber": "Locatore {{n}}",
+      "tenantNumber": "Conduttore {{n}}",
+      "addLandlord": "Aggiungi locatore",
+      "addTenant": "Aggiungi conduttore",
+      "removeLandlord": "Rimuovi il locatore {{n}}",
+      "removeTenant": "Rimuovi il conduttore {{n}}",
+      "partiesMax": "Puoi inserire al massimo {{max}} parti per ruolo.",
+      "fiscalCodeHint": "16 caratteri per una persona fisica, 11 cifre per una società."
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -3633,7 +3664,9 @@
     "breadcrumbLabel": "Percorso di navigazione",
     "breadcrumbCheckout": "Checkout",
     "closeBookingSheet": "Chiudi pannello prenotazione",
-    "directBookingTagline": "Prenotazione diretta"
+    "directBookingTagline": "Prenotazione diretta",
+    "subprocessors": "Sub-responsabili",
+    "legalDocuments": "Documenti legali"
   },
   "publicBooking": {
     "payNow": "Paga ora",
@@ -3994,7 +4027,10 @@
       "renewAndContinue": "Rinnova l'accesso e continua",
       "renewing": "Rinnovo dell'accesso...",
       "stillPending": "I permessi non sono ancora stati applicati. Riprova più tardi o rinnova l'accesso."
-    }
+    },
+    "readDocument": "Leggi il documento",
+    "documentInPreparation": "testo in preparazione",
+    "readSubprocessors": "Vedi l'elenco completo dei sub-responsabili"
   },
   "breadcrumb": {
     "home": "Home",
@@ -4853,7 +4889,12 @@
       "checkoutWizardNotStarted": "Avvia il check-out prima di completarlo: riapri la procedura di check-out del soggiorno.",
       "checkoutCleaningChoiceInvalid": "Scegli se richiedere le pulizie a un fornitore (indicando il fornitore) oppure saltarle.",
       "checkoutStepInvalid": "Passaggio del check-out non valido.",
-      "checkoutNotCompleted": "La proprietà si dichiara pronta dopo il check-out del soggiorno."
+      "checkoutNotCompleted": "La proprietà si dichiara pronta dopo il check-out del soggiorno.",
+      "leasePartyFiscalCodeInvalid": "Il codice fiscale di una parte non è valido.",
+      "leasePartyFiscalCodeDuplicate": "Lo stesso codice fiscale è indicato per più parti del contratto.",
+      "leasePartiesTooMany": "Troppe parti per un ruolo: al massimo 10 locatori e 10 conduttori.",
+      "leaseLandlordRequired": "Il contratto deve avere almeno un locatore.",
+      "leaseTenantRequired": "Il contratto deve avere almeno un conduttore."
     }
   },
   "validation": {
@@ -5143,6 +5184,60 @@
       "saveFailed": "Salvataggio non riuscito.",
       "verified": "Verifica registrata.",
       "verifyFailed": "Verifica non riuscita."
+    }
+  },
+  "legal": {
+    "loading": "Caricamento del documento",
+    "loadError": "Impossibile caricare il documento. Riprova tra poco.",
+    "retry": "Riprova",
+    "backToIndex": "Documenti legali",
+    "version": "Versione {{version}}",
+    "effectiveAt": "in vigore dal {{date}}",
+    "effectiveAtPending": "data di entrata in vigore non ancora indicata",
+    "inPreparation": "Il testo di questo documento è in preparazione e sarà pubblicato qui.",
+    "onlyItalian": "Questo documento è disponibile solo in italiano.",
+    "openOfficialCopy": "Apri la copia ufficiale del documento",
+    "indexTitle": "Documenti legali",
+    "indexIntro": "Termini, informativa privacy, accordo sul trattamento dei dati ed elenco dei sub-responsabili della piattaforma CasaZen.",
+    "documents": {
+      "tos": {
+        "title": "Termini di Servizio",
+        "summary": "Condizioni generali di utilizzo della piattaforma CasaZen."
+      },
+      "privacy": {
+        "title": "Informativa Privacy",
+        "summary": "Informativa sul trattamento dei dati personali ai sensi del GDPR."
+      },
+      "dpa": {
+        "title": "Data Processing Agreement",
+        "summary": "Accordo sul trattamento dei dati (art. 28 GDPR)."
+      }
+    },
+    "subprocessors": {
+      "title": "Sub-responsabili del trattamento",
+      "summary": "Fornitori che trattano dati personali per conto di CasaZen (art. 28 GDPR).",
+      "intro": "Elenco dei fornitori a cui la piattaforma affida dati personali nella configurazione attuale. I dati non ancora confermati sono indicati come in definizione.",
+      "empty": "Nessun sub-responsabile configurato.",
+      "pending": "in definizione",
+      "columns": {
+        "name": "Fornitore",
+        "purpose": "Finalità",
+        "entity": "Società e sede",
+        "region": "Luogo del trattamento",
+        "transfer": "Trasferimento extra-SEE"
+      },
+      "purposes": {
+        "database": "Database",
+        "storage": "Archiviazione file",
+        "databaseAndStorage": "Database e archiviazione file",
+        "authentication": "Autenticazione",
+        "payments": "Pagamenti",
+        "email": "Email transazionali",
+        "pushNotifications": "Notifiche push all'app",
+        "backendHosting": "Hosting dell'API",
+        "frontendHosting": "Hosting dell'applicazione web",
+        "ai": "Generazione di testi con intelligenza artificiale"
+      }
     }
   }
 }
