@@ -49,8 +49,23 @@ vi.mock('@/queries/use-public-seo', () => ({
   useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
 }));
 vi.mock('@/queries/use-legal', () => ({
-  usePlatformLegalLinks: () => ({ privacyUrl: undefined, termsUrl: undefined }),
   useLegalDocuments: () => ({ isLoading: true, isError: false }),
+  useLegalLanguage: () => 'it',
+  // PL-14: no text provided yet by the product owner (D14).
+  useLegalDocument: () => ({
+    data: { key: 'tos', version: '2026-06-v1', effectiveAt: null, title: 't', summary: 's', available: false },
+    isLoading: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
+  useSubprocessors: () => ({
+    data: { version: '2026-10-v1', effectiveAt: null, items: [] },
+    isLoading: false,
+    isError: false,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
 }));
 
 import { PublicAppProviders } from '@/contexts/auth-bridge';
@@ -112,6 +127,20 @@ describe('public routes without Auth0 (SE-03)', () => {
       expect(await screen.findByTestId('public-site-shell')).toBeInTheDocument();
       expect(router.state.location.pathname).toBe(path);
       expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument();
+      expect(assign).not.toHaveBeenCalled();
+      expect(replace).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['/legale', '/legale/termini', '/legale/privacy', '/legale/dpa', '/legale/sub-responsabili'])(
+    'LegalPage_%s_AnonymousVisitor_IsPublic',
+    async (path) => {
+      const router = renderPublicApp(path);
+
+      expect(await screen.findByTestId('public-site-shell')).toBeInTheDocument();
+      expect(router.state.location.pathname).toBe(path);
+      expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument();
+      expect(screen.getByTestId('footer-subprocessors')).toBeInTheDocument();
       expect(assign).not.toHaveBeenCalled();
       expect(replace).not.toHaveBeenCalled();
     },

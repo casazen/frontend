@@ -3513,7 +3513,9 @@
     "breadcrumbLabel": "Breadcrumb",
     "breadcrumbCheckout": "Checkout",
     "closeBookingSheet": "Close booking panel",
-    "directBookingTagline": "Direct booking"
+    "directBookingTagline": "Direct booking",
+    "subprocessors": "Subprocessors",
+    "legalDocuments": "Legal documents"
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -3874,7 +3876,10 @@
       "renewAndContinue": "Renew sign-in and continue",
       "renewing": "Renewing sign-in...",
       "stillPending": "The permissions have not been applied yet. Try again later or renew your sign-in."
-    }
+    },
+    "readDocument": "Read the document",
+    "documentInPreparation": "text being prepared",
+    "readSubprocessors": "See the full list of subprocessors"
   },
   "breadcrumb": {
     "home": "Home",
@@ -5020,6 +5025,60 @@
       "saveFailed": "Save failed.",
       "verified": "Verification recorded.",
       "verifyFailed": "Verification failed."
+    }
+  },
+  "legal": {
+    "loading": "Loading the document",
+    "loadError": "The document could not be loaded. Please try again shortly.",
+    "retry": "Try again",
+    "backToIndex": "Legal documents",
+    "version": "Version {{version}}",
+    "effectiveAt": "in force from {{date}}",
+    "effectiveAtPending": "effective date not yet set",
+    "inPreparation": "The text of this document is being prepared and will be published here.",
+    "onlyItalian": "This document is available in Italian only.",
+    "openOfficialCopy": "Open the official copy of the document",
+    "indexTitle": "Legal documents",
+    "indexIntro": "Terms, privacy notice, data processing agreement and list of subprocessors of the CasaZen platform.",
+    "documents": {
+      "tos": {
+        "title": "Terms of Service",
+        "summary": "General terms of use of the CasaZen platform."
+      },
+      "privacy": {
+        "title": "Privacy Notice",
+        "summary": "Notice on the processing of personal data under the GDPR."
+      },
+      "dpa": {
+        "title": "Data Processing Agreement",
+        "summary": "Agreement on data processing (Art. 28 GDPR)."
+      }
+    },
+    "subprocessors": {
+      "title": "Subprocessors",
+      "summary": "Providers that process personal data on behalf of CasaZen (Art. 28 GDPR).",
+      "intro": "List of the providers the platform entrusts with personal data in its current configuration. Details not yet confirmed are marked as being defined.",
+      "empty": "No subprocessor configured.",
+      "pending": "being defined",
+      "columns": {
+        "name": "Provider",
+        "purpose": "Purpose",
+        "entity": "Company and registered office",
+        "region": "Processing location",
+        "transfer": "Transfer outside the EEA"
+      },
+      "purposes": {
+        "database": "Database",
+        "storage": "File storage",
+        "databaseAndStorage": "Database and file storage",
+        "authentication": "Authentication",
+        "payments": "Payments",
+        "email": "Transactional email",
+        "pushNotifications": "Push notifications to the app",
+        "backendHosting": "API hosting",
+        "frontendHosting": "Web app hosting",
+        "ai": "AI text generation"
+      }
     }
   }
 }
