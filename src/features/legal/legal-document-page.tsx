@@ -48,7 +48,7 @@ export function LegalDocumentPage({ documentKey }: { documentKey: LegalDocumentK
   return (
     <main className="mx-auto max-w-3xl px-4 py-8" data-testid={`legal-document-${documentKey}`}>
       <p className="text-sm">
-        <Link to={LEGAL_INDEX_PATH} className="underline hover:text-[var(--cz-public-primary)]">
+        <Link to={LEGAL_INDEX_PATH} className="underline hover:text-[var(--cz-public-primary-text)]">
           {t('legal.backToIndex')}
         </Link>
       </p>
@@ -83,7 +83,7 @@ export function LegalDocumentPage({ documentKey }: { documentKey: LegalDocumentK
             href={document.documentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-[var(--cz-public-primary)]"
+            className="underline hover:text-[var(--cz-public-primary-text)]"
             data-testid="legal-document-external"
           >
             {t('legal.openOfficialCopy')}
