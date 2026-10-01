@@ -23,6 +23,15 @@ export interface Property {
   photoUrls: string[];
   houseRules: string;
   cinCode: string | null;
+  /**
+   * ISTAT code (6 digits, text) of the comune chosen from the official list (SU-04); null until chosen: it is never
+   * inferred from the free-text `city`.
+   */
+  comuneIstatCode?: string | null;
+  /** CasaZen's region code (`LOM`) that follows the comune; null until a comune is chosen. */
+  regionCode?: string | null;
+  /** The CIN is valid and its ISTAT comune differs from `comuneIstatCode`: a non-blocking warning. */
+  cinIstatMismatch?: boolean;
   /** IANA time zone, e.g. `Europe/Rome`. */
   timezone: string;
   cancellationPolicyId: string | null;
@@ -66,6 +75,11 @@ export interface CreatePropertyDto {
   address: string;
   city: string;
   postalCode: string;
+  /**
+   * ISTAT code of the comune chosen from the official list (`GET /api/comuni`): validated by the API, the region follows it.
+   * `null` clears it; a city changed without a comune clears the stored one.
+   */
+  comuneIstatCode?: string | null;
   latitude?: number;
   longitude?: number;
   bedrooms: number;
@@ -204,6 +218,12 @@ export interface PropertyDetailDto {
   damageDeposit: number;
   cinCode: string | null;
   cinStatus: CinStatus;
+  /** The CIN is valid and its ISTAT comune differs from the property's chosen comune: a non-blocking warning (SU-04). */
+  cinIstatMismatch?: boolean;
+  /** ISTAT code of the comune chosen from the official list; null until chosen. */
+  comuneIstatCode?: string | null;
+  /** CasaZen's region code that follows the comune; null until a comune is chosen. */
+  regionCode?: string | null;
   timezone: string;
   amenities: string[];
   photoUrls: string[];

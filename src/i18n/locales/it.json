@@ -137,7 +137,8 @@
         "error": "Impossibile inviare l'invito",
         "duplicate": "Esiste già un invito attivo per questa email",
         "emailFailed": "Consegna email fallita — riprova tra qualche minuto"
-      }
+      },
+      "comune": "Comune"
     },
     "seo": {
       "title": "SEO Compliance",
@@ -1715,7 +1716,8 @@
         "cancel": "Annulla",
         "saving": "Salvataggio...",
         "save": "Salva CIN"
-      }
+      },
+      "istatMismatch": "Il comune indicato nel CIN è diverso dal comune dell'immobile. Non è un errore: il CIN non cambia dopo un trasferimento o una riclassificazione. Controlla solo che sia il CIN di questo immobile."
     },
     "ota": {
       "title": "Integrazioni OTA",
@@ -1821,6 +1823,12 @@
         "loading": "Caricamento delle policy di cancellazione…",
         "loadError": "Impossibile caricare le policy di cancellazione: la policy attuale resta invariata.",
         "empty": "Nessuna policy di cancellazione disponibile."
+      },
+      "comune": {
+        "label": "Comune (elenco ISTAT)",
+        "hint": "Scegli il comune dall'elenco ufficiale ISTAT: da qui seguono la regione, i documenti richiesti, l'imposta di soggiorno e il controllo del CIN.",
+        "legacyCity": "Città indicata finora: {{city}}. Non è collegata all'elenco ISTAT: scegli il comune per confermarla.",
+        "cityFromComune": "Presa dal comune scelto. Cancella la scelta per scrivere un'altra città."
       }
     },
     "validation": {
@@ -1874,6 +1882,9 @@
       },
       "timezone": {
         "required": "Scegli un fuso orario"
+      },
+      "comuneIstatCode": {
+        "format": "Il codice ISTAT del comune non è valido: scegli il comune dall'elenco."
       }
     },
     "slug": {
@@ -2469,6 +2480,15 @@
       "empty": "Non hai ancora ricevuto richieste dagli host.",
       "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
       "openInbox": "Apri gli incarichi"
+    },
+    "comuni": {
+      "pickerPlaceholder": "Cerca e aggiungi un comune",
+      "chosenTitle": "Comuni scelti",
+      "noneChosen": "Nessun comune scelto dall'elenco.",
+      "codeOnly": "Comune {{code}}",
+      "remove": "Rimuovi {{name}}",
+      "legacyTitle": "Indicati come testo",
+      "legacyHint": "Questi comuni non sono collegati all'elenco ufficiale, quindi la ricerca per codice non li riconosce sempre. Cercali nell'elenco e aggiungili, poi rimuovi il testo."
     }
   },
   "settings": {
@@ -5151,6 +5171,28 @@
         "frontendHosting": "Hosting dell'applicazione web",
         "ai": "Generazione di testi con intelligenza artificiale"
       }
+    }
+  },
+  "comune": {
+    "picker": {
+      "placeholder": "Cerca il comune (almeno 2 lettere)",
+      "loadingList": "Carico l'elenco dei comuni…",
+      "statusError": "Non riesco a controllare l'elenco dei comuni. Riprova.",
+      "retry": "Riprova",
+      "unavailableTitle": "Elenco dei comuni non disponibile",
+      "unavailableDescription": "L'elenco ufficiale dei comuni ISTAT non è ancora disponibile, quindi qui non puoi sceglierlo. Puoi continuare: il comune resta un testo libero, ma finché non lo scegli dall'elenco non si applicano le regole della tua regione, l'imposta di soggiorno per codice e il controllo del CIN.",
+      "minChars_one": "Scrivi almeno {{count}} lettera.",
+      "minChars_other": "Scrivi almeno {{count}} lettere.",
+      "searching": "Cerco…",
+      "searchError": "Non riesco a cercare i comuni: questo non significa che non ci siano risultati.",
+      "noResults": "Nessun comune trovato per «{{query}}». Controlla come l'hai scritto.",
+      "resultCount_one": "{{count}} comune trovato. Usa le frecce e Invio per sceglierlo.",
+      "resultCount_other": "{{count}} comuni trovati. Usa le frecce e Invio per sceglierne uno.",
+      "clear": "Cancella il comune scelto",
+      "listLabel": "Comuni trovati",
+      "derivedRegion": "Regione: {{region}} (segue il comune)",
+      "notInList": "Questo comune non è più nell'elenco ufficiale (fusione o soppressione): scegli quello attuale.",
+      "codeUnknown": "Il codice ISTAT {{code}} non è nell'elenco dei comuni: scegli di nuovo il comune."
     }
   }
 }

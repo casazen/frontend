@@ -17,6 +17,13 @@ vi.mock('@/queries/use-properties', () => ({
   useCancellationPolicies: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 
+// The comune picker reads the official ISTAT list: here it is not imported, the form keeps its free-text city (SU-04).
+vi.mock('@/queries/use-comuni', () => ({
+  useComuneDatasetStatus: () => ({ data: { datasetAvailable: false }, isPending: false, isError: false, refetch: vi.fn() }),
+  useComuneSearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
+  useComune: () => ({ data: undefined, isError: false }),
+}));
+
 function fill(label: string, value: string | number) {
   fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
 }

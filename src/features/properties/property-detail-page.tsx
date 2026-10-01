@@ -13,7 +13,7 @@ import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { Edit, ArrowRight, CalendarRange, ExternalLink, Wrench, Plus } from 'lucide-react';
+import { Edit, ArrowRight, CalendarRange, ExternalLink, Info, Wrench, Plus } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { PropertyCinBadge } from './components/property-cin-badge';
@@ -158,6 +158,17 @@ export function PropertyDetailPage() {
             </div>
           }
         />
+
+        {property.cinIstatMismatch && (
+          <p
+            className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground"
+            role="note"
+            data-testid="property-cin-istat-mismatch"
+          >
+            <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{t('property.cin.istatMismatch')}</span>
+          </p>
+        )}
 
         {org?.slug ? (
           <Card data-testid="host-public-site-link">

@@ -14,6 +14,8 @@ export const propertyFormSchema = z.object({
   description: z.string().min(10, 'property.validation.description.minLength').max(1000, 'property.validation.description.maxLength'),
   address: z.string().min(5, 'property.validation.address.required'),
   city: z.string().min(2, 'property.validation.city.required'),
+  /** ISTAT code of the comune chosen from the official list (SU-04); '' = none chosen. */
+  comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.validation.comuneIstatCode.format').or(z.literal('')),
   postalCode: z.string().min(3, 'property.validation.postalCode.required'),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
@@ -91,6 +93,7 @@ export function propertyFormDefaults(
   if (!property) {
     return {
       ...shortStayDefaults,
+      comuneIstatCode: '',
       // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
       ...(variant === 'long-rent' ? { nightlyRate: 0, maxGuests: 0 } : {}),
     };
@@ -102,6 +105,7 @@ export function propertyFormDefaults(
     description: property.description,
     address: property.address,
     city: property.city,
+    comuneIstatCode: property.comuneIstatCode ?? '',
     postalCode: property.postalCode,
     latitude: property.latitude,
     longitude: property.longitude,
@@ -122,6 +126,8 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     description: values.description,
     address: values.address,
     city: values.city,
+    // The comune chosen from the official list; null clears it (and the region that follows it), see UpdatePropertyRequest.
+    comuneIstatCode: values.comuneIstatCode || null,
     postalCode: values.postalCode,
     latitude: values.latitude,
     longitude: values.longitude,

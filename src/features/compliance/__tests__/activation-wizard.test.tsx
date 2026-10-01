@@ -316,6 +316,27 @@ describe('PropertyActivationWizard', () => {
     expect(await screen.findByText('property-detail')).toBeInTheDocument();
   });
 
+  it('stepWithWarnings_CinIstatMismatch_ShowsTheServerNoteWithoutBlockingTheStep', () => {
+    mockActivation(
+      activation('Active', {
+        cin: {
+          warnings: [
+            { step: 'cin', code: 'cin_istat_comune_mismatch', message: 'Il CIN contiene un altro comune: nota informativa.' },
+          ],
+        },
+      }),
+    );
+    renderWizard();
+
+    fireEvent.click(stepButton('cin'));
+    const warnings = screen.getByTestId('activation-step-warnings-cin');
+    expect(warnings).toHaveTextContent('Il CIN contiene un altro comune: nota informativa.');
+    expect(within(warnings).getByRole('listitem')).toHaveAttribute('data-code', 'cin_istat_comune_mismatch');
+    // A note only: the step stays complete and the property stays active.
+    expect(screen.getByTestId('compliance-status-badge')).toHaveTextContent('Attivo');
+    expect(screen.queryByTestId('activation-step-warnings-base-data')).not.toBeInTheDocument();
+  });
+
   it('complete_Conflict409WithThreeBlockers_ListsTranslatedBlockersWithLinksToTheirSteps', async () => {
     completeActivation.mockRejectedValue(
       httpError(409, {

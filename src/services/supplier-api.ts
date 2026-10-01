@@ -29,7 +29,10 @@ export async function fetchSupplierProfile(): Promise<SupplierProfile> {
 export async function updateSupplierProfile(
   payload: Partial<Pick<SupplierProfile, 'legalName' | 'vatNumber' | 'phone' | 'bio'>> & {
     categories?: string[];
+    /** Comuni written as text (kept as written). */
     comuni?: string[];
+    /** ISTAT codes of the comuni chosen from the official list: replaces the stored ones; left out keeps them (SU-04). */
+    comuneIstatCodes?: string[];
     photoUrls?: string[];
   },
 ): Promise<SupplierProfile> {

@@ -15,6 +15,16 @@ import { ServiceCategoryPicker } from '@/features/service-requests/components/se
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
+import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
+import { useComuneDatasetStatus } from '@/queries/use-comuni';
+import { comuneLabel } from '@/lib/comune-label';
+import type { SupplierProfile } from '@/types/supplier';
+
+/** The comuni of a profile as the form edits them: the ISTAT ones chosen from the list, and the text not covered by them. */
+function comuniValueOf(profile: SupplierProfile): SupplierComuniValue {
+  const istatCodes = profile.comuneIstatCodes ?? [];
+  return { istatCodes, legacy: (profile.comuni ?? []).filter((entry) => !istatCodes.includes(entry)) };
+}
 
 const MAX_PHOTOS = 10;
 
@@ -33,7 +43,9 @@ export function SupplierProfilePage() {
   const [vatNumber, setVatNumber] = useState('');
   const [phone, setPhone] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
-  const [comuneInput, setComuneInput] = useState('');
+  const [comuni, setComuni] = useState<SupplierComuniValue>({ istatCodes: [], legacy: [] });
+  const comuneStatus = useComuneDatasetStatus();
+  const comuneListAvailable = comuneStatus.data?.datasetAvailable === true;
   const [bio, setBio] = useState('');
 
   // Photo management
@@ -49,7 +61,7 @@ export function SupplierProfilePage() {
     setVatNumber(profile.vatNumber ?? '');
     setPhone(profile.phone ?? '');
     setCategories(profile.categories ?? []);
-    setComuneInput((profile.comuni ?? []).join(', '));
+    setComuni(comuniValueOf(profile));
     setBio(profile.bio ?? '');
     setExistingPhotos(profile.photoUrls ?? []);
     setNewPhotoFiles([]);
@@ -115,7 +127,9 @@ export function SupplierProfilePage() {
         vatNumber: vatNumber.trim(),
         phone: phone.trim() || undefined,
         categories: keepKnownCategories(categories, categoryCodes),
-        comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
+        comuni: comuni.legacy,
+        // Only while the official list is imported: the API refuses ISTAT codes otherwise and leaves the stored ones as they are.
+        ...(comuneListAvailable ? { comuneIstatCodes: comuni.istatCodes } : {}),
         bio: bio.trim(),
         photoUrls: existingPhotos,
       });
@@ -190,9 +204,16 @@ export function SupplierProfilePage() {
                 </div>
               </div>
               <div>
-                <Label>{t('supplier.operatingMunicipalities')}</Label>
-                <Input value={comuneInput} onChange={(e) => setComuneInput(e.target.value)}
-                       placeholder={t('supplier.comuniPlaceholder')} className="mt-1" />
+                <Label htmlFor="supplier-comuni">{t('supplier.operatingMunicipalities')}</Label>
+                <div className="mt-1">
+                  <SupplierComuniField
+                    id="supplier-comuni"
+                    value={comuni}
+                    known={profile.operatingComuni}
+                    onChange={setComuni}
+                    disabled={saving}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -353,14 +374,25 @@ export function SupplierProfilePage() {
               </div>
               <div>
                 <span className="text-sm font-medium text-muted-foreground">{t('supplier.municipalities')}</span>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {(profile.comuni ?? []).length > 0
-                    ? profile.comuni!.map((c) => (
-                        <span key={c} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
-                          {c}
-                        </span>
-                      ))
-                    : <span className="text-sm text-muted-foreground">—</span>}
+                <div className="mt-1 flex flex-wrap gap-1" data-testid="supplier-profile-comuni">
+                  {(() => {
+                    const value = comuniValueOf(profile);
+                    const described = new Map((profile.operatingComuni ?? []).map((comune) => [comune.istatCode, comune]));
+                    const names = [
+                      ...value.istatCodes.map((code) => {
+                        const comune = described.get(code);
+                        return { key: code, label: comune ? comuneLabel(comune) : t('supplier.comuni.codeOnly', { code }) };
+                      }),
+                      ...value.legacy.map((entry) => ({ key: `text-${entry}`, label: entry })),
+                    ];
+                    return names.length > 0
+                      ? names.map(({ key, label }) => (
+                          <span key={key} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
+                            {label}
+                          </span>
+                        ))
+                      : <span className="text-sm text-muted-foreground">—</span>;
+                  })()}
                 </div>
               </div>
             </CardContent>

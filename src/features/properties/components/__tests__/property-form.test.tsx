@@ -8,6 +8,13 @@ import { PropertyForm } from '../property-form';
 
 vi.mock('@/queries/use-properties', () => ({ useCancellationPolicies: vi.fn() }));
 
+// The comune picker reads the official ISTAT list: here it is not imported, the form keeps its free-text city (SU-04).
+vi.mock('@/queries/use-comuni', () => ({
+  useComuneDatasetStatus: () => ({ data: { datasetAvailable: false }, isPending: false, isError: false, refetch: vi.fn() }),
+  useComuneSearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
+  useComune: () => ({ data: undefined, isError: false }),
+}));
+
 // Radix checkboxes measure themselves.
 class ResizeObserverMock {
   observe() {}
@@ -72,6 +79,8 @@ const ROUND_TRIP = {
   description: 'Monolocale luminoso con vista sul porto',
   address: 'Via del Porto 3',
   city: 'Genova',
+  // No comune chosen from the official list yet (SU-04): sent as null, which keeps it empty.
+  comuneIstatCode: null,
   postalCode: '16128',
   latitude: 44.41,
   longitude: 8.93,

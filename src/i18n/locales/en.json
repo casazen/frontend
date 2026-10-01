@@ -137,7 +137,8 @@
         "error": "Unable to send the invitation",
         "duplicate": "An active invitation already exists for this email",
         "emailFailed": "Email delivery failed — please try again in a few minutes"
-      }
+      },
+      "comune": "Comune"
     },
     "seo": {
       "title": "SEO Compliance",
@@ -1715,7 +1716,8 @@
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save CIN"
-      }
+      },
+      "istatMismatch": "The comune inside the CIN differs from the comune of the property. This is not an error: a CIN does not change after a relocation or reclassification. Just check that it is the CIN of this property."
     },
     "ota": {
       "title": "OTA Integrations",
@@ -1821,6 +1823,12 @@
         "loading": "Loading cancellation policies…",
         "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
         "empty": "No cancellation policy available."
+      },
+      "comune": {
+        "label": "Comune (ISTAT list)",
+        "hint": "Choose the comune from the official ISTAT list: the region, the required documents, the tourist tax and the CIN check follow from it.",
+        "legacyCity": "City entered so far: {{city}}. It is not linked to the ISTAT list: choose the comune to confirm it.",
+        "cityFromComune": "Taken from the chosen comune. Clear the choice to type another city."
       }
     },
     "validation": {
@@ -1874,6 +1882,9 @@
       },
       "timezone": {
         "required": "Choose a time zone"
+      },
+      "comuneIstatCode": {
+        "format": "The ISTAT code of the comune is not valid: choose the comune from the list."
       }
     },
     "slug": {
@@ -2179,8 +2190,8 @@
     "step2Title": "How do you manage availability?",
     "continueToCalendar": "Continue",
     "categoriesHint": "Choose one or more categories. You can add more later.",
-    "comuniHint": "Enter the cities where you operate, separated by commas.",
-    "comuniPlaceholder": "e.g. Rome, Milan, Naples",
+    "comuniHint": "Enter the names of the comuni in Italian where you operate, separated by commas.",
+    "comuniPlaceholder": "e.g. Roma, Milano, Napoli",
     "acceptTosFirst": "You must accept the terms of service",
     "connectLater": "Set up later",
     "completeLaterHint": "You can complete your profile and add details anytime from the dashboard.",
@@ -2469,6 +2480,15 @@
       "empty": "You have not received any requests from hosts yet.",
       "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
       "openInbox": "Open assignments"
+    },
+    "comuni": {
+      "pickerPlaceholder": "Search and add a comune",
+      "chosenTitle": "Chosen comuni",
+      "noneChosen": "No comune chosen from the list.",
+      "codeOnly": "Comune {{code}}",
+      "remove": "Remove {{name}}",
+      "legacyTitle": "Entered as text",
+      "legacyHint": "These comuni are not linked to the official list, so the search by code does not always recognize them. Look them up in the list and add them, then remove the text."
     }
   },
   "settings": {
@@ -5151,6 +5171,28 @@
         "frontendHosting": "Web app hosting",
         "ai": "AI text generation"
       }
+    }
+  },
+  "comune": {
+    "picker": {
+      "placeholder": "Search for the comune (at least 2 letters)",
+      "loadingList": "Loading the list of comuni…",
+      "statusError": "Could not check the list of comuni. Try again.",
+      "retry": "Try again",
+      "unavailableTitle": "List of comuni not available",
+      "unavailableDescription": "The official ISTAT list of comuni is not available yet, so you cannot pick from it here. You can carry on: the comune stays free text, but until you choose it from the list, the rules of your region, the tourist tax by code and the CIN check do not apply.",
+      "minChars_one": "Type at least {{count}} letter.",
+      "minChars_other": "Type at least {{count}} letters.",
+      "searching": "Searching…",
+      "searchError": "Could not search the comuni: this does not mean there are no results.",
+      "noResults": "No comune found for “{{query}}”. Check how you typed it.",
+      "resultCount_one": "{{count}} comune found. Use the arrow keys and Enter to choose it.",
+      "resultCount_other": "{{count}} comuni found. Use the arrow keys and Enter to choose one.",
+      "clear": "Clear the chosen comune",
+      "listLabel": "Comuni found",
+      "derivedRegion": "Region: {{region}} (follows the comune)",
+      "notInList": "This comune is no longer in the official list (merger or suppression): choose the current one.",
+      "codeUnknown": "The ISTAT code {{code}} is not in the list of comuni: choose the comune again."
     }
   }
 }

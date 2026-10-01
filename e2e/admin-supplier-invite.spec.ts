@@ -6,6 +6,10 @@ test.describe('Admin supplier invite (#357)', () => {
   test.beforeEach(async ({ page }) => {
     await setDemoProfile(page, 'admin');
     await pinE2eLocale(page, 'it');
+    // The official ISTAT list is a platform configuration (SU-04): without it the invite asks for the code as text, as before.
+    await page.route('**/api/comuni/status', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ datasetAvailable: false }) }),
+    );
   });
 
   test('AC-A1: invite form renders for admin user', async ({ page }) => {
