@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import i18n from '@/i18n/config';
-import it from '@/i18n/locales/it.json';
-import en from '@/i18n/locales/en.json';
+import itLocale from '@/i18n/locales/it.json';
+import enLocale from '@/i18n/locales/en.json';
 import { AI_CONTENT_NOTICE_KEYS, AiContentNotice, type AiContentKind } from '../ai-content-notice';
 
 beforeEach(async () => {
@@ -36,8 +36,8 @@ describe('AiContentNotice (EU AI Act transparency, AC9, SE-05 A8-27)', () => {
     'AiContentNotice_%s_HasATextInItalianAndEnglish',
     (kind) => {
       const path = AI_CONTENT_NOTICE_KEYS[kind].split('.').slice(1).join('.');
-      const itText = (it.aiContentNotice as Record<string, string>)[path];
-      const enText = (en.aiContentNotice as Record<string, string>)[path];
+      const itText = (itLocale.aiContentNotice as Record<string, string>)[path];
+      const enText = (enLocale.aiContentNotice as Record<string, string>)[path];
 
       expect(itText).toEqual(expect.any(String));
       expect(enText).toEqual(expect.any(String));
