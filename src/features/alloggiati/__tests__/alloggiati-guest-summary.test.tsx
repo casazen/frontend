@@ -4,6 +4,9 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import i18n from '@/i18n/config';
+import { saveBlobAs } from '@/lib/file-download';
 import { AlloggiatiGuestSummary } from '../components/alloggiati-guest-summary';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import type { AlloggiatiGuestSummaryDto } from '@/types/alloggiati.types';
@@ -17,8 +20,10 @@ vi.mock('@/api/alloggiati.api', () => ({
     replaceStayGuests: vi.fn(),
     searchCodes: vi.fn(),
     getDocumentNumbers: vi.fn(),
+    downloadRecordFile: vi.fn(),
   },
 }));
+vi.mock('@/lib/file-download', () => ({ saveBlobAs: vi.fn(), withJsonErrorBody: vi.fn() }));
 
 // Radix Dialog measures itself with ResizeObserver, which jsdom does not provide.
 class ResizeObserverMock {
@@ -109,13 +114,13 @@ const summary: AlloggiatiGuestSummaryDto = {
   ],
 };
 
-function renderSummary(canEdit = false, canRevealDocuments = false) {
+function renderSummary(canEdit = false, canRevealDocuments = false, canDownloadRecordFile = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     createElement(
       QueryClientProvider,
       { client },
-      createElement(AlloggiatiGuestSummary, { bookingId: BOOKING_ID, canEdit, canRevealDocuments }),
+      createElement(AlloggiatiGuestSummary, { bookingId: BOOKING_ID, canEdit, canRevealDocuments, canDownloadRecordFile }),
     ),
   );
 }
@@ -285,5 +290,90 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
       "Impossibile caricare i dati dell'ospite.",
     );
     expect(screen.queryByText('Nessun ospite registrato per questa prenotazione.')).not.toBeInTheDocument();
+  });
+});
+
+describe('AlloggiatiGuestSummary record file (CO-13)', () => {
+  const exportReadySummary: AlloggiatiGuestSummaryDto = {
+    ...summary,
+    dataComplete: true,
+    exportReady: true,
+    missingCodeTables: [],
+    guests: summary.guests.map((guest) => ({ ...guest, missingFields: [], codesToComplete: [] })),
+  };
+
+  it('recordFile_ExportReadyAndGuestRead_DownloadsTheFileAndSendsNothing', async () => {
+    const blob = new Blob(['16...'], { type: 'text/plain' });
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(exportReadySummary);
+    vi.mocked(alloggiatiApi.downloadRecordFile).mockResolvedValue(blob);
+    renderSummary(false, false, true);
+
+    const button = await screen.findByTestId('alloggiati-record-file-download');
+    expect(button).toBeEnabled();
+    expect(screen.getByTestId('alloggiati-record-file')).toHaveTextContent('oggi o di ieri');
+    fireEvent.click(button);
+
+    await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(blob, 'alloggiati-2026-10-10.txt'));
+    expect(alloggiatiApi.downloadRecordFile).toHaveBeenCalledWith(BOOKING_ID);
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('alloggiati.recordFile.downloaded'));
+    // Downloading is not sending: the host still declares the submission himself.
+    expect(alloggiatiApi.markSentManually).not.toHaveBeenCalled();
+    expect(button).toBeEnabled();
+  });
+
+  it('recordFile_DataOrCodesIncomplete_DisablesTheDownloadAndSaysWhy', async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
+    renderSummary(false, false, true);
+
+    const button = await screen.findByTestId('alloggiati-record-file-download');
+
+    expect(button).toBeDisabled();
+    expect(screen.getByTestId('alloggiati-record-file')).toHaveTextContent('quando i dati degli ospiti e i codici ufficiali sono completi');
+    fireEvent.click(button);
+    expect(alloggiatiApi.downloadRecordFile).not.toHaveBeenCalled();
+  });
+
+  it('recordFile_StayLongerThan30Days_DisablesTheDownload', async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue({ ...exportReadySummary, stayDays: 45, stayExceedsMaxDays: true });
+    renderSummary(false, false, true);
+
+    expect(await screen.findByTestId('alloggiati-record-file-download')).toBeDisabled();
+    expect(screen.getByTestId('alloggiati-stay-exceeds-max')).toBeInTheDocument();
+  });
+
+  it('recordFile_WithoutGuestRead_ShowsNoDownload', async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(exportReadySummary);
+    renderSummary();
+
+    await screen.findByTestId('alloggiati-guest-summary');
+
+    expect(screen.queryByTestId('alloggiati-record-file')).not.toBeInTheDocument();
+  });
+
+  it('recordFile_ApiRefusesTheFile_ShowsTheTranslatedProblemAndStaysUsable', async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(exportReadySummary);
+    vi.mocked(alloggiatiApi.downloadRecordFile).mockRejectedValue(
+      httpError(422, { code: 'alloggiati_file_name_not_representable' }),
+    );
+    renderSummary(false, false, true);
+
+    fireEvent.click(await screen.findByTestId('alloggiati-record-file-download'));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.alloggiatiFileNameNotRepresentable')),
+    );
+    expect(saveBlobAs).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(screen.getByTestId('alloggiati-record-file-download')).toBeEnabled();
+  });
+
+  it('recordFile_NetworkFailureWithoutProblem_ShowsTheGenericMessageNotAnEmptyState', async () => {
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(exportReadySummary);
+    vi.mocked(alloggiatiApi.downloadRecordFile).mockRejectedValue(new Error('boom'));
+    renderSummary(false, false, true);
+
+    fireEvent.click(await screen.findByTestId('alloggiati-record-file-download'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('alloggiati.recordFile.failed')));
   });
 });
