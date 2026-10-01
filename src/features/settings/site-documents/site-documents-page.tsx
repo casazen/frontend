@@ -119,6 +119,9 @@ export function SiteDocumentsContent() {
   );
 }
 
+/** The two ways to provide a document, in the order the editor offers them. */
+const SOURCES: readonly OrgSiteDocumentSource[] = ['Text', 'ExternalUrl'];
+
 interface DocumentForm {
   source: OrgSiteDocumentSource;
   content: string;
@@ -220,7 +223,7 @@ function SiteDocumentCard({ state, orgSlug }: { state: OrgSiteDocumentState; org
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium">{t('siteDocuments.source.label')}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
-            {(['Text', 'ExternalUrl'] as const).map((source) => (
+            {SOURCES.map((source) => (
               <label
                 key={source}
                 className={cn(

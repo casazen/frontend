@@ -97,7 +97,8 @@ export function OrgDocumentPage({ kind }: { kind: OrgSiteDocumentKind }) {
     );
   }
 
-  const body = document.source === 'Text' ? sanitizeHtml(document.contentHtml) : '';
+  const textHtml = document.source === 'Text' ? document.contentHtml : null;
+  const hasBody = sanitizeHtml(textHtml) !== '';
   const externalHost = document.source === 'ExternalUrl' && document.externalUrl ? hostOf(document.externalUrl) : null;
 
   return (
@@ -116,10 +117,10 @@ export function OrgDocumentPage({ kind }: { kind: OrgSiteDocumentKind }) {
         </p>
       </header>
 
-      {body ? (
+      {hasBody ? (
         <article
           className="public-document"
-          dangerouslySetInnerHTML={{ __html: body }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(textHtml) }}
           data-testid="org-document-body"
         />
       ) : null}

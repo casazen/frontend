@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Trans, useTranslation } from 'react-i18next';
+import { Trans } from 'react-i18next';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { orgDocumentPath } from '@/lib/org-document-paths';
@@ -19,7 +19,6 @@ const LINK_CLASS = 'public-site-link';
  * to is readable before the consent is given.
  */
 export function ConsentCheckbox({ checked, onCheckedChange, orgSlug }: ConsentCheckboxProps) {
-  const { t } = useTranslation();
   const newTab = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
   return (
