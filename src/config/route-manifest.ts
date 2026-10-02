@@ -788,7 +788,8 @@ export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Part
   return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
 }
 
-function hasEntryPermission(
+/** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */
+export function hasEntryPermission(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
 ): boolean {

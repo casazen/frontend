@@ -4307,6 +4307,85 @@
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
     }
   },
+  "activation": {
+    "title": "Activate your booking site",
+    "progress_one": "{{count}} of {{total}} step completed",
+    "progress_other": "{{count}} of {{total}} steps completed",
+    "progressLabel": "Activation progress",
+    "loadError": "The activation checklist could not be loaded.",
+    "retry": "Retry",
+    "state": {
+      "done": "Completed",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "blocked": "Waiting"
+    },
+    "steps": {
+      "account": {
+        "title": "Account and consents",
+        "done": "You chose how to use CasaZen, your organization was created and you accepted the consents."
+      },
+      "organization": {
+        "title": "Organization name and address",
+        "done": "You chose the name and the public address of the organization."
+      },
+      "property": {
+        "title": "First property",
+        "done_one": "{{count}} property created.",
+        "done_other": "{{count}} properties created."
+      },
+      "cin": {
+        "title": "Property CIN codes",
+        "done": "Every property has a valid CIN ({{done}} of {{total}})."
+      },
+      "payments": {
+        "title": "Payments with Stripe",
+        "done": "Stripe can collect direct bookings."
+      },
+      "sitePublished": {
+        "title": "Site published and bookable",
+        "done_one": "{{count}} property of {{total}} is published and bookable.",
+        "done_other": "{{count}} properties of {{total}} are published and bookable."
+      },
+      "firstBooking": {
+        "title": "First direct booking",
+        "done": "You received your first confirmed direct booking."
+      }
+    },
+    "reasons": {
+      "onboarding_incomplete": "Finish signing up first: role, organization and consents.",
+      "org_profile_incomplete": "Choose the organization name and a readable public address: for now you have the ones CasaZen generated.",
+      "no_property": "Add at least one property.",
+      "cin_missing_or_invalid": "Valid CIN on {{done}} of {{total}} properties: add or fix the CIN of the others.",
+      "connect_not_started": "You have not connected a Stripe account yet: without it, guests cannot pay.",
+      "connect_requirements_due": "Stripe still asks for data or documents to enable payments.",
+      "connect_pending_verification": "You sent the data: Stripe is verifying the account and has not enabled payments yet.",
+      "org_inactive": "The organization is disabled and its public pages cannot be reached. Contact support.",
+      "properties_paused": "Every property that could be published is paused: reactivate at least one.",
+      "compliance_pending": "The properties have not completed the compliance activation yet (CIN, documents, safety): until they do, they are not published.",
+      "properties_inactive": "No property is active: activate at least one.",
+      "payments_not_ready": "A property is published, but guests cannot pay yet because Stripe has not enabled payments.",
+      "site_not_published": "Publish the site first: you need a published property and Stripe payments enabled.",
+      "awaiting_first_booking": "The site is open and bookable: share the link with your guests.",
+      "unknown": "This step is not completed yet."
+    },
+    "cta": {
+      "onboarding": "Finish signing up",
+      "organization": "Set name and address",
+      "property": "Add a property",
+      "cin": "Manage properties",
+      "paymentsStart": "Connect Stripe",
+      "paymentsContinue": "Go to payments",
+      "reactivate": "Reactivate properties",
+      "compliance": "Complete the activation",
+      "properties": "Go to properties",
+      "share": "Share the link",
+      "open": "Open"
+    },
+    "siteBanner": {
+      "title": "Guests cannot book from your site yet"
+    }
+  },
   "onboarding": {
     "casaZen": "CasaZen",
     "howToUse": "How do you want to use CasaZen?",
