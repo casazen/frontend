@@ -243,7 +243,7 @@ describe('ActivationChecklist (PL-15, PLG-AC10)', () => {
     renderWidget();
 
     expect(await screen.findByText('Activate your booking site')).toBeInTheDocument();
-    expect(screen.getByTestId('activation-step-payments-detail')).toHaveTextContent(
+    expect(await screen.findByTestId('activation-step-payments-detail')).toHaveTextContent(
       'You have not connected a Stripe account yet',
     );
     expect(screen.getByTestId('activation-step-account-state')).toHaveTextContent('Completed');
