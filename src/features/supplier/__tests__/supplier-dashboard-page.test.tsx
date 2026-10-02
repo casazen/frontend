@@ -161,4 +161,21 @@ describe('SupplierDashboardPage (SU-11, A4-15)', () => {
     expect(screen.getByTestId('supplier-kpi-awaiting')).toHaveTextContent('Waiting to be taken');
     expect(screen.getByTestId('supplier-kpis-range')).toHaveTextContent('11 requests received in total');
   });
+  it('SupplierDashboardPage_SuspendedSupplier_ShowsSuspendedStateAndNoActivationButton', async () => {
+    api.fetchSupplierDashboard.mockResolvedValue({ ...DASHBOARD, status: 'Suspended' });
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-dashboard-status')).toHaveTextContent('Sospeso');
+    expect(screen.getByText('Contatta il supporto CasaZen per riattivare l\'account.')).toBeInTheDocument();
+    // Activating again is refused by the API for a suspended supplier: the button is not offered.
+    expect(screen.queryByRole('button', { name: /attivazione/i })).not.toBeInTheDocument();
+  });
+
+  it('SupplierDashboardPage_PendingSupplier_StillOffersTheActivation', async () => {
+    api.fetchSupplierDashboard.mockResolvedValue({ ...DASHBOARD, status: 'Pending' });
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-dashboard-status')).toHaveTextContent('In attesa');
+    expect(screen.getByRole('button', { name: /attivazione/i })).toBeInTheDocument();
+  });
 });
