@@ -270,6 +270,7 @@ export function SupplierDashboardPage() {
   }
 
   const isActive = dashboard.status === 'Active';
+  const isSuspended = dashboard.status === 'Suspended';
   const hasSync = dashboard.calendarSyncStatus?.calendarSyncType !== 'None';
 
   return (
@@ -340,18 +341,25 @@ export function SupplierDashboardPage() {
             {isActive ? (
               <CheckCircle2 className="h-8 w-8 text-green-500" />
             ) : (
-              <AlertTriangle className="h-8 w-8 text-amber-500" />
+              <AlertTriangle className={`h-8 w-8 ${isSuspended ? 'text-destructive' : 'text-amber-500'}`} />
             )}
             <div>
-              <p className={`text-lg font-semibold ${isActive ? 'text-green-700' : 'text-amber-700'}`}>
-                {isActive ? t('supplier.statusActive') : t('supplier.statusPending')}
+              <p
+                className={`text-lg font-semibold ${isActive ? 'text-green-700' : isSuspended ? 'text-destructive' : 'text-amber-700'}`}
+                data-testid="supplier-dashboard-status"
+              >
+                {isActive ? t('supplier.statusActive') : isSuspended ? t('supplier.statusSuspended') : t('supplier.statusPending')}
               </p>
               <p className="text-xs text-muted-foreground">
-                {isActive ? t('supplier.visibleToHosts') : t('supplier.completeActivationHint')}
+                {isActive
+                  ? t('supplier.visibleToHosts')
+                  : isSuspended
+                    ? t('supplier.suspendedHint')
+                    : t('supplier.completeActivationHint')}
               </p>
             </div>
           </div>
-          {!isActive && (
+          {!isActive && !isSuspended && (
             <Button className="mt-3 w-full" size="sm" onClick={() => navigate('/app/supplier/activation')}>
               {t('supplier.goToActivation')}
             </Button>

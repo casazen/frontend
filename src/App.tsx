@@ -19,10 +19,12 @@ import { safeReturnTo } from '@/lib/auth-return-to';
 import { recordLandingTouch } from '@/lib/signup-attribution';
 import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
-import { router } from '@/routes';
+import { getRouter } from '@/routes';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
+import { getHostSite } from '@/lib/host-site';
 
 function AppShell() {
+  const router = getRouter();
   useEffect(() => {
     // 403 on a protected read → existing no-access page. `replace` keeps Back from reopening the
     // forbidden page (which would 403 again).
@@ -48,7 +50,7 @@ function AppShell() {
       setApiOnboardingRequiredHandler(null);
       setApiAccountInactiveHandler(null);
     };
-  }, []);
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -74,7 +76,7 @@ function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unk
 
   const returnTo = safeReturnTo(appState?.returnTo);
   if (returnTo) {
-    void router.navigate(returnTo, { replace: true });
+    void getRouter().navigate(returnTo, { replace: true });
     return;
   }
   window.history.replaceState({}, document.title, window.location.pathname);
@@ -82,7 +84,8 @@ function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unk
 
 function App() {
   const pathname = window.location.pathname;
-  const publicPath = isPublicUnauthenticatedPath(pathname);
+  // An org's own host (BK-16) only ever shows the org's public booking site, whatever the clean address looks like.
+  const publicPath = getHostSite() !== null || isPublicUnauthenticatedPath(pathname);
   const secureOrigin = isSecureAuth0Origin();
 
   useEffect(() => {

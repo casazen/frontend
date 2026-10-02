@@ -20,8 +20,12 @@ export function ComplianceGuidePage() {
           title: page.title,
           description: page.metaDescription,
           canonicalUrl: page.canonicalUrl,
+          ogType: 'article',
         }
-      : null,
+      : // A page that is not published or failed to load is never indexed (BK-15, A8-09: soft 404).
+        isError
+        ? { title: t('publicSeo.notFound'), noindex: true }
+        : null,
   );
 
   if (isLoading) {

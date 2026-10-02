@@ -347,6 +347,17 @@ describe('SupplierRegisterPage', () => {
       );
     });
 
+    it('revokedInvite_ShowsTranslatedErrorWithoutFormOrRetry', async () => {
+      mockAuth({ authenticated: false });
+      vi.mocked(lookupSupplierInvite).mockRejectedValue(problemError(422, { code: 'supplier_invite_revoked' }));
+      renderPage(`/register?inviteToken=${TOKEN}`);
+
+      // SU-12: an admin revoked the invite, only a new one helps (no retry, no form).
+      expect(await screen.findByRole('alert')).toHaveTextContent(t('apiErrors.codes.supplierInviteRevoked'));
+      expect(screen.queryByRole('button', { name: t('supplier.register.retry') })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(t('supplier.register.legalName'))).not.toBeInTheDocument();
+    });
+
     it('lookupNetworkError_OffersRetry', async () => {
       mockAuth({ authenticated: false });
       vi.mocked(lookupSupplierInvite).mockRejectedValueOnce(problemError(503, {}));

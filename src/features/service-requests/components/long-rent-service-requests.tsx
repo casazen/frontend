@@ -18,6 +18,7 @@ export function LongRentServiceRequests({ propertyId }: { propertyId: string }) 
     <ServiceRequestsCard
       query={requests}
       context="long-rent"
+      canManage={canRequest}
       emptyText={t('serviceRequest.emptyForProperty')}
       testId="long-rent-service-requests"
       action={canRequest ? <ServiceRequestForm propertyId={propertyId} context="long-rent" /> : undefined}
