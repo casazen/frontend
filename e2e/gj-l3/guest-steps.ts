@@ -69,7 +69,7 @@ export async function guestConfirmsEmail(page: Page, link: string): Promise<void
   await expect(page.getByText('Email confermata')).toBeVisible({ timeout: 20_000 });
 }
 
-/** Guest check-in portal (3 steps): two guests, the head of the family's identity document. */
+/** Guest check-in portal (3 steps): two guests, the head of the family's identity document, the privacy notice and the submit. */
 export async function guestCompletesCheckIn(page: Page, link: string): Promise<void> {
   await page.goto(link);
   const guests = [
@@ -91,5 +91,9 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
   await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
   await page.getByRole('button', { name: 'Avanti' }).click();
+  // Step 3 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
+  // tick). "Avanti" must NOT submit by itself: the test used to pass only because that click skipped this step.
+  await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
+  await page.getByTestId('checkin-submit').click();
   await expect(page.getByText('Check-in completato!')).toBeVisible({ timeout: 20_000 });
 }
