@@ -11,6 +11,7 @@ export * from './tourist-tax.types';  // ✅ New
 export * from './calendar.types';  // ✅ New
 export * from './pricing-adapter.types';
 export * from './lease.types';
+export * from './rent.types';
 export * from './admin.types';
 export * from './users.types';
 export * from './org.types';
