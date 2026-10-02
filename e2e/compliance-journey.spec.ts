@@ -400,10 +400,15 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('checkin-progress')).toBeVisible();
 
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
+      // CO-02: the document is asked again (the number on file is never sent back to the guest).
+      await page.locator('#guest-0-documentType').selectOption('IdentityCard');
       await page.locator('#guest-0-documentNumber').fill('AB1234567');
+      await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
 
+      // The last step shows the privacy notice first: moving to it must not submit the form.
       await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
+      await expect(page.getByTestId('checkin-success')).toHaveCount(0);
       await page.getByTestId('checkin-submit').click();
       await expect(page.getByTestId('checkin-success')).toBeVisible({ timeout: 10_000 });
       expect(authHeader).toBeUndefined();
