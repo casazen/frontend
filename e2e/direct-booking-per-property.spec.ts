@@ -96,13 +96,19 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
     await expect(badge).toContainText(/Pubblicata/i);
   });
 
-  test('copy URL button copies property booking URL to clipboard', async ({ page }) => {
+  test('copy URL button copies property booking URL to clipboard', async ({ page, context }) => {
+    // Headless Chromium rejects navigator.clipboard.writeText without the permission: the app then (correctly)
+    // shows the error toast, so the test has to grant it like a user would by allowing the prompt.
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'));
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
     await page.getByTestId('vetrina-property-copy-url').first().click();
 
     await expect(page.getByText(/copiato/i)).toBeVisible({ timeout: 5_000 });
+    // The toast alone does not prove the copy: the clipboard must hold the absolute booking URL of the property.
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toBe(`${new URL(page.url()).origin}/book/${DEMO_ORG_SLUG_VETRINA}/property/${mockOrgPropertySlug}`);
   });
 });
 
