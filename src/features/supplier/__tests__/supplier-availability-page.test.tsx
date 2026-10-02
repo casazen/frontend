@@ -63,4 +63,23 @@ describe('SupplierAvailabilityPage today (QA-CLOCK-FE)', () => {
     expect(useSupplierAvailability).toHaveBeenCalledWith('2026-09-24', '2026-10-07');
     expect(screen.getByTestId('availability-2026-09-24')).toBeInTheDocument();
   });
+  it('SupplierAvailabilityPage_LoadFails_ShowsAnErrorWithRetryNotAllDaysAvailable', async () => {
+    freezeClock(NOON_UTC);
+    const refetch = vi.fn();
+    vi.mocked(useSupplierAvailability).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('boom'),
+      refetch,
+    } as unknown as ReturnType<typeof useSupplierAvailability>);
+
+    render(<SupplierAvailabilityPage />);
+
+    expect(screen.getByTestId('supplier-availability-error')).toHaveTextContent(i18n.t('supplier.availabilityLoadError'));
+    // The days default to "available": showing them after a failed load would hide the error.
+    expect(screen.queryByTestId('availability-2026-09-24')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.errorState.retry') }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
 });

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
 import { Pencil, Check, X, Upload, Trash2, ImageIcon } from 'lucide-react';
@@ -30,7 +31,7 @@ const MAX_PHOTOS = 10;
 
 export function SupplierProfilePage() {
   const { t } = useTranslation();
-  const { data: profile, isLoading } = useSupplierProfile();
+  const { data: profile, isLoading, isError, error, refetch } = useSupplierProfile();
   const updateProfile = useUpdateSupplierProfile();
   const uploadPhotos = useUploadSupplierPhotos();
   const { data: categoryCodes } = useServiceCategories();
@@ -141,6 +142,21 @@ export function SupplierProfilePage() {
       setSaving(false);
     }
   };
+
+  // An API error is not an endless spinner (SU-06, A4-25): say it failed and offer a retry.
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} />
+        <ErrorState
+          testId="supplier-profile-error"
+          title={t('supplier.profileLoadError')}
+          error={error}
+          onRetry={() => void refetch()}
+        />
+      </div>
+    );
+  }
 
   if (isLoading || !profile) {
     return <LoadingScreen message={t('supplier.profileLoading')} />;

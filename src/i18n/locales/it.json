@@ -2811,7 +2811,9 @@
         "bannerSoft": "Accetta la versione corrente dei Termini di Servizio: la tua accettazione precedente non riporta la versione.",
         "bannerAction": "Vai ad accettare"
       }
-    }
+    },
+    "profileLoadError": "Impossibile caricare il profilo fornitore.",
+    "availabilityLoadError": "Impossibile caricare la disponibilità."
   },
   "settings": {
     "planTitle": "Il tuo piano",

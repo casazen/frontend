@@ -2811,7 +2811,9 @@
         "bannerSoft": "Accept the current version of the Terms of Service: your earlier acceptance does not record the version.",
         "bannerAction": "Go and accept"
       }
-    }
+    },
+    "profileLoadError": "Could not load the supplier profile.",
+    "availabilityLoadError": "Could not load the availability."
   },
   "settings": {
     "planTitle": "Your plan",

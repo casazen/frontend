@@ -10,13 +10,14 @@ import { SupplierProfilePage } from '../supplier-profile-page';
 const api = vi.hoisted(() => ({ getStatus: vi.fn(), search: vi.fn(), getByIstatCode: vi.fn() }));
 const supplier = vi.hoisted(() => ({
   profile: undefined as unknown,
+  query: undefined as unknown,
   updateProfile: vi.fn(),
   uploadPhotos: vi.fn(),
 }));
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
 vi.mock('@/queries/use-supplier', () => ({
-  useSupplierProfile: () => ({ data: supplier.profile, isLoading: false }),
+  useSupplierProfile: () => supplier.query ?? { data: supplier.profile, isLoading: false },
   useUpdateSupplierProfile: () => ({ mutateAsync: supplier.updateProfile, isPending: false }),
   useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false }),
 }));
@@ -77,6 +78,7 @@ beforeEach(async () => {
   api.getStatus.mockResolvedValue({ datasetAvailable: true });
   api.search.mockResolvedValue({ datasetAvailable: true, items: [] });
   supplier.profile = profile();
+  supplier.query = undefined;
   supplier.updateProfile.mockResolvedValue({});
 });
 
@@ -113,5 +115,15 @@ describe('SupplierProfilePage comuni', () => {
     const payload = supplier.updateProfile.mock.calls[0][0] as Record<string, unknown>;
     expect(payload.comuni).toEqual(['Roma', 'Milano']);
     expect(payload).not.toHaveProperty('comuneIstatCodes');
+  });
+  it('says the profile could not be loaded, with a retry, instead of an endless spinner (SU-06, A4-25)', () => {
+    const refetch = vi.fn();
+    supplier.query = { data: undefined, isLoading: false, isError: true, error: new Error('403'), refetch };
+    renderPage();
+
+    expect(screen.getByTestId('supplier-profile-error')).toHaveTextContent('Impossibile caricare il profilo fornitore.');
+    expect(screen.queryByText('Caricamento profilo...')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 });
