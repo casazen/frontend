@@ -8,7 +8,7 @@ import type { SupplierServiceRequest } from '@/types/service-request';
 import type { SupplierInboxParams, SupplierInboxResponse } from '@/types/supplier';
 import { SupplierInboxPage } from '../supplier-inbox-page';
 
-const api = vi.hoisted(() => ({ fetchSupplierInbox: vi.fn() }));
+const api = vi.hoisted(() => ({ fetchSupplierInbox: vi.fn(), fetchSupplierProfile: vi.fn() }));
 
 vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/supplier-api')>()),
@@ -70,6 +70,7 @@ describe('SupplierInboxPage (SU-08, A4-14)', () => {
     api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) =>
       params.status === 'open' ? page([OPEN_ITEM]) : page([REJECTED_ITEM]),
     );
+    api.fetchSupplierProfile.mockResolvedValue({ status: 'Active' });
     await i18n.changeLanguage('it');
   });
 
@@ -158,5 +159,28 @@ describe('SupplierInboxPage (SU-08, A4-14)', () => {
     await waitFor(() =>
       expect(screen.getByTestId('supplier-inbox-empty')).toHaveTextContent('Nessun incarico nello storico per questi filtri.'),
     );
+  });
+  it('SupplierInboxPage_SuspendedSupplier_DisablesTheQuickActionsOfEveryOpenRequest', async () => {
+    api.fetchSupplierProfile.mockResolvedValue({ status: 'Suspended' });
+    api.fetchSupplierInbox.mockResolvedValue(
+      page([OPEN_ITEM, { ...OPEN_ITEM, id: 'r-taken', status: 'PresoInCarico' }]),
+    );
+    renderPage();
+
+    const card = await screen.findByTestId('inbox-item-r-open');
+    await waitFor(() => expect(within(card).getByTestId('take-r-open')).toBeDisabled());
+    expect(within(card).getByTestId('reject-r-open')).toBeDisabled();
+    expect(within(screen.getByTestId('inbox-item-r-taken')).getByTestId('complete-r-taken')).toBeDisabled();
+    // The request stays readable: its detail link still works.
+    expect(within(card).getByTestId('open-r-open')).toHaveAttribute('href', '/app/supplier/inbox/r-open');
+  });
+
+  it('SupplierInboxPage_ActiveSupplier_KeepsTheQuickActionsEnabled', async () => {
+    renderPage();
+
+    const card = await screen.findByTestId('inbox-item-r-open');
+    await waitFor(() => expect(api.fetchSupplierProfile).toHaveBeenCalled());
+    expect(within(card).getByTestId('take-r-open')).toBeEnabled();
+    expect(within(card).getByTestId('reject-r-open')).toBeEnabled();
   });
 });

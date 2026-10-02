@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
   completeServiceRequest,
   createLongRentServiceRequest,
@@ -17,11 +17,26 @@ import {
 import type { CreateLongRentServiceRequestDto, CreateServiceRequestDto } from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { getProblemMessage } from '@/lib/api-errors';
+import { isAxiosError } from 'axios';
+import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
 /** Supplier dashboard KPIs (every period): a supplier transition changes them (SU-11). */
 const SUPPLIER_KPIS_KEY = ['supplier', 'dashboard', 'kpis'];
+
+/** 422 code of a supplier action refused because the supplier is suspended or not active (SU-12). */
+const SUPPLIER_NOT_ACTIVE_CODE = 'service_request_supplier_not_active';
+
+/**
+ * Toast of a failed supplier action. When the API says the supplier is not active (an admin suspended it while the page
+ * was open) the supplier profile is reloaded, so the console shows the suspension banner and disables the actions.
+ */
+function onSupplierActionError(queryClient: QueryClient, error: unknown) {
+  if (isAxiosError(error) && getProblemCode(error.response?.data) === SUPPLIER_NOT_ACTIVE_CODE) {
+    void queryClient.invalidateQueries({ queryKey: ['supplier', 'profile'] });
+  }
+  toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+}
 
 /**
  * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
@@ -119,7 +134,7 @@ export function useTakeServiceRequest() {
       queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
     },
-    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => onSupplierActionError(queryClient, error),
   });
 }
 
@@ -133,7 +148,7 @@ export function useCompleteServiceRequest() {
       queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.completed'));
     },
-    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => onSupplierActionError(queryClient, error),
   });
 }
 
@@ -147,7 +162,7 @@ export function useRejectServiceRequest() {
       queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.rejected'));
     },
-    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => onSupplierActionError(queryClient, error),
   });
 }
 

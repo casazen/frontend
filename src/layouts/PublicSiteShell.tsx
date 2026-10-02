@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { isAxiosError } from 'axios';
 import { Loader2, Menu } from 'lucide-react';
 import { usePublicOrg } from '@/queries/use-public-org';
-import { useCustomHostRedirect } from '@/hooks/use-custom-host-redirect';
+import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
+import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
 import { Footer } from '@/features/public-site/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { publicSiteColorVars } from '@/lib/public-site-colors';
+import { normalizeHexColor, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';
 
 interface PublicSiteShellProps {
@@ -36,35 +40,44 @@ function canonicalOrgPath(pathname: string, slug: string): string {
 }
 
 export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
-  useCustomHostRedirect();
   const { t } = useTranslation();
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const location = useLocation();
   const isOrgMode = mode === 'org' && !!orgSlug;
-  const { data: org, isLoading, isError } = usePublicOrg(isOrgMode ? orgSlug : undefined);
+  const { data: org, isLoading, isError, error, refetch } = usePublicOrg(isOrgMode ? orgSlug : undefined);
+  useOrgSeoMeta(org, location.pathname);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const themeId = org?.publicThemeId ?? 'mare';
-  const primaryColor = org?.themeColor ?? undefined;
+  const themeId = resolvePublicSiteTheme(org?.publicThemeId);
+  // Only a valid hex color reaches CSS (BK-12); null keeps the theme's own color. The text color on it and the
+  // readable variant of it are derived so that any host color meets AA (BK-13).
+  const colorVars = publicSiteColorVars(normalizeHexColor(org?.primaryColor ?? org?.themeColor), themeId);
+  const colorStyle = colorVars as CSSProperties | null;
   const showBookingCta = isOrgMode && (location.pathname.includes('/property/') || location.pathname === `/book/${orgSlug}` || location.pathname === `/book/${orgSlug}/`);
 
+  // Also on <html> for the content rendered in portals (dialogs), outside .public-site-root.
+  const colorVarsKey = colorVars ? JSON.stringify(colorVars) : '';
   useEffect(() => {
     const root = document.documentElement;
-    if (primaryColor) {
-      root.style.setProperty('--cz-public-primary', primaryColor);
-    }
+    const vars: Record<string, string> = colorVarsKey ? JSON.parse(colorVarsKey) : {};
+    for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value);
     return () => {
-      root.style.removeProperty('--cz-public-primary');
+      for (const name of Object.keys(vars)) root.style.removeProperty(name);
     };
-  }, [primaryColor]);
+  }, [colorVarsKey]);
 
   if (isOrgMode) {
     if (isLoading) {
       return (
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
+        <div role="status" className="flex min-h-screen items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+          <span className="sr-only">{t('publicSite.loading')}</span>
         </div>
       );
+    }
+    // Only a 404 means "no such site": any other failure (500, network) is an error with a retry, not a missing org.
+    if (isError && !(isAxiosError(error) && error.response?.status === 404)) {
+      return <PublicOrgErrorPage onRetry={() => void refetch()} />;
     }
     if (isError || !org) return <PublicOrgNotFoundPage />;
     // A previous slug of the org (PL-04): the backend still resolves it, the address bar moves to the current one.
@@ -80,13 +93,16 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
     <div
       className="public-site-root flex min-h-screen flex-col"
       data-theme={themeId}
+      // On the root itself: the [data-theme] tokens are declared on this element and would override a value
+      // inherited from <html> (A3-17). Color, text on it and readable variant (BK-13).
+      style={colorStyle ?? undefined}
       data-testid="public-site-shell"
     >
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">
         {t('publicSite.skipToContent')}
       </a>
 
-      <header className="border-b border-black/10 bg-[var(--cz-public-surface)]">
+      <header className="border-b border-[var(--cz-public-border)] bg-[var(--cz-public-surface)]">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4 md:py-4">
           <Link to={isOrgMode ? basePath : '/search'} className="flex min-w-0 flex-1 items-center">
             {org?.logoUrl ? (
@@ -113,11 +129,11 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
                 <SheetTrigger className="rounded-md p-2 hover:bg-black/5" aria-label={t('publicSite.openMenu')}>
                   <Menu className="h-6 w-6" />
                 </SheetTrigger>
-                <SheetContent side="right" className="w-72">
+                <SheetContent side="right" className="public-site-root w-72" data-theme={themeId} style={colorStyle ?? undefined}>
                   <nav className="mt-8 flex flex-col gap-2 text-base" onClick={() => setMenuOpen(false)}>
                     <Link
                       to={`${basePath}/my-bookings`}
-                      className="block py-2 hover:text-[var(--cz-public-primary)]"
+                      className="block py-2 hover:text-[var(--cz-public-primary-text)]"
                       data-testid="public-nav-my-bookings"
                     >
                       {t('publicSite.navMyBookings')}
@@ -127,7 +143,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
               </Sheet>
             </div>
           ) : (
-            <Link to="/search" className="text-sm underline hover:text-[var(--cz-public-primary)]">
+            <Link to="/search" className="text-sm underline hover:text-[var(--cz-public-primary-text)]">
               {t('publicSite.explore')}
             </Link>
           )}
@@ -143,6 +159,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         contactEmail={org?.contactEmail}
         showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
         showSeoHubLink={!isOrgMode}
+        orgSlug={isOrgMode ? (org?.slug ?? orgSlug) : undefined}
       />
 
       {isOrgMode ? <CookieConsentBanner /> : null}

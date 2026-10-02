@@ -6,6 +6,7 @@ import { PublicCinLabel } from '@/features/properties/components/public-cin-labe
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
+import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import type { WidgetAvailability } from '@/features/public-site/components/BookingWidget';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { PublicOrgDto } from '@/types';
@@ -26,11 +27,12 @@ export function PublicPropertyPage() {
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
   // By the id of the loaded property: the URL may carry its slug, the availability takes the id (BK-05, R-03).
   const availabilityQuery = usePropertyAvailability(property?.id);
+  usePropertySeoMeta(org, property);
 
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--cz-public-primary)]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--cz-public-primary-text)]" />
       </div>
     );
   }

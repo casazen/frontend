@@ -18,6 +18,8 @@ export function SeoHubPage() {
     title: t('publicSeo.hub.metaTitle'),
     description: t('publicSeo.hub.metaDescription'),
     canonicalUrl: data?.canonicalUrl,
+    // A hub that failed to load or lists nothing is as thin as the empty guides: not indexed (BK-15, like the sitemap).
+    noindex: isError || (data !== undefined && data.pages.length === 0),
   });
 
   if (isLoading) {

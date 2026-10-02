@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSupplierInbox } from '@/queries/use-supplier';
+import { useSupplierInbox, useSupplierSuspended } from '@/queries/use-supplier';
 import {
   useCompleteServiceRequest,
   useRejectServiceRequest,
@@ -186,6 +186,8 @@ export function SupplierInboxPage() {
   const takeMutation = useTakeServiceRequest();
   const completeMutation = useCompleteServiceRequest();
   const rejectMutation = useRejectServiceRequest();
+  // A suspended supplier performs no action (SU-12): the buttons stay visible but disabled, the banner says why.
+  const suspended = useSupplierSuspended();
 
   const periodInvalid = !!from && !!to && from > to;
 
@@ -193,10 +195,10 @@ export function SupplierInboxPage() {
     if (item.status === 'Richiesto') {
       return (
         <>
-          <Button size="sm" onClick={() => takeMutation.mutate(item.id)} disabled={takeMutation.isPending} data-testid={`take-${item.id}`}>
+          <Button size="sm" onClick={() => takeMutation.mutate(item.id)} disabled={takeMutation.isPending || suspended} data-testid={`take-${item.id}`}>
             {t('serviceRequest.take')}
           </Button>
-          <Button size="sm" variant="outline" onClick={() => setRejectId(item.id)} data-testid={`reject-${item.id}`}>
+          <Button size="sm" variant="outline" onClick={() => setRejectId(item.id)} disabled={suspended} data-testid={`reject-${item.id}`}>
             {t('serviceRequest.reject')}
           </Button>
         </>
@@ -207,7 +209,7 @@ export function SupplierInboxPage() {
         <Button
           size="sm"
           onClick={() => completeMutation.mutate({ id: item.id })}
-          disabled={completeMutation.isPending}
+          disabled={completeMutation.isPending || suspended}
           data-testid={`complete-${item.id}`}
         >
           {t('serviceRequest.complete')}
