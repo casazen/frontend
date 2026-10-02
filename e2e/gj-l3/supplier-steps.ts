@@ -1,12 +1,13 @@
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import type { StackEnv } from './stack';
+import { pickComune } from './host-steps';
 
 /** Platform admin invites a supplier for a comune (self-serve registration is off: invite only). */
-export async function inviteSupplier(admin: Page, email: string, comuneCode: string): Promise<void> {
+export async function inviteSupplier(admin: Page, email: string, comuneName: string): Promise<void> {
   await admin.goto('/app/admin/suppliers/invite');
   await admin.getByTestId('invite-email-input').fill(email);
-  await admin.getByTestId('invite-comune-input').fill(comuneCode);
+  await pickComune(admin, '#comune-picker', comuneName);
   await admin.getByTestId('service-category-cleaning').click();
   await admin.getByTestId('invite-submit-btn').click();
 }
@@ -38,8 +39,9 @@ export async function registerAndActivateSupplier(
   await page.getByRole('button', { name: 'Completa la registrazione' }).click();
   await page.getByRole('button', { name: /Completa il profilo/ }).click();
 
-  // Step 1: the invite pre-selects its categories and comune; the supplier confirms them.
+  // Step 1: the invite pre-selects its categories and comune (chip); the supplier confirms them.
   await expect(page.getByTestId('service-category-cleaning')).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
+  await expect(page.getByTestId('supplier-comuni-chosen')).toContainText('Roma');
   await page.getByRole('button', { name: 'Continua' }).click();
   // Step 2: availability can wait; accept the terms and activate.
   await page.locator('#tos').click();

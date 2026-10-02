@@ -83,7 +83,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
   try {
     await step('Platform admin invites the supplier by email', async () => {
       await loginAs(admin, stack, emails.admin);
-      await inviteSupplier(admin, emails.supplier, '058091');
+      await inviteSupplier(admin, emails.supplier, 'Roma');
     });
 
     await step('Supplier accepts the invite, registers and activates the profile (phone viewport)', async () => {

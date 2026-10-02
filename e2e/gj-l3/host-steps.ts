@@ -18,6 +18,12 @@ export const PROPERTY = {
   nightlyRate: 100,
 } as const;
 
+/** Picks a comune of the official ISTAT list in the autocomplete (SU-04): types the name, chooses the first match. */
+export async function pickComune(page: Page, inputSelector: string, name: string): Promise<void> {
+  await page.locator(inputSelector).fill(name);
+  await page.getByRole('option', { name: new RegExp(`^${name}`, 'i') }).first().click();
+}
+
 /** Onboarding wizard as a new host sees it: operator type, consents, plan. */
 export async function completeHostOnboarding(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible({ timeout: 30_000 });
@@ -41,7 +47,8 @@ export async function createProperty(page: Page, slug: string): Promise<string> 
   await page.locator('#slug').fill(slug);
   await page.locator('#cinCode').fill(PROPERTY.cin);
   await page.locator('#address').fill(PROPERTY.address);
-  await page.locator('#city').fill(PROPERTY.city);
+  await pickComune(page, '#comune', PROPERTY.city); // gives the city, the ISTAT code and the region
+  await expect(page.locator('#city')).toHaveValue(PROPERTY.city);
   await page.locator('#postalCode').fill(PROPERTY.postalCode);
   await page.locator('#bedrooms').fill('2');
   await page.locator('#bathrooms').fill('1');
