@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSupplierInboxItem } from '@/queries/use-supplier';
+import { useSupplierInboxItem, useSupplierSuspended } from '@/queries/use-supplier';
 import {
   useCompleteServiceRequest,
   useRejectServiceRequest,
@@ -219,7 +219,9 @@ function ActionBar({ request, onChanged }: { request: SupplierServiceRequestDeta
   const complete = useCompleteServiceRequest();
   const reject = useRejectServiceRequest();
   const [rejecting, setRejecting] = useState(false);
-  const busy = take.isPending || complete.isPending || reject.isPending;
+  // A suspended supplier performs no action (SU-12): the buttons stay visible but disabled, the banner says why.
+  const suspended = useSupplierSuspended();
+  const busy = take.isPending || complete.isPending || reject.isPending || suspended;
 
   let content: ReactNode = null;
   if (request.status === 'Richiesto') {
@@ -284,6 +286,11 @@ function ActionBar({ request, onChanged }: { request: SupplierServiceRequestDeta
       >
         {content}
       </div>
+      {suspended && (request.status === 'Richiesto' || request.status === 'PresoInCarico' || request.status === 'InCorso') && (
+        <p className="text-sm text-muted-foreground" data-testid="supplier-request-actions-suspended">
+          {t('supplier.request.actionsSuspended')}
+        </p>
+      )}
       {rejecting && (
         <RejectServiceRequestDialog
           open

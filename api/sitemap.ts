@@ -11,17 +11,48 @@
  * reach the API. A failure is a 503 that is never cached: crawlers retry later, and an error page is never served as
  * a sitemap. Self-contained on purpose (no imports): Vercel bundles each file of `api/` on its own.
  *
+ * BK-15 adds the sitemaps of the booking sites through the same function: `/sitemap-book.xml` (`?name=book`, the index of
+ * the orgs that have a published property) and `/book/:orgSlug/sitemap.xml` (`?org=:orgSlug`, the landing page and the
+ * published properties of one org, under the org's own path as the sitemap protocol requires). Unknown orgs are a 404.
+ *
  * Runbook: backend `docs/runbooks/seo-domain.md`.
  */
 
 /** Backend endpoint, relative to `VITE_API_BASE_URL` (which ends with `/api`). */
 export const SITEMAP_UPSTREAM_PATH = 'public/sitemap.xml';
 
+/** Backend endpoint of the index of the booking sites' sitemaps (`/sitemap-book.xml`). */
+export const BOOKING_SITEMAP_INDEX_UPSTREAM_PATH = 'public/sitemap-book.xml';
+
+/** The Host the crawler used (Vercel sets `x-forwarded-host` on a rewritten request), only a plain host name; else null. */
+function requestHost(headers: Headers | undefined): string | null {
+  const value = (headers?.get('x-forwarded-host') ?? headers?.get('host') ?? '').split(',')[0].trim().toLowerCase();
+  return /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*(:\d{1,5})?$/.test(value) ? value : null;
+}
+
+/** Same alphabet as the org slugs the backend accepts: anything else is a 404 before the backend is called. */
+const ORG_SLUG = /^[A-Za-z0-9-]{1,100}$/;
+
+/**
+ * Backend path of the sitemap a rewrite asks for, or null when the request names an org that cannot exist:
+ * no parameter is the compliance sitemap, `name=book` the index of the booking sites, `org` one org's sitemap.
+ */
+export function sitemapUpstreamPath(searchParams: URLSearchParams): string | null {
+  const org = searchParams.get('org');
+  if (org !== null) return ORG_SLUG.test(org) ? `public/orgs/${org}/sitemap.xml` : null;
+  if (searchParams.get('name') === 'book') return BOOKING_SITEMAP_INDEX_UPSTREAM_PATH;
+  return SITEMAP_UPSTREAM_PATH;
+}
+
 const UPSTREAM_TIMEOUT_MS = 8000;
 const CACHE_OK = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
 
-/** Absolute URL of the backend sitemap, or null when `VITE_API_BASE_URL` is not an absolute http(s) URL. */
-export function sitemapUpstreamUrl(apiBaseUrl: string | undefined): URL | null {
+/** Absolute URL of a backend sitemap, or null when `VITE_API_BASE_URL` is not an absolute http(s) URL. */
+export function sitemapUpstreamUrl(
+  apiBaseUrl: string | undefined,
+  path: string = SITEMAP_UPSTREAM_PATH,
+  host: string | null = null,
+): URL | null {
   const trimmed = apiBaseUrl?.trim();
   if (!trimmed) return null;
 
@@ -33,7 +64,10 @@ export function sitemapUpstreamUrl(apiBaseUrl: string | undefined): URL | null {
   }
   if (base.protocol !== 'https:' && base.protocol !== 'http:') return null;
 
-  return new URL(SITEMAP_UPSTREAM_PATH, base);
+  const url = new URL(path, base);
+  // BK-16: the guides sitemap becomes the sitemap of an org's own host when the Host of the request is one (the backend decides).
+  if (host && path === SITEMAP_UPSTREAM_PATH) url.searchParams.set('host', host);
+  return url;
 }
 
 function unavailable(reason: string): Response {
@@ -44,8 +78,18 @@ function unavailable(reason: string): Response {
   });
 }
 
-export async function GET(): Promise<Response> {
-  const upstream = sitemapUpstreamUrl(process.env.VITE_API_BASE_URL);
+function notFound(): Response {
+  return new Response('Sitemap not found.\n', {
+    status: 404,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
+}
+
+export async function GET(request?: Request): Promise<Response> {
+  const path = sitemapUpstreamPath(request ? new URL(request.url).searchParams : new URLSearchParams());
+  if (!path) return notFound();
+
+  const upstream = sitemapUpstreamUrl(process.env.VITE_API_BASE_URL, path, requestHost(request?.headers));
   if (!upstream) return unavailable('VITE_API_BASE_URL is missing or not an absolute URL');
 
   let response: Response;
@@ -61,8 +105,10 @@ export async function GET(): Promise<Response> {
     return unavailable(error instanceof Error ? error.name : 'request failed');
   }
 
+  // An org that is unknown, renamed or has nothing published has no sitemap (not an outage); same for the org's own host.
+  if (response.status === 404 && (upstream.pathname.includes('/orgs/') || upstream.searchParams.has('host'))) return notFound();
   if (!response.ok) return unavailable(`backend answered ${response.status}`);
-  if (!body.includes('<urlset')) return unavailable('backend answer is not a sitemap');
+  if (!body.includes('<urlset') && !body.includes('<sitemapindex')) return unavailable('backend answer is not a sitemap');
 
   return new Response(body, {
     status: 200,
@@ -71,7 +117,7 @@ export async function GET(): Promise<Response> {
 }
 
 /** Same status and headers as GET, without a body (e.g. `curl -I`). */
-export async function HEAD(): Promise<Response> {
-  const response = await GET();
+export async function HEAD(request?: Request): Promise<Response> {
+  const response = await GET(request);
   return new Response(null, { status: response.status, headers: response.headers });
 }

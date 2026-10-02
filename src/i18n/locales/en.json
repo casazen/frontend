@@ -246,6 +246,104 @@
         "enqueued": "Enqueued",
         "unknown": "Unknown"
       }
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "description": "List of suppliers, suspension and reactivation, invites.",
+      "inviteNew": "Invite supplier",
+      "tabsLabel": "Supplier sections",
+      "tabSuppliers": "Suppliers",
+      "tabInvites": "Invites",
+      "searchPlaceholder": "Search by name or email",
+      "loading": "Loading…",
+      "loadError": "Could not load the suppliers.",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "empty": "There are no suppliers yet.",
+      "emptyFiltered": "No supplier matches the filters.",
+      "pagination": "Page {{page}} of {{totalPages}} · {{totalCount}} results",
+      "previous": "Previous",
+      "next": "Next",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "history": "History",
+      "filter": {
+        "status": "Supplier status",
+        "allStatuses": "All statuses",
+        "allInviteStates": "All statuses"
+      },
+      "table": {
+        "name": "Supplier",
+        "contact": "Contact",
+        "categories": "Categories and comuni",
+        "status": "Status",
+        "openRequests": "Open requests",
+        "actions": "Actions",
+        "registeredOn": "Registered on {{date}}",
+        "suspendedOn": "Suspended on {{date}}"
+      },
+      "suspendDialog": {
+        "title": "Suspend {{name}}",
+        "description": "A suspended supplier receives no new requests and cannot take, complete or reject the existing ones. It stays in the system and you can reactivate it at any time.",
+        "openRequests_one": "The supplier still has {{count}} open request: it stays as it is and the supplier cannot work on it until you reactivate it.",
+        "openRequests_other": "The supplier still has {{count}} open requests: they stay as they are and the supplier cannot work on them until you reactivate it.",
+        "reason": "Reason for the suspension",
+        "reasonHint": "Required. It is an internal note recorded with your name in the history: the supplier does not see it.",
+        "suspending": "Suspending…"
+      },
+      "reactivateDialog": {
+        "title": "Reactivate {{name}}",
+        "description": "The supplier becomes active and visible to hosts again if it had already completed the activation; otherwise it goes back to pending and has to complete it."
+      },
+      "audit": {
+        "title": "History of {{name}}",
+        "description": "Who suspended or reactivated the supplier, when and why.",
+        "empty": "No action recorded for this supplier.",
+        "loadError": "Could not load the history.",
+        "by": "by {{actor}}",
+        "reason": "Reason: {{reason}}",
+        "action": {
+          "Suspended": "Suspended",
+          "Reactivated": "Reactivated",
+          "InviteResent": "Invite sent again",
+          "InviteRevoked": "Invite revoked"
+        }
+      },
+      "invites": {
+        "searchPlaceholder": "Search by invited email",
+        "email": "Invited email",
+        "comune": "Comune",
+        "categories": "Categories",
+        "state": "Invite status",
+        "expiresAt": "Expires on",
+        "sentOn": "Sent on {{date}}",
+        "resend": "Send again",
+        "revoke": "Revoke",
+        "empty": "There are no invites yet.",
+        "emptyFiltered": "No invite matches the filters.",
+        "loadError": "Could not load the invites.",
+        "stateLabel": {
+          "Pending": "Pending",
+          "Used": "Used",
+          "Expired": "Expired",
+          "Revoked": "Revoked"
+        },
+        "resendDialog": {
+          "title": "Send the invite again",
+          "description": "A new email will be sent to {{email}} with a new link valid for 7 days. The previous link stops working."
+        },
+        "revokeDialog": {
+          "title": "Revoke the invite",
+          "description": "The link sent to {{email}} will stop working. You can create a new invite for the same email."
+        }
+      },
+      "toast": {
+        "error": "The operation failed. Try again.",
+        "suspended": "{{name}} was suspended.",
+        "reactivated": "{{name}} was reactivated.",
+        "inviteResent": "Invite sent again to {{email}}.",
+        "inviteRevoked": "Invite for {{email}} revoked."
+      }
     }
   },
   "nav": {
@@ -1003,7 +1101,8 @@
         "checkedIn": "Guest arrived",
         "checkedOut": "Stay completed",
         "block": "Dates blocked by another channel (iCal)",
-        "toReview": "OTA stay to check"
+        "toReview": "OTA stay to check",
+        "manualBlock": "Dates you closed (owner, maintenance)"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -1012,6 +1111,50 @@
         "notABooking": "These dates come from the linked iCal calendar: they are taken on another channel and are not a CasaZen booking. The guest's details are on the channel.",
         "otherSource": "another calendar",
         "close": "Close"
+      },
+      "manualBlock": {
+        "action": "Block dates",
+        "formTitle": "Block dates",
+        "formHint": "Close the nights when the property is not available: they cannot be booked on the site and are exported as busy to the linked channels. You can also select the days on the calendar.",
+        "startDate": "From the night of",
+        "endDate": "Free again from",
+        "endDateHint": "First day bookable again, like the departure day of a stay.",
+        "nights_one": "{{count}} night blocked",
+        "nights_other": "{{count}} nights blocked",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose the reason",
+        "reasons": {
+          "Owner": "Owner stay",
+          "Maintenance": "Maintenance",
+          "Other": "Other reason"
+        },
+        "note": "Note (optional)",
+        "noteHint": "Only you see it: it is never shown to guests or sent to the channels.",
+        "submit": "Block dates",
+        "submitting": "Blocking...",
+        "cancel": "Cancel",
+        "created": "Dates blocked",
+        "createFailed": "The dates could not be blocked. Try again.",
+        "title": "Dates closed: {{reason}}",
+        "tooltip": "Dates closed: {{reason}}",
+        "noteLabel": "Note: {{note}}",
+        "explanation": "You closed these nights: they cannot be booked on the site and are busy on the channels that read the exported calendar.",
+        "readOnly": "Only users who can edit the property can remove the block.",
+        "delete": "Remove block",
+        "deleteConfirm": "Remove the block? The nights become bookable again on the site and free on the linked channels.",
+        "deleteConfirmAction": "Remove",
+        "deleting": "Removing...",
+        "deleted": "Block removed: the dates are free again",
+        "deleteFailed": "The block could not be removed. Try again.",
+        "validation": {
+          "startRequired": "Enter the first night to block.",
+          "startInPast": "Past dates cannot be blocked.",
+          "endRequired": "Enter when the property is free again.",
+          "endAfterStart": "The end date must be after the first night.",
+          "tooLong": "You can block at most {{max}} nights at a time.",
+          "reasonRequired": "Choose the reason of the block.",
+          "noteTooLong": "The note can be at most {{max}} characters long."
+        }
       },
       "toolbar": {
         "today": "Today",
@@ -2307,7 +2450,8 @@
       "closedPaid": "The host marked the work as paid.",
       "closedRejected": "You declined this request.",
       "cancel": "Cancel",
-      "rejectReasonHint": "The host sees the reason (at most 500 characters)."
+      "rejectReasonHint": "The host sees the reason (at most 500 characters).",
+      "actionsSuspended": "Actions are not available: the supplier account is suspended."
     },
     "register": {
       "title": "Supplier registration",
@@ -2511,6 +2655,12 @@
       "empty": "You have not received any requests from hosts yet.",
       "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
       "openInbox": "Open assignments"
+    },
+    "statusSuspended": "Suspended",
+    "suspendedHint": "Contact CasaZen support to reactivate the account.",
+    "suspended": {
+      "title": "Supplier account suspended",
+      "description": "You receive no new requests and cannot take, complete or reject the existing ones. Contact CasaZen support to reactivate the account."
     }
   },
   "settings": {
@@ -2545,11 +2695,6 @@
     "planSettings": "Plan settings"
   },
   "domain": {
-    "status": {
-      "Pending": "Pending",
-      "Verified": "Verified",
-      "Failed": "Failed"
-    },
     "modes": {
       "path": "CasaZen path (/book/{slug})",
       "subdomain": "CasaZen subdomain",
@@ -2567,25 +2712,84 @@
       "save": "Save domain settings",
       "saved": "Domain settings saved",
       "saveFailed": "Could not save domain settings",
-      "verify": "Verify DNS",
+      "verify": "Check now",
       "verifySuccess": "Domain verified successfully",
-      "verifyFailed": "DNS verification failed — check your records and try again",
+      "verifyFailed": "The check did not work: try again shortly",
       "upgradeCta": "Custom domains are available on Pro.",
       "upgradeLink": "Upgrade plan",
       "currentTitle": "Current configuration",
       "pathUrl": "Path URL",
       "subdomainUrl": "Subdomain URL",
       "customDomainUrl": "Custom domain URL",
-      "customDomainPlaceholder": "www.yourvilla.com"
+      "customDomainPlaceholder": "www.yourvilla.com",
+      "verifying": "Checking…",
+      "loadError": "Unable to load the domain settings.",
+      "retry": "Try again",
+      "planLapsed": "Your plan no longer includes the custom domain: until you go back to Pro the site does not answer on this domain and your guests use the CasaZen path."
     },
     "dns": {
-      "title": "DNS instructions",
-      "description": "Add these records at your DNS provider, then click Verify.",
-      "cname": "CNAME record",
-      "txt": "TXT verification record",
-      "copyCname": "Copy CNAME target",
+      "title": "DNS records to create",
+      "description": "Create these records at the provider of your domain (where you registered it). Then press Check now.",
+      "txt": "1. Ownership TXT record",
+      "txtHint": "Proves the domain is yours. Type TXT.",
+      "cname": "2. CNAME record",
+      "cnameHint": "Points the domain to our service. Type CNAME, for a subdomain such as www.",
+      "aRecord": "Alternatively: A record",
+      "aRecordHint": "For a domain without www (the root of a domain cannot have a CNAME) create a record of type A for each address:",
+      "providerTxt": "3. Service provider TXT record",
+      "providerTxtHint": "Required only because the domain is already used on another account of the provider. Type TXT.",
+      "copyCname": "Copy CNAME value",
       "copyTxt": "Copy TXT value",
-      "copied": "Copied to clipboard"
+      "copyProviderTxt": "Copy the provider TXT value",
+      "copied": "Copied to the clipboard",
+      "copyFailed": "Cannot copy: select the value by hand",
+      "sslNote": "The SSL certificate is generated automatically once the domain is active."
+    },
+    "state": {
+      "verified": "Active",
+      "waitingDns": "Waiting for DNS",
+      "activating": "Activating",
+      "failed": "Not active"
+    },
+    "stateTitle": {
+      "verified": "Your domain is active",
+      "waitingDns": "Waiting for the DNS records",
+      "activating": "Activation in progress",
+      "failed": "The domain cannot be activated"
+    },
+    "stateDescription": {
+      "verified": "Your guests can book from your domain. We keep checking the DNS records: if they are removed, the domain stops being active.",
+      "waitingDns": "Create the DNS records shown below at your provider and wait for them to propagate (it can take a few hours). Then press Check now, or wait for the automatic check.",
+      "activating": "The DNS records are not the problem: we are finishing the activation of the domain on the platform and will retry automatically.",
+      "failed": "The domain cannot be activated. Check that it is spelled correctly or choose another domain."
+    },
+    "issues": {
+      "ownership_txt_missing": "We cannot find the TXT record that proves you own the domain. Check that it was created and wait for the DNS to propagate (it can take a few hours).",
+      "dns_not_pointing": "The domain does not point to our service yet: create the CNAME record shown (for a domain without www, the A records) and wait for the DNS to propagate.",
+      "vercel_verification_pending": "The service provider asks for one more TXT record to confirm the domain: add it (it is in the DNS instructions) and check again.",
+      "vercel_not_configured": "Activating custom domains is not available on the platform yet. Your domain will activate by itself as soon as it is.",
+      "vercel_unauthorized": "We cannot activate the domain right now because of a platform configuration problem. We will retry automatically; if it lasts, contact support.",
+      "vercel_unavailable": "The activation service is not answering right now. We will retry automatically.",
+      "domain_taken": "This domain is already in use by another CasaZen site.",
+      "vercel_domain_in_use": "This domain is already linked to another project or account of the service provider and we cannot activate it. Contact support.",
+      "vercel_rejected": "The service provider does not accept this domain. Check that it is spelled correctly."
+    },
+    "lastCheck": "Last check",
+    "neverChecked": "not checked yet",
+    "verifiedAt": "Active since",
+    "autoCheck": {
+      "active": "We re-check the domain automatically: you do not need to come back here.",
+      "stopped": "The automatic check is paused because the domain has not been configured for too long: press Check now after fixing the DNS records."
+    },
+    "activationUnavailable": "Activating custom domains is not available on the platform yet: the domain will stay on hold until the service is configured. There is nothing different to do on your DNS.",
+    "siteAddress": {
+      "title": "Give your site an address of its own",
+      "suggestion": "Today your guests book on {{url}}. Choose a CasaZen subdomain or, with Pro, your own domain (for example www.yourvilla.com).",
+      "domainTitle": "Domain {{domain}}",
+      "choose": "Choose the address",
+      "manage": "Go to the setup",
+      "dismiss": "Hide the suggestion",
+      "loadError": "We cannot load the address of your site."
     }
   },
   "orgSettings": {
@@ -3806,6 +4010,11 @@
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
     "legalDocuments": "Legal documents",
+    "seo": {
+      "orgTitle": "{{name}} — Book direct",
+      "orgDescription": "Book direct with {{name}}.",
+      "propertyTitle": "{{name}} · {{city}} — {{org}}"
+    },
     "loading": "Loading...",
     "loadingProperties": "Loading properties...",
     "propertiesError": {
@@ -4155,6 +4364,85 @@
       "CategoryRequired": "Select the accommodation category to calculate the tax.",
       "ChildAgesRequired": "Enter the age of every minor to calculate the tax.",
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
+    }
+  },
+  "activation": {
+    "title": "Activate your booking site",
+    "progress_one": "{{count}} of {{total}} step completed",
+    "progress_other": "{{count}} of {{total}} steps completed",
+    "progressLabel": "Activation progress",
+    "loadError": "The activation checklist could not be loaded.",
+    "retry": "Retry",
+    "state": {
+      "done": "Completed",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "blocked": "Waiting"
+    },
+    "steps": {
+      "account": {
+        "title": "Account and consents",
+        "done": "You chose how to use CasaZen, your organization was created and you accepted the consents."
+      },
+      "organization": {
+        "title": "Organization name and address",
+        "done": "You chose the name and the public address of the organization."
+      },
+      "property": {
+        "title": "First property",
+        "done_one": "{{count}} property created.",
+        "done_other": "{{count}} properties created."
+      },
+      "cin": {
+        "title": "Property CIN codes",
+        "done": "Every property has a valid CIN ({{done}} of {{total}})."
+      },
+      "payments": {
+        "title": "Payments with Stripe",
+        "done": "Stripe can collect direct bookings."
+      },
+      "sitePublished": {
+        "title": "Site published and bookable",
+        "done_one": "{{count}} property of {{total}} is published and bookable.",
+        "done_other": "{{count}} properties of {{total}} are published and bookable."
+      },
+      "firstBooking": {
+        "title": "First direct booking",
+        "done": "You received your first confirmed direct booking."
+      }
+    },
+    "reasons": {
+      "onboarding_incomplete": "Finish signing up first: role, organization and consents.",
+      "org_profile_incomplete": "Choose the organization name and a readable public address: for now you have the ones CasaZen generated.",
+      "no_property": "Add at least one property.",
+      "cin_missing_or_invalid": "Valid CIN on {{done}} of {{total}} properties: add or fix the CIN of the others.",
+      "connect_not_started": "You have not connected a Stripe account yet: without it, guests cannot pay.",
+      "connect_requirements_due": "Stripe still asks for data or documents to enable payments.",
+      "connect_pending_verification": "You sent the data: Stripe is verifying the account and has not enabled payments yet.",
+      "org_inactive": "The organization is disabled and its public pages cannot be reached. Contact support.",
+      "properties_paused": "Every property that could be published is paused: reactivate at least one.",
+      "compliance_pending": "The properties have not completed the compliance activation yet (CIN, documents, safety): until they do, they are not published.",
+      "properties_inactive": "No property is active: activate at least one.",
+      "payments_not_ready": "A property is published, but guests cannot pay yet because Stripe has not enabled payments.",
+      "site_not_published": "Publish the site first: you need a published property and Stripe payments enabled.",
+      "awaiting_first_booking": "The site is open and bookable: share the link with your guests.",
+      "unknown": "This step is not completed yet."
+    },
+    "cta": {
+      "onboarding": "Finish signing up",
+      "organization": "Set name and address",
+      "property": "Add a property",
+      "cin": "Manage properties",
+      "paymentsStart": "Connect Stripe",
+      "paymentsContinue": "Go to payments",
+      "reactivate": "Reactivate properties",
+      "compliance": "Complete the activation",
+      "properties": "Go to properties",
+      "share": "Share the link",
+      "open": "Open"
+    },
+    "siteBanner": {
+      "title": "Guests cannot book from your site yet"
     }
   },
   "onboarding": {
@@ -5087,6 +5375,27 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
+      "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
+      "supplierAlreadySuspended": "The supplier is already suspended.",
+      "supplierNotSuspended": "The supplier is not suspended: there is nothing to reactivate.",
+      "supplierInviteNotFound": "Invite not found.",
+      "supplierInviteNotPending": "Only a pending invite can be revoked: this one was already used, has expired or was already revoked.",
+      "supplierInviteNotResendable": "An invite that was already used or revoked cannot be sent again: create a new invite.",
+      "supplierInviteRevoked": "This invite was revoked. Ask the CasaZen team to send you a new one.",
+      "calendarBlockOverlapsBooking": "A booking already takes one of these nights: cancel it or choose other dates.",
+      "calendarBlockOverlapsBlock": "You have already blocked one of these nights: remove that block or choose other dates.",
+      "calendarBlockInPast": "Past dates cannot be blocked.",
+      "calendarBlockInvalidRange": "The end date must be after the start date.",
+      "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
+      "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
+      "propertyPhotoNone": "Select at least one photo to upload.",
+      "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
+      "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
+      "propertyPhotoInvalidType": "One of the files is not a valid photo: only JPEG, PNG or WebP images are accepted.",
+      "propertyPhotoInvalidSize": "One of the files is empty or larger than the maximum size allowed.",
+      "propertyPhotoNotFound": "The photo is no longer in the gallery: the list has been refreshed.",
+      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again.",
       "rentLeaseNotSigned": "The rent can be set up only for a lease signed by every party.",
       "rentBillingDayInvalid": "The due day must be between 1 and 28.",
       "rentAmountInvalid": "The installment amount must be greater than zero, with at most two decimals.",
@@ -5097,14 +5406,7 @@
       "rentNoTenantEmail": "No tenant has an email address to send the payment request to.",
       "rentPaymentRequestNotSent": "The payment request was not sent: the email service is unavailable.",
       "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
-      "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one.",
-      "propertyPhotoNone": "Select at least one photo to upload.",
-      "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
-      "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
-      "propertyPhotoInvalidType": "One of the files is not a valid photo: only JPEG, PNG or WebP images are accepted.",
-      "propertyPhotoInvalidSize": "One of the files is empty or larger than the maximum size allowed.",
-      "propertyPhotoNotFound": "The photo is no longer in the gallery: the list has been refreshed.",
-      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again."
+      "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one."
     }
   },
   "validation": {
@@ -5448,6 +5750,24 @@
         "frontendHosting": "Web app hosting",
         "ai": "AI text generation"
       }
+    }
+  },
+  "hostSite": {
+    "loading": "Loading the site…",
+    "notFound": {
+      "title": "Site not found",
+      "description": "This address does not match any active site. If you own it, check the domain status in the site settings."
+    },
+    "platformLink": "Go to CasaZen",
+    "error": {
+      "title": "The site could not be loaded",
+      "description": "We could not reach the server. Please try again shortly.",
+      "retry": "Try again"
+    },
+    "pageNotFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist on this site.",
+      "home": "Go to the home page"
     }
   },
   "rent": {

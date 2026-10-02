@@ -24,7 +24,13 @@ const ACTIVATION_PATH = '/app/supplier/activation';
 const SELF_SERVE_PATH = '/register';
 
 /** Invite errors that retrying cannot fix. */
-const FINAL_INVITE_CODES = new Set(['supplier_invite_invalid', 'supplier_invite_expired', 'supplier_invite_used']);
+const FINAL_INVITE_CODES = new Set([
+  'supplier_invite_invalid',
+  'supplier_invite_expired',
+  'supplier_invite_used',
+  // An admin revoked it (SU-12): only a new invite helps.
+  'supplier_invite_revoked',
+]);
 
 type RegistrationDone = {
   authenticated: boolean;
