@@ -1,7 +1,7 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { completeOnboardingFromRentalChoice, fillHostBookingGuestContact } from './helpers/onboarding';
-import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { fillPropertyForm, mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   mockCurrentUserWithOrg,
   mockEntitlement,
@@ -33,32 +33,38 @@ test.describe('Business Golden Path', () => {
     await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
     await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
-    await page.getByLabel(/Property Name|Nome proprietà/i).fill('Casa Business');
-    await page.getByLabel(/Description|Descrizione/i).fill('Golden path test property.');
-    await page.getByLabel(/Address|Indirizzo/i).fill('Via Garibaldi 42');
-    await page.getByLabel(/City|Città/i).fill('Milano');
-    await page.getByLabel(/Country|Nazione/i).fill('IT');
-    await page.getByLabel(/ZIP|CAP/i).fill('20100');
-    await page.getByLabel(/Bedrooms|Camere/i).fill('3');
-    await page.getByLabel(/Bathrooms|Bagni/i).fill('2');
-    await page.getByLabel(/Max Guests|Ospiti max/i).fill('6');
-    await page.getByLabel(/Price per Night|Prezzo per notte/i).fill('150');
+    await fillPropertyForm(page, {
+      name: 'Casa Business',
+      description: 'Golden path test property.',
+      address: 'Via Garibaldi 42',
+      comune: 'Milano',
+      postalCode: '20100',
+      bedrooms: 3,
+      bathrooms: 2,
+      maxGuests: 6,
+      nightlyRate: 150,
+    });
 
     const resp = page.waitForResponse(
       (r) => r.request().method() === 'POST' && r.url().includes('/api/properties'),
     );
-    await page.getByRole('button', { name: /Create|Crea/i }).click();
+    await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
     expect((await resp).status()).toBe(201);
 
     // Navigate to detail
-    await expect(page.getByRole('link', { name: 'Casa Business' })).toBeVisible();
-    await page.getByRole('link', { name: 'Casa Business' }).click();
+    await expect(page.getByRole('link', { name: 'Casa Business', exact: true })).toBeVisible();
+    await page.getByRole('link', { name: 'Casa Business', exact: true }).click();
 
     await expect(page.getByRole('heading', { name: 'Casa Business' })).toBeVisible();
     await expect(page.getByText(/CIN mancante|Missing CIN/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Dettagli|Details/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /OTA|Integrazioni/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Prezzi|Pricing|Suggerimenti stagionali|Seasonal suggestions/i })).toBeVisible();
+    // The detail is split in tabs (info, seasonal suggestions, iCal calendars: the OTA channels are frozen, D10).
+    await expect(page.getByRole('heading', { name: 'Dettagli proprietà' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Calendari iCal' }).click();
+    await expect(page.getByTestId('property-ical-settings')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Suggerimenti stagionali' }).click();
+    await expect(page.getByRole('button', { name: 'Gestisci i suggerimenti' })).toBeVisible();
   });
 
   test('seasonal suggestions: enable toggle → save config → verify On badge', async ({ page }) => {
@@ -189,7 +195,7 @@ test.describe('Business Golden Path', () => {
     const resp = page.waitForResponse(
       (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
     );
-    await page.getByRole('button', { name: /Create|Crea/i }).click();
+    await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
     expect((await resp).status()).toBe(201);
 
     // Should redirect to booking detail
@@ -280,7 +286,7 @@ test.describe('Business Golden Path', () => {
 
     await page.getByLabel(/Booking|Prenotazione/i).selectOption({ index: 1 });
     await page.getByLabel(/Amount|Importo/i).fill('930');
-    await page.getByRole('button', { name: /Create|Crea/i }).click();
+    await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
 
     // Process payment
     await page.getByRole('button', { name: /Process|Elabora/i }).click();

@@ -1,7 +1,7 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { fillHostBookingGuestContact } from './helpers/onboarding';
-import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { fillPropertyForm, mockPropertiesApi } from './helpers/properties-api-mock';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import { mockCinComplianceApi } from './helpers/cin-mock';
 import { mockAlloggiatiApi, mockCheckInApi, mockBookingDetailApi, DEMO_CHECKIN_TOKEN, DEMO_BOOKING_ID } from './helpers/alloggiati-mock';
@@ -170,26 +170,26 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
 
-      await page.getByLabel(/Property Name|Nome proprietà/i).fill('Casa Conforme');
-      await page.getByLabel(/Description|Descrizione/i).fill('Test CIN validation.');
-      await page.getByLabel(/Address|Indirizzo/i).fill('Via Dante 1');
-      await page.getByLabel(/City|Città/i).fill('Roma');
-      await page.getByLabel(/Country|Nazione/i).fill('IT');
-      await page.getByLabel(/ZIP|CAP/i).fill('00100');
-      await page.getByLabel(/Bedrooms|Camere/i).fill('2');
-      await page.getByLabel(/Bathrooms|Bagni/i).fill('1');
-      await page.getByLabel(/Max Guests|Ospiti max/i).fill('4');
-      await page.getByLabel(/Price per Night|Prezzo per notte/i).fill('120');
-
       // Real CIN (official BDSR format) typed with separators: accepted, the backend stores it normalized
-      await page.getByLabel(/CIN/i).fill('IT-058091-C2-7G5FFZDZ');
+      await fillPropertyForm(page, {
+        name: 'Casa Conforme',
+        description: 'Test CIN validation.',
+        address: 'Via Dante 1',
+        comune: 'Roma',
+        postalCode: '00100',
+        bedrooms: 2,
+        bathrooms: 1,
+        maxGuests: 4,
+        nightlyRate: 120,
+        cinCode: 'IT-058091-C2-7G5FFZDZ',
+      });
 
       const resp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && r.url().includes('/api/properties'),
       );
-      await page.getByRole('button', { name: /Create|Crea/i }).click();
+      await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
       expect((await resp).status()).toBe(201);
-      await expect(page.getByText(/created successfully|creata con successo/i)).toBeVisible();
+      await expect(page.getByText(/created successfully|creato con successo/i)).toBeVisible();
     });
 
     test('CIN deadline banner visible → navigates to compliance dashboard', async ({ page }) => {
@@ -362,7 +362,7 @@ test.describe('Italian Compliance Golden Path', () => {
       const resp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
       );
-      await page.getByRole('button', { name: /Create|Crea/i }).click();
+      await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
       expect((await resp).status()).toBe(201);
 
       await expect(page.getByText(/20[,.]00/)).toBeVisible();
