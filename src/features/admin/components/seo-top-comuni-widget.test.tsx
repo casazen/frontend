@@ -15,7 +15,7 @@ const RESPONSE: SeoTopComuniResponse = {
   to: '2026-10-01T00:00:00Z',
   retentionDays: 90,
   items: [
-    { comuneCode: '013075', comuneName: 'Como', ctaClicks: 1234, signupStarts: 80, signups: 7 },
+    { comuneCode: '013075', comuneName: 'Como', ctaClicks: 12345, signupStarts: 80, signups: 7 },
     { comuneCode: '015146', comuneName: 'Milano', ctaClicks: 20, signupStarts: 0, signups: 0 },
   ],
 };
@@ -65,8 +65,8 @@ describe('SeoTopComuniWidget (SE-04, #300 AC9, A8-11)', () => {
     const como = await screen.findByTestId('seo-top-comune-013075');
     expect(AdminSeoApi.getTopComuni).toHaveBeenCalledWith(30);
     expect(como).toHaveTextContent('Como');
-    expect(como).toHaveTextContent('1.234');
-    expect(within(como).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['Como', '1.234', '80', '7']);
+    expect(como).toHaveTextContent('12.345');
+    expect(within(como).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['Como', '12.345', '80', '7']);
     expect(screen.getByTestId('seo-top-comune-015146')).toHaveTextContent('Milano');
     expect(screen.getByTestId('seo-top-comuni-retention')).toHaveTextContent('eliminati dopo 90 giorni');
   });
@@ -102,7 +102,7 @@ describe('SeoTopComuniWidget (SE-04, #300 AC9, A8-11)', () => {
     renderWidget();
 
     expect(await screen.findByText('Municipalities that convert')).toBeInTheDocument();
-    expect(screen.getByTestId('seo-top-comune-013075')).toHaveTextContent('1,234');
+    expect(await screen.findByTestId('seo-top-comune-013075')).toHaveTextContent('12,345');
     expect(screen.getByTestId('seo-top-comuni-retention')).toHaveTextContent('deleted after 90 days');
   });
 });

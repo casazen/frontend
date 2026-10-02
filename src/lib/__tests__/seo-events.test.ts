@@ -66,7 +66,7 @@ describe('buildSeoEventPayload (SE-04, #300 AC3, no personal data)', () => {
     expect(payload).toEqual({ event: 'cta_click', comuneSlug: 'como', utmSource: 'newsletter', referrerHost: 'news.example.org' });
   });
 
-  it.each([[undefined], [null], [''], ['Como!'], ['../etc'], ['0130751']])(
+  it.each([[undefined], [null], [''], ['Como!'], ['../etc'], ['013 075']])(
     'buildSeoEventPayload_InvalidComune_%s_SendsNothing',
     (comune) => {
       expect(buildSeoEventPayload('cta_click', comune, LOCATION)).toBeNull();
