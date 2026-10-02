@@ -205,7 +205,8 @@ export async function GET(request: Request): Promise<Response> {
 
   const host = requestHost(request.headers);
   if (route.kind === 'host') {
-    if (!host) return notFound();
+    // Only a plain host name is ever compared, sent upstream or used to build a URL.
+    if (!host || !PLAIN_HOST.test(host)) return notFound();
     // `/` and `/property/…` of the app's own host are not an org's pages: the single-page app, as before.
     if (isAppHost(host, process.env.VITE_PUBLIC_SITE_URL)) return singlePageApp(request.headers, host);
   }

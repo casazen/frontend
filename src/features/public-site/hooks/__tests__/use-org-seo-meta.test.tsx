@@ -37,8 +37,8 @@ function meta(selector: string): string | null {
 
 beforeEach(async () => {
   await i18n.changeLanguage('it');
-  document.title = 'CasaZen';
   document.head.innerHTML = '';
+  document.title = 'CasaZen';
 });
 
 afterEach(() => {
@@ -96,7 +96,7 @@ describe('useOrgSeoMeta', () => {
     renderHook(() => useOrgSeoMeta(ORG, '/book/villa-rossi/property/casa-mare'), { wrapper });
 
     expect(document.title).toBe('CasaZen');
-    expect(document.head.children).toHaveLength(0);
+    expect(document.head.querySelectorAll('meta, link')).toHaveLength(0);
   });
 
   it('useOrgSeoMeta_OrgStillLoading_ChangesNothing', () => {

@@ -11,8 +11,8 @@ function canonical(): string | null {
 }
 
 beforeEach(() => {
-  document.title = 'CasaZen';
   document.head.innerHTML = '';
+  document.title = 'CasaZen';
 });
 
 afterEach(() => {
@@ -96,7 +96,7 @@ describe('useSeoMeta', () => {
     renderHook(() => useSeoMeta(null));
 
     expect(document.title).toBe('CasaZen');
-    expect(document.head.children).toHaveLength(0);
+    expect(document.head.querySelectorAll('meta, link')).toHaveLength(0);
   });
 
   it('useSeoMeta_ChangedTitle_ReplacesThePreviousTagsWithoutDuplicates', () => {
