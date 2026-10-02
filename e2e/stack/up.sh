@@ -64,7 +64,9 @@ if [ -n "${STRIPE_TEST_SECRET_KEY:-}" ]; then
     "Stripe__ConnectWebhookSecret=${STRIPE_TEST_CONNECT_WEBHOOK_SECRET:-}"
   )
 fi
-BACKEND_CMD="${E2E_BACKEND_CMD:-dotnet run --project $BACKEND_DIR/Casazen.Web -c Release --no-launch-profile}"
+# CI builds the backend first (E2E_BACKEND_NO_BUILD=1); locally `dotnet run` builds when needed.
+NO_BUILD=""; [ "${E2E_BACKEND_NO_BUILD:-0}" = "1" ] && NO_BUILD="--no-build"
+BACKEND_CMD="${E2E_BACKEND_CMD:-dotnet run --project $BACKEND_DIR/Casazen.Web -c Release --no-launch-profile $NO_BUILD}"
 env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://localhost:$API_PORT" \
   "ConnectionStrings__DefaultConnection=$CONN" \
   "Auth0__Domain=localhost:$IDP_PORT" "Auth0__Audience=https://casazen-api" \
@@ -74,7 +76,7 @@ env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://localhost:$API_PO
   "Email__ApiUrl=http://localhost:$MAIL_PORT" \
   "SSL_CERT_FILE=$STACK_DIR/trust-bundle.pem" \
   "RateLimiting__PublicBookingCreate__PermitLimit=1000" "RateLimiting__PublicBookingLookup__PermitLimit=1000" \
-  "${STRIPE_ARGS[@]}" \
+  ${STRIPE_ARGS[@]+"${STRIPE_ARGS[@]}"} \
   nohup $BACKEND_CMD > "$STACK_DIR/backend.log" 2>&1 &
 echo $! > "$STACK_DIR/backend.pid"
 wait_for "http://localhost:$API_PORT/api/health/live" "backend" 240
@@ -82,7 +84,6 @@ wait_for "http://localhost:$API_PORT/api/health/live" "backend" 240
 # 5. Frontend (Vite dev server, real Auth0 SDK pointed at the mock IdP: no demo mode).
 ( cd "$FE_DIR" && env VITE_HTTPS=0 VITE_API_BASE_URL="http://localhost:$API_PORT/api" \
     VITE_AUTH0_DOMAIN="localhost:$IDP_PORT" VITE_AUTH0_CLIENT_ID=e2e-spa-client VITE_AUTH0_AUDIENCE=https://casazen-api \
-    VITE_STRIPE_PUBLISHABLE_KEY="${STRIPE_TEST_PUBLISHABLE_KEY:-}" \
     nohup npx vite --host localhost --port "$FE_PORT" --strictPort > "$STACK_DIR/vite.log" 2>&1 &
   echo $! > "$STACK_DIR/vite.pid" )
 wait_for "http://localhost:$FE_PORT/" "frontend" 120

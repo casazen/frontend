@@ -96,8 +96,6 @@ export default defineConfig({
             '**/local-integration.spec.ts',
             '**/l3/**/*.spec.ts',
             '**/*-l3.spec.ts',
-            '**/golden-journey-web.spec.ts',
-            '**/golden-journey-supplier-mobile.spec.ts',
           ],
           dependencies: ['setup'],
           use: {
@@ -133,7 +131,7 @@ export default defineConfig({
         },
         {
           name: 'staging-gj',
-          // Real-API L3 only (demo golden-journey-web.spec.ts stays in L2 chromium project)
+          // Real-API L3 only (the Golden Journey is the gj-l3 project on the ephemeral stack, FN-03)
           testMatch: [
             '**/l3/**/*.spec.ts',
             '**/*-l3.spec.ts',

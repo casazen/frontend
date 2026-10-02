@@ -232,6 +232,35 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       expect((await hostApi.get<Booking>(`/bookings/${ids.bookingId}`)).status, 'stay still CheckedIn').toBe('CheckedIn');
     });
 
+    await step('Host completes the check-out wizard; the compliance cockpit has nothing pending for the stay', async () => {
+      await host.goto(`/app/short-rent/bookings/${ids.bookingId}/checkout`);
+      await expect(host.getByTestId('checkout-wizard-page')).toBeVisible({ timeout: 20_000 });
+      // CO-17: the 5 steps. The supplier request of the stay already covers the cleaning, so it is skipped.
+      await host.getByTestId('checkout-confirm-departure').click();
+      await host.getByTestId('checkout-step-next').click();
+      await expect(host.getByTestId('checkout-step-panel-alloggiati')).toBeVisible({ timeout: 15_000 });
+      await host.getByTestId('checkout-step-next').click();
+      await host.getByTestId('checkout-cleaning-skip').click();
+      await host.getByTestId('checkout-step-next').click();
+      await host.getByTestId('checkout-tourist-tax-CollectedAtProperty').click();
+      await host.getByTestId('checkout-step-next').click();
+      await host.getByTestId('checkout-property-ready-yes').click();
+      await host.getByTestId('checkout-complete-button').click();
+      await expect(host.getByText(/Check-out completato/i)).toBeVisible({ timeout: 20_000 });
+      await expect
+        .poll(async () => (await hostApi.get<Booking>(`/bookings/${ids.bookingId}`)).status, { timeout: 30_000 })
+        .toBe('CheckedOut');
+
+      await host.goto('/app/short-rent');
+      await expect(host.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 20_000 });
+      const summary = await hostApi.get<{
+        checkoutsDue?: { items?: { id?: string }[] };
+        turnoversPending?: { items?: { id?: string }[] };
+      }>('/compliance/summary');
+      expect((summary.checkoutsDue?.items ?? []).map((i) => i.id)).not.toContain(ids.bookingId);
+      expect((summary.turnoversPending?.items ?? []).map((i) => i.id)).not.toContain(ids.bookingId);
+    });
+
     expect(errors5xx, 'no API 5xx during the whole journey').toEqual([]);
 
     // Seed for the app suite of FN-04 (Maestro) and for debugging: written as a CI artifact, never committed.
