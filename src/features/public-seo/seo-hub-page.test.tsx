@@ -149,7 +149,8 @@ describe('ComplianceGuidePage canonical', () => {
       comuneSlug: 'como',
       canonicalUrl: `${PUBLIC_SITE}/p/affitti-brevi/lombardia/como`,
       lastRefreshedAt: null,
-      disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
+      aiGenerated: true,
+      contentLanguage: 'it',
       cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
       touristTaxRates: [],
     };

@@ -3,12 +3,6 @@ import type { TouristTaxQuoteStatus, TouristTaxRateRule } from './tourist-tax.ty
 export type SeoPageType = 'ComplianceGuide' | 'TouristTaxCalc' | 'SupplierMicrosite';
 export type LegalReviewStatus = 'Draft' | 'Reviewed';
 
-export interface SeoDisclaimers {
-  lastUpdated: string;
-  notLegalAdvice: string;
-  aiGenerated: string;
-}
-
 export interface SeoCta {
   /**
    * `/signup` of the web app with the comune and the default UTM parameters, on the public domain (backend
@@ -40,7 +34,14 @@ export interface SeoPagePublic {
   /** On the configured public domain (backend `App__PublicSiteBaseUrl`); null only when it is not configured. */
   canonicalUrl: string | null;
   lastRefreshedAt: string | null;
-  disclaimers: SeoDisclaimers;
+  /**
+   * The text was written by an AI model (then approved by an admin): the page shows the AI Act transparency notice next
+   * to it (SE-05, A8-27). The disclaimers ("not legal advice", the notice) are texts of this app in the visitor's
+   * language (`publicSeo.disclaimers.*`, `aiContentNotice.*`), not of the API (A8-19).
+   */
+  aiGenerated: boolean;
+  /** Language of `title`, `metaDescription` and `bodyHtml` (`it`): the regulations are Italian. */
+  contentLanguage: string;
   cta: SeoCta;
   /** Rates in force today; empty when CasaZen has no rate for the comune (A8-12). */
   touristTaxRates: PublicTouristTaxRateSummary[];

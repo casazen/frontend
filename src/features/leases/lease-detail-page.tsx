@@ -22,6 +22,7 @@ import { QuesturaCommunicationPanel } from './components/questura-communication-
 import { DelegaCaptureDialog } from './components/delega-capture-dialog';
 import { getLeaseEventTypeLabel, getLeasePartyRoleLabel, getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
 import { ConcordatoAssessmentPanel } from './components/concordato-assessment-panel';
+import { RentSchedulePanel } from './components/rent-schedule-panel';
 
 export function LeaseDetailPage() {
   const { t } = useTranslation();
@@ -213,6 +214,8 @@ export function LeaseDetailPage() {
               onSubmitToProvider={handleSubmitToProvider}
               isSubmittingToProvider={triggerRegistration.isPending}
             />
+            {/* LT-06: recurring rent, once the lease is signed. */}
+            <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />
             {providerFilingAvailable && checklist && (
               <DelegaCaptureDialog
                 open={delegaOpen}
