@@ -1,5 +1,6 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
+import { pinE2eLocale } from './helpers/locale';
 import { completeOnboardingFromRentalChoice, fillHostBookingGuestContact } from './helpers/onboarding';
 import { fillPropertyForm, mockPropertiesApi } from './helpers/properties-api-mock';
 import {
@@ -64,31 +65,30 @@ test.describe('Business Golden Path', () => {
     await expect(page.getByTestId('property-ical-settings')).toBeVisible();
 
     await page.getByRole('button', { name: 'Suggerimenti stagionali' }).click();
-    await expect(page.getByRole('button', { name: 'Gestisci i suggerimenti' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Gestisci i suggerimenti' }).first()).toBeVisible();
   });
 
   test('seasonal suggestions: enable toggle → save config → verify On badge', async ({ page }) => {
+    // The assertions below are written against the English texts: pin the locale (the product default is Italian).
+    await pinE2eLocale(page, 'en');
     await mockCurrentUserWithOrg(page);
     await mockEntitlement(page);
     await mockPricingApiDefaults(page);
 
-    await page.goto(demoUrl(`/app/short-rent/properties/${PROPERTY_ID}/pricing`, 'short-stay'));
-
-    await expect(page.getByRole('heading', { name: /Seasonal suggestions|Suggerimenti stagionali/i, level: 1 })).toBeVisible();
-    await expect(page.getByRole('switch', { name: /turn on|attiva/i })).toBeVisible();
-
-    // Override config to disabled state first
+    // The configuration starts disabled; after the save the page reloads it, and the server answers the saved one.
+    let saveCallCount = 0;
     await page.route(`**/api/pricing-adapter/config/${PROPERTY_ID}`, async (route) => {
       const method = route.request().method();
       if (method === 'GET') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ ...configEnabled, isEnabled: false }),
+          body: JSON.stringify(saveCallCount > 0 ? configEnabled : { ...configEnabled, isEnabled: false }),
         });
         return;
       }
       if (method === 'POST') {
+        saveCallCount++;
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -99,13 +99,16 @@ test.describe('Business Golden Path', () => {
       await route.fallback();
     });
 
-    // Reload to get disabled state
-    await page.reload();
-    await expect(page.getByRole('switch', { name: /turn on|attiva/i })).not.toBeChecked();
+    await page.goto(demoUrl(`/app/short-rent/properties/${PROPERTY_ID}/pricing`, 'short-stay'));
 
-    await page.getByRole('switch', { name: /turn on|attiva/i }).click();
-    await expect(page.getByText(/saved|salvate/i)).toBeVisible();
-    await expect(page.getByText(/^(On|Attivi)$/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Seasonal suggestions', level: 1 })).toBeVisible();
+    const toggle = page.getByRole('switch', { name: /turn on seasonal suggestions/i });
+    await expect(toggle).not.toBeChecked();
+
+    await toggle.click();
+    await expect.poll(() => saveCallCount).toBe(1);
+    await expect(page.getByText('Suggestion rules saved')).toBeVisible();
+    await expect(page.getByText('On', { exact: true })).toBeVisible();
   });
 
   test('booking create with tourist tax → verify on detail page', async ({ page }) => {
@@ -195,14 +198,16 @@ test.describe('Business Golden Path', () => {
     const resp = page.waitForResponse(
       (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
     );
-    await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
+    await page.getByRole('button', { name: /Create|Crea/i }).click();
     expect((await resp).status()).toBe(201);
 
     // Should redirect to booking detail
-    await expect(page.getByText(/30[,.]00/)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('booking-price-tax')).toContainText(/30[,.]00/, { timeout: 10_000 });
   });
 
-  test('payment create → process → verify completed', async ({ page }) => {
+  test('payment create → recorded as pending and listed', async ({ page }) => {
+    // The host only records the payment (POST /api/payments, method required): there is no "process" action in the app,
+    // a card payment is settled by Stripe and arrives as Completed (BK-02).
     await mockCurrentUserWithOrg(page);
     await page.route('**/api/bookings**', async (route) => {
       if (route.request().method() !== 'GET') { await route.fallback(); return; }
@@ -223,73 +228,47 @@ test.describe('Business Golden Path', () => {
       });
     });
 
-    let paymentStatus = 'Pending';
+    const created = {
+      id: PAYMENT_ID,
+      bookingId: BOOKING_ID,
+      amount: 930,
+      currency: 'EUR',
+      refundedAmount: 0,
+      status: 'Pending',
+      method: 'BankTransfer',
+      createdAt: '2026-07-01T10:00:00Z',
+    };
+    let postedBody: Record<string, unknown> | null = null;
 
     await page.route('**/api/payments', async (route) => {
       if (route.request().method() === 'POST') {
-        await route.fulfill({
-          status: 201,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: PAYMENT_ID,
-            bookingId: BOOKING_ID,
-            amount: 930,
-            refundedAmount: 0,
-            status: 'Pending',
-            method: 'Stripe',
-            createdAt: new Date().toISOString(),
-          }),
-        });
+        postedBody = route.request().postDataJSON() as Record<string, unknown>;
+        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(created) });
         return;
       }
-      await route.fallback();
-    });
-
-    await page.route(`**/api/payments/${PAYMENT_ID}/process`, async (route) => {
-      if (route.request().method() === 'POST') {
-        paymentStatus = 'Completed';
+      if (route.request().method() === 'GET') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({
-            id: PAYMENT_ID,
-            bookingId: BOOKING_ID,
-            amount: 930,
-            refundedAmount: 0,
-            status: 'Completed',
-            stripePaymentIntentId: 'pi_e2e_001',
-            processedAt: new Date().toISOString(),
-          }),
+          body: JSON.stringify(postedBody ? [created] : []),
         });
         return;
       }
       await route.fallback();
-    });
-
-    await page.route(`**/api/payments/${PAYMENT_ID}`, async (route) => {
-      if (route.request().method() !== 'GET') { await route.fallback(); return; }
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          id: PAYMENT_ID,
-          bookingId: BOOKING_ID,
-          amount: 930,
-          refundedAmount: 0,
-          status: paymentStatus,
-          method: 'Stripe',
-        }),
-      });
     });
 
     await page.goto(demoUrl('/app/short-rent/payments/create', 'short-stay'));
 
-    await page.getByLabel(/Booking|Prenotazione/i).selectOption({ index: 1 });
-    await page.getByLabel(/Amount|Importo/i).fill('930');
-    await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
+    await page.locator('#bookingId').selectOption(BOOKING_ID);
+    await page.locator('#amount').fill('930');
+    await page.locator('#method').selectOption('BankTransfer');
+    await page.getByRole('button', { name: 'Crea pagamento' }).click();
 
-    // Process payment
-    await page.getByRole('button', { name: /Process|Elabora/i }).click();
-    await expect(page.getByText(/Completed|Completato/i)).toBeVisible({ timeout: 10_000 });
+    await expect.poll(() => postedBody).toMatchObject({ bookingId: BOOKING_ID, amount: 930, method: 'BankTransfer' });
+
+    // Back on the list, the payment is there, waiting for settlement.
+    await expect(page).toHaveURL(/\/app\/short-rent\/payments$/);
+    const row = page.getByRole('row', { name: /Bonifico bancario/ });
+    await expect(row).toContainText('In attesa');
   });
 });

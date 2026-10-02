@@ -202,8 +202,9 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('cin-compliance-page')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByTestId('cin-summary-cards')).toBeVisible();
       await expect(page.getByTestId('cin-compliance-table')).toBeVisible();
-      await expect(page.getByText(/Mancante|Missing/i)).toBeVisible();
-      await expect(page.getByText(/Valido|Valid/i)).toBeVisible();
+      const table = page.getByTestId('cin-compliance-table');
+      await expect(table.getByRole('row', { name: /Appartamento Centro/ })).toContainText(/Mancante/);
+      await expect(table.getByRole('row', { name: /Monolocale Mare/ })).toContainText(/Valido/);
     });
   });
 
@@ -225,8 +226,8 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByText(/creata con successo|created successfully/i)).toBeVisible({ timeout: 10_000 });
 
       // Verify appears
-      await expect(page.getByText('Roma')).toBeVisible();
-      await expect(page.getByText('3.50')).toBeVisible();
+      // The rate is shown with the Italian number format (3,50).
+      await expect(page.getByRole('row', { name: /Roma/ })).toContainText(/3,50/);
     });
 
     test('public tourist tax widget calculates without auth header', async ({ page }) => {
@@ -270,6 +271,13 @@ test.describe('Italian Compliance Golden Path', () => {
               sourceUrl: null,
             }],
           }),
+        });
+      });
+      await page.route('**/api/public/seo/*/featured-properties', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ comuneSlug: 'como', comuneName: 'Como', properties: [] }),
         });
       });
       await page.route('**/api/public/tourist-tax/calculate', async (route) => {
@@ -362,10 +370,10 @@ test.describe('Italian Compliance Golden Path', () => {
       const resp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
       );
-      await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
+      await page.getByRole('button', { name: /Create|Crea/i }).click();
       expect((await resp).status()).toBe(201);
 
-      await expect(page.getByText(/20[,.]00/)).toBeVisible();
+      await expect(page.getByTestId('booking-price-tax')).toContainText(/20[,.]00/);
     });
   });
 
