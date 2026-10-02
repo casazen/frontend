@@ -140,6 +140,11 @@ function mockGdprApi(page: import('@playwright/test').Page) {
   });
 
   page.route('**/api/bookings**', async (route) => {
+    // `**/api/bookings**` also matches the Vite module `/src/api/bookings.api.ts`: only the API is answered.
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
+      await route.fallback();
+      return;
+    }
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({
       status: 200,

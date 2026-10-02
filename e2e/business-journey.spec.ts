@@ -209,7 +209,7 @@ test.describe('Business Golden Path', () => {
     // The host only records the payment (POST /api/payments, method required): there is no "process" action in the app,
     // a card payment is settled by Stripe and arrives as Completed (BK-02).
     await mockCurrentUserWithOrg(page);
-    await page.route('**/api/bookings**', async (route) => {
+    await page.route(/\/api\/bookings(\/|\?|$)/, async (route) => {
       if (route.request().method() !== 'GET') { await route.fallback(); return; }
       await route.fulfill({
         status: 200,

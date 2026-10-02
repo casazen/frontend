@@ -44,6 +44,11 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
   });
 
   await page.route('**/api/bookings**', async (route) => {
+    // `**/api/bookings**` also matches the Vite module `/src/api/bookings.api.ts`: only the API is answered.
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
+      await route.fallback();
+      return;
+    }
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -56,6 +61,11 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
   });
 
   await page.route('**/api/payments**', async (route) => {
+    // `**/api/payments**` also matches the Vite module `/src/api/payments.api.ts`: only the API is answered.
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
+      await route.fallback();
+      return;
+    }
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
