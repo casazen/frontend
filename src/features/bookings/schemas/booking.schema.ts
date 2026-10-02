@@ -48,7 +48,6 @@ export function bookingFormSchema(mode: 'create' | 'edit') {
   });
 }
 
-export type GuestFormValues = z.infer<typeof guestSchema>;
 export type BookingFormValues = z.infer<typeof bookingFieldsSchema>;
 
 // Booking status labels are now resolved via getBookingStatusLabel() from @/lib/i18n-labels.

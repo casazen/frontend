@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UsersApi } from '@/api/users.api';
 import { OrgsApi } from '@/api/orgs.api';
-import type { RentalType, UpdateProfileRequest, PlanTier, UserDetail, UserRole } from '@/types';
+import type { RentalType, PlanTier, UserDetail, UserRole } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -28,14 +28,6 @@ export function useUsers(params?: GetUsersParams) {
   return useQuery({
     queryKey: [USERS_KEY, params],
     queryFn: () => UsersApi.getUsers(params ?? {}),
-  });
-}
-
-export function useUser(id: string) {
-  return useQuery({
-    queryKey: [USERS_KEY, id],
-    queryFn: () => UsersApi.getUserById(id),
-    enabled: !!id,
   });
 }
 
@@ -83,21 +75,6 @@ export function useEntitlement() {
     // A host endpoint: not asked while the backend withholds the host features (PL-02), e.g. from the admin shell.
     enabled: !!org?.id && user?.onboardingRequired !== true,
     retry: false,
-  });
-}
-
-export function useUpdateMe() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: UpdateProfileRequest) => UsersApi.updateMe(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [ME_KEY] });
-      toast.success(i18n.t('toast.profileUpdated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.profileUpdateFailed'));
-    },
   });
 }
 

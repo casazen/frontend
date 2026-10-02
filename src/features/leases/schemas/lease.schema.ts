@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type FiscalRegime, type LeaseStatus } from '@/types';
+import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type LeaseStatus } from '@/types';
 import type { RliRegistrationState } from '@/lib/rli-registration-state';
 import { isValidFiscalCode, normalizeFiscalCode } from '@/lib/fiscal-code';
 
@@ -65,13 +65,6 @@ export const leaseFormSchema = z
   });
 
 export type LeaseFormValues = z.infer<typeof leaseFormSchema>;
-
-/** @deprecated Use getFiscalRegimeLabel from @/lib/i18n-labels */
-export const FISCAL_REGIME_I18N_KEYS: Record<FiscalRegime, string> = {
-  CedolareSecca: 'leases.fiscalRegimeLabel.CedolareSecca',
-  RegimeOrdinario: 'leases.fiscalRegimeLabel.RegimeOrdinario',
-  CanoneConcordato: 'leases.fiscalRegimeLabel.CanoneConcordato',
-};
 
 export const LEASE_STATUS_VARIANTS: Record<LeaseStatus, 'default' | 'secondary' | 'outline' | 'destructive' | 'success'> = {
   Draft: 'secondary',

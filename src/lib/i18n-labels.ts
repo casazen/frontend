@@ -72,10 +72,6 @@ export function getGenderLabel(gender: string, t: TranslateFn): string {
   return t(`checkin.gender.${gender}`);
 }
 
-export function getCinStatusLabel(status: string, t: TranslateFn): string {
-  return t(`cin.status.${status}`);
-}
-
 /** Italian end-user copy shown when a write is blocked by the org's plan limit (#202, AC8/AC12). */
 export function getPlanLimitMessage(): string {
   return i18n.t('common.planLimitMessage');
@@ -190,10 +186,6 @@ export function getCheckInSessionStatusLabel(status: string, t: TranslateFn): st
 
 export function getOtaPlatformLabel(platform: string, t: TranslateFn): string {
   return t(`ota.platform.${platform}`);
-}
-
-export function getSyncStatusLabel(status: string, t: TranslateFn): string {
-  return t(`ota.syncStatus.${status}`);
 }
 
 export function readPersistedLocale(): AppLocale | null {

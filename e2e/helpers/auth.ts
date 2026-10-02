@@ -1,6 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect } from '@playwright/test';
-import { requireE2eCredentials, e2eEnv } from './env';
+import { requireE2eCredentials } from './env';
 
 export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
@@ -255,21 +254,6 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
 
     return [];
   });
-}
-
-export async function assertAuthenticatedUser(page: Page): Promise<void> {
-  const sub = await readAuth0Sub(page);
-  expect(sub, 'Auth0 sub missing after login').toBeTruthy();
-
-  if (e2eEnv.auth0UserId) {
-    expect(sub, `Expected Auth0 sub ${e2eEnv.auth0UserId}`).toBe(e2eEnv.auth0UserId);
-  }
-
-  const roles = await readAuth0Roles(page);
-  expect(
-    roles,
-    'LongTermLandlord role missing in JWT — assign it in Auth0 for this user and update the Login Action to set roles on access + ID tokens'
-  ).toContain('LongTermLandlord');
 }
 
 export async function waitForAppReady(page: Page): Promise<void> {

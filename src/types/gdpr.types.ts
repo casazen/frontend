@@ -10,8 +10,6 @@ export type GuestConsentAction = 'NoticePresented' | 'Granted' | 'Withdrawn' | '
 /** Who recorded the event (API enum `GuestConsentSource`). */
 export type GuestConsentSource = 'GuestPortal' | 'HostOnGuestRequest' | 'RetentionPolicy';
 
-export const GUEST_DATA_CATEGORIES: readonly GuestDataCategory[] = ['DocumentScans', 'AlloggiatiData', 'Marketing', 'FiscalData'];
-
 /** Retention of one category for a guest, computed by the API from `Gdpr:Retention` (never a default in code). */
 export interface GuestRetentionScheduleItem {
   category: GuestDataCategory;

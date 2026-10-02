@@ -8,8 +8,6 @@ export function futureStay(daysAhead = 30, nights = 3): { checkIn: string; check
   return { checkIn, checkOut: addDays(checkIn, nights) };
 }
 
-export const DIRECT_CHECKOUT_CONSENT_VERSION = '2026-06-direct-checkout-v1';
-
 export function mockDirectBookingResponse(overrides?: Partial<DirectBookingResponse>): DirectBookingResponse {
   return {
     bookingId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',

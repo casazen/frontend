@@ -5,9 +5,7 @@ import {
   createServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
-  fetchServiceRequest,
   fetchServiceRequests,
-  fetchSuppliersByComune,
   fetchSuppliersByProperty,
   markLongRentServiceRequestPaid,
   markServiceRequestPaid,
@@ -57,14 +55,6 @@ export function useServiceRequests(params?: {
   });
 }
 
-export function useServiceRequest(id: string) {
-  return useQuery({
-    queryKey: [SERVICE_REQUESTS_KEY, id],
-    queryFn: () => fetchServiceRequest(id),
-    enabled: !!id,
-  });
-}
-
 /** Long-rent requests (D2) of a property, or of every property in scope without `propertyId`. */
 export function useLongRentServiceRequests(propertyId?: string) {
   return useQuery({
@@ -79,14 +69,6 @@ export function useLongRentSuppliers(propertyId?: string, category?: string) {
     queryKey: ['suppliers', 'long-rent', propertyId, category],
     queryFn: () => fetchLongRentSuppliers(propertyId!, category),
     enabled: !!propertyId,
-  });
-}
-
-export function useSuppliersByComune(comune?: string, category?: string) {
-  return useQuery({
-    queryKey: ['suppliers', comune, category],
-    queryFn: () => fetchSuppliersByComune(comune!, category),
-    enabled: !!comune,
   });
 }
 

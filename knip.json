@@ -1,0 +1,31 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "api/*.ts",
+    "scripts/*.mjs",
+    "e2e/auth.setup.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "api/**/*.ts",
+    "e2e/**/*.ts",
+    "scripts/**/*.mjs",
+    "src/**/*.css"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreBinaries": [
+    "psql"
+  ],
+  "ignoreIssues": {
+    "src/components/ui/**": [
+      "exports",
+      "types"
+    ],
+    "src/types/**": [
+      "types"
+    ]
+  },
+  "compilers": {
+    "css": true
+  }
+}

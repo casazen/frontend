@@ -819,13 +819,6 @@ export function getDefaultRoute(contextKey: AppContextKey): string {
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
 
-/** @deprecated Use getVisibleNavEntries for permission-aware navigation */
-export function getNavEntries(contextKey: AppContextKey): RouteManifestEntry[] {
-  return ROUTE_MANIFEST.filter(
-    (entry) => entry.context === contextKey && isNavEntry(entry),
-  );
-}
-
 export function getVisibleNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
@@ -858,21 +851,6 @@ export function getSecondaryNavEntries(
   return getVisibleNavEntries(contextKey, hasPermission, features).filter(
     (entry) => entry.navPlacement === 'secondary',
   );
-}
-
-export function getSecondaryNavByGroup(
-  contextKey: AppContextKey,
-  hasPermission?: PermissionPredicate,
-  features?: Partial<FeatureFlags>,
-): Map<NavGroup, RouteManifestEntry[]> {
-  const grouped = new Map<NavGroup, RouteManifestEntry[]>();
-  for (const entry of getSecondaryNavEntries(contextKey, hasPermission, features)) {
-    if (!entry.navGroup) continue;
-    const list = grouped.get(entry.navGroup) ?? [];
-    list.push(entry);
-    grouped.set(entry.navGroup, list);
-  }
-  return grouped;
 }
 
 /** Desktop sidebar: all visible nav entries grouped (primary + secondary). */

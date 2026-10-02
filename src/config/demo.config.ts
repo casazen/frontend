@@ -102,5 +102,3 @@ export function getDemoProfileKey(href?: string): ExtendedDemoProfile {
 export function getDemoUser(href?: string) {
   return buildDemoUser(getDemoProfileKey(href));
 }
-
-export const demoUser = buildDemoUser(resolveDemoProfile());
