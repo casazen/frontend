@@ -16,10 +16,15 @@ test.describe('Supplier layout standardization', () => {
       // The server opens the first incomplete step: services. It saves category codes, never labels (SU-03, A4-05).
       await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/2/);
       await page.getByTestId('service-category-cleaning').click();
-      await page.locator('#comuni').fill('H501');
+      // The comuni are picked from the official ISTAT list and saved as ISTAT codes (SU-04).
+      await page.locator('#comuni').fill('Roma');
+      await page.getByRole('option', { name: /^Roma/ }).first().click();
+      await expect(page.getByTestId('supplier-comune-chip-058091')).toBeVisible();
       const profileSave = page.waitForRequest((r) => r.url().includes('/api/supplier/profile') && r.method() === 'PUT');
       await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
-      expect((await profileSave).postDataJSON().categories).toEqual(['cleaning']);
+      const saved = (await profileSave).postDataJSON();
+      expect(saved.categories).toEqual(['cleaning']);
+      expect(saved.comuneIstatCodes).toEqual(['058091']);
 
       // Step 3 (photos, optional): skip.
       await page.getByRole('button', { name: /Salta|Skip/i }).click();

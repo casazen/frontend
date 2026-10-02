@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { mockComuniApi } from './properties-api-mock';
 import { mockServiceCategoriesApi } from './service-categories-mock';
 
 interface SupplierProfile {
@@ -9,6 +10,8 @@ interface SupplierProfile {
   email: string;
   categories: string[];
   comuni: string[];
+  /** Comuni chosen from the official ISTAT list (SU-04). */
+  comuneIstatCodes?: string[];
   bio?: string | null;
   photoUrls: string[];
   tosAcceptedAt?: string | null;
@@ -46,7 +49,7 @@ function activationOf(profile: SupplierProfile, savedStep: number | null): Activ
   });
   const steps = [
     step('identity', profile.legalName && profile.phone ? null : 'legal_name_missing'),
-    step('services', profile.categories.length === 0 ? 'categories_missing' : profile.comuni.length === 0 ? 'comuni_missing' : null),
+    step('services', profile.categories.length === 0 ? 'categories_missing' : profile.comuni.length === 0 && (profile.comuneIstatCodes ?? []).length === 0 ? 'comuni_missing' : null),
     step('showcase', null, false),
     step('profile', profile.bio ? null : 'bio_missing'),
     step('terms', profile.tosAcceptedAt ? null : 'tos_not_accepted'),
@@ -100,6 +103,7 @@ export async function mockSupplierConsoleApi(
   let savedStep: number | null = null;
 
   await mockServiceCategoriesApi(page);
+  await mockComuniApi(page);
 
   await page.route('**/api/supplier/**', async (route) => {
     const url = route.request().url();
