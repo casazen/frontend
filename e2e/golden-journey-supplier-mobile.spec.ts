@@ -57,9 +57,12 @@ test.describe('Golden Journey supplier mobile (AC13 F1–F2)', () => {
         data: { categories: ['cleaning'], comuni: ['058091'], bio: 'F1–F2' },
       });
       expect([200, 201], 'F1 supplier profile').toContain(profilePut.status());
+      // SU-05: the acceptance names the Terms version in force.
+      const activationStatus = await request.get(`${API}/supplier/profile/activation`, { headers: auth });
+      const tosVersion = ((await activationStatus.json()) as { tos: { currentVersion: string } }).tos.currentVersion;
       const activate = await request.post(`${API}/supplier/profile/activation/complete`, {
         headers: auth,
-        data: { tosAccepted: true },
+        data: { tosAccepted: true, tosVersion },
       });
       expect([200, 201], 'F1 supplier activate').toContain(activate.status());
     }

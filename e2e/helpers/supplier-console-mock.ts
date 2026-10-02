@@ -14,9 +14,56 @@ interface SupplierProfile {
   tosAcceptedAt?: string | null;
 }
 
+interface ActivationStep {
+  id: string;
+  status: 'completed' | 'pending';
+  blocker: string | null;
+  required: boolean;
+}
+
 interface ActivationStatus {
   status: string;
-  steps: Array<{ id: string; label: string; status: string; blocker?: string | null }>;
+  currentStep: number;
+  steps: ActivationStep[];
+  tos: {
+    currentVersion: string;
+    acceptedVersion: string | null;
+    acceptedAt: string | null;
+    reacceptanceRequired: boolean;
+    blocksActions: boolean;
+  };
+}
+
+const MOCK_TOS_VERSION = '2026-10-v1';
+
+/** What the API derives from the stored profile (SU-05): the requirements of each wizard step. */
+function activationOf(profile: SupplierProfile, savedStep: number | null): ActivationStatus {
+  const step = (id: string, blocker: string | null, required = true): ActivationStep => ({
+    id,
+    status: blocker === null && (required || profile.photoUrls.length > 0) ? 'completed' : 'pending',
+    blocker,
+    required,
+  });
+  const steps = [
+    step('identity', profile.legalName && profile.phone ? null : 'legal_name_missing'),
+    step('services', profile.categories.length === 0 ? 'categories_missing' : profile.comuni.length === 0 ? 'comuni_missing' : null),
+    step('showcase', null, false),
+    step('profile', profile.bio ? null : 'bio_missing'),
+    step('terms', profile.tosAcceptedAt ? null : 'tos_not_accepted'),
+  ];
+  const firstIncomplete = steps.findIndex((s) => s.required && s.status === 'pending');
+  return {
+    status: profile.status,
+    currentStep: savedStep ?? (firstIncomplete >= 0 ? firstIncomplete + 1 : 5),
+    steps,
+    tos: {
+      currentVersion: MOCK_TOS_VERSION,
+      acceptedVersion: profile.tosAcceptedAt ? MOCK_TOS_VERSION : null,
+      acceptedAt: profile.tosAcceptedAt ?? null,
+      reacceptanceRequired: false,
+      blocksActions: false,
+    },
+  };
 }
 
 const demoSupplierProfile: SupplierProfile = {
@@ -30,22 +77,6 @@ const demoSupplierProfile: SupplierProfile = {
   bio: null,
   photoUrls: [],
   tosAcceptedAt: null,
-};
-
-const demoActivationPending: ActivationStatus = {
-  status: 'Pending',
-  steps: [
-    { id: 'identity', label: 'Identità e contatti', status: 'completed' },
-    { id: 'categories', label: 'Categorie di servizio', status: 'pending', blocker: 'Scegli almeno una categoria' },
-    { id: 'comuni', label: 'Comuni di operatività', status: 'pending', blocker: 'Seleziona almeno un comune' },
-    { id: 'profile', label: 'Profilo professionale', status: 'pending', blocker: 'Aggiungi una descrizione professionale' },
-    { id: 'tos', label: 'Termini di servizio', status: 'pending', blocker: 'Accetta i termini di servizio' },
-  ],
-};
-
-const demoActivationActive: ActivationStatus = {
-  status: 'Active',
-  steps: demoActivationPending.steps.map((step) => ({ ...step, status: 'completed', blocker: null })),
 };
 
 interface InboxItem {
@@ -62,10 +93,11 @@ export async function mockSupplierConsoleApi(
 ): Promise<void> {
   const active = options?.active ?? false;
   const inboxItems = options?.inboxItems ?? [];
-  const profile: SupplierProfile = active
+  // Stateful like the API: what the wizard saves is what the next read returns (SU-05).
+  let profile: SupplierProfile = active
     ? { ...demoSupplierProfile, status: 'Active', categories: ['cleaning'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
-    : demoSupplierProfile;
-  const activation = active ? demoActivationActive : demoActivationPending;
+    : { ...demoSupplierProfile };
+  let savedStep: number | null = null;
 
   await mockServiceCategoriesApi(page);
 
@@ -73,13 +105,30 @@ export async function mockSupplierConsoleApi(
     const url = route.request().url();
     const method = route.request().method();
 
-    if (url.includes('/profile/activation') && method === 'GET') {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(activation) });
+    if (url.includes('/profile/activation/step') && method === 'PUT') {
+      savedStep = (route.request().postDataJSON() as { step: number }).step;
+      await route.fulfill({ status: 204 });
       return;
     }
 
     if (url.includes('/profile/activation/complete') && method === 'POST') {
+      const body = route.request().postDataJSON() as { tosAccepted: boolean; tosVersion: string };
+      const blockers = activationOf(profile, savedStep).steps.filter((s) => s.required && s.blocker && s.id !== 'terms');
+      if (!body.tosAccepted || blockers.length > 0) {
+        await route.fulfill({
+          status: 409,
+          contentType: 'application/problem+json',
+          body: JSON.stringify({ code: 'supplier_activation_blocked', blockers: blockers.map((s) => s.blocker) }),
+        });
+        return;
+      }
+      profile = { ...profile, status: 'Active', tosAcceptedAt: new Date().toISOString() };
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'Active' }) });
+      return;
+    }
+
+    if (url.includes('/profile/activation') && method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(activationOf(profile, savedStep)) });
       return;
     }
 
@@ -90,13 +139,13 @@ export async function mockSupplierConsoleApi(
 
     if (url.includes('/profile') && method === 'PUT') {
       const body = route.request().postDataJSON() as Partial<SupplierProfile>;
-      const merged = {
+      profile = {
         ...profile,
         ...body,
         categories: body.categories ?? profile.categories,
         comuni: body.comuni ?? profile.comuni,
       };
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(merged) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(profile) });
       return;
     }
 

@@ -248,9 +248,12 @@ l3.describe('Golden Journey web L3 real API (AC1–AC5, AC14)', () => {
     });
     expectSuccessStatus(profilePut.status(), 'Step 2 supplier profile');
 
+    // SU-05: the acceptance names the Terms version in force.
+    const activationStatus = await request.get(`${API}/supplier/profile/activation`, { headers: auth });
+    const tosVersion = ((await activationStatus.json()) as { tos: { currentVersion: string } }).tos.currentVersion;
     const activate = await request.post(`${API}/supplier/profile/activation/complete`, {
       headers: auth,
-      data: { tosAccepted: true },
+      data: { tosAccepted: true, tosVersion },
     });
     expectSuccessStatus(activate.status(), 'Step 2 supplier Active');
     const actBody = (await activate.json()) as { status?: string };
