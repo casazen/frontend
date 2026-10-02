@@ -1101,7 +1101,8 @@
         "checkedIn": "Ospite arrivato",
         "checkedOut": "Soggiorno concluso",
         "block": "Date bloccate da un altro canale (iCal)",
-        "toReview": "Soggiorno OTA da verificare"
+        "toReview": "Soggiorno OTA da verificare",
+        "manualBlock": "Date chiuse da te (proprietario, manutenzione)"
       },
       "block": {
         "title": "Date bloccate su {{source}}",
@@ -1110,6 +1111,50 @@
         "notABooking": "Queste date arrivano dal calendario iCal collegato: sono occupate su un altro canale e non sono una prenotazione CasaZen. Trovi i dettagli dell'ospite sul canale.",
         "otherSource": "un altro calendario",
         "close": "Chiudi"
+      },
+      "manualBlock": {
+        "action": "Blocca date",
+        "formTitle": "Blocca date",
+        "formHint": "Chiudi le notti in cui l'immobile non è disponibile: non saranno prenotabili sul sito e verranno esportate come occupate ai canali collegati. Puoi anche selezionare i giorni direttamente sul calendario.",
+        "startDate": "Dalla notte del",
+        "endDate": "Di nuovo libero dal",
+        "endDateHint": "Primo giorno di nuovo prenotabile, come il giorno di partenza di un soggiorno.",
+        "nights_one": "{{count}} notte bloccata",
+        "nights_other": "{{count}} notti bloccate",
+        "reason": "Motivo",
+        "reasonPlaceholder": "Scegli il motivo",
+        "reasons": {
+          "Owner": "Soggiorno del proprietario",
+          "Maintenance": "Manutenzione",
+          "Other": "Altro motivo"
+        },
+        "note": "Nota (facoltativa)",
+        "noteHint": "La vedi solo tu: non viene mostrata agli ospiti né inviata ai canali.",
+        "submit": "Blocca date",
+        "submitting": "Blocco in corso...",
+        "cancel": "Annulla",
+        "created": "Date bloccate",
+        "createFailed": "Impossibile bloccare le date. Riprova.",
+        "title": "Date chiuse: {{reason}}",
+        "tooltip": "Date chiuse: {{reason}}",
+        "noteLabel": "Nota: {{note}}",
+        "explanation": "Hai chiuso tu queste notti: non sono prenotabili sul sito e risultano occupate sui canali che leggono il calendario esportato.",
+        "readOnly": "Solo chi può modificare l'immobile può eliminare il blocco.",
+        "delete": "Elimina blocco",
+        "deleteConfirm": "Eliminare il blocco? Le notti tornano prenotabili sul sito e libere sui canali collegati.",
+        "deleteConfirmAction": "Elimina",
+        "deleting": "Eliminazione...",
+        "deleted": "Blocco eliminato: le date sono di nuovo libere",
+        "deleteFailed": "Impossibile eliminare il blocco. Riprova.",
+        "validation": {
+          "startRequired": "Indica la prima notte da bloccare.",
+          "startInPast": "Non puoi bloccare date già passate.",
+          "endRequired": "Indica da quando l'immobile torna libero.",
+          "endAfterStart": "La data di fine deve essere successiva alla prima notte.",
+          "tooLong": "Puoi bloccare al massimo {{max}} notti alla volta.",
+          "reasonRequired": "Scegli il motivo del blocco.",
+          "noteTooLong": "La nota può contenere al massimo {{max}} caratteri."
+        }
       },
       "toolbar": {
         "today": "Oggi",
@@ -5200,6 +5245,12 @@
       "supplierInviteNotPending": "Solo un invito in attesa può essere revocato: questo è già stato usato, è scaduto o è già stato revocato.",
       "supplierInviteNotResendable": "Un invito già usato o revocato non si può reinviare: crea un nuovo invito.",
       "supplierInviteRevoked": "Questo invito è stato revocato. Chiedi al team CasaZen di inviartene uno nuovo.",
+      "calendarBlockOverlapsBooking": "Una prenotazione occupa già una di queste notti: annullala o scegli altre date.",
+      "calendarBlockOverlapsBlock": "Hai già bloccato una di queste notti: elimina quel blocco o scegli altre date.",
+      "calendarBlockInPast": "Non puoi bloccare date già passate.",
+      "calendarBlockInvalidRange": "La data di fine deve essere successiva alla data di inizio.",
+      "calendarBlockNotManual": "Questo blocco arriva dal calendario di un canale: si toglie dal canale o scollegando il calendario.",
+      "calendarBlockNotFound": "Il blocco non esiste più: aggiorna il calendario.",
       "propertyPhotoNone": "Seleziona almeno una foto da caricare.",
       "propertyPhotoTooManyFiles": "Hai selezionato troppe foto in una volta sola: caricane meno.",
       "propertyPhotoLimitReached": "Hai raggiunto il numero massimo di foto della proprietà: elimina una foto prima di caricarne altre.",
