@@ -185,19 +185,19 @@ async function mockLegalDocuments(page: import('@playwright/test').Page): Promis
     documentUrl: 'https://example.com/legal/document',
   };
 
-  await page.route('**/api/legal/tos', async (route) => {
+  await page.route(/\/api\/legal\/tos(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(legalDoc) });
   });
-  await page.route('**/api/legal/privacy', async (route) => {
+  await page.route(/\/api\/legal\/privacy(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(legalDoc) });
   });
-  await page.route('**/api/legal/dpa', async (route) => {
+  await page.route(/\/api\/legal\/dpa(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(legalDoc) });
   });
-  await page.route('**/api/legal/subprocessors', async (route) => {
+  await page.route(/\/api\/legal\/subprocessors(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({
       status: 200,
