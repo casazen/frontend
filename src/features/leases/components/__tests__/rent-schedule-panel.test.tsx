@@ -221,4 +221,28 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(post).toHaveBeenCalledWith(`${RENT_URL}/installments/inst-1/payment-request`, undefined, undefined);
     await waitFor(() => expect(get.mock.calls.filter(([url]) => url === RENT_URL).length).toBeGreaterThan(1));
   });
+  it('render_LeaseGetsSigned_ReadsTheLedgerAgainAndOffersTheSchedule', async () => {
+    // A7-29 (found by the e2e): the panel was rendered while the lease was a draft and kept "not signed yet" after the
+    // landlord uploaded the signed contract, until a reload.
+    get.mockResolvedValueOnce({ data: ledger({ canConfigure: false, schedule: null, installments: [] }) });
+    get.mockResolvedValue({ data: ledger({ canConfigure: true, schedule: null, installments: [] }) });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    const tree = (status: string) => (
+      <QueryClientProvider client={client}>
+        <I18nextProvider i18n={i18n}>
+          <MemoryRouter>
+            <RentSchedulePanel leaseId="lease-1" leaseStatus={status} />
+          </MemoryRouter>
+        </I18nextProvider>
+      </QueryClientProvider>
+    );
+    const view = render(tree('Draft'));
+    expect(await screen.findByTestId('rent-not-signed')).toBeInTheDocument();
+
+    view.rerender(tree('Signed'));
+
+    expect(await screen.findByRole('button', { name: /Genera lo scadenziario/ })).toBeInTheDocument();
+    expect(screen.queryByTestId('rent-not-signed')).not.toBeInTheDocument();
+    expect(get).toHaveBeenCalledTimes(2);
+  });
 });

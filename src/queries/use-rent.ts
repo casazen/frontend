@@ -8,10 +8,14 @@ import type { ConfigureRentScheduleInput, MarkRentPaidInput, RentLedger } from '
 const RENT_KEY = 'lease-rent';
 const PUBLIC_RENT_KEY = 'public-rent-payment';
 
-/** Rent page of a lease (LT-06): schedule, installments and what the landlord can do. */
-export function useRentLedger(leaseId: string) {
+/**
+ * Rent page of a lease (LT-06): schedule, installments and what the landlord can do. The lease status is part of the
+ * key: signing the lease (offline, or by the provider while the page is open) changes what the ledger allows
+ * (`canConfigure`), so the ledger is read again instead of staying "not signed yet".
+ */
+export function useRentLedger(leaseId: string, leaseStatus?: string) {
   return useQuery({
-    queryKey: [RENT_KEY, leaseId],
+    queryKey: [RENT_KEY, leaseId, leaseStatus ?? null],
     queryFn: () => rentApi.getLedger(leaseId),
     enabled: !!leaseId,
   });

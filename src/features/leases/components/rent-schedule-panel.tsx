@@ -31,15 +31,17 @@ const PAYMENTS_SETTINGS_PATH = '/app/short-rent/settings/payments';
 
 interface RentSchedulePanelProps {
   leaseId: string;
+  /** Status of the lease: when it changes (e.g. signed) the ledger is read again. */
+  leaseStatus?: string;
 }
 
 /**
  * Recurring rent of a lease (LT-06, #269): schedule generated from the lease, installments with their real state (to
  * collect, in progress, paid online or offline, failed, cancelled), payment link to the tenant and offline payments.
  */
-export function RentSchedulePanel({ leaseId }: RentSchedulePanelProps) {
+export function RentSchedulePanel({ leaseId, leaseStatus }: RentSchedulePanelProps) {
   const { t } = useTranslation();
-  const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId);
+  const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
 
   return (
     <Card data-testid="rent-schedule-panel">

@@ -215,7 +215,7 @@ export function LeaseDetailPage() {
               isSubmittingToProvider={triggerRegistration.isPending}
             />
             {/* LT-06: recurring rent, once the lease is signed. */}
-            <RentSchedulePanel leaseId={lease.id} />
+            <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />
             {providerFilingAvailable && checklist && (
               <DelegaCaptureDialog
                 open={delegaOpen}
