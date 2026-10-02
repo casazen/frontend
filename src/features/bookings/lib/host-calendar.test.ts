@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { toStayDate } from '@/lib/stay-dates';
 import { withBrowserTimeZone } from '@/test/clock';
 import type { CalendarItemDto } from '@/types/calendar.types';
-import { hostCalendarRange, toHostCalendarEvents } from './host-calendar';
+import type { TFunction } from 'i18next';
+import { blockSourceLabel, hostCalendarRange, toHostCalendarEvents, type HostCalendarBlockEvent } from './host-calendar';
 
 function item(overrides: Partial<CalendarItemDto>): CalendarItemDto {
   return {
@@ -76,6 +77,33 @@ describe('toHostCalendarEvents', () => {
     const [event] = toHostCalendarEvents([item({ type: 'manual-block', channel: 'Vrbo' })]);
 
     expect(event).toMatchObject({ kind: 'block', channel: null, feedLabel: null });
+  });
+
+  it('toHostCalendarEvents_ManualBlock_KeepsReasonAndNote', () => {
+    const [event] = toHostCalendarEvents([
+      item({ type: 'ical-block', id: 'mb', blockSource: 'Manual', blockReason: 'Maintenance', summary: ' Caldaia ', guestName: null }),
+    ]);
+
+    expect(event).toMatchObject({ kind: 'block', manual: true, reason: 'Maintenance', summary: 'Caldaia', channel: null });
+  });
+
+  it('toHostCalendarEvents_ManualBlockWithUnknownReason_IsOtherAndImportedBlockHasNoReason', () => {
+    const [manual, imported] = toHostCalendarEvents([
+      item({ type: 'ical-block', id: 'mb', blockSource: 'Manual', blockReason: 'Holiday' }),
+      item({ type: 'ical-block', id: 'ib', blockSource: 'ICalImport', blockReason: 'Owner', channel: 'Airbnb' }),
+    ]);
+
+    expect(manual).toMatchObject({ manual: true, reason: 'Other' });
+    expect(imported).toMatchObject({ manual: false, reason: null });
+  });
+
+  it('blockSourceLabel_ManualBlock_IsTheReasonNotAChannel', () => {
+    const t = ((key: string) => key) as unknown as TFunction;
+    const [event] = toHostCalendarEvents([
+      item({ type: 'ical-block', blockSource: 'Manual', blockReason: 'Owner', feedLabel: 'ignored' }),
+    ]) as HostCalendarBlockEvent[];
+
+    expect(blockSourceLabel(event, t)).toBe('booking.calendar.manualBlock.reasons.Owner');
   });
 
   it('toHostCalendarEvents_DepartureNotAfterArrival_IsShownOnTheArrivalDay', () => {

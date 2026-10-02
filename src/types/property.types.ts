@@ -179,6 +179,8 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   cancellationPolicySummary: string;
   minNights: number | null;
   currency: string;
+  /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
+  canonicalUrl?: string | null;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;

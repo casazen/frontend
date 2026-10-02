@@ -3,6 +3,7 @@ import { SupplierSidebar } from './supplier-sidebar';
 import { Header } from './header';
 import { BottomNav } from './bottom-nav';
 import { MobileNavDrawer } from './mobile-nav-drawer';
+import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 
 interface SupplierAppShellProps {
   children?: React.ReactNode;
@@ -16,6 +17,7 @@ export function SupplierAppShell({ children }: SupplierAppShellProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] md:pb-6 md:p-6">
+          <SupplierSuspendedBanner />
           {children ?? <Outlet />}
         </main>
         <BottomNav contextKey="supplier" />

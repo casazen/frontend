@@ -268,6 +268,7 @@ export function PropertyDetailPage() {
                 query={serviceRequests}
                 emptyText={t('serviceRequest.emptyForProperty')}
                 showStay
+                canManage={hasPermission('short-rent', 'property.write')}
                 testId="property-service-requests"
               />
             </div>

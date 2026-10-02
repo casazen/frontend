@@ -10,15 +10,17 @@ import { Label } from '@/components/ui/label';
 import { useCurrentUser, useEntitlement } from '@/queries/use-users';
 import { needsOrgSetup } from '@/lib/onboarding';
 import type { PublicHostMode } from '@/types/domain.types';
+import { getProblemMessage } from '@/lib/api-errors';
 import { DnsInstructionsPanel } from './dns-instructions-panel';
 import { DomainStatusBadge } from './domain-status-badge';
+import { DomainStatusPanel } from './domain-status-panel';
 import { useOrgDomain, useSetOrgDomain, useVerifyOrgDomain } from './use-org-domain';
 
 export function CustomDomainSettingsPage() {
   const { t } = useTranslation();
   const { org, user } = useCurrentUser();
   const { data: entitlement } = useEntitlement();
-  const { data: domainConfig, isLoading } = useOrgDomain(org?.id);
+  const { data: domainConfig, isLoading, isError, error, refetch } = useOrgDomain(org?.id);
   const setDomain = useSetOrgDomain(org?.id);
   const verifyDomain = useVerifyOrgDomain(org?.id);
 
@@ -52,8 +54,9 @@ export function CustomDomainSettingsPage() {
   const canUseCustomDomain = entitlement?.canUseCustomDomain ?? domainConfig?.canUseCustomDomain ?? false;
   const effectiveMode = domainConfig?.publicHostMode ?? hostMode;
 
-  const handleSave = async () => {
-    await setDomain.mutateAsync({
+  // `mutate`, not `mutateAsync`: the hook already tells the user why a save failed.
+  const handleSave = () => {
+    setDomain.mutate({
       hostMode,
       subdomain: hostMode === 'CasazenSubdomain' ? subdomain || org.slug : undefined,
       customDomain: hostMode === 'CustomDomain' ? customDomain : undefined,
@@ -69,7 +72,18 @@ export function CustomDomainSettingsPage() {
         />
 
         {isLoading ? (
-          <p className="text-muted-foreground">{t('domain.settings.loading')}</p>
+          <p className="text-muted-foreground" data-testid="domain-loading">
+            {t('domain.settings.loading')}
+          </p>
+        ) : isError && !domainConfig ? (
+          <Card role="alert" data-testid="domain-load-error">
+            <CardContent className="space-y-3 py-6 text-center">
+              <p className="text-sm text-destructive">{getProblemMessage(error, t) ?? t('domain.settings.loadError')}</p>
+              <Button type="button" variant="outline" size="sm" onClick={() => void refetch()}>
+                {t('domain.settings.retry')}
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <>
             <Card>
@@ -132,7 +146,7 @@ export function CustomDomainSettingsPage() {
 
                 <Button
                   type="button"
-                  onClick={() => void handleSave()}
+                  onClick={handleSave}
                   disabled={setDomain.isPending}
                   data-testid="save-domain-settings"
                 >
@@ -150,8 +164,11 @@ export function CustomDomainSettingsPage() {
                       {t(`domain.modes.${effectiveMode === 'CasazenPath' ? 'path' : effectiveMode === 'CasazenSubdomain' ? 'subdomain' : 'custom'}`)}
                     </CardDescription>
                   </div>
-                  {domainConfig.customDomain && (
-                    <DomainStatusBadge status={domainConfig.domainVerificationStatus} />
+                  {domainConfig.publicHostMode === 'CustomDomain' && domainConfig.customDomain && (
+                    <DomainStatusBadge
+                      status={domainConfig.domainVerificationStatus}
+                      detail={domainConfig.status?.detail}
+                    />
                   )}
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
@@ -170,26 +187,38 @@ export function CustomDomainSettingsPage() {
                   {domainConfig.publicUrls.customDomainUrl && (
                     <p>
                       <span className="font-medium">{t('domain.settings.customDomainUrl')}:</span>{' '}
-                      {domainConfig.publicUrls.customDomainUrl}
+                      <a
+                        href={domainConfig.publicUrls.customDomainUrl}
+                        className="underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {domainConfig.publicUrls.customDomainUrl}
+                      </a>
                     </p>
                   )}
 
-                  {domainConfig.dnsInstructions && (
-                    <DnsInstructionsPanel instructions={domainConfig.dnsInstructions} />
+                  {domainConfig.publicHostMode === 'CustomDomain' && !canUseCustomDomain && (
+                    <p
+                      className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-destructive"
+                      role="alert"
+                      data-testid="domain-plan-lapsed"
+                    >
+                      {t('domain.settings.planLapsed')}
+                    </p>
                   )}
 
-                  {domainConfig.publicHostMode === 'CustomDomain' &&
-                    domainConfig.domainVerificationStatus !== 'Verified' && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        data-testid="verify-domain-button"
-                        disabled={verifyDomain.isPending}
-                        onClick={() => void verifyDomain.mutateAsync()}
-                      >
-                        {t('domain.settings.verify')}
-                      </Button>
-                    )}
+                  {domainConfig.publicHostMode === 'CustomDomain' && domainConfig.customDomain && (
+                    <DomainStatusPanel
+                      config={domainConfig}
+                      verifying={verifyDomain.isPending}
+                      onVerify={() => verifyDomain.mutate()}
+                    />
+                  )}
+
+                  {domainConfig.dnsInstructions && domainConfig.publicHostMode === 'CustomDomain' && (
+                    <DnsInstructionsPanel instructions={domainConfig.dnsInstructions} />
+                  )}
                 </CardContent>
               </Card>
             )}

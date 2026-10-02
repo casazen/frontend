@@ -41,6 +41,15 @@ interface ServiceRequestFormProps {
   /** Supplier already chosen (marketplace). Without it the form lists the property's suppliers for the category. */
   supplierOrgId?: string;
   preselectedCategory?: string;
+  /** Notes the form starts with (re-requesting after a rejection starts from the notes of the rejected request). */
+  initialNotes?: string;
+  /**
+   * Suppliers left out of the list: the ones that already rejected this job (SU-09). The API does not forbid asking
+   * them again, the host just does not get them offered by default.
+   */
+  excludeSupplierOrgIds?: string[];
+  /** `otherSupplier`: the request replaces one a supplier rejected (title and hint say so). */
+  mode?: 'new' | 'otherSupplier';
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
@@ -58,6 +67,9 @@ export function ServiceRequestForm({
   bookingId,
   supplierOrgId,
   preselectedCategory,
+  initialNotes,
+  excludeSupplierOrgIds,
+  mode = 'new',
   open: openProp,
   onOpenChange,
   hideTrigger = false,
@@ -81,7 +93,7 @@ export function ServiceRequestForm({
   const [category, setCategory] = useState<string>(preselectedCategory ?? '');
   const selectedCategory = categoryCodes?.includes(category) ? category : (categoryCodes?.[0] ?? '');
   const [urgency, setUrgency] = useState<ServiceRequestUrgency>('Normal');
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(initialNotes ?? '');
   const [pickedStay, setPickedStay] = useState('');
   const [pickedSupplier, setPickedSupplier] = useState('');
 
@@ -102,7 +114,11 @@ export function ServiceRequestForm({
     supplierCategory,
   );
   const suppliers = isShortRent ? shortRentSuppliers : longRentSuppliers;
-  const supplierOptions = suppliers.data?.items ?? [];
+  const excluded = excludeSupplierOrgIds ?? [];
+  const allSuppliers = suppliers.data?.items ?? [];
+  const supplierOptions = allSuppliers.filter((s) => !excluded.includes(s.orgId));
+  // Only the suppliers that already rejected this job were left: say so, instead of "no supplier for this category".
+  const onlyExcludedLeft = supplierOptions.length === 0 && allSuppliers.length > 0;
 
   const effectiveStay = bookingId ?? (stayOptions.some((b) => b.id === pickedStay) ? pickedStay : '');
   const effectiveSupplier =
@@ -116,7 +132,7 @@ export function ServiceRequestForm({
   const onCreated = {
     onSuccess: () => {
       setOpen(false);
-      setNotes('');
+      setNotes(initialNotes ?? '');
     },
   };
 
@@ -148,9 +164,10 @@ export function ServiceRequestForm({
       )}
       <DialogContent className="max-h-[90vh] overflow-y-auto" data-testid="service-request-dialog">
         <DialogHeader>
-          <DialogTitle>{t('serviceRequest.requestSupplier')}</DialogTitle>
+          <DialogTitle>{t(mode === 'otherSupplier' ? 'serviceRequest.requestOtherSupplier' : 'serviceRequest.requestSupplier')}</DialogTitle>
           <DialogDescription>
             {t(isShortRent ? 'serviceRequest.stayScopedDescription' : 'serviceRequest.longRentScopedDescription')}
+            {mode === 'otherSupplier' && ` ${t('serviceRequest.otherSupplierHint')}`}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
@@ -214,7 +231,7 @@ export function ServiceRequestForm({
                 </div>
               ) : supplierOptions.length === 0 ? (
                 <p className="text-sm text-muted-foreground" data-testid="service-request-no-suppliers">
-                  {t('serviceRequest.noSuppliers')}
+                  {t(onlyExcludedLeft ? 'serviceRequest.noOtherSuppliers' : 'serviceRequest.noSuppliers')}
                 </p>
               ) : (
                 <select

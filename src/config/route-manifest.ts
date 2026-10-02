@@ -582,6 +582,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
   },
   {
+    path: '/app/admin/suppliers',
+    context: 'admin',
+    requiredPermissions: ['admin.users.manage'],
+    navKey: 'nav.suppliers',
+    navGroup: 'operations',
+    navPlacement: 'primary',
+    navOrder: 3,
+    icon: 'Store',
+    component: async () => ({ default: (await import('@/features/admin/admin-suppliers-page')).AdminSuppliersPage }),
+  },
+  {
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
@@ -777,7 +788,8 @@ export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Part
   return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
 }
 
-function hasEntryPermission(
+/** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */
+export function hasEntryPermission(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
 ): boolean {
