@@ -13,7 +13,7 @@
 import { createServer as createHttpsServer } from 'node:https';
 import { createServer as createHttpServer } from 'node:http';
 import { readFileSync } from 'node:fs';
-import { createHash, createSign, generateKeyPairSync, randomBytes } from 'node:crypto';
+import { createHash, createPrivateKey, createPublicKey, createSign, randomBytes, randomUUID } from 'node:crypto';
 
 if (process.env.E2E_STACK !== '1') {
   console.error('mock-services: set E2E_STACK=1 (test-only server).');
@@ -34,16 +34,19 @@ const PASSWORD = process.env.E2E_USER_PASSWORD ?? 'E2e-test-password-1';
  * Accounts are created on first login: any `<name>@example.test` with the shared password. Every run uses fresh
  * addresses (so a fresh organization, no cleanup endpoint needed). Roles start empty and are granted through the
  * mock Management API exactly as the backend does it in production (onboarding, supplier registration), then appear
- * in the next token. The guest is anonymous: it never logs in.
+ * in the next token. The guest is anonymous: it never logs in. `gj-admin-*` is the platform admin (role Admin).
  */
 const USERS = {};
 const userFor = (email) => {
   if (!/^[a-z0-9._+-]+@example\.test$/.test(email)) return undefined;
-  return (USERS[email] ??= { email, sub: `auth0|${email.split('@')[0]}`, name: email.split('@')[0], roles: [] });
+  const name = email.split('@')[0];
+  // The platform operator who invites suppliers is provisioned out of band in production (Auth0 dashboard).
+  return (USERS[email] ??= { email, sub: `auth0|${name}`, name, roles: name.startsWith('gj-admin-') ? ['Admin'] : [] });
 };
 
-const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'e2e-1', alg: 'RS256', use: 'sig' };
+// Signing key = the throw-away TLS key (RSA): a restarted mock keeps signing with the key the backend already cached.
+const privateKey = createPrivateKey(readFileSync(process.env.E2E_TLS_KEY));
+const jwk = { ...createPublicKey(privateKey).export({ format: 'jwk' }), kid: 'e2e-1', alg: 'RS256', use: 'sig' };
 const b64u = (b) => Buffer.from(b).toString('base64url');
 
 function sign(payload) {
@@ -208,7 +211,8 @@ async function mailHandler(req, res) {
   if (req.method === 'POST' && url.pathname === '/emails') {
     const body = await readBody(req);
     outbox.push({ at: new Date().toISOString(), to: [].concat(body.to ?? []), subject: body.subject, html: body.html });
-    return json(res, 200, { id: `mock-${outbox.length}` });
+    // The Resend client reads the id as a GUID.
+    return json(res, 200, { id: randomUUID() });
   }
   if (req.method === 'GET' && url.pathname === '/__outbox') return json(res, 200, outbox);
   if (req.method === 'DELETE' && url.pathname === '/__outbox') {
