@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { CheckoutOutcome, DirectBookingResponse } from '../../src/types';
+import type { CheckoutOutcome, DirectBookingQuote, DirectBookingQuotePayload, DirectBookingResponse } from '../../src/types';
 import { addDays, todayInRome } from '../../src/lib/stay-dates';
 
 /** A stay starting `daysAhead` days after today in Europe/Rome: fixed dates would end up in the past. */
@@ -49,7 +49,44 @@ export function mockCheckoutOutcome(overrides?: Partial<CheckoutOutcome>): Check
   };
 }
 
+/** Price of a stay as `POST /api/public/bookings/quote` answers it (BK-03, BK-07): the checkout shows it before booking. */
+export function mockDirectBookingQuote(payload: DirectBookingQuotePayload): DirectBookingQuote {
+  const nights = Math.round(
+    (Date.parse(payload.checkOutDate) - Date.parse(payload.checkInDate)) / 86_400_000,
+  );
+  const nightlyRate = 180;
+  const lodgingTotal = nights * nightlyRate;
+  const touristTaxAmount = 2 * nights;
+  return {
+    propertyId: payload.propertyId,
+    checkInDate: payload.checkInDate,
+    checkOutDate: payload.checkOutDate,
+    nights,
+    nightlyRate,
+    lodgingTotal,
+    cleaningFee: 0,
+    basePrice: lodgingTotal,
+    touristTax: { status: 'Calculated', amount: touristTaxAmount, taxableNights: nights, ageRulesApply: false, categories: [] },
+    totalPrice: lodgingTotal + touristTaxAmount,
+    currency: 'EUR',
+    paymentOptions: { deferredPaymentAvailable: false, deferredChargeDate: null, freeCancellationUntil: null },
+  };
+}
+
 export async function mockDirectCheckoutApi(page: Page): Promise<void> {
+  await page.route('**/api/public/bookings/quote', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.fallback();
+      return;
+    }
+    const payload = route.request().postDataJSON() as DirectBookingQuotePayload;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(mockDirectBookingQuote(payload)),
+    });
+  });
+
   // The outcome page reads the real state of the booking (BK-07): here the webhook has already confirmed it.
   await page.route('**/api/public/bookings/*/outcome', async (route) => {
     const bookingId = new URL(route.request().url()).pathname.split('/').slice(-2)[0];

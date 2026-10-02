@@ -25,7 +25,11 @@ test.describe('Direct checkout (#226)', () => {
     await expect(page.getByTestId('direct-checkout-page')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('price-breakdown')).toBeVisible();
     await expect(page.getByTestId('gdpr-consent')).toBeVisible();
-    await expect(page.getByTestId('price-breakdown').getByText('Tassa di soggiorno', { exact: true })).toBeVisible();
+    // A calculated tax is part of the total (BK-03); the page says so.
+    await expect(
+      page.getByTestId('price-breakdown').getByText('Tassa di soggiorno (inclusa nel totale)', { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByTestId('price-breakdown')).toContainText(/546,00/);
     await expect(page.getByText('Acconsento al trattamento')).toBeVisible();
   });
 
