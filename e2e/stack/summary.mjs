@@ -23,7 +23,7 @@ for (const s of report.suites ?? []) walk(s);
 
 const lines = ['## Golden Journey L3 (UI, ephemeral stack)', '', '| Variant | Result |', '|---|---|'];
 for (const row of rows) {
-  lines.push(`| ${row.title} | ${row.status === 'skipped' ? '**SKIPPED**' : row.status} |`);
+  lines.push(`| ${row.title} | ${{ skipped: '**SKIPPED**', expected: 'passed', unexpected: '**FAILED**' }[row.status] ?? row.status} |`);
   if (row.status === 'skipped') {
     console.log(`::warning title=Golden Journey L3 test SKIPPED::${row.title} did NOT run. ${row.notes.join(' ')}`);
     lines.push('', `> SKIPPED: ${row.title}. ${row.notes.join(' ')}`, '');

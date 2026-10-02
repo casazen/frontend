@@ -43,10 +43,11 @@ export async function guestBooksStay(page: Page, stay: GuestStay): Promise<strin
   if (stay.payment === 'card') {
     // Stripe test card in the Payment Element (iframe served by js.stripe.com, the only external call of the suite).
     const frame = page.frameLocator('iframe[name^="__privateStripeFrame"]').first();
-    await frame.getByLabel(/numero|card number/i).fill('4242424242424242', { timeout: 60_000 });
-    await frame.getByLabel(/scadenza|expiration/i).fill('12 / 34');
-    await frame.getByLabel(/cvc|sicurezza|security/i).fill('123');
-    await page.getByRole('button', { name: /Paga ora|Paga/ }).last().click();
+    // Stable input names of the card fields of the Payment Element (labels depend on the Stripe locale).
+    await frame.locator('input[name="number"]').fill('4242424242424242', { timeout: 60_000 });
+    await frame.locator('input[name="expiry"]').fill('12 / 34');
+    await frame.locator('input[name="cvc"]').fill('123');
+    await page.getByRole('button', { name: 'Paga ora', exact: true }).click();
     // The page shows the backend's state: "confirmed" only after the webhook confirmed the booking.
     await expect(page).toHaveURL(new RegExp(`/book/${stay.orgSlug}/booking/`), { timeout: 60_000 });
     await expect(page.getByText('Prenotazione confermata!')).toBeVisible({ timeout: 90_000 });
