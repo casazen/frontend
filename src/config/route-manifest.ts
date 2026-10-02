@@ -225,6 +225,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The host's own privacy notice and booking terms, shown on the public site (BK-14, A3-21). Short-rent only.
+    path: '/app/short-rent/settings/site-documents',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.siteDocuments',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 8,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/settings/site-documents/site-documents-page')).SiteDocumentsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -762,7 +777,8 @@ export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Part
   return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
 }
 
-function hasEntryPermission(
+/** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */
+export function hasEntryPermission(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
 ): boolean {

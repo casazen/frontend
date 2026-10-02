@@ -300,7 +300,8 @@
       "amministrazione": "Administration"
     },
     "ltrReferenceData": "LTR reference data",
-    "siteAppearance": "Site appearance"
+    "siteAppearance": "Site appearance",
+    "siteDocuments": "Site documents"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -1002,7 +1003,8 @@
         "checkedIn": "Guest arrived",
         "checkedOut": "Stay completed",
         "block": "Dates blocked by another channel (iCal)",
-        "toReview": "OTA stay to check"
+        "toReview": "OTA stay to check",
+        "manualBlock": "Dates you closed (owner, maintenance)"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -1011,6 +1013,50 @@
         "notABooking": "These dates come from the linked iCal calendar: they are taken on another channel and are not a CasaZen booking. The guest's details are on the channel.",
         "otherSource": "another calendar",
         "close": "Close"
+      },
+      "manualBlock": {
+        "action": "Block dates",
+        "formTitle": "Block dates",
+        "formHint": "Close the nights when the property is not available: they cannot be booked on the site and are exported as busy to the linked channels. You can also select the days on the calendar.",
+        "startDate": "From the night of",
+        "endDate": "Free again from",
+        "endDateHint": "First day bookable again, like the departure day of a stay.",
+        "nights_one": "{{count}} night blocked",
+        "nights_other": "{{count}} nights blocked",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose the reason",
+        "reasons": {
+          "Owner": "Owner stay",
+          "Maintenance": "Maintenance",
+          "Other": "Other reason"
+        },
+        "note": "Note (optional)",
+        "noteHint": "Only you see it: it is never shown to guests or sent to the channels.",
+        "submit": "Block dates",
+        "submitting": "Blocking...",
+        "cancel": "Cancel",
+        "created": "Dates blocked",
+        "createFailed": "The dates could not be blocked. Try again.",
+        "title": "Dates closed: {{reason}}",
+        "tooltip": "Dates closed: {{reason}}",
+        "noteLabel": "Note: {{note}}",
+        "explanation": "You closed these nights: they cannot be booked on the site and are busy on the channels that read the exported calendar.",
+        "readOnly": "Only users who can edit the property can remove the block.",
+        "delete": "Remove block",
+        "deleteConfirm": "Remove the block? The nights become bookable again on the site and free on the linked channels.",
+        "deleteConfirmAction": "Remove",
+        "deleting": "Removing...",
+        "deleted": "Block removed: the dates are free again",
+        "deleteFailed": "The block could not be removed. Try again.",
+        "validation": {
+          "startRequired": "Enter the first night to block.",
+          "startInPast": "Past dates cannot be blocked.",
+          "endRequired": "Enter when the property is free again.",
+          "endAfterStart": "The end date must be after the first night.",
+          "tooLong": "You can block at most {{max}} nights at a time.",
+          "reasonRequired": "Choose the reason of the block.",
+          "noteTooLong": "The note can be at most {{max}} characters long."
+        }
       },
       "toolbar": {
         "today": "Today",
@@ -1634,6 +1680,7 @@
       "retry": "Retry",
       "tabs": {
         "info": "Info & Photos",
+        "photos": "Photos",
         "pricing": "Seasonal suggestions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
@@ -1679,7 +1726,46 @@
       "prev": "Previous photo",
       "next": "Next photo",
       "unavailable": "Photo unavailable",
-      "alt": "{{name}} - photo {{index}}"
+      "alt": "{{name}} - photo {{index}}",
+      "title": "Property photos",
+      "description": "The first photo is the cover: guests see it first on your booking site and in search results.",
+      "rules": "Up to {{max}} photos in JPEG, PNG or WebP format, {{size}} MB each at most.",
+      "counter": "{{count}} of {{max}} photos",
+      "limitReached": "You have reached the maximum of {{max}} photos: delete a photo to upload more.",
+      "upload": "Upload photos",
+      "uploading": "Uploading…",
+      "uploaded_one": "{{count}} photo uploaded.",
+      "uploaded_other": "{{count}} photos uploaded.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "selectionTooMany": "You can upload at most {{max}} photos at a time.",
+      "selectionOverLimit": "You can add {{remaining}} more photos (maximum {{max}} per property).",
+      "selectionInvalidType": "“{{name}}” is not a JPEG, PNG or WebP image.",
+      "selectionTooLarge": "“{{name}}” is empty or larger than the {{size}} MB limit.",
+      "loading": "Loading photos…",
+      "loadError": "The photos could not be loaded.",
+      "retry": "Try again",
+      "emptyTitle": "No photos",
+      "emptyDescription": "Add photos of the property: guests also choose by looking at the pictures.",
+      "emptyReadOnly": "No photos have been uploaded for this property.",
+      "emptyAction": "Upload the first photo",
+      "cover": "Cover",
+      "setCover": "Set as cover",
+      "coverSet": "Cover photo updated.",
+      "coverFailed": "The cover could not be changed. Please try again.",
+      "moveEarlier": "Move photo {{index}} earlier",
+      "moveLater": "Move photo {{index}} later",
+      "reorderFailed": "The order of the photos could not be changed. Please try again.",
+      "delete": "Delete photo {{index}}",
+      "deleteTitle": "Delete this photo?",
+      "deleteDescription": "The photo will be removed from the gallery and from the booking site. This cannot be undone.",
+      "deleteConfirm": "Delete photo",
+      "cancel": "Cancel",
+      "deleted": "Photo deleted.",
+      "deleteFailed": "The photo could not be deleted. Please try again.",
+      "legacy": "Photo no longer available: delete it and upload it again.",
+      "actionFailed": "The operation failed. Please try again.",
+      "manage": "Manage photos",
+      "add": "Add photos"
     },
     "documents": {
       "title": "Documents",
@@ -2669,6 +2755,88 @@
       "imageType": "Unsupported format: upload a PNG, JPEG or WebP image.",
       "imageTooLarge": "The image exceeds the maximum size of {{maxMb}} MB.",
       "imageDimensions": "Invalid image size: it must be at least {{minWidth}}×{{minHeight}} pixels and at most {{maxWidth}}×{{maxHeight}}."
+    }
+  },
+  "siteDocuments": {
+    "title": "Site documents",
+    "description": "The privacy notice and booking terms of your site: guests read them before they book.",
+    "adminRequired": "The site documents are managed by your organization's administrator: contact the administrator to change them.",
+    "loadError": "Unable to load the site documents.",
+    "responsibility": {
+      "title": "These are the documents of your site",
+      "body": "You are the data controller of your guests' data. Write the texts yourself or with your advisor: CasaZen does not draft them and does not check their content. CasaZen's own privacy notice and terms are separate documents."
+    },
+    "kinds": {
+      "privacy": {
+        "title": "Privacy notice",
+        "description": "How you process your guests' personal data. The consent a guest gives when booking points to this page."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "description": "The conditions of the booking: payment, cancellation, house rules."
+      }
+    },
+    "status": {
+      "published": "Published: version {{version}} since {{date}}.",
+      "never": "Not published yet. Guests see a notice saying it has not been published yet.",
+      "withdrawn": "Withdrawn on {{date}}. Guests see a notice saying it has not been published yet."
+    },
+    "source": {
+      "label": "How do you want to provide it",
+      "options": {
+        "Text": "I write the text here",
+        "ExternalUrl": "I already have a document online"
+      }
+    },
+    "content": {
+      "label": "Text",
+      "placeholder": "Write or paste the text of the document here.",
+      "counter": "{{length}} of {{max}} characters"
+    },
+    "format": {
+      "summary": "How to format the text",
+      "body": "Separate paragraphs with a blank line. Use # for a title, ## for a subtitle, - for a bullet list, **bold**, *italic* and [text](https://address) for a link. HTML code is not allowed."
+    },
+    "url": {
+      "label": "Address of the document",
+      "placeholder": "https://www.example.com/privacy",
+      "hint": "It must start with https://. Guests see a button that opens it in a new tab."
+    },
+    "actions": {
+      "publishFirst": "Publish",
+      "publishNew": "Publish new version",
+      "withdraw": "Withdraw the document",
+      "withdrawConfirm": "Guests will no longer see this document: they will see a notice saying it has not been published. The versions stay in the history.",
+      "withdrawYes": "Yes, withdraw",
+      "withdrawCancel": "Cancel",
+      "openPublic": "Open the public page"
+    },
+    "history": {
+      "title": "Versions",
+      "item": "Version {{version}} of {{date}}",
+      "source": {
+        "Text": "text",
+        "ExternalUrl": "link to an external document"
+      },
+      "inUse": "in use",
+      "withdrawn": "withdrawn",
+      "replaced": "replaced",
+      "useAsBase": "Use as a base"
+    },
+    "toasts": {
+      "published": "Document published (version {{version}})",
+      "publishFailed": "Unable to publish the document",
+      "withdrawn": "Document withdrawn",
+      "withdrawFailed": "Unable to withdraw the document",
+      "versionLoadFailed": "Unable to load this version"
+    },
+    "errors": {
+      "contentRequired": "Write the text of the document.",
+      "contentTooLong": "The text is longer than {{max}} characters.",
+      "htmlNotAllowed": "The text contains HTML code, which is not allowed: write plain text.",
+      "linkInvalid": "A link is not valid: it must start with https://, http:// or mailto:.",
+      "urlRequired": "Enter the address of the document.",
+      "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
   "vetrina": {
@@ -3703,6 +3871,31 @@
       "from": "from",
       "perNight": "per night",
       "details": "Details"
+    },
+    "operatorPrivacy": "Privacy notice",
+    "operatorTerms": "Booking terms",
+    "documents": {
+      "backToSite": "Back to {{name}}",
+      "loading": "Loading the document...",
+      "loadError": "We can't load the document right now. Please try again in a moment.",
+      "seoDescription": "{{title}} of {{name}}",
+      "publishedBy": "Document published by {{name}}",
+      "version": "version {{version}}, published on {{date}}",
+      "contact": "Write to {{email}} for information",
+      "externalIntro": "{{name}} has published this document on another site.",
+      "externalOpen": "Open the document",
+      "externalOpenAt": "Open the document on {{host}}",
+      "externalHint": "It opens in a new tab, outside this site.",
+      "privacy": {
+        "title": "Privacy notice",
+        "notPublishedTitle": "Privacy notice not published yet",
+        "notPublished": "{{name}} has not published its privacy notice on this site yet."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "notPublishedTitle": "Booking terms not published yet",
+        "notPublished": "{{name}} has not published its booking terms on this site yet."
+      }
     }
   },
   "publicBooking": {
@@ -3772,7 +3965,7 @@
     "checkoutPlaceholderDates": "Selected dates: {{checkIn}} → {{checkOut}}",
     "checkoutPlaceholderPaymentComing": "Payment coming soon",
     "checkoutPlaceholderDescription": "Secure payment for {{orgName}} will be available after the operator activates Stripe Connect. This page will host the direct checkout flow (spec-direct-checkout).",
-    "gdprConsentText": "I consent to the processing of my personal data for booking management, in compliance with the operator's privacy policy.",
+    "gdprConsentText": "I consent to the processing of my personal data to manage the booking, in accordance with the operator's <privacy>privacy notice</privacy>.",
     "emailValidation": "Invalid email",
     "emailPlaceholder": "name@example.com",
     "checkoutDates_one": "Dates: {{checkIn}} → {{checkOut}} ({{count}} night)",
@@ -3968,7 +4161,8 @@
       "dayBooked": "{{date}}: booked"
     },
     "orgLoadError": "We can't load this site right now",
-    "orgLoadErrorDescription": "A temporary problem occurred. Please try again in a moment."
+    "orgLoadErrorDescription": "A temporary problem occurred. Please try again in a moment.",
+    "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicSeo": {
     "hub": {
@@ -4012,6 +4206,85 @@
       "CategoryRequired": "Select the accommodation category to calculate the tax.",
       "ChildAgesRequired": "Enter the age of every minor to calculate the tax.",
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
+    }
+  },
+  "activation": {
+    "title": "Activate your booking site",
+    "progress_one": "{{count}} of {{total}} step completed",
+    "progress_other": "{{count}} of {{total}} steps completed",
+    "progressLabel": "Activation progress",
+    "loadError": "The activation checklist could not be loaded.",
+    "retry": "Retry",
+    "state": {
+      "done": "Completed",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "blocked": "Waiting"
+    },
+    "steps": {
+      "account": {
+        "title": "Account and consents",
+        "done": "You chose how to use CasaZen, your organization was created and you accepted the consents."
+      },
+      "organization": {
+        "title": "Organization name and address",
+        "done": "You chose the name and the public address of the organization."
+      },
+      "property": {
+        "title": "First property",
+        "done_one": "{{count}} property created.",
+        "done_other": "{{count}} properties created."
+      },
+      "cin": {
+        "title": "Property CIN codes",
+        "done": "Every property has a valid CIN ({{done}} of {{total}})."
+      },
+      "payments": {
+        "title": "Payments with Stripe",
+        "done": "Stripe can collect direct bookings."
+      },
+      "sitePublished": {
+        "title": "Site published and bookable",
+        "done_one": "{{count}} property of {{total}} is published and bookable.",
+        "done_other": "{{count}} properties of {{total}} are published and bookable."
+      },
+      "firstBooking": {
+        "title": "First direct booking",
+        "done": "You received your first confirmed direct booking."
+      }
+    },
+    "reasons": {
+      "onboarding_incomplete": "Finish signing up first: role, organization and consents.",
+      "org_profile_incomplete": "Choose the organization name and a readable public address: for now you have the ones CasaZen generated.",
+      "no_property": "Add at least one property.",
+      "cin_missing_or_invalid": "Valid CIN on {{done}} of {{total}} properties: add or fix the CIN of the others.",
+      "connect_not_started": "You have not connected a Stripe account yet: without it, guests cannot pay.",
+      "connect_requirements_due": "Stripe still asks for data or documents to enable payments.",
+      "connect_pending_verification": "You sent the data: Stripe is verifying the account and has not enabled payments yet.",
+      "org_inactive": "The organization is disabled and its public pages cannot be reached. Contact support.",
+      "properties_paused": "Every property that could be published is paused: reactivate at least one.",
+      "compliance_pending": "The properties have not completed the compliance activation yet (CIN, documents, safety): until they do, they are not published.",
+      "properties_inactive": "No property is active: activate at least one.",
+      "payments_not_ready": "A property is published, but guests cannot pay yet because Stripe has not enabled payments.",
+      "site_not_published": "Publish the site first: you need a published property and Stripe payments enabled.",
+      "awaiting_first_booking": "The site is open and bookable: share the link with your guests.",
+      "unknown": "This step is not completed yet."
+    },
+    "cta": {
+      "onboarding": "Finish signing up",
+      "organization": "Set name and address",
+      "property": "Add a property",
+      "cin": "Manage properties",
+      "paymentsStart": "Connect Stripe",
+      "paymentsContinue": "Go to payments",
+      "reactivate": "Reactivate properties",
+      "compliance": "Complete the activation",
+      "properties": "Go to properties",
+      "share": "Share the link",
+      "open": "Open"
+    },
+    "siteBanner": {
+      "title": "Guests cannot book from your site yet"
     }
   },
   "onboarding": {
@@ -4118,37 +4391,38 @@
   },
   "search": {
     "page": {
-      "title": "Search Properties",
+      "title": "Search properties",
       "description": "Find your perfect vacation rental",
       "searching": "Searching...",
       "results_one": "{{count}} property found",
       "results_other": "{{count}} properties found"
     },
     "filters": {
-      "title": "Search Filters",
+      "title": "Search filters",
       "city": "City",
       "cityPlaceholder": "e.g., Rome, Milan, Florence...",
-      "minPrice": "Min Price (euro/night)",
-      "maxPrice": "Max Price (euro/night)",
-      "minBedrooms": "Min Bedrooms",
-      "maxBedrooms": "Max Bedrooms",
-      "minBathrooms": "Min Bathrooms",
-      "maxBathrooms": "Max Bathrooms",
+      "minPrice": "Min price (€ per night)",
+      "maxPrice": "Max price (€ per night)",
+      "minBedrooms": "Min bedrooms",
+      "minBathrooms": "Min bathrooms",
+      "guests": "Guests",
       "search": "Search",
       "reset": "Reset"
     },
     "results": {
       "noProperties": "No properties found",
-      "noPropertiesDesc": "Try adjusting your search filters to find more properties"
+      "noPropertiesDesc": "Try adjusting your search filters to find more properties.",
+      "errorTitle": "We can't run the search right now",
+      "errorDescription": "This is not an empty list: the search failed. Please try again in a moment."
     },
-    "card": {
-      "bed_one": "bed",
-      "bed_other": "beds",
-      "bath_one": "bath",
-      "bath_other": "baths",
-      "guests": "guests",
-      "perNight": "/night",
-      "details": "Details"
+    "errors": {
+      "invalidNumber": "Enter a valid number.",
+      "negative": "The value cannot be negative.",
+      "tooHigh": "The value is too high.",
+      "wholeNumber": "Enter a whole number.",
+      "guestsMin": "Guests must be at least 1.",
+      "priceRange": "The maximum price must be at least the minimum.",
+      "cityTooLong": "The city name is too long."
     }
   },
   "login": {
@@ -4945,7 +5219,20 @@
       "leasePartyFiscalCodeDuplicate": "The same fiscal code is given for more than one party of the lease.",
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
-      "leaseTenantRequired": "The lease needs at least one tenant."
+      "leaseTenantRequired": "The lease needs at least one tenant.",
+      "calendarBlockOverlapsBooking": "A booking already takes one of these nights: cancel it or choose other dates.",
+      "calendarBlockOverlapsBlock": "You have already blocked one of these nights: remove that block or choose other dates.",
+      "calendarBlockInPast": "Past dates cannot be blocked.",
+      "calendarBlockInvalidRange": "The end date must be after the start date.",
+      "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
+      "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
+      "propertyPhotoNone": "Select at least one photo to upload.",
+      "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
+      "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
+      "propertyPhotoInvalidType": "One of the files is not a valid photo: only JPEG, PNG or WebP images are accepted.",
+      "propertyPhotoInvalidSize": "One of the files is empty or larger than the maximum size allowed.",
+      "propertyPhotoNotFound": "The photo is no longer in the gallery: the list has been refreshed.",
+      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again."
     }
   },
   "validation": {

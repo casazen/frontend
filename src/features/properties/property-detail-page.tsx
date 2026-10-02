@@ -13,12 +13,13 @@ import { useCurrentUser } from '@/queries/use-users';
 import { useUpdatePropertyCin } from '@/queries/use-cin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { Edit, ArrowRight, CalendarRange, ExternalLink, Wrench, Plus } from 'lucide-react';
+import { Edit, ArrowRight, CalendarRange, ExternalLink, ImagePlus, Wrench, Plus } from 'lucide-react';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { PropertyCinBadge } from './components/property-cin-badge';
 import { PropertyCinDialog } from './components/property-cin-dialog';
 import { PropertyPhotoCarousel } from './components/property-photo-carousel';
+import { PropertyPhotoManager } from './components/property-photo-manager';
 import { PropertyInfoCard } from './components/property-info-card';
 import { PropertyAmenitiesGrid } from './components/property-amenities-grid';
 import { PropertyDocumentsSection } from './components/property-documents-section';
@@ -30,9 +31,9 @@ import { PropertyPricingSummaryCard } from './components/property-pricing-summar
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
 import { useServiceRequests } from '@/queries/use-service-requests';
 
-type PropertyTab = 'info' | 'pricing' | 'ical' | 'documents' | 'cin';
+type PropertyTab = 'info' | 'photos' | 'pricing' | 'ical' | 'documents' | 'cin';
 
-const PROPERTY_TABS: readonly PropertyTab[] = ['info', 'pricing', 'ical', 'documents', 'cin'];
+const PROPERTY_TABS: readonly PropertyTab[] = ['info', 'photos', 'pricing', 'ical', 'documents', 'cin'];
 
 function isPropertyTab(value: string | null): value is PropertyTab {
   return value !== null && (PROPERTY_TABS as readonly string[]).includes(value);
@@ -68,6 +69,8 @@ export function PropertyDetailPage() {
   const canCreateBooking = hasPermission('short-rent', 'booking.write');
   // Alloggiati Web credentials are write-only; the API also checks ownership or the org-wide role (TN-3).
   const canEditQuesturaCredentials = hasPermission('short-rent', 'property.write');
+  // Photos: upload, order, cover and deletion need the same permission (the API also checks ownership or the org-wide role).
+  const canEditPhotos = hasPermission('short-rent', 'property.write');
   // Overview of the property's short-rent requests, each linked to its stay (D2).
   const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
 
@@ -111,6 +114,7 @@ export function PropertyDetailPage() {
 
   const tabs: { key: PropertyTab; label: string }[] = [
     { key: 'info', label: t('property.detail.tabs.info') },
+    { key: 'photos', label: t('property.detail.tabs.photos') },
     { key: 'pricing', label: t('property.detail.tabs.pricing') },
     { key: 'ical', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical') },
     { key: 'documents', label: t('property.detail.tabs.documents') },
@@ -217,6 +221,12 @@ export function PropertyDetailPage() {
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
               <PropertyPhotoCarousel photoUrls={property.photoUrls} name={property.name} />
+              {canEditPhotos && (
+                <Button variant="outline" size="sm" onClick={() => setActiveTab('photos')} data-testid="property-manage-photos">
+                  <ImagePlus className="mr-2 h-4 w-4" />
+                  {t(property.photoUrls.length > 0 ? 'property.photos.manage' : 'property.photos.add')}
+                </Button>
+              )}
 
               {property.description && (
                 <Card>
@@ -251,6 +261,10 @@ export function PropertyDetailPage() {
               />
             </div>
           </div>
+        )}
+
+        {activeTab === 'photos' && (
+          <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canEditPhotos} />
         )}
 
         {activeTab === 'pricing' && (

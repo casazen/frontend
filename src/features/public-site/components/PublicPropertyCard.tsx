@@ -8,8 +8,12 @@ import type { PublicPropertyDto } from '@/types';
 
 interface PublicPropertyCardProps {
   property: PublicPropertyDto;
-  /** The property's page on the booking site (`buildPropertyBookingPath`, search params kept by the caller). */
-  to: To;
+  /**
+   * The property's page on the booking site (`buildPropertyBookingPath`, search params kept by the caller). Absent when
+   * the page is not known (a search result without its org slug): the card is then shown without a link rather than
+   * with one that leads nowhere (BK-20).
+   */
+  to?: To;
 }
 
 /** A positive finite count, or null: a missing or malformed number is left out, never shown as "NaN" or "0". */
@@ -56,9 +60,13 @@ export function PublicPropertyCard({ property, to }: PublicPropertyCardProps) {
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="space-y-1">
           <h3 className="public-display text-lg leading-snug">
-            <Link to={to} className="outline-none after:absolute after:inset-0" data-testid="public-property-card-link">
-              {property.name}
-            </Link>
+            {to ? (
+              <Link to={to} className="outline-none after:absolute after:inset-0" data-testid="public-property-card-link">
+                {property.name}
+              </Link>
+            ) : (
+              property.name
+            )}
           </h3>
           {place ? (
             <p className="flex items-center gap-1 text-sm text-[var(--cz-public-muted)]">
@@ -107,9 +115,11 @@ export function PublicPropertyCard({ property, to }: PublicPropertyCardProps) {
           ) : (
             <span />
           )}
-          <span className="public-site-cta px-3 py-1.5 text-sm" aria-hidden>
-            {t('publicSite.card.details')}
-          </span>
+          {to ? (
+            <span className="public-site-cta px-3 py-1.5 text-sm" aria-hidden>
+              {t('publicSite.card.details')}
+            </span>
+          ) : null}
         </div>
       </div>
     </article>
