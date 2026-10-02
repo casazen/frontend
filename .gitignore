@@ -43,3 +43,7 @@ playwright-report/
 # TypeScript incremental build info (tsc -b)
 *.tsbuildinfo
 
+
+# Golden Journey L3 (FN-03): throw-away stack state and reports
+e2e/.stack/
+playwright-report.json
