@@ -73,7 +73,22 @@ const reportMocks: Record<string, unknown> = {
     taxYear: 2026,
     packLabel,
     byOta: [{ source: 'Airbnb', gross: 100, withholding: 21, net: 79, payoutCount: 1 }],
-    lines: [],
+    // The report is "empty" without lines: the by-channel table follows the payouts it summarises.
+    lines: [
+      {
+        paymentId: '22222222-2222-2222-2222-222222222222',
+        propertyId: '11111111-1111-1111-1111-111111111111',
+        source: 'Airbnb',
+        paidAt: '2026-06-10T09:00:00Z',
+        paidOn: '2026-06-10',
+        gross: 100,
+        withholding: 21,
+        net: 79,
+        propertyName: 'Casa Demo',
+        bookingCode: 'CZ-DEMO1',
+        withholdingSource: 'AutoOta',
+      },
+    ],
     period,
     disclaimer: regimeMock.disclaimer,
     orgName: 'Demo',
