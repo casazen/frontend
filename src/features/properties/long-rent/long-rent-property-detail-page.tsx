@@ -70,7 +70,7 @@ export function LongRentPropertyDetailPage() {
           <div>
             <p className="text-muted-foreground">{t('longRentProperties.detail.address')}</p>
             <p className="font-medium">
-              {[property.address, property.postalCode, property.city].filter(Boolean).join(', ')}
+              {[property.address, property.unit?.trim(), property.postalCode, property.city].filter(Boolean).join(', ')}
             </p>
           </div>
           <div>

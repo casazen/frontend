@@ -2001,7 +2001,8 @@
         "bathrooms": "2",
         "maxGuests": "6",
         "nightlyRate": "150",
-        "houseRules": "E.g. no parties, check-in from 3:00 pm"
+        "houseRules": "E.g. no parties, check-in from 3:00 pm",
+        "unit": "e.g. Staircase B, unit 5"
       },
       "bedroomsHint": "0 for a studio",
       "cleaningFee": "Cleaning fee (€)",
@@ -2020,7 +2021,9 @@
         "loading": "Loading cancellation policies…",
         "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
         "empty": "No cancellation policy available."
-      }
+      },
+      "unit": "Unit / staircase",
+      "unitHint": "Optional. Enter it if you have several apartments in the same building: each one needs a different unit or staircase."
     },
     "validation": {
       "name": {
@@ -2073,6 +2076,16 @@
       },
       "timezone": {
         "required": "Choose a time zone"
+      },
+      "unit": {
+        "maxLength": "The unit or staircase can have at most 30 characters",
+        "duplicate": "You already have a property at this address: if it is another apartment in the same building, enter the unit or staircase."
+      },
+      "latitude": {
+        "range": "The latitude must be a number between -90 and 90"
+      },
+      "longitude": {
+        "range": "The longitude must be a number between -180 and 180"
       }
     },
     "slug": {
@@ -5275,7 +5288,7 @@
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
-      "duplicatePropertyAddress": "This address is already used by an active property.",
+      "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
@@ -5436,6 +5449,7 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
       "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
       "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
       "supplierAlreadySuspended": "The supplier is already suspended.",

@@ -2001,7 +2001,8 @@
         "bathrooms": "2",
         "maxGuests": "6",
         "nightlyRate": "150",
-        "houseRules": "Es. niente feste, check-in dalle 15:00"
+        "houseRules": "Es. niente feste, check-in dalle 15:00",
+        "unit": "es. Scala B, int. 5"
       },
       "bedroomsHint": "0 per un monolocale",
       "cleaningFee": "Pulizie (€)",
@@ -2020,7 +2021,9 @@
         "loading": "Caricamento delle policy di cancellazione…",
         "loadError": "Impossibile caricare le policy di cancellazione: la policy attuale resta invariata.",
         "empty": "Nessuna policy di cancellazione disponibile."
-      }
+      },
+      "unit": "Interno / scala",
+      "unitHint": "Facoltativo. Indicalo se nello stesso edificio hai più appartamenti: ognuno deve avere un interno o una scala diversi."
     },
     "validation": {
       "name": {
@@ -2073,6 +2076,16 @@
       },
       "timezone": {
         "required": "Scegli un fuso orario"
+      },
+      "unit": {
+        "maxLength": "L'interno o la scala può avere al massimo 30 caratteri",
+        "duplicate": "Hai già un immobile con questo indirizzo: se è un altro appartamento dello stesso edificio, indica l'interno o la scala."
+      },
+      "latitude": {
+        "range": "La latitudine deve essere un numero tra -90 e 90"
+      },
+      "longitude": {
+        "range": "La longitudine deve essere un numero tra -180 e 180"
       }
     },
     "slug": {
@@ -5275,7 +5288,7 @@
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
-      "duplicatePropertyAddress": "Indirizzo già usato da un immobile attivo.",
+      "duplicatePropertyAddress": "Hai già un immobile attivo con questo indirizzo. Se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
       "managedByStripe": "Il piano è gestito da Stripe. Usa il portale di fatturazione.",
       "subscriptionRequired": "Per passare a un piano a pagamento serve un abbonamento attivo.",
       "billingGateClosed": "La fatturazione non è ancora disponibile.",
@@ -5436,6 +5449,7 @@
       "leasePartiesTooMany": "Troppe parti per un ruolo: al massimo 10 locatori e 10 conduttori.",
       "leaseLandlordRequired": "Il contratto deve avere almeno un locatore.",
       "leaseTenantRequired": "Il contratto deve avere almeno un conduttore.",
+      "propertyCoordinatesInvalid": "Le coordinate non sono valide: la latitudine deve essere tra -90 e 90 e la longitudine tra -180 e 180.",
       "serviceRequestSupplierNotActive": "Il tuo account fornitore non è attivo (è sospeso o non ancora attivato): non puoi eseguire azioni sulle richieste. Contatta il supporto CasaZen.",
       "supplierSuspended": "Il tuo account fornitore è sospeso: non puoi completare l'attivazione. Contatta il supporto CasaZen.",
       "supplierAlreadySuspended": "Il fornitore è già sospeso.",
