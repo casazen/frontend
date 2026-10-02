@@ -2,289 +2,237 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { getProblemMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import {
   useCompleteSupplierActivation,
+  useSaveSupplierActivationStep,
   useSupplierActivation,
   useSupplierProfile,
-  useUpdateSupplierProfile,
-  useSetIcalFeed,
 } from '@/queries/use-supplier';
-import type { SupplierProfile } from '@/types/supplier';
-import { Calendar, Smartphone, CheckCircle2, ArrowRight, Link2, Loader2 } from 'lucide-react';
-import { IcalHelpTooltip } from './components/ical-help-tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
-import { useServiceCategories } from '@/queries/use-service-categories';
-import { keepKnownCategories } from '@/lib/service-categories';
-import { getProblemMessage } from '@/lib/api-errors';
-import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
-import { useComuneDatasetStatus } from '@/queries/use-comuni';
-import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
+import { ACTIVATION_STEP_IDS, type ActivationStatus, type SupplierProfile } from '@/types/supplier';
+import { ActivationTermsCard } from './components/activation-terms-card';
+import {
+  CalendarFeedCard,
+  IdentityStep,
+  ProfileStep,
+  ServicesStep,
+  ShowcaseStep,
+} from './components/activation-steps';
+import { TosReacceptance } from './components/tos-reacceptance';
 
-interface Step1Props {
-  profile: SupplierProfile;
-  onNext: () => void;
+const STEP_COUNT = ACTIVATION_STEP_IDS.length;
+const TERMS_STEP = STEP_COUNT;
+
+function clampStep(step: number): number {
+  return Math.min(Math.max(Math.trunc(step) || 1, 1), STEP_COUNT);
 }
 
-function Step1Registration({ profile, onNext }: Step1Props) {
+/** Step 5: optional calendar, Terms of Service and the check of what is still missing before activating. */
+function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; onGoToStep: (step: number) => void }) {
   const { t } = useTranslation();
-  const updateProfile = useUpdateSupplierProfile();
-  const { data: categoryCodes } = useServiceCategories();
+  const navigate = useNavigate();
+  const complete = useCompleteSupplierActivation();
+  const [tosAccepted, setTosAccepted] = useState(false);
 
-  const [categories, setCategories] = useState<string[]>(profile.categories ?? []);
-  const [comuni, setComuni] = useState<SupplierComuniValue>(() => {
-    const istatCodes = profile.comuneIstatCodes ?? [];
-    return { istatCodes, legacy: (profile.comuni ?? []).filter((entry) => !istatCodes.includes(entry)) };
-  });
-  const comuneStatus = useComuneDatasetStatus();
-  const comuneListAvailable = comuneStatus.data?.datasetAvailable === true;
-  const [saving, setSaving] = useState(false);
+  // What the server still finds missing in the stored profile (everything but the Terms, which are the checkbox below).
+  const missing = activation.steps
+    .map((step, index) => ({ step, number: index + 1 }))
+    .filter(({ step }) => step.required && step.blocker && step.id !== 'terms');
 
-  const handleSaveAndNext = async () => {
-    setSaving(true);
+  const handleActivate = async () => {
     try {
-      await updateProfile.mutateAsync({
-        categories: keepKnownCategories(categories, categoryCodes),
-        comuni: comuni.legacy,
-        // Only while the official list is imported: the API refuses ISTAT codes otherwise and keeps the stored ones.
-        ...(comuneListAvailable ? { comuneIstatCodes: comuni.istatCodes } : {}),
-      });
-      toast.success(t('supplier.progressSaved'));
-      onNext();
+      await complete.mutateAsync({ tosAccepted, tosVersion: activation.tos.currentVersion });
+      toast.success(t('supplier.activation.activated'));
+      navigate('/app/supplier/dashboard', { replace: true });
     } catch (error) {
-      toast.error(getProblemMessage(error, t) ?? t('supplier.progressSaveError'));
-    } finally {
-      setSaving(false);
+      toast.error(getProblemMessage(error, t) ?? t('supplier.activation.activateError'));
     }
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('supplier.step1Title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>{t('supplier.serviceCategories')}</Label>
-            <p className="mb-2 text-xs text-muted-foreground">{t('supplier.categoriesHint')}</p>
-            <ServiceCategoryPicker value={categories} onChange={setCategories} disabled={saving} />
-          </div>
+      <CalendarFeedCard />
+      <ActivationTermsCard
+        version={activation.tos.currentVersion}
+        checked={tosAccepted}
+        onCheckedChange={setTosAccepted}
+        disabled={complete.isPending}
+      />
 
-          <div>
-            <Label htmlFor="comuni">{t('supplier.operatingMunicipalities')}</Label>
-            <div className="mt-1">
-              <SupplierComuniField
-                id="comuni"
-                value={comuni}
-                known={profile.operatingComuni}
-                onChange={setComuni}
-                disabled={saving}
-              />
-            </div>
-          </div>
+      <Card data-testid="supplier-activation-summary">
+        <CardContent className="space-y-3 pt-6">
+          <h3 className="text-sm font-semibold">{t('supplier.activation.summary.title')}</h3>
+          {missing.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.ready')}</p>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.missing')}</p>
+              <ul className="space-y-1">
+                {missing.map(({ step, number }) => (
+                  <li key={step.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span data-testid={`supplier-activation-blocker-${step.blocker}`}>
+                      {t(`supplier.activation.blockers.${step.blocker}`)}
+                    </span>
+                    <Button type="button" variant="link" size="sm" onClick={() => onGoToStep(number)}>
+                      {t('supplier.activation.summary.goTo', { step: number })}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </CardContent>
       </Card>
 
-      <Button onClick={() => void handleSaveAndNext()} disabled={saving} className="w-full">
-        {t('supplier.continueToCalendar')} <ArrowRight className="ml-2 h-4 w-4" />
+      <Button
+        onClick={() => void handleActivate()}
+        disabled={complete.isPending || !tosAccepted || missing.length > 0}
+        className="w-full"
+      >
+        {complete.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+        {complete.isPending ? t('supplier.activation.activating') : t('supplier.activation.activate')}
       </Button>
     </div>
   );
 }
 
-function Step2Calendar({ profile }: { profile: SupplierProfile }) {
+function StepNav({
+  activation,
+  current,
+  onGoToStep,
+}: {
+  activation: ActivationStatus;
+  current: number;
+  onGoToStep: (step: number) => void;
+}) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const completeActivation = useCompleteSupplierActivation();
-  const setIcalFeedMutation = useSetIcalFeed();
-  const [tosAccepted, setTosAccepted] = useState(Boolean(profile.tosAcceptedAt));
-  const [activating, setActivating] = useState(false);
+  return (
+    <nav aria-label={t('supplier.activation.stepsLabel')}>
+      <ol className="grid grid-cols-5 gap-1 text-center">
+        {activation.steps.map((step, index) => {
+          const number = index + 1;
+          const done = step.status === 'completed';
+          return (
+            <li key={step.id}>
+              <button
+                type="button"
+                onClick={() => onGoToStep(number)}
+                aria-current={number === current ? 'step' : undefined}
+                data-testid={`supplier-activation-nav-${step.id}`}
+                className={cn(
+                  'flex w-full flex-col items-center gap-1 rounded-md px-1 py-2 text-xs',
+                  number === current ? 'bg-muted font-medium' : 'text-muted-foreground hover:bg-muted/60',
+                )}
+              >
+                {done ? (
+                  <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
+                ) : (
+                  <Circle className="h-4 w-4" aria-hidden="true" />
+                )}
+                <span>{t(`supplier.activation.steps.${step.id}`)}</span>
+                <span className="sr-only">
+                  {done ? t('supplier.activation.stepDone') : t('supplier.activation.stepTodo')}
+                </span>
+                {!step.required && <span className="text-[10px]">{t('supplier.activation.optional')}</span>}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
 
-  // iCal dialog state
-  const [showIcalDialog, setShowIcalDialog] = useState(false);
-  const [icalUrl, setIcalUrl] = useState('');
-  const [savingIcal, setSavingIcal] = useState(false);
+function ActivationWizard({ activation, profile }: { activation: ActivationStatus; profile: SupplierProfile }) {
+  const { t } = useTranslation();
+  const saveStep = useSaveSupplierActivationStep();
+  // The server remembers the step: the wizard opens where the supplier stopped, from any device (SU-05).
+  const [step, setStep] = useState(() => clampStep(activation.currentStep));
 
-  const handleActivate = async () => {
-    setActivating(true);
-    try {
-      await completeActivation.mutateAsync(tosAccepted);
-      toast.success(t('supplier.profileActivated'));
-      navigate('/app/supplier/dashboard', { replace: true });
-    } catch {
-      toast.error(t('supplier.acceptTosFirst'));
-    } finally {
-      setActivating(false);
-    }
-  };
-
-  const handleSaveIcal = async () => {
-    if (!icalUrl.trim()) return;
-    setSavingIcal(true);
-    try {
-      await setIcalFeedMutation.mutateAsync(icalUrl.trim());
-      // The first sync runs in a background job (SU-15): "started", never "synced".
-      toast.success(t('supplier.syncSuccess'));
-      setShowIcalDialog(false);
-    } catch (error) {
-      toast.error(getProblemMessage(error, t) ?? t('supplier.icalSaveError'));
-    } finally {
-      setSavingIcal(false);
-    }
+  const goToStep = (next: number) => {
+    const target = clampStep(next);
+    setStep(target);
+    saveStep.mutate(target, {
+      onError: () => toast.error(t('supplier.activation.stepSaveError')),
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('supplier.step2Title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">{t('supplier.calendarSyncDescription')}</p>
+    <div className="mx-auto max-w-lg space-y-6" data-testid="supplier-activation-page">
+      <PageHeader title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
+      <StepNav activation={activation} current={step} onGoToStep={goToStep} />
+      <p className="text-sm text-muted-foreground" data-testid="supplier-activation-step-of">
+        {t('supplier.activation.stepOf', { current: step, total: STEP_COUNT })}
+      </p>
 
-          <div className="grid gap-3">
-            {/* Google Calendar — coming soon */}
-            <div className="flex items-start gap-3 rounded-md border p-3 opacity-60">
-              <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{t('supplier.googleCalendar')}</p>
-                <p className="text-xs text-muted-foreground">{t('supplier.googleCalendarHint')}</p>
-                <Button size="sm" variant="outline" className="mt-2" disabled>
-                  {t('supplier.comingSoon')}
-                </Button>
-              </div>
-            </div>
+      {/* `key`: each step starts from the data saved on the server, not from the previous step's form. */}
+      {step === 1 && <IdentityStep key="identity" profile={profile} onSaved={() => goToStep(2)} />}
+      {step === 2 && <ServicesStep key="services" profile={profile} onSaved={() => goToStep(3)} />}
+      {step === 3 && <ShowcaseStep key="showcase" profile={profile} onSaved={() => goToStep(4)} />}
+      {step === 4 && <ProfileStep key="profile" profile={profile} onSaved={() => goToStep(5)} />}
+      {step === TERMS_STEP && <TermsStep activation={activation} onGoToStep={goToStep} />}
 
-            {/* iCal Feed — functional */}
-            <div className="flex items-start gap-3 rounded-md border p-3">
-              <Link2 className="mt-0.5 h-5 w-5 text-primary shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{t('supplier.icalFeed')}</p>
-                <p className="text-xs text-muted-foreground">{t('supplier.icalFeedHint')}</p>
-                <Button size="sm" variant="outline" className="mt-2" onClick={() => { setIcalUrl(''); setShowIcalDialog(true); }}>
-                  {t('supplier.pasteIcalUrl')}
-                </Button>
-              </div>
-            </div>
-
-            {/* WhatsApp — coming soon */}
-            <div className="flex items-start gap-3 rounded-md border p-3 opacity-60">
-              <Smartphone className="mt-0.5 h-5 w-5 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{t('supplier.whatsappOption')}</p>
-                <p className="text-xs text-muted-foreground">{t('supplier.whatsappHint')}</p>
-                <Button size="sm" variant="outline" className="mt-2" disabled>
-                  {t('supplier.comingSoon')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex items-start gap-3 pt-6">
-          <Checkbox
-            id="tos"
-            checked={tosAccepted}
-            onCheckedChange={(checked) => setTosAccepted(checked === true)}
-          />
-          <div className="space-y-1">
-            <Label htmlFor="tos" className="leading-relaxed text-sm">
-              {t('supplier.acceptTos')}
-            </Label>
-            {/* LEGAL-TEXTS: the checkbox accepts a document the supplier can read (new tab, the activation stays open). */}
-            <p className="text-sm">
-              <a
-                href={LEGAL_DOCUMENT_PATHS.tos}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-                data-testid="supplier-tos-read"
-              >
-                {t('supplier.readTos')}
-              </a>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex flex-col items-center gap-3">
-        <Button onClick={() => void handleActivate()} disabled={activating || !tosAccepted} className="w-full">
-          <CheckCircle2 className="mr-2 h-4 w-4" />
-          {t('supplier.activateProfile')}
+      {step > 1 && (
+        <Button type="button" variant="ghost" onClick={() => goToStep(step - 1)}>
+          {t('supplier.activation.back')}
         </Button>
-        <p className="text-xs text-muted-foreground">{t('supplier.completeLaterHint')}</p>
-      </div>
-
-      {/* iCal Dialog */}
-      <Dialog open={showIcalDialog} onOpenChange={setShowIcalDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('supplier.icalFeedUrlTitle')}</DialogTitle>
-            <DialogDescription>{t('supplier.icalFeedUrlDescription')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 mt-2">
-            <div className="flex items-center gap-1.5">
-              <Label className="text-sm font-medium">{t('supplier.icalFeedUrlLabel')}</Label>
-              <IcalHelpTooltip />
-            </div>
-            <Input
-              value={icalUrl}
-              onChange={(e) => setIcalUrl(e.target.value)}
-              placeholder="https://calendar.google.com/calendar/ical/..."
-              autoFocus
-            />
-          </div>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={() => setShowIcalDialog(false)} disabled={savingIcal}>
-              {t('shared.cancel')}
-            </Button>
-            <Button onClick={() => void handleSaveIcal()} disabled={savingIcal || !icalUrl.trim()}>
-              {savingIcal && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('supplier.saveAndSync')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      )}
     </div>
   );
 }
 
 export function SupplierActivationPage() {
   const { t } = useTranslation();
-  const [step, setStep] = useState<'registration' | 'calendar'>('registration');
-  const { data: activation, isLoading: activationLoading } = useSupplierActivation();
-  const { data: profile, isLoading: profileLoading } = useSupplierProfile();
+  const activationQuery = useSupplierActivation();
+  const profileQuery = useSupplierProfile();
 
-  if (activationLoading || profileLoading || !profile || !activation) {
+  // An API error is not "loading forever" (A4-25): say it failed and offer a retry.
+  if (activationQuery.isError || profileQuery.isError) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <ErrorState
+          testId="supplier-activation-error"
+          title={t('supplier.activation.loadError')}
+          error={activationQuery.error ?? profileQuery.error}
+          onRetry={() => {
+            void activationQuery.refetch();
+            void profileQuery.refetch();
+          }}
+        />
+      </div>
+    );
+  }
+
+  const activation = activationQuery.data;
+  const profile = profileQuery.data;
+  if (!activation || !profile) {
     return <LoadingScreen message={t('supplier.activationLoading')} />;
   }
 
-  if (activation.status === 'Active') {
-    return <Navigate to="/app/supplier/dashboard" replace />;
+  if (activation.status === 'Suspended') {
+    // A suspended supplier cannot activate itself: only an admin reactivates it (SU-12).
+    return (
+      <div className="mx-auto max-w-lg space-y-4" data-testid="supplier-activation-suspended">
+        <PageHeader title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />
+      </div>
+    );
   }
 
-  return (
-    <div className="max-w-lg mx-auto" data-testid="supplier-activation-page">
-      <PageHeader
-        title={t('supplier.activationTitle')}
-        description={t('supplier.activationNewDescription')}
-      />
+  if (activation.status === 'Active') {
+    // An active supplier whose Terms are not the current version accepts the new one here; otherwise the dashboard.
+    return activation.tos.reacceptanceRequired ? (
+      <TosReacceptance tos={activation.tos} />
+    ) : (
+      <Navigate to="/app/supplier/dashboard" replace />
+    );
+  }
 
-      {step === 'registration' ? (
-        <Step1Registration profile={profile} onNext={() => setStep('calendar')} />
-      ) : (
-        <Step2Calendar profile={profile} />
-      )}
-    </div>
-  );
+  return <ActivationWizard activation={activation} profile={profile} />;
 }

@@ -1739,6 +1739,9 @@
       "retry": "Riprova",
       "retrying": "Nuovo tentativo...",
       "signInAgain": "Accedi di nuovo"
+    },
+    "errorState": {
+      "retry": "Riprova"
     }
   },
   "common": {
@@ -2418,18 +2421,10 @@
     "photoUrlsHint": "Un URL per riga. Le prime foto appariranno nella tua vetrina pubblica.",
     "bio": "Descrizione",
     "activationLoading": "Caricamento attivazione...",
-    "activationTitle": "Attivazione profilo fornitore",
-    "activationNewDescription": "Due minuti e sei operativo. Il resto puoi completarlo dopo.",
-    "activationDescription": "Completa i 5 passaggi per comparire nel marketplace host",
-    "step1Title": "Cosa offri e dove?",
-    "step2Title": "Come gestisci la disponibilità?",
-    "continueToCalendar": "Continua",
     "categoriesHint": "Scegli una o più categorie. Potrai aggiungerne altre dopo.",
     "comuniHint": "Inserisci i nomi delle città dove operi, separati da virgola.",
     "comuniPlaceholder": "es. Roma, Milano, Napoli",
-    "acceptTosFirst": "Devi accettare i termini di servizio",
     "connectLater": "Configura dopo",
-    "completeLaterHint": "Potrai completare il profilo e aggiungere dettagli in qualsiasi momento dalla dashboard.",
     "progressSaveError": "Impossibile salvare. Riprova.",
     "activationStatus": "Stato attivazione",
     "serviceCategories": "Categorie di servizio",
@@ -2437,13 +2432,8 @@
     "municipalityCodesLabel": "Codici comune (separati da virgola)",
     "description": "Descrizione",
     "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
-    "acceptTos": "Accetto i Termini di Servizio di CasaZen, comprese le regole per i fornitori",
-    "readTos": "Leggi i Termini di Servizio",
     "saveProgress": "Salva progresso",
-    "activateProfile": "Attiva profilo",
     "progressSaved": "Progresso salvato",
-    "profileActivated": "Profilo fornitore attivato",
-    "completeAllSteps": "Completa tutti i passaggi prima di attivare il profilo",
     "inboxTitle": "Inbox incarichi",
     "inboxDescription": "Le richieste di servizio degli host: apri un incarico per vedere dove, quando e chi contattare.",
     "loading": "Caricamento...",
@@ -2732,6 +2722,95 @@
       "remove": "Rimuovi {{name}}",
       "legacyTitle": "Indicati come testo",
       "legacyHint": "Questi comuni non sono collegati all'elenco ufficiale, quindi la ricerca per codice non li riconosce sempre. Cercali nell'elenco e aggiungili, poi rimuovi il testo."
+    },
+    "activation": {
+      "title": "Attivazione profilo fornitore",
+      "description": "Completa i 5 passi per comparire agli host. Puoi interrompere e riprendere da dove eri: i progressi sono salvati sul tuo account.",
+      "stepOf": "Passo {{current}} di {{total}}",
+      "optional": "Facoltativo",
+      "stepsLabel": "Passi dell'attivazione",
+      "steps": {
+        "identity": "Dati dell'attività",
+        "services": "Servizi e comuni",
+        "showcase": "Vetrina e foto",
+        "profile": "Descrizione",
+        "terms": "Disponibilità e termini"
+      },
+      "stepDone": "completato",
+      "stepTodo": "da completare",
+      "back": "Indietro",
+      "next": "Salva e continua",
+      "skip": "Salta, aggiungo le foto dopo",
+      "loadError": "Impossibile caricare l'attivazione del profilo.",
+      "saveError": "Impossibile salvare questo passo. Riprova.",
+      "stepSaveError": "Impossibile ricordare il passo raggiunto: al prossimo accesso potresti ripartire da un passo precedente.",
+      "identity": {
+        "title": "Chi sei?",
+        "legalName": "Ragione sociale o nome dell'attività",
+        "phone": "Telefono",
+        "phoneHint": "Con il prefisso se non italiano, ad esempio +39 06 1234567. Gli host lo vedono solo quando prendi in carico un incarico.",
+        "vatNumber": "Partita IVA (facoltativa)",
+        "email": "Email dell'account"
+      },
+      "services": {
+        "title": "Cosa offri e dove?"
+      },
+      "showcase": {
+        "title": "Vetrina e foto",
+        "description": "Le prime foto compaiono nella tua vetrina. Puoi aggiungerle anche dopo l'attivazione.",
+        "count": "{{current}}/{{max}} foto",
+        "add": "Scegli foto",
+        "upload": "Carica foto",
+        "uploaded": "Foto caricate",
+        "uploadError": "Impossibile caricare le foto. Riprova.",
+        "max": "Massimo {{max}} foto",
+        "remove": "Rimuovi foto {{index}}"
+      },
+      "profile": {
+        "title": "Descrizione professionale",
+        "label": "Descrizione",
+        "hint": "Racconta chi sei, cosa fai e in quali situazioni sei utile agli host. Questo testo è visibile agli host quando ti scelgono.",
+        "counter": "{{count}}/{{max}} caratteri"
+      },
+      "terms": {
+        "title": "Disponibilità e Termini di Servizio",
+        "calendarTitle": "Disponibilità (facoltativa)",
+        "calendarHint": "Collega un calendario per ricevere solo incarichi nei giorni liberi. Puoi farlo anche dopo l'attivazione.",
+        "version": "Versione dei Termini: {{version}}",
+        "accept": "Accetto i Termini di Servizio di CasaZen (versione {{version}}), comprese le regole per i fornitori",
+        "read": "Leggi i Termini di Servizio"
+      },
+      "summary": {
+        "title": "Prima di attivare",
+        "ready": "Hai completato tutti i requisiti: puoi attivare il profilo.",
+        "missing": "Per attivare il profilo mancano ancora:",
+        "goTo": "Vai al passo {{step}}"
+      },
+      "blockers": {
+        "legal_name_missing": "La ragione sociale",
+        "phone_invalid": "Un numero di telefono valido",
+        "categories_missing": "Almeno una categoria di servizio",
+        "comuni_missing": "Almeno un comune di operatività",
+        "bio_missing": "La descrizione professionale",
+        "tos_not_accepted": "L'accettazione dei Termini di Servizio",
+        "tos_reacceptance_required": "L'accettazione della nuova versione dei Termini di Servizio"
+      },
+      "activate": "Attiva profilo",
+      "activating": "Attivazione in corso…",
+      "activated": "Profilo fornitore attivato: da ora gli host possono trovarti.",
+      "activateError": "Impossibile attivare il profilo.",
+      "reaccept": {
+        "title": "Nuova versione dei Termini di Servizio",
+        "description": "I Termini di Servizio di CasaZen sono stati aggiornati. Per continuare a gestire gli incarichi devi accettare la versione corrente.",
+        "descriptionLegacy": "Hai accettato i Termini di Servizio prima che ne registrassimo la versione. Accetta la versione corrente per tenere traccia del tuo consenso.",
+        "button": "Accetta e continua",
+        "done": "Termini di Servizio accettati.",
+        "error": "Impossibile registrare l'accettazione.",
+        "banner": "Accetta la nuova versione dei Termini di Servizio",
+        "bannerBlocking": "Finché non accetti la nuova versione dei Termini di Servizio non puoi prendere in carico, completare o rifiutare incarichi.",
+        "bannerSoft": "Accetta la versione corrente dei Termini di Servizio: la tua accettazione precedente non riporta la versione.",
+        "bannerAction": "Vai ad accettare"
+      }
     }
   },
   "settings": {

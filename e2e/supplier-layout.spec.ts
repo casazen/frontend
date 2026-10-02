@@ -5,22 +5,31 @@ import { pinE2eLocale, resetE2eStorage } from './helpers/locale';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
-    test('full activation: completes 2-step wizard, lands on dashboard', async ({ page }) => {
+    test('full activation: completes the 5-step wizard, lands on dashboard', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page);
 
       await page.goto(demoUrl('/app/supplier/activation', 'supplier'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier Profile Activation/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier profile activation/i })).toBeVisible();
 
-      // Step 1: categories + comuni. The wizard saves category codes, never labels (SU-03, A4-05).
+      // The server opens the first incomplete step: services. It saves category codes, never labels (SU-03, A4-05).
+      await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/2/);
       await page.getByTestId('service-category-cleaning').click();
       await page.locator('#comuni').fill('H501');
       const profileSave = page.waitForRequest((r) => r.url().includes('/api/supplier/profile') && r.method() === 'PUT');
-      await page.getByRole('button', { name: /Continua|Continue/i }).click();
+      await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
       expect((await profileSave).postDataJSON().categories).toEqual(['cleaning']);
 
-      // Step 2: ToS + activate
+      // Step 3 (photos, optional): skip.
+      await page.getByRole('button', { name: /Salta|Skip/i }).click();
+
+      // Step 4: description.
+      await page.locator('#bio').fill('Pulizie professionali a Roma');
+      await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
+
+      // Step 5: Terms + activate.
+      await expect(page.getByTestId('supplier-activation-summary')).toBeVisible();
       await page.locator('#tos').click();
       await page.getByRole('button', { name: /Attiva profilo|Activate profile/i }).click();
 

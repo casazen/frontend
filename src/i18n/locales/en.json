@@ -1739,6 +1739,9 @@
       "retry": "Try again",
       "retrying": "Retrying...",
       "signInAgain": "Sign in again"
+    },
+    "errorState": {
+      "retry": "Try again"
     }
   },
   "common": {
@@ -2418,18 +2421,10 @@
     "photoUrlsHint": "One URL per line. The first photos will appear in your public showcase.",
     "bio": "Description",
     "activationLoading": "Loading activation...",
-    "activationTitle": "Supplier Profile Activation",
-    "activationNewDescription": "Two minutes and you're live. You can complete the rest later.",
-    "activationDescription": "Complete the 5 steps to appear in the host marketplace",
-    "step1Title": "What do you offer and where?",
-    "step2Title": "How do you manage availability?",
-    "continueToCalendar": "Continue",
     "categoriesHint": "Choose one or more categories. You can add more later.",
     "comuniHint": "Enter the names of the comuni in Italian where you operate, separated by commas.",
     "comuniPlaceholder": "e.g. Roma, Milano, Napoli",
-    "acceptTosFirst": "You must accept the terms of service",
     "connectLater": "Set up later",
-    "completeLaterHint": "You can complete your profile and add details anytime from the dashboard.",
     "progressSaveError": "Could not save. Try again.",
     "activationStatus": "Activation status",
     "serviceCategories": "Service categories",
@@ -2437,13 +2432,8 @@
     "municipalityCodesLabel": "Municipality codes (comma-separated)",
     "description": "Description",
     "describeServicesPlaceholder": "Describe your services...",
-    "acceptTos": "I accept the CasaZen Terms of Service, including the rules for suppliers",
-    "readTos": "Read the Terms of Service",
     "saveProgress": "Save progress",
-    "activateProfile": "Activate profile",
     "progressSaved": "Progress saved",
-    "profileActivated": "Supplier profile activated",
-    "completeAllSteps": "Complete all steps before activating the profile",
     "inboxTitle": "Assignment Inbox",
     "inboxDescription": "Service requests from hosts: open an assignment to see where, when and whom to contact.",
     "loading": "Loading...",
@@ -2732,6 +2722,95 @@
       "remove": "Remove {{name}}",
       "legacyTitle": "Entered as text",
       "legacyHint": "These comuni are not linked to the official list, so the search by code does not always recognize them. Look them up in the list and add them, then remove the text."
+    },
+    "activation": {
+      "title": "Supplier profile activation",
+      "description": "Complete the 5 steps to appear to hosts. You can stop and resume where you left off: your progress is saved on your account.",
+      "stepOf": "Step {{current}} of {{total}}",
+      "optional": "Optional",
+      "stepsLabel": "Activation steps",
+      "steps": {
+        "identity": "Business details",
+        "services": "Services and municipalities",
+        "showcase": "Showcase and photos",
+        "profile": "Description",
+        "terms": "Availability and terms"
+      },
+      "stepDone": "completed",
+      "stepTodo": "to do",
+      "back": "Back",
+      "next": "Save and continue",
+      "skip": "Skip, I'll add photos later",
+      "loadError": "Could not load the profile activation.",
+      "saveError": "Could not save this step. Try again.",
+      "stepSaveError": "Could not remember the step you reached: next time you may restart from an earlier step.",
+      "identity": {
+        "title": "Who are you?",
+        "legalName": "Business name",
+        "phone": "Phone",
+        "phoneHint": "With the country prefix if not Italian, for example +39 06 1234567. Hosts only see it once you take on a job.",
+        "vatNumber": "VAT number (optional)",
+        "email": "Account email"
+      },
+      "services": {
+        "title": "What do you offer and where?"
+      },
+      "showcase": {
+        "title": "Showcase and photos",
+        "description": "The first photos appear in your showcase. You can also add them after activation.",
+        "count": "{{current}}/{{max}} photos",
+        "add": "Choose photos",
+        "upload": "Upload photos",
+        "uploaded": "Photos uploaded",
+        "uploadError": "Could not upload the photos. Try again.",
+        "max": "At most {{max}} photos",
+        "remove": "Remove photo {{index}}"
+      },
+      "profile": {
+        "title": "Professional description",
+        "label": "Description",
+        "hint": "Tell hosts who you are, what you do and when you can help. This text is visible to hosts when they choose you.",
+        "counter": "{{count}}/{{max}} characters"
+      },
+      "terms": {
+        "title": "Availability and Terms of Service",
+        "calendarTitle": "Availability (optional)",
+        "calendarHint": "Connect a calendar to receive jobs only on your free days. You can also do it after activation.",
+        "version": "Terms version: {{version}}",
+        "accept": "I accept the CasaZen Terms of Service (version {{version}}), including the rules for suppliers",
+        "read": "Read the Terms of Service"
+      },
+      "summary": {
+        "title": "Before activating",
+        "ready": "You have met every requirement: you can activate the profile.",
+        "missing": "To activate the profile you still need:",
+        "goTo": "Go to step {{step}}"
+      },
+      "blockers": {
+        "legal_name_missing": "The business name",
+        "phone_invalid": "A valid phone number",
+        "categories_missing": "At least one service category",
+        "comuni_missing": "At least one municipality",
+        "bio_missing": "The professional description",
+        "tos_not_accepted": "Acceptance of the Terms of Service",
+        "tos_reacceptance_required": "Acceptance of the new version of the Terms of Service"
+      },
+      "activate": "Activate profile",
+      "activating": "Activating…",
+      "activated": "Supplier profile activated: hosts can now find you.",
+      "activateError": "Could not activate the profile.",
+      "reaccept": {
+        "title": "New version of the Terms of Service",
+        "description": "The CasaZen Terms of Service have been updated. To keep handling jobs you must accept the current version.",
+        "descriptionLegacy": "You accepted the Terms of Service before we recorded their version. Accept the current version so that your consent is on record.",
+        "button": "Accept and continue",
+        "done": "Terms of Service accepted.",
+        "error": "Could not record the acceptance.",
+        "banner": "Accept the new version of the Terms of Service",
+        "bannerBlocking": "Until you accept the new version of the Terms of Service you cannot take, complete or reject jobs.",
+        "bannerSoft": "Accept the current version of the Terms of Service: your earlier acceptance does not record the version.",
+        "bannerAction": "Go and accept"
+      }
     }
   },
   "settings": {

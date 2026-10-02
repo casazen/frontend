@@ -26,8 +26,22 @@ export async function fetchSupplierActivation(): Promise<ActivationStatus> {
   return ApiClient.get<ActivationStatus>('/supplier/profile/activation');
 }
 
-export async function completeSupplierActivation(tosAccepted: boolean): Promise<{ status: string }> {
-  return ApiClient.post<{ status: string }>('/supplier/profile/activation/complete', { tosAccepted });
+/** `tosVersion` is the version the supplier saw (`tos.currentVersion`): the API answers 409 when it is no longer current. */
+export async function completeSupplierActivation(
+  tosAccepted: boolean,
+  tosVersion: string,
+): Promise<{ status: string }> {
+  return ApiClient.post<{ status: string }>('/supplier/profile/activation/complete', { tosAccepted, tosVersion });
+}
+
+/** Saves the wizard step (1-5) the supplier reached. */
+export async function saveSupplierActivationStep(step: number): Promise<void> {
+  await ApiClient.put('/supplier/profile/activation/step', { step });
+}
+
+/** Re-acceptance of the current Terms of Service by an active supplier. */
+export async function acceptSupplierTos(tosVersion: string): Promise<void> {
+  await ApiClient.post('/supplier/profile/tos/accept', { tosVersion });
 }
 
 export async function fetchSupplierProfile(): Promise<SupplierProfile> {
