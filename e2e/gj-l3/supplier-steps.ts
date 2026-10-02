@@ -39,11 +39,21 @@ export async function registerAndActivateSupplier(
   await page.getByRole('button', { name: 'Completa la registrazione' }).click();
   await page.getByRole('button', { name: /Completa il profilo/ }).click();
 
-  // Step 1: the invite pre-selects its categories and comune (chip); the supplier confirms them.
+  // SU-05: five steps saved by the server. 1 identity (business name and phone come from the registration).
+  const next = page.getByRole('button', { name: 'Salva e continua' });
+  await expect(page.getByTestId('supplier-activation-step-of')).toContainText('1', { timeout: 20_000 });
+  await expect(page.locator('#legal-name')).toHaveValue(legalName);
+  await next.click();
+  // 2 services: the invite pre-selects its categories and comune (chip); the supplier confirms them.
   await expect(page.getByTestId('service-category-cleaning')).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
   await expect(page.getByTestId('supplier-comuni-chosen')).toContainText('Roma');
-  await page.getByRole('button', { name: 'Continua' }).click();
-  // Step 2: availability can wait; accept the terms and activate.
+  await next.click();
+  // 3 showcase photos are optional.
+  await page.getByRole('button', { name: /Salta, aggiungo le foto dopo/ }).click();
+  // 4 professional description.
+  await page.locator('#bio').fill(`Pulizie professionali di appartamenti turistici a Roma (${legalName}).`);
+  await next.click();
+  // 5 availability can wait; accept the terms of the version in force and activate.
   await page.locator('#tos').click();
   await page.getByRole('button', { name: 'Attiva profilo' }).click();
   await expect(page).toHaveURL(/\/app\/supplier\/dashboard/, { timeout: 30_000 });
