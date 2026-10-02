@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import itLocale from '@/i18n/locales/it.json';
 import enLocale from '@/i18n/locales/en.json';
-import { AI_CONTENT_NOTICE_KEYS, AiContentNotice, type AiContentKind } from '../ai-content-notice';
+import { AiContentNotice } from '../ai-content-notice';
+import { AI_CONTENT_NOTICE_KEYS, type AiContentKind } from '../ai-content-notice-keys';
 
 beforeEach(async () => {
   await i18n.changeLanguage('it');
