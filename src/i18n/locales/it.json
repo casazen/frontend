@@ -246,6 +246,104 @@
         "enqueued": "In coda",
         "unknown": "Sconosciuto"
       }
+    },
+    "suppliers": {
+      "title": "Fornitori",
+      "description": "Elenco dei fornitori, sospensione e riattivazione, inviti.",
+      "inviteNew": "Invita fornitore",
+      "tabsLabel": "Sezioni dei fornitori",
+      "tabSuppliers": "Fornitori",
+      "tabInvites": "Inviti",
+      "searchPlaceholder": "Cerca per nome o email",
+      "loading": "Caricamento…",
+      "loadError": "Impossibile caricare i fornitori.",
+      "retry": "Riprova",
+      "cancel": "Annulla",
+      "empty": "Non ci sono ancora fornitori.",
+      "emptyFiltered": "Nessun fornitore corrisponde ai filtri.",
+      "pagination": "Pagina {{page}} di {{totalPages}} · {{totalCount}} risultati",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "suspend": "Sospendi",
+      "reactivate": "Riattiva",
+      "history": "Storico",
+      "filter": {
+        "status": "Stato del fornitore",
+        "allStatuses": "Tutti gli stati",
+        "allInviteStates": "Tutti gli stati"
+      },
+      "table": {
+        "name": "Fornitore",
+        "contact": "Contatti",
+        "categories": "Categorie e comuni",
+        "status": "Stato",
+        "openRequests": "Richieste aperte",
+        "actions": "Azioni",
+        "registeredOn": "Registrato il {{date}}",
+        "suspendedOn": "Sospeso il {{date}}"
+      },
+      "suspendDialog": {
+        "title": "Sospendi {{name}}",
+        "description": "Un fornitore sospeso non riceve nuove richieste e non può prendere in carico, completare o rifiutare quelle esistenti. Resta nel sistema e puoi riattivarlo quando vuoi.",
+        "openRequests_one": "Il fornitore ha {{count}} richiesta ancora aperta: resta com'è e il fornitore non potrà più lavorarla finché non lo riattivi.",
+        "openRequests_other": "Il fornitore ha {{count}} richieste ancora aperte: restano come sono e il fornitore non potrà più lavorarle finché non lo riattivi.",
+        "reason": "Motivo della sospensione",
+        "reasonHint": "Obbligatorio. È una nota interna registrata con il tuo nome nello storico: il fornitore non la vede.",
+        "suspending": "Sospensione in corso…"
+      },
+      "reactivateDialog": {
+        "title": "Riattiva {{name}}",
+        "description": "Il fornitore torna attivo e visibile agli host se aveva già completato l'attivazione; altrimenti torna in attesa e deve completarla."
+      },
+      "audit": {
+        "title": "Storico di {{name}}",
+        "description": "Chi ha sospeso o riattivato il fornitore, quando e perché.",
+        "empty": "Nessuna azione registrata per questo fornitore.",
+        "loadError": "Impossibile caricare lo storico.",
+        "by": "da {{actor}}",
+        "reason": "Motivo: {{reason}}",
+        "action": {
+          "Suspended": "Sospeso",
+          "Reactivated": "Riattivato",
+          "InviteResent": "Invito reinviato",
+          "InviteRevoked": "Invito revocato"
+        }
+      },
+      "invites": {
+        "searchPlaceholder": "Cerca per email invitata",
+        "email": "Email invitata",
+        "comune": "Comune",
+        "categories": "Categorie",
+        "state": "Stato dell'invito",
+        "expiresAt": "Scade il",
+        "sentOn": "Inviato il {{date}}",
+        "resend": "Reinvia",
+        "revoke": "Revoca",
+        "empty": "Non ci sono ancora inviti.",
+        "emptyFiltered": "Nessun invito corrisponde ai filtri.",
+        "loadError": "Impossibile caricare gli inviti.",
+        "stateLabel": {
+          "Pending": "In attesa",
+          "Used": "Usato",
+          "Expired": "Scaduto",
+          "Revoked": "Revocato"
+        },
+        "resendDialog": {
+          "title": "Reinvia l'invito",
+          "description": "Verrà inviata una nuova email a {{email}} con un nuovo link valido 7 giorni. Il link precedente smette di funzionare."
+        },
+        "revokeDialog": {
+          "title": "Revoca l'invito",
+          "description": "Il link inviato a {{email}} non funzionerà più. Potrai creare un nuovo invito per la stessa email."
+        }
+      },
+      "toast": {
+        "error": "Operazione non riuscita. Riprova.",
+        "suspended": "{{name}} è stato sospeso.",
+        "reactivated": "{{name}} è stato riattivato.",
+        "inviteResent": "Invito reinviato a {{email}}.",
+        "inviteRevoked": "Invito per {{email}} revocato."
+      }
     }
   },
   "nav": {
@@ -2117,7 +2215,30 @@
     "emptyForStay": "Nessuna richiesta fornitore per questo soggiorno.",
     "emptyForProperty": "Nessuna richiesta fornitore per questo immobile.",
     "viewStay": "Vai al soggiorno",
-    "noStayLegacy": "Senza soggiorno (richiesta precedente)"
+    "noStayLegacy": "Senza soggiorno (richiesta precedente)",
+    "requestOtherSupplier": "Richiedi ad altro fornitore",
+    "otherSupplierHint": "Il fornitore che ha rifiutato non è nell'elenco.",
+    "noOtherSuppliers": "Nessun altro fornitore attivo per questa categoria nel comune dell'immobile.",
+    "timeline": {
+      "actorHost": "Il tuo team",
+      "actorSupplier": "Il fornitore",
+      "rejectionReason": "Motivo del rifiuto: {{reason}}",
+      "noRejectionReason": "Il fornitore non ha indicato un motivo.",
+      "alreadyReRequested": "Già richiesto a un altro fornitore.",
+      "waiting": {
+        "Richiesto": "In attesa che il fornitore accetti o rifiuti.",
+        "PresoInCarico": "In attesa che il fornitore completi il lavoro.",
+        "Completato": "Lavoro completato: segna pagato quando hai pagato il fornitore."
+      }
+    },
+    "markPaidDialog": {
+      "title": "Segna come pagato",
+      "description": "Confermi di aver pagato {{supplier}} per {{category}}? CasaZen non effettua il pagamento: questo segna solo che l'hai già fatto.",
+      "descriptionNoSupplier": "Confermi di aver pagato il fornitore per {{category}}? CasaZen non effettua il pagamento: questo segna solo che l'hai già fatto.",
+      "irreversible": "L'operazione non si può annullare e il fornitore riceverà una notifica.",
+      "cancel": "Annulla",
+      "confirm": "Sì, ho pagato"
+    }
   },
   "ical": {
     "title": "Calendario OTA",
@@ -2353,7 +2474,8 @@
       "closedPaid": "L'host ha segnato il lavoro come pagato.",
       "closedRejected": "Hai rifiutato questa richiesta.",
       "cancel": "Annulla",
-      "rejectReasonHint": "L'host vede il motivo (massimo 500 caratteri)."
+      "rejectReasonHint": "L'host vede il motivo (massimo 500 caratteri).",
+      "actionsSuspended": "Azioni non disponibili: l'account fornitore è sospeso."
     },
     "register": {
       "title": "Registrazione fornitore",
@@ -2557,6 +2679,12 @@
       "empty": "Non hai ancora ricevuto richieste dagli host.",
       "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
       "openInbox": "Apri gli incarichi"
+    },
+    "statusSuspended": "Sospeso",
+    "suspendedHint": "Contatta il supporto CasaZen per riattivare l'account.",
+    "suspended": {
+      "title": "Account fornitore sospeso",
+      "description": "Non ricevi nuove richieste e non puoi prendere in carico, completare o rifiutare quelle esistenti. Contatta il supporto CasaZen per riattivare l'account."
     }
   },
   "settings": {
@@ -5271,6 +5399,14 @@
       "leasePartiesTooMany": "Troppe parti per un ruolo: al massimo 10 locatori e 10 conduttori.",
       "leaseLandlordRequired": "Il contratto deve avere almeno un locatore.",
       "leaseTenantRequired": "Il contratto deve avere almeno un conduttore.",
+      "serviceRequestSupplierNotActive": "Il tuo account fornitore non è attivo (è sospeso o non ancora attivato): non puoi eseguire azioni sulle richieste. Contatta il supporto CasaZen.",
+      "supplierSuspended": "Il tuo account fornitore è sospeso: non puoi completare l'attivazione. Contatta il supporto CasaZen.",
+      "supplierAlreadySuspended": "Il fornitore è già sospeso.",
+      "supplierNotSuspended": "Il fornitore non è sospeso: non c'è nulla da riattivare.",
+      "supplierInviteNotFound": "Invito non trovato.",
+      "supplierInviteNotPending": "Solo un invito in attesa può essere revocato: questo è già stato usato, è scaduto o è già stato revocato.",
+      "supplierInviteNotResendable": "Un invito già usato o revocato non si può reinviare: crea un nuovo invito.",
+      "supplierInviteRevoked": "Questo invito è stato revocato. Chiedi al team CasaZen di inviartene uno nuovo.",
       "calendarBlockOverlapsBooking": "Una prenotazione occupa già una di queste notti: annullala o scegli altre date.",
       "calendarBlockOverlapsBlock": "Hai già bloccato una di queste notti: elimina quel blocco o scegli altre date.",
       "calendarBlockInPast": "Non puoi bloccare date già passate.",

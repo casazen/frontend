@@ -246,6 +246,104 @@
         "enqueued": "Enqueued",
         "unknown": "Unknown"
       }
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "description": "List of suppliers, suspension and reactivation, invites.",
+      "inviteNew": "Invite supplier",
+      "tabsLabel": "Supplier sections",
+      "tabSuppliers": "Suppliers",
+      "tabInvites": "Invites",
+      "searchPlaceholder": "Search by name or email",
+      "loading": "Loading…",
+      "loadError": "Could not load the suppliers.",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "empty": "There are no suppliers yet.",
+      "emptyFiltered": "No supplier matches the filters.",
+      "pagination": "Page {{page}} of {{totalPages}} · {{totalCount}} results",
+      "previous": "Previous",
+      "next": "Next",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "history": "History",
+      "filter": {
+        "status": "Supplier status",
+        "allStatuses": "All statuses",
+        "allInviteStates": "All statuses"
+      },
+      "table": {
+        "name": "Supplier",
+        "contact": "Contact",
+        "categories": "Categories and comuni",
+        "status": "Status",
+        "openRequests": "Open requests",
+        "actions": "Actions",
+        "registeredOn": "Registered on {{date}}",
+        "suspendedOn": "Suspended on {{date}}"
+      },
+      "suspendDialog": {
+        "title": "Suspend {{name}}",
+        "description": "A suspended supplier receives no new requests and cannot take, complete or reject the existing ones. It stays in the system and you can reactivate it at any time.",
+        "openRequests_one": "The supplier still has {{count}} open request: it stays as it is and the supplier cannot work on it until you reactivate it.",
+        "openRequests_other": "The supplier still has {{count}} open requests: they stay as they are and the supplier cannot work on them until you reactivate it.",
+        "reason": "Reason for the suspension",
+        "reasonHint": "Required. It is an internal note recorded with your name in the history: the supplier does not see it.",
+        "suspending": "Suspending…"
+      },
+      "reactivateDialog": {
+        "title": "Reactivate {{name}}",
+        "description": "The supplier becomes active and visible to hosts again if it had already completed the activation; otherwise it goes back to pending and has to complete it."
+      },
+      "audit": {
+        "title": "History of {{name}}",
+        "description": "Who suspended or reactivated the supplier, when and why.",
+        "empty": "No action recorded for this supplier.",
+        "loadError": "Could not load the history.",
+        "by": "by {{actor}}",
+        "reason": "Reason: {{reason}}",
+        "action": {
+          "Suspended": "Suspended",
+          "Reactivated": "Reactivated",
+          "InviteResent": "Invite sent again",
+          "InviteRevoked": "Invite revoked"
+        }
+      },
+      "invites": {
+        "searchPlaceholder": "Search by invited email",
+        "email": "Invited email",
+        "comune": "Comune",
+        "categories": "Categories",
+        "state": "Invite status",
+        "expiresAt": "Expires on",
+        "sentOn": "Sent on {{date}}",
+        "resend": "Send again",
+        "revoke": "Revoke",
+        "empty": "There are no invites yet.",
+        "emptyFiltered": "No invite matches the filters.",
+        "loadError": "Could not load the invites.",
+        "stateLabel": {
+          "Pending": "Pending",
+          "Used": "Used",
+          "Expired": "Expired",
+          "Revoked": "Revoked"
+        },
+        "resendDialog": {
+          "title": "Send the invite again",
+          "description": "A new email will be sent to {{email}} with a new link valid for 7 days. The previous link stops working."
+        },
+        "revokeDialog": {
+          "title": "Revoke the invite",
+          "description": "The link sent to {{email}} will stop working. You can create a new invite for the same email."
+        }
+      },
+      "toast": {
+        "error": "The operation failed. Try again.",
+        "suspended": "{{name}} was suspended.",
+        "reactivated": "{{name}} was reactivated.",
+        "inviteResent": "Invite sent again to {{email}}.",
+        "inviteRevoked": "Invite for {{email}} revoked."
+      }
     }
   },
   "nav": {
@@ -2117,7 +2215,30 @@
     "emptyForStay": "No supplier requests for this stay.",
     "emptyForProperty": "No supplier requests for this property.",
     "viewStay": "Go to the stay",
-    "noStayLegacy": "No stay (earlier request)"
+    "noStayLegacy": "No stay (earlier request)",
+    "requestOtherSupplier": "Request another supplier",
+    "otherSupplierHint": "The supplier that rejected it is not in the list.",
+    "noOtherSuppliers": "No other active supplier for this category in the property's comune.",
+    "timeline": {
+      "actorHost": "Your team",
+      "actorSupplier": "The supplier",
+      "rejectionReason": "Reason for the rejection: {{reason}}",
+      "noRejectionReason": "The supplier gave no reason.",
+      "alreadyReRequested": "Already requested from another supplier.",
+      "waiting": {
+        "Richiesto": "Waiting for the supplier to accept or reject.",
+        "PresoInCarico": "Waiting for the supplier to complete the job.",
+        "Completato": "Job completed: mark it as paid once you have paid the supplier."
+      }
+    },
+    "markPaidDialog": {
+      "title": "Mark as paid",
+      "description": "Do you confirm you paid {{supplier}} for {{category}}? CasaZen does not make the payment: this only records that you already did.",
+      "descriptionNoSupplier": "Do you confirm you paid the supplier for {{category}}? CasaZen does not make the payment: this only records that you already did.",
+      "irreversible": "This cannot be undone and the supplier will be notified.",
+      "cancel": "Cancel",
+      "confirm": "Yes, I paid"
+    }
   },
   "ical": {
     "title": "OTA Calendar",
@@ -2353,7 +2474,8 @@
       "closedPaid": "The host marked the work as paid.",
       "closedRejected": "You declined this request.",
       "cancel": "Cancel",
-      "rejectReasonHint": "The host sees the reason (at most 500 characters)."
+      "rejectReasonHint": "The host sees the reason (at most 500 characters).",
+      "actionsSuspended": "Actions are not available: the supplier account is suspended."
     },
     "register": {
       "title": "Supplier registration",
@@ -2557,6 +2679,12 @@
       "empty": "You have not received any requests from hosts yet.",
       "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
       "openInbox": "Open assignments"
+    },
+    "statusSuspended": "Suspended",
+    "suspendedHint": "Contact CasaZen support to reactivate the account.",
+    "suspended": {
+      "title": "Supplier account suspended",
+      "description": "You receive no new requests and cannot take, complete or reject the existing ones. Contact CasaZen support to reactivate the account."
     }
   },
   "settings": {
@@ -5271,6 +5399,14 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
+      "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
+      "supplierAlreadySuspended": "The supplier is already suspended.",
+      "supplierNotSuspended": "The supplier is not suspended: there is nothing to reactivate.",
+      "supplierInviteNotFound": "Invite not found.",
+      "supplierInviteNotPending": "Only a pending invite can be revoked: this one was already used, has expired or was already revoked.",
+      "supplierInviteNotResendable": "An invite that was already used or revoked cannot be sent again: create a new invite.",
+      "supplierInviteRevoked": "This invite was revoked. Ask the CasaZen team to send you a new one.",
       "calendarBlockOverlapsBooking": "A booking already takes one of these nights: cancel it or choose other dates.",
       "calendarBlockOverlapsBlock": "You have already blocked one of these nights: remove that block or choose other dates.",
       "calendarBlockInPast": "Past dates cannot be blocked.",

@@ -582,6 +582,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
   },
   {
+    path: '/app/admin/suppliers',
+    context: 'admin',
+    requiredPermissions: ['admin.users.manage'],
+    navKey: 'nav.suppliers',
+    navGroup: 'operations',
+    navPlacement: 'primary',
+    navOrder: 3,
+    icon: 'Store',
+    component: async () => ({ default: (await import('@/features/admin/admin-suppliers-page')).AdminSuppliersPage }),
+  },
+  {
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
