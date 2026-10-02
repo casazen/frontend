@@ -3,12 +3,6 @@ import type { TouristTaxQuoteStatus, TouristTaxRateRule } from './tourist-tax.ty
 export type SeoPageType = 'ComplianceGuide' | 'TouristTaxCalc' | 'SupplierMicrosite';
 export type LegalReviewStatus = 'Draft' | 'Reviewed';
 
-export interface SeoDisclaimers {
-  lastUpdated: string;
-  notLegalAdvice: string;
-  aiGenerated: string;
-}
-
 export interface SeoCta {
   /**
    * `/signup` of the web app with the comune and the default UTM parameters, on the public domain (backend
@@ -40,7 +34,14 @@ export interface SeoPagePublic {
   /** On the configured public domain (backend `App__PublicSiteBaseUrl`); null only when it is not configured. */
   canonicalUrl: string | null;
   lastRefreshedAt: string | null;
-  disclaimers: SeoDisclaimers;
+  /**
+   * The text was written by an AI model (then approved by an admin): the page shows the AI Act transparency notice next
+   * to it (SE-05, A8-27). The disclaimers ("not legal advice", the notice) are texts of this app in the visitor's
+   * language (`publicSeo.disclaimers.*`, `aiContentNotice.*`), not of the API (A8-19).
+   */
+  aiGenerated: boolean;
+  /** Language of `title`, `metaDescription` and `bodyHtml` (`it`): the regulations are Italian. */
+  contentLanguage: string;
   cta: SeoCta;
   /** Rates in force today; empty when CasaZen has no rate for the comune (A8-12). */
   touristTaxRates: PublicTouristTaxRateSummary[];
@@ -221,4 +222,73 @@ export interface SeoPagesQuery {
   comuneCode?: string;
   page?: number;
   pageSize?: number;
+}
+
+// ─── Funnel analytics and featured properties (SE-04, #300 AC2 AC3 AC8 AC9) ────────────────────────────────
+
+/**
+ * Events of the SEO funnel sent to `POST /api/public/seo/events` (AC3): the click on the "Pubblica la tua casa" CTA
+ * of a page and the start of the signup that came from it. Names of the wire format.
+ */
+export type SeoEventName = 'cta_click' | 'signup_start';
+
+/**
+ * Body of `POST /api/public/seo/events`: no personal data (no IP, no user id, no visitor id): the event, the comune of
+ * the page (slug or ISTAT code) and the marketing values of the visit, validated with the rules of the signup
+ * attribution (`src/lib/signup-attribution.ts`).
+ */
+export interface SeoEventPayload {
+  event: SeoEventName;
+  comuneSlug: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  /** Host of the site the visitor came from, never the URL. */
+  referrerHost?: string;
+}
+
+/** A bookable property of a comune, as listed on its SEO pages (AC2). */
+export interface FeaturedProperty {
+  id: string;
+  /** Property slug of the booking site; null for a legacy property (the booking path then uses the id). */
+  slug: string | null;
+  /** Current slug of the org: with the property it builds `/book/{orgSlug}/property/{slug}`. */
+  orgSlug: string;
+  name: string;
+  city: string;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  nightlyRate: number;
+  /** First photo, an absolute URL; null when the property has none. */
+  photoUrl: string | null;
+}
+
+/** `GET /api/public/seo/{comune}/featured-properties`: published properties of the comune (never paused or pending). */
+export interface FeaturedPropertiesResponse {
+  comuneSlug: string;
+  comuneName: string;
+  properties: FeaturedProperty[];
+}
+
+/** A row of the admin widget: what one comune did in the window. */
+export interface SeoTopComune {
+  comuneCode: string;
+  comuneName: string;
+  /** `cta_click` events. */
+  ctaClicks: number;
+  /** `signup_start` events. */
+  signupStarts: number;
+  /** Host signups attributed to the comune (`SignupAttribution`, SE-03) that were recorded in the window. */
+  signups: number;
+}
+
+/** `GET /api/admin/seo/top-comuni?days=`: comuni by CTA clicks, with the window and how long events are kept. */
+export interface SeoTopComuniResponse {
+  days: number;
+  from: string;
+  to: string;
+  /** Events older than this are deleted (`Seo:Events:RetentionDays`): a longer window shows less than asked. */
+  retentionDays: number;
+  items: SeoTopComune[];
 }

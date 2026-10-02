@@ -7,9 +7,13 @@ export interface Property {
   name: string;
   description: string;
   address: string;
+  /** Interno / scala (PC-06): tells apart the apartments of one building; `null` when the property has none. */
+  unit?: string | null;
   city: string;
   postalCode: string;
+  /** WGS84 degrees, -90..90, six decimals (about 0.1 m, A2-33); 0 with a longitude of 0 = not set. */
   latitude?: number;
+  /** WGS84 degrees, -180..180, six decimals. */
   longitude?: number;
   /** 0 = studio flat (monolocale). */
   bedrooms: number;
@@ -73,6 +77,8 @@ export interface CreatePropertyDto {
   name: string;
   description: string;
   address: string;
+  /** Interno / scala; `null` or blank clears it. The same address and unit twice in an org is a 409 `duplicate_property_address`. */
+  unit?: string | null;
   city: string;
   postalCode: string;
   /**
@@ -228,6 +234,8 @@ export interface PropertyDetailDto {
   name: string;
   description: string;
   address: string;
+  /** Interno / scala (PC-06); `null` when the property has none. */
+  unit?: string | null;
   city: string;
   postalCode: string;
   bedrooms: number;

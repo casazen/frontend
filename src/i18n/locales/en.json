@@ -148,6 +148,20 @@
       "budgetTokens": "{{used}} / {{cap}} tokens this month",
       "budgetLoading": "Loading the budget…",
       "budgetError": "Unable to load the AI budget.",
+      "topComuni": {
+        "title": "Municipalities that convert",
+        "description": "Clicks on the \"Publish your home\" button of the SEO pages, by municipality, in the last {{days}} days.",
+        "loadError": "The municipality statistics could not be loaded.",
+        "retry": "Retry",
+        "empty": "No clicks recorded in the last {{days}} days.",
+        "retention": "Events hold no personal data and are deleted after {{days}} days.",
+        "columns": {
+          "comune": "Municipality",
+          "ctaClicks": "Button clicks",
+          "signupStarts": "Signups started",
+          "signups": "Signups completed"
+        }
+      },
       "loading": "Loading...",
       "loadError": "Unable to load SEO pages. Please try again later.",
       "filter": {
@@ -1989,7 +2003,8 @@
         "bathrooms": "2",
         "maxGuests": "6",
         "nightlyRate": "150",
-        "houseRules": "E.g. no parties, check-in from 3:00 pm"
+        "houseRules": "E.g. no parties, check-in from 3:00 pm",
+        "unit": "e.g. Staircase B, unit 5"
       },
       "bedroomsHint": "0 for a studio",
       "cleaningFee": "Cleaning fee (€)",
@@ -2009,6 +2024,8 @@
         "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
         "empty": "No cancellation policy available."
       },
+      "unit": "Unit / staircase",
+      "unitHint": "Optional. Enter it if you have several apartments in the same building: each one needs a different unit or staircase.",
       "comune": {
         "label": "Comune (ISTAT list)",
         "hint": "Choose the comune from the official ISTAT list: the region, the required documents, the tourist tax and the CIN check follow from it.",
@@ -2067,6 +2084,16 @@
       },
       "timezone": {
         "required": "Choose a time zone"
+      },
+      "unit": {
+        "maxLength": "The unit or staircase can have at most 30 characters",
+        "duplicate": "You already have a property at this address: if it is another apartment in the same building, enter the unit or staircase."
+      },
+      "latitude": {
+        "range": "The latitude must be a number between -90 and 90"
+      },
+      "longitude": {
+        "range": "The longitude must be a number between -180 and 180"
       },
       "comuneIstatCode": {
         "format": "The ISTAT code of the comune is not valid: choose the comune from the list."
@@ -2410,7 +2437,8 @@
     "municipalityCodesLabel": "Municipality codes (comma-separated)",
     "description": "Description",
     "describeServicesPlaceholder": "Describe your services...",
-    "acceptTos": "I accept the CasaZen supplier terms of service",
+    "acceptTos": "I accept the CasaZen Terms of Service, including the rules for suppliers",
+    "readTos": "Read the Terms of Service",
     "saveProgress": "Save progress",
     "activateProfile": "Activate profile",
     "progressSaved": "Progress saved",
@@ -4383,6 +4411,12 @@
       "retry": "Try again"
     },
     "notFound": "Page not found",
+    "disclaimers": {
+      "lastUpdated": "Last updated: {{date}}",
+      "lastUpdatedUnknown": "Update date not available",
+      "notLegalAdvice": "General information, not legal advice. The host remains responsible for compliance."
+    },
+    "contentLanguageNote": "The text of this page is only available in Italian: the regulations it explains are Italian.",
     "guideNotAvailable": "The guide for this municipality is not yet available.",
     "calculatorNotAvailable": "The calculator for this municipality is not yet available.",
     "calculateTax": "Calculate tourist tax",
@@ -4401,6 +4435,20 @@
     "taxableNights_one": "Stay of {{count}} night, taxed nights: {{taxable}}",
     "taxableNights_other": "Stay of {{count}} nights, taxed nights: {{taxable}}",
     "estimateDisclaimer": "Estimate with the rates recorded in CasaZen: check exemptions and updates on the municipality's website.",
+    "featured": {
+      "title": "Homes available in {{comuneName}}",
+      "loading": "Loading homes…",
+      "loadError": "The homes of this municipality could not be loaded.",
+      "retry": "Retry",
+      "empty": "There are no bookable homes in {{comuneName}} on CasaZen yet.",
+      "studio": "Studio",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "fromPerNight": "{{price}} per night",
+      "viewAndBook": "View and book"
+    },
     "quoteStatus": {
       "Calculated": "Tax calculated.",
       "RateUnavailable": "Rate not available for these dates: check the municipality's website.",
@@ -4585,7 +4633,10 @@
     "ariaLabel": "Breadcrumb"
   },
   "aiContentNotice": {
-    "label": "AI-generated description"
+    "label": "AI-generated content",
+    "seo": "Text generated with the help of AI and approved by a CasaZen administrator before publication: always check the official sources.",
+    "draft": "Text generated by AI: it is a draft to review before approving it.",
+    "supplierReason": "Reason generated by AI."
   },
   "search": {
     "page": {
@@ -5257,7 +5308,7 @@
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
-      "duplicatePropertyAddress": "This address is already used by an active property.",
+      "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
@@ -5418,6 +5469,7 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
       "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
       "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
       "supplierAlreadySuspended": "The supplier is already suspended.",
@@ -5438,7 +5490,18 @@
       "propertyPhotoInvalidType": "One of the files is not a valid photo: only JPEG, PNG or WebP images are accepted.",
       "propertyPhotoInvalidSize": "One of the files is empty or larger than the maximum size allowed.",
       "propertyPhotoNotFound": "The photo is no longer in the gallery: the list has been refreshed.",
-      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again."
+      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again.",
+      "rentLeaseNotSigned": "The rent can be set up only for a lease signed by every party.",
+      "rentBillingDayInvalid": "The due day must be between 1 and 28.",
+      "rentAmountInvalid": "The installment amount must be greater than zero, with at most two decimals.",
+      "rentCadenceLocked": "The cadence cannot change: some installments are paid or have a payment in progress.",
+      "rentInstallmentNotPayable": "The installment is already paid or can no longer be paid.",
+      "rentInstallmentInFlight": "An online payment of the installment is in progress: wait for Stripe's outcome.",
+      "rentOnlinePaymentsUnavailable": "To request online payments, connect a Stripe account enabled for charges.",
+      "rentNoTenantEmail": "No tenant has an email address to send the payment request to.",
+      "rentPaymentRequestNotSent": "The payment request was not sent: the email service is unavailable.",
+      "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
+      "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one."
     }
   },
   "validation": {
@@ -5801,6 +5864,96 @@
       "description": "The page you are looking for does not exist on this site.",
       "home": "Go to the home page"
     }
+  },
+  "rent": {
+    "title": "Rent",
+    "description": "Installment schedule generated from the lease. An installment is paid only when Stripe confirms the online payment or when you record a payment received outside CasaZen.",
+    "loading": "Loading the rent schedule…",
+    "loadError": "The rent schedule could not be loaded.",
+    "retry": "Retry",
+    "notSignedYet": "The rent schedule can be set up once every party has signed the lease.",
+    "onlineUnavailable": "To ask the tenant to pay online, connect a Stripe account enabled for charges. You can still record payments received outside CasaZen.",
+    "onlineUnavailableLink": "Go to Payments",
+    "noTenantEmail": "No tenant has an email address: the payment link cannot be sent.",
+    "summary": "{{cadence}} installment of {{amount}}, due on day {{day}}.",
+    "edit": "Edit",
+    "disable": "Disable",
+    "scheduleInactive": "The schedule is disabled: unpaid installments are cancelled. Save it again to enable it.",
+    "cadenceLabel": "Cadence",
+    "cadence": {
+      "Monthly": "Monthly",
+      "Bimonthly": "Bimonthly",
+      "Quarterly": "Quarterly",
+      "Semiannual": "Semiannual"
+    },
+    "billingDayLabel": "Due day (1-28)",
+    "billingDayPlaceholder": "Start day of the lease",
+    "billingDayInvalid": "Enter a day between 1 and 28.",
+    "amountLabel": "Installment amount",
+    "amountHint": "If left empty: monthly rent of the lease times the months of the cadence ({{amount}}).",
+    "amountInvalid": "Enter an amount greater than zero.",
+    "createSchedule": "Generate the schedule",
+    "saveChanges": "Save changes",
+    "cancel": "Cancel",
+    "partialFinalPeriod": "The lease ends inside a period ({{start}} – {{end}}): no installment was generated for it, settle it with the tenant.",
+    "noInstallments": "No installments to show.",
+    "columns": {
+      "period": "Period",
+      "dueDate": "Due",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "Scheduled": "To collect",
+      "Processing": "Payment in progress",
+      "Paid": "Paid",
+      "Failed": "Payment failed",
+      "Cancelled": "Cancelled"
+    },
+    "overdue": "Overdue",
+    "paidOnline": "Paid online on {{date}} (confirmed by Stripe)",
+    "paidOffline": "Payment recorded by you: paid on {{date}}",
+    "failed": "The last online payment did not go through.",
+    "failedWithCode": "The last online payment did not go through ({{code}}).",
+    "processingHint": "Stripe is processing the payment: the status updates as soon as the outcome arrives.",
+    "linkSent": "Payment link sent on {{date}}",
+    "sendLink": "Send payment link",
+    "resendLink": "Send the link again",
+    "markPaid": "Mark as paid",
+    "markPaidDialog": {
+      "title": "Record a payment received",
+      "description": "Installment of {{amount}} for the period from {{start}} to {{end}}, paid outside CasaZen (bank transfer, cash…). Any online payment link still open will be disabled.",
+      "paidOn": "Payment date",
+      "paidOnInvalid": "Enter a date not later than today ({{today}}).",
+      "note": "Note (optional)",
+      "notePlaceholder": "E.g. bank transfer of 3 October",
+      "submit": "Record the payment"
+    },
+    "scheduleSaved": "Rent schedule saved",
+    "scheduleDisabled": "Schedule disabled",
+    "markedPaid": "Payment recorded",
+    "paymentRequestSent": "Payment link sent to the tenant",
+    "actionFailed": "The operation failed"
+  },
+  "rentPayment": {
+    "title": "Rent payment",
+    "loading": "Loading…",
+    "loadError": "The payment could not be loaded.",
+    "retry": "Retry",
+    "invalidLink": "The payment link is not valid or was replaced by a newer one. Use the latest email you received or contact the landlord.",
+    "property": "Property",
+    "landlord": "Payment to",
+    "period": "Period",
+    "dueDate": "Due",
+    "amount": "Amount",
+    "paid": "This installment is paid. Thank you!",
+    "processing": "Payment sent: waiting for Stripe's confirmation. This page updates by itself.",
+    "unavailable": "This installment cannot be paid online. Contact the landlord.",
+    "failed": "The previous payment did not go through. You can try again, also with another payment method.",
+    "sessionError": "The payment could not be started. Try again.",
+    "payNow": "Pay {{amount}}",
+    "stripeNotice": "The payment is handled by Stripe and goes directly to the landlord's account."
   },
   "comune": {
     "picker": {

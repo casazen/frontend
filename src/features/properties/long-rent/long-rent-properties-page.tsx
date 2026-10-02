@@ -69,7 +69,7 @@ export function LongRentPropertiesPage() {
                 <div className="min-w-0">
                   <p className="font-medium truncate">{property.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {[property.address, property.postalCode, property.city].filter(Boolean).join(', ')}
+                    {[property.address, property.unit?.trim(), property.postalCode, property.city].filter(Boolean).join(', ')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t('longRentProperties.roomsValue', { bedrooms: property.bedrooms, bathrooms: property.bathrooms })}

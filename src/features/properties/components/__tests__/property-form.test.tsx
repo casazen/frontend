@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
+import { AxiosError, AxiosHeaders, type AxiosResponse } from 'axios';
 import i18n from '@/i18n/config';
 import * as propertyQueries from '@/queries/use-properties';
 import type { CancellationPolicyOption, Property } from '@/types';
@@ -78,6 +79,7 @@ const ROUND_TRIP = {
   name: 'Monolocale sul porto',
   description: 'Monolocale luminoso con vista sul porto',
   address: 'Via del Porto 3',
+  unit: null,
   city: 'Genova',
   // No comune chosen from the official list yet (SU-04): sent as null, which keeps it empty.
   comuneIstatCode: null,
@@ -288,5 +290,100 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     });
     expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('photoUrls');
     expect(screen.getByText(i18n.t('property.form.cancellationPolicy.empty'))).toBeInTheDocument();
+  });
+});
+
+describe('PropertyForm unit and coordinates (PC-06, A2-19, A2-33)', { timeout: 20_000 }, () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('it');
+    mockPolicies({ data: POLICIES });
+  });
+
+  it('unitField_IsShownWithItsHintAndStartsFromTheStoredUnit', () => {
+    renderForm({ property: { ...PROPERTY, unit: 'Scala B int. 5' } });
+
+    expect(field('property.form.unit')).toHaveValue('Scala B int. 5');
+    expect(screen.getByText(/Indicalo se nello stesso edificio hai più appartamenti/)).toBeInTheDocument();
+  });
+
+  it('unitTyped_IsSentTrimmed', async () => {
+    const onSubmit = renderForm();
+
+    change('property.form.unit', '  int. 5  ');
+    submit();
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ unit: 'int. 5' });
+  });
+
+  it('unitLeftBlank_IsSentAsNullSoTheApiClearsIt', async () => {
+    const onSubmit = renderForm({ property: { ...PROPERTY, unit: 'int. 2' } });
+
+    change('property.form.unit', '   ');
+    submit();
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ unit: null });
+  });
+
+  it('unitLongerThanTheLimit_IsRefusedWithItsOwnMessage', async () => {
+    const onSubmit = renderForm();
+
+    change('property.form.unit', 'x'.repeat(31));
+    submit();
+
+    expect(await screen.findByText("L'interno o la scala può avere al massimo 30 caratteri")).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('duplicateAddressConflict_IsShownUnderTheUnitFieldAndTheFormStaysFilled', async () => {
+    const conflict = new AxiosError('Request failed', 'ERR_BAD_REQUEST', undefined, undefined, {
+      status: 409,
+      statusText: '',
+      headers: {},
+      config: { headers: new AxiosHeaders() },
+      data: { status: 409, title: 'Conflict', code: 'duplicate_property_address' },
+    } as AxiosResponse);
+    const onSubmit = vi.fn().mockRejectedValue(conflict);
+    render(
+      <I18nextProvider i18n={i18n}>
+        <PropertyForm property={PROPERTY} onSubmit={onSubmit} />
+      </I18nextProvider>,
+    );
+
+    submit();
+
+    expect(
+      await screen.findByText(
+        "Hai già un immobile con questo indirizzo: se è un altro appartamento dello stesso edificio, indica l'interno o la scala.",
+      ),
+    ).toBeInTheDocument();
+    expect(field('property.form.address')).toHaveValue('Via del Porto 3');
+  });
+
+  it.each([
+    ['property.form.latitude', 91, 'La latitudine deve essere un numero tra -90 e 90'],
+    ['property.form.latitude', -90.5, 'La latitudine deve essere un numero tra -90 e 90'],
+    ['property.form.longitude', 181, 'La longitudine deve essere un numero tra -180 e 180'],
+    ['property.form.longitude', -400, 'La longitudine deve essere un numero tra -180 e 180'],
+  ])('coordinateOutOfRange_%s_%s_ShowsTheMessageAndSendsNothing', async (key, value, message) => {
+    const onSubmit = renderForm();
+
+    change(key, value);
+    submit();
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('coordinatesWithSixDecimals_AreSentAsTyped', async () => {
+    const onSubmit = renderForm();
+
+    change('property.form.latitude', 45.464211);
+    change('property.form.longitude', 9.189982);
+    submit();
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ latitude: 45.464211, longitude: 9.189982 });
   });
 });

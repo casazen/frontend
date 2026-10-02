@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useApproveSeoRevision, useSeoPageDetail } from '@/queries/use-admin-seo';
+import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { formatDateTime } from '@/lib/utils';
 import type { SeoReviewEvent, SeoRevisionPreview } from '@/types/seo.types';
@@ -170,11 +171,15 @@ function RevisionPanel({ heading, revision, published, emptyText, testId }: Revi
               .join(' · ')}
           </p>
           {revision.bodyHtml ? (
-            <article
-              className="prose prose-sm prose-neutral max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(revision.bodyHtml) }}
-              data-testid={`${testId}-body`}
-            />
+            <>
+              {/* Only a text a model really wrote carries the notice: a "not generated" state has none to show. */}
+              <AiContentNotice visible={isPublishableContent(revision.contentStatus)} kind={published ? 'seo' : 'draft'} />
+              <article
+                className="prose prose-sm prose-neutral max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(revision.bodyHtml) }}
+                data-testid={`${testId}-body`}
+              />
+            </>
           ) : (
             <p className="text-sm text-destructive">{t(contentStatusKey(revision.contentStatus, published))}</p>
           )}

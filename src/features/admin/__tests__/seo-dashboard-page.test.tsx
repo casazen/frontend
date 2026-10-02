@@ -19,6 +19,7 @@ vi.mock('@/api/admin-seo.api', () => ({
     withdrawPage: vi.fn(),
     getBudget: vi.fn(),
     listComuni: vi.fn(),
+    getTopComuni: vi.fn(),
   },
 }));
 vi.mock('@/components/layout/page-header', () => ({
@@ -140,6 +141,13 @@ describe('SeoDashboardPage', () => {
       lastResetAt: '2026-09-01T00:00:00Z',
     });
     vi.mocked(AdminSeoApi.listComuni).mockResolvedValue([]);
+    vi.mocked(AdminSeoApi.getTopComuni).mockResolvedValue({
+      days: 30,
+      from: '2026-09-01T00:00:00Z',
+      to: '2026-10-01T00:00:00Z',
+      retentionDays: 90,
+      items: [{ comuneCode: '013075', comuneName: 'Como', ctaClicks: 5, signupStarts: 2, signups: 1 }],
+    });
     vi.mocked(AdminSeoApi.getPage).mockResolvedValue(comoDetail);
   });
 
@@ -161,6 +169,14 @@ describe('SeoDashboardPage', () => {
     expect(screen.getByTestId('seo-withdraw-page-como')).toBeInTheDocument();
     expect(screen.queryByTestId('seo-open-public-page-roma')).not.toBeInTheDocument();
     expect(screen.queryByTestId('seo-withdraw-page-roma')).not.toBeInTheDocument();
+  });
+
+  it('render_TopComuniWidget_IsOnTheDashboardAndItsFailureDoesNotHideThePages', async () => {
+    vi.mocked(AdminSeoApi.getTopComuni).mockRejectedValue(problemError(500, {}));
+    renderPage();
+
+    expect(await screen.findByTestId('seo-top-comuni-error')).toBeInTheDocument();
+    expect(await screen.findByTestId('seo-pages-table')).toBeInTheDocument();
   });
 
   it('pagination_NextPage_AsksTheServerForTheSecondPage', async () => {
@@ -204,6 +220,9 @@ describe('SeoDashboardPage', () => {
     expect(pending).toHaveTextContent('Nuovo testo della guida');
     expect(pending.querySelector('img, script')).toBeNull();
     expect(screen.getByTestId('seo-review-published-body')).toHaveTextContent('Vecchio testo approvato');
+    // SE-05 (A8-27): both AI texts carry the AI Act notice, worded for what they are (a draft, an approved page).
+    expect(within(screen.getByTestId('seo-review-pending')).getByTestId('ai-content-notice')).toHaveAttribute('data-kind', 'draft');
+    expect(within(screen.getByTestId('seo-review-published')).getByTestId('ai-content-notice')).toHaveAttribute('data-kind', 'seo');
     expect(screen.getByTestId('seo-review-history')).toHaveTextContent('Approvata da auth0|legale');
     expect(screen.getByTestId('seo-review-history')).toHaveTextContent('Nota: Parere n. 7');
 
@@ -269,6 +288,8 @@ describe('SeoDashboardPage', () => {
     expect(dialog().getByTestId('seo-review-published')).toHaveTextContent('La pagina non è pubblicata');
     expect(dialog().queryByTestId('seo-review-approve')).not.toBeInTheDocument();
     expect(dialog().queryByRole('checkbox')).not.toBeInTheDocument();
+    // No text was generated: nothing AI-written to declare.
+    expect(dialog().queryByTestId('ai-content-notice')).not.toBeInTheDocument();
   });
 
   it('withdraw_AsksConfirmationThenSendsTheReason', async () => {

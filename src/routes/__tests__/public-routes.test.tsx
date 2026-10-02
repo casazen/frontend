@@ -26,7 +26,8 @@ const { page } = vi.hoisted(() => {
     comuneSlug: 'como',
     canonicalUrl: 'https://public-site.example.test/p/affitti-brevi/lombardia/como',
     lastRefreshedAt: null,
-    disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
+    aiGenerated: true,
+    contentLanguage: 'it',
     cta: {
       signupUrl:
         'https://public-site.example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta&utm_content=compliance-guide',
@@ -46,6 +47,14 @@ vi.mock('@/queries/use-public-seo', () => ({
   }),
   useComplianceGuide: () => ({ data: page, isLoading: false, isError: false }),
   useTouristTaxPage: () => ({ data: page, isLoading: false, isError: false }),
+  useFeaturedProperties: () => ({
+    data: { comuneSlug: 'como', comuneName: 'Como', properties: [] },
+    isLoading: false,
+    isError: false,
+    error: null,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
 }));
 vi.mock('@/queries/use-legal', () => ({

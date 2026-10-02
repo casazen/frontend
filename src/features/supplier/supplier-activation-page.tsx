@@ -26,6 +26,7 @@ import { keepKnownCategories } from '@/lib/service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
 import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
 import { useComuneDatasetStatus } from '@/queries/use-comuni';
+import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
 
 interface Step1Props {
   profile: SupplierProfile;
@@ -196,9 +197,23 @@ function Step2Calendar({ profile }: { profile: SupplierProfile }) {
             checked={tosAccepted}
             onCheckedChange={(checked) => setTosAccepted(checked === true)}
           />
-          <Label htmlFor="tos" className="leading-relaxed text-sm">
-            {t('supplier.acceptTos')}
-          </Label>
+          <div className="space-y-1">
+            <Label htmlFor="tos" className="leading-relaxed text-sm">
+              {t('supplier.acceptTos')}
+            </Label>
+            {/* LEGAL-TEXTS: the checkbox accepts a document the supplier can read (new tab, the activation stays open). */}
+            <p className="text-sm">
+              <a
+                href={LEGAL_DOCUMENT_PATHS.tos}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                data-testid="supplier-tos-read"
+              >
+                {t('supplier.readTos')}
+              </a>
+            </p>
+          </div>
         </CardContent>
       </Card>
 

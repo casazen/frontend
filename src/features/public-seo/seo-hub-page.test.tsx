@@ -20,6 +20,14 @@ vi.mock('@/queries/use-public-seo', () => ({
   usePublishedSeoPages: () => ({ ...state.hub, refetch: state.refetch, isFetching: false }),
   useComplianceGuide: () => ({ data: state.guide, isLoading: false, isError: false }),
   useTouristTaxPage: () => ({ data: null, isLoading: false, isError: true }),
+  useFeaturedProperties: () => ({
+    data: { comuneSlug: 'como', comuneName: 'Como', properties: [] },
+    isLoading: false,
+    isError: false,
+    error: null,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
 }));
 
@@ -141,7 +149,8 @@ describe('ComplianceGuidePage canonical', () => {
       comuneSlug: 'como',
       canonicalUrl: `${PUBLIC_SITE}/p/affitti-brevi/lombardia/como`,
       lastRefreshedAt: null,
-      disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
+      aiGenerated: true,
+      contentLanguage: 'it',
       cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
       touristTaxRates: [],
     };

@@ -4,7 +4,9 @@ import { Loader2 } from 'lucide-react';
 import { useTouristTaxPage } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
+import { SeoContentLanguageNote } from './components/seo-content-language-note';
 import { SeoCtaBlock } from './components/seo-cta-block';
+import { FeaturedProperties } from './components/featured-properties';
 import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-widget';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 
@@ -54,11 +56,15 @@ export function TouristTaxCalculatorPage() {
       </header>
 
       {page.bodyHtml && (
-        <article
-          className="prose prose-neutral max-w-none dark:prose-invert"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.bodyHtml) }}
-          data-testid="tourist-tax-page-body"
-        />
+        <>
+          <SeoContentLanguageNote contentLanguage={page.contentLanguage} />
+          <article
+            lang={page.contentLanguage}
+            className="prose prose-neutral max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.bodyHtml) }}
+            data-testid="tourist-tax-page-body"
+          />
+        </>
       )}
 
       <TouristTaxCalculatorWidget
@@ -67,8 +73,10 @@ export function TouristTaxCalculatorPage() {
         rates={page.touristTaxRates ?? []}
       />
 
-      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} />
-      <SeoDisclaimerFooter disclaimers={page.disclaimers} />
+      <FeaturedProperties comuneSlug={page.comuneSlug} comuneName={page.comuneName} />
+
+      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />
+      <SeoDisclaimerFooter lastRefreshedAt={page.lastRefreshedAt} aiGenerated={page.aiGenerated} />
     </main>
   );
 }
