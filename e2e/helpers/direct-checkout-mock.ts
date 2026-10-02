@@ -49,31 +49,40 @@ export function mockCheckoutOutcome(overrides?: Partial<CheckoutOutcome>): Check
   };
 }
 
+export interface QuotePricing {
+  nightlyRate?: number;
+  cleaningFee?: number;
+  /** Tourist tax of one adult for one night. */
+  touristTaxPerAdultNight?: number;
+}
+
 /** Price of a stay as `POST /api/public/bookings/quote` answers it (BK-03, BK-07): the checkout shows it before booking. */
-export function mockDirectBookingQuote(payload: DirectBookingQuotePayload): DirectBookingQuote {
+export function mockDirectBookingQuote(
+  payload: DirectBookingQuotePayload,
+  { nightlyRate = 180, cleaningFee = 0, touristTaxPerAdultNight = 1 }: QuotePricing = {},
+): DirectBookingQuote {
   const nights = Math.round(
     (Date.parse(payload.checkOutDate) - Date.parse(payload.checkInDate)) / 86_400_000,
   );
-  const nightlyRate = 180;
-  const lodgingTotal = nights * nightlyRate;
-  const touristTaxAmount = 2 * nights;
+  const basePrice = nights * nightlyRate + cleaningFee;
+  const touristTaxAmount = touristTaxPerAdultNight * payload.numberOfAdults * nights;
   return {
     propertyId: payload.propertyId,
     checkInDate: payload.checkInDate,
     checkOutDate: payload.checkOutDate,
     nights,
     nightlyRate,
-    lodgingTotal,
-    cleaningFee: 0,
-    basePrice: lodgingTotal,
+    lodgingTotal: nights * nightlyRate,
+    cleaningFee,
+    basePrice,
     touristTax: { status: 'Calculated', amount: touristTaxAmount, taxableNights: nights, ageRulesApply: false, categories: [] },
-    totalPrice: lodgingTotal + touristTaxAmount,
+    totalPrice: basePrice + touristTaxAmount,
     currency: 'EUR',
     paymentOptions: { deferredPaymentAvailable: false, deferredChargeDate: null, freeCancellationUntil: null },
   };
 }
 
-export async function mockDirectCheckoutApi(page: Page): Promise<void> {
+export async function mockDirectBookingQuoteApi(page: Page, pricing: QuotePricing = {}): Promise<void> {
   await page.route('**/api/public/bookings/quote', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.fallback();
@@ -83,9 +92,13 @@ export async function mockDirectCheckoutApi(page: Page): Promise<void> {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(mockDirectBookingQuote(payload)),
+      body: JSON.stringify(mockDirectBookingQuote(payload, pricing)),
     });
   });
+}
+
+export async function mockDirectCheckoutApi(page: Page): Promise<void> {
+  await mockDirectBookingQuoteApi(page);
 
   // The outcome page reads the real state of the booking (BK-07): here the webhook has already confirmed it.
   await page.route('**/api/public/bookings/*/outcome', async (route) => {
