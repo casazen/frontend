@@ -2228,7 +2228,30 @@
     "emptyForStay": "Nessuna richiesta fornitore per questo soggiorno.",
     "emptyForProperty": "Nessuna richiesta fornitore per questo immobile.",
     "viewStay": "Vai al soggiorno",
-    "noStayLegacy": "Senza soggiorno (richiesta precedente)"
+    "noStayLegacy": "Senza soggiorno (richiesta precedente)",
+    "requestOtherSupplier": "Richiedi ad altro fornitore",
+    "otherSupplierHint": "Il fornitore che ha rifiutato non è nell'elenco.",
+    "noOtherSuppliers": "Nessun altro fornitore attivo per questa categoria nel comune dell'immobile.",
+    "timeline": {
+      "actorHost": "Il tuo team",
+      "actorSupplier": "Il fornitore",
+      "rejectionReason": "Motivo del rifiuto: {{reason}}",
+      "noRejectionReason": "Il fornitore non ha indicato un motivo.",
+      "alreadyReRequested": "Già richiesto a un altro fornitore.",
+      "waiting": {
+        "Richiesto": "In attesa che il fornitore accetti o rifiuti.",
+        "PresoInCarico": "In attesa che il fornitore completi il lavoro.",
+        "Completato": "Lavoro completato: segna pagato quando hai pagato il fornitore."
+      }
+    },
+    "markPaidDialog": {
+      "title": "Segna come pagato",
+      "description": "Confermi di aver pagato {{supplier}} per {{category}}? CasaZen non effettua il pagamento: questo segna solo che l'hai già fatto.",
+      "descriptionNoSupplier": "Confermi di aver pagato il fornitore per {{category}}? CasaZen non effettua il pagamento: questo segna solo che l'hai già fatto.",
+      "irreversible": "L'operazione non si può annullare e il fornitore riceverà una notifica.",
+      "cancel": "Annulla",
+      "confirm": "Sì, ho pagato"
+    }
   },
   "ical": {
     "title": "Calendario OTA",
@@ -2389,7 +2412,8 @@
     "municipalityCodesLabel": "Codici comune (separati da virgola)",
     "description": "Descrizione",
     "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
-    "acceptTos": "Accetto i termini di servizio fornitore CasaZen",
+    "acceptTos": "Accetto i Termini di Servizio di CasaZen, comprese le regole per i fornitori",
+    "readTos": "Leggi i Termini di Servizio",
     "saveProgress": "Salva progresso",
     "activateProfile": "Attiva profilo",
     "progressSaved": "Progresso salvato",
@@ -4353,8 +4377,14 @@
       "retry": "Riprova"
     },
     "notFound": "Pagina non trovata",
-    "guideNotAvailable": "La guida per questo comune non e' ancora disponibile.",
-    "calculatorNotAvailable": "Il calcolatore per questo comune non e' ancora disponibile.",
+    "disclaimers": {
+      "lastUpdated": "Ultimo aggiornamento: {{date}}",
+      "lastUpdatedUnknown": "Data di aggiornamento non disponibile",
+      "notLegalAdvice": "Informazione generale, non consulenza legale. L'host resta responsabile degli adempimenti."
+    },
+    "contentLanguageNote": "Il testo di questa pagina è disponibile solo in italiano: le norme che spiega sono italiane.",
+    "guideNotAvailable": "La guida per questo comune non è ancora disponibile.",
+    "calculatorNotAvailable": "Il calcolatore per questo comune non è ancora disponibile.",
     "calculateTax": "Calcola la tassa di soggiorno",
     "estimatedTax": "Tassa stimata: {{amount}}",
     "calculate": "Calcola",
@@ -4555,7 +4585,10 @@
     "ariaLabel": "Percorso di navigazione"
   },
   "aiContentNotice": {
-    "label": "Descrizione generata con AI"
+    "label": "Contenuto generato con AI",
+    "seo": "Testo generato con l'ausilio dell'AI e approvato da un amministratore CasaZen prima della pubblicazione: verifica sempre le fonti ufficiali.",
+    "draft": "Testo generato con l'AI: è una bozza da rivedere prima di approvarla.",
+    "supplierReason": "Motivazione generata con l'AI."
   },
   "search": {
     "page": {
