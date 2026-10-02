@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { PlanTier, RentalType, UserRole } from '../../src/types';
 
-const DEMO_ORG = {
+export const DEMO_ORG = {
   id: 'org-e2e-0001',
   name: 'Acme Stays',
   slug: 'acme-stays',

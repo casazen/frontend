@@ -1,7 +1,9 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
+import { DEMO_ORG } from './helpers/org-api-mock';
 
-const DEMO_ORG_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1';
+// The org of the demo user (`GET /api/users/me` mock): the page asks for the domain of that org.
+const DEMO_ORG_ID = DEMO_ORG.id;
 
 test.describe('Custom domain settings (#298)', () => {
   test.beforeEach(async ({ page }) => {
