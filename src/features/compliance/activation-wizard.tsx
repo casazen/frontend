@@ -182,6 +182,21 @@ function BlockerList({
   );
 }
 
+/** Notes that never block (SU-04), shown whether the step is complete or not: the message is localized by the API. */
+function StepWarnings({ step }: { step: ComplianceWizardStep }) {
+  if (!step.warnings || step.warnings.length === 0) return null;
+  return (
+    <ul className="space-y-1 text-sm text-muted-foreground" data-testid={`activation-step-warnings-${step.id}`}>
+      {step.warnings.map((warning, index) => (
+        <li key={`${warning.code}-${index}`} className="flex items-start gap-2" data-code={warning.code}>
+          <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{warning.message}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** What keeps a step incomplete, translated by code (the safety step shows its own list in the form). */
 function StepBlockers({ step }: { step: ComplianceWizardStep }) {
   const { t } = useTranslation();
@@ -475,6 +490,7 @@ function ActivationWizardContent({
             {currentStep && currentStep.id !== 'safety' && currentStep.id !== 'tourist-tax' && (
               <StepBlockers step={currentStep} />
             )}
+            {currentStep && <StepWarnings step={currentStep} />}
           </CardHeader>
           <CardContent className="space-y-6">
             <StepPanel active={currentStepId === 'base-data'} stepId="base-data">

@@ -22,6 +22,13 @@ vi.mock('@/queries/use-supplier', () => ({
   useSetIcalFeed: () => ({ mutateAsync: vi.fn() }),
 }));
 
+// SU-04: the comune field reads the status of the official list; this test is about the Terms link, so the list is "not imported".
+vi.mock('@/queries/use-comuni', () => ({
+  useComuneDatasetStatus: () => ({ data: { datasetAvailable: false }, isLoading: false, isError: false }),
+  useComuneSearch: () => ({ data: undefined, isLoading: false, isError: false }),
+  useComune: () => ({ data: undefined, isLoading: false, isError: false }),
+}));
+
 vi.mock('@/queries/use-service-categories', () => ({
   useServiceCategories: () => ({ data: [] }),
 }));

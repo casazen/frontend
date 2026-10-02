@@ -6,7 +6,12 @@ export interface SupplierProfile {
   phone: string;
   email: string;
   categories: string[];
+  /** Comuni written as text (before the official list, or while it is not imported): shown as written. */
   comuni: string[];
+  /** ISTAT codes of the comuni chosen from the official list (SU-04). */
+  comuneIstatCodes?: string[];
+  /** The chosen comuni with name, province and region; a stored code not in the list is only in `comuneIstatCodes`. */
+  operatingComuni?: import('@/types/comune.types').Comune[];
   bio?: string | null;
   photoUrls: string[];
   tosAcceptedAt?: string | null;

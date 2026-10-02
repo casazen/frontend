@@ -20,6 +20,7 @@ import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
 import type { CreatePropertyDto, Property } from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
+import { ComunePicker } from '@/components/shared/comune-picker';
 import { useCancellationPolicies } from '@/queries/use-properties';
 import { getProblemMessage } from '@/lib/api-errors';
 import { isDuplicateAddressError } from '../property-errors';
@@ -109,6 +110,7 @@ export function PropertyForm({
   );
 
   const selectedAmenities = watch('amenities') || [];
+  const comuneIstatCode = watch('comuneIstatCode') || null;
 
   const toggleAmenity = (amenity: string) => {
     const current = selectedAmenities;
@@ -180,6 +182,28 @@ export function PropertyForm({
             <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
             <FormFieldError error={errors.address} />
           </div>
+          <div className="space-y-2" data-testid="property-comune-field">
+            <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
+            <ComunePicker
+              id="comune"
+              istatCode={comuneIstatCode}
+              fallbackName={property?.city}
+              disabled={disabled}
+              describedBy="comune-hint"
+              onChange={(comune) => {
+                // The comune chosen from the official list gives the city (its name) and, through the API, the region.
+                setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldDirty: true, shouldValidate: true });
+                if (comune) setValue('city', comune.name, { shouldDirty: true, shouldValidate: true });
+              }}
+            />
+            <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
+            {!comuneIstatCode && property?.city && (
+              <p className="text-xs text-amber-800" data-testid="property-comune-legacy">
+                {t('property.form.comune.legacyCity', { city: property.city })}
+              </p>
+            )}
+            <FormFieldError error={errors.comuneIstatCode} />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="unit">{t('property.form.unit')}</Label>
             <Input
@@ -196,7 +220,16 @@ export function PropertyForm({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">{t('property.form.city')}</Label>
-              <Input id="city" {...register('city')} placeholder={t('property.form.placeholder.city')} />
+              <Input
+                id="city"
+                {...register('city')}
+                readOnly={!!comuneIstatCode}
+                aria-describedby={comuneIstatCode ? 'city-from-comune' : undefined}
+                placeholder={t('property.form.placeholder.city')}
+              />
+              {comuneIstatCode && (
+                <p id="city-from-comune" className="text-xs text-muted-foreground">{t('property.form.comune.cityFromComune')}</p>
+              )}
               <FormFieldError error={errors.city} />
             </div>
             <div className="space-y-2">

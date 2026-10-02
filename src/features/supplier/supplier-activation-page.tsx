@@ -24,6 +24,8 @@ import { ServiceCategoryPicker } from '@/features/service-requests/components/se
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
+import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
+import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
 
 interface Step1Props {
@@ -37,7 +39,12 @@ function Step1Registration({ profile, onNext }: Step1Props) {
   const { data: categoryCodes } = useServiceCategories();
 
   const [categories, setCategories] = useState<string[]>(profile.categories ?? []);
-  const [comuneInput, setComuneInput] = useState((profile.comuni ?? []).join(', '));
+  const [comuni, setComuni] = useState<SupplierComuniValue>(() => {
+    const istatCodes = profile.comuneIstatCodes ?? [];
+    return { istatCodes, legacy: (profile.comuni ?? []).filter((entry) => !istatCodes.includes(entry)) };
+  });
+  const comuneStatus = useComuneDatasetStatus();
+  const comuneListAvailable = comuneStatus.data?.datasetAvailable === true;
   const [saving, setSaving] = useState(false);
 
   const handleSaveAndNext = async () => {
@@ -45,7 +52,9 @@ function Step1Registration({ profile, onNext }: Step1Props) {
     try {
       await updateProfile.mutateAsync({
         categories: keepKnownCategories(categories, categoryCodes),
-        comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
+        comuni: comuni.legacy,
+        // Only while the official list is imported: the API refuses ISTAT codes otherwise and keeps the stored ones.
+        ...(comuneListAvailable ? { comuneIstatCodes: comuni.istatCodes } : {}),
       });
       toast.success(t('supplier.progressSaved'));
       onNext();
@@ -71,13 +80,15 @@ function Step1Registration({ profile, onNext }: Step1Props) {
 
           <div>
             <Label htmlFor="comuni">{t('supplier.operatingMunicipalities')}</Label>
-            <p className="mb-2 text-xs text-muted-foreground">{t('supplier.comuniHint')}</p>
-            <Input
-              id="comuni"
-              value={comuneInput}
-              onChange={(e) => setComuneInput(e.target.value)}
-              placeholder={t('supplier.comuniPlaceholder')}
-            />
+            <div className="mt-1">
+              <SupplierComuniField
+                id="comuni"
+                value={comuni}
+                known={profile.operatingComuni}
+                onChange={setComuni}
+                disabled={saving}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
