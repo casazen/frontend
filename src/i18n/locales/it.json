@@ -414,7 +414,8 @@
     },
     "ltrReferenceData": "Dati normativi LTR",
     "siteAppearance": "Aspetto sito",
-    "siteDocuments": "Documenti sito"
+    "siteDocuments": "Documenti sito",
+    "supplierShowcase": "Vetrina"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -2813,7 +2814,23 @@
       }
     },
     "profileLoadError": "Impossibile caricare il profilo fornitore.",
-    "availabilityLoadError": "Impossibile caricare la disponibilità."
+    "availabilityLoadError": "Impossibile caricare la disponibilità.",
+    "showcase": {
+      "title": "Vetrina pubblica",
+      "description": "Anteprima della pagina che chiunque può aprire con il tuo link: è identica a quella pubblica.",
+      "loading": "Caricamento della vetrina…",
+      "loadError": "Impossibile caricare l'anteprima della vetrina.",
+      "published": "La vetrina è pubblica: chi ha il link può vederla.",
+      "notPublished": "La vetrina non è ancora pubblica: lo sarà quando attivi il profilo. Questa è l'anteprima di come apparirà.",
+      "suspended": "Il profilo è sospeso: la vetrina non è visibile al pubblico. Contatta il supporto CasaZen.",
+      "noPublicUrl": "L'indirizzo pubblico non è configurato su questo ambiente: il link completo non è disponibile.",
+      "open": "Apri la pagina pubblica",
+      "copyLink": "Copia il link",
+      "linkCopied": "Link copiato",
+      "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
+      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link.",
+      "previewLink": "Anteprima vetrina"
+    }
   },
   "settings": {
     "planTitle": "Il tuo piano",
@@ -5615,7 +5632,16 @@
     "notFound": "Fornitore non trovato",
     "notFoundDescription": "Questa pagina fornitore non esiste o non è più attiva.",
     "availableDays_one": "{{count}} giorno disponibile nelle prossime 2 settimane",
-    "availableDays_other": "{{count}} giorni disponibili nelle prossime 2 settimane"
+    "availableDays_other": "{{count}} giorni disponibili nelle prossime 2 settimane",
+    "title": "Vetrina fornitore",
+    "pageTitle": "{{name}}: fornitore su CasaZen",
+    "pageDescription": "Servizi, zone e disponibilità di {{name}}.",
+    "loading": "Caricamento della vetrina…",
+    "loadError": "Impossibile caricare la vetrina del fornitore.",
+    "photoAlt": "Foto di {{name}}",
+    "comuniTitle": "Dove opera",
+    "servicesTitle": "Servizi",
+    "noAvailability": "Il fornitore non ha ancora indicato la disponibilità dei prossimi giorni."
   },
   "serviceCategories": {
     "loading": "Caricamento categorie…",

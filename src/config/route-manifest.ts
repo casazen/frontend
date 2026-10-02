@@ -762,6 +762,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
   },
   {
+    // Preview of the public showcase and where it is published (SU-13, A4-16).
+    path: '/app/supplier/showcase',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierShowcase',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 2,
+    icon: 'Store',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-showcase-preview-page')).SupplierShowcasePreviewPage }),
+  },
+  {
     // Help page for connecting an external calendar via iCal (SU-15), moved inside the supplier shell with its own
     // sidebar entry (A4-32, #327-AC2/AC4). The public `/help/ical` route stays for the host property iCal settings
     // page, which links the same component from outside the supplier context.
@@ -771,7 +783,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.supplierHelpIcal',
     navGroup: 'account',
     navPlacement: 'secondary',
-    navOrder: 2,
+    navOrder: 3,
     icon: 'HelpCircle',
     component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
   },

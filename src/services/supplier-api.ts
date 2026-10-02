@@ -9,6 +9,7 @@ import type {
   SupplierKpiPeriod,
   SupplierKpis,
   SupplierProfile,
+  SupplierShowcasePreview,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
 import axios from '@/lib/axios';
@@ -262,4 +263,9 @@ export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: strin
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
+}
+
+/** The owner's preview of the public showcase and where it is (or will be) published (SU-13). */
+export async function fetchSupplierShowcasePreview(): Promise<SupplierShowcasePreview> {
+  return ApiClient.get<SupplierShowcasePreview>('/supplier/showcase');
 }

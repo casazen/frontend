@@ -31,6 +31,8 @@ export const DISALLOWED_PATHS = [
   '/book/*/booking/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
+  // Supplier showcases (SU-13): `noindex` in v0, the product owner decides when they become indexable.
+  '/fornitori/',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',

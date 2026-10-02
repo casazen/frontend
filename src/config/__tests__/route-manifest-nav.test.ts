@@ -211,8 +211,15 @@ describe('route-manifest nav helpers', () => {
     expect(entry?.navKey).toBe('nav.supplierHelpIcal');
 
     const secondary = getSecondaryNavEntries('supplier', allowAll).map((e) => e.path);
-    expect(secondary).toEqual(['/app/supplier/profile', '/app/supplier/help/ical']);
+    expect(secondary).toEqual(['/app/supplier/profile', '/app/supplier/showcase', '/app/supplier/help/ical']);
     const drawer = [...getDrawerNavByGroup('supplier', allowAll).values()].flat().map((e) => e.path);
     expect(drawer).toContain('/app/supplier/help/ical');
+  });
+
+  // SU-13 (A4-16): the preview of the public showcase has its own sidebar entry.
+  it('puts the showcase preview in the supplier console sidebar', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/supplier/showcase');
+    expect(entry?.context).toBe('supplier');
+    expect(entry?.navKey).toBe('nav.supplierShowcase');
   });
 });

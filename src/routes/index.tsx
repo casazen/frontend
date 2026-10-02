@@ -37,7 +37,8 @@ import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-reque
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
-import { SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
+import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
 import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
@@ -218,11 +219,14 @@ export const appRoutes: RouteObject[] = [
       { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
       { path: LEGAL_DOCUMENT_PATHS.dpa, element: <DpaPage /> },
       { path: LEGAL_SUBPROCESSORS_PATH, element: <SubprocessorsPage /> },
+      // Public showcase of a supplier (SU-13, A4-16): in the public shell, `noindex` (see the page).
+      { path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`, element: <SupplierShowcasePage /> },
     ],
   },
   {
+    // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.
     path: '/s/:slug',
-    element: <SupplierShowcasePage />,
+    element: <LegacySupplierShowcaseRedirect />,
   },
   {
     path: '/checkin/:token',

@@ -24,6 +24,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /book/*/booking/',
       'Disallow: /book/*/requests/',
       'Disallow: /book/*/property/*/checkout',
+      'Disallow: /fornitori/',
       'Disallow: /my-bookings',
       'Disallow: /booking/',
       'Disallow: /requests/',
@@ -60,6 +61,8 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/book/x/booking/123',
       '/book/x/requests/123/confirm',
       '/book/x/property/villa/checkout',
+      // SU-13: the supplier showcase is noindex in v0.
+      '/fornitori/pulizie-roma',
       '/my-bookings',
       '/booking/0f6c',
       '/requests/0f6c/confirm',

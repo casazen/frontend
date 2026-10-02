@@ -414,7 +414,8 @@
     },
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",
-    "siteDocuments": "Site documents"
+    "siteDocuments": "Site documents",
+    "supplierShowcase": "Showcase"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -2813,7 +2814,23 @@
       }
     },
     "profileLoadError": "Could not load the supplier profile.",
-    "availabilityLoadError": "Could not load the availability."
+    "availabilityLoadError": "Could not load the availability.",
+    "showcase": {
+      "title": "Public showcase",
+      "description": "Preview of the page anyone can open with your link: it is identical to the public one.",
+      "loading": "Loading the showcase…",
+      "loadError": "Could not load the showcase preview.",
+      "published": "The showcase is public: anyone with the link can see it.",
+      "notPublished": "The showcase is not public yet: it will be once you activate the profile. This is a preview of how it will look.",
+      "suspended": "The profile is suspended: the showcase is not visible to the public. Contact CasaZen support.",
+      "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
+      "open": "Open the public page",
+      "copyLink": "Copy the link",
+      "linkCopied": "Link copied",
+      "linkCopyError": "Could not copy the link: select it and copy it by hand.",
+      "notIndexed": "The page does not appear in search engines: it is reached only through the link.",
+      "previewLink": "Showcase preview"
+    }
   },
   "settings": {
     "planTitle": "Your plan",
@@ -5615,7 +5632,16 @@
     "notFound": "Supplier not found",
     "notFoundDescription": "This supplier page does not exist or is no longer active.",
     "availableDays_one": "{{count}} day available in the next 2 weeks",
-    "availableDays_other": "{{count}} days available in the next 2 weeks"
+    "availableDays_other": "{{count}} days available in the next 2 weeks",
+    "title": "Supplier showcase",
+    "pageTitle": "{{name}}: supplier on CasaZen",
+    "pageDescription": "Services, areas and availability of {{name}}.",
+    "loading": "Loading the showcase…",
+    "loadError": "Could not load the supplier showcase.",
+    "photoAlt": "Photo of {{name}}",
+    "comuniTitle": "Where they work",
+    "servicesTitle": "Services",
+    "noAvailability": "The supplier has not yet entered availability for the coming days."
   },
   "serviceCategories": {
     "loading": "Loading categories…",

@@ -9,6 +9,7 @@ import {
   fetchSupplierAudit,
   fetchCalendarSyncStatus,
   fetchSupplierActivation,
+  fetchSupplierShowcasePreview,
   fetchSupplierAvailability,
   fetchSupplierDashboard,
   fetchSupplierInbox,
@@ -341,5 +342,13 @@ export function useUploadSupplierPhotos() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'profile'] });
     },
+  });
+}
+
+/** The owner's preview of the public showcase (SU-13). */
+export function useSupplierShowcasePreview() {
+  return useQuery({
+    queryKey: ['supplier', 'showcase'],
+    queryFn: fetchSupplierShowcasePreview,
   });
 }

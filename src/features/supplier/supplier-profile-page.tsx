@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
-import { Pencil, Check, X, Upload, Trash2, ImageIcon } from 'lucide-react';
+import { Pencil, Check, X, Upload, Trash2, ImageIcon, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { getServiceCategoryLabel, getSupplierStatusLabel } from '@/lib/i18n-labels';
 import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
@@ -169,9 +170,16 @@ export function SupplierProfilePage() {
       <div className="flex items-center justify-between">
         <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} />
         {!editing && (
-          <Button variant="outline" size="sm" onClick={() => { hydrate(); setEditing(true); }}>
-            <Pencil className="mr-1 h-4 w-4" /> {t('supplier.editProfile')}
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/app/supplier/showcase" data-testid="supplier-showcase-preview-link">
+                <Eye className="mr-1 h-4 w-4" /> {t('supplier.showcase.previewLink')}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { hydrate(); setEditing(true); }}>
+              <Pencil className="mr-1 h-4 w-4" /> {t('supplier.editProfile')}
+            </Button>
+          </div>
         )}
       </div>
 

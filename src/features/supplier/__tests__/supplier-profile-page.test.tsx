@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
+import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { Comune } from '@/types/comune.types';
 import type { SupplierProfile } from '@/types/supplier';
@@ -66,7 +67,9 @@ function renderPage() {
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
-        <SupplierProfilePage />
+        <MemoryRouter>
+          <SupplierProfilePage />
+        </MemoryRouter>
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -116,6 +119,12 @@ describe('SupplierProfilePage comuni', () => {
     expect(payload.comuni).toEqual(['Roma', 'Milano']);
     expect(payload).not.toHaveProperty('comuneIstatCodes');
   });
+  it('links the preview of the public showcase (SU-13)', () => {
+    renderPage();
+
+    expect(screen.getByTestId('supplier-showcase-preview-link')).toHaveAttribute('href', '/app/supplier/showcase');
+  });
+
   it('says the profile could not be loaded, with a retry, instead of an endless spinner (SU-06, A4-25)', () => {
     const refetch = vi.fn();
     supplier.query = { data: undefined, isLoading: false, isError: true, error: new Error('403'), refetch };

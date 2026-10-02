@@ -89,7 +89,7 @@ describe('routes of an org own host (BK-16)', () => {
     },
   );
 
-  it.each(['/login', '/signup', '/onboarding', '/app/short-rent/bookings', '/search', '/p/affitti-brevi', '/checkin/abc', '/s/supplier', '/anything'])(
+  it.each(['/login', '/signup', '/onboarding', '/app/short-rent/bookings', '/search', '/p/affitti-brevi', '/checkin/abc', '/s/supplier', '/fornitori/supplier', '/anything'])(
     'AnyOtherRoute_%s_IsNotFoundNeverTheAppOrTheLogin',
     async (path) => {
       const router = renderHostSite(path);
