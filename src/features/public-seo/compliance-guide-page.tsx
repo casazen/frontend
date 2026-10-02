@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useComplianceGuide } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
+import { SeoContentLanguageNote } from './components/seo-content-language-note';
 import { SeoCtaBlock } from './components/seo-cta-block';
 import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-widget';
 import { sanitizeHtml } from '@/lib/sanitize-html';
@@ -55,7 +56,10 @@ export function ComplianceGuidePage() {
         <h1 className="mt-1 text-3xl font-bold">{page.title}</h1>
       </header>
 
+      <SeoContentLanguageNote contentLanguage={page.contentLanguage} />
+
       <article
+        lang={page.contentLanguage}
         className="prose prose-neutral max-w-none dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.bodyHtml) }}
         data-testid="compliance-guide-body"
@@ -68,7 +72,7 @@ export function ComplianceGuidePage() {
       />
 
       <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} />
-      <SeoDisclaimerFooter disclaimers={page.disclaimers} />
+      <SeoDisclaimerFooter lastRefreshedAt={page.lastRefreshedAt} aiGenerated={page.aiGenerated} />
     </main>
   );
 }

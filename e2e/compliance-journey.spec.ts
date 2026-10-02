@@ -249,11 +249,8 @@ test.describe('Italian Compliance Golden Path', () => {
             comuneSlug: 'como',
             canonicalUrl: 'https://casazen.app/p/tassa-soggiorno/como',
             lastRefreshedAt: '2026-01-01T00:00:00Z',
-            disclaimers: {
-              lastUpdated: '2026-01-01',
-              notLegalAdvice: 'Non è un parere legale.',
-              aiGenerated: '',
-            },
+            aiGenerated: true,
+            contentLanguage: 'it',
             cta: { signupUrl: '/signup' },
             touristTaxRates: [{
               city: 'Como',
