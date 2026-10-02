@@ -52,3 +52,65 @@ export interface OnboardingConsentsPayload {
   subprocessorsVersion: string;
   marketingOptIn?: boolean;
 }
+
+/** Steps of the activation checklist (PL-15): stable keys of `GET /api/onboarding/status`. */
+export type ActivationStepKey =
+  | 'account'
+  | 'organization'
+  | 'property'
+  | 'cin'
+  | 'payments'
+  | 'sitePublished'
+  | 'firstBooking';
+
+/**
+ * `done`: the stored state proves it. `todo`: not started. `inProgress`: started, something is still missing.
+ * `blocked`: another step comes first.
+ */
+export type ActivationStepState = 'done' | 'todo' | 'inProgress' | 'blocked';
+
+/** Why a step is not done: stable codes of the backend (`ActivationStepReasons`), translated by the client. */
+export const ACTIVATION_STEP_REASONS = [
+  'onboarding_incomplete',
+  'org_profile_incomplete',
+  'no_property',
+  'cin_missing_or_invalid',
+  'connect_not_started',
+  'connect_requirements_due',
+  'connect_pending_verification',
+  'org_inactive',
+  'properties_paused',
+  'compliance_pending',
+  'properties_inactive',
+  'payments_not_ready',
+  'site_not_published',
+  'awaiting_first_booking',
+] as const;
+
+export type ActivationStepReason = (typeof ACTIVATION_STEP_REASONS)[number];
+
+export interface ActivationStep {
+  key: ActivationStepKey;
+  state: ActivationStepState;
+  /** Null when the step is done. */
+  reason?: ActivationStepReason | null;
+  /** Properties that satisfy the step (valid CIN, published), for the steps that count them. */
+  done?: number | null;
+  /** Properties of the org, for the steps that count them. */
+  total?: number | null;
+}
+
+/** `GET /api/onboarding/status`: the activation of the caller's org, derived from stored state (PL-15). */
+export interface OnboardingStatus {
+  roleChosen: boolean;
+  orgProvisioned: boolean;
+  consentsAccepted: boolean;
+  propertyCreated: boolean;
+  /** True only when a published property can really be booked and paid (Stripe charges enabled). */
+  sitePublished: boolean;
+  firstBookingTaken: boolean;
+  activated: boolean;
+  /** Link to share; null until the site is really published or when the public domain is not configured (D3). */
+  publicBookingUrl?: string | null;
+  steps: ActivationStep[];
+}
