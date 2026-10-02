@@ -435,7 +435,9 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByTestId('alloggiati-status-badge')).toHaveText(/Da inviare manualmente|To send manually/i);
-      await expect(page.getByTestId('alloggiati-guest-summary')).toContainText('CA12345AB');
+      // The document number is masked (CO-02): the full one is never in the page until the host reveals it.
+      await expect(page.getByTestId('alloggiati-guest-summary')).toContainText('*****45AB');
+      await expect(page.getByTestId('alloggiati-guest-summary')).not.toContainText('CA12345AB');
 
       await page.getByTestId('alloggiati-resend-button').click();
       await page.getByTestId('alloggiati-sent-confirm').click();
