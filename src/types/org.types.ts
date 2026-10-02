@@ -52,6 +52,8 @@ export interface PublicOrgDto {
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
   publicThemeId?: string | null;
   showPoweredBy?: boolean;
+  /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
+  canonicalUrl?: string | null;
 }
 
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */

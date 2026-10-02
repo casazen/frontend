@@ -10,3 +10,17 @@ export function getPublicSiteHost(value: unknown = import.meta.env.VITE_PUBLIC_S
     return null;
   }
 }
+
+/**
+ * Origin (`https://host`) of the public web app, from `VITE_PUBLIC_SITE_URL`: where the CasaZen pages that an org's own site
+ * links to (the legal documents) live. `null` when the variable is not set or not an https URL; no default (decision D3).
+ */
+export function getPublicSiteOrigin(value: unknown = import.meta.env.VITE_PUBLIC_SITE_URL): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
