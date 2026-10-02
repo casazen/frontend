@@ -18,6 +18,7 @@ import { formatStayDate } from '@/lib/stay-dates';
 import { BOOKING_STATUS_VARIANTS } from '@/features/bookings/schemas/booking.schema';
 import { ComplianceSummaryWidget } from '@/features/compliance/compliance-summary-widget';
 import { SiteAddressCard } from '@/features/settings/domain/site-address-card';
+import { ActivationChecklist } from '@/features/onboarding/components/activation-checklist';
 import type { OtaIntegration, OtaPlatform } from '@/types';
 import type { DashboardKpis, DashboardPeriodSelection, DashboardStay, DashboardStayList } from '@/types/dashboard.types';
 import { StatsCard } from './components/stats-card';
@@ -82,6 +83,8 @@ export function DashboardPage() {
           description={t('dashboard.description')}
           action={<DashboardPeriodSelect value={period} onChange={setPeriod} />}
         />
+
+        <ActivationChecklist />
 
         <ComplianceSummaryWidget />
 

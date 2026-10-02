@@ -1003,7 +1003,8 @@
         "checkedIn": "Ospite arrivato",
         "checkedOut": "Soggiorno concluso",
         "block": "Date bloccate da un altro canale (iCal)",
-        "toReview": "Soggiorno OTA da verificare"
+        "toReview": "Soggiorno OTA da verificare",
+        "manualBlock": "Date chiuse da te (proprietario, manutenzione)"
       },
       "block": {
         "title": "Date bloccate su {{source}}",
@@ -1012,6 +1013,50 @@
         "notABooking": "Queste date arrivano dal calendario iCal collegato: sono occupate su un altro canale e non sono una prenotazione CasaZen. Trovi i dettagli dell'ospite sul canale.",
         "otherSource": "un altro calendario",
         "close": "Chiudi"
+      },
+      "manualBlock": {
+        "action": "Blocca date",
+        "formTitle": "Blocca date",
+        "formHint": "Chiudi le notti in cui l'immobile non è disponibile: non saranno prenotabili sul sito e verranno esportate come occupate ai canali collegati. Puoi anche selezionare i giorni direttamente sul calendario.",
+        "startDate": "Dalla notte del",
+        "endDate": "Di nuovo libero dal",
+        "endDateHint": "Primo giorno di nuovo prenotabile, come il giorno di partenza di un soggiorno.",
+        "nights_one": "{{count}} notte bloccata",
+        "nights_other": "{{count}} notti bloccate",
+        "reason": "Motivo",
+        "reasonPlaceholder": "Scegli il motivo",
+        "reasons": {
+          "Owner": "Soggiorno del proprietario",
+          "Maintenance": "Manutenzione",
+          "Other": "Altro motivo"
+        },
+        "note": "Nota (facoltativa)",
+        "noteHint": "La vedi solo tu: non viene mostrata agli ospiti né inviata ai canali.",
+        "submit": "Blocca date",
+        "submitting": "Blocco in corso...",
+        "cancel": "Annulla",
+        "created": "Date bloccate",
+        "createFailed": "Impossibile bloccare le date. Riprova.",
+        "title": "Date chiuse: {{reason}}",
+        "tooltip": "Date chiuse: {{reason}}",
+        "noteLabel": "Nota: {{note}}",
+        "explanation": "Hai chiuso tu queste notti: non sono prenotabili sul sito e risultano occupate sui canali che leggono il calendario esportato.",
+        "readOnly": "Solo chi può modificare l'immobile può eliminare il blocco.",
+        "delete": "Elimina blocco",
+        "deleteConfirm": "Eliminare il blocco? Le notti tornano prenotabili sul sito e libere sui canali collegati.",
+        "deleteConfirmAction": "Elimina",
+        "deleting": "Eliminazione...",
+        "deleted": "Blocco eliminato: le date sono di nuovo libere",
+        "deleteFailed": "Impossibile eliminare il blocco. Riprova.",
+        "validation": {
+          "startRequired": "Indica la prima notte da bloccare.",
+          "startInPast": "Non puoi bloccare date già passate.",
+          "endRequired": "Indica da quando l'immobile torna libero.",
+          "endAfterStart": "La data di fine deve essere successiva alla prima notte.",
+          "tooLong": "Puoi bloccare al massimo {{max}} notti alla volta.",
+          "reasonRequired": "Scegli il motivo del blocco.",
+          "noteTooLong": "La nota può contenere al massimo {{max}} caratteri."
+        }
       },
       "toolbar": {
         "today": "Oggi",
@@ -4216,6 +4261,85 @@
       "NightlyPriceRequired": "Indica il prezzo di una notte per calcolare la tassa."
     }
   },
+  "activation": {
+    "title": "Attiva il tuo sito di prenotazione",
+    "progress_one": "{{count}} passaggio su {{total}} completato",
+    "progress_other": "{{count}} passaggi su {{total}} completati",
+    "progressLabel": "Avanzamento dell'attivazione",
+    "loadError": "Non è stato possibile caricare la checklist di attivazione.",
+    "retry": "Riprova",
+    "state": {
+      "done": "Completato",
+      "todo": "Da fare",
+      "inProgress": "In corso",
+      "blocked": "In attesa"
+    },
+    "steps": {
+      "account": {
+        "title": "Account e consensi",
+        "done": "Hai scelto come usare CasaZen, creato l'organizzazione e accettato i consensi."
+      },
+      "organization": {
+        "title": "Nome e indirizzo dell'organizzazione",
+        "done": "Hai scelto il nome e l'indirizzo pubblico dell'organizzazione."
+      },
+      "property": {
+        "title": "Primo immobile",
+        "done_one": "{{count}} immobile creato.",
+        "done_other": "{{count}} immobili creati."
+      },
+      "cin": {
+        "title": "CIN degli immobili",
+        "done": "Tutti gli immobili hanno un CIN valido ({{done}} su {{total}})."
+      },
+      "payments": {
+        "title": "Pagamenti con Stripe",
+        "done": "Stripe può incassare le prenotazioni dirette."
+      },
+      "sitePublished": {
+        "title": "Sito pubblicato e prenotabile",
+        "done_one": "{{count}} immobile su {{total}} è pubblicato e prenotabile.",
+        "done_other": "{{count}} immobili su {{total}} sono pubblicati e prenotabili."
+      },
+      "firstBooking": {
+        "title": "Prima prenotazione diretta",
+        "done": "Hai ricevuto la prima prenotazione diretta confermata."
+      }
+    },
+    "reasons": {
+      "onboarding_incomplete": "Completa prima la registrazione: ruolo, organizzazione e consensi.",
+      "org_profile_incomplete": "Scegli il nome dell'organizzazione e un indirizzo pubblico leggibile: per ora hai quelli generati da CasaZen.",
+      "no_property": "Aggiungi almeno un immobile.",
+      "cin_missing_or_invalid": "CIN valido su {{done}} immobili di {{total}}: inserisci o correggi il CIN degli altri.",
+      "connect_not_started": "Non hai ancora collegato un account Stripe: senza, gli ospiti non possono pagare.",
+      "connect_requirements_due": "Stripe chiede ancora dati o documenti per abilitare gli incassi.",
+      "connect_pending_verification": "Hai inviato i dati: Stripe sta verificando l'account e non ha ancora abilitato gli incassi.",
+      "org_inactive": "L'organizzazione è disattivata e le sue pagine pubbliche non sono raggiungibili. Contatta l'assistenza.",
+      "properties_paused": "Gli immobili che potrebbero essere pubblicati sono tutti in pausa: riattivane almeno uno.",
+      "compliance_pending": "Gli immobili non hanno ancora completato l'attivazione di conformità (CIN, documenti, sicurezza): finché non è fatto non sono pubblicati.",
+      "properties_inactive": "Nessun immobile è attivo: attivane almeno uno.",
+      "payments_not_ready": "C'è un immobile pubblicato, ma gli ospiti non possono ancora pagare perché Stripe non ha abilitato gli incassi.",
+      "site_not_published": "Pubblica prima il sito: servono un immobile pubblicato e gli incassi Stripe abilitati.",
+      "awaiting_first_booking": "Il sito è aperto e prenotabile: condividi il link con i tuoi ospiti.",
+      "unknown": "Questo passaggio non è ancora completato."
+    },
+    "cta": {
+      "onboarding": "Completa la registrazione",
+      "organization": "Imposta nome e indirizzo",
+      "property": "Aggiungi un immobile",
+      "cin": "Gestisci gli immobili",
+      "paymentsStart": "Collega Stripe",
+      "paymentsContinue": "Vai ai pagamenti",
+      "reactivate": "Riattiva gli immobili",
+      "compliance": "Completa l'attivazione",
+      "properties": "Vai agli immobili",
+      "share": "Condividi il link",
+      "open": "Apri"
+    },
+    "siteBanner": {
+      "title": "Gli ospiti non possono ancora prenotare dal tuo sito"
+    }
+  },
   "onboarding": {
     "casaZen": "CasaZen",
     "howToUse": "Come vuoi usare CasaZen?",
@@ -5146,6 +5270,12 @@
       "leasePartiesTooMany": "Troppe parti per un ruolo: al massimo 10 locatori e 10 conduttori.",
       "leaseLandlordRequired": "Il contratto deve avere almeno un locatore.",
       "leaseTenantRequired": "Il contratto deve avere almeno un conduttore.",
+      "calendarBlockOverlapsBooking": "Una prenotazione occupa già una di queste notti: annullala o scegli altre date.",
+      "calendarBlockOverlapsBlock": "Hai già bloccato una di queste notti: elimina quel blocco o scegli altre date.",
+      "calendarBlockInPast": "Non puoi bloccare date già passate.",
+      "calendarBlockInvalidRange": "La data di fine deve essere successiva alla data di inizio.",
+      "calendarBlockNotManual": "Questo blocco arriva dal calendario di un canale: si toglie dal canale o scollegando il calendario.",
+      "calendarBlockNotFound": "Il blocco non esiste più: aggiorna il calendario.",
       "propertyPhotoNone": "Seleziona almeno una foto da caricare.",
       "propertyPhotoTooManyFiles": "Hai selezionato troppe foto in una volta sola: caricane meno.",
       "propertyPhotoLimitReached": "Hai raggiunto il numero massimo di foto della proprietà: elimina una foto prima di caricarne altre.",

@@ -21,6 +21,9 @@ vi.mock('@/features/compliance/compliance-summary-widget', () => ({
 vi.mock('@/features/settings/domain/site-address-card', () => ({
   SiteAddressCard: () => null,
 }));
+vi.mock('@/features/onboarding/components/activation-checklist', () => ({
+  ActivationChecklist: () => null,
+}));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));

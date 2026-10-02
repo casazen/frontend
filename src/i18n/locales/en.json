@@ -1003,7 +1003,8 @@
         "checkedIn": "Guest arrived",
         "checkedOut": "Stay completed",
         "block": "Dates blocked by another channel (iCal)",
-        "toReview": "OTA stay to check"
+        "toReview": "OTA stay to check",
+        "manualBlock": "Dates you closed (owner, maintenance)"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -1012,6 +1013,50 @@
         "notABooking": "These dates come from the linked iCal calendar: they are taken on another channel and are not a CasaZen booking. The guest's details are on the channel.",
         "otherSource": "another calendar",
         "close": "Close"
+      },
+      "manualBlock": {
+        "action": "Block dates",
+        "formTitle": "Block dates",
+        "formHint": "Close the nights when the property is not available: they cannot be booked on the site and are exported as busy to the linked channels. You can also select the days on the calendar.",
+        "startDate": "From the night of",
+        "endDate": "Free again from",
+        "endDateHint": "First day bookable again, like the departure day of a stay.",
+        "nights_one": "{{count}} night blocked",
+        "nights_other": "{{count}} nights blocked",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose the reason",
+        "reasons": {
+          "Owner": "Owner stay",
+          "Maintenance": "Maintenance",
+          "Other": "Other reason"
+        },
+        "note": "Note (optional)",
+        "noteHint": "Only you see it: it is never shown to guests or sent to the channels.",
+        "submit": "Block dates",
+        "submitting": "Blocking...",
+        "cancel": "Cancel",
+        "created": "Dates blocked",
+        "createFailed": "The dates could not be blocked. Try again.",
+        "title": "Dates closed: {{reason}}",
+        "tooltip": "Dates closed: {{reason}}",
+        "noteLabel": "Note: {{note}}",
+        "explanation": "You closed these nights: they cannot be booked on the site and are busy on the channels that read the exported calendar.",
+        "readOnly": "Only users who can edit the property can remove the block.",
+        "delete": "Remove block",
+        "deleteConfirm": "Remove the block? The nights become bookable again on the site and free on the linked channels.",
+        "deleteConfirmAction": "Remove",
+        "deleting": "Removing...",
+        "deleted": "Block removed: the dates are free again",
+        "deleteFailed": "The block could not be removed. Try again.",
+        "validation": {
+          "startRequired": "Enter the first night to block.",
+          "startInPast": "Past dates cannot be blocked.",
+          "endRequired": "Enter when the property is free again.",
+          "endAfterStart": "The end date must be after the first night.",
+          "tooLong": "You can block at most {{max}} nights at a time.",
+          "reasonRequired": "Choose the reason of the block.",
+          "noteTooLong": "The note can be at most {{max}} characters long."
+        }
       },
       "toolbar": {
         "today": "Today",
@@ -4216,6 +4261,85 @@
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
     }
   },
+  "activation": {
+    "title": "Activate your booking site",
+    "progress_one": "{{count}} of {{total}} step completed",
+    "progress_other": "{{count}} of {{total}} steps completed",
+    "progressLabel": "Activation progress",
+    "loadError": "The activation checklist could not be loaded.",
+    "retry": "Retry",
+    "state": {
+      "done": "Completed",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "blocked": "Waiting"
+    },
+    "steps": {
+      "account": {
+        "title": "Account and consents",
+        "done": "You chose how to use CasaZen, your organization was created and you accepted the consents."
+      },
+      "organization": {
+        "title": "Organization name and address",
+        "done": "You chose the name and the public address of the organization."
+      },
+      "property": {
+        "title": "First property",
+        "done_one": "{{count}} property created.",
+        "done_other": "{{count}} properties created."
+      },
+      "cin": {
+        "title": "Property CIN codes",
+        "done": "Every property has a valid CIN ({{done}} of {{total}})."
+      },
+      "payments": {
+        "title": "Payments with Stripe",
+        "done": "Stripe can collect direct bookings."
+      },
+      "sitePublished": {
+        "title": "Site published and bookable",
+        "done_one": "{{count}} property of {{total}} is published and bookable.",
+        "done_other": "{{count}} properties of {{total}} are published and bookable."
+      },
+      "firstBooking": {
+        "title": "First direct booking",
+        "done": "You received your first confirmed direct booking."
+      }
+    },
+    "reasons": {
+      "onboarding_incomplete": "Finish signing up first: role, organization and consents.",
+      "org_profile_incomplete": "Choose the organization name and a readable public address: for now you have the ones CasaZen generated.",
+      "no_property": "Add at least one property.",
+      "cin_missing_or_invalid": "Valid CIN on {{done}} of {{total}} properties: add or fix the CIN of the others.",
+      "connect_not_started": "You have not connected a Stripe account yet: without it, guests cannot pay.",
+      "connect_requirements_due": "Stripe still asks for data or documents to enable payments.",
+      "connect_pending_verification": "You sent the data: Stripe is verifying the account and has not enabled payments yet.",
+      "org_inactive": "The organization is disabled and its public pages cannot be reached. Contact support.",
+      "properties_paused": "Every property that could be published is paused: reactivate at least one.",
+      "compliance_pending": "The properties have not completed the compliance activation yet (CIN, documents, safety): until they do, they are not published.",
+      "properties_inactive": "No property is active: activate at least one.",
+      "payments_not_ready": "A property is published, but guests cannot pay yet because Stripe has not enabled payments.",
+      "site_not_published": "Publish the site first: you need a published property and Stripe payments enabled.",
+      "awaiting_first_booking": "The site is open and bookable: share the link with your guests.",
+      "unknown": "This step is not completed yet."
+    },
+    "cta": {
+      "onboarding": "Finish signing up",
+      "organization": "Set name and address",
+      "property": "Add a property",
+      "cin": "Manage properties",
+      "paymentsStart": "Connect Stripe",
+      "paymentsContinue": "Go to payments",
+      "reactivate": "Reactivate properties",
+      "compliance": "Complete the activation",
+      "properties": "Go to properties",
+      "share": "Share the link",
+      "open": "Open"
+    },
+    "siteBanner": {
+      "title": "Guests cannot book from your site yet"
+    }
+  },
   "onboarding": {
     "casaZen": "CasaZen",
     "howToUse": "How do you want to use CasaZen?",
@@ -5146,6 +5270,12 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "calendarBlockOverlapsBooking": "A booking already takes one of these nights: cancel it or choose other dates.",
+      "calendarBlockOverlapsBlock": "You have already blocked one of these nights: remove that block or choose other dates.",
+      "calendarBlockInPast": "Past dates cannot be blocked.",
+      "calendarBlockInvalidRange": "The end date must be after the start date.",
+      "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
+      "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
       "propertyPhotoNone": "Select at least one photo to upload.",
       "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
       "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
