@@ -94,14 +94,21 @@ test.describe('Branded booking site (#215)', () => {
     await expect(banner).not.toBeVisible();
   });
 
-  test('AC8: footer contains Privacy Policy and Terms of Service links', async ({ page }) => {
+  test("AC8: footer links to the operator's own privacy notice and booking terms (BK-14)", async ({ page }) => {
     await page.goto(`/book/${DEMO_ORG_SLUG}`);
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
 
-    await expect(page.getByTestId('footer-privacy')).toBeVisible();
-    await expect(page.getByTestId('footer-terms')).toBeVisible();
-    await expect(page.getByTestId('footer-privacy')).toHaveText(/Privacy Policy/i);
-    await expect(page.getByTestId('footer-terms')).toHaveText(/Termini di servizio|Terms of Service/i);
+    // BK-14: on a host's booking site the footer offers the operator's documents of that site, opened in a new tab,
+    // not the CasaZen ones.
+    const privacy = page.getByTestId('footer-privacy');
+    const terms = page.getByTestId('footer-terms');
+    await expect(privacy).toHaveText('Informativa privacy');
+    await expect(privacy).toHaveAttribute('href', `/book/${DEMO_ORG_SLUG}/privacy`);
+    await expect(privacy).toHaveAttribute('target', '_blank');
+    await expect(terms).toHaveText('Termini di prenotazione');
+    await expect(terms).toHaveAttribute('href', `/book/${DEMO_ORG_SLUG}/termini`);
+    await expect(terms).toHaveAttribute('target', '_blank');
+    await expect(page.getByTestId('footer-legal')).toHaveCount(0);
   });
 
   test('AC9: AI content notice is hidden when isAiGenerated is false', async ({ page }) => {
