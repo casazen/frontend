@@ -23,6 +23,8 @@ interface ServiceRequestsCardProps {
   /** Header action, e.g. the "request a supplier" dialog trigger. */
   action?: ReactNode;
   showStay?: boolean;
+  /** The caller may pay and re-request (`property.write` of the context); default true. */
+  canManage?: boolean;
   testId?: string;
 }
 
@@ -36,6 +38,7 @@ export function ServiceRequestsCard({
   context = 'short-rent',
   action,
   showStay = false,
+  canManage = true,
   testId = 'service-requests-card',
 }: ServiceRequestsCardProps) {
   const { t } = useTranslation();
@@ -67,7 +70,7 @@ export function ServiceRequestsCard({
             {emptyText}
           </p>
         ) : (
-          <ServiceRequestTimeline requests={items} context={context} showStay={showStay} />
+          <ServiceRequestTimeline requests={items} context={context} showStay={showStay} canManage={canManage} />
         )}
       </CardContent>
     </Card>

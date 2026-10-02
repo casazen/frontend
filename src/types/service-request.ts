@@ -39,6 +39,11 @@ export interface ServiceRequest {
   rejectionReason?: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * The steps of the request, oldest first, with date and party (SU-09): requested and paid by the host, taken,
+   * completed or rejected by the supplier. The supplier's team members are never named to the host.
+   */
+  history?: ServiceRequestHistoryEntry[];
 }
 
 /** The stay of a short-rent request as the supplier sees it (SU-08): dates only, never the guest. */

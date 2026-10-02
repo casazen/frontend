@@ -75,7 +75,6 @@ export interface CreatePropertyDto {
   cleaningFee?: number;
   damageDeposit?: number;
   amenities?: string[];
-  photoUrls?: string[];
   houseRules?: string;
   cinCode?: string | null;
   timezone?: string;
@@ -88,6 +87,20 @@ export interface CreatePropertyDto {
  * `cinCode`, `slug` and `cancellationPolicyId` sent as `null` are cleared.
  */
 export type UpdatePropertyDto = Partial<CreatePropertyDto>;
+
+/**
+ * Photo gallery of a property (`GET /properties/{id}/images`, PC-04) and the answer of every change to it: the photo
+ * URLs in display order (absolute public URLs of the storage; the first is the cover that the public pages show first)
+ * and the rules the upload enforces. The photos are never part of `CreatePropertyDto` / `UpdatePropertyDto`: the API
+ * ignores a `photoUrls` sent there.
+ */
+export interface PropertyPhotosDto {
+  photoUrls: string[];
+  maxPhotos: number;
+  maxFilesPerRequest: number;
+  maxFileSizeBytes: number;
+  allowedContentTypes: string[];
+}
 
 /** A cancellation policy a property can reference (`GET /properties/cancellation-policies`). */
 export interface CancellationPolicyOption {
@@ -123,6 +136,11 @@ export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 export interface PublicPropertyDto {
   id: string;
   slug?: string | null;
+  /**
+   * Current slug of the org that owns the property: with `slug`, the property page of its booking site
+   * (`/book/{orgSlug}/property/{slug}`). Absent only from an older backend (BK-20, A3-27).
+   */
+  orgSlug?: string;
   name: string;
   description: string;
   city: string;
@@ -147,6 +165,8 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   cancellationPolicySummary: string;
   minNights: number | null;
   currency: string;
+  /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
+  canonicalUrl?: string | null;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
@@ -227,13 +247,15 @@ export interface PropertyPauseStatus {
   pausedAt: string | null;
 }
 
+/**
+ * Filters of the public search, all optional (BK-20, A8-13): `city` is a part of the name, the minimums are inclusive,
+ * `guests` is the number of guests the property must sleep. Every one of them is sent to `GET /api/properties/search`.
+ */
 export interface PropertySearchParams {
   city?: string;
   minPrice?: number;
   maxPrice?: number;
   minBedrooms?: number;
-  maxGuests?: number;
-  amenities?: string[];
-  page?: number;
-  limit?: number;
+  minBathrooms?: number;
+  guests?: number;
 }

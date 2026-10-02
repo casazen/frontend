@@ -79,9 +79,21 @@ describe('LongRentServiceRequests (SU-07, D2)', () => {
     renderSection();
 
     fireEvent.click(await screen.findByTestId('mark-paid-sr-lease'));
+    // SU-09: "Segna pagato" is irreversible, so it asks for confirmation first.
+    expect(api.markLongRentServiceRequestPaid).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByTestId('mark-paid-confirm'));
 
     await waitFor(() => expect(api.markLongRentServiceRequestPaid).toHaveBeenCalledWith('sr-lease'));
     expect(api.markServiceRequestPaid).not.toHaveBeenCalled();
+  });
+
+  it('LongRentServiceRequests_WithoutLongRentWrite_DoesNotOfferMarkPaid', async () => {
+    workspace.permissions = new Set(['long-rent:property.read']);
+
+    renderSection();
+
+    expect(await screen.findByTestId('service-request-sr-lease')).toBeInTheDocument();
+    expect(screen.queryByTestId('mark-paid-sr-lease')).not.toBeInTheDocument();
   });
 
   it('LongRentServiceRequests_LoadFails_ShowsTheErrorNotAnEmptyList', async () => {

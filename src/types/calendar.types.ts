@@ -39,6 +39,8 @@ export interface CalendarItemDto {
   feedLabel?: string | null;
   /** `ical-block` only: `ICalImport` or `Manual` (CO-21). */
   blockSource?: string | null;
+  /** `ical-block` with `blockSource` `Manual` only: why the host closed the dates (PC-09); `summary` is then the note. */
+  blockReason?: string | null;
   /** `ical-block` only: its import feed (CO-21). */
   feedId?: string | null;
   /** `ical-block` only: the OTA stay created from it, while not cancelled (CO-21). */
@@ -63,4 +65,33 @@ export interface CalendarResponseDto {
   bookings: CalendarBookingDto[];
   /** Every booking and block of the range (`bookings` holds the bookings only). */
   items: CalendarItemDto[];
+}
+
+/** Why the host closed dates by hand (backend `CalendarBlockReason`, PC-09). */
+export const MANUAL_BLOCK_REASONS = ['Owner', 'Maintenance', 'Other'] as const;
+export type ManualBlockReason = (typeof MANUAL_BLOCK_REASONS)[number];
+
+/** Longest note of a manual block (backend `CalendarBlock.ManualNoteMaxLength`). */
+export const MANUAL_BLOCK_NOTE_MAX_LENGTH = 200;
+
+/** Longest manual block in nights (backend `ManualBlocks.MaxNights`). */
+export const MANUAL_BLOCK_MAX_NIGHTS = 366;
+
+/** `POST /api/properties/{id}/blocks` (PC-09): nights from `startDate` (included) to `endDate` (first free day). */
+export interface CreateManualBlockDto {
+  startDate: string;
+  endDate: string;
+  reason: ManualBlockReason;
+  note?: string;
+}
+
+/** A manual block (backend `ManualBlockDto`): stay dates without time zone (`2026-10-10T00:00:00`). */
+export interface ManualBlockDto {
+  id: string;
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  nights: number;
+  reason: ManualBlockReason | string;
+  note?: string | null;
 }
