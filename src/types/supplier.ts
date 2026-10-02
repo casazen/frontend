@@ -17,16 +17,35 @@ export interface SupplierProfile {
   tosAcceptedAt?: string | null;
 }
 
+/** Ids of the five activation wizard steps, in order (SU-05). */
+export const ACTIVATION_STEP_IDS = ['identity', 'services', 'showcase', 'profile', 'terms'] as const;
+export type ActivationStepId = (typeof ACTIVATION_STEP_IDS)[number];
+
 export interface ActivationStep {
-  id: string;
-  label: string;
-  status: string;
+  id: ActivationStepId;
+  status: 'completed' | 'pending';
+  /** Stable code of the first missing requirement (`categories_missing`, ...), null when the step is complete. */
   blocker?: string | null;
+  /** False for a step that never blocks the activation (showcase photos). */
+  required: boolean;
+}
+
+export interface SupplierTos {
+  currentVersion: string;
+  acceptedVersion?: string | null;
+  acceptedAt?: string | null;
+  /** The supplier accepted a version other than the current one (or before versions were recorded). */
+  reacceptanceRequired: boolean;
+  /** Take, complete and reject are refused until the current version is accepted. */
+  blocksActions: boolean;
 }
 
 export interface ActivationStatus {
   status: string;
+  /** Step number (1-5) saved by the server: the wizard resumes there on any device. */
+  currentStep: number;
   steps: ActivationStep[];
+  tos: SupplierTos;
 }
 
 export interface SupplierInboxResponse {

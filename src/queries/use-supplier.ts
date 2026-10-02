@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   claimSupplierProfile,
+  acceptSupplierTos,
   completeSupplierActivation,
+  saveSupplierActivationStep,
   fetchAdminInvites,
   fetchAdminSuppliers,
   fetchSupplierAudit,
@@ -101,7 +103,23 @@ export function useSupplierInboxItem(id: string | undefined) {
 export function useCompleteSupplierActivation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (tosAccepted: boolean) => completeSupplierActivation(tosAccepted),
+    mutationFn: ({ tosAccepted, tosVersion }: { tosAccepted: boolean; tosVersion: string }) =>
+      completeSupplierActivation(tosAccepted, tosVersion),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['supplier'] });
+    },
+  });
+}
+
+/** Saves the wizard step; the activation status is not refetched (the wizard keeps its own step while it is open). */
+export function useSaveSupplierActivationStep() {
+  return useMutation({ mutationFn: saveSupplierActivationStep });
+}
+
+export function useAcceptSupplierTos() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: acceptSupplierTos,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplier'] });
     },
