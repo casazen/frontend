@@ -1,7 +1,7 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { fillHostBookingGuestContact } from './helpers/onboarding';
-import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { fillPropertyForm, mockPropertiesApi } from './helpers/properties-api-mock';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import { mockCinComplianceApi } from './helpers/cin-mock';
 import { mockAlloggiatiApi, mockCheckInApi, mockBookingDetailApi, DEMO_CHECKIN_TOKEN, DEMO_BOOKING_ID } from './helpers/alloggiati-mock';
@@ -140,6 +140,11 @@ function mockGdprApi(page: import('@playwright/test').Page) {
   });
 
   page.route('**/api/bookings**', async (route) => {
+    // `**/api/bookings**` also matches the Vite module `/src/api/bookings.api.ts`: only the API is answered.
+    if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
+      await route.fallback();
+      return;
+    }
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({
       status: 200,
@@ -170,26 +175,26 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
 
-      await page.getByLabel(/Property Name|Nome proprietà/i).fill('Casa Conforme');
-      await page.getByLabel(/Description|Descrizione/i).fill('Test CIN validation.');
-      await page.getByLabel(/Address|Indirizzo/i).fill('Via Dante 1');
-      await page.getByLabel(/City|Città/i).fill('Roma');
-      await page.getByLabel(/Country|Nazione/i).fill('IT');
-      await page.getByLabel(/ZIP|CAP/i).fill('00100');
-      await page.getByLabel(/Bedrooms|Camere/i).fill('2');
-      await page.getByLabel(/Bathrooms|Bagni/i).fill('1');
-      await page.getByLabel(/Max Guests|Ospiti max/i).fill('4');
-      await page.getByLabel(/Price per Night|Prezzo per notte/i).fill('120');
-
       // Real CIN (official BDSR format) typed with separators: accepted, the backend stores it normalized
-      await page.getByLabel(/CIN/i).fill('IT-058091-C2-7G5FFZDZ');
+      await fillPropertyForm(page, {
+        name: 'Casa Conforme',
+        description: 'Test CIN validation.',
+        address: 'Via Dante 1',
+        comune: 'Roma',
+        postalCode: '00100',
+        bedrooms: 2,
+        bathrooms: 1,
+        maxGuests: 4,
+        nightlyRate: 120,
+        cinCode: 'IT-058091-C2-7G5FFZDZ',
+      });
 
       const resp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && r.url().includes('/api/properties'),
       );
-      await page.getByRole('button', { name: /Create|Crea/i }).click();
+      await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
       expect((await resp).status()).toBe(201);
-      await expect(page.getByText(/created successfully|creata con successo/i)).toBeVisible();
+      await expect(page.getByText(/created successfully|creato con successo/i)).toBeVisible();
     });
 
     test('CIN deadline banner visible → navigates to compliance dashboard', async ({ page }) => {
@@ -202,8 +207,9 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('cin-compliance-page')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByTestId('cin-summary-cards')).toBeVisible();
       await expect(page.getByTestId('cin-compliance-table')).toBeVisible();
-      await expect(page.getByText(/Mancante|Missing/i)).toBeVisible();
-      await expect(page.getByText(/Valido|Valid/i)).toBeVisible();
+      const table = page.getByTestId('cin-compliance-table');
+      await expect(table.getByRole('row', { name: /Appartamento Centro/ })).toContainText(/Mancante/);
+      await expect(table.getByRole('row', { name: /Monolocale Mare/ })).toContainText(/Valido/);
     });
   });
 
@@ -225,8 +231,8 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByText(/creata con successo|created successfully/i)).toBeVisible({ timeout: 10_000 });
 
       // Verify appears
-      await expect(page.getByText('Roma')).toBeVisible();
-      await expect(page.getByText('3.50')).toBeVisible();
+      // The rate is shown with the Italian number format (3,50).
+      await expect(page.getByRole('row', { name: /Roma/ })).toContainText(/3,50/);
     });
 
     test('public tourist tax widget calculates without auth header', async ({ page }) => {
@@ -249,11 +255,8 @@ test.describe('Italian Compliance Golden Path', () => {
             comuneSlug: 'como',
             canonicalUrl: 'https://casazen.app/p/tassa-soggiorno/como',
             lastRefreshedAt: '2026-01-01T00:00:00Z',
-            disclaimers: {
-              lastUpdated: '2026-01-01',
-              notLegalAdvice: 'Non è un parere legale.',
-              aiGenerated: '',
-            },
+            aiGenerated: true,
+            contentLanguage: 'it',
             cta: { signupUrl: '/signup' },
             touristTaxRates: [{
               city: 'Como',
@@ -273,6 +276,13 @@ test.describe('Italian Compliance Golden Path', () => {
               sourceUrl: null,
             }],
           }),
+        });
+      });
+      await page.route('**/api/public/seo/*/featured-properties', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ comuneSlug: 'como', comuneName: 'Como', properties: [] }),
         });
       });
       await page.route('**/api/public/tourist-tax/calculate', async (route) => {
@@ -368,7 +378,7 @@ test.describe('Italian Compliance Golden Path', () => {
       await page.getByRole('button', { name: /Create|Crea/i }).click();
       expect((await resp).status()).toBe(201);
 
-      await expect(page.getByText(/20[,.]00/)).toBeVisible();
+      await expect(page.getByTestId('booking-price-tax')).toContainText(/20[,.]00/);
     });
   });
 
@@ -390,10 +400,15 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('checkin-progress')).toBeVisible();
 
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
+      // CO-02: the document is asked again (the number on file is never sent back to the guest).
+      await page.locator('#guest-0-documentType').selectOption('IdentityCard');
       await page.locator('#guest-0-documentNumber').fill('AB1234567');
+      await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
 
+      // The last step shows the privacy notice first: moving to it must not submit the form.
       await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
+      await expect(page.getByTestId('checkin-success')).toHaveCount(0);
       await page.getByTestId('checkin-submit').click();
       await expect(page.getByTestId('checkin-success')).toBeVisible({ timeout: 10_000 });
       expect(authHeader).toBeUndefined();
@@ -420,7 +435,9 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByTestId('alloggiati-status-badge')).toHaveText(/Da inviare manualmente|To send manually/i);
-      await expect(page.getByTestId('alloggiati-guest-summary')).toContainText('CA12345AB');
+      // The document number is masked (CO-02): the full one is never in the page until the host reveals it.
+      await expect(page.getByTestId('alloggiati-guest-summary')).toContainText('*****45AB');
+      await expect(page.getByTestId('alloggiati-guest-summary')).not.toContainText('CA12345AB');
 
       await page.getByTestId('alloggiati-resend-button').click();
       await page.getByTestId('alloggiati-sent-confirm').click();

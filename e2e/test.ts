@@ -57,6 +57,31 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
+  // PL-15: an activated host. The activation checklist of the dashboard hides once every step is done, so the specs
+  // that do not test it see the dashboard as before.
+  await page.route('**/api/onboarding/status**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const keys = ['account', 'organization', 'property', 'cin', 'payments', 'sitePublished', 'firstBooking'];
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        roleChosen: true,
+        orgProvisioned: true,
+        consentsAccepted: true,
+        propertyCreated: true,
+        sitePublished: true,
+        firstBookingTaken: true,
+        activated: true,
+        publicBookingUrl: null,
+        steps: keys.map((key) => ({ key, state: 'done', reason: null, done: null, total: null })),
+      }),
+    });
+  });
+
   await page.route('**/api/compliance/summary**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -160,19 +185,19 @@ async function mockLegalDocuments(page: import('@playwright/test').Page): Promis
     documentUrl: 'https://example.com/legal/document',
   };
 
-  await page.route('**/api/legal/tos', async (route) => {
+  await page.route(/\/api\/legal\/tos(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(legalDoc) });
   });
-  await page.route('**/api/legal/privacy', async (route) => {
+  await page.route(/\/api\/legal\/privacy(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(legalDoc) });
   });
-  await page.route('**/api/legal/dpa', async (route) => {
+  await page.route(/\/api\/legal\/dpa(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(legalDoc) });
   });
-  await page.route('**/api/legal/subprocessors', async (route) => {
+  await page.route(/\/api\/legal\/subprocessors(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') { await route.fallback(); return; }
     await route.fulfill({
       status: 200,

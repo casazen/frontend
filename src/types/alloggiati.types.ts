@@ -202,5 +202,3 @@ export interface GuestCheckInDataResponse {
 export interface GuestDocumentUploadResponse {
   documentScanUrl: string;
 }
-
-export const ALLOGGIATI_CHECKIN_CONSENT_VERSION = '2026-06-01';

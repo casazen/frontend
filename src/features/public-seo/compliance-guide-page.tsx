@@ -4,7 +4,9 @@ import { Loader2 } from 'lucide-react';
 import { useComplianceGuide } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
+import { SeoContentLanguageNote } from './components/seo-content-language-note';
 import { SeoCtaBlock } from './components/seo-cta-block';
+import { FeaturedProperties } from './components/featured-properties';
 import { TouristTaxCalculatorWidget } from './components/tourist-tax-calculator-widget';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 
@@ -19,8 +21,12 @@ export function ComplianceGuidePage() {
           title: page.title,
           description: page.metaDescription,
           canonicalUrl: page.canonicalUrl,
+          ogType: 'article',
         }
-      : null,
+      : // A page that is not published or failed to load is never indexed (BK-15, A8-09: soft 404).
+        isError
+        ? { title: t('publicSeo.notFound'), noindex: true }
+        : null,
   );
 
   if (isLoading) {
@@ -51,7 +57,10 @@ export function ComplianceGuidePage() {
         <h1 className="mt-1 text-3xl font-bold">{page.title}</h1>
       </header>
 
+      <SeoContentLanguageNote contentLanguage={page.contentLanguage} />
+
       <article
+        lang={page.contentLanguage}
         className="prose prose-neutral max-w-none dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.bodyHtml) }}
         data-testid="compliance-guide-body"
@@ -63,8 +72,10 @@ export function ComplianceGuidePage() {
         rates={page.touristTaxRates ?? []}
       />
 
-      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} />
-      <SeoDisclaimerFooter disclaimers={page.disclaimers} />
+      <FeaturedProperties comuneSlug={page.comuneSlug} comuneName={page.comuneName} />
+
+      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />
+      <SeoDisclaimerFooter lastRefreshedAt={page.lastRefreshedAt} aiGenerated={page.aiGenerated} />
     </main>
   );
 }

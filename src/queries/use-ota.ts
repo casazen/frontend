@@ -2,9 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { otaApi } from '@/api/ota.api';
 import type {
   CreateOtaIntegrationDto,
-  UpdateOtaIntegrationDto,
   OtaPlatform,
-  OtaPricingUpdate,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -20,22 +18,6 @@ export function useOtaIntegrations(params?: Record<string, unknown>, options?: {
   });
 }
 
-export function useOtaIntegration(id: string) {
-  return useQuery({
-    queryKey: [OTA_KEY, id],
-    queryFn: () => otaApi.getById(id),
-    enabled: !!id,
-  });
-}
-
-export function useOtaStatus() {
-  return useQuery({
-    queryKey: [OTA_KEY, 'status'],
-    queryFn: () => otaApi.getStatus(),
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
-}
-
 export function useCreateOtaIntegration() {
   const queryClient = useQueryClient();
 
@@ -47,38 +29,6 @@ export function useCreateOtaIntegration() {
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.otaIntegrationCreateFailed'));
-    },
-  });
-}
-
-export function useUpdateOtaIntegration() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateOtaIntegrationDto }) =>
-      otaApi.update(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
-      queryClient.invalidateQueries({ queryKey: [OTA_KEY, variables.id] });
-      toast.success(i18n.t('toast.otaIntegrationUpdated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.otaIntegrationUpdateFailed'));
-    },
-  });
-}
-
-export function useDeleteOtaIntegration() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => otaApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
-      toast.success(i18n.t('toast.otaIntegrationDeleted'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.otaIntegrationDeleteFailed'));
     },
   });
 }
@@ -111,37 +61,6 @@ export function useSyncOtaPlatform() {
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.platformSyncFailed'));
-    },
-  });
-}
-
-export function useUpdateOtaPricing() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: OtaPricingUpdate) => otaApi.updatePricing(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [OTA_KEY] });
-      toast.success(i18n.t('toast.otaPricingUpdated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.otaPricingUpdateFailed'));
-    },
-  });
-}
-
-export function useValidateOta() {
-  return useMutation({
-    mutationFn: (id: string) => otaApi.validate(id),
-    onSuccess: (data) => {
-      if (data.isValid) {
-        toast.success(i18n.t('toast.otaCredentialsValidated'));
-      } else {
-        toast.error(i18n.t('toast.otaValidationFailed', { errors: data.errors?.join(', ') ?? '' }));
-      }
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.otaCredentialsValidationFailed'));
     },
   });
 }

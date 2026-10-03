@@ -17,6 +17,18 @@ export interface ComplianceWizardStep {
   touristTax?: ActivationTouristTax | null;
   /** What keeps this blocking step incomplete, with stable codes (e.g. `safety_gas_detector_missing`). */
   blockers?: ActivationBlocker[];
+  /** Non-blocking notes of the step with stable codes (SU-04): the step may be complete and still carry them. */
+  warnings?: ActivationWarning[];
+}
+
+/**
+ * A note that never blocks the activation: stable code and the message localized by the API (it names the comuni
+ * involved), e.g. `cin_istat_comune_mismatch` (the comune inside the CIN is not the property's) or `comune_istat_missing`.
+ */
+export interface ActivationWarning {
+  step: string;
+  code: string;
+  message: string;
 }
 
 /** One reason why the activation is blocked: stable code, localized message from the API. */

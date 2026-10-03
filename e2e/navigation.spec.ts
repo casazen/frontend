@@ -10,7 +10,7 @@ test.describe('Navigation (#252 / #259)', () => {
     test('sidebar shows grouped sections', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
+      const sidebar = page.getByRole('complementary', { name: 'Navigazione principale' });
       await expect(sidebar.getByText(/Operazioni|Operations/i)).toBeVisible();
       await expect(sidebar.getByText(/Finanza|Finance/i)).toBeVisible();
     });
@@ -20,7 +20,7 @@ test.describe('Navigation (#252 / #259)', () => {
         waitUntil: 'domcontentloaded',
       });
 
-      const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
+      const sidebar = page.getByRole('complementary', { name: 'Navigazione principale' });
       const calendarLink = sidebar.getByRole('link', { name: /Calendario|Calendar/i });
       const bookingsLink = sidebar.getByRole('link', { name: /Prenotazioni|Bookings/i });
 
@@ -33,14 +33,14 @@ test.describe('Navigation (#252 / #259)', () => {
         waitUntil: 'domcontentloaded',
       });
 
-      await expect(page.getByRole('complementary', { name: 'Main navigation' })).toBeVisible();
+      await expect(page.getByRole('complementary', { name: 'Navigazione principale' })).toBeVisible();
       await expect(page.getByRole('heading', { name: /Analisi ricavi|Revenue Analytics/i })).toBeVisible();
     });
 
     test('CIN page uses app shell with sidebar', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/compliance/cin', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByRole('complementary', { name: 'Main navigation' })).toBeVisible();
+      await expect(page.getByRole('complementary', { name: 'Navigazione principale' })).toBeVisible();
       await expect(page.getByTestId('cin-compliance-page')).toBeVisible();
     });
   });

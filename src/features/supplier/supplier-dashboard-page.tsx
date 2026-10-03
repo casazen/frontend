@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSupplierDashboard, useSupplierKpis } from '@/queries/use-supplier';
+import { useSupplierActivation, useSupplierDashboard, useSupplierKpis } from '@/queries/use-supplier';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate } from '@/lib/stay-dates';
 import { SUPPLIER_KPI_PERIODS } from '@/types/supplier';
@@ -116,6 +116,40 @@ function ErrorPanel({ testId, message, onRetry }: { testId: string; message: str
         <p className="flex-1 text-sm text-destructive">{message}</p>
         <Button size="sm" variant="outline" onClick={onRetry}>
           {t('supplier.retry')}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * An active supplier whose accepted Terms of Service are not the current version (SU-05, A4-31): says what happens and
+ * links the acceptance. It stays out of the way while the status loads or fails (the dashboard has its own error state).
+ */
+function TosReacceptanceBanner() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { data: activation } = useSupplierActivation();
+  const tos = activation?.tos;
+  if (activation?.status !== 'Active' || !tos?.reacceptanceRequired) return null;
+
+  return (
+    <Card className="mb-4 border-amber-300 bg-amber-50" role="alert" data-testid="supplier-tos-reacceptance-banner">
+      <CardContent className="flex items-center gap-3 py-4">
+        <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-amber-900">{t('supplier.activation.reaccept.banner')}</p>
+          <p className="text-xs text-amber-900">
+            {tos.blocksActions ? t('supplier.activation.reaccept.bannerBlocking') : t('supplier.activation.reaccept.bannerSoft')}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="shrink-0 border-amber-400 text-amber-900"
+          onClick={() => navigate('/app/supplier/activation')}
+        >
+          {t('supplier.activation.reaccept.bannerAction')}
         </Button>
       </CardContent>
     </Card>
@@ -270,11 +304,14 @@ export function SupplierDashboardPage() {
   }
 
   const isActive = dashboard.status === 'Active';
+  const isSuspended = dashboard.status === 'Suspended';
   const hasSync = dashboard.calendarSyncStatus?.calendarSyncType !== 'None';
 
   return (
     <div>
       {header}
+
+      <TosReacceptanceBanner />
 
       {/* Incomplete profile compact warning */}
       {dashboard.profileCompletionPercent < 100 && (
@@ -340,18 +377,25 @@ export function SupplierDashboardPage() {
             {isActive ? (
               <CheckCircle2 className="h-8 w-8 text-green-500" />
             ) : (
-              <AlertTriangle className="h-8 w-8 text-amber-500" />
+              <AlertTriangle className={`h-8 w-8 ${isSuspended ? 'text-destructive' : 'text-amber-500'}`} />
             )}
             <div>
-              <p className={`text-lg font-semibold ${isActive ? 'text-green-700' : 'text-amber-700'}`}>
-                {isActive ? t('supplier.statusActive') : t('supplier.statusPending')}
+              <p
+                className={`text-lg font-semibold ${isActive ? 'text-green-700' : isSuspended ? 'text-destructive' : 'text-amber-700'}`}
+                data-testid="supplier-dashboard-status"
+              >
+                {isActive ? t('supplier.statusActive') : isSuspended ? t('supplier.statusSuspended') : t('supplier.statusPending')}
               </p>
               <p className="text-xs text-muted-foreground">
-                {isActive ? t('supplier.visibleToHosts') : t('supplier.completeActivationHint')}
+                {isActive
+                  ? t('supplier.visibleToHosts')
+                  : isSuspended
+                    ? t('supplier.suspendedHint')
+                    : t('supplier.completeActivationHint')}
               </p>
             </div>
           </div>
-          {!isActive && (
+          {!isActive && !isSuspended && (
             <Button className="mt-3 w-full" size="sm" onClick={() => navigate('/app/supplier/activation')}>
               {t('supplier.goToActivation')}
             </Button>

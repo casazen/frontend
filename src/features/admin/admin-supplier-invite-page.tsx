@@ -13,6 +13,9 @@ import { ServiceCategoryPicker } from '@/features/service-requests/components/se
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
+import { ComunePicker } from '@/components/shared/comune-picker';
+
+const ISTAT_CODE = /^[0-9]{6}$/;
 
 export function AdminSupplierInvitePage() {
   const { t } = useTranslation();
@@ -75,13 +78,24 @@ export function AdminSupplierInvitePage() {
             />
           </div>
           <div>
-            <Label htmlFor="comune">{t('admin.supplierInvite.comuneCode')}</Label>
-            <Input
-              id="comune"
-              data-testid="invite-comune-input"
-              value={comuneCode}
-              onChange={(e) => setComuneCode(e.target.value)}
-              placeholder="H501"
+            <Label htmlFor="comune-picker">{t('admin.supplierInvite.comune')}</Label>
+            {/* The invite names a comune of the official ISTAT list (by its code); without the list the code is typed as before. */}
+            <ComunePicker
+              id="comune-picker"
+              istatCode={ISTAT_CODE.test(comuneCode) ? comuneCode : null}
+              onChange={(comune) => setComuneCode(comune?.istatCode ?? '')}
+              unavailableFallback={
+                <div>
+                  <Label htmlFor="comune">{t('admin.supplierInvite.comuneCode')}</Label>
+                  <Input
+                    id="comune"
+                    data-testid="invite-comune-input"
+                    value={comuneCode}
+                    onChange={(e) => setComuneCode(e.target.value)}
+                    placeholder="H501"
+                  />
+                </div>
+              }
             />
           </div>
           <div>

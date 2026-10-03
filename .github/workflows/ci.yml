@@ -40,6 +40,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # FN-02 (A9-33): unused files, exports and dependencies fail the build (config and ignores: knip.json).
+      - name: Dead code (knip)
+        run: npm run knip
+
       - name: Unit tests (vitest)
         run: npm test
 

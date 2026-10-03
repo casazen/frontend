@@ -33,6 +33,17 @@ export function useTouristTaxPage(comune: string) {
   });
 }
 
+/** Featured properties of a comune (SE-04, AC2): a short list, read again after a while, errors shown, not hidden. */
+export function useFeaturedProperties(comune: string) {
+  return useQuery({
+    queryKey: [PUBLIC_SEO_KEY, 'featured-properties', comune],
+    queryFn: () => PublicSeoApi.getFeaturedProperties(comune),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    enabled: !!comune,
+  });
+}
+
 export function useCalculateTouristTax() {
   return useMutation({
     mutationFn: (request: PublicTouristTaxCalculateRequest) =>

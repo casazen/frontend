@@ -4,12 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
-import type { SupplierDashboard, SupplierKpis } from '@/types/supplier';
+import type { ActivationStatus, SupplierDashboard, SupplierKpis } from '@/types/supplier';
 import { SupplierDashboardPage } from '../supplier-dashboard-page';
 
 const api = vi.hoisted(() => ({
   fetchSupplierDashboard: vi.fn(),
   fetchSupplierKpis: vi.fn(),
+  fetchSupplierActivation: vi.fn(),
 }));
 
 vi.mock('@/services/supplier-api', async (importOriginal) => ({
@@ -23,6 +24,13 @@ const DASHBOARD: SupplierDashboard = {
   availabilityRate: 0.5,
   calendarSyncStatus: { calendarSyncType: 'None' },
   lastUpdated: '2026-09-20T08:00:00Z',
+};
+
+const ACTIVATION: ActivationStatus = {
+  status: 'Active',
+  currentStep: 5,
+  steps: [],
+  tos: { currentVersion: '2026-10-v1', acceptedVersion: '2026-10-v1', acceptedAt: '2026-10-01T08:00:00Z', reacceptanceRequired: false, blocksActions: false },
 };
 
 const KPIS: SupplierKpis = {
@@ -58,6 +66,7 @@ describe('SupplierDashboardPage (SU-11, A4-15)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     api.fetchSupplierDashboard.mockResolvedValue(DASHBOARD);
+    api.fetchSupplierActivation.mockResolvedValue(ACTIVATION);
     api.fetchSupplierKpis.mockResolvedValue(KPIS);
     await i18n.changeLanguage('it');
   });
@@ -160,5 +169,51 @@ describe('SupplierDashboardPage (SU-11, A4-15)', () => {
     await screen.findByTestId('supplier-kpi-completed');
     expect(screen.getByTestId('supplier-kpi-awaiting')).toHaveTextContent('Waiting to be taken');
     expect(screen.getByTestId('supplier-kpis-range')).toHaveTextContent('11 requests received in total');
+  });
+  it('SupplierDashboardPage_SuspendedSupplier_ShowsSuspendedStateAndNoActivationButton', async () => {
+    api.fetchSupplierDashboard.mockResolvedValue({ ...DASHBOARD, status: 'Suspended' });
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-dashboard-status')).toHaveTextContent('Sospeso');
+    expect(screen.getByText('Contatta il supporto CasaZen per riattivare l\'account.')).toBeInTheDocument();
+    // Activating again is refused by the API for a suspended supplier: the button is not offered.
+    expect(screen.queryByRole('button', { name: /attivazione/i })).not.toBeInTheDocument();
+  });
+
+  it('SupplierDashboardPage_PendingSupplier_StillOffersTheActivation', async () => {
+    api.fetchSupplierDashboard.mockResolvedValue({ ...DASHBOARD, status: 'Pending' });
+    renderPage();
+
+    expect(await screen.findByTestId('supplier-dashboard-status')).toHaveTextContent('In attesa');
+    expect(screen.getByRole('button', { name: /attivazione/i })).toBeInTheDocument();
+  });
+  it('SupplierDashboardPage_OlderTermsAccepted_ShowsTheBlockingReacceptanceBanner', async () => {
+    api.fetchSupplierActivation.mockResolvedValue({
+      ...ACTIVATION,
+      tos: { ...ACTIVATION.tos, acceptedVersion: '2025-01-v1', reacceptanceRequired: true, blocksActions: true },
+    });
+    renderPage();
+
+    const banner = await screen.findByTestId('supplier-tos-reacceptance-banner');
+    expect(banner).toHaveTextContent('Accetta la nuova versione dei Termini di Servizio');
+    expect(banner).toHaveTextContent('non puoi prendere in carico, completare o rifiutare incarichi');
+  });
+
+  it('SupplierDashboardPage_TermsAcceptedBeforeVersionsWereRecorded_AsksWithoutSayingItBlocks', async () => {
+    api.fetchSupplierActivation.mockResolvedValue({
+      ...ACTIVATION,
+      tos: { ...ACTIVATION.tos, acceptedVersion: null, reacceptanceRequired: true, blocksActions: false },
+    });
+    renderPage();
+
+    const banner = await screen.findByTestId('supplier-tos-reacceptance-banner');
+    expect(banner).not.toHaveTextContent('non puoi prendere in carico');
+  });
+
+  it('SupplierDashboardPage_CurrentTermsAccepted_ShowsNoBanner', async () => {
+    renderPage();
+
+    await screen.findByTestId('supplier-kpi-completed');
+    expect(screen.queryByTestId('supplier-tos-reacceptance-banner')).not.toBeInTheDocument();
   });
 });

@@ -6,21 +6,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
-import { Pencil, Check, X, Upload, Trash2, ImageIcon } from 'lucide-react';
+import { Pencil, Check, X, Upload, Trash2, ImageIcon, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { getServiceCategoryLabel, getSupplierStatusLabel } from '@/lib/i18n-labels';
 import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
+import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
+import { useComuneDatasetStatus } from '@/queries/use-comuni';
+import { comuneLabel } from '@/lib/comune-label';
+import type { SupplierProfile } from '@/types/supplier';
+
+/** The comuni of a profile as the form edits them: the ISTAT ones chosen from the list, and the text not covered by them. */
+function comuniValueOf(profile: SupplierProfile): SupplierComuniValue {
+  const istatCodes = profile.comuneIstatCodes ?? [];
+  return { istatCodes, legacy: (profile.comuni ?? []).filter((entry) => !istatCodes.includes(entry)) };
+}
 
 const MAX_PHOTOS = 10;
 
 export function SupplierProfilePage() {
   const { t } = useTranslation();
-  const { data: profile, isLoading } = useSupplierProfile();
+  const { data: profile, isLoading, isError, error, refetch } = useSupplierProfile();
   const updateProfile = useUpdateSupplierProfile();
   const uploadPhotos = useUploadSupplierPhotos();
   const { data: categoryCodes } = useServiceCategories();
@@ -33,7 +45,9 @@ export function SupplierProfilePage() {
   const [vatNumber, setVatNumber] = useState('');
   const [phone, setPhone] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
-  const [comuneInput, setComuneInput] = useState('');
+  const [comuni, setComuni] = useState<SupplierComuniValue>({ istatCodes: [], legacy: [] });
+  const comuneStatus = useComuneDatasetStatus();
+  const comuneListAvailable = comuneStatus.data?.datasetAvailable === true;
   const [bio, setBio] = useState('');
 
   // Photo management
@@ -49,7 +63,7 @@ export function SupplierProfilePage() {
     setVatNumber(profile.vatNumber ?? '');
     setPhone(profile.phone ?? '');
     setCategories(profile.categories ?? []);
-    setComuneInput((profile.comuni ?? []).join(', '));
+    setComuni(comuniValueOf(profile));
     setBio(profile.bio ?? '');
     setExistingPhotos(profile.photoUrls ?? []);
     setNewPhotoFiles([]);
@@ -115,7 +129,9 @@ export function SupplierProfilePage() {
         vatNumber: vatNumber.trim(),
         phone: phone.trim() || undefined,
         categories: keepKnownCategories(categories, categoryCodes),
-        comuni: comuneInput.split(',').map((x) => x.trim()).filter(Boolean),
+        comuni: comuni.legacy,
+        // Only while the official list is imported: the API refuses ISTAT codes otherwise and leaves the stored ones as they are.
+        ...(comuneListAvailable ? { comuneIstatCodes: comuni.istatCodes } : {}),
         bio: bio.trim(),
         photoUrls: existingPhotos,
       });
@@ -128,6 +144,21 @@ export function SupplierProfilePage() {
     }
   };
 
+  // An API error is not an endless spinner (SU-06, A4-25): say it failed and offer a retry.
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} />
+        <ErrorState
+          testId="supplier-profile-error"
+          title={t('supplier.profileLoadError')}
+          error={error}
+          onRetry={() => void refetch()}
+        />
+      </div>
+    );
+  }
+
   if (isLoading || !profile) {
     return <LoadingScreen message={t('supplier.profileLoading')} />;
   }
@@ -139,9 +170,16 @@ export function SupplierProfilePage() {
       <div className="flex items-center justify-between">
         <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} />
         {!editing && (
-          <Button variant="outline" size="sm" onClick={() => { hydrate(); setEditing(true); }}>
-            <Pencil className="mr-1 h-4 w-4" /> {t('supplier.editProfile')}
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/app/supplier/showcase" data-testid="supplier-showcase-preview-link">
+                <Eye className="mr-1 h-4 w-4" /> {t('supplier.showcase.previewLink')}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { hydrate(); setEditing(true); }}>
+              <Pencil className="mr-1 h-4 w-4" /> {t('supplier.editProfile')}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -190,9 +228,16 @@ export function SupplierProfilePage() {
                 </div>
               </div>
               <div>
-                <Label>{t('supplier.operatingMunicipalities')}</Label>
-                <Input value={comuneInput} onChange={(e) => setComuneInput(e.target.value)}
-                       placeholder={t('supplier.comuniPlaceholder')} className="mt-1" />
+                <Label htmlFor="supplier-comuni">{t('supplier.operatingMunicipalities')}</Label>
+                <div className="mt-1">
+                  <SupplierComuniField
+                    id="supplier-comuni"
+                    value={comuni}
+                    known={profile.operatingComuni}
+                    onChange={setComuni}
+                    disabled={saving}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -353,14 +398,25 @@ export function SupplierProfilePage() {
               </div>
               <div>
                 <span className="text-sm font-medium text-muted-foreground">{t('supplier.municipalities')}</span>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {(profile.comuni ?? []).length > 0
-                    ? profile.comuni!.map((c) => (
-                        <span key={c} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
-                          {c}
-                        </span>
-                      ))
-                    : <span className="text-sm text-muted-foreground">—</span>}
+                <div className="mt-1 flex flex-wrap gap-1" data-testid="supplier-profile-comuni">
+                  {(() => {
+                    const value = comuniValueOf(profile);
+                    const described = new Map((profile.operatingComuni ?? []).map((comune) => [comune.istatCode, comune]));
+                    const names = [
+                      ...value.istatCodes.map((code) => {
+                        const comune = described.get(code);
+                        return { key: code, label: comune ? comuneLabel(comune) : t('supplier.comuni.codeOnly', { code }) };
+                      }),
+                      ...value.legacy.map((entry) => ({ key: `text-${entry}`, label: entry })),
+                    ];
+                    return names.length > 0
+                      ? names.map(({ key, label }) => (
+                          <span key={key} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
+                            {label}
+                          </span>
+                        ))
+                      : <span className="text-sm text-muted-foreground">—</span>;
+                  })()}
                 </div>
               </div>
             </CardContent>

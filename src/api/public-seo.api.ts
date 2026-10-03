@@ -1,7 +1,9 @@
 import { ApiClient } from '@/api/client';
 import type {
+  FeaturedPropertiesResponse,
   PublicTouristTaxCalculateRequest,
   PublicTouristTaxCalculateResponse,
+  SeoEventPayload,
   SeoPagePublic,
   SeoPublishedPages,
 } from '@/types/seo.types';
@@ -18,6 +20,18 @@ export const PublicSeoApi = {
 
   getTouristTaxPage: (comune: string): Promise<SeoPagePublic> =>
     ApiClient.get<SeoPagePublic>(`/public/content/tassa-soggiorno/${comune}`, undefined, { public: true }),
+
+  /** Published, bookable properties of a comune (slug or ISTAT code) for its SEO pages (SE-04, AC2). */
+  getFeaturedProperties: (comune: string): Promise<FeaturedPropertiesResponse> =>
+    ApiClient.get<FeaturedPropertiesResponse>(
+      `/public/seo/${encodeURIComponent(comune)}/featured-properties`,
+      undefined,
+      { public: true },
+    ),
+
+  /** One event of the funnel (AC3). Anonymous; the page does not wait for the answer. */
+  trackEvent: (payload: SeoEventPayload): Promise<void> =>
+    ApiClient.post<void>('/public/seo/events', payload, { public: true }),
 
   calculateTouristTax: (
     request: PublicTouristTaxCalculateRequest,

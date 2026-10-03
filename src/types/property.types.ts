@@ -7,9 +7,13 @@ export interface Property {
   name: string;
   description: string;
   address: string;
+  /** Interno / scala (PC-06): tells apart the apartments of one building; `null` when the property has none. */
+  unit?: string | null;
   city: string;
   postalCode: string;
+  /** WGS84 degrees, -90..90, six decimals (about 0.1 m, A2-33); 0 with a longitude of 0 = not set. */
   latitude?: number;
+  /** WGS84 degrees, -180..180, six decimals. */
   longitude?: number;
   /** 0 = studio flat (monolocale). */
   bedrooms: number;
@@ -23,6 +27,15 @@ export interface Property {
   photoUrls: string[];
   houseRules: string;
   cinCode: string | null;
+  /**
+   * ISTAT code (6 digits, text) of the comune chosen from the official list (SU-04); null until chosen: it is never
+   * inferred from the free-text `city`.
+   */
+  comuneIstatCode?: string | null;
+  /** CasaZen's region code (`LOM`) that follows the comune; null until a comune is chosen. */
+  regionCode?: string | null;
+  /** The CIN is valid and its ISTAT comune differs from `comuneIstatCode`: a non-blocking warning. */
+  cinIstatMismatch?: boolean;
   /** IANA time zone, e.g. `Europe/Rome`. */
   timezone: string;
   cancellationPolicyId: string | null;
@@ -64,8 +77,15 @@ export interface CreatePropertyDto {
   name: string;
   description: string;
   address: string;
+  /** Interno / scala; `null` or blank clears it. The same address and unit twice in an org is a 409 `duplicate_property_address`. */
+  unit?: string | null;
   city: string;
   postalCode: string;
+  /**
+   * ISTAT code of the comune chosen from the official list (`GET /api/comuni`): validated by the API, the region follows it.
+   * `null` clears it; a city changed without a comune clears the stored one.
+   */
+  comuneIstatCode?: string | null;
   latitude?: number;
   longitude?: number;
   bedrooms: number;
@@ -75,7 +95,6 @@ export interface CreatePropertyDto {
   cleaningFee?: number;
   damageDeposit?: number;
   amenities?: string[];
-  photoUrls?: string[];
   houseRules?: string;
   cinCode?: string | null;
   timezone?: string;
@@ -88,6 +107,20 @@ export interface CreatePropertyDto {
  * `cinCode`, `slug` and `cancellationPolicyId` sent as `null` are cleared.
  */
 export type UpdatePropertyDto = Partial<CreatePropertyDto>;
+
+/**
+ * Photo gallery of a property (`GET /properties/{id}/images`, PC-04) and the answer of every change to it: the photo
+ * URLs in display order (absolute public URLs of the storage; the first is the cover that the public pages show first)
+ * and the rules the upload enforces. The photos are never part of `CreatePropertyDto` / `UpdatePropertyDto`: the API
+ * ignores a `photoUrls` sent there.
+ */
+export interface PropertyPhotosDto {
+  photoUrls: string[];
+  maxPhotos: number;
+  maxFilesPerRequest: number;
+  maxFileSizeBytes: number;
+  allowedContentTypes: string[];
+}
 
 /** A cancellation policy a property can reference (`GET /properties/cancellation-policies`). */
 export interface CancellationPolicyOption {
@@ -123,6 +156,11 @@ export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 export interface PublicPropertyDto {
   id: string;
   slug?: string | null;
+  /**
+   * Current slug of the org that owns the property: with `slug`, the property page of its booking site
+   * (`/book/{orgSlug}/property/{slug}`). Absent only from an older backend (BK-20, A3-27).
+   */
+  orgSlug?: string;
   name: string;
   description: string;
   city: string;
@@ -147,6 +185,8 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   cancellationPolicySummary: string;
   minNights: number | null;
   currency: string;
+  /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
+  canonicalUrl?: string | null;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
@@ -194,6 +234,8 @@ export interface PropertyDetailDto {
   name: string;
   description: string;
   address: string;
+  /** Interno / scala (PC-06); `null` when the property has none. */
+  unit?: string | null;
   city: string;
   postalCode: string;
   bedrooms: number;
@@ -204,6 +246,12 @@ export interface PropertyDetailDto {
   damageDeposit: number;
   cinCode: string | null;
   cinStatus: CinStatus;
+  /** The CIN is valid and its ISTAT comune differs from the property's chosen comune: a non-blocking warning (SU-04). */
+  cinIstatMismatch?: boolean;
+  /** ISTAT code of the comune chosen from the official list; null until chosen. */
+  comuneIstatCode?: string | null;
+  /** CasaZen's region code that follows the comune; null until a comune is chosen. */
+  regionCode?: string | null;
   timezone: string;
   amenities: string[];
   photoUrls: string[];
@@ -227,13 +275,15 @@ export interface PropertyPauseStatus {
   pausedAt: string | null;
 }
 
+/**
+ * Filters of the public search, all optional (BK-20, A8-13): `city` is a part of the name, the minimums are inclusive,
+ * `guests` is the number of guests the property must sleep. Every one of them is sent to `GET /api/properties/search`.
+ */
 export interface PropertySearchParams {
   city?: string;
   minPrice?: number;
   maxPrice?: number;
   minBedrooms?: number;
-  maxGuests?: number;
-  amenities?: string[];
-  page?: number;
-  limit?: number;
+  minBathrooms?: number;
+  guests?: number;
 }

@@ -3,6 +3,8 @@ import type {
   ComplianceActivationResult,
   ComplianceSummaryResult,
   CheckoutWizardState,
+  SafetyChecklist,
+  SafetyItemCode,
 } from '../../src/types/compliance.types';
 
 export const DEMO_PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
@@ -125,7 +127,67 @@ export const demoCheckoutWizard: CheckoutWizardState = {
   propertyReady: { ready: null, readyAt: null, notes: null },
 };
 
+const SAFETY_ITEM_CODES: SafetyItemCode[] = [
+  'FireExtinguishers',
+  'GasDetector',
+  'CoDetector',
+  'SystemsCompliance',
+  'BdsrDeclaration',
+  'SmokeDetector',
+  'EmergencyInstructions',
+];
+
+/** Safety checklist (CO-07) of a property that has not answered it yet: every item "not answered", facts unknown. */
+const demoSafetyChecklistUnanswered: SafetyChecklist = {
+  schemaVersion: 1,
+  legalBasis: 'D.L. 145/2023 art. 13-ter',
+  declarationTextVersion: 'e2e',
+  saved: false,
+  importedFromLegacy: false,
+  facts: {
+    entrepreneurial: null,
+    hasGasSupply: null,
+    combustionAppliances: null,
+    floorCount: null,
+    floorAreasSqm: null,
+  },
+  items: SAFETY_ITEM_CODES.map((code) => ({
+    code,
+    requirement: code === 'SmokeDetector' || code === 'EmergencyInstructions' ? 'Optional' : 'Undetermined',
+    status: 'NotAnswered',
+    notApplicableReason: null,
+    answer: null,
+    quantity: null,
+    location: null,
+    detectorType: null,
+    checkedOn: null,
+    expiresOn: null,
+    evidenceDocumentId: null,
+    evidenceFileName: null,
+    notes: null,
+  })),
+  minimumExtinguishers: null,
+  isComplete: false,
+  blockers: [],
+  warnings: [],
+  confirmedAt: null,
+  confirmedTextVersion: null,
+  updatedAt: null,
+};
+
 export async function mockComplianceApi(page: Page): Promise<void> {
+  await page.route(`**/api/properties/${DEMO_PROPERTY_ID}/compliance/safety-checklist`, async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(demoSafetyChecklistUnanswered),
+    });
+  });
+
   await page.route(`**/api/properties/${DEMO_PROPERTY_ID}/compliance/activation`, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();

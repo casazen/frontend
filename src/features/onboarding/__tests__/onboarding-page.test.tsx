@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { LEGAL_QUERY_KEY } from '@/queries/use-legal';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, type AxiosResponse } from 'axios';
 import i18n from '@/i18n/config';
@@ -104,6 +105,7 @@ function renderPage(entry: string | { pathname: string; search?: string; state?:
           <Route path="/app/supplier/activation" element={<p data-testid="supplier-activation">activation</p>} />
           <Route path="/register" element={<p data-testid="supplier-register">register</p>} />
           <Route path="/register/claim" element={<p data-testid="supplier-claim">claim</p>} />
+          <Route path="/app/short-rent/profile" element={<p data-testid="profile-page">profile</p>} />
           <Route path="/" element={<p data-testid="root">root</p>} />
         </Routes>
       </MemoryRouter>
@@ -242,18 +244,94 @@ describe('OnboardingPage (PL-01)', () => {
     mockAuth([]);
     vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
     vi.mocked(UsersApi.putOnboarding).mockRejectedValue(httpError(422, { code: 'consents_required' }));
-    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response());
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ rentalType: 'LongTerm' }));
 
     renderPage('/onboarding?mode=edit');
-    fireEvent.click(await screen.findByTestId('onboarding-plan-confirm'));
+    fireEvent.click((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') }))[1]);
+    fireEvent.click(screen.getByTestId('onboarding-edit-save'));
 
     fireEvent.click(await screen.findByTestId('accept-consents'));
-    fireEvent.click(await screen.findByTestId('onboarding-plan-confirm'));
 
+    // Edit mode has no plan step (A1-15): the consents are sent with the type chosen on the role step.
     await waitFor(() =>
-      expect(UsersApi.postOnboarding).toHaveBeenCalledWith({ rentalType: 'ShortTerm', planTier: 'Starter', consents: CONSENTS }),
+      expect(UsersApi.postOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined, consents: CONSENTS }),
     );
     expect(toast.error).toHaveBeenCalledWith(i18n.t('onboarding.consentRequiredToast'));
+    expect(screen.queryByTestId('plan-selection-grid')).not.toBeInTheDocument();
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/settings/plan'));
+  });
+
+  it('OnboardingPage_EditMode_StartsFromTheRoleStepAndOpensThePlanPageAfterSaving', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
+    vi.mocked(UsersApi.putOnboarding).mockResolvedValue(response({ rentalType: 'LongTerm' }));
+
+    renderPage('/onboarding?mode=edit');
+
+    // A1-15: the role step, never the plan selector whose choice the backend ignores for an existing org.
+    expect(await screen.findByText(i18n.t('onboarding.editOperatorType'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('onboarding.editRoleDescription'))).toBeInTheDocument();
+    expect(screen.queryByTestId('plan-selection-grid')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-plan-confirm')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: i18n.t('onboarding.choose') })[1]);
+    expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('onboarding-edit-save'));
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/settings/plan'));
+    expect(UsersApi.putOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined });
+    expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+    expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('OnboardingPage_EditModeSameType_SaveDisabledUntilAnotherTypeIsChosen', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
+
+    renderPage('/onboarding?mode=edit');
+
+    expect(await screen.findByTestId('onboarding-edit-save')).toBeDisabled();
+    fireEvent.click(screen.getAllByRole('button', { name: i18n.t('onboarding.choose') })[2]);
+    expect(screen.getByTestId('onboarding-edit-save')).toBeEnabled();
+  });
+
+  it('OnboardingPage_EditModeCancel_ReturnsToTheProfileWithoutSaving', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
+
+    renderPage({ pathname: '/onboarding', search: '?mode=edit', state: { from: '/app/short-rent/profile' } });
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('onboarding.cancel') }));
+
+    expect(await screen.findByTestId('profile-page')).toBeInTheDocument();
+    expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
+  });
+
+  it('OnboardingPage_StaleDocuments400_ReloadsTheDocumentsAndAsksTheConsentsAgain', async () => {
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
+    vi.mocked(UsersApi.postOnboarding)
+      .mockRejectedValueOnce(
+        httpError(400, { error: 'Alcuni documenti legali sono stati aggiornati.', staleDocuments: ['tos'] }),
+      )
+      .mockResolvedValueOnce(response());
+    const resetQueries = vi.spyOn(QueryClient.prototype, 'resetQueries');
+
+    renderPage();
+    await chooseShortTermWithConsents();
+
+    // A1-39: back to the consents with the documents reloaded, no "retry" that would resend the outdated versions.
+    expect(await screen.findByTestId('accept-consents')).toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalledWith(i18n.t('onboarding.consentsStaleToast'));
+    expect(resetQueries).toHaveBeenCalledWith({ queryKey: LEGAL_QUERY_KEY });
+    expect(screen.queryByTestId('onboarding-retry')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-plan-confirm')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('accept-consents'));
+    fireEvent.click(await screen.findByTestId('onboarding-plan-confirm'));
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    expect(UsersApi.postOnboarding).toHaveBeenCalledTimes(2);
+    resetQueries.mockRestore();
   });
 
   it('OnboardingPage_SubmitFails_KeepsSelectionAndOffersRetry', async () => {
@@ -425,7 +503,7 @@ describe('OnboardingPage supplier option (SU-02)', () => {
 
     renderPage('/onboarding?mode=edit');
 
-    expect(await screen.findByTestId('plan-selection-grid')).toBeInTheDocument();
+    expect(await screen.findByTestId('onboarding-edit-actions')).toBeInTheDocument();
     expect(screen.queryByTestId('onboarding-supplier-option')).not.toBeInTheDocument();
   });
 });

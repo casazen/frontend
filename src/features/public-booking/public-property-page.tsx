@@ -3,9 +3,9 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
 import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
-import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { Button } from '@/components/ui/button';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
+import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import type { WidgetAvailability } from '@/features/public-site/components/BookingWidget';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { PublicOrgDto } from '@/types';
@@ -26,11 +26,12 @@ export function PublicPropertyPage() {
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
   // By the id of the loaded property: the URL may carry its slug, the availability takes the id (BK-05, R-03).
   const availabilityQuery = usePropertyAvailability(property?.id);
+  usePropertySeoMeta(org, property);
 
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--cz-public-primary)]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--cz-public-primary-text)]" />
       </div>
     );
   }
@@ -87,7 +88,6 @@ export function PublicPropertyPage() {
               </div>
             </div>
 
-            <AiContentNotice visible={false} />
             <p className="text-[var(--cz-public-muted)]">{property.description}</p>
 
             <div className="flex flex-wrap gap-4 text-sm">

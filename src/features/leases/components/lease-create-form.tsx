@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form';
+import { useFieldArray, useForm, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -10,13 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { propertiesApi } from '@/api/properties.api';
 import { useProperties } from '@/queries/use-properties';
-import { leaseFormSchema } from '../schemas/lease.schema';
+import { leaseFormSchema, MAX_PARTIES_PER_ROLE, type LeasePartyFormValues } from '../schemas/lease.schema';
 import { getLeaseContractTypeLabel, getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
 import { getProblemMessage } from '@/lib/api-errors';
 import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import type { LeaseFormValues } from '../schemas/lease.schema';
 import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type ConcordatoCharacteristics, type CreateLeaseDto } from '@/types';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { normalizeFiscalCode } from '@/lib/fiscal-code';
 import { CanoneConcordatoCalculator, type ConcordatoRange } from './canone-concordato-calculator';
 import { isRentInConcordatoRange } from '../lib/concordato-rent-range';
 import { FormFieldError } from '@/components/shared/form-field-error';
@@ -51,6 +52,7 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     setValue,
@@ -60,8 +62,8 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
     defaultValues: {
       contractType: 'Libero',
       taxRegime: 'CedolareSecca',
-      landlord: { role: 'Landlord' },
-      tenant: { role: 'Tenant' },
+      landlords: [emptyParty('Landlord')],
+      tenants: [emptyParty('Tenant')],
     } as LeaseFormValues,
   });
 
@@ -155,9 +157,10 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
       endDate: values.endDate,
       monthlyRent: values.monthlyRent,
       securityDeposit: values.securityDeposit ?? null,
+      // Every landlord, then every tenant, in the order entered (LT-14): the API keeps that order.
       parties: [
-        { ...values.landlord, role: 'Landlord' },
-        { ...values.tenant, role: 'Tenant' },
+        ...values.landlords.map((party) => toPartyDto(party, 'Landlord')),
+        ...values.tenants.map((party) => toPartyDto(party, 'Tenant')),
       ],
       ...(values.contractType === 'Concordato' && concordatoCharacteristics
         ? { canoneConcordato: concordatoCharacteristics }
@@ -366,25 +369,8 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('leases.form.landlordTitle')}</CardTitle>
-          <CardDescription>{t('leases.form.landlordDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <PartyFields prefix="landlord" register={register} errors={errors.landlord} t={t} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('leases.form.tenantTitle')}</CardTitle>
-          <CardDescription>{t('leases.form.tenantDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <PartyFields prefix="tenant" register={register} errors={errors.tenant} t={t} />
-        </CardContent>
-      </Card>
+      <PartyListCard role="Landlord" control={control} register={register} errors={errors.landlords} t={t} />
+      <PartyListCard role="Tenant" control={control} register={register} errors={errors.tenants} t={t} />
 
       <div className="flex justify-end gap-4">
         <Button
@@ -398,17 +384,110 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
   );
 }
 
-function PartyFields({
-  prefix,
+function emptyParty(role: 'Landlord' | 'Tenant'): LeasePartyFormValues {
+  return { role, firstName: '', lastName: '', fiscalCode: '', citizenship: '', contactEmail: '' };
+}
+
+function toPartyDto(party: LeasePartyFormValues, role: 'Landlord' | 'Tenant') {
+  return { ...party, role, fiscalCode: normalizeFiscalCode(party.fiscalCode) };
+}
+
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * Landlords or tenants of the lease (LT-14, A7-28): one or more, up to {@link MAX_PARTIES_PER_ROLE}. Co-owners and
+ * co-tenants (e.g. spouses) are each a party of the contract and of the RLI registration.
+ */
+function PartyListCard({
+  role,
+  control,
   register,
   errors,
   t,
 }: {
-  prefix: 'landlord' | 'tenant';
+  role: 'Landlord' | 'Tenant';
+  control: Control<LeaseFormValues>;
   register: UseFormRegister<LeaseFormValues>;
-  errors?: FieldErrors<LeaseFormValues['landlord']> | FieldErrors<LeaseFormValues['tenant']>;
-  t: (key: string) => string;
+  errors?: FieldErrors<LeaseFormValues>['landlords'];
+  t: TranslateFn;
 }) {
+  const name = role === 'Landlord' ? 'landlords' : 'tenants';
+  const keys = role === 'Landlord'
+    ? { title: 'leases.form.landlordsTitle', description: 'leases.form.landlordsDescription', item: 'leases.form.landlordNumber', add: 'leases.form.addLandlord', remove: 'leases.form.removeLandlord' }
+    : { title: 'leases.form.tenantsTitle', description: 'leases.form.tenantsDescription', item: 'leases.form.tenantNumber', add: 'leases.form.addTenant', remove: 'leases.form.removeTenant' };
+  const { fields, append, remove } = useFieldArray({ control, name });
+  const atMax = fields.length >= MAX_PARTIES_PER_ROLE;
+
+  return (
+    <Card data-testid={`lease-${name}`}>
+      <CardHeader>
+        <CardTitle>{t(keys.title)}</CardTitle>
+        <CardDescription>{t(keys.description)}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {fields.map((field, index) => (
+          <fieldset
+            key={field.id}
+            className="space-y-4 rounded-md border p-4"
+            aria-label={t(keys.item, { n: index + 1 })}
+            data-testid={`lease-${name}-${index}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-medium">{t(keys.item, { n: index + 1 })}</p>
+              {fields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => remove(index)}
+                  aria-label={t(keys.remove, { n: index + 1 })}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <PartyFields
+                prefix={`${name}.${index}`}
+                showCitizenshipHint={role === 'Tenant'}
+                register={register}
+                errors={errors?.[index]}
+                t={t}
+              />
+            </div>
+          </fieldset>
+        ))}
+        <FormFieldError error={errors?.root ?? errors} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" variant="outline" size="sm" onClick={() => append(emptyParty(role))} disabled={atMax}>
+            <Plus className="mr-1 h-4 w-4" />
+            {t(keys.add)}
+          </Button>
+          {atMax && (
+            <p className="text-sm text-muted-foreground" data-testid={`lease-${name}-max`}>
+              {t('leases.form.partiesMax', { max: MAX_PARTIES_PER_ROLE })}
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PartyFields({
+  prefix,
+  showCitizenshipHint,
+  register,
+  errors,
+  t,
+}: {
+  prefix: `landlords.${number}` | `tenants.${number}`;
+  showCitizenshipHint: boolean;
+  register: UseFormRegister<LeaseFormValues>;
+  errors?: FieldErrors<LeasePartyFormValues>;
+  t: TranslateFn;
+}) {
+  const hintId = `${prefix}.citizenship-hint`;
   return (
     <>
       <div className="space-y-2">
@@ -423,7 +502,15 @@ function PartyFields({
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${prefix}.fiscalCode`}>{t('leases.form.fiscalCodeLabel')}</Label>
-        <Input id={`${prefix}.fiscalCode`} {...register(`${prefix}.fiscalCode`)} />
+        <Input
+          id={`${prefix}.fiscalCode`}
+          autoCapitalize="characters"
+          aria-describedby={`${prefix}.fiscalCode-hint`}
+          {...register(`${prefix}.fiscalCode`)}
+        />
+        <p id={`${prefix}.fiscalCode-hint`} className="text-xs text-muted-foreground">
+          {t('leases.form.fiscalCodeHint')}
+        </p>
         <FormFieldError error={errors?.fiscalCode} />
       </div>
       <div className="space-y-2">
@@ -432,11 +519,11 @@ function PartyFields({
           id={`${prefix}.citizenship`}
           maxLength={2}
           placeholder="IT"
-          aria-describedby={prefix === 'tenant' ? 'tenant.citizenship-hint' : undefined}
+          aria-describedby={showCitizenshipHint ? hintId : undefined}
           {...register(`${prefix}.citizenship`)}
         />
-        {prefix === 'tenant' && (
-          <p id="tenant.citizenship-hint" className="text-xs text-muted-foreground">
+        {showCitizenshipHint && (
+          <p id={hintId} className="text-xs text-muted-foreground">
             {t('leases.form.citizenshipHint')}
           </p>
         )}
@@ -444,11 +531,7 @@ function PartyFields({
       </div>
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor={`${prefix}.contactEmail`}>{t('leases.form.contactEmailLabel')}</Label>
-        <Input
-          id={`${prefix}.contactEmail`}
-          type="email"
-          {...register(`${prefix}.contactEmail`)}
-        />
+        <Input id={`${prefix}.contactEmail`} type="email" {...register(`${prefix}.contactEmail`)} />
         <FormFieldError error={errors?.contactEmail} />
       </div>
     </>

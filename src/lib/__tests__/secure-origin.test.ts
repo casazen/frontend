@@ -21,6 +21,7 @@ describe('isPublicUnauthenticatedPath', () => {
     expect(isPublicUnauthenticatedPath('/search')).toBe(true);
     expect(isPublicUnauthenticatedPath('/p/affitti-brevi/lazio/roma')).toBe(true);
     expect(isPublicUnauthenticatedPath('/checkin/token')).toBe(true);
+    expect(isPublicUnauthenticatedPath('/rent/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
   });
 
   it('does not match host console routes', () => {

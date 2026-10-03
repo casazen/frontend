@@ -20,8 +20,10 @@ import { getAmenityLabel } from '@/lib/i18n-labels';
 import type { PropertyFormValues } from '../schemas/property.schema';
 import type { CreatePropertyDto, Property } from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
+import { ComunePicker } from '@/components/shared/comune-picker';
 import { useCancellationPolicies } from '@/queries/use-properties';
 import { getProblemMessage } from '@/lib/api-errors';
+import { isDuplicateAddressError } from '../property-errors';
 
 const selectClassName =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
@@ -43,8 +45,11 @@ function timeZoneOptions(current: string | undefined): string[] {
 
 interface PropertyFormProps {
   property?: Property;
-  /** The API body: every field the form shows (the update keeps the others, A2-04). */
-  onSubmit: (data: CreatePropertyDto) => void;
+  /**
+   * The API body: every field the form shows (the update keeps the others, A2-04). May return the promise of the save: a
+   * 409 `duplicate_property_address` is then shown under the unit field (the mutation already toasted it).
+   */
+  onSubmit: (data: CreatePropertyDto) => void | Promise<unknown>;
   onCancel?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
@@ -75,6 +80,7 @@ export function PropertyForm({
     formState: { errors, isDirty },
     watch,
     setValue,
+    setError,
   } = useForm<PropertyFormValues>({
     resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema),
     defaultValues: propertyFormDefaults(property, variant),
@@ -84,7 +90,18 @@ export function PropertyForm({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  const submit = (values: PropertyFormValues) => onSubmit(toPropertyPayload(values, variant));
+  const submit = async (values: PropertyFormValues) => {
+    try {
+      await onSubmit(toPropertyPayload(values, variant));
+    } catch (error) {
+      if (isDuplicateAddressError(error)) {
+        // Another apartment of the same building needs its own interno / scala: say it where it is fixed.
+        setError('unit', { type: 'server', message: 'property.validation.unit.duplicate' });
+        return;
+      }
+      throw error;
+    }
+  };
   const currentTimezone = watch('timezone');
   // Same option elements between renders: the ~400 zones are not re-rendered at every keystroke.
   const timezoneOptionElements = useMemo(
@@ -93,6 +110,7 @@ export function PropertyForm({
   );
 
   const selectedAmenities = watch('amenities') || [];
+  const comuneIstatCode = watch('comuneIstatCode') || null;
 
   const toggleAmenity = (amenity: string) => {
     const current = selectedAmenities;
@@ -164,10 +182,54 @@ export function PropertyForm({
             <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
             <FormFieldError error={errors.address} />
           </div>
+          <div className="space-y-2" data-testid="property-comune-field">
+            <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
+            <ComunePicker
+              id="comune"
+              istatCode={comuneIstatCode}
+              fallbackName={property?.city}
+              disabled={disabled}
+              describedBy="comune-hint"
+              onChange={(comune) => {
+                // The comune chosen from the official list gives the city (its name) and, through the API, the region.
+                setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldDirty: true, shouldValidate: true });
+                if (comune) setValue('city', comune.name, { shouldDirty: true, shouldValidate: true });
+              }}
+            />
+            <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
+            {!comuneIstatCode && property?.city && (
+              <p className="text-xs text-amber-800" data-testid="property-comune-legacy">
+                {t('property.form.comune.legacyCity', { city: property.city })}
+              </p>
+            )}
+            <FormFieldError error={errors.comuneIstatCode} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="unit">{t('property.form.unit')}</Label>
+            <Input
+              id="unit"
+              data-testid="property-unit-input"
+              maxLength={30}
+              {...register('unit')}
+              placeholder={t('property.form.placeholder.unit')}
+              aria-describedby="unit-hint"
+            />
+            <p id="unit-hint" className="text-xs text-muted-foreground">{t('property.form.unitHint')}</p>
+            <FormFieldError error={errors.unit} />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">{t('property.form.city')}</Label>
-              <Input id="city" {...register('city')} placeholder={t('property.form.placeholder.city')} />
+              <Input
+                id="city"
+                {...register('city')}
+                readOnly={!!comuneIstatCode}
+                aria-describedby={comuneIstatCode ? 'city-from-comune' : undefined}
+                placeholder={t('property.form.placeholder.city')}
+              />
+              {comuneIstatCode && (
+                <p id="city-from-comune" className="text-xs text-muted-foreground">{t('property.form.comune.cityFromComune')}</p>
+              )}
               <FormFieldError error={errors.city} />
             </div>
             <div className="space-y-2">
@@ -184,6 +246,7 @@ export function PropertyForm({
                 const parsed = Number(value);
                 return Number.isNaN(parsed) ? undefined : parsed;
               }})} placeholder={t('property.form.placeholder.latitude')} />
+              <FormFieldError error={errors.latitude} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="longitude">{t('property.form.longitude')}</Label>
@@ -192,6 +255,7 @@ export function PropertyForm({
                 const parsed = Number(value);
                 return Number.isNaN(parsed) ? undefined : parsed;
               }})} placeholder={t('property.form.placeholder.longitude')} />
+              <FormFieldError error={errors.longitude} />
             </div>
           </div>
         </CardContent>

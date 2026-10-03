@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import type { Property } from '../../src/types';
 import {
   buildCreatedProperty,
@@ -11,6 +11,8 @@ import {
  */
 export async function mockPropertiesApi(page: Page, initial: Property[] = emptyPropertyList): Promise<void> {
   const store = { properties: [...initial] };
+  await mockComuniApi(page);
+  await mockPropertyIcalApi(page);
 
   const isCollectionPath = (url: string) => {
     const path = new URL(url).pathname.replace(/\/$/, '');
@@ -104,5 +106,103 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       contentType: 'application/json',
       body: JSON.stringify(buildPropertyDetailFromProperty(property)),
     });
+  });
+}
+
+/** Official ISTAT comuni list (SU-04) with the two comuni the specs use: the property form picks the city from it. */
+const MOCK_COMUNI = [
+  {
+    istatCode: '015146',
+    cadastralCode: 'F205',
+    name: 'Milano',
+    displayName: 'Milano',
+    provinceCode: 'MI',
+    regionCode: 'LOM',
+    regionIstatCode: '03',
+    regionName: 'Lombardia',
+    isActive: true,
+  },
+  {
+    istatCode: '058091',
+    cadastralCode: 'H501',
+    name: 'Roma',
+    displayName: 'Roma',
+    provinceCode: 'RM',
+    regionCode: 'LAZ',
+    regionIstatCode: '12',
+    regionName: 'Lazio',
+    isActive: true,
+  },
+];
+
+export async function mockComuniApi(page: Page): Promise<void> {
+  await page.route(/\/api\/comuni(\/|\?|$)/, async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace(/\/$/, '');
+    let body: unknown;
+    if (path.endsWith('/comuni/status')) {
+      body = { datasetAvailable: true, referenceDate: '2026-01-01', sourceVersion: 'e2e' };
+    } else if (path.endsWith('/comuni')) {
+      const query = (url.searchParams.get('q') ?? '').toLowerCase();
+      body = { datasetAvailable: true, items: MOCK_COMUNI.filter((c) => c.name.toLowerCase().includes(query)) };
+    } else {
+      body = MOCK_COMUNI.find((c) => path.endsWith(`/comuni/${c.istatCode}`));
+    }
+    await route.fulfill({
+      status: body ? 200 : 404,
+      contentType: 'application/json',
+      body: JSON.stringify(body ?? { status: 404, title: 'Not Found' }),
+    });
+  });
+}
+
+export interface PropertyFormInput {
+  name: string;
+  description: string;
+  address: string;
+  /** Name of a comune of the mocked ISTAT list: it gives the city. */
+  comune: string;
+  postalCode: string;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  nightlyRate: number;
+  cinCode?: string;
+}
+
+/** Fills the short-stay property form (SU-04: the city comes from the ISTAT comune picker, there is no country field). */
+export async function fillPropertyForm(page: Page, values: PropertyFormInput): Promise<void> {
+  await page.locator('#name').fill(values.name);
+  await page.locator('#description').fill(values.description);
+  await page.locator('#address').fill(values.address);
+  await page.locator('#comune').fill(values.comune);
+  await page.getByRole('option', { name: new RegExp(`^${values.comune}`) }).first().click();
+  await expect(page.locator('#city')).toHaveValue(values.comune);
+  await page.locator('#postalCode').fill(values.postalCode);
+  await page.locator('#bedrooms').fill(String(values.bedrooms));
+  await page.locator('#bathrooms').fill(String(values.bathrooms));
+  await page.locator('#maxGuests').fill(String(values.maxGuests));
+  await page.locator('#nightlyRate').fill(String(values.nightlyRate));
+  if (values.cinCode) await page.locator('#cinCode').fill(values.cinCode);
+}
+
+/** iCal calendars of a property (PC-10, PC-12): no feed connected, an export link. */
+export async function mockPropertyIcalApi(page: Page): Promise<void> {
+  await page.route('**/api/properties/*/ical/**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    const path = new URL(route.request().url()).pathname;
+    const body = path.endsWith('/ical/feeds')
+      ? []
+      : path.endsWith('/ical/export-url')
+        ? { exportUrl: 'https://casazen.example/ical/export/e2e-token.ics' }
+        : { exportUrl: 'https://casazen.example/ical/export/e2e-token.ics', blockCount: 0, feeds: [] };
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
 }

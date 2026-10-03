@@ -10,6 +10,7 @@ import { VetrinaPreviewPanel } from './components/vetrina-preview-panel';
 import { VetrinaUrlCopy } from './components/vetrina-url-copy';
 import { VetrinaPropertyList } from './components/vetrina-property-list';
 import { buildPropertyBookingPath, buildOrgBookingPath } from '@/lib/booking-url';
+import { SitePublicationBanner } from '@/features/onboarding/components/site-publication-banner';
 
 export function VetrinaPage() {
   const { t } = useTranslation();
@@ -41,6 +42,9 @@ export function VetrinaPage() {
               title={t('directBooking.title')}
               description={t('directBooking.description')}
             />
+            <div className="mt-3 empty:hidden">
+              <SitePublicationBanner />
+            </div>
           </div>
 
           <div className="flex min-h-0 flex-1 overflow-hidden">

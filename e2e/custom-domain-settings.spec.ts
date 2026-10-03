@@ -1,46 +1,47 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
+import { DEMO_ORG } from './helpers/org-api-mock';
 
-const DEMO_ORG_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1';
+// The org of the demo user (`GET /api/users/me` mock): the page asks for the domain of that org.
+const DEMO_ORG_ID = DEMO_ORG.id;
 
 test.describe('Custom domain settings (#298)', () => {
   test.beforeEach(async ({ page }) => {
+    const initialConfig = {
+      orgId: DEMO_ORG_ID,
+      publicHostMode: 'CasazenSubdomain',
+      subdomain: 'villa-demo',
+      customDomain: null,
+      domainVerificationStatus: 'Pending',
+      canUseCustomDomain: true,
+      dnsInstructions: null,
+      publicUrls: {
+        pathUrl: 'https://casazen.app/book/villa-demo',
+        subdomainUrl: 'https://villa-demo.casazen.it',
+        customDomainUrl: null,
+      },
+    };
+    // The page reloads the configuration after a save (it does not trust the POST body): the mock keeps what was saved,
+    // as the backend does.
+    let currentConfig: Record<string, unknown> = initialConfig;
+
     await page.route(`**/api/orgs/${DEMO_ORG_ID}/domain`, async (route) => {
       if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            orgId: DEMO_ORG_ID,
-            publicHostMode: 'CasazenSubdomain',
-            subdomain: 'villa-demo',
-            customDomain: null,
-            domainVerificationStatus: 'Pending',
-            canUseCustomDomain: true,
-            dnsInstructions: null,
-            publicUrls: {
-              pathUrl: 'https://casazen.app/book/villa-demo',
-              subdomainUrl: 'https://villa-demo.casazen.it',
-              customDomainUrl: null,
-            },
-          }),
-        });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(currentConfig) });
         return;
       }
 
-      if (route.request().method() === 'POST' && !route.request().url().includes('/verify')) {
+      if (route.request().method() === 'POST') {
         const body = route.request().postDataJSON() as { hostMode: string; customDomain?: string };
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            orgId: DEMO_ORG_ID,
-            publicHostMode: body.hostMode,
-            subdomain: null,
-            customDomain: body.customDomain ?? null,
-            domainVerificationStatus: body.hostMode === 'CustomDomain' ? 'Pending' : 'Pending',
-            canUseCustomDomain: true,
-            dnsInstructions: body.hostMode === 'CustomDomain'
+        currentConfig = {
+          orgId: DEMO_ORG_ID,
+          publicHostMode: body.hostMode,
+          subdomain: null,
+          customDomain: body.customDomain ?? null,
+          domainVerificationStatus: 'Pending',
+          canUseCustomDomain: true,
+          dnsInstructions:
+            body.hostMode === 'CustomDomain'
               ? {
                   cnameHost: body.customDomain,
                   cnameTarget: 'cname.vercel-dns.com',
@@ -49,13 +50,13 @@ test.describe('Custom domain settings (#298)', () => {
                   sslNote: 'SSL automatico via Vercel',
                 }
               : null,
-            publicUrls: {
-              pathUrl: 'https://casazen.app/book/villa-demo',
-              subdomainUrl: null,
-              customDomainUrl: body.customDomain ? `https://${body.customDomain}` : null,
-            },
-          }),
-        });
+          publicUrls: {
+            pathUrl: 'https://casazen.app/book/villa-demo',
+            subdomainUrl: null,
+            customDomainUrl: body.customDomain ? `https://${body.customDomain}` : null,
+          },
+        };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(currentConfig) });
         return;
       }
 

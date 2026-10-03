@@ -22,10 +22,6 @@ export async function fetchServiceRequests(params?: {
   return ApiClient.get<ServiceRequestListResponse>('/service-requests', params);
 }
 
-export async function fetchServiceRequest(id: string): Promise<ServiceRequest> {
-  return ApiClient.get<ServiceRequest>(`/service-requests/${id}`);
-}
-
 /** Short-rent request for a stay: the API answers 422 without a `bookingId` of the property. */
 export async function createServiceRequest(payload: CreateServiceRequestDto): Promise<ServiceRequest> {
   const { data } = await axios.post<ServiceRequest>('/service-requests', payload);
@@ -50,10 +46,6 @@ export async function rejectServiceRequest(id: string, reason: string): Promise<
 export async function markServiceRequestPaid(id: string): Promise<ServiceRequest> {
   const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/mark-paid`);
   return data;
-}
-
-export async function fetchSuppliersByComune(comune: string, category?: string): Promise<SupplierListResponse> {
-  return ApiClient.get<SupplierListResponse>('/suppliers', { comune, category });
 }
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {

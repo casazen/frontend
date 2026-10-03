@@ -16,7 +16,7 @@ import {
   mockOrgPropertySlug,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
-import { futureStay, mockDirectBookingResponse } from './helpers/direct-checkout-mock';
+import { futureStay, mockDirectBookingQuoteApi, mockDirectBookingResponse } from './helpers/direct-checkout-mock';
 import { demoUrl } from './helpers/demo-profile';
 import { mockCurrentUserWithOrg } from './helpers/org-api-mock';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
@@ -66,14 +66,14 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('vetrina page renders property list panel', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
+    await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText('Trastevere Suite')).toBeVisible();
   });
 
   test('selecting a property shows the preview iframe for that property', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
+    await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
@@ -87,7 +87,7 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('published badge appears on active+compliant property', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
+    await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'));
 
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
@@ -96,13 +96,19 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
     await expect(badge).toContainText(/Pubblicata/i);
   });
 
-  test('copy URL button copies property booking URL to clipboard', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent/settings/direct-booking', 'short-stay'));
+  test('copy URL button copies property booking URL to clipboard', async ({ page, context }) => {
+    // Headless Chromium rejects navigator.clipboard.writeText without the permission: the app then (correctly)
+    // shows the error toast, so the test has to grant it like a user would by allowing the prompt.
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'));
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
 
     await page.getByTestId('vetrina-property-copy-url').first().click();
 
     await expect(page.getByText(/copiato/i)).toBeVisible({ timeout: 5_000 });
+    // The toast alone does not prove the copy: the clipboard must hold the absolute booking URL of the property.
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toBe(`${new URL(page.url()).origin}/book/${DEMO_ORG_SLUG_VETRINA}/property/${mockOrgPropertySlug}`);
   });
 });
 
@@ -174,6 +180,8 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
   test('widget checkout carries dates, guests and amount to the checkout (A3-01)', async ({ page }) => {
     const { checkIn, checkOut } = futureStay(30, 3);
     let bookingPayload: CreateDirectBookingPayload | undefined;
+    // The price comes from the quote endpoint (BK-03): 165 € a night, 55 € cleaning, 2 € of tourist tax per adult and night.
+    await mockDirectBookingQuoteApi(page, { nightlyRate: 165, cleaningFee: 55, touristTaxPerAdultNight: 2 });
     await page.route('**/api/public/bookings', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback();
@@ -209,8 +217,7 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await expect(page.getByTestId('checkout-stay-summary')).toContainText('(3 notti)');
     await expect(page.getByText(/Invalid Date/)).toHaveCount(0);
 
-    // 3 nights × 165 € + 55 € cleaning. The tourist tax is still the provisional estimate of the
-    // page (2 € × adults × nights = 18 €) until the quote endpoint of task BK-03.
+    // 3 nights × 165 € + 55 € cleaning + 2 € × 3 adults × 3 nights of tourist tax = 568 €.
     const breakdown = page.getByTestId('price-breakdown');
     await expect(breakdown).toContainText('3 notti x 165,00 €');
     await expect(breakdown).toContainText('495,00 €');

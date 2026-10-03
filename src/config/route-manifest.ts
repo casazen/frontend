@@ -195,6 +195,51 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23).
+    path: '/app/short-rent/settings/organization',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 6,
+    icon: 'Settings',
+    component: async () => ({
+      default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
+    }),
+  },
+  {
+    // Public-site branding: logo, hero, color, tagline, theme (BK-12, A3-17). Short-rent only: it is the booking site.
+    path: '/app/short-rent/settings/site-appearance',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.siteAppearance',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 7,
+    icon: 'Palette',
+    component: async () => ({
+      default: (await import('@/features/settings/site-appearance/site-appearance-page')).SiteAppearancePage,
+    }),
+  },
+  {
+    // The host's own privacy notice and booking terms, shown on the public site (BK-14, A3-21). Short-rent only.
+    path: '/app/short-rent/settings/site-documents',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.siteDocuments',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 8,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/settings/site-documents/site-documents-page')).SiteDocumentsPage,
+    }),
+  },
+  {
     path: '/app/short-rent/settings/payments',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -281,7 +326,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
-    legacyPaths: ['/app/short-rent/cin', '/cin', '/admin/cin'],
+    legacyPaths: ['/app/short-rent/cin', '/cin'],
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -485,6 +530,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
     }),
   },
+  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell.
+  {
+    path: '/app/long-rent/settings/organization',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 5,
+    icon: 'Settings',
+    component: async () => ({
+      default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
+    }),
+  },
   {
     path: '/app/admin',
     context: 'admin',
@@ -520,6 +580,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 7,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
+  },
+  {
+    path: '/app/admin/suppliers',
+    context: 'admin',
+    requiredPermissions: ['admin.users.manage'],
+    navKey: 'nav.suppliers',
+    navGroup: 'operations',
+    navPlacement: 'primary',
+    navOrder: 3,
+    icon: 'Store',
+    component: async () => ({ default: (await import('@/features/admin/admin-suppliers-page')).AdminSuppliersPage }),
   },
   {
     path: '/app/admin/suppliers/invite',
@@ -574,6 +645,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
+  },
+  // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed.
+  {
+    path: '/app/admin/cin',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.cinAudit',
+    navGroup: 'compliance-audit',
+    navPlacement: 'primary',
+    navOrder: 1,
+    icon: 'BadgeCheck',
+    component: async () => ({ default: (await import('@/features/admin/admin-cin-page')).AdminCinPage }),
+    // The old /admin/cin URL was the admin audit, not the host CIN page: it must land here (A1-16).
+    legacyPaths: ['/admin/cin'],
   },
   // Admin Tax Rates
   {
@@ -676,6 +761,32 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'CalendarCheck',
     component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
   },
+  {
+    // Preview of the public showcase and where it is published (SU-13, A4-16).
+    path: '/app/supplier/showcase',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierShowcase',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 2,
+    icon: 'Store',
+    component: async () => ({ default: (await import('@/features/supplier/supplier-showcase-preview-page')).SupplierShowcasePreviewPage }),
+  },
+  {
+    // Help page for connecting an external calendar via iCal (SU-15), moved inside the supplier shell with its own
+    // sidebar entry (A4-32, #327-AC2/AC4). The public `/help/ical` route stays for the host property iCal settings
+    // page, which links the same component from outside the supplier context.
+    path: '/app/supplier/help/ical',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierHelpIcal',
+    navGroup: 'account',
+    navPlacement: 'secondary',
+    navOrder: 3,
+    icon: 'HelpCircle',
+    component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
@@ -689,7 +800,8 @@ export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Part
   return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
 }
 
-function hasEntryPermission(
+/** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */
+export function hasEntryPermission(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
 ): boolean {
@@ -705,13 +817,6 @@ export function getDefaultRoute(contextKey: AppContextKey): string {
     return '/app/supplier/dashboard';
   }
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
-}
-
-/** @deprecated Use getVisibleNavEntries for permission-aware navigation */
-export function getNavEntries(contextKey: AppContextKey): RouteManifestEntry[] {
-  return ROUTE_MANIFEST.filter(
-    (entry) => entry.context === contextKey && isNavEntry(entry),
-  );
 }
 
 export function getVisibleNavEntries(
@@ -746,21 +851,6 @@ export function getSecondaryNavEntries(
   return getVisibleNavEntries(contextKey, hasPermission, features).filter(
     (entry) => entry.navPlacement === 'secondary',
   );
-}
-
-export function getSecondaryNavByGroup(
-  contextKey: AppContextKey,
-  hasPermission?: PermissionPredicate,
-  features?: Partial<FeatureFlags>,
-): Map<NavGroup, RouteManifestEntry[]> {
-  const grouped = new Map<NavGroup, RouteManifestEntry[]>();
-  for (const entry of getSecondaryNavEntries(contextKey, hasPermission, features)) {
-    if (!entry.navGroup) continue;
-    const list = grouped.get(entry.navGroup) ?? [];
-    list.push(entry);
-    grouped.set(entry.navGroup, list);
-  }
-  return grouped;
 }
 
 /** Desktop sidebar: all visible nav entries grouped (primary + secondary). */

@@ -2,6 +2,14 @@ import { test, expect } from './test';
 
 test.describe('Guest check-in portal', () => {
   test('shows invalid link for unknown token', async ({ page }) => {
+    // L2 has no backend: the API answers 404 for a token it does not know, as the real one does.
+    await page.route('**/api/public/checkin/**', async (route) => {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/problem+json',
+        body: JSON.stringify({ status: 404, title: 'Not Found' }),
+      });
+    });
     await page.goto('/checkin/invalid-token-00000000000000000000000000000000');
     await expect(page.getByText(/invalid|non valido/i)).toBeVisible({ timeout: 15_000 });
   });

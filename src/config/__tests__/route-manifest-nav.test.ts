@@ -58,9 +58,14 @@ describe('route-manifest nav helpers', () => {
   });
 
   // PL-16 (A1-36): a landlord with only long-term leases reaches plan and billing from the long-rent shell.
-  it('has the plan and billing pages in the long-rent shell for the org billing administrator', () => {
-    const billingPaths = ['/app/long-rent/settings/plan', '/app/long-rent/settings/billing'];
-    for (const path of billingPaths) {
+  // A1-22/A1-23: the org identity settings page is there too, on the same policy.
+  it('has the plan, billing and organization pages in the long-rent shell for the org billing administrator', () => {
+    const orgAdminPaths = [
+      '/app/long-rent/settings/plan',
+      '/app/long-rent/settings/billing',
+      '/app/long-rent/settings/organization',
+    ];
+    for (const path of orgAdminPaths) {
       const entry = ROUTE_MANIFEST.find((e) => e.path === path);
       expect(entry?.context).toBe('long-rent');
       expect(entry?.orgBillingAdmin).toBe(true);
@@ -68,13 +73,43 @@ describe('route-manifest nav helpers', () => {
     }
 
     const secondary = getSecondaryNavEntries('long-rent', allowAll).map((e) => e.path);
-    expect(secondary).toEqual(billingPaths);
+    expect(secondary).toEqual(orgAdminPaths);
     const drawer = [...getDrawerNavByGroup('long-rent', allowAll).values()].flat().map((e) => e.path);
-    expect(drawer).toEqual(billingPaths);
+    expect(drawer).toEqual(orgAdminPaths);
 
     const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
     const visible = getVisibleNavEntries('long-rent', notBillingAdmin).map((e) => e.path);
-    expect(visible.filter((path) => billingPaths.includes(path))).toEqual([]);
+    expect(visible.filter((path) => orgAdminPaths.includes(path))).toEqual([]);
+  });
+
+  // BK-12: the public-site branding page belongs to the short-rent shell, for the org billing administrator only.
+  it('shows the site appearance page only in the short-rent shell, to the org billing administrator', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/site-appearance');
+    expect(entry?.orgBillingAdmin).toBe(true);
+    expect(entry?.navKey).toBe('nav.siteAppearance');
+    expect(ROUTE_MANIFEST.some((e) => e.path === '/app/long-rent/settings/site-appearance')).toBe(false);
+
+    const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
+    const hidden = getVisibleNavEntries('short-rent', notBillingAdmin).map((e) => e.path);
+    expect(hidden).not.toContain('/app/short-rent/settings/site-appearance');
+    expect(getSecondaryNavEntries('short-rent', allowAll).map((e) => e.path)).toContain(
+      '/app/short-rent/settings/site-appearance',
+    );
+  });
+
+  // BK-14: the operator documents page, like the branding page, is short-rent only and for the org billing administrator.
+  it('shows the site documents page only in the short-rent shell, to the org billing administrator', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/short-rent/settings/site-documents');
+    expect(entry?.orgBillingAdmin).toBe(true);
+    expect(entry?.navKey).toBe('nav.siteDocuments');
+    expect(ROUTE_MANIFEST.some((e) => e.path === '/app/long-rent/settings/site-documents')).toBe(false);
+
+    const notBillingAdmin = (_ctx: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
+    const hidden = getVisibleNavEntries('short-rent', notBillingAdmin).map((e) => e.path);
+    expect(hidden).not.toContain('/app/short-rent/settings/site-documents');
+    expect(getSecondaryNavEntries('short-rent', allowAll).map((e) => e.path)).toContain(
+      '/app/short-rent/settings/site-documents',
+    );
   });
 
   it('maps each plan or billing page to the same page of the other rental shell', () => {
@@ -147,5 +182,44 @@ describe('route-manifest nav helpers', () => {
   it('keeps the iCal-based calendar available with the otaPartnerApi flag off', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll, { otaPartnerApi: false });
     expect(primary.some((e) => e.path === '/app/short-rent/bookings/calendar')).toBe(true);
+  });
+
+  // A1-16: the CIN audit page existed but had no route, so the admin had no menu entry or URL for it.
+  it('makes the admin CIN audit route reachable and visible in the admin menu', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/admin/cin');
+    expect(entry?.context).toBe('admin');
+    expect(entry?.requiredPermissions).toEqual(['admin.cin.read']);
+    expect(entry?.navGroup).toBe('compliance-audit');
+    expect(entry?.legacyPaths).toContain('/admin/cin');
+
+    const visible = getVisibleNavEntries('admin', allowAll).map((e) => e.path);
+    expect(visible).toContain('/app/admin/cin');
+
+    const withoutCinRead = (_ctx: string, permission: string) => permission !== 'admin.cin.read';
+    const hiddenPaths = getVisibleNavEntries('admin', withoutCinRead).map((e) => e.path);
+    expect(hiddenPaths).not.toContain('/app/admin/cin');
+
+    // The old /admin/cin URL is the admin audit: no other entry may claim it (the host CIN page used to).
+    const claimants = ROUTE_MANIFEST.filter((e) => e.legacyPaths?.includes('/admin/cin')).map((e) => e.path);
+    expect(claimants).toEqual(['/app/admin/cin']);
+  });
+
+  // SU-16 (A4-32, #327-AC2/AC4): the iCal help page lives inside the supplier console, with its own sidebar entry.
+  it('puts the iCal help page in the supplier console sidebar', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/supplier/help/ical');
+    expect(entry?.context).toBe('supplier');
+    expect(entry?.navKey).toBe('nav.supplierHelpIcal');
+
+    const secondary = getSecondaryNavEntries('supplier', allowAll).map((e) => e.path);
+    expect(secondary).toEqual(['/app/supplier/profile', '/app/supplier/showcase', '/app/supplier/help/ical']);
+    const drawer = [...getDrawerNavByGroup('supplier', allowAll).values()].flat().map((e) => e.path);
+    expect(drawer).toContain('/app/supplier/help/ical');
+  });
+
+  // SU-13 (A4-16): the preview of the public showcase has its own sidebar entry.
+  it('puts the showcase preview in the supplier console sidebar', () => {
+    const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/supplier/showcase');
+    expect(entry?.context).toBe('supplier');
+    expect(entry?.navKey).toBe('nav.supplierShowcase');
   });
 });

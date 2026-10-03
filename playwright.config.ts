@@ -5,12 +5,16 @@ import { defineConfig, devices } from '@playwright/test';
  * - default / CI: L2 demo (`page.route` mocks OK)
  * - E2E_LOCAL=1: L3 against local InMemory API (no mock of paths under test)
  * - E2E_STAGING=1: L3 / smoke against Railway test API
+ * - E2E_GJ_L3=1: Golden Journey L3 from the UI on an ephemeral stack (real backend + PostgreSQL + mock IdP), three
+ *   distinct actors; `e2e/stack/up.sh` first, runbook backend docs/runbooks/golden-journey-l3.md
  *
  * @see https://playwright.dev/docs/test-configuration
  */
 const isLocalRun = process.env.E2E_LOCAL === '1';
 const isStagingRun = process.env.E2E_STAGING === '1';
 const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
+/** Golden Journey L3 on the ephemeral stack (FN-03): `e2e/stack/up.sh` starts it, `e2e/gj-l3/` is the suite. */
+const isGjL3Run = process.env.E2E_GJ_L3 === '1';
 const isProdSmokeRun = process.env.E2E_PROD_SMOKE === '1';
 
 /**
@@ -40,7 +44,20 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
   },
 
-  projects: isProdSmokeRun
+  projects: isGjL3Run
+    ? [
+        {
+          name: 'gj-l3',
+          testMatch: '**/gj-l3/**/*.spec.ts',
+          // The mock IdP serves a throw-away self-signed certificate (the backend trusts it via SSL_CERT_FILE).
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+            ignoreHTTPSErrors: true,
+          },
+        },
+      ]
+    : isProdSmokeRun
     ? [
         {
           name: 'prod-smoke',
@@ -79,8 +96,6 @@ export default defineConfig({
             '**/local-integration.spec.ts',
             '**/l3/**/*.spec.ts',
             '**/*-l3.spec.ts',
-            '**/golden-journey-web.spec.ts',
-            '**/golden-journey-supplier-mobile.spec.ts',
           ],
           dependencies: ['setup'],
           use: {
@@ -116,7 +131,7 @@ export default defineConfig({
         },
         {
           name: 'staging-gj',
-          // Real-API L3 only (demo golden-journey-web.spec.ts stays in L2 chromium project)
+          // Real-API L3 only (the Golden Journey is the gj-l3 project on the ephemeral stack, FN-03)
           testMatch: [
             '**/l3/**/*.spec.ts',
             '**/*-l3.spec.ts',
@@ -138,6 +153,7 @@ export default defineConfig({
             '**/vercel-deploy-smoke.spec.ts',
             '**/local-integration.spec.ts',
             '**/l3/**',
+            '**/gj-l3/**',
             '**/*-l3.spec.ts',
             '**/prod-deploy-smoke.spec.ts',
           ],
@@ -145,7 +161,8 @@ export default defineConfig({
         },
       ],
 
-  webServer: isDeploySmokeRun || isProdSmokeRun
+  // The L3 stack is started by e2e/stack/up.sh (database, backend, mock services and Vite), not by Playwright.
+  webServer: isDeploySmokeRun || isProdSmokeRun || isGjL3Run
     ? undefined
     : isLocalRun
     ? {

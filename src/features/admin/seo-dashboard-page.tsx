@@ -22,6 +22,7 @@ import type { LegalReviewStatus, SeoPageAdmin } from '@/types/seo.types';
 import { SeoLatestRevisionStatus, SeoPublicationBadge } from './components/seo-status';
 import { SEO_PAGE_TYPE_KEY } from './components/seo-review-helpers';
 import { SeoReviewDialog } from './components/seo-review-dialog';
+import { SeoTopComuniWidget } from './components/seo-top-comuni-widget';
 import { SeoWithdrawDialog } from './components/seo-withdraw-dialog';
 import { formatDate } from '@/lib/utils';
 import i18n from '@/i18n/config';
@@ -97,6 +98,8 @@ export function SeoDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      <SeoTopComuniWidget />
 
       <Card>
         <CardContent className="space-y-4 pt-6">

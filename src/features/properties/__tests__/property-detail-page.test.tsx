@@ -182,6 +182,24 @@ describe('PropertyDetailPage', () => {
     expect(screen.getByTestId('property-pause-status-badge')).toHaveTextContent(i18n.t('property.table.active'));
   });
 
+  // SU-04: the mismatch between the CIN's ISTAT code and the property's comune is a note, never an error.
+  it('PropertyDetailPage_CinIstatMismatch_ShowsANonBlockingNoteOnlyWhenTheApiFlagsIt', () => {
+    const view = renderPage();
+    expect(screen.queryByTestId('property-cin-istat-mismatch')).not.toBeInTheDocument();
+    view.unmount();
+
+    vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
+      data: { ...mockDetail, comuneIstatCode: '015146', cinIstatMismatch: true },
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof propertyQueries.usePropertyDetail>);
+    renderPage();
+
+    const note = screen.getByTestId('property-cin-istat-mismatch');
+    expect(note).toHaveAttribute('role', 'note');
+    expect(note).toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+  });
+
   // A2-05: the badge and the action button read `isPaused`, never `isActive` — pausing is a dedicated, reversible
   // action that never 404s the owner's own detail page (it used to, via the old IsActive filter).
   it('PropertyDetailPage_PausedProperty_ShowsPausedBadgeAndAnActivateAction', () => {

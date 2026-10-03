@@ -5,7 +5,9 @@ import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { getProblemMessage } from '@/lib/api-errors';
 import { useSupplierAvailability, useUpdateSupplierAvailability } from '@/queries/use-supplier';
 import { addDays, formatStayDate, todayInRome } from '@/lib/stay-dates';
 
@@ -22,7 +24,7 @@ export function SupplierAvailabilityPage() {
   const days = useMemo(() => buildVisibleDays(), []);
   const from = days[0];
   const to = days[days.length - 1];
-  const { data, isLoading } = useSupplierAvailability(from, to);
+  const { data, isLoading, isError, error, refetch } = useSupplierAvailability(from, to);
   const updateAvailability = useUpdateSupplierAvailability();
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [initialized, setInitialized] = useState(false);
@@ -45,10 +47,25 @@ export function SupplierAvailabilityPage() {
     try {
       await updateAvailability.mutateAsync(dates);
       toast.success(t('supplier.availabilityUpdated'));
-    } catch {
-      toast.error(t('supplier.availabilitySaveError'));
+    } catch (saveError) {
+      toast.error(getProblemMessage(saveError, t) ?? t('supplier.availabilitySaveError'));
     }
   };
+
+  // A failed load must not look like "every day is available" (SU-06, A4-25): the days default to available.
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title={t('supplier.availabilityTitle')} description={t('supplier.availabilityDescription')} />
+        <ErrorState
+          testId="supplier-availability-error"
+          title={t('supplier.availabilityLoadError')}
+          error={error}
+          onRetry={() => void refetch()}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <LoadingScreen message={t('supplier.availabilityLoading')} />;

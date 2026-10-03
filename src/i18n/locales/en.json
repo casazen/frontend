@@ -31,6 +31,7 @@
       "description": "National identification code verification (D.L. 145/2023)",
       "filters": "Filters",
       "loadError": "Unable to load CIN data. Please try again later.",
+      "retry": "Retry",
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} properties)",
       "previous": "Previous",
       "next": "Next",
@@ -57,8 +58,13 @@
       "pagination": "Page {{page}} of {{totalPages}} ({{totalCount}} users)",
       "previous": "Previous",
       "next": "Next",
+      "loadError": "Could not load users. Try again later.",
+      "retry": "Retry",
       "filter": {
-        "allRoles": "All roles"
+        "allRoles": "All roles",
+        "allStatuses": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "table": {
         "name": "Name",
@@ -66,6 +72,7 @@
         "role": "Role",
         "plan": "Plan",
         "status": "Status",
+        "createdAt": "Registered on",
         "actions": "Actions",
         "active": "Active",
         "inactive": "Inactive",
@@ -83,9 +90,13 @@
         "confirm": "Deactivate"
       },
       "roleDialog": {
-        "title": "Change role",
-        "description": "Select the new role for {{name}}.",
-        "label": "Role",
+        "title": "Manage roles",
+        "description": "Select the roles for {{name}}.",
+        "label": "Roles",
+        "loading": "Loading roles…",
+        "loadError": "Could not load the current roles.",
+        "retry": "Retry",
+        "noRolesWarning": "No role selected: the user will lose access to the app's features.",
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save"
@@ -101,6 +112,8 @@
     "jobs": {
       "title": "Background Jobs",
       "description": "Hangfire job status (refreshed every 30 seconds)",
+      "loadError": "Could not load jobs. Try again later.",
+      "retry": "Retry",
       "table": {
         "job": "Job",
         "cron": "Cron",
@@ -124,7 +137,8 @@
         "error": "Unable to send the invitation",
         "duplicate": "An active invitation already exists for this email",
         "emailFailed": "Email delivery failed — please try again in a few minutes"
-      }
+      },
+      "comune": "Comune"
     },
     "seo": {
       "title": "SEO Compliance",
@@ -134,6 +148,20 @@
       "budgetTokens": "{{used}} / {{cap}} tokens this month",
       "budgetLoading": "Loading the budget…",
       "budgetError": "Unable to load the AI budget.",
+      "topComuni": {
+        "title": "Municipalities that convert",
+        "description": "Clicks on the \"Publish your home\" button of the SEO pages, by municipality, in the last {{days}} days.",
+        "loadError": "The municipality statistics could not be loaded.",
+        "retry": "Retry",
+        "empty": "No clicks recorded in the last {{days}} days.",
+        "retention": "Events hold no personal data and are deleted after {{days}} days.",
+        "columns": {
+          "comune": "Municipality",
+          "ctaClicks": "Button clicks",
+          "signupStarts": "Signups started",
+          "signups": "Signups completed"
+        }
+      },
       "loading": "Loading...",
       "loadError": "Unable to load SEO pages. Please try again later.",
       "filter": {
@@ -233,6 +261,104 @@
         "enqueued": "Enqueued",
         "unknown": "Unknown"
       }
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "description": "List of suppliers, suspension and reactivation, invites.",
+      "inviteNew": "Invite supplier",
+      "tabsLabel": "Supplier sections",
+      "tabSuppliers": "Suppliers",
+      "tabInvites": "Invites",
+      "searchPlaceholder": "Search by name or email",
+      "loading": "Loading…",
+      "loadError": "Could not load the suppliers.",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "empty": "There are no suppliers yet.",
+      "emptyFiltered": "No supplier matches the filters.",
+      "pagination": "Page {{page}} of {{totalPages}} · {{totalCount}} results",
+      "previous": "Previous",
+      "next": "Next",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "history": "History",
+      "filter": {
+        "status": "Supplier status",
+        "allStatuses": "All statuses",
+        "allInviteStates": "All statuses"
+      },
+      "table": {
+        "name": "Supplier",
+        "contact": "Contact",
+        "categories": "Categories and comuni",
+        "status": "Status",
+        "openRequests": "Open requests",
+        "actions": "Actions",
+        "registeredOn": "Registered on {{date}}",
+        "suspendedOn": "Suspended on {{date}}"
+      },
+      "suspendDialog": {
+        "title": "Suspend {{name}}",
+        "description": "A suspended supplier receives no new requests and cannot take, complete or reject the existing ones. It stays in the system and you can reactivate it at any time.",
+        "openRequests_one": "The supplier still has {{count}} open request: it stays as it is and the supplier cannot work on it until you reactivate it.",
+        "openRequests_other": "The supplier still has {{count}} open requests: they stay as they are and the supplier cannot work on them until you reactivate it.",
+        "reason": "Reason for the suspension",
+        "reasonHint": "Required. It is an internal note recorded with your name in the history: the supplier does not see it.",
+        "suspending": "Suspending…"
+      },
+      "reactivateDialog": {
+        "title": "Reactivate {{name}}",
+        "description": "The supplier becomes active and visible to hosts again if it had already completed the activation; otherwise it goes back to pending and has to complete it."
+      },
+      "audit": {
+        "title": "History of {{name}}",
+        "description": "Who suspended or reactivated the supplier, when and why.",
+        "empty": "No action recorded for this supplier.",
+        "loadError": "Could not load the history.",
+        "by": "by {{actor}}",
+        "reason": "Reason: {{reason}}",
+        "action": {
+          "Suspended": "Suspended",
+          "Reactivated": "Reactivated",
+          "InviteResent": "Invite sent again",
+          "InviteRevoked": "Invite revoked"
+        }
+      },
+      "invites": {
+        "searchPlaceholder": "Search by invited email",
+        "email": "Invited email",
+        "comune": "Comune",
+        "categories": "Categories",
+        "state": "Invite status",
+        "expiresAt": "Expires on",
+        "sentOn": "Sent on {{date}}",
+        "resend": "Send again",
+        "revoke": "Revoke",
+        "empty": "There are no invites yet.",
+        "emptyFiltered": "No invite matches the filters.",
+        "loadError": "Could not load the invites.",
+        "stateLabel": {
+          "Pending": "Pending",
+          "Used": "Used",
+          "Expired": "Expired",
+          "Revoked": "Revoked"
+        },
+        "resendDialog": {
+          "title": "Send the invite again",
+          "description": "A new email will be sent to {{email}} with a new link valid for 7 days. The previous link stops working."
+        },
+        "revokeDialog": {
+          "title": "Revoke the invite",
+          "description": "The link sent to {{email}} will stop working. You can create a new invite for the same email."
+        }
+      },
+      "toast": {
+        "error": "The operation failed. Try again.",
+        "suspended": "{{name}} was suspended.",
+        "reactivated": "{{name}} was reactivated.",
+        "inviteResent": "Invite sent again to {{email}}.",
+        "inviteRevoked": "Invite for {{email}} revoked."
+      }
     }
   },
   "nav": {
@@ -251,12 +377,14 @@
     "revenue": "Revenue",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
+    "organization": "Organization",
     "ota": "OTA",
     "leases": "Leases",
     "users": "Users",
     "jobs": "Processes",
     "suppliers": "Suppliers",
     "guests": "Guests",
+    "cinAudit": "CIN Audit",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "more": "More",
@@ -270,6 +398,7 @@
     "supplierCalendar": "Calendar",
     "supplierInbox": "Requests",
     "supplierAvailability": "Availability",
+    "supplierHelpIcal": "iCal guide",
     "group": {
       "operazioni": "Operations",
       "immobili": "Properties",
@@ -283,7 +412,10 @@
       "operations": "Administration",
       "amministrazione": "Administration"
     },
-    "ltrReferenceData": "LTR reference data"
+    "ltrReferenceData": "LTR reference data",
+    "siteAppearance": "Site appearance",
+    "siteDocuments": "Site documents",
+    "supplierShowcase": "Showcase"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -686,8 +818,9 @@
         "required": "Last name is required"
       },
       "fiscalCode": {
-        "minLength": "Fiscal code must be at least 11 characters",
-        "maxLength": "Fiscal code must be at most 16 characters"
+        "required": "Fiscal code is required",
+        "invalid": "Invalid fiscal code: check the 16 characters (natural person) or the 11 digits (company).",
+        "duplicate": "This fiscal code is already entered for another party of the lease."
       },
       "citizenship": {
         "length": "Use ISO 3166-1 alpha-2 country code (e.g. IT)",
@@ -711,6 +844,14 @@
       },
       "securityDeposit": {
         "min": "The security deposit cannot be negative."
+      },
+      "landlords": {
+        "required": "Enter at least one landlord.",
+        "max": "You can enter at most 10 landlords."
+      },
+      "tenants": {
+        "required": "Enter at least one tenant.",
+        "max": "You can enter at most 10 tenants."
       }
     },
     "createPageTitle": "Create lease",
@@ -724,10 +865,6 @@
       "startDateLabel": "Start date *",
       "endDateLabel": "End date *",
       "monthlyRentLabel": "Monthly rent (€) *",
-      "landlordTitle": "Landlord",
-      "landlordDescription": "Contract party — property owner or representative",
-      "tenantTitle": "Tenant",
-      "tenantDescription": "Contract party — lessee",
       "firstNameLabel": "First name *",
       "lastNameLabel": "Last name *",
       "fiscalCodeLabel": "Fiscal code *",
@@ -757,7 +894,19 @@
       },
       "concordatoIndicativeRangeHint": "Indicative monthly range: {{min}} – {{max}} EUR",
       "concordatoRentOutsideIndicativeRange": "The monthly rent is outside the indicative range: you can create the lease, but check the rent with an organization that signed the agreement.",
-      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication."
+      "citizenshipHint": "2-letter ISO code (Greece: GR). A tenant who is not a citizen of one of the 27 EU states requires the Questura communication.",
+      "landlordsTitle": "Landlords",
+      "landlordsDescription": "Every owner letting the property (e.g. co-owners or spouses): each one is a party of the contract and of the registration.",
+      "tenantsTitle": "Tenants",
+      "tenantsDescription": "Every tenant renting the property: each one is a party of the contract and of the registration.",
+      "landlordNumber": "Landlord {{n}}",
+      "tenantNumber": "Tenant {{n}}",
+      "addLandlord": "Add landlord",
+      "addTenant": "Add tenant",
+      "removeLandlord": "Remove landlord {{n}}",
+      "removeTenant": "Remove tenant {{n}}",
+      "partiesMax": "You can enter at most {{max}} parties per role.",
+      "fiscalCodeHint": "16 characters for a natural person, 11 digits for a company."
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -968,7 +1117,8 @@
         "checkedIn": "Guest arrived",
         "checkedOut": "Stay completed",
         "block": "Dates blocked by another channel (iCal)",
-        "toReview": "OTA stay to check"
+        "toReview": "OTA stay to check",
+        "manualBlock": "Dates you closed (owner, maintenance)"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -977,6 +1127,50 @@
         "notABooking": "These dates come from the linked iCal calendar: they are taken on another channel and are not a CasaZen booking. The guest's details are on the channel.",
         "otherSource": "another calendar",
         "close": "Close"
+      },
+      "manualBlock": {
+        "action": "Block dates",
+        "formTitle": "Block dates",
+        "formHint": "Close the nights when the property is not available: they cannot be booked on the site and are exported as busy to the linked channels. You can also select the days on the calendar.",
+        "startDate": "From the night of",
+        "endDate": "Free again from",
+        "endDateHint": "First day bookable again, like the departure day of a stay.",
+        "nights_one": "{{count}} night blocked",
+        "nights_other": "{{count}} nights blocked",
+        "reason": "Reason",
+        "reasonPlaceholder": "Choose the reason",
+        "reasons": {
+          "Owner": "Owner stay",
+          "Maintenance": "Maintenance",
+          "Other": "Other reason"
+        },
+        "note": "Note (optional)",
+        "noteHint": "Only you see it: it is never shown to guests or sent to the channels.",
+        "submit": "Block dates",
+        "submitting": "Blocking...",
+        "cancel": "Cancel",
+        "created": "Dates blocked",
+        "createFailed": "The dates could not be blocked. Try again.",
+        "title": "Dates closed: {{reason}}",
+        "tooltip": "Dates closed: {{reason}}",
+        "noteLabel": "Note: {{note}}",
+        "explanation": "You closed these nights: they cannot be booked on the site and are busy on the channels that read the exported calendar.",
+        "readOnly": "Only users who can edit the property can remove the block.",
+        "delete": "Remove block",
+        "deleteConfirm": "Remove the block? The nights become bookable again on the site and free on the linked channels.",
+        "deleteConfirmAction": "Remove",
+        "deleting": "Removing...",
+        "deleted": "Block removed: the dates are free again",
+        "deleteFailed": "The block could not be removed. Try again.",
+        "validation": {
+          "startRequired": "Enter the first night to block.",
+          "startInPast": "Past dates cannot be blocked.",
+          "endRequired": "Enter when the property is free again.",
+          "endAfterStart": "The end date must be after the first night.",
+          "tooLong": "You can block at most {{max}} nights at a time.",
+          "reasonRequired": "Choose the reason of the block.",
+          "noteTooLong": "The note can be at most {{max}} characters long."
+        }
       },
       "toolbar": {
         "today": "Today",
@@ -1546,6 +1740,9 @@
       "retry": "Try again",
       "retrying": "Retrying...",
       "signInAgain": "Sign in again"
+    },
+    "errorState": {
+      "retry": "Try again"
     }
   },
   "common": {
@@ -1600,6 +1797,7 @@
       "retry": "Retry",
       "tabs": {
         "info": "Info & Photos",
+        "photos": "Photos",
         "pricing": "Seasonal suggestions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
@@ -1645,7 +1843,46 @@
       "prev": "Previous photo",
       "next": "Next photo",
       "unavailable": "Photo unavailable",
-      "alt": "{{name}} - photo {{index}}"
+      "alt": "{{name}} - photo {{index}}",
+      "title": "Property photos",
+      "description": "The first photo is the cover: guests see it first on your booking site and in search results.",
+      "rules": "Up to {{max}} photos in JPEG, PNG or WebP format, {{size}} MB each at most.",
+      "counter": "{{count}} of {{max}} photos",
+      "limitReached": "You have reached the maximum of {{max}} photos: delete a photo to upload more.",
+      "upload": "Upload photos",
+      "uploading": "Uploading…",
+      "uploaded_one": "{{count}} photo uploaded.",
+      "uploaded_other": "{{count}} photos uploaded.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "selectionTooMany": "You can upload at most {{max}} photos at a time.",
+      "selectionOverLimit": "You can add {{remaining}} more photos (maximum {{max}} per property).",
+      "selectionInvalidType": "“{{name}}” is not a JPEG, PNG or WebP image.",
+      "selectionTooLarge": "“{{name}}” is empty or larger than the {{size}} MB limit.",
+      "loading": "Loading photos…",
+      "loadError": "The photos could not be loaded.",
+      "retry": "Try again",
+      "emptyTitle": "No photos",
+      "emptyDescription": "Add photos of the property: guests also choose by looking at the pictures.",
+      "emptyReadOnly": "No photos have been uploaded for this property.",
+      "emptyAction": "Upload the first photo",
+      "cover": "Cover",
+      "setCover": "Set as cover",
+      "coverSet": "Cover photo updated.",
+      "coverFailed": "The cover could not be changed. Please try again.",
+      "moveEarlier": "Move photo {{index}} earlier",
+      "moveLater": "Move photo {{index}} later",
+      "reorderFailed": "The order of the photos could not be changed. Please try again.",
+      "delete": "Delete photo {{index}}",
+      "deleteTitle": "Delete this photo?",
+      "deleteDescription": "The photo will be removed from the gallery and from the booking site. This cannot be undone.",
+      "deleteConfirm": "Delete photo",
+      "cancel": "Cancel",
+      "deleted": "Photo deleted.",
+      "deleteFailed": "The photo could not be deleted. Please try again.",
+      "legacy": "Photo no longer available: delete it and upload it again.",
+      "actionFailed": "The operation failed. Please try again.",
+      "manage": "Manage photos",
+      "add": "Add photos"
     },
     "documents": {
       "title": "Documents",
@@ -1682,7 +1919,8 @@
         "cancel": "Cancel",
         "saving": "Saving...",
         "save": "Save CIN"
-      }
+      },
+      "istatMismatch": "The comune inside the CIN differs from the comune of the property. This is not an error: a CIN does not change after a relocation or reclassification. Just check that it is the CIN of this property."
     },
     "ota": {
       "title": "OTA Integrations",
@@ -1769,7 +2007,8 @@
         "bathrooms": "2",
         "maxGuests": "6",
         "nightlyRate": "150",
-        "houseRules": "E.g. no parties, check-in from 3:00 pm"
+        "houseRules": "E.g. no parties, check-in from 3:00 pm",
+        "unit": "e.g. Staircase B, unit 5"
       },
       "bedroomsHint": "0 for a studio",
       "cleaningFee": "Cleaning fee (€)",
@@ -1788,6 +2027,14 @@
         "loading": "Loading cancellation policies…",
         "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
         "empty": "No cancellation policy available."
+      },
+      "unit": "Unit / staircase",
+      "unitHint": "Optional. Enter it if you have several apartments in the same building: each one needs a different unit or staircase.",
+      "comune": {
+        "label": "Comune (ISTAT list)",
+        "hint": "Choose the comune from the official ISTAT list: the region, the required documents, the tourist tax and the CIN check follow from it.",
+        "legacyCity": "City entered so far: {{city}}. It is not linked to the ISTAT list: choose the comune to confirm it.",
+        "cityFromComune": "Taken from the chosen comune. Clear the choice to type another city."
       }
     },
     "validation": {
@@ -1841,6 +2088,19 @@
       },
       "timezone": {
         "required": "Choose a time zone"
+      },
+      "unit": {
+        "maxLength": "The unit or staircase can have at most 30 characters",
+        "duplicate": "You already have a property at this address: if it is another apartment in the same building, enter the unit or staircase."
+      },
+      "latitude": {
+        "range": "The latitude must be a number between -90 and 90"
+      },
+      "longitude": {
+        "range": "The longitude must be a number between -180 and 180"
+      },
+      "comuneIstatCode": {
+        "format": "The ISTAT code of the comune is not valid: choose the comune from the list."
       }
     },
     "slug": {
@@ -1997,7 +2257,30 @@
     "emptyForStay": "No supplier requests for this stay.",
     "emptyForProperty": "No supplier requests for this property.",
     "viewStay": "Go to the stay",
-    "noStayLegacy": "No stay (earlier request)"
+    "noStayLegacy": "No stay (earlier request)",
+    "requestOtherSupplier": "Request another supplier",
+    "otherSupplierHint": "The supplier that rejected it is not in the list.",
+    "noOtherSuppliers": "No other active supplier for this category in the property's comune.",
+    "timeline": {
+      "actorHost": "Your team",
+      "actorSupplier": "The supplier",
+      "rejectionReason": "Reason for the rejection: {{reason}}",
+      "noRejectionReason": "The supplier gave no reason.",
+      "alreadyReRequested": "Already requested from another supplier.",
+      "waiting": {
+        "Richiesto": "Waiting for the supplier to accept or reject.",
+        "PresoInCarico": "Waiting for the supplier to complete the job.",
+        "Completato": "Job completed: mark it as paid once you have paid the supplier."
+      }
+    },
+    "markPaidDialog": {
+      "title": "Mark as paid",
+      "description": "Do you confirm you paid {{supplier}} for {{category}}? CasaZen does not make the payment: this only records that you already did.",
+      "descriptionNoSupplier": "Do you confirm you paid the supplier for {{category}}? CasaZen does not make the payment: this only records that you already did.",
+      "irreversible": "This cannot be undone and the supplier will be notified.",
+      "cancel": "Cancel",
+      "confirm": "Yes, I paid"
+    }
   },
   "ical": {
     "title": "OTA Calendar",
@@ -2139,18 +2422,10 @@
     "photoUrlsHint": "One URL per line. The first photos will appear in your public showcase.",
     "bio": "Description",
     "activationLoading": "Loading activation...",
-    "activationTitle": "Supplier Profile Activation",
-    "activationNewDescription": "Two minutes and you're live. You can complete the rest later.",
-    "activationDescription": "Complete the 5 steps to appear in the host marketplace",
-    "step1Title": "What do you offer and where?",
-    "step2Title": "How do you manage availability?",
-    "continueToCalendar": "Continue",
     "categoriesHint": "Choose one or more categories. You can add more later.",
-    "comuniHint": "Enter the cities where you operate, separated by commas.",
-    "comuniPlaceholder": "e.g. Rome, Milan, Naples",
-    "acceptTosFirst": "You must accept the terms of service",
+    "comuniHint": "Enter the names of the comuni in Italian where you operate, separated by commas.",
+    "comuniPlaceholder": "e.g. Roma, Milano, Napoli",
     "connectLater": "Set up later",
-    "completeLaterHint": "You can complete your profile and add details anytime from the dashboard.",
     "progressSaveError": "Could not save. Try again.",
     "activationStatus": "Activation status",
     "serviceCategories": "Service categories",
@@ -2158,12 +2433,8 @@
     "municipalityCodesLabel": "Municipality codes (comma-separated)",
     "description": "Description",
     "describeServicesPlaceholder": "Describe your services...",
-    "acceptTos": "I accept the CasaZen supplier terms of service",
     "saveProgress": "Save progress",
-    "activateProfile": "Activate profile",
     "progressSaved": "Progress saved",
-    "profileActivated": "Supplier profile activated",
-    "completeAllSteps": "Complete all steps before activating the profile",
     "inboxTitle": "Assignment Inbox",
     "inboxDescription": "Service requests from hosts: open an assignment to see where, when and whom to contact.",
     "loading": "Loading...",
@@ -2232,7 +2503,8 @@
       "closedPaid": "The host marked the work as paid.",
       "closedRejected": "You declined this request.",
       "cancel": "Cancel",
-      "rejectReasonHint": "The host sees the reason (at most 500 characters)."
+      "rejectReasonHint": "The host sees the reason (at most 500 characters).",
+      "actionsSuspended": "Actions are not available: the supplier account is suspended."
     },
     "register": {
       "title": "Supplier registration",
@@ -2436,6 +2708,128 @@
       "empty": "You have not received any requests from hosts yet.",
       "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
       "openInbox": "Open assignments"
+    },
+    "statusSuspended": "Suspended",
+    "suspendedHint": "Contact CasaZen support to reactivate the account.",
+    "suspended": {
+      "title": "Supplier account suspended",
+      "description": "You receive no new requests and cannot take, complete or reject the existing ones. Contact CasaZen support to reactivate the account."
+    },
+    "comuni": {
+      "pickerPlaceholder": "Search and add a comune",
+      "chosenTitle": "Chosen comuni",
+      "noneChosen": "No comune chosen from the list.",
+      "codeOnly": "Comune {{code}}",
+      "remove": "Remove {{name}}",
+      "legacyTitle": "Entered as text",
+      "legacyHint": "These comuni are not linked to the official list, so the search by code does not always recognize them. Look them up in the list and add them, then remove the text."
+    },
+    "activation": {
+      "title": "Supplier profile activation",
+      "description": "Complete the 5 steps to appear to hosts. You can stop and resume where you left off: your progress is saved on your account.",
+      "stepOf": "Step {{current}} of {{total}}",
+      "optional": "Optional",
+      "stepsLabel": "Activation steps",
+      "steps": {
+        "identity": "Business details",
+        "services": "Services and municipalities",
+        "showcase": "Showcase and photos",
+        "profile": "Description",
+        "terms": "Availability and terms"
+      },
+      "stepDone": "completed",
+      "stepTodo": "to do",
+      "back": "Back",
+      "next": "Save and continue",
+      "skip": "Skip, I'll add photos later",
+      "loadError": "Could not load the profile activation.",
+      "saveError": "Could not save this step. Try again.",
+      "stepSaveError": "Could not remember the step you reached: next time you may restart from an earlier step.",
+      "identity": {
+        "title": "Who are you?",
+        "legalName": "Business name",
+        "phone": "Phone",
+        "phoneHint": "With the country prefix if not Italian, for example +39 06 1234567. Hosts only see it once you take on a job.",
+        "vatNumber": "VAT number (optional)",
+        "email": "Account email"
+      },
+      "services": {
+        "title": "What do you offer and where?"
+      },
+      "showcase": {
+        "title": "Showcase and photos",
+        "description": "The first photos appear in your showcase. You can also add them after activation.",
+        "count": "{{current}}/{{max}} photos",
+        "add": "Choose photos",
+        "upload": "Upload photos",
+        "uploaded": "Photos uploaded",
+        "uploadError": "Could not upload the photos. Try again.",
+        "max": "At most {{max}} photos",
+        "remove": "Remove photo {{index}}"
+      },
+      "profile": {
+        "title": "Professional description",
+        "label": "Description",
+        "hint": "Tell hosts who you are, what you do and when you can help. This text is visible to hosts when they choose you.",
+        "counter": "{{count}}/{{max}} characters"
+      },
+      "terms": {
+        "title": "Availability and Terms of Service",
+        "calendarTitle": "Availability (optional)",
+        "calendarHint": "Connect a calendar to receive jobs only on your free days. You can also do it after activation.",
+        "version": "Terms version: {{version}}",
+        "accept": "I accept the CasaZen Terms of Service (version {{version}}), including the rules for suppliers",
+        "read": "Read the Terms of Service"
+      },
+      "summary": {
+        "title": "Before activating",
+        "ready": "You have met every requirement: you can activate the profile.",
+        "missing": "To activate the profile you still need:",
+        "goTo": "Go to step {{step}}"
+      },
+      "blockers": {
+        "legal_name_missing": "The business name",
+        "phone_invalid": "A valid phone number",
+        "categories_missing": "At least one service category",
+        "comuni_missing": "At least one municipality",
+        "bio_missing": "The professional description",
+        "tos_not_accepted": "Acceptance of the Terms of Service",
+        "tos_reacceptance_required": "Acceptance of the new version of the Terms of Service"
+      },
+      "activate": "Activate profile",
+      "activating": "Activating…",
+      "activated": "Supplier profile activated: hosts can now find you.",
+      "activateError": "Could not activate the profile.",
+      "reaccept": {
+        "title": "New version of the Terms of Service",
+        "description": "The CasaZen Terms of Service have been updated. To keep handling jobs you must accept the current version.",
+        "descriptionLegacy": "You accepted the Terms of Service before we recorded their version. Accept the current version so that your consent is on record.",
+        "button": "Accept and continue",
+        "done": "Terms of Service accepted.",
+        "error": "Could not record the acceptance.",
+        "banner": "Accept the new version of the Terms of Service",
+        "bannerBlocking": "Until you accept the new version of the Terms of Service you cannot take, complete or reject jobs.",
+        "bannerSoft": "Accept the current version of the Terms of Service: your earlier acceptance does not record the version.",
+        "bannerAction": "Go and accept"
+      }
+    },
+    "profileLoadError": "Could not load the supplier profile.",
+    "availabilityLoadError": "Could not load the availability.",
+    "showcase": {
+      "title": "Public showcase",
+      "description": "Preview of the page anyone can open with your link: it is identical to the public one.",
+      "loading": "Loading the showcase…",
+      "loadError": "Could not load the showcase preview.",
+      "published": "The showcase is public: anyone with the link can see it.",
+      "notPublished": "The showcase is not public yet: it will be once you activate the profile. This is a preview of how it will look.",
+      "suspended": "The profile is suspended: the showcase is not visible to the public. Contact CasaZen support.",
+      "noPublicUrl": "The public address is not configured on this environment: the full link is not available.",
+      "open": "Open the public page",
+      "copyLink": "Copy the link",
+      "linkCopied": "Link copied",
+      "linkCopyError": "Could not copy the link: select it and copy it by hand.",
+      "notIndexed": "The page does not appear in search engines: it is reached only through the link.",
+      "previewLink": "Showcase preview"
     }
   },
   "settings": {
@@ -2470,11 +2864,6 @@
     "planSettings": "Plan settings"
   },
   "domain": {
-    "status": {
-      "Pending": "Pending",
-      "Verified": "Verified",
-      "Failed": "Failed"
-    },
     "modes": {
       "path": "CasaZen path (/book/{slug})",
       "subdomain": "CasaZen subdomain",
@@ -2492,25 +2881,290 @@
       "save": "Save domain settings",
       "saved": "Domain settings saved",
       "saveFailed": "Could not save domain settings",
-      "verify": "Verify DNS",
+      "verify": "Check now",
       "verifySuccess": "Domain verified successfully",
-      "verifyFailed": "DNS verification failed — check your records and try again",
+      "verifyFailed": "The check did not work: try again shortly",
       "upgradeCta": "Custom domains are available on Pro.",
       "upgradeLink": "Upgrade plan",
       "currentTitle": "Current configuration",
       "pathUrl": "Path URL",
       "subdomainUrl": "Subdomain URL",
       "customDomainUrl": "Custom domain URL",
-      "customDomainPlaceholder": "www.yourvilla.com"
+      "customDomainPlaceholder": "www.yourvilla.com",
+      "verifying": "Checking…",
+      "loadError": "Unable to load the domain settings.",
+      "retry": "Try again",
+      "planLapsed": "Your plan no longer includes the custom domain: until you go back to Pro the site does not answer on this domain and your guests use the CasaZen path."
     },
     "dns": {
-      "title": "DNS instructions",
-      "description": "Add these records at your DNS provider, then click Verify.",
-      "cname": "CNAME record",
-      "txt": "TXT verification record",
-      "copyCname": "Copy CNAME target",
+      "title": "DNS records to create",
+      "description": "Create these records at the provider of your domain (where you registered it). Then press Check now.",
+      "txt": "1. Ownership TXT record",
+      "txtHint": "Proves the domain is yours. Type TXT.",
+      "cname": "2. CNAME record",
+      "cnameHint": "Points the domain to our service. Type CNAME, for a subdomain such as www.",
+      "aRecord": "Alternatively: A record",
+      "aRecordHint": "For a domain without www (the root of a domain cannot have a CNAME) create a record of type A for each address:",
+      "providerTxt": "3. Service provider TXT record",
+      "providerTxtHint": "Required only because the domain is already used on another account of the provider. Type TXT.",
+      "copyCname": "Copy CNAME value",
       "copyTxt": "Copy TXT value",
-      "copied": "Copied to clipboard"
+      "copyProviderTxt": "Copy the provider TXT value",
+      "copied": "Copied to the clipboard",
+      "copyFailed": "Cannot copy: select the value by hand",
+      "sslNote": "The SSL certificate is generated automatically once the domain is active."
+    },
+    "state": {
+      "verified": "Active",
+      "waitingDns": "Waiting for DNS",
+      "activating": "Activating",
+      "failed": "Not active"
+    },
+    "stateTitle": {
+      "verified": "Your domain is active",
+      "waitingDns": "Waiting for the DNS records",
+      "activating": "Activation in progress",
+      "failed": "The domain cannot be activated"
+    },
+    "stateDescription": {
+      "verified": "Your guests can book from your domain. We keep checking the DNS records: if they are removed, the domain stops being active.",
+      "waitingDns": "Create the DNS records shown below at your provider and wait for them to propagate (it can take a few hours). Then press Check now, or wait for the automatic check.",
+      "activating": "The DNS records are not the problem: we are finishing the activation of the domain on the platform and will retry automatically.",
+      "failed": "The domain cannot be activated. Check that it is spelled correctly or choose another domain."
+    },
+    "issues": {
+      "ownership_txt_missing": "We cannot find the TXT record that proves you own the domain. Check that it was created and wait for the DNS to propagate (it can take a few hours).",
+      "dns_not_pointing": "The domain does not point to our service yet: create the CNAME record shown (for a domain without www, the A records) and wait for the DNS to propagate.",
+      "vercel_verification_pending": "The service provider asks for one more TXT record to confirm the domain: add it (it is in the DNS instructions) and check again.",
+      "vercel_not_configured": "Activating custom domains is not available on the platform yet. Your domain will activate by itself as soon as it is.",
+      "vercel_unauthorized": "We cannot activate the domain right now because of a platform configuration problem. We will retry automatically; if it lasts, contact support.",
+      "vercel_unavailable": "The activation service is not answering right now. We will retry automatically.",
+      "domain_taken": "This domain is already in use by another CasaZen site.",
+      "vercel_domain_in_use": "This domain is already linked to another project or account of the service provider and we cannot activate it. Contact support.",
+      "vercel_rejected": "The service provider does not accept this domain. Check that it is spelled correctly."
+    },
+    "lastCheck": "Last check",
+    "neverChecked": "not checked yet",
+    "verifiedAt": "Active since",
+    "autoCheck": {
+      "active": "We re-check the domain automatically: you do not need to come back here.",
+      "stopped": "The automatic check is paused because the domain has not been configured for too long: press Check now after fixing the DNS records."
+    },
+    "activationUnavailable": "Activating custom domains is not available on the platform yet: the domain will stay on hold until the service is configured. There is nothing different to do on your DNS.",
+    "siteAddress": {
+      "title": "Give your site an address of its own",
+      "suggestion": "Today your guests book on {{url}}. Choose a CasaZen subdomain or, with Pro, your own domain (for example www.yourvilla.com).",
+      "domainTitle": "Domain {{domain}}",
+      "choose": "Choose the address",
+      "manage": "Go to the setup",
+      "dismiss": "Hide the suggestion",
+      "loadError": "We cannot load the address of your site."
+    }
+  },
+  "orgSettings": {
+    "title": "Organization settings",
+    "description": "Your organization's name, public address and contact email.",
+    "adminRequired": {
+      "title": "Reserved for the organization administrator",
+      "description": "These settings are managed by your organization's administrator: contact the administrator to change them."
+    },
+    "loadError": "Could not load the organization settings.",
+    "formTitle": "Organization identity",
+    "formDescription": "The name and address are visible on your public booking site; the email only if you choose to show it.",
+    "nameLabel": "Organization name",
+    "slugLabel": "Public address",
+    "slugHelp": "Letters, numbers and hyphens (3 to 63 characters). Forms the address of your booking site (/book/your-address).",
+    "slugChecking": "Checking availability…",
+    "slugAvailable": "Address available: {{path}}",
+    "slugUnavailable": "This address is not available: choose another one.",
+    "slugCheckFailed": "Availability cannot be checked right now: it will be checked when you save.",
+    "slugChangeNotice": "The old address ({{previous}}) will keep leading to your site and stays reserved to you. Still, update the links you shared (listings, QR codes, social media) with the new one.",
+    "contactEmailLabel": "Contact email",
+    "contactEmailHelp": "CasaZen notifications (bookings, requests, alerts) are sent here.",
+    "contactEmailPublicLabel": "Show the contact email to guests",
+    "contactEmailPublicHelp": "Not published by default. Turn this on to show it on your public booking site.",
+    "save": "Save settings",
+    "saved": "Organization settings saved",
+    "saveFailed": "Could not save the organization settings",
+    "errors": {
+      "nameRequired": "Enter the organization name.",
+      "slugRequired": "Enter the public address.",
+      "contactEmailRequired": "Enter the contact email.",
+      "contactEmailInvalid": "Enter a valid email."
+    },
+    "siteAppearanceHint": "The public site's logo, colors and theme are edited in Site appearance.",
+    "siteAppearanceLink": "Go to Site appearance"
+  },
+  "siteAppearance": {
+    "title": "Site appearance",
+    "description": "Logo, cover image, color, tagline and theme of your public booking site.",
+    "adminRequired": "The site appearance is managed by your organization's administrator: contact them to change it.",
+    "loadError": "Could not load the site appearance.",
+    "save": "Save style",
+    "saved": "Site appearance saved",
+    "saveFailed": "Could not save the site appearance",
+    "images": {
+      "title": "Images",
+      "description": "Images are published on the site right away. PNG, JPEG or WebP.",
+      "upload": "Upload",
+      "replace": "Replace",
+      "remove": "Remove",
+      "uploadFailed": "Could not upload the image",
+      "removeFailed": "Could not remove the image",
+      "logo": {
+        "label": "Logo",
+        "empty": "No logo: the site shows the name",
+        "currentAlt": "Current logo",
+        "hint": "Shown in the header. Up to {{maxMb}} MB, from {{minWidth}}×{{minHeight}} to {{maxWidth}}×{{maxHeight}} pixels; best with a transparent background (PNG).",
+        "uploaded": "Logo updated",
+        "removed": "Logo removed"
+      },
+      "hero": {
+        "label": "Cover image",
+        "empty": "No cover: the site uses the first property photo",
+        "currentAlt": "Current cover image",
+        "hint": "At the top of the home page, full width. Up to {{maxMb}} MB, at least {{minWidth}}×{{minHeight}} pixels (at most {{maxWidth}}×{{maxHeight}}).",
+        "uploaded": "Cover image updated",
+        "removed": "Cover image removed"
+      }
+    },
+    "style": {
+      "title": "Style",
+      "description": "Theme, primary color and tagline. Changes show in the preview and must be saved."
+    },
+    "theme": {
+      "label": "Theme",
+      "options": {
+        "mare": {
+          "name": "Sea",
+          "description": "Bright and welcoming, for seaside homes and summer holidays."
+        },
+        "montagna": {
+          "name": "Mountain",
+          "description": "Warm and natural, for cabins, chalets and farm stays."
+        },
+        "urban": {
+          "name": "Urban",
+          "description": "Clean and modern, for city apartments."
+        }
+      }
+    },
+    "color": {
+      "label": "Primary color",
+      "picker": "Pick the primary color",
+      "placeholder": "#1a6b8f",
+      "help": "Used for the site's buttons and links. Hex code, for example #1a6b8f.",
+      "usingTheme": "You are using the theme's color.",
+      "useTheme": "Use the theme's color",
+      "contrast": {
+        "title": "Readability",
+        "buttonLight": "Button text will be white (contrast {{ratio}}:1, WCAG AA compliant).",
+        "buttonDark": "Button text will be dark (contrast {{ratio}}:1, WCAG AA compliant): white on this color would be hard to read.",
+        "textAdjusted": "This color is too light to be read as text on the theme background: links, icons and the focus outline will use a darker variant ({{color}})."
+      }
+    },
+    "tagline": {
+      "label": "Tagline",
+      "placeholder": "For example: Holiday homes a short walk from the sea",
+      "counter": "{{length}} of {{max}} characters"
+    },
+    "preview": {
+      "title": "Preview",
+      "description": "How the top of your site looks with the changes in progress.",
+      "openSite": "Open the site",
+      "identityHint": "The site's name and address are edited in the organization settings.",
+      "identityLink": "Go to Organization"
+    },
+    "errors": {
+      "colorInvalid": "The color is not valid: use a hex code, for example #1a6b8f.",
+      "themeInvalid": "This theme is not available for the public site.",
+      "taglineTooLong": "The tagline cannot exceed {{maxLength}} characters.",
+      "imageEmpty": "The selected file is empty.",
+      "imageType": "Unsupported format: upload a PNG, JPEG or WebP image.",
+      "imageTooLarge": "The image exceeds the maximum size of {{maxMb}} MB.",
+      "imageDimensions": "Invalid image size: it must be at least {{minWidth}}×{{minHeight}} pixels and at most {{maxWidth}}×{{maxHeight}}."
+    }
+  },
+  "siteDocuments": {
+    "title": "Site documents",
+    "description": "The privacy notice and booking terms of your site: guests read them before they book.",
+    "adminRequired": "The site documents are managed by your organization's administrator: contact the administrator to change them.",
+    "loadError": "Unable to load the site documents.",
+    "responsibility": {
+      "title": "These are the documents of your site",
+      "body": "You are the data controller of your guests' data. Write the texts yourself or with your advisor: CasaZen does not draft them and does not check their content. CasaZen's own privacy notice and terms are separate documents."
+    },
+    "kinds": {
+      "privacy": {
+        "title": "Privacy notice",
+        "description": "How you process your guests' personal data. The consent a guest gives when booking points to this page."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "description": "The conditions of the booking: payment, cancellation, house rules."
+      }
+    },
+    "status": {
+      "published": "Published: version {{version}} since {{date}}.",
+      "never": "Not published yet. Guests see a notice saying it has not been published yet.",
+      "withdrawn": "Withdrawn on {{date}}. Guests see a notice saying it has not been published yet."
+    },
+    "source": {
+      "label": "How do you want to provide it",
+      "options": {
+        "Text": "I write the text here",
+        "ExternalUrl": "I already have a document online"
+      }
+    },
+    "content": {
+      "label": "Text",
+      "placeholder": "Write or paste the text of the document here.",
+      "counter": "{{length}} of {{max}} characters"
+    },
+    "format": {
+      "summary": "How to format the text",
+      "body": "Separate paragraphs with a blank line. Use # for a title, ## for a subtitle, - for a bullet list, **bold**, *italic* and [text](https://address) for a link. HTML code is not allowed."
+    },
+    "url": {
+      "label": "Address of the document",
+      "placeholder": "https://www.example.com/privacy",
+      "hint": "It must start with https://. Guests see a button that opens it in a new tab."
+    },
+    "actions": {
+      "publishFirst": "Publish",
+      "publishNew": "Publish new version",
+      "withdraw": "Withdraw the document",
+      "withdrawConfirm": "Guests will no longer see this document: they will see a notice saying it has not been published. The versions stay in the history.",
+      "withdrawYes": "Yes, withdraw",
+      "withdrawCancel": "Cancel",
+      "openPublic": "Open the public page"
+    },
+    "history": {
+      "title": "Versions",
+      "item": "Version {{version}} of {{date}}",
+      "source": {
+        "Text": "text",
+        "ExternalUrl": "link to an external document"
+      },
+      "inUse": "in use",
+      "withdrawn": "withdrawn",
+      "replaced": "replaced",
+      "useAsBase": "Use as a base"
+    },
+    "toasts": {
+      "published": "Document published (version {{version}})",
+      "publishFailed": "Unable to publish the document",
+      "withdrawn": "Document withdrawn",
+      "withdrawFailed": "Unable to withdraw the document",
+      "versionLoadFailed": "Unable to load this version"
+    },
+    "errors": {
+      "contentRequired": "Write the text of the document.",
+      "contentTooLong": "The text is longer than {{max}} characters.",
+      "htmlNotAllowed": "The text contains HTML code, which is not allowed: write plain text.",
+      "linkInvalid": "A link is not valid: it must start with https://, http:// or mailto:.",
+      "urlRequired": "Enter the address of the document.",
+      "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
     }
   },
   "vetrina": {
@@ -2712,7 +3366,7 @@
     "ordinaryTerm": "24 hours from arrival",
     "shortStayTerm": "short stay: 6 hours from arrival",
     "manualBanner": "CasaZen does not transmit to Alloggiati Web yet: send each record on the Questura portal and record the submission here.",
-    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, then mark it as sent.",
+    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
     "waitingArrivalNotice": "The communication is sent from the arrival day: the portal accepts only today or yesterday as arrival date.",
     "declaredNotice": "Submission declared by the host: keep the receipt issued by the Alloggiati Web portal.",
     "failureNotice": {
@@ -2800,6 +3454,16 @@
         "GuestPortal": "Entered by the guest on {{date}}",
         "Host": "Entered by the host on {{date}}"
       }
+    },
+    "recordFile": {
+      "title": "File for the Alloggiati Web portal",
+      "description": "The text file to upload on the Alloggiati Web portal (menu File): one line per guest, in the order of the communication. Downloading it sends nothing: after uploading it on the portal, mark the submission as manual.",
+      "download": "Download the file",
+      "preparing": "Preparing the file…",
+      "arrivalWindow": "The portal only accepts records with an arrival date of today or yesterday. The file contains identity document data: keep it safe and delete it after sending.",
+      "notReady": "The file is available when the guest data and the official codes are complete and the stay does not exceed 30 days.",
+      "downloaded": "File downloaded: upload it on the Alloggiati Web portal, then mark the submission.",
+      "failed": "Could not generate the Alloggiati file. Try again."
     },
     "codeTable": {
       "Comuni": "municipalities",
@@ -3512,7 +4176,60 @@
     "breadcrumbLabel": "Breadcrumb",
     "breadcrumbCheckout": "Checkout",
     "closeBookingSheet": "Close booking panel",
-    "directBookingTagline": "Direct booking"
+    "directBookingTagline": "Direct booking",
+    "subprocessors": "Subprocessors",
+    "legalDocuments": "Legal documents",
+    "seo": {
+      "orgTitle": "{{name}} — Book direct",
+      "orgDescription": "Book direct with {{name}}.",
+      "propertyTitle": "{{name}} · {{city}} — {{org}}"
+    },
+    "loading": "Loading...",
+    "loadingProperties": "Loading properties...",
+    "propertiesError": {
+      "title": "We can't show the properties right now",
+      "description": "This is not an empty list: loading failed. Please try again in a moment."
+    },
+    "emptyProperties": {
+      "description": "This host has no properties available to book online yet.",
+      "contact": "Write to {{email}} for information"
+    },
+    "card": {
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "bathrooms_one": "{{count}} bathroom",
+      "bathrooms_other": "{{count}} bathrooms",
+      "from": "from",
+      "perNight": "per night",
+      "details": "Details"
+    },
+    "operatorPrivacy": "Privacy notice",
+    "operatorTerms": "Booking terms",
+    "documents": {
+      "backToSite": "Back to {{name}}",
+      "loading": "Loading the document...",
+      "loadError": "We can't load the document right now. Please try again in a moment.",
+      "seoDescription": "{{title}} of {{name}}",
+      "publishedBy": "Document published by {{name}}",
+      "version": "version {{version}}, published on {{date}}",
+      "contact": "Write to {{email}} for information",
+      "externalIntro": "{{name}} has published this document on another site.",
+      "externalOpen": "Open the document",
+      "externalOpenAt": "Open the document on {{host}}",
+      "externalHint": "It opens in a new tab, outside this site.",
+      "privacy": {
+        "title": "Privacy notice",
+        "notPublishedTitle": "Privacy notice not published yet",
+        "notPublished": "{{name}} has not published its privacy notice on this site yet."
+      },
+      "terms": {
+        "title": "Booking terms",
+        "notPublishedTitle": "Booking terms not published yet",
+        "notPublished": "{{name}} has not published its booking terms on this site yet."
+      }
+    }
   },
   "publicBooking": {
     "payNow": "Pay now",
@@ -3581,7 +4298,7 @@
     "checkoutPlaceholderDates": "Selected dates: {{checkIn}} → {{checkOut}}",
     "checkoutPlaceholderPaymentComing": "Payment coming soon",
     "checkoutPlaceholderDescription": "Secure payment for {{orgName}} will be available after the operator activates Stripe Connect. This page will host the direct checkout flow (spec-direct-checkout).",
-    "gdprConsentText": "I consent to the processing of my personal data for booking management, in compliance with the operator's privacy policy.",
+    "gdprConsentText": "I consent to the processing of my personal data to manage the booking, in accordance with the operator's <privacy>privacy notice</privacy>.",
     "emailValidation": "Invalid email",
     "emailPlaceholder": "name@example.com",
     "checkoutDates_one": "Dates: {{checkIn}} → {{checkOut}} ({{count}} night)",
@@ -3775,7 +4492,10 @@
       "legendBooked": "Booked",
       "dayFree": "{{date}}: free",
       "dayBooked": "{{date}}: booked"
-    }
+    },
+    "orgLoadError": "We can't load this site right now",
+    "orgLoadErrorDescription": "A temporary problem occurred. Please try again in a moment.",
+    "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicSeo": {
     "hub": {
@@ -3789,6 +4509,12 @@
       "retry": "Try again"
     },
     "notFound": "Page not found",
+    "disclaimers": {
+      "lastUpdated": "Last updated: {{date}}",
+      "lastUpdatedUnknown": "Update date not available",
+      "notLegalAdvice": "General information, not legal advice. The host remains responsible for compliance."
+    },
+    "contentLanguageNote": "The text of this page is only available in Italian: the regulations it explains are Italian.",
     "guideNotAvailable": "The guide for this municipality is not yet available.",
     "calculatorNotAvailable": "The calculator for this municipality is not yet available.",
     "calculateTax": "Calculate tourist tax",
@@ -3807,12 +4533,105 @@
     "taxableNights_one": "Stay of {{count}} night, taxed nights: {{taxable}}",
     "taxableNights_other": "Stay of {{count}} nights, taxed nights: {{taxable}}",
     "estimateDisclaimer": "Estimate with the rates recorded in CasaZen: check exemptions and updates on the municipality's website.",
+    "featured": {
+      "title": "Homes available in {{comuneName}}",
+      "loading": "Loading homes…",
+      "loadError": "The homes of this municipality could not be loaded.",
+      "retry": "Retry",
+      "empty": "There are no bookable homes in {{comuneName}} on CasaZen yet.",
+      "studio": "Studio",
+      "bedrooms_one": "{{count}} bedroom",
+      "bedrooms_other": "{{count}} bedrooms",
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "fromPerNight": "{{price}} per night",
+      "viewAndBook": "View and book"
+    },
     "quoteStatus": {
       "Calculated": "Tax calculated.",
       "RateUnavailable": "Rate not available for these dates: check the municipality's website.",
       "CategoryRequired": "Select the accommodation category to calculate the tax.",
       "ChildAgesRequired": "Enter the age of every minor to calculate the tax.",
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
+    }
+  },
+  "activation": {
+    "title": "Activate your booking site",
+    "progress_one": "{{count}} of {{total}} step completed",
+    "progress_other": "{{count}} of {{total}} steps completed",
+    "progressLabel": "Activation progress",
+    "loadError": "The activation checklist could not be loaded.",
+    "retry": "Retry",
+    "state": {
+      "done": "Completed",
+      "todo": "To do",
+      "inProgress": "In progress",
+      "blocked": "Waiting"
+    },
+    "steps": {
+      "account": {
+        "title": "Account and consents",
+        "done": "You chose how to use CasaZen, your organization was created and you accepted the consents."
+      },
+      "organization": {
+        "title": "Organization name and address",
+        "done": "You chose the name and the public address of the organization."
+      },
+      "property": {
+        "title": "First property",
+        "done_one": "{{count}} property created.",
+        "done_other": "{{count}} properties created."
+      },
+      "cin": {
+        "title": "Property CIN codes",
+        "done": "Every property has a valid CIN ({{done}} of {{total}})."
+      },
+      "payments": {
+        "title": "Payments with Stripe",
+        "done": "Stripe can collect direct bookings."
+      },
+      "sitePublished": {
+        "title": "Site published and bookable",
+        "done_one": "{{count}} property of {{total}} is published and bookable.",
+        "done_other": "{{count}} properties of {{total}} are published and bookable."
+      },
+      "firstBooking": {
+        "title": "First direct booking",
+        "done": "You received your first confirmed direct booking."
+      }
+    },
+    "reasons": {
+      "onboarding_incomplete": "Finish signing up first: role, organization and consents.",
+      "org_profile_incomplete": "Choose the organization name and a readable public address: for now you have the ones CasaZen generated.",
+      "no_property": "Add at least one property.",
+      "cin_missing_or_invalid": "Valid CIN on {{done}} of {{total}} properties: add or fix the CIN of the others.",
+      "connect_not_started": "You have not connected a Stripe account yet: without it, guests cannot pay.",
+      "connect_requirements_due": "Stripe still asks for data or documents to enable payments.",
+      "connect_pending_verification": "You sent the data: Stripe is verifying the account and has not enabled payments yet.",
+      "org_inactive": "The organization is disabled and its public pages cannot be reached. Contact support.",
+      "properties_paused": "Every property that could be published is paused: reactivate at least one.",
+      "compliance_pending": "The properties have not completed the compliance activation yet (CIN, documents, safety): until they do, they are not published.",
+      "properties_inactive": "No property is active: activate at least one.",
+      "payments_not_ready": "A property is published, but guests cannot pay yet because Stripe has not enabled payments.",
+      "site_not_published": "Publish the site first: you need a published property and Stripe payments enabled.",
+      "awaiting_first_booking": "The site is open and bookable: share the link with your guests.",
+      "unknown": "This step is not completed yet."
+    },
+    "cta": {
+      "onboarding": "Finish signing up",
+      "organization": "Set name and address",
+      "property": "Add a property",
+      "cin": "Manage properties",
+      "paymentsStart": "Connect Stripe",
+      "paymentsContinue": "Go to payments",
+      "reactivate": "Reactivate properties",
+      "compliance": "Complete the activation",
+      "properties": "Go to properties",
+      "share": "Share the link",
+      "open": "Open"
+    },
+    "siteBanner": {
+      "title": "Guests cannot book from your site yet"
     }
   },
   "onboarding": {
@@ -3822,18 +4641,21 @@
     "acceptLegalDocs": "Accept legal documents",
     "choosePlan": "Choose your plan",
     "roleDescription": "Select the type of operator to personalise your experience.",
+    "editRoleDescription": "Choose the new operator type and save. The plan does not change here: once saved, the plan page opens, where you can manage it.",
     "consentsDescription": "To activate your account, ToS, privacy, DPA and the subprocessor list are required.",
     "consentsRenewalTitle": "Legal documents updated",
     "consentsRenewalDescription": "We have updated our legal documents: accept the new versions to keep using the host features.",
     "planOrgDescription": "Set up your organization to start managing properties and bookings.",
     "planDefaultDescription": "Select the initial plan for your organization. You can change it later.",
     "consentRequiredToast": "Accept the mandatory legal documents before continuing.",
+    "consentsStaleToast": "Some legal documents have been updated in the meantime: review and accept the current versions.",
     "configurationErrorToast": "Error during profile setup. Please try again.",
     "back": "Back",
     "continue": "Continue",
     "configuring": "Setting up...",
     "choose": "Choose",
     "saveChanges": "Save changes",
+    "cancel": "Cancel",
     "completeRegistration": "Complete registration",
     "retry": "Retry",
     "select": "Select",
@@ -3870,7 +4692,10 @@
       "renewAndContinue": "Renew sign-in and continue",
       "renewing": "Renewing sign-in...",
       "stillPending": "The permissions have not been applied yet. Try again later or renew your sign-in."
-    }
+    },
+    "readDocument": "Read the document",
+    "documentInPreparation": "text being prepared",
+    "readSubprocessors": "See the full list of subprocessors"
   },
   "breadcrumb": {
     "home": "Home",
@@ -3906,41 +4731,45 @@
     "ariaLabel": "Breadcrumb"
   },
   "aiContentNotice": {
-    "label": "AI-generated description"
+    "label": "AI-generated content",
+    "seo": "Text generated with the help of AI and approved by a CasaZen administrator before publication: always check the official sources.",
+    "draft": "Text generated by AI: it is a draft to review before approving it.",
+    "supplierReason": "Reason generated by AI."
   },
   "search": {
     "page": {
-      "title": "Search Properties",
+      "title": "Search properties",
       "description": "Find your perfect vacation rental",
       "searching": "Searching...",
       "results_one": "{{count}} property found",
       "results_other": "{{count}} properties found"
     },
     "filters": {
-      "title": "Search Filters",
+      "title": "Search filters",
       "city": "City",
       "cityPlaceholder": "e.g., Rome, Milan, Florence...",
-      "minPrice": "Min Price (euro/night)",
-      "maxPrice": "Max Price (euro/night)",
-      "minBedrooms": "Min Bedrooms",
-      "maxBedrooms": "Max Bedrooms",
-      "minBathrooms": "Min Bathrooms",
-      "maxBathrooms": "Max Bathrooms",
+      "minPrice": "Min price (€ per night)",
+      "maxPrice": "Max price (€ per night)",
+      "minBedrooms": "Min bedrooms",
+      "minBathrooms": "Min bathrooms",
+      "guests": "Guests",
       "search": "Search",
       "reset": "Reset"
     },
     "results": {
       "noProperties": "No properties found",
-      "noPropertiesDesc": "Try adjusting your search filters to find more properties"
+      "noPropertiesDesc": "Try adjusting your search filters to find more properties.",
+      "errorTitle": "We can't run the search right now",
+      "errorDescription": "This is not an empty list: the search failed. Please try again in a moment."
     },
-    "card": {
-      "bed_one": "bed",
-      "bed_other": "beds",
-      "bath_one": "bath",
-      "bath_other": "baths",
-      "guests": "guests",
-      "perNight": "/night",
-      "details": "Details"
+    "errors": {
+      "invalidNumber": "Enter a valid number.",
+      "negative": "The value cannot be negative.",
+      "tooHigh": "The value is too high.",
+      "wholeNumber": "Enter a whole number.",
+      "guestsMin": "Guests must be at least 1.",
+      "priceRange": "The maximum price must be at least the minimum.",
+      "cityTooLong": "The city name is too long."
     }
   },
   "login": {
@@ -4577,7 +5406,7 @@
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
-      "duplicatePropertyAddress": "This address is already used by an active property.",
+      "duplicatePropertyAddress": "You already have an active property at this address. If it is another apartment in the same building, enter the unit or staircase.",
       "managedByStripe": "Your plan is managed by Stripe. Use the billing portal.",
       "subscriptionRequired": "A paid plan requires an active subscription.",
       "billingGateClosed": "Billing is not available yet.",
@@ -4594,6 +5423,9 @@
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
       "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
+      "alloggiatiFileNotReady": "The Alloggiati file cannot be generated: the guest data is incomplete or an official code is missing.",
+      "alloggiatiFileStayDaysInvalid": "The Alloggiati file cannot be generated: one schedina accepts from 1 to 30 days of stay.",
+      "alloggiatiFileNameNotRepresentable": "The Alloggiati file cannot be generated: the first or last name of a guest has characters the portal does not accept. Write them with letters of the Latin alphabet only, as on the document.",
       "touristTaxRateNotFound": "This rate no longer exists: reload the list.",
       "bookingDatesUnavailable": "The selected dates are not available: they overlap another booking or a calendar block.",
       "bookingCreateInvalid": "The booking cannot be created: the check-in cannot be in the past and at least one guest is needed.",
@@ -4603,6 +5435,9 @@
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
+      "orgSlugTaken": "This web address is already used, or was used, by another organization.",
+      "orgSlugReserved": "This web address is reserved for the platform: choose another one.",
+      "orgSlugInvalid": "This web address is not valid: use 3 to 63 characters among letters, numbers and hyphens.",
       "accountInactive": "Your account was deactivated.",
       "cannotDeactivateSelf": "You cannot deactivate your own account: ask another administrator.",
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
@@ -4726,7 +5561,45 @@
       "checkoutWizardNotStarted": "Start the check-out before completing it: open the check-out of the stay again.",
       "checkoutCleaningChoiceInvalid": "Choose whether to request a cleaning from a supplier (with the supplier) or to skip it.",
       "checkoutStepInvalid": "Invalid check-out step.",
-      "checkoutNotCompleted": "The property is declared ready after the check-out of the stay."
+      "checkoutNotCompleted": "The property is declared ready after the check-out of the stay.",
+      "leasePartyFiscalCodeInvalid": "The fiscal code of a party is not valid.",
+      "leasePartyFiscalCodeDuplicate": "The same fiscal code is given for more than one party of the lease.",
+      "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
+      "leaseLandlordRequired": "The lease needs at least one landlord.",
+      "leaseTenantRequired": "The lease needs at least one tenant.",
+      "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
+      "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
+      "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
+      "supplierAlreadySuspended": "The supplier is already suspended.",
+      "supplierNotSuspended": "The supplier is not suspended: there is nothing to reactivate.",
+      "supplierInviteNotFound": "Invite not found.",
+      "supplierInviteNotPending": "Only a pending invite can be revoked: this one was already used, has expired or was already revoked.",
+      "supplierInviteNotResendable": "An invite that was already used or revoked cannot be sent again: create a new invite.",
+      "supplierInviteRevoked": "This invite was revoked. Ask the CasaZen team to send you a new one.",
+      "calendarBlockOverlapsBooking": "A booking already takes one of these nights: cancel it or choose other dates.",
+      "calendarBlockOverlapsBlock": "You have already blocked one of these nights: remove that block or choose other dates.",
+      "calendarBlockInPast": "Past dates cannot be blocked.",
+      "calendarBlockInvalidRange": "The end date must be after the start date.",
+      "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
+      "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
+      "propertyPhotoNone": "Select at least one photo to upload.",
+      "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
+      "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
+      "propertyPhotoInvalidType": "One of the files is not a valid photo: only JPEG, PNG or WebP images are accepted.",
+      "propertyPhotoInvalidSize": "One of the files is empty or larger than the maximum size allowed.",
+      "propertyPhotoNotFound": "The photo is no longer in the gallery: the list has been refreshed.",
+      "propertyPhotosChanged": "The gallery was changed by another user or another tab: the list has been refreshed, please try again.",
+      "rentLeaseNotSigned": "The rent can be set up only for a lease signed by every party.",
+      "rentBillingDayInvalid": "The due day must be between 1 and 28.",
+      "rentAmountInvalid": "The installment amount must be greater than zero, with at most two decimals.",
+      "rentCadenceLocked": "The cadence cannot change: some installments are paid or have a payment in progress.",
+      "rentInstallmentNotPayable": "The installment is already paid or can no longer be paid.",
+      "rentInstallmentInFlight": "An online payment of the installment is in progress: wait for Stripe's outcome.",
+      "rentOnlinePaymentsUnavailable": "To request online payments, connect a Stripe account enabled for charges.",
+      "rentNoTenantEmail": "No tenant has an email address to send the payment request to.",
+      "rentPaymentRequestNotSent": "The payment request was not sent: the email service is unavailable.",
+      "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
+      "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one."
     }
   },
   "validation": {
@@ -4759,7 +5632,16 @@
     "notFound": "Supplier not found",
     "notFoundDescription": "This supplier page does not exist or is no longer active.",
     "availableDays_one": "{{count}} day available in the next 2 weeks",
-    "availableDays_other": "{{count}} days available in the next 2 weeks"
+    "availableDays_other": "{{count}} days available in the next 2 weeks",
+    "title": "Supplier showcase",
+    "pageTitle": "{{name}}: supplier on CasaZen",
+    "pageDescription": "Services, areas and availability of {{name}}.",
+    "loading": "Loading the showcase…",
+    "loadError": "Could not load the supplier showcase.",
+    "photoAlt": "Photo of {{name}}",
+    "comuniTitle": "Where they work",
+    "servicesTitle": "Services",
+    "noAvailability": "The supplier has not yet entered availability for the coming days."
   },
   "serviceCategories": {
     "loading": "Loading categories…",
@@ -5016,6 +5898,190 @@
       "saveFailed": "Save failed.",
       "verified": "Verification recorded.",
       "verifyFailed": "Verification failed."
+    }
+  },
+  "legal": {
+    "loading": "Loading the document",
+    "loadError": "The document could not be loaded. Please try again shortly.",
+    "retry": "Try again",
+    "backToIndex": "Legal documents",
+    "version": "Version {{version}}",
+    "effectiveAt": "in force from {{date}}",
+    "effectiveAtPending": "effective date not yet set",
+    "inPreparation": "The text of this document is being prepared and will be published here.",
+    "onlyItalian": "This document is available in Italian only.",
+    "openOfficialCopy": "Open the official copy of the document",
+    "indexTitle": "Legal documents",
+    "indexIntro": "Terms, privacy notice, data processing agreement and list of subprocessors of the CasaZen platform.",
+    "documents": {
+      "tos": {
+        "title": "Terms of Service",
+        "summary": "General terms of use of the CasaZen platform."
+      },
+      "privacy": {
+        "title": "Privacy Notice",
+        "summary": "Notice on the processing of personal data under the GDPR."
+      },
+      "dpa": {
+        "title": "Data Processing Agreement",
+        "summary": "Agreement on data processing (Art. 28 GDPR)."
+      }
+    },
+    "subprocessors": {
+      "title": "Subprocessors",
+      "summary": "Providers that process personal data on behalf of CasaZen (Art. 28 GDPR).",
+      "intro": "List of the providers the platform entrusts with personal data in its current configuration. Details not yet confirmed are marked as being defined.",
+      "empty": "No subprocessor configured.",
+      "pending": "being defined",
+      "columns": {
+        "name": "Provider",
+        "purpose": "Purpose",
+        "entity": "Company and registered office",
+        "region": "Processing location",
+        "transfer": "Transfer outside the EEA"
+      },
+      "purposes": {
+        "database": "Database",
+        "storage": "File storage",
+        "databaseAndStorage": "Database and file storage",
+        "authentication": "Authentication",
+        "payments": "Payments",
+        "email": "Transactional email",
+        "pushNotifications": "Push notifications to the app",
+        "backendHosting": "API hosting",
+        "frontendHosting": "Web app hosting",
+        "ai": "AI text generation"
+      }
+    }
+  },
+  "hostSite": {
+    "loading": "Loading the site…",
+    "notFound": {
+      "title": "Site not found",
+      "description": "This address does not match any active site. If you own it, check the domain status in the site settings."
+    },
+    "platformLink": "Go to CasaZen",
+    "error": {
+      "title": "The site could not be loaded",
+      "description": "We could not reach the server. Please try again shortly.",
+      "retry": "Try again"
+    },
+    "pageNotFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist on this site.",
+      "home": "Go to the home page"
+    }
+  },
+  "rent": {
+    "title": "Rent",
+    "description": "Installment schedule generated from the lease. An installment is paid only when Stripe confirms the online payment or when you record a payment received outside CasaZen.",
+    "loading": "Loading the rent schedule…",
+    "loadError": "The rent schedule could not be loaded.",
+    "retry": "Retry",
+    "notSignedYet": "The rent schedule can be set up once every party has signed the lease.",
+    "onlineUnavailable": "To ask the tenant to pay online, connect a Stripe account enabled for charges. You can still record payments received outside CasaZen.",
+    "onlineUnavailableLink": "Go to Payments",
+    "noTenantEmail": "No tenant has an email address: the payment link cannot be sent.",
+    "summary": "{{cadence}} installment of {{amount}}, due on day {{day}}.",
+    "edit": "Edit",
+    "disable": "Disable",
+    "scheduleInactive": "The schedule is disabled: unpaid installments are cancelled. Save it again to enable it.",
+    "cadenceLabel": "Cadence",
+    "cadence": {
+      "Monthly": "Monthly",
+      "Bimonthly": "Bimonthly",
+      "Quarterly": "Quarterly",
+      "Semiannual": "Semiannual"
+    },
+    "billingDayLabel": "Due day (1-28)",
+    "billingDayPlaceholder": "Start day of the lease",
+    "billingDayInvalid": "Enter a day between 1 and 28.",
+    "amountLabel": "Installment amount",
+    "amountHint": "If left empty: monthly rent of the lease times the months of the cadence ({{amount}}).",
+    "amountInvalid": "Enter an amount greater than zero.",
+    "createSchedule": "Generate the schedule",
+    "saveChanges": "Save changes",
+    "cancel": "Cancel",
+    "partialFinalPeriod": "The lease ends inside a period ({{start}} – {{end}}): no installment was generated for it, settle it with the tenant.",
+    "noInstallments": "No installments to show.",
+    "columns": {
+      "period": "Period",
+      "dueDate": "Due",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "Scheduled": "To collect",
+      "Processing": "Payment in progress",
+      "Paid": "Paid",
+      "Failed": "Payment failed",
+      "Cancelled": "Cancelled"
+    },
+    "overdue": "Overdue",
+    "paidOnline": "Paid online on {{date}} (confirmed by Stripe)",
+    "paidOffline": "Payment recorded by you: paid on {{date}}",
+    "failed": "The last online payment did not go through.",
+    "failedWithCode": "The last online payment did not go through ({{code}}).",
+    "processingHint": "Stripe is processing the payment: the status updates as soon as the outcome arrives.",
+    "linkSent": "Payment link sent on {{date}}",
+    "sendLink": "Send payment link",
+    "resendLink": "Send the link again",
+    "markPaid": "Mark as paid",
+    "markPaidDialog": {
+      "title": "Record a payment received",
+      "description": "Installment of {{amount}} for the period from {{start}} to {{end}}, paid outside CasaZen (bank transfer, cash…). Any online payment link still open will be disabled.",
+      "paidOn": "Payment date",
+      "paidOnInvalid": "Enter a date not later than today ({{today}}).",
+      "note": "Note (optional)",
+      "notePlaceholder": "E.g. bank transfer of 3 October",
+      "submit": "Record the payment"
+    },
+    "scheduleSaved": "Rent schedule saved",
+    "scheduleDisabled": "Schedule disabled",
+    "markedPaid": "Payment recorded",
+    "paymentRequestSent": "Payment link sent to the tenant",
+    "actionFailed": "The operation failed"
+  },
+  "rentPayment": {
+    "title": "Rent payment",
+    "loading": "Loading…",
+    "loadError": "The payment could not be loaded.",
+    "retry": "Retry",
+    "invalidLink": "The payment link is not valid or was replaced by a newer one. Use the latest email you received or contact the landlord.",
+    "property": "Property",
+    "landlord": "Payment to",
+    "period": "Period",
+    "dueDate": "Due",
+    "amount": "Amount",
+    "paid": "This installment is paid. Thank you!",
+    "processing": "Payment sent: waiting for Stripe's confirmation. This page updates by itself.",
+    "unavailable": "This installment cannot be paid online. Contact the landlord.",
+    "failed": "The previous payment did not go through. You can try again, also with another payment method.",
+    "sessionError": "The payment could not be started. Try again.",
+    "payNow": "Pay {{amount}}",
+    "stripeNotice": "The payment is handled by Stripe and goes directly to the landlord's account."
+  },
+  "comune": {
+    "picker": {
+      "placeholder": "Search for the comune (at least 2 letters)",
+      "loadingList": "Loading the list of comuni…",
+      "statusError": "Could not check the list of comuni. Try again.",
+      "retry": "Try again",
+      "unavailableTitle": "List of comuni not available",
+      "unavailableDescription": "The official ISTAT list of comuni is not available yet, so you cannot pick from it here. You can carry on: the comune stays free text, but until you choose it from the list, the rules of your region, the tourist tax by code and the CIN check do not apply.",
+      "minChars_one": "Type at least {{count}} letter.",
+      "minChars_other": "Type at least {{count}} letters.",
+      "searching": "Searching…",
+      "searchError": "Could not search the comuni: this does not mean there are no results.",
+      "noResults": "No comune found for “{{query}}”. Check how you typed it.",
+      "resultCount_one": "{{count}} comune found. Use the arrow keys and Enter to choose it.",
+      "resultCount_other": "{{count}} comuni found. Use the arrow keys and Enter to choose one.",
+      "clear": "Clear the chosen comune",
+      "listLabel": "Comuni found",
+      "derivedRegion": "Region: {{region}} (follows the comune)",
+      "notInList": "This comune is no longer in the official list (merger or suppression): choose the current one.",
+      "codeUnknown": "The ISTAT code {{code}} is not in the list of comuni: choose the comune again."
     }
   }
 }

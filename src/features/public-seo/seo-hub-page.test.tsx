@@ -16,15 +16,18 @@ const state = vi.hoisted(() => ({
   guide: null as SeoPagePublic | null,
 }));
 
-// Footer legal links come from the backend configuration (SE-03, D3): no domain in the frontend.
-vi.mock('@/queries/use-legal', () => ({
-  usePlatformLegalLinks: () => ({ privacyUrl: 'https://legal.example.test/privacy', termsUrl: undefined }),
-}));
-
 vi.mock('@/queries/use-public-seo', () => ({
   usePublishedSeoPages: () => ({ ...state.hub, refetch: state.refetch, isFetching: false }),
   useComplianceGuide: () => ({ data: state.guide, isLoading: false, isError: false }),
   useTouristTaxPage: () => ({ data: null, isLoading: false, isError: true }),
+  useFeaturedProperties: () => ({
+    data: { comuneSlug: 'como', comuneName: 'Como', properties: [] },
+    isLoading: false,
+    isError: false,
+    error: null,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
   useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
 }));
 
@@ -146,7 +149,8 @@ describe('ComplianceGuidePage canonical', () => {
       comuneSlug: 'como',
       canonicalUrl: `${PUBLIC_SITE}/p/affitti-brevi/lombardia/como`,
       lastRefreshedAt: null,
-      disclaimers: { lastUpdated: 'u', notLegalAdvice: 'n', aiGenerated: 'a' },
+      aiGenerated: true,
+      contentLanguage: 'it',
       cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
       touristTaxRates: [],
     };
@@ -175,17 +179,19 @@ describe('Footer hub link', () => {
     expect(screen.getByTestId('footer-seo-hub')).toHaveTextContent(i18n.t('publicSite.seoHub'));
   });
 
-  it('Footer_LegalLinks_UseTheConfiguredDocumentsAndHideTheMissingOnes', () => {
+  it('Footer_CasaZenPublicPages_LinksTheLegalPages', () => {
     render(
       <MemoryRouter>
         <Footer displayName="CasaZen" showSeoHubLink />
       </MemoryRouter>,
     );
 
-    expect(screen.getByTestId('footer-privacy')).toHaveAttribute('href', 'https://legal.example.test/privacy');
-    // Terms not configured on the backend: no link to a page that does not exist.
-    expect(screen.queryByTestId('footer-terms')).not.toBeInTheDocument();
-    expect(document.querySelector('a[href*="casazen"]')).toBeNull();
+    // PL-14: internal pages (no domain in the frontend, D3), shown even before the texts exist ("in preparation").
+    expect(screen.getByTestId('footer-privacy')).toHaveAttribute('href', '/legale/privacy');
+    expect(screen.getByTestId('footer-terms')).toHaveAttribute('href', '/legale/termini');
+    expect(screen.getByTestId('footer-subprocessors')).toHaveAttribute('href', '/legale/sub-responsabili');
+    expect(screen.getByTestId('footer-legal')).toHaveAttribute('href', '/legale');
+    expect(screen.getByTestId('footer-privacy')).not.toHaveAttribute('target');
   });
 
   it('Footer_HostBookingSite_DoesNotLinkTheHub', () => {
@@ -196,5 +202,8 @@ describe('Footer hub link', () => {
     );
 
     expect(screen.queryByTestId('footer-seo-hub')).not.toBeInTheDocument();
+    // The host's site keeps Privacy and Terms in a new tab (the guest does not leave the booking); no host documents.
+    expect(screen.getByTestId('footer-privacy')).toHaveAttribute('target', '_blank');
+    expect(screen.queryByTestId('footer-subprocessors')).not.toBeInTheDocument();
   });
 });

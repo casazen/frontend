@@ -316,11 +316,13 @@ export function CheckInPage() {
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
                   </Button>
                   {step < TOTAL_STEPS ? (
-                    <Button type="button" onClick={goNext}>
+                    // Own key: the same DOM button must not turn from "button" to "submit" during the click that moves
+                    // to the last step, or the browser submits the form and the privacy notice is never shown.
+                    <Button key="checkin-next" type="button" onClick={goNext}>
                       {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={submitCheckIn.isPending} data-testid="checkin-submit">
+                    <Button key="checkin-submit" type="submit" disabled={submitCheckIn.isPending} data-testid="checkin-submit">
                       {submitCheckIn.isPending ? t('checkin.saving') : t('checkin.submit')}
                     </Button>
                   )}

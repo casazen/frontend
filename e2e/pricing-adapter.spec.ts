@@ -11,12 +11,15 @@ import {
   mockDelayedRecalculate,
 } from './helpers/api-mock';
 import { demoUrl } from './helpers/demo-profile';
+import { pinE2eLocale } from './helpers/locale';
 import { mockCurrentUserWithOrg, mockEntitlement, mockPlansCatalog } from './helpers/org-api-mock';
 
 const PRICING_URL = `/properties/${PROPERTY_ID}/pricing`;
 
 test.describe('Seasonal suggestions (D4, PC-15)', () => {
   test.beforeEach(async ({ page }) => {
+    // The assertions below are written against the English texts: pin the locale (the product default is Italian).
+    await pinE2eLocale(page, 'en');
     await mockPlansCatalog(page);
     await mockCurrentUserWithOrg(page);
     await mockEntitlement(page);
@@ -110,8 +113,9 @@ test.describe('Seasonal suggestions (D4, PC-15)', () => {
     await expect(page.getByTestId('current-base-price')).toContainText('180');
     const rows = page.getByTestId('suggestions-table').locator('tbody tr');
     await expect(rows).toHaveCount(7);
-    await expect(rows.nth(2)).toContainText('Republic Day');
-    await expect(rows.nth(3)).toContainText('High season ×1.30');
+    // The fixture starts on 2026-05-30: 1 June is high season, 2 June is the Republic Day holiday.
+    await expect(rows.nth(2)).toContainText('High season ×1.30');
+    await expect(rows.nth(3)).toContainText('Holiday: Republic Day ×1.50');
     await expect(page.getByTestId('read-only-notice')).toBeVisible();
   });
 

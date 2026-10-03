@@ -1,8 +1,10 @@
 name: E2E Golden Journey
 
-# L2 (demo) Golden Journey web suite. No placeholder or `continue-on-error` gates here:
-# a failing step fails the check.
-# - Real Golden Journey L3 gate from the UI on an ephemeral stack (host, supplier, guest; F1–F2): task FN-03.
+# No placeholder or `continue-on-error` gates here: a failing step fails the check.
+# - `GJ web suite`: L2 (demo, page.route) shell checks, fast, not the journey gate.
+# - `GJ L3 (UI, ephemeral stack)`: the real Golden Journey from the UI against a real backend + PostgreSQL + mock
+#   IdP/mail (admin, host, supplier, guest; F1-F2), Stripe test mode when the secrets exist (FN-03).
+#   Runbook: backend docs/runbooks/golden-journey-l3.md.
 # - Maestro host-app suite on an emulator: task FN-04 (mobile repo). Until then no app job runs here.
 
 on:
@@ -26,8 +28,122 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Run golden-journey-web (L2 demo on PR)
+      - name: Run golden-journey-web (L2 demo shell checks)
         run: npx playwright test e2e/golden-journey-web.spec.ts --project=chromium
-      # Skipped by the spec itself unless E2E_LOCAL=1 / E2E_STAGING=1 (real API); runs for real in FN-03.
-      - name: Run supplier mobile F1–F2 file if present
-        run: npx playwright test e2e/golden-journey-supplier-mobile.spec.ts --project=chromium
+
+  gj-l3:
+    name: GJ L3 (UI, ephemeral stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Throw-away service container: the password below is not a secret.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      E2E_BACKEND_DIR: ${{ github.workspace }}/backend
+      E2E_BACKEND_NO_BUILD: '1'
+      # Secrets are exposed as env and tested through env.*: the `secrets` context is not allowed in a step `if:`.
+      BACKEND_REPO_TOKEN: ${{ secrets.BACKEND_REPO_TOKEN }}
+      STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+      STRIPE_TEST_PUBLISHABLE_KEY: ${{ secrets.STRIPE_TEST_PUBLISHABLE_KEY }}
+    steps:
+      - name: Backend repository token present
+        if: ${{ env.BACKEND_REPO_TOKEN == '' }}
+        run: |
+          echo "::error title=Golden Journey L3 cannot run::Secret BACKEND_REPO_TOKEN (read access to casazen/backend) is not set or not available to this run (fork PR?). This gate is NOT skipped silently: it fails. See backend docs/runbooks/golden-journey-l3.md section 3."
+          exit 1
+      - uses: actions/checkout@v4
+        with:
+          path: frontend
+      - name: Pick the matching backend ref
+        id: other
+        env:
+          OTHER_REPO: casazen/backend
+          HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          BASE_REF: ${{ github.base_ref || github.ref_name }}
+        run: |
+          # A change that spans both repos lives on the SAME branch name in each: use it when it exists, because the
+          # base branch does not have the other half of the change yet. Otherwise fall back to the base branch.
+          # (The token is a secret: GitHub masks it in the log.)
+          if git ls-remote --exit-code --heads "https://x-access-token:${BACKEND_REPO_TOKEN}@github.com/${OTHER_REPO}.git" "refs/heads/${HEAD_REF}" > /dev/null 2>&1; then
+            echo "ref=${HEAD_REF}" >> "$GITHUB_OUTPUT"
+            echo "Using ${OTHER_REPO} on the same branch: ${HEAD_REF}"
+          else
+            echo "ref=${BASE_REF}" >> "$GITHUB_OUTPUT"
+            echo "Branch ${HEAD_REF} does not exist in ${OTHER_REPO}: using its base branch ${BASE_REF}"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          repository: casazen/backend
+          ref: ${{ steps.other.outputs.ref }}
+          token: ${{ secrets.BACKEND_REPO_TOKEN }}
+          path: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install Stripe CLI (only when the Stripe test secrets exist)
+        if: ${{ env.STRIPE_TEST_SECRET_KEY != '' }}
+        run: |
+          curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | sudo tee /etc/apt/sources.list.d/stripe.list
+          sudo apt-get update && sudo apt-get install -y stripe
+      - name: Build backend
+        run: dotnet build backend/Casazen.Web -c Release
+      - name: Install frontend and Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Golden Journey L3 (stack up, suite, stack down)
+        working-directory: frontend
+        run: bash e2e/stack/ci-run.sh
+      - name: Show the failed tests and the stack logs
+        # Only on failure. The same files are uploaded as an artifact, but the job log is what is read first.
+        if: ${{ failure() }}
+        working-directory: frontend
+        run: |
+          strip() { sed 's/\x1b\[[0-9;]*[A-Za-z]//g'; }
+          echo "::group::Failed tests (playwright-report.json)"
+          if [ -f playwright-report.json ]; then
+            jq -r '.. | objects | select(has("results")) | select(any(.results[]; .status=="failed" or .status=="timedOut")) | "### \(.projectName // "") \(.status // "")", (.results[-1].error.message // "no error message")' playwright-report.json 2>/dev/null | strip | head -150 || true
+          else
+            echo "no playwright-report.json: the suite did not run to the end"
+          fi
+          echo "::endgroup::"
+          for f in e2e/.stack/*.log; do
+            [ -f "$f" ] || continue
+            echo "::group::Last 120 lines of $f"
+            tail -n 120 "$f" | strip
+            echo "::endgroup::"
+          done
+          ls -la e2e/.stack e2e/.auth 2>/dev/null || true
+      - name: Upload logs and traces
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gj-l3-logs
+          if-no-files-found: ignore
+          path: |
+            frontend/e2e/.stack/*.log
+            frontend/test-results/
+            frontend/playwright-report.json
+            frontend/e2e/.auth/gj-seed.json

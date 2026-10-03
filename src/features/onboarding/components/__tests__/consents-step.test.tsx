@@ -8,12 +8,13 @@ const { useLegalDocuments } = vi.hoisted(() => ({ useLegalDocuments: vi.fn() }))
 
 vi.mock('@/queries/use-legal', () => ({ useLegalDocuments }));
 
-const doc = (title: string) => ({
+const doc = (title: string, available = true) => ({
   version: '2026-06-v1',
   effectiveAt: '2026-06-01T00:00:00Z',
   title,
   summary: title,
   documentUrl: null,
+  available,
 });
 
 function renderStep() {
@@ -28,7 +29,7 @@ describe('ConsentsStep subprocessors', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     useLegalDocuments.mockReturnValue({
-      tos: doc('ToS'),
+      tos: doc('ToS', false),
       privacy: doc('Privacy'),
       dpa: doc('DPA'),
       subprocessors: {
@@ -54,5 +55,19 @@ describe('ConsentsStep subprocessors', () => {
     expect(ai.textContent).not.toContain('()');
     expect(screen.getByTestId('subprocessor-Supabase')).toHaveTextContent('Supabase — Database (EU)');
     expect(screen.getByTestId('subprocessor-Supabase')).not.toHaveTextContent(i18n.t('onboarding.subprocessorDetailsPending'));
+  });
+
+  it('ConsentsStep_DocumentsWithoutText_LinkTheirPagesAndSayTextInPreparation', () => {
+    renderStep();
+
+    // PL-14 (A1-06): every accepted document can be read on its public page (new tab, the onboarding stays open).
+    expect(screen.getByTestId('consent-tos-read')).toHaveAttribute('href', '/legale/termini');
+    expect(screen.getByTestId('consent-tos-read')).toHaveAttribute('target', '_blank');
+    expect(screen.getByTestId('consent-privacy-read')).toHaveAttribute('href', '/legale/privacy');
+    expect(screen.getByTestId('consent-dpa-read')).toHaveAttribute('href', '/legale/dpa');
+    expect(screen.getByTestId('consent-subprocessors-read')).toHaveAttribute('href', '/legale/sub-responsabili');
+    expect(screen.getByTestId('consent-tos-in-preparation')).toHaveTextContent(i18n.t('onboarding.documentInPreparation'));
+    expect(screen.queryByTestId('consent-privacy-in-preparation')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(i18n.t('onboarding.acceptTos', { title: i18n.t('legal.documents.tos.title'), version: '2026-06-v1' }))).toBeInTheDocument();
   });
 });

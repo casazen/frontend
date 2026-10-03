@@ -140,34 +140,11 @@ export function useActivateProperty() {
   });
 }
 
-export function useDeleteProperty() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => propertiesApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
-      toast.success(i18n.t('toast.propertyDeleted'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyDeleteFailed'));
-    },
-  });
-}
-
 export function useSearchProperties(params?: PropertySearchParams) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, 'search', params],
     queryFn: () => propertiesApi.search(params || {}),
     enabled: !!params,
-  });
-}
-
-export function usePublicProperty(id: string) {
-  return useQuery({
-    queryKey: [PROPERTIES_KEY, id, 'public'],
-    queryFn: () => propertiesApi.getPublicProperty(id),
-    enabled: !!id,
   });
 }
 

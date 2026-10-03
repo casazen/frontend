@@ -3,7 +3,9 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import {
   getHomeRouteForRentalType,
   getHomeRouteForUser,
+  getPlanPageForRentalType,
   getPostOnboardingRoute,
+  getStaleConsentDocuments,
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
@@ -160,5 +162,35 @@ describe('onboarding helpers', () => {
     expect(needsOnboarding({}, { orgId: 's-1', supplierOrgId: 's-1', onboardingCompletedAt: null }, [])).toBe(false);
     // No org, no roles, no supplier link: host onboarding (with the supplier option).
     expect(needsOnboarding({}, { orgId: null, supplierOrgId: null, onboardingCompletedAt: null }, [])).toBe(true);
+  });
+});
+
+describe('operator type edit and stale consents (PL-06)', () => {
+  function errorWith(status: number, data: unknown): AxiosError {
+    return new AxiosError('request failed', 'ERR_BAD_REQUEST', undefined, undefined, {
+      status,
+      data,
+    } as AxiosResponse);
+  }
+
+  it('getPlanPageForRentalType_EachRentalType_ReturnsThePlanPageOfItsContext', () => {
+    expect(getPlanPageForRentalType('ShortTerm')).toBe('/app/short-rent/settings/plan');
+    expect(getPlanPageForRentalType('Both')).toBe('/app/short-rent/settings/plan');
+    expect(getPlanPageForRentalType('LongTerm')).toBe('/app/long-rent/settings/plan');
+  });
+
+  it('getStaleConsentDocuments_BadRequestWithStaleDocuments_ReturnsTheDocuments', () => {
+    const error = errorWith(400, { error: 'Documenti aggiornati.', staleDocuments: ['tos', 'subprocessors'] });
+
+    expect(getStaleConsentDocuments(error)).toEqual(['tos', 'subprocessors']);
+  });
+
+  it('getStaleConsentDocuments_OtherErrors_ReturnsNull', () => {
+    expect(getStaleConsentDocuments(errorWith(400, { error: 'Tutti i consensi obbligatori devono essere accettati.' }))).toBeNull();
+    expect(getStaleConsentDocuments(errorWith(400, { staleDocuments: [] }))).toBeNull();
+    expect(getStaleConsentDocuments(errorWith(400, { staleDocuments: 'tos' }))).toBeNull();
+    expect(getStaleConsentDocuments(errorWith(422, { staleDocuments: ['tos'] }))).toBeNull();
+    expect(getStaleConsentDocuments(errorWith(400, null))).toBeNull();
+    expect(getStaleConsentDocuments(new Error('network'))).toBeNull();
   });
 });

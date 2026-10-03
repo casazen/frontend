@@ -97,8 +97,10 @@ export function BookingDetailPage() {
   const canCancel =
     canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   const canEdit = canWrite && booking.status !== 'Cancelled';
-  // A short-rent supplier request is for this stay (D2); the API needs property.write in short-rent.
-  const canRequestSupplier = hasPermission('short-rent', 'property.write') && booking.status !== 'Cancelled';
+  // A short-rent supplier request is for this stay (D2); the API needs property.write in short-rent, also to pay a
+  // completed request or ask another supplier after a rejection (SU-09). No new request for a cancelled stay.
+  const canManageSupplierRequests = hasPermission('short-rent', 'property.write');
+  const canRequestSupplier = canManageSupplierRequests && booking.status !== 'Cancelled';
   // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
   const canCheckIn = canWrite && canRegisterArrival(booking);
   // The check-out wizard accepts a stay with the arrival registered, or a confirmed one from its departure day, whose
@@ -277,6 +279,7 @@ export function BookingDetailPage() {
               <ServiceRequestsCard
                 query={serviceRequests}
                 emptyText={t('serviceRequest.emptyForStay')}
+                canManage={canManageSupplierRequests}
                 testId="booking-service-requests"
                 action={
                   canRequestSupplier ? (

@@ -13,10 +13,22 @@ export const propertyFormSchema = z.object({
   name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
   description: z.string().min(10, 'property.validation.description.minLength').max(1000, 'property.validation.description.maxLength'),
   address: z.string().min(5, 'property.validation.address.required'),
+  /** Interno / scala (PC-06): optional, the limit of the API. */
+  unit: z.string().max(30, 'property.validation.unit.maxLength').optional(),
   city: z.string().min(2, 'property.validation.city.required'),
+  /** ISTAT code of the comune chosen from the official list (SU-04); '' = none chosen. */
+  comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.validation.comuneIstatCode.format').or(z.literal('')),
   postalCode: z.string().min(3, 'property.validation.postalCode.required'),
-  latitude: z.number().min(-90).max(90).optional(),
-  longitude: z.number().min(-180).max(180).optional(),
+  latitude: z
+    .number({ error: 'property.validation.latitude.range' })
+    .min(-90, 'property.validation.latitude.range')
+    .max(90, 'property.validation.latitude.range')
+    .optional(),
+  longitude: z
+    .number({ error: 'property.validation.longitude.range' })
+    .min(-180, 'property.validation.longitude.range')
+    .max(180, 'property.validation.longitude.range')
+    .optional(),
   bedrooms: z
     .number({ error: 'property.validation.bedrooms.min' })
     .int('property.validation.bedrooms.min')
@@ -91,6 +103,7 @@ export function propertyFormDefaults(
   if (!property) {
     return {
       ...shortStayDefaults,
+      comuneIstatCode: '',
       // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
       ...(variant === 'long-rent' ? { nightlyRate: 0, maxGuests: 0 } : {}),
     };
@@ -101,7 +114,9 @@ export function propertyFormDefaults(
     name: property.name,
     description: property.description,
     address: property.address,
+    unit: property.unit ?? '',
     city: property.city,
+    comuneIstatCode: property.comuneIstatCode ?? '',
     postalCode: property.postalCode,
     latitude: property.latitude,
     longitude: property.longitude,
@@ -121,7 +136,11 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     name: values.name,
     description: values.description,
     address: values.address,
+    // Blank = no unit (the API clears it on an update and stores none on a create).
+    unit: values.unit?.trim() ? values.unit.trim() : null,
     city: values.city,
+    // The comune chosen from the official list; null clears it (and the region that follows it), see UpdatePropertyRequest.
+    comuneIstatCode: values.comuneIstatCode || null,
     postalCode: values.postalCode,
     latitude: values.latitude,
     longitude: values.longitude,

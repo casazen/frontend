@@ -8,9 +8,6 @@ type TranslateFn = (key: string) => string;
 export const ALREADY_SUBSCRIBED_CODE = 'already_subscribed';
 /** 422 of the checkout: the plan has no Stripe price in this environment (PL-11). */
 export const BILLING_PLAN_UNAVAILABLE_CODE = 'billing_plan_unavailable';
-/** 409 of the checkout: the billing entry gate (P.IVA and SDI) is closed, nobody can be charged yet. */
-export const BILLING_GATE_CLOSED_CODE = 'billing_gate_closed';
-
 /** Query parameter of the Stripe Checkout return page. */
 export const CHECKOUT_RETURN_PARAM = 'checkout';
 
