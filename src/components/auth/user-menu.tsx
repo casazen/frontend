@@ -28,9 +28,15 @@ export function UserMenu() {
 
   if (!user) return null;
 
+  const displayName = user.name || user.email;
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none">
+      {/* The trigger is only an avatar: it needs a name of its own (UI-03, a11y) and a visible focus ring. */}
+      <DropdownMenuTrigger
+        aria-label={displayName ? t('appShell.userMenuNamed', { name: displayName }) : t('appShell.userMenu')}
+        className="flex min-h-11 min-w-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
         <Avatar>
           <AvatarImage src={user.picture} alt={user.name || user.email || ''} />
           <AvatarFallback>{getInitials(user.name || user.email || 'U')}</AvatarFallback>
