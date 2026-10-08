@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
+import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
@@ -56,7 +57,11 @@ export function SupplierAvailabilityPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t('supplier.availabilityTitle')} description={t('supplier.availabilityDescription')} />
+        <PageHeader
+          title={t('supplier.availabilityTitle')}
+          description={t('supplier.availabilityDescription')}
+          action={<NavChildLinks parentPath="/app/supplier/availability" />}
+        />
         <ErrorState
           testId="supplier-availability-error"
           title={t('supplier.availabilityLoadError')}
@@ -73,7 +78,11 @@ export function SupplierAvailabilityPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('supplier.availabilityTitle')} description={t('supplier.availabilityDescription')} />
+      <PageHeader
+        title={t('supplier.availabilityTitle')}
+        description={t('supplier.availabilityDescription')}
+        action={<NavChildLinks parentPath="/app/supplier/availability" />}
+      />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {days.map((key) => {
           const available = selected[key] ?? true;

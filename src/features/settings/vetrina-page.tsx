@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCurrentUser } from '@/queries/use-users';
 import { useProperties } from '@/queries/use-properties';
@@ -41,6 +42,7 @@ export function VetrinaPage() {
             <PageHeader
               title={t('directBooking.title')}
               description={t('directBooking.description')}
+              action={<NavChildLinks parentPath="/app/short-rent/vetrina" />}
             />
             <div className="mt-3 empty:hidden">
               <SitePublicationBanner />
@@ -99,6 +101,7 @@ export function VetrinaPage() {
           <PageHeader
             title={t('directBooking.title')}
             description={t('directBooking.description')}
+            action={<NavChildLinks parentPath="/app/short-rent/vetrina" />}
           />
           <Card className="mt-6">
             <CardContent className="py-12 text-center">
