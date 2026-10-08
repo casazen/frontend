@@ -1,0 +1,364 @@
+/*
+ * Design tokens of the redesign (UI-01): "Pietra" warm neutrals, four area accents, semantic colors, shape and motion.
+ * Reference values: the clickable demo (redesign/assets/tokens.css and base.css). Demo name -> real name:
+ *   --bg -> --color-background          --surface -> --color-card           --surface-3 -> --color-muted
+ *   --text -> --color-foreground        --text-tertiary -> --color-muted-foreground
+ *   --border -> --color-border          --border-strong -> --color-border-strong (new)
+ *   --border-control -> --color-input   --focus -> --color-ring (fixed, never per area)
+ *   --accent -> --color-primary         --accent-soft -> --color-primary-soft (new)
+ *   --accent-text -> --color-primary-text (new)                             --on-accent -> --color-primary-foreground
+ *   --danger-solid -> --color-destructive
+ *   --success/warning/info-{text,bg,border,solid} -> --color-{success,warning,info}-{foreground,soft,border} and
+ *   --color-{success,warning,info} (the solid, for icons and bars, never for text); the same four for `danger`.
+ * shadcn's `--color-accent` is the grey of hover states, not the demo's `--accent`: it only gets a warm grey.
+ *
+ * GRADUAL RELEASE (decisions 01-D8 and D26). Whatever changes the look of a token the app already has lives under
+ * `html[data-ui='v2']`, which `UiVersionSync` sets when the backend flag `uiRedesign` is on, or
+ * `localStorage['casazen:ui'] === 'v2'` (QA), or the build has `VITE_UI_V2=true`. Without the attribute this file only
+ * adds names nothing reads yet (the primitives, the new tokens, the `v2:` variant), so the app looks exactly as before.
+ * The attribute is never set where the app is not redesigned yet: the public booking site (DB-01 migrates it) and the
+ * pages of guests and tenants (`NOT_REDESIGNED_ROUTE_HANDLE`). `tokens.test.ts` enforces the first rule,
+ * `ui-version-sync.test.tsx` and `not-redesigned-routes.test.tsx` the second.
+ *
+ * The area comes from `html[data-area=...]` (`AreaProvider`): it is on <html> and not on the shell because Radix portals
+ * (dialogs, menus, sheets) render outside the shell. The dark theme is not here (UI-10, decision D26): every semantic
+ * token below is an alias of a primitive, so a `html[data-ui='v2'].dark` block only has to remap the aliases and add the
+ * dark primitives of the demo (`--terra-dark`...), which come with their own contrast test.
+ *
+ * Cascade note: custom properties are unlayered, so they win over Tailwind's `@layer theme`. Element rules go into
+ * `@layer base`, so any utility class (`focus-visible:outline-none`, `min-h-0`, `border-red-500`...) still beats them.
+ */
+
+/* `v2:bg-success-soft` = the utility, only when the redesign is on. Lets a component carry both looks until UI-10. */
+@custom-variant v2 (html[data-ui='v2'] &);
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * 1. Primitives: inert names (no component reads them directly; the semantic tokens below alias them).
+ * ---------------------------------------------------------------------------------------------------------------- */
+:root {
+  /* Neutrals "Pietra" */
+  --stone-0: #ffffff;
+  --stone-25: #fbfaf8;
+  --stone-50: #f6f4f0;
+  --stone-100: #efece7;
+  --stone-200: #e4e0d9;
+  --stone-300: #cfc9bf;
+  --stone-400: #a39c91;
+  --stone-500: #8c857a;
+  --stone-600: #6f685e;
+  --stone-700: #5c564d;
+  --stone-800: #3a362f;
+  --stone-900: #1c1a17;
+
+  /* Short rent: Terracotta */
+  --terra-50: #fff7f2;
+  --terra-100: #fff1ea;
+  --terra-200: #ffe2d3;
+  --terra-300: #f6b898;
+  --terra-500: #e2622d;
+  --terra-600: #c2410c;
+  --terra-700: #a8380a;
+  --terra-800: #9a3412;
+  --terra-900: #7c2d12;
+
+  /* Long rent: Savoy blue */
+  --savoia-50: #f5f8ff;
+  --savoia-100: #eef3ff;
+  --savoia-200: #dce6ff;
+  --savoia-300: #a9bff5;
+  --savoia-500: #4a72e0;
+  --savoia-600: #2852c9;
+  --savoia-700: #2147af;
+  --savoia-800: #1e3f9e;
+  --savoia-900: #1b3477;
+
+  /* Suppliers: Sage green */
+  --salvia-50: #f3fbf8;
+  --salvia-100: #e8f6f1;
+  --salvia-200: #cdede2;
+  --salvia-300: #93d3be;
+  --salvia-500: #1a9a80;
+  --salvia-600: #0b7461;
+  --salvia-700: #09644f;
+  --salvia-800: #075d4e;
+  --salvia-900: #064a3e;
+
+  /* Administration: Amethyst */
+  --ametista-50: #f9f6ff;
+  --ametista-100: #f3eeff;
+  --ametista-200: #e6dcff;
+  --ametista-300: #c6b2f2;
+  --ametista-500: #8a63e0;
+  --ametista-600: #6a3fc7;
+  --ametista-700: #5b33b0;
+  --ametista-800: #52309c;
+  --ametista-900: #3f2578;
+
+  /* Brand: Ink (login, area picker, no area: decision D26) */
+  --ink-100: #e9f1f0;
+  --ink-600: #2b4f53;
+  --ink-700: #1f3a3d;
+  --ink-800: #172c2e;
+
+  /* Semantic: text on a soft background, soft background, border, solid (icons and bars, not text: see the note below) */
+  --green-text: #166534;
+  --green-bg: #eaf7ee;
+  --green-border: #b7e2c3;
+  --green-solid: #1e8a47;
+  --amber-text: #8a4b05;
+  --amber-bg: #fef4e2;
+  --amber-border: #f5d49a;
+  --amber-solid: #d98a0b;
+  --red-text: #b4232a;
+  --red-bg: #fdedee;
+  --red-border: #f4b8bb;
+  --red-solid: #b4232a;
+  --blue-text: #1f4fa8;
+  --blue-bg: #ecf2fd;
+  --blue-border: #b9cdf3;
+  --blue-solid: #2563eb;
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* Layers (z-index scale) */
+  --z-sticky: 10;
+  --z-header: 20;
+  --z-sidebar: 30;
+  --z-bottom-nav: 40;
+  --z-fab: 45;
+  --z-drawer: 50;
+  --z-modal: 60;
+  --z-popover: 70;
+  --z-tour: 80;
+  --z-toast: 90;
+
+  /* Controls: minimum touch target (WCAG 2.5.5, the product rule is 44 px) and the control heights of the demo */
+  --touch-min: 44px;
+  --control-h: 44px;
+  --control-h-sm: 36px;
+  --control-h-lg: 52px;
+}
+
+/* Reduced motion: the durations collapse (the blanket rule at the end of this file also stops animations). */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * 2. New tokens registered in Tailwind (utilities `bg-success-soft`, `text-primary-text`, `bg-surface-2`, `ease-standard`).
+ *    Additive: no existing component reads them, so they change nothing by themselves. `static` keeps them in the CSS
+ *    even when no class uses them, so inline styles and charts can read `var(--color-success)`.
+ *    Without the redesign the area tokens derive from the current primary and the surfaces from the current neutrals.
+ *
+ *    The solids (`--color-success`, `--color-warning`, ...) are for icons, dots and bars next to a label, never for text:
+ *    white on `success` is 4.4:1 and on `warning` 2.8:1. Text uses `-foreground` on `-soft` (6:1 and more).
+ * ---------------------------------------------------------------------------------------------------------------- */
+@theme static {
+  --color-primary-soft: color-mix(in oklab, var(--color-primary) 10%, var(--color-background));
+  --color-primary-text: var(--color-primary);
+  --color-surface-2: var(--color-muted);
+  --color-surface-3: var(--color-muted);
+  --color-border-strong: var(--color-input);
+
+  --color-success: var(--green-solid);
+  --color-success-foreground: var(--green-text);
+  --color-success-soft: var(--green-bg);
+  --color-success-border: var(--green-border);
+  --color-warning: var(--amber-solid);
+  --color-warning-foreground: var(--amber-text);
+  --color-warning-soft: var(--amber-bg);
+  --color-warning-border: var(--amber-border);
+  --color-danger: var(--red-solid);
+  --color-danger-foreground: var(--red-text);
+  --color-danger-soft: var(--red-bg);
+  --color-danger-border: var(--red-border);
+  --color-info: var(--blue-solid);
+  --color-info-foreground: var(--blue-text);
+  --color-info-soft: var(--blue-bg);
+  --color-info-border: var(--blue-border);
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * 3. The redesign. Everything from here on is under html[data-ui='v2'].
+ * ---------------------------------------------------------------------------------------------------------------- */
+html[data-ui='v2'] {
+  color-scheme: light;
+
+  /* Surfaces and text */
+  --color-background: var(--stone-25);
+  --color-foreground: var(--stone-900);
+  --color-card: var(--stone-0);
+  --color-card-foreground: var(--stone-900);
+  --color-popover: var(--stone-0);
+  --color-popover-foreground: var(--stone-900);
+  --color-secondary: var(--stone-100);
+  --color-secondary-foreground: var(--stone-900);
+  --color-muted: var(--stone-100);
+  /* 5.3:1 on the page, 4.7:1 on `muted` (the current value is 4.4:1 and 3.9:1) */
+  --color-muted-foreground: var(--stone-600);
+  --color-accent: var(--stone-100);
+  --color-accent-foreground: var(--stone-900);
+  --color-destructive: var(--red-solid);
+  --color-destructive-foreground: #ffffff;
+  --color-surface-2: var(--stone-50);
+  --color-surface-3: var(--stone-100);
+
+  /* Lines: `border` and `border-strong` are decorative; `input` is the border of fields and the off track of switches (3:1) */
+  --color-border: var(--stone-200);
+  --color-border-strong: var(--stone-300);
+  --color-input: var(--stone-500);
+
+  /* Focus: one fixed blue (3:1 on every surface), never the area accent */
+  --color-ring: #2563eb;
+
+  /* Accent: brand ink where there is no area (login, area picker, onboarding) */
+  --color-primary: var(--ink-700);
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: var(--ink-100);
+  --color-primary-text: var(--ink-700);
+
+  /* Shape. Same names as Tailwind's `rounded-*` (demo values: +2 px on xs and sm, +4 on md, +6 on lg, +8 on xl). 3xl and
+     4xl only keep the scale increasing; nothing uses them today. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-3xl: 32px;
+  --radius-4xl: 40px;
+
+  /* Motion: what `transition-*` utilities use when a class gives no duration or easing */
+  --default-transition-duration: var(--dur-fast);
+  --default-transition-timing-function: var(--ease-standard);
+}
+
+/* Area accents. `account` (the customer's administration, decision D1) will share the `admin` block. */
+html[data-ui='v2'][data-area='short-rent'] {
+  --color-primary: var(--terra-600);
+  --color-primary-soft: var(--terra-100);
+  --color-primary-text: var(--terra-800);
+}
+
+html[data-ui='v2'][data-area='long-rent'] {
+  --color-primary: var(--savoia-600);
+  --color-primary-soft: var(--savoia-100);
+  --color-primary-text: var(--savoia-800);
+}
+
+html[data-ui='v2'][data-area='supplier'] {
+  --color-primary: var(--salvia-600);
+  --color-primary-soft: var(--salvia-100);
+  --color-primary-text: var(--salvia-800);
+}
+
+html[data-ui='v2'][data-area='admin'],
+html[data-ui='v2'][data-area='account'] {
+  --color-primary: var(--ametista-600);
+  --color-primary-soft: var(--ametista-100);
+  --color-primary-text: var(--ametista-800);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * 4. Element rules of the redesign (`@layer base`: utilities still win).
+ * ---------------------------------------------------------------------------------------------------------------- */
+@layer base {
+  /*
+   * Warm shadows. Tailwind's shadow utilities read `--tw-shadow-color` and fall back to black when it is not set, so one
+   * declaration tints all of them (and their `hover:` variants) with the warm ink of the demo. Not on <html>: the property
+   * is registered as non-inheriting. A class that sets its own shadow color (`shadow-red-500`) is in `utilities` and wins.
+   */
+  html[data-ui='v2'] *,
+  html[data-ui='v2'] ::before,
+  html[data-ui='v2'] ::after {
+    --tw-shadow-color: rgb(28 26 23 / 0.1);
+  }
+
+  /* The default color of a border (see the neutralizer below). Elements only, as the rule it replaces. */
+  html[data-ui='v2'] * {
+    border-color: var(--color-border);
+  }
+
+  /* A visible focus ring for everything that has none of its own (links, native selects, summaries, custom controls). */
+  html[data-ui='v2'] :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  /*
+   * Touch targets of at least 44 px (the product rule) for touch screens, without moving a dense layout:
+   *  - fields grow (a row of fields can take 4 px);
+   *  - buttons keep their size and get an invisible hit area of 44 px around their center (a toolbar of small icon
+   *    buttons, an inline link-button or a calendar header look the same; a button that is already 44 px is not touched).
+   */
+  @media (pointer: coarse) {
+    html[data-ui='v2']
+      :is(
+        input:not(
+          [type='checkbox'],
+          [type='radio'],
+          [type='range'],
+          [type='color'],
+          [type='file'],
+          [type='hidden'],
+          [type='image'],
+          [type='button'],
+          [type='submit'],
+          [type='reset']
+        ),
+        select,
+        textarea
+      ) {
+      min-height: var(--touch-min);
+    }
+
+    html[data-ui='v2'] :is(button, [role='button'], summary) {
+      position: relative;
+    }
+
+    html[data-ui='v2'] :is(button, [role='button'], summary)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, var(--touch-min));
+      height: max(100%, var(--touch-min));
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  /* Reduced motion: no animation, no transition, no smooth scrolling (the user's setting, not a design choice). */
+  @media (prefers-reduced-motion: reduce) {
+    html[data-ui='v2'] *,
+    html[data-ui='v2'] ::before,
+    html[data-ui='v2'] ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/*
+ * Neutralizer of the border rule of globals.css. That rule (`* { border-color: var(--color-border) }`) is outside any
+ * `@layer`, so it beats every `border-*` color utility: today `border-input`, `border-primary`, `border-destructive` and
+ * `border-red-500` all draw the default grey, so the border of a field is the light `border` color (1.3:1) whatever the
+ * token says. Under the redesign the rule is switched off (`revert-layer` drops every unlayered declaration of the
+ * property, then the layers decide: utilities first, then the default of `@layer base` above).
+ *
+ * Specificity (0,0,1): above the rule it switches off (0,0,0), below any class or attribute selector, so a third-party
+ * stylesheet that colors its own borders (the calendar, the toasts) keeps winning, as it does now.
+ */
+html:where([data-ui='v2']) * {
+  border-color: revert-layer;
+}
