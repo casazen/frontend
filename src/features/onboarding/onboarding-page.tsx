@@ -12,7 +12,6 @@ import { useUserRoles } from '@/hooks/use-user-roles';
 import {
   canEditOnboarding,
   getHomeRouteForUser,
-  getPlanPageForRentalType,
   getPostOnboardingRoute,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
@@ -215,7 +214,7 @@ export function OnboardingPage() {
       await syncSignupAttribution();
     }
 
-    const target = isEditMode ? getPlanPageForRentalType(rentalType) : getPostOnboardingRoute(rentalType, from);
+    const target = isEditMode ? '/profile' : getPostOnboardingRoute(rentalType, from);
     if (result.rolesSynced === false) {
       if (pendingRoles) toast.error(t('onboarding.rolesPending.stillPending'));
       setPendingRoles({ rentalType, planTier, target });
