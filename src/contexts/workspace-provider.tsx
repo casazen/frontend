@@ -173,7 +173,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin)(?:\/|$)/);
+    // The area in the address is the active one, supplier console included (UI-00). The old `/supplier/...` addresses
+    // never get here: they are redirected to `/app/supplier/...` by routes outside this provider.
+    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin|supplier)(?:\/|$)/);
     if (appMatch) {
       const fromUrl = appMatch[1] as AppContextKey;
       if (!contexts.some((c) => c.contextKey === fromUrl)) {
@@ -182,16 +184,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
       setActiveContextState((previous) => (previous === fromUrl ? previous : fromUrl));
       localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, fromUrl);
-      return;
-    }
-
-    if (location.pathname.startsWith('/supplier')) {
-      if (!contexts.some((c) => c.contextKey === 'supplier')) {
-        return;
-      }
-
-      setActiveContextState((previous) => (previous === 'supplier' ? previous : 'supplier'));
-      localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, 'supplier');
     }
   }, [contexts, isReady, location.pathname]);
 
