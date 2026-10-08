@@ -13,6 +13,7 @@ import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
+import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
 import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
@@ -187,6 +188,8 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/book/:orgSlug',
     element: <PublicSiteShell mode="org" />,
+    // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
@@ -207,6 +210,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     element: <PublicSiteShell mode="default" />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       // Public search across the booking sites (BK-20): in the public shell, never in the host console.
       { path: '/search', element: <SearchPage /> },
@@ -229,13 +233,17 @@ export const appRoutes: RouteObject[] = [
     element: <LegacySupplierShowcaseRedirect />,
   },
   {
+    // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).
     path: '/checkin/:token',
     element: <CheckInPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     // Link of the rent payment request email (LT-06): the tenant pays an installment on the landlord's Stripe account.
+    // A tenant's page, not the landlord's console: it keeps its look until it is redesigned.
     path: '/rent/pay/:installmentId',
     element: <RentPaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     path: '/supplier',
