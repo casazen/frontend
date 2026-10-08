@@ -155,6 +155,14 @@ describe('public routes without Auth0 (SE-03)', () => {
     },
   );
 
+  it('PublicSeoPage_DefaultMode_ShowsCookieConsentBanner', async () => {
+    localStorage.removeItem('casazen_cookie_consent');
+    renderPublicApp('/p/affitti-brevi/lombardia/como');
+
+    expect(await screen.findByTestId('public-site-shell')).toBeInTheDocument();
+    expect(screen.getByTestId('cookie-consent-banner')).toBeInTheDocument();
+  });
+
   it('SeoCta_OpensSignupOnThePublicDomainWithComuneAndTheUtmOfTheVisit', async () => {
     renderPublicApp('/p/affitti-brevi/lombardia/como?utm_source=newsletter&utm_campaign=settembre');
 
