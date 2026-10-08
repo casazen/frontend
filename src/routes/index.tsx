@@ -13,6 +13,7 @@ import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
+import { AreaProvider } from '@/contexts/area-provider';
 import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
 import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
@@ -83,7 +84,10 @@ const workspaceRoutes: RouteObject[] = [
     path: '/app',
     element: (
       <WorkspaceProvider>
-        <Outlet />
+        {/* data-area on <html>: the accent of the area (UI-01); the area picker and the pages outside an area have none. */}
+        <AreaProvider>
+          <Outlet />
+        </AreaProvider>
       </WorkspaceProvider>
     ),
     children: [
