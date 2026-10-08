@@ -9,11 +9,9 @@ import { ContextSidebar } from '../context-sidebar';
 
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: vi.fn() }));
-vi.mock('@/queries/use-users', () => ({ useCurrentUser: vi.fn() }));
 
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useNavCounts } from '@/hooks/use-nav-counts';
-import { useCurrentUser } from '@/queries/use-users';
 
 function arrange(contextKeys: AppContextKey[], hasPermission: (ctx: AppContextKey, permission: string) => boolean = () => true) {
   const contexts: ContextBootstrapDto[] = contextKeys.map((contextKey) => ({
@@ -36,7 +34,7 @@ function arrange(contextKeys: AppContextKey[], hasPermission: (ctx: AppContextKe
 function renderSidebar(contextKey: AppContextKey, path = `/app/${contextKey}`) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <ContextSidebar contextKey={contextKey} />
+      <ContextSidebar contextKey={contextKey} organizationName="Casa Rossi Srl" />
     </MemoryRouter>,
   );
 }
@@ -47,12 +45,6 @@ describe('ContextSidebar (UI-04a)', () => {
     window.localStorage.clear();
     useUiStore.setState({ sidebarCollapsed: false });
     vi.mocked(useNavCounts).mockReturnValue({});
-    vi.mocked(useCurrentUser).mockReturnValue({
-      org: { id: 'org-1', name: 'Casa Rossi Srl', slug: 'casa-rossi', planTier: 'Pro' },
-      user: null,
-      planTier: 'Pro',
-      isLoading: false,
-    } as unknown as ReturnType<typeof useCurrentUser>);
     await i18n.changeLanguage('it');
   });
 

@@ -11,13 +11,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 
 interface MobileNavDrawerProps {
   contextKey: AppContextKey;
+  /** The organization of the user, shown under the name of the area. */
+  organizationName?: string | null;
 }
 
 /**
  * The menu of the phone, opened by the hamburger of the header or by "Altro" of the bottom bar: the area switcher and
  * what the bottom bar does not list (UI-04b redraws it as a sheet from the bottom).
  */
-export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
+export function MobileNavDrawer({ contextKey, organizationName = null }: MobileNavDrawerProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
@@ -49,7 +51,7 @@ export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
           </div>
         </SheetHeader>
         <div className="border-b p-3">
-          <AreaSwitcher contextKey={contextKey} />
+          <AreaSwitcher contextKey={contextKey} organizationName={organizationName} />
         </div>
         <nav aria-label={t('nav.menuLabel', { area: t(getArea(contextKey).nameKey) })} className="flex-1 overflow-y-auto py-2">
           <GroupedNavLinks nav={nav} matchEntries={matchEntries} variant="drawer" onNavigate={() => setSidebarOpen(false)} />

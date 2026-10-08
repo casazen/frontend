@@ -10,9 +10,8 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: vi.fn(),
 }));
-// The counters and the organization line are not what this test is about.
+// The counters are not what this test is about.
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
-vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ org: null, user: null, planTier: null, isLoading: false }) }));
 
 import { useWorkspace } from '@/hooks/use-workspace';
 

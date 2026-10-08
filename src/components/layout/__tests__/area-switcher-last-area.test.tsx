@@ -10,9 +10,6 @@ import { AreaSwitcher } from '../area-switcher';
 
 vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/api/contexts', () => ({ contextsApi: { getContexts: vi.fn() } }));
-vi.mock('@/queries/use-users', () => ({
-  useCurrentUser: () => ({ org: { id: 'org-1', name: 'Casa Rossi Srl', slug: 'casa-rossi', planTier: 'Pro' }, user: null, planTier: 'Pro', isLoading: false }),
-}));
 
 import { useAuth } from '@/hooks/use-auth';
 
@@ -31,7 +28,7 @@ function Probe() {
     <>
       <p data-testid="active-context">{activeContext}</p>
       <p data-testid="pathname">{pathname}</p>
-      <AreaSwitcher contextKey={activeContext ?? 'short-rent'} />
+      <AreaSwitcher contextKey={activeContext ?? 'short-rent'} organizationName="Casa Rossi Srl" />
     </>
   );
 }

@@ -8,10 +8,8 @@ import { useUiStore } from '@/store/ui-store';
 import { MobileNavDrawer } from '../mobile-nav-drawer';
 
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
-vi.mock('@/queries/use-users', () => ({ useCurrentUser: vi.fn() }));
 
 import { useWorkspace } from '@/hooks/use-workspace';
-import { useCurrentUser } from '@/queries/use-users';
 
 function arrange(contextKeys: AppContextKey[]) {
   const contexts: ContextBootstrapDto[] = contextKeys.map((contextKey) => ({
@@ -34,7 +32,7 @@ function arrange(contextKeys: AppContextKey[]) {
 function renderDrawer(contextKey: AppContextKey, path = `/app/${contextKey}`) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <MobileNavDrawer contextKey={contextKey} />
+      <MobileNavDrawer contextKey={contextKey} organizationName="Casa Rossi Srl" />
     </MemoryRouter>,
   );
 }
@@ -44,12 +42,6 @@ describe('MobileNavDrawer (UI-04a)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     useUiStore.setState({ sidebarOpen: true });
-    vi.mocked(useCurrentUser).mockReturnValue({
-      org: { id: 'org-1', name: 'Casa Rossi Srl', slug: 'casa-rossi', planTier: 'Pro' },
-      user: null,
-      planTier: 'Pro',
-      isLoading: false,
-    } as unknown as ReturnType<typeof useCurrentUser>);
     await i18n.changeLanguage('it');
   });
 

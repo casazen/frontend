@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { AppContextKey } from '@/config/route-manifest';
+import { useCurrentUser } from '@/queries/use-users';
 import { DemoBanner } from '@/components/shared/demo-banner';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
@@ -32,6 +33,8 @@ interface AppShellLayoutProps {
  */
 export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   const mainRef = useRef<HTMLElement>(null);
+  const { org } = useCurrentUser();
+  const organizationName = org?.name ?? null;
   const shell = useMemo(() => ({ contextKey }), [contextKey]);
 
   useEffect(() => {
@@ -49,8 +52,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
     <AppShellContext.Provider value={shell}>
       <SkipLink targetId={MAIN_CONTENT_ID} />
       <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
-        <ContextSidebar contextKey={contextKey} />
-        <MobileNavDrawer contextKey={contextKey} />
+        <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
+        <MobileNavDrawer contextKey={contextKey} organizationName={organizationName} />
         <div className="flex min-w-0 flex-1 flex-col">
           <DemoBanner />
           <Header />

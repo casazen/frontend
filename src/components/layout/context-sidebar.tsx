@@ -12,6 +12,8 @@ import { GroupedNavLinks } from './grouped-nav-links';
 
 interface ContextSidebarProps {
   contextKey: AppContextKey;
+  /** The organization of the user, shown under the name of the area. */
+  organizationName?: string | null;
 }
 
 /**
@@ -19,7 +21,7 @@ interface ContextSidebarProps {
  * counters) and the button that reduces it to the icons, which the browser remembers. The name, the icon and the footer
  * line of the area come from `config/areas.ts`, the entries from the route manifest.
  */
-export function ContextSidebar({ contextKey }: ContextSidebarProps) {
+export function ContextSidebar({ contextKey, organizationName = null }: ContextSidebarProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
@@ -49,7 +51,7 @@ export function ContextSidebar({ contextKey }: ContextSidebarProps) {
       )}
     >
       <div className="border-b p-3">
-        <AreaSwitcher contextKey={contextKey} collapsed={collapsed} />
+        <AreaSwitcher contextKey={contextKey} organizationName={organizationName} collapsed={collapsed} />
       </div>
       <nav
         aria-label={t('nav.menuLabel', { area: t(area.nameKey) })}

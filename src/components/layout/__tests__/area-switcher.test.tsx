@@ -6,10 +6,8 @@ import type { AppContextKey } from '@/config/route-manifest';
 import { AreaSwitcher } from '../area-switcher';
 
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
-vi.mock('@/queries/use-users', () => ({ useCurrentUser: vi.fn() }));
 
 import { useWorkspace } from '@/hooks/use-workspace';
-import { useCurrentUser } from '@/queries/use-users';
 
 function context(contextKey: AppContextKey): ContextBootstrapDto {
   // The name the backend sends is not the one the user sees any more.
@@ -17,8 +15,10 @@ function context(contextKey: AppContextKey): ContextBootstrapDto {
 }
 
 const setActiveContext = vi.fn();
+let organization: string | null = 'Casa Rossi Srl';
 
 function arrange(contextKeys: AppContextKey[], org: string | null = 'Casa Rossi Srl') {
+  organization = org;
   vi.mocked(useWorkspace).mockReturnValue({
     contexts: contextKeys.map(context),
     activeContext: contextKeys[0] ?? null,
@@ -27,12 +27,11 @@ function arrange(contextKeys: AppContextKey[], org: string | null = 'Casa Rossi 
     hasPermission: () => true,
     getDefaultRoute: (key) => `/app/${key}`,
   });
-  vi.mocked(useCurrentUser).mockReturnValue({
-    org: org ? { id: 'org-1', name: org, slug: 'casa-rossi', planTier: 'Pro' } : null,
-    user: null,
-    planTier: null,
-    isLoading: false,
-  } as unknown as ReturnType<typeof useCurrentUser>);
+}
+
+/** The shell reads the organization once and hands its name down. */
+function renderSwitcher(contextKey: AppContextKey, props: { collapsed?: boolean } = {}) {
+  return render(<AreaSwitcher contextKey={contextKey} organizationName={organization} {...props} />);
 }
 
 function openByKeyboard(trigger: HTMLElement) {
@@ -53,7 +52,7 @@ describe('AreaSwitcher (UI-04a)', () => {
   describe('with a single area', () => {
     it('AreaSwitcher_OneArea_IsOnlyTheHeadingOfTheSidebar', () => {
       arrange(['supplier']);
-      render(<AreaSwitcher contextKey="supplier" />);
+      renderSwitcher('supplier');
 
       const heading = screen.getByTestId('area-header');
       expect(within(heading).getByText('Portale fornitori')).toBeInTheDocument();
@@ -64,7 +63,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_OneAreaAndNoOrganization_ShowsTheNameAlone', () => {
       arrange(['short-rent'], null);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
 
       expect(within(screen.getByTestId('area-header')).getByText('Affitti brevi')).toBeInTheDocument();
       expect(screen.queryByText('Casa Rossi Srl')).not.toBeInTheDocument();
@@ -74,7 +73,7 @@ describe('AreaSwitcher (UI-04a)', () => {
   describe('with several areas', () => {
     it('AreaSwitcher_SeveralAreas_IsAMenuButtonThatNamesTheCurrentArea', () => {
       arrange(['short-rent', 'long-rent']);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
 
       const trigger = screen.getByRole('button', { name: 'Area attuale: Affitti brevi. Cambia area' });
       expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
@@ -87,7 +86,7 @@ describe('AreaSwitcher (UI-04a)', () => {
     it('AreaSwitcher_Opened_ListsOnlyTheAreasOfTheUserInOrderWithTheirDescription', async () => {
       // Contexts in a different order than the selector, and the backend names are not shown.
       arrange(['admin', 'supplier', 'short-rent']);
-      render(<AreaSwitcher contextKey="supplier" />);
+      renderSwitcher('supplier');
       openByKeyboard(screen.getByTestId('area-switcher'));
 
       const menu = await screen.findByRole('menu');
@@ -110,7 +109,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_Opened_TicksTheCurrentAreaAndStartsTheFocusOnIt', async () => {
       arrange(['short-rent', 'long-rent', 'supplier']);
-      render(<AreaSwitcher contextKey="long-rent" />);
+      renderSwitcher('long-rent');
       openByKeyboard(screen.getByTestId('area-switcher'));
 
       const current = await screen.findByRole('menuitemradio', { name: /Affitti lunghi/ });
@@ -121,7 +120,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_ChoosingAnotherArea_OpensIt', async () => {
       arrange(['short-rent', 'long-rent']);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
       openByKeyboard(screen.getByTestId('area-switcher'));
 
       const other = await screen.findByRole('menuitemradio', { name: /Affitti lunghi/ });
@@ -135,7 +134,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_ChoosingTheCurrentArea_JustClosesTheMenu', async () => {
       arrange(['short-rent', 'long-rent']);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
       openByKeyboard(screen.getByTestId('area-switcher'));
 
       const current = await screen.findByRole('menuitemradio', { name: /Affitti brevi/ });
@@ -148,7 +147,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_ArrowKeys_MoveTheFocusBetweenTheAreas', async () => {
       arrange(['short-rent', 'long-rent', 'supplier']);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
       openByKeyboard(screen.getByTestId('area-switcher'));
 
       const first = await screen.findByRole('menuitemradio', { name: /Affitti brevi/ });
@@ -163,7 +162,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_Escape_ClosesTheMenuAndGivesTheFocusBackToTheButton', async () => {
       arrange(['short-rent', 'long-rent']);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
       const trigger = screen.getByTestId('area-switcher');
       openByKeyboard(trigger);
 
@@ -180,7 +179,7 @@ describe('AreaSwitcher (UI-04a)', () => {
     it('AreaSwitcher_EnglishUi_ShowsTheEnglishNamesAndDescriptions', async () => {
       await i18n.changeLanguage('en');
       arrange(['short-rent', 'supplier']);
-      render(<AreaSwitcher contextKey="short-rent" />);
+      renderSwitcher('short-rent');
 
       expect(screen.getByRole('button', { name: 'Current area: Short-term rentals. Change area' })).toBeInTheDocument();
       openByKeyboard(screen.getByTestId('area-switcher'));
@@ -191,7 +190,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_Collapsed_KeepsOnlyTheIconButStillSaysWhereTheUserIs', () => {
       arrange(['short-rent', 'long-rent']);
-      render(<AreaSwitcher contextKey="short-rent" collapsed />);
+      renderSwitcher('short-rent', { collapsed: true });
 
       const trigger = screen.getByRole('button', { name: 'Area attuale: Affitti brevi. Cambia area' });
       expect(trigger).not.toHaveTextContent('Affitti brevi');
@@ -201,7 +200,7 @@ describe('AreaSwitcher (UI-04a)', () => {
 
     it('AreaSwitcher_CurrentAreaIcon_CarriesTheAccentOfTheArea', () => {
       arrange(['short-rent', 'long-rent']);
-      const { container } = render(<AreaSwitcher contextKey="short-rent" />);
+      const { container } = renderSwitcher('short-rent');
 
       const tile = container.querySelector('[data-area]');
       expect(tile).toHaveAttribute('data-area', 'short-rent');

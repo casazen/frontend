@@ -13,12 +13,13 @@ import { getAccessibleAreas, getArea } from '@/config/areas';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { cn } from '@/lib/utils';
-import { useCurrentUser } from '@/queries/use-users';
 import { NavIcon } from './nav-icon';
 
 interface AreaSwitcherProps {
   /** The area of the page that is open: the one the switcher shows as current. */
   contextKey: AppContextKey;
+  /** The organization of the user, shown under the name of the area (the shell reads it once and hands it down). */
+  organizationName?: string | null;
   /** Sidebar reduced to the icons: the switcher keeps only the icon of the area. */
   collapsed?: boolean;
   className?: string;
@@ -34,10 +35,9 @@ interface AreaSwitcherProps {
  * arrows to move, Esc to close and focus back on the button. Choosing an area opens its home; the area is remembered
  * between visits by the workspace (`casazen:active-context`, the server side is UI-13).
  */
-export function AreaSwitcher({ contextKey, collapsed = false, className }: AreaSwitcherProps) {
+export function AreaSwitcher({ contextKey, organizationName = null, collapsed = false, className }: AreaSwitcherProps) {
   const { t } = useTranslation();
   const { contexts, setActiveContext } = useWorkspace();
-  const { org } = useCurrentUser();
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
 
@@ -66,7 +66,9 @@ export function AreaSwitcher({ contextKey, collapsed = false, className }: AreaS
       {collapsed ? null : (
         <span className="min-w-0 flex-1 text-left">
           <span className="block truncate text-base font-bold leading-tight">{currentName}</span>
-          {org ? <span className="mt-0.5 block truncate text-xs text-muted-foreground">{org.name}</span> : null}
+          {organizationName ? (
+            <span className="mt-0.5 block truncate text-xs text-muted-foreground">{organizationName}</span>
+          ) : null}
         </span>
       )}
       {hasChoice && !collapsed ? (
@@ -107,7 +109,9 @@ export function AreaSwitcher({ contextKey, collapsed = false, className }: AreaS
         data-testid="area-switcher-menu"
         className="w-[min(22rem,calc(100vw-1.5rem))] p-2"
       >
-        {org ? <DropdownMenuLabel className="truncate px-3 pb-1 pt-2 uppercase tracking-wide">{org.name}</DropdownMenuLabel> : null}
+        {organizationName ? (
+          <DropdownMenuLabel className="truncate px-3 pb-1 pt-2 uppercase tracking-wide">{organizationName}</DropdownMenuLabel>
+        ) : null}
         <DropdownMenuRadioGroup
           value={contextKey}
           onValueChange={(value) => {
