@@ -244,6 +244,16 @@
         "confirm": "Withdraw"
       }
     },
+    "marketing": {
+      "title": "Marketing",
+      "description": "Tracking data already collected: signup attributions and top-converting comuni from the SEO funnel.",
+      "scopeNotice": "These data reflect the tracking currently active. No new events have been added.",
+      "attributions": {
+        "title": "Signup attributions (UTM & referrer)",
+        "description": "Where new hosts come from: UTM source, medium, campaign and referrer host, captured at signup.",
+        "apiNote": "Aggregate data will be available through the following API endpoint (under development):"
+      }
+    },
     "profile": {
       "title": "User profile",
       "description": "Account information and API testing tools"
@@ -387,6 +397,7 @@
     "cinAudit": "CIN Audit",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
+    "marketing": "Marketing",
     "more": "More",
     "brandShort": "CASAZEN",
     "brandAdmin": "CASAZEN Admin",

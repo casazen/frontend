@@ -244,6 +244,16 @@
         "confirm": "Ritira"
       }
     },
+    "marketing": {
+      "title": "Marketing",
+      "description": "Dati di tracciamento già raccolti: attribuzioni signup e comuni che convertono dal funnel SEO.",
+      "scopeNotice": "Questi dati riflettono il tracciamento attualmente attivo. Nessun nuovo evento è stato aggiunto.",
+      "attributions": {
+        "title": "Attribuzioni signup (UTM & referrer)",
+        "description": "Da dove arrivano i nuovi host: UTM source, medium, campaign e host del sito di provenienza, raccolti al momento del signup.",
+        "apiNote": "I dati aggregati saranno disponibili tramite l'endpoint API seguente (in sviluppo):"
+      }
+    },
     "profile": {
       "title": "Profilo utente",
       "description": "Informazioni account e strumenti per il test API"
@@ -387,6 +397,7 @@
     "cinAudit": "Audit CIN",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
+    "marketing": "Marketing",
     "more": "Altro",
     "brandShort": "CASAZEN",
     "brandAdmin": "CASAZEN Admin",
