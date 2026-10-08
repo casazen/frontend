@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { BillingApi } from '@/api/billing.api';
 import type { ContextBootstrapDto } from '@/api/contexts';
+import type { AppContextKey } from '@/config/route-manifest';
 import type { WorkspaceContextValue } from '@/contexts/workspace-context';
 import * as userQueries from '@/queries/use-users';
 import type { BillingPlan, BillingSubscription } from '@/types';
@@ -44,18 +45,18 @@ vi.mock('@/contexts/workspace-provider', async () => {
   }
   return { WorkspaceProvider };
 });
-// The shells are replaced by markers: the test is about which shell hosts the page, not about the menus.
-vi.mock('@/components/layout/long-term-app-shell', async () => {
-  const { Outlet } = await import('react-router-dom');
+// The one shell of the area (UI-03) is replaced by a marker: the test is about which area hosts the page, not about the
+// menus. The real `AppShell` that the short-rent pages still wrap themselves in finds the shell and adds nothing.
+vi.mock('@/components/layout/app-shell-layout', async () => {
+  const { AppShellContext } = await import('@/components/layout/app-shell-context');
   return {
-    LongTermAppShell: ({ children }: { children?: ReactNode }) => (
-      <div data-testid="long-rent-shell">{children ?? <Outlet />}</div>
+    AppShellLayout: ({ contextKey, children }: { contextKey: AppContextKey; children: ReactNode }) => (
+      <AppShellContext.Provider value={{ contextKey }}>
+        <div data-testid={`${contextKey}-shell`}>{children}</div>
+      </AppShellContext.Provider>
     ),
   };
 });
-vi.mock('@/components/layout/app-shell', () => ({
-  AppShell: ({ children }: { children: ReactNode }) => <div data-testid="short-rent-shell">{children}</div>,
-}));
 vi.mock('@/api/billing.api', () => ({
   BillingApi: {
     getPlans: vi.fn(),
@@ -107,6 +108,8 @@ function renderApp(entry: string) {
 
 describe('plan and billing pages from the long-rent shell (PL-16)', () => {
   beforeEach(() => {
+    // The window scrolls in the shell (UI-03): `ScrollRestoration` scrolls it, jsdom has no scrolling to offer.
+    window.scrollTo = vi.fn();
     workspaceContexts.value = [longRentContext];
     vi.mocked(userQueries.useCurrentUser).mockReturnValue({
       user: { orgId: 'org-1' },

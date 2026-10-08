@@ -36,7 +36,13 @@ export function ContextSidebar({
   const grouped = getDesktopNavByGroup(contextKey, permissionCheck, flags);
 
   return (
-    <aside role="complementary" aria-label={t('shell.mainNavigation')} className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
+    // Sticky to the window, as tall as the visible viewport (`dvh`), with the menu scrolling inside it: the window is
+    // what scrolls in the shell (UI-03). `self-start` keeps the flex row from stretching it to the page height.
+    <aside
+      role="complementary"
+      aria-label={t('shell.mainNavigation')}
+      className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col self-start border-r bg-card md:flex"
+    >
       <div className="border-b px-4 py-4 space-y-3">
         <div className="flex items-center gap-2.5 px-2">
           <div
