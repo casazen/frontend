@@ -256,11 +256,24 @@ describe('tokens.css: shape, motion, layers', () => {
   it('Touch_CoarsePointer_FieldsGrowAndButtonsGetA44pxHitAreaWithoutMovingTheLayout', () => {
     expect(primitives['--touch-min']).toBe('44px');
     const coarse = /pointer:\s*coarse/;
-    const hitArea = declarationsOf(`${GATE} :is(button, [role='button'], summary)::after`, coarse);
+    // Toggles are buttons too, and a 44 px slop on a 16 px checkbox covers the label and the next control.
+    const hit = `${GATE} :is(button, [role='button'], summary):not([role='checkbox'], [role='switch'], [role='radio'])`;
+    const hitArea = declarationsOf(`${hit}::after`, coarse);
     expect(hitArea.width).toBe('max(100%, var(--touch-min))');
     expect(hitArea.height).toBe('max(100%, var(--touch-min))');
+    // The slop is under every visible control. z-index 0 (not the button's own stacking context) so a neighbor on
+    // z-index 1 wins the tap; the gap, where nothing is drawn, still hits the slop.
+    expect(hitArea['z-index']).toBe('0');
+    expect(declarationsOf(`${hit}::before`, coarse)).toEqual({ content: "''", position: 'absolute', 'z-index': '1', inset: '0' });
+    expect(declarationsOf(`${GATE} :is(a, label, input, select, textarea):not([role='button'])`, coarse)).toEqual({
+      position: 'relative',
+      'z-index': '1',
+    });
+    // The search glyph is an absolute sibling sitting in the field's padding: the field's layer must not cover it.
+    expect(declarationsOf(`${GATE} :has(> :is(input, select, textarea)) > svg`, coarse)).toEqual({ 'z-index': '2' });
     // The hit area is a pseudo-element: no button gets taller, wider or moved, so a dense layout stays as it is.
-    expect(declarationsOf(`${GATE} :is(button, [role='button'], summary)`, coarse)).toEqual({ position: 'relative' });
+    // No z-index on the button: that would trap ::after and the overflow would steal the tap again.
+    expect(declarationsOf(hit, coarse)).toEqual({ position: 'relative' });
     // Fields do grow: a row of fields can take 4 px.
     expect(declarationsOf(/^html\[data-ui='v2'\] :is\( ?input:not/, coarse)).toEqual({ 'min-height': 'var(--touch-min)' });
   });

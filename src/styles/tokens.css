@@ -299,6 +299,14 @@ html[data-ui='v2'][data-area='account'] {
    *  - fields grow (a row of fields can take 4 px);
    *  - buttons keep their size and get an invisible hit area of 44 px around their center (a toolbar of small icon
    *    buttons, an inline link-button or a calendar header look the same; a button that is already 44 px is not touched).
+   *
+   * The hit area is an overflowing ::after, painted above earlier siblings, so it would steal a tap meant for the
+   * control underneath (a checkbox or switch is a 16 px / 24 px button; the same overflow covers an input, a link or
+   * the previous icon button). The slop stays at z-index 0 and the button stays z-index: auto — a z-index on the
+   * button would trap the pseudo inside it and the overflow would still win. A ::before covers only the button's own
+   * box at z-index 1, and links, labels and fields sit on that same layer: a tap on a visible control hits that
+   * control, a tap in the empty gap still hits the slop. Checkbox, switch and radio are left out: they are drawn
+   * inside their label, and a 44 px slop there covers the next row. The label is their target.
    */
   @media (pointer: coarse) {
     html[data-ui='v2']
@@ -321,18 +329,44 @@ html[data-ui='v2'][data-area='account'] {
       min-height: var(--touch-min);
     }
 
-    html[data-ui='v2'] :is(button, [role='button'], summary) {
+    /* No z-index here: it would trap ::after and paint the slop above earlier siblings. */
+    html[data-ui='v2']
+      :is(button, [role='button'], summary):not([role='checkbox'], [role='switch'], [role='radio']) {
       position: relative;
     }
 
-    html[data-ui='v2'] :is(button, [role='button'], summary)::after {
+    html[data-ui='v2']
+      :is(button, [role='button'], summary):not([role='checkbox'], [role='switch'], [role='radio'])::before {
       content: '';
       position: absolute;
+      z-index: 1;
+      inset: 0;
+    }
+
+    html[data-ui='v2']
+      :is(button, [role='button'], summary):not([role='checkbox'], [role='switch'], [role='radio'])::after {
+      content: '';
+      position: absolute;
+      z-index: 0;
       top: 50%;
       left: 50%;
       width: max(100%, var(--touch-min));
       height: max(100%, var(--touch-min));
       transform: translate(-50%, -50%);
+    }
+
+    /* Above the slop. Buttons are not in this list: see the note on `position: relative` above. */
+    html[data-ui='v2'] :is(a, label, input, select, textarea):not([role='button']) {
+      position: relative;
+      z-index: 1;
+    }
+
+    /*
+     * A field icon (the search glyph) is an absolutely positioned sibling drawn in the field's padding.
+     * The field's layer would cover it; keep the glyph on top.
+     */
+    html[data-ui='v2'] :has(> :is(input, select, textarea)) > svg {
+      z-index: 2;
     }
   }
 
