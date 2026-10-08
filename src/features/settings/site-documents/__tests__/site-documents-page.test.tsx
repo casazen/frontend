@@ -8,8 +8,10 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { OrgsApi } from '@/api/orgs.api';
+import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import * as userQueries from '@/queries/use-users';
+import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import type { OrgSiteDocumentKind, OrgSiteDocumentState, OrgSiteDocumentVersion } from '@/types';
 import { SiteDocumentsPage } from '../site-documents-page';
 
@@ -74,15 +76,10 @@ function problemError(status: number, data: Record<string, unknown> = {}): Axios
   });
 }
 
-function mockContexts(contextKeys: string[]) {
+/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
+function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
-    contexts: contextKeys.map((contextKey) => ({
-      contextKey,
-      displayName: contextKey,
-      roleKey: contextKey,
-      permissions: [],
-      defaultRoute: `/app/${contextKey}`,
-    })),
+    contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
   } as unknown as WorkspaceResult);
 }
 
@@ -127,6 +124,19 @@ describe('SiteDocumentsPage (BK-14, A3-21)', () => {
     expect(screen.getByTestId('site-documents-admin-required')).toHaveTextContent(i18n.t('siteDocuments.adminRequired'));
     expect(OrgsApi.getSiteDocuments).not.toHaveBeenCalled();
   });
+
+  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key.
+  it.each(MEMBER_ROLE_KEYS)(
+    'SiteDocumentsPage_MemberWithRoleKey_%s_ShowsAdminRequiredWithoutCallingTheApi',
+    (roleKey) => {
+      mockContexts(['short-rent'], roleKey);
+      renderPage();
+
+      expect(screen.getByTestId('site-documents-admin-required')).toHaveTextContent(i18n.t('siteDocuments.adminRequired'));
+      expect(OrgsApi.getSiteDocuments).not.toHaveBeenCalled();
+      expect(OrgsApi.publishSiteDocument).not.toHaveBeenCalled();
+    },
+  );
 
   it('SiteDocumentsPage_WhileLoading_ShowsSkeleton', () => {
     vi.mocked(OrgsApi.getSiteDocuments).mockReturnValue(new Promise(() => {}));
