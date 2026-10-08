@@ -1,24 +1,25 @@
 import { useTranslation } from 'react-i18next';
 import { Home } from 'lucide-react';
-import {
-  getDrawerNavByGroup,
-  getVisibleNavEntries,
-  type AppContextKey,
-} from '@/config/route-manifest';
+import { getArea } from '@/config/areas';
+import { getContextNav, getNavMatchEntries, type AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useUiStore } from '@/store/ui-store';
+import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
-import { WorkspaceSwitcher } from './workspace-switcher';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface MobileNavDrawerProps {
   contextKey: AppContextKey;
 }
 
+/**
+ * The menu of the phone, opened by the hamburger of the header or by "Altro" of the bottom bar: the area switcher and
+ * what the bottom bar does not list (UI-04b redraws it as a sheet from the bottom).
+ */
 export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
   const { t } = useTranslation();
-  const { contexts, hasPermission } = useWorkspace();
+  const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
   const sidebarOpen = useUiStore((state) => state.sidebarOpen);
   const setSidebarOpen = useUiStore((state) => state.setSidebarOpen);
@@ -33,8 +34,8 @@ export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
-  const grouped = getDrawerNavByGroup(contextKey, permissionCheck, flags);
+  const nav = getContextNav(contextKey, permissionCheck, flags, { withoutBottom: true });
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
 
   return (
     <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -47,18 +48,11 @@ export function MobileNavDrawer({ contextKey }: MobileNavDrawerProps) {
             <SheetTitle>{CONTEXT_TITLES[contextKey]}</SheetTitle>
           </div>
         </SheetHeader>
-        {contexts.length > 1 && (
-          <div className="border-b py-3">
-            <WorkspaceSwitcher layout="drawer" />
-          </div>
-        )}
-        <nav className="flex-1 overflow-y-auto py-2">
-          <GroupedNavLinks
-            grouped={grouped}
-            allEntries={allEntries}
-            variant="drawer"
-            onNavigate={() => setSidebarOpen(false)}
-          />
+        <div className="border-b p-3">
+          <AreaSwitcher contextKey={contextKey} />
+        </div>
+        <nav aria-label={t('nav.menuLabel', { area: t(getArea(contextKey).nameKey) })} className="flex-1 overflow-y-auto py-2">
+          <GroupedNavLinks nav={nav} matchEntries={matchEntries} variant="drawer" onNavigate={() => setSidebarOpen(false)} />
         </nav>
       </SheetContent>
     </Sheet>

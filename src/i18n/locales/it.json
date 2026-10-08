@@ -384,7 +384,6 @@
     "jobs": "Processi",
     "suppliers": "Fornitori",
     "guests": "Ospiti",
-    "cinAudit": "Audit CIN",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "more": "Altro",
@@ -392,7 +391,7 @@
     "brandAdmin": "CASAZEN Admin",
     "brandSupplier": "CASAZEN Fornitore",
     "vetrina": "Vetrina",
-    "directBooking": "Direct Booking",
+    "directBooking": "Sito di prenotazione",
     "inviteSupplier": "Invita fornitore",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
@@ -400,22 +399,30 @@
     "supplierAvailability": "Disponibilità",
     "supplierHelpIcal": "Guida iCal",
     "group": {
-      "operazioni": "Operazioni",
-      "immobili": "Immobili",
-      "finanza": "Finanza",
-      "compliance": "Conformità",
-      "compliance-audit": "Compliance Audit",
-      "integrazioni": "Integrazioni",
-      "account": "Impostazioni",
-      "reporting": "Finanza",
-      "vetrina": "Vetrina",
-      "operations": "Amministrazione",
-      "amministrazione": "Amministrazione"
+      "activity": "La tua attività",
+      "everyday": "Ogni giorno",
+      "management": "Gestione",
+      "offer": "La tua offerta",
+      "platform": "Piattaforma",
+      "portfolio": "Patrimonio",
+      "work": "Lavoro"
     },
     "ltrReferenceData": "Dati normativi LTR",
     "siteAppearance": "Aspetto sito",
     "siteDocuments": "Documenti sito",
-    "supplierShowcase": "Vetrina"
+    "supplierShowcase": "Vetrina",
+    "compliance": "Adempimenti",
+    "complianceAudit": "Conformità",
+    "collapse": "Comprimi menu",
+    "expand": "Espandi menu",
+    "menuLabel": "Menu {{area}}",
+    "childLinksLabel": "Pagine collegate",
+    "count": {
+      "bookingRequests_one": "{{count}} richiesta da approvare",
+      "bookingRequests_other": "{{count}} richieste da approvare",
+      "supplierRequests_one": "{{count}} richiesta da accettare",
+      "supplierRequests_other": "{{count}} richieste da accettare"
+    }
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -429,14 +436,11 @@
     "longRentSubtitle": "Affitti lungo termine",
     "adminSubtitle": "Amministrazione",
     "adminFooter": "v1.0.0 · Admin",
-    "workspaceLabel": "Area di lavoro",
-    "workspaceContext": "Contesto applicativo",
     "mainNavigation": "Navigazione principale",
     "mobileNavigation": "Navigazione mobile",
     "openMenu": "Apri menu di navigazione",
     "layerShortStay": "Affitti brevi",
     "layerLongTerm": "Affitti lungo termine",
-    "supplierSubtitle": "Fornitore",
     "layerSwitcherLabel": "Area applicativa"
   },
   "leases": {
@@ -5615,6 +5619,27 @@
       "requestAccessGeneric": "Per chiedere l'accesso rivolgiti a chi amministra il tuo account.",
       "mailSubject": "Richiesta di accesso a una pagina di CasaZen",
       "mailBody": "Buongiorno, vorrei chiedere l'accesso alla pagina {{path}} di CasaZen. Grazie."
+    }
+  },
+  "areas": {
+    "admin": {
+      "description": "Utenti, fornitori, processi e controlli di conformità della piattaforma",
+      "name": "Amministrazione"
+    },
+    "longRent": {
+      "description": "Contratti, inquilini, scadenze e canoni",
+      "name": "Affitti lunghi"
+    },
+    "shortRent": {
+      "description": "Prenotazioni, calendario, prezzi e sito diretto",
+      "name": "Affitti brevi"
+    },
+    "supplier": {
+      "description": "Richieste, disponibilità, servizi e vetrina",
+      "name": "Portale fornitori"
+    },
+    "switcher": {
+      "current": "Area attuale: {{name}}. Cambia area"
     }
   },
   "validation": {

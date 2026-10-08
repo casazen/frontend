@@ -283,11 +283,15 @@ export function useSupplierDashboard() {
   });
 }
 
-/** Service-request KPIs of the supplier for `period` (SU-11). */
-export function useSupplierKpis(period: SupplierKpiPeriod) {
+/**
+ * Service-request KPIs of the supplier for `period` (SU-11). The counter of "Richieste" in the menu (UI-04a) reads the
+ * current month through the same cache entry as the dashboard, and only when `enabled`.
+ */
+export function useSupplierKpis(period: SupplierKpiPeriod, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['supplier', 'dashboard', 'kpis', period],
     queryFn: () => fetchSupplierKpis(period),
+    enabled: options?.enabled ?? true,
   });
 }
 

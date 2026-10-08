@@ -1,7 +1,4 @@
 import { useEffect, useMemo, useRef } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { Wrench } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import type { AppContextKey } from '@/config/route-manifest';
 import { DemoBanner } from '@/components/shared/demo-banner';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
@@ -19,25 +16,6 @@ const MAIN_CONTENT_ID = 'main-content';
 /** Height of the sticky header (`h-16`): what the window keeps free at the top when it scrolls something into view. */
 const HEADER_HEIGHT = '4rem';
 
-interface ShellContextPresentation {
-  subtitleKey: string;
-  icon?: LucideIcon;
-  iconClassName?: string;
-  footerLabelKey?: string;
-}
-
-/** What differs between the areas in the chrome of the shell; the menus themselves come from the route manifest. */
-const SHELL_CONTEXTS: Record<AppContextKey, ShellContextPresentation> = {
-  'short-rent': { subtitleKey: 'shell.shortRentSubtitle' },
-  'long-rent': { subtitleKey: 'shell.longRentSubtitle' },
-  admin: {
-    subtitleKey: 'shell.adminSubtitle',
-    iconClassName: 'bg-destructive text-destructive-foreground',
-    footerLabelKey: 'shell.adminFooter',
-  },
-  supplier: { subtitleKey: 'shell.supplierSubtitle', icon: Wrench },
-};
-
 interface AppShellLayoutProps {
   contextKey: AppContextKey;
   children: React.ReactNode;
@@ -53,10 +31,8 @@ interface AppShellLayoutProps {
  * height under the header sizes itself (see `vetrina-page.tsx`).
  */
 export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
-  const { t } = useTranslation();
   const mainRef = useRef<HTMLElement>(null);
   const shell = useMemo(() => ({ contextKey }), [contextKey]);
-  const presentation = SHELL_CONTEXTS[contextKey];
 
   useEffect(() => {
     // The window scrolls and the header is sticky: an anchor (`#panel`) or an element that takes the focus must not land
@@ -73,13 +49,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
     <AppShellContext.Provider value={shell}>
       <SkipLink targetId={MAIN_CONTENT_ID} />
       <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
-        <ContextSidebar
-          contextKey={contextKey}
-          subtitle={t(presentation.subtitleKey)}
-          icon={presentation.icon}
-          iconClassName={presentation.iconClassName}
-          footerLabel={presentation.footerLabelKey ? t(presentation.footerLabelKey) : undefined}
-        />
+        <ContextSidebar contextKey={contextKey} />
         <MobileNavDrawer contextKey={contextKey} />
         <div className="flex min-w-0 flex-1 flex-col">
           <DemoBanner />

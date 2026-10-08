@@ -23,6 +23,8 @@ vi.mock('@/queries/use-users', () => ({
   }),
 }));
 vi.mock('@/queries/use-supplier', () => ({ useSupplierSuspended: () => supplier.suspended }));
+// The counters of the menu have their own tests: the shell does not need a query client.
+vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 
 function workspace(contextKeys: AppContextKey[]): WorkspaceContextValue {
   const contexts: ContextBootstrapDto[] = contextKeys.map((contextKey) => ({
@@ -98,7 +100,9 @@ describe('AppShellLayout (UI-03)', () => {
     expect(screen.getByRole('complementary', { name: i18n.t('shell.mainNavigation') })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: i18n.t('shell.openMenu') })).toBeInTheDocument();
-    expect(screen.getAllByRole('tablist', { name: i18n.t('shell.workspaceContext') })).toHaveLength(1);
+    // An user with several areas chooses between them with the area switcher (UI-04a), no longer with icon tabs.
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: i18n.t('areas.switcher.current', { name: i18n.t('areas.shortRent.name') }) })).toHaveLength(1);
     expect(screen.getByTestId('language-switcher')).toBeInTheDocument();
     expect(screen.getByTestId('org-badge')).toBeInTheDocument();
     // `header` is queried by tag in the end-to-end specs: there is one, and it is the banner of the page.
@@ -107,11 +111,11 @@ describe('AppShellLayout (UI-03)', () => {
   });
 
   it.each<[AppContextKey, string]>([
-    ['short-rent', 'shell.shortRentSubtitle'],
-    ['long-rent', 'shell.longRentSubtitle'],
-    ['admin', 'shell.adminSubtitle'],
-    ['supplier', 'shell.supplierSubtitle'],
-  ])('AppShellLayout_%s_ShowsTheSubtitleOfItsArea', (contextKey, subtitleKey) => {
+    ['short-rent', 'areas.shortRent.name'],
+    ['long-rent', 'areas.longRent.name'],
+    ['admin', 'areas.admin.name'],
+    ['supplier', 'areas.supplier.name'],
+  ])('AppShellLayout_%s_ShowsTheNameOfItsArea', (contextKey, nameKey) => {
     renderInRouter(
       <AppShellLayout contextKey={contextKey}>
         <p>pagina</p>
@@ -121,9 +125,10 @@ describe('AppShellLayout (UI-03)', () => {
     );
 
     expect(screen.getByTestId('app-shell')).toHaveAttribute('data-context', contextKey);
-    // The subtitle sits under the brand (a menu group may carry the same word, e.g. "Amministrazione").
-    const brand = within(screen.getByRole('complementary')).getByText('CASAZEN');
-    expect(brand.nextElementSibling).toHaveTextContent(i18n.t(subtitleKey));
+    // The name heads the sidebar, with the organization under it (a user with a single area has nothing to choose).
+    const heading = within(screen.getByRole('complementary')).getByTestId('area-header');
+    expect(heading).toHaveTextContent(i18n.t(nameKey));
+    expect(heading).toHaveTextContent('Acme Stays');
   });
 
   it('AppShellLayout_AdminArea_KeepsItsOwnFooterLabel', () => {

@@ -14,10 +14,10 @@ interface BottomNavProps {
 
 export function BottomNav({ contextKey }: BottomNavProps) {
   const { t } = useTranslation();
-  const { primaryEntries, hasSecondary, activeTab } = useMobileNav(contextKey);
+  const { bottomEntries, hasMore, activeTab } = useMobileNav(contextKey);
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
 
-  if (primaryEntries.length === 0) {
+  if (bottomEntries.length === 0) {
     return null;
   }
 
@@ -28,7 +28,7 @@ export function BottomNav({ contextKey }: BottomNavProps) {
       style={{ height: 'var(--bottom-nav-height)' }}
     >
       <div className="flex h-full items-stretch">
-        {primaryEntries.map((entry) => {
+        {bottomEntries.map((entry) => {
           const Icon = getNavIcon(entry.icon);
           const isActive = activeTab === entry.path;
           return (
@@ -46,7 +46,7 @@ export function BottomNav({ contextKey }: BottomNavProps) {
             </Link>
           );
         })}
-        {hasSecondary && (
+        {hasMore && (
           <button
             type="button"
             aria-label={t('nav.more')}

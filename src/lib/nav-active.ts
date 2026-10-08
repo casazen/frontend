@@ -1,38 +1,47 @@
 import type { RouteManifestEntry } from '@/config/route-manifest';
 
-const EXACT_MATCH_PATHS = new Set([
-  '/app/short-rent',
-  '/app/admin',
-  '/app/long-rent/leases',
-]);
+/**
+ * The root pages of an area: every other page of the area starts with their address, so they are highlighted only on
+ * their own page.
+ */
+const EXACT_MATCH_PATHS = new Set(['/app/short-rent', '/app/admin']);
+
+function matchesPathname(pathname: string, entry: RouteManifestEntry): boolean {
+  if (pathname === entry.path) return true;
+  if (EXACT_MATCH_PATHS.has(entry.path)) return false;
+  return pathname.startsWith(`${entry.path}/`);
+}
 
 /**
- * Returns true when `entry` should appear selected for `pathname`.
- * Prevents parent routes (e.g. Prenotazioni) from staying active when a more
- * specific sibling nav route matches (e.g. Calendario under /bookings/calendar).
+ * The entry of the menu that stands for the open page, or `undefined` when none does.
+ *
+ * `navEntries` holds the entries of the menus and the pages that hang from them (`navParent`). The most specific entry
+ * wins, so a parent route (Prenotazioni) does not stay selected when a more specific sibling matches (Calendario under
+ * /bookings/calendar). A page that hangs from an entry (Alloggiati from Adempimenti) stands for that entry, which is the
+ * one highlighted; when the entry it hangs from is not among `navEntries`, the page stands for itself.
+ */
+export function resolveActiveNavEntry(
+  pathname: string,
+  navEntries: RouteManifestEntry[],
+): RouteManifestEntry | undefined {
+  let best: RouteManifestEntry | undefined;
+  for (const entry of navEntries) {
+    if (matchesPathname(pathname, entry) && (!best || entry.path.length > best.path.length)) {
+      best = entry;
+    }
+  }
+  if (!best?.navParent) return best;
+  const parentPath = best.navParent;
+  return navEntries.find((entry) => entry.path === parentPath && !entry.navParent) ?? best;
+}
+
+/**
+ * Returns true when `entry` should appear selected for `pathname` (see {@link resolveActiveNavEntry}).
  */
 export function isNavEntryActive(
   pathname: string,
   entry: RouteManifestEntry,
   navEntries: RouteManifestEntry[],
 ): boolean {
-  if (EXACT_MATCH_PATHS.has(entry.path)) {
-    return pathname === entry.path;
-  }
-
-  if (pathname === entry.path) {
-    return true;
-  }
-
-  if (!pathname.startsWith(`${entry.path}/`)) {
-    return false;
-  }
-
-  return !navEntries.some(
-    (other) =>
-      other.path !== entry.path &&
-      other.path.length > entry.path.length &&
-      other.path.startsWith(`${entry.path}/`) &&
-      (pathname === other.path || pathname.startsWith(`${other.path}/`)),
-  );
+  return resolveActiveNavEntry(pathname, navEntries)?.path === entry.path;
 }

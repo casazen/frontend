@@ -30,6 +30,8 @@ vi.mock('@/config/support.config', async (importOriginal) => {
 vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ user: { name: 'Demo User', email: 'demo@casazen.com' }, logout: vi.fn() }),
 }));
+// The counters of the menu have their own tests: the route tree does not need a query client.
+vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 vi.mock('@/queries/use-users', () => ({
   useCurrentUser: () => ({
     org: { id: 'org-1', name: 'Acme Stays', slug: 'acme-stays', planTier: 'Pro' },
@@ -166,14 +168,14 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.queryByTestId('app-shell')).not.toBeInTheDocument();
   });
 
-  it('AppShellRoute_EveryArea_RendersASingleShellWithItsOwnSubtitle', async () => {
+  it('AppShellRoute_EveryArea_RendersASingleShellWithItsOwnName', async () => {
     renderApp('/app/long-rent/leases');
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Contratti lungo termine' })).toBeInTheDocument();
     const shells = screen.getAllByTestId('app-shell');
     expect(shells).toHaveLength(1);
     expect(shells[0]).toHaveAttribute('data-context', 'long-rent');
-    expect(within(screen.getByRole('complementary')).getByText(i18n.t('shell.longRentSubtitle'))).toBeInTheDocument();
+    expect(within(screen.getByRole('complementary')).getByText(i18n.t('areas.longRent.name'))).toBeInTheDocument();
   });
 
   it('AppShellRoute_NavigatingBetweenPages_KeepsTheHeaderAndTheSidebarMounted', async () => {
@@ -204,7 +206,7 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.getByRole('banner')).toBe(header);
     expect(screen.getAllByTestId('app-shell')).toHaveLength(1);
     expect(screen.getByTestId('app-shell')).toHaveAttribute('data-context', 'long-rent');
-    expect(within(screen.getByRole('complementary')).getByText(i18n.t('shell.longRentSubtitle'))).toBeInTheDocument();
+    expect(within(screen.getByRole('complementary')).getByText(i18n.t('areas.longRent.name'))).toBeInTheDocument();
   });
 
   it('AppShellRoute_FirstPage_LeavesTheFocusWhereTheBrowserPutIt', async () => {
