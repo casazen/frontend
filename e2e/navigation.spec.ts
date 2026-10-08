@@ -10,9 +10,11 @@ test.describe('Navigation (#252 / #259)', () => {
     test('sidebar shows grouped sections', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
+      // UI-04a: seven main entries in three named groups, the rest in "Altro".
       const sidebar = page.getByRole('complementary', { name: 'Navigazione principale' });
-      await expect(sidebar.getByText(/Operazioni|Operations/i)).toBeVisible();
-      await expect(sidebar.getByText(/Finanza|Finance/i)).toBeVisible();
+      await expect(sidebar.getByText(/Ogni giorno|Every day/i)).toBeVisible();
+      await expect(sidebar.getByText(/La tua offerta|Your offer/i)).toBeVisible();
+      await expect(sidebar.getByText(/Gestione|Management/i)).toBeVisible();
     });
 
     test('calendar route highlights Calendario not Prenotazioni in sidebar', async ({ page }) => {
@@ -76,7 +78,8 @@ test.describe('Navigation (#252 / #259)', () => {
       await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
       const drawer = page.getByRole('dialog');
       await expect(drawer).toBeVisible();
-      await expect(drawer.getByText(/Finanza|Finance/i)).toBeVisible();
+      // "Incassi" is a main entry that is not one of the four destinations of the bottom bar: the drawer lists it (UI-04a).
+      await expect(drawer.getByText(/Gestione|Management/i)).toBeVisible();
 
       await drawer.getByRole('link', { name: /Incassi|Payments/i }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/payments/);
@@ -111,24 +114,25 @@ test.describe('Navigation (#252 / #259)', () => {
       expect(box!.height).toBeGreaterThanOrEqual(44);
     });
 
-    test('dual-role user sees workspace switcher on mobile', async ({ page }) => {
+    test('dual-role user sees the area switcher on mobile', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
       await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
       const drawer = page.getByRole('dialog');
-      await expect(drawer.getByRole('tab', { name: /Affitti brevi|Short-term rentals/i })).toBeVisible();
-      await expect(drawer.getByRole('tab', { name: /Affitti lungo termine|Long-term rentals/i })).toBeVisible();
+      await drawer.getByTestId('area-switcher').click();
+      await expect(page.getByRole('menuitemradio', { name: /Affitti brevi|Short-term rentals/i })).toBeVisible();
+      await expect(page.getByRole('menuitemradio', { name: /Affitti lunghi|Long-term rentals/i })).toBeVisible();
     });
 
-    test('workspace switcher is not in header on dual-role mobile', async ({ page }) => {
+    test('area switcher is not in header on dual-role mobile', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
       const header = page.locator('header');
-      await expect(header.getByRole('tablist', { name: 'Workspace context' })).toHaveCount(0);
+      await expect(header.getByTestId('area-switcher')).toHaveCount(0);
 
       await page.getByRole('button', { name: 'Open navigation menu' }).click();
-      await expect(page.getByRole('dialog').getByRole('tablist', { name: 'Workspace context' })).toBeVisible();
+      await expect(page.getByRole('dialog').getByTestId('area-switcher')).toBeVisible();
     });
   });
 });
