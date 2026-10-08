@@ -201,6 +201,47 @@ describe('RouteFocus', () => {
     expect(announcer()).toHaveTextContent('Pagina B');
   });
 
+  it('RouteFocus_ModalStillOpenWhenTheWaitRunsOut_LeavesTheFocusThereAndTakesTheHeadingWhenTheAppIsVisibleAgain', () => {
+    renderShell();
+    const root = screen.getByTestId('app-root');
+    root.setAttribute('aria-hidden', 'true');
+
+    go('b');
+    const heading = screen.getByRole('heading', { level: 1, name: 'Pagina B', hidden: true });
+    // A dialog that stays open longer than the wait: the heading is already in the page.
+    advance(5200);
+    expect(heading).not.toHaveFocus();
+    expect(screen.getByTestId('main')).not.toHaveFocus();
+    expect(announcer()).toBeEmptyDOMElement();
+
+    root.removeAttribute('aria-hidden');
+    advance(150);
+    expect(heading).toHaveFocus();
+    advance(60);
+    expect(announcer()).toHaveTextContent('Pagina B');
+  });
+
+  it('RouteFocus_ModalStillOpenWhenTheWaitRunsOutAndThePageHasNoHeading_DoesNotFocusTheHiddenContent', () => {
+    document.title = 'CasaZen';
+    renderShell();
+    const root = screen.getByTestId('app-root');
+    root.setAttribute('aria-hidden', 'true');
+
+    go('plain');
+    advance(5200);
+    expect(screen.getByTestId('main')).not.toHaveFocus();
+    expect(announcer()).toBeEmptyDOMElement();
+
+    root.removeAttribute('aria-hidden');
+    // The wait for a heading starts once the app is visible again.
+    advance(150);
+    expect(screen.getByTestId('main')).not.toHaveFocus();
+    advance(5200);
+    expect(screen.getByTestId('main')).toHaveFocus();
+    advance(60);
+    expect(announcer()).toHaveTextContent('CasaZen');
+  });
+
   it('RouteFocus_OtherNavigationBeforeTheHeadingShowsUp_AbandonsTheFirstWait', () => {
     renderShell();
 

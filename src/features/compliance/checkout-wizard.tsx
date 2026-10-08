@@ -61,7 +61,7 @@ export function CheckoutWizardPage() {
   const registerArrival = useRegisterArrivalAndStartCheckout(bookingId);
 
   if (bookingLoading) {
-    return <LoadingScreen message={t('compliance.checkout.loading')} />;
+    return <LoadingScreen message={t('compliance.checkout.loading')} className="h-auto flex-1" />;
   }
 
   if (bookingError) {

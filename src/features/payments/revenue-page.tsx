@@ -138,7 +138,7 @@ export function RevenuePage() {
         </Card>
 
         {isLoading ? (
-          <LoadingScreen message={t('revenue.loading')} />
+          <LoadingScreen message={t('revenue.loading')} className="h-auto flex-1" />
         ) : analytics ? (
           <RevenueDashboard analytics={analytics} />
         ) : (

@@ -21,7 +21,8 @@ interface RouteFocusProps {
  *
  * The first page shown does nothing: the browser's own starting point (the skip link) is the right one on a load. The
  * focus is not taken from the page when it has put it inside its content (autofocus), and a heading is waited for while
- * a modal (the mobile menu) still hides the page from assistive technology.
+ * a modal (the mobile menu) still hides the page from assistive technology. That wait is not cut short by the timeout
+ * for a missing heading, so the focus is not moved into content assistive technology cannot see.
  */
 export function RouteFocus({ mainRef }: RouteFocusProps) {
   const { pathname } = useLocation();
@@ -65,8 +66,11 @@ export function RouteFocus({ mainRef }: RouteFocusProps) {
       announce(heading?.textContent?.trim() || document.title);
     };
 
+    // A dialog (or the mobile menu) hides the app from assistive technology. The heading may already be in the page.
+    const pageIsHidden = () => main.closest('[aria-hidden="true"]') !== null;
+
     const attempt = (): boolean => {
-      if (main.closest('[aria-hidden="true"]')) return false;
+      if (pageIsHidden()) return false;
       const heading = main.querySelector('h1');
       if (!heading) return false;
       settle(heading);
@@ -76,10 +80,14 @@ export function RouteFocus({ mainRef }: RouteFocusProps) {
     if (!attempt()) {
       let waited = 0;
       poll = setInterval(() => {
-        waited += POLL_INTERVAL_MS;
         if (attempt()) {
           clearInterval(poll);
-        } else if (waited >= MAX_WAIT_MS) {
+          return;
+        }
+        // Hidden time is not the wait for a heading, and the timeout must not take the focus from the dialog.
+        if (pageIsHidden()) return;
+        waited += POLL_INTERVAL_MS;
+        if (waited >= MAX_WAIT_MS) {
           clearInterval(poll);
           settle(null);
         }

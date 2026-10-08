@@ -103,7 +103,7 @@ export function SupplierShowcasePreviewPage() {
   }
 
   if (isLoading || !data) {
-    return <LoadingScreen message={t('supplier.showcase.loading')} />;
+    return <LoadingScreen message={t('supplier.showcase.loading')} className="h-auto flex-1" />;
   }
 
   return (

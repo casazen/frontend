@@ -67,7 +67,7 @@ export function GuestDetailPage() {
   const bookings = guestBookings ?? [];
 
   if (isLoading) {
-    return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
+    return <LoadingScreen message={t('shared.loading.defaultMessage')} className="h-auto flex-1" />;
   }
 
   if (isError || !guest) {
