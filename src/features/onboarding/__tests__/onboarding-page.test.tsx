@@ -259,8 +259,8 @@ describe('OnboardingPage (PL-01)', () => {
     );
     expect(toast.error).toHaveBeenCalledWith(i18n.t('onboarding.consentRequiredToast'));
     expect(screen.queryByTestId('plan-selection-grid')).not.toBeInTheDocument();
-    // PL-06: edit mode always navigates to /profile after saving (not to the plan page).
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/profile'));
+    // PL-06: edit mode returns to the profile of the saved rental type (not the legacy /profile alias).
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/profile'));
   });
 
   it('OnboardingPage_EditMode_StartsFromTheRoleStepAndNavigatesToProfileAfterSaving', async () => {
@@ -280,8 +280,8 @@ describe('OnboardingPage (PL-01)', () => {
     expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('onboarding-edit-save'));
 
-    // PL-06: after saving the rental type in edit mode, navigate to /profile (not the plan page).
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/profile'));
+    // PL-06: after saving LongTerm in edit mode, open the long-rent profile (not the plan page).
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/profile'));
     expect(UsersApi.putOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined });
     expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);

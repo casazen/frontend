@@ -13,6 +13,7 @@ import {
   canEditOnboarding,
   getHomeRouteForUser,
   getPostOnboardingRoute,
+  getProfilePageForRentalType,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
   isLinkedSupplier,
@@ -214,7 +215,7 @@ export function OnboardingPage() {
       await syncSignupAttribution();
     }
 
-    const target = isEditMode ? '/profile' : getPostOnboardingRoute(rentalType, from);
+    const target = isEditMode ? getProfilePageForRentalType(rentalType) : getPostOnboardingRoute(rentalType, from);
     if (result.rolesSynced === false) {
       if (pendingRoles) toast.error(t('onboarding.rolesPending.stillPending'));
       setPendingRoles({ rentalType, planTier, target });
