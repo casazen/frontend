@@ -5372,7 +5372,6 @@
       "description": "Complete the check-out for {{guest}}",
       "confirmDepartureLabel": "I confirm that the guest has left the property.",
       "serviceNotes": "Notes for the supplier",
-      "next": "Next",
       "backToBooking": "Back to booking",
       "complete": "Close stay",
       "completed": "Check-out completed: the property is ready for the next guest.",
@@ -5384,31 +5383,34 @@
       "arrivalMissingHint": "The arrival of {{guest}} was not registered. If the guest arrived, register the arrival and go on with the check-out.",
       "registerArrivalAndProceed": "Register arrival and continue",
       "registeringArrival": "Registering the arrival…",
-      "back": "Back",
       "completedNotReady": "Check-out completed. The property is still to be declared ready in the compliance overview.",
-      "progress": "Steps completed: {{done}} of {{total}}",
       "progressSaveFailed": "The check-out progress could not be saved.",
       "closedLoadError": "Unable to load the check-out summary.",
       "propertyReadyConfirmed": "Property declared ready for the next guest.",
       "propertyReadyFailed": "The property could not be declared ready.",
       "steps": {
         "stay-summary": {
+          "label": "Stay",
           "title": "Stay summary",
           "hint": "Check the stay and confirm that the guest has left."
         },
         "alloggiati": {
+          "label": "Alloggiati",
           "title": "Alloggiati Web",
           "hint": "Status of the guest report to the police (Questura)."
         },
         "cleaning": {
+          "label": "Cleaning",
           "title": "Cleaning",
           "hint": "Request a cleaning from a supplier of the property's municipality, or skip this step."
         },
         "tourist-tax": {
+          "label": "Tourist tax",
           "title": "Tourist tax",
           "hint": "State how the tourist tax was collected."
         },
         "property-ready": {
+          "label": "Property",
           "title": "Property ready",
           "hint": "Confirm whether the property is ready for the next guest."
         }
@@ -5468,6 +5470,33 @@
         "propertyReady": "Property declared ready on {{date}}.",
         "propertyNotReady": "The property has not been declared ready for the next guest yet.",
         "confirmReady": "Declare the property ready"
+      },
+      "errors": {
+        "confirmDeparture": "Confirm that the guest has left the property.",
+        "cleaningChoice": "Choose whether to request cleaning from a supplier or skip this step.",
+        "cleaningSupplier": "Choose the supplier to send the request to.",
+        "cleaningCategory": "Choose the type of service.",
+        "taxCollection": "Say how the tourist tax was collected.",
+        "propertyReady": "Say whether the property is ready for the next guest."
+      },
+      "summary": {
+        "title": "Your answers",
+        "departure": "Departure",
+        "departureConfirmed": "The guest has left the property",
+        "cleaning": "Cleaning",
+        "cleaningRequest": "Request sent to a supplier",
+        "cleaningSkip": "Skipped",
+        "touristTax": "Tourist tax"
+      },
+      "done": {
+        "title": "The stay is closed",
+        "description": "The check-out of {{guest}} is recorded.",
+        "stayClosed": "In the booking the stay now shows as concluded.",
+        "propertyReady": "The property is marked as ready for the next guest.",
+        "propertyNotReady": "The property is not ready yet: it stays in the compliance summary until you declare it ready.",
+        "cleaningRequested": "The cleaning request was sent to the supplier: you find it in the booking detail.",
+        "alloggiatiToSend": "The Alloggiati communication does not show as sent yet: check it from the booking page.",
+        "compliance": "Go to compliance"
       }
     },
     "safety": {

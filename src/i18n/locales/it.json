@@ -5372,7 +5372,6 @@
       "description": "Completa il check-out per {{guest}}",
       "confirmDepartureLabel": "Confermo che l'ospite ha lasciato la struttura.",
       "serviceNotes": "Note per il fornitore",
-      "next": "Avanti",
       "backToBooking": "Torna alla prenotazione",
       "complete": "Chiudi soggiorno",
       "completed": "Check-out completato: la proprietà è pronta per il prossimo ospite.",
@@ -5384,31 +5383,34 @@
       "arrivalMissingHint": "L'arrivo di {{guest}} non risulta registrato. Se l'ospite è arrivato, registra l'arrivo e procedi con il check-out.",
       "registerArrivalAndProceed": "Registra arrivo e procedi",
       "registeringArrival": "Registrazione dell'arrivo…",
-      "back": "Indietro",
       "completedNotReady": "Check-out completato. La proprietà resta da dichiarare pronta nel riepilogo compliance.",
-      "progress": "Passaggi completati: {{done}} su {{total}}",
       "progressSaveFailed": "Impossibile salvare l'avanzamento del check-out.",
       "closedLoadError": "Impossibile caricare il riepilogo del check-out.",
       "propertyReadyConfirmed": "Proprietà dichiarata pronta per il prossimo ospite.",
       "propertyReadyFailed": "Impossibile dichiarare la proprietà pronta.",
       "steps": {
         "stay-summary": {
+          "label": "Soggiorno",
           "title": "Riepilogo soggiorno",
           "hint": "Controlla il soggiorno e conferma che l'ospite è partito."
         },
         "alloggiati": {
+          "label": "Alloggiati",
           "title": "Alloggiati Web",
           "hint": "Stato della comunicazione degli ospiti alla Questura."
         },
         "cleaning": {
+          "label": "Pulizie",
           "title": "Pulizie",
           "hint": "Richiedi le pulizie a un fornitore del comune della proprietà, oppure salta questo passaggio."
         },
         "tourist-tax": {
+          "label": "Imposta",
           "title": "Imposta di soggiorno",
           "hint": "Indica come è stata riscossa l'imposta di soggiorno."
         },
         "property-ready": {
+          "label": "Proprietà",
           "title": "Proprietà pronta",
           "hint": "Conferma se la proprietà è pronta per il prossimo ospite."
         }
@@ -5468,6 +5470,33 @@
         "propertyReady": "Proprietà dichiarata pronta il {{date}}.",
         "propertyNotReady": "La proprietà non è ancora stata dichiarata pronta per il prossimo ospite.",
         "confirmReady": "Dichiara la proprietà pronta"
+      },
+      "errors": {
+        "confirmDeparture": "Conferma che l'ospite ha lasciato la struttura.",
+        "cleaningChoice": "Scegli se richiedere le pulizie a un fornitore o saltare questo passaggio.",
+        "cleaningSupplier": "Scegli il fornitore a cui inviare la richiesta.",
+        "cleaningCategory": "Scegli il tipo di servizio.",
+        "taxCollection": "Indica come è stata riscossa l'imposta di soggiorno.",
+        "propertyReady": "Indica se la proprietà è pronta per il prossimo ospite."
+      },
+      "summary": {
+        "title": "Le tue risposte",
+        "departure": "Partenza",
+        "departureConfirmed": "L'ospite ha lasciato la struttura",
+        "cleaning": "Pulizie",
+        "cleaningRequest": "Richiesta inviata a un fornitore",
+        "cleaningSkip": "Saltate",
+        "touristTax": "Imposta di soggiorno"
+      },
+      "done": {
+        "title": "Il soggiorno è chiuso",
+        "description": "Il check-out di {{guest}} è registrato.",
+        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
+        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
+        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
+        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "alloggiatiToSend": "La comunicazione Alloggiati non risulta ancora inviata: controllala dalla scheda della prenotazione.",
+        "compliance": "Vai agli adempimenti"
       }
     },
     "safety": {
