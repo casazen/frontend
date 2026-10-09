@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,11 @@ const selectClassName =
 
 /** Number inputs: an empty field is NaN, reported by the schema with the field's own message. */
 const asNumber = { valueAsNumber: true } as const;
+
+/** Optional override: blank means the catalog policy window, not zero. */
+const optionalNumber = {
+  setValueAs: (value: unknown) => (value === '' || value == null ? null : Number(value)),
+} as const;
 
 /** IANA time zones of the browser, Europe/Rome first; the current value is always an option. */
 function timeZoneOptions(current: string | undefined): string[] {
@@ -336,6 +341,12 @@ export function PropertyForm({
                 error={errors.cancellationPolicyId}
               />
             </div>
+            <CancellationOverrides
+              register={register}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+            />
           </CardContent>
         </Card>
       )}
@@ -415,6 +426,78 @@ function CancellationPolicyField({ value, onChange, error }: CancellationPolicyF
       )}
       {selected?.description && <p className="text-xs text-muted-foreground">{selected.description}</p>}
       <FormFieldError error={error} />
+    </div>
+  );
+}
+
+interface CancellationOverridesProps {
+  register: UseFormRegister<PropertyFormValues>;
+  watch: UseFormWatch<PropertyFormValues>;
+  setValue: UseFormSetValue<PropertyFormValues>;
+  errors: FieldErrors<PropertyFormValues>;
+}
+
+/**
+ * Host customisation of catalog refund windows and type. Stays of 28 nights or more keep the catalog policy.
+ */
+function CancellationOverrides({ register, watch, setValue, errors }: CancellationOverridesProps) {
+  const { t } = useTranslation();
+  const refundType = watch('cancellationRefundType') ?? 'Percent';
+
+  return (
+    <div className="space-y-3" data-testid="cancellation-overrides">
+      <p className="text-sm font-medium">{t('property.form.cancellationPolicy.customize')}</p>
+      <p className="text-xs text-muted-foreground">{t('property.form.cancellationPolicy.longStayHint')}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="space-y-2">
+          <Label htmlFor="cancellationFullRefundHours">{t('property.form.cancellationPolicy.fullRefundHours')}</Label>
+          <Input
+            id="cancellationFullRefundHours"
+            type="number"
+            min={0}
+            step={1}
+            {...register('cancellationFullRefundHours', optionalNumber)}
+          />
+          <FormFieldError error={errors.cancellationFullRefundHours} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cancellationPartialRefundHours">{t('property.form.cancellationPolicy.partialRefundHours')}</Label>
+          <Input
+            id="cancellationPartialRefundHours"
+            type="number"
+            min={0}
+            step={1}
+            {...register('cancellationPartialRefundHours', optionalNumber)}
+          />
+          <FormFieldError error={errors.cancellationPartialRefundHours} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cancellationPartialRefundPercent">{t('property.form.cancellationPolicy.partialPercent')}</Label>
+          <Input
+            id="cancellationPartialRefundPercent"
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            {...register('cancellationPartialRefundPercent', optionalNumber)}
+          />
+          <FormFieldError error={errors.cancellationPartialRefundPercent} />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="cancellationRefundType">{t('property.form.cancellationPolicy.refundType')}</Label>
+        <select
+          id="cancellationRefundType"
+          className={selectClassName}
+          value={refundType}
+          onChange={(event) =>
+            setValue('cancellationRefundType', event.target.value as 'Percent' | 'NonRefundable', { shouldDirty: true })
+          }
+        >
+          <option value="Percent">{t('property.form.cancellationPolicy.percent')}</option>
+          <option value="NonRefundable">{t('property.form.cancellationPolicy.nonRefundable')}</option>
+        </select>
+      </div>
     </div>
   );
 }

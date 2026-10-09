@@ -2037,7 +2037,15 @@
         "current": "Current policy",
         "loading": "Loading cancellation policies…",
         "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
-        "empty": "No cancellation policy available."
+        "empty": "No cancellation policy available.",
+        "customize": "Customise refund",
+        "fullRefundHours": "Hours for a 100% refund",
+        "partialRefundHours": "Hours for a partial refund",
+        "partialPercent": "Partial refund percent",
+        "refundType": "Refund type",
+        "percent": "Percent of the stay",
+        "nonRefundable": "Non-refundable",
+        "longStayHint": "Stays of 28 nights or more keep the catalog policy, without these overrides."
       },
       "unit": "Unit / staircase",
       "unitHint": "Optional. Enter it if you have several apartments in the same building: each one needs a different unit or staircase.",
