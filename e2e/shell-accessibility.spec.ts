@@ -1,6 +1,7 @@
 import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { resetE2eStorage } from './helpers/locale';
+import { chooseLanguage, moreOfTheBar } from './helpers/profile-menu';
 
 /**
  * UI-03: one shell for every area, the window scrolls, and the shell takes care of the keyboard and screen reader user
@@ -57,15 +58,15 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(page.getByTestId('app-shell')).toHaveCount(1);
     });
 
-    test('<html lang> follows the language chosen in the header', async ({ page }) => {
+    test('<html lang> follows the language chosen in the profile menu', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('lang', 'it');
 
-      await page.getByTestId('language-switcher').locator('button', { hasText: 'EN' }).click();
+      await chooseLanguage(page, 'English');
       await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
-      await page.getByTestId('language-switcher').locator('button', { hasText: 'IT' }).click();
+      await chooseLanguage(page, 'Italiano');
       await expect(page.locator('html')).toHaveAttribute('lang', 'it');
     });
 
@@ -105,7 +106,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
 
-      await page.getByRole('button', { name: 'Apri menu di navigazione' }).click();
+      await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       // "Incassi" is a secondary entry: it is in the sheet "Altro", not in the bottom bar (see navigation.spec.ts).
       await sheet.getByRole('link', { name: /Incassi|Payments/i }).click();

@@ -148,7 +148,32 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.getAllByRole('complementary', { name: i18n.t('shell.mainNavigation') })).toHaveLength(1);
     expect(screen.getAllByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: i18n.t('shell.openMenu') })).toHaveLength(1);
+    // The menu button of the header is gone (UI-05): on a phone the menu is "Altro" of the bottom bar, and only the bar has it.
+    expect(screen.queryByRole('button', { name: 'Apri menu di navigazione' })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).getAllByRole('button', { name: i18n.t('nav.more') }),
+    ).toHaveLength(1);
+  });
+
+  it('AppShellRoute_EveryPage_PutsItsOwnTitleAndTheNameOfItsAreaOnTheTab', async () => {
+    document.title = 'CasaZen';
+    const router = renderApp('/app/short-rent');
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Cruscotto' })).toBeInTheDocument();
+    expect(document.title).toBe('Cruscotto · Affitti brevi · CasaZen');
+
+    // The shell stays and the page changes: so does the title, and the area when the user goes to another one.
+    await act(async () => {
+      await router.navigate('/app/short-rent/bookings');
+    });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeInTheDocument();
+    expect(document.title).toBe('Prenotazioni · Affitti brevi · CasaZen');
+
+    await act(async () => {
+      await router.navigate('/app/long-rent/leases');
+    });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Contratti lungo termine' })).toBeInTheDocument();
+    expect(document.title).toBe('Contratti lungo termine · Affitti lunghi · CasaZen');
   });
 
   it('AppShellRoute_WorkspaceNotReady_ShowsTheLoadingScreenNotAnEmptyShell', async () => {
