@@ -5406,6 +5406,8 @@
     "loadError": "Unable to load the fiscal regime.",
     "retry": "Retry",
     "assignSuccess": "Fiscal regime updated",
+    "unconfirmed": "The regime was detected automatically: confirm it or choose another. It is never applied on its own.",
+    "confirmRecommended": "Confirm the recommended regime",
     "notAssigned": "Not assigned",
     "chooseRegime": "Regime for this year",
     "selectPlaceholder": "Choose a regime",

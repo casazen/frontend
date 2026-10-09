@@ -5406,6 +5406,8 @@
     "loadError": "Impossibile caricare il regime fiscale.",
     "retry": "Riprova",
     "assignSuccess": "Regime fiscale aggiornato",
+    "unconfirmed": "Il regime è stato rilevato automaticamente: confermalo o scegline un altro. Non viene applicato da solo.",
+    "confirmRecommended": "Conferma il regime consigliato",
     "notAssigned": "Non assegnato",
     "chooseRegime": "Regime per quest'anno",
     "selectPlaceholder": "Scegli un regime",
