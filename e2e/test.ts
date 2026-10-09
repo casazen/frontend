@@ -98,7 +98,7 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
-  await page.route('**/api/bookings', async (route) => {
+  await page.route('**/api/bookings**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;

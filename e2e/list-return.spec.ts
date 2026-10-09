@@ -30,7 +30,7 @@ function booking(id: string, firstName: string, status: string) {
 const BOOKINGS = [booking('bk-1', 'Mario', 'Confirmed'), booking('bk-2', 'Giulia', 'Pending'), booking('bk-3', 'Luca', 'Cancelled')];
 
 async function mockBookings(page: Page) {
-  await page.route('**/api/bookings', async (route) => {
+  await page.route('**/api/bookings**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -134,7 +134,7 @@ test.describe('Filters of the list in the address (UI-05)', () => {
 
     test('changing a filter does not scroll the page to the top', async ({ page }) => {
       // Many bookings, so that the page scrolls.
-      await page.route('**/api/bookings', async (route) => {
+      await page.route('**/api/bookings**', async (route) => {
         if (route.request().method() !== 'GET') {
           await route.fallback();
           return;
