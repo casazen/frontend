@@ -3861,7 +3861,9 @@
       "descriptionPlaceholder": "Pagamento per prenotazione...",
       "cancel": "Annulla",
       "creating": "Creazione...",
-      "create": "Crea pagamento"
+      "create": "Crea pagamento",
+      "noBookingsTitle": "Non ci sono prenotazioni",
+      "noBookingsDescription": "Un pagamento si registra su una prenotazione: creane una e poi torna qui."
     },
     "refund": {
       "title": "Rimborsa pagamento",

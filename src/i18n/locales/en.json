@@ -3861,7 +3861,9 @@
       "descriptionPlaceholder": "Payment for booking...",
       "cancel": "Cancel",
       "creating": "Creating...",
-      "create": "Create Payment"
+      "create": "Create Payment",
+      "noBookingsTitle": "There are no bookings",
+      "noBookingsDescription": "A payment is recorded against a booking: create one, then come back here."
     },
     "refund": {
       "title": "Refund payment",
