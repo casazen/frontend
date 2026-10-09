@@ -15,14 +15,6 @@ vi.mock('@/api/checkin.api', () => ({
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// Radix Checkbox measures itself with ResizeObserver, which jsdom does not provide.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const TOKEN = 'tok-123';
 
 /** Filling several guests over three steps takes a few seconds in jsdom, more on a loaded CI runner. */

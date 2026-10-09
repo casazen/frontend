@@ -25,6 +25,7 @@ import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { getOrgBillingPageAlternates, ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
+import { ContextIndexRoute } from './context-index-route';
 import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
@@ -54,7 +55,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
   const entries = ROUTE_MANIFEST.filter((entry) => entry.context === contextKey);
 
-  return entries.map((entry) => {
+  const children: RouteObject[] = entries.map((entry) => {
     const relativePath = entry.path === prefix ? '' : entry.path.slice(`${prefix}/`.length);
     return {
       path: relativePath,
@@ -70,6 +71,13 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
       ),
     } satisfies RouteObject;
   });
+
+  // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
+  // the area (UI-00). Short-rent and admin have the page in the manifest.
+  if (!entries.some((entry) => entry.path === prefix)) {
+    children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
+  }
+  return children;
 }
 
 const legacyPaths = Array.from(

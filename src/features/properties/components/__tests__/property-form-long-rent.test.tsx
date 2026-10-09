@@ -4,14 +4,6 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { PropertyForm } from '../property-form';
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 // The short-stay form lists the cancellation policies of the API.
 vi.mock('@/queries/use-properties', () => ({
   useCancellationPolicies: () => ({ data: [], isLoading: false, isError: false, error: null }),

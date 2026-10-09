@@ -37,7 +37,9 @@ export function LegacyRedirect() {
         const resolved = Object.entries(match.params).reduce((acc, [key, value]) => {
           return acc.replace(`:${key}`, value ?? '');
         }, entry.path);
-        return <Navigate to={resolved} replace />;
+        // Query and fragment travel with the page: Stripe return pages (`?checkout=success`, `?stripe_return=1`) and the
+        // links of the emails reach the console through these old addresses.
+        return <Navigate to={`${resolved}${location.search}${location.hash}`} replace />;
       }
     }
   }

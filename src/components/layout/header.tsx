@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { OrgBadge } from '@/components/org/org-badge';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { useUiStore } from '@/store/ui-store';
 
 interface HeaderProps {
@@ -12,10 +13,16 @@ interface HeaderProps {
 
 export function Header({ slotStart }: HeaderProps) {
   const { t } = useTranslation();
+  const { isReady } = useWorkspace();
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
 
   return (
-    <header className="safe-area-top sticky top-0 z-40 flex h-16 items-center border-b bg-background px-4 md:px-6">
+    <header
+      // The signed-in app is up once its shell is on screen and the workspace is loaded: the e2e logins wait for this id
+      // (e2e/auth.setup.ts, e2e/helpers/auth.ts), not for the title of a page. Keep it when the header changes.
+      data-testid={isReady ? 'app-ready' : undefined}
+      className="safe-area-top sticky top-0 z-40 flex h-16 items-center border-b bg-background px-4 md:px-6"
+    >
       <Button
         variant="ghost"
         size="icon"
