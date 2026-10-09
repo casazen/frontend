@@ -1742,7 +1742,8 @@
       "signInAgain": "Accedi di nuovo"
     },
     "errorState": {
-      "retry": "Riprova"
+      "retry": "Riprova",
+      "supportWithEmail": "Se il problema continua, scrivi al supporto:"
     }
   },
   "common": {
