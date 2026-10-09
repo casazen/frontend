@@ -24,7 +24,10 @@ vi.mock('@/api/service-requests.api', () => ({
   fetchSuppliersByProperty: api.fetchSuppliersByProperty,
   fetchLongRentSuppliers: api.fetchLongRentSuppliers,
 }));
-vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getAll: api.getBookings } }));
+vi.mock('@/api/bookings.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/bookings.api')>();
+  return { ...actual, bookingsApi: { ...actual.bookingsApi, getAll: api.getBookings } };
+});
 
 const CATALOG = ['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in'];
 
