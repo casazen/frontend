@@ -34,8 +34,12 @@ function files(path: string): string[] {
   return readdirSync(absolute).flatMap((entry) => files(join(path, entry)));
 }
 
+// One pass over the whole shipped tree, line by line: seconds on a loaded machine, so the limit is explicit (QA-INFRA-01)
+// instead of the 5 s default, which a saturated CPU exceeded.
+const SCAN_TIMEOUT_MS = 30_000;
+
 describe('no hardcoded domain (D3)', () => {
-  it('shippedFrontend_HasNoCasazenAppDomain', () => {
+  it('shippedFrontend_HasNoCasazenAppDomain', { timeout: SCAN_TIMEOUT_MS }, () => {
     const offending: string[] = [];
     let scanned = 0;
     for (const file of SCANNED.flatMap(files)) {
