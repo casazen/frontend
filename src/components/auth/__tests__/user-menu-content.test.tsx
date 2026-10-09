@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
@@ -36,24 +36,10 @@ function arrange(contextKeys: AppContextKey[], activeContext: AppContextKey | nu
   });
 }
 
-function Address() {
-  return <p data-testid="address">{useLocation().pathname}</p>;
-}
-
 function renderMenu() {
   return render(
     <MemoryRouter initialEntries={['/start']}>
-      <Routes>
-        <Route
-          path="*"
-          element={
-            <>
-              <UserMenu />
-              <Address />
-            </>
-          }
-        />
-      </Routes>
+      <UserMenu />
     </MemoryRouter>,
   );
 }
@@ -124,22 +110,7 @@ describe('UserMenu content (UI-05)', () => {
     });
   });
 
-  describe('profile', () => {
-    it.each<[AppContextKey, string]>([
-      ['short-rent', '/app/short-rent/profile'],
-      ['long-rent', '/app/long-rent/profile'],
-      ['admin', '/app/admin/profile'],
-      ['supplier', '/app/supplier/profile'],
-    ])('UserMenu_Profile_%s_OpensTheProfileOfThatArea', async (area, path) => {
-      arrange([area]);
-      renderMenu();
-      const menu = await openMenu();
-
-      fireEvent.click(within(menu).getByRole('menuitem', { name: 'Profilo' }));
-
-      expect(screen.getByTestId('address')).toHaveTextContent(path);
-    });
-  });
+  // Where "Profilo" leads in each area (UI-00) is guarded by user-menu-profile-path.test.tsx: not repeated here.
 
   describe('language', () => {
     it('UserMenu_Language_ShowsTheNamesInTheirOwnLanguageWithTheCurrentOneChecked', async () => {
