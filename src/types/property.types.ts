@@ -39,6 +39,10 @@ export interface Property {
   /** IANA time zone, e.g. `Europe/Rome`. */
   timezone: string;
   cancellationPolicyId: string | null;
+  cancellationFullRefundHours?: number | null;
+  cancellationPartialRefundHours?: number | null;
+  cancellationPartialRefundPercent?: number | null;
+  cancellationRefundType?: 'Percent' | 'NonRefundable';
   isActive: boolean;
   /** Host-set pause (A2-05): hidden from public search/bookings until reactivated with `POST /properties/:id/activate`. */
   isPaused: boolean;
@@ -99,6 +103,10 @@ export interface CreatePropertyDto {
   cinCode?: string | null;
   timezone?: string;
   cancellationPolicyId?: string | null;
+  cancellationFullRefundHours?: number | null;
+  cancellationPartialRefundHours?: number | null;
+  cancellationPartialRefundPercent?: number | null;
+  cancellationRefundType?: 'Percent' | 'NonRefundable';
   slug?: string | null;
 }
 

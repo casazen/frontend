@@ -2040,7 +2040,15 @@
         "current": "Policy attuale",
         "loading": "Caricamento delle policy di cancellazione…",
         "loadError": "Impossibile caricare le policy di cancellazione: la policy attuale resta invariata.",
-        "empty": "Nessuna policy di cancellazione disponibile."
+        "empty": "Nessuna policy di cancellazione disponibile.",
+        "customize": "Personalizza rimborso",
+        "fullRefundHours": "Ore per rimborso 100%",
+        "partialRefundHours": "Ore per rimborso parziale",
+        "partialPercent": "Percentuale rimborso parziale",
+        "refundType": "Tipo di rimborso",
+        "percent": "Percentuale sulla prenotazione",
+        "nonRefundable": "Non rimborsabile",
+        "longStayHint": "I soggiorni di 28 notti o più restano sulla policy di catalogo, senza questi override."
       },
       "unit": "Interno / scala",
       "unitHint": "Facoltativo. Indicalo se nello stesso edificio hai più appartamenti: ognuno deve avere un interno o una scala diversi.",
