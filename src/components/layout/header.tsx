@@ -10,9 +10,10 @@ import { NavIcon } from './nav-icon';
 
 interface HeaderProps {
   /**
-   * Global search (UI-06), the notifications bell (UI-12) and the help centre (UI-08): the places where they plug in. Each
-   * one is mounted only by who builds the function, and only when the function exists (its flag is on): a function that is
-   * not there leaves nothing in the header, no empty box and no button that does nothing. The profile is always there.
+   * Global search (UI-06, `CommandPaletteTrigger`), the notifications bell (UI-12) and the help centre (UI-08): the places
+   * where they plug in. Each one is mounted only by who builds the function, and only when the function exists (its flag is
+   * on): a function that is not there leaves nothing in the header, no empty box and no button that does nothing. The
+   * profile is always there.
    */
   search?: React.ReactNode;
   notifications?: React.ReactNode;
@@ -58,12 +59,14 @@ export function Header({ search, notifications, help }: HeaderProps) {
     >
       {isPhone && shell ? <HeaderAreaLabel contextKey={shell.contextKey} /> : null}
       {search ? (
-        <div data-testid="header-search" className="min-w-0 max-w-xl flex-1">
+        // On a computer the search is a field that takes most of the room up to 36rem; on a phone it is an icon that sits with
+        // the other buttons, at the right (after the spacer, which is not focusable: the focus order is the same).
+        <div data-testid="header-search" className="min-w-0 max-w-xl flex-[4] max-md:order-1 max-md:flex-none">
           {search}
         </div>
       ) : null}
       <div className="flex-1" />
-      <div className="flex items-center gap-1 md:gap-2">
+      <div className="flex items-center gap-1 max-md:order-2 md:gap-2">
         {notifications}
         {help}
         <OrgBadge />
