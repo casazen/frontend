@@ -163,7 +163,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await expect(page.getByRole('button', { name: 'Apri menu di navigazione' })).toHaveCount(0);
-      await expect(page.locator('header').getByRole('button')).toHaveCount(1);
+      // What the header has is the search (UI-06) and the profile: no button that opens a menu of the pages.
+      await expect(page.locator('header').getByRole('button')).toHaveCount(2);
+      await expect(page.locator('header').getByTestId('command-palette-trigger')).toBeVisible();
       await more(page).click();
       await expect(sheet(page)).toBeVisible();
     });
