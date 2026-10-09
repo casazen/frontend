@@ -289,7 +289,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
     });
 
-    test('no horizontal scroll with the area switcher open in the sheet of the phone', async ({ page }) => {
+    test('no horizontal scroll with the area switcher open in the phone menu', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
