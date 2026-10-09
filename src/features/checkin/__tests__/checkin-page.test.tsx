@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { configure, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -19,6 +19,11 @@ const TOKEN = 'tok-123';
 
 /** Filling several guests over three steps takes a few seconds in jsdom, more on a loaded CI runner. */
 const FORM_TEST_TIMEOUT_MS = 30_000;
+
+// Every wait of the file (`findBy*`, `waitFor`) gave up after the 1 s default, which a form this size does not meet on a loaded
+// machine. Explicit conditions only, no fixed waits: a wait ends as soon as its condition holds, so the ceiling costs nothing
+// when the machine is idle (QA-INFRA-01). Below the test timeout above.
+configure({ asyncUtilTimeout: 15_000 });
 
 const booker: PublicCheckInGuestPrefill = {
   type: 'SingleGuest',
