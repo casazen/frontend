@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Loader2, Plus, X } from 'lucide-react';
 import { useBookings } from '@/queries/use-bookings';
 import { useProperty } from '@/queries/use-properties';
+import { useListReturn } from '@/hooks/use-list-return';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
@@ -45,9 +46,25 @@ export function BookingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { hasPermission } = useWorkspace();
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('all');
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  // The status tab and the search are in the address (UI-05, `?status=Confirmed&q=rossi`), not in the state of the page: the
+  // browser's Back, a link that is shared and the way back from a booking (`BackLink`, the breadcrumb of the booking) all
+  // give the list as it was left. `useListReturn` remembers it for that way back.
+  useListReturn(BOOKINGS_PATH);
+  const statusParam = searchParams.get('status') ?? '';
+  const activeTab = TABS.includes(statusParam) ? statusParam : 'all';
+  const search = searchParams.get('q') ?? '';
+  const changeFilter = (name: 'status' | 'q', value: string) =>
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value === '' || (name === 'status' && value === 'all')) next.delete(name);
+        else next.set(name, value);
+        return next;
+      },
+      // A filter is not a page: it replaces the entry of the history, and the window stays where it is (UI-03 scrolls to the top on a change of address).
+      { replace: true, preventScrollReset: true },
+    );
   // "Registra arrivo" from the list (CO-08): the same dialog as the booking detail.
   const [arrivalBooking, setArrivalBooking] = useState<Booking | null>(null);
   const canWrite = hasPermission('short-rent', 'booking.write');
@@ -122,7 +139,7 @@ export function BookingsPage() {
               {TABS.map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => changeFilter('status', tab)}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
                     activeTab === tab
                       ? 'bg-primary text-primary-foreground'
@@ -139,7 +156,7 @@ export function BookingsPage() {
               <Input
                 placeholder={t('booking.list.searchPlaceholder')}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => changeFilter('q', e.target.value)}
                 className="pl-9"
               />
             </div>
