@@ -256,45 +256,16 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
   });
 }
 
+/**
+ * The page of a signed-in user is up: the workspace is loaded and a screen of the app is on display, which carries
+ * `data-testid="app-ready"` (UI-00): the header of the shells, or the area picker of a user with several areas. Or the
+ * onboarding wizard is on display, for a user who has not finished it. The title of a page ("Cruscotto") is no signal of
+ * readiness: it changes with the language and whenever a page is renamed.
+ */
 export async function waitForAppReady(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      const text = document.body.innerText;
-      if (text.includes('Authenticating...')) return false;
-      if (text.includes('Autenticazione in corso...')) return false;
-      if (text.includes('Caricamento...')) return false;
-      if (text.includes("Caricamento dell'area di lavoro...")) return false;
-      if (text.includes('Sign in with Auth0')) return false;
-      if (text.includes('Accedi con Auth0')) return false;
-
-      // Token cache (any Auth0/storage key) or authenticated Italian chrome.
-      let hasToken = false;
-      for (const store of [localStorage, sessionStorage]) {
-        for (const key of Object.keys(store)) {
-          const raw = store.getItem(key);
-          if (raw?.includes('access_token')) {
-            hasToken = true;
-            break;
-          }
-        }
-        if (hasToken) break;
-      }
-      if (!hasToken && !text.includes('Cruscotto') && !text.includes('Il mio profilo')) {
-        return false;
-      }
-
-      if (text.includes('Come vuoi usare CasaZen')) return true;
-
-      const knownContent = [
-        'Dashboard', 'Long-term leases', 'No leases yet',
-        'Short-term rentals', 'Property Manager', 'Long-Term Rental',
-        'Cruscotto', 'Immobili', 'Prenotazioni', 'Calendario',
-        'Affitti brevi', 'Affitti lungo termine',
-        'properties', 'bookings', 'calendar',
-      ];
-      return knownContent.some((fragment) => text.includes(fragment));
-    },
-    undefined,
-    { timeout: 90_000 }
-  );
+  await page
+    .getByTestId('app-ready')
+    .or(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i }))
+    .first()
+    .waitFor({ state: 'visible', timeout: 90_000 });
 }

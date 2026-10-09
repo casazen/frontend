@@ -22,13 +22,6 @@ vi.mock('@/queries/use-properties', () => ({
   useCancellationPolicies: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 // Rows of the official ISTAT list (ISTAT, 21/02/2026).
 const MILANO: Comune = {
   istatCode: '015146',

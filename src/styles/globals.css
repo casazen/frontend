@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Redesign (UI-01): fonts and tokens. The values below stay the current look; the new ones sit under html[data-ui='v2']. */
+@import "./fonts.css";
+@import "./tokens.css";
 
 @theme {
   --color-background: oklch(100% 0 0);

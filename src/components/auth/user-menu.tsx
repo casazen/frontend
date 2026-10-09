@@ -23,6 +23,12 @@ import { profilePathForContext } from '@/lib/profile-path';
 
 // Every row is at least 44 px tall on a phone and for a finger (the menu items of Radix are 32 px).
 const ITEM_CLASS = 'min-h-9 gap-2 px-3 max-md:min-h-11 pointer-coarse:min-h-11';
+function profilePathForContext(context: AppContextKey | null): string {
+  if (context === 'admin') return '/app/admin/profile';
+  if (context === 'long-rent') return '/app/long-rent/profile';
+  if (context === 'supplier') return '/app/supplier/profile';
+  return '/app/short-rent/profile';
+}
 
 /**
  * The menu of the profile (header, UI-05): who is signed in, the profile page of the area the user is in, the language of the

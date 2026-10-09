@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import type { AppContextKey } from '@/config/route-manifest';
+import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import { OrgBadge } from '../org-badge';
 import { PlanBadge } from '../plan-badge';
 import * as useUsers from '@/queries/use-users';
@@ -26,15 +27,10 @@ function mockOrg(planTier: 'Starter' | 'Pro' | 'Scale' = 'Pro') {
   } as unknown as ReturnType<typeof useUsers.useCurrentUser>);
 }
 
-function workspace(contextKeys: AppContextKey[]): WorkspaceContextValue {
+/** The contexts of the user as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
+function workspace(contextKeys: AppContextKey[], roleKey?: string): WorkspaceContextValue {
   return {
-    contexts: contextKeys.map((contextKey) => ({
-      contextKey,
-      displayName: contextKey,
-      roleKey: contextKey,
-      permissions: [],
-      defaultRoute: `/app/${contextKey}`,
-    })),
+    contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
     activeContext: contextKeys[0] ?? null,
     isReady: true,
     setActiveContext: vi.fn(),
@@ -44,9 +40,9 @@ function workspace(contextKeys: AppContextKey[]): WorkspaceContextValue {
 }
 
 /** The badge as the header of the shell at `path` draws it, for a user working in `contexts`. */
-function renderInShell(path: string, contexts: AppContextKey[]) {
+function renderInShell(path: string, contexts: AppContextKey[], roleKey?: string) {
   return render(
-    <WorkspaceContext.Provider value={workspace(contexts)}>
+    <WorkspaceContext.Provider value={workspace(contexts, roleKey)}>
       <MemoryRouter initialEntries={[path]}>
         <OrgBadge />
       </MemoryRouter>
@@ -124,6 +120,19 @@ describe('OrgBadge plan link per shell', () => {
     const badge = screen.getByTestId('org-badge');
     expect(badge.tagName).not.toBe('A');
     expect(badge).not.toHaveAttribute('href');
+    expect(screen.getByTestId('plan-badge')).toHaveTextContent(i18n.t('plan.tier.Pro'));
+  });
+
+  // AM-00 (S1): a collaborator of the org sees where it works, but the badge does not lead it to a page it cannot use.
+  it.each(MEMBER_ROLE_KEYS)('OrgBadge_MemberWithRoleKey_%s_ShowsThePlanWithoutALink', (roleKey) => {
+    mockOrg();
+
+    renderInShell('/app/short-rent/properties', ['short-rent', 'long-rent'], roleKey);
+
+    const badge = screen.getByTestId('org-badge');
+    expect(badge.tagName).not.toBe('A');
+    expect(badge).not.toHaveAttribute('href');
+    expect(screen.getByText('Acme Stays')).toBeInTheDocument();
     expect(screen.getByTestId('plan-badge')).toHaveTextContent(i18n.t('plan.tier.Pro'));
   });
 
