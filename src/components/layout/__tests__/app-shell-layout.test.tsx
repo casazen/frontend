@@ -5,6 +5,7 @@ import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import { LoadingScreen } from '@/components/shared/loading-screen';
 import { AppShell } from '../app-shell';
 import { AppShellContext } from '../app-shell-context';
 import { AppShellLayout } from '../app-shell-layout';
@@ -160,6 +161,21 @@ describe('AppShellLayout (UI-03)', () => {
     );
 
     expect(screen.queryByTestId('supplier-suspended-banner')).not.toBeInTheDocument();
+  });
+
+  // A page loader is a child of `main`. The viewport height (`h-screen`) would stick out under the header and scroll
+  // the window while the data is loading (booking detail, alloggiati, admin profile).
+  it('AppShellLayout_PageLoading_FillsTheContentRegionInsteadOfTheViewport', () => {
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <LoadingScreen message="Caricamento prenotazione" />
+      </AppShellLayout>,
+    );
+
+    const loader = screen.getByText('Caricamento prenotazione').parentElement?.parentElement;
+    expect(loader).toHaveClass('flex-1', 'h-auto');
+    expect(loader).not.toHaveClass('h-screen');
+    expect(screen.getByRole('main')).toContainElement(loader as HTMLElement);
   });
 
   // The window scrolls (not an inner region): these classes are what makes the header and the sidebar stay in place.
