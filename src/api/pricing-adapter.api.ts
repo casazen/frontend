@@ -25,4 +25,7 @@ export const pricingAdapterApi = {
 
   recalculate: (propertyId: string) =>
     ApiClient.post<RecalculateSuggestionsResponse>(`${BASE}/recalculate/${propertyId}`),
+
+  apply: (propertyId: string, items: { date: string; price?: number | null }[] = []) =>
+    ApiClient.post<{ applied: number }>(`${BASE}/suggestions/${propertyId}/apply`, { items }),
 };

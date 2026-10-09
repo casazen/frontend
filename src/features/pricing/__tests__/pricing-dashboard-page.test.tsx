@@ -62,9 +62,9 @@ const mockSuggestions: SeasonalSuggestionsResponse = {
   computedAt: '2026-07-01T02:00:00Z',
   nextRunOn: '2026-07-08',
   items: [
-    { date: '2026-07-01', basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null },
-    { date: '2026-08-15', basePrice: 180, suggestedPrice: 270, multiplier: 1.5, rule: 'Holiday', holiday: 'Assumption' },
-    { date: '2026-09-01', basePrice: 180, suggestedPrice: 180, multiplier: 1, rule: 'None', holiday: null },
+    { date: '2026-07-01', basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null, appliedPrice: null, appliedAt: null },
+    { date: '2026-08-15', basePrice: 180, suggestedPrice: 270, multiplier: 1.5, rule: 'Holiday', holiday: 'Assumption', appliedPrice: null, appliedAt: null },
+    { date: '2026-09-01', basePrice: 180, suggestedPrice: 180, multiplier: 1, rule: 'None', holiday: null, appliedPrice: null, appliedAt: null },
   ],
 };
 
@@ -111,6 +111,7 @@ function setupAllMocks(overrides: Partial<{
   vi.mocked(pricingQueries.useSavePricingAdapterConfig).mockReturnValue({ ...noopMutation(), mutate: saveMutate } as unknown as SaveResult);
   vi.mocked(pricingQueries.useDisablePricingAdapter).mockReturnValue({ ...noopMutation(), mutate: disableMutate } as unknown as DisableResult);
   vi.mocked(pricingQueries.useRecalculateSuggestions).mockReturnValue({ ...noopMutation(), mutate: recalculateMutate } as unknown as RecalculateResult);
+  vi.mocked(pricingQueries.useApplySeasonalSuggestions).mockReturnValue({ ...noopMutation() } as never);
 }
 
 beforeEach(async () => {
@@ -152,12 +153,12 @@ describe('PricingDashboardPage', () => {
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();
   });
 
-  it('PricingDashboardPage_Enabled_StatesThatSuggestionsAreReadOnly', () => {
+  it('PricingDashboardPage_Enabled_StatesThatSuggestionsNeedHostConfirm', () => {
     setupAllMocks();
 
     renderPage();
 
-    expect(screen.getByTestId('read-only-notice')).toHaveTextContent(/non vengono applicati a preventivi e prenotazioni/);
+    expect(screen.getByTestId('apply-notice')).toHaveTextContent(/proposte/);
   });
 
   it('PricingDashboardPage_NightlyRateChangedAfterComputation_WarnsToRecalculate', () => {
