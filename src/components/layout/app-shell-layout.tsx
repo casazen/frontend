@@ -7,7 +7,7 @@ import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
 import { ContextSidebar } from './context-sidebar';
 import { Header } from './header';
-import { MobileNavDrawer } from './mobile-nav-drawer';
+import { MoreSheet } from './more-sheet';
 import { RouteFocus } from './route-focus';
 import { SkipLink } from './skip-link';
 
@@ -53,7 +53,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
       <SkipLink targetId={MAIN_CONTENT_ID} />
       <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
         <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
-        <MobileNavDrawer contextKey={contextKey} organizationName={organizationName} />
+        <MoreSheet contextKey={contextKey} organizationName={organizationName} />
         <div className="flex min-w-0 flex-1 flex-col">
           <DemoBanner />
           <Header />

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { AppToaster } from '@/components/shared/app-toaster';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
@@ -58,7 +58,7 @@ function AppShell() {
       <FeatureFlagsProvider>
         <RouterProvider router={router} />
       </FeatureFlagsProvider>
-      <Toaster position="top-right" richColors />
+      <AppToaster />
     </QueryClientProvider>
   );
 }
