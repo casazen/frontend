@@ -5256,6 +5256,127 @@
       "cityTooLong": "Il nome della città è troppo lungo."
     }
   },
+  "commandPalette": {
+    "actions": {
+      "connectChannel": {
+        "keywords": "ota|airbnb|booking.com|canali|ical|sincronizza|calendari esterni",
+        "label": "Collega Airbnb o Booking.com"
+      },
+      "newBooking": {
+        "keywords": "nuova prenotazione|aggiungi prenotazione|registra soggiorno|inserisci prenotazione",
+        "label": "Crea una prenotazione"
+      },
+      "newLease": {
+        "keywords": "crea contratto|nuova locazione|nuovo affitto|inquilino",
+        "label": "Nuovo contratto"
+      },
+      "newPayment": {
+        "keywords": "nuovo pagamento|registra incasso|entrata|aggiungi pagamento",
+        "label": "Registra un pagamento"
+      },
+      "newProperty": {
+        "keywords": "nuovo immobile|crea immobile|casa|appartamento|struttura|alloggio",
+        "label": "Aggiungi un immobile"
+      },
+      "signOut": {
+        "keywords": "logout|disconnetti|chiudi sessione|termina sessione"
+      },
+      "support": {
+        "keywords": "aiuto|supporto|assistenza|contatta|problema|help",
+        "label": "Scrivi all'assistenza",
+        "mailSubject": "Richiesta di assistenza"
+      },
+      "switchArea": {
+        "keywords": "cambia area|area|contesto|passa",
+        "label": "Cambia area: {{area}}"
+      },
+      "switchLanguage": {
+        "keywords": "lingua|language|cambia lingua|traduzione"
+      }
+    },
+    "description": "Scrivi per cercare. Usa le frecce per scegliere un risultato, Invio per aprirlo, Esc per chiudere.",
+    "fallbacks": {
+      "booking": "Prenotazione"
+    },
+    "groups": {
+      "action": "Azioni",
+      "booking": "Prenotazioni",
+      "guest": "Ospiti",
+      "page": "Pagine",
+      "property": "Immobili",
+      "recent": "Recenti"
+    },
+    "hints": {
+      "close": "per chiudere",
+      "navigate": "per scegliere",
+      "open": "per aprire"
+    },
+    "keys": {
+      "enter": "Invio",
+      "escape": "Esc"
+    },
+    "keywords": {
+      "alloggiati": "questura|polizia|schedine|portale alloggiati",
+      "bookings": "soggiorni|arrivi|partenze|prenotare|riserva",
+      "calendar": "disponibilità|prezzi|date|blocchi|occupazione|agenda",
+      "cin": "codice identificativo nazionale|codice cin|identificativo",
+      "compliance": "alloggiati|questura|cin|scadenze|obblighi|conformità|normativa",
+      "complianceAudit": "cin|controlli|audit|verifica|conformità",
+      "dashboard": "oggi|home|panoramica|inizio|dashboard|riepilogo",
+      "directBooking": "sito|sito web|vetrina|prenotazione diretta|pubblica|booking engine",
+      "domain": "dominio|indirizzo|url|sito web|collega dominio",
+      "fiscal": "tasse|imposte|cedolare secca|regime fiscale|fisco|partita iva",
+      "guests": "clienti|anagrafica|rubrica|ospite|persone",
+      "inviteSupplier": "invita|nuovo fornitore|aggiungi fornitore|partner",
+      "jobs": "job|code|automazioni|processi in background|lavori programmati",
+      "leases": "locazioni|affitti|inquilini|canoni|scadenze|contratto",
+      "ltrReferenceData": "canone concordato|zone|accordi territoriali|dati normativi",
+      "marketing": "campagne|promozione|newsletter",
+      "marketplace": "servizi|fornitori|pulizie|manutenzione|app",
+      "organization": "azienda|impresa|team|dati fatturazione|ragione sociale",
+      "ota": "airbnb|booking.com|canali|ical|sincronizza|calendari esterni",
+      "payments": "pagamenti|incassi|entrate|soldi|transazioni|stripe",
+      "profile": "account|dati personali|password|utente|il mio profilo",
+      "properties": "case|appartamenti|strutture|alloggi|proprietà|ville",
+      "revenue": "ricavi|fatturato|guadagni|report|statistiche|andamento",
+      "seo": "contenuti|articoli|guide|motori di ricerca|pubblicazioni",
+      "siteAppearance": "colori|logo|tema|grafica|aspetto|stile",
+      "siteDocuments": "documenti|termini|privacy|condizioni|regolamento",
+      "stripeConnect": "stripe|pagamenti online|iban|payout|bonifici|carte",
+      "supplierAvailability": "orari|giorni|ferie|disponibile|agenda",
+      "supplierCalendar": "agenda|appuntamenti|lavori",
+      "supplierDashboard": "inizio|panoramica|home|oggi",
+      "supplierHelpIcal": "ical|calendario|guida|aiuto|sincronizzazione",
+      "supplierInbox": "richieste|lavori|messaggi|clienti|preventivi",
+      "supplierShowcase": "vetrina|servizi|profilo pubblico|prezzi|listino",
+      "suppliers": "partner|professionisti|aziende|approvazione",
+      "taxRates": "tassa di soggiorno|imposta di soggiorno|aliquote|comuni",
+      "users": "persone|utenti|account|ruoli|permessi"
+    },
+    "kinds": {
+      "action": "Azione",
+      "booking": "Prenotazione",
+      "guest": "Ospite",
+      "page": "Pagina",
+      "property": "Immobile"
+    },
+    "noResults": {
+      "description": "Prova con il nome di un immobile, di un ospite o di una pagina.",
+      "title": "Nessun risultato per «{{query}}»"
+    },
+    "placeholder": "Cerca immobili, prenotazioni, ospiti, pagine…",
+    "results": "Risultati",
+    "status": {
+      "noResults": "Nessun risultato",
+      "results_one": "{{count}} risultato disponibile",
+      "results_other": "{{count}} risultati disponibili",
+      "searching": "Ricerca in corso"
+    },
+    "stay": {
+      "dates": "{{from}} – {{to}}"
+    },
+    "title": "Cerca"
+  },
   "login": {
     "brand": "CASAZEN",
     "platformDescription": "Piattaforma gestione affitti brevi",

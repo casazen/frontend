@@ -5256,6 +5256,127 @@
       "cityTooLong": "The city name is too long."
     }
   },
+  "commandPalette": {
+    "actions": {
+      "connectChannel": {
+        "keywords": "ota|airbnb|booking.com|channels|ical|sync|external calendars",
+        "label": "Connect Airbnb or Booking.com"
+      },
+      "newBooking": {
+        "keywords": "new booking|add booking|record a stay|enter booking",
+        "label": "Create a booking"
+      },
+      "newLease": {
+        "keywords": "create lease|new rental|new contract|tenant",
+        "label": "New lease"
+      },
+      "newPayment": {
+        "keywords": "new payment|record income|add payment|collection",
+        "label": "Record a payment"
+      },
+      "newProperty": {
+        "keywords": "new property|create property|house|apartment|listing|accommodation",
+        "label": "Add a property"
+      },
+      "signOut": {
+        "keywords": "logout|log out|sign out|disconnect|end session"
+      },
+      "support": {
+        "keywords": "help|support|assistance|contact|problem|issue",
+        "label": "Write to support",
+        "mailSubject": "Support request"
+      },
+      "switchArea": {
+        "keywords": "switch area|area|context|change",
+        "label": "Switch area: {{area}}"
+      },
+      "switchLanguage": {
+        "keywords": "language|lingua|change language|translation"
+      }
+    },
+    "description": "Type to search. Use the arrow keys to pick a result, Enter to open it, Esc to close.",
+    "fallbacks": {
+      "booking": "Booking"
+    },
+    "groups": {
+      "action": "Actions",
+      "booking": "Bookings",
+      "guest": "Guests",
+      "page": "Pages",
+      "property": "Properties",
+      "recent": "Recent"
+    },
+    "hints": {
+      "close": "to close",
+      "navigate": "to move",
+      "open": "to open"
+    },
+    "keys": {
+      "enter": "Enter",
+      "escape": "Esc"
+    },
+    "keywords": {
+      "alloggiati": "police|guest registration|alloggiati web|questura|guest forms",
+      "bookings": "stays|arrivals|departures|reservations|book",
+      "calendar": "availability|prices|dates|blocks|occupancy|schedule",
+      "cin": "national identification code|cin code|identifier",
+      "compliance": "alloggiati|police|cin|deadlines|obligations|regulations",
+      "complianceAudit": "cin|checks|audit|verification|compliance",
+      "dashboard": "today|home|overview|start|dashboard|summary",
+      "directBooking": "website|site|storefront|direct booking|publish|booking engine",
+      "domain": "domain|address|url|website|connect domain",
+      "fiscal": "taxes|tax regime|flat tax|cedolare secca|vat|revenue authority",
+      "guests": "customers|clients|contacts|people|guest list",
+      "inviteSupplier": "invite|new supplier|add supplier|partner",
+      "jobs": "jobs|queues|automations|background processes|scheduled tasks",
+      "leases": "rentals|contracts|tenants|rent|deadlines|lease",
+      "ltrReferenceData": "agreed rent|zones|territorial agreements|regulatory data",
+      "marketing": "campaigns|promotion|newsletter",
+      "marketplace": "services|suppliers|cleaning|maintenance|apps",
+      "organization": "company|business|team|billing details|legal name",
+      "ota": "airbnb|booking.com|channels|ical|sync|external calendars",
+      "payments": "payments|income|money|transactions|stripe|collections",
+      "profile": "account|personal details|password|user|my profile",
+      "properties": "houses|apartments|listings|accommodations|villas|real estate",
+      "revenue": "revenue|turnover|earnings|reports|statistics|trends",
+      "seo": "content|articles|guides|search engines|publications",
+      "siteAppearance": "colors|logo|theme|graphics|look|style",
+      "siteDocuments": "documents|terms|privacy|conditions|house rules",
+      "stripeConnect": "stripe|online payments|iban|payout|bank transfers|cards",
+      "supplierAvailability": "hours|days|holidays|available|schedule",
+      "supplierCalendar": "schedule|appointments|jobs",
+      "supplierDashboard": "start|overview|home|today",
+      "supplierHelpIcal": "ical|calendar|guide|help|sync",
+      "supplierInbox": "requests|jobs|messages|clients|quotes",
+      "supplierShowcase": "showcase|services|public profile|prices|price list",
+      "suppliers": "partners|professionals|companies|approval",
+      "taxRates": "tourist tax|city tax|rates|municipalities",
+      "users": "people|users|accounts|roles|permissions"
+    },
+    "kinds": {
+      "action": "Action",
+      "booking": "Booking",
+      "guest": "Guest",
+      "page": "Page",
+      "property": "Property"
+    },
+    "noResults": {
+      "description": "Try the name of a property, a guest or a page.",
+      "title": "No results for “{{query}}”"
+    },
+    "placeholder": "Search properties, bookings, guests, pages…",
+    "results": "Results",
+    "status": {
+      "noResults": "No results",
+      "results_one": "{{count}} result available",
+      "results_other": "{{count}} results available",
+      "searching": "Searching"
+    },
+    "stay": {
+      "dates": "{{from}} – {{to}}"
+    },
+    "title": "Search"
+  },
   "login": {
     "brand": "CASAZEN",
     "platformDescription": "Vacation Property Management Platform",

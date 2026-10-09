@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
@@ -112,6 +112,40 @@ describe('AppShellLayout (UI-03)', () => {
     // `header` is queried by tag in the end-to-end specs: there is one, and it is the banner of the page.
     expect(document.querySelectorAll('header')).toHaveLength(1);
     expect(screen.getByRole('banner')).toBe(document.querySelector('header'));
+  });
+
+  it('AppShellLayout_Header_HasTheOneSearchThatOpensThePaletteEvenWithoutAQueryClient', async () => {
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <p>pagina</p>
+      </AppShellLayout>,
+    );
+
+    // The one control that opens the global search (UI-06) is in the header: not a second one in the menus.
+    expect(screen.getAllByTestId('command-palette-trigger')).toHaveLength(1);
+    const search = within(screen.getByRole('banner')).getByRole('button', { name: i18n.t('commandPalette.placeholder') });
+    expect(screen.queryByRole('dialog', { name: i18n.t('commandPalette.title') })).not.toBeInTheDocument();
+
+    fireEvent.click(search);
+
+    const palette = await screen.findByRole('dialog', { name: i18n.t('commandPalette.title') });
+    const box = within(palette).getByRole('combobox');
+    await waitFor(() => expect(box).toHaveFocus());
+    // This shell has no query client: the palette still opens and finds the pages of the menus.
+    fireEvent.change(box, { target: { value: 'prenotazioni' } });
+    expect(within(palette).getAllByRole('option')[0]).toHaveTextContent('Prenotazioni');
+  });
+
+  it('AppShellLayout_CtrlK_OpensThePaletteFromAnywhereInTheShell', async () => {
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <p>pagina</p>
+      </AppShellLayout>,
+    );
+
+    fireEvent.keyDown(document.body, { key: 'k', ctrlKey: true });
+
+    expect(await screen.findByRole('dialog', { name: i18n.t('commandPalette.title') })).toBeInTheDocument();
   });
 
   it.each<[AppContextKey, string]>([
