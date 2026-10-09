@@ -2243,7 +2243,8 @@
       "InCorso": "In progress",
       "Completato": "Completed",
       "Pagato": "Paid",
-      "Rifiutato": "Declined"
+      "Rifiutato": "Declined",
+      "Annullato": "Cancelled"
     },
     "stayScopedDescription": "In short-term rentals the request is for a stay: you find it in the booking detail, on the web and in the app.",
     "longRentScopedDescription": "In long-term rentals the request is for the property.",
@@ -3170,6 +3171,421 @@
       "linkInvalid": "A link is not valid: it must start with https://, http:// or mailto:.",
       "urlRequired": "Enter the address of the document.",
       "urlInvalid": "The address is not valid: it must be a complete https:// address, without credentials."
+    }
+  },
+  "status": {
+    "explainer": {
+      "need": "To move to “{{next}}” you need:",
+      "compactNeed": "To move to “{{next}}”:",
+      "next": "Next status:",
+      "itemDone": "done",
+      "itemTodo": "to do"
+    },
+    "pipeline": {
+      "label": "Progress",
+      "done": "done",
+      "current": "current status",
+      "todo": "to do",
+      "offPath": "off the usual path"
+    },
+    "booking": {
+      "Pending": {
+        "label": "Pending",
+        "explain": "The booking is not confirmed yet: it is waiting for your answer or for the guest's payment. If neither comes in time, the dates are freed.",
+        "need": [
+          "If it is a pay-at-the-property request, accept or decline it before the deadline",
+          "If it is waiting for an online payment, the guest has to complete it"
+        ]
+      },
+      "Confirmed": {
+        "label": "Confirmed",
+        "explain": "The booking is confirmed and the dates are yours. Before arrival the guest completes the online check-in.",
+        "need": [
+          "The guests' documents (online check-in)",
+          "The arrival registered on the check-in day"
+        ]
+      },
+      "CheckedIn": {
+        "label": "Checked in",
+        "explain": "The guest is at the property.",
+        "need": [
+          "The check-out on the departure date, with the guided procedure"
+        ]
+      },
+      "CheckedOut": {
+        "label": "Checked out",
+        "explain": "The stay is over. If you have not done it yet, declare the property ready for the next guest."
+      },
+      "Cancelled": {
+        "label": "Cancelled",
+        "explain": "The booking was cancelled and the dates are available again. Any refund follows the cancellation terms."
+      }
+    },
+    "property": {
+      "Pending": {
+        "label": "To complete",
+        "explain": "The property is saved but not active yet: guests cannot see it or book it until you complete the activation steps.",
+        "need": [
+          "The property details and the CIN code",
+          "The required documents",
+          "The safety checklist",
+          "The confirmation of the compliance requirements"
+        ]
+      },
+      "Active": {
+        "label": "Active",
+        "explain": "The property is active and visible to guests."
+      },
+      "Suspended": {
+        "label": "Suspended",
+        "explain": "The property is suspended: guests cannot see it or book it until the mandatory items are complete again.",
+        "need": [
+          "Fix the mandatory items listed and complete the activation again"
+        ]
+      },
+      "Paused": {
+        "label": "Paused",
+        "explain": "You paused the property: it does not show in search and does not get new bookings. Those already confirmed stay valid.",
+        "need": [
+          "Reactivate it whenever you like: you do not have to enter anything again"
+        ]
+      }
+    },
+    "request": {
+      "Richiesto": {
+        "label": "Requested",
+        "explain": "The request was sent: the supplier still has to accept or decline it.",
+        "need": [
+          "The supplier accepts the request"
+        ],
+        "supplier": {
+          "label": "New",
+          "explain": "A customer asked you for a job: accept it or decline it.",
+          "need": [
+            "Accept the request, or decline it giving the reason"
+          ]
+        }
+      },
+      "PresoInCarico": {
+        "label": "Accepted",
+        "explain": "The supplier accepted the request and will take care of it.",
+        "need": [
+          "The supplier starts the job when the work begins"
+        ],
+        "supplier": {
+          "explain": "You accepted the job.",
+          "need": [
+            "Start the job when you begin the work"
+          ]
+        }
+      },
+      "InCorso": {
+        "label": "In progress",
+        "explain": "The supplier is working on it.",
+        "need": [
+          "The supplier marks the work as completed"
+        ],
+        "supplier": {
+          "explain": "You have started the work.",
+          "need": [
+            "Mark the work as completed when you are done"
+          ]
+        }
+      },
+      "Completato": {
+        "label": "Completed",
+        "explain": "The supplier has finished the work. When you have paid them, mark the request as paid.",
+        "need": [
+          "Pay the supplier",
+          "Mark the request as paid"
+        ],
+        "supplier": {
+          "label": "Waiting for payment",
+          "explain": "You have finished the work: now the customer has to pay you and mark the request as paid.",
+          "need": [
+            "The customer marks the request as paid"
+          ]
+        }
+      },
+      "Pagato": {
+        "label": "Paid",
+        "explain": "Job done and paid.",
+        "supplier": {
+          "explain": "The customer marked the work as paid."
+        }
+      },
+      "Rifiutato": {
+        "label": "Declined",
+        "explain": "The supplier cannot take it. You can send the request to another supplier.",
+        "supplier": {
+          "explain": "You declined the request."
+        }
+      },
+      "Annullato": {
+        "label": "Cancelled",
+        "explain": "The request was cancelled before the work was done."
+      }
+    },
+    "member": {
+      "Active": {
+        "label": "Active",
+        "explain": "They can sign in with the permissions of their role."
+      },
+      "Deactivated": {
+        "label": "Deactivated",
+        "explain": "They can no longer sign in to the organization. Their account and what they created stay: you can reactivate them whenever you like."
+      },
+      "Pending": {
+        "label": "Invitation sent",
+        "explain": "The person has not accepted the invitation yet. While it is valid it takes one seat of the plan.",
+        "need": [
+          "The person accepts the invitation from the email"
+        ]
+      },
+      "Accepted": {
+        "label": "Invitation accepted",
+        "explain": "The person accepted the invitation and is now part of the organization."
+      },
+      "Revoked": {
+        "label": "Invitation withdrawn",
+        "explain": "The invitation was withdrawn: the link no longer works and the seat is free again."
+      },
+      "Expired": {
+        "label": "Invitation expired",
+        "explain": "The invitation was not accepted in time: the link no longer works and the seat is free again. You can invite the person again."
+      }
+    },
+    "subscription": {
+      "active": {
+        "label": "Active",
+        "explain": "The plan is active and renews by itself."
+      },
+      "trialing": {
+        "label": "Trial",
+        "explain": "You are trying the plan. To go on after the trial you need a valid payment method.",
+        "need": [
+          "A valid payment method"
+        ]
+      },
+      "past_due": {
+        "label": "Payment overdue",
+        "explain": "The last renewal failed. For a limited time you keep the plan, then you go back to the basic plan.",
+        "need": [
+          "Update the payment method"
+        ]
+      },
+      "incomplete": {
+        "label": "Payment to complete",
+        "explain": "The first payment did not go through, so the plan is not active yet.",
+        "need": [
+          "Complete the payment"
+        ]
+      },
+      "unpaid": {
+        "label": "Unpaid",
+        "explain": "The invoices of the plan were not paid and the paid plan is not available.",
+        "need": [
+          "Pay the invoices and update the payment method"
+        ]
+      },
+      "canceled": {
+        "label": "Expired",
+        "explain": "The subscription has ended: the paid plan is no longer available.",
+        "need": [
+          "Choose a plan again"
+        ]
+      },
+      "none": {
+        "label": "No subscription",
+        "explain": "There is no active paid subscription.",
+        "need": [
+          "Choose a plan and a payment method"
+        ]
+      }
+    },
+    "lease": {
+      "Draft": {
+        "label": "Draft",
+        "explain": "The contract is being prepared: it has not been sent for signing yet.",
+        "need": [
+          "The property and the parties of the contract",
+          "Rent and duration",
+          "Contract type and tax regime"
+        ]
+      },
+      "AwaitingSignature": {
+        "label": "Awaiting signature",
+        "explain": "The contract was sent for signing: we are waiting for the parties to sign.",
+        "need": [
+          "The signature of all the parties"
+        ]
+      },
+      "PartiallySigned": {
+        "label": "Partially signed",
+        "explain": "Some parties have signed, others still have to.",
+        "need": [
+          "The signature of the parties still missing"
+        ]
+      },
+      "Signed": {
+        "label": "Signed",
+        "explain": "The contract is signed by all the parties and must be registered with the Revenue Agency within 30 days of signing or of the start date, whichever comes first.",
+        "need": [
+          "The registration with the Revenue Agency (RLI form), which CasaZen helps you prepare"
+        ]
+      },
+      "RegistrationPending": {
+        "label": "Registration pending",
+        "explain": "The registration has been started and is not complete yet.",
+        "need": [
+          "The outcome of the registration"
+        ]
+      },
+      "SentToProvider": {
+        "label": "Sent to provider",
+        "explain": "The registration was sent to the service that submits it to the Revenue Agency.",
+        "need": [
+          "The outcome from the registration service"
+        ]
+      },
+      "Registered": {
+        "label": "Registered",
+        "explain": "The contract is registered. The documents stay available."
+      },
+      "Rejected": {
+        "label": "Rejected",
+        "explain": "The registration did not go through.",
+        "need": [
+          "Check the reason given",
+          "Fix the details and try again"
+        ]
+      }
+    },
+    "rent": {
+      "Scheduled": {
+        "label": "To collect",
+        "explain": "The rent has not been paid yet. If the due date passes, it shows as overdue.",
+        "need": [
+          "The tenant's payment"
+        ]
+      },
+      "Overdue": {
+        "label": "Overdue",
+        "explain": "The due date has passed and the rent is not paid. You can send the payment link to the tenant again.",
+        "need": [
+          "The tenant's payment",
+          "Or record a payment made outside CasaZen yourself"
+        ]
+      },
+      "Processing": {
+        "label": "Payment in progress",
+        "explain": "The payment has started and is waiting for the bank to confirm it.",
+        "need": [
+          "The confirmation of the payment"
+        ]
+      },
+      "Paid": {
+        "label": "Paid",
+        "explain": "The rent shows as collected."
+      },
+      "Failed": {
+        "label": "Payment failed",
+        "explain": "The last online payment did not go through: the tenant can try again from the payment link.",
+        "need": [
+          "The tenant tries again from the link",
+          "Or record a payment made outside CasaZen yourself"
+        ]
+      },
+      "Cancelled": {
+        "label": "Cancelled",
+        "explain": "The rent schedule was disabled before this installment was paid."
+      }
+    },
+    "supplier": {
+      "Pending": {
+        "label": "Pending",
+        "explain": "The profile is not active yet: until you complete the activation hosts cannot find you.",
+        "need": [
+          "Complete the activation steps",
+          "Accept the terms of service"
+        ]
+      },
+      "Active": {
+        "label": "Active",
+        "explain": "The profile is active: hosts can see it and send you requests."
+      },
+      "Suspended": {
+        "label": "Suspended",
+        "explain": "The profile was suspended by CasaZen: you receive no requests until it is reactivated."
+      }
+    },
+    "checkin": {
+      "Inviato": {
+        "label": "Link sent",
+        "explain": "The online check-in link was created but the guest has not opened it yet.",
+        "need": [
+          "The guest opens the link and fills in the details and documents"
+        ]
+      },
+      "InCompilazione": {
+        "label": "In progress",
+        "explain": "The guest opened the link and is filling in their details.",
+        "need": [
+          "The guest sends all the details"
+        ]
+      },
+      "Completo": {
+        "label": "Complete",
+        "explain": "The guest sent all the details: you can prepare the Alloggiati Web communication."
+      },
+      "AlloggiatiInviato": {
+        "label": "Alloggiati submitted",
+        "explain": "The Alloggiati Web communication has the receipt of the portal."
+      },
+      "Scaduto": {
+        "label": "Expired",
+        "explain": "The link is no longer valid: it expired or was replaced by a new one.",
+        "need": [
+          "Send a new link"
+        ]
+      }
+    },
+    "alloggiati": {
+      "DaInviare": {
+        "label": "To send",
+        "explain": "Waiting for the arrival day: the portal does not accept a future arrival date."
+      },
+      "DaInviareManualmente": {
+        "label": "To send manually",
+        "explain": "The communication is ready but CasaZen does not transmit it: you have to send it yourself on the Alloggiati Web portal, within 24 hours of arrival (6 hours if the stay does not exceed 24 hours).",
+        "need": [
+          "Sending on the Alloggiati Web portal",
+          "Recording the sending here, with the date"
+        ]
+      },
+      "InviatoManualmente": {
+        "label": "Sent manually",
+        "explain": "You declared that you sent it on the portal. CasaZen has no receipt: keep the one from the portal."
+      },
+      "Inviato": {
+        "label": "Sent (receipt)",
+        "explain": "The communication was transmitted and has the receipt of the portal."
+      },
+      "Rifiutato": {
+        "label": "Rejected",
+        "explain": "The portal rejected the communication: correct the details and send it again from the Questura portal.",
+        "need": [
+          "Correct the details indicated",
+          "Send again from the portal"
+        ]
+      },
+      "Errore": {
+        "label": "Error",
+        "explain": "Error preparing the communication: send it from the Questura portal.",
+        "need": [
+          "Send the communication from the Questura portal"
+        ]
+      }
     }
   },
   "vetrina": {
