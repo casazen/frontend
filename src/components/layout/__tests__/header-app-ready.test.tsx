@@ -7,7 +7,6 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 // The parts of the header that read the user and the organisation are not under test.
 vi.mock('@/components/auth/user-menu', () => ({ UserMenu: () => <div data-testid="user-menu" /> }));
 vi.mock('@/components/org/org-badge', () => ({ OrgBadge: () => <div data-testid="org-badge" /> }));
-vi.mock('@/components/layout/language-switcher', () => ({ LanguageSwitcher: () => <div data-testid="language-switcher" /> }));
 
 function renderHeader(isReady: boolean) {
   vi.mocked(useWorkspace).mockReturnValue({ isReady } as unknown as ReturnType<typeof useWorkspace>);
@@ -38,7 +37,7 @@ describe('Header carries the app-ready test id (UI-00)', () => {
   it('Header_WorkspaceReady_StillHasItsUsualParts', () => {
     renderHeader(true);
 
-    expect(screen.getByTestId('language-switcher')).toBeInTheDocument();
+    // The language is no longer a switch of the header (UI-05): it is a row of the menu of the profile, which is the user menu.
     expect(screen.getByTestId('org-badge')).toBeInTheDocument();
     expect(screen.getByTestId('user-menu')).toBeInTheDocument();
   });

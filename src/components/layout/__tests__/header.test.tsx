@@ -12,11 +12,8 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 vi.mock('@/components/auth/user-menu', () => ({ UserMenu: () => <button type="button" data-testid="user-menu-trigger" /> }));
 vi.mock('@/components/org/org-badge', () => ({ OrgBadge: () => <div data-testid="org-badge" /> }));
 
-function renderHeader(
-  props: React.ComponentProps<typeof Header> = {},
-  { isReady = true, contextKey }: { isReady?: boolean; contextKey?: AppContextKey } = {},
-) {
-  vi.mocked(useWorkspace).mockReturnValue({ isReady } as unknown as ReturnType<typeof useWorkspace>);
+function renderHeader(props: React.ComponentProps<typeof Header> = {}, { contextKey }: { contextKey?: AppContextKey } = {}) {
+  vi.mocked(useWorkspace).mockReturnValue({ isReady: true } as unknown as ReturnType<typeof useWorkspace>);
   const header = <Header {...props} />;
   return render(contextKey ? <AppShellContext.Provider value={{ contextKey }}>{header}</AppShellContext.Provider> : header);
 }
@@ -65,20 +62,7 @@ describe('Header (UI-05)', () => {
     });
   });
 
-  describe('app-ready (UI-00)', () => {
-    it('Header_WorkspaceReady_IsTheAppReadyElement', () => {
-      renderHeader({}, { isReady: true });
-
-      expect(screen.getByTestId('app-ready')).toBe(screen.getByRole('banner'));
-    });
-
-    it('Header_WorkspaceStillLoading_IsNotAppReadyYet', () => {
-      renderHeader({}, { isReady: false });
-
-      expect(screen.getByRole('banner')).toBeInTheDocument();
-      expect(screen.queryByTestId('app-ready')).not.toBeInTheDocument();
-    });
-  });
+  // `data-testid="app-ready"` (UI-00) is guarded by header-app-ready.test.tsx: not repeated here.
 
   describe('the places where the other functions plug in', () => {
     it('Header_FunctionsThatExist_AreMountedInTheirPlaces', () => {
