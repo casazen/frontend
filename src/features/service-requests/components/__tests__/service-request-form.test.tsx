@@ -84,7 +84,7 @@ describe('ServiceRequestForm', () => {
     renderForm({ supplierOrgId: 'sup-chosen', preselectedCategory: 'plumbing', onOpenChange });
 
     const staySelect = await screen.findByTestId('service-request-stay');
-    expect(api.getBookings).toHaveBeenCalledWith({ propertyId: 'prop-1' });
+    expect(api.getBookings).toHaveBeenCalledWith({ propertyId: 'prop-1', page: 1, pageSize: 100 });
     // No stay chosen yet: nothing can be sent without one.
     expect(screen.getByTestId('submit-service-request')).toBeDisabled();
 
