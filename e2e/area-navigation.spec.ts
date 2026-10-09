@@ -129,8 +129,8 @@ test.describe('Area navigation (UI-04a)', () => {
       const bookings = page.getByRole('navigation', { name: 'Menu Affitti brevi' }).getByRole('link', { name: /Prenotazioni/ });
       await expect(bookings.getByTestId('nav-count')).toHaveText(/2/);
       await expect(bookings).toHaveAccessibleName(/^Prenotazioni\s*,\s*2 richieste da approvare$/);
-      // The other entries have none.
-      await expect(page.getByTestId('nav-count')).toHaveCount(1);
+      // The other entries of the menu have none (the bar of the phone, hidden on a computer, shows its own: mobile-navigation.spec.ts).
+      await expect(page.getByRole('navigation', { name: 'Menu Affitti brevi' }).getByTestId('nav-count')).toHaveCount(1);
     });
 
     test('no waiting request, no counter', async ({ page }) => {
@@ -232,7 +232,12 @@ test.describe('Area navigation (UI-04a)', () => {
       // Only the icons are on screen, the names stay for screen readers.
       await expect(sidebar.getByText('Ogni giorno')).toHaveCount(0);
       await expect(sidebar.getByRole('link', { name: 'Calendario' })).toBeVisible();
-      await expect(sidebar.getByRole('link', { name: 'Calendario' })).toHaveAttribute('title', 'Calendario');
+      // The name is a tooltip on hover and on keyboard focus (UI-04b), no longer the `title` attribute of UI-04a.
+      await expect(sidebar.getByRole('link', { name: 'Calendario' })).not.toHaveAttribute('title');
+      await sidebar.getByRole('link', { name: 'Calendario' }).hover();
+      await expect(page.getByTestId('rail-tooltip')).toHaveText('Calendario');
+      await page.mouse.move(700, 500);
+      await expect(page.getByTestId('rail-tooltip')).toHaveCount(0);
 
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expect(sidebar).toHaveAttribute('data-collapsed', 'true');
@@ -263,27 +268,28 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
-    test('the bottom bar has four destinations and "Altro" opens what is left', async ({ page }) => {
+    test('the bottom bar has four destinations and "Altro" opens a sheet with what is left', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const bar = page.getByRole('navigation', { name: 'Navigazione mobile' });
       await expect(bar.getByRole('link')).toHaveText(['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']);
       await bar.getByRole('button', { name: 'Altro' }).click();
 
-      const drawer = page.getByRole('dialog');
-      await expect(drawer.getByRole('group', { name: 'La tua offerta' })).toBeVisible();
-      await expect(drawer.getByRole('group', { name: 'Gestione' })).toBeVisible();
-      await expect(drawer.getByRole('group', { name: 'Altro' })).toBeVisible();
-      await expect(drawer.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
-      await drawer.getByRole('link', { name: 'Profilo' }).click();
+      const sheet = page.getByRole('dialog');
+      await expect(sheet.getByRole('group', { name: 'La tua offerta' })).toBeVisible();
+      await expect(sheet.getByRole('group', { name: 'Gestione' })).toBeVisible();
+      await expect(sheet.getByRole('group', { name: 'Altro' })).toBeVisible();
+      await expect(sheet.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
+      await sheet.getByRole('link', { name: 'Profilo' }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/profile/);
-      await expect(drawer).not.toBeVisible();
-      // The profile is not one of the destinations of the bar: "Altro" is the marked tab.
-      await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
+      await expect(sheet).not.toBeVisible();
+      // The profile is not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
+      await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-current', 'page');
+      await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
     });
 
-    test('no horizontal scroll with the area switcher open in the phone menu', async ({ page }) => {
+    test('no horizontal scroll with the area switcher open in the sheet of the phone', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
