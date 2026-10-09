@@ -14,13 +14,14 @@ import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { cn } from '@/lib/utils';
 import { NavIcon } from './nav-icon';
+import { useRailTooltip } from './rail-tooltip';
 
 interface AreaSwitcherProps {
   /** The area of the page that is open: the one the switcher shows as current. */
   contextKey: AppContextKey;
   /** The organization of the user, shown under the name of the area (the shell reads it once and hands it down). */
   organizationName?: string | null;
-  /** Sidebar reduced to the icons: the switcher keeps only the icon of the area. */
+  /** Sidebar reduced to the icons: the switcher keeps only the icon of the area, whose name is a tooltip (UI-04b). */
   collapsed?: boolean;
   className?: string;
 }
@@ -54,6 +55,8 @@ export function AreaSwitcher({ contextKey, organizationName = null, collapsed = 
   const current = getArea(contextKey);
   const currentName = t(current.nameKey);
   const hasChoice = areas.length > 1;
+  // Reduced to the icon, the area has its name as a tooltip, on hover and on focus (UI-04b).
+  const { triggerProps, tooltip } = useRailTooltip(currentName, collapsed);
 
   const face = (
     <>
@@ -81,9 +84,21 @@ export function AreaSwitcher({ contextKey, organizationName = null, collapsed = 
 
   if (!hasChoice) {
     return (
-      <div data-testid="area-header" className={cn(faceClass, className)}>
-        {face}
-      </div>
+      <>
+        <div
+          data-testid="area-header"
+          className={cn(faceClass, className)}
+          onPointerEnter={triggerProps.onPointerEnter}
+          onPointerLeave={triggerProps.onPointerLeave}
+        >
+          {face}
+          {/* Nothing to click, but the icon alone must still say where the user is. */}
+          {collapsed ? (
+            <span className="sr-only">{organizationName ? `${currentName}, ${organizationName}` : currentName}</span>
+          ) : null}
+        </div>
+        {tooltip}
+      </>
     );
   }
 
@@ -99,10 +114,12 @@ export function AreaSwitcher({ contextKey, organizationName = null, collapsed = 
             'min-h-14 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-accent',
             className,
           )}
+          {...triggerProps}
         >
           {face}
         </button>
       </DropdownMenuTrigger>
+      {tooltip}
       <DropdownMenuContent
         ref={menuRef}
         align="start"
