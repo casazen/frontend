@@ -313,9 +313,29 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     renderPage(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
 
     expect(await screen.findByTestId('alloggiati-panel-stub', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByTestId('booking-tab-alloggiati')).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(screen.getByTestId('booking-tab-details'));
     expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-panel-stub')).not.toBeInTheDocument();
+  });
+
+  // UI-07 (Tabs): the tabs are links with the tab in the address, so that the other parameters stay and the address can be shared.
+  it('BookingDetailPage_Tabs_AreLinksThatKeepTheRestOfTheAddressAndTheTestIds', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    renderPage(`/app/short-rent/bookings/${BOOKING_ID}?from=calendar`);
+
+    expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: i18n.t('booking.detailPage.tabsLabel') })).toBeInTheDocument();
+    expect(screen.getByTestId('booking-tab-details')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?from=calendar`);
+    expect(screen.getByTestId('booking-tab-guest')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings/${BOOKING_ID}?from=calendar&tab=guest`,
+    );
+    expect(screen.getByTestId('booking-tab-alloggiati')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings/${BOOKING_ID}?from=calendar&tab=alloggiati`,
+    );
   });
 
   it('BookingDetailPage_PaymentTab_PricePerNightIsLodgingOnlyWithoutTaxAndCleaning', async () => {
@@ -323,7 +343,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('booking.detailPage.tabs.payment') }, WAIT));
+    fireEvent.click(await screen.findByRole('tab', { name: i18n.t('booking.detailPage.tabs.payment') }, WAIT));
 
     // (450 base - 50 cleaning) / 4 nights = 100 per night; the total 462 includes cleaning and 12 of tourist tax.
     expect(screen.getByTestId('booking-price-per-night')).toHaveTextContent(

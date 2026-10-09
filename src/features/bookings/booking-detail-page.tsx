@@ -20,6 +20,7 @@ import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { isBookingTab, type BookingTab } from './lib/booking-tabs';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
@@ -33,20 +34,11 @@ import type { Booking } from '@/types';
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // The tab is in the URL (`?tab=alloggiati`): the "complete the guest data" links of the arrival open it (CO-08).
-  const [searchParams, setSearchParams] = useSearchParams();
+  // The tab is in the URL (`?tab=alloggiati`): the "complete the guest data" links of the arrival open it (CO-08). The tabs
+  // themselves are `Tabs` (UI-07), which reads and writes that same parameter.
+  const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const activeTab: BookingTab = isBookingTab(tabParam) ? tabParam : 'details';
-  const setActiveTab = (tab: BookingTab) =>
-    setSearchParams(
-      (params) => {
-        const next = new URLSearchParams(params);
-        if (tab === 'details') next.delete('tab');
-        else next.set('tab', tab);
-        return next;
-      },
-      { replace: true },
-    );
   const [cancelOpen, setCancelOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [arrivalOpen, setArrivalOpen] = useState(false);
@@ -111,11 +103,12 @@ export function BookingDetailPage() {
   const channelText = bookingChannelText(booking, t);
   const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
 
-  const tabs: { key: BookingTab; label: string }[] = [
-    { key: 'details', label: t('booking.detailPage.tabs.details') },
-    { key: 'guest', label: t('booking.detailPage.tabs.guest') },
-    { key: 'payment', label: t('booking.detailPage.tabs.payment') },
-    { key: 'alloggiati', label: t('booking.detailPage.tabs.alloggiati') },
+  // The test ids are how the Golden Journey (L3) and the tests reach the tabs.
+  const tabs: TabItem<BookingTab>[] = [
+    { value: 'details', label: t('booking.detailPage.tabs.details'), testId: 'booking-tab-details' },
+    { value: 'guest', label: t('booking.detailPage.tabs.guest'), testId: 'booking-tab-guest' },
+    { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
+    { value: 'alloggiati', label: t('booking.detailPage.tabs.alloggiati'), testId: 'booking-tab-alloggiati' },
   ];
 
   return (
@@ -172,24 +165,14 @@ export function BookingDetailPage() {
 
         <OtaReviewNotice booking={booking} canWrite={canWrite} />
 
-        <div className="flex gap-1 border-b mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              data-testid={`booking-tab-${tab.key}`}
-              aria-pressed={activeTab === tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
+        {/* UI-07 pilot of Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
+        <Tabs
+          label={t('booking.detailPage.tabsLabel')}
+          items={tabs}
+          defaultValue="details"
+          value={activeTab}
+          selectTestId="booking-tabs-select"
+        >
         {activeTab === 'details' && (
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-2 space-y-6">
@@ -349,6 +332,7 @@ export function BookingDetailPage() {
         {activeTab === 'alloggiati' && (
           <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
         )}
+        </Tabs>
       </div>
       {(canCancel || cancelOpen) && (
         <CancelBookingDialog bookingId={booking.id} open={cancelOpen} onOpenChange={setCancelOpen} />
