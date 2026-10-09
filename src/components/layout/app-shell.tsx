@@ -1,26 +1,21 @@
-import { Sidebar } from './sidebar';
-import { Header } from './header';
-import { BottomNav } from './bottom-nav';
-import { MobileNavDrawer } from './mobile-nav-drawer';
-import { DemoBanner } from '@/components/shared/demo-banner';
+import { useAppShell } from './app-shell-context';
+import { AppShellLayout } from './app-shell-layout';
 
 interface AppShellProps {
   children: React.ReactNode;
 }
 
+/**
+ * Wrapper that pages still put around their content. Since UI-03 the shell belongs to the route (`ContextLayout` mounts
+ * `AppShellLayout`), so inside it this renders just the children: a page never gets a second shell and the pages that
+ * wrap themselves keep working unchanged. Outside any shell (a render that is not under a context layout) it gives the
+ * short-rent shell, as it always did.
+ *
+ * Transitional: the pages will drop the wrapper in a follow-up (codemod by folder), then this file goes away.
+ */
 export function AppShell({ children }: AppShellProps) {
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <MobileNavDrawer contextKey="short-rent" />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <DemoBanner />
-        <Header />
-        <main className="flex flex-1 flex-col overflow-y-auto p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] md:pb-6 md:p-6">
-          {children}
-        </main>
-        <BottomNav contextKey="short-rent" />
-      </div>
-    </div>
-  );
+  const shell = useAppShell();
+  if (shell) return <>{children}</>;
+
+  return <AppShellLayout contextKey="short-rent">{children}</AppShellLayout>;
 }

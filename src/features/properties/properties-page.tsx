@@ -75,7 +75,7 @@ export function PropertiesPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen className="h-auto flex-1" />;
   }
 
   if (error) {

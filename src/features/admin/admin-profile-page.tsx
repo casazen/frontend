@@ -16,7 +16,7 @@ export function AdminProfilePage() {
   const { data: profile, isLoading: profileLoading } = useMe();
 
   if (isLoading || profileLoading || !user) {
-    return <LoadingScreen />;
+    return <LoadingScreen className="h-auto flex-1" />;
   }
 
   const displayRole = roles.includes(ROLE_ADMIN)

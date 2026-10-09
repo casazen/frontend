@@ -38,7 +38,7 @@ export function LeasesPage() {
   );
 
   if (isLoading) {
-    return <LoadingScreen message={t('leases.loading')} />;
+    return <LoadingScreen message={t('leases.loading')} className="h-auto flex-1" />;
   }
 
   // A failed load is never shown as "no leases" (A7-27).

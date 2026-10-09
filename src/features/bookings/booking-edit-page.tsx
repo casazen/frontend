@@ -43,7 +43,7 @@ export function BookingEditPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen message={t('booking.edit.loading')} />;
+    return <LoadingScreen message={t('booking.edit.loading')} className="h-auto flex-1" />;
   }
 
   if (isError && getHttpStatus(error) !== 404) {

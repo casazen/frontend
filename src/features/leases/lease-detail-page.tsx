@@ -34,7 +34,7 @@ export function LeaseDetailPage() {
   const [delegaOpen, setDelegaOpen] = useState(false);
 
   if (isLoading) {
-    return <LoadingScreen message={t('leases.detailLoading')} />;
+    return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
   }
 
   const backToList = () => navigate('/app/long-rent/leases');

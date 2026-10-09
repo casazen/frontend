@@ -23,7 +23,7 @@ export function PropertyEditPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen message={t('property.edit.loading')} />;
+    return <LoadingScreen message={t('property.edit.loading')} className="h-auto flex-1" />;
   }
 
   if (!property) {

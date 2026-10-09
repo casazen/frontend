@@ -160,7 +160,7 @@ export function SupplierProfilePage() {
   }
 
   if (isLoading || !profile) {
-    return <LoadingScreen message={t('supplier.profileLoading')} />;
+    return <LoadingScreen message={t('supplier.profileLoading')} className="h-auto flex-1" />;
   }
 
   const hasPendingPhotos = newPhotoPreviews.length > 0;

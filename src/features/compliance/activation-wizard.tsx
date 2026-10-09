@@ -283,7 +283,7 @@ export function PropertyActivationWizard() {
   }
 
   if (!(ready || started) || !propertyQuery.data || !activationQuery.data) {
-    return <LoadingScreen message={t('compliance.activation.loading')} />;
+    return <LoadingScreen message={t('compliance.activation.loading')} className="h-auto flex-1" />;
   }
 
   return (

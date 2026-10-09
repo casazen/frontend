@@ -5603,6 +5603,21 @@
       "rentPaymentLinkInvalid": "Il link di pagamento non è valido o è stato sostituito da uno più recente."
     }
   },
+  "appShell": {
+    "skipToContent": "Vai al contenuto",
+    "userMenu": "Menu utente",
+    "userMenuNamed": "Menu utente: {{name}}",
+    "reserved": {
+      "title": "Questa pagina è riservata",
+      "description": "Il tuo ruolo non include l'accesso a questa pagina. Se ti serve per lavorare, puoi chiedere l'accesso.",
+      "backToToday": "Torna a Oggi",
+      "backToOverview": "Torna alla Panoramica",
+      "requestAccess": "Chiedi l'accesso",
+      "requestAccessGeneric": "Per chiedere l'accesso rivolgiti a chi amministra il tuo account.",
+      "mailSubject": "Richiesta di accesso a una pagina di CasaZen",
+      "mailBody": "Buongiorno, vorrei chiedere l'accesso alla pagina {{path}} di CasaZen. Grazie."
+    }
+  },
   "validation": {
     "required": "Campo obbligatorio",
     "invalid": "Valore non valido",

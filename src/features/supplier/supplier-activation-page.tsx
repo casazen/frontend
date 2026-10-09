@@ -213,7 +213,7 @@ export function SupplierActivationPage() {
   const activation = activationQuery.data;
   const profile = profileQuery.data;
   if (!activation || !profile) {
-    return <LoadingScreen message={t('supplier.activationLoading')} />;
+    return <LoadingScreen message={t('supplier.activationLoading')} className="h-auto flex-1" />;
   }
 
   if (activation.status === 'Suspended') {

@@ -25,7 +25,7 @@ export function PaymentDetailPage() {
   const [refundOpen, setRefundOpen] = useState(false);
 
   if (isLoading) {
-    return <LoadingScreen message={t('payment.detail.loading')} />;
+    return <LoadingScreen message={t('payment.detail.loading')} className="h-auto flex-1" />;
   }
 
   if (!payment) {

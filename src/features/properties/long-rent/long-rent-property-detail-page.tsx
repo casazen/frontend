@@ -23,7 +23,7 @@ export function LongRentPropertyDetailPage() {
   const documents = usePropertyDocuments(id);
 
   if (isLoading) {
-    return <LoadingScreen message={t('longRentProperties.detail.loading')} />;
+    return <LoadingScreen message={t('longRentProperties.detail.loading')} className="h-auto flex-1" />;
   }
 
   if (isError || !property) {
@@ -86,7 +86,7 @@ export function LongRentPropertyDetailPage() {
       <PropertyCadastralCard key={property.updatedAt} property={property} />
 
       {documents.isLoading ? (
-        <LoadingScreen message={t('longRentProperties.detail.documentsLoading')} />
+        <LoadingScreen message={t('longRentProperties.detail.documentsLoading')} className="h-auto flex-1" />
       ) : documents.isError || !documents.data ? (
         <LoadErrorCard
           error={documents.error}

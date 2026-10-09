@@ -68,7 +68,7 @@ export function SupplierAvailabilityPage() {
   }
 
   if (isLoading) {
-    return <LoadingScreen message={t('supplier.availabilityLoading')} />;
+    return <LoadingScreen message={t('supplier.availabilityLoading')} className="h-auto flex-1" />;
   }
 
   return (

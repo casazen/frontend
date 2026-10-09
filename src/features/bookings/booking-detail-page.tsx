@@ -58,7 +58,7 @@ export function BookingDetailPage() {
   const { t, i18n } = useTranslation();
 
   if (isLoading) {
-    return <LoadingScreen message={t('booking.detailPage.loading')} />;
+    return <LoadingScreen message={t('booking.detailPage.loading')} className="h-auto flex-1" />;
   }
 
   // An API error is never shown as "not found" (only a 404 is).

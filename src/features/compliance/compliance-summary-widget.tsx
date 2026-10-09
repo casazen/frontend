@@ -95,7 +95,7 @@ export function ComplianceSummaryWidget() {
     return (
       <Card data-testid="compliance-summary-widget">
         <CardContent className="py-8">
-          <LoadingScreen message={t('compliance.summary.loading')} />
+          <LoadingScreen message={t('compliance.summary.loading')} className="h-auto flex-1" />
         </CardContent>
       </Card>
     );
