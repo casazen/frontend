@@ -6,6 +6,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -220,30 +221,20 @@ function SiteDocumentCard({ state, orgSlug }: { state: OrgSiteDocumentState; org
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">{t('siteDocuments.source.label')}</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {SOURCES.map((source) => (
-              <label
-                key={source}
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 rounded-md border p-3 text-sm',
-                  form.source === source && 'border-primary ring-1 ring-primary',
-                )}
-              >
-                <input
-                  type="radio"
-                  name={`${idPrefix}-source`}
-                  value={source}
-                  checked={form.source === source}
-                  onChange={() => setForm((f) => ({ ...f, source }))}
-                  data-testid={`${idPrefix}-source-${source}`}
-                />
-                {t(`siteDocuments.source.options.${source}`)}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        {/* UI-07 pilot of ChoiceCard: the same two radio buttons (same names, values and test ids), drawn as cards. */}
+        <ChoiceGroup legend={t('siteDocuments.source.label')} legendVisible minCardWidth={14}>
+          {SOURCES.map((source) => (
+            <ChoiceCard
+              key={source}
+              name={`${idPrefix}-source`}
+              value={source}
+              checked={form.source === source}
+              onChange={() => setForm((f) => ({ ...f, source }))}
+              data-testid={`${idPrefix}-source-${source}`}
+              title={t(`siteDocuments.source.options.${source}`)}
+            />
+          ))}
+        </ChoiceGroup>
 
         {form.source === 'Text' ? (
           <div className="space-y-2">
