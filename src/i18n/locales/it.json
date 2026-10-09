@@ -2277,7 +2277,8 @@
       "InCorso": "In corso",
       "Completato": "Completato",
       "Pagato": "Pagato",
-      "Rifiutato": "Rifiutato"
+      "Rifiutato": "Rifiutato",
+      "Annullato": "Annullato"
     },
     "stayScopedDescription": "Negli affitti brevi la richiesta è legata a un soggiorno: la ritrovi nel dettaglio della prenotazione, sul web e nell'app.",
     "longRentScopedDescription": "Negli affitti lunghi la richiesta è legata all'immobile.",
@@ -3206,6 +3207,421 @@
       "urlInvalid": "L'indirizzo non è valido: deve essere un indirizzo https:// completo, senza credenziali."
     }
   },
+  "status": {
+    "explainer": {
+      "need": "Per passare a «{{next}}» serve:",
+      "compactNeed": "Per passare a «{{next}}»:",
+      "next": "Stato successivo:",
+      "itemDone": "completato",
+      "itemTodo": "da fare"
+    },
+    "pipeline": {
+      "label": "Avanzamento",
+      "done": "completato",
+      "current": "stato attuale",
+      "todo": "da fare",
+      "offPath": "fuori dal percorso previsto"
+    },
+    "booking": {
+      "Pending": {
+        "label": "In attesa",
+        "explain": "La prenotazione non è ancora confermata: aspetta una tua risposta o il pagamento dell'ospite. Se non arriva in tempo, le date tornano libere.",
+        "need": [
+          "Se è una richiesta con pagamento in struttura, accettala o rifiutala prima della scadenza",
+          "Se aspetta il pagamento online, l'ospite deve completarlo"
+        ]
+      },
+      "Confirmed": {
+        "label": "Confermata",
+        "explain": "La prenotazione è confermata e le date sono tue. Prima dell'arrivo l'ospite completa il check-in online.",
+        "need": [
+          "I documenti degli ospiti (check-in online)",
+          "L'arrivo registrato il giorno del check-in"
+        ]
+      },
+      "CheckedIn": {
+        "label": "Check-in effettuato",
+        "explain": "L'ospite è nell'immobile.",
+        "need": [
+          "Il check-out alla data di partenza, con la procedura guidata"
+        ]
+      },
+      "CheckedOut": {
+        "label": "Check-out effettuato",
+        "explain": "Il soggiorno è concluso. Se non l'hai già fatto, dichiara l'immobile pronto per il prossimo ospite."
+      },
+      "Cancelled": {
+        "label": "Annullata",
+        "explain": "La prenotazione è stata annullata e le date sono di nuovo disponibili. L'eventuale rimborso segue le condizioni di cancellazione."
+      }
+    },
+    "property": {
+      "Pending": {
+        "label": "Da completare",
+        "explain": "L'immobile è salvato ma non è ancora attivo: non è visibile né prenotabile dagli ospiti finché non completi i passaggi di attivazione.",
+        "need": [
+          "I dati dell'immobile e il codice CIN",
+          "I documenti richiesti",
+          "La checklist di sicurezza",
+          "La conferma dei requisiti di compliance"
+        ]
+      },
+      "Active": {
+        "label": "Attivo",
+        "explain": "L'immobile è attivo e visibile agli ospiti."
+      },
+      "Suspended": {
+        "label": "Sospeso",
+        "explain": "L'immobile è sospeso: non è visibile né prenotabile dagli ospiti finché i punti obbligatori non sono di nuovo completi.",
+        "need": [
+          "Risolvi i punti obbligatori indicati e completa di nuovo l'attivazione"
+        ]
+      },
+      "Paused": {
+        "label": "In pausa",
+        "explain": "Hai messo l'immobile in pausa: non compare nella ricerca e non riceve nuove prenotazioni. Quelle già confermate restano valide.",
+        "need": [
+          "Riattivalo quando vuoi: non devi inserire di nuovo nulla"
+        ]
+      }
+    },
+    "request": {
+      "Richiesto": {
+        "label": "Richiesto",
+        "explain": "La richiesta è stata inviata: il fornitore deve ancora accettarla o rifiutarla.",
+        "need": [
+          "Il fornitore accetta la richiesta"
+        ],
+        "supplier": {
+          "label": "Nuova",
+          "explain": "Un cliente ti ha chiesto un intervento: accettalo o rifiutalo.",
+          "need": [
+            "Accetta la richiesta, oppure rifiutala indicando il motivo"
+          ]
+        }
+      },
+      "PresoInCarico": {
+        "label": "Preso in carico",
+        "explain": "Il fornitore ha accettato la richiesta e se ne occuperà.",
+        "need": [
+          "Il fornitore avvia l'intervento quando inizia il lavoro"
+        ],
+        "supplier": {
+          "explain": "Hai preso in carico l'intervento.",
+          "need": [
+            "Avvia l'intervento quando inizi il lavoro"
+          ]
+        }
+      },
+      "InCorso": {
+        "label": "In corso",
+        "explain": "Il fornitore sta lavorando.",
+        "need": [
+          "Il fornitore segna il lavoro come completato"
+        ],
+        "supplier": {
+          "explain": "Hai iniziato il lavoro.",
+          "need": [
+            "Segna il lavoro come completato quando hai finito"
+          ]
+        }
+      },
+      "Completato": {
+        "label": "Completato",
+        "explain": "Il fornitore ha finito il lavoro. Quando l'hai pagato, segna la richiesta come pagata.",
+        "need": [
+          "Pagare il fornitore",
+          "Segnare la richiesta come pagata"
+        ],
+        "supplier": {
+          "label": "In attesa di pagamento",
+          "explain": "Hai finito il lavoro: ora il cliente deve pagarti e segnare la richiesta come pagata.",
+          "need": [
+            "Il cliente segna la richiesta come pagata"
+          ]
+        }
+      },
+      "Pagato": {
+        "label": "Pagato",
+        "explain": "Intervento concluso e pagato.",
+        "supplier": {
+          "explain": "Il cliente ha segnato il lavoro come pagato."
+        }
+      },
+      "Rifiutato": {
+        "label": "Rifiutato",
+        "explain": "Il fornitore non può occuparsene. Puoi inviare la richiesta a un altro fornitore.",
+        "supplier": {
+          "explain": "Hai rifiutato la richiesta."
+        }
+      },
+      "Annullato": {
+        "label": "Annullato",
+        "explain": "La richiesta è stata annullata prima che il lavoro fosse fatto."
+      }
+    },
+    "member": {
+      "Active": {
+        "label": "Attivo",
+        "explain": "Può accedere con i permessi del suo ruolo."
+      },
+      "Deactivated": {
+        "label": "Disattivato",
+        "explain": "Non può più accedere all'organizzazione. Il suo account e ciò che ha creato restano: puoi riattivarlo quando vuoi."
+      },
+      "Pending": {
+        "label": "Invito inviato",
+        "explain": "La persona non ha ancora accettato l'invito. Finché l'invito è valido occupa un posto del piano.",
+        "need": [
+          "La persona accetta l'invito dall'email"
+        ]
+      },
+      "Accepted": {
+        "label": "Invito accettato",
+        "explain": "La persona ha accettato l'invito e ora fa parte dell'organizzazione."
+      },
+      "Revoked": {
+        "label": "Invito annullato",
+        "explain": "L'invito è stato ritirato: il link non funziona più e il posto è di nuovo libero."
+      },
+      "Expired": {
+        "label": "Invito scaduto",
+        "explain": "L'invito non è stato accettato in tempo: il link non funziona più e il posto è di nuovo libero. Puoi invitare di nuovo la persona."
+      }
+    },
+    "subscription": {
+      "active": {
+        "label": "Attivo",
+        "explain": "Il piano è attivo e si rinnova da solo."
+      },
+      "trialing": {
+        "label": "In prova",
+        "explain": "Stai provando il piano. Per continuare dopo la prova serve un metodo di pagamento valido.",
+        "need": [
+          "Un metodo di pagamento valido"
+        ]
+      },
+      "past_due": {
+        "label": "Pagamento in ritardo",
+        "explain": "L'ultimo rinnovo non è andato a buon fine. Per un periodo limitato mantieni il piano, poi si passa al piano base.",
+        "need": [
+          "Aggiorna il metodo di pagamento"
+        ]
+      },
+      "incomplete": {
+        "label": "Pagamento da completare",
+        "explain": "Il primo pagamento non è andato a buon fine, quindi il piano non è ancora attivo.",
+        "need": [
+          "Completa il pagamento"
+        ]
+      },
+      "unpaid": {
+        "label": "Non pagato",
+        "explain": "Le fatture del piano non sono state pagate e il piano a pagamento non è disponibile.",
+        "need": [
+          "Salda le fatture e aggiorna il metodo di pagamento"
+        ]
+      },
+      "canceled": {
+        "label": "Scaduto",
+        "explain": "L'abbonamento è terminato: il piano a pagamento non è più disponibile.",
+        "need": [
+          "Scegli di nuovo un piano"
+        ]
+      },
+      "none": {
+        "label": "Nessun abbonamento",
+        "explain": "Non c'è un abbonamento a pagamento attivo.",
+        "need": [
+          "Scegli un piano e un metodo di pagamento"
+        ]
+      }
+    },
+    "lease": {
+      "Draft": {
+        "label": "Bozza",
+        "explain": "Il contratto è in preparazione: non è ancora stato inviato alla firma.",
+        "need": [
+          "Immobile e parti del contratto",
+          "Canone e durata",
+          "Tipo di contratto e regime fiscale"
+        ]
+      },
+      "AwaitingSignature": {
+        "label": "In attesa di firma",
+        "explain": "Il contratto è stato inviato alla firma: aspettiamo le firme delle parti.",
+        "need": [
+          "La firma di tutte le parti"
+        ]
+      },
+      "PartiallySigned": {
+        "label": "Firmato parzialmente",
+        "explain": "Alcune parti hanno firmato, altre devono ancora farlo.",
+        "need": [
+          "La firma delle parti che mancano"
+        ]
+      },
+      "Signed": {
+        "label": "Firmato",
+        "explain": "Il contratto è firmato da tutte le parti e va registrato all'Agenzia delle Entrate entro 30 giorni dalla stipula o dalla decorrenza, se anteriore.",
+        "need": [
+          "La registrazione all'Agenzia delle Entrate (modello RLI), che CasaZen ti aiuta a preparare"
+        ]
+      },
+      "RegistrationPending": {
+        "label": "Registrazione in attesa",
+        "explain": "La registrazione è stata avviata e non è ancora conclusa.",
+        "need": [
+          "L'esito della registrazione"
+        ]
+      },
+      "SentToProvider": {
+        "label": "Inviato al provider",
+        "explain": "La registrazione è stata inviata al servizio che la trasmette all'Agenzia delle Entrate.",
+        "need": [
+          "L'esito dal servizio di registrazione"
+        ]
+      },
+      "Registered": {
+        "label": "Registrato",
+        "explain": "Il contratto è registrato. I documenti restano consultabili."
+      },
+      "Rejected": {
+        "label": "Rifiutato",
+        "explain": "La registrazione non è andata a buon fine.",
+        "need": [
+          "Controlla il motivo indicato",
+          "Correggi i dati e riprova"
+        ]
+      }
+    },
+    "rent": {
+      "Scheduled": {
+        "label": "Da incassare",
+        "explain": "Il canone non è ancora stato pagato. Se la scadenza passa, risulta in ritardo.",
+        "need": [
+          "Il pagamento dell'inquilino"
+        ]
+      },
+      "Overdue": {
+        "label": "Scaduta",
+        "explain": "La scadenza è passata e il canone non risulta pagato. Puoi inviare di nuovo all'inquilino il link di pagamento.",
+        "need": [
+          "Il pagamento dell'inquilino",
+          "Oppure registra tu un pagamento fatto fuori da CasaZen"
+        ]
+      },
+      "Processing": {
+        "label": "Pagamento in corso",
+        "explain": "Il pagamento è partito e aspetta la conferma della banca.",
+        "need": [
+          "La conferma del pagamento"
+        ]
+      },
+      "Paid": {
+        "label": "Pagata",
+        "explain": "Il canone risulta incassato."
+      },
+      "Failed": {
+        "label": "Pagamento non riuscito",
+        "explain": "L'ultimo pagamento online non è andato a buon fine: l'inquilino può riprovare dal link di pagamento.",
+        "need": [
+          "L'inquilino riprova a pagare dal link",
+          "Oppure registra tu un pagamento fatto fuori da CasaZen"
+        ]
+      },
+      "Cancelled": {
+        "label": "Annullata",
+        "explain": "Il piano dei canoni è stato disattivato prima del pagamento di questa rata."
+      }
+    },
+    "supplier": {
+      "Pending": {
+        "label": "In attesa",
+        "explain": "Il profilo non è ancora attivo: finché non completi l'attivazione gli host non possono trovarti.",
+        "need": [
+          "Completa i passaggi dell'attivazione",
+          "Accetta i termini di servizio"
+        ]
+      },
+      "Active": {
+        "label": "Attivo",
+        "explain": "Il profilo è attivo: gli host possono vederlo e inviarti richieste."
+      },
+      "Suspended": {
+        "label": "Sospeso",
+        "explain": "Il profilo è stato sospeso da CasaZen: non ricevi richieste finché non viene riattivato."
+      }
+    },
+    "checkin": {
+      "Inviato": {
+        "label": "Link inviato",
+        "explain": "Il link del check-in online è stato creato ma l'ospite non l'ha ancora aperto.",
+        "need": [
+          "L'ospite apre il link e compila i dati e i documenti"
+        ]
+      },
+      "InCompilazione": {
+        "label": "In compilazione",
+        "explain": "L'ospite ha aperto il link e sta compilando i suoi dati.",
+        "need": [
+          "L'ospite invia tutti i dati"
+        ]
+      },
+      "Completo": {
+        "label": "Completato",
+        "explain": "L'ospite ha inviato tutti i dati: puoi preparare la comunicazione ad Alloggiati Web."
+      },
+      "AlloggiatiInviato": {
+        "label": "Alloggiati inviato",
+        "explain": "La comunicazione ad Alloggiati Web ha la ricevuta del portale."
+      },
+      "Scaduto": {
+        "label": "Scaduto",
+        "explain": "Il link non è più valido: è scaduto o è stato sostituito da uno nuovo.",
+        "need": [
+          "Invia un nuovo link"
+        ]
+      }
+    },
+    "alloggiati": {
+      "DaInviare": {
+        "label": "Da inviare",
+        "explain": "In attesa del giorno di arrivo: il portale non accetta una data di arrivo futura."
+      },
+      "DaInviareManualmente": {
+        "label": "Da inviare manualmente",
+        "explain": "La comunicazione è pronta ma CasaZen non la trasmette: devi inviarla tu dal portale Alloggiati Web, entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24 ore).",
+        "need": [
+          "Invio sul portale Alloggiati Web",
+          "Segnalare qui l'invio, con la data"
+        ]
+      },
+      "InviatoManualmente": {
+        "label": "Inviato manualmente",
+        "explain": "Hai dichiarato di averla inviata sul portale. CasaZen non ha una ricevuta: conserva quella del portale."
+      },
+      "Inviato": {
+        "label": "Inviato (ricevuta)",
+        "explain": "La comunicazione è stata trasmessa e ha la ricevuta del portale."
+      },
+      "Rifiutato": {
+        "label": "Rifiutato",
+        "explain": "Il portale ha rifiutato la comunicazione: correggi i dati e inviala di nuovo dal portale della Questura.",
+        "need": [
+          "Correggi i dati indicati",
+          "Invia di nuovo dal portale"
+        ]
+      },
+      "Errore": {
+        "label": "Errore",
+        "explain": "Errore nella preparazione della comunicazione: inviala dal portale della Questura.",
+        "need": [
+          "Invia la comunicazione dal portale della Questura"
+        ]
+      }
+    }
+  },
   "vetrina": {
     "title": "Vetrina",
     "description": "Il tuo sito di prenotazioni pubblico. Qui puoi vedere come appari ai tuoi ospiti.",
@@ -3213,6 +3629,32 @@
     "visitDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
     "visitSite": "Visita {{siteName}}",
     "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico."
+  },
+  "wizard": {
+    "back": "Indietro",
+    "cancel": "Annulla",
+    "continueTo": "Continua: {{step}}",
+    "skip": "Salta questo passo",
+    "draft": {
+      "resume": "Riprendi dal passo {{number}}",
+      "resumeText": "Eri arrivato al passo {{current}} di {{total}}: «{{step}}».",
+      "resumeTitle": "Hai una bozza salvata alle {{time}}",
+      "restart": "Ricomincia da capo",
+      "savedAt": "Bozza salvata alle {{time}}"
+    },
+    "errors": {
+      "finishFailed": "Non siamo riusciti a completare l'operazione. Controlla i dati e riprova.",
+      "summary_one": "C'è 1 campo da controllare",
+      "summary_other": "Ci sono {{count}} campi da controllare"
+    },
+    "done": {
+      "whatNext": "Cosa succede ora"
+    },
+    "summary": {
+      "edit": "Modifica",
+      "editField": "Modifica {{field}}",
+      "empty": "Non indicato"
+    }
   },
   "directBooking": {
     "title": "Direct Booking",
@@ -4965,7 +5407,6 @@
       "description": "Completa il check-out per {{guest}}",
       "confirmDepartureLabel": "Confermo che l'ospite ha lasciato la struttura.",
       "serviceNotes": "Note per il fornitore",
-      "next": "Avanti",
       "backToBooking": "Torna alla prenotazione",
       "complete": "Chiudi soggiorno",
       "completed": "Check-out completato: la proprietà è pronta per il prossimo ospite.",
@@ -4977,31 +5418,34 @@
       "arrivalMissingHint": "L'arrivo di {{guest}} non risulta registrato. Se l'ospite è arrivato, registra l'arrivo e procedi con il check-out.",
       "registerArrivalAndProceed": "Registra arrivo e procedi",
       "registeringArrival": "Registrazione dell'arrivo…",
-      "back": "Indietro",
       "completedNotReady": "Check-out completato. La proprietà resta da dichiarare pronta nel riepilogo compliance.",
-      "progress": "Passaggi completati: {{done}} su {{total}}",
       "progressSaveFailed": "Impossibile salvare l'avanzamento del check-out.",
       "closedLoadError": "Impossibile caricare il riepilogo del check-out.",
       "propertyReadyConfirmed": "Proprietà dichiarata pronta per il prossimo ospite.",
       "propertyReadyFailed": "Impossibile dichiarare la proprietà pronta.",
       "steps": {
         "stay-summary": {
+          "label": "Soggiorno",
           "title": "Riepilogo soggiorno",
           "hint": "Controlla il soggiorno e conferma che l'ospite è partito."
         },
         "alloggiati": {
+          "label": "Alloggiati",
           "title": "Alloggiati Web",
           "hint": "Stato della comunicazione degli ospiti alla Questura."
         },
         "cleaning": {
+          "label": "Pulizie",
           "title": "Pulizie",
           "hint": "Richiedi le pulizie a un fornitore del comune della proprietà, oppure salta questo passaggio."
         },
         "tourist-tax": {
+          "label": "Imposta",
           "title": "Imposta di soggiorno",
           "hint": "Indica come è stata riscossa l'imposta di soggiorno."
         },
         "property-ready": {
+          "label": "Proprietà",
           "title": "Proprietà pronta",
           "hint": "Conferma se la proprietà è pronta per il prossimo ospite."
         }
@@ -5061,6 +5505,33 @@
         "propertyReady": "Proprietà dichiarata pronta il {{date}}.",
         "propertyNotReady": "La proprietà non è ancora stata dichiarata pronta per il prossimo ospite.",
         "confirmReady": "Dichiara la proprietà pronta"
+      },
+      "errors": {
+        "confirmDeparture": "Conferma che l'ospite ha lasciato la struttura.",
+        "cleaningChoice": "Scegli se richiedere le pulizie a un fornitore o saltare questo passaggio.",
+        "cleaningSupplier": "Scegli il fornitore a cui inviare la richiesta.",
+        "cleaningCategory": "Scegli il tipo di servizio.",
+        "taxCollection": "Indica come è stata riscossa l'imposta di soggiorno.",
+        "propertyReady": "Indica se la proprietà è pronta per il prossimo ospite."
+      },
+      "summary": {
+        "title": "Le tue risposte",
+        "departure": "Partenza",
+        "departureConfirmed": "L'ospite ha lasciato la struttura",
+        "cleaning": "Pulizie",
+        "cleaningRequest": "Richiesta inviata a un fornitore",
+        "cleaningSkip": "Saltate",
+        "touristTax": "Imposta di soggiorno"
+      },
+      "done": {
+        "title": "Il soggiorno è chiuso",
+        "description": "Il check-out di {{guest}} è registrato.",
+        "stayClosed": "Nella prenotazione il soggiorno risulta concluso.",
+        "propertyReady": "L'immobile è segnato come pronto per il prossimo ospite.",
+        "propertyNotReady": "L'immobile non è ancora pronto: resta nel riepilogo compliance finché non lo dichiari pronto.",
+        "cleaningRequested": "La richiesta di pulizia è stata inviata al fornitore: la trovi nel dettaglio della prenotazione.",
+        "alloggiatiToSend": "La comunicazione Alloggiati non risulta ancora inviata: controllala dalla scheda della prenotazione.",
+        "compliance": "Vai agli adempimenti"
       }
     },
     "safety": {

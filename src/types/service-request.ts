@@ -4,7 +4,9 @@ export type ServiceRequestStatus =
   | 'InCorso'
   | 'Completato'
   | 'Pagato'
-  | 'Rifiutato';
+  | 'Rifiutato'
+  /** Cancelled before the work was done: by the host, by the supplier before starting, or when the supplier did not answer in time (SP-04). */
+  | 'Annullato';
 
 export type ServiceRequestUrgency = 'Normal' | 'High' | 'Emergency';
 
