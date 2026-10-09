@@ -384,7 +384,6 @@
     "jobs": "Processes",
     "suppliers": "Suppliers",
     "guests": "Guests",
-    "cinAudit": "CIN Audit",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
     "more": "More",
@@ -392,7 +391,7 @@
     "brandAdmin": "CASAZEN Admin",
     "brandSupplier": "CASAZEN Supplier",
     "vetrina": "Showcase",
-    "directBooking": "Direct Booking",
+    "directBooking": "Booking site",
     "inviteSupplier": "Invite supplier",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendar",
@@ -400,22 +399,30 @@
     "supplierAvailability": "Availability",
     "supplierHelpIcal": "iCal guide",
     "group": {
-      "operazioni": "Operations",
-      "immobili": "Properties",
-      "finanza": "Finance",
-      "compliance": "Compliance",
-      "compliance-audit": "Compliance Audit",
-      "integrazioni": "Integrations",
-      "account": "Settings",
-      "reporting": "Finance",
-      "vetrina": "Showcase",
-      "operations": "Administration",
-      "amministrazione": "Administration"
+      "activity": "Your business",
+      "everyday": "Every day",
+      "management": "Management",
+      "offer": "Your offer",
+      "platform": "Platform",
+      "portfolio": "Portfolio",
+      "work": "Work"
     },
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",
     "siteDocuments": "Site documents",
-    "supplierShowcase": "Showcase"
+    "supplierShowcase": "Showcase",
+    "compliance": "Compliance",
+    "complianceAudit": "Compliance audit",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "menuLabel": "{{area}} menu",
+    "childLinksLabel": "Related pages",
+    "count": {
+      "bookingRequests_one": "{{count}} request to approve",
+      "bookingRequests_other": "{{count}} requests to approve",
+      "supplierRequests_one": "{{count}} request to accept",
+      "supplierRequests_other": "{{count}} requests to accept"
+    }
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -429,14 +436,11 @@
     "longRentSubtitle": "Long-term rentals",
     "adminSubtitle": "Administration",
     "adminFooter": "v1.0.0 · Admin",
-    "workspaceLabel": "Workspace",
-    "workspaceContext": "Workspace context",
     "mainNavigation": "Main navigation",
     "mobileNavigation": "Mobile navigation",
     "openMenu": "Open navigation menu",
     "layerShortStay": "Short-stay",
     "layerLongTerm": "Long-term",
-    "supplierSubtitle": "Supplier",
     "layerSwitcherLabel": "Application layer"
   },
   "leases": {
@@ -5616,6 +5620,27 @@
       "requestAccessGeneric": "To request access, contact whoever administers your account.",
       "mailSubject": "Access request for a CasaZen page",
       "mailBody": "Hello, I would like to request access to the page {{path}} on CasaZen. Thank you."
+    }
+  },
+  "areas": {
+    "admin": {
+      "description": "Users, suppliers, jobs and compliance checks of the platform",
+      "name": "Administration"
+    },
+    "longRent": {
+      "description": "Contracts, tenants, due dates and rents",
+      "name": "Long-term rentals"
+    },
+    "shortRent": {
+      "description": "Bookings, calendar, prices and your direct booking site",
+      "name": "Short-term rentals"
+    },
+    "supplier": {
+      "description": "Requests, availability, services and showcase",
+      "name": "Supplier portal"
+    },
+    "switcher": {
+      "current": "Current area: {{name}}. Change area"
     }
   },
   "validation": {

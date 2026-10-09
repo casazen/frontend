@@ -1,39 +1,42 @@
-import type { LucideIcon } from 'lucide-react';
-import { Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  getDesktopNavByGroup,
-  getVisibleNavEntries,
-  type AppContextKey,
-} from '@/config/route-manifest';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { getArea } from '@/config/areas';
+import { getContextNav, getNavMatchEntries, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useNavCounts } from '@/hooks/use-nav-counts';
+import { useUiStore } from '@/store/ui-store';
+import { cn } from '@/lib/utils';
+import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
-import { WorkspaceSwitcher } from './workspace-switcher';
 
 interface ContextSidebarProps {
   contextKey: AppContextKey;
-  subtitle: string;
-  icon?: LucideIcon;
-  iconClassName?: string;
-  footerLabel?: string;
+  /** The organization of the user, shown under the name of the area. */
+  organizationName?: string | null;
 }
 
-export function ContextSidebar({
-  contextKey,
-  subtitle,
-  icon: Icon = Home,
-  iconClassName = 'bg-primary text-primary-foreground',
-  footerLabel = 'v1.0.0 · casazen.io',
-}: ContextSidebarProps) {
+/**
+ * The sidebar of an area (UI-04a): the area switcher, the menu (labelled groups of at most seven entries, "Altro", the
+ * counters) and the button that reduces it to the icons, which the browser remembers. The name, the icon and the footer
+ * line of the area come from `config/areas.ts`, the entries from the route manifest.
+ */
+export function ContextSidebar({ contextKey, organizationName = null }: ContextSidebarProps) {
   const { t } = useTranslation();
-  const { contexts, hasPermission } = useWorkspace();
+  const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
-  const permissionCheck = (ctx: AppContextKey, permission: string) =>
-    hasPermission(ctx, permission);
+  const collapsed = useUiStore((state) => state.sidebarCollapsed);
+  const toggleCollapsed = useUiStore((state) => state.toggleSidebarCollapsed);
 
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
-  const grouped = getDesktopNavByGroup(contextKey, permissionCheck, flags);
+  const area = getArea(contextKey);
+  const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
+  const nav = getContextNav(contextKey, permissionCheck, flags);
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
+  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
+
+  const toggleLabel = collapsed ? t('nav.expand') : t('nav.collapse');
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  const footerLabel = area.footerKey ? t(area.footerKey) : 'v1.0.0 · casazen.io';
 
   return (
     // Sticky to the window, as tall as the visible viewport (`dvh`), with the menu scrolling inside it: the window is
@@ -41,33 +44,38 @@ export function ContextSidebar({
     <aside
       role="complementary"
       aria-label={t('shell.mainNavigation')}
-      className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col self-start border-r bg-card md:flex"
+      data-collapsed={collapsed}
+      className={cn(
+        'sticky top-0 hidden h-dvh shrink-0 flex-col self-start border-r bg-card transition-[width] duration-200 motion-reduce:transition-none md:flex',
+        collapsed ? 'w-[4.5rem]' : 'w-64',
+      )}
     >
-      <div className="border-b px-4 py-4 space-y-3">
-        <div className="flex items-center gap-2.5 px-2">
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-lg shadow-sm ${iconClassName}`}
-          >
-            <Icon className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-base font-bold tracking-tight">CASAZEN</span>
-            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              {subtitle}
-            </span>
-          </div>
-        </div>
-        {contexts.length > 1 && <WorkspaceSwitcher layout="sidebar" />}
+      <div className="border-b p-3">
+        <AreaSwitcher contextKey={contextKey} organizationName={organizationName} collapsed={collapsed} />
       </div>
-      <nav className="flex-1 overflow-y-auto p-3">
-        <GroupedNavLinks
-          grouped={grouped}
-          allEntries={allEntries}
-          variant="sidebar"
-        />
+      <nav
+        aria-label={t('nav.menuLabel', { area: t(area.nameKey) })}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4"
+      >
+        <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
       </nav>
-      <div className="border-t p-3">
-        <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
+      <div className="flex flex-col gap-1 border-t p-3">
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          title={collapsed ? toggleLabel : undefined}
+          data-testid="sidebar-collapse-toggle"
+          className={cn(
+            'flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:min-h-11',
+            collapsed && 'justify-center px-0',
+          )}
+        >
+          <ToggleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span className={cn(collapsed && 'sr-only')}>{toggleLabel}</span>
+        </button>
+        {collapsed ? null : (
+          <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
+        )}
       </div>
     </aside>
   );

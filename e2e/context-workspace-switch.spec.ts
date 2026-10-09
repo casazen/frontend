@@ -52,19 +52,43 @@ test.describe('Context workspace switcher (#189)', () => {
     await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
   });
 
+  // UI-04a: the area switcher (a button with a menu) replaces the icon tabs of the sidebar.
   test('dual-role user can switch between contexts', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
-    const shortStayTab = page.getByRole('tab', { name: /Affitti brevi|Short-term|Short stay/i });
-    const longTermTab = page.getByRole('tab', { name: /lungo termine|Long-term|long stay/i });
-    await expect(shortStayTab).toBeVisible();
-    await longTermTab.click();
+    const switcher = page.getByTestId('area-switcher');
+    await expect(switcher).toBeVisible();
+    await expect(switcher).toHaveAttribute('aria-label', /Affitti brevi|Short-term rentals/);
+
+    await switcher.click();
+    await page.getByRole('menuitemradio', { name: /Affitti lunghi|Long-term rentals/ }).click();
     await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
-    await shortStayTab.click();
+    await expect(switcher).toHaveAttribute('aria-label', /Affitti lunghi|Long-term rentals/);
+
+    await switcher.click();
+    await page.getByRole('menuitemradio', { name: /Affitti brevi|Short-term rentals/ }).click();
     await expect(page).toHaveURL(/\/app\/short-rent/);
   });
 
   test('admin-only user lands in admin context', async ({ page }) => {
+    // The dashboard of the console reads its numbers from the API: unanswered, the dev server answers with the page of the
+    // app and the dashboard fails while the test looks at the menu (a race that made this test flaky).
+    await page.route('**/api/admin/stats', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          totalProperties: 0,
+          activeProperties: 0,
+          totalBookings: 0,
+          bookingsThisMonth: 0,
+          upcomingCheckIns: 0,
+          totalRevenue: 0,
+          cinCompliance: { total: 0, valid: 0, missing: 0, invalid: 0 },
+          otaSyncHealth: { synced: 0, failed: 0, neverSynced: 0 },
+        }),
+      }),
+    );
     await page.goto(demoUrl('/app/choose-context', 'admin'));
     await expect(page).toHaveURL(/\/app\/admin/);
     await expect(page.getByRole('link', { name: 'Utenti' })).toBeVisible();

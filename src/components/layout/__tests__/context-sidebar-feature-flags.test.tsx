@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
@@ -10,6 +10,8 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: vi.fn(),
 }));
+// The counters are not what this test is about.
+vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 
 import { useWorkspace } from '@/hooks/use-workspace';
 
@@ -17,7 +19,7 @@ function renderSidebar(otaPartnerApi?: boolean) {
   const sidebar = (
     <I18nextProvider i18n={i18n}>
       <MemoryRouter initialEntries={['/app/short-rent']}>
-        <ContextSidebar contextKey="short-rent" subtitle="Affitti brevi" />
+        <ContextSidebar contextKey="short-rent" />
       </MemoryRouter>
     </I18nextProvider>
   );
@@ -29,7 +31,10 @@ function renderSidebar(otaPartnerApi?: boolean) {
   );
 }
 
-// FD-20 / D10: the "Canali OTA" menu entry is behind the otaPartnerApi flag, off by default.
+const openMore = () => fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
+
+// FD-20 / D10: the "Canali OTA" menu entry is behind the otaPartnerApi flag, off by default. It is one of the entries of
+// "Altro" (UI-04a), which the tests open.
 describe('ContextSidebar feature flags', () => {
   beforeEach(() => {
     vi.mocked(useWorkspace).mockReturnValue({
@@ -44,15 +49,17 @@ describe('ContextSidebar feature flags', () => {
 
   it('has no OTA entry when the otaPartnerApi flag is off, even with ota.read', () => {
     renderSidebar(false);
+    openMore();
 
     expect(screen.getByRole('link', { name: 'Immobili' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ospiti' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'OTA' })).not.toBeInTheDocument();
     expect(document.querySelector('a[href^="/app/short-rent/ota"]')).toBeNull();
-    expect(screen.queryByText('Integrazioni')).not.toBeInTheDocument();
   });
 
   it('has no OTA entry when the flags are not available', () => {
     renderSidebar();
+    openMore();
 
     expect(screen.getByRole('link', { name: 'Immobili' })).toBeInTheDocument();
     expect(document.querySelector('a[href^="/app/short-rent/ota"]')).toBeNull();
@@ -60,6 +67,7 @@ describe('ContextSidebar feature flags', () => {
 
   it('shows the OTA entry when the otaPartnerApi flag is on', () => {
     renderSidebar(true);
+    openMore();
 
     expect(screen.getByRole('link', { name: 'OTA' })).toHaveAttribute('href', '/app/short-rent/ota');
   });

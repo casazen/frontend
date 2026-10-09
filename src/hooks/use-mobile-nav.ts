@@ -1,18 +1,23 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-  getPrimaryNavEntries,
-  getSecondaryNavEntries,
+  getBottomNavEntries,
+  getNavMatchEntries,
   getVisibleNavEntries,
   type AppContextKey,
 } from '@/config/route-manifest';
-import { isNavEntryActive } from '@/lib/nav-active';
+import { resolveActiveNavEntry } from '@/lib/nav-active';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useUiStore } from '@/store/ui-store';
 
 export type MobileNavTabId = string | 'more';
 
+/**
+ * What the bottom bar of the phone shows (UI-04a): the destinations the manifest marks with `navBottom` (at most four) and
+ * "Altro", which opens the menu with everything else. The tab of the open page is its destination, or "Altro" when the
+ * page is not one of them. UI-04b redraws the bar and the menu.
+ */
 export function useMobileNav(contextKey: AppContextKey) {
   const location = useLocation();
   const { hasPermission } = useWorkspace();
@@ -23,39 +28,30 @@ export function useMobileNav(contextKey: AppContextKey) {
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
-  const primaryEntries = getPrimaryNavEntries(contextKey, permissionCheck, flags);
-  const secondaryEntries = getSecondaryNavEntries(contextKey, permissionCheck, flags);
-  const hasSecondary = secondaryEntries.length > 0;
+  const bottomEntries = getBottomNavEntries(contextKey, permissionCheck, flags);
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
+  const hasMore = getVisibleNavEntries(contextKey, permissionCheck, flags).some(
+    (entry) => entry.navBottom === undefined,
+  );
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname, setSidebarOpen]);
 
   const resolveActiveTab = (): MobileNavTabId => {
-    const pathname = location.pathname;
-
-    const activePrimary = primaryEntries.find((entry) =>
-      isNavEntryActive(pathname, entry, allEntries),
-    );
-    if (activePrimary) {
-      return activePrimary.path;
+    const active = resolveActiveNavEntry(location.pathname, matchEntries);
+    const onBar = bottomEntries.find((entry) => entry.path === active?.path);
+    if (onBar) {
+      return onBar.path;
     }
-
-    const onSecondary = secondaryEntries.some((entry) =>
-      isNavEntryActive(pathname, entry, allEntries),
-    );
-    if (onSecondary || sidebarOpen) {
-      return 'more';
-    }
-
-    return primaryEntries[0]?.path ?? 'more';
+    // A page that is not a bar destination — one of "Altro", or a page in no menu, such as plan and billing —
+    // marks "Altro", including while the drawer is closed.
+    return 'more';
   };
 
   return {
-    primaryEntries,
-    secondaryEntries,
-    hasSecondary,
+    bottomEntries,
+    hasMore,
     activeTab: resolveActiveTab(),
     sidebarOpen,
     setSidebarOpen,
