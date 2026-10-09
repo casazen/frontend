@@ -47,6 +47,7 @@ import { DpaPage, PrivacyPage, TermsPage } from '@/features/legal/legal-document
 import { SubprocessorsPage } from '@/features/legal/subprocessors-page';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
+import { devRoutes } from './dev-routes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -249,6 +250,8 @@ export const appRoutes: RouteObject[] = [
     path: '/help/ical',
     element: <IcalHelpPage />,
   },
+  // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
+  ...devRoutes,
   {
     // Public 404 (A8-03): never a redirect to the login.
     path: '*',
