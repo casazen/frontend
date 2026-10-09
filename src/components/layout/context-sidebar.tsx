@@ -4,11 +4,13 @@ import { getArea } from '@/config/areas';
 import { getContextNav, getNavMatchEntries, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
+import { useRailTooltip } from './rail-tooltip';
 
 interface ContextSidebarProps {
   contextKey: AppContextKey;
@@ -16,17 +18,48 @@ interface ContextSidebarProps {
   organizationName?: string | null;
 }
 
+/** The button that reduces the sidebar to the icons and gives it back; reduced, its name is a tooltip like the others. */
+function CollapseToggle({ collapsed, label, onToggle }: { collapsed: boolean; label: string; onToggle: () => void }) {
+  const { triggerProps, tooltip } = useRailTooltip(label, collapsed);
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        data-testid="sidebar-collapse-toggle"
+        className={cn(
+          'flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:min-h-11',
+          collapsed && 'justify-center px-0',
+        )}
+        {...triggerProps}
+      >
+        <ToggleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <span className={cn(collapsed && 'sr-only')}>{label}</span>
+      </button>
+      {tooltip}
+    </>
+  );
+}
+
 /**
  * The sidebar of an area (UI-04a): the area switcher, the menu (labelled groups of at most seven entries, "Altro", the
  * counters) and the button that reduces it to the icons, which the browser remembers. The name, the icon and the footer
  * line of the area come from `config/areas.ts`, the entries from the route manifest.
+ *
+ * On a tablet (from `md` to `lg`, UI-04b) it is always the rail of icons, so that the page keeps the width: there is no
+ * button, the choice is the window's. Whether the user reduced it or the window is narrow, the names of the icons show as
+ * a tooltip next to them, on hover and on keyboard focus.
  */
 export function ContextSidebar({ contextKey, organizationName = null }: ContextSidebarProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
-  const collapsed = useUiStore((state) => state.sidebarCollapsed);
+  const isTablet = useMediaQuery(TABLET_QUERY);
+  const reducedByUser = useUiStore((state) => state.sidebarCollapsed);
   const toggleCollapsed = useUiStore((state) => state.toggleSidebarCollapsed);
+  const collapsed = reducedByUser || isTablet;
 
   const area = getArea(contextKey);
   const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
@@ -34,8 +67,6 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
   const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
 
-  const toggleLabel = collapsed ? t('nav.expand') : t('nav.collapse');
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
   const footerLabel = area.footerKey ? t(area.footerKey) : 'v1.0.0 · casazen.io';
 
   return (
@@ -59,24 +90,18 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
       >
         <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
       </nav>
-      <div className="flex flex-col gap-1 border-t p-3">
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          title={collapsed ? toggleLabel : undefined}
-          data-testid="sidebar-collapse-toggle"
-          className={cn(
-            'flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:min-h-11',
-            collapsed && 'justify-center px-0',
+      {isTablet ? null : (
+        <div className="flex flex-col gap-1 border-t p-3">
+          <CollapseToggle
+            collapsed={collapsed}
+            label={collapsed ? t('nav.expand') : t('nav.collapse')}
+            onToggle={toggleCollapsed}
+          />
+          {collapsed ? null : (
+            <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
           )}
-        >
-          <ToggleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className={cn(collapsed && 'sr-only')}>{toggleLabel}</span>
-        </button>
-        {collapsed ? null : (
-          <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
   );
 }

@@ -106,12 +106,12 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
 
       await page.getByRole('button', { name: 'Apri menu di navigazione' }).click();
-      const drawer = page.getByRole('dialog');
-      // "Incassi" is a secondary entry: it is in the menu, not in the bottom bar (see navigation.spec.ts).
-      await drawer.getByRole('link', { name: /Incassi|Payments/i }).click();
+      const sheet = page.getByRole('dialog');
+      // "Incassi" is a secondary entry: it is in the sheet "Altro", not in the bottom bar (see navigation.spec.ts).
+      await sheet.getByRole('link', { name: /Incassi|Payments/i }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/payments/);
-      await expect(drawer).not.toBeVisible();
+      await expect(sheet).not.toBeVisible();
       await expect(page.getByRole('heading', { level: 1, name: /Pagamenti|Payments/i })).toBeFocused();
       await expect(page.getByTestId('route-announcer')).not.toBeEmpty();
       expect(

@@ -72,27 +72,27 @@ test.describe('Navigation (#252 / #259)', () => {
       await expect(page).toHaveURL(/\/app\/short-rent\/properties/);
     });
 
-    test('drawer opens from hamburger and closes on route change', async ({ page }) => {
+    test('the sheet opens from the menu button of the header and closes on route change', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await expect(drawer).toBeVisible();
-      // "Incassi" is a main entry that is not one of the four destinations of the bottom bar: the drawer lists it (UI-04a).
-      await expect(drawer.getByText(/Gestione|Management/i)).toBeVisible();
+      const sheet = page.getByRole('dialog');
+      await expect(sheet).toBeVisible();
+      // "Incassi" is a main entry that is not one of the four destinations of the bottom bar: the sheet from the bottom lists it (UI-04a, UI-04b).
+      await expect(sheet.getByText(/Gestione|Management/i)).toBeVisible();
 
-      await drawer.getByRole('link', { name: /Incassi|Payments/i }).click();
+      await sheet.getByRole('link', { name: /Incassi|Payments/i }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/payments/);
-      await expect(drawer).not.toBeVisible();
+      await expect(sheet).not.toBeVisible();
     });
 
-    test('drawer shows disambiguated payment labels', async ({ page }) => {
+    test('the sheet shows disambiguated payment labels', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await expect(drawer.getByRole('link', { name: /Incassi|Payments/i })).toBeVisible();
-      await expect(drawer.getByRole('link', { name: /Stripe Connect/i })).toBeVisible();
+      const sheet = page.getByRole('dialog');
+      await expect(sheet.getByRole('link', { name: /Incassi|Payments/i })).toBeVisible();
+      await expect(sheet.getByRole('link', { name: /Stripe Connect/i })).toBeVisible();
     });
 
     test('no horizontal overflow on dashboard', async ({ page }) => {
@@ -119,8 +119,8 @@ test.describe('Navigation (#252 / #259)', () => {
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
       await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await drawer.getByTestId('area-switcher').click();
+      const sheet = page.getByRole('dialog');
+      await sheet.getByTestId('area-switcher').click();
       await expect(page.getByRole('menuitemradio', { name: /Affitti brevi|Short-term rentals/i })).toBeVisible();
       await expect(page.getByRole('menuitemradio', { name: /Affitti lunghi|Long-term rentals/i })).toBeVisible();
     });

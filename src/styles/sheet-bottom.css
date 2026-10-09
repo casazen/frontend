@@ -1,0 +1,68 @@
+/*
+ * Motion of the sheet that comes up from the bottom (UI-04b, `components/ui/sheet.tsx`).
+ *
+ * The `animate-in` / `slide-in-from-*` utilities the other sides ask for do nothing yet: no animation plugin is installed
+ * (UI-07 adds one and can then drop this file). The sheet from the bottom is written here instead: it slides up when it
+ * opens and down when it closes, from where a drag of the handle let it go (`--sheet-drag`), and its dark background fades.
+ * Without motion (prefers-reduced-motion) it just appears and disappears.
+ */
+@keyframes sheet-bottom-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-bottom-out {
+  from {
+    transform: translateY(var(--sheet-drag, 0px));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-sheet-side='bottom'][data-state='open'] {
+    animation: sheet-bottom-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-side='bottom'][data-state='closed'] {
+    animation: sheet-bottom-out 200ms ease-in forwards;
+  }
+
+  [data-sheet-overlay='bottom'][data-state='open'] {
+    animation: sheet-overlay-in 200ms ease-out;
+  }
+
+  [data-sheet-overlay='bottom'][data-state='closed'] {
+    animation: sheet-overlay-out 200ms ease-in forwards;
+  }
+}
+
+/* A drag lets go of the sheet at once: no easing back, no sliding, when the user asks for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  [data-sheet-side='bottom'] {
+    transition: none !important;
+  }
+}

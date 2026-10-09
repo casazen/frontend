@@ -5,7 +5,10 @@ import { persist } from 'zustand/middleware';
 export const UI_STORE_STORAGE_KEY = 'casazen:sidebar';
 
 interface UiState {
-  /** On mobile (< md), semantically "mobile nav drawer open". */
+  /**
+   * On a phone (< md): the sheet "Altro" of the bottom bar is open (`MoreSheet`, UI-04b). The bar and the menu button of the
+   * header open it. The name is the one the drawer that slid in from the left had.
+   */
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -13,6 +16,12 @@ interface UiState {
   sidebarCollapsed: boolean;
   toggleSidebarCollapsed: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  /**
+   * The bottom bar of the phone is on the page (`BottomNav`, UI-04b). The toasts read it (`AppToaster`): with a bar they come
+   * up above it; on a page without one (the public pages, the login) they stay where they were, at the top.
+   */
+  bottomBarVisible: boolean;
+  setBottomBarVisible: (visible: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -24,11 +33,14 @@ export const useUiStore = create<UiState>()(
       sidebarCollapsed: false,
       toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      bottomBarVisible: false,
+      setBottomBarVisible: (visible) => set({ bottomBarVisible: visible }),
     }),
     {
       name: UI_STORE_STORAGE_KEY,
       version: 1,
-      // The drawer of the phone starts closed on every visit: only the preference is kept.
+      // The sheet of the phone starts closed on every visit and the bar says by itself that it is there: only the
+      // preference is kept.
       partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed }),
     },
   ),

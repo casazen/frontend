@@ -148,27 +148,27 @@ test.describe('Supplier layout standardization', () => {
       await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
     });
 
-    test('drawer opens from hamburger and shows secondary items', async ({ page }) => {
+    test('the sheet opens from the menu button of the header and shows secondary items', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
       await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await expect(drawer).toBeVisible();
-      await expect(drawer.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
+      const sheet = page.getByRole('dialog');
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
     });
 
-    test('drawer closes on navigation', async ({ page }) => {
+    test('the sheet closes on navigation', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
       await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await drawer.getByRole('link', { name: /Profilo|Profile/i }).click();
+      const sheet = page.getByRole('dialog');
+      await sheet.getByRole('link', { name: /Profilo|Profile/i }).click();
       await expect(page).toHaveURL(/\/app\/supplier\/profile/);
-      await expect(drawer).not.toBeVisible();
+      await expect(sheet).not.toBeVisible();
     });
   });
 
