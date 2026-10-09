@@ -29,7 +29,7 @@ export function LongRentPropertyEditPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen message={t('longRentProperties.detail.loading')} />;
+    return <LoadingScreen message={t('longRentProperties.detail.loading')} className="h-auto flex-1" />;
   }
 
   if (isError || !property) {

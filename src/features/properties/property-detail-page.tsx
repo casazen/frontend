@@ -76,7 +76,7 @@ export function PropertyDetailPage() {
   const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
 
   if (isLoading) {
-    return <LoadingScreen message={t('property.detail.loading')} />;
+    return <LoadingScreen message={t('property.detail.loading')} className="h-auto flex-1" />;
   }
 
   // An API error is never shown as "not found" (only a 404 is, A2-36).

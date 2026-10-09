@@ -9,7 +9,8 @@ const LAZY_ROUTE_COMPONENTS: Record<string, LazyExoticComponent<ComponentType>> 
 export function ManifestRoute({ entry }: { entry: RouteManifestEntry }) {
   const Component = LAZY_ROUTE_COMPONENTS[entry.path];
   return (
-    <Suspense fallback={<LoadingScreen />}>
+    // Inside the content region of the shell (it scrolls with the window): the spinner fills it, not the viewport.
+    <Suspense fallback={<LoadingScreen className="h-auto flex-1" />}>
       <Component />
     </Suspense>
   );

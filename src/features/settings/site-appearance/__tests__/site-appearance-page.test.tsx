@@ -8,8 +8,10 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { OrgsApi } from '@/api/orgs.api';
+import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import * as userQueries from '@/queries/use-users';
+import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import type { OrgBranding } from '@/types';
 import { SiteAppearancePage } from '../site-appearance-page';
 
@@ -64,15 +66,10 @@ function problemError(status: number, data: Record<string, unknown> = {}): Axios
   });
 }
 
-function mockContexts(contextKeys: string[]) {
+/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
+function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
-    contexts: contextKeys.map((contextKey) => ({
-      contextKey,
-      displayName: contextKey,
-      roleKey: contextKey,
-      permissions: [],
-      defaultRoute: `/app/${contextKey}`,
-    })),
+    contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
   } as unknown as WorkspaceResult);
 }
 
@@ -119,6 +116,19 @@ describe('SiteAppearancePage', () => {
     expect(screen.getByTestId('site-appearance-admin-required')).toHaveTextContent(i18n.t('siteAppearance.adminRequired'));
     expect(OrgsApi.getBranding).not.toHaveBeenCalled();
   });
+
+  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key.
+  it.each(MEMBER_ROLE_KEYS)(
+    'SiteAppearancePage_MemberWithRoleKey_%s_ShowsAdminRequiredWithoutCallingTheApi',
+    (roleKey) => {
+      mockContexts(['short-rent'], roleKey);
+      renderPage();
+
+      expect(screen.getByTestId('site-appearance-admin-required')).toHaveTextContent(i18n.t('siteAppearance.adminRequired'));
+      expect(OrgsApi.getBranding).not.toHaveBeenCalled();
+      expect(OrgsApi.updateBranding).not.toHaveBeenCalled();
+    },
+  );
 
   it('SiteAppearancePage_WhileLoading_ShowsSkeleton', () => {
     vi.mocked(OrgsApi.getBranding).mockReturnValue(new Promise(() => {}));

@@ -42,12 +42,16 @@ export function useBooking(id: string) {
   });
 }
 
-/** "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). */
-export function useBookingApprovalRequests() {
+/**
+ * "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). Also the counter of "Prenotazioni"
+ * in the menu (UI-04a), which shares the cache with the requests panel and reads it only when `enabled`.
+ */
+export function useBookingApprovalRequests(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, 'approval-requests'],
     queryFn: () => bookingsApi.getApprovalRequests(),
     retry: retryTransientErrors(1),
+    enabled: options?.enabled ?? true,
   });
 }
 

@@ -16,14 +16,6 @@ vi.mock('@/queries/use-comuni', () => ({
   useComune: () => ({ data: undefined, isError: false }),
 }));
 
-// Radix checkboxes measure themselves.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const POLICIES: CancellationPolicyOption[] = [
   {
     id: 'policy-flex',

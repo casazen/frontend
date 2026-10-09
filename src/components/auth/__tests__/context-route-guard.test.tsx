@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ContextRouteGuard } from '../context-route-guard';
+import i18n from '@/i18n/config';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
@@ -134,5 +135,82 @@ describe('ContextRouteGuard plan and billing pages of another context', () => {
     renderBillingRoute('/app/short-rent/settings/plan');
 
     expect(screen.getByText('leases')).toBeInTheDocument();
+  });
+});
+
+function renderReservedRoute(options: { permissions: string[]; flagOn?: boolean; homePath?: string }) {
+  const homePath = options.homePath ?? '/app/short-rent';
+  vi.mocked(useWorkspace).mockReturnValue({
+    contexts: [
+      {
+        contextKey: 'short-rent',
+        displayName: 'Affitti brevi',
+        roleKey: 'property_manager',
+        permissions: options.permissions,
+        defaultRoute: homePath,
+      },
+    ],
+    activeContext: 'short-rent',
+    isReady: true,
+    setActiveContext: vi.fn(),
+    hasPermission: vi.fn().mockReturnValue(true),
+    getDefaultRoute: vi.fn().mockReturnValue(homePath),
+  });
+
+  return render(
+    <FeatureFlagsContext.Provider
+      value={{ flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi: options.flagOn ?? true }, isLoading: false }}
+    >
+      <MemoryRouter initialEntries={['/app/short-rent/payments']}>
+        <Routes>
+          <Route path="/app/short-rent" element={<p>home</p>} />
+          <Route
+            path="/app/short-rent/payments"
+            element={
+              <ContextRouteGuard contextKey="short-rent" requiredPermissions={['payment.read']} featureFlag="otaPartnerApi">
+                <p>payments page</p>
+              </ContextRouteGuard>
+            }
+          />
+        </Routes>
+        <LocationProbe />
+      </MemoryRouter>
+    </FeatureFlagsContext.Provider>,
+  );
+}
+
+// UI-03: a page the role has no permission for was a silent redirect to the home; now the page says it is reserved.
+describe('ContextRouteGuard reserved page', () => {
+  it('ContextRouteGuard_UserInTheAreaWithoutThePermission_ShowsTheReservedPageNotARedirect', () => {
+    renderReservedRoute({ permissions: ['booking.read'] });
+
+    expect(screen.getByRole('heading', { level: 1, name: i18n.t('appShell.reserved.title') })).toBeInTheDocument();
+    expect(screen.queryByText('payments page')).not.toBeInTheDocument();
+    expect(screen.queryByText('home')).not.toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent/payments');
+  });
+
+  it('ContextRouteGuard_ReservedPage_LeadsBackToTheHomeOfTheArea', () => {
+    renderReservedRoute({ permissions: [] });
+
+    expect(screen.getByRole('link', { name: i18n.t('appShell.reserved.backToToday') })).toHaveAttribute(
+      'href',
+      '/app/short-rent',
+    );
+  });
+
+  it('ContextRouteGuard_UserWithThePermission_RendersThePage', () => {
+    renderReservedRoute({ permissions: ['payment.read'] });
+
+    expect(screen.getByText('payments page')).toBeInTheDocument();
+    expect(screen.queryByTestId('reserved-page')).not.toBeInTheDocument();
+  });
+
+  it('ContextRouteGuard_FlagOffAndNoPermission_RedirectsToTheHomeBecauseThePageDoesNotExistYet', () => {
+    renderReservedRoute({ permissions: [], flagOn: false });
+
+    expect(screen.getByText('home')).toBeInTheDocument();
+    expect(screen.queryByTestId('reserved-page')).not.toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent');
   });
 });

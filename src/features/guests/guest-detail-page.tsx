@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { GdprTab } from './components/gdpr-tab';
 import { GuestDocumentNumberRow } from './components/guest-document-number-row';
 import { guestsApi } from '@/api/guests.api';
-import { bookingsApi } from '@/api/bookings.api';
+import { asBookingPage, bookingsApi } from '@/api/bookings.api';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { toast } from 'sonner';
@@ -64,10 +64,10 @@ export function GuestDetailPage() {
     enabled: !!id,
   });
 
-  const bookings = guestBookings ?? [];
+  const bookings = asBookingPage(guestBookings).items;
 
   if (isLoading) {
-    return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
+    return <LoadingScreen message={t('shared.loading.defaultMessage')} className="h-auto flex-1" />;
   }
 
   if (isError || !guest) {

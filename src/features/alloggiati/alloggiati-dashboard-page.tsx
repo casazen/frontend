@@ -16,7 +16,7 @@ export function AlloggiatiDashboardPage() {
   const { data: rows, isLoading, isError, refetch } = useAlloggiatiSummary();
 
   if (isLoading) {
-    return <LoadingScreen message={t('alloggiati.loading')} />;
+    return <LoadingScreen message={t('alloggiati.loading')} className="h-auto flex-1" />;
   }
 
   const items = rows ?? [];

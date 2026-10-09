@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { supportConfig } from '@/config/support.config';
 import { getProblemMessage } from '@/lib/api-errors';
 
 interface ErrorStateProps {
@@ -10,6 +11,11 @@ interface ErrorStateProps {
   error?: unknown;
   /** Reloads the data: the "Riprova" button is shown only with it. */
   onRetry?: () => void;
+  /**
+   * Under the retry button, how to reach support when the problem persists: the e-mail of the build configuration
+   * (`VITE_SUPPORT_EMAIL`). Nothing is shown without one: a phone number or a chat is never made up.
+   */
+  showSupport?: boolean;
   testId?: string;
 }
 
@@ -17,9 +23,10 @@ interface ErrorStateProps {
  * Error of a failed load: an API error is never shown as an empty list or an endless spinner (SU-06, A4-25). Announced to
  * screen readers (`role="alert"`) and offers a retry.
  */
-export function ErrorState({ title, error, onRetry, testId = 'error-state' }: ErrorStateProps) {
+export function ErrorState({ title, error, onRetry, showSupport = false, testId = 'error-state' }: ErrorStateProps) {
   const { t } = useTranslation();
   const detail = error === undefined ? undefined : getProblemMessage(error, t);
+  const supportEmail = showSupport ? supportConfig.email : null;
 
   return (
     <div
@@ -34,6 +41,14 @@ export function ErrorState({ title, error, onRetry, testId = 'error-state' }: Er
         <Button variant="outline" size="sm" onClick={onRetry}>
           {t('shared.errorState.retry')}
         </Button>
+      )}
+      {supportEmail && (
+        <p className="max-w-md break-words text-sm text-muted-foreground">
+          {t('shared.errorState.supportWithEmail')}{' '}
+          <a className="font-medium text-foreground underline underline-offset-4" href={`mailto:${supportEmail}`}>
+            {supportEmail}
+          </a>
+        </p>
       )}
     </div>
   );

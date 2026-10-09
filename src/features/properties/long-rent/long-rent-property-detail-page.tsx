@@ -1,9 +1,8 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Edit, FilePlus2, TriangleAlert } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProperty, usePropertyDocuments } from '@/queries/use-properties';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
@@ -23,7 +22,7 @@ export function LongRentPropertyDetailPage() {
   const documents = usePropertyDocuments(id);
 
   if (isLoading) {
-    return <LoadingScreen message={t('longRentProperties.detail.loading')} />;
+    return <LoadingScreen message={t('longRentProperties.detail.loading')} className="h-auto flex-1" />;
   }
 
   if (isError || !property) {
@@ -41,25 +40,25 @@ export function LongRentPropertyDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* The pilot of the new page header (UI-05): the trail, one primary action (fixed above the bottom bar on a phone) and the rest in "⋯". */}
       <PageHeader
         title={property.name}
         description={property.city}
-        action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline">
-              <Link to={longRentPropertyEditPath(property.id)}>
-                <Edit className="mr-2 h-4 w-4" />
-                {t('longRentProperties.detail.edit')}
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link to={newLeaseForPropertyPath(property.id)}>
-                <FilePlus2 className="mr-2 h-4 w-4" />
-                {t('longRentProperties.detail.newLease')}
-              </Link>
-            </Button>
-          </div>
-        }
+        crumbs="auto"
+        primary={{
+          label: t('longRentProperties.detail.newLease'),
+          icon: FilePlus2,
+          to: newLeaseForPropertyPath(property.id),
+          testId: 'long-rent-property-new-lease',
+        }}
+        secondary={[
+          {
+            label: t('longRentProperties.detail.edit'),
+            icon: Edit,
+            to: longRentPropertyEditPath(property.id),
+            testId: 'long-rent-property-edit',
+          },
+        ]}
       />
 
       <Card>
@@ -86,7 +85,7 @@ export function LongRentPropertyDetailPage() {
       <PropertyCadastralCard key={property.updatedAt} property={property} />
 
       {documents.isLoading ? (
-        <LoadingScreen message={t('longRentProperties.detail.documentsLoading')} />
+        <LoadingScreen message={t('longRentProperties.detail.documentsLoading')} className="h-auto flex-1" />
       ) : documents.isError || !documents.data ? (
         <LoadErrorCard
           error={documents.error}

@@ -394,7 +394,6 @@
     "jobs": "Processi",
     "suppliers": "Fornitori",
     "guests": "Ospiti",
-    "cinAudit": "Audit CIN",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
     "marketing": "Marketing",
@@ -403,7 +402,7 @@
     "brandAdmin": "CASAZEN Admin",
     "brandSupplier": "CASAZEN Fornitore",
     "vetrina": "Vetrina",
-    "directBooking": "Direct Booking",
+    "directBooking": "Sito di prenotazione",
     "inviteSupplier": "Invita fornitore",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
@@ -411,44 +410,51 @@
     "supplierAvailability": "Disponibilità",
     "supplierHelpIcal": "Guida iCal",
     "group": {
-      "operazioni": "Operazioni",
-      "immobili": "Immobili",
-      "finanza": "Finanza",
-      "compliance": "Conformità",
-      "compliance-audit": "Compliance Audit",
-      "integrazioni": "Integrazioni",
-      "account": "Impostazioni",
-      "reporting": "Finanza",
-      "vetrina": "Vetrina",
-      "operations": "Amministrazione",
-      "amministrazione": "Amministrazione",
-      "platform": "Piattaforma"
+      "activity": "La tua attività",
+      "everyday": "Ogni giorno",
+      "management": "Gestione",
+      "offer": "La tua offerta",
+      "platform": "Piattaforma",
+      "portfolio": "Patrimonio",
+      "work": "Lavoro"
     },
     "ltrReferenceData": "Dati normativi LTR",
     "siteAppearance": "Aspetto sito",
     "siteDocuments": "Documenti sito",
-    "supplierShowcase": "Vetrina"
+    "supplierShowcase": "Vetrina",
+    "compliance": "Adempimenti",
+    "complianceAudit": "Conformità",
+    "collapse": "Comprimi menu",
+    "expand": "Espandi menu",
+    "menuLabel": "Menu {{area}}",
+    "childLinksLabel": "Pagine collegate",
+    "count": {
+      "bookingRequests_one": "{{count}} richiesta da approvare",
+      "bookingRequests_other": "{{count}} richieste da approvare",
+      "supplierRequests_one": "{{count}} richiesta da accettare",
+      "supplierRequests_other": "{{count}} richieste da accettare"
+    }
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
     "switchToEnglish": "Passa all'inglese",
     "italian": "IT",
     "english": "EN",
-    "label": "Lingua"
+    "label": "Lingua",
+    "names": {
+      "it": "Italiano",
+      "en": "English"
+    }
   },
   "shell": {
     "shortRentSubtitle": "Affitti brevi",
     "longRentSubtitle": "Affitti lungo termine",
     "adminSubtitle": "Amministrazione",
     "adminFooter": "v1.0.0 · Admin",
-    "workspaceLabel": "Area di lavoro",
-    "workspaceContext": "Contesto applicativo",
     "mainNavigation": "Navigazione principale",
     "mobileNavigation": "Navigazione mobile",
-    "openMenu": "Apri menu di navigazione",
     "layerShortStay": "Affitti brevi",
     "layerLongTerm": "Affitti lungo termine",
-    "supplierSubtitle": "Fornitore",
     "layerSwitcherLabel": "Area applicativa"
   },
   "leases": {
@@ -1757,7 +1763,8 @@
       "signInAgain": "Accedi di nuovo"
     },
     "errorState": {
-      "retry": "Riprova"
+      "retry": "Riprova",
+      "supportWithEmail": "Se il problema continua, scrivi al supporto:"
     }
   },
   "common": {
@@ -3888,7 +3895,9 @@
       "descriptionPlaceholder": "Pagamento per prenotazione...",
       "cancel": "Annulla",
       "creating": "Creazione...",
-      "create": "Crea pagamento"
+      "create": "Crea pagamento",
+      "noBookingsTitle": "Non ci sono prenotazioni",
+      "noBookingsDescription": "Un pagamento si registra su una prenotazione: creane una e poi torna qui."
     },
     "refund": {
       "title": "Rimborsa pagamento",
@@ -5475,6 +5484,7 @@
       "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",
       "userInactive": "L'utente è disattivato: riattivalo prima di cambiarne il ruolo.",
       "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
+      "memberCannotOnboard": "Fai già parte di un'organizzazione come collaboratore: non puoi attivare un nuovo account né cambiare il tuo ruolo. Se ti serve un altro ruolo, chiedilo al titolare dell'organizzazione.",
       "supplierInviteInvalid": "Invito non valido: il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito.",
       "supplierInviteExpired": "Questo invito è scaduto. Chiedi al team CasaZen di inviartene uno nuovo.",
       "supplierInviteUsed": "Questo invito è già stato usato. Se hai già un account fornitore, accedi.",
@@ -5634,6 +5644,54 @@
       "rentPaymentLinkInvalid": "Il link di pagamento non è valido o è stato sostituito da uno più recente."
     }
   },
+  "appShell": {
+    "skipToContent": "Vai al contenuto",
+    "userMenu": "Menu utente",
+    "userMenuNamed": "Menu utente: {{name}}",
+    "reserved": {
+      "title": "Questa pagina è riservata",
+      "description": "Il tuo ruolo non include l'accesso a questa pagina. Se ti serve per lavorare, puoi chiedere l'accesso.",
+      "backToToday": "Torna a Oggi",
+      "backToOverview": "Torna alla Panoramica",
+      "requestAccess": "Chiedi l'accesso",
+      "requestAccessGeneric": "Per chiedere l'accesso rivolgiti a chi amministra il tuo account.",
+      "mailSubject": "Richiesta di accesso a una pagina di CasaZen",
+      "mailBody": "Buongiorno, vorrei chiedere l'accesso alla pagina {{path}} di CasaZen. Grazie."
+    },
+    "yourAreas": "Le tue aree",
+    "account": {
+      "profileAndLanguage": "Profilo e lingua"
+    }
+  },
+  "areas": {
+    "admin": {
+      "description": "Utenti, fornitori, processi e controlli di conformità della piattaforma",
+      "name": "Amministrazione"
+    },
+    "longRent": {
+      "description": "Contratti, inquilini, scadenze e canoni",
+      "name": "Affitti lunghi"
+    },
+    "shortRent": {
+      "description": "Prenotazioni, calendario, prezzi e sito diretto",
+      "name": "Affitti brevi"
+    },
+    "supplier": {
+      "description": "Richieste, disponibilità, servizi e vetrina",
+      "name": "Portale fornitori"
+    },
+    "switcher": {
+      "current": "Area attuale: {{name}}. Cambia area"
+    }
+  },
+  "pageHeader": {
+    "moreActions": "Altre azioni",
+    "backTo": "Torna a {{name}}"
+  },
+  "pageTitle": {
+    "withArea": "{{page}} · {{area}} · CasaZen",
+    "withoutArea": "{{page}} · CasaZen"
+  },
   "validation": {
     "required": "Campo obbligatorio",
     "invalid": "Valore non valido",
@@ -5748,6 +5806,25 @@
     "childAgePlaceholder": "Età",
     "childAgeOption_one": "{{count}} anno",
     "childAgeOption_other": "{{count}} anni"
+  },
+  "ui": {
+    "field": {
+      "optional": "(facoltativo)",
+      "example": "Esempio:"
+    },
+    "progress": {
+      "label": "Avanzamento"
+    },
+    "ring": {
+      "label": "{{value}}% completato"
+    },
+    "stepper": {
+      "label": "Passaggi",
+      "stepOf": "Passo {{current}} di {{total}}",
+      "done": "completato",
+      "current": "passo attuale",
+      "todo": "da fare"
+    }
   },
   "questuraCredentials": {
     "title": "Credenziali Alloggiati Web (Questura)",

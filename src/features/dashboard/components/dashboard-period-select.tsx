@@ -55,7 +55,7 @@ export function DashboardPeriodSelect({ value, onChange }: DashboardPeriodSelect
   }, []);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 max-w-full items-center gap-2">
       <Label htmlFor="dashboard-period" className="text-sm text-muted-foreground">
         {t('dashboard.period.label')}
       </Label>
@@ -64,7 +64,7 @@ export function DashboardPeriodSelect({ value, onChange }: DashboardPeriodSelect
         data-testid="dashboard-period"
         value={toValue(value)}
         onChange={(event) => onChange(fromValue(event.target.value))}
-        className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex h-9 min-w-0 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <option value={CURRENT}>{t('dashboard.period.currentMonth')}</option>
         <option value={LAST_30_DAYS}>{t('dashboard.period.last30Days')}</option>

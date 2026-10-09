@@ -79,7 +79,7 @@ export function PricingDashboardPage() {
   }
 
   if (configQuery.isLoading) {
-    return <LoadingScreen message={t('pricing.dashboard.loading')} />;
+    return <LoadingScreen message={t('pricing.dashboard.loading')} className="h-auto flex-1" />;
   }
 
   function suggestionsContent() {

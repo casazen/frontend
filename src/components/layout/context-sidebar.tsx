@@ -1,68 +1,107 @@
-import type { LucideIcon } from 'lucide-react';
-import { Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  getDesktopNavByGroup,
-  getVisibleNavEntries,
-  type AppContextKey,
-} from '@/config/route-manifest';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { getArea } from '@/config/areas';
+import { getContextNav, getNavMatchEntries, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { useNavCounts } from '@/hooks/use-nav-counts';
+import { useUiStore } from '@/store/ui-store';
+import { cn } from '@/lib/utils';
+import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
-import { WorkspaceSwitcher } from './workspace-switcher';
+import { useRailTooltip } from './rail-tooltip';
 
 interface ContextSidebarProps {
   contextKey: AppContextKey;
-  subtitle: string;
-  icon?: LucideIcon;
-  iconClassName?: string;
-  footerLabel?: string;
+  /** The organization of the user, shown under the name of the area. */
+  organizationName?: string | null;
 }
 
-export function ContextSidebar({
-  contextKey,
-  subtitle,
-  icon: Icon = Home,
-  iconClassName = 'bg-primary text-primary-foreground',
-  footerLabel = 'v1.0.0 · casazen.io',
-}: ContextSidebarProps) {
-  const { t } = useTranslation();
-  const { contexts, hasPermission } = useWorkspace();
-  const { flags } = useFeatureFlags();
-  const permissionCheck = (ctx: AppContextKey, permission: string) =>
-    hasPermission(ctx, permission);
-
-  const allEntries = getVisibleNavEntries(contextKey, permissionCheck, flags);
-  const grouped = getDesktopNavByGroup(contextKey, permissionCheck, flags);
+/** The button that reduces the sidebar to the icons and gives it back; reduced, its name is a tooltip like the others. */
+function CollapseToggle({ collapsed, label, onToggle }: { collapsed: boolean; label: string; onToggle: () => void }) {
+  const { triggerProps, tooltip } = useRailTooltip(label, collapsed);
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
 
   return (
-    <aside role="complementary" aria-label={t('shell.mainNavigation')} className="hidden md:flex h-screen w-64 flex-col border-r bg-card">
-      <div className="border-b px-4 py-4 space-y-3">
-        <div className="flex items-center gap-2.5 px-2">
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-lg shadow-sm ${iconClassName}`}
-          >
-            <Icon className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-base font-bold tracking-tight">CASAZEN</span>
-            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              {subtitle}
-            </span>
-          </div>
-        </div>
-        {contexts.length > 1 && <WorkspaceSwitcher layout="sidebar" />}
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        data-testid="sidebar-collapse-toggle"
+        className={cn(
+          'flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:min-h-11',
+          collapsed && 'justify-center px-0',
+        )}
+        {...triggerProps}
+      >
+        <ToggleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <span className={cn(collapsed && 'sr-only')}>{label}</span>
+      </button>
+      {tooltip}
+    </>
+  );
+}
+
+/**
+ * The sidebar of an area (UI-04a): the area switcher, the menu (labelled groups of at most seven entries, "Altro", the
+ * counters) and the button that reduces it to the icons, which the browser remembers. The name, the icon and the footer
+ * line of the area come from `config/areas.ts`, the entries from the route manifest.
+ *
+ * On a tablet (from `md` to `lg`, UI-04b) it is always the rail of icons, so that the page keeps the width: there is no
+ * button, the choice is the window's. Whether the user reduced it or the window is narrow, the names of the icons show as
+ * a tooltip next to them, on hover and on keyboard focus.
+ */
+export function ContextSidebar({ contextKey, organizationName = null }: ContextSidebarProps) {
+  const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
+  const isTablet = useMediaQuery(TABLET_QUERY);
+  const reducedByUser = useUiStore((state) => state.sidebarCollapsed);
+  const toggleCollapsed = useUiStore((state) => state.toggleSidebarCollapsed);
+  const collapsed = reducedByUser || isTablet;
+
+  const area = getArea(contextKey);
+  const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
+  const nav = getContextNav(contextKey, permissionCheck, flags);
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
+  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
+
+  const footerLabel = area.footerKey ? t(area.footerKey) : 'v1.0.0 · casazen.io';
+
+  return (
+    // Sticky to the window, as tall as the visible viewport (`dvh`), with the menu scrolling inside it: the window is
+    // what scrolls in the shell (UI-03). `self-start` keeps the flex row from stretching it to the page height.
+    <aside
+      role="complementary"
+      aria-label={t('shell.mainNavigation')}
+      data-collapsed={collapsed}
+      className={cn(
+        'sticky top-0 hidden h-dvh shrink-0 flex-col self-start border-r bg-card transition-[width] duration-200 motion-reduce:transition-none md:flex',
+        collapsed ? 'w-[4.5rem]' : 'w-64',
+      )}
+    >
+      <div className="border-b p-3">
+        <AreaSwitcher contextKey={contextKey} organizationName={organizationName} collapsed={collapsed} />
       </div>
-      <nav className="flex-1 overflow-y-auto p-3">
-        <GroupedNavLinks
-          grouped={grouped}
-          allEntries={allEntries}
-          variant="sidebar"
-        />
+      <nav
+        aria-label={t('nav.menuLabel', { area: t(area.nameKey) })}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4"
+      >
+        <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
       </nav>
-      <div className="border-t p-3">
-        <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
-      </div>
+      {isTablet ? null : (
+        <div className="flex flex-col gap-1 border-t p-3">
+          <CollapseToggle
+            collapsed={collapsed}
+            label={collapsed ? t('nav.expand') : t('nav.collapse')}
+            onToggle={toggleCollapsed}
+          />
+          {collapsed ? null : (
+            <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
+          )}
+        </div>
+      )}
     </aside>
   );
 }

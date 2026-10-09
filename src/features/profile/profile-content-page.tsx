@@ -10,7 +10,7 @@ export function ProfileContentPage() {
   const { isLoading, user } = useAuth();
 
   if (isLoading || !user) {
-    return <LoadingScreen />;
+    return <LoadingScreen className="h-auto flex-1" />;
   }
 
   return (
