@@ -477,6 +477,92 @@ describe('DataView (UI-07)', () => {
     });
   });
 
+  // What the unified list (ListView, UI-14) asks of the table: all of it optional, none of it changes a list that does not use it.
+  describe('what the unified list builds on', () => {
+    it('DataView_OnRowClick_IsCalledForAClickOnTheRowInTheTableAndOnTheCard', () => {
+      const onRowClick = vi.fn();
+      render(<Harness onRowClick={onRowClick} />);
+
+      fireEvent.click(within(table()).getByText('Torino'));
+      fireEvent.click(within(list()).getByText('Roma'));
+
+      expect(onRowClick).toHaveBeenCalledTimes(2);
+      expect(onRowClick).toHaveBeenNthCalledWith(1, GUESTS[0], expect.anything());
+      expect(onRowClick).toHaveBeenNthCalledWith(2, GUESTS[1], expect.anything());
+    });
+
+    it('DataView_OnRowClick_LeavesTheClickOfAnythingInteractiveInTheRowToIt', () => {
+      const onRowClick = vi.fn();
+      const onOpen = vi.fn();
+      render(
+        <Harness
+          onRowClick={onRowClick}
+          selectable
+          rowActions={(guest) => (
+            <button type="button" onClick={onOpen}>
+              Apri {guest.name}
+            </button>
+          )}
+        />,
+      );
+
+      fireEvent.click(within(table()).getByRole('button', { name: 'Apri Zeno Verdi' }));
+      fireEvent.click(within(table()).getAllByRole('checkbox')[1]);
+
+      expect(onOpen).toHaveBeenCalledTimes(1);
+      expect(onRowClick).not.toHaveBeenCalled();
+    });
+
+    it('DataView_OnRowClick_MakesTheRowLookClickableOnlyWhenThereIsOne', () => {
+      const { rerender } = render(<Harness />);
+      expect(within(table()).getAllByRole('row')[1]).not.toHaveClass('cursor-pointer');
+
+      rerender(<Harness onRowClick={() => undefined} />);
+      expect(within(table()).getAllByRole('row')[1]).toHaveClass('cursor-pointer');
+    });
+
+    it('DataView_RowClassNameAndRowTestId_GoOnTheRowOfTheTableAndOnTheCard', () => {
+      render(<Harness rowClassName={(guest) => (guest.nights > 5 ? 'is-long' : undefined)} rowTestId={(guest) => `row-${guest.id}`} />);
+
+      const rows = screen.getAllByTestId('row-g3');
+      expect(rows).toHaveLength(2);
+      for (const row of rows) expect(row).toHaveClass('is-long');
+      for (const row of screen.getAllByTestId('row-g1')) expect(row).not.toHaveClass('is-long');
+    });
+
+    it('DataView_CardSelectableOff_LeavesTheBoxesToTheTable', () => {
+      render(<Harness selectable cardSelectable={false} />);
+
+      expect(within(table()).getAllByRole('checkbox')).toHaveLength(4);
+      expect(within(list()).queryByRole('checkbox')).not.toBeInTheDocument();
+      expect(screen.queryByText('Seleziona tutte le righe', { selector: 'label' })).not.toBeInTheDocument();
+    });
+
+    it('DataView_CardClassName_ReplacesThePaddingOfTheCard', () => {
+      render(<Harness cardClassName="p-0" />);
+
+      const content = within(list()).getAllByRole('listitem')[0].firstElementChild;
+      expect(content).toHaveClass('p-0');
+      expect(content).not.toHaveClass('p-4');
+    });
+
+    it('DataView_Bare_HasNoBorderAroundTheCardsBecauseTheyAreInABoxAlready', () => {
+      const { rerender } = render(<Harness />);
+      expect(list()).toHaveClass('rounded-lg', 'border');
+
+      rerender(<Harness bare />);
+      expect(list()).not.toHaveClass('rounded-lg');
+      expect(list()).not.toHaveClass('border');
+      expect(list()).toHaveClass('divide-y');
+    });
+
+    it('DataView_TitleOfASortButton_IsAlignedToTheLeftWhenItWraps', () => {
+      render(<Harness />);
+
+      expect(within(header('Nome')).getByRole('button')).toHaveClass('text-left');
+    });
+  });
+
   describe('accessibility', () => {
     it('DataView_WithEverythingOn_HasNoAxeViolations', async () => {
       const { container } = render(
