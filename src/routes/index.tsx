@@ -13,6 +13,8 @@ import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
+import { AreaProvider } from '@/contexts/area-provider';
+import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
 import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
@@ -23,6 +25,7 @@ import { OnboardingPage } from '@/features/onboarding/onboarding-page';
 import { getOrgBillingPageAlternates, ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
+import { ContextIndexRoute } from './context-index-route';
 import { CatchAllRedirect } from './catch-all-redirect';
 import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
@@ -53,7 +56,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
   const entries = ROUTE_MANIFEST.filter((entry) => entry.context === contextKey);
 
-  return entries.map((entry) => {
+  const children: RouteObject[] = entries.map((entry) => {
     const relativePath = entry.path === prefix ? '' : entry.path.slice(`${prefix}/`.length);
     return {
       path: relativePath,
@@ -69,6 +72,13 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
       ),
     } satisfies RouteObject;
   });
+
+  // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
+  // the area (UI-00). Short-rent and admin have the page in the manifest.
+  if (!entries.some((entry) => entry.path === prefix)) {
+    children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
+  }
+  return children;
 }
 
 const legacyPaths = Array.from(
@@ -83,7 +93,10 @@ const workspaceRoutes: RouteObject[] = [
     path: '/app',
     element: (
       <WorkspaceProvider>
-        <Outlet />
+        {/* data-area on <html>: the accent of the area (UI-01); the area picker and the pages outside an area have none. */}
+        <AreaProvider>
+          <Outlet />
+        </AreaProvider>
       </WorkspaceProvider>
     ),
     children: [
@@ -188,6 +201,8 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/book/:orgSlug',
     element: <PublicSiteShell mode="org" />,
+    // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
@@ -208,6 +223,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     element: <PublicSiteShell mode="default" />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       // Public search across the booking sites (BK-20): in the public shell, never in the host console.
       { path: '/search', element: <SearchPage /> },
@@ -230,13 +246,17 @@ export const appRoutes: RouteObject[] = [
     element: <LegacySupplierShowcaseRedirect />,
   },
   {
+    // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).
     path: '/checkin/:token',
     element: <CheckInPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     // Link of the rent payment request email (LT-06): the tenant pays an installment on the landlord's Stripe account.
+    // A tenant's page, not the landlord's console: it keeps its look until it is redesigned.
     path: '/rent/pay/:installmentId',
     element: <RentPaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     path: '/supplier',

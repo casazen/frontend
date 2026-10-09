@@ -1754,7 +1754,8 @@
       "signInAgain": "Sign in again"
     },
     "errorState": {
-      "retry": "Try again"
+      "retry": "Try again",
+      "supportWithEmail": "If the problem continues, write to support:"
     }
   },
   "common": {
@@ -3872,7 +3873,9 @@
       "descriptionPlaceholder": "Payment for booking...",
       "cancel": "Cancel",
       "creating": "Creating...",
-      "create": "Create Payment"
+      "create": "Create Payment",
+      "noBookingsTitle": "There are no bookings",
+      "noBookingsDescription": "A payment is recorded against a booking: create one, then come back here."
     },
     "refund": {
       "title": "Refund payment",
@@ -5455,6 +5458,7 @@
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
+      "memberCannotOnboard": "You already belong to an organization as a collaborator: you cannot set up a new account or change your own role. If you need a different role, ask the owner of the organization.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
       "supplierInviteUsed": "This invitation has already been used. If you already have a supplier account, sign in.",
@@ -5803,6 +5807,25 @@
     "childAgePlaceholder": "Age",
     "childAgeOption_one": "{{count}} year",
     "childAgeOption_other": "{{count}} years"
+  },
+  "ui": {
+    "field": {
+      "optional": "(optional)",
+      "example": "Example:"
+    },
+    "progress": {
+      "label": "Progress"
+    },
+    "ring": {
+      "label": "{{value}}% complete"
+    },
+    "stepper": {
+      "label": "Steps",
+      "stepOf": "Step {{current}} of {{total}}",
+      "done": "done",
+      "current": "current step",
+      "todo": "to do"
+    }
   },
   "questuraCredentials": {
     "title": "Alloggiati Web credentials (Questura)",

@@ -20,6 +20,7 @@ import { recordLandingTouch } from '@/lib/signup-attribution';
 import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { getRouter } from '@/routes';
+import { UiVersionSync } from '@/routes/ui-version-sync';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
 import { getHostSite } from '@/lib/host-site';
 
@@ -56,6 +57,7 @@ function AppShell() {
     <QueryClientProvider client={queryClient}>
       <I18nLocaleSync />
       <FeatureFlagsProvider>
+        <UiVersionSync router={router} />
         <RouterProvider router={router} />
       </FeatureFlagsProvider>
       <AppToaster />

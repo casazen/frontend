@@ -15,9 +15,9 @@ async function waitForSession(page: import('@playwright/test').Page): Promise<vo
           if (raw.includes('access_token')) return true;
         }
       }
-      const text = document.body.innerText;
-      if (text.includes('Cruscotto') || text.includes('Il mio profilo')) return true;
-      return /auth0\|[a-zA-Z0-9]+/.test(text);
+      // The shell of the signed-in app (UI-00): not the title of a page, which changes with the language and the redesign.
+      if (document.querySelector('[data-testid="app-ready"]')) return true;
+      return /auth0\|[a-zA-Z0-9]+/.test(document.body.innerText);
     },
     undefined,
     { timeout: 90_000 },
@@ -70,7 +70,7 @@ setup('authenticate long-term test user', async ({ page }) => {
   const sub = await readAuth0Sub(page);
   if (!sub && !token) {
     const chrome = page
-      .getByRole('heading', { name: /Cruscotto|Dashboard|Il mio profilo/i })
+      .getByTestId('app-ready')
       .or(page.getByRole('button', { name: /@/ }))
       .or(page.getByRole('link', { name: /auth0\|/i }))
       .first();

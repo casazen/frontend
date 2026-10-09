@@ -20,14 +20,6 @@ vi.mock('../components/attestation-guidance-panel', () => ({ AttestationGuidance
 vi.mock('../components/imu-notification-export-button', () => ({ ImuNotificationExportButton: () => null }));
 vi.mock('../components/lease-signing-panel', () => ({ LeaseSigningPanel: () => null }));
 
-// Radix Checkbox measures itself with ResizeObserver, which jsdom does not provide.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 

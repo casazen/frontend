@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Redesign (UI-01): fonts and tokens. The values below stay the current look; the new ones sit under html[data-ui='v2']. */
+@import "./fonts.css";
+@import "./tokens.css";
 /*
  * The animation utilities the shadcn components ask for (`animate-in`, `fade-in-0`, `zoom-in-95`, `slide-in-from-*`): until
  * UI-07 no plugin provided them and they did nothing. Dialog, sheet, menu and tip now move when they open and close.

@@ -1,0 +1,21 @@
+/*
+ * Fonts of the app (UI-01). Self-hosted: no request to a third-party font server (GDPR, and the first paint does not wait
+ * for one), see `no-hardcoded-domain.test.ts` and `tokens.test.ts`. The Google Fonts <link> of the demo is not copied.
+ *
+ * The faces are the ones the public booking site already ships: `public-fonts.css` declares `Inter Variable` and
+ * `Fraunces Variable` over the woff2 files in `src/assets/fonts/public/` (latin subset, `font-display: swap`). They are
+ * imported, not declared again, so there is one definition and one copy of each file. A face is downloaded only when an
+ * element uses its family: importing it costs the stylesheet bytes, not a font request. The main weight is preloaded in
+ * `index.html`.
+ */
+@import './public-fonts.css';
+
+/* A new name: nothing uses `font-display` yet (display titles, UI-04 onwards). Same stack as the demo. */
+@theme static {
+  --font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+}
+
+/* Inter replaces the system stack only under the redesign; the fallbacks are the demo's. */
+html[data-ui='v2'] {
+  --font-sans: 'Inter Variable', Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Roboto, Arial, sans-serif;
+}

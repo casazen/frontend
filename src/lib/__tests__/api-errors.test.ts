@@ -59,6 +59,21 @@ describe('getProblemMessage (A9-09 FE)', () => {
     expect(getProblemMessage(error, t)).toBe(i18n.t('apiErrors.codes.managedByStripe'));
   });
 
+  // AM-00 (S2): the 409 a member of an org gets from the onboarding has its own text, not the generic conflict.
+  it('getProblemMessage_memberCannotOnboard_isTranslatedInBothLanguages', async () => {
+    const error = httpError(409, { status: 409, code: 'member_cannot_onboard', detail: 'Testo del server' });
+
+    const italian = getProblemMessage(error, t);
+    await i18n.changeLanguage('en');
+    const english = getProblemMessage(error, t);
+    await i18n.changeLanguage('it');
+
+    expect(italian).toBe(i18n.t('apiErrors.codes.memberCannotOnboard'));
+    expect(italian).toContain('collaboratore');
+    expect(english).toContain('collaborator');
+    expect(english).not.toBe(italian);
+  });
+
   it('getProblemMessage_unknownCode_fallsBackToServerText', () => {
     const error = httpError(409, { error: 'Richiesta già presa in carico da un altro fornitore', code: 'x_unknown' });
 

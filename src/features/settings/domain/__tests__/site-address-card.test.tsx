@@ -6,13 +6,17 @@ import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { DomainApi } from '@/api/domain.api';
+import { MEMBER_ROLE_KEYS } from '@/test/org-contexts';
 import type { OrgDomainConfig } from '@/types/domain.types';
 import { SiteAddressCard } from '../site-address-card';
 
 vi.mock('@/api/domain.api', () => ({
   DomainApi: { getDomain: vi.fn(), setDomain: vi.fn(), verifyDomain: vi.fn(), resolveHost: vi.fn() },
 }));
-const workspace = vi.hoisted(() => ({ contexts: [{ contextKey: 'short-rent' }] as { contextKey: string }[], writes: true }));
+const workspace = vi.hoisted(() => ({
+  contexts: [{ contextKey: 'short-rent', roleKey: 'property_owner' }] as { contextKey: string; roleKey: string }[],
+  writes: true,
+}));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
     contexts: workspace.contexts,
@@ -62,7 +66,7 @@ function renderCard() {
 
 describe('SiteAddressCard (BK-17, CD-AC9)', () => {
   beforeEach(async () => {
-    workspace.contexts = [{ contextKey: 'short-rent' }];
+    workspace.contexts = [{ contextKey: 'short-rent', roleKey: 'property_owner' }];
     workspace.writes = true;
     window.localStorage.clear();
     await i18n.changeLanguage('it');
@@ -74,7 +78,17 @@ describe('SiteAddressCard (BK-17, CD-AC9)', () => {
   });
 
   it('card_NotBillingAdmin_RendersNothingAndAsksNothing', () => {
-    workspace.contexts = [{ contextKey: 'guest' }];
+    workspace.contexts = [{ contextKey: 'guest', roleKey: 'guest' }];
+    renderCard();
+
+    expect(screen.queryByTestId('site-address-card')).not.toBeInTheDocument();
+    expect(DomainApi.getDomain).not.toHaveBeenCalled();
+  });
+
+  // AM-00 (S1): a collaborator of the org with property.write has the short-rent context but not the owner's role key:
+  // the custom domain endpoints answer 403 to it, so the card does not ask for them.
+  it.each(MEMBER_ROLE_KEYS)('card_MemberWithRoleKey_%s_RendersNothingAndAsksNothing', (roleKey) => {
+    workspace.contexts = [{ contextKey: 'short-rent', roleKey }];
     renderCard();
 
     expect(screen.queryByTestId('site-address-card')).not.toBeInTheDocument();

@@ -7,9 +7,11 @@ import { I18nextProvider } from 'react-i18next';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { BillingApi } from '@/api/billing.api';
+import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { ME_QUERY_KEY } from '@/lib/onboarding-gate';
 import * as userQueries from '@/queries/use-users';
+import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import type { BillingPlan, BillingSubscription, PlanTier } from '@/types';
 import { CHECKOUT_CONFIRM_POLL_MS, CHECKOUT_CONFIRM_TIMEOUT_MS } from '../billing-utils';
 import { PlansPage, PlansPageContent } from '../plans-page';
@@ -92,15 +94,10 @@ function mockUser(planTier: PlanTier = 'Starter') {
   } as unknown as CurrentUserResult);
 }
 
-function mockContexts(contextKeys: string[]) {
+/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
+function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
-    contexts: contextKeys.map((contextKey) => ({
-      contextKey,
-      displayName: contextKey,
-      roleKey: contextKey,
-      permissions: [],
-      defaultRoute: `/app/${contextKey}`,
-    })),
+    contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
   } as unknown as WorkspaceResult);
 }
 
@@ -431,6 +428,21 @@ describe('PlansPage', () => {
     expect(BillingApi.getPlans).not.toHaveBeenCalled();
     expect(BillingApi.getSubscription).not.toHaveBeenCalled();
   });
+
+  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key: no plans, no checkout.
+  it.each(MEMBER_ROLE_KEYS)(
+    'PlansPage_MemberWithRoleKey_%s_AsksToContactTheOwnerWithoutCallingTheApi',
+    (roleKey) => {
+      mockContexts(['short-rent', 'long-rent'], roleKey);
+      renderPage();
+
+      expect(screen.getByTestId('billing-admin-required')).toHaveTextContent(i18n.t('billing.adminRequired.description'));
+      expect(screen.queryByTestId('billing-plans-grid')).not.toBeInTheDocument();
+      expect(BillingApi.getPlans).not.toHaveBeenCalled();
+      expect(BillingApi.getSubscription).not.toHaveBeenCalled();
+      expect(BillingApi.createCheckoutSession).not.toHaveBeenCalled();
+    },
+  );
 
   it('PlansPage_BillingLink_IsRelativeToTheCurrentContext', async () => {
     renderPage();
