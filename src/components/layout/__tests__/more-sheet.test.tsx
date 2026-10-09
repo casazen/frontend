@@ -10,9 +10,13 @@ import { MoreSheet } from '../more-sheet';
 
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: vi.fn() }));
+vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
 
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useNavCounts } from '@/hooks/use-nav-counts';
+import { useAuth } from '@/hooks/use-auth';
+
+const logout = vi.fn();
 
 function arrange(contextKeys: AppContextKey[], hasPermission: (ctx: AppContextKey, permission: string) => boolean = () => true) {
   const contexts: ContextBootstrapDto[] = contextKeys.map((contextKey) => ({
@@ -59,6 +63,8 @@ describe('MoreSheet (UI-04b)', () => {
     vi.clearAllMocks();
     useUiStore.setState({ sidebarOpen: false });
     vi.mocked(useNavCounts).mockReturnValue({});
+    vi.mocked(useAuth).mockReturnValue({ user: { name: 'Mario Rossi', email: 'mario@example.com' }, logout } as unknown as ReturnType<typeof useAuth>);
+    localStorage.clear();
     await i18n.changeLanguage('it');
   });
 
@@ -189,6 +195,89 @@ describe('MoreSheet (UI-04b)', () => {
 
       expect(within(sheet()).getByRole('button', { name: 'Area attuale: Affitti brevi. Cambia area' })).toHaveAttribute('aria-haspopup', 'menu');
       expect(within(sheet()).queryByRole('tab')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('account (UI-05)', () => {
+    // The sheet lists the page "Profilo" among its tiles too: the account is looked at on its own.
+    const account = () => within(screen.getByTestId('sheet-account'));
+    const accountRow = () => account().getByRole('button', { name: /Mario Rossi/ });
+
+    it('MoreSheet_Open_EndsWithOneRowForTheProfileAndTheLanguage', () => {
+      arrange(['short-rent']);
+      renderSheet('short-rent');
+
+      open();
+
+      // The row of the demo ("Profilo, tema e lingua") without the theme, which does not exist yet (D26).
+      expect(accountRow()).toHaveTextContent('Profilo e lingua');
+      expect(accountRow()).toHaveAttribute('aria-expanded', 'false');
+      // Closed, what is inside is not reachable.
+      expect(account().queryByRole('link', { name: 'Profilo' })).not.toBeInTheDocument();
+      expect(account().queryByRole('button', { name: 'Esci' })).not.toBeInTheDocument();
+      expect(account().getByTestId('language-switcher')).not.toBeVisible();
+    });
+
+    it('MoreSheet_AccountRowOpened_OffersProfileLanguageAndLogout', () => {
+      arrange(['short-rent']);
+      renderSheet('short-rent');
+      open();
+
+      fireEvent.click(accountRow());
+
+      expect(accountRow()).toHaveAttribute('aria-expanded', 'true');
+      expect(account().getByRole('link', { name: 'Profilo' })).toHaveAttribute('href', '/app/short-rent/profile');
+      const language = account().getByRole('group', { name: 'Lingua' });
+      expect(within(language).getByRole('button', { name: "Passa all'italiano" })).toHaveAttribute('aria-pressed', 'true');
+      expect(within(language).getByRole('button', { name: "Passa all'inglese" })).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(account().getByRole('button', { name: 'Esci' }));
+      expect(logout).toHaveBeenCalledTimes(1);
+    });
+
+    it('MoreSheet_LanguageButtons_AreAtLeast44PixelsForAFinger', () => {
+      arrange(['short-rent']);
+      renderSheet('short-rent');
+      open();
+      fireEvent.click(accountRow());
+
+      for (const name of ["Passa all'italiano", "Passa all'inglese"]) {
+        expect(account().getByRole('button', { name })).toHaveClass('min-h-11', 'min-w-11');
+      }
+    });
+
+    it('MoreSheet_ChoosingEnglish_ChangesTheLanguageAndKeepsTheChoice', async () => {
+      arrange(['short-rent']);
+      renderSheet('short-rent');
+      open();
+      fireEvent.click(accountRow());
+
+      fireEvent.click(account().getByRole('button', { name: "Passa all'inglese" }));
+
+      await waitFor(() => expect(i18n.language).toBe('en'));
+      expect(localStorage.getItem('casazen.locale')).toBe('en');
+      expect(within(screen.getByRole('dialog', { name: 'More' })).getByRole('button', { name: /Profile and language/ })).toBeInTheDocument();
+    });
+
+    it('MoreSheet_ProfileLink_ClosesTheSheetAndOpensTheProfileOfTheArea', () => {
+      arrange(['supplier']);
+      renderSheet('supplier', '/app/supplier/dashboard');
+      open();
+      fireEvent.click(accountRow());
+
+      fireEvent.click(account().getByRole('link', { name: 'Profilo' }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByTestId('location')).toHaveTextContent('/app/supplier/profile');
+    });
+
+    it('MoreSheet_NoUser_HasNoAccountRow', () => {
+      vi.mocked(useAuth).mockReturnValue({ user: undefined, logout } as unknown as ReturnType<typeof useAuth>);
+      arrange(['short-rent']);
+      renderSheet('short-rent');
+
+      open();
+
+      expect(within(sheet()).queryByTestId('sheet-account')).not.toBeInTheDocument();
     });
   });
 

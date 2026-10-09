@@ -55,10 +55,9 @@ function BarIcon({ active, children }: { active: boolean; children: React.ReactN
  */
 export function BottomNav({ contextKey }: BottomNavProps) {
   const { t } = useTranslation();
-  const { bottomEntries, hasMore, activeTab, sidebarOpen, setSidebarOpen } = useMobileNav(contextKey);
+  const { bottomEntries, hasMore, hasBar, activeTab, sidebarOpen, setSidebarOpen } = useMobileNav(contextKey);
   const setBottomBarVisible = useUiStore((state) => state.setBottomBarVisible);
   const counts = useNavCounts(bottomEntries);
-  const hasBar = bottomEntries.length > 0;
 
   useEffect(() => {
     if (!hasBar) return undefined;
@@ -104,8 +103,8 @@ export function BottomNav({ contextKey }: BottomNavProps) {
         {hasMore ? (
           <button
             type="button"
-            // The sheet gives the focus back to the button that opened it, to this one when the opener was not a tab of
-            // the bar (the menu button of the header) or took no focus (a tap on Safari).
+            // The sheet gives the focus back to the button that opened it, to this one when the opener took no focus (a tap
+            // on Safari).
             data-more-trigger=""
             aria-haspopup="dialog"
             aria-expanded={sidebarOpen}

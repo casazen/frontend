@@ -2,6 +2,7 @@ import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { mockLeasesApiEmpty } from './helpers/lease-api-mock';
 import { resetE2eStorage } from './helpers/locale';
+import { moreOfTheBar, profileMenuTrigger } from './helpers/profile-menu';
 
 test.describe('Navigation (#252 / #259)', () => {
   test.describe('Desktop layout', () => {
@@ -72,10 +73,10 @@ test.describe('Navigation (#252 / #259)', () => {
       await expect(page).toHaveURL(/\/app\/short-rent\/properties/);
     });
 
-    test('the sheet opens from the menu button of the header and closes on route change', async ({ page }) => {
+    test('the sheet opens from "Altro" of the bottom bar and closes on route change', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
+      await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       await expect(sheet).toBeVisible();
       // "Incassi" is a main entry that is not one of the four destinations of the bottom bar: the sheet from the bottom lists it (UI-04a, UI-04b).
@@ -89,7 +90,7 @@ test.describe('Navigation (#252 / #259)', () => {
     test('the sheet shows disambiguated payment labels', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
+      await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       await expect(sheet.getByRole('link', { name: /Incassi|Payments/i })).toBeVisible();
       await expect(sheet.getByRole('link', { name: /Stripe Connect/i })).toBeVisible();
@@ -104,21 +105,24 @@ test.describe('Navigation (#252 / #259)', () => {
       expect(overflow).toBe(false);
     });
 
-    test('hamburger meets minimum touch target size', async ({ page }) => {
+    test('the header has no menu button; the profile menu and "Altro" meet the minimum touch target size', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      const hamburger = page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i });
-      const box = await hamburger.boundingBox();
-      expect(box).not.toBeNull();
-      expect(box!.width).toBeGreaterThanOrEqual(44);
-      expect(box!.height).toBeGreaterThanOrEqual(44);
+      // UI-05: the menu of the phone is "Altro" of the bottom bar; the header is for the profile.
+      await expect(page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i })).toHaveCount(0);
+      for (const target of [profileMenuTrigger(page), moreOfTheBar(page)]) {
+        const box = await target.boundingBox();
+        expect(box).not.toBeNull();
+        expect(box!.width).toBeGreaterThanOrEqual(44);
+        expect(box!.height).toBeGreaterThanOrEqual(44);
+      }
     });
 
     test('dual-role user sees the area switcher on mobile', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Open navigation menu|Apri menu di navigazione/i }).click();
+      await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       await sheet.getByTestId('area-switcher').click();
       await expect(page.getByRole('menuitemradio', { name: /Affitti brevi|Short-term rentals/i })).toBeVisible();
@@ -131,7 +135,7 @@ test.describe('Navigation (#252 / #259)', () => {
       const header = page.locator('header');
       await expect(header.getByTestId('area-switcher')).toHaveCount(0);
 
-      await page.getByRole('button', { name: 'Open navigation menu' }).click();
+      await moreOfTheBar(page).click();
       await expect(page.getByRole('dialog').getByTestId('area-switcher')).toBeVisible();
     });
   });

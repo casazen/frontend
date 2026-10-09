@@ -37,7 +37,7 @@ export function VetrinaPage() {
   return (
     <AppShell>
       {orgBookingPath ? (
-        <div className="-m-4 flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-4rem-var(--bottom-nav-height))] md:-m-6">
+        <div className="-m-4 flex h-[calc(100svh-var(--header-height))] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-var(--header-height)-var(--bottom-nav-height))] md:-m-6">
           <div className="shrink-0 border-b bg-background px-4 py-4 md:px-6">
             <PageHeader
               title={t('directBooking.title')}

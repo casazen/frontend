@@ -5,7 +5,6 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Breadcrumb } from '@/components/shared/breadcrumb';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useTranslation } from 'react-i18next';
 import { useBooking } from '@/queries/use-bookings';
@@ -122,9 +121,9 @@ export function BookingDetailPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <Breadcrumb />
-
+        {/* The trail (Affitti brevi › Prenotazioni › this booking) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
+          crumbs="auto"
           title={t('booking.detailPage.title', { code: booking.id.slice(0, 8) })}
           description={`${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}
           action={

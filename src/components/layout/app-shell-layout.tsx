@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useCurrentUser } from '@/queries/use-users';
+import { useUiStore } from '@/store/ui-store';
+import { cn } from '@/lib/utils';
 import { DemoBanner } from '@/components/shared/demo-banner';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
@@ -14,8 +16,11 @@ import { SkipLink } from './skip-link';
 /** `id` of the content region: target of the skip link and of the focus at every change of page. */
 const MAIN_CONTENT_ID = 'main-content';
 
-/** Height of the sticky header (`h-16`): what the window keeps free at the top when it scrolls something into view. */
-const HEADER_HEIGHT = '4rem';
+/**
+ * What the window keeps free at the top when it scrolls something into view: the height of the sticky header, which
+ * `globals.css` says once (`--header-height`) and the header takes as its own (UI-05).
+ */
+const HEADER_HEIGHT = 'var(--header-height)';
 
 interface AppShellLayoutProps {
   contextKey: AppContextKey;
@@ -36,6 +41,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   const { org } = useCurrentUser();
   const organizationName = org?.name ?? null;
   const shell = useMemo(() => ({ contextKey }), [contextKey]);
+  // A page that fixes its primary action above the bottom bar of the phone (`PageHeader`, UI-05) needs room under its content.
+  const mobilePrimaryVisible = useUiStore((state) => state.mobilePrimaryVisible);
 
   useEffect(() => {
     // The window scrolls and the header is sticky: an anchor (`#panel`) or an element that takes the focus must not land
@@ -56,12 +63,17 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
         <MoreSheet contextKey={contextKey} organizationName={organizationName} />
         <div className="flex min-w-0 flex-1 flex-col">
           <DemoBanner />
+          {/* The search (UI-06), the notifications bell (UI-12) and the help (UI-08) are handed to the header here, each only when its function exists. */}
           <Header />
           <main
             id={MAIN_CONTENT_ID}
             ref={mainRef}
             tabIndex={-1}
-            className="flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6"
+            className={cn(
+              'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
+              mobilePrimaryVisible &&
+                'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
+            )}
           >
             {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
             {children}

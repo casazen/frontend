@@ -6,6 +6,8 @@ import { stubViewportWidth } from '@/test/viewport';
 import { AppToaster } from '../app-toaster';
 
 const ABOVE_THE_BAR = 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem)';
+const ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION =
+  'calc(var(--bottom-nav-height) + var(--mobile-primary-height) + env(safe-area-inset-bottom, 0px) + 0.75rem)';
 
 async function showAToast() {
   act(() => {
@@ -17,7 +19,7 @@ async function showAToast() {
 
 describe('AppToaster (UI-04b)', () => {
   beforeEach(() => {
-    useUiStore.setState({ bottomBarVisible: false });
+    useUiStore.setState({ bottomBarVisible: false, mobilePrimaryVisible: false });
   });
 
   afterEach(() => {
@@ -26,7 +28,7 @@ describe('AppToaster (UI-04b)', () => {
     });
     cleanup();
     vi.unstubAllGlobals();
-    useUiStore.setState({ bottomBarVisible: false });
+    useUiStore.setState({ bottomBarVisible: false, mobilePrimaryVisible: false });
   });
 
   it('AppToaster_Computer_KeepsTheToastsAtTheTopRight', async () => {
@@ -76,6 +78,46 @@ describe('AppToaster (UI-04b)', () => {
     expect(toaster.style.getPropertyValue('--offset-left')).toBe('24px');
     expect(toaster.style.getPropertyValue('--mobile-offset-top')).toBe('16px');
     expect(toaster.style.getPropertyValue('--mobile-offset-left')).toBe('16px');
+  });
+
+  it('AppToaster_PhoneWithTheBarAndAFixedPrimaryAction_RaisesTheToastsOverBoth', async () => {
+    // UI-05: a page that fixes its primary action above the bar must not have its toasts hidden behind it.
+    stubViewportWidth(390);
+    useUiStore.setState({ bottomBarVisible: true, mobilePrimaryVisible: true });
+    render(<AppToaster />);
+
+    const toaster = await showAToast();
+
+    expect(toaster).toHaveAttribute('data-y-position', 'bottom');
+    expect(toaster.style.getPropertyValue('--offset-bottom')).toBe(ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION);
+    expect(toaster.style.getPropertyValue('--mobile-offset-bottom')).toBe(ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION);
+  });
+
+  it('AppToaster_PrimaryActionComesAndGoes_TheToastsFollowIt', async () => {
+    stubViewportWidth(390);
+    useUiStore.setState({ bottomBarVisible: true });
+    render(<AppToaster />);
+    const toaster = await showAToast();
+    expect(toaster.style.getPropertyValue('--mobile-offset-bottom')).toBe(ABOVE_THE_BAR);
+
+    act(() => useUiStore.setState({ mobilePrimaryVisible: true }));
+    expect(document.querySelector<HTMLElement>('[data-sonner-toaster]')!.style.getPropertyValue('--mobile-offset-bottom')).toBe(
+      ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION,
+    );
+
+    act(() => useUiStore.setState({ mobilePrimaryVisible: false }));
+    expect(document.querySelector<HTMLElement>('[data-sonner-toaster]')!.style.getPropertyValue('--mobile-offset-bottom')).toBe(ABOVE_THE_BAR);
+  });
+
+  it('AppToaster_ComputerWithAPrimaryActionInTheHeader_KeepsTheToastsAtTheTopRight', async () => {
+    // The action is fixed to the bottom only on a phone: elsewhere it is a button next to the title.
+    stubViewportWidth(1280);
+    useUiStore.setState({ bottomBarVisible: true, mobilePrimaryVisible: true });
+    render(<AppToaster />);
+
+    const toaster = await showAToast();
+
+    expect(toaster).toHaveAttribute('data-y-position', 'top');
   });
 
   it('AppToaster_PhoneWithoutTheBar_KeepsTheToastsAtTheTopRightLikeTheComputer', async () => {

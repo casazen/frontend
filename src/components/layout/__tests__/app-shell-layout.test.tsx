@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import { useUiStore } from '@/store/ui-store';
 import { AppShell } from '../app-shell';
 import { AppShellContext } from '../app-shell-context';
 import { AppShellLayout } from '../app-shell-layout';
@@ -99,11 +100,14 @@ describe('AppShellLayout (UI-03)', () => {
 
     expect(screen.getByRole('complementary', { name: i18n.t('shell.mainNavigation') })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: i18n.t('shell.openMenu') })).toBeInTheDocument();
+    // The header has no menu button since UI-05: the phone has "Altro" in the bottom bar, and only there.
+    expect(screen.queryByRole('button', { name: 'Apri menu di navigazione' })).not.toBeInTheDocument();
+    expect(within(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).getByRole('button', { name: i18n.t('nav.more') })).toBeInTheDocument();
     // An user with several areas chooses between them with the area switcher (UI-04a), no longer with icon tabs.
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: i18n.t('areas.switcher.current', { name: i18n.t('areas.shortRent.name') }) })).toHaveLength(1);
-    expect(screen.getByTestId('language-switcher')).toBeInTheDocument();
+    // The language is in the menu of the profile (UI-05), not a switch of the header.
+    expect(screen.queryByTestId('language-switcher')).not.toBeInTheDocument();
     expect(screen.getByTestId('org-badge')).toBeInTheDocument();
     // `header` is queried by tag in the end-to-end specs: there is one, and it is the banner of the page.
     expect(document.querySelectorAll('header')).toHaveLength(1);
@@ -185,6 +189,23 @@ describe('AppShellLayout (UI-03)', () => {
     expect(screen.getByRole('main').parentElement).not.toHaveClass('overflow-hidden');
   });
 
+  it('AppShellLayout_PageWithAFixedPrimaryAction_MakesRoomForItUnderTheContentOfAPhone', () => {
+    const room = 'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]';
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <p>pagina</p>
+      </AppShellLayout>,
+    );
+    // The usual room is the bottom bar's; the fixed action of a page (UI-05) needs its own on top.
+    expect(screen.getByRole('main')).not.toHaveClass(room);
+
+    act(() => useUiStore.setState({ mobilePrimaryVisible: true }));
+    expect(screen.getByRole('main')).toHaveClass(room);
+
+    act(() => useUiStore.setState({ mobilePrimaryVisible: false }));
+    expect(screen.getByRole('main')).not.toHaveClass(room);
+  });
+
   it('AppShellLayout_Mounted_KeepsAnchorsAndFocusedElementsFromLandingUnderTheStickyHeader', () => {
     document.documentElement.style.scrollPaddingTop = '';
     const { unmount } = renderInRouter(
@@ -193,7 +214,8 @@ describe('AppShellLayout (UI-03)', () => {
       </AppShellLayout>,
     );
 
-    expect(document.documentElement.style.scrollPaddingTop).toBe('4rem');
+    // The height of the header is said once, in `globals.css` (`--header-height`): the shell does not repeat it (UI-05).
+    expect(document.documentElement.style.scrollPaddingTop).toBe('var(--header-height)');
 
     // Nothing is left behind when the user leaves the shell (the public pages have no sticky header).
     unmount();

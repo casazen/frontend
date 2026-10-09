@@ -429,7 +429,11 @@
     "switchToEnglish": "Passa all'inglese",
     "italian": "IT",
     "english": "EN",
-    "label": "Lingua"
+    "label": "Lingua",
+    "names": {
+      "it": "Italiano",
+      "en": "English"
+    }
   },
   "shell": {
     "shortRentSubtitle": "Affitti brevi",
@@ -438,7 +442,6 @@
     "adminFooter": "v1.0.0 · Admin",
     "mainNavigation": "Navigazione principale",
     "mobileNavigation": "Navigazione mobile",
-    "openMenu": "Apri menu di navigazione",
     "layerShortStay": "Affitti brevi",
     "layerLongTerm": "Affitti lungo termine",
     "layerSwitcherLabel": "Area applicativa"
@@ -5623,6 +5626,10 @@
       "requestAccessGeneric": "Per chiedere l'accesso rivolgiti a chi amministra il tuo account.",
       "mailSubject": "Richiesta di accesso a una pagina di CasaZen",
       "mailBody": "Buongiorno, vorrei chiedere l'accesso alla pagina {{path}} di CasaZen. Grazie."
+    },
+    "yourAreas": "Le tue aree",
+    "account": {
+      "profileAndLanguage": "Profilo e lingua"
     }
   },
   "areas": {
@@ -5645,6 +5652,14 @@
     "switcher": {
       "current": "Area attuale: {{name}}. Cambia area"
     }
+  },
+  "pageHeader": {
+    "moreActions": "Altre azioni",
+    "backTo": "Torna a {{name}}"
+  },
+  "pageTitle": {
+    "withArea": "{{page}} · {{area}} · CasaZen",
+    "withoutArea": "{{page}} · CasaZen"
   },
   "validation": {
     "required": "Campo obbligatorio",

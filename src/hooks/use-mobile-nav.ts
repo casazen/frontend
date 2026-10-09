@@ -20,8 +20,11 @@ export type MobileNavTabId = string | 'more';
  * destination; any other page (one of "Altro", or one that is in no menu) is "Altro".
  *
  * "Altro" is there when the sheet has something to show: entries the bar does not list, or other areas to go to. The sheet
- * is open while `sidebarOpen` is set (the header opens it too, with its menu button) and closes by itself when the page
- * changes.
+ * is open while `sidebarOpen` is set and closes by itself when the page changes.
+ *
+ * The bar is the only way to the menus on a phone: the header has no menu button since UI-05. So it is drawn (`hasBar`)
+ * whenever there is a destination or something behind "Altro": a user whose role leaves it none of the four destinations is
+ * not left without a way to its other pages or to its other areas.
  */
 export function useMobileNav(contextKey: AppContextKey) {
   const location = useLocation();
@@ -39,6 +42,8 @@ export function useMobileNav(contextKey: AppContextKey) {
     getVisibleNavEntries(contextKey, permissionCheck, flags).some((entry) => entry.navBottom === undefined) ||
     getAccessibleAreas(contexts).length > 1;
 
+  const hasBar = bottomEntries.length > 0 || hasMore;
+
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname, setSidebarOpen]);
@@ -52,6 +57,7 @@ export function useMobileNav(contextKey: AppContextKey) {
   return {
     bottomEntries,
     hasMore,
+    hasBar,
     activeTab: resolveActiveTab(),
     sidebarOpen,
     setSidebarOpen,

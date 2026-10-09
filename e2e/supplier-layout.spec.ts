@@ -2,6 +2,7 @@ import { test, expect } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 import { pinE2eLocale, resetE2eStorage } from './helpers/locale';
+import { moreOfTheBar } from './helpers/profile-menu';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
@@ -148,12 +149,12 @@ test.describe('Supplier layout standardization', () => {
       await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
     });
 
-    test('the sheet opens from the menu button of the header and shows secondary items', async ({ page }) => {
+    test('the sheet opens from "Altro" of the bottom bar and shows secondary items', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
+      await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       await expect(sheet).toBeVisible();
       await expect(sheet.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
@@ -164,7 +165,7 @@ test.describe('Supplier layout standardization', () => {
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
+      await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
       await sheet.getByRole('link', { name: /Profilo|Profile/i }).click();
       await expect(page).toHaveURL(/\/app\/supplier\/profile/);

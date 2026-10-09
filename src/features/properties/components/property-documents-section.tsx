@@ -24,7 +24,8 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      {/* Wraps: with a font wider than the one tested the title and the upload button do not fit a phone in one line (UI-05). */}
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
         <CardTitle>{t('property.documents.title')}</CardTitle>
         <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />
       </CardHeader>

@@ -293,7 +293,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: 'Apri menu di navigazione' }).click();
+      await page.locator('[data-more-trigger]').click();
       await page.getByRole('dialog').getByTestId('area-switcher').click();
       await expect(page.getByRole('menuitemradio', { name: /Affitti lunghi/ })).toBeVisible();
 
@@ -310,7 +310,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: 'Apri menu di navigazione' }).click();
+      await page.locator('[data-more-trigger]').click();
       await page.getByRole('dialog').getByTestId('area-switcher').click();
       await expect(page.getByRole('menuitemradio', { name: /Affitti lunghi/ })).toBeVisible();
 

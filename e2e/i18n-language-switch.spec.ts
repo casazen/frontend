@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { installDemoUserMeMock } from './helpers/org-api-mock';
 import { demoUrl } from './helpers/demo-profile';
+import { chooseLanguage, openProfileMenu, profileMenuTrigger } from './helpers/profile-menu';
 
 const DEMO_STAY = {
   bookingId: 'booking-i18n-1',
@@ -87,12 +88,13 @@ async function resetLocaleToDefault(page: import('@playwright/test').Page): Prom
   await page.reload({ waitUntil: 'networkidle' });
 }
 
+// UI-05: the language is chosen in the menu of the profile (the avatar of the header), not with a switch of the header.
 async function switchToEnglish(page: import('@playwright/test').Page): Promise<void> {
-  await page.getByTestId('language-switcher').locator('button', { hasText: 'EN' }).click();
+  await chooseLanguage(page, 'English');
 }
 
 async function gotoDashboard(page: import('@playwright/test').Page): Promise<void> {
-  await expect(page.getByTestId('language-switcher')).toBeVisible({ timeout: 15_000 });
+  await expect(profileMenuTrigger(page)).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe('i18n language switch (#251)', () => {
@@ -128,10 +130,9 @@ test.describe('i18n language switch (#251)', () => {
 
     await page.reload({ waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-    await expect(page.getByTestId('language-switcher').locator('button', { hasText: 'EN' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    const menu = await openProfileMenu(page);
+    await expect(menu.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute('aria-checked', 'true');
+    await expect(menu.getByRole('menuitemradio', { name: 'Italiano' })).toHaveAttribute('aria-checked', 'false');
   });
 
   test('booking badge shows Confermata not confirmed slug', async ({ page }) => {
