@@ -56,10 +56,16 @@ test.describe('Page header on a phone (UI-04a CI fix)', () => {
         expect(box, `${width} px: the controls of the header are on the page`).not.toBeNull();
         expect(box!.x, `${width} px: the controls start inside the screen`).toBeGreaterThanOrEqual(0);
         expect(box!.x + box!.width, `${width} px: the controls end inside the screen`).toBeLessThanOrEqual(width);
-        expect(
-          await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth),
-          `${width} px: the page does not scroll sideways`,
-        ).toBeLessThanOrEqual(0);
+        // CI keeps no trace of a run that passes the retries, so a failure says by itself what sticks out and by how much.
+        const sideways = await page.evaluate((viewport) => {
+          const root = document.documentElement;
+          const outside = Array.from(document.querySelectorAll('main *, header *'))
+            .filter((element) => element.getBoundingClientRect().right > viewport + 0.5)
+            .slice(0, 6)
+            .map((element) => `<${element.tagName.toLowerCase()}> "${(element.textContent ?? '').trim().slice(0, 30)}" ends at ${Math.round(element.getBoundingClientRect().right)}`);
+          return { scroll: root.scrollWidth - root.clientWidth, outside };
+        }, width);
+        expect(sideways.scroll, `${width} px: the page does not scroll sideways (sticking out: ${sideways.outside.join('; ') || 'nothing'})`).toBeLessThanOrEqual(0);
       }
     });
   }
