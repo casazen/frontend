@@ -352,7 +352,7 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
     });
   }
 
-  test('AC-W9: a toast comes up above the buttons, not behind them, and the reason is in the page too', async ({ page }) => {
+  test('AC-W9: when the server refuses, the message is on the screen above the buttons and the toast comes up over their bar', async ({ page }) => {
     await pinE2eLocale(page, 'it');
     await mockCheckoutApi(page);
     // The server refuses to close the stay: its reason is in the page (under the buttons' step) and in a toast.
@@ -372,10 +372,20 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
     await page.getByTestId('checkout-complete-button').click();
 
     await expect(page.getByTestId('checkout-complete-error')).toBeVisible();
+    // The focus goes to the message: the button that was busy has lost it, and the page scrolls the message in.
+    await expect(page.getByTestId('checkout-complete-error')).toBeFocused();
     const toast = page.locator('[data-sonner-toast]').first();
     await expect(toast).toBeVisible();
-    const buttons = (await page.getByTestId('checkout-complete-button').boundingBox())!;
     const box = await settled(toast);
-    expect(box.y + box.height, 'the toast ends above the buttons').toBeLessThanOrEqual(buttons.y);
+    const reason = await settled(page.getByTestId('checkout-complete-error'));
+    const buttons = (await page.getByTestId('checkout-complete-button').boundingBox())!;
+    const nav = (await page.locator('nav[aria-label="Navigazione mobile"]').boundingBox())!;
+    // The toast is raised over the room of the bar of the buttons (72 px), not only over the bottom bar...
+    expect(box.y + box.height, 'the toast comes up over the bar of the buttons').toBeLessThanOrEqual(nav.y - 72);
+    // ...and wherever the page is scrolled to (the focus took it to the message), it does not cover the buttons.
+    expect(box.y < buttons.y + buttons.height && box.y + box.height > buttons.y, 'the toast does not cover the buttons').toBe(false);
+    // The message of the page is in view too, above the buttons and not under them.
+    expect(reason.y, 'the message is on the screen').toBeGreaterThanOrEqual(0);
+    expect(reason.y + reason.height, 'and above the buttons').toBeLessThanOrEqual(buttons.y);
   });
 });

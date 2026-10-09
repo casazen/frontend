@@ -264,6 +264,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   const revealProblemsOnArrival = React.useRef(false);
   const panelRef = React.useRef<HTMLDivElement>(null);
   const summaryRef = React.useRef<HTMLDivElement>(null);
+  const finishErrorRef = React.useRef<HTMLDivElement>(null);
   const titleRef = React.useRef<HTMLHeadingElement>(null);
 
   const goTo = React.useCallback(
@@ -346,6 +347,13 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     const firstInvalid = panelRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
     (firstInvalid ?? summaryRef.current)?.focus();
   }, [focusRequest, problems.length]);
+
+  // The server refused (or the save before "Continue" failed): the message is where the person looks. The button that was busy
+  // has lost the focus, and on a phone the message is below the fold, so the focus goes to it and the page scrolls it in
+  // above the buttons (scroll-mb).
+  React.useEffect(() => {
+    if (finishError) finishErrorRef.current?.focus();
+  }, [finishError]);
 
   // Once done, the wizard stays done: "back" from the confirmation does not reopen a form that would send the same thing twice.
   React.useEffect(() => {
@@ -522,7 +530,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
               </Alert>
             )}
             {finishMessage && (
-              <Alert variant="danger" data-testid={ids.finishError}>
+              <Alert ref={finishErrorRef} variant="danger" tabIndex={-1} data-testid={ids.finishError} className="outline-none max-md:scroll-mb-40">
                 {finishMessage}
               </Alert>
             )}

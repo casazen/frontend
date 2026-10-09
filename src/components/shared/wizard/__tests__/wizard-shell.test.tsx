@@ -388,7 +388,9 @@ describe("WizardShell finishing", () => {
 
     fireEvent.click(screen.getByTestId("wizard-finish"));
 
-    expect(await screen.findByTestId("wizard-finish-error")).toBeInTheDocument();
+    const error = await screen.findByTestId("wizard-finish-error");
+    // The button that was busy has lost the focus: it goes to the message (which a phone scrolls in above the buttons).
+    await waitFor(() => expect(error).toHaveFocus());
     expect(screen.queryByTestId("done")).not.toBeInTheDocument();
     expect(screen.getByTestId("wizard-finish")).toHaveTextContent("Crea la casa");
 
