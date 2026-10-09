@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/*
+ * The animation utilities the shadcn components ask for (`animate-in`, `fade-in-0`, `zoom-in-95`, `slide-in-from-*`): until
+ * UI-07 no plugin provided them and they did nothing. Dialog, sheet, menu and tip now move when they open and close.
+ */
+@import "tw-animate-css";
 
 @theme {
   --color-background: oklch(100% 0 0);
@@ -59,6 +64,18 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
+}
+
+/*
+ * `tw-animate-css` does not look at what the user asked for: whoever prefers less motion gets none. Radix waits for the
+ * animation of a closing dialog, menu or tip to end before it removes it; with none it removes it at once. (Outside every
+ * layer, so it wins over the utilities, which sit in a layer.)
+ */
+@media (prefers-reduced-motion: reduce) {
+  [class*='animate-in'],
+  [class*='animate-out'] {
+    animation: none;
+  }
 }
 
 /*
