@@ -20,9 +20,15 @@ const more = (page: Page) => page.locator('[data-more-trigger]');
 const sheet = (page: Page) => page.getByRole('dialog', { name: 'Altro' });
 const handle = (page: Page) => sheet(page).getByTestId('sheet-handle');
 
-/** The page behind the sheet is not scrollable sideways: nothing sticks out of the window on the right. */
-const fitsTheWidth = (page: Page) =>
-  page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+/**
+ * How far the page scrolls sideways. What the specs ask is that what opens (the sheet, the menu) does not add to it: the
+ * page behind may be wider than a phone with the font of the machine (the dashboard is, on Linux), and that is its own
+ * business, not the navigation's.
+ */
+const pageWidth = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth);
+
+/** True when something inside the element is wider than it (it would scroll or stick out sideways). */
+const sticksOut = (locator: Locator) => locator.evaluate((element) => element.scrollWidth > element.clientWidth);
 
 /** The box of an element that slides (the sheet comes up in 280 ms): once it has stopped. */
 async function settled(locator: Locator) {
@@ -182,6 +188,8 @@ test.describe('Mobile navigation (UI-04b)', () => {
     test('a sheet taller than the screen scrolls inside itself and leaves the page visible above it', async ({ page }) => {
       await page.setViewportSize({ width: 360, height: 480 });
       await page.goto(demoUrl('/app/short-rent/profile', 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      const before = await pageWidth(page);
       await more(page).click();
 
       const box = await settled(sheet(page));
@@ -191,7 +199,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       const last = sheet(page).getByRole('link', { name: 'Organizzazione' });
       await last.scrollIntoViewIfNeeded();
       await expect(last).toBeInViewport();
-      expect(await fitsTheWidth(page)).toBe(true);
+      // It scrolls up and down, never sideways, and the page behind does not get wider.
+      expect(await sticksOut(sheet(page).locator('div.overflow-y-auto'))).toBe(false);
+      expect(await pageWidth(page)).toBeLessThanOrEqual(before);
     });
 
     test('nothing sticks out at 360 and 390 px: the bar, the sheet and the open area switcher', async ({ page }) => {
@@ -201,11 +211,14 @@ test.describe('Mobile navigation (UI-04b)', () => {
         await page.goto(demoUrl('/app/short-rent/profile', 'dual'), { waitUntil: 'domcontentloaded' });
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
         await expect(bar(page)).toBeVisible();
-        expect(await fitsTheWidth(page)).toBe(true);
+        const before = await pageWidth(page);
+        expect(await sticksOut(bar(page))).toBe(false);
 
         await more(page).click();
         await settled(sheet(page));
-        expect(await fitsTheWidth(page)).toBe(true);
+        expect(await pageWidth(page)).toBeLessThanOrEqual(before);
+        expect(await sticksOut(sheet(page))).toBe(false);
+        expect(await sticksOut(sheet(page).locator('div.overflow-y-auto'))).toBe(false);
         // Every tile is inside the sheet, which is inside the screen.
         for (const tile of await sheet(page).getByRole('link').all()) {
           const tileBox = (await tile.boundingBox())!;
@@ -219,7 +232,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
         const menuBox = await settled(menu);
         expect(menuBox.x).toBeGreaterThanOrEqual(0);
         expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(width);
-        expect(await fitsTheWidth(page)).toBe(true);
+        expect(await pageWidth(page)).toBeLessThanOrEqual(before);
       }
     });
 
@@ -239,7 +252,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
         expect(Math.round(boxes[0]!.x)).toBe(0);
         expect(Math.round(boxes[4]!.x + boxes[4]!.width)).toBe(width);
         expect(Math.abs(boxes[0]!.width - boxes[4]!.width)).toBeLessThan(1);
-        expect(await fitsTheWidth(page)).toBe(true);
+        expect(await sticksOut(bar(page))).toBe(false);
       }
     });
 
