@@ -197,17 +197,12 @@ describe('PlansPage', () => {
     expect(await screen.findByTestId('billing-plans-empty')).toHaveTextContent(i18n.t('billing.plans.emptyTitle'));
   });
 
-  it('PlansPage_Prices_ShowsApiPriceOrStripeNoteNeverAnInventedOne', async () => {
+  it('PlansPage_Prices_ShowsPreSaleFreeNeverAnInventedAmount', async () => {
     renderPage();
     await screen.findByTestId('billing-plans-grid');
 
-    // toHaveTextContent collapses the no-break space of the currency format into a space.
-    const euro = (amount: number) =>
-      new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'EUR' }).format(amount).replace(/\s/g, ' ');
-    expect(screen.getByTestId('plan-price-Pro')).toHaveTextContent(
-      i18n.t('billing.plans.pricePerMonth', { price: euro(79) }),
-    );
-    expect(screen.getByTestId('plan-price-Scale')).toHaveTextContent(i18n.t('billing.plans.priceAtCheckout'));
+    expect(screen.getByTestId('plan-price-Pro')).toHaveTextContent(i18n.t('billing.plans.preSaleFree'));
+    expect(screen.getByTestId('plan-price-Scale')).toHaveTextContent(i18n.t('billing.plans.preSaleFree'));
 
     expect(planButton('Starter')).toHaveTextContent(i18n.t('plan.currentPlan'));
     expect(planButton('Starter')).toBeDisabled();

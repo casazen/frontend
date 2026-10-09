@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
       globals: true,
       setupFiles: ['./src/test/setup.ts'],
       // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`
-      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
+      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', '**/.worktrees/**'],
     },
   }
 })

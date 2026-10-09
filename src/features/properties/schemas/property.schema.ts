@@ -53,6 +53,19 @@ export const propertyFormSchema = z.object({
   timezone: z.string().min(1, 'property.validation.timezone.required').max(50, 'property.validation.timezone.required'),
   /** '' = no cancellation policy. */
   cancellationPolicyId: z.string(),
+  cancellationFullRefundHours: z.preprocess(
+    (value) => (typeof value === 'number' && Number.isFinite(value) ? value : null),
+    z.number().int().min(0).max(24 * 365).nullable(),
+  ),
+  cancellationPartialRefundHours: z.preprocess(
+    (value) => (typeof value === 'number' && Number.isFinite(value) ? value : null),
+    z.number().int().min(0).max(24 * 365).nullable(),
+  ),
+  cancellationPartialRefundPercent: z.preprocess(
+    (value) => (typeof value === 'number' && Number.isFinite(value) ? value : null),
+    z.number().min(0).max(100).nullable(),
+  ),
+  cancellationRefundType: z.enum(['Percent', 'NonRefundable']).optional(),
   amenities: z.array(z.string()),
   // Official CIN format, spaces/hyphens/case ignored: shared with the backend rule (src/lib/cin-format.ts).
   cinCode: optionalCinSchema,
@@ -95,6 +108,10 @@ export function propertyFormDefaults(
     houseRules: property?.houseRules ?? '',
     timezone: property?.timezone || DEFAULT_PROPERTY_TIMEZONE,
     cancellationPolicyId: property?.cancellationPolicyId ?? '',
+    cancellationFullRefundHours: property?.cancellationFullRefundHours ?? null,
+    cancellationPartialRefundHours: property?.cancellationPartialRefundHours ?? null,
+    cancellationPartialRefundPercent: property?.cancellationPartialRefundPercent ?? null,
+    cancellationRefundType: property?.cancellationRefundType ?? 'Percent',
     cinCode: property?.cinCode ?? '',
     slug: property?.slug ?? '',
     amenities: property?.amenities ?? [],
@@ -159,6 +176,10 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     houseRules: values.houseRules,
     timezone: values.timezone,
     cancellationPolicyId: values.cancellationPolicyId || null,
+    cancellationFullRefundHours: values.cancellationFullRefundHours ?? null,
+    cancellationPartialRefundHours: values.cancellationPartialRefundHours ?? null,
+    cancellationPartialRefundPercent: values.cancellationPartialRefundPercent ?? null,
+    cancellationRefundType: values.cancellationRefundType ?? 'Percent',
     cinCode: values.cinCode ?? '',
     slug: values.slug ?? '',
   };

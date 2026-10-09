@@ -26,7 +26,6 @@ import {
   CHECKOUT_CONFIRM_POLL_MS,
   CHECKOUT_CONFIRM_TIMEOUT_MS,
   CHECKOUT_RETURN_PARAM,
-  formatPlanPrice,
   isLiveSubscription,
   isPaidStatus,
   needsPaymentAction,
@@ -300,10 +299,8 @@ interface BillingPlanCardProps {
   onPortal: () => void;
 }
 
-function BillingPlanCard({ plan, action, locale, portalPending, onCheckout, onPortal }: BillingPlanCardProps) {
+function BillingPlanCard({ plan, action, portalPending, onCheckout, onPortal }: BillingPlanCardProps) {
   const { t } = useTranslation();
-  // Prices come only from the API (backend configuration); without one, Stripe Checkout shows it.
-  const price = plan.priceMonthly > 0 ? formatPlanPrice(plan.priceMonthly, plan.currency, locale) : '';
 
   return (
     <Card
@@ -313,7 +310,7 @@ function BillingPlanCard({ plan, action, locale, portalPending, onCheckout, onPo
       <CardHeader>
         <CardTitle>{plan.displayName}</CardTitle>
         <CardDescription data-testid={`plan-price-${plan.tier}`}>
-          {price ? t('billing.plans.pricePerMonth', { price }) : t('billing.plans.priceAtCheckout')}
+          {t('billing.plans.preSaleFree')}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-4">

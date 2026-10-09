@@ -16,13 +16,26 @@ import type {
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInLinkResponse, CheckInSessionStatusDto } from '@/types/public-checkin.types';
+import type { PagedResult } from '@/types/users.types';
+
+/** Backend `PagedResultDto` or a legacy array from older mocks. */
+export function asBookingPage(data: PagedResult<Booking> | Booking[] | undefined): PagedResult<Booking> {
+  if (!data) return { items: [], totalCount: 0, page: 1, pageSize: 10 };
+  if (Array.isArray(data)) return { items: data, totalCount: data.length, page: 1, pageSize: data.length || 10 };
+  return {
+    items: data.items ?? [],
+    totalCount: data.totalCount ?? 0,
+    page: data.page ?? 1,
+    pageSize: data.pageSize ?? 10,
+  };
+}
 
 export const bookingsApi = {
   getAll: (params?: Record<string, unknown>) =>
-    ApiClient.get<Booking[]>('/bookings', params),
+    ApiClient.get<PagedResult<Booking> | Booking[]>('/bookings', params),
 
   getByGuestId: (guestId: string) =>
-    ApiClient.get<Booking[]>('/bookings', { guestId }),
+    ApiClient.get<PagedResult<Booking> | Booking[]>('/bookings', { guestId }),
 
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
 

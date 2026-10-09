@@ -244,6 +244,16 @@
         "confirm": "Withdraw"
       }
     },
+    "marketing": {
+      "title": "Marketing",
+      "description": "Tracking data already collected: signup attributions and top-converting comuni from the SEO funnel.",
+      "scopeNotice": "These data reflect the tracking currently active. No new events have been added.",
+      "attributions": {
+        "title": "Signup attributions (UTM & referrer)",
+        "description": "Where new hosts come from: UTM source, medium, campaign and referrer host, captured at signup.",
+        "apiNote": "Aggregate data will be available through the following API endpoint (under development):"
+      }
+    },
     "profile": {
       "title": "User profile",
       "description": "Account information and API testing tools"
@@ -386,6 +396,7 @@
     "guests": "Guests",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
+    "marketing": "Marketing",
     "more": "More",
     "brandShort": "CASAZEN",
     "brandAdmin": "CASAZEN Admin",
@@ -1252,7 +1263,10 @@
       "newBooking": "New booking",
       "filteredByProperty": "Bookings of {{name}}",
       "filteredByAProperty": "Bookings of one property",
-      "showAll": "Show all"
+      "showAll": "Show all",
+      "prevPage": "Previous",
+      "nextPage": "Next",
+      "pageOf": "Page {{page}} of {{totalPages}}"
     },
     "detail": {
       "guestInformation": "Guest Information",
@@ -2039,7 +2053,15 @@
         "current": "Current policy",
         "loading": "Loading cancellation policies…",
         "loadError": "Could not load the cancellation policies: the current policy stays unchanged.",
-        "empty": "No cancellation policy available."
+        "empty": "No cancellation policy available.",
+        "customize": "Customise refund",
+        "fullRefundHours": "Hours for a 100% refund",
+        "partialRefundHours": "Hours for a partial refund",
+        "partialPercent": "Partial refund percent",
+        "refundType": "Refund type",
+        "percent": "Percent of the stay",
+        "nonRefundable": "Non-refundable",
+        "longStayHint": "Stays of 28 nights or more keep the catalog policy, without these overrides."
       },
       "unit": "Unit / staircase",
       "unitHint": "Optional. Enter it if you have several apartments in the same building: each one needs a different unit or staircase.",
@@ -2168,7 +2190,11 @@
       "basePriceLabel": "Base price:",
       "perNight": "per night",
       "basePriceHint": "This is the property's nightly rate: quotes and bookings use this price.",
-      "readOnlyNotice": "Suggestions are read-only proposals: CasaZen does not handle different prices per date yet, so they are not applied to quotes and bookings. To change the price, edit the property's nightly rate.",
+      "readOnlyNotice": "Suggestions are proposals: they apply to quotes and bookings only after you confirm them. You can edit the price by hand before applying.",
+      "applyNotice": "Suggestions stay proposals until you confirm them. The applied price can be edited by hand.",
+      "applyAll": "Apply all suggestions",
+      "applyOne": "Apply",
+      "applied": "Applied",
       "baseChanged": "The nightly rate changed after the last computation ({{computed}} → {{current}}): recalculate the suggestions.",
       "computedAt": "Computed on {{date}}",
       "chartTitle_one": "Suggested price for {{count}} night",
@@ -3232,6 +3258,7 @@
   "billing": {
     "plans": {
       "pricePerMonth": "{{price}} per month",
+      "preSaleFree": "Free during pre-sale",
       "priceAtCheckout": "The price is shown on the Stripe payment page.",
       "changeInPortal": "Change in the portal",
       "unavailable": "Not available",
@@ -5250,6 +5277,8 @@
     "stipulaDeclared": "Signing date saved",
     "stipulaDeclareFailed": "Could not save the signing date",
     "pricingRecalculated": "Suggestions recalculated",
+    "pricingApplied": "Seasonal prices applied",
+    "pricingApplyFailed": "Could not apply seasonal prices",
     "pricingRecalculateFailed": "Could not recalculate the suggestions",
     "pricingBasePriceMissing": "Set the property's nightly rate to get suggestions",
     "cadastralSaved": "Cadastral data saved",
@@ -5392,6 +5421,8 @@
     "loadError": "Unable to load the fiscal regime.",
     "retry": "Retry",
     "assignSuccess": "Fiscal regime updated",
+    "unconfirmed": "The regime was detected automatically: confirm it or choose another. It is never applied on its own.",
+    "confirmRecommended": "Confirm the recommended regime",
     "notAssigned": "Not assigned",
     "chooseRegime": "Regime for this year",
     "selectPlaceholder": "Choose a regime",

@@ -147,6 +147,14 @@ export function getPlanPageForRentalType(rentalType: RentalType): string {
 }
 
 /**
+ * Profile of the context a rental type opens (PL-06). `/profile` is only a legacy alias, and short-rent claims it
+ * first, so assigning it after a switch to long-term never opens `/app/long-rent/profile`.
+ */
+export function getProfilePageForRentalType(rentalType: RentalType): string {
+  return rentalType === 'LongTerm' ? '/app/long-rent/profile' : '/app/short-rent/profile';
+}
+
+/**
  * Legal documents whose accepted version is no longer the current one (A1-39): the 400 of `POST/PUT /users/onboarding`
  * carries them in `staleDocuments` (`tos`, `privacy`, `dpa`, `subprocessors`). The backend sends no ProblemDetails
  * `code` for this case, so the field itself identifies it. `null` for any other error.

@@ -13,9 +13,13 @@ import type { Booking, Property } from '@/types';
 import { BookingsPage } from '../bookings-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
-vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { getAll: vi.fn(), getApprovalRequests: vi.fn(), checkIn: vi.fn() },
-}));
+vi.mock('@/api/bookings.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/bookings.api')>();
+  return {
+    ...actual,
+    bookingsApi: { getAll: vi.fn(), getApprovalRequests: vi.fn(), checkIn: vi.fn() },
+  };
+});
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { getById: vi.fn() },
@@ -148,7 +152,7 @@ describe('BookingsPage', () => {
     renderPage('/app/short-rent/bookings?propertyId=property-1');
 
     await screen.findByText('Mario Rossi', undefined, WAIT);
-    expect(bookingsApi.getAll).toHaveBeenCalledWith({ propertyId: 'property-1' });
+    expect(bookingsApi.getAll).toHaveBeenCalledWith({ pageSize: 10, propertyId: 'property-1', page: 1 });
     expect(await screen.findByText(i18n.t('booking.list.filteredByProperty', { name: 'Casa Mare' }), undefined, WAIT))
       .toBeInTheDocument();
     expect(screen.getByRole('link', { name: i18n.t('booking.list.showAll') })).toHaveAttribute('href', '/app/short-rent/bookings');
@@ -164,7 +168,7 @@ describe('BookingsPage', () => {
     renderPage();
 
     await screen.findByText('Mario Rossi', undefined, WAIT);
-    expect(bookingsApi.getAll).toHaveBeenCalledWith(undefined);
+    expect(bookingsApi.getAll).toHaveBeenCalledWith({ pageSize: 10, page: 1 });
     expect(screen.queryByTestId('bookings-property-filter')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: i18n.t('booking.list.newBooking') })).toHaveAttribute(
       'href',
