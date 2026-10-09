@@ -44,10 +44,9 @@ export function useMobileNav(contextKey: AppContextKey) {
     if (onBar) {
       return onBar.path;
     }
-    if (active || sidebarOpen) {
-      return 'more';
-    }
-    return bottomEntries[0]?.path ?? 'more';
+    // A page that is not a bar destination — one of "Altro", or a page in no menu, such as plan and billing —
+    // marks "Altro", including while the drawer is closed.
+    return 'more';
   };
 
   return {

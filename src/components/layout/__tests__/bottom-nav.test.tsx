@@ -156,6 +156,24 @@ describe('BottomNav destinations (UI-04a)', () => {
     }
   });
 
+  it('marks Altro for a page that is in no menu', () => {
+    // Plan and billing are reached from the org badge and belong to no menu.
+    renderBar('short-rent', '/app/short-rent/settings/plan');
+
+    expect(within(bar()).getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
+    for (const link of within(bar()).getAllByRole('link')) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
+    cleanup();
+
+    renderBar('long-rent', '/app/long-rent/settings/billing');
+
+    expect(within(bar()).getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
+    for (const link of within(bar()).getAllByRole('link')) {
+      expect(link).not.toHaveAttribute('aria-current');
+    }
+  });
+
   it('marks the destination on the pages of the entry', () => {
     renderBar('short-rent', '/app/short-rent/properties/p1/pricing');
 
