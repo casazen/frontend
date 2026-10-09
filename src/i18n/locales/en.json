@@ -3233,6 +3233,7 @@
   "billing": {
     "plans": {
       "pricePerMonth": "{{price}} per month",
+      "preSaleFree": "Free during pre-sale",
       "priceAtCheckout": "The price is shown on the Stripe payment page.",
       "changeInPortal": "Change in the portal",
       "unavailable": "Not available",
