@@ -5721,6 +5721,19 @@
     "field": {
       "optional": "(facoltativo)",
       "example": "Esempio:"
+    },
+    "progress": {
+      "label": "Avanzamento"
+    },
+    "ring": {
+      "label": "{{value}}% completato"
+    },
+    "stepper": {
+      "label": "Passaggi",
+      "stepOf": "Passo {{current}} di {{total}}",
+      "done": "completato",
+      "current": "passo attuale",
+      "todo": "da fare"
     }
   },
   "questuraCredentials": {
