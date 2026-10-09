@@ -317,6 +317,20 @@ describe('MoreSheet (UI-04b)', () => {
       expect(bar).not.toHaveFocus();
     });
 
+    it('MoreSheet_TileOfThePageAlreadyOpen_GivesTheFocusBackSinceNothingChanged', async () => {
+      arrange(['short-rent']);
+      renderSheet('short-rent', '/app/short-rent/payments');
+      const bar = screen.getByRole('button', { name: 'Altro (barra)' });
+      act(() => bar.focus());
+      open();
+
+      fireEvent.click(within(sheet()).getByRole('link', { name: 'Incassi' }));
+
+      // Same page: no heading to take the focus, so it goes back to where it was.
+      await waitFor(() => expect(bar).toHaveFocus());
+      expect(screen.getByTestId('location')).toHaveTextContent('/app/short-rent/payments');
+    });
+
     it('MoreSheet_OpenedAgain_NotesTheNewOpener', async () => {
       arrange(['short-rent']);
       renderSheet('short-rent');

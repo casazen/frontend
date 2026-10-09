@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { getArea } from '@/config/areas';
 import { getContextNav, getNavMatchEntries, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -25,13 +26,15 @@ interface MoreSheetProps {
  *
  * It is a modal dialog: the focus goes into it and stays there, Esc, a tap outside, the close button and a pull of the
  * handle close it, and the page behind it is hidden from assistive technology. The focus goes back to what opened it (to
- * "Altro" when that took none); when a page was chosen it does not, the heading of the new page takes it (`RouteFocus`).
- * It closes by itself when the page changes and when the window grows to the tablet, where the sidebar takes over.
+ * "Altro" when that took none); when the page changed meanwhile it does not, the heading of the new page takes it
+ * (`RouteFocus`). It closes by itself when the page changes (`useMobileNav`, in the bar) and when the window grows to the
+ * tablet, where the sidebar takes over.
  */
 export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
+  const { pathname } = useLocation();
   const open = useUiStore((state) => state.sidebarOpen);
   const setOpen = useUiStore((state) => state.setSidebarOpen);
   const isWide = useMediaQuery(FROM_TABLET_QUERY);
@@ -47,13 +50,19 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   }, [open, isWide, setOpen]);
 
   const sheet = useRef<HTMLDivElement>(null);
+  // The page now, and the page the sheet was opened on: the sheet that closes on the same page gives the focus back, the one
+  // that closes on another has opened it.
+  const currentPath = useRef(pathname);
+  const pathWhenOpened = useRef(pathname);
+  useEffect(() => {
+    currentPath.current = pathname;
+  }, [pathname]);
   // Who opened the sheet, noted as it opens (before the focus moves into it).
   const opener = useRef<HTMLElement | null>(null);
-  const choseAPage = useRef(false);
   useLayoutEffect(() => {
     if (!open) return;
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    choseAPage.current = false;
+    pathWhenOpened.current = currentPath.current;
   }, [open]);
 
   const takeFocus = (event: Event) => {
@@ -66,7 +75,7 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   const giveFocusBack = (event: Event) => {
     // Radix would give it to its own trigger, which this sheet does not have: the opener is the bar or the header.
     event.preventDefault();
-    if (choseAPage.current) return;
+    if (currentPath.current !== pathWhenOpened.current) return;
     const noted = opener.current;
     const target =
       noted && noted.isConnected && noted !== document.body
@@ -102,10 +111,7 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
               matchEntries={matchEntries}
               variant="sheet"
               counts={counts}
-              onNavigate={() => {
-                choseAPage.current = true;
-                setOpen(false);
-              }}
+              onNavigate={() => setOpen(false)}
             />
           </nav>
         </div>
