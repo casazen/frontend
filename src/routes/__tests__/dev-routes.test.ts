@@ -6,13 +6,13 @@ describe('devRoutes (UI-07)', () => {
     vi.resetModules();
   });
 
-  it('devRoutes_OnTheDevServer_HoldsThePageOfThePrimitives', async () => {
+  it('devRoutes_OnTheDevServer_HoldsThePageOfThePrimitivesAndThatOfTheList', async () => {
     vi.stubEnv('DEV', true);
     vi.resetModules();
 
     const { devRoutes } = await import('../dev-routes');
 
-    expect(devRoutes.map((route) => route.path)).toEqual(['/dev/primitives']);
+    expect(devRoutes.map((route) => route.path)).toEqual(['/dev/primitives', '/dev/list-view']);
   });
 
   it('devRoutes_InABuild_IsEmptySoThePageIsNotShippedNorReachable', async () => {
@@ -32,6 +32,16 @@ describe('devRoutes (UI-07)', () => {
     const { devRoutes } = await import('../dev-routes');
 
     const loaded = await devRoutes[0].lazy?.();
+
+    expect(loaded).toEqual({ Component: expect.any(Function) });
+  });
+
+  it('devRoutes_PageOfTheList_LoadsOnDemand', { timeout: 30_000 }, async () => {
+    vi.stubEnv('DEV', true);
+    vi.resetModules();
+    const { devRoutes } = await import('../dev-routes');
+
+    const loaded = await devRoutes[1].lazy?.();
 
     expect(loaded).toEqual({ Component: expect.any(Function) });
   });
