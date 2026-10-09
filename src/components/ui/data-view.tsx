@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ChevronDown, ChevronUp, ChevronsUpDown, Inbox } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonList, SkeletonTable } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { cn } from '@/lib/utils';
@@ -231,13 +231,18 @@ export function DataView<Row>({
   }
 
   if (isLoading) {
+    // The placeholders of UI-02, one for each representation: a table where there is room, a list of rows where there is
+    // not. Each announces "Loading..." once (`role="status"`); the one that is not shown is `display: none`, so not read.
+    const loadingShown = SHOWN_FROM[cardsUntil];
     return (
       <div className={rootClass} data-testid={testId}>
-        <div role="status" aria-busy="true" data-testid={testId ? `${testId}-loading` : undefined} className="space-y-3">
-          <span className="sr-only">{t('dataView.loading')}</span>
-          {Array.from({ length: 5 }, (_, index) => (
-            <Skeleton key={index} className="h-14 w-full" />
-          ))}
+        <div data-testid={testId ? `${testId}-loading` : undefined}>
+          <SkeletonTable
+            label={t('dataView.loading')}
+            columns={Math.min(Math.max(columns.length, 2), 5)}
+            className={loadingShown.table}
+          />
+          <SkeletonList label={t('dataView.loading')} className={loadingShown.cards} />
         </div>
       </div>
     );

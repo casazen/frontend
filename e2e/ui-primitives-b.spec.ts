@@ -799,6 +799,20 @@ test.describe('DataView', () => {
     await expect(table.getByRole('checkbox', { name: 'Seleziona Mario Rossi' })).not.toBeChecked();
   });
 
+  test('on a phone the loading skeleton is the list one and nothing sticks out', async ({ page }) => {
+    await openGallery(page, 390, 700);
+    const states = page.getByRole('group', { name: "Stato dell'elenco" });
+
+    await states.getByRole('button', { name: 'Caricamento' }).click();
+
+    const loading = page.getByTestId('guests-view-loading').getByRole('status');
+    await expect(loading).toHaveCount(1);
+    await expect(loading).toContainText("Caricamento dell'elenco");
+    // The list one (round avatars), not the table one, which has no room here.
+    await expect(loading.locator('.rounded-full').first()).toBeVisible();
+    await expectNothingSticksOut(page, '390 px, loading');
+  });
+
   test('on a phone the cards can be selected as well, and the bar stays in view while the page scrolls', async ({ page }) => {
     await openGallery(page, 390, 700);
     const list = page.getByRole('list', { name: 'Ospiti di prova' });
@@ -817,8 +831,12 @@ test.describe('DataView', () => {
     const states = page.getByRole('group', { name: "Stato dell'elenco" });
 
     await states.getByRole('button', { name: 'Caricamento' }).click();
-    await expect(page.getByTestId('guests-view-loading')).toHaveAttribute('aria-busy', 'true');
-    await expect(page.getByTestId('guests-view-loading')).toContainText("Caricamento dell'elenco");
+    // The skeleton of each representation is in the page and a media query shows one: at this width the table's is read
+    // (the list's is `display: none`, so it is not in the accessibility tree).
+    const loading = page.getByTestId('guests-view-loading').getByRole('status');
+    await expect(loading).toHaveCount(1);
+    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(loading).toContainText("Caricamento dell'elenco");
 
     await states.getByRole('button', { name: 'Vuoto' }).click();
     await expect(page.getByText('Nessun ospite')).toBeVisible();

@@ -395,13 +395,35 @@ describe('DataView (UI-07)', () => {
   });
 
   describe('loading, failing and nothing to show', () => {
-    it('DataView_Loading_ShowsASkeletonThatIsAnnouncedAndNoRows', () => {
+    it('DataView_Loading_ShowsTheSkeletonsOfTheTwoRepresentationsEachAnnouncedAndNoRows', () => {
       render(<Harness isLoading />);
 
-      const status = screen.getByRole('status');
-      expect(status).toHaveAttribute('aria-busy', 'true');
-      expect(status).toHaveTextContent("Caricamento dell'elenco");
+      // The placeholders of UI-02, one for the table and one for the list; a media query shows one of them, and the other
+      // is `display: none`, which a screen reader does not read (jsdom has no CSS: both are here).
+      const statuses = screen.getAllByRole('status');
+      expect(statuses).toHaveLength(2);
+      for (const status of statuses) {
+        expect(status).toHaveAttribute('aria-busy', 'true');
+        expect(status).toHaveTextContent("Caricamento dell'elenco");
+      }
+      expect(statuses[0]).toHaveClass('hidden', 'md:block');
+      expect(statuses[1]).toHaveClass('md:hidden');
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    });
+
+    it('DataView_LoadingWithCardsUntilXl_ShowsTheTableSkeletonOnlyFromXl', () => {
+      render(<Harness isLoading cardsUntil="xl" />);
+
+      const [tableSkeleton, listSkeleton] = screen.getAllByRole('status');
+      expect(tableSkeleton).toHaveClass('hidden', 'xl:block');
+      expect(listSkeleton).toHaveClass('xl:hidden');
+    });
+
+    it('DataView_LoadingWithATestId_PutsItOnTheBoxThatHoldsBothSkeletons', () => {
+      render(<Harness isLoading testId="guests" />);
+
+      const loading = screen.getByTestId('guests-loading');
+      expect(within(loading).getAllByRole('status')).toHaveLength(2);
     });
 
     it('DataView_Error_ShowsTheErrorWithRetryNotAnEmptyList', () => {
@@ -451,7 +473,7 @@ describe('DataView (UI-07)', () => {
       await i18n.changeLanguage('en');
       render(<Harness isLoading />);
 
-      expect(screen.getByRole('status')).toHaveTextContent('Loading the list');
+      for (const status of screen.getAllByRole('status')) expect(status).toHaveTextContent('Loading the list');
     });
   });
 
