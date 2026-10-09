@@ -60,9 +60,11 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     const [property] = (await properties.json()) as { id: string }[];
     test.skip(!property, 'The E2E user has no property: seed one on the environment.');
 
+    // An empty supplier id is 400 validation_error (NotEmptyGuid) before the stay rule. A non-empty id with no
+    // bookingId is otherwise well formed, so the missing stay reaches 422 service_request_booking_required.
     const refused = await request.post(`${API}/service-requests`, {
       headers: auth,
-      data: { propertyId: property.id, supplierOrgId: '00000000-0000-0000-0000-000000000000', category: 'cleaning' },
+      data: { propertyId: property.id, supplierOrgId: '11111111-1111-1111-1111-111111111111', category: 'cleaning' },
     });
 
     expect(refused.status()).toBe(422);
