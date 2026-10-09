@@ -106,6 +106,7 @@ function renderPage(entry: string | { pathname: string; search?: string; state?:
           <Route path="/register" element={<p data-testid="supplier-register">register</p>} />
           <Route path="/register/claim" element={<p data-testid="supplier-claim">claim</p>} />
           <Route path="/app/short-rent/profile" element={<p data-testid="profile-page">profile</p>} />
+          <Route path="/profile" element={<p data-testid="profile-root">profile-root</p>} />
           <Route path="/" element={<p data-testid="root">root</p>} />
         </Routes>
       </MemoryRouter>
@@ -258,10 +259,11 @@ describe('OnboardingPage (PL-01)', () => {
     );
     expect(toast.error).toHaveBeenCalledWith(i18n.t('onboarding.consentRequiredToast'));
     expect(screen.queryByTestId('plan-selection-grid')).not.toBeInTheDocument();
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/settings/plan'));
+    // PL-06: edit mode returns to the profile of the saved rental type (not the legacy /profile alias).
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/profile'));
   });
 
-  it('OnboardingPage_EditMode_StartsFromTheRoleStepAndOpensThePlanPageAfterSaving', async () => {
+  it('OnboardingPage_EditMode_StartsFromTheRoleStepAndNavigatesToProfileAfterSaving', async () => {
     mockAuth(['PropertyOwner']);
     vi.mocked(UsersApi.getMe).mockResolvedValue(ONBOARDED);
     vi.mocked(UsersApi.putOnboarding).mockResolvedValue(response({ rentalType: 'LongTerm' }));
@@ -278,7 +280,8 @@ describe('OnboardingPage (PL-01)', () => {
     expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('onboarding-edit-save'));
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/settings/plan'));
+    // PL-06: after saving LongTerm in edit mode, open the long-rent profile (not the plan page).
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/profile'));
     expect(UsersApi.putOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined });
     expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);

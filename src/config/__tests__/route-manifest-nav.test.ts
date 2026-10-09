@@ -109,13 +109,14 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/supplier/help/ical',
     ]);
 
-    // Staff: eight primary entries became six, the compliance audit standing for the three compliance pages.
+    // Staff: the compliance audit stands for the three compliance pages; Marketing (SE-03) sits with SEO.
     expect(paths(getPrimaryNavEntries('admin', allowAll))).toEqual([
       '/app/admin',
       '/app/admin/users',
       '/app/admin/suppliers',
       '/app/admin/jobs',
       '/app/admin/seo',
+      '/app/admin/marketing',
       '/app/admin/cin',
     ]);
     expect(paths(getSecondaryNavEntries('admin', allowAll))).toEqual([

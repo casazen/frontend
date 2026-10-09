@@ -162,7 +162,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         orgSlug={isOrgMode ? (org?.slug ?? orgSlug) : undefined}
       />
 
-      {isOrgMode ? <CookieConsentBanner /> : null}
+      <CookieConsentBanner />
     </div>
   );
 }

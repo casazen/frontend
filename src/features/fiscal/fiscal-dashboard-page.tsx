@@ -146,6 +146,11 @@ function FiscalPropertyCard({ row, snapshot, pending, onAssign }: FiscalProperty
         <p>
           {t('fiscal.recommended')}: {row.recommendedRegime ? t(`fiscal.regime.${row.recommendedRegime}`) : '—'}
         </p>
+        {!row.regimeConfirmed && (
+          <p className="text-muted-foreground" data-testid={`fiscal-unconfirmed-${row.propertyId}`}>
+            {t('fiscal.unconfirmed')}
+          </p>
+        )}
         {row.taxNote && TAX_NOTE_KEYS[row.taxNote] && (
           <p data-testid={`fiscal-tax-note-${row.propertyId}`} className="text-muted-foreground">
             {t(TAX_NOTE_KEYS[row.taxNote])}
@@ -185,6 +190,16 @@ function FiscalPropertyCard({ row, snapshot, pending, onAssign }: FiscalProperty
               {t('fiscal.wizard.link')}
             </Link>
           </p>
+        )}
+        {!row.regimeConfirmed && row.recommendedRegime && available.has(row.recommendedRegime) && (
+          <Button
+            size="sm"
+            data-testid={`fiscal-confirm-${row.propertyId}`}
+            disabled={pending}
+            onClick={() => onAssign(row.recommendedRegime!)}
+          >
+            {t('fiscal.confirmRecommended')}
+          </Button>
         )}
         {canDesignate && (
           <div className="space-y-1">

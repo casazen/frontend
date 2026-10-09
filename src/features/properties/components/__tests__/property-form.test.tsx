@@ -88,6 +88,10 @@ const ROUND_TRIP = {
   houseRules: 'Niente feste dopo le 23',
   timezone: 'Europe/Vienna',
   cancellationPolicyId: 'policy-flex',
+  cancellationFullRefundHours: null,
+  cancellationPartialRefundHours: null,
+  cancellationPartialRefundPercent: null,
+  cancellationRefundType: 'Percent',
   cinCode: 'IT010025C2ABCDEFGH',
   slug: 'monolocale-porto',
 };
@@ -163,6 +167,24 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
       houseRules: 'Check-in dalle 15',
       timezone: 'Europe/Rome',
       cancellationPolicyId: 'policy-strict',
+    });
+  });
+
+  it('PropertyForm_HostRefundOverrides_SendsHoursPercentAndType', async () => {
+    const onSubmit = renderForm();
+
+    change('property.form.cancellationPolicy.fullRefundHours', 72);
+    change('property.form.cancellationPolicy.partialRefundHours', 24);
+    change('property.form.cancellationPolicy.partialPercent', 40);
+    fireEvent.change(field('property.form.cancellationPolicy.refundType'), { target: { value: 'NonRefundable' } });
+    submit();
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      cancellationFullRefundHours: 72,
+      cancellationPartialRefundHours: 24,
+      cancellationPartialRefundPercent: 40,
+      cancellationRefundType: 'NonRefundable',
     });
   });
 

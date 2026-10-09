@@ -244,6 +244,16 @@
         "confirm": "Ritira"
       }
     },
+    "marketing": {
+      "title": "Marketing",
+      "description": "Dati di tracciamento già raccolti: attribuzioni signup e comuni che convertono dal funnel SEO.",
+      "scopeNotice": "Questi dati riflettono il tracciamento attualmente attivo. Nessun nuovo evento è stato aggiunto.",
+      "attributions": {
+        "title": "Attribuzioni signup (UTM & referrer)",
+        "description": "Da dove arrivano i nuovi host: UTM source, medium, campaign e host del sito di provenienza, raccolti al momento del signup.",
+        "apiNote": "I dati aggregati saranno disponibili tramite l'endpoint API seguente (in sviluppo):"
+      }
+    },
     "profile": {
       "title": "Profilo utente",
       "description": "Informazioni account e strumenti per il test API"
@@ -386,6 +396,7 @@
     "guests": "Ospiti",
     "taxRates": "Tassa di Soggiorno",
     "seo": "SEO & Contenuti",
+    "marketing": "Marketing",
     "more": "Altro",
     "brandShort": "CASAZEN",
     "brandAdmin": "CASAZEN Admin",
@@ -1252,7 +1263,10 @@
       "newBooking": "Nuova prenotazione",
       "filteredByProperty": "Prenotazioni di {{name}}",
       "filteredByAProperty": "Prenotazioni di una proprietà",
-      "showAll": "Mostra tutte"
+      "showAll": "Mostra tutte",
+      "prevPage": "Precedente",
+      "nextPage": "Successiva",
+      "pageOf": "Pagina {{page}} di {{totalPages}}"
     },
     "detail": {
       "guestInformation": "Informazioni ospite",
@@ -2034,7 +2048,15 @@
         "current": "Policy attuale",
         "loading": "Caricamento delle policy di cancellazione…",
         "loadError": "Impossibile caricare le policy di cancellazione: la policy attuale resta invariata.",
-        "empty": "Nessuna policy di cancellazione disponibile."
+        "empty": "Nessuna policy di cancellazione disponibile.",
+        "customize": "Personalizza rimborso",
+        "fullRefundHours": "Ore per rimborso 100%",
+        "partialRefundHours": "Ore per rimborso parziale",
+        "partialPercent": "Percentuale rimborso parziale",
+        "refundType": "Tipo di rimborso",
+        "percent": "Percentuale sulla prenotazione",
+        "nonRefundable": "Non rimborsabile",
+        "longStayHint": "I soggiorni di 28 notti o più restano sulla policy di catalogo, senza questi override."
       },
       "unit": "Interno / scala",
       "unitHint": "Facoltativo. Indicalo se nello stesso edificio hai più appartamenti: ognuno deve avere un interno o una scala diversi.",
@@ -2163,7 +2185,11 @@
       "basePriceLabel": "Prezzo base:",
       "perNight": "a notte",
       "basePriceHint": "È il prezzo per notte della struttura: preventivi e prenotazioni usano questo prezzo.",
-      "readOnlyNotice": "I suggerimenti sono proposte in sola lettura: CasaZen non gestisce ancora prezzi diversi per data, quindi non vengono applicati a preventivi e prenotazioni. Per cambiare il prezzo modifica il prezzo per notte della struttura.",
+      "readOnlyNotice": "I suggerimenti sono proposte: si applicano a preventivi e prenotazioni solo se confermi. Puoi modificare il prezzo a mano prima di applicare.",
+      "applyNotice": "I suggerimenti restano proposte finché non li confermi. Il prezzo applicato è modificabile a mano.",
+      "applyAll": "Applica tutti i suggerimenti",
+      "applyOne": "Applica",
+      "applied": "Applicato",
       "baseChanged": "Il prezzo per notte è cambiato dopo l'ultimo calcolo ({{computed}} → {{current}}): ricalcola i suggerimenti.",
       "computedAt": "Calcolati il {{date}}",
       "chartTitle_one": "Prezzo suggerito per {{count}} notte",
@@ -3227,6 +3253,7 @@
   "billing": {
     "plans": {
       "pricePerMonth": "{{price}} al mese",
+      "preSaleFree": "Gratuito in prevendita",
       "priceAtCheckout": "Il prezzo è indicato nella pagina di pagamento Stripe.",
       "changeInPortal": "Cambia dal portale",
       "unavailable": "Non disponibile",
@@ -5245,6 +5272,8 @@
     "stipulaDeclared": "Data di stipula salvata",
     "stipulaDeclareFailed": "Impossibile salvare la data di stipula",
     "pricingRecalculated": "Suggerimenti ricalcolati",
+    "pricingApplied": "Prezzi stagionali applicati",
+    "pricingApplyFailed": "Impossibile applicare i prezzi stagionali",
     "pricingRecalculateFailed": "Impossibile ricalcolare i suggerimenti",
     "pricingBasePriceMissing": "Imposta il prezzo per notte della struttura per ottenere i suggerimenti",
     "cadastralSaved": "Dati catastali salvati",
@@ -5387,6 +5416,8 @@
     "loadError": "Impossibile caricare il regime fiscale.",
     "retry": "Riprova",
     "assignSuccess": "Regime fiscale aggiornato",
+    "unconfirmed": "Il regime è stato rilevato automaticamente: confermalo o scegline un altro. Non viene applicato da solo.",
+    "confirmRecommended": "Conferma il regime consigliato",
     "notAssigned": "Non assegnato",
     "chooseRegime": "Regime per quest'anno",
     "selectPlaceholder": "Scegli un regime",

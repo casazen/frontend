@@ -4,6 +4,7 @@ import {
   getHomeRouteForRentalType,
   getHomeRouteForUser,
   getPlanPageForRentalType,
+  getProfilePageForRentalType,
   getPostOnboardingRoute,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
@@ -177,6 +178,12 @@ describe('operator type edit and stale consents (PL-06)', () => {
     expect(getPlanPageForRentalType('ShortTerm')).toBe('/app/short-rent/settings/plan');
     expect(getPlanPageForRentalType('Both')).toBe('/app/short-rent/settings/plan');
     expect(getPlanPageForRentalType('LongTerm')).toBe('/app/long-rent/settings/plan');
+  });
+
+  it('getProfilePageForRentalType_EachRentalType_ReturnsTheProfileOfItsContext', () => {
+    expect(getProfilePageForRentalType('ShortTerm')).toBe('/app/short-rent/profile');
+    expect(getProfilePageForRentalType('Both')).toBe('/app/short-rent/profile');
+    expect(getProfilePageForRentalType('LongTerm')).toBe('/app/long-rent/profile');
   });
 
   it('getStaleConsentDocuments_BadRequestWithStaleDocuments_ReturnsTheDocuments', () => {

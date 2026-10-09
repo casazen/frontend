@@ -628,6 +628,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/admin/seo-dashboard-page')).SeoDashboardPage }),
     legacyPaths: ['/admin/seo'],
   },
+  // Marketing section (SE-03): surfaces existing tracking data (signup attributions, top-converting comuni).
+  {
+    path: '/app/admin/marketing',
+    context: 'admin',
+    requiredPermissions: ['admin.seo.read'],
+    navKey: 'nav.marketing',
+    navGroup: 'platform',
+    navPlacement: 'primary',
+    navOrder: 6,
+    icon: 'TrendingUp',
+    component: async () => ({ default: (await import('@/features/admin/marketing-page')).MarketingPage }),
+    legacyPaths: ['/admin/marketing'],
+  },
   // Guests
   {
     path: '/app/short-rent/guests',

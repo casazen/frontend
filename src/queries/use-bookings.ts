@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { bookingsApi } from '@/api/bookings.api';
+import { asBookingPage, bookingsApi } from '@/api/bookings.api';
 import type {
   Booking,
   CancelBookingDto,
@@ -21,7 +21,7 @@ const BOOKINGS_KEY = 'bookings';
 export function useBookings(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, params],
-    queryFn: () => bookingsApi.getAll(params),
+    queryFn: async () => asBookingPage(await bookingsApi.getAll({ pageSize: 10, ...params })),
   });
 }
 
@@ -29,7 +29,7 @@ export function useBookings(params?: Record<string, unknown>) {
 export function usePropertyBookings(propertyId?: string) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, { propertyId }],
-    queryFn: () => bookingsApi.getAll({ propertyId }),
+    queryFn: async () => asBookingPage(await bookingsApi.getAll({ propertyId, page: 1, pageSize: 100 })).items,
     enabled: !!propertyId,
   });
 }
