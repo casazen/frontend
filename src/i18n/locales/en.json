@@ -5717,6 +5717,12 @@
     "childAgeOption_one": "{{count}} year",
     "childAgeOption_other": "{{count}} years"
   },
+  "ui": {
+    "field": {
+      "optional": "(optional)",
+      "example": "Example:"
+    }
+  },
   "questuraCredentials": {
     "title": "Alloggiati Web credentials (Questura)",
     "description": "Username, password and web service key (WSKey) of the Alloggiati Web account of this property.",

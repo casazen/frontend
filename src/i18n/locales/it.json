@@ -5717,6 +5717,12 @@
     "childAgeOption_one": "{{count}} anno",
     "childAgeOption_other": "{{count}} anni"
   },
+  "ui": {
+    "field": {
+      "optional": "(facoltativo)",
+      "example": "Esempio:"
+    }
+  },
   "questuraCredentials": {
     "title": "Credenziali Alloggiati Web (Questura)",
     "description": "Nome utente, password e chiave del web service (WSKey) dell'account Alloggiati Web di questo immobile.",
