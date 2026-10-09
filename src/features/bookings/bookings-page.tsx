@@ -48,6 +48,7 @@ export function BookingsPage() {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   // "Registra arrivo" from the list (CO-08): the same dialog as the booking detail.
   const [arrivalBooking, setArrivalBooking] = useState<Booking | null>(null);
   const canWrite = hasPermission('short-rent', 'booking.write');
@@ -55,7 +56,13 @@ export function BookingsPage() {
   // "Bookings of this property" (A2-30): the backend filters by property, so the list and its counts are the
   // property's only.
   const propertyId = searchParams.get('propertyId') ?? '';
-  const { data: bookings, isLoading, isError, error } = useBookings(propertyId ? { propertyId } : undefined);
+  const { data: bookingsPage, isLoading, isError, error } = useBookings(
+    propertyId ? { propertyId, page } : { page },
+  );
+  const bookings = bookingsPage?.items ?? [];
+  const totalCount = bookingsPage?.totalCount ?? 0;
+  const pageSize = bookingsPage?.pageSize || 10;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const { data: filterProperty } = useProperty(propertyId);
   const createPath = propertyId
     ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(propertyId)}`
@@ -264,6 +271,31 @@ export function BookingsPage() {
                     )}
                   </tbody>
                 </table>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-end gap-2 pt-3" data-testid="bookings-pagination">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      {t('booking.list.prevPage')}
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {t('booking.list.pageOf', { page, totalPages })}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      {t('booking.list.nextPage')}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
