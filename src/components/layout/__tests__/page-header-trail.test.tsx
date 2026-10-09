@@ -11,17 +11,20 @@ import { Button } from '@/components/ui/button';
 import { AppShellContext } from '../app-shell-context';
 import { PageHeader } from '../page-header';
 
-/** The head every page had before UI-05, copied from `develop`: what the 64 pages must keep rendering, to the last class. */
+/**
+ * The head every page has before UI-05 (the one of the UI-04a CI fix, which makes it fit a phone), copied as it was: what the
+ * 64 pages must keep rendering, to the last class.
+ */
 function HeadBeforeUi05({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div className="min-w-0 grow basis-56">
+        <h1 className="break-words text-3xl font-bold tracking-tight">{title}</h1>
         {description && (
-          <p className="text-muted-foreground mt-2">{description}</p>
+          <p className="text-muted-foreground mt-2 break-words">{description}</p>
         )}
       </div>
-      {action && <div>{action}</div>}
+      {action && <div className="min-w-0 max-w-full">{action}</div>}
     </div>
   );
 }

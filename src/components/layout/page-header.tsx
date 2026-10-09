@@ -41,10 +41,15 @@ interface PageHeaderProps {
 }
 
 /**
- * The head of a page: its title and what it is for, and, on the right, its actions. Every page that has one sets the title of
- * the tab (`usePageTitle`).
+ * Title, description and, on the right, the controls of the page. Every page that has one sets the title of the tab
+ * (`usePageTitle`).
  *
- * Without the props of UI-05 (`crumbs`, `primary`, `secondary`) it is the head every page had, in the same markup, so that
+ * It has to fit a phone whatever the font of the machine: the text block can shrink (`min-w-0`) and a word longer than the
+ * screen breaks, and the controls go under the text when they would leave it less than 14rem, instead of pushing out of the
+ * screen (a select or two buttons made the whole page scroll sideways at 360-390 px with a font wider than Segoe UI, as the
+ * Linux machines of the CI have). With room enough nothing changes: text on the left, controls on the right.
+ *
+ * Without the props of UI-05 (`crumbs`, `primary`, `secondary`) it is the head every page has, in the same markup, so that
  * the 64 pages that use it are unchanged. With them it becomes the head of the new interface: breadcrumb on a computer and
  * link back on a phone, the primary action next to the title (fixed above the bottom bar on a phone), the others in "⋯".
  */
@@ -53,14 +58,14 @@ export function PageHeader({ title, description, action, crumbs, primary, second
 
   if (crumbs === undefined && primary === undefined && !secondary?.length) {
     return (
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0 grow basis-56">
+          <h1 className="break-words text-3xl font-bold tracking-tight">{title}</h1>
           {description && (
-            <p className="text-muted-foreground mt-2">{description}</p>
+            <p className="text-muted-foreground mt-2 break-words">{description}</p>
           )}
         </div>
-        {action && <div>{action}</div>}
+        {action && <div className="min-w-0 max-w-full">{action}</div>}
       </div>
     );
   }
@@ -119,13 +124,14 @@ function PageHeaderWithTrail({ title, description, action, crumbs, primary, seco
     <div className="flex flex-col gap-2" data-testid="page-header">
       {items.length > 0 ? <PageCrumbs items={items} /> : null}
       {back?.to ? <BackLink to={back.to} label={back.label} /> : null}
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0 flex-[1_1_12rem]">
+      {/* The same row as the head every page has (it wraps and shrinks to fit a phone); the title is smaller on a phone. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0 grow basis-56">
           <h1 className="break-words text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
           {description ? <p className="mt-2 break-words text-muted-foreground">{description}</p> : null}
         </div>
         {hasActions ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
             {action}
             {secondary?.length ? <PageHeaderMenu items={secondary} /> : null}
             {primary ? <PageHeaderPrimary action={primary} mode={mobilePrimary} /> : null}
