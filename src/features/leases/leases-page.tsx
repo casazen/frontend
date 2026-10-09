@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeases } from '@/queries/use-leases';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
-import { LeaseStatusBadge } from './components/lease-status-badge';
+import { StatusBadge } from '@/components/shared/status/status-badge';
 import { getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
 import type { LeaseSummary } from '@/types';
 
@@ -89,7 +89,7 @@ export function LeasesPage() {
                     {formatDate(lease.startDate)} — {formatDate(lease.endDate)}
                   </p>
                 </div>
-                <LeaseStatusBadge status={lease.status} />
+                <StatusBadge kind="lease" status={lease.status} />
               </CardHeader>
               <CardContent className="flex flex-wrap gap-4 text-sm">
                 <div>

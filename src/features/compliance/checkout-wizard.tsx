@@ -1,7 +1,8 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Breadcrumb } from '@/components/shared/breadcrumb';
+import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { WizardSummary } from '@/components/shared/wizard/wizard-summary';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
@@ -23,32 +26,38 @@ import {
 } from '@/features/compliance/use-compliance';
 import { GuestDataNotice } from '@/features/bookings/components/guest-data-notice';
 import { hasStayStarted } from '@/features/bookings/lib/stay-actions';
-import { CHECKOUT_WIZARD_STEPS, type CheckoutWizardState, type CheckoutWizardStepId } from '@/types/compliance.types';
 import {
-  canComplete,
+  CHECKOUT_WIZARD_STEPS,
+  type CheckoutWizardCompleteResult,
+  type CheckoutWizardState,
+  type CheckoutWizardStepId,
+} from '@/types/compliance.types';
+import {
+  answersFromState,
+  checkoutStepSchemas,
   completeCommand,
-  draftFromState,
-  isStepAnswered,
   progressCommand,
-  stepIndex,
-  type CheckoutDraft,
+  stepFromState,
+  type CheckoutAnswers,
 } from './checkout-wizard-model';
 import {
   AlloggiatiStep,
-  CheckoutStepper,
   CleaningStep,
   PropertyReadyStep,
   StaySummaryStep,
   TouristTaxStep,
 } from './components/checkout-wizard-steps';
+import { CheckoutDone } from './components/checkout-wizard-done';
 
 /**
  * Check-out of a stay (CO-08, CO-17, A5-24). The wizard is opened (`checkout-wizard/start`, same rules as
  * `POST /bookings/:id/check-out`) and has 5 steps: stay summary and departure, Alloggiati Web, cleaning request to a
- * supplier (or skip), tourist tax collected, property ready. Every step can be reopened and the answers are saved on the
- * server as the host moves, so the wizard resumes where it was. When the host never registered the arrival of a
- * confirmed booking the page offers "Registra arrivo e procedi" instead of a 409 dead end. After the check-out the page
- * shows what was declared and lets the host declare the property ready.
+ * supplier (or skip), tourist tax collected, property ready. It is a `WizardShell`: the step is in the address
+ * (`?step=`), each step is checked before the next one opens, and the answers are kept as a draft in the session, so a
+ * reload gives back what was typed. The answers are also saved on the server as the host lands on another step, so the
+ * wizard resumes where it was, on the web or in the app. When the host never registered the arrival of a confirmed
+ * booking the page offers "Registra arrivo e procedi" instead of a 409 dead end. When the stay is closed the wizard says
+ * "What happens now"; after that the page shows what was declared and lets the host declare the property ready.
  */
 export function CheckoutWizardPage() {
   const { id } = useParams<{ id: string }>();
@@ -59,9 +68,12 @@ export function CheckoutWizardPage() {
   const arrivalRegistered = booking?.status === 'CheckedIn';
   const start = useStartCheckoutWizard(bookingId, arrivalRegistered);
   const registerArrival = useRegisterArrivalAndStartCheckout(bookingId);
+  // Set when the host closes the stay in this visit: the booking becomes "checked out" at once, and the confirmation
+  // "What happens now" must stay on screen instead of giving way to the summary of a closed stay.
+  const [closedHere, setClosedHere] = useState<CheckoutWizardCompleteResult | null>(null);
 
   if (bookingLoading) {
-    return <LoadingScreen message={t('compliance.checkout.loading')} className="h-auto flex-1" />;
+    return <LoadingScreen message={t('compliance.checkout.loading')} />;
   }
 
   if (bookingError) {
@@ -95,7 +107,7 @@ export function CheckoutWizardPage() {
     </Button>
   );
 
-  if (booking.status === 'CheckedOut') {
+  if (booking.status === 'CheckedOut' && !closedHere) {
     return (
       <AppShell>
         <div className="space-y-6 max-w-xl mx-auto" data-testid="checkout-wizard-page">
@@ -108,7 +120,7 @@ export function CheckoutWizardPage() {
   }
 
   const arrivalMissing = booking.status === 'Confirmed' && hasStayStarted(booking);
-  if (!arrivalRegistered && !arrivalMissing) {
+  if (!closedHere && !arrivalRegistered && !arrivalMissing) {
     return (
       <AppShell>
         <div className="space-y-4 max-w-lg mx-auto py-12 text-center" data-testid="checkout-unavailable">
@@ -122,11 +134,12 @@ export function CheckoutWizardPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-2xl mx-auto" data-testid="checkout-wizard-page">
+      {/* `w-full`: the shell sits in a column; a centered block there takes the width of its content, and the buttons of a phone would stick out. */}
+      <div className="space-y-6 max-w-2xl mx-auto w-full" data-testid="checkout-wizard-page">
         <Breadcrumb />
         <PageHeader
           title={t('compliance.checkout.title')}
-          description={t('compliance.checkout.description', { guest: guestName })}
+          description={closedHere ? undefined : t('compliance.checkout.description', { guest: guestName })}
         />
 
         {arrivalMissing && (
@@ -174,106 +187,166 @@ export function CheckoutWizardPage() {
           </div>
         )}
 
-        {arrivalRegistered && start.data && <CheckoutWizardForm key={bookingId} bookingId={bookingId} state={start.data} />}
+        {(arrivalRegistered || closedHere) && start.data && (
+          <CheckoutWizardForm
+            key={bookingId}
+            bookingId={bookingId}
+            guestName={guestName}
+            state={start.data}
+            onClosed={setClosedHere}
+          />
+        )}
 
-        <Button variant="ghost" asChild>
-          <Link to={`/app/short-rent/bookings/${bookingId}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('compliance.checkout.backToBooking')}
-          </Link>
-        </Button>
+        {!closedHere && (
+          <Button variant="ghost" asChild>
+            <Link to={`/app/short-rent/bookings/${bookingId}`}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('compliance.checkout.backToBooking')}
+            </Link>
+          </Button>
+        )}
       </div>
     </AppShell>
   );
 }
 
-/** The 5 steps of an open wizard, starting from the progress saved on the server. */
-function CheckoutWizardForm({ bookingId, state }: { bookingId: string; state: CheckoutWizardState }) {
+/** The fields of one step: the step components, fed from the form of the wizard. */
+function CheckoutStepPanel({ step, state }: { step: CheckoutWizardStepId; state: CheckoutWizardState }) {
+  const form = useFormContext<CheckoutAnswers>();
+  const answers = useWatch({ control: form.control }) as CheckoutAnswers;
+  const change = useCallback(
+    (update: Partial<CheckoutAnswers>) => {
+      for (const [name, value] of Object.entries(update) as Array<[keyof CheckoutAnswers, CheckoutAnswers[keyof CheckoutAnswers]]>) {
+        form.setValue(name, value as never, { shouldDirty: true });
+      }
+    },
+    [form]
+  );
+
+  switch (step) {
+    case 'stay-summary':
+      return <StaySummaryStep state={state} draft={answers} onChange={change} />;
+    case 'alloggiati':
+      return <AlloggiatiStep state={state} />;
+    case 'cleaning':
+      return <CleaningStep state={state} draft={answers} onChange={change} />;
+    case 'tourist-tax':
+      return <TouristTaxStep state={state} draft={answers} onChange={change} />;
+    case 'property-ready':
+      return (
+        <>
+          <PropertyReadyStep draft={answers} onChange={change} />
+          <CheckoutSummary answers={answers} />
+        </>
+      );
+  }
+}
+
+/** What the host answered so far, before the last button: each answer links back to its step. */
+function CheckoutSummary({ answers }: { answers: CheckoutAnswers }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [draft, setDraft] = useState<CheckoutDraft>(() => draftFromState(state));
-  const saveProgress = useSaveCheckoutProgress(bookingId);
-  const completeCheckout = useCompleteCheckoutWizard(bookingId);
-
-  const change = (update: Partial<CheckoutDraft>) => setDraft((current) => ({ ...current, ...update }));
-
-  /** Moves to `step` and saves the answers so far: the wizard reopens there, on the web or in the app. */
-  const goTo = (step: CheckoutWizardStepId) => {
-    change({ step });
-    saveProgress.mutate(progressCommand(draft, step));
-  };
-
-  const index = stepIndex(draft.step);
-  const previous = index > 0 ? CHECKOUT_WIZARD_STEPS[index - 1] : null;
-  const next = index < CHECKOUT_WIZARD_STEPS.length - 1 ? CHECKOUT_WIZARD_STEPS[index + 1] : null;
-  const answered = isStepAnswered(draft, draft.step);
-
-  const handleComplete = async () => {
-    try {
-      await completeCheckout.mutateAsync(completeCommand(draft));
-      navigate(`/app/short-rent/bookings/${bookingId}`);
-    } catch {
-      // Shown below and by the mutation toast.
-    }
-  };
+  const cleaning =
+    answers.cleaningChoice === 'Request'
+      ? t('compliance.checkout.summary.cleaningRequest')
+      : answers.cleaningChoice === 'Skip'
+        ? t('compliance.checkout.summary.cleaningSkip')
+        : null;
 
   return (
-    <Card data-testid="checkout-wizard-form" data-step={draft.step}>
-      <CardHeader className="space-y-4">
-        <CheckoutStepper draft={draft} onSelect={goTo} />
-        <div>
-          <CardTitle>{t(`compliance.checkout.steps.${draft.step}.title`)}</CardTitle>
-          <CardDescription>{t(`compliance.checkout.steps.${draft.step}.hint`)}</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {draft.step === 'stay-summary' && <StaySummaryStep state={state} draft={draft} onChange={change} />}
-        {draft.step === 'alloggiati' && <AlloggiatiStep state={state} />}
-        {draft.step === 'cleaning' && <CleaningStep state={state} draft={draft} onChange={change} />}
-        {draft.step === 'tourist-tax' && <TouristTaxStep state={state} draft={draft} onChange={change} />}
-        {draft.step === 'property-ready' && <PropertyReadyStep draft={draft} onChange={change} />}
+    <section className="space-y-2" data-testid="checkout-summary">
+      <h3 className="text-sm font-semibold">{t('compliance.checkout.summary.title')}</h3>
+      <WizardSummary
+        items={[
+          {
+            id: 'departure',
+            label: t('compliance.checkout.summary.departure'),
+            value: answers.departureConfirmed ? t('compliance.checkout.summary.departureConfirmed') : null,
+            stepId: 'stay-summary',
+          },
+          { id: 'cleaning', label: t('compliance.checkout.summary.cleaning'), value: cleaning, stepId: 'cleaning' },
+          {
+            id: 'tourist-tax',
+            label: t('compliance.checkout.summary.touristTax'),
+            value: answers.touristTaxCollection ? t(`compliance.checkout.touristTax.collection.${answers.touristTaxCollection}`) : null,
+            stepId: 'tourist-tax',
+          },
+        ]}
+      />
+    </section>
+  );
+}
 
-        {saveProgress.isError && (
+/** The 5 steps of an open wizard, starting from the progress saved on the server. */
+function CheckoutWizardForm({
+  bookingId,
+  guestName,
+  state,
+  onClosed,
+}: {
+  bookingId: string;
+  guestName: string;
+  state: CheckoutWizardState;
+  onClosed: (result: CheckoutWizardCompleteResult) => void;
+}) {
+  const { t } = useTranslation();
+  const saveProgress = useSaveCheckoutProgress(bookingId);
+  const completeCheckout = useCompleteCheckoutWizard(bookingId);
+  const { mutate: saveProgressNow } = saveProgress;
+
+  const steps: WizardStep<CheckoutAnswers>[] = CHECKOUT_WIZARD_STEPS.map((stepId) => ({
+    id: stepId,
+    label: t(`compliance.checkout.steps.${stepId}.label`),
+    title: t(`compliance.checkout.steps.${stepId}.title`),
+    purpose: t(`compliance.checkout.steps.${stepId}.hint`),
+    schema: checkoutStepSchemas[stepId],
+    render: () => <CheckoutStepPanel step={stepId} state={state} />,
+  }));
+
+  /** Lands on a step: the answers so far are saved, and the wizard reopens there, on the web or in the app. */
+  const onStepChange = useCallback(
+    ({ to, values }: { to: string; values: CheckoutAnswers }) => saveProgressNow(progressCommand(values, to as CheckoutWizardStepId)),
+    [saveProgressNow]
+  );
+
+  return (
+    <WizardShell<CheckoutAnswers, CheckoutWizardCompleteResult>
+      id={`checkout-${bookingId}`}
+      steps={steps}
+      defaultValues={answersFromState(state)}
+      initialStepId={stepFromState(state)}
+      finishLabel={t('compliance.checkout.complete')}
+      finishFailedMessage={t('compliance.checkout.completeFailed')}
+      onFinish={async (values) => {
+        const result = await completeCheckout.mutateAsync(completeCommand(values));
+        onClosed(result);
+        return result;
+      }}
+      onStepChange={onStepChange}
+      // The server remembers the answers too, and so does the app: a draft of a step behind the one the server is on is older
+      // than what the server knows, and would put old answers over newer ones.
+      draft={{
+        accept: (saved) =>
+          CHECKOUT_WIZARD_STEPS.indexOf(saved.step as CheckoutWizardStepId) >= CHECKOUT_WIZARD_STEPS.indexOf(stepFromState(state)),
+      }}
+      // Reopening the confirmation (a typed address) when nothing was closed here: there is nothing to confirm, start over.
+      renderDone={({ result }) =>
+        result ? <CheckoutDone bookingId={bookingId} guestName={guestName} result={result} /> : <Navigate to={{ search: '' }} replace />
+      }
+      aboveFooter={
+        saveProgress.isError ? (
           <p role="alert" className="text-sm text-destructive" data-testid="checkout-progress-error">
             {getProblemMessage(saveProgress.error, t) ?? t('compliance.checkout.progressSaveFailed')}
           </p>
-        )}
-        {completeCheckout.isError && (
-          <p role="alert" className="text-sm text-destructive" data-testid="checkout-complete-error">
-            {getProblemMessage(completeCheckout.error, t) ?? t('compliance.checkout.completeFailed')}
-          </p>
-        )}
-
-        <div className="flex flex-wrap justify-between gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            data-testid="checkout-step-back"
-            disabled={!previous}
-            onClick={() => previous && goTo(previous)}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('compliance.checkout.back')}
-          </Button>
-          {next ? (
-            <Button type="button" data-testid="checkout-step-next" disabled={!answered} onClick={() => goTo(next)}>
-              {t('compliance.checkout.next')}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              data-testid="checkout-complete-button"
-              onClick={() => void handleComplete()}
-              disabled={!canComplete(draft) || completeCheckout.isPending}
-            >
-              {completeCheckout.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('compliance.checkout.complete')}
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        ) : undefined
+      }
+      testIds={{
+        root: 'checkout-wizard-form',
+        back: 'checkout-step-back',
+        next: 'checkout-step-next',
+        finish: 'checkout-complete-button',
+        finishError: 'checkout-complete-error',
+      }}
+    />
   );
 }
 
