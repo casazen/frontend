@@ -28,6 +28,7 @@ const baseRow: FiscalPropertyRow = {
   name: 'Casa IRPEF',
   recommendedRegime: 'CedolareSecca21',
   assignedRegime: 'IrpefOrdinaria',
+  regimeConfirmed: true,
   isPrimaryForCedolare: false,
   shortStayInTaxYear: true,
   taxpayerIndex: 0,
@@ -105,7 +106,7 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
       strPropertyCount: 3,
       requiresPartitaIva: true,
       properties: [
-        { ...baseRow, assignedRegime: null, recommendedRegime: null, taxNote: 'short_stay_threshold_exceeded', availableRegimes: [] },
+        { ...baseRow, assignedRegime: null, recommendedRegime: null, regimeConfirmed: false, taxNote: 'short_stay_threshold_exceeded', availableRegimes: [] },
       ],
     });
 
@@ -120,7 +121,7 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
   it('FiscalDashboard_OneProperty_OffersRegimeSelectAndThe21PercentDesignation', async () => {
     vi.mocked(fiscalApi.getRegime).mockResolvedValue({
       ...baseSnapshot,
-      properties: [{ ...baseRow, assignedRegime: null, taxNote: null }],
+      properties: [{ ...baseRow, assignedRegime: null, regimeConfirmed: false, taxNote: null }],
     });
     vi.mocked(fiscalApi.assignRegime).mockResolvedValue({ ...baseRow, assignedRegime: 'CedolareSecca21' });
 
@@ -228,6 +229,8 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
         {
           ...baseRow,
           assignedRegime: null,
+          recommendedRegime: 'RegimeOrdinario',
+          regimeConfirmed: false,
           taxNote: 'short_stay_threshold_exceeded',
           availableRegimes: ['RegimeOrdinario', 'RegimeForfettario'],
         },
@@ -271,6 +274,42 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
     expect(within(empty).getByRole('link', { name: i18n.t('fiscal.empty.action') })).toHaveAttribute(
       'href',
       '/app/short-rent/properties/create',
+    );
+  });
+
+  it('FiscalDashboard_UnconfirmedRecommendation_ConfirmsTheDetectedImpresaRegime', async () => {
+    vi.mocked(fiscalApi.getRegime).mockResolvedValue({
+      ...baseSnapshot,
+      hasPartitaIva: true,
+      properties: [
+        {
+          ...baseRow,
+          assignedRegime: null,
+          recommendedRegime: 'RegimeOrdinario',
+          regimeConfirmed: false,
+          taxNote: 'short_stay_threshold_exceeded',
+          availableRegimes: ['RegimeOrdinario', 'RegimeForfettario'],
+        },
+      ],
+    });
+    vi.mocked(fiscalApi.assignRegime).mockResolvedValueOnce({
+      ...baseRow,
+      assignedRegime: 'RegimeOrdinario',
+      recommendedRegime: 'RegimeOrdinario',
+      regimeConfirmed: true,
+    });
+
+    renderPage();
+
+    expect(await screen.findByTestId('fiscal-unconfirmed-p-irpef')).toHaveTextContent(i18n.t('fiscal.unconfirmed'));
+    fireEvent.click(screen.getByTestId('fiscal-confirm-p-irpef'));
+
+    await waitFor(() =>
+      expect(fiscalApi.assignRegime).toHaveBeenCalledWith('p-irpef', {
+        taxYear: expect.any(Number),
+        regime: 'RegimeOrdinario',
+        isPrimaryForCedolare: undefined,
+      }),
     );
   });
 
