@@ -7,7 +7,8 @@ export const UI_STORE_STORAGE_KEY = 'casazen:sidebar';
 interface UiState {
   /**
    * On a phone (< md): the sheet "Altro" of the bottom bar is open (`MoreSheet`, UI-04b). The bar and the menu button of the
-   * header open it. The name is the one the drawer that slid in from the left had.
+   * header opened it too until UI-05, which took the menu button out. The name is the one the drawer that slid in from the
+   * left had.
    */
   sidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -22,6 +23,12 @@ interface UiState {
    */
   bottomBarVisible: boolean;
   setBottomBarVisible: (visible: boolean) => void;
+  /**
+   * The page has its primary action fixed at the bottom of the phone (`PageHeader` with `mobilePrimary`, UI-05). The
+   * content makes room for it (`AppShellLayout`) and the toasts come up above it (`AppToaster`). Not persisted.
+   */
+  mobilePrimaryVisible: boolean;
+  setMobilePrimaryVisible: (visible: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -35,6 +42,8 @@ export const useUiStore = create<UiState>()(
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       bottomBarVisible: false,
       setBottomBarVisible: (visible) => set({ bottomBarVisible: visible }),
+      mobilePrimaryVisible: false,
+      setMobilePrimaryVisible: (visible) => set({ mobilePrimaryVisible: visible }),
     }),
     {
       name: UI_STORE_STORAGE_KEY,

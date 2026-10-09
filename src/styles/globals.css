@@ -29,6 +29,17 @@
 
 :root {
   --bottom-nav-height: 4rem;
+  /*
+   * How tall the sticky header of the shell is (UI-05): the one place that says it. The header takes it as its height; what
+   * has to sit under the header reads it from here (the scroll padding of the window, the full-height page of the booking
+   * site editor, the sticky preview of the site appearance) instead of repeating "4rem".
+   */
+  --header-height: 4rem;
+  /*
+   * The bar that carries the primary action of a page on a phone (`PageHeader`, UI-05): a 48 px button and the space around
+   * it. It sits above the bottom bar, so the page makes room for it and the toasts come up above it.
+   */
+  --mobile-primary-height: 4.5rem;
 }
 
 .safe-area-top {
