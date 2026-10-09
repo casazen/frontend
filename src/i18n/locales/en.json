@@ -6186,6 +6186,139 @@
     "labelFor": "About: {{title}}",
     "learnMore": "Learn more"
   },
+  "listView": {
+    "board": {
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items",
+      "label": "Columns by status",
+      "moved": "Moved",
+      "moveFailed": "It could not be moved. Try again.",
+      "moveMenu": "Move or other actions: {{name}}",
+      "moveTo": "Move to…",
+      "moveToColumn": "Move to “{{column}}”"
+    },
+    "bulk": {
+      "bar": "Actions on the selected rows",
+      "clear": "Clear selection",
+      "done_one": "{{action}}: {{count}} row",
+      "done_other": "{{action}}: {{count}} rows",
+      "export": "Export the selection (CSV)",
+      "failed": "The action did not work. Try again.",
+      "selected_one": "{{count}} selected",
+      "selected_other": "{{count}} selected"
+    },
+    "chips": {
+      "label": "Quick filters",
+      "needAttention_one": "{{count}} needs attention",
+      "needAttention_other": "{{count}} need attention"
+    },
+    "clear": "Clear the filters",
+    "columns": {
+      "always": "Always shown",
+      "apply": "Apply",
+      "description": "Choose what the table shows. Locked columns are always there.",
+      "reset": "Reset",
+      "title": "Columns of the list"
+    },
+    "count_one": "{{count}} result",
+    "count_other": "{{count}} results",
+    "countOf": "{{base}} of {{total}}",
+    "detail": {
+      "description": "The detail of the row you chose.",
+      "openPage": "Open the full page"
+    },
+    "export": {
+      "done_one": "Export ready: {{count}} row in the CSV file.",
+      "done_other": "Export ready: {{count}} rows in the CSV file (it opens in Excel).",
+      "menu_one": "Export {{count}} row (CSV)",
+      "menu_other": "Export {{count}} rows (CSV)",
+      "menuPage_one": "Export this page ({{count}} row, CSV)",
+      "menuPage_other": "Export this page ({{count}} rows, CSV)"
+    },
+    "filters": {
+      "all": "All",
+      "button": "Filters",
+      "buttonCount": "Filters · {{count}}",
+      "clear": "Clear",
+      "dateOrder": "The start date is after the end date.",
+      "description": "Narrow down the list. The quick filters stay on top.",
+      "from": "From",
+      "rangeBoth": "from {{from}} to {{to}}",
+      "rangeFrom": "from {{date}}",
+      "rangeTo": "until {{date}}",
+      "show": "Show the results",
+      "showCount_one": "Show {{count}} result",
+      "showCount_other": "Show {{count}} results",
+      "title": "Filters",
+      "to": "To"
+    },
+    "layout": {
+      "board": "Columns",
+      "label": "How to see the list",
+      "list": "List"
+    },
+    "loadError": "Could not load the list",
+    "more": {
+      "button": "Columns, order and export",
+      "columns": "Choose the columns…",
+      "sort": "Sort by…"
+    },
+    "noResults": {
+      "description": "Try removing a filter or searching with another word.",
+      "title": "No results"
+    },
+    "pagination": {
+      "label": "Pages of the list",
+      "next": "Next",
+      "page": "Page {{page}} of {{pageCount}}",
+      "previous": "Previous"
+    },
+    "row": {
+      "more": "More actions: {{name}}"
+    },
+    "select": {
+      "done": "Done",
+      "hint": "Tap the rows you want to select.",
+      "start": "Select more rows"
+    },
+    "sort": {
+      "apply": "Apply",
+      "ascending": "Ascending (A to Z, lowest first)",
+      "by": "Column",
+      "descending": "Descending (Z to A, highest first)",
+      "description": "Choose the column and the direction.",
+      "direction": "Direction",
+      "title": "Sort by"
+    },
+    "tags": {
+      "label": "Active filters",
+      "remove": "Remove the filter: {{text}}",
+      "search": "Search: “{{q}}”"
+    },
+    "views": {
+      "button": "Views",
+      "delete": "Delete",
+      "deleted": "View “{{name}}” deleted",
+      "deleteDescription": "Choose which one to take out of the “Views” menu.",
+      "deleteItem": "Delete a saved view…",
+      "deleteOne": "Delete the view: {{name}}",
+      "deleteTitle": "Delete a view",
+      "errorEmpty": "Write a name for the view.",
+      "errorLimit": "You can save {{max}} views at most: delete one to save another.",
+      "errorStorage": "The browser does not allow saving the view.",
+      "errorTooLong": "This view is too long to be saved.",
+      "mine": "My views",
+      "nameHint": "For example: This week’s arrivals.",
+      "nameLabel": "Name of the view",
+      "none": "You have not saved any view yet.",
+      "presets": "Built in",
+      "save": "Save the view",
+      "saved": "View “{{name}}” saved",
+      "saveDescription": "You will find it in the “Views” menu, with the search, filters, columns and order as they are now. It stays on this computer.",
+      "saveItem": "Save this view…",
+      "saveTitle": "Save this view"
+    }
+  },
   "qty": {
     "decrease": "Decrease {{label}}",
     "increase": "Increase {{label}}"

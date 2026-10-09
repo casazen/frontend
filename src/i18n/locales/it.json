@@ -6186,6 +6186,139 @@
     "labelFor": "Cos'è: {{title}}",
     "learnMore": "Scopri di più"
   },
+  "listView": {
+    "board": {
+      "count_one": "{{count}} elemento",
+      "count_other": "{{count}} elementi",
+      "label": "Colonne per stato",
+      "moved": "Spostata",
+      "moveFailed": "Non è stato possibile spostarla. Riprova.",
+      "moveMenu": "Sposta o altre azioni: {{name}}",
+      "moveTo": "Sposta in…",
+      "moveToColumn": "Sposta in «{{column}}»"
+    },
+    "bulk": {
+      "bar": "Azioni sulle righe selezionate",
+      "clear": "Annulla la selezione",
+      "done_one": "{{action}}: {{count}} riga",
+      "done_other": "{{action}}: {{count}} righe",
+      "export": "Esporta la selezione (CSV)",
+      "failed": "L’azione non è andata a buon fine. Riprova.",
+      "selected_one": "{{count}} selezionata",
+      "selected_other": "{{count}} selezionate"
+    },
+    "chips": {
+      "label": "Filtri rapidi",
+      "needAttention_one": "{{count}} da gestire",
+      "needAttention_other": "{{count}} da gestire"
+    },
+    "clear": "Azzera i filtri",
+    "columns": {
+      "always": "Sempre visibile",
+      "apply": "Applica",
+      "description": "Scegli cosa vedere nella tabella. Le colonne bloccate restano sempre.",
+      "reset": "Ripristina",
+      "title": "Colonne dell’elenco"
+    },
+    "count_one": "{{count}} risultato",
+    "count_other": "{{count}} risultati",
+    "countOf": "{{base}} su {{total}}",
+    "detail": {
+      "description": "Il dettaglio della riga che hai scelto.",
+      "openPage": "Apri la scheda completa"
+    },
+    "export": {
+      "done_one": "Esportazione pronta: {{count}} riga nel file CSV.",
+      "done_other": "Esportazione pronta: {{count}} righe nel file CSV (si apre con Excel).",
+      "menu_one": "Esporta {{count}} riga (CSV)",
+      "menu_other": "Esporta {{count}} righe (CSV)",
+      "menuPage_one": "Esporta questa pagina ({{count}} riga, CSV)",
+      "menuPage_other": "Esporta questa pagina ({{count}} righe, CSV)"
+    },
+    "filters": {
+      "all": "Tutti",
+      "button": "Filtri",
+      "buttonCount": "Filtri · {{count}}",
+      "clear": "Azzera",
+      "dateOrder": "La data di inizio è dopo quella di fine.",
+      "description": "Restringi l’elenco. I filtri rapidi restano in alto.",
+      "from": "Dal",
+      "rangeBoth": "dal {{from}} al {{to}}",
+      "rangeFrom": "dal {{date}}",
+      "rangeTo": "fino al {{date}}",
+      "show": "Mostra i risultati",
+      "showCount_one": "Mostra {{count}} risultato",
+      "showCount_other": "Mostra {{count}} risultati",
+      "title": "Filtri",
+      "to": "Al"
+    },
+    "layout": {
+      "board": "Colonne",
+      "label": "Come vedere l’elenco",
+      "list": "Elenco"
+    },
+    "loadError": "Impossibile caricare l’elenco",
+    "more": {
+      "button": "Colonne, ordine ed esportazione",
+      "columns": "Scegli le colonne…",
+      "sort": "Ordina per…"
+    },
+    "noResults": {
+      "description": "Prova a togliere un filtro o a cercare con un’altra parola.",
+      "title": "Nessun risultato"
+    },
+    "pagination": {
+      "label": "Pagine dell’elenco",
+      "next": "Successiva",
+      "page": "Pagina {{page}} di {{pageCount}}",
+      "previous": "Precedente"
+    },
+    "row": {
+      "more": "Altre azioni: {{name}}"
+    },
+    "select": {
+      "done": "Fine",
+      "hint": "Tocca le righe che vuoi selezionare.",
+      "start": "Seleziona più righe"
+    },
+    "sort": {
+      "apply": "Applica",
+      "ascending": "Crescente (da A a Z, dal più basso)",
+      "by": "Colonna",
+      "descending": "Decrescente (da Z ad A, dal più alto)",
+      "description": "Scegli la colonna e la direzione.",
+      "direction": "Direzione",
+      "title": "Ordina per"
+    },
+    "tags": {
+      "label": "Filtri attivi",
+      "remove": "Rimuovi il filtro: {{text}}",
+      "search": "Cerca: «{{q}}»"
+    },
+    "views": {
+      "button": "Viste",
+      "delete": "Elimina",
+      "deleted": "Vista «{{name}}» eliminata",
+      "deleteDescription": "Scegli quale vuoi togliere dal menu «Viste».",
+      "deleteItem": "Elimina una vista salvata…",
+      "deleteOne": "Elimina la vista: {{name}}",
+      "deleteTitle": "Elimina una vista",
+      "errorEmpty": "Scrivi un nome per la vista.",
+      "errorLimit": "Puoi salvare al massimo {{max}} viste: eliminane una per salvarne un’altra.",
+      "errorStorage": "Il browser non permette di salvare la vista.",
+      "errorTooLong": "Questa vista è troppo lunga per essere salvata.",
+      "mine": "Le mie viste",
+      "nameHint": "Per esempio: Arrivi della settimana.",
+      "nameLabel": "Nome della vista",
+      "none": "Non hai ancora salvato nessuna vista.",
+      "presets": "Predefinite",
+      "save": "Salva la vista",
+      "saved": "Vista «{{name}}» salvata",
+      "saveDescription": "La ritrovi nel menu «Viste», con la ricerca, i filtri, le colonne e l’ordine di adesso. Resta su questo computer.",
+      "saveItem": "Salva questa vista…",
+      "saveTitle": "Salva questa vista"
+    }
+  },
   "qty": {
     "decrease": "Diminuisci {{label}}",
     "increase": "Aumenta {{label}}"
