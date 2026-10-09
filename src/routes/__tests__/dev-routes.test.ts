@@ -24,7 +24,9 @@ describe('devRoutes (UI-07)', () => {
     expect(devRoutes).toEqual([]);
   });
 
-  it('devRoutes_Page_LoadsOnDemand', async () => {
+  // Imports the page of the primitives and everything it shows: the first time, on a slow machine, that takes longer than the
+  // 5 seconds a test is given by default.
+  it('devRoutes_Page_LoadsOnDemand', { timeout: 30_000 }, async () => {
     vi.stubEnv('DEV', true);
     vi.resetModules();
     const { devRoutes } = await import('../dev-routes');
