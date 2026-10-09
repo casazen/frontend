@@ -139,8 +139,9 @@ const DialogContent = React.forwardRef<
           // Last in the markup (so the first field, not this button, takes the focus when the dialog opens) and first on
           // the screen: a bar that stays at the top while the content scrolls under it, with the grip and the close
           // button. Almost no room of its own: its negative bottom margin leaves the title close under the grip.
-          // From `sm` up it is not a box at all (`contents`): the close button is where it has always been.
-          <div className="max-sm:sticky max-sm:top-0 max-sm:z-10 max-sm:order-first max-sm:-mb-1 max-sm:h-7 max-sm:bg-background sm:contents">
+          // From `sm` up it is not a box at all (`contents`): the close button is where it has always been. It takes the
+          // background of the dialog (`inherit`), so a dark one (the photo viewer of the public site) has a dark bar, not a white one.
+          <div className="max-sm:sticky max-sm:top-0 max-sm:z-10 max-sm:order-first max-sm:-mb-1 max-sm:h-7 max-sm:bg-inherit sm:contents">
             {handle ? <SheetHandle className="sm:hidden" onClose={() => closeRef.current?.click()} /> : null}
             {closeButton}
           </div>

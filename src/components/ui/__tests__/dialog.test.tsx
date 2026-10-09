@@ -172,6 +172,16 @@ describe('Dialog responsive (UI-07)', () => {
       expect(dialog().querySelector('input')).toHaveFocus();
     });
 
+    it('Dialog_DarkDialog_TheTopBarTakesItsBackgroundNotAWhiteOne', () => {
+      render(<Harness className="bg-black" />);
+
+      // The photo viewer of the public site is black: its sheet has a black bar too, whatever the background of the dialog is.
+      const bar = handle().parentElement;
+      expect(dialog()).toHaveClass('bg-black');
+      expect(bar).toHaveClass('max-sm:bg-inherit', 'max-sm:sticky');
+      expect(bar).not.toHaveClass('max-sm:bg-background');
+    });
+
     it('Dialog_DialogHeader_IsLeftAlignedAndClearOfTheCloseButton', () => {
       render(<Harness />);
 
