@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useForm, type FieldErrors, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from 'react-hook-form';
+import { useForm, type FieldErrors, type Resolver, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -87,7 +87,7 @@ export function PropertyForm({
     setValue,
     setError,
   } = useForm<PropertyFormValues>({
-    resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema),
+    resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema) as Resolver<PropertyFormValues>,
     defaultValues: propertyFormDefaults(property, variant),
   });
 

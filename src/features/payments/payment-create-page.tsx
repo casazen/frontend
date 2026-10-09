@@ -31,8 +31,8 @@ export function PaymentCreatePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const createPayment = useCreatePayment();
-  const { data: bookingsData } = useBookings({ page: 1, pageSize: 100 });
-  const bookings = bookingsData?.items ?? [];
+  const bookingsQuery = useBookings({ page: 1, pageSize: 100 });
+  const bookings = bookingsQuery.data?.items ?? [];
 
   const {
     register,
