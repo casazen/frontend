@@ -1,9 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
+import { AppShellContext } from '@/components/layout/app-shell-context';
+import { useUiStore } from '@/store/ui-store';
 import * as propertyQueries from '@/queries/use-properties';
 import type { Property, PropertyDocumentDto } from '@/types';
 import { LongRentPropertiesPage } from '../long-rent-properties-page';
@@ -155,6 +157,68 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
     expect(screen.getByTestId('long-rent-ape-status')).toHaveTextContent(i18n.t('longRentProperties.detail.apePresent'));
     expect(screen.getByText('ape-2026.pdf')).toBeInTheDocument();
     expect(screen.getByText(new RegExp(`^${i18n.t('shared.documentUpload.types.ape')} · PDF`))).toBeInTheDocument();
+  });
+
+  describe('header (the pilot of the new page header, UI-05)', () => {
+    function renderInTheShell() {
+      mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
+      return render(
+        <I18nextProvider i18n={i18n}>
+          <AppShellContext.Provider value={{ contextKey: 'long-rent' }}>
+            <MemoryRouter initialEntries={['/app/long-rent/properties/prop-1']}>
+              <Routes>
+                <Route path="/app/long-rent/properties/:id" element={<LongRentPropertyDetailPage />} />
+              </Routes>
+            </MemoryRouter>
+          </AppShellContext.Provider>
+        </I18nextProvider>,
+      );
+    }
+
+    it('LongRentPropertyDetailPage_Header_ShowsWhereThePageSitsAndAWayBackForThePhone', () => {
+      renderInTheShell();
+
+      const trail = screen.getByRole('navigation', { name: i18n.t('breadcrumb.ariaLabel') });
+      expect(within(trail).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+        i18n.t('areas.longRent.name'),
+        i18n.t('nav.properties'),
+        'Bilocale Monza',
+      ]);
+      expect(within(trail).getByRole('link', { name: i18n.t('nav.properties') })).toHaveAttribute('href', '/app/long-rent/properties');
+      expect(screen.getByRole('link', { name: i18n.t('pageHeader.backTo', { name: i18n.t('nav.properties') }) })).toHaveAttribute(
+        'href',
+        '/app/long-rent/properties',
+      );
+      expect(document.title).toBe(`Bilocale Monza · ${i18n.t('areas.longRent.name')} · CasaZen`);
+    });
+
+    it('LongRentPropertyDetailPage_Header_HasOnePrimaryActionThatIsTheNewLease', () => {
+      renderInTheShell();
+
+      const primary = screen.getByTestId('page-header-primary');
+      expect(within(primary).getByRole('link', { name: i18n.t('longRentProperties.detail.newLease') })).toHaveAttribute(
+        'href',
+        '/app/long-rent/leases/new?propertyId=prop-1',
+      );
+      // On a phone it is fixed above the bottom bar (the stylesheet moves it; there is a single copy of the button).
+      expect(primary).toHaveAttribute('data-mobile-primary', 'bar');
+      expect(screen.getAllByRole('link', { name: i18n.t('longRentProperties.detail.newLease') })).toHaveLength(1);
+      expect(useUiStore.getState().mobilePrimaryVisible).toBe(true);
+    });
+
+    it('LongRentPropertyDetailPage_Header_PutsTheEditInTheMenuOfTheThreeDots', async () => {
+      renderInTheShell();
+      // Not on the page: a page has one primary action and the rest is in the menu.
+      expect(screen.queryByRole('link', { name: i18n.t('longRentProperties.detail.edit') })).not.toBeInTheDocument();
+
+      fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
+
+      const menu = await screen.findByRole('menu');
+      expect(within(menu).getByRole('menuitem', { name: i18n.t('longRentProperties.detail.edit') })).toHaveAttribute(
+        'href',
+        '/app/long-rent/properties/prop-1/edit',
+      );
+    });
   });
 
   it('LongRentPropertyDetailPage_DocumentsForbidden_ShowsTheError', () => {

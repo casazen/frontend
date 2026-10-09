@@ -8,7 +8,7 @@ import { resetE2eStorage } from './helpers/locale';
  * UI-04b: navigation of the phone and of the tablet. On a phone the bottom bar has the four destinations of the area and
  * "Altro", which opens a sheet from the bottom with the rest and the area switcher; on a tablet the sidebar is a rail of
  * icons whose names show on hover and on keyboard focus. The old menu that slid in from the left is gone: the sheet is the
- * one menu of the phone (and the menu button of the header opens it too).
+ * one menu of the phone, and "Altro" of the bar is the only way to it (the header has no menu button since UI-05).
  *
  * While the sheet is open the page behind it is hidden from assistive technology (a modal dialog), the bar included:
  * what the specs read from the bar in that state they read by selector, not by role.
@@ -145,7 +145,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
     });
 
-    test('a tap on the dimmed page, the close button and the menu button of the header close it as well', async ({ page }) => {
+    test('a tap on the dimmed page and the close button close it as well', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await more(page).click();
@@ -157,14 +157,15 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await sheet(page).getByRole('button', { name: 'Chiudi' }).click();
       await expect(sheet(page)).toBeHidden();
       await expect(more(page)).toBeFocused();
+    });
 
-      // The menu button of the header (until the header is redrawn) opens the same sheet; the focus goes back to it.
-      const menuButton = page.getByRole('button', { name: 'Apri menu di navigazione' });
-      await menuButton.click();
+    test('the header has no menu button: "Altro" of the bar is the only way to the sheet', async ({ page }) => {
+      await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+
+      await expect(page.getByRole('button', { name: 'Apri menu di navigazione' })).toHaveCount(0);
+      await expect(page.locator('header').getByRole('button')).toHaveCount(1);
+      await more(page).click();
       await expect(sheet(page)).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expect(sheet(page)).toBeHidden();
-      await expect(menuButton).toBeFocused();
     });
 
     test('pulling the handle down follows the finger and closes the sheet; a short pull brings it back', async ({ page }) => {

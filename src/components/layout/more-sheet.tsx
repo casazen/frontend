@@ -11,6 +11,7 @@ import { useUiStore } from '@/store/ui-store';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
+import { SheetAccount } from './sheet-account';
 
 interface MoreSheetProps {
   contextKey: AppContextKey;
@@ -21,8 +22,9 @@ interface MoreSheetProps {
 /**
  * The sheet that comes up from the bottom of the phone (UI-04b): "Altro" of the bottom bar. It holds what the bar does not
  * list, grouped as the sidebar groups it (tiles, with the counters), and the area switcher, which tells where the user is
- * and lets it go elsewhere. It replaces the menu that slid in from the left: one menu on a phone, reached from the bar
- * (and from the menu button of the header, which opens the same sheet until the header is redrawn).
+ * and lets it go elsewhere, and, last, the account of the user: the profile, the language and "Esci" (UI-05). It replaces
+ * the menu that slid in from the left: one menu on a phone, reached from the bar (the header no longer has a menu button
+ * that opened it too).
  *
  * It is a modal dialog: the focus goes into it and stays there, Esc, a tap outside, the close button and a pull of the
  * handle close it, and the page behind it is hidden from assistive technology. The focus goes back to what opened it (to
@@ -73,7 +75,7 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   };
 
   const giveFocusBack = (event: Event) => {
-    // Radix would give it to its own trigger, which this sheet does not have: the opener is the bar or the header.
+    // Radix would give it to its own trigger, which this sheet does not have: the opener is the bar.
     event.preventDefault();
     if (currentPath.current !== pathWhenOpened.current) return;
     const noted = opener.current;
@@ -114,6 +116,7 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
               onNavigate={() => setOpen(false)}
             />
           </nav>
+          <SheetAccount onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

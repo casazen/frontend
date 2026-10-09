@@ -429,7 +429,11 @@
     "switchToEnglish": "Switch to English",
     "italian": "IT",
     "english": "EN",
-    "label": "Language"
+    "label": "Language",
+    "names": {
+      "it": "Italiano",
+      "en": "English"
+    }
   },
   "shell": {
     "shortRentSubtitle": "Short-term rentals",
@@ -438,7 +442,6 @@
     "adminFooter": "v1.0.0 · Admin",
     "mainNavigation": "Main navigation",
     "mobileNavigation": "Mobile navigation",
-    "openMenu": "Open navigation menu",
     "layerShortStay": "Short-stay",
     "layerLongTerm": "Long-term",
     "layerSwitcherLabel": "Application layer"
@@ -6094,6 +6097,10 @@
       "requestAccessGeneric": "To request access, contact whoever administers your account.",
       "mailSubject": "Access request for a CasaZen page",
       "mailBody": "Hello, I would like to request access to the page {{path}} on CasaZen. Thank you."
+    },
+    "yourAreas": "Your areas",
+    "account": {
+      "profileAndLanguage": "Profile and language"
     }
   },
   "areas": {
@@ -6116,6 +6123,14 @@
     "switcher": {
       "current": "Current area: {{name}}. Change area"
     }
+  },
+  "pageHeader": {
+    "moreActions": "More actions",
+    "backTo": "Back to {{name}}"
+  },
+  "pageTitle": {
+    "withArea": "{{page}} · {{area}} · CasaZen",
+    "withoutArea": "{{page}} · CasaZen"
   },
   "validation": {
     "required": "This field is required",

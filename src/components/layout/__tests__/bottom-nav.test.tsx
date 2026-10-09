@@ -111,6 +111,26 @@ describe('BottomNav (UI-04b)', () => {
       expect(container).toBeEmptyDOMElement();
     });
 
+    it('BottomNav_NoDestinationButPagesBehindAltro_ShowsTheBarWithAltroAlone', () => {
+      // A role with few permissions has none of the four destinations but still has pages (the profile): the header has no
+      // menu button since UI-05, so the bar is the way to them.
+      arrange(['long-rent'], () => false);
+      renderBar('long-rent', '/app/long-rent/profile');
+
+      expect(within(bar()).queryAllByRole('link')).toHaveLength(0);
+      expect(more()).toBeInTheDocument();
+      expect(more()).toHaveAttribute('aria-current', 'page');
+      expect(useUiStore.getState().bottomBarVisible).toBe(true);
+    });
+
+    it('BottomNav_NoDestinationButSeveralAreas_ShowsTheBarWithAltroForTheAreaSwitcher', () => {
+      arrange(['admin', 'long-rent'], () => false);
+      renderBar('admin');
+
+      expect(within(bar()).queryAllByRole('link')).toHaveLength(0);
+      expect(more()).toBeInTheDocument();
+    });
+
     it('BottomNav_EnglishUi_UsesTheEnglishNames', async () => {
       await i18n.changeLanguage('en');
       renderBar('short-rent');
