@@ -71,6 +71,13 @@ inquilini (check-in, pagamento dell'affitto) non la ricevono mai: restano come s
 Il colore d'area (`data-area` su `<html>`) segue la rotta `/app/<area>/…`; fuori da un'area (accesso, scelta area) c'è
 l'inchiostro del marchio.
 
+### Le primitive su una pagina sola
+
+Con il dev server (`npm run dev:demo`) la pagina `/dev/primitives` mostra insieme dialogo (foglio dal basso su telefono),
+suggerimento «?», schede, controlli segmentati e a scelta, quantità, elenco tabella/card e toast con «Annulla» (UI-07). Serve a
+guardarli e a farci girare axe e gli Playwright dei telefoni (`e2e/ui-primitives-b.spec.ts`). **Non esiste nella build**:
+la rotta c'è solo se `import.meta.env.DEV` è vero.
+
 ## Configurazione
 
 La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`, valida solo con il dev server o con
