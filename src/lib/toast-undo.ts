@@ -93,6 +93,8 @@ export function toastUndo(message: string, options: ToastUndoOptions): string | 
     description,
     duration: commit ? Number.POSITIVE_INFINITY : duration,
     action: { label: i18n.t('toastUndo.undo'), onClick: runUndo },
+    // The button of the library is 24 px tall: the invisible `after` box makes the target 44 px for a finger.
+    classNames: { actionButton: "relative after:absolute after:-inset-x-2 after:-inset-y-2.5 after:content-['']" },
     onDismiss: commit ? runCommit : undefined,
   };
   return tone === 'success' ? toast.success(message, data) : toast.info(message, data);

@@ -16,6 +16,7 @@ type ToastData = {
   description?: string;
   duration: number;
   action: { label: string; onClick: () => void };
+  classNames?: { actionButton?: string };
   onDismiss?: () => void;
 };
 
@@ -59,6 +60,13 @@ describe('toastUndo (UI-07)', () => {
       expect(data.action.label).toBe('Annulla');
       expect(data.duration).toBe(UNDO_WINDOW_MS);
       expect(UNDO_WINDOW_MS).toBe(6000);
+    });
+
+    it('toastUndo_Default_TheButtonOfTheLibraryGetsAnInvisibleTargetOf44Px', () => {
+      toastUndo('Fatto', { undo: vi.fn() });
+
+      // 24 px of button and 10 px of box above and below it.
+      expect(lastCall().data.classNames?.actionButton).toContain('after:-inset-y-2.5');
     });
 
     it('toastUndo_InEnglish_TheActionIsUndo', async () => {
