@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'uiRedesign';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -26,6 +26,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * and a configured provider); otherwise the contract is signed offline (download, sign, upload with the stipula date).
    */
   eSignProvider: false,
+  /**
+   * UI-01 / D8: the redesign (design tokens, area accents, Inter), off. Read by `UiVersionSync`, which sets
+   * `html[data-ui='v2']`. The backend flag `UiRedesign` is added by task BL-01: until the API sends the key (and in every
+   * environment that does not know it) it is off. `localStorage['casazen:ui'] === 'v2'` and `VITE_UI_V2=true` turn it on
+   * without the backend, for QA and for a build (`src/lib/ui-version.ts`).
+   */
+  uiRedesign: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
