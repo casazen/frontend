@@ -24,7 +24,10 @@ vi.mock('@/api/service-requests.api', () => ({
   fetchSuppliersByProperty: api.fetchSuppliersByProperty,
   fetchLongRentSuppliers: api.fetchLongRentSuppliers,
 }));
-vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getAll: api.getBookings } }));
+vi.mock('@/api/bookings.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/bookings.api')>();
+  return { ...actual, bookingsApi: { ...actual.bookingsApi, getAll: api.getBookings } };
+});
 
 const CATALOG = ['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in'];
 
@@ -81,7 +84,7 @@ describe('ServiceRequestForm', () => {
     renderForm({ supplierOrgId: 'sup-chosen', preselectedCategory: 'plumbing', onOpenChange });
 
     const staySelect = await screen.findByTestId('service-request-stay');
-    expect(api.getBookings).toHaveBeenCalledWith({ propertyId: 'prop-1' });
+    expect(api.getBookings).toHaveBeenCalledWith({ propertyId: 'prop-1', page: 1, pageSize: 100 });
     // No stay chosen yet: nothing can be sent without one.
     expect(screen.getByTestId('submit-service-request')).toBeDisabled();
 

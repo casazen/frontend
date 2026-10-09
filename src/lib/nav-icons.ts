@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Store,
   Sun,
+  TrendingUp,
   User,
   UserPlus,
   Users,
@@ -57,6 +58,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   Settings,
   Shield,
   Store,
+  TrendingUp,
   Wallet,
   Wrench,
 };

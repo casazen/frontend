@@ -11,9 +11,18 @@ import type { Booking } from '@/types';
 import { BookingsPage } from '../bookings-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
-vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { getAll: vi.fn(), getApprovalRequests: vi.fn(), checkIn: vi.fn() },
-}));
+vi.mock('@/api/bookings.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/bookings.api')>();
+  return {
+    ...actual,
+    bookingsApi: {
+      ...actual.bookingsApi,
+      getAll: vi.fn(),
+      getApprovalRequests: vi.fn(),
+      checkIn: vi.fn(),
+    },
+  };
+});
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getById: vi.fn() } }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));

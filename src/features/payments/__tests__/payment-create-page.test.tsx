@@ -20,6 +20,10 @@ const AIRBNB = { id: 'b2000000-1111-2222-3333-444444444444', guest: { firstName:
 
 const mutateAsync = vi.fn();
 
+function bookingPage(items: unknown[] = []) {
+  return { items, totalCount: items.length, page: 1, pageSize: 100 };
+}
+
 function mockBookings(state: Record<string, unknown>) {
   queries.useBookings.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn(), ...state });
 }
@@ -48,7 +52,7 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
   mutateAsync.mockResolvedValue({ id: 'p1' });
   queries.useCreatePayment.mockReturnValue({ mutateAsync, isPending: false });
-  mockBookings({ data: [GIULIA, AIRBNB] });
+  mockBookings({ data: bookingPage([GIULIA, AIRBNB]) });
 });
 
 afterEach(cleanup);
@@ -185,7 +189,7 @@ describe('PaymentCreatePage: the states of the list of bookings', () => {
   });
 
   it('PaymentCreatePage_NoBookings_ExplainsAndPointsToCreateOne', () => {
-    mockBookings({ data: [] });
+    mockBookings({ data: bookingPage() });
     renderPage();
 
     expect(screen.getByRole('heading', { level: 3, name: 'Non ci sono prenotazioni' })).toBeInTheDocument();
@@ -199,7 +203,7 @@ describe('PaymentCreatePage: the states of the list of bookings', () => {
 
   it('PaymentCreatePage_English_UsesTheEnglishTexts', async () => {
     await i18n.changeLanguage('en');
-    mockBookings({ data: [] });
+    mockBookings({ data: bookingPage() });
     renderPage();
 
     expect(screen.getByRole('heading', { level: 3, name: 'There are no bookings' })).toBeInTheDocument();
