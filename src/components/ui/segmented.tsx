@@ -51,7 +51,7 @@ export function Segmented<T extends string>({ label, options, value, onValueChan
               if (!pressed) onValueChange(option.value);
             }}
             className={cn(
-              'inline-flex min-h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors pointer-coarse:min-h-11',
+              'inline-flex min-h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors pointer-coarse:min-h-11 pointer-coarse:min-w-11',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
               // `foreground/65` and not `muted-foreground`: that token is 3.9:1 on the gray track, and a text needs 4.5:1.
               pressed ? 'bg-background text-foreground shadow-sm' : 'text-foreground/65 hover:text-foreground',

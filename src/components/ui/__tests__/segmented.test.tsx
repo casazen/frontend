@@ -84,6 +84,13 @@ describe('Segmented (UI-07)', () => {
     expect(screen.getByTestId('filter-all')).toHaveClass('pointer-coarse:min-h-11');
   });
 
+  // A choice that is only an icon (the list / columns switch of the unified list, UI-14) is a square the finger can hit.
+  it('Segmented_Buttons_AreAtLeast44PxWideForAFinger', () => {
+    render(<Harness />);
+
+    expect(screen.getByTestId('filter-all')).toHaveClass('pointer-coarse:min-w-11');
+  });
+
   it('Segmented_Keyboard_EveryButtonIsInTheTabOrder', () => {
     render(<Harness />);
 
