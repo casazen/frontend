@@ -302,5 +302,22 @@ test.describe('Area navigation (UI-04a)', () => {
       expect(box!.x + box!.width).toBeLessThanOrEqual(390);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     });
+
+    // The same check at 360 px, the narrowest phone of the suite: the menu, the switcher and the page behind them (the
+    // headers of the pages, with wider letters, are in page-header-reflow.spec.ts).
+    test('no horizontal scroll at 360 px with the area switcher open in the phone menu', async ({ page }) => {
+      await page.setViewportSize({ width: 360, height: 800 });
+      await mockLeasesApiEmpty(page);
+      await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
+
+      await page.getByRole('button', { name: 'Apri menu di navigazione' }).click();
+      await page.getByRole('dialog').getByTestId('area-switcher').click();
+      await expect(page.getByRole('menuitemradio', { name: /Affitti lunghi/ })).toBeVisible();
+
+      const box = await page.getByRole('menu').boundingBox();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(360);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    });
   });
 });

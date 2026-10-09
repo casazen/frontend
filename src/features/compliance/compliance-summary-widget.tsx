@@ -128,10 +128,10 @@ export function ComplianceSummaryWidget() {
 
   return (
     <Card data-testid="compliance-summary-widget">
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div>
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="min-w-0 grow basis-56">
           <CardTitle className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5" />
+            <ClipboardList className="h-5 w-5 shrink-0" />
             {t('compliance.summary.title')}
           </CardTitle>
           <CardDescription>{t('compliance.summary.description')}</CardDescription>
