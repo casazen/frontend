@@ -421,7 +421,8 @@
       "reporting": "Finance",
       "vetrina": "Showcase",
       "operations": "Administration",
-      "amministrazione": "Administration"
+      "amministrazione": "Administration",
+      "platform": "Platform"
     },
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",

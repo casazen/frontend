@@ -12,7 +12,8 @@ export type NavGroup =
   | 'reporting'
   | 'vetrina'
   | 'compliance-audit'
-  | 'operations';
+  | 'operations'
+  | 'platform';
 
 export type NavPlacement = 'primary' | 'secondary';
 
@@ -50,6 +51,7 @@ export const NAV_GROUP_ORDER: NavGroup[] = [
   'account',
   'compliance-audit',
   'operations',
+  'platform',
 ];
 
 export const ROUTE_MANIFEST: RouteManifestEntry[] = [
@@ -634,7 +636,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.marketing',
-    navGroup: 'operations',
+    navGroup: 'platform',
     navPlacement: 'primary',
     navOrder: 6,
     icon: 'TrendingUp',
