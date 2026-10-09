@@ -318,6 +318,22 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(sheet(page).getByRole('link', { name: 'Profilo' })).toBeVisible();
     });
 
+    test('with reduced motion the sheet appears and goes without sliding', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+
+      await more(page).click();
+      await expect(sheet(page)).toBeVisible();
+      expect(await sheet(page).evaluate((element) => getComputedStyle(element).animationName)).toBe('none');
+      expect(await page.locator('[data-sheet-overlay]').evaluate((element) => getComputedStyle(element).animationName)).toBe('none');
+
+      // Pulled down and let go it does not ease back either: it is where it was at once.
+      await dragDown(page, handle(page), 20);
+      expect(await sheet(page).evaluate((element) => getComputedStyle(element).transitionDuration)).toBe('0s');
+      await page.keyboard.press('Escape');
+      await expect(sheet(page)).toBeHidden();
+    });
+
     test('a phone turned sideways keeps the bar; the sheet closes when the window grows to a tablet', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/profile', 'short-stay'), { waitUntil: 'domcontentloaded' });
       await more(page).click();

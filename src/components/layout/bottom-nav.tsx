@@ -16,12 +16,12 @@ interface BottomNavProps {
 }
 
 // A column of the bar is a fifth of a 360 px screen (72 px) and the widest name ("Prenotazioni", "Disponibilità") is
-// about 67 px in Inter at 11 px semibold: it fits with no ellipsis. On the narrowest phones (320 px, 64 px a column) the
-// text goes down to 10 px.
+// about 67 px in Inter at 11 px semibold: it fits with no ellipsis (the tabs have no side padding, the room is the
+// column's). On the narrowest phones (320 px, 64 px a column) the text goes down to 10 px, 61 px wide.
 // The name comes first in the markup and last on the screen (`flex-col-reverse`): a screen reader reads "Prenotazioni, 2
 // richieste da approvare" and not the counter, which sits on the icon, before the name.
 const ITEM_CLASS =
-  'relative flex min-h-11 min-w-0 flex-1 flex-col-reverse items-center justify-center gap-0.5 px-0.5 text-[11px] font-semibold leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[340px]:text-[10px]';
+  'relative flex min-h-11 min-w-0 flex-1 flex-col-reverse items-center justify-center gap-0.5 px-0 text-[11px] font-semibold leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[340px]:text-[10px]';
 const ITEM_ACTIVE = 'text-[color:var(--color-primary-text,var(--color-primary))]';
 const ITEM_INACTIVE = 'text-muted-foreground';
 
