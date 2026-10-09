@@ -12,8 +12,9 @@ const guestPath = (guest: GuestSummary) => `/app/short-rent/guests/${guest.id}`;
 
 /**
  * The guests of the list (UI-07: the pilot of `DataView`): a table with room for it, a list of cards on a phone, where the
- * old table scrolled sideways. The server pages and searches the list, so the columns are not sortable here (sorting the
- * 20 rows of one page would be sorting a fragment).
+ * old table scrolled sideways. Cards until `xl`: with the sidebar open (from `lg`) the table of five columns is not seen whole
+ * under 1280 px. The server pages and searches the list, so the columns are not sortable here (sorting the 20 rows of one
+ * page would be sorting a fragment).
  */
 export function GuestListTable({ guests }: GuestListTableProps) {
   const { t } = useTranslation();
@@ -31,6 +32,8 @@ export function GuestListTable({ guests }: GuestListTableProps) {
       rows={guests}
       columns={columns}
       rowKey={(guest) => guest.id}
+      testId="guest-list"
+      cardsUntil="xl"
       rowActions={(guest) => (
         <Link to={guestPath(guest)} className="text-primary hover:underline text-sm font-medium">
           {t('guests.viewDetails')}

@@ -82,6 +82,13 @@ describe('DataView (UI-07)', () => {
       expect(list().parentElement).toHaveClass('lg:hidden');
     });
 
+    it('DataView_CardsUntilXl_TheCardsStayUntilTheWideDesktop', () => {
+      render(<Harness cardsUntil="xl" />);
+
+      expect(table().closest('div.hidden')).toHaveClass('hidden', 'xl:block');
+      expect(list().parentElement).toHaveClass('xl:hidden');
+    });
+
     it('DataView_Table_HasHeadersOfColumnsAndTheNameOfTheRowAsHeaderOfTheRow', () => {
       render(<Harness />);
 

@@ -70,8 +70,11 @@ export interface DataViewProps<Row> {
   /** What to say, and to offer, when there is nothing in the list: the props of an `EmptyState`. */
   empty?: React.ComponentProps<typeof EmptyState>;
 
-  /** Under which width the table is cards: `md` (768 px, default) or `lg` (1024 px, for a table that needs the room). */
-  cardsUntil?: 'md' | 'lg';
+  /**
+   * Under which width the table is cards: `md` (768 px, default), `lg` (1024 px) or `xl` (1280 px), for a table that needs room:
+   * in the shell the sidebar takes 256 px from `lg` on, so a table of five columns needs `xl` to be seen whole.
+   */
+  cardsUntil?: 'md' | 'lg' | 'xl';
   /** Under the list: pagination, a count. */
   footer?: React.ReactNode;
   className?: string;
@@ -82,6 +85,7 @@ export interface DataViewProps<Row> {
 const SHOWN_FROM = {
   md: { table: 'hidden md:block', cards: 'md:hidden' },
   lg: { table: 'hidden lg:block', cards: 'lg:hidden' },
+  xl: { table: 'hidden xl:block', cards: 'xl:hidden' },
 } as const;
 
 function valueOf<Row>(row: Row, column: DataColumn<Row>): string | number | null | undefined {
