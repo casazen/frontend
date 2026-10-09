@@ -117,6 +117,21 @@ describe('SupplierCalendarSyncPage (SU-15)', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
+  // UI-07: the "?" beside the label of the dialog is a HelpTip now; its link still opens the help page inside the console (SU-16).
+  it('helpTip_InTheIcalDialog_SaysWhereToFindTheLinkAndLeadsToTheHelpPageOfTheConsole', async () => {
+    vi.mocked(fetchCalendarSyncStatus).mockResolvedValue(notLinked);
+
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('supplier.pasteIcalUrl') }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('supplier.help.icalTooltipLabel') }));
+
+    expect(screen.getByText(i18n.t('supplier.help.icalTooltipText'))).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: i18n.t('supplier.help.icalTooltipCta') })).toHaveAttribute(
+      'href',
+      '/app/supplier/help/ical',
+    );
+  });
+
   it('syncNow_Click_QueuesAndShowsInProgress', async () => {
     vi.mocked(fetchCalendarSyncStatus).mockResolvedValue(synced);
     vi.mocked(syncSupplierCalendarNow).mockResolvedValue(syncing);

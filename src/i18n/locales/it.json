@@ -1378,6 +1378,7 @@
         "payment": "Pagamento",
         "alloggiati": "Alloggiati"
       },
+      "tabsLabel": "Sezioni della prenotazione",
       "viewProperty": "Vedi proprieta",
       "bookingDetailsTitle": "Dettagli prenotazione",
       "specialRequests": "Richieste speciali",
@@ -1707,6 +1708,10 @@
     },
     "confirm": "Conferma",
     "cancel": "Annulla",
+    "confirmationDialog": {
+      "consequences": "Cosa succede se confermi",
+      "requireText": "Per confermare scrivi <strong>{{text}}</strong>"
+    },
     "loading": {
       "defaultMessage": "Caricamento...",
       "srOnly": "Caricamento..."
@@ -6162,6 +6167,33 @@
   "pageTitle": {
     "withArea": "{{page}} · {{area}} · CasaZen",
     "withoutArea": "{{page}} · CasaZen"
+  },
+  "dataView": {
+    "selectAll": "Seleziona tutte le righe",
+    "selectRow": "Seleziona la riga",
+    "rowActions": "Azioni",
+    "bulkBar": "Azioni sulle righe selezionate",
+    "selected_one": "{{count}} selezionata",
+    "selected_other": "{{count}} selezionate",
+    "clearSelection": "Annulla la selezione",
+    "loading": "Caricamento dell'elenco",
+    "loadError": "Impossibile caricare l'elenco",
+    "emptyTitle": "Nessun elemento",
+    "emptyDescription": "Non c'è ancora niente da mostrare in questo elenco."
+  },
+  "helpTip": {
+    "label": "Maggiori informazioni",
+    "labelFor": "Cos'è: {{title}}",
+    "learnMore": "Scopri di più"
+  },
+  "qty": {
+    "decrease": "Diminuisci {{label}}",
+    "increase": "Aumenta {{label}}"
+  },
+  "toastUndo": {
+    "undo": "Annulla",
+    "undoFailed": "Non è stato possibile annullare.",
+    "commitFailed": "Non è stato possibile completare l'operazione."
   },
   "validation": {
     "required": "Campo obbligatorio",

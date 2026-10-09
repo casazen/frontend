@@ -42,12 +42,15 @@ const DRAG_FLICK_SPEED = 0.5;
  * letting go earlier brings it back. The sheet is moved by hand (its `transform`), not through React state: it follows
  * the finger at every pointer move and is mounted again, untouched, the next time it opens. The same can be done without
  * a pointer with Esc and the close button, which is why the handle is hidden from assistive technology.
+ *
+ * The dialog of a phone (`Dialog`, UI-07) is a sheet from the bottom too, and wears the same handle: what it moves is the
+ * nearest element that says it is a sheet, `data-sheet-side` or `data-dialog-sheet`.
  */
-function SheetHandle({ onClose }: { onClose: () => void }) {
+function SheetHandle({ onClose, className }: { onClose: () => void; className?: string }) {
   const start = React.useRef<{ y: number; time: number } | null>(null);
 
   const place = (event: React.PointerEvent<HTMLElement>, distance: number, following: boolean) => {
-    const sheet = event.currentTarget.closest<HTMLElement>('[data-sheet-side]');
+    const sheet = event.currentTarget.closest<HTMLElement>('[data-sheet-side], [data-dialog-sheet]');
     if (!sheet) return;
     // `--sheet-drag` is where the closing animation starts from (`styles/sheet-bottom.css`).
     sheet.style.setProperty('--sheet-drag', `${distance}px`);
@@ -75,7 +78,10 @@ function SheetHandle({ onClose }: { onClose: () => void }) {
     <div
       aria-hidden="true"
       data-testid="sheet-handle"
-      className="flex h-7 shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
+      className={cn(
+        'flex h-7 shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing',
+        className,
+      )}
       onPointerDown={(event) => {
         if (event.pointerType === 'mouse' && event.button !== 0) return;
         start.current = { y: event.clientY, time: event.timeStamp };
@@ -152,4 +158,24 @@ const SheetTitle = React.forwardRef<
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
-export { Sheet, SheetPortal, SheetOverlay, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetTitle };
+/** What the sheet is about, in a sentence: a screen reader reads it when the sheet opens (the tip of `HelpTip`, UI-07). */
+const SheetDescription = React.forwardRef<
+  React.ElementRef<typeof SheetPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <SheetPrimitive.Description ref={ref} className={cn('text-sm text-foreground/70', className)} {...props} />
+));
+SheetDescription.displayName = SheetPrimitive.Description.displayName;
+
+export {
+  Sheet,
+  SheetPortal,
+  SheetOverlay,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHandle,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+};

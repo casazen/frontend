@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
+import { toastUndo } from '@/lib/toast-undo';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
@@ -117,7 +118,14 @@ export function usePauseProperty() {
     mutationFn: (id: string) => propertiesApi.pause(id),
     onSuccess: (_, id) => {
       invalidatePropertyCaches(queryClient, id);
-      toast.success(i18n.t('toast.propertyPaused'));
+      // UI-07 (toastUndo): pausing has a true inverse, `activate` (idempotent, nothing else changes), so the toast offers it.
+      toastUndo(i18n.t('toast.propertyPaused'), {
+        undo: async () => {
+          await propertiesApi.activate(id);
+          invalidatePropertyCaches(queryClient, id);
+          toast.success(i18n.t('toast.propertyActivated'));
+        },
+      });
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyPauseFailed'));

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Segmented } from '@/components/ui/segmented';
 import {
   Dialog,
   DialogContent,
@@ -112,24 +113,23 @@ export function PropertiesPage() {
           </Button>
         </div>
 
+        {/* UI-07 pilot of Segmented: the same three buttons with aria-pressed, as one control. */}
         {propertyList.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('property.page.filterLabel')}>
-            {STATUS_FILTERS.map((filter) => (
-              <Button
-                key={filter}
-                type="button"
-                variant={statusFilter === filter ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter(filter)}
-                aria-pressed={statusFilter === filter}
-                data-testid={`property-filter-${filter}`}
-              >
-                {filter === 'all' && t('property.page.filterAll', { count: propertyList.length })}
-                {filter === 'active' && t('property.page.filterActive', { count: propertyList.length - pausedCount })}
-                {filter === 'paused' && t('property.page.filterPaused', { count: pausedCount })}
-              </Button>
-            ))}
-          </div>
+          <Segmented
+            label={t('property.page.filterLabel')}
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            options={STATUS_FILTERS.map((filter) => ({
+              value: filter,
+              testId: `property-filter-${filter}`,
+              label:
+                filter === 'all'
+                  ? t('property.page.filterAll', { count: propertyList.length })
+                  : filter === 'active'
+                    ? t('property.page.filterActive', { count: propertyList.length - pausedCount })
+                    : t('property.page.filterPaused', { count: pausedCount }),
+            }))}
+          />
         )}
 
         {propertyList.length === 0 ? (

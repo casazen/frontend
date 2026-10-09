@@ -231,7 +231,8 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
 
         await more.click();
         const item = page.getByRole('menuitem', { name: 'Modifica' });
-        const box = (await item.boundingBox())!;
+        // The menu grows into place as it opens (UI-07 turned on the `animate-in` classes): measured after it stopped.
+        const box = await settled(item);
         expect(box.height).toBeGreaterThanOrEqual(44);
         expect(box.x).toBeGreaterThanOrEqual(0);
         expect(box.x + box.width).toBeLessThanOrEqual(width);

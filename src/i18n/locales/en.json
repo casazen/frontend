@@ -1378,6 +1378,7 @@
         "payment": "Payment",
         "alloggiati": "Alloggiati"
       },
+      "tabsLabel": "Booking sections",
       "viewProperty": "View property",
       "bookingDetailsTitle": "Booking details",
       "specialRequests": "Special Requests",
@@ -1707,6 +1708,10 @@
     },
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "confirmationDialog": {
+      "consequences": "What happens if you confirm",
+      "requireText": "To confirm, type <strong>{{text}}</strong>"
+    },
     "loading": {
       "defaultMessage": "Loading...",
       "srOnly": "Loading..."
@@ -6162,6 +6167,33 @@
   "pageTitle": {
     "withArea": "{{page}} · {{area}} · CasaZen",
     "withoutArea": "{{page}} · CasaZen"
+  },
+  "dataView": {
+    "selectAll": "Select all rows",
+    "selectRow": "Select row",
+    "rowActions": "Actions",
+    "bulkBar": "Actions on the selected rows",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "clearSelection": "Clear selection",
+    "loading": "Loading the list",
+    "loadError": "Could not load the list",
+    "emptyTitle": "No items",
+    "emptyDescription": "There is nothing to show in this list yet."
+  },
+  "helpTip": {
+    "label": "More information",
+    "labelFor": "About: {{title}}",
+    "learnMore": "Learn more"
+  },
+  "qty": {
+    "decrease": "Decrease {{label}}",
+    "increase": "Increase {{label}}"
+  },
+  "toastUndo": {
+    "undo": "Undo",
+    "undoFailed": "Could not undo this.",
+    "commitFailed": "Could not complete the action."
   },
   "validation": {
     "required": "This field is required",
