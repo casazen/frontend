@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { pinE2eLocale } from './helpers/locale';
@@ -255,6 +255,21 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
 
 const WIDER_LETTERS = 'body, body * { letter-spacing: 0.08em !important; }';
 
+/** The box of an element that slides into place (a toast does): once it has stopped. */
+async function settled(locator: Locator) {
+  let previous = '';
+  await expect
+    .poll(async () => {
+      const box = await locator.boundingBox();
+      const key = box ? [box.x, box.y, box.width, box.height].map(Math.round).join(',') : '';
+      const same = key !== '' && key === previous;
+      previous = key;
+      return same;
+    })
+    .toBe(true);
+  return (await locator.boundingBox())!;
+}
+
 test.describe('Wizard kit pilot on a phone (UI-11)', () => {
   test.describe.configure({ timeout: 90_000 });
 
@@ -314,6 +329,10 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
       const bar = await page.getByTestId('checkout-complete-button').boundingBox();
       expect(notes, 'the notes are on the page').not.toBeNull();
       expect(notes!.y + notes!.height, 'the notes end above the buttons').toBeLessThanOrEqual(bar!.y + 1);
+      // What the page puts after the wizard (the link back to the booking) is not left under the buttons either: they stay above it.
+      const back = await page.getByRole('link', { name: 'Torna alla prenotazione' }).boundingBox();
+      expect(back, 'the link back to the booking is on the page').not.toBeNull();
+      expect(back!.y, 'and it starts below the buttons').toBeGreaterThanOrEqual(bar!.y + bar!.height - 1);
 
       // The summary and its links fit too.
       await expect(page.getByTestId('checkout-summary').getByRole('link', { name: /^Modifica / }).first()).toBeVisible();
@@ -332,4 +351,31 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
       }
     });
   }
+
+  test('AC-W9: a toast comes up above the buttons, not behind them, and the reason is in the page too', async ({ page }) => {
+    await pinE2eLocale(page, 'it');
+    await mockCheckoutApi(page);
+    // The server refuses to close the stay: its reason is in the page (under the buttons' step) and in a toast.
+    await page.route(`**/api/bookings/${BOOKING_ID}/checkout-wizard/complete`, async (route) => {
+      await route.fulfill({
+        status: 422,
+        contentType: 'application/problem+json',
+        body: JSON.stringify({ status: 422, title: 'Dati non validi', detail: 'Il check-out non è valido' }),
+      });
+    });
+    await page.setViewportSize({ width: 390, height: 520 });
+    await page.goto(CHECKOUT_URL, { waitUntil: 'domcontentloaded' });
+    await expect(heading(page, 'Riepilogo soggiorno')).toBeVisible({ timeout: 20_000 });
+    await goToLastStep(page);
+    await page.getByTestId('checkout-property-ready-yes').click();
+
+    await page.getByTestId('checkout-complete-button').click();
+
+    await expect(page.getByTestId('checkout-complete-error')).toBeVisible();
+    const toast = page.locator('[data-sonner-toast]').first();
+    await expect(toast).toBeVisible();
+    const buttons = (await page.getByTestId('checkout-complete-button').boundingBox())!;
+    const box = await settled(toast);
+    expect(box.y + box.height, 'the toast ends above the buttons').toBeLessThanOrEqual(buttons.y);
+  });
 });

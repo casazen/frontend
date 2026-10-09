@@ -7,6 +7,7 @@ import i18n from "@/i18n/config";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { readWizardDraft, writeWizardDraft } from "@/lib/wizard-draft";
+import { useUiStore } from "@/store/ui-store";
 import { WizardShell, type WizardShellProps, type WizardStep } from "../wizard-shell";
 import { WizardSummary } from "../wizard-summary";
 
@@ -629,6 +630,22 @@ describe("WizardShell draft", () => {
 });
 
 describe("WizardShell on a phone", () => {
+  it("WizardShell_ButtonsBar_TellsTheToastsToComeUpOverItAndStopsWhenTheFlowIsLeft", () => {
+    const { unmount } = renderWizard({}, "/app/short-rent/properties/new?step=review");
+
+    expect(useUiStore.getState().mobilePrimaryVisible).toBe(true);
+
+    unmount();
+
+    expect(useUiStore.getState().mobilePrimaryVisible).toBe(false);
+  });
+
+  it("WizardShell_Confirmation_HasNoBarSoTheToastsGoBackDown", () => {
+    renderWizard({}, "/app/short-rent/properties/new?step=fatto");
+
+    expect(useUiStore.getState().mobilePrimaryVisible).toBe(false);
+  });
+
   it("WizardShell_Buttons_SitAboveTheBottomBarAndNeverOutsideTheScreen", () => {
     renderWizard({}, "/app/short-rent/properties/new?step=home");
 

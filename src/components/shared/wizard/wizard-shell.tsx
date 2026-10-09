@@ -21,6 +21,7 @@ import { useWizardDraft } from "@/hooks/use-wizard-draft";
 import { translateValidationMessage } from "@/i18n/validation-message";
 import { getProblemMessage } from "@/lib/api-errors";
 import { formatRomeDateTime } from "@/lib/stay-dates";
+import { useUiStore } from "@/store/ui-store";
 import type { WizardDraft } from "@/lib/wizard-draft";
 import { cn } from "@/lib/utils";
 import { WizardContext, type WizardContextValue } from "./wizard-context";
@@ -286,6 +287,18 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     },
     [searchParams]
   );
+
+  // On a phone the buttons are a bar above the bottom one, as the primary action of a page can be (`PageHeader.mobilePrimary`,
+  // UI-05): the toasts read the same flag and come up over it, and not over the buttons. The shell also keeps some room under
+  // the content for it, which here is only a margin at the end of the page (the bar sticks while the page scrolls, it does not
+  // cover the end of it): what a page puts after the wizard stays where it was, above that margin. Not on the confirmation,
+  // which has no bar.
+  const setMobilePrimaryVisible = useUiStore((state) => state.setMobilePrimaryVisible);
+  React.useEffect(() => {
+    if (isDone) return undefined;
+    setMobilePrimaryVisible(true);
+    return () => setMobilePrimaryVisible(false);
+  }, [isDone, setMobilePrimaryVisible]);
 
   // Every change of an answer is queued for the draft, with the step it was made on; and once a "Continue" has failed, the
   // field that changed is checked again, so its problem goes away as soon as the person fixes it (and not on the next blur).
