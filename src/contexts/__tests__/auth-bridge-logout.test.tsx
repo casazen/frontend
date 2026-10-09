@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { readWizardDraft, writeWizardDraft } from '@/lib/wizard-draft';
 
@@ -19,12 +19,17 @@ vi.mock('@auth0/auth0-react', () => ({
 vi.mock('@/config/demo.config', () => ({ isDemoMode: false, getDemoUser: () => undefined }));
 vi.mock('@/lib/axios', () => ({ setApiAuthHandlers: vi.fn() }));
 
-import { AuthAppProviders, useAuthBridge, type AuthBridgeValue } from '../auth-bridge';
+import { AuthAppProviders, useAuthBridge } from '../auth-bridge';
 
-let bridge: AuthBridgeValue;
+/** One button for each way out of the session. */
 function Probe() {
-  bridge = useAuthBridge();
-  return null;
+  const { logout, logoutToLogin } = useAuthBridge();
+  return (
+    <>
+      <button type="button" data-testid="logout" onClick={() => logout()} />
+      <button type="button" data-testid="logoutToLogin" onClick={() => logoutToLogin()} />
+    </>
+  );
 }
 
 const DRAFT = { step: 'documents', values: { name: 'Casa' } };
@@ -47,7 +52,7 @@ describe('sign out and the drafts of the guided flows', () => {
     writeWizardDraft('checkout-b1', { userId: 'auth0|u1', orgId: null }, DRAFT);
     sessionStorage.setItem('casazen.pendingCheckout', '{"keep":"me"}');
 
-    act(() => bridge[method]());
+    fireEvent.click(screen.getByTestId(method));
 
     expect(readWizardDraft('property-new', { userId: 'auth0|u1', orgId: 'org-1' })).toBeNull();
     expect(readWizardDraft('checkout-b1', { userId: 'auth0|u1', orgId: null })).toBeNull();
