@@ -69,6 +69,26 @@ export async function guestConfirmsEmail(page: Page, link: string): Promise<void
   await expect(page.getByText('Email confermata')).toBeVisible({ timeout: 20_000 });
 }
 
+/**
+ * Identity card of the head of the family. Without the Alloggiati table the field is the short list; once that table
+ * is imported it is a suggestion box and the form keeps the official code only when the chosen label matches an entry.
+ */
+async function chooseIdentityCard(page: Page): Promise<void> {
+  const field = page.locator('#guest-0-documentType');
+  if ((await field.evaluate((element) => element.tagName)) === 'SELECT') {
+    await field.selectOption({ label: "Carta d'identita'" });
+    return;
+  }
+
+  const officialLabel = "CARTA DI IDENTITA'";
+  await field.fill('CARTA DI');
+  await expect(page.locator(`[data-testid="guest-0-documentType-options"] option[value="${officialLabel}"]`)).toBeAttached({
+    timeout: 15_000,
+  });
+  await field.fill(officialLabel);
+  await expect(page.getByTestId('guest-0-documentType-code')).toContainText('IDENT');
+}
+
 /** Guest check-in portal (3 steps): two guests, the head of the family's identity document, the privacy notice and the submit. */
 export async function guestCompletesCheckIn(page: Page, link: string): Promise<void> {
   await page.goto(link);
@@ -87,7 +107,7 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
     await page.locator(`#guest-${i}-citizenshipName`).fill('Italiana');
   }
   await page.getByRole('button', { name: 'Avanti' }).click();
-  await page.locator('#guest-0-documentType').selectOption({ label: "Carta d'identita'" });
+  await chooseIdentityCard(page);
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
   await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
   await page.getByRole('button', { name: 'Avanti' }).click();
