@@ -37,12 +37,12 @@ function buildSuggestions(count: number): SeasonalSuggestion[] {
     const date = new Date(start + index * 86_400_000).toISOString().slice(0, 10);
     const month = Number(date.slice(5, 7));
     if (date === '2026-06-02') {
-      return { date, basePrice: 180, suggestedPrice: 270, multiplier: 1.5, rule: 'Holiday', holiday: 'Republic' };
+      return { date, basePrice: 180, suggestedPrice: 270, multiplier: 1.5, rule: 'Holiday', holiday: 'Republic', appliedPrice: null, appliedAt: null };
     }
     if (month >= 6 && month <= 8) {
-      return { date, basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null };
+      return { date, basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null, appliedPrice: null, appliedAt: null };
     }
-    return { date, basePrice: 180, suggestedPrice: 180, multiplier: 1, rule: 'None', holiday: null };
+    return { date, basePrice: 180, suggestedPrice: 180, multiplier: 1, rule: 'None', holiday: null, appliedPrice: null, appliedAt: null };
   });
 }
 

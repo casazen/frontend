@@ -13,6 +13,7 @@ import {
   useSavePricingAdapterConfig,
   useDisablePricingAdapter,
   useRecalculateSuggestions,
+  useApplySeasonalSuggestions,
   useSeasonalSuggestions,
 } from '@/queries/use-pricing-adapter';
 import type { PricingAdapterConfig, SavePricingAdapterConfigRequest } from '@/types';
@@ -59,6 +60,7 @@ export function PricingDashboardPage() {
   const saveConfig = useSavePricingAdapterConfig(propertyId!);
   const disableConfig = useDisablePricingAdapter(propertyId!);
   const recalculate = useRecalculateSuggestions(propertyId!);
+  const apply = useApplySeasonalSuggestions(propertyId!);
 
   const config = configQuery.data;
   const isSaving = saveConfig.isPending || disableConfig.isPending;
@@ -131,7 +133,13 @@ export function PricingDashboardPage() {
         />
       );
     }
-    return <PricingSuggestionsSection data={data} />;
+    return (
+      <PricingSuggestionsSection
+        data={data}
+        applying={apply.isPending}
+        onApply={(items) => apply.mutate(items)}
+      />
+    );
   }
 
   return (
