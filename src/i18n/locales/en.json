@@ -3180,6 +3180,32 @@
     "visitSite": "Visit {{siteName}}",
     "noOrg": "Complete your organization setup to activate the public site."
   },
+  "wizard": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "continueTo": "Continue: {{step}}",
+    "skip": "Skip this step",
+    "draft": {
+      "resume": "Resume from step {{number}}",
+      "resumeText": "You had reached step {{current}} of {{total}}: “{{step}}”.",
+      "resumeTitle": "You have a draft saved at {{time}}",
+      "restart": "Start over",
+      "savedAt": "Draft saved at {{time}}"
+    },
+    "errors": {
+      "finishFailed": "We could not complete the operation. Check the details and try again.",
+      "summary_one": "1 field needs checking",
+      "summary_other": "{{count}} fields need checking"
+    },
+    "done": {
+      "whatNext": "What happens now"
+    },
+    "summary": {
+      "edit": "Edit",
+      "editField": "Edit {{field}}",
+      "empty": "Not provided"
+    }
+  },
   "directBooking": {
     "title": "Direct Booking",
     "description": "Your direct booking site. Share it with guests to receive commission-free OTA bookings.",

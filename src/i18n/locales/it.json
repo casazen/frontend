@@ -3180,6 +3180,32 @@
     "visitSite": "Visita {{siteName}}",
     "noOrg": "Completa la configurazione dell'organizzazione per attivare il sito pubblico."
   },
+  "wizard": {
+    "back": "Indietro",
+    "cancel": "Annulla",
+    "continueTo": "Continua: {{step}}",
+    "skip": "Salta questo passo",
+    "draft": {
+      "resume": "Riprendi dal passo {{number}}",
+      "resumeText": "Eri arrivato al passo {{current}} di {{total}}: «{{step}}».",
+      "resumeTitle": "Hai una bozza salvata alle {{time}}",
+      "restart": "Ricomincia da capo",
+      "savedAt": "Bozza salvata alle {{time}}"
+    },
+    "errors": {
+      "finishFailed": "Non siamo riusciti a completare l'operazione. Controlla i dati e riprova.",
+      "summary_one": "C'è 1 campo da controllare",
+      "summary_other": "Ci sono {{count}} campi da controllare"
+    },
+    "done": {
+      "whatNext": "Cosa succede ora"
+    },
+    "summary": {
+      "edit": "Modifica",
+      "editField": "Modifica {{field}}",
+      "empty": "Non indicato"
+    }
+  },
   "directBooking": {
     "title": "Direct Booking",
     "description": "Il tuo sito di prenotazioni diretto. Condividilo con i tuoi ospiti per ricevere prenotazioni senza commissioni OTA.",
