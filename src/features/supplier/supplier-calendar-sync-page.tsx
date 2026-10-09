@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useCalendarSyncStatus, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/use-supplier';
 import { getProblemMessage } from '@/lib/api-errors';
 import { Calendar, Link2, Smartphone, CheckCircle2, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
-import { IcalHelpTooltip } from './components/ical-help-tooltip';
 
 export function SupplierCalendarSyncPage() {
   const { t } = useTranslation();
@@ -179,7 +179,14 @@ export function SupplierCalendarSyncPage() {
             <div>
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="ical-url">{t('supplier.icalFeedUrlLabel')}</Label>
-                <IcalHelpTooltip />
+                {/* UI-07 pilot of HelpTip: a bubble beside the label, a sheet from the bottom on a phone. The help page is the one inside the supplier console (SU-16). */}
+                <HelpTip
+                  label={t('supplier.help.icalTooltipLabel')}
+                  learnMoreHref="/app/supplier/help/ical"
+                  learnMoreLabel={t('supplier.help.icalTooltipCta')}
+                >
+                  {t('supplier.help.icalTooltipText')}
+                </HelpTip>
               </div>
               <Input
                 id="ical-url"
