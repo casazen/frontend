@@ -5443,6 +5443,7 @@
       "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",
       "userInactive": "L'utente è disattivato: riattivalo prima di cambiarne il ruolo.",
       "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
+      "memberCannotOnboard": "Fai già parte di un'organizzazione come collaboratore: non puoi attivare un nuovo account né cambiare il tuo ruolo. Se ti serve un altro ruolo, chiedilo al titolare dell'organizzazione.",
       "supplierInviteInvalid": "Invito non valido: il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito.",
       "supplierInviteExpired": "Questo invito è scaduto. Chiedi al team CasaZen di inviartene uno nuovo.",
       "supplierInviteUsed": "Questo invito è già stato usato. Se hai già un account fornitore, accedi.",

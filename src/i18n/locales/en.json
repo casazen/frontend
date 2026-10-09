@@ -5443,6 +5443,7 @@
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",
+      "memberCannotOnboard": "You already belong to an organization as a collaborator: you cannot set up a new account or change your own role. If you need a different role, ask the owner of the organization.",
       "supplierInviteInvalid": "Invalid invitation: the link is incomplete or does not exist. Open the link from the email again or ask for a new invitation.",
       "supplierInviteExpired": "This invitation has expired. Ask the CasaZen team to send you a new one.",
       "supplierInviteUsed": "This invitation has already been used. If you already have a supplier account, sign in.",
