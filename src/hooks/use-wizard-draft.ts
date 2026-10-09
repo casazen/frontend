@@ -3,6 +3,7 @@ import { useCurrentUser } from "@/queries/use-users";
 import {
   WIZARD_DRAFT_TTL_MS,
   clearWizardDraft,
+  onWizardDraftsWiped,
   readWizardDraft,
   writeWizardDraft,
   type WizardDraft,
@@ -72,6 +73,8 @@ export function useWizardDraft(id: string, options: UseWizardDraftOptions = {}):
 
   const pending = useRef<{ step: string; values: Record<string, unknown> } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Set when the person signs out: every draft was wiped, and this flow, still open until the page goes, saves nothing more.
+  const wiped = useRef(false);
 
   const config = useRef({ id, scope, version, exclude });
   useEffect(() => {
@@ -93,7 +96,7 @@ export function useWizardDraft(id: string, options: UseWizardDraftOptions = {}):
 
   const save = useCallback(
     (input: { step: string; values: Record<string, unknown> }) => {
-      if (!config.current.scope) return;
+      if (!config.current.scope || wiped.current) return;
       pending.current = input;
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(flush, debounceMs);
@@ -111,6 +114,21 @@ export function useWizardDraft(id: string, options: UseWizardDraftOptions = {}):
     if (draftScope) clearWizardDraft(draftId, draftScope);
     setSavedAt(null);
   }, []);
+
+  // Signing out wipes every draft: what is still queued is forgotten too, or the page leaving (pagehide, unmount) would write it
+  // back under the old user and the answers would outlive the session in this tab.
+  useEffect(
+    () =>
+      onWizardDraftsWiped(() => {
+        if (timer.current) {
+          clearTimeout(timer.current);
+          timer.current = null;
+        }
+        pending.current = null;
+        wiped.current = true;
+      }),
+    [],
+  );
 
   // A reload or a closed tab must not lose what was typed in the last moment: write what is queued as the page goes away.
   useEffect(() => {

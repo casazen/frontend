@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { readWizardDraft, writeWizardDraft } from "@/lib/wizard-draft";
+import { clearAllWizardDrafts, readWizardDraft, writeWizardDraft } from "@/lib/wizard-draft";
 import { useWizardDraft, type UseWizardDraftOptions } from "../use-wizard-draft";
 
 let currentUser: { id: string } | null = { id: "user-1" };
@@ -269,5 +269,49 @@ describe("useWizardDraft clearing", () => {
     });
 
     expect(readWizardDraft("flow", SCOPE)?.values).toEqual({ name: "Villa" });
+  });
+});
+
+describe("useWizardDraft sign-out", () => {
+  it("useWizardDraft_SignOutWhileAnswersAreQueued_ThePageLeavingDoesNotWriteThemBack", () => {
+    const { result, unmount } = open();
+
+    act(() => {
+      result.current.save({ step: "notes", values: { note: "private" } });
+      clearAllWizardDrafts();
+      window.dispatchEvent(new Event("pagehide"));
+      vi.advanceTimersByTime(1000);
+    });
+    unmount();
+
+    expect(readWizardDraft("flow", SCOPE)).toBeNull();
+    expect(sessionStorage.length).toBe(0);
+  });
+
+  it("useWizardDraft_AfterSignOut_TheFlowStillOpenWritesNothingMore", () => {
+    const { result } = open();
+    act(() => {
+      clearAllWizardDrafts();
+    });
+
+    act(() => {
+      result.current.save({ step: "notes", values: { note: "later" } });
+      vi.advanceTimersByTime(1000);
+      result.current.flush();
+    });
+
+    expect(sessionStorage.length).toBe(0);
+  });
+
+  it("useWizardDraft_AFlowOpenedAfterSignOut_SavesAsUsual", () => {
+    clearAllWizardDrafts();
+    const { result } = open();
+
+    act(() => {
+      result.current.save({ step: "notes", values: { note: "new session" } });
+      result.current.flush();
+    });
+
+    expect(readWizardDraft("flow", SCOPE)?.values).toEqual({ note: "new session" });
   });
 });

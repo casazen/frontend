@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   WIZARD_DRAFT_TTL_MS,
   clearAllWizardDrafts,
+  onWizardDraftsWiped,
   clearWizardDraft,
   readWizardDraft,
   storableValues,
@@ -229,5 +230,47 @@ describe("clearAllWizardDrafts", () => {
     });
 
     expect(() => clearAllWizardDrafts()).not.toThrow();
+  });
+});
+
+describe("onWizardDraftsWiped", () => {
+  it("onWizardDraftsWiped_ClearAll_CallsTheListenersBeforeTheDraftsGo", () => {
+    writeWizardDraft("flow", SCOPE, { step: "a", values: {} });
+    let draftWasThere = false;
+    const stop = onWizardDraftsWiped(() => {
+      draftWasThere = readWizardDraft("flow", SCOPE) !== null;
+    });
+
+    clearAllWizardDrafts();
+    stop();
+
+    expect(draftWasThere).toBe(true);
+    expect(readWizardDraft("flow", SCOPE)).toBeNull();
+  });
+
+  it("onWizardDraftsWiped_Unregistered_IsNotCalledAnymore", () => {
+    const listener = vi.fn();
+    const stop = onWizardDraftsWiped(listener);
+    stop();
+
+    clearAllWizardDrafts();
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("onWizardDraftsWiped_AListenerThrows_TheOthersStillRunAndTheDraftsGo", () => {
+    writeWizardDraft("flow", SCOPE, { step: "a", values: {} });
+    const second = vi.fn();
+    const stopFirst = onWizardDraftsWiped(() => {
+      throw new Error("cannot forget");
+    });
+    const stopSecond = onWizardDraftsWiped(second);
+
+    expect(() => clearAllWizardDrafts()).not.toThrow();
+    stopFirst();
+    stopSecond();
+
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(readWizardDraft("flow", SCOPE)).toBeNull();
   });
 });

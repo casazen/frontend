@@ -146,8 +146,28 @@ export function writeWizardDraft(
   }
 }
 
+const wipeListeners = new Set<() => void>();
+
+/**
+ * Registers what a mounted flow does when every draft is deleted (the person signs out): it forgets what it has queued, so the
+ * page leaving (`pagehide`, unmount) cannot write the answers back under the old user. Returns the function that unregisters.
+ */
+export function onWizardDraftsWiped(listener: () => void): () => void {
+  wipeListeners.add(listener);
+  return () => {
+    wipeListeners.delete(listener);
+  };
+}
+
 /** Deletes every draft of every flow of every user: the person signs out, and what they typed does not stay in the tab. */
 export function clearAllWizardDrafts(): void {
+  for (const listener of wipeListeners) {
+    try {
+      listener();
+    } catch {
+      // A flow that cannot forget must not stop the others from forgetting.
+    }
+  }
   try {
     const mine: string[] = [];
     for (let index = 0; index < sessionStorage.length; index++) {
