@@ -1746,7 +1746,8 @@
       "signInAgain": "Accedi di nuovo"
     },
     "errorState": {
-      "retry": "Riprova"
+      "retry": "Riprova",
+      "supportWithEmail": "Se il problema continua, scrivi al supporto:"
     }
   },
   "common": {
@@ -3864,7 +3865,9 @@
       "descriptionPlaceholder": "Pagamento per prenotazione...",
       "cancel": "Annulla",
       "creating": "Creazione...",
-      "create": "Crea pagamento"
+      "create": "Crea pagamento",
+      "noBookingsTitle": "Non ci sono prenotazioni",
+      "noBookingsDescription": "Un pagamento si registra su una prenotazione: creane una e poi torna qui."
     },
     "refund": {
       "title": "Rimborsa pagamento",
@@ -5757,6 +5760,25 @@
     "childAgePlaceholder": "Età",
     "childAgeOption_one": "{{count}} anno",
     "childAgeOption_other": "{{count}} anni"
+  },
+  "ui": {
+    "field": {
+      "optional": "(facoltativo)",
+      "example": "Esempio:"
+    },
+    "progress": {
+      "label": "Avanzamento"
+    },
+    "ring": {
+      "label": "{{value}}% completato"
+    },
+    "stepper": {
+      "label": "Passaggi",
+      "stepOf": "Passo {{current}} di {{total}}",
+      "done": "completato",
+      "current": "passo attuale",
+      "todo": "da fare"
+    }
   },
   "questuraCredentials": {
     "title": "Credenziali Alloggiati Web (Questura)",
