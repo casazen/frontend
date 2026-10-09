@@ -1,7 +1,7 @@
 import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { resetE2eStorage } from './helpers/locale';
-import { chooseLanguage, moreOfTheBar } from './helpers/profile-menu';
+import { chooseLanguage, moreOfTheBar, openProfileMenu, profileMenuTrigger } from './helpers/profile-menu';
 
 /**
  * UI-03: one shell for every area, the window scrolls, and the shell takes care of the keyboard and screen reader user
@@ -70,6 +70,49 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(page.locator('html')).toHaveAttribute('lang', 'it');
     });
 
+    test('the profile menu works from the keyboard: the arrows, Enter on a language, Escape and the focus back', async ({ page }) => {
+      await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      const avatar = profileMenuTrigger(page);
+
+      // The name of the avatar says whose menu it is, and it opens with Enter.
+      await expect(avatar).toHaveAttribute('aria-label', /^Menu utente: /);
+      await avatar.focus();
+      await page.keyboard.press('Enter');
+      const menu = page.getByRole('menu');
+      await expect(menu).toBeVisible();
+      await expect(menu.getByRole('menuitem')).toHaveText(['Profilo', 'Esci']);
+      await expect(menu.getByRole('menuitemradio')).toHaveText(['Italiano', 'English', 'Affitti brevi', 'Affitti lunghi']);
+
+      // Home and End walk the rows, Escape closes the menu and the focus is back on the avatar.
+      await page.keyboard.press('End');
+      await expect(menu.getByRole('menuitem', { name: 'Esci' })).toBeFocused();
+      await page.keyboard.press('Home');
+      await expect(menu.getByRole('menuitem', { name: 'Profilo' })).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(menu).toBeHidden();
+      await expect(avatar).toBeFocused();
+
+      // A language is chosen with the keyboard too: the whole page, and <html lang>, follow.
+      await page.keyboard.press('Enter');
+      await menu.getByRole('menuitemradio', { name: 'English' }).focus();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+      await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
+      await expect(avatar).toBeFocused();
+    });
+
+    test('the profile menu offers the areas of the user and goes to the one chosen', async ({ page }) => {
+      await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+
+      const menu = await openProfileMenu(page);
+      await expect(menu.getByRole('menuitemradio', { name: 'Affitti brevi' })).toHaveAttribute('aria-checked', 'true');
+      await menu.getByRole('menuitemradio', { name: 'Affitti lunghi' }).click();
+
+      await expect(page).toHaveURL(/\/app\/long-rent/);
+    });
+
     test('the window scrolls while the header and the sidebar stay in place', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/payments/revenue', 'short-stay'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1, name: /Analisi ricavi|Revenue Analytics/i })).toBeVisible();
@@ -118,6 +161,31 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
       ).toBe(true);
+    });
+
+    test('the sheet "Altro" ends with the account: the profile, the language in buttons a finger tall, and the exit', async ({ page }) => {
+      await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+
+      await moreOfTheBar(page).click();
+      const sheet = page.getByRole('dialog');
+      const row = sheet.getByTestId('sheet-account').getByRole('button', { name: /Profilo e lingua/ });
+      await expect(row).toHaveAttribute('aria-expanded', 'false');
+      await row.click();
+      await expect(row).toHaveAttribute('aria-expanded', 'true');
+
+      const account = sheet.getByTestId('sheet-account');
+      await expect(account.getByRole('link', { name: 'Profilo' })).toBeVisible();
+      await expect(account.getByRole('button', { name: 'Esci' })).toBeVisible();
+      for (const name of ["Passa all'italiano", "Passa all'inglese"]) {
+        const box = await account.getByRole('button', { name }).boundingBox();
+        expect(box!.width).toBeGreaterThanOrEqual(44);
+        expect(box!.height).toBeGreaterThanOrEqual(44);
+      }
+
+      await account.getByRole('button', { name: "Passa all'inglese" }).click();
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+      await expect(sheet.getByRole('heading', { name: 'More' })).toBeVisible();
     });
 
     test('the bottom bar stays at the bottom of the screen while the window scrolls', async ({ page }) => {
