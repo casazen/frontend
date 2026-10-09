@@ -1,125 +1,53 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/shared/empty-state';
-import { GuestListTable } from './components/guest-list-table';
+import { ListView } from '@/components/shared/list-view/list-view';
+import { useListState } from '@/components/shared/list-view/use-list-state';
+import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { guestsApi } from '@/api/guests.api';
-import { Search, Loader2, RefreshCw, Users } from 'lucide-react';
+import { useGuestsList } from './guests-list';
 
 const PAGE_SIZE = 20;
 
+/**
+ * The guests of the host (UI-14: the unified list, in `server` mode). The search and the page are in the address
+ * (`?q=rossi&page=2`), the list writes them there and this page reads them to ask the API, which searches and pages.
+ */
 export function GuestsPage() {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const list = useGuestsList();
+  const viewsScope = useListViewsScope();
+  const { state } = useListState(list);
+  const search = state.q.trim();
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-    isRefetching,
-  } = useQuery({
-    queryKey: ['guests', { search, page }],
-    queryFn: () => guestsApi.getAll({ search: search || undefined, page, pageSize: PAGE_SIZE }),
+  const { data, isLoading, isError, error, refetch, isPlaceholderData } = useQuery({
+    queryKey: ['guests', { search, page: state.page }],
+    queryFn: () => guestsApi.getAll({ search: search || undefined, page: state.page, pageSize: PAGE_SIZE }),
+    // The rows of the last search stay on the screen, a little dimmed, until those of the next one arrive.
+    placeholderData: keepPreviousData,
   });
-
-  const filtered = data?.items ?? [];
-  const totalCount = data?.totalCount ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader
-          title={t('guests.title')}
-          description={t('guests.search')}
+        <PageHeader title={t('guests.title')} description={t('guests.search')} />
+
+        <ListView
+          list={list}
+          mode="server"
+          rows={data?.items ?? []}
+          totalCount={data?.totalCount}
+          pageSize={PAGE_SIZE}
+          isLoading={isLoading}
+          isRefreshing={isPlaceholderData}
+          isError={isError && !isLoading}
+          error={error}
+          errorTitle={t('guests.loadError')}
+          onRetry={() => void refetch()}
+          viewsScope={viewsScope}
+          testId="guest-list"
         />
-
-        <Card>
-          <CardContent className="pt-4 space-y-4">
-            {/* Search */}
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('guests.search')}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9"
-              />
-            </div>
-
-            {/* Loading State */}
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-muted-foreground">{t('shared.loading.defaultMessage')}</span>
-              </div>
-            )}
-
-            {/* Error State */}
-            {isError && !isLoading && (
-              <div className="py-12 text-center">
-                <p className="text-destructive mb-4">{t('guests.loadError')}</p>
-                <Button
-                  variant="outline"
-                  onClick={() => refetch()}
-                  disabled={isRefetching}
-                >
-                  <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-                  {t('guests.retry')}
-                </Button>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {!isLoading && !isError && filtered.length === 0 && (
-              <EmptyState
-                icon={Users}
-                title={t('guests.title')}
-                description={t('guests.empty')}
-              />
-            )}
-
-            {/* Table */}
-            {!isLoading && !isError && filtered.length > 0 && (
-              <GuestListTable guests={filtered} />
-            )}
-
-            {/* Pagination */}
-            {!isLoading && !isError && totalPages > 1 && (
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>{t('guests.pagination', { page, totalPages, totalCount })}</span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => p - 1)}
-                  >
-                    {t('guests.previous')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    {t('guests.next')}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </AppShell>
   );

@@ -79,7 +79,27 @@ export interface DataViewProps<Row> {
   footer?: React.ReactNode;
   className?: string;
   testId?: string;
+
+  /**
+   * The row can be opened with a click anywhere on it (the table row, the card): it is for the pointer, the keyboard has the
+   * link or the button the row must have in it. A click on something interactive inside the row (a link, a button, a box,
+   * a menu) is that thing's, not the row's. Added for the unified list (UI-14).
+   */
+  onRowClick?: (row: Row, event: React.MouseEvent<HTMLElement>) => void;
+  /** Classes for the row of the table and the item of the list of cards (an accent for a row that waits for an answer). */
+  rowClassName?: (row: Row) => string | undefined;
+  /** `data-testid` of a row, in the table and in the cards (they are two elements for the same row: it is on both). */
+  rowTestId?: (row: Row) => string | undefined;
+  /** The boxes on the cards: `false` leaves them to the table. On a phone they appear when the person asks to select. */
+  cardSelectable?: boolean;
+  /** Classes for what is inside a card item, in place of its padding (`p-0` when the card draws its own, to the edges). */
+  cardClassName?: string;
+  /** No border and no rounded corners around the list of cards: it is already inside a box (the unified list). */
+  bare?: boolean;
 }
+
+/** What takes a click for itself inside a row: the row does not open under a finger that pressed a link, a button or a box. */
+const INTERACTIVE = 'a, button, input, select, textarea, label, summary, [role="menuitem"], [role="button"], [data-no-row-click]';
 
 /** The two representations are in the page together and a media query shows one: written out so that the classes can be found. */
 const SHOWN_FROM = {
@@ -188,6 +208,12 @@ export function DataView<Row>({
   footer,
   className,
   testId,
+  onRowClick,
+  rowClassName,
+  rowTestId,
+  cardSelectable = true,
+  cardClassName,
+  bare = false,
 }: DataViewProps<Row>) {
   const { t, i18n } = useTranslation();
   const [ownSort, setOwnSort] = React.useState<DataViewSort | null>(defaultSort ?? null);
@@ -258,6 +284,14 @@ export function DataView<Row>({
 
   const shown = SHOWN_FROM[cardsUntil];
   const nameOf = (row: Row) => rowLabel?.(row) ?? t('dataView.selectRow');
+  const selectableCards = selectable && cardSelectable;
+  /** A click on the row itself; whatever is interactive inside the row has its own. */
+  const clickRow = (row: Row, event: React.MouseEvent<HTMLElement>) => {
+    if (!onRowClick) return;
+    const inside = (event.target as HTMLElement).closest(INTERACTIVE);
+    if (inside && event.currentTarget.contains(inside)) return;
+    onRowClick(row, event);
+  };
 
   return (
     <div className={rootClass} data-testid={testId}>
@@ -309,7 +343,7 @@ export function DataView<Row>({
                           type="button"
                           onClick={() => requestSort(column.key)}
                           className={cn(
-                            '-mx-2 inline-flex min-h-9 items-center gap-1 rounded-md px-2 font-medium hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            '-mx-2 inline-flex min-h-9 items-center gap-1 rounded-md px-2 text-left font-medium hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             direction && 'text-foreground',
                             column.align === 'end' && 'flex-row-reverse',
                           )}
@@ -338,7 +372,13 @@ export function DataView<Row>({
                   <tr
                     key={key}
                     data-selected={isChosen ? 'true' : undefined}
-                    className="border-b transition-colors last:border-0 hover:bg-muted/30 data-[selected=true]:bg-primary/5"
+                    data-testid={rowTestId?.(row)}
+                    onClick={onRowClick ? (event) => clickRow(row, event) : undefined}
+                    className={cn(
+                      'border-b transition-colors last:border-0 hover:bg-muted/30 data-[selected=true]:bg-primary/5',
+                      onRowClick && 'cursor-pointer',
+                      rowClassName?.(row),
+                    )}
                   >
                     {selectable ? (
                       <td className="w-11 px-1">
@@ -375,25 +415,31 @@ export function DataView<Row>({
       </div>
 
       <div className={cn('min-w-0', shown.cards)}>
-        {selectable ? (
+        {selectableCards ? (
           // Cards have no header with a box in it: the box for all of them is a row of its own, with its words.
           <label className="mb-1 flex min-h-11 cursor-pointer items-center gap-3 px-3 text-sm">
             <NativeCheckbox checked={allChosen} indeterminate={someChosen} onChange={toggleAll} />
             {t('dataView.selectAll')}
           </label>
         ) : null}
-        <ul role="list" aria-label={label} className="divide-y rounded-lg border">
+        <ul role="list" aria-label={label} className={cn('divide-y', !bare && 'rounded-lg border')}>
           {shownRows.map((row) => {
             const key = rowKey(row);
             const isChosen = chosen.has(key);
             return (
-              <li key={key} data-selected={isChosen ? 'true' : undefined} className="flex min-w-0 items-start data-[selected=true]:bg-primary/5">
-                {selectable ? (
+              <li
+                key={key}
+                data-selected={isChosen ? 'true' : undefined}
+                data-testid={rowTestId?.(row)}
+                onClick={onRowClick ? (event) => clickRow(row, event) : undefined}
+                className={cn('flex min-w-0 items-start data-[selected=true]:bg-primary/5', onRowClick && 'cursor-pointer', rowClassName?.(row))}
+              >
+                {selectableCards ? (
                   <div className="pl-1 pt-1">
                     <SelectBox checked={isChosen} label={nameOf(row)} onChange={() => toggleRow(key)} />
                   </div>
                 ) : null}
-                <div className="min-w-0 flex-1 break-words p-4">{renderCard(row)}</div>
+                <div className={cn('min-w-0 flex-1 break-words p-4', cardClassName)}>{renderCard(row)}</div>
               </li>
             );
           })}

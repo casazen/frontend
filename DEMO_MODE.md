@@ -78,6 +78,16 @@ suggerimento «?», schede, controlli segmentati e a scelta, quantità, elenco t
 guardarli e a farci girare axe e gli Playwright dei telefoni (`e2e/ui-primitives-b.spec.ts`). **Non esiste nella build**:
 la rotta c'è solo se `import.meta.env.DEV` è vero.
 
+### L'elenco unico su una pagina sola
+
+Sempre con il dev server, la pagina `/dev/list-view` mostra l'elenco unico (UI-14, `ListView`) su prenotazioni finte che cambiano
+davvero quando si esegue un'azione: ricerca, filtri rapidi, filtri nel cassetto, viste (anche salvate, nel browser), colonne e
+ordine, CSV, selezione e azioni di massa con «Annulla», swipe e menu «⋯» delle card, cassetto di dettaglio e vista a colonne
+(trascinamento con il mouse, «Sposta in…» con tastiera e dito). I pulsanti in alto cambiano lo stato dell'elenco (caricamento,
+aggiornamento, errore, vuoto) con `?scenario=`. Serve a guardarlo e a farci girare axe e gli Playwright dei telefoni
+(`e2e/list-view.spec.ts`). Come si configura un elenco, con un esempio, è nel `README.md` di `src/components/shared/list-view/`;
+la prima pagina vera che lo usa è l'elenco **Ospiti** (`features/guests/guests-list.ts`). **Non esiste nella build.**
+
 ## Configurazione
 
 La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`, valida solo con il dev server o con
