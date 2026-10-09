@@ -50,10 +50,22 @@ describe('ui store (UI-04a)', () => {
     expect(stored()?.state).not.toHaveProperty('sidebarOpen');
   });
 
-  it('UiStore_ToggleSidebar_StillOpensAndClosesThePhoneDrawer', () => {
-    useUiStore.getState().toggleSidebar();
+  it('UiStore_SetSidebarOpen_OpensAndClosesThePhoneSheet', () => {
+    // The menu button of the header, which used to toggle it, is gone (UI-05): the bar of the phone opens the sheet.
+    useUiStore.getState().setSidebarOpen(true);
     expect(useUiStore.getState().sidebarOpen).toBe(true);
     useUiStore.getState().setSidebarOpen(false);
     expect(useUiStore.getState().sidebarOpen).toBe(false);
+  });
+
+  it('UiStore_MobilePrimaryVisible_StartsOffAndIsNeverKept', () => {
+    expect(useUiStore.getState().mobilePrimaryVisible).toBe(false);
+
+    useUiStore.getState().setMobilePrimaryVisible(true);
+    useUiStore.getState().setSidebarCollapsed(true);
+
+    expect(useUiStore.getState().mobilePrimaryVisible).toBe(true);
+    expect(stored()?.state).toEqual({ sidebarCollapsed: true });
+    useUiStore.getState().setMobilePrimaryVisible(false);
   });
 });

@@ -11,7 +11,6 @@ interface UiState {
    * left had.
    */
   sidebarOpen: boolean;
-  toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   /** The sidebar of the desktop shows only the icons (UI-04a). Kept between visits. */
   sidebarCollapsed: boolean;
@@ -35,7 +34,6 @@ export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
       sidebarOpen: false,
-      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       sidebarCollapsed: false,
       toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
