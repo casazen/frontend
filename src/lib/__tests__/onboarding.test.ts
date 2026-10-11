@@ -5,6 +5,7 @@ import {
   getHomeRouteForUser,
   getPlanPageForRentalType,
   getProfilePageForRentalType,
+  getFirstPropertyRoute,
   getPostOnboardingRoute,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
@@ -118,6 +119,20 @@ describe('onboarding helpers', () => {
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rentals-elsewhere')).toBe('/app/short-rent');
     expect(getPostOnboardingRoute('ShortTerm', '/app/admin')).toBe('/app/short-rent');
     expect(getPostOnboardingRoute('LongTerm', null)).toBe('/app/long-rent/leases');
+  });
+
+  it('getPostOnboardingRoute_FirstRunOpensTheFirstPropertyUnlessAGuardSentTheUserToADeepPage', () => {
+    expect(getPostOnboardingRoute('ShortTerm', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
+    expect(getPostOnboardingRoute('LongTerm', null, { firstRun: true })).toBe('/app/long-rent/properties/new?first=1');
+    // `Both` starts with short rent; the long-term area is one click away.
+    expect(getPostOnboardingRoute('Both', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
+    // The bare home of an area is "nowhere in particular": a new host starts with its first property.
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent', { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
+    // A deep link the guard remembered is kept.
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent/bookings/42', { firstRun: true })).toBe('/app/short-rent/bookings/42');
+    // Not the first run (a renewal of the consents): the home or the origin, never a creation form.
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent', { firstRun: false })).toBe('/app/short-rent');
+    expect(getFirstPropertyRoute('LongTerm')).toBe('/app/long-rent/properties/new?first=1');
   });
 
   it('isProfileLoadFailure_TransientErrorsYes_NotFoundNo (A1-19)', () => {

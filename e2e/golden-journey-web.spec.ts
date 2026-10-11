@@ -47,8 +47,6 @@ test.describe('Golden Journey web (#301)', () => {
     await expect(consentsContinue).toBeEnabled({ timeout: 10_000 });
     await consentsContinue.click();
 
-    await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-    await page.getByTestId('onboarding-plan-confirm').click();
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
 
     // Step 4: guest public booking — branded shell

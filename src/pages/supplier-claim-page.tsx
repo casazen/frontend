@@ -44,6 +44,7 @@ export function SupplierClaimPage() {
   const claim = useClaimSupplier();
   const { mutate } = claim;
   const started = useRef(false);
+  const leavingStarted = useRef(false);
   const [result, setResult] = useState<SupplierClaimResult | null>(null);
   const [leaving, setLeaving] = useState(false);
 
@@ -62,6 +63,19 @@ export function SupplierClaimPage() {
     [mutate, pending],
   );
 
+  const target = result?.redirectUrl?.startsWith('/app/') ? result.redirectUrl : SUPPLIER_HOME_ROUTE;
+  const linkedAndSynced = result?.rolesSynced === true;
+
+  // Once the profile is linked and the role is granted, the wizard opens by itself: no "profile linked" page to click.
+  useEffect(() => {
+    if (!linkedAndSynced || leavingStarted.current) return;
+    leavingStarted.current = true;
+    // Best effort: the new Supplier role reaches the token; the console already works through the account link.
+    void refreshAccessToken()
+      .catch(() => undefined)
+      .then(() => navigate(target, { replace: true }));
+  }, [linkedAndSynced, target, navigate, refreshAccessToken]);
+
   // Once signed in, the claim starts by itself (the user got here to link the profile).
   useEffect(() => {
     if (authLoading || !isAuthenticated || started.current) return;
@@ -74,13 +88,6 @@ export function SupplierClaimPage() {
     void refreshAccessToken()
       .catch(() => undefined)
       .then(sendClaim);
-  };
-
-  const continueToConsole = async (target: string) => {
-    setLeaving(true);
-    // Best effort: the new Supplier role reaches the token; the console already works through the account link.
-    await refreshAccessToken().catch(() => undefined);
-    navigate(target, { replace: true });
   };
 
   const renewAndContinue = async (target: string) => {
@@ -132,7 +139,6 @@ export function SupplierClaimPage() {
   }
 
   if (result) {
-    const target = result.redirectUrl?.startsWith('/app/') ? result.redirectUrl : SUPPLIER_HOME_ROUTE;
     if (!result.rolesSynced) {
       // FD-14 / PL-01: the link is saved, the Auth0 role is not; a retry repeats the (idempotent) claim.
       return (
@@ -146,13 +152,8 @@ export function SupplierClaimPage() {
       );
     }
 
-    return (
-      <ClaimLayout title={t('supplier.claim.successTitle')} description={t('supplier.claim.successDescription')} success>
-        <Button className="w-full" size="lg" onClick={() => void continueToConsole(target)}>
-          {t('supplier.claim.completeProfile')}
-        </Button>
-      </ClaimLayout>
-    );
+    // Linked and role granted: nothing to confirm, the wizard is the next screen (it starts by itself, below).
+    return <ClaimLoading message={t('supplier.claim.loading')} />;
   }
 
   if (claim.isError) {

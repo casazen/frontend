@@ -11,6 +11,8 @@ import type { Property, PropertyDocumentDto } from '@/types';
 import { LongRentPropertiesPage } from '../long-rent-properties-page';
 import { LongRentPropertyDetailPage } from '../long-rent-property-detail-page';
 
+// The first-steps guide has its own tests and reads other endpoints.
+vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
 vi.mock('@/queries/use-properties');
 // Covered by its own tests (long-rent-service-requests.test.tsx): here only the APE and the property core.
 vi.mock('@/features/service-requests/components/long-rent-service-requests', () => ({

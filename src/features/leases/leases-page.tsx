@@ -7,6 +7,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeases } from '@/queries/use-leases';
+import { LongRentGuide } from '@/features/onboarding/components/long-rent-guide';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -62,6 +63,7 @@ export function LeasesPage() {
   return (
     <div className="space-y-6">
       {header}
+      <LongRentGuide />
 
       {leases.length === 0 ? (
         <EmptyState

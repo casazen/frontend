@@ -16,25 +16,54 @@ import {
   useSupplierActivation,
   useSupplierProfile,
 } from '@/queries/use-supplier';
-import { ACTIVATION_STEP_IDS, type ActivationStatus, type SupplierProfile } from '@/types/supplier';
+import type { ActivationStatus, ActivationStepId, SupplierProfile } from '@/types/supplier';
 import { ActivationTermsCard } from './components/activation-terms-card';
-import {
-  CalendarFeedCard,
-  IdentityStep,
-  ProfileStep,
-  ServicesStep,
-  ShowcaseStep,
-} from './components/activation-steps';
+import { IdentityStep, PresentationStep, ServicesStep } from './components/activation-steps';
 import { TosReacceptance } from './components/tos-reacceptance';
 
-const STEP_COUNT = ACTIVATION_STEP_IDS.length;
-const TERMS_STEP = STEP_COUNT;
+/**
+ * What the supplier sees: at most four screens, from the five steps the server tracks (SU-05). The identity (business name,
+ * phone) is asked at registration, so its screen only appears when the server still finds it incomplete; the optional
+ * showcase photos live with the description; the optional calendar is offered after the activation, from the dashboard.
+ * The server keeps the step number, so the wizard still resumes where the supplier stopped, on any device.
+ */
+type ScreenId = 'identity' | 'services' | 'profile' | 'terms';
 
-function clampStep(step: number): number {
-  return Math.min(Math.max(Math.trunc(step) || 1, 1), STEP_COUNT);
+interface Screen {
+  id: ScreenId;
+  /** Step number the server remembers while the screen is open (1-5). */
+  serverStep: number;
+  /** Server steps whose requirements the screen collects. */
+  stepIds: ActivationStepId[];
 }
 
-/** Step 5: optional calendar, Terms of Service and the check of what is still missing before activating. */
+const ALL_SCREENS: Screen[] = [
+  { id: 'identity', serverStep: 1, stepIds: ['identity'] },
+  { id: 'services', serverStep: 2, stepIds: ['services'] },
+  { id: 'profile', serverStep: 3, stepIds: ['showcase', 'profile'] },
+  { id: 'terms', serverStep: 5, stepIds: ['terms'] },
+];
+
+/** Screen that collects a server step (1-5). */
+function screenIdForServerStep(step: number): ScreenId {
+  if (step <= 1) return 'identity';
+  if (step === 2) return 'services';
+  if (step <= 4) return 'profile';
+  return 'terms';
+}
+
+function visibleScreens(activation: ActivationStatus): Screen[] {
+  const identityDone = activation.steps.find((step) => step.id === 'identity')?.status === 'completed';
+  return ALL_SCREENS.filter((screen) => screen.id !== 'identity' || !identityDone);
+}
+
+function isScreenDone(activation: ActivationStatus, screen: Screen): boolean {
+  return activation.steps
+    .filter((step) => screen.stepIds.includes(step.id) && step.required)
+    .every((step) => step.status === 'completed');
+}
+
+/** Last screen: Terms of Service and the check of what is still missing before activating. */
 function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; onGoToStep: (step: number) => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -58,7 +87,6 @@ function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; o
 
   return (
     <div className="space-y-6">
-      <CalendarFeedCard />
       <ActivationTermsCard
         version={activation.tos.currentVersion}
         checked={tosAccepted}
@@ -105,30 +133,31 @@ function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; o
 
 function StepNav({
   activation,
+  screens,
   current,
-  onGoToStep,
+  onGoToScreen,
 }: {
   activation: ActivationStatus;
+  screens: Screen[];
   current: number;
-  onGoToStep: (step: number) => void;
+  onGoToScreen: (index: number) => void;
 }) {
   const { t } = useTranslation();
   return (
     <nav aria-label={t('supplier.activation.stepsLabel')}>
-      <ol className="grid grid-cols-5 gap-1 text-center">
-        {activation.steps.map((step, index) => {
-          const number = index + 1;
-          const done = step.status === 'completed';
+      <ol className="grid gap-1 text-center" style={{ gridTemplateColumns: `repeat(${screens.length}, minmax(0, 1fr))` }}>
+        {screens.map((screen, index) => {
+          const done = isScreenDone(activation, screen);
           return (
-            <li key={step.id}>
+            <li key={screen.id}>
               <button
                 type="button"
-                onClick={() => onGoToStep(number)}
-                aria-current={number === current ? 'step' : undefined}
-                data-testid={`supplier-activation-nav-${step.id}`}
+                onClick={() => onGoToScreen(index)}
+                aria-current={index === current ? 'step' : undefined}
+                data-testid={`supplier-activation-nav-${screen.id}`}
                 className={cn(
                   'flex w-full flex-col items-center gap-1 rounded-md px-1 py-2 text-xs',
-                  number === current ? 'bg-muted font-medium' : 'text-muted-foreground hover:bg-muted/60',
+                  index === current ? 'bg-muted font-medium' : 'text-muted-foreground hover:bg-muted/60',
                 )}
               >
                 {done ? (
@@ -136,11 +165,10 @@ function StepNav({
                 ) : (
                   <Circle className="h-4 w-4" aria-hidden="true" />
                 )}
-                <span>{t(`supplier.activation.steps.${step.id}`)}</span>
+                <span>{t(`supplier.activation.steps.${screen.id}`)}</span>
                 <span className="sr-only">
                   {done ? t('supplier.activation.stepDone') : t('supplier.activation.stepTodo')}
                 </span>
-                {!step.required && <span className="text-[10px]">{t('supplier.activation.optional')}</span>}
               </button>
             </li>
           );
@@ -153,34 +181,42 @@ function StepNav({
 function ActivationWizard({ activation, profile }: { activation: ActivationStatus; profile: SupplierProfile }) {
   const { t } = useTranslation();
   const saveStep = useSaveSupplierActivationStep();
-  // The server remembers the step: the wizard opens where the supplier stopped, from any device (SU-05).
-  const [step, setStep] = useState(() => clampStep(activation.currentStep));
+  // Fixed for the visit: a screen never disappears under the supplier's hands when its data is saved.
+  const [screens] = useState(() => visibleScreens(activation));
+  const [index, setIndex] = useState(() => {
+    const resumed = screens.findIndex((screen) => screen.id === screenIdForServerStep(activation.currentStep));
+    return resumed >= 0 ? resumed : 0;
+  });
 
-  const goToStep = (next: number) => {
-    const target = clampStep(next);
-    setStep(target);
-    saveStep.mutate(target, {
+  const goToScreen = (next: number) => {
+    const target = Math.min(Math.max(next, 0), screens.length - 1);
+    setIndex(target);
+    saveStep.mutate(screens[target].serverStep, {
       onError: () => toast.error(t('supplier.activation.stepSaveError')),
     });
   };
+  const goToServerStep = (step: number) => {
+    const target = screens.findIndex((screen) => screen.id === screenIdForServerStep(step));
+    goToScreen(target >= 0 ? target : 0);
+  };
 
+  const current = screens[index];
   return (
     <div className="mx-auto max-w-lg space-y-6" data-testid="supplier-activation-page">
       <PageHeader title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
-      <StepNav activation={activation} current={step} onGoToStep={goToStep} />
+      <StepNav activation={activation} screens={screens} current={index} onGoToScreen={goToScreen} />
       <p className="text-sm text-muted-foreground" data-testid="supplier-activation-step-of">
-        {t('supplier.activation.stepOf', { current: step, total: STEP_COUNT })}
+        {t('supplier.activation.stepOf', { current: index + 1, total: screens.length })}
       </p>
 
       {/* `key`: each step starts from the data saved on the server, not from the previous step's form. */}
-      {step === 1 && <IdentityStep key="identity" profile={profile} onSaved={() => goToStep(2)} />}
-      {step === 2 && <ServicesStep key="services" profile={profile} onSaved={() => goToStep(3)} />}
-      {step === 3 && <ShowcaseStep key="showcase" profile={profile} onSaved={() => goToStep(4)} />}
-      {step === 4 && <ProfileStep key="profile" profile={profile} onSaved={() => goToStep(5)} />}
-      {step === TERMS_STEP && <TermsStep activation={activation} onGoToStep={goToStep} />}
+      {current.id === 'identity' && <IdentityStep key="identity" profile={profile} onSaved={() => goToScreen(index + 1)} />}
+      {current.id === 'services' && <ServicesStep key="services" profile={profile} onSaved={() => goToScreen(index + 1)} />}
+      {current.id === 'profile' && <PresentationStep key="profile" profile={profile} onSaved={() => goToScreen(index + 1)} />}
+      {current.id === 'terms' && <TermsStep activation={activation} onGoToStep={goToServerStep} />}
 
-      {step > 1 && (
-        <Button type="button" variant="ghost" onClick={() => goToStep(step - 1)}>
+      {index > 0 && (
+        <Button type="button" variant="ghost" onClick={() => goToScreen(index - 1)}>
           {t('supplier.activation.back')}
         </Button>
       )}

@@ -22,6 +22,7 @@ const PAGE_KEYWORDS: ReadonlyArray<{ navKey: string; keywordsKey: string }> = [
   { navKey: 'nav.fiscal', keywordsKey: 'commandPalette.keywords.fiscal' },
   { navKey: 'nav.guests', keywordsKey: 'commandPalette.keywords.guests' },
   { navKey: 'nav.inviteSupplier', keywordsKey: 'commandPalette.keywords.inviteSupplier' },
+  { navKey: 'nav.inviteQr', keywordsKey: 'commandPalette.keywords.inviteQr' },
   { navKey: 'nav.jobs', keywordsKey: 'commandPalette.keywords.jobs' },
   { navKey: 'nav.leases', keywordsKey: 'commandPalette.keywords.leases' },
   { navKey: 'nav.ltrReferenceData', keywordsKey: 'commandPalette.keywords.ltrReferenceData' },

@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { toast } from 'sonner';
 import { PropertyForm } from './components/property-form';
+import { QuickPropertyForm } from './components/quick-property-form';
 import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import {
@@ -17,6 +19,9 @@ import type { CreatePropertyDto } from '@/types';
 export function PropertyCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // First property of a new host (`?first=1`, set by the onboarding): the short form, then the checklist asks the rest.
+  const [searchParams] = useSearchParams();
+  const quick = searchParams.get('first') === '1';
   const createProperty = useCreateProperty();
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);
@@ -29,6 +34,11 @@ export function PropertyCreatePage() {
     setPlanLimitHit(false);
     try {
       await createProperty.mutateAsync(data);
+      if (quick) {
+        toast.success(t('property.quick.created'));
+        navigate('/app/short-rent');
+        return;
+      }
       navigate('/app/short-rent/properties');
     } catch (error) {
       if (isPlanLimitError(error)) {
@@ -43,8 +53,8 @@ export function PropertyCreatePage() {
     <AppShell>
       <div className="space-y-6 max-w-4xl mx-auto">
         <PageHeader
-          title={t('property.create.title')}
-          description={t('property.create.description')}
+          title={quick ? t('property.quick.title') : t('property.create.title')}
+          description={quick ? t('property.quick.description') : t('property.create.description')}
         />
 
         {blockedByPlan && (
@@ -63,11 +73,21 @@ export function PropertyCreatePage() {
           </div>
         )}
 
-        <PropertyForm
-          onSubmit={handleSubmit}
-          isLoading={createProperty.isPending}
-          disabled={blockedByPlan}
-        />
+        {quick ? (
+          <QuickPropertyForm
+            variant="short-rent"
+            onSubmit={handleSubmit}
+            isLoading={createProperty.isPending}
+            disabled={blockedByPlan}
+            onFullForm={() => navigate('/app/short-rent/properties/create')}
+          />
+        ) : (
+          <PropertyForm
+            onSubmit={handleSubmit}
+            isLoading={createProperty.isPending}
+            disabled={blockedByPlan}
+          />
+        )}
       </div>
     </AppShell>
   );

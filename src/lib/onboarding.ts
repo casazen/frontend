@@ -125,17 +125,29 @@ const RENTAL_TYPE_CONTEXT_PREFIXES: Record<RentalType, string[]> = {
 };
 
 /**
- * Where to go once the onboarding is done: back to the page the guard redirected from when it belongs to a
- * context the chosen rental type opens, otherwise the home of that rental type.
+ * Where a host who has just created the org starts: the quick creation of the first property of the area the rental
+ * type opens (the checklist and the guides ask for the rest afterwards). Short-term first for `Both`.
  */
-export function getPostOnboardingRoute(rentalType: RentalType, from?: string | null): string {
-  if (from) {
-    const prefixes = RENTAL_TYPE_CONTEXT_PREFIXES[rentalType] ?? [];
-    if (prefixes.some((prefix) => from === prefix || from.startsWith(`${prefix}/`))) {
-      return from;
-    }
+export function getFirstPropertyRoute(rentalType: RentalType): string {
+  return rentalType === 'LongTerm' ? '/app/long-rent/properties/new?first=1' : '/app/short-rent/properties/create?first=1';
+}
+
+/**
+ * Where to go once the onboarding is done: a deep page the guard redirected from when it belongs to a context the chosen
+ * rental type opens; otherwise, right after the org was created (`firstRun`), the creation of the first property;
+ * otherwise the home of the rental type.
+ */
+export function getPostOnboardingRoute(
+  rentalType: RentalType,
+  from?: string | null,
+  options?: { firstRun?: boolean },
+): string {
+  const prefixes = RENTAL_TYPE_CONTEXT_PREFIXES[rentalType] ?? [];
+  if (from && prefixes.some((prefix) => from === prefix || from.startsWith(`${prefix}/`))) {
+    // A new host sent from the bare home of an area is not "going somewhere": it starts with the first property.
+    if (!(options?.firstRun && prefixes.includes(from))) return from;
   }
-  return getHomeRouteForRentalType(rentalType);
+  return options?.firstRun ? getFirstPropertyRoute(rentalType) : getHomeRouteForRentalType(rentalType);
 }
 
 /**

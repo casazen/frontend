@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Accept required onboarding consents and continue to the plan step. */
+/** Accept required onboarding consents and continue: they are the last screen, the org starts on Starter (no plan step). */
 export async function completeOnboardingConsents(page: Page): Promise<void> {
   const consents = page.getByTestId('onboarding-consents-step');
   await expect(consents).toBeVisible({ timeout: 20_000 });
@@ -20,8 +20,6 @@ export async function completeOnboardingFromRentalChoice(
 ): Promise<void> {
   await page.getByRole('button', { name: /Scegli|Choose/i }).nth(rentalButtonIndex).click();
   await completeOnboardingConsents(page);
-  await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-  await page.getByTestId('onboarding-plan-confirm').click();
 }
 
 /** Host booking create now requires guest contact (PC-07). */

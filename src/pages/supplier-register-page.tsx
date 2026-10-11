@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ComunePicker } from '@/components/shared/comune-picker';
 import { useAuth } from '@/hooks/use-auth';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { currentReturnTo } from '@/lib/auth-return-to';
@@ -195,7 +196,7 @@ function SelfServeRegistration() {
     );
   }
 
-  if (!options.data.selfServeEnabled || options.data.pilotComuni.length === 0) {
+  if (!options.data.selfServeEnabled) {
     return (
       <RegisterLayout
         title={t('supplier.register.selfServeUnavailableTitle')}
@@ -233,7 +234,7 @@ function SelfServeRegistration() {
       <RegistrationForm
         email={accountEmail}
         emailHint={accountEmail ? t('supplier.register.emailAccountHint') : undefined}
-        comune={{ kind: 'choice', options: options.data.pilotComuni }}
+        comune={{ kind: 'picker' }}
         submitting={register.isPending}
         error={error}
         onSubmit={submit}
@@ -257,8 +258,10 @@ function SelfServeRegistration() {
 type RegistrationValues = { email: string; comuneCode: string; legalName: string; phone: string };
 
 type ComuneField =
+  /** The comune of an invite: fixed. */
   | { kind: 'locked'; code: string; label: string }
-  | { kind: 'choice'; options: { code: string; name: string }[] };
+  /** Any comune of the official ISTAT list, searched by name (the list is public and loaded in the background). */
+  | { kind: 'picker' };
 
 function RegistrationForm({
   email: lockedEmail,
@@ -278,9 +281,7 @@ function RegistrationForm({
 }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
-  const [comuneCode, setComuneCode] = useState(() =>
-    comune.kind === 'locked' ? comune.code : comune.options.length === 1 ? comune.options[0].code : '',
-  );
+  const [comuneCode, setComuneCode] = useState(() => (comune.kind === 'locked' ? comune.code : ''));
   const [legalName, setLegalName] = useState('');
   const [phone, setPhone] = useState('');
   const [missingFields, setMissingFields] = useState(false);
@@ -326,21 +327,14 @@ function RegistrationForm({
           <Input id="comune" value={comune.label} readOnly aria-readonly="true" className="bg-muted" />
         ) : (
           <>
-            <select
+            <ComunePicker
               id="comune"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-              value={comuneCode}
-              onChange={(e) => setComuneCode(e.target.value)}
-              required
-            >
-              <option value="">{t('supplier.register.comunePlaceholder')}</option>
-              {comune.options.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {t('supplier.register.comuneWithCode', { name: option.name, code: option.code })}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">{t('supplier.register.comuneHint')}</p>
+              istatCode={comuneCode || null}
+              onChange={(picked) => setComuneCode(picked?.istatCode ?? '')}
+              placeholder={t('supplier.register.comunePlaceholder')}
+              describedBy="comune-hint"
+            />
+            <p id="comune-hint" className="text-xs text-muted-foreground">{t('supplier.register.comuneHint')}</p>
           </>
         )}
       </div>
@@ -395,7 +389,7 @@ function RegistrationSuccess({ done }: { done: RegistrationDone }) {
   const { t } = useTranslation();
   const { login, refreshAccessToken } = useAuth();
   const navigate = useNavigate();
-  const [opening, setOpening] = useState(false);
+  const opened = useRef(false);
 
   // Back to the claim page after the Auth0 signup or login; the claim also travels in appState.
   function loginToClaim(authorizationParams: Record<string, string>) {
@@ -406,40 +400,33 @@ function RegistrationSuccess({ done }: { done: RegistrationDone }) {
     });
   }
 
-  async function openActivation() {
-    setOpening(true);
+  // A signed-in supplier is already linked: nothing to confirm, the wizard is the next screen.
+  const authenticated = done.authenticated;
+  useEffect(() => {
+    if (!authenticated || opened.current) return;
+    opened.current = true;
     // The Supplier role was just added in Auth0: get a token that carries it (best effort, the API
     // already authorizes the supplier through the account link).
-    await refreshAccessToken().catch(() => undefined);
-    navigate(ACTIVATION_PATH, { replace: true });
-  }
+    void refreshAccessToken()
+      .catch(() => undefined)
+      .then(() => navigate(ACTIVATION_PATH, { replace: true }));
+  }, [authenticated, refreshAccessToken, navigate]);
+
+  if (authenticated) return <LoadingCard message={t('supplier.register.openingActivation')} />;
 
   return (
     <RegisterLayout
       title={t('supplier.register.successTitle')}
-      description={
-        done.authenticated
-          ? t('supplier.register.successSignedIn')
-          : t('supplier.register.successDescription', { email: done.email })
-      }
+      description={t('supplier.register.successDescription', { email: done.email })}
       success
     >
-      {done.authenticated ? (
-        <Button className="w-full" size="lg" disabled={opening} onClick={() => void openActivation()}>
-          {opening && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-          {t('supplier.register.completeProfile')}
-        </Button>
-      ) : (
-        <>
-          <Button className="w-full" size="lg" onClick={() => loginToClaim({ screen_hint: 'signup' })}>
-            {t('supplier.register.createAccount')}
-          </Button>
-          <Button className="w-full" variant="outline" onClick={() => loginToClaim({})}>
-            {t('supplier.register.loginToClaim')}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">{t('supplier.register.afterAccount')}</p>
-        </>
-      )}
+      <Button className="w-full" size="lg" onClick={() => loginToClaim({ screen_hint: 'signup' })}>
+        {t('supplier.register.createAccount')}
+      </Button>
+      <Button className="w-full" variant="outline" onClick={() => loginToClaim({})}>
+        {t('supplier.register.loginToClaim')}
+      </Button>
+      <p className="text-center text-xs text-muted-foreground">{t('supplier.register.afterAccount')}</p>
     </RegisterLayout>
   );
 }
