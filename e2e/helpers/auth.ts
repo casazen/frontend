@@ -265,7 +265,7 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
 export async function waitForAppReady(page: Page): Promise<void> {
   await page
     .getByTestId('app-ready')
-    .or(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i }))
+    .or(page.getByRole('heading', { name: /Da dove vuoi iniziare/i }))
     .first()
     .waitFor({ state: 'visible', timeout: 90_000 });
 }

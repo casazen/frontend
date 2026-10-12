@@ -497,6 +497,24 @@
     "loading": "Caricamento contratti...",
     "emptyTitle": "Nessun contratto",
     "emptyDescription": "Crea il primo contratto di locazione lungo termine.",
+    "guide": {
+      "intro": "Tre passaggi, in ordine. Il contratto si salva solo dopo aver aggiunto l'immobile e caricato l'APE.",
+      "property": {
+        "title": "Aggiungi l'immobile",
+        "description": "Nome, indirizzo e dati della casa che affitti.",
+        "cta": "Aggiungi l'immobile"
+      },
+      "ape": {
+        "title": "Carica l'APE",
+        "description": "Apri l'immobile e carica l'attestato di prestazione energetica. Senza APE il contratto non si può salvare.",
+        "cta": "Vai agli immobili"
+      },
+      "lease": {
+        "title": "Crea il contratto",
+        "description": "Scegli l'immobile, chi firma e il canone mensile.",
+        "cta": "Crea il contratto"
+      }
+    },
     "loadError": "Impossibile caricare i contratti. Riprova.",
     "rentLabel": "Canone ",
     "regimeLabel": "Regime ",
@@ -5081,6 +5099,11 @@
   },
   "activation": {
     "title": "Attiva il tuo sito di prenotazione",
+    "next": {
+      "kicker": "Il prossimo passo",
+      "intro": "Fai un passaggio alla volta.",
+      "position": "Passaggio {{current}} di {{total}}"
+    },
     "progress_one": "{{count}} passaggio su {{total}} completato",
     "progress_other": "{{count}} passaggi su {{total}} completati",
     "progressLabel": "Avanzamento dell'attivazione",
@@ -5160,10 +5183,17 @@
   },
   "onboarding": {
     "casaZen": "CasaZen",
-    "howToUse": "Come vuoi usare CasaZen?",
+    "howToUse": "Da dove vuoi iniziare?",
     "editOperatorType": "Modifica tipo di operatore",
     "acceptLegalDocs": "Accetta i documenti legali",
-    "roleDescription": "Scegli come lavori: ti portiamo subito al tuo primo immobile.",
+    "stepsLabel": "Passaggi della registrazione",
+    "stepOf": "Passaggio {{current}} di {{total}}",
+    "steps": {
+      "role": "Come usi CasaZen",
+      "consents": "Documenti"
+    },
+    "then": "Poi, in ordine",
+    "roleDescription": "Scegli una strada. Dopo i documenti ti accompagniamo nel primo passaggio da fare in app.",
     "editRoleDescription": "Scegli il nuovo tipo di operatore e salva. Il piano non cambia qui: dopo il salvataggio si apre la pagina del piano, dove puoi gestirlo.",
     "consentsDescription": "Ultimo passaggio: per attivare il tuo account servono ToS, privacy, DPA e l'elenco subprocessori.",
     "consentsRenewalTitle": "Documenti legali aggiornati",
@@ -5179,11 +5209,28 @@
     "cancel": "Annulla",
     "retry": "Riprova",
     "shortTermTitle": "Affitti brevi",
-    "shortTermDescription": "Gestisci prenotazioni short-stay su Airbnb, Booking.com e altri",
+    "shortTermDescription": "Case affittate a notte o a settimana, con un sito dove gli ospiti prenotano.",
     "longTermTitle": "Locazioni di lungo periodo",
-    "longTermDescription": "Gestisci contratti di locazione, registrazione RLI, cedolare secca",
+    "longTermDescription": "Case affittate per mesi o anni, con contratto e documenti dell'immobile.",
     "bothTitle": "Entrambi",
-    "bothDescription": "Accedi a entrambe le sezioni con switcher rapido",
+    "bothDescription": "Affitti brevi e contratti di locazione, con lo stesso account.",
+    "paths": {
+      "short": {
+        "property": "Aggiungi la casa",
+        "payments": "Inserisci il CIN e collega i pagamenti",
+        "share": "Pubblica il sito e condividi il link"
+      },
+      "long": {
+        "property": "Aggiungi l'immobile",
+        "ape": "Carica l'APE",
+        "lease": "Crea il primo contratto"
+      },
+      "both": {
+        "start": "Entra nell'area da cui vuoi partire",
+        "finish": "Completa i passaggi di quell'area",
+        "switch": "Passa all'altra area quando vuoi"
+      }
+    },
     "legalDocuments": "Documenti legali",
     "loadingLegalDocs": "Caricamento documenti legali...",
     "cannotLoadLegalDocs": "Impossibile caricare i documenti legali. Riprova tra qualche istante.",
@@ -5423,6 +5470,15 @@
     "title": "Registrati su CasaZen",
     "redirecting": "Ti stiamo portando alla registrazione…",
     "continue": "Continua la registrazione"
+  },
+  "emailVerified": {
+    "title": "Email confermata",
+    "description": "Il tuo indirizzo è verificato. Accedi: ti guidiamo noi nei primi passaggi.",
+    "unknownTitle": "Verifica email",
+    "unknownDescription": "Se hai appena confermato l'email, accedi. Se invece compare un errore, richiedi un nuovo link dalla schermata di accesso.",
+    "failedTitle": "Email non verificata",
+    "failedDescription": "Il link è già stato usato, è scaduto, oppure la pagina di ritorno non è tra gli indirizzi consentiti. Se l'email risulta già confermata, accedi. Altrimenti richiedi un nuovo messaggio dalla schermata di accesso.",
+    "signIn": "Accedi"
   },
   "notFound": {
     "title": "Pagina non trovata",

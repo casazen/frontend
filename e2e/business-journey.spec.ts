@@ -18,7 +18,7 @@ test.describe('Business Golden Path', () => {
   test('host onboarding → plan selection → short-rent dashboard', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen|How do you want to use CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare|Where do you want to start/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Scegli|Choose/i })).toHaveCount(3);
 
     await completeOnboardingFromRentalChoice(page, 0);

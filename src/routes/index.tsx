@@ -8,6 +8,7 @@ import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
 import { SignupPage } from '@/pages/signup-page';
+import { EmailVerifiedPage } from '@/pages/email-verified-page';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
@@ -166,6 +167,11 @@ export const appRoutes: RouteObject[] = [
         // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
         path: SIGNUP_PATH,
         element: <SignupPage />,
+      },
+      {
+        // Auth0 verification email Redirect To. Not the OAuth callback: Auth0 adds `code=success`.
+        path: '/email-verified',
+        element: <EmailVerifiedPage />,
       },
       {
         // Deactivated account (PL-03): under the Auth0 boundary so that its logout button always works, but outside
