@@ -103,7 +103,8 @@ async function acceptConsents(page: Page): Promise<void> {
   await page.getByTestId('onboarding-consents-continue').click();
 }
 
-test.describe.configure({ mode: 'serial' });
+// The CI config has a 30 s default per test: a whole onboarding (login, several screens, API) needs more on a shared runner.
+test.describe.configure({ mode: 'serial', timeout: 120_000 });
 
 test.describe('Onboarding L3 (real stack)', () => {
   let entry: { host: string; supplier: string };

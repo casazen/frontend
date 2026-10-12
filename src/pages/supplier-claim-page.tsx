@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { Home, Loader2 } from 'lucide-react';
@@ -15,8 +16,7 @@ import {
   SUPPLIER_CLAIM_PATH,
   type PendingSupplierClaim,
 } from '@/lib/supplier-claim';
-import { useClaimSupplier } from '@/queries/use-supplier';
-import type { SupplierClaimResult } from '@/services/supplier-api';
+import { claimSupplierProfile, type SupplierClaimResult } from '@/services/supplier-api';
 
 function claimErrorCode(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
@@ -41,27 +41,38 @@ export function SupplierClaimPage() {
   const { isLoading: authLoading, isAuthenticated, login, refreshAccessToken, forceReauth } = useAuth();
   // Read once: the token is forgotten as soon as the claim succeeds, a retry reuses this copy.
   const [pending] = useState<PendingSupplierClaim | null>(() => readPendingSupplierClaim());
-  const claim = useClaimSupplier();
-  const { mutate } = claim;
+  const queryClient = useQueryClient();
   const started = useRef(false);
   const leavingStarted = useRef(false);
-  const [result, setResult] = useState<SupplierClaimResult | null>(null);
   const [leaving, setLeaving] = useState(false);
+  // Not `useMutation`: with React StrictMode (development) the component is mounted twice and the mutation observer is
+  // detached from a call started by the first effect run, so the page stayed on "linking…" with the profile already linked.
+  // A promise settles the state of the component whatever the observers do.
+  const [claim, setClaim] = useState<{ status: 'idle' | 'pending' | 'success' | 'error'; data?: SupplierClaimResult; error?: unknown }>({
+    status: 'idle',
+  });
+  const result = claim.data ?? null;
 
-  const sendClaim = useCallback(
-    () =>
-      mutate(pending?.token, {
-        onSuccess: (data) => {
-          clearPendingSupplierClaim();
-          setResult(data);
-        },
-        onError: (error) => {
-          const code = claimErrorCode(error);
-          if (code && TOKEN_FINAL_CODES.has(code)) clearPendingSupplierClaim();
-        },
-      }),
-    [mutate, pending],
-  );
+  const runClaim = useCallback(() => {
+    claimSupplierProfile(pending?.token).then(
+      (data) => {
+        clearPendingSupplierClaim();
+        void queryClient.invalidateQueries({ queryKey: ['me'] });
+        setClaim({ status: 'success', data });
+      },
+      (error: unknown) => {
+        const code = claimErrorCode(error);
+        if (code && TOKEN_FINAL_CODES.has(code)) clearPendingSupplierClaim();
+        setClaim({ status: 'error', error });
+      },
+    );
+  }, [pending, queryClient]);
+
+  // A retry: back to "linking…" while it runs (the first attempt starts from `idle`, which renders the same).
+  const sendClaim = useCallback(() => {
+    setClaim({ status: 'pending' });
+    runClaim();
+  }, [runClaim]);
 
   const target = result?.redirectUrl?.startsWith('/app/') ? result.redirectUrl : SUPPLIER_HOME_ROUTE;
   const linkedAndSynced = result?.rolesSynced === true;
@@ -80,8 +91,8 @@ export function SupplierClaimPage() {
   useEffect(() => {
     if (authLoading || !isAuthenticated || started.current) return;
     started.current = true;
-    sendClaim();
-  }, [authLoading, isAuthenticated, sendClaim]);
+    runClaim();
+  }, [authLoading, isAuthenticated, runClaim]);
 
   const retryWithFreshToken = () => {
     // A just-verified email reaches the access token only with a new token.
@@ -144,7 +155,7 @@ export function SupplierClaimPage() {
       return (
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
           <RolesPendingPanel
-            isRetrying={claim.isPending}
+            isRetrying={claim.status === 'pending'}
             onRetry={sendClaim}
             onRenewSession={() => void renewAndContinue(target)}
           />
@@ -156,7 +167,7 @@ export function SupplierClaimPage() {
     return <ClaimLoading message={t('supplier.claim.loading')} />;
   }
 
-  if (claim.isError) {
+  if (claim.status === 'error') {
     const code = claimErrorCode(claim.error);
     const message = getProblemMessage(claim.error, t) ?? t('supplier.claim.errorGeneric');
     return (
@@ -172,7 +183,7 @@ export function SupplierClaimPage() {
         {code === 'supplier_claim_email_unverified' ? (
           <>
             <p className="text-sm text-muted-foreground">{t('supplier.claim.verifyEmailHint')}</p>
-            <Button className="w-full" disabled={claim.isPending} onClick={retryWithFreshToken}>
+            <Button className="w-full" onClick={retryWithFreshToken}>
               {t('supplier.claim.retry')}
             </Button>
           </>
@@ -188,7 +199,7 @@ export function SupplierClaimPage() {
           </Button>
         ) : null}
         {code === undefined || !KNOWN_CODES.has(code) ? (
-          <Button className="w-full" variant="outline" disabled={claim.isPending} onClick={sendClaim}>
+          <Button className="w-full" variant="outline" onClick={sendClaim}>
             {t('supplier.claim.retry')}
           </Button>
         ) : null}
