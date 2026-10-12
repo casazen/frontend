@@ -80,6 +80,7 @@
         "roleAction": "Ruolo",
         "deactivateAction": "Disattiva",
         "reactivateAction": "Riattiva",
+        "removeAction": "Rimuovi",
         "empty": "Nessun utente trovato."
       },
       "deactivateDialog": {
@@ -88,6 +89,13 @@
         "cancel": "Annulla",
         "deactivating": "Disattivazione...",
         "confirm": "Disattiva"
+      },
+      "deleteDialog": {
+        "title": "Rimuovi utente",
+        "description": "Confermi la rimozione definitiva di {{label}}? L'account non potrà più accedere a CasaZen. L'organizzazione e i suoi immobili restano. L'operazione non si può annullare.",
+        "cancel": "Annulla",
+        "removing": "Rimozione...",
+        "confirm": "Rimuovi"
       },
       "roleDialog": {
         "title": "Gestisci ruoli",
@@ -5862,6 +5870,8 @@
     "userReactivated": "Utente riattivato",
     "userReactivatedAuth0NotSynced": "Utente riattivato in CasaZen, ma Auth0 non è stato aggiornato: non potrà accedere finché non ripeti la riattivazione.",
     "userReactivateFailed": "Impossibile riattivare l'utente",
+    "userRemoved": "Utente rimosso",
+    "userRemoveFailed": "Impossibile rimuovere l'utente",
     "cinCodeUpdated": "Codice CIN aggiornato con successo",
     "cinCodeUpdateFailed": "Impossibile aggiornare il codice CIN",
     "checkInDataSaved": "Dati check-in salvati con successo",
@@ -6105,6 +6115,13 @@
       "orgSlugInvalid": "Questo indirizzo web non è valido: usa da 3 a 63 caratteri tra lettere, numeri e trattini.",
       "accountInactive": "Il tuo account è stato disattivato.",
       "cannotDeactivateSelf": "Non puoi disattivare il tuo account: chiedi a un altro amministratore.",
+      "cannotDeleteSelf": "Non puoi rimuovere il tuo account: chiedi a un altro amministratore.",
+      "cannotDeleteLastAdmin": "Non puoi rimuovere l'ultimo amministratore attivo: nomina prima un altro amministratore.",
+      "userDeleteBlocked": "Questo utente non si può rimuovere: ha ancora dati collegati. Disattivalo.",
+      "auth0ManagementNotConfigured": "Auth0 non è configurato: l'utente è ancora in CasaZen.",
+      "auth0ManagementError": "Auth0 non ha rimosso l'account: l'utente è ancora in CasaZen. Riprova.",
+      "auth0ManagementTokenFailed": "Auth0 non ha accettato la richiesta: l'utente è ancora in CasaZen. Riprova.",
+      "auth0RateLimited": "Auth0 sta limitando le richieste: l'utente è ancora in CasaZen. Riprova tra poco.",
       "lastActiveAdmin": "Non puoi disattivare l'ultimo amministratore attivo: nomina prima un altro amministratore.",
       "userInactive": "L'utente è disattivato: riattivalo prima di cambiarne il ruolo.",
       "onboardingRequired": "Completa l'attivazione dell'account: scegli il tipo di attività e accetta i documenti legali in vigore.",
