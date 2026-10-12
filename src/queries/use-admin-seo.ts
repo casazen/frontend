@@ -2,8 +2,10 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { AdminSeoApi } from '@/api/admin-seo.api';
 import type {
   ApproveSeoRevisionRequest,
+  SaveSeoDraftRequest,
   SeoGenerateRequest,
   SeoPagesQuery,
+  UpdateAiSettingsRequest,
   WithdrawSeoPageRequest,
 } from '@/types/seo.types';
 import { toast } from 'sonner';
@@ -34,6 +36,44 @@ export function useSeoComuni() {
   return useQuery({
     queryKey: [ADMIN_SEO_KEY, 'comuni'],
     queryFn: () => AdminSeoApi.listComuni(),
+  });
+}
+
+export function useAiSettings() {
+  return useQuery({
+    queryKey: [ADMIN_SEO_KEY, 'ai'],
+    queryFn: () => AdminSeoApi.getAiSettings(),
+  });
+}
+
+export function useUpdateAiSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateAiSettingsRequest) => AdminSeoApi.updateAiSettings(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY, 'ai'] });
+      toast.success(i18n.t('toast.seoAiSettingsSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.seoAiSettingsFailed'));
+    },
+  });
+}
+
+export function useSaveSeoDraft() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ pageId, body }: { pageId: string; body: SaveSeoDraftRequest }) =>
+      AdminSeoApi.saveDraft(pageId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [ADMIN_SEO_KEY] });
+      toast.success(i18n.t('toast.seoDraftSaved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.seoDraftFailed'));
+    },
   });
 }
 
