@@ -123,6 +123,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin/suppliers/invite',
       '/app/admin/invite-qr',
       '/app/admin/ai',
+      '/app/admin/demo',
       '/app/admin/profile',
     ]);
   });

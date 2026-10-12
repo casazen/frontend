@@ -719,6 +719,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/admin/admin-ltr-reference-data-page')).AdminLtrReferenceDataPage,
     }),
   },
+  {
+    path: '/app/admin/demo',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.demoEnvironment',
+    navPlacement: 'secondary',
+    navOrder: 25,
+    icon: 'Shield',
+    component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
+  },
   // ============================================================
   // Supplier console
   // ============================================================
