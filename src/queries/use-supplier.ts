@@ -9,8 +9,10 @@ import {
   fetchCalendarSyncStatus,
   fetchSupplierActivation,
   fetchSupplierShowcasePreview,
+  fetchSupplierAgendaCalendar,
   fetchSupplierAvailability,
   fetchSupplierDashboard,
+  fetchSupplierHours,
   fetchSupplierInbox,
   fetchSupplierInboxItem,
   fetchSupplierKpis,
@@ -22,6 +24,7 @@ import {
   registerSupplier,
   resendSupplierInvite,
   revokeSupplierInvite,
+  saveSupplierHours,
   setIcalFeed,
   suspendSupplier,
   syncSupplierCalendarNow,
@@ -33,6 +36,7 @@ import type { SupplierRegisterPayload } from '@/services/supplier-api';
 import type { AdminInvitesParams, AdminSuppliersParams } from '@/types/admin-suppliers';
 import type {
   CalendarSyncStatus,
+  SupplierAgendaHoursDay,
   SupplierInboxParams,
   SupplierKpiPeriod,
   UpdateAvailabilityEntry,
@@ -146,12 +150,40 @@ export function useSupplierAvailability(from: string, to: string) {
   });
 }
 
+/** Agenda (hours, closed days, calendar events, requests) for the availability page. */
+export function useSupplierAgendaCalendar(from: string, to: string) {
+  return useQuery({
+    queryKey: ['supplier', 'agenda', from, to],
+    queryFn: () => fetchSupplierAgendaCalendar(from, to),
+  });
+}
+
+export function useSupplierHours() {
+  return useQuery({
+    queryKey: ['supplier', 'hours'],
+    queryFn: fetchSupplierHours,
+  });
+}
+
+export function useSaveSupplierHours() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (days: SupplierAgendaHoursDay[]) => saveSupplierHours(days),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'hours'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'agenda'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+    },
+  });
+}
+
 export function useUpdateSupplierAvailability() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dates: UpdateAvailabilityEntry[]) => updateSupplierAvailability(dates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'agenda'] });
     },
   });
 }
@@ -296,6 +328,7 @@ export function useCalendarSyncStatus() {
       const next = await fetchCalendarSyncStatus();
       if (previous?.lastSyncStatus === 'Syncing' && next.lastSyncStatus !== 'Syncing') {
         void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+        void queryClient.invalidateQueries({ queryKey: ['supplier', 'agenda'] });
         void queryClient.invalidateQueries({ queryKey: ['supplier', 'dashboard'] });
       }
       return next;

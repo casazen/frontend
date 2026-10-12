@@ -15,12 +15,30 @@ const supplier = vi.hoisted(() => ({
   updateProfile: vi.fn(),
   uploadPhotos: vi.fn(),
 }));
+const hoursPayload = vi.hoisted(() => ({
+  days: [
+    { weekday: 'Monday', bands: [{ startMinute: 540, endMinute: 1080 }] },
+    { weekday: 'Tuesday', bands: [] },
+    { weekday: 'Wednesday', bands: [] },
+    { weekday: 'Thursday', bands: [] },
+    { weekday: 'Friday', bands: [] },
+    { weekday: 'Saturday', bands: [] },
+    { weekday: 'Sunday', bands: [] },
+  ],
+  configuredAt: '2026-10-01T10:00:00Z',
+}));
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
 vi.mock('@/queries/use-supplier', () => ({
   useSupplierProfile: () => supplier.query ?? { data: supplier.profile, isLoading: false },
   useUpdateSupplierProfile: () => ({ mutateAsync: supplier.updateProfile, isPending: false }),
   useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false }),
+  useSupplierHours: () => ({
+    data: hoursPayload,
+    isLoading: false,
+    isError: false,
+  }),
+  useSaveSupplierHours: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/queries/use-service-categories', () => ({ useServiceCategories: () => ({ data: undefined }) }));
 vi.mock('@/features/service-requests/components/service-category-picker', () => ({
