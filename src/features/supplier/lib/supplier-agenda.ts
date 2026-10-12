@@ -20,16 +20,6 @@ export const WEEKDAYS = [
 
 export type WeekdayName = (typeof WEEKDAYS)[number];
 
-const WEEKDAY_INDEX: Record<WeekdayName, number> = {
-  Monday: 0,
-  Tuesday: 1,
-  Wednesday: 2,
-  Thursday: 3,
-  Friday: 4,
-  Saturday: 5,
-  Sunday: 6,
-};
-
 /** Minutes after midnight (0–1440) as `HH:mm` on the Rome wall clock. */
 export function minutesToHm(minutes: number): string {
   if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return '';
@@ -218,8 +208,4 @@ export function buildWorkingDays(input: {
 
 export function emptyWeekHours(): SupplierAgendaHoursDay[] {
   return WEEKDAYS.map((weekday) => ({ weekday, bands: [] }));
-}
-
-export function weekdayIndex(weekday: WeekdayName): number {
-  return WEEKDAY_INDEX[weekday];
 }
