@@ -38,6 +38,8 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 
 const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 
+const WIZARD_STEPS: WizardStep[] = ['role', 'consents'];
+
 /** 422 code of `PUT /users/onboarding` from a user without org and without consents (backend A1-01). */
 const CONSENTS_REQUIRED_CODE = 'consents_required';
 
@@ -295,11 +297,43 @@ export function OnboardingPage() {
         ? t('onboarding.consentsRenewalDescription')
         : t('onboarding.consentsDescription');
 
+  const showStepper = !isEditMode && !renewsConsents;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
       <div className="mx-auto max-w-5xl space-y-10 text-center">
         <div className="space-y-3">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">{t('onboarding.casaZen')}</p>
+          {showStepper ? (
+            <>
+              <p className="text-sm text-muted-foreground" data-testid="onboarding-step-of">
+                {t('onboarding.stepOf', {
+                  current: WIZARD_STEPS.indexOf(step) + 1,
+                  total: WIZARD_STEPS.length,
+                })}
+              </p>
+              <ol
+                className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm"
+                aria-label={t('onboarding.stepsLabel')}
+                data-testid="onboarding-steps"
+              >
+                {WIZARD_STEPS.map((wizardStep, index) => {
+                  const current = wizardStep === step;
+                  const done = WIZARD_STEPS.indexOf(step) > index;
+                  return (
+                    <li
+                      key={wizardStep}
+                      aria-current={current ? 'step' : undefined}
+                      className={current ? 'font-semibold text-foreground' : done ? 'text-primary' : 'text-muted-foreground'}
+                    >
+                      <span className="mr-1">{index + 1}.</span>
+                      {t(`onboarding.steps.${wizardStep}`)}
+                    </li>
+                  );
+                })}
+              </ol>
+            </>
+          ) : null}
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
           <p className="text-muted-foreground">{subheading}</p>
         </div>

@@ -16,16 +16,16 @@ test.describe('Role-based onboarding (#198)', () => {
     await page.goto(demoUrl('/', 'onboarding'));
 
     await expect(page).toHaveURL(/\/onboarding/, { timeout: 15_000 });
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
   });
 
   test('AC2 onboarding shows three rental type cards', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
-    await expect(page.getByText('Affitti brevi')).toBeVisible();
-    await expect(page.getByText('Locazioni di lungo periodo')).toBeVisible();
-    await expect(page.getByText('Entrambi')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Affitti brevi' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Locazioni di lungo periodo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Entrambi' })).toBeVisible();
   });
 
   test('AC3 short-term choice navigates to short-rent home', async ({ page }) => {
@@ -64,13 +64,13 @@ test.describe('Persistent onboarding completion (#277)', () => {
     await page.goto(demoUrl('/onboarding', 'short-stay'));
 
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).not.toBeVisible();
   });
 
   test('AC3 user without completion sees onboarding on first visit', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
   });
 
   test('AC4 edit mode only accessible after onboarding completed', async ({ page }) => {

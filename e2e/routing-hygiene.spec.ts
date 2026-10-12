@@ -63,7 +63,7 @@ test.describe('Routing hygiene and app-ready (UI-00)', () => {
       await page.goto(demoUrl('/onboarding', 'onboarding'), { waitUntil: 'domcontentloaded' });
 
       await waitForAppReady(page);
-      await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
       await expect(page.getByTestId('app-ready')).toHaveCount(0);
     });
   });

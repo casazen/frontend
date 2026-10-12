@@ -49,6 +49,42 @@ function StateIcon({ state }: { state: ActivationStepState }) {
   }
 }
 
+/** The step the host should do now: the first one that is open and not waiting on another step. */
+function nextActionableStep(steps: ActivationStep[]): ActivationStep | null {
+  const open = steps.filter((step) => step.state !== 'done');
+  return open.find((step) => step.state !== 'blocked') ?? open[0] ?? null;
+}
+
+function NextStep({ step, index, total }: { step: ActivationStep; index: number; total: number }) {
+  const { t, i18n } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const route = activationStepRoute(step, hasPermission);
+  const title = t(`activation.steps.${step.key}.title`);
+
+  return (
+    <div
+      className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-left"
+      data-testid="activation-next-step"
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-primary">{t('activation.next.kicker')}</p>
+      <p className="mt-1 text-base font-semibold">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {activationStepDetail(step, t, (key) => i18n.exists(key))}
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {t('activation.next.position', { current: index, total })}
+      </p>
+      {route ? (
+        <Button className="mt-3" asChild>
+          <Link to={route} data-testid="activation-next-step-cta">
+            {t(activationStepCtaKey(step))}
+          </Link>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 function StepRow({ step }: { step: ActivationStep }) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -134,6 +170,8 @@ export function ActivationChecklist() {
 
   const done = steps.filter((step) => step.state === 'done').length;
   const percent = Math.round((done / steps.length) * 100);
+  const next = nextActionableStep(steps);
+  const nextIndex = next ? steps.findIndex((step) => step.key === next.key) + 1 : 0;
 
   return (
     <Card data-testid="activation-checklist" aria-busy={status.isFetching || undefined}>
@@ -143,7 +181,7 @@ export function ActivationChecklist() {
           {t('activation.title')}
         </CardTitle>
         <CardDescription data-testid="activation-checklist-progress">
-          {t('activation.progress', { count: done, total: steps.length })}
+          {t('activation.next.intro')} {t('activation.progress', { count: done, total: steps.length })}
         </CardDescription>
         <div
           role="progressbar"
@@ -156,7 +194,8 @@ export function ActivationChecklist() {
           <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percent}%` }} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {next ? <NextStep step={next} index={nextIndex} total={steps.length} /> : null}
         <ol className="space-y-2">
           {steps.map((step) => (
             <StepRow key={step.key} step={step} />

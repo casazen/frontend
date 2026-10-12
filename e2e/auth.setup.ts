@@ -30,7 +30,7 @@ async function completeOnboardingIfNeeded(
   await page.goto('/app/short-rent');
   await page.waitForLoadState('domcontentloaded');
 
-  const wizard = page.getByRole('heading', { name: /Come vuoi usare CasaZen/i });
+  const wizard = page.getByRole('heading', { name: /Da dove vuoi iniziare/i });
   if (!(await wizard.isVisible({ timeout: 10_000 }).catch(() => false))) {
     return;
   }

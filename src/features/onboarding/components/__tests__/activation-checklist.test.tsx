@@ -129,6 +129,12 @@ describe('ActivationChecklist (PL-15, PLG-AC10)', () => {
     expect(screen.getByTestId('activation-step-sitePublished-state')).toHaveTextContent('In attesa');
     // The state is also a label, not only an icon or a color.
     expect(screen.getByTestId('activation-step-account-state')).toHaveTextContent('Completato');
+    const next = screen.getByTestId('activation-next-step');
+    expect(next).toHaveTextContent('Nome e indirizzo dell\'organizzazione');
+    expect(within(next).getByTestId('activation-next-step-cta')).toHaveAttribute(
+      'href',
+      '/app/short-rent/settings/organization',
+    );
   });
 
   it('ActivationChecklist_StripeStartedButChargesOff_IsInProgressNotDone', async () => {

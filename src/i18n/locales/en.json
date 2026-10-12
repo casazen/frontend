@@ -552,6 +552,24 @@
     "loading": "Loading leases...",
     "emptyTitle": "No leases yet",
     "emptyDescription": "Create your first long-term lease contract.",
+    "guide": {
+      "intro": "Three steps, in order. A contract can be saved only after you add the property and upload its energy certificate.",
+      "property": {
+        "title": "Add the property",
+        "description": "Name, address and details of the home you rent out.",
+        "cta": "Add the property"
+      },
+      "ape": {
+        "title": "Upload the energy certificate",
+        "description": "Open the property and upload its energy performance certificate. Without it the contract cannot be saved.",
+        "cta": "Go to properties"
+      },
+      "lease": {
+        "title": "Create the contract",
+        "description": "Choose the property, who signs and the monthly rent.",
+        "cta": "Create the contract"
+      }
+    },
     "loadError": "Failed to load leases. Please try again.",
     "rentLabel": "Rent ",
     "regimeLabel": "Regime ",
@@ -5136,6 +5154,11 @@
   },
   "activation": {
     "title": "Activate your booking site",
+    "next": {
+      "kicker": "Next step",
+      "intro": "Do one step at a time.",
+      "position": "Step {{current}} of {{total}}"
+    },
     "progress_one": "{{count}} of {{total}} step completed",
     "progress_other": "{{count}} of {{total}} steps completed",
     "progressLabel": "Activation progress",
@@ -5215,10 +5238,17 @@
   },
   "onboarding": {
     "casaZen": "CasaZen",
-    "howToUse": "How do you want to use CasaZen?",
+    "howToUse": "Where do you want to start?",
     "editOperatorType": "Edit operator type",
     "acceptLegalDocs": "Accept legal documents",
-    "roleDescription": "Choose how you work: we take you straight to your first property.",
+    "stepsLabel": "Sign-up steps",
+    "stepOf": "Step {{current}} of {{total}}",
+    "steps": {
+      "role": "How you use CasaZen",
+      "consents": "Documents"
+    },
+    "then": "Then, in order",
+    "roleDescription": "Pick one path. After the documents we take you to the first thing to do in the app.",
     "editRoleDescription": "Choose the new operator type and save. The plan does not change here: once saved, the plan page opens, where you can manage it.",
     "consentsDescription": "Last step: to activate your account we need the ToS, privacy notice, DPA and the list of subprocessors.",
     "consentsRenewalTitle": "Legal documents updated",
@@ -5234,11 +5264,28 @@
     "cancel": "Cancel",
     "retry": "Retry",
     "shortTermTitle": "Short-term rentals",
-    "shortTermDescription": "Manage short-stay bookings on Airbnb, Booking.com and others",
+    "shortTermDescription": "Homes rented by the night or the week, with a site where guests book.",
     "longTermTitle": "Long-term rentals",
-    "longTermDescription": "Manage lease contracts, RLI registration, flat-rate tax",
+    "longTermDescription": "Homes rented for months or years, with a contract and the property documents.",
     "bothTitle": "Both",
-    "bothDescription": "Access both sections with quick switcher",
+    "bothDescription": "Short stays and lease contracts, with the same account.",
+    "paths": {
+      "short": {
+        "property": "Add the home",
+        "payments": "Enter the CIN and connect payments",
+        "share": "Publish the site and share the link"
+      },
+      "long": {
+        "property": "Add the property",
+        "ape": "Upload the energy certificate",
+        "lease": "Create the first contract"
+      },
+      "both": {
+        "start": "Open the area you want to start with",
+        "finish": "Finish the steps of that area",
+        "switch": "Switch to the other area whenever you want"
+      }
+    },
     "legalDocuments": "Legal documents",
     "loadingLegalDocs": "Loading legal documents...",
     "cannotLoadLegalDocs": "Unable to load the legal documents. Please try again shortly.",
@@ -5478,6 +5525,15 @@
     "title": "Sign up to CasaZen",
     "redirecting": "Taking you to the signup…",
     "continue": "Continue to sign up"
+  },
+  "emailVerified": {
+    "title": "Email confirmed",
+    "description": "Your address is verified. Sign in: we will walk you through the first steps.",
+    "unknownTitle": "Email verification",
+    "unknownDescription": "If you just confirmed your email, sign in. If you saw an error instead, ask for a new link from the sign-in screen.",
+    "failedTitle": "Email not verified",
+    "failedDescription": "The link was already used, it expired, or the return page is not an allowed address. If the email is already confirmed, sign in. Otherwise ask for a new message from the sign-in screen.",
+    "signIn": "Sign in"
   },
   "notFound": {
     "title": "Page not found",

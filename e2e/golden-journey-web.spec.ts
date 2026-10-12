@@ -33,7 +33,7 @@ test.describe('Golden Journey web (#301)', () => {
 
     // Step 3: host onboarding → consents → plan → short-rent
     await page.goto(demoUrl('/onboarding', 'onboarding'));
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
     await page.getByRole('button', { name: 'Scegli' }).first().click();
 
     const consents = page.getByTestId('onboarding-consents-step');

@@ -75,6 +75,19 @@ describe('LeasesPage', () => {
     expect(await screen.findByText('Nessun contratto')).toBeInTheDocument();
     expect(screen.queryByTestId('leases-load-error')).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Nuovo contratto' }).length).toBeGreaterThan(0);
+    const guide = screen.getByTestId('long-rent-start-guide');
+    expect(within(guide).getByRole('link', { name: 'Aggiungi l\'immobile' })).toHaveAttribute(
+      'href',
+      '/app/long-rent/properties/new',
+    );
+    expect(within(guide).getByRole('link', { name: 'Vai agli immobili' })).toHaveAttribute(
+      'href',
+      '/app/long-rent/properties',
+    );
+    expect(within(guide).getByRole('link', { name: 'Crea il contratto' })).toHaveAttribute(
+      'href',
+      '/app/long-rent/leases/new',
+    );
   });
 
   it('render_HtmlFallbackBody_ShowsLoadErrorInsteadOfCrashing', async () => {

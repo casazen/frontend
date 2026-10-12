@@ -26,7 +26,7 @@ export async function pickComune(page: Page, inputSelector: string, name: string
 
 /** Onboarding wizard as a new host sees it: operator type, then the consents (no plan step: the org starts on Starter). */
 export async function completeHostOnboarding(page: Page): Promise<void> {
-  await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Scegli' }).first().click(); // "Affitti brevi"
   const consents = page.getByTestId('onboarding-consents-step');
   await expect(consents).toBeVisible({ timeout: 20_000 });

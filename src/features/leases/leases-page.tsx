@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, FileText, Plus } from 'lucide-react';
+import { LONG_RENT_PROPERTIES_PATH, LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
 import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -13,6 +14,36 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
 import type { LeaseSummary } from '@/types';
+
+const START_STEPS = [
+  { key: 'property', href: LONG_RENT_PROPERTY_CREATE_PATH },
+  { key: 'ape', href: LONG_RENT_PROPERTIES_PATH },
+  { key: 'lease', href: '/app/long-rent/leases/new' },
+] as const;
+
+/** First visit with no contracts: the three steps, in order, instead of a single "create" button. */
+function LongRentStartGuide() {
+  const { t } = useTranslation();
+
+  return (
+    <ol className="mx-auto grid max-w-2xl gap-3 text-left" data-testid="long-rent-start-guide">
+      {START_STEPS.map((step, index) => (
+        <li key={step.key} className="flex gap-3 rounded-lg border bg-card p-4">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+            {index + 1}
+          </span>
+          <div className="min-w-0 space-y-1">
+            <p className="font-medium">{t(`leases.guide.${step.key}.title`)}</p>
+            <p className="text-sm text-muted-foreground">{t(`leases.guide.${step.key}.description`)}</p>
+            <Button variant={index === 0 ? 'default' : 'outline'} size="sm" asChild>
+              <Link to={step.href}>{t(`leases.guide.${step.key}.cta`)}</Link>
+            </Button>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 function getPropertyLabel(lease: LeaseSummary): string {
   return lease.property?.name ?? lease.propertyId.slice(0, 8);
@@ -66,15 +97,18 @@ export function LeasesPage() {
       <LongRentGuide />
 
       {leases.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title={t('leases.emptyTitle')}
-          description={t('leases.emptyDescription')}
-          action={{
-            label: t('leases.createLease'),
-            onClick: goToCreate,
-          }}
-        />
+        <div className="space-y-6">
+          <EmptyState
+            icon={FileText}
+            title={t('leases.emptyTitle')}
+            description={t('leases.guide.intro')}
+            action={{
+              label: t('leases.guide.property.cta'),
+              href: LONG_RENT_PROPERTY_CREATE_PATH,
+            }}
+          />
+          <LongRentStartGuide />
+        </div>
       ) : (
         <div className="grid gap-4">
           {leases.map((lease) => (

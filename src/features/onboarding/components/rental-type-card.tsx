@@ -29,6 +29,13 @@ const CARD_META: Record<RentalType, CardMetaEntry> = {
   },
 };
 
+/** What the host does after this choice, in order. Keys of `onboarding.paths.*`. */
+const PATH_STEPS: Record<RentalType, readonly string[]> = {
+  ShortTerm: ['onboarding.paths.short.property', 'onboarding.paths.short.payments', 'onboarding.paths.short.share'],
+  LongTerm: ['onboarding.paths.long.property', 'onboarding.paths.long.ape', 'onboarding.paths.long.lease'],
+  Both: ['onboarding.paths.both.start', 'onboarding.paths.both.finish', 'onboarding.paths.both.switch'],
+};
+
 interface RentalTypeCardProps {
   rentalType: RentalType;
   onSelect: (rentalType: RentalType) => void;
@@ -56,7 +63,15 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
         <CardTitle>{t(meta.titleKey)}</CardTitle>
         <CardDescription>{t(meta.descriptionKey)}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('onboarding.then')}</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-4 text-sm text-muted-foreground">
+            {PATH_STEPS[rentalType].map((key) => (
+              <li key={key}>{t(key)}</li>
+            ))}
+          </ol>
+        </div>
         <Button
           type="button"
           className="w-full"

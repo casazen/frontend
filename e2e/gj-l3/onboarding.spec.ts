@@ -136,7 +136,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await signInAtIdp(page, email);
 
       // Screen 1: only the choice of the host. The supplier is a quiet line, not a card that competes.
-      await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
       await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
       await expect(page.getByRole('heading', { name: /Sono un fornitore/i })).toHaveCount(0);
       await expectNoHorizontalOverflow(page, 'onboarding choice');
@@ -199,7 +199,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto(entry.host);
       await signInAtIdp(page, email);
 
-      await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
       await page.getByRole('button', { name: 'Scegli' }).nth(1).click(); // "Locazioni di lungo periodo"
       await acceptConsents(page);
 
@@ -321,7 +321,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto('/login');
       await page.getByRole('button', { name: /accedi|sign in|log in|login/i }).first().click();
       await signInAtIdp(page, `lost-${unique()}@example.test`);
-      await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
       await page.getByTestId('onboarding-supplier-register').click();
       await expect(page).toHaveURL(/\/register$/);
       await expect(page.locator('#legalName')).toBeVisible();
