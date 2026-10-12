@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,17 +13,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useApproveSeoRevision, useSeoPageDetail } from '@/queries/use-admin-seo';
+import { useApproveSeoRevision, useGenerateSeoPages, useSaveSeoDraft, useSeoPageDetail } from '@/queries/use-admin-seo';
 import { AiContentNotice } from '@/components/shared/ai-content-notice';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { formatDateTime } from '@/lib/utils';
 import type { SeoReviewEvent, SeoRevisionPreview } from '@/types/seo.types';
-import { contentStatusKey, isPublishableContent, SEO_REVIEW_NOTE_MAX_LENGTH } from './seo-review-helpers';
+import { contentStatusKey, isAiWrittenContent, isPublishableContent, SEO_REVIEW_NOTE_MAX_LENGTH } from './seo-review-helpers';
 
 interface SeoReviewDialogProps {
   /** Page under review; null closes the dialog. Mount it with `key={pageId}` so the form restarts for each page. */
   pageId: string | null;
   onClose: () => void;
+  /** Closes the dialog and moves the SEO page to the AI provider form. */
+  onConfigureAi?: () => void;
 }
 
 /**
@@ -30,16 +33,60 @@ interface SeoReviewDialogProps {
  * page shows them (sanitized), the review history, and the approval of the exact revision read, with an explicit legal
  * review confirmation and an optional note kept in the audit.
  */
-export function SeoReviewDialog({ pageId, onClose }: SeoReviewDialogProps) {
+export function SeoReviewDialog({ pageId, onClose, onConfigureAi }: SeoReviewDialogProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError } = useSeoPageDetail(pageId);
   const approveMutation = useApproveSeoRevision();
+  const generateMutation = useGenerateSeoPages();
+  const saveDraft = useSaveSeoDraft();
   const [confirmed, setConfirmed] = useState(false);
   const [note, setNote] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [draftBody, setDraftBody] = useState('');
+  const [draftTitle, setDraftTitle] = useState('');
+  const [draftMeta, setDraftMeta] = useState('');
 
   const pending = data?.pendingRevision ?? null;
   const pendingPublishable = pending !== null && isPublishableContent(pending.contentStatus);
-  const canApprove = pendingPublishable && confirmed && !approveMutation.isPending;
+  const canApprove = pendingPublishable && confirmed && !editing && !approveMutation.isPending;
+
+  useEffect(() => {
+    setConfirmed(false);
+    setNote('');
+  }, [pending?.id]);
+
+  function openEditor() {
+    setDraftBody(pending?.bodyHtml || data?.publishedRevision?.bodyHtml || '');
+    setDraftTitle(data?.page.title ?? '');
+    setDraftMeta('');
+    setEditing(true);
+  }
+
+  function handleRegenerate() {
+    if (!data) return;
+    generateMutation.mutate({
+      comuneCodes: [data.page.comuneCode],
+      pageTypes: [data.page.pageType],
+      forceRegenerate: true,
+    });
+  }
+
+  function handleSaveDraft() {
+    if (!data) return;
+    const title = draftTitle.trim();
+    const meta = draftMeta.trim();
+    saveDraft.mutate(
+      {
+        pageId: data.page.id,
+        body: {
+          bodyHtml: draftBody,
+          ...(title ? { title } : {}),
+          ...(meta ? { metaDescription: meta } : {}),
+        },
+      },
+      { onSuccess: () => setEditing(false) },
+    );
+  }
 
   function handleApprove() {
     if (!data || !pending) return;
@@ -94,6 +141,42 @@ export function SeoReviewDialog({ pageId, onClose }: SeoReviewDialogProps) {
               </p>
             )}
 
+            {editing && (
+              <div className="space-y-3 rounded-md border p-4" data-testid="seo-draft-editor">
+                <p className="text-sm text-muted-foreground">{t('admin.seo.review.draftHelp')}</p>
+                <div className="space-y-1">
+                  <Label htmlFor="seo-draft-title">{t('admin.seo.review.draftTitle')}</Label>
+                  <Input
+                    id="seo-draft-title"
+                    value={draftTitle}
+                    maxLength={300}
+                    onChange={(event) => setDraftTitle(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="seo-draft-meta">{t('admin.seo.review.draftMeta')}</Label>
+                  <Input
+                    id="seo-draft-meta"
+                    value={draftMeta}
+                    maxLength={500}
+                    placeholder={t('admin.seo.review.draftMetaPlaceholder')}
+                    onChange={(event) => setDraftMeta(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="seo-draft-body">{t('admin.seo.review.draftBody')}</Label>
+                  <Textarea
+                    id="seo-draft-body"
+                    value={draftBody}
+                    maxLength={100000}
+                    rows={12}
+                    onChange={(event) => setDraftBody(event.target.value)}
+                    data-testid="seo-draft-body"
+                  />
+                </div>
+              </div>
+            )}
+
             {pendingPublishable && (
               <div className="space-y-3 rounded-md border p-4">
                 {data.page.counselRequired && (
@@ -133,7 +216,36 @@ export function SeoReviewDialog({ pageId, onClose }: SeoReviewDialogProps) {
           <Button variant="outline" onClick={onClose}>
             {t('admin.seo.review.close')}
           </Button>
-          {pendingPublishable && (
+          {data && !pendingPublishable && onConfigureAi && (
+            <Button variant="outline" onClick={onConfigureAi} data-testid="seo-review-configure-ai">
+              {t('admin.seo.review.configureAi')}
+            </Button>
+          )}
+          {data && (
+            <Button
+              variant="outline"
+              onClick={() => (editing ? setEditing(false) : openEditor())}
+              data-testid="seo-review-edit"
+            >
+              {editing ? t('admin.seo.review.draftCancel') : t('admin.seo.review.edit')}
+            </Button>
+          )}
+          {editing && (
+            <Button onClick={handleSaveDraft} disabled={saveDraft.isPending || draftBody.trim().length === 0} data-testid="seo-draft-save">
+              {t('admin.seo.review.draftSave')}
+            </Button>
+          )}
+          {data && !editing && (
+            <Button
+              variant={pendingPublishable ? 'outline' : 'default'}
+              onClick={handleRegenerate}
+              disabled={generateMutation.isPending}
+              data-testid="seo-review-regenerate"
+            >
+              {t('admin.seo.review.regenerate')}
+            </Button>
+          )}
+          {pendingPublishable && !editing && (
             <Button onClick={handleApprove} disabled={!canApprove} data-testid="seo-review-approve">
               {t('admin.seo.review.approve')}
             </Button>
@@ -173,7 +285,7 @@ function RevisionPanel({ heading, revision, published, emptyText, testId }: Revi
           {revision.bodyHtml ? (
             <>
               {/* Only a text a model really wrote carries the notice: a "not generated" state has none to show. */}
-              <AiContentNotice visible={isPublishableContent(revision.contentStatus)} kind={published ? 'seo' : 'draft'} />
+              <AiContentNotice visible={isAiWrittenContent(revision.contentStatus)} kind={published ? 'seo' : 'draft'} />
               <article
                 className="prose prose-sm prose-neutral max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(revision.bodyHtml) }}

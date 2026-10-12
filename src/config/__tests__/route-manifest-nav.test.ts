@@ -122,6 +122,7 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(paths(getSecondaryNavEntries('admin', allowAll))).toEqual([
       '/app/admin/suppliers/invite',
       '/app/admin/invite-qr',
+      '/app/admin/ai',
       '/app/admin/profile',
     ]);
   });

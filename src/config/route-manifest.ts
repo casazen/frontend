@@ -627,6 +627,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/jobs'],
   },
   {
+    path: '/app/admin/ai',
+    context: 'admin',
+    requiredPermissions: ['admin.seo.read'],
+    navKey: 'nav.ai',
+    navPlacement: 'secondary',
+    navOrder: 23,
+    icon: 'Sparkles',
+    component: async () => ({ default: (await import('@/features/admin/admin-ai-page')).AdminAiPage }),
+    legacyPaths: ['/admin/ai'],
+  },
+  {
     path: '/app/admin/seo',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],

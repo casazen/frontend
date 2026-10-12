@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
@@ -18,6 +19,9 @@ vi.mock('@/api/admin-seo.api', () => ({
     approveRevision: vi.fn(),
     withdrawPage: vi.fn(),
     getBudget: vi.fn(),
+    getAiSettings: vi.fn(),
+    updateAiSettings: vi.fn(),
+    saveDraft: vi.fn(),
     listComuni: vi.fn(),
     getTopComuni: vi.fn(),
   },
@@ -123,7 +127,9 @@ function problemError(status: number, data: object): AxiosError {
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(createElement(QueryClientProvider, { client }, createElement(SeoDashboardPage)));
+  return render(
+    createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(SeoDashboardPage))),
+  );
 }
 
 function dialog() {
@@ -135,6 +141,16 @@ describe('SeoDashboardPage', () => {
     vi.clearAllMocks();
     await i18n.changeLanguage('it');
     vi.mocked(AdminSeoApi.listPages).mockResolvedValue(pagesResult([como, roma]));
+    vi.mocked(AdminSeoApi.getAiSettings).mockResolvedValue({
+      provider: 'Stub',
+      externalActive: false,
+      apiKeyConfigured: false,
+      apiKeyHint: null,
+      model: 'deepseek-v4-flash',
+      baseUrl: 'https://api.deepseek.com',
+      source: 'environment',
+      hasStoredKey: false,
+    });
     vi.mocked(AdminSeoApi.getBudget).mockResolvedValue({
       monthlyTokenCap: 500000,
       tokensUsedThisMonth: 1200,
@@ -323,5 +339,52 @@ describe('SeoDashboardPage', () => {
     const request = vi.mocked(AdminSeoApi.generatePages).mock.calls[0][0];
     expect(request).toEqual({ comuneCodes: [], pageTypes: ['ComplianceGuide', 'TouristTaxCalc'], forceRegenerate: false });
     expect(request).not.toHaveProperty('autoApproveCounsel');
+  });
+
+  it('aiSettings_Stub_ShowsTheProviderForm', async () => {
+    renderPage();
+
+    expect(await screen.findByTestId('seo-ai-settings-status')).toHaveTextContent('Nessun provider esterno attivo');
+    expect(screen.getByTestId('seo-ai-settings-link')).toHaveAttribute('href', '/app/admin/ai');
+  });
+
+  it('review_ContentNotGenerated_CanConfigureAiRegenerateOrWrite', async () => {
+    vi.mocked(AdminSeoApi.generatePages).mockResolvedValue({
+      jobId: 'job-roma',
+      enqueuedAt: '2026-09-25T08:00:00Z',
+      comuneCount: 1,
+      estimatedPages: 1,
+    });
+    vi.mocked(AdminSeoApi.getPage).mockResolvedValue({
+      page: roma,
+      pendingRevision: {
+        id: 'rev-roma',
+        generatedAt: '2026-09-20T08:00:00Z',
+        contentStatus: 'Placeholder',
+        promptVersion: null,
+        sourceDataVersion: 'v1',
+        bodyHtml: '<p>Como: contenuto generato per affitti brevi.</p>',
+      },
+      publishedRevision: null,
+      reviewHistory: [],
+    });
+    renderPage();
+    fireEvent.click(await screen.findByTestId('seo-review-page-roma'));
+
+    expect(await screen.findByTestId('seo-review-not-publishable')).toBeInTheDocument();
+    fireEvent.click(dialog().getByTestId('seo-review-regenerate'));
+    await waitFor(() =>
+      expect(AdminSeoApi.generatePages).toHaveBeenCalledWith({
+        comuneCodes: ['058091'],
+        pageTypes: ['ComplianceGuide'],
+        forceRegenerate: true,
+      }),
+    );
+
+    fireEvent.click(dialog().getByTestId('seo-review-edit'));
+    expect(dialog().getByTestId('seo-draft-editor')).toBeInTheDocument();
+    fireEvent.click(dialog().getByTestId('seo-review-configure-ai'));
+    await waitFor(() => expect(screen.queryByTestId('seo-review-dialog')).not.toBeInTheDocument());
+    expect(screen.getByTestId('seo-ai-settings-card')).toBeInTheDocument();
   });
 });

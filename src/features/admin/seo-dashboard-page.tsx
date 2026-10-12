@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
@@ -21,6 +22,7 @@ import {
 import type { LegalReviewStatus, SeoPageAdmin } from '@/types/seo.types';
 import { SeoLatestRevisionStatus, SeoPublicationBadge } from './components/seo-status';
 import { SEO_PAGE_TYPE_KEY } from './components/seo-review-helpers';
+import { SeoAiSettingsCard } from './components/seo-ai-settings-card';
 import { SeoReviewDialog } from './components/seo-review-dialog';
 import { SeoTopComuniWidget } from './components/seo-top-comuni-widget';
 import { SeoWithdrawDialog } from './components/seo-withdraw-dialog';
@@ -37,6 +39,7 @@ type StatusFilter = '' | LegalReviewStatus;
  */
 export function SeoDashboardPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<StatusFilter>('');
   const { data, isLoading, isError, isPlaceholderData } = useSeoPages({
@@ -78,6 +81,8 @@ export function SeoDashboardPage() {
           </Button>
         }
       />
+
+      <SeoAiSettingsCard />
 
       <Card data-testid="seo-ai-budget-card">
         <CardHeader>
@@ -228,7 +233,15 @@ export function SeoDashboardPage() {
         </CardContent>
       </Card>
 
-      <SeoReviewDialog key={reviewPageId ?? 'none'} pageId={reviewPageId} onClose={() => setReviewPageId(null)} />
+      <SeoReviewDialog
+        key={reviewPageId ?? 'none'}
+        pageId={reviewPageId}
+        onClose={() => setReviewPageId(null)}
+        onConfigureAi={() => {
+          setReviewPageId(null);
+          navigate('/app/admin/ai');
+        }}
+      />
       <SeoWithdrawDialog key={withdrawPage?.id ?? 'none'} page={withdrawPage} onClose={() => setWithdrawPage(null)} />
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>

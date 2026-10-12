@@ -1,7 +1,9 @@
 import { ApiClient } from '@/api/client';
 import type {
   ApproveSeoRevisionRequest,
+  AiAdminSettings,
   PlatformAiBudget,
+  SaveSeoDraftRequest,
   SeoComuneRegistryItem,
   SeoGenerateAccepted,
   SeoGenerateRequest,
@@ -10,6 +12,7 @@ import type {
   SeoPagesPagedResult,
   SeoPagesQuery,
   SeoTopComuniResponse,
+  UpdateAiSettingsRequest,
   WithdrawSeoPageRequest,
 } from '@/types/seo.types';
 
@@ -44,6 +47,15 @@ export const AdminSeoApi = {
 
   getBudget: (): Promise<PlatformAiBudget> =>
     ApiClient.get<PlatformAiBudget>('/admin/seo/budget'),
+
+  getAiSettings: (): Promise<AiAdminSettings> =>
+    ApiClient.get<AiAdminSettings>('/admin/seo/ai'),
+
+  updateAiSettings: (body: UpdateAiSettingsRequest): Promise<AiAdminSettings> =>
+    ApiClient.put<AiAdminSettings>('/admin/seo/ai', body),
+
+  saveDraft: (pageId: string, body: SaveSeoDraftRequest): Promise<SeoPageAdminDetail> =>
+    ApiClient.post<SeoPageAdminDetail>(`/admin/seo/pages/${pageId}/draft`, body),
 
   listComuni: (): Promise<SeoComuneRegistryItem[]> =>
     ApiClient.get<SeoComuneRegistryItem[]>('/admin/seo/comuni'),
