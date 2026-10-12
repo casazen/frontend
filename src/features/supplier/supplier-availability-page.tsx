@@ -122,7 +122,16 @@ export function SupplierAvailabilityPage() {
   }
 
   if (availabilityQuery.isLoading || agendaQuery.isLoading || !agendaQuery.data) {
-    return <LoadingScreen message={t('supplier.availabilityLoading')} className="h-auto flex-1" />;
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title={t('supplier.availabilityTitle')}
+          description={t('supplier.availabilityDescription')}
+          action={<NavChildLinks parentPath="/app/supplier/availability" />}
+        />
+        <LoadingScreen message={t('supplier.availabilityLoading')} className="h-auto flex-1" />
+      </div>
+    );
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -58,14 +58,13 @@ export function SupplierWorkingHoursCard() {
   const { data, isLoading, isError, error, refetch } = useSupplierHours();
   const saveHours = useSaveSupplierHours();
   const [draft, setDraft] = useState<Record<WeekdayName, DayDraft>>(() => toDraft(emptyWeekHours()));
-  const [hydrated, setHydrated] = useState(false);
+  const [hydratedFrom, setHydratedFrom] = useState<typeof data>(undefined);
 
-  useEffect(() => {
-    if (data && !hydrated) {
-      setDraft(toDraft(data.days));
-      setHydrated(true);
-    }
-  }, [data, hydrated]);
+  // Hydrate once per server payload (same pattern as the availability page): no effect, no cascading render.
+  if (data && data !== hydratedFrom) {
+    setHydratedFrom(data);
+    setDraft(toDraft(data.days));
+  }
 
   if (isLoading) {
     return <LoadingScreen message={t('supplier.hoursLoading')} className="h-auto py-8" />;
@@ -95,7 +94,6 @@ export function SupplierWorkingHoursCard() {
     try {
       await saveHours.mutateAsync(days);
       toast.success(t('supplier.hoursUpdated'));
-      setHydrated(false);
     } catch (saveError) {
       toast.error(getProblemMessage(saveError, t) ?? t('supplier.hoursSaveError'));
     }

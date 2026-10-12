@@ -114,7 +114,7 @@ function timeRangeOnDay(date: string, startUtc: string, endUtc: string): string 
   if (!start || !end) return null;
 
   const startsMidnight = start.hour === 0 && start.minute === 0 && start.date === date;
-  let endsMidnight = end.hour === 0 && end.minute === 0;
+  const endsMidnight = end.hour === 0 && end.minute === 0;
   const endDay = endsMidnight ? addDays(end.date, -1) : end.date;
   if (startsMidnight && endsMidnight && endDay === date && start.date === date) {
     return null; // whole day on the Rome clock
