@@ -21,6 +21,23 @@ vi.mock('@/queries/use-supplier', () => ({
   useSupplierProfile: () => supplier.query ?? { data: supplier.profile, isLoading: false },
   useUpdateSupplierProfile: () => ({ mutateAsync: supplier.updateProfile, isPending: false }),
   useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false }),
+  useSupplierHours: () => ({
+    data: {
+      days: [
+        { weekday: 'Monday', bands: [{ startMinute: 540, endMinute: 1080 }] },
+        { weekday: 'Tuesday', bands: [] },
+        { weekday: 'Wednesday', bands: [] },
+        { weekday: 'Thursday', bands: [] },
+        { weekday: 'Friday', bands: [] },
+        { weekday: 'Saturday', bands: [] },
+        { weekday: 'Sunday', bands: [] },
+      ],
+      configuredAt: '2026-10-01T10:00:00Z',
+    },
+    isLoading: false,
+    isError: false,
+  }),
+  useSaveSupplierHours: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/queries/use-service-categories', () => ({ useServiceCategories: () => ({ data: undefined }) }));
 vi.mock('@/features/service-requests/components/service-category-picker', () => ({

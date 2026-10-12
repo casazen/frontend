@@ -79,6 +79,80 @@ export interface SupplierAvailabilityResponse {
   dates: UpdateAvailabilityEntry[];
 }
 
+/** Weekday names of `GET/PUT api/supplier/availability/hours` (Monday first). */
+export type SupplierWeekday =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
+export interface SupplierHoursBand {
+  startMinute: number;
+  endMinute: number;
+}
+
+export interface SupplierAgendaHoursDay {
+  weekday: SupplierWeekday;
+  bands: SupplierHoursBand[];
+}
+
+export interface SupplierHoursResponse {
+  days: SupplierAgendaHoursDay[];
+  configuredAt?: string | null;
+}
+
+export type SupplierBusyWindowKind = 'Block' | 'ExtraOpening' | 'External';
+export type SupplierBusyWindowSource = 'Manual' | 'ICalFeed';
+export type SupplierAvailabilitySource = 'Manual' | 'ICalFeed';
+
+export interface SupplierAgendaClosedDay {
+  date: string;
+  source: SupplierAvailabilitySource;
+}
+
+export interface SupplierAgendaTimeOff {
+  id: string;
+  fromDate: string;
+  toDate: string;
+  reason: string;
+  label?: string | null;
+  createdAt: string;
+}
+
+export interface SupplierAgendaBlock {
+  id: string;
+  kind: SupplierBusyWindowKind;
+  source: SupplierBusyWindowSource;
+  startUtc: string;
+  endUtc: string;
+  label?: string | null;
+  createdAt: string;
+}
+
+export interface SupplierAgendaRequest {
+  id: string;
+  date: string;
+  startUtc?: string | null;
+  endUtc?: string | null;
+  status: string;
+  category: string;
+}
+
+/** `GET api/supplier/calendar`: hours, closed days, time off, blocks and requests for a range. */
+export interface SupplierAgendaCalendar {
+  from: string;
+  to: string;
+  timeZone: string;
+  workingHours: SupplierAgendaHoursDay[];
+  closedDays: SupplierAgendaClosedDay[];
+  timeOff: SupplierAgendaTimeOff[];
+  blocks: SupplierAgendaBlock[];
+  requests: SupplierAgendaRequest[];
+}
+
 /**
  * State of the supplier's iCal sync (SU-15): `Syncing` while the queued job has not run yet; the calendar is synced
  * only once it becomes `Success`.

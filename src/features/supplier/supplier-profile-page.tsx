@@ -18,6 +18,7 @@ import { useServiceCategories } from '@/queries/use-service-categories';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
 import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
+import { SupplierWorkingHoursCard } from '@/features/supplier/components/supplier-working-hours-card';
 import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import { comuneLabel } from '@/lib/comune-label';
 import type { SupplierProfile } from '@/types/supplier';
@@ -458,6 +459,8 @@ export function SupplierProfilePage() {
           </Card>
         </div>
       )}
+
+      <SupplierWorkingHoursCard />
     </div>
   );
 }

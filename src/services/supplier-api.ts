@@ -2,8 +2,11 @@ import { ApiClient } from '@/api/client';
 import type {
   ActivationStatus,
   CalendarSyncStatus,
+  SupplierAgendaCalendar,
+  SupplierAgendaHoursDay,
   SupplierAvailabilityResponse,
   SupplierDashboard,
+  SupplierHoursResponse,
   SupplierInboxParams,
   SupplierInboxResponse,
   SupplierKpiPeriod,
@@ -97,6 +100,20 @@ export async function fetchSupplierAvailability(
 export async function updateSupplierAvailability(dates: UpdateAvailabilityEntry[]): Promise<{ updated: number }> {
   const { data } = await axios.put<{ updated: number }>('/supplier/availability', { dates });
   return data;
+}
+
+/** Weekly working hours (SP-03): seven days, Monday first, bands as minutes after midnight in Rome. */
+export async function fetchSupplierHours(): Promise<SupplierHoursResponse> {
+  return ApiClient.get<SupplierHoursResponse>('/supplier/availability/hours');
+}
+
+export async function saveSupplierHours(days: SupplierAgendaHoursDay[]): Promise<SupplierHoursResponse> {
+  return ApiClient.put<SupplierHoursResponse>('/supplier/availability/hours', { days });
+}
+
+/** Agenda for a date range: hours, closed days, calendar engagements and requests (SP-03/SP-05). */
+export async function fetchSupplierAgendaCalendar(from: string, to: string): Promise<SupplierAgendaCalendar> {
+  return ApiClient.get<SupplierAgendaCalendar>('/supplier/calendar', { from, to });
 }
 
 export async function inviteSupplier(payload: {
