@@ -53,16 +53,22 @@ function toPayload(draft: Record<WeekdayName, DayDraft>): SupplierAgendaHoursDay
  * Weekly working hours on the supplier profile (and reusable elsewhere): one band per weekday on the Rome clock.
  * Empty week = rest every day until the supplier sets hours.
  */
+function hoursPayloadKey(data: { configuredAt?: string | null; days: SupplierAgendaHoursDay[] }): string {
+  // Prefer configuredAt when the API sends it; otherwise fingerprint days so mocks / empty weeks still hydrate once.
+  return data.configuredAt ?? JSON.stringify(data.days);
+}
+
 export function SupplierWorkingHoursCard() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierHours();
   const saveHours = useSaveSupplierHours();
   const [draft, setDraft] = useState<Record<WeekdayName, DayDraft>>(() => toDraft(emptyWeekHours()));
-  const [hydratedFrom, setHydratedFrom] = useState<typeof data>(undefined);
+  const [hydratedKey, setHydratedKey] = useState<string | null>(null);
 
-  // Hydrate once per server payload (same pattern as the availability page): no effect, no cascading render.
-  if (data && data !== hydratedFrom) {
-    setHydratedFrom(data);
+  // Hydrate once per server payload key (not object identity — query mocks often return a new object each render).
+  const payloadKey = data ? hoursPayloadKey(data) : null;
+  if (data && payloadKey !== null && payloadKey !== hydratedKey) {
+    setHydratedKey(payloadKey);
     setDraft(toDraft(data.days));
   }
 

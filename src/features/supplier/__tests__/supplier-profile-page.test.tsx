@@ -15,6 +15,18 @@ const supplier = vi.hoisted(() => ({
   updateProfile: vi.fn(),
   uploadPhotos: vi.fn(),
 }));
+const hoursPayload = vi.hoisted(() => ({
+  days: [
+    { weekday: 'Monday', bands: [{ startMinute: 540, endMinute: 1080 }] },
+    { weekday: 'Tuesday', bands: [] },
+    { weekday: 'Wednesday', bands: [] },
+    { weekday: 'Thursday', bands: [] },
+    { weekday: 'Friday', bands: [] },
+    { weekday: 'Saturday', bands: [] },
+    { weekday: 'Sunday', bands: [] },
+  ],
+  configuredAt: '2026-10-01T10:00:00Z',
+}));
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
 vi.mock('@/queries/use-supplier', () => ({
@@ -22,18 +34,7 @@ vi.mock('@/queries/use-supplier', () => ({
   useUpdateSupplierProfile: () => ({ mutateAsync: supplier.updateProfile, isPending: false }),
   useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false }),
   useSupplierHours: () => ({
-    data: {
-      days: [
-        { weekday: 'Monday', bands: [{ startMinute: 540, endMinute: 1080 }] },
-        { weekday: 'Tuesday', bands: [] },
-        { weekday: 'Wednesday', bands: [] },
-        { weekday: 'Thursday', bands: [] },
-        { weekday: 'Friday', bands: [] },
-        { weekday: 'Saturday', bands: [] },
-        { weekday: 'Sunday', bands: [] },
-      ],
-      configuredAt: '2026-10-01T10:00:00Z',
-    },
+    data: hoursPayload,
     isLoading: false,
     isError: false,
   }),
