@@ -61,6 +61,10 @@ export const UsersApi = {
   deactivateUser: (id: string): Promise<UserActivationResponse> =>
     ApiClient.delete<UserActivationResponse>(`/users/${encodeURIComponent(id)}`),
 
+  /** Permanently removes the account (`DELETE /users/{id}/account`). Auth0 is deleted first. */
+  deleteRegisteredUser: (id: string): Promise<void> =>
+    ApiClient.delete<void>(`/users/${encodeURIComponent(id)}/account`),
+
   reactivateUser: (id: string): Promise<UserActivationResponse> =>
     ApiClient.post<UserActivationResponse>(`/users/${encodeURIComponent(id)}/reactivate`),
 

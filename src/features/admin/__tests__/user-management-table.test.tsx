@@ -9,7 +9,13 @@ import { UserManagementTable } from '../components/user-management-table';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/api/users.api', () => ({
-  UsersApi: { deactivateUser: vi.fn(), reactivateUser: vi.fn(), getRoles: vi.fn(), updateRoles: vi.fn() },
+  UsersApi: {
+    deactivateUser: vi.fn(),
+    reactivateUser: vi.fn(),
+    deleteRegisteredUser: vi.fn(),
+    getRoles: vi.fn(),
+    updateRoles: vi.fn(),
+  },
 }));
 
 const active: UserSummary = {
@@ -107,5 +113,29 @@ describe('UserManagementTable deactivation and reactivation (PL-03)', () => {
     await waitFor(() =>
       expect(toast.warning).toHaveBeenCalledWith(i18n.t('toast.userReactivatedAuth0NotSynced')),
     );
+  });
+
+  it('remove_confirmed_deletesTheAccount', async () => {
+    vi.mocked(UsersApi.deleteRegisteredUser).mockResolvedValue(undefined);
+    renderTable([active]);
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('admin.users.table.removeAction') }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Anna Attiva');
+    expect(dialog).toHaveTextContent('attivo@example.com');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('admin.users.deleteDialog.confirm') }));
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('toast.userRemoved')));
+    expect(UsersApi.deleteRegisteredUser).toHaveBeenCalledWith('auth0|active');
+  });
+
+  it('remove_cancel_doesNotDelete', async () => {
+    renderTable([active]);
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('admin.users.table.removeAction') }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('admin.users.deleteDialog.cancel') }));
+
+    expect(UsersApi.deleteRegisteredUser).not.toHaveBeenCalled();
   });
 });

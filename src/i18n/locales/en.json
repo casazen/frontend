@@ -80,6 +80,7 @@
         "roleAction": "Role",
         "deactivateAction": "Deactivate",
         "reactivateAction": "Reactivate",
+        "removeAction": "Remove",
         "empty": "No users found."
       },
       "deactivateDialog": {
@@ -88,6 +89,13 @@
         "cancel": "Cancel",
         "deactivating": "Deactivating...",
         "confirm": "Deactivate"
+      },
+      "deleteDialog": {
+        "title": "Remove user",
+        "description": "Permanently remove {{label}}? The account will no longer be able to sign in to CasaZen. The organization and its properties stay. This cannot be undone.",
+        "cancel": "Cancel",
+        "removing": "Removing...",
+        "confirm": "Remove"
       },
       "roleDialog": {
         "title": "Manage roles",
@@ -5862,6 +5870,8 @@
     "userReactivated": "User reactivated",
     "userReactivatedAuth0NotSynced": "User reactivated in CasaZen, but Auth0 was not updated: the user cannot sign in until you repeat the reactivation.",
     "userReactivateFailed": "Failed to reactivate user",
+    "userRemoved": "User removed",
+    "userRemoveFailed": "Could not remove the user",
     "cinCodeUpdated": "CIN code updated successfully",
     "cinCodeUpdateFailed": "Failed to update CIN code",
     "checkInDataSaved": "Check-in data saved successfully",
@@ -6105,6 +6115,13 @@
       "orgSlugInvalid": "This web address is not valid: use 3 to 63 characters among letters, numbers and hyphens.",
       "accountInactive": "Your account was deactivated.",
       "cannotDeactivateSelf": "You cannot deactivate your own account: ask another administrator.",
+      "cannotDeleteSelf": "You cannot remove your own account: ask another administrator.",
+      "cannotDeleteLastAdmin": "You cannot remove the last active administrator: appoint another administrator first.",
+      "userDeleteBlocked": "This user cannot be removed: related data still points at the account. Deactivate it instead.",
+      "auth0ManagementNotConfigured": "Auth0 is not configured: the user is still in CasaZen.",
+      "auth0ManagementError": "Auth0 did not remove the account: the user is still in CasaZen. Try again.",
+      "auth0ManagementTokenFailed": "Auth0 rejected the request: the user is still in CasaZen. Try again.",
+      "auth0RateLimited": "Auth0 is limiting requests: the user is still in CasaZen. Try again shortly.",
       "lastActiveAdmin": "You cannot deactivate the last active administrator: appoint another administrator first.",
       "userInactive": "The user is deactivated: reactivate it before changing its role.",
       "onboardingRequired": "Complete your account activation: choose your business type and accept the current legal documents.",

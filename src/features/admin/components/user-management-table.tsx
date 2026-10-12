@@ -7,6 +7,7 @@ import { formatUserDisplayName } from '@/lib/user-display';
 import { ChangeRoleDialog } from './change-role-dialog';
 import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
+import { DeleteUserDialog } from './delete-user-dialog';
 import type { UserSummary } from '@/types';
 import { getPlanTierLabel, getRoleLabel } from '@/lib/i18n-labels';
 import { formatDate } from '@/lib/utils';
@@ -22,6 +23,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
   const [planTarget, setPlanTarget] = useState<UserSummary | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<UserSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<UserSummary | null>(null);
   const { mutate: reactivate, isPending: isReactivating, variables: reactivatingId } = useReactivateUser();
 
   if (isLoading) {
@@ -105,6 +107,13 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                         {t('admin.users.table.reactivateAction')}
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDeleteTarget(user)}
+                    >
+                      {t('admin.users.table.removeAction')}
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -135,6 +144,11 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
         user={deactivateTarget}
         open={deactivateTarget !== null}
         onOpenChange={(open) => { if (!open) setDeactivateTarget(null); }}
+      />
+      <DeleteUserDialog
+        user={deleteTarget}
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
       />
     </>
   );
