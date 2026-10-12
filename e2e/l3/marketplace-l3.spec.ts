@@ -6,6 +6,11 @@ const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 
 
 type Auth = Record<string, string>;
 
+interface Stay {
+  id: string;
+  status: string;
+}
+
 interface Candidate {
   propertyId: string;
   stayId: string;
@@ -23,7 +28,9 @@ async function findCandidate(request: APIRequestContext, auth: Auth): Promise<Ca
   for (const property of (await properties.json()) as { id: string }[]) {
     const bookings = await request.get(`${API}/bookings?propertyId=${property.id}`, { headers: auth });
     if (bookings.status() !== 200) continue;
-    const stay = ((await bookings.json()) as { id: string; status: string }[]).find((b) => b.status !== 'Cancelled');
+    // GET /bookings is paged ({ items, totalCount, ... }) since backend #468; accept the old bare array too.
+    const body = (await bookings.json()) as Stay[] | { items: Stay[] };
+    const stay = (Array.isArray(body) ? body : body.items).find((b) => b.status !== 'Cancelled');
     if (!stay) continue;
 
     const suppliers = await request.get(`${API}/suppliers?propertyId=${property.id}&category=cleaning`, { headers: auth });
