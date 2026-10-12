@@ -5,19 +5,7 @@ import { Home, LogIn, MailWarning } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-export type EmailVerificationOutcome = 'verified' | 'failed' | 'unknown';
-
-/**
- * Auth0 appends `success` and `code` to the Redirect To URL of the verification email.
- * `code=success` is not an OAuth code: this page is not the login redirect (`window.location.origin`).
- */
-export function emailVerificationOutcome(params: URLSearchParams): EmailVerificationOutcome {
-  const success = params.get('success');
-  if (success === 'false') return 'failed';
-  if (success === 'true' || params.get('code') === 'success') return 'verified';
-  return 'unknown';
-}
+import { emailVerificationOutcome } from './email-verification-outcome';
 
 /**
  * Landing page of the Auth0 verification email (Redirect To). Stays outside the login callback so Auth0's

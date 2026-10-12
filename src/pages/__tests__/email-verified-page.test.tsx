@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
-import { emailVerificationOutcome } from '../email-verified-page';
+import { emailVerificationOutcome } from '../email-verification-outcome';
 
 const auth0 = vi.hoisted(() => ({
   isLoading: false,

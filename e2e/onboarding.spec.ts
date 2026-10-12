@@ -23,9 +23,9 @@ test.describe('Role-based onboarding (#198)', () => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
-    await expect(page.getByText('Affitti brevi')).toBeVisible();
-    await expect(page.getByText('Locazioni di lungo periodo')).toBeVisible();
-    await expect(page.getByText('Entrambi')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Affitti brevi' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Locazioni di lungo periodo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Entrambi' })).toBeVisible();
   });
 
   test('AC3 short-term choice navigates to short-rent home', async ({ page }) => {
