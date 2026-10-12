@@ -87,7 +87,7 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
     await page.locator(`#guest-${i}-citizenshipName`).fill('Italiana');
   }
   await page.getByRole('button', { name: 'Avanti' }).click();
-  await page.locator('#guest-0-documentType').selectOption({ label: "Carta d'identita'" });
+  await pickHeadOfFamilyDocumentType(page);
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
   await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
   await page.getByRole('button', { name: 'Avanti' }).click();
@@ -96,4 +96,34 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
   await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
   await page.getByTestId('checkin-submit').click();
   await expect(page.getByText('Check-in completato!')).toBeVisible({ timeout: 20_000 });
+}
+
+/** Official Alloggiati DOCUMENTI row IDENT (Polizia di Stato). Never a made-up type. */
+const OFFICIAL_IDENTITY_CARD_QUERY = 'CARTA DI IDENTITA';
+const FALLBACK_SELECT_LABEL = "Carta d'identita'";
+
+/**
+ * Head-of-family document type: native select of the local enum when the official table is not imported,
+ * otherwise the CodeTableInput (input + datalist) of CO-12. After the Alloggiati seed the GJ stack has
+ * DOCUMENTI, so selectOption on #guest-0-documentType fails ("Element is not a select").
+ */
+async function pickHeadOfFamilyDocumentType(page: Page): Promise<void> {
+  const field = page.locator('#guest-0-documentType');
+  await expect(field).toBeVisible();
+  const tag = await field.evaluate((el) => el.tagName.toLowerCase());
+  if (tag === 'select') {
+    await field.selectOption({ label: FALLBACK_SELECT_LABEL });
+    return;
+  }
+
+  await field.fill(OFFICIAL_IDENTITY_CARD_QUERY);
+  const options = page.getByTestId('guest-0-documentType-options').locator('option');
+  await expect(options.first()).toBeAttached({ timeout: 15_000 });
+  const official = await options.evaluateAll((els) => {
+    const labels = els.map((el) => el.getAttribute('value') ?? '');
+    return labels.find((label) => /CARTA DI IDENTITA/i.test(label)) ?? labels[0] ?? '';
+  });
+  expect(official, 'official identity-card row from Alloggiati DOCUMENTI').toBeTruthy();
+  await field.fill(official);
+  await expect(page.getByTestId('guest-0-documentType-code')).toBeVisible();
 }

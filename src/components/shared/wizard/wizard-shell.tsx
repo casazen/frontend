@@ -305,15 +305,19 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   // field that changed is checked again, so its problem goes away as soon as the person fixes it (and not on the next blur).
   const saveDraft = draft.save;
   React.useEffect(() => {
-    return form.subscribe({
-      formState: { values: true },
-      callback: ({ values, name }) => {
-        // `name` is the field that changed: the form opening, or a refresh of its state, is not something to keep.
-        if (!name) return;
-        if (draftOn) saveDraft({ step: stepIdRef.current, values: values as Record<string, unknown> });
-        if (failedStepIdRef.current === stepIdRef.current) void form.trigger(name as Path<TValues>);
-      },
+    const { unsubscribe } = form.watch((values, info) => {
+      // `name` is the field that changed: the form opening, or a refresh of its state, is not something to keep.
+      if (!info.name) return;
+      if (draftOn) saveDraft({ step: stepIdRef.current, values: values as Record<string, unknown> });
+      if (failedStepIdRef.current === stepIdRef.current) {
+        // trigger() from inside the watch callback can skip the formState update (RHF re-entrancy); run it after this tick.
+        const field = info.name as Path<TValues>;
+        queueMicrotask(() => {
+          void form.trigger(field);
+        });
+      }
     });
+    return unsubscribe;
   }, [form, draftOn, saveDraft]);
 
   // Landing on another step: progress is told to the page and kept in the draft, the old problems go away and the
