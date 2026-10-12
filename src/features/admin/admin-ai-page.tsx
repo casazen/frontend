@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAiSettings, useUpdateAiSettings } from '@/queries/use-admin-seo';
-import type { AiProviderName } from '@/types/seo.types';
+import type { AiAdminSettings, AiProviderName } from '@/types/seo.types';
 
 const PROVIDERS: AiProviderName[] = ['Stub', 'DeepSeek', 'OpenAI', 'Anthropic', 'OpenAiCompatible'];
 
@@ -22,25 +22,18 @@ const PRESETS: Record<AiProviderName, { model: string; baseUrl: string }> = {
  * Platform AI provider. The key is write-only. Stub calls nobody; the others write drafts (SEO and the other AI
  * callers) and are listed among the subprocessors once a key is saved.
  */
-export function AdminAiPage() {
+function knownProvider(value: string): AiProviderName {
+  return PROVIDERS.includes(value as AiProviderName) ? (value as AiProviderName) : 'Stub';
+}
+
+function AiProviderForm({ settings }: { settings: AiAdminSettings }) {
   const { t } = useTranslation();
-  const settings = useAiSettings();
   const update = useUpdateAiSettings();
-  const [provider, setProvider] = useState<AiProviderName>('Stub');
-  const [model, setModel] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
+  const [provider, setProvider] = useState<AiProviderName>(() => knownProvider(settings.provider));
+  const [model, setModel] = useState(settings.model ?? '');
+  const [baseUrl, setBaseUrl] = useState(settings.baseUrl ?? '');
   const [apiKey, setApiKey] = useState('');
   const [clearApiKey, setClearApiKey] = useState(false);
-
-  useEffect(() => {
-    if (!settings.data) return;
-    const next = PROVIDERS.includes(settings.data.provider) ? settings.data.provider : 'Stub';
-    setProvider(next);
-    setModel(settings.data.model ?? '');
-    setBaseUrl(settings.data.baseUrl ?? '');
-    setApiKey('');
-    setClearApiKey(false);
-  }, [settings.data]);
 
   function handleProvider(next: AiProviderName) {
     setProvider(next);
@@ -66,29 +59,14 @@ export function AdminAiPage() {
   const external = provider !== 'Stub';
 
   return (
-    <div className="space-y-6" data-testid="admin-ai-page">
-      <PageHeader title={t('admin.ai.title')} description={t('admin.ai.description')} />
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('admin.ai.formTitle')}</CardTitle>
-          <CardDescription>{t('admin.ai.formDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {settings.isLoading ? (
-            <p className="text-sm text-muted-foreground">{t('admin.ai.loading')}</p>
-          ) : settings.isError || !settings.data ? (
-            <p className="text-sm text-destructive" data-testid="admin-ai-error">
-              {t('admin.ai.loadError')}
-            </p>
-          ) : (
-            <>
-              <p className="text-sm" data-testid="admin-ai-status">
-                {settings.data.externalActive
-                  ? t('admin.ai.statusActive', { provider: settings.data.provider })
-                  : t('admin.ai.statusInactive')}
-                {settings.data.apiKeyHint ? ` · ${t('admin.ai.keyHint', { hint: settings.data.apiKeyHint })}` : ''}
-                {` · ${t(settings.data.source === 'admin' ? 'admin.ai.sourceAdmin' : 'admin.ai.sourceEnvironment')}`}
-              </p>
+    <>
+      <p className="text-sm" data-testid="admin-ai-status">
+        {settings.externalActive
+          ? t('admin.ai.statusActive', { provider: settings.provider })
+          : t('admin.ai.statusInactive')}
+        {settings.apiKeyHint ? ` · ${t('admin.ai.keyHint', { hint: settings.apiKeyHint })}` : ''}
+        {` · ${t(settings.source === 'admin' ? 'admin.ai.sourceAdmin' : 'admin.ai.sourceEnvironment')}`}
+      </p>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
@@ -146,7 +124,7 @@ export function AdminAiPage() {
                       value={apiKey}
                       maxLength={500}
                       placeholder={
-                        settings.data.apiKeyConfigured
+                        settings.apiKeyConfigured
                           ? t('admin.ai.keyKeepPlaceholder')
                           : t('admin.ai.keyPlaceholder')
                       }
@@ -164,7 +142,7 @@ export function AdminAiPage() {
                 </p>
               )}
 
-              {settings.data.hasStoredKey && (
+              {settings.hasStoredKey && (
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -176,10 +154,38 @@ export function AdminAiPage() {
                 </label>
               )}
 
-              <Button onClick={handleSave} disabled={update.isPending} data-testid="admin-ai-save">
-                {t('admin.ai.save')}
-              </Button>
-            </>
+      <Button onClick={handleSave} disabled={update.isPending} data-testid="admin-ai-save">
+        {t('admin.ai.save')}
+      </Button>
+    </>
+  );
+}
+
+export function AdminAiPage() {
+  const { t } = useTranslation();
+  const settings = useAiSettings();
+  const data = settings.data;
+  const formKey = data
+    ? `${data.provider}|${data.model}|${data.baseUrl}|${data.source}|${data.hasStoredKey}|${data.apiKeyHint ?? ''}`
+    : 'empty';
+
+  return (
+    <div className="space-y-6" data-testid="admin-ai-page">
+      <PageHeader title={t('admin.ai.title')} description={t('admin.ai.description')} />
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('admin.ai.formTitle')}</CardTitle>
+          <CardDescription>{t('admin.ai.formDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {settings.isLoading ? (
+            <p className="text-sm text-muted-foreground">{t('admin.ai.loading')}</p>
+          ) : settings.isError || !data ? (
+            <p className="text-sm text-destructive" data-testid="admin-ai-error">
+              {t('admin.ai.loadError')}
+            </p>
+          ) : (
+            <AiProviderForm key={formKey} settings={data} />
           )}
         </CardContent>
       </Card>

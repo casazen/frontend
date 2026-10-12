@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
-import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { AdminSeoApi } from '@/api/admin-seo.api';
 import { AdminAiPage } from '../admin-ai-page';

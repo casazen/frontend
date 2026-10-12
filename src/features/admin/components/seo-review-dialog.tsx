@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,21 +39,26 @@ export function SeoReviewDialog({ pageId, onClose, onConfigureAi }: SeoReviewDia
   const approveMutation = useApproveSeoRevision();
   const generateMutation = useGenerateSeoPages();
   const saveDraft = useSaveSeoDraft();
-  const [confirmed, setConfirmed] = useState(false);
-  const [note, setNote] = useState('');
+  const [review, setReview] = useState({ revisionId: '', confirmed: false, note: '' });
   const [editing, setEditing] = useState(false);
   const [draftBody, setDraftBody] = useState('');
   const [draftTitle, setDraftTitle] = useState('');
   const [draftMeta, setDraftMeta] = useState('');
 
   const pending = data?.pendingRevision ?? null;
+  const revisionId = pending?.id ?? '';
+  const confirmed = review.revisionId === revisionId && review.confirmed;
+  const note = review.revisionId === revisionId ? review.note : '';
   const pendingPublishable = pending !== null && isPublishableContent(pending.contentStatus);
   const canApprove = pendingPublishable && confirmed && !editing && !approveMutation.isPending;
 
-  useEffect(() => {
-    setConfirmed(false);
-    setNote('');
-  }, [pending?.id]);
+  function setConfirmed(value: boolean) {
+    setReview({ revisionId, confirmed: value, note });
+  }
+
+  function setNote(value: string) {
+    setReview({ revisionId, confirmed, note: value });
+  }
 
   function openEditor() {
     setDraftBody(pending?.bodyHtml || data?.publishedRevision?.bodyHtml || '');
