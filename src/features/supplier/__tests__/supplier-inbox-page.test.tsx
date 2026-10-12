@@ -104,6 +104,59 @@ describe('SupplierInboxPage (SU-08, A4-14)', () => {
     );
   });
 
+  it('SupplierInboxPage_OpenRequestWithoutATime_ShowsMissingTimeWithoutBlockingTheDay', async () => {
+    renderPage();
+    const card = await screen.findByTestId('inbox-item-r-open');
+    expect(within(card).getByTestId('inbox-day-r-open')).toHaveTextContent('orario mancante');
+    expect(within(card).getByTestId('take-r-open')).toBeEnabled();
+  });
+
+  it('SupplierInboxPage_OverlappingIntervals_BlocksTakingAnotherJob', async () => {
+    const open = {
+      ...OPEN_ITEM,
+      scheduledStart: '2026-10-12T08:00:00.000Z',
+      scheduledEnd: '2026-10-12T11:00:00.000Z',
+    };
+    const taken = {
+      ...open,
+      id: 'r-taken',
+      status: 'PresoInCarico' as const,
+      scheduledStart: '2026-10-12T10:00:00.000Z',
+      scheduledEnd: '2026-10-12T12:00:00.000Z',
+    };
+    api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) =>
+      params.status === 'open' ? page([open, taken]) : page([REJECTED_ITEM]),
+    );
+    renderPage();
+
+    expect(await screen.findByTestId('take-r-open')).toBeDisabled();
+    expect(screen.getByTestId('conflict-r-open')).toHaveTextContent('si sovrappone');
+  });
+
+  it('SupplierInboxPage_SameDayWithTimesThatDoNotOverlap_ShowsTheDurationAndAllowsTheTake', async () => {
+    const morning = {
+      ...OPEN_ITEM,
+      scheduledStart: '2026-10-12T08:00:00.000Z',
+      scheduledEnd: '2026-10-12T10:00:00.000Z',
+    };
+    const afternoon = {
+      ...morning,
+      id: 'r-taken',
+      status: 'PresoInCarico' as const,
+      scheduledStart: '2026-10-12T12:00:00.000Z',
+      scheduledEnd: '2026-10-12T14:00:00.000Z',
+    };
+    api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) =>
+      params.status === 'open' ? page([morning, afternoon]) : page([REJECTED_ITEM]),
+    );
+    renderPage();
+
+    const card = await screen.findByTestId('inbox-item-r-open');
+    expect(within(card).getByTestId('inbox-day-r-open')).toHaveTextContent('10:00–12:00');
+    expect(within(card).getByTestId('inbox-day-r-open')).toHaveTextContent('2 ore');
+    expect(within(card).getByTestId('take-r-open')).toBeEnabled();
+  });
+
   it('SupplierInboxPage_HistoryPagination_AsksTheServerForTheNextPage', async () => {
     api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) =>
       page([REJECTED_ITEM], 45, params.page ?? 1),

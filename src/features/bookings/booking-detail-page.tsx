@@ -265,7 +265,11 @@ export function BookingDetailPage() {
                 testId="booking-service-requests"
                 action={
                   canRequestSupplier ? (
-                    <ServiceRequestForm propertyId={booking.propertyId} bookingId={booking.id} />
+                    <ServiceRequestForm
+                      propertyId={booking.propertyId}
+                      bookingId={booking.id}
+                      jobDate={stayDateOf(booking.checkOutDate)}
+                    />
                   ) : undefined
                 }
               />

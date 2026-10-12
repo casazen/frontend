@@ -6,6 +6,8 @@ import {
   isStayDate,
   nightsBetween,
   parseStayDate,
+  romeWallClock,
+  romeWallTimeToUtc,
   startOfMonth,
   startOfWeek,
   stayDateToLocalDate,
@@ -191,6 +193,25 @@ describe('calendar widget helpers (PC-08)', () => {
       expect(date?.getHours()).toBe(0);
       expect(toStayDate(date!)).toBe('2026-09-30');
     });
+  });
+
+  it('romeWallClock_SummerMidnight_IsPreviousUtcEvening', () => {
+    // 13 October 2026 00:00 Rome is still CEST: 22:00 UTC on the 12th.
+    expect(romeWallClock('2026-10-12T22:00:00.000Z')).toEqual({ date: '2026-10-13', hour: 0, minute: 0 });
+  });
+
+  it('romeWallTimeToUtc_SummerTime_IsTwoHoursBehindRome', () => {
+    // 12 October 2026 is still summer time: 10:00 in Rome is 08:00 UTC.
+    expect(romeWallTimeToUtc('2026-10-12', '10:00')).toBe('2026-10-12T08:00:00.000Z');
+  });
+
+  it('romeWallTimeToUtc_WinterTime_IsOneHourBehindRome', () => {
+    expect(romeWallTimeToUtc('2026-01-15', '10:00')).toBe('2026-01-15T09:00:00.000Z');
+  });
+
+  it('romeWallTimeToUtc_InvalidInput_ReturnsEmpty', () => {
+    expect(romeWallTimeToUtc('2026-02-30', '10:00')).toBe('');
+    expect(romeWallTimeToUtc('2026-10-12', '25:00')).toBe('');
   });
 
   it('stayDateToLocalDate_InvalidDate_ReturnsNull', () => {

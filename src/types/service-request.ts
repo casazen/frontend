@@ -89,6 +89,10 @@ export interface SupplierServiceRequest {
   address?: string | null;
   /** Day of the job, `YYYY-MM-DD` (Europe/Rome): the check-out of the stay; null when there is no stay. */
   scheduledFor?: string | null;
+  /** Start of the work (UTC). Required on new requests; may be null only on legacy rows before backfill. */
+  scheduledStart?: string | null;
+  /** End of the work (UTC): the start plus the duration. */
+  scheduledEnd?: string | null;
   stay?: SupplierStay | null;
   contactDisclosed: boolean;
   hostContact?: SupplierHostContact | null;
@@ -127,6 +131,10 @@ export interface CreateServiceRequestDto {
   category: string;
   urgency?: ServiceRequestUrgency;
   notes?: string;
+  /** Start of the work (UTC). With `durationMinutes` the supplier sees the interval. */
+  scheduledStartUtc?: string;
+  /** How long the work lasts, in minutes. */
+  durationMinutes?: number;
 }
 
 /** Long-rent request (`POST /long-rent/service-requests`, D2): for the property, never a booking. */
@@ -136,6 +144,8 @@ export interface CreateLongRentServiceRequestDto {
   category: string;
   urgency?: ServiceRequestUrgency;
   notes?: string;
+  scheduledStartUtc?: string;
+  durationMinutes?: number;
 }
 
 export interface SupplierPicker {

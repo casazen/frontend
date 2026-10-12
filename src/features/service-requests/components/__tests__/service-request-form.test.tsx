@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
+import { romeWallTimeToUtc } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 import { ServiceRequestForm } from '../service-request-form';
 
@@ -53,6 +54,11 @@ function stay(id: string, checkIn: string, checkOut: string, overrides: Partial<
   } as Booking;
 }
 
+function fillSchedule() {
+  fireEvent.change(screen.getByTestId('service-request-start-time'), { target: { value: '10:00' } });
+  fireEvent.change(screen.getByTestId('service-request-duration'), { target: { value: '120' } });
+}
+
 function renderForm(props: Partial<React.ComponentProps<typeof ServiceRequestForm>> = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -92,6 +98,7 @@ describe('ServiceRequestForm', () => {
     fireEvent.change(screen.getByLabelText(i18n.t('serviceRequest.notes')), {
       target: { value: 'Keys at the front desk' },
     });
+    fillSchedule();
     await waitFor(() => expect(screen.getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(screen.getByTestId('submit-service-request'));
 
@@ -103,6 +110,8 @@ describe('ServiceRequestForm', () => {
       category: 'plumbing',
       urgency: 'Normal',
       notes: 'Keys at the front desk',
+      scheduledStartUtc: romeWallTimeToUtc('2099-10-05', '10:00'),
+      durationMinutes: 120,
     });
     expect(api.createLongRentServiceRequest).not.toHaveBeenCalled();
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
@@ -139,7 +148,7 @@ describe('ServiceRequestForm', () => {
   });
 
   it('ServiceRequestForm_FromBookingDetail_SendsThatStayAndLetsTheHostPickTheSupplier', async () => {
-    renderForm({ bookingId: 'b-detail' });
+    renderForm({ bookingId: 'b-detail', jobDate: '2099-10-05' });
 
     const supplierSelect = await screen.findByTestId('service-request-supplier');
     expect(screen.queryByTestId('service-request-stay')).not.toBeInTheDocument();
@@ -149,6 +158,7 @@ describe('ServiceRequestForm', () => {
     expect(screen.getByTestId('submit-service-request')).toBeDisabled();
 
     fireEvent.change(supplierSelect, { target: { value: 'sup-2' } });
+    fillSchedule();
     await waitFor(() => expect(screen.getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(screen.getByTestId('submit-service-request'));
 
@@ -158,6 +168,8 @@ describe('ServiceRequestForm', () => {
       bookingId: 'b-detail',
       supplierOrgId: 'sup-2',
       category: 'cleaning',
+      scheduledStartUtc: romeWallTimeToUtc('2099-10-05', '10:00'),
+      durationMinutes: 120,
     });
   });
 
@@ -181,12 +193,22 @@ describe('ServiceRequestForm', () => {
     expect(api.fetchSuppliersByProperty).not.toHaveBeenCalled();
 
     fireEvent.change(supplierSelect, { target: { value: 'sup-1' } });
+    fireEvent.change(screen.getByTestId('service-request-job-date'), { target: { value: '2099-10-05' } });
+    fillSchedule();
     await waitFor(() => expect(screen.getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(screen.getByTestId('submit-service-request'));
 
     await waitFor(() => expect(api.createLongRentServiceRequest).toHaveBeenCalledTimes(1));
     const payload = api.createLongRentServiceRequest.mock.calls[0][0];
-    expect(payload).toEqual({ propertyId: 'prop-1', supplierOrgId: 'sup-1', category: 'plumbing', urgency: 'Normal', notes: undefined });
+    expect(payload).toEqual({
+      propertyId: 'prop-1',
+      supplierOrgId: 'sup-1',
+      category: 'plumbing',
+      urgency: 'Normal',
+      notes: undefined,
+      scheduledStartUtc: romeWallTimeToUtc('2099-10-05', '10:00'),
+      durationMinutes: 120,
+    });
     expect(payload).not.toHaveProperty('bookingId');
     expect(api.createServiceRequest).not.toHaveBeenCalled();
     expect(api.getBookings).not.toHaveBeenCalled();
@@ -213,8 +235,9 @@ describe('ServiceRequestForm', () => {
   });
 
   it('ServiceRequestForm_PreselectedCategoryNotACode_SubmitsFirstCatalogCode', async () => {
-    renderForm({ bookingId: 'b-detail', supplierOrgId: 'sup-chosen', preselectedCategory: 'Pulizie' });
+    renderForm({ bookingId: 'b-detail', jobDate: '2099-10-05', supplierOrgId: 'sup-chosen', preselectedCategory: 'Pulizie' });
 
+    fillSchedule();
     await waitFor(() => expect(screen.getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(screen.getByTestId('submit-service-request'));
 
@@ -233,8 +256,9 @@ describe('ServiceRequestForm', () => {
   it('ServiceRequestForm_CreateFails_KeepsDialogOpen', async () => {
     const onOpenChange = vi.fn();
     api.createServiceRequest.mockRejectedValue(new Error('network'));
-    renderForm({ bookingId: 'b-detail', supplierOrgId: 'sup-chosen', onOpenChange });
+    renderForm({ bookingId: 'b-detail', jobDate: '2099-10-05', supplierOrgId: 'sup-chosen', onOpenChange });
 
+    fillSchedule();
     await waitFor(() => expect(screen.getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(screen.getByTestId('submit-service-request'));
 

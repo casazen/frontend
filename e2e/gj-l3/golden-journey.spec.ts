@@ -189,6 +189,8 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await host.getByTestId('request-supplier-btn').click();
       await host.locator('#sr-supplier').selectOption({ label: supplierName });
       await host.locator('#sr-notes').fill(`Pulizia di fine soggiorno ${run}`);
+      await host.getByTestId('service-request-start-time').fill('10:00');
+      await host.getByTestId('service-request-duration').selectOption('120');
       await host.getByTestId('submit-service-request').click();
       await expect(host.getByText('In attesa che il fornitore accetti o rifiuti.')).toBeVisible({ timeout: 20_000 });
       const requests = await hostApi.get<ServiceRequest[] | { items: ServiceRequest[] }>(
