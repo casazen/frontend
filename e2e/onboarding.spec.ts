@@ -35,11 +35,12 @@ test.describe('Role-based onboarding (#198)', () => {
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
   });
 
-  test('AC3 long-term choice navigates to leases home', async ({ page }) => {
+  test('AC3 long-term choice opens the first property', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await completeOnboardingFromRentalChoice(page, 1);
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/, { timeout: 15_000 });
+    // A new landlord starts with the first property (the guide of the leases page asks for the lease next).
+    await expect(page).toHaveURL(/\/app\/long-rent\/properties\/new\?first=1/, { timeout: 15_000 });
   });
 
   test('AC5 user with roles visiting onboarding is redirected away', async ({ page }) => {

@@ -369,6 +369,30 @@
         "inviteResent": "Invite sent again to {{email}}.",
         "inviteRevoked": "Invite for {{email}} revoked."
       }
+    },
+    "inviteQr": {
+      "title": "Invite QR codes",
+      "description": "Codes to print or share: whoever scans one lands straight on the right path, as a supplier or as a host.",
+      "campaign": "Campaign name (optional)",
+      "campaignPlaceholder": "E.g. flyer-rome-october",
+      "campaignHint": "Used to measure how many signups come from this code. In the address: {{value}}",
+      "supplier": {
+        "title": "Supplier invite",
+        "description": "Opens the supplier registration: the supplier picks their comune among all the Italian ones.",
+        "printSubtitle": "Do you offer services? Scan and register on CasaZen."
+      },
+      "host": {
+        "title": "Host invite",
+        "description": "Opens the host signup: they choose short or long rentals and create their first property right away.",
+        "printSubtitle": "Do you rent out your home? Scan and start managing it with CasaZen."
+      },
+      "qrAlt": "QR code: {{title}}",
+      "print": "Print",
+      "download": "Download PNG",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copyError": "Could not copy the link.",
+      "popupBlocked": "The browser blocked the print window: allow popups for this site and try again."
     }
   },
   "nav": {
@@ -433,7 +457,8 @@
       "bookingRequests_other": "{{count}} requests to approve",
       "supplierRequests_one": "{{count}} request to accept",
       "supplierRequests_other": "{{count}} requests to accept"
-    }
+    },
+    "inviteQr": "Invite QR codes"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -2142,6 +2167,21 @@
       "label": "URL Slug (optional)",
       "placeholder": "my-property",
       "hint": "Customize the URL for this property on your booking site. Leave empty to use the property ID."
+    },
+    "quick": {
+      "title": "Add your first property",
+      "description": "Just a few details. We ask for the rest (photos, CIN, payments) afterwards, one step at a time.",
+      "name": "What is it called?",
+      "namePlaceholder": "E.g. Duomo Apartment",
+      "rateHint": "You can change it at any time and set seasonal rates.",
+      "submit": "Create property and continue",
+      "saving": "Creating…",
+      "fullForm": "I prefer to enter all the details now",
+      "created": "Property created. Let's finish the setup.",
+      "validation": {
+        "comuneRequired": "Pick the comune from the list.",
+        "duplicate": "A property with this address already exists."
+      }
     }
   },
   "pricing": {
@@ -2584,13 +2624,12 @@
       "selfServeUnavailableTitle": "Registration by invitation",
       "selfServeUnavailable": "Suppliers can currently join CasaZen by invitation only. If you received an invitation, open the link in the email.",
       "optionsError": "The registration options could not be loaded.",
-      "comunePlaceholder": "Select the municipality",
-      "comuneHint": "Self-registration is available only in the pilot municipalities.",
+      "comunePlaceholder": "Search for your municipality",
+      "comuneHint": "Pick the main municipality where you work: you can add more later.",
       "comuneWithCode": "{{name}} ({{code}})",
       "emailAccountHint": "This is the email of your account.",
       "emailInviteHint": "The invitation is valid only for this email.",
-      "successSignedIn": "Your supplier profile has been created and linked to your account. Complete it in the activation steps: until you activate it, hosts cannot see it.",
-      "completeProfile": "Complete your profile"
+      "openingActivation": "Opening your profile…"
     },
     "claim": {
       "title": "Link your supplier profile",
@@ -2600,9 +2639,6 @@
       "login": "I already have an account: sign in",
       "loading": "Loading…",
       "linking": "Linking your supplier profile…",
-      "successTitle": "Profile linked",
-      "successDescription": "Your supplier profile is linked to your account. Complete it in the activation steps: until you activate it, hosts cannot see it.",
-      "completeProfile": "Complete your profile",
       "errorTitle": "Profile not linked",
       "errorGeneric": "We could not link the supplier profile. Please try again.",
       "switchAccount": "Sign in with {{email}}",
@@ -2766,22 +2802,20 @@
     },
     "activation": {
       "title": "Supplier profile activation",
-      "description": "Complete the 5 steps to appear to hosts. You can stop and resume where you left off: your progress is saved on your account.",
+      "description": "A few steps to appear to hosts. You can stop and resume where you left off: your progress is saved on your account.",
       "stepOf": "Step {{current}} of {{total}}",
-      "optional": "Optional",
       "stepsLabel": "Activation steps",
       "steps": {
         "identity": "Business details",
         "services": "Services and municipalities",
         "showcase": "Showcase and photos",
-        "profile": "Description",
-        "terms": "Availability and terms"
+        "profile": "About you",
+        "terms": "Terms and activation"
       },
       "stepDone": "completed",
       "stepTodo": "to do",
       "back": "Back",
       "next": "Save and continue",
-      "skip": "Skip, I'll add photos later",
       "loadError": "Could not load the profile activation.",
       "saveError": "Could not save this step. Try again.",
       "stepSaveError": "Could not remember the step you reached: next time you may restart from an earlier step.",
@@ -2815,8 +2849,6 @@
       },
       "terms": {
         "title": "Availability and Terms of Service",
-        "calendarTitle": "Availability (optional)",
-        "calendarHint": "Connect a calendar to receive jobs only on your free days. You can also do it after activation.",
         "version": "Terms version: {{version}}",
         "accept": "I accept the CasaZen Terms of Service (version {{version}}), including the rules for suppliers",
         "read": "Read the Terms of Service"
@@ -5123,14 +5155,11 @@
     "howToUse": "How do you want to use CasaZen?",
     "editOperatorType": "Edit operator type",
     "acceptLegalDocs": "Accept legal documents",
-    "choosePlan": "Choose your plan",
-    "roleDescription": "Select the type of operator to personalise your experience.",
+    "roleDescription": "Choose how you work: we take you straight to your first property.",
     "editRoleDescription": "Choose the new operator type and save. The plan does not change here: once saved, the plan page opens, where you can manage it.",
-    "consentsDescription": "To activate your account, ToS, privacy, DPA and the subprocessor list are required.",
+    "consentsDescription": "Last step: to activate your account we need the ToS, privacy notice, DPA and the list of subprocessors.",
     "consentsRenewalTitle": "Legal documents updated",
     "consentsRenewalDescription": "We have updated our legal documents: accept the new versions to keep using the host features.",
-    "planOrgDescription": "Set up your organization to start managing properties and bookings.",
-    "planDefaultDescription": "Select the initial plan for your organization. You can change it later.",
     "consentRequiredToast": "Accept the mandatory legal documents before continuing.",
     "consentsStaleToast": "Some legal documents have been updated in the meantime: review and accept the current versions.",
     "configurationErrorToast": "Error during profile setup. Please try again.",
@@ -5140,9 +5169,7 @@
     "choose": "Choose",
     "saveChanges": "Save changes",
     "cancel": "Cancel",
-    "completeRegistration": "Complete registration",
     "retry": "Retry",
-    "select": "Select",
     "shortTermTitle": "Short-term rentals",
     "shortTermDescription": "Manage short-stay bookings on Airbnb, Booking.com and others",
     "longTermTitle": "Long-term rentals",
@@ -5162,10 +5189,9 @@
     "skipDescription": "You do not need a host organization to use the administration area or the supplier console.",
     "skipForNow": "Skip for now",
     "supplierOption": {
-      "title": "I am a supplier",
-      "description": "Do you offer services to hosts (cleaning, maintenance, check-in…)? You do not need a host organization: register your business as a supplier.",
-      "register": "Register as a supplier",
-      "claim": "Already registered your business? Link the profile"
+      "register": "Register your business as a supplier",
+      "claim": "Already registered your business? Link the profile",
+      "question": "Do you offer services to hosts (cleaning, maintenance, check-in…)?"
     },
     "rolesPending": {
       "title": "Setup complete",
@@ -5351,7 +5377,8 @@
       "supplierShowcase": "showcase|services|public profile|prices|price list",
       "suppliers": "partners|professionals|companies|approval",
       "taxRates": "tourist tax|city tax|rates|municipalities",
-      "users": "people|users|accounts|roles|permissions"
+      "users": "people|users|accounts|roles|permissions",
+      "inviteQr": "qr|qr code|print|flyer|invite|poster"
     },
     "kinds": {
       "action": "Action",
@@ -6948,6 +6975,22 @@
       "derivedRegion": "Region: {{region}} (follows the comune)",
       "notInList": "This comune is no longer in the official list (merger or suppression): choose the current one.",
       "codeUnknown": "The ISTAT code {{code}} is not in the list of comuni: choose the comune again."
+    }
+  },
+  "longRentGuide": {
+    "title": "Start here",
+    "progress": "{{count}} of {{total}} steps done",
+    "steps": {
+      "property": {
+        "title": "Add your first property",
+        "hint": "Address and comune are enough: you add the rest (energy certificate, documents) later.",
+        "cta": "Add property"
+      },
+      "lease": {
+        "title": "Create your first lease",
+        "hint": "We guide you through signing and registration, with flat-rate tax and deadlines.",
+        "cta": "Create lease"
+      }
     }
   }
 }

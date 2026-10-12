@@ -52,8 +52,6 @@ async function completeOnboardingIfNeeded(
     await page.getByTestId('onboarding-consents-continue').click();
   }
 
-  await expect(page.getByTestId('plan-selection-grid')).toBeVisible({ timeout: 30_000 });
-  await page.getByTestId('onboarding-plan-confirm').click();
   await page.waitForURL((url) => !url.pathname.includes('/onboarding'), { timeout: 60_000 });
   await waitForSession(page);
 }

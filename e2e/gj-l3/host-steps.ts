@@ -24,7 +24,7 @@ export async function pickComune(page: Page, inputSelector: string, name: string
   await page.getByRole('option', { name: new RegExp(`^${name}`, 'i') }).first().click();
 }
 
-/** Onboarding wizard as a new host sees it: operator type, consents, plan. */
+/** Onboarding wizard as a new host sees it: operator type, then the consents (no plan step: the org starts on Starter). */
 export async function completeHostOnboarding(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Scegli' }).first().click(); // "Affitti brevi"
@@ -32,8 +32,6 @@ export async function completeHostOnboarding(page: Page): Promise<void> {
   await expect(consents).toBeVisible({ timeout: 20_000 });
   for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.click();
   await page.getByTestId('onboarding-consents-continue').click();
-  await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-  await page.getByTestId('onboarding-plan-confirm').click();
   // Roles are granted through the (mock) Management API; the "roles pending" card must not stay on screen.
   await expect(page.getByTestId('onboarding-roles-pending')).toHaveCount(0, { timeout: 20_000 });
   await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 30_000 });

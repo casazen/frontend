@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  claimSupplierProfile,
   acceptSupplierTos,
   completeSupplierActivation,
   saveSupplierActivationStep,
@@ -261,17 +260,6 @@ export function useRegisterSupplier() {
     onSuccess: (_result, { authenticated }) => {
       // A signed-in registration links the account to the supplier org: /me changes.
       if (authenticated) void queryClient.invalidateQueries({ queryKey: ['me'] });
-    },
-  });
-}
-
-/** Links the signed-in account to its supplier profile (SU-02); the profile (`/me`) then has `supplierOrgId`. */
-export function useClaimSupplier() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (claimToken?: string) => claimSupplierProfile(claimToken),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }

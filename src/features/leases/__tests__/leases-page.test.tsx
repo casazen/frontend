@@ -7,6 +7,8 @@ import { LeasesPage } from '../leases-page';
 import { buildSummary, HTML_FALLBACK, httpError, renderAt } from './lease-test-utils';
 
 // The real leasesApi and ApiClient run: only the HTTP layer is replaced.
+// The first-steps guide has its own tests and reads other endpoints.
+vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 const get = vi.mocked(axios.get);

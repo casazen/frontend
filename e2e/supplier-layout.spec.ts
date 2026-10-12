@@ -6,7 +6,7 @@ import { moreOfTheBar } from './helpers/profile-menu';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
-    test('full activation: completes the 5-step wizard, lands on dashboard', async ({ page }) => {
+    test('full activation: completes the three screens, lands on dashboard', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page);
 
@@ -15,7 +15,7 @@ test.describe('Supplier layout standardization', () => {
       await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier profile activation/i })).toBeVisible();
 
       // The server opens the first incomplete step: services. It saves category codes, never labels (SU-03, A4-05).
-      await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/2/);
+      await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/1 di 3|1 of 3/);
       await page.getByTestId('service-category-cleaning').click();
       // The comuni are picked from the official ISTAT list and saved as ISTAT codes (SU-04).
       await page.locator('#comuni').fill('Roma');
@@ -27,14 +27,11 @@ test.describe('Supplier layout standardization', () => {
       expect(saved.categories).toEqual(['cleaning']);
       expect(saved.comuneIstatCodes).toEqual(['058091']);
 
-      // Step 3 (photos, optional): skip.
-      await page.getByRole('button', { name: /Salta|Skip/i }).click();
-
-      // Step 4: description.
+      // Presentation: description (the photos on the same screen are optional).
       await page.locator('#bio').fill('Pulizie professionali a Roma');
       await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
 
-      // Step 5: Terms + activate.
+      // Terms + activate.
       await expect(page.getByTestId('supplier-activation-summary')).toBeVisible();
       await page.locator('#tos').click();
       await page.getByRole('button', { name: /Attiva profilo|Activate profile/i }).click();

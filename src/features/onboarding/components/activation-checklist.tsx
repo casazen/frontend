@@ -57,7 +57,8 @@ function StepRow({ step }: { step: ActivationStep }) {
 
   return (
     <li
-      className="flex flex-wrap items-start justify-between gap-3 rounded-md border px-3 py-3"
+      // Stacked on a phone (the text keeps the full width), side by side from `sm`.
+      className="flex flex-col gap-3 rounded-md border px-3 py-3 sm:flex-row sm:items-start sm:justify-between"
       data-testid={`activation-step-${step.key}`}
       data-state={step.state}
     >
@@ -70,7 +71,7 @@ function StepRow({ step }: { step: ActivationStep }) {
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 pl-8 sm:pl-0">
         <Badge variant={STATE_BADGE[step.state]} data-testid={`activation-step-${step.key}-state`}>
           {t(`activation.state.${step.state}`)}
         </Badge>

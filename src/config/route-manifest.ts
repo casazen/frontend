@@ -604,6 +604,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/suppliers/invite'],
   },
   {
+    path: '/app/admin/invite-qr',
+    context: 'admin',
+    requiredPermissions: ['admin.users.manage'],
+    navKey: 'nav.inviteQr',
+    navPlacement: 'secondary',
+    navOrder: 22,
+    icon: 'QrCode',
+    component: async () => ({ default: (await import('@/features/admin/admin-invite-qr-page')).AdminInviteQrPage }),
+  },
+  {
     path: '/app/admin/jobs',
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],

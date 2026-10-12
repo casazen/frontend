@@ -107,14 +107,11 @@ describe('SupplierClaimPage (SU-02)', () => {
 
     renderPage();
 
-    expect(await screen.findByText(t('supplier.claim.successTitle'))).toBeInTheDocument();
+    // Linked and role granted: nothing to confirm, the wizard opens by itself.
+    expect(await screen.findByTestId('activation')).toBeInTheDocument();
     expect(claimSupplierProfile).toHaveBeenCalledTimes(1);
     expect(claimSupplierProfile).toHaveBeenCalledWith(CLAIM.token);
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: t('supplier.claim.completeProfile') }));
-
-    expect(await screen.findByTestId('activation')).toBeInTheDocument();
     expect(refreshAccessToken).toHaveBeenCalled();
   });
 
@@ -130,7 +127,7 @@ describe('SupplierClaimPage (SU-02)', () => {
     expect(await screen.findByTestId('onboarding-roles-pending')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('onboarding-roles-retry'));
 
-    expect(await screen.findByText(t('supplier.claim.successTitle'))).toBeInTheDocument();
+    expect(await screen.findByTestId('activation')).toBeInTheDocument();
     expect(claimSupplierProfile).toHaveBeenCalledTimes(2);
     // The retry reuses the token kept in memory: the backend answers the already linked org.
     expect(claimSupplierProfile).toHaveBeenLastCalledWith(CLAIM.token);
@@ -192,7 +189,7 @@ describe('SupplierClaimPage (SU-02)', () => {
     expect(claimSupplierProfile).toHaveBeenCalledWith(undefined);
     fireEvent.click(screen.getByRole('button', { name: t('supplier.claim.retry') }));
 
-    expect(await screen.findByText(t('supplier.claim.successTitle'))).toBeInTheDocument();
+    expect(await screen.findByTestId('activation')).toBeInTheDocument();
     expect(refreshAccessToken).toHaveBeenCalled();
     expect(claimSupplierProfile).toHaveBeenCalledTimes(2);
   });
@@ -210,7 +207,7 @@ describe('SupplierClaimPage (SU-02)', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: t('supplier.claim.retry') }));
 
-    expect(await screen.findByText(t('supplier.claim.successTitle'))).toBeInTheDocument();
+    expect(await screen.findByTestId('activation')).toBeInTheDocument();
   });
 
   it('skip_ForgetsTheClaimAndLeaves', async () => {

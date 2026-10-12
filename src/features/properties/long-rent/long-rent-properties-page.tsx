@@ -7,6 +7,7 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProperties } from '@/queries/use-properties';
+import { LongRentGuide } from '@/features/onboarding/components/long-rent-guide';
 import { LoadErrorCard } from './load-error-card';
 import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from './paths';
 
@@ -53,6 +54,7 @@ export function LongRentPropertiesPage() {
   return (
     <div className="space-y-6">
       {header}
+      <LongRentGuide />
 
       {properties.length === 0 ? (
         <EmptyState

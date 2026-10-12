@@ -369,6 +369,30 @@
         "inviteResent": "Invito reinviato a {{email}}.",
         "inviteRevoked": "Invito per {{email}} revocato."
       }
+    },
+    "inviteQr": {
+      "title": "QR di invito",
+      "description": "Codici da stampare o condividere: chi li inquadra arriva direttamente al percorso giusto, da fornitore o da host.",
+      "campaign": "Nome della campagna (facoltativo)",
+      "campaignPlaceholder": "Es. volantino-roma-ottobre",
+      "campaignHint": "Serve a misurare quante registrazioni arrivano da questo codice. Nell'indirizzo: {{value}}",
+      "supplier": {
+        "title": "Invito fornitori",
+        "description": "Apre la registrazione fornitore: il fornitore sceglie il suo comune tra tutti quelli italiani.",
+        "printSubtitle": "Sei un fornitore di servizi? Inquadra e registrati su CasaZen."
+      },
+      "host": {
+        "title": "Invito host",
+        "description": "Apre la registrazione host: sceglie affitti brevi o lunghi e crea subito il primo immobile.",
+        "printSubtitle": "Affitti la tua casa? Inquadra e inizia a gestirla con CasaZen."
+      },
+      "qrAlt": "Codice QR: {{title}}",
+      "print": "Stampa",
+      "download": "Scarica PNG",
+      "copy": "Copia link",
+      "copied": "Link copiato.",
+      "copyError": "Impossibile copiare il link.",
+      "popupBlocked": "Il browser ha bloccato la finestra di stampa: consenti i popup per questo sito e riprova."
     }
   },
   "nav": {
@@ -433,7 +457,8 @@
       "bookingRequests_other": "{{count}} richieste da approvare",
       "supplierRequests_one": "{{count}} richiesta da accettare",
       "supplierRequests_other": "{{count}} richieste da accettare"
-    }
+    },
+    "inviteQr": "QR di invito"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -2142,6 +2167,21 @@
       "label": "Slug URL (opzionale)",
       "placeholder": "la-mia-struttura",
       "hint": "Personalizza l'URL di questa struttura nel tuo sito di prenotazione. Lascia vuoto per usare l'ID della struttura."
+    },
+    "quick": {
+      "title": "Aggiungi il tuo primo immobile",
+      "description": "Bastano pochi dati. Il resto (foto, CIN, pagamenti) te lo chiediamo dopo, un passo alla volta.",
+      "name": "Come si chiama?",
+      "namePlaceholder": "Es. Appartamento Duomo",
+      "rateHint": "Potrai cambiarlo in ogni momento e impostare tariffe stagionali.",
+      "submit": "Crea immobile e continua",
+      "saving": "Creazione…",
+      "fullForm": "Preferisco inserire tutti i dettagli ora",
+      "created": "Immobile creato. Ora completiamo la configurazione.",
+      "validation": {
+        "comuneRequired": "Scegli il comune dall'elenco.",
+        "duplicate": "Esiste già un immobile con questo indirizzo."
+      }
     }
   },
   "pricing": {
@@ -2584,13 +2624,12 @@
       "selfServeUnavailableTitle": "Registrazione su invito",
       "selfServeUnavailable": "Al momento i fornitori entrano in CasaZen solo su invito. Se hai ricevuto un invito, apri il link nell'email.",
       "optionsError": "Impossibile caricare le opzioni di registrazione.",
-      "comunePlaceholder": "Seleziona il comune",
-      "comuneHint": "La registrazione autonoma è disponibile solo nei comuni pilota.",
+      "comunePlaceholder": "Cerca il tuo comune",
+      "comuneHint": "Scegli il comune principale in cui lavori: puoi aggiungerne altri dopo.",
       "comuneWithCode": "{{name}} ({{code}})",
       "emailAccountHint": "È l'email del tuo account.",
       "emailInviteHint": "L'invito vale solo per questa email.",
-      "successSignedIn": "Il tuo profilo fornitore è stato creato e collegato al tuo account. Completalo nella procedura di attivazione: finché non lo attivi gli host non lo vedono.",
-      "completeProfile": "Completa il profilo"
+      "openingActivation": "Apertura del tuo profilo…"
     },
     "claim": {
       "title": "Collega il tuo profilo fornitore",
@@ -2600,9 +2639,6 @@
       "login": "Ho già un account: accedi",
       "loading": "Caricamento…",
       "linking": "Collegamento del profilo fornitore…",
-      "successTitle": "Profilo collegato",
-      "successDescription": "Il profilo fornitore è collegato al tuo account. Completalo nella procedura di attivazione: finché non lo attivi gli host non lo vedono.",
-      "completeProfile": "Completa il profilo",
       "errorTitle": "Profilo non collegato",
       "errorGeneric": "Non è stato possibile collegare il profilo fornitore. Riprova.",
       "switchAccount": "Accedi con {{email}}",
@@ -2766,22 +2802,20 @@
     },
     "activation": {
       "title": "Attivazione profilo fornitore",
-      "description": "Completa i 5 passi per comparire agli host. Puoi interrompere e riprendere da dove eri: i progressi sono salvati sul tuo account.",
+      "description": "Pochi passi per comparire agli host. Puoi interrompere e riprendere da dove eri: i progressi sono salvati sul tuo account.",
       "stepOf": "Passo {{current}} di {{total}}",
-      "optional": "Facoltativo",
       "stepsLabel": "Passi dell'attivazione",
       "steps": {
         "identity": "Dati dell'attività",
         "services": "Servizi e comuni",
         "showcase": "Vetrina e foto",
-        "profile": "Descrizione",
-        "terms": "Disponibilità e termini"
+        "profile": "Presentazione",
+        "terms": "Termini e attivazione"
       },
       "stepDone": "completato",
       "stepTodo": "da completare",
       "back": "Indietro",
       "next": "Salva e continua",
-      "skip": "Salta, aggiungo le foto dopo",
       "loadError": "Impossibile caricare l'attivazione del profilo.",
       "saveError": "Impossibile salvare questo passo. Riprova.",
       "stepSaveError": "Impossibile ricordare il passo raggiunto: al prossimo accesso potresti ripartire da un passo precedente.",
@@ -2815,8 +2849,6 @@
       },
       "terms": {
         "title": "Disponibilità e Termini di Servizio",
-        "calendarTitle": "Disponibilità (facoltativa)",
-        "calendarHint": "Collega un calendario per ricevere solo incarichi nei giorni liberi. Puoi farlo anche dopo l'attivazione.",
         "version": "Versione dei Termini: {{version}}",
         "accept": "Accetto i Termini di Servizio di CasaZen (versione {{version}}), comprese le regole per i fornitori",
         "read": "Leggi i Termini di Servizio"
@@ -5123,14 +5155,11 @@
     "howToUse": "Come vuoi usare CasaZen?",
     "editOperatorType": "Modifica tipo di operatore",
     "acceptLegalDocs": "Accetta i documenti legali",
-    "choosePlan": "Scegli il tuo piano",
-    "roleDescription": "Scegli il tipo di operatore per personalizzare la tua esperienza.",
+    "roleDescription": "Scegli come lavori: ti portiamo subito al tuo primo immobile.",
     "editRoleDescription": "Scegli il nuovo tipo di operatore e salva. Il piano non cambia qui: dopo il salvataggio si apre la pagina del piano, dove puoi gestirlo.",
-    "consentsDescription": "Per attivare il tuo account sono richiesti ToS, privacy, DPA e l'elenco subprocessori.",
+    "consentsDescription": "Ultimo passaggio: per attivare il tuo account servono ToS, privacy, DPA e l'elenco subprocessori.",
     "consentsRenewalTitle": "Documenti legali aggiornati",
     "consentsRenewalDescription": "Abbiamo aggiornato i documenti legali: accetta le nuove versioni per continuare a usare le funzioni per host.",
-    "planOrgDescription": "Configura la tua organizzazione per iniziare a gestire proprieta' e prenotazioni.",
-    "planDefaultDescription": "Seleziona il piano iniziale per la tua organizzazione. Potrai modificarlo in seguito.",
     "consentRequiredToast": "Accetta i documenti legali obbligatori prima di continuare.",
     "consentsStaleToast": "Nel frattempo alcuni documenti legali sono stati aggiornati: rileggi e accetta le versioni correnti.",
     "configurationErrorToast": "Errore durante la configurazione del profilo. Riprova.",
@@ -5140,9 +5169,7 @@
     "choose": "Scegli",
     "saveChanges": "Salva modifiche",
     "cancel": "Annulla",
-    "completeRegistration": "Completa registrazione",
     "retry": "Riprova",
-    "select": "Seleziona",
     "shortTermTitle": "Affitti brevi",
     "shortTermDescription": "Gestisci prenotazioni short-stay su Airbnb, Booking.com e altri",
     "longTermTitle": "Locazioni di lungo periodo",
@@ -5162,10 +5189,9 @@
     "skipDescription": "Non ti serve un'organizzazione host per usare l'area di amministrazione o la console fornitori.",
     "skipForNow": "Salta per ora",
     "supplierOption": {
-      "title": "Sono un fornitore",
-      "description": "Offri servizi agli host (pulizie, manutenzione, check-in…)? Non ti serve un'organizzazione host: registra la tua attività come fornitore.",
-      "register": "Registrati come fornitore",
-      "claim": "Hai già registrato la tua attività? Collega il profilo"
+      "register": "Registra la tua attività come fornitore",
+      "claim": "Hai già registrato la tua attività? Collega il profilo",
+      "question": "Offri servizi agli host (pulizie, manutenzione, check-in…)?"
     },
     "rolesPending": {
       "title": "Configurazione completata",
@@ -5351,7 +5377,8 @@
       "supplierShowcase": "vetrina|servizi|profilo pubblico|prezzi|listino",
       "suppliers": "partner|professionisti|aziende|approvazione",
       "taxRates": "tassa di soggiorno|imposta di soggiorno|aliquote|comuni",
-      "users": "persone|utenti|account|ruoli|permessi"
+      "users": "persone|utenti|account|ruoli|permessi",
+      "inviteQr": "qr|codice qr|stampa|volantino|invito|locandina"
     },
     "kinds": {
       "action": "Azione",
@@ -6948,6 +6975,22 @@
       "derivedRegion": "Regione: {{region}} (segue il comune)",
       "notInList": "Questo comune non è più nell'elenco ufficiale (fusione o soppressione): scegli quello attuale.",
       "codeUnknown": "Il codice ISTAT {{code}} non è nell'elenco dei comuni: scegli di nuovo il comune."
+    }
+  },
+  "longRentGuide": {
+    "title": "Inizia da qui",
+    "progress": "{{count}} di {{total}} passi completati",
+    "steps": {
+      "property": {
+        "title": "Aggiungi il tuo primo immobile",
+        "hint": "Indirizzo e comune bastano: il resto (APE, documenti) lo aggiungi dopo.",
+        "cta": "Aggiungi immobile"
+      },
+      "lease": {
+        "title": "Crea il primo contratto di locazione",
+        "hint": "Ti guidiamo fino a firma e registrazione, con cedolare secca e scadenze.",
+        "cta": "Crea contratto"
+      }
     }
   }
 }
