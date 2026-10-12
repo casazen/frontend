@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Wrench } from 'lucide-react';
@@ -22,9 +23,14 @@ import {
 import { usePropertyBookings } from '@/queries/use-bookings';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
+import { formatStayDate, romeWallTimeToUtc } from '@/lib/stay-dates';
+import { formatWorkDuration } from '@/lib/work-duration';
 import type { ServiceRequestContextKey, ServiceRequestUrgency } from '@/types/service-request';
 import { ServiceCategorySelect } from './service-category-picker';
 import { orderStaysForRequest, stayOptionLabel } from '../lib/stays';
+import { stayDateOf } from '@/features/bookings/lib/booking-price';
+
+const DURATIONS = [30, 60, 90, 120, 180, 240, 360];
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -38,6 +44,11 @@ interface ServiceRequestFormProps {
   context?: ServiceRequestContextKey;
   /** Short-rent: the stay (booking detail). Without it the form asks which stay of the property. */
   bookingId?: string;
+  /**
+   * Europe/Rome day of the job (`YYYY-MM-DD`). Short-rent booking detail passes the check-out; otherwise the form
+   * uses the check-out of the stay it asks for. Long-rent asks the host for the day.
+   */
+  jobDate?: string;
   /** Supplier already chosen (marketplace). Without it the form lists the property's suppliers for the category. */
   supplierOrgId?: string;
   preselectedCategory?: string;
@@ -65,6 +76,7 @@ export function ServiceRequestForm({
   propertyId,
   context = 'short-rent',
   bookingId,
+  jobDate,
   supplierOrgId,
   preselectedCategory,
   initialNotes,
@@ -96,13 +108,17 @@ export function ServiceRequestForm({
   const [notes, setNotes] = useState(initialNotes ?? '');
   const [pickedStay, setPickedStay] = useState('');
   const [pickedSupplier, setPickedSupplier] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [durationMinutes, setDurationMinutes] = useState('');
+  const [pickedDate, setPickedDate] = useState('');
 
   const isShortRent = context === 'short-rent';
   const asksStay = isShortRent && !bookingId;
   const asksSupplier = !supplierOrgId;
 
-  // Queried only while the dialog is open and the form needs them.
-  const stays = usePropertyBookings(open && asksStay ? propertyId : undefined);
+  // The check-out of the stay is the day of the job. Loaded when the form asks which stay, or when a known stay was
+  // not given its day by the caller.
+  const stays = usePropertyBookings(open && isShortRent && (asksStay || !jobDate) ? propertyId : undefined);
   const stayOptions = orderStaysForRequest(stays.data ?? []);
   const supplierCategory = selectedCategory || undefined;
   const shortRentSuppliers = useSuppliersByProperty(
@@ -123,11 +139,16 @@ export function ServiceRequestForm({
   const effectiveStay = bookingId ?? (stayOptions.some((b) => b.id === pickedStay) ? pickedStay : '');
   const effectiveSupplier =
     supplierOrgId ?? (supplierOptions.some((s) => s.orgId === pickedSupplier) ? pickedSupplier : '');
+  const stayForDay = stayOptions.find((b) => b.id === effectiveStay);
+  const day = isShortRent ? jobDate || (stayForDay ? stayDateOf(stayForDay.checkOutDate) : '') : pickedDate;
+  const duration = Number(durationMinutes);
+  const scheduleReady = !!day && /^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) && DURATIONS.includes(duration);
 
   const createStayRequest = useCreateServiceRequest();
   const createLongRentRequest = useCreateLongRentServiceRequest();
   const isPending = createStayRequest.isPending || createLongRentRequest.isPending;
-  const canSubmit = !!effectiveSupplier && !!selectedCategory && (!isShortRent || !!effectiveStay) && !isPending;
+  const canSubmit =
+    !!effectiveSupplier && !!selectedCategory && (!isShortRent || !!effectiveStay) && scheduleReady && !isPending;
 
   const onCreated = {
     onSuccess: () => {
@@ -138,12 +159,16 @@ export function ServiceRequestForm({
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+    const scheduledStartUtc = romeWallTimeToUtc(day, startTime);
+    if (!scheduledStartUtc) return;
     const common = {
       propertyId,
       supplierOrgId: effectiveSupplier,
       category: selectedCategory,
       urgency,
       notes: notes || undefined,
+      scheduledStartUtc,
+      durationMinutes: duration,
     };
     if (isShortRent) {
       createStayRequest.mutate({ ...common, bookingId: effectiveStay }, onCreated);
@@ -251,6 +276,51 @@ export function ServiceRequestForm({
               )}
             </div>
           )}
+
+          <div className="space-y-2">
+            {isShortRent ? (
+              day && (
+                <p className="text-sm text-muted-foreground" data-testid="service-request-job-day">
+                  {t('serviceRequest.jobDayValue', { date: formatStayDate(day, i18n.language) })}
+                </p>
+              )
+            ) : (
+              <>
+                <Label htmlFor="sr-day">{t('serviceRequest.jobDay')}</Label>
+                <Input
+                  id="sr-day"
+                  type="date"
+                  value={pickedDate}
+                  onChange={(e) => setPickedDate(e.target.value)}
+                  data-testid="service-request-job-date"
+                />
+              </>
+            )}
+            <Label htmlFor="sr-start">{t('serviceRequest.startTime')}</Label>
+            <Input
+              id="sr-start"
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              data-testid="service-request-start-time"
+            />
+            <Label htmlFor="sr-duration">{t('serviceRequest.duration')}</Label>
+            <select
+              id="sr-duration"
+              className={selectClass}
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(e.target.value)}
+              data-testid="service-request-duration"
+            >
+              <option value="">{t('serviceRequest.durationPlaceholder')}</option>
+              {DURATIONS.map((minutes) => (
+                <option key={minutes} value={minutes}>
+                  {formatWorkDuration(minutes, t)}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">{t('serviceRequest.durationHint')}</p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="sr-urgency">{t('serviceRequest.urgency')}</Label>

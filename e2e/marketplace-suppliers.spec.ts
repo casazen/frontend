@@ -107,6 +107,8 @@ async function mockMarketplaceApis(page: Page) {
       expect(body.category).toBe('cleaning');
       // D2: the request is for the stay chosen in the dialog.
       expect(body.bookingId).toBe(STAY_ID);
+      expect(body.durationMinutes).toBe(120);
+      expect(body.scheduledStartUtc).toEqual(expect.any(String));
       expect(body.chargeToGuest).toBeUndefined();
 
       await route.fulfill({
@@ -153,6 +155,8 @@ test.describe('Marketplace suppliers (#340)', () => {
     // Without a stay the request cannot be sent (D2).
     await expect(page.getByTestId('submit-service-request')).toBeDisabled();
     await page.getByTestId('service-request-stay').selectOption(STAY_ID);
+    await page.getByTestId('service-request-start-time').fill('10:00');
+    await page.getByTestId('service-request-duration').selectOption('120');
     await expect(page.getByTestId('submit-service-request')).toBeEnabled();
 
     const createResp = page.waitForResponse(

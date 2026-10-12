@@ -17,6 +17,8 @@ import {
 import { getProblemMessage } from '@/lib/api-errors';
 import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { formatRomeDateTime, formatStayDate } from '@/lib/stay-dates';
+import { workDurationMinutes } from '@/features/supplier/lib/job-time';
+import { formatWorkDuration } from '@/lib/work-duration';
 import type {
   ServiceRequestHistoryEntry,
   ServiceRequestUrgency,
@@ -115,6 +117,8 @@ function WhereSection({ request }: { request: SupplierServiceRequestDetail }) {
 
 function WhenSection({ request }: { request: SupplierServiceRequestDetail }) {
   const { t, i18n } = useTranslation();
+  const minutes = workDurationMinutes(request.scheduledStart, request.scheduledEnd);
+  const timed = !!(request.scheduledStart && request.scheduledEnd && minutes);
   return (
     <Section title={t('supplier.request.whenTitle')} icon={<CalendarDays className="h-4 w-4" />} testId="supplier-request-when">
       {request.scheduledFor ? (
@@ -122,7 +126,21 @@ function WhenSection({ request }: { request: SupplierServiceRequestDetail }) {
           <Field label={t('supplier.request.scheduledFor')} testId="supplier-request-scheduled-for">
             {formatStayDate(request.scheduledFor, i18n.language, LONG_DATE)}
           </Field>
-          <p className="text-xs text-muted-foreground">{t('supplier.request.scheduledForHint')}</p>
+          {timed ? (
+            <>
+              <Field label={t('supplier.request.time')} testId="supplier-request-time">
+                {formatRomeDateTime(request.scheduledStart!, i18n.language, { hour: '2-digit', minute: '2-digit' })}
+                –
+                {formatRomeDateTime(request.scheduledEnd!, i18n.language, { hour: '2-digit', minute: '2-digit' })}
+              </Field>
+              <Field label={t('supplier.request.duration')} testId="supplier-request-duration">
+                {formatWorkDuration(minutes, t)}
+              </Field>
+              <p className="text-xs text-muted-foreground">{t('supplier.request.hasTimeHint')}</p>
+            </>
+          ) : (
+            <Hint testId="supplier-request-no-time">{t('supplier.request.noTimeHint')}</Hint>
+          )}
         </>
       ) : (
         <Hint testId="supplier-request-no-date">{t('supplier.request.noDate')}</Hint>

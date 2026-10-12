@@ -19,6 +19,7 @@ import {
 import { getProblemMessage } from '@/lib/api-errors';
 import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
+import { formatJobWhen, takeBlockedBy } from '@/features/supplier/lib/job-time';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import type { SupplierInboxParams, SupplierInboxStatus } from '@/types/supplier';
 import { RejectServiceRequestDialog } from './components/reject-service-request-dialog';
@@ -42,9 +43,7 @@ function ActivityLine({ item, tab }: { item: SupplierServiceRequest; tab: InboxT
     </span>,
     <span key="day" className="inline-flex items-center gap-1" data-testid={`inbox-day-${item.id}`}>
       <CalendarDays className="h-3.5 w-3.5" />
-      {item.scheduledFor
-        ? t('supplier.inbox.dayOf', { date: formatStayDate(item.scheduledFor, i18n.language) })
-        : t('supplier.inbox.noDate')}
+      {formatJobWhen(item, i18n.language, t)}
     </span>,
   ];
   if (tab === 'history') {
@@ -104,7 +103,7 @@ function InboxList({
   tab: InboxTab;
   enabled: boolean;
   onPage: (page: number) => void;
-  renderActions?: (item: SupplierServiceRequest) => ReactNode;
+  renderActions?: (item: SupplierServiceRequest, blocked: boolean) => ReactNode;
 }) {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierInbox(params, { enabled });
@@ -149,7 +148,12 @@ function InboxList({
   return (
     <div className="space-y-4">
       {data.items.map((item) => (
-        <InboxCard key={item.id} item={item} tab={tab} actions={renderActions?.(item)} />
+        <InboxCard
+          key={item.id}
+          item={item}
+          tab={tab}
+          actions={renderActions?.(item, tab === 'open' && takeBlockedBy(item, data.items))}
+        />
       ))}
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm" data-testid="supplier-inbox-pagination">
         <span className="text-muted-foreground" data-testid="supplier-inbox-page-info">
@@ -191,13 +195,18 @@ export function SupplierInboxPage() {
 
   const periodInvalid = !!from && !!to && from > to;
 
-  const openActions = (item: SupplierServiceRequest) => {
+  const openActions = (item: SupplierServiceRequest, blocked: boolean) => {
     if (item.status === 'Richiesto') {
       return (
         <>
-          <Button size="sm" onClick={() => takeMutation.mutate(item.id)} disabled={takeMutation.isPending || suspended} data-testid={`take-${item.id}`}>
+          <Button size="sm" onClick={() => takeMutation.mutate(item.id)} disabled={takeMutation.isPending || suspended || blocked} data-testid={`take-${item.id}`}>
             {t('serviceRequest.take')}
           </Button>
+          {blocked && (
+            <p className="w-full text-xs text-destructive" data-testid={`conflict-${item.id}`}>
+              {t('supplier.inbox.conflict')}
+            </p>
+          )}
           <Button size="sm" variant="outline" onClick={() => setRejectId(item.id)} disabled={suspended} data-testid={`reject-${item.id}`}>
             {t('serviceRequest.reject')}
           </Button>

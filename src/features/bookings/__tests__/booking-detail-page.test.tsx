@@ -13,7 +13,7 @@ import { fetchServiceCategories } from '@/api/service-categories.api';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { toast } from 'sonner';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
-import { addDays, todayInRome } from '@/lib/stay-dates';
+import { addDays, romeWallTimeToUtc, todayInRome } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 import { BookingDetailPage } from '../booking-detail-page';
 
@@ -441,6 +441,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     fireEvent.change(await within(dialog).findByTestId('service-request-supplier', undefined, WAIT), {
       target: { value: 'sup-1' },
     });
+    fireEvent.change(within(dialog).getByTestId('service-request-start-time'), { target: { value: '10:00' } });
+    fireEvent.change(within(dialog).getByTestId('service-request-duration'), { target: { value: '120' } });
     await waitFor(() => expect(within(dialog).getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(within(dialog).getByTestId('submit-service-request'));
 
@@ -450,6 +452,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
       bookingId: BOOKING_ID,
       supplierOrgId: 'sup-1',
       category: 'cleaning',
+      scheduledStartUtc: romeWallTimeToUtc('2027-10-05', '10:00'),
+      durationMinutes: 120,
     });
   });
 

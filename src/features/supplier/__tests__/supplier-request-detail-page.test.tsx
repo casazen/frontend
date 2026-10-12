@@ -124,6 +124,7 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     expect(screen.getByTestId('supplier-request-city')).toHaveTextContent('Roma');
     expect(screen.getByTestId('supplier-request-postal-code')).toHaveTextContent('00184');
     expect(screen.getByTestId('supplier-request-scheduled-for')).toHaveTextContent('lunedì 12 ottobre 2026');
+    expect(screen.getByTestId('supplier-request-no-time')).toHaveTextContent('Manca l\'orario');
     expect(screen.getByTestId('supplier-request-stay')).toHaveTextContent('Dal 9 ottobre 2026 al 12 ottobre 2026');
     expect(screen.getByTestId('supplier-request-address-hidden')).toHaveTextContent(
       "L'indirizzo completo è visibile dopo la presa in carico.",

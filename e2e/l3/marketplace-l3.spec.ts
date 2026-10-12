@@ -88,6 +88,8 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     await page.getByTestId('marketplace-request-service-btn').click();
     await expect(page.getByTestId('submit-service-request')).toBeDisabled();
     await page.getByTestId('service-request-stay').selectOption(stayId);
+    await page.getByTestId('service-request-start-time').fill('10:00');
+    await page.getByTestId('service-request-duration').selectOption('120');
 
     const created = page.waitForResponse(
       (r) => r.request().method() === 'POST' && new URL(r.url()).pathname.endsWith('/api/service-requests'),
