@@ -38,7 +38,7 @@ export function SupplierInvitesList() {
   let content;
   if (isLoading) {
     content = <LoadingRows />;
-  } else if (isError || !data) {
+  } else if (isError || !data?.items) {
     content = <ErrorRow error={error} message={t('admin.suppliers.invites.loadError')} onRetry={() => void refetch()} />;
   } else if (data.items.length === 0) {
     content = (
