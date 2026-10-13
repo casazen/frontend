@@ -12,7 +12,7 @@ function directives(robots: string): string[] {
 
 describe('buildRobotsTxt (SE-02, A8-02)', () => {
   it('buildRobotsTxt_VercelProduction_AllowsIndexingAndDeclaresSitemapOnPublicDomain', () => {
-    const robots = buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl: `${PUBLIC_SITE}/` });
+    const robots = buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl: `${PUBLIC_SITE}/`, publicSiteEnabled: true });
 
     expect(directives(robots)).toEqual([
       'User-agent: *',
@@ -29,9 +29,19 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /booking/',
       'Disallow: /requests/',
       'Disallow: /property/*/checkout',
+      'Disallow: /_site/',
       `Sitemap: ${PUBLIC_SITE}/sitemap.xml`,
       `Sitemap: ${PUBLIC_SITE}/sitemap-book.xml`,
+      `Sitemap: ${PUBLIC_SITE}/sitemap-site.xml`,
     ]);
+  });
+
+  it('buildRobotsTxt_VercelProductionWithoutThePublicSite_DoesNotDeclareItsSitemap', () => {
+    // SEO-VETRINA: no company data yet, so production does not serve the public site (src/site/site-gate.ts).
+    const robots = buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl: PUBLIC_SITE, publicSiteEnabled: false });
+    expect(robots).not.toContain('sitemap-site.xml');
+    expect(robots).toContain(`Sitemap: ${PUBLIC_SITE}/sitemap.xml`);
+    expect(robots).toContain(`Sitemap: ${PUBLIC_SITE}/sitemap-book.xml`);
   });
 
   it('buildRobotsTxt_VercelProduction_KeepsTheBookingSitesAndGuidesCrawlable', () => {
@@ -50,6 +60,11 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/',
       '/property/villa',
       '/sitemap.xml',
+      // SEO-VETRINA: the pages of the public site and their sitemap.
+      '/funzionalita',
+      '/per-i-fornitori',
+      '/chi-siamo',
+      '/sitemap-site.xml',
     ]) {
       expect(isDisallowed(indexed), indexed).toBe(false);
     }
@@ -67,6 +82,8 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/booking/0f6c',
       '/requests/0f6c/confirm',
       '/property/villa/checkout',
+      // The files behind the public site's pages, which are served at their own paths.
+      '/_site/index.html',
     ]) {
       expect(isDisallowed(hidden), hidden).toBe(true);
     }
@@ -76,14 +93,14 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
     'buildRobotsTxt_NotProduction_%s_DisallowsEverythingWithoutSitemap',
     (vercelEnv) => {
       // Preview deployments, the develop test deployment, local and CI builds are never indexed.
-      const robots = buildRobotsTxt({ vercelEnv, publicSiteUrl: PUBLIC_SITE });
+      const robots = buildRobotsTxt({ vercelEnv, publicSiteUrl: PUBLIC_SITE, publicSiteEnabled: true });
 
       expect(directives(robots)).toEqual(['User-agent: *', 'Disallow: /']);
     },
   );
 
   it('buildRobotsTxt_NotProductionWithoutPublicSite_DoesNotNeedIt', () => {
-    expect(() => buildRobotsTxt({ vercelEnv: 'preview', publicSiteUrl: undefined })).not.toThrow();
+    expect(() => buildRobotsTxt({ vercelEnv: 'preview', publicSiteUrl: undefined, publicSiteEnabled: true })).not.toThrow();
   });
 
   it.each([
@@ -95,7 +112,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
     [`${PUBLIC_SITE}/?utm=1`, /site root/],
   ])('buildRobotsTxt_ProductionWithInvalidPublicSite_%s_FailsTheBuild', (publicSiteUrl, message) => {
     // Decision D3: no default domain, so a production build cannot guess one.
-    expect(() => buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl })).toThrow(message);
+    expect(() => buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl, publicSiteEnabled: true })).toThrow(message);
   });
 
   it('parsePublicSiteUrl_UppercaseHostWithTrailingSlash_ReturnsNormalizedOrigin', () => {

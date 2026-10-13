@@ -7206,5 +7206,175 @@
         "cta": "Create lease"
       }
     }
+  },
+  "site": {
+    "meta": {
+      "home": {
+        "title": "CasaZen | Compliant short-term rental software: CIN, guests, tourist tax",
+        "description": "Run your short-term rentals by the rules: CIN checks, guest data for Alloggiati Web, online check-in, tourist tax and a direct booking site with no CasaZen commission."
+      },
+      "features": {
+        "title": "Features | CasaZen",
+        "description": "Compliance, iCal calendar, direct booking site with Stripe payments, supplier requests and long-term rentals: every CasaZen feature for hosts and property managers."
+      },
+      "suppliers": {
+        "title": "For suppliers: work with the hosts in your area | CasaZen",
+        "description": "Cleaning, maintenance, laundry and service businesses for holiday rentals: sign up on CasaZen and receive requests from hosts in the comuni where you work."
+      },
+      "about": {
+        "title": "About us and contacts | CasaZen",
+        "description": "CasaZen is the software for short- and long-term rental hosts and property managers in Italy. Company details and contacts."
+      }
+    },
+    "nav": {
+      "home": "CasaZen, home page",
+      "main": "Main menu",
+      "features": "Features",
+      "suppliers": "For suppliers",
+      "guides": "Guides",
+      "about": "About us",
+      "login": "Log in",
+      "switchLanguage": "Italiano",
+      "switchLanguageLabel": "Switch to Italian"
+    },
+    "footer": {
+      "tagline": "Software for compliant short- and long-term rentals.",
+      "productTitle": "Product",
+      "resourcesTitle": "Resources",
+      "legalTitle": "Legal",
+      "guides": "Guides for hosts",
+      "privacy": "Privacy",
+      "terms": "Terms of service",
+      "legalIndex": "Legal documents",
+      "subprocessors": "Sub-processors",
+      "vatId": "VAT no. {{vatId}}",
+      "contact": "Contact",
+      "rights": "© {{year}} CasaZen"
+    },
+    "home": {
+      "hero": {
+        "eyebrow": "For hosts and property managers",
+        "title": "Short-term rentals by the rules, without spreadsheets",
+        "subtitle": "CasaZen brings compliance (CIN, guest reporting, tourist tax), your calendar and your direct booking site together in one app.",
+        "ctaFeatures": "See the features"
+      },
+      "compliance": {
+        "title": "Compliance under control",
+        "intro": "The rules change from one comune to the next. CasaZen tells you what is missing and when it is due.",
+        "cinTitle": "CIN",
+        "cinText": "Checks the official format of the national identification code (CIN) and warns you when it is missing or invalid. Public pages show the CIN only when it is valid.",
+        "alloggiatiTitle": "Guest reporting",
+        "alloggiatiText": "Collect guest data with the official Alloggiati Web code tables, keep track of the 6- and 24-hour deadlines and download the file ready to upload to the Polizia di Stato portal.",
+        "checkinTitle": "Online check-in",
+        "checkinText": "A few days before arrival guests receive a link and enter their own details, for everyone in the stay.",
+        "touristTaxTitle": "Tourist tax",
+        "touristTaxText": "Per-night calculation with the comune's rules (seasons, ages, maximum nights) where the rate is available, included in the booking total, plus reports per comune and month as CSV or PDF.",
+        "wizardTitle": "Guided activation",
+        "wizardText": "A step-by-step flow checks details, CIN, documents and safety equipment before a property goes live."
+      },
+      "booking": {
+        "title": "Your direct booking site",
+        "text": "A site with your properties, your logo and your colours. Guests pay online with Stripe straight into your account: CasaZen takes no commission on bookings (Stripe's fees still apply). They can pay now, later or at the property.",
+        "domain": "Publish it on a CasaZen address or connect your own domain."
+      },
+      "operations": {
+        "title": "The everyday work",
+        "calendarTitle": "Calendar and iCal",
+        "calendarText": "Bookings, blocks and iCal calendar sync with Airbnb, Booking.com and other portals, refreshed about every 15 minutes.",
+        "suppliersTitle": "Local suppliers",
+        "suppliersText": "Request cleaning, maintenance, laundry or linen from suppliers registered in your comune and follow each request to the end.",
+        "fiscalTitle": "Tax estimates",
+        "fiscalText": "Summaries for the cedolare secca flat tax and your tax return: supporting estimates to check with your accountant.",
+        "longRentTitle": "Long-term rentals too",
+        "longRentText": "4+4, 3+2 and transitional contracts, deadline reminders and rent paid online."
+      },
+      "guides": {
+        "title": "Free guides per comune",
+        "text": "For each comune we explain CIN, Alloggiati Web and the tourist tax with the official sources; for Lombardy also the CIR and the tourist flow reporting on Ross1000. Every guide is reviewed by a person before it is published.",
+        "cta": "Go to the guides"
+      },
+      "suppliersTeaser": {
+        "title": "Do you run a cleaning, maintenance or service business?",
+        "text": "Receive requests from hosts in your area and manage them from a single page.",
+        "cta": "See how it works"
+      },
+      "finalCta": {
+        "title": "Want to try CasaZen?",
+        "text": "For now you can only join by invitation. Write to us and we will get back to you."
+      }
+    },
+    "features": {
+      "title": "Features",
+      "intro": "Everything you need to manage short- and long-term rentals, in line with Italian rules.",
+      "complianceTitle": "Compliance",
+      "complianceItem1": "CIN format check and a warning when the comune code in it does not match the property's comune.",
+      "complianceItem2": "Guided property activation: details, CIN, required documents and safety equipment.",
+      "complianceItem3": "Guest data with the official Alloggiati Web code tables, 6- and 24-hour deadlines and a file ready to upload to the portal.",
+      "complianceItem4": "Online guest check-in with a link sent before arrival.",
+      "touristTaxTitle": "Tourist tax",
+      "touristTaxItem1": "Per-night calculation with seasons, age exemptions and maximum nights, where the comune's rate is available.",
+      "touristTaxItem2": "Tax included in the total the guest pays on the booking site.",
+      "touristTaxItem3": "Reports per comune and month as JSON, CSV or PDF, as a basis for paying the comune.",
+      "bookingTitle": "Direct booking site",
+      "bookingItem1": "Three visual styles with your logo and colour, and your own privacy and terms pages.",
+      "bookingItem2": "Stripe payments into your account with no CasaZen commission on bookings: now, later or at the property.",
+      "bookingItem3": "A CasaZen address or your own domain.",
+      "bookingItem4": "Search-engine-ready pages: title, description and structured data for every property.",
+      "calendarTitle": "Calendar",
+      "calendarItem1": "Bookings, manual blocks and iCal calendars imported from Airbnb, Booking.com and other portals.",
+      "calendarItem2": "An iCal calendar to export to the portals, synced about every 15 minutes.",
+      "suppliersTitle": "Suppliers",
+      "suppliersItem1": "Find suppliers by comune and category: cleaning, maintenance, laundry, linen and more.",
+      "suppliersItem2": "Requests per stay or per property, with the status and history of each request.",
+      "fiscalTitle": "Tax",
+      "fiscalItem1": "Tax regime per property and annual summary for the cedolare secca flat tax.",
+      "fiscalItem2": "Simulations and reports of the portals' withholdings: supporting estimates, not a replacement for your accountant.",
+      "longRentTitle": "Long-term rentals",
+      "longRentItem1": "4+4, 3+2 and transitional contracts, with cedolare secca or the ordinary regime.",
+      "longRentItem2": "Rent paid online with Stripe or marked as paid, with email reminders.",
+      "longRentItem3": "Reminders of the contract registration (RLI) deadlines."
+    },
+    "suppliers": {
+      "title": "Work with the hosts in your area",
+      "subtitle": "CasaZen connects businesses and professionals with short- and long-term rental hosts looking for services for their properties.",
+      "howTitle": "How it works",
+      "step1": "Receive your invitation and choose the categories of your services and the comuni where you work.",
+      "step2": "Complete the activation in a few steps and accept the terms of service.",
+      "step3": "Receive requests from hosts: accept or decline them and follow them to completion.",
+      "featuresTitle": "What you get",
+      "inboxTitle": "Requests on a single page",
+      "inboxText": "Each request with its date and, once you accept it, the host's address and contacts, with the full history.",
+      "availabilityTitle": "Hours and calendar",
+      "availabilityText": "Set your weekly hours and import your iCal calendar to avoid overlaps.",
+      "showcaseTitle": "A showcase to share",
+      "showcaseText": "A public page with your categories, the comuni where you work, your description and photos.",
+      "categoriesTitle": "Service categories",
+      "categoryCleaning": "Cleaning",
+      "categoryMaintenance": "Maintenance",
+      "categoryPlumbing": "Plumbing",
+      "categoryLaundry": "Laundry",
+      "categoryLinen": "Linen",
+      "categoryCheckIn": "Guest check-in",
+      "categoryGardening": "Gardening",
+      "categoryEvents": "Events",
+      "categoryRental": "Rentals",
+      "categoryExcursions": "Excursions"
+    },
+    "about": {
+      "title": "About us",
+      "intro": "CasaZen is the software for short- and long-term rental hosts and property managers in Italy. We built it around Italian rules: CIN, guest reporting, tourist tax and regional rules, starting with Lombardy.",
+      "approach": "Every piece of regulatory information we publish cites the official sources and is reviewed by a person before it goes live.",
+      "contactsTitle": "Contacts",
+      "emailLabel": "Email",
+      "companyTitle": "Company details",
+      "nameLabel": "Company name",
+      "vatIdLabel": "VAT number",
+      "addressLabel": "Registered office"
+    },
+    "invite": {
+      "notice": "CasaZen is just getting started: for now access is by invitation only.",
+      "cta": "Ask for an invitation",
+      "subject": "Invitation request for CasaZen"
+    }
   }
 }
