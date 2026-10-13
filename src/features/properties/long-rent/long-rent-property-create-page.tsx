@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ME_QUERY_KEY } from '@/lib/onboarding-gate';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
@@ -22,6 +24,7 @@ export function LongRentPropertyCreatePage() {
   const [searchParams] = useSearchParams();
   const quick = searchParams.get('first') === '1';
   const createProperty = useCreateProperty();
+  const queryClient = useQueryClient();
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);
 
@@ -32,6 +35,8 @@ export function LongRentPropertyCreatePage() {
     setPlanLimitHit(false);
     try {
       const created = await createProperty.mutateAsync(data);
+      // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back here.
+      await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
       if (quick) {
         toast.success(t('property.quick.created'));
         navigate(LONG_RENT_LEASES_PATH);

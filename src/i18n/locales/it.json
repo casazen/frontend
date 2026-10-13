@@ -1951,7 +1951,16 @@
       "actions": "Azioni",
       "edit": "Modifica",
       "editAria": "Modifica {{name}}",
+      "delete": "Elimina",
+      "deleteAria": "Elimina {{name}}",
       "noRate": "Non impostato"
+    },
+    "deleteDialog": {
+      "title": "Eliminare l'immobile?",
+      "description": "Stai per eliminare «{{name}}». L'immobile scomparirà dall'elenco.",
+      "confirm": "Elimina immobile",
+      "consequenceHidden": "L'immobile non sarà più visibile nell'elenco.",
+      "consequenceBlocked": "Non puoi eliminarlo se ha prenotazioni future o locazioni attive."
     },
     "detail": {
       "loading": "Caricamento proprietà...",
@@ -6275,6 +6284,8 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
+      "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",

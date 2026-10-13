@@ -1951,7 +1951,16 @@
       "actions": "Actions",
       "edit": "Edit",
       "editAria": "Edit {{name}}",
+      "delete": "Delete",
+      "deleteAria": "Delete {{name}}",
       "noRate": "Not set"
+    },
+    "deleteDialog": {
+      "title": "Delete this property?",
+      "description": "You are about to delete \"{{name}}\". It will disappear from the list.",
+      "confirm": "Delete property",
+      "consequenceHidden": "The property will no longer be visible in the list.",
+      "consequenceBlocked": "It cannot be deleted while it has upcoming bookings or active leases."
     },
     "detail": {
       "loading": "Loading property...",
@@ -6275,6 +6284,8 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
+      "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",

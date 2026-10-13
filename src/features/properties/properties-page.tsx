@@ -14,16 +14,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useProperties,
   usePauseProperty,
   useActivateProperty,
   useCreateProperty,
+  useDeleteProperty,
 } from '@/queries/use-properties';
 import { useCinCompliance } from '@/queries/use-cin';
 import { CinDeadlineBanner } from '@/features/cin';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PropertyForm } from './components/property-form';
 import { isPlanLimitError, getPlanLimitMessage } from '@/lib/entitlement-error';
@@ -43,6 +46,10 @@ export function PropertiesPage() {
   const pauseProperty = usePauseProperty();
   const activateProperty = useActivateProperty();
   const createProperty = useCreateProperty();
+  const deleteProperty = useDeleteProperty();
+  const { hasPermission } = useWorkspace();
+  const canDelete = hasPermission('short-rent', 'property.write');
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
@@ -55,6 +62,16 @@ export function PropertiesPage() {
       } else {
         await pauseProperty.mutateAsync(property.id);
       }
+    } catch {
+      // Error toast already handled by the mutation
+    }
+  };
+
+  // The backend decides whether it can go (409 with upcoming bookings / active leases): the mutation's own toast says why.
+  const confirmDelete = async () => {
+    if (!propertyToDelete) return;
+    try {
+      await deleteProperty.mutateAsync(propertyToDelete.id);
     } catch {
       // Error toast already handled by the mutation
     }
@@ -226,6 +243,18 @@ export function PropertiesPage() {
                                 <Pencil className="h-4 w-4" />
                               </Link>
                             </Button>
+                            {canDelete && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setPropertyToDelete(p)}
+                                aria-label={t('property.table.deleteAria', { name: p.name })}
+                                title={t('property.table.delete')}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -236,6 +265,21 @@ export function PropertiesPage() {
             </CardContent>
           </Card>
         )}
+
+        <ConfirmationDialog
+          open={propertyToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setPropertyToDelete(null);
+          }}
+          title={t('property.deleteDialog.title')}
+          description={t('property.deleteDialog.description', { name: propertyToDelete?.name ?? '' })}
+          confirmLabel={t('property.deleteDialog.confirm')}
+          variant="destructive"
+          requireText={propertyToDelete?.name ?? ''}
+          consequences={[t('property.deleteDialog.consequenceHidden'), t('property.deleteDialog.consequenceBlocked')]}
+          onConfirm={confirmDelete}
+          isLoading={deleteProperty.isPending}
+        />
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

@@ -57,7 +57,10 @@ export function OnboardingPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const isEditMode = searchParams.get('mode') === 'edit';
-  const from = (location.state as { from?: string } | null)?.from ?? null;
+  const locationState = location.state as { from?: string; completeStep?: boolean } | null;
+  const from = locationState?.from ?? null;
+  // The activation checklist sent the user here to finish a step it still shows as "todo": stay, never bounce to the home.
+  const completingChecklistStep = locationState?.completeStep === true;
   const { refreshAccessToken, forceReauth } = useAuth();
   const {
     data: profile,
@@ -108,6 +111,7 @@ export function OnboardingPage() {
     // are withheld by the backend (PL-02) stays here: its home would answer onboarding_required again.
     if (
       !isEditMode &&
+      !completingChecklistStep &&
       hasOrg &&
       (hasRoles || linkedSupplier) &&
       (!hostAccessWithheld || homeRoute === SUPPLIER_HOME_ROUTE)
@@ -136,6 +140,7 @@ export function OnboardingPage() {
     homeRoute,
     hostAccessWithheld,
     isEditMode,
+    completingChecklistStep,
     pendingRoles,
     isLeaving,
     renewsConsents,

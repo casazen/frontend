@@ -148,6 +148,31 @@ export function useActivateProperty() {
   });
 }
 
+/**
+ * Soft delete (`DELETE /properties/{id}`). The backend refuses with 409 `property_has_upcoming_bookings` or
+ * `property_has_active_leases`: `getProblemMessage` turns those codes into their own text (`apiErrors.codes`).
+ */
+export function useDeleteProperty() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => propertiesApi.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({ queryKey: [PROPERTIES_KEY, id] });
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
+      // Usage of the plan, dashboard counters, calendar/bookings and compliance (CIN) lists all count properties.
+      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['compliance'] });
+      toast.success(i18n.t('toast.propertyDeleted'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyDeleteFailed'));
+    },
+  });
+}
+
 export function useSearchProperties(params?: PropertySearchParams) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, 'search', params],

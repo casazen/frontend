@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activationStepCtaKey, activationStepRoute } from '../activation-routes';
+import { activationStepCtaKey, activationStepLinkState, activationStepRoute } from '../activation-routes';
 import type { ActivationStep, ActivationStepKey } from '@/types/onboarding.types';
 import type { PermissionPredicate } from '@/config/route-manifest';
 import i18n from '@/i18n/config';
@@ -76,5 +76,15 @@ describe('activationStepCtaKey (PL-15)', () => {
         }
       }
     }
+  });
+});
+
+describe('activationStepLinkState', () => {
+  it('activationStepLinkState_AccountStep_FlagsTheOnboardingAsAStepToComplete', () => {
+    expect(activationStepLinkState(step('account', 'todo'))).toEqual({ completeStep: true });
+  });
+
+  it('activationStepLinkState_OtherSteps_ReturnsNoState', () => {
+    expect(activationStepLinkState(step('property', 'todo'))).toBeUndefined();
   });
 });

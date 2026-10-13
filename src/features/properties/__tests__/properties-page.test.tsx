@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import * as propertyQueries from '@/queries/use-properties';
+import * as workspace from '@/hooks/use-workspace';
 import * as cinQueries from '@/queries/use-cin';
 import type { Property } from '@/types';
 import { PropertiesPage } from '../properties-page';
@@ -14,8 +15,10 @@ vi.mock('@/queries/use-properties', () => ({
   usePauseProperty: vi.fn(),
   useActivateProperty: vi.fn(),
   useCreateProperty: vi.fn(),
+  useDeleteProperty: vi.fn(),
   useCancellationPolicies: vi.fn(),
 }));
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 vi.mock('@/queries/use-cin', () => ({ useCinCompliance: vi.fn() }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: ReactNode }) => createElement('div', null, children),
@@ -75,12 +78,22 @@ function mockMutation() {
 describe('PropertiesPage (A2-27)', () => {
   let pauseMutation: ReturnType<typeof mockMutation>;
   let activateMutation: ReturnType<typeof mockMutation>;
+  let deleteMutation: ReturnType<typeof mockMutation>;
+  let granted: string[];
 
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     vi.mocked(cinQueries.useCinCompliance).mockReturnValue({ data: undefined } as unknown as ReturnType<
       typeof cinQueries.useCinCompliance
     >);
+    granted = ['property.write'];
+    vi.mocked(workspace.useWorkspace).mockReturnValue({
+      hasPermission: (context: string, permission: string) => context === 'short-rent' && granted.includes(permission),
+    } as unknown as ReturnType<typeof workspace.useWorkspace>);
+    deleteMutation = mockMutation();
+    vi.mocked(propertyQueries.useDeleteProperty).mockReturnValue(
+      deleteMutation as unknown as ReturnType<typeof propertyQueries.useDeleteProperty>,
+    );
     pauseMutation = mockMutation();
     activateMutation = mockMutation();
     vi.mocked(propertyQueries.usePauseProperty).mockReturnValue(
@@ -203,5 +216,64 @@ describe('PropertiesPage (A2-27)', () => {
 
     expect(screen.getByRole('link', { name: paused.name })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: active.name })).not.toBeInTheDocument();
+  });
+
+  it('PropertiesPage_UserWithPropertyWrite_SeesTheDeleteAction', () => {
+    mockList({ data: [STUDIO] });
+
+    renderPage();
+
+    expect(screen.getByRole('button', { name: i18n.t('property.table.deleteAria', { name: STUDIO.name }) })).toBeInTheDocument();
+  });
+
+  it('PropertiesPage_UserWithoutPropertyWrite_DoesNotSeeTheDeleteAction', () => {
+    granted = [];
+    mockList({ data: [STUDIO] });
+
+    renderPage();
+
+    expect(screen.queryByRole('button', { name: i18n.t('property.table.deleteAria', { name: STUDIO.name }) })).not.toBeInTheDocument();
+    // The other row actions stay.
+    expect(screen.getByRole('button', { name: i18n.t('property.table.pause') })).toBeInTheDocument();
+  });
+
+  it('PropertiesPage_DeleteClicked_ConfirmStaysDisabledUntilTheNameIsTyped', () => {
+    mockList({ data: [STUDIO] });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.table.deleteAria', { name: STUDIO.name }) }));
+
+    const confirm = screen.getByRole('button', { name: i18n.t('property.deleteDialog.confirm') });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(screen.getByTestId('confirmation-input'), { target: { value: 'Altro nome' } });
+    expect(confirm).toBeDisabled();
+    expect(deleteMutation.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('PropertiesPage_NameTypedAndConfirmed_DeletesThePropertyById', async () => {
+    deleteMutation.mutateAsync.mockResolvedValue(undefined);
+    mockList({ data: [STUDIO] });
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.table.deleteAria', { name: STUDIO.name }) }));
+
+    fireEvent.change(screen.getByTestId('confirmation-input'), { target: { value: STUDIO.name } });
+    const confirm = screen.getByRole('button', { name: i18n.t('property.deleteDialog.confirm') });
+    expect(confirm).toBeEnabled();
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(deleteMutation.mutateAsync).toHaveBeenCalledWith(STUDIO.id));
+  });
+
+  it('PropertiesPage_DeleteFails_DoesNotThrowAndClosesTheDialog', async () => {
+    deleteMutation.mutateAsync.mockRejectedValue(new Error('409'));
+    mockList({ data: [STUDIO] });
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.table.deleteAria', { name: STUDIO.name }) }));
+    fireEvent.change(screen.getByTestId('confirmation-input'), { target: { value: STUDIO.name } });
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.deleteDialog.confirm') }));
+
+    await waitFor(() => expect(deleteMutation.mutateAsync).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('confirmation-input')).not.toBeInTheDocument());
   });
 });

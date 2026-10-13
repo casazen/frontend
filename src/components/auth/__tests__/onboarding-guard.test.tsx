@@ -127,6 +127,60 @@ describe('OnboardingGuard (PL-01)', () => {
     expect(screen.queryByTestId('workspace')).not.toBeInTheDocument();
   });
 
+  it('OnboardingGuard_OnboardedHostWithoutProperties_OpensTheFirstPropertyCreation', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        orgId: 'org-1',
+        rentalType: 'ShortTerm',
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        onboardingRequired: false,
+        consentsAccepted: true,
+        hasProperties: false,
+      }),
+    );
+
+    renderGuard('/app/short-rent');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/properties/create');
+    expect(screen.queryByTestId('onboarding-page')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingGuard_HostWithoutPropertiesOnTheCreationPage_StaysThereWithoutLooping', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        orgId: 'org-1',
+        rentalType: 'ShortTerm',
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        onboardingRequired: false,
+        hasProperties: false,
+      }),
+    );
+
+    renderGuard('/app/short-rent/properties/create');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/properties/create');
+  });
+
+  it('OnboardingGuard_AdminWithoutProperties_DoesNotOpenTheFirstPropertyCreation', async () => {
+    mockAuth({ roles: ['Admin'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        role: 'Admin',
+        orgId: 'org-admin',
+        rentalType: 'ShortTerm',
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        onboardingRequired: false,
+        hasProperties: false,
+      }),
+    );
+
+    renderGuard('/app/admin');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/admin');
+  });
+
   it('OnboardingGuard_AdminWithOnboardingRequired_RendersAdminRoutes (PL-02)', async () => {
     mockAuth({ roles: ['Admin'] });
     vi.mocked(UsersApi.getMe).mockResolvedValue(

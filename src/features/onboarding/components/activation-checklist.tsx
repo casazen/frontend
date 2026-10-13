@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { activationStepDetail } from '@/lib/activation-labels';
-import { activationStepCtaKey, activationStepRoute } from '@/lib/activation-routes';
+import { activationStepCtaKey, activationStepLinkState, activationStepRoute } from '@/lib/activation-routes';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useOnboardingStatus } from '@/queries/use-onboarding-status';
 import type { ActivationStep, ActivationStepKey, ActivationStepState } from '@/types/onboarding.types';
@@ -76,7 +76,7 @@ function NextStep({ step, index, total }: { step: ActivationStep; index: number;
       </p>
       {route ? (
         <Button className="mt-3" asChild>
-          <Link to={route} data-testid="activation-next-step-cta">
+          <Link to={route} state={activationStepLinkState(step)} data-testid="activation-next-step-cta">
             {t(activationStepCtaKey(step))}
           </Link>
         </Button>
@@ -113,7 +113,7 @@ function StepRow({ step }: { step: ActivationStep }) {
         </Badge>
         {route && (
           <Button variant="outline" size="sm" asChild>
-            <Link to={route} aria-label={`${t(activationStepCtaKey(step))}: ${title}`} data-testid={`activation-step-${step.key}-cta`}>
+            <Link to={route} state={activationStepLinkState(step)} aria-label={`${t(activationStepCtaKey(step))}: ${title}`} data-testid={`activation-step-${step.key}-cta`}>
               {t(activationStepCtaKey(step))}
             </Link>
           </Button>

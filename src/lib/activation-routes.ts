@@ -101,3 +101,11 @@ export function activationStepCtaKey(step: Pick<ActivationStep, 'key' | 'state' 
       return 'activation.cta.open';
   }
 }
+
+/**
+ * Router state for the link of a step. The account step opens the onboarding wizard, which would otherwise send an
+ * already onboarded user straight home: the flag tells it the user came to finish a step that is still open.
+ */
+export function activationStepLinkState(step: Pick<ActivationStep, 'key'>): { completeStep: true } | undefined {
+  return step.key === 'account' ? { completeStep: true } : undefined;
+}
