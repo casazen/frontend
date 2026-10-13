@@ -202,6 +202,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
         'Stripe Connect',
         'Dominio pubblico',
         'Organizzazione',
+        'Invita un host',
       ]);
       // The button controls the list it opens.
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-controls', within(more).getByRole('list').id);

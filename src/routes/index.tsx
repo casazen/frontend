@@ -12,6 +12,7 @@ import { EmailVerifiedPage } from '@/pages/email-verified-page';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
+import { HostInvitePage } from '@/pages/host-invite-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { AreaProvider } from '@/contexts/area-provider';
@@ -162,6 +163,12 @@ export const appRoutes: RouteObject[] = [
       {
         path: '/register',
         element: <SupplierRegisterPage />,
+      },
+      {
+        // Link of the email that invites an independent host: under Auth0 (it leads to the signup or login) but outside
+        // the protected route and the onboarding guard, which would send a new account to the onboarding first.
+        path: '/invito-host/:token',
+        element: <HostInvitePage />,
       },
       {
         // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.

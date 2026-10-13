@@ -196,8 +196,6 @@
       "scenariosTitle": "What the template shows"
     },
     "supplierInvite": {
-      "title": "Invite supplier",
-      "description": "Send a pilot invitation per municipality",
       "newInvite": "New invitation",
       "email": "Email",
       "comuneCode": "Municipality code",
@@ -485,6 +483,15 @@
       "copied": "Link copied.",
       "copyError": "Could not copy the link.",
       "popupBlocked": "The browser blocked the print window: allow popups for this site and try again."
+    },
+    "invites": {
+      "title": "Invitations",
+      "description": "Invite suppliers and independent hosts and follow the state of the invitations sent.",
+      "typeLabel": "Type of invitation",
+      "type": {
+        "supplier": "Supplier",
+        "host": "Host"
+      }
     }
   },
   "nav": {
@@ -520,7 +527,8 @@
     "brandSupplier": "CASAZEN Supplier",
     "vetrina": "Showcase",
     "directBooking": "Booking site",
-    "inviteSupplier": "Invite supplier",
+    "invites": "Invitations",
+    "hostInvites": "Invite a host",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendar",
     "supplierInbox": "Requests",
@@ -5554,7 +5562,8 @@
       "domain": "domain|address|url|website|connect domain",
       "fiscal": "taxes|tax regime|flat tax|cedolare secca|vat|revenue authority",
       "guests": "customers|clients|contacts|people|guest list",
-      "inviteSupplier": "invite|new supplier|add supplier|partner",
+      "invites": "invite|invitation|invitations|new supplier|add supplier|new host|partner",
+      "hostInvites": "invite|invitation|invitations|new host|referral|add host",
       "jobs": "jobs|queues|automations|background processes|scheduled tasks",
       "leases": "rentals|contracts|tenants|rent|deadlines|lease",
       "ltrReferenceData": "agreed rent|zones|territorial agreements|regulatory data",
@@ -6491,7 +6500,9 @@
       "rentNoTenantEmail": "No tenant has an email address to send the payment request to.",
       "rentPaymentRequestNotSent": "The payment request was not sent: the email service is unavailable.",
       "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
-      "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one."
+      "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one.",
+      "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
+      "hostEmailTaken": "This email already has a CasaZen account: no need to invite it."
     }
   },
   "appShell": {
@@ -7216,6 +7227,116 @@
         "title": "Create your first lease",
         "hint": "We guide you through signing and registration, with flat-rate tax and deadlines.",
         "cta": "Create lease"
+      }
+    }
+  },
+  "hostInvites": {
+    "title": "Invite a host",
+    "description": "Invite another independent host to CasaZen. They sign up like everyone else: the invitation does not assign any role.",
+    "retry": "Retry",
+    "form": {
+      "title": "New invitation",
+      "email": "Email of the host to invite",
+      "message": "Message (optional)",
+      "locale": "Language of the email (optional)",
+      "localeDefault": "Default",
+      "localeOption": {
+        "it": "Italian",
+        "en": "English"
+      },
+      "send": "Send invitation",
+      "sending": "Sending…",
+      "errors": {
+        "emailRequired": "Enter the host's email.",
+        "emailInvalid": "Enter a valid email."
+      }
+    },
+    "quota": {
+      "label": "Invitations today",
+      "usage": "Invitations today: {{used}} of {{limit}}",
+      "remaining_one": "{{count}} left",
+      "remaining_other": "{{count}} left",
+      "exhausted": "You have used all of today's invitations. You can send more from {{date}}.",
+      "resets": "The quota starts again on {{date}}.",
+      "loadError": "Unable to load the invitation quota."
+    },
+    "list": {
+      "title": "Your invitations",
+      "searchPlaceholder": "Search by invited email",
+      "email": "Invited email",
+      "invitedBy": "Invited by",
+      "inviter": "{{name}} ({{org}})",
+      "noInviter": "—",
+      "state": "Invitation state",
+      "allStates": "All states",
+      "expiresAt": "Expires on",
+      "sentOn": "Sent on {{date}}",
+      "usedOn": "Used on {{date}}",
+      "actions": "Actions",
+      "resend": "Resend",
+      "revoke": "Revoke",
+      "empty": "There are no invitations yet.",
+      "emptyFiltered": "No invitation matches the filters.",
+      "loadError": "Unable to load the invitations."
+    },
+    "stateLabel": {
+      "Pending": "Pending",
+      "Used": "Used",
+      "Expired": "Expired",
+      "Revoked": "Revoked"
+    },
+    "resendDialog": {
+      "title": "Resend the invitation",
+      "description": "A new email with a new link will be sent to {{email}}. The previous link stops working."
+    },
+    "revokeDialog": {
+      "title": "Revoke the invitation",
+      "description": "The link sent to {{email}} will stop working. You can create a new invitation for the same email."
+    },
+    "toast": {
+      "sent": "Invitation sent to {{email}}, valid until {{expiresAt}}.",
+      "resent": "Invitation resent to {{email}}.",
+      "revoked": "Invitation for {{email}} revoked.",
+      "error": "Operation failed. Try again."
+    }
+  },
+  "hostInvite": {
+    "loading": "Checking the invitation…",
+    "retry": "Retry",
+    "errorTitle": "Invitation could not be checked",
+    "errorGeneric": "We cannot check the invitation right now. Try again shortly.",
+    "invitedBy": "{{name}} invited you to CasaZen",
+    "invited": "You have been invited to CasaZen",
+    "description": "CasaZen helps independent hosts manage short and long rentals in line with Italian rules.",
+    "forEmail": "Invitation for {{email}}",
+    "useSameEmail": "Sign up with the email the invitation was sent to. The link does not assign you any role: you create your account like everyone else.",
+    "signup": "Create your account",
+    "login": "I already have an account",
+    "accepting": "Linking the invitation…",
+    "acceptedTitle": "Invitation accepted",
+    "accepted": "Your account is linked to the invitation.",
+    "acceptedWithInviter": "Your account is linked to the invitation from {{name}}.",
+    "continue": "Continue",
+    "acceptErrorTitle": "Invitation not linked",
+    "acceptErrorGeneric": "We could not link the invitation to your account. You can continue: your account works anyway.",
+    "continueWithout": "Continue without the invitation",
+    "unusable": {
+      "login": "Go to sign in",
+      "invalid": {
+        "title": "Invalid invitation",
+        "description": "The link is incomplete or does not exist. Open the link from the email again or ask for a new invitation."
+      },
+      "expired": {
+        "title": "Invitation expired",
+        "description": "This invitation is no longer valid because it expired. Ask the person who invited you to send a new one."
+      },
+      "revoked": {
+        "title": "Invitation revoked",
+        "description": "The person who invited you cancelled this invitation. Ask them to send a new one."
+      },
+      "used": {
+        "title": "Invitation already used",
+        "description": "This invitation has already been used. If you already have an account, sign in."
       }
     }
   }

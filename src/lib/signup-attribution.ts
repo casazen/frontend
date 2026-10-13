@@ -1,6 +1,7 @@
 import { isAxiosError } from 'axios';
 import { UsersApi } from '@/api/users.api';
 import { AuthTokenUnavailableError, isTransientRequestError } from '@/lib/api-errors';
+import { HOST_INVITE_PATH_PREFIX } from '@/lib/host-invite';
 import type { SignupAttribution } from '@/types';
 
 /**
@@ -86,6 +87,8 @@ export function validComune(value: string | null | undefined): string | undefine
 }
 
 export function validLandingPath(pathname: string | null | undefined): string | undefined {
+  // The address of an invite link carries its secret token: never part of an attribution.
+  if (pathname?.startsWith(HOST_INVITE_PATH_PREFIX)) return undefined;
   return valid(pathname, LANDING_PATH_PATTERN, MAX_LANDING_PATH_LENGTH);
 }
 

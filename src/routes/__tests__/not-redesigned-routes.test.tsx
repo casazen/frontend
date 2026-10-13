@@ -44,6 +44,7 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     '/register',
     SIGNUP_PATH,
     '/register/claim',
+    '/invito-host/token-del-link',
     '/onboarding',
     '/app/choose-context',
     '/app/no-access',

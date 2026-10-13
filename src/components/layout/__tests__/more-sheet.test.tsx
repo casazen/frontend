@@ -120,6 +120,7 @@ describe('MoreSheet (UI-04b)', () => {
         'Stripe Connect',
         'Dominio pubblico',
         'Organizzazione',
+        'Invita un host',
       ]);
       // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
@@ -143,7 +144,7 @@ describe('MoreSheet (UI-04b)', () => {
 
       open();
 
-      expect(tiles(sheet())).toEqual(['Profilo', 'Organizzazione']);
+      expect(tiles(sheet())).toEqual(['Profilo', 'Organizzazione', 'Invita un host']);
       // One group needs no name on the screen (the title says it), and still has one for a screen reader.
       expect(within(sheet()).getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(within(sheet()).queryByText('Altro', { selector: 'p' })).not.toBeInTheDocument();
