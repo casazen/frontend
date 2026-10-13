@@ -528,7 +528,7 @@
     "vetrina": "Showcase",
     "directBooking": "Booking site",
     "invites": "Invitations",
-    "hostInvites": "Invite a host",
+    "hostInvites": "Recommend CasaZen",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendar",
     "supplierInbox": "Requests",
@@ -7231,12 +7231,13 @@
     }
   },
   "hostInvites": {
-    "title": "Invite a host",
-    "description": "Invite another independent host to CasaZen. They sign up like everyone else: the invitation does not assign any role.",
+    "title": "Recommend CasaZen to a friend",
+    "description": "Know another host who could use CasaZen? Invite them: they sign up like everyone else and the invitation does not assign any role.",
     "retry": "Retry",
     "form": {
       "title": "New invitation",
       "email": "Email of the host to invite",
+      "emailFriend": "Your friend's email",
       "message": "Message (optional)",
       "locale": "Language of the email (optional)",
       "localeDefault": "Default",
@@ -7248,6 +7249,7 @@
       "sending": "Sending…",
       "errors": {
         "emailRequired": "Enter the host's email.",
+        "emailRequiredFriend": "Enter your friend's email.",
         "emailInvalid": "Enter a valid email."
       }
     },

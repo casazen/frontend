@@ -30,7 +30,9 @@ export function HostInviteForm({ scope, blocked = false }: { scope: HostInviteSc
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const trimmed = email.trim();
-    if (!trimmed) return setEmailError(t('hostInvites.form.errors.emailRequired'));
+    if (!trimmed) {
+      return setEmailError(t(scope === 'host' ? 'hostInvites.form.errors.emailRequiredFriend' : 'hostInvites.form.errors.emailRequired'));
+    }
     if (!EMAIL_PATTERN.test(trimmed)) return setEmailError(t('hostInvites.form.errors.emailInvalid'));
     setEmailError(null);
     try {
@@ -64,7 +66,7 @@ export function HostInviteForm({ scope, blocked = false }: { scope: HostInviteSc
       <CardContent>
         <form onSubmit={(e) => void submit(e)} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <Label htmlFor="host-invite-email">{t('hostInvites.form.email')}</Label>
+            <Label htmlFor="host-invite-email">{t(scope === 'host' ? 'hostInvites.form.emailFriend' : 'hostInvites.form.email')}</Label>
             <Input
               id="host-invite-email"
               type="email"

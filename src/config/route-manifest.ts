@@ -256,12 +256,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // A host invites other independent hosts (daily quota per org). No role is assigned: the invited person signs up as usual.
-    // Backend policy `OrgMembersManage` (owner and admin of the org): `orgBillingAdmin` is the closest owner mirror, menu only.
+    // A host recommends CasaZen to a friend: any member of a host org, whatever the role (backend policy `SharedPropertyRead`, held by every
+    // host role). Daily quota per org. No role is assigned: the invited person signs up as usual.
     path: '/app/short-rent/settings/invitations',
     context: 'short-rent',
-    requiredPermissions: [],
-    orgBillingAdmin: true,
+    requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
     navPlacement: 'secondary',
     navOrder: 34,
@@ -561,8 +560,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     path: '/app/long-rent/settings/invitations',
     context: 'long-rent',
-    requiredPermissions: [],
-    orgBillingAdmin: true,
+    requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
     navPlacement: 'secondary',
     navOrder: 34,

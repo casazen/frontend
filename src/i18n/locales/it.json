@@ -528,7 +528,7 @@
     "vetrina": "Vetrina",
     "directBooking": "Sito di prenotazione",
     "invites": "Inviti",
-    "hostInvites": "Invita un host",
+    "hostInvites": "Consiglia CasaZen",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
     "supplierInbox": "Richieste",
@@ -7231,12 +7231,13 @@
     }
   },
   "hostInvites": {
-    "title": "Invita un host",
-    "description": "Invita un altro host indipendente su CasaZen. Si registra come tutti gli altri: l'invito non assegna ruoli.",
+    "title": "Consiglia CasaZen a un amico",
+    "description": "Conosci un altro host a cui CasaZen può servire? Invitalo: si registra come tutti gli altri e l'invito non gli assegna ruoli.",
     "retry": "Riprova",
     "form": {
       "title": "Nuovo invito",
       "email": "Email dell'host da invitare",
+      "emailFriend": "Email del tuo amico",
       "message": "Messaggio (facoltativo)",
       "locale": "Lingua dell'email (facoltativa)",
       "localeDefault": "Predefinita",
@@ -7248,6 +7249,7 @@
       "sending": "Invio in corso…",
       "errors": {
         "emailRequired": "Inserisci l'email dell'host.",
+        "emailRequiredFriend": "Inserisci l'email del tuo amico.",
         "emailInvalid": "Inserisci un'email valida."
       }
     },

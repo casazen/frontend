@@ -596,15 +596,15 @@ describe('route-manifest nav helpers', () => {
   });
 
   // A host invites other independent hosts from "Altro" of both rental areas; the admin has one section for all the invites.
-  it('puts the invitation of hosts in "Altro" of both rental areas, in the menu of the org owner only', () => {
+  it('puts the invitation of hosts in "Altro" of both rental areas, open to every member of a host org', () => {
     for (const context of ['short-rent', 'long-rent'] as const) {
       const entry = entryOf(`/app/${context}/settings/invitations`);
       expect(entry.context).toBe(context);
       expect(entry.navKey).toBe('nav.hostInvites');
       expect(entry.navPlacement).toBe('secondary');
-      expect(entry.requiredPermissions).toEqual([]);
-      // Backend policy OrgMembersManage (owner and admin of the org): menu only, the backend stays the authority.
-      expect(entry.orgBillingAdmin).toBe(true);
+      // Backend policy SharedPropertyRead: the permission every host role holds, owner or collaborator.
+      expect(entry.requiredPermissions).toEqual(['property.read']);
+      expect(entry.orgBillingAdmin).toBeUndefined();
     }
   });
 
