@@ -105,4 +105,28 @@ describe('site gate (SEO-VETRINA)', () => {
     // The company does not exist yet: production keeps / as the console until name and partita IVA are set.
     expect(isPublicSiteEnabled({ vercelEnv: 'production', legalName, legalVatId })).toBe(false);
   });
+
+  describe('without a partita IVA (the owner chose to publish it)', () => {
+    const base = { vercelEnv: 'production', legalName: 'Mario Rossi', legalVatId: undefined };
+
+    it('isPublicSiteEnabled_productionWithHolderNameContactAndTheChoice_isOn', () => {
+      expect(isPublicSiteEnabled({ ...base, contactEmail: 'info@example.com', withoutVatId: 'true' })).toBe(true);
+      expect(isPublicSiteEnabled({ ...base, contactEmail: ' info@example.com ', withoutVatId: ' TRUE ' })).toBe(true);
+    });
+
+    it.each([
+      ['no choice', { contactEmail: 'info@example.com', withoutVatId: undefined }],
+      ['the choice is false', { contactEmail: 'info@example.com', withoutVatId: 'false' }],
+      ['no contact e-mail', { contactEmail: undefined, withoutVatId: 'true' }],
+      ['an invalid contact e-mail', { contactEmail: 'not-an-email', withoutVatId: 'true' }],
+    ])('isPublicSiteEnabled_production_%s_isOff', (_case, input) => {
+      expect(isPublicSiteEnabled({ ...base, ...input })).toBe(false);
+    });
+
+    it('isPublicSiteEnabled_productionWithTheChoiceButNoHolderName_isOff', () => {
+      expect(
+        isPublicSiteEnabled({ ...base, legalName: ' ', contactEmail: 'info@example.com', withoutVatId: 'true' }),
+      ).toBe(false);
+    });
+  });
 });

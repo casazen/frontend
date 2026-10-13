@@ -51,6 +51,17 @@ describe('buildSiteHead (SEO-VETRINA)', () => {
     expect(head.match(/<\/script>/g)).toHaveLength(1);
   });
 
+  it('buildOrganizationJsonLd_holderWithoutPartitaIva_isNotDeclaredAsALegalEntity', () => {
+    // A person is shown in the page, never as the legal name of an organization.
+    expect(buildOrganizationJsonLd('https://site.example.test', { ...NO_LEGAL, name: 'Mario Rossi', email: 'info@example.com' })).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'CasaZen',
+      url: 'https://site.example.test/',
+      email: 'info@example.com',
+    });
+  });
+
   it('buildOrganizationJsonLd_containsOnlyConfiguredCompanyData', () => {
     expect(buildOrganizationJsonLd(null, NO_LEGAL)).toEqual({
       '@context': 'https://schema.org',

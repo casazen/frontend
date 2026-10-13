@@ -83,6 +83,34 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
     expect(findVercelBuildEnvProblems({ vercelEnv, demoBuild: false, env: withoutCompanyData() })).toEqual([]);
   });
 
+  describe('publishing the public site without a partita IVA', () => {
+    const chosen = { ...withoutCompanyData(), VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true' };
+
+    it('findVercelBuildEnvProblems_productionWithTheChoiceButNoHolder_NamesNameAndContact', () => {
+      // The owner asked to publish: a site with no identifiable holder must not go online by mistake.
+      expect(findVercelBuildEnvProblems({ vercelEnv: 'production', demoBuild: false, env: chosen })).toEqual([
+        expect.stringMatching(/^VITE_LEGAL_NAME: missing/),
+        expect.stringMatching(/^VITE_SUPPORT_EMAIL: missing/),
+      ]);
+    });
+
+    it('findVercelBuildEnvProblems_productionWithTheChoiceAndTheHolder_IsAccepted', () => {
+      const env = { ...chosen, VITE_LEGAL_NAME: 'Mario Rossi', VITE_SUPPORT_EMAIL: 'info@example.com' };
+      expect(findVercelBuildEnvProblems({ vercelEnv: 'production', demoBuild: false, env })).toEqual([]);
+    });
+
+    it('findVercelBuildEnvProblems_previewWithTheChoiceButNoHolder_IsNotAProblem', () => {
+      expect(findVercelBuildEnvProblems({ vercelEnv: 'preview', demoBuild: false, env: chosen })).toEqual([]);
+    });
+
+    it.each(['yes', '1', 'ttrue'])('findVercelBuildEnvProblems_choice_%s_IsAProblem', (value) => {
+      const env = { ...withoutCompanyData(), VITE_PUBLIC_SITE_WITHOUT_VAT_ID: value };
+      expect(findVercelBuildEnvProblems({ vercelEnv: 'preview', demoBuild: false, env })).toEqual([
+        expect.stringMatching(/^VITE_PUBLIC_SITE_WITHOUT_VAT_ID: must be true or false/),
+      ]);
+    });
+  });
+
   it.each(['IT 0123456789', '0123456789X', 'DE123456789'])(
     'findVercelBuildEnvProblems_ProductionWithInvalidPartitaIva_%s_IsAProblem',
     (value) => {

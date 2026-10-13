@@ -47,7 +47,13 @@ export function renderSitePages(year: number): RenderedSitePage[] {
 /** Whether this build serves the public site: always outside Vercel production, in production only with the company data. */
 export function isSiteServed(vercelEnv: string | undefined): boolean {
   const env = import.meta.env as Record<string, unknown>;
-  return isPublicSiteEnabled({ vercelEnv, legalName: env.VITE_LEGAL_NAME, legalVatId: env.VITE_LEGAL_VAT_ID });
+  return isPublicSiteEnabled({
+    vercelEnv,
+    legalName: env.VITE_LEGAL_NAME,
+    legalVatId: env.VITE_LEGAL_VAT_ID,
+    contactEmail: env.VITE_SUPPORT_EMAIL,
+    withoutVatId: env.VITE_PUBLIC_SITE_WITHOUT_VAT_ID,
+  });
 }
 
 /**

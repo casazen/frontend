@@ -78,11 +78,29 @@ describe('site middleware (SEO-VETRINA)', () => {
     [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Esempio S.r.l.' }],
     [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Esempio S.r.l.', VITE_LEGAL_VAT_ID: 'IT 012 345 678 90' }],
     [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Esempio S.r.l.', VITE_LEGAL_VAT_ID: 'DE123456789' }],
+    // Without a partita IVA, by the owner's explicit choice, with the holder's name and contact.
+    [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true', VITE_SUPPORT_EMAIL: 'info@example.com' }],
+    [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: ' True ', VITE_SUPPORT_EMAIL: 'info@example.com' }],
+    [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true' }],
+    [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true', VITE_SUPPORT_EMAIL: 'bad' }],
+    [{ VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'false', VITE_SUPPORT_EMAIL: 'info@example.com' }],
+    [{ VERCEL_ENV: 'production', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true', VITE_SUPPORT_EMAIL: 'info@example.com' }],
   ])('isSiteEnabled_%j_isTheRuleOfTheSiteGate', (env: Record<string, string | undefined>) => {
     // middleware.ts is bundled on its own: its copy of the gate must agree with src/site/site-gate.ts.
     expect(isSiteEnabled(env)).toBe(
-      isPublicSiteEnabled({ vercelEnv: env.VERCEL_ENV, legalName: env.VITE_LEGAL_NAME, legalVatId: env.VITE_LEGAL_VAT_ID }),
+      isPublicSiteEnabled({
+        vercelEnv: env.VERCEL_ENV,
+        legalName: env.VITE_LEGAL_NAME,
+        legalVatId: env.VITE_LEGAL_VAT_ID,
+        contactEmail: env.VITE_SUPPORT_EMAIL,
+        withoutVatId: env.VITE_PUBLIC_SITE_WITHOUT_VAT_ID,
+      }),
     );
+  });
+
+  it('sitePagePath_productionWithoutPartitaIvaButTheChoiceAndTheHolder_servesThePublicSite', () => {
+    const env = { ...ENV, VERCEL_ENV: 'production', VITE_LEGAL_NAME: 'Mario Rossi', VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true', VITE_SUPPORT_EMAIL: 'info@example.com' };
+    expect(sitePagePath(request(`${PUBLIC_SITE}/`), env)).toBe(`/${SITE_ASSET_DIR}/index.html`);
   });
 
   it.each([

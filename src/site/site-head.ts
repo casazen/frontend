@@ -35,8 +35,8 @@ export function buildOrganizationJsonLd(origin: string | null, legal: SiteLegal)
     '@type': 'Organization',
     name: 'CasaZen',
     ...(origin ? { url: `${origin}/` } : {}),
-    ...(legal.name ? { legalName: legal.name } : {}),
-    ...(legal.vatId ? { vatID: legal.vatId } : {}),
+    // A legal entity only: a holder without a partita IVA (a person) is shown in the page, not declared as an organization.
+    ...(legal.name && legal.vatId ? { legalName: legal.name, vatID: legal.vatId } : {}),
     ...(legal.address ? { address: legal.address } : {}),
     ...(legal.email ? { email: legal.email } : {}),
   };

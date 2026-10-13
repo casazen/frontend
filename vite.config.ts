@@ -53,6 +53,8 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
             vercelEnv: process.env.VERCEL_ENV,
             legalName: viteEnv.VITE_LEGAL_NAME,
             legalVatId: viteEnv.VITE_LEGAL_VAT_ID,
+            contactEmail: viteEnv.VITE_SUPPORT_EMAIL,
+            withoutVatId: viteEnv.VITE_PUBLIC_SITE_WITHOUT_VAT_ID,
           }),
         }),
       ),

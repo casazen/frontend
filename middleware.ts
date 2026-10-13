@@ -14,7 +14,8 @@ import { next, rewrite } from '@vercel/functions';
  *   `localhost` and the Vercel deployments: the same rule as `isAppHost` of `api/seo.ts`.
  * - On Vercel production the site is served only once the company name and a valid partita IVA are configured
  *   (`VITE_LEGAL_NAME`, `VITE_LEGAL_VAT_ID`): the company does not exist yet, and its home page must show the partita IVA
- *   (art. 35 DPR 633/1972). Until then every request goes on unchanged. Same rule as `src/site/site-gate.ts`.
+ *   (art. 35 DPR 633/1972). The owner can choose to publish without one (`VITE_PUBLIC_SITE_WITHOUT_VAT_ID=true`, with the
+ *   name and contact e-mail of the holder). Until then every request goes on unchanged. Same rule as `src/site/site-gate.ts`.
  *
  * Self-contained on purpose (no imports from `src/`): Vercel bundles it on its own. `src/test/site-middleware.test.ts`
  * checks that the paths below are the pages of `src/site/site-pages.ts` and that the gate is the one of `site-gate.ts`.
@@ -53,11 +54,19 @@ export function isAppHost(host: string, publicSiteUrl: string | undefined): bool
 /** Italian partita IVA: 11 digits, optionally with the `IT` prefix (spaces ignored). */
 const VAT_ID = /^(IT)?\d{11}$/;
 
-/** Whether the public site is served here: always outside production, in production only with the company data. */
+/** A plain e-mail address (same rule as `EMAIL` of `src/site/site-gate.ts`). */
+const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
+
+/**
+ * Whether the public site is served here: always outside production; in production with the company name and a partita
+ * IVA, or when the owner chose to publish without one (`VITE_PUBLIC_SITE_WITHOUT_VAT_ID=true`) and set the name and the
+ * contact e-mail of the holder. Same rule as `isPublicSiteEnabled` of `src/site/site-gate.ts`.
+ */
 export function isSiteEnabled(env: Record<string, string | undefined>): boolean {
   if (env.VERCEL_ENV !== 'production') return true;
-  const vatId = (env.VITE_LEGAL_VAT_ID ?? '').replace(/\s+/g, '').toUpperCase();
-  return (env.VITE_LEGAL_NAME ?? '').trim() !== '' && VAT_ID.test(vatId);
+  if ((env.VITE_LEGAL_NAME ?? '').trim() === '') return false;
+  if (VAT_ID.test((env.VITE_LEGAL_VAT_ID ?? '').replace(/\s+/g, '').toUpperCase())) return true;
+  return (env.VITE_PUBLIC_SITE_WITHOUT_VAT_ID ?? '').trim().toLowerCase() === 'true' && EMAIL.test((env.VITE_SUPPORT_EMAIL ?? '').trim());
 }
 
 /** True for the redirect back from the Auth0 login (OAuth 2.0 authorization response: `code` or `error`, with `state`). */
