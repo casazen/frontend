@@ -2,7 +2,9 @@ import type { Page } from '@playwright/test';
 import type {
   ComplianceActivationResult,
   ComplianceSummaryResult,
-  CheckoutWizardStartResult,
+  CheckoutWizardState,
+  SafetyChecklist,
+  SafetyItemCode,
 } from '../../src/types/compliance.types';
 
 export const DEMO_PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
@@ -20,6 +22,11 @@ export const demoActivationPending: ComplianceActivationResult = {
   ],
 };
 
+/**
+ * The cockpit with the contract of `GET /api/compliance/summary` (CO-04, A5-09): action by name and id of the target,
+ * never a path; labels as the API builds them (property name, guest name). Typed with the app's types, so a change
+ * of the contract breaks this mock too.
+ */
 export const demoComplianceSummary: ComplianceSummaryResult = {
   propertiesPending: {
     count: 1,
@@ -27,7 +34,9 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
       {
         id: DEMO_PROPERTY_ID,
         label: 'Appartamento Centro',
-        routeLink: `/app/properties/${DEMO_PROPERTY_ID}/activation`,
+        action: 'ActivateProperty',
+        propertyId: DEMO_PROPERTY_ID,
+        bookingId: null,
       },
     ],
   },
@@ -36,8 +45,10 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     items: [
       {
         id: DEMO_CHECKOUT_BOOKING_ID,
-        label: 'Appartamento Centro — check-in 2026-07-01',
-        routeLink: `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}`,
+        label: 'Mario Rossi',
+        action: 'CompleteGuestCheckIn',
+        propertyId: null,
+        bookingId: DEMO_CHECKOUT_BOOKING_ID,
       },
     ],
   },
@@ -46,8 +57,10 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     items: [
       {
         id: DEMO_CHECKOUT_BOOKING_ID,
-        label: 'Appartamento Centro — checkout 2026-07-04',
-        routeLink: `/app/short-rent/bookings/${DEMO_CHECKOUT_BOOKING_ID}/checkout`,
+        label: 'Mario Rossi',
+        action: 'CheckOut',
+        propertyId: null,
+        bookingId: DEMO_CHECKOUT_BOOKING_ID,
       },
     ],
   },
@@ -55,22 +68,126 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
     count: 0,
     items: [],
   },
+  alloggiatiManualRequired: {
+    count: 1,
+    items: [
+      {
+        id: DEMO_CHECKOUT_BOOKING_ID,
+        label: 'Mario Rossi',
+        action: 'SendAlloggiati',
+        propertyId: null,
+        bookingId: DEMO_CHECKOUT_BOOKING_ID,
+      },
+    ],
+  },
+  turnoversPending: {
+    count: 0,
+    items: [],
+  },
 };
 
-export const demoCheckoutWizard: CheckoutWizardStartResult = {
+/** `checkout-wizard/start` as the API answers it (CO-17): 5 steps, nothing answered yet. */
+export const demoCheckoutWizard: CheckoutWizardState = {
+  bookingId: DEMO_CHECKOUT_BOOKING_ID,
+  bookingStatus: 'CheckedIn',
+  currentStep: 'stay-summary',
+  startedAt: '2026-09-25T08:00:00Z',
+  completedAt: null,
   steps: [
-    { id: 'confirm-departure', label: 'Conferma partenza ospite', status: 'pending' },
-    { id: 'compliance-summary', label: 'Riepilogo compliance soggiorno', status: 'pending' },
-    { id: 'supplier-selection', label: 'Servizi turnover', status: 'pending' },
-    { id: 'payment', label: 'Pagamenti e saldo', status: 'pending' },
-    { id: 'property-ready', label: 'Proprietà pronta', status: 'pending' },
+    { id: 'stay-summary', label: 'Riepilogo soggiorno', status: 'pending', blocker: true },
+    { id: 'alloggiati', label: 'Alloggiati Web', status: 'warning', blocker: false },
+    { id: 'cleaning', label: 'Pulizie', status: 'pending', blocker: false },
+    { id: 'tourist-tax', label: 'Imposta di soggiorno', status: 'pending', blocker: false },
+    { id: 'property-ready', label: 'Proprietà pronta', status: 'pending', blocker: false },
   ],
-  suppliers: [
-    { orgId: '11111111-1111-1111-1111-111111111101', legalName: 'Pulizie Roma Srl', category: 'cleaning' },
-  ],
+  stay: {
+    guestName: 'Mario Rossi',
+    propertyId: DEMO_PROPERTY_ID,
+    propertyName: 'Appartamento Centro',
+    propertyCity: 'Roma',
+    checkInDate: '2026-09-22T00:00:00Z',
+    checkOutDate: '2026-09-25T00:00:00Z',
+    nights: 3,
+    numberOfGuests: 2,
+    numberOfAdults: 2,
+    numberOfChildren: 0,
+    arrivedAt: null,
+    source: 'Direct',
+    departureConfirmed: false,
+  },
+  alloggiati: {
+    status: 'DaInviareManualmente',
+    sent: false,
+    deadlineAt: '2026-09-23T22:00:00Z',
+    isOverdue: true,
+    dataComplete: true,
+  },
+  cleaning: { choice: null, supplierOrgId: null, category: null, notes: null, requestId: null },
+  touristTax: { recordedAmount: 18, currency: 'EUR', collectedWithOnlinePayment: true, collection: null },
+  propertyReady: { ready: null, readyAt: null, notes: null },
+};
+
+const SAFETY_ITEM_CODES: SafetyItemCode[] = [
+  'FireExtinguishers',
+  'GasDetector',
+  'CoDetector',
+  'SystemsCompliance',
+  'BdsrDeclaration',
+  'SmokeDetector',
+  'EmergencyInstructions',
+];
+
+/** Safety checklist (CO-07) of a property that has not answered it yet: every item "not answered", facts unknown. */
+const demoSafetyChecklistUnanswered: SafetyChecklist = {
+  schemaVersion: 1,
+  legalBasis: 'D.L. 145/2023 art. 13-ter',
+  declarationTextVersion: 'e2e',
+  saved: false,
+  importedFromLegacy: false,
+  facts: {
+    entrepreneurial: null,
+    hasGasSupply: null,
+    combustionAppliances: null,
+    floorCount: null,
+    floorAreasSqm: null,
+  },
+  items: SAFETY_ITEM_CODES.map((code) => ({
+    code,
+    requirement: code === 'SmokeDetector' || code === 'EmergencyInstructions' ? 'Optional' : 'Undetermined',
+    status: 'NotAnswered',
+    notApplicableReason: null,
+    answer: null,
+    quantity: null,
+    location: null,
+    detectorType: null,
+    checkedOn: null,
+    expiresOn: null,
+    evidenceDocumentId: null,
+    evidenceFileName: null,
+    notes: null,
+  })),
+  minimumExtinguishers: null,
+  isComplete: false,
+  blockers: [],
+  warnings: [],
+  confirmedAt: null,
+  confirmedTextVersion: null,
+  updatedAt: null,
 };
 
 export async function mockComplianceApi(page: Page): Promise<void> {
+  await page.route(`**/api/properties/${DEMO_PROPERTY_ID}/compliance/safety-checklist`, async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(demoSafetyChecklistUnanswered),
+    });
+  });
+
   await page.route(`**/api/properties/${DEMO_PROPERTY_ID}/compliance/activation`, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();

@@ -47,21 +47,6 @@ export function getInitials(name: string): string {
 }
 
 /**
- * Truncate text with ellipsis
- */
-export function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-}
-
-/**
- * Sleep utility for async operations
- */
-export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
  * Copies text to the clipboard. Uses execCommand fallback when the async Clipboard API
  * is unavailable or fails (common after awaiting a token fetch).
  */

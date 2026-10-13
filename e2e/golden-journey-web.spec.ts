@@ -5,14 +5,16 @@ import {
   mockBrandedBookingApi,
   mockPublicOrg,
 } from './helpers/branded-booking-mock';
+import { mockComplianceApi } from './helpers/compliance-mock';
+import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 /**
- * Golden Journey web — Fase 0 batch (#301): host onboarding + branded booking.
- * Supplier tests consolidated into supplier-layout.spec.ts.
+ * Golden Journey web, L2 demo (page.route mocks): fast shell checks only, NOT the journey gate.
+ * The real journey (UI, ephemeral stack, four distinct actors, F1–F2) is `e2e/gj-l3/golden-journey.spec.ts` (FN-03).
  */
 test.describe('Golden Journey web (#301)', () => {
   test.beforeEach(async ({ page }) => {
-    await mockBrandedBookingApi(page);
     await page.addInitScript(() => {
       localStorage.removeItem('casazen_cookie_consent');
       localStorage.setItem('casazen.locale', 'it');
@@ -20,6 +22,8 @@ test.describe('Golden Journey web (#301)', () => {
   });
 
   test('GJ steps 3–4 sequential (demo mode)', async ({ page }) => {
+    test.setTimeout(60_000);
+    await mockBrandedBookingApi(page);
     const api500: string[] = [];
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) {
@@ -27,12 +31,22 @@ test.describe('Golden Journey web (#301)', () => {
       }
     });
 
-    // Step 3: host onboarding → short-rent
+    // Step 3: host onboarding → consents → plan → short-rent
     await page.goto(demoUrl('/onboarding', 'onboarding'));
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
     await page.getByRole('button', { name: 'Scegli' }).first().click();
-    await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-    await page.getByTestId('onboarding-plan-confirm').click();
+
+    const consents = page.getByTestId('onboarding-consents-step');
+    await expect(consents).toBeVisible({ timeout: 20_000 });
+    const checkboxes = consents.getByRole('checkbox');
+    const count = await checkboxes.count();
+    for (let i = 0; i < count; i++) {
+      await checkboxes.nth(i).click();
+    }
+    const consentsContinue = page.getByTestId('onboarding-consents-continue');
+    await expect(consentsContinue).toBeEnabled({ timeout: 10_000 });
+    await consentsContinue.click();
+
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
 
     // Step 4: guest public booking — branded shell
@@ -42,6 +56,47 @@ test.describe('Golden Journey web (#301)', () => {
       page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
+
+    expect(api500).toEqual([]);
+  });
+
+  test('GJ steps 5–7 host ops shell (calendar + compliance cockpit)', async ({ page }) => {
+    const property = buildCreatedProperty({
+      id: '11111111-1111-1111-1111-111111111101',
+      name: 'Villa GJ',
+    });
+    await mockPropertiesApi(page, [property]);
+    await mockComplianceApi(page);
+    await page.route('**/api/bookings/calendar**', async (route) => {
+      if (route.request().method() !== 'GET') {
+        await route.fallback();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ bookings: [], timezone: 'Europe/Rome', utcOffsetMinutes: 60 }),
+      });
+    });
+
+    const api500: string[] = [];
+    page.on('response', (res) => {
+      if (res.url().includes('/api/') && res.status() >= 500) {
+        api500.push(`${res.status()} ${res.url()}`);
+      }
+    });
+
+    await page.goto(demoUrl('/app/short-rent/bookings/calendar', 'short-stay'), {
+      waitUntil: 'networkidle',
+    });
+    await expect(
+      page.locator('#calendar-property').or(page.getByText(/Nessuna proprietà disponibile/i)),
+    ).toBeVisible({ timeout: 20_000 });
+
+    await page.goto(demoUrl('/app/short-rent', 'short-stay'), {
+      waitUntil: 'domcontentloaded',
+    });
+    await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
 
     expect(api500).toEqual([]);
   });

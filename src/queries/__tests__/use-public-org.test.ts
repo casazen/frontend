@@ -29,7 +29,7 @@ const mockProperty: PublicPropertyDto = {
   cleaningFee: 40,
   amenities: ['Wifi'],
   photoUrls: [],
-  cinCode: 'IT-00000-0000000000',
+  cinCode: 'IT015146A12HOLV2MZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
 };

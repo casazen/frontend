@@ -3,10 +3,8 @@ import {
   PROPERTY_ID,
   configEnabled,
   configDisabled,
-  historyPage1,
-  historyPage2,
-  historyAfterSync,
-  previewData,
+  recalculateResponse,
+  suggestionsData,
 } from '../fixtures/pricing.fixtures';
 
 /**
@@ -17,68 +15,55 @@ import {
 const pricingBase = `**/api/pricing-adapter`;
 
 /**
- * Overrides POST sync with a delayed response so the UI can show the pending spinner.
+ * Overrides POST recalculate with a delayed response so the UI can show the pending spinner.
  * Call AFTER mockPricingApiDefaults — Playwright evaluates routes LIFO.
  */
-export async function mockDelayedPricingSync(
+export async function mockDelayedRecalculate(
   page: Page,
-  options: { delayMs?: number; onSync?: () => void } = {},
+  options: { delayMs?: number; onRecalculate?: () => void } = {},
 ): Promise<void> {
   const delayMs = options.delayMs ?? 800;
 
-  await page.route(`${pricingBase}/sync/${PROPERTY_ID}`, async (route) => {
+  await page.route(`${pricingBase}/recalculate/${PROPERTY_ID}`, async (route) => {
     if (route.request().method() !== 'POST') {
       await route.fallback();
       return;
     }
 
-    options.onSync?.();
+    options.onRecalculate?.();
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     await route.fulfill({
-      status: 202,
+      status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ jobId: 'job-e2e-sync-001' }),
+      body: JSON.stringify(recalculateResponse),
     });
   });
 }
 
 /**
- * Registers the full set of default API mocks needed for the AI pricing flow.
+ * Registers the full set of default API mocks needed for the seasonal suggestions flow.
  * Playwright route handlers are evaluated in LIFO order — later registrations
  * take priority, so individual tests can override a specific route by calling
  * page.route() AFTER this helper.
  */
 export async function mockPricingApiDefaults(page: Page): Promise<void> {
-  // GET preview
-  await page.route(`${pricingBase}/preview/${PROPERTY_ID}`, (route) => {
+  // GET suggestions
+  await page.route(`${pricingBase}/suggestions/${PROPERTY_ID}`, (route) => {
     if (route.request().method() !== 'GET') { route.fallback(); return; }
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(previewData),
+      body: JSON.stringify(suggestionsData),
     });
   });
 
-  // POST sync
-  await page.route(`${pricingBase}/sync/${PROPERTY_ID}`, (route) => {
+  // POST recalculate
+  await page.route(`${pricingBase}/recalculate/${PROPERTY_ID}`, (route) => {
     if (route.request().method() !== 'POST') { route.fallback(); return; }
     route.fulfill({
-      status: 202,
-      contentType: 'application/json',
-      body: JSON.stringify({ jobId: 'job-e2e-sync-001' }),
-    });
-  });
-
-  // GET history (with optional query string)
-  await page.route(`${pricingBase}/history/${PROPERTY_ID}**`, (route) => {
-    if (route.request().method() !== 'GET') { route.fallback(); return; }
-    const url = new URL(route.request().url());
-    const page_ = Number(url.searchParams.get('page') ?? '1');
-    const body = page_ >= 2 ? historyPage2 : historyPage1;
-    route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(body),
+      body: JSON.stringify(recalculateResponse),
     });
   });
 
@@ -118,20 +103,6 @@ export async function mockConfigDisabled(page: Page): Promise<void> {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(configDisabled),
-    });
-  });
-}
-
-/**
- * Overrides GET history to return the post-sync state (new entry at top).
- */
-export async function mockHistoryAfterSync(page: Page): Promise<void> {
-  await page.route(`${pricingBase}/history/${PROPERTY_ID}**`, (route) => {
-    if (route.request().method() !== 'GET') { route.fallback(); return; }
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(historyAfterSync),
     });
   });
 }

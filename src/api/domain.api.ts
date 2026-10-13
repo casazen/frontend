@@ -17,5 +17,5 @@ export const DomainApi = {
     ApiClient.post<OrgDomainVerifyResult>(`/orgs/${orgId}/domain/verify`, {}),
 
   resolveHost: (host: string): Promise<ResolveHostResponse> =>
-    ApiClient.get<ResolveHostResponse>('/public/resolve-host', { host }),
+    ApiClient.get<ResolveHostResponse>('/public/resolve-host', { host }, { public: true }),
 };

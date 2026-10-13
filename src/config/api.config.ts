@@ -1,7 +1,7 @@
 const baseUrl = import.meta.env.VITE_API_BASE_URL || (
   import.meta.env.PROD
     ? 'https://casazen-api.up.railway.app/api'  // Production: Railway prod
-    : 'https://localhost:5001/api'               // Development: local
+    : 'http://localhost:5000/api'
 );
 
 export const apiConfig = {

@@ -1,12 +1,9 @@
 import type { RentalType } from '@/types';
 import { getUserRoles, isAdmin, ROLE_ADMIN, ROLE_LONG_TERM_LANDLORD, ROLE_PROPERTY_OWNER, ROLE_SUPPLIER } from '@/lib/auth-roles';
 import type { UserWithRoles } from '@/lib/auth-roles';
-
-export const RENTAL_TYPE_LABELS: Record<RentalType, string> = {
-  ShortTerm: 'Affitti brevi',
-  LongTerm: 'Locazioni di lungo periodo',
-  Both: 'Entrambi',
-};
+import { isAxiosError } from 'axios';
+import { getHttpStatus } from '@/lib/api-errors';
+import { planPagePath } from '@/lib/billing-routes';
 
 export function getHomeRouteForRentalType(rentalType: RentalType): string {
   switch (rentalType) {
@@ -19,17 +16,33 @@ export function getHomeRouteForRentalType(rentalType: RentalType): string {
   }
 }
 
-export function getHomeRouteForUser(user: UserWithRoles): string {
+/** Where a supplier-only user lands: the activation wizard (an active supplier is sent on to the dashboard). */
+export const SUPPLIER_HOME_ROUTE = '/app/supplier/activation';
+
+type SupplierLinkProfile = { orgId?: string | null; supplierOrgId?: string | null } | null | undefined;
+
+/**
+ * True when `/users/me` says the account is linked to a supplier profile (invite, registration or claim, SU-02).
+ * Unlike the Supplier role it does not wait for a fresh access token (`rolesSynced: false`).
+ */
+export function isLinkedSupplier(profile: SupplierLinkProfile): boolean {
+  return !!profile?.supplierOrgId;
+}
+
+function hasHostRole(roles: string[]): boolean {
+  return roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
+}
+
+export function getHomeRouteForUser(user: UserWithRoles, profile?: SupplierLinkProfile): string {
   if (isAdmin(user)) {
     return '/app/admin';
   }
 
   const roles = getUserRoles(user);
-  const isHost =
-    roles.includes(ROLE_PROPERTY_OWNER) || roles.includes(ROLE_LONG_TERM_LANDLORD);
+  const isHost = hasHostRole(roles);
 
-  if (roles.includes(ROLE_SUPPLIER) && !isHost) {
-    return '/supplier/inbox';
+  if ((roles.includes(ROLE_SUPPLIER) || isLinkedSupplier(profile)) && !isHost) {
+    return SUPPLIER_HOME_ROUTE;
   }
 
   if (roles.includes(ROLE_LONG_TERM_LANDLORD) && !roles.includes(ROLE_PROPERTY_OWNER)) {
@@ -39,20 +52,66 @@ export function getHomeRouteForUser(user: UserWithRoles): string {
   return '/app/short-rent';
 }
 
+/**
+ * True when `GET /users/me` failed for a reason that says nothing about the onboarding (5xx, network, session):
+ * the UI offers a retry instead of the wizard (A1-19). Only a 404 (no profile at all) counts as "not onboarded".
+ */
+export function isProfileLoadFailure(error: unknown): boolean {
+  return error != null && getHttpStatus(error) !== 404;
+}
+
 /** True when the caller has no tenant org yet (blocks property create, plan, entitlement). */
 export function needsOrgSetup(profile?: { orgId?: string | null } | null): boolean {
   return !profile?.orgId;
 }
 
-export function needsOnboarding(
-  user: UserWithRoles,
-  profile?: { orgId?: string | null; onboardingCompletedAt?: string | null } | null,
-  roles?: string[],
-): boolean {
+/**
+ * Platform admins and supplier-only users do not need a host org, so they are never sent through the host
+ * onboarding (A1-01): the admin reaches the admin routes, the supplier its console. Both can still open
+ * `/onboarding` themselves to set up a host org.
+ */
+export function isExemptFromHostOnboarding(roles: string[]): boolean {
+  if (roles.includes(ROLE_ADMIN)) return true;
+  return roles.includes(ROLE_SUPPLIER) && !hasHostRole(roles);
+}
+
+/** Profile fields that decide the onboarding (`GET /users/me`). */
+export interface OnboardingProfile {
+  orgId?: string | null;
+  supplierOrgId?: string | null;
+  onboardingCompletedAt?: string | null;
+  rentalType?: RentalType | null;
+  /** Backend gate (PL-02): host features withheld until the onboarding and the current consents. */
+  onboardingRequired?: boolean | null;
+  consentsAccepted?: boolean | null;
+  /**
+   * The org has at least one property (`/users/me`). Only a strict `false` means "first property pending": a missing
+   * value (older backend, demo profile) never redirects.
+   */
+  hasProperties?: boolean | null;
+}
+
+export function needsOnboarding(user: UserWithRoles, profile?: OnboardingProfile | null, roles?: string[]): boolean {
   const resolvedRoles = roles ?? getUserRoles(user);
 
-  // Org backfill takes priority — e.g. admin with timestamp but no tenant (#285)
+  // Admins and supplier-only users skip it even without an org (#285 used to trap admins here).
+  if (isExemptFromHostOnboarding(resolvedRoles)) {
+    return false;
+  }
+
+  // A supplier linked in the database goes to its console, never to the host onboarding (A4-02), even while the
+  // Supplier role is not in the access token yet. A host org can still be set up from `/onboarding`.
+  if (isLinkedSupplier(profile)) {
+    return false;
+  }
+
+  // Hosts without an org (roles assigned by hand in Auth0, org never provisioned) complete it to get one.
   if (needsOrgSetup(profile)) {
+    return true;
+  }
+
+  // PL-02: the backend withholds the host features (onboarding never completed, or legal documents changed).
+  if (profile?.onboardingRequired === true) {
     return true;
   }
 
@@ -61,10 +120,116 @@ export function needsOnboarding(
     return false;
   }
 
-  if (resolvedRoles.includes(ROLE_ADMIN)) {
-    return false;
-  }
   return resolvedRoles.length === 0;
+}
+
+/**
+ * Pages a host without properties must still reach: the creation of the property itself (the destination, so no loop),
+ * and the pages that are not about the property (account settings and plan, profile, legal documents).
+ */
+const FIRST_PROPERTY_EXEMPT_PATTERNS = [
+  /^\/(?:app\/(?:short|long)-rent\/)?properties\/(?:create|new)(?:\/|$)/,
+  /^\/app\/(?:short|long)-rent\/settings(?:\/|$)/,
+  /^\/app\/(?:short|long)-rent\/profile(?:\/|$)/,
+  /^\/profile(?:\/|$)/,
+  /^\/legale(?:\/|$)/,
+  /^\/onboarding(?:\/|$)/,
+];
+
+/**
+ * Second, separate check after the wizard (consents stay a hard requirement of {@link needsOnboarding}): a host with
+ * an org, a completed onboarding and a rental type but no property yet is taken to the creation of the first one,
+ * not back to the whole wizard. Admins, suppliers and members without a rental type of their own (invited, so
+ * not the ones who chose to set up a host org) are never sent there.
+ */
+export function needsFirstProperty(
+  user: UserWithRoles,
+  profile: OnboardingProfile | null | undefined,
+  roles: string[] | undefined,
+  pathname: string,
+): boolean {
+  const resolvedRoles = roles ?? getUserRoles(user);
+  if (isExemptFromHostOnboarding(resolvedRoles) || isLinkedSupplier(profile)) return false;
+  if (!profile?.orgId || !profile.rentalType) return false;
+  if (needsOnboarding(user, profile, resolvedRoles)) return false;
+  if (profile.hasProperties !== false) return false;
+  return !FIRST_PROPERTY_EXEMPT_PATTERNS.some((pattern) => pattern.test(pathname));
+}
+
+const RENTAL_TYPE_CONTEXT_PREFIXES: Record<RentalType, string[]> = {
+  ShortTerm: ['/app/short-rent'],
+  LongTerm: ['/app/long-rent'],
+  Both: ['/app/short-rent', '/app/long-rent'],
+};
+
+/**
+ * Where a host who has just created the org starts: the quick creation of the first property of the area the rental
+ * type opens (the checklist and the guides ask for the rest afterwards). Short-term first for `Both`.
+ */
+export function getFirstPropertyRoute(rentalType: RentalType): string {
+  return rentalType === 'LongTerm' ? '/app/long-rent/properties/new?first=1' : '/app/short-rent/properties/create?first=1';
+}
+
+/**
+ * Where to go once the onboarding is done: a deep page the guard redirected from when it belongs to a context the chosen
+ * rental type opens; otherwise, right after the org was created (`firstRun`), the creation of the first property;
+ * otherwise the home of the rental type.
+ */
+export function getPostOnboardingRoute(
+  rentalType: RentalType,
+  from?: string | null,
+  options?: { firstRun?: boolean },
+): string {
+  const prefixes = RENTAL_TYPE_CONTEXT_PREFIXES[rentalType] ?? [];
+  if (from && prefixes.some((prefix) => from === prefix || from.startsWith(`${prefix}/`))) {
+    // A new host sent from the bare home of an area is not "going somewhere": it starts with the first property.
+    if (!(options?.firstRun && prefixes.includes(from))) return from;
+  }
+  return options?.firstRun ? getFirstPropertyRoute(rentalType) : getHomeRouteForRentalType(rentalType);
+}
+
+/**
+ * Plan page of the context a rental type opens (A1-15): the operator type edit does not change the plan, it hands over
+ * to the plan page (Stripe checkout or portal) once saved.
+ */
+export function getPlanPageForRentalType(rentalType: RentalType): string {
+  return planPagePath(rentalType === 'LongTerm' ? 'long-rent' : 'short-rent');
+}
+
+/**
+ * Profile of the context a rental type opens (PL-06). `/profile` is only a legacy alias, and short-rent claims it
+ * first, so assigning it after a switch to long-term never opens `/app/long-rent/profile`.
+ */
+export function getProfilePageForRentalType(rentalType: RentalType): string {
+  return rentalType === 'LongTerm' ? '/app/long-rent/profile' : '/app/short-rent/profile';
+}
+
+/**
+ * Legal documents whose accepted version is no longer the current one (A1-39): the 400 of `POST/PUT /users/onboarding`
+ * carries them in `staleDocuments` (`tos`, `privacy`, `dpa`, `subprocessors`). The backend sends no ProblemDetails
+ * `code` for this case, so the field itself identifies it. `null` for any other error.
+ */
+export function getStaleConsentDocuments(error: unknown): string[] | null {
+  if (!isAxiosError(error) || error.response?.status !== 400) return null;
+  const data: unknown = error.response.data;
+  if (typeof data !== 'object' || data === null || !('staleDocuments' in data)) return null;
+  const { staleDocuments } = data;
+  if (!Array.isArray(staleDocuments)) return null;
+  const documents = staleDocuments.filter((value): value is string => typeof value === 'string');
+  return documents.length > 0 ? documents : null;
+}
+
+/**
+ * The onboarding was completed but a legal document changed since (backend `consentsAccepted: false`, PL-02): only
+ * the consents step is needed, submitted with the rental type already chosen.
+ */
+export function needsConsentRenewal(profile?: OnboardingProfile | null): boolean {
+  return (
+    !!profile?.orgId &&
+    !!profile.onboardingCompletedAt &&
+    !!profile.rentalType &&
+    profile.consentsAccepted === false
+  );
 }
 
 /**

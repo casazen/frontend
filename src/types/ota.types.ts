@@ -40,7 +40,7 @@ export interface CreateOtaIntegrationDto {
   isActive?: boolean;
 }
 
-export interface UpdateOtaIntegrationDto extends Partial<CreateOtaIntegrationDto> {}
+export type UpdateOtaIntegrationDto = Partial<CreateOtaIntegrationDto>;
 
 export interface SyncResult {
   platform: OtaPlatform;

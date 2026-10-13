@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CinComplianceTable } from './components/cin-compliance-table';
@@ -15,7 +16,7 @@ export function AdminCinPage() {
   const [page, setPage] = useState(1);
   const [cinStatus, setCinStatus] = useState<CinStatusFilter>('');
 
-  const { data, isLoading, isError } = useCinCompliance(
+  const { data, isLoading, isError, refetch } = useCinCompliance(
     page,
     PAGE_SIZE,
     cinStatus || undefined,
@@ -28,6 +29,7 @@ export function AdminCinPage() {
       <PageHeader
         title={t('admin.cin.title')}
         description={t('admin.cin.description')}
+        action={<NavChildLinks parentPath="/app/admin/cin" />}
       />
 
       <Card>
@@ -55,9 +57,12 @@ export function AdminCinPage() {
       <Card>
         <CardContent className="pt-6">
           {isError ? (
-            <p className="py-8 text-center text-destructive">
-              {t('admin.cin.loadError')}
-            </p>
+            <div className="space-y-3 py-8 text-center">
+              <p className="text-destructive">{t('admin.cin.loadError')}</p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                {t('admin.cin.retry')}
+              </Button>
+            </div>
           ) : (
             <>
               <CinComplianceTable items={data?.items ?? []} isLoading={isLoading} />

@@ -22,6 +22,34 @@ export interface CinCompliancePagedResult {
   pageSize: number;
 }
 
+export interface DemoEnvironmentStatus {
+  available: boolean;
+  enabled: boolean;
+  templateVersion: string;
+  lastResetAt: string | null;
+  showcaseProperties: number;
+  scenarios: string[];
+}
+
+export interface DemoOrgListItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface DemoComplianceResult {
+  propertiesSeen: number;
+  published: number;
+  alreadyComplete: number;
+  filled: number;
+}
+
+export interface DemoResetResult {
+  removed: number;
+  created: number;
+  unpublishedRemoved: number;
+}
+
 export const AdminApi = {
   getStats: (): Promise<AdminStats> =>
     ApiClient.get<AdminStats>('/admin/stats'),
@@ -41,4 +69,19 @@ export const AdminApi = {
 
   updateOrgPlan: (orgId: string, planTier: string): Promise<Entitlement> =>
     ApiClient.patch<Entitlement>(`/admin/orgs/${orgId}/plan`, { planTier }),
+
+  getDemoStatus: (): Promise<DemoEnvironmentStatus> =>
+    ApiClient.get<DemoEnvironmentStatus>('/admin/demo'),
+
+  listDemoOrgs: (): Promise<DemoOrgListItem[]> =>
+    ApiClient.get<DemoOrgListItem[]>('/admin/demo/orgs'),
+
+  setDemoEnabled: (enabled: boolean): Promise<DemoEnvironmentStatus> =>
+    ApiClient.put<DemoEnvironmentStatus>('/admin/demo/enabled', { enabled }),
+
+  applyDemoCompliance: (orgId: string): Promise<DemoComplianceResult> =>
+    ApiClient.post<DemoComplianceResult>(`/admin/demo/orgs/${orgId}/compliance`),
+
+  resetDemoShowcase: (orgId: string, confirmation: string, removeUnpublished: boolean): Promise<DemoResetResult> =>
+    ApiClient.post<DemoResetResult>(`/admin/demo/orgs/${orgId}/reset`, { confirmation, removeUnpublished }),
 };

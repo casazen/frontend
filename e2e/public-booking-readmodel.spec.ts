@@ -13,13 +13,15 @@ test.describe('Public booking read-model (#212)', () => {
     await mockPublicBookingReadApi(page);
   });
 
-  test('AC11: search results show CIN badge, city, price, and capacity without operator identity', async ({ page }) => {
+  test('AC11: search results show the CIN code, city, price, and capacity without operator identity', async ({ page }) => {
     await page.goto(demoUrl(SEARCH_URL, 'short-stay'));
 
     await expect(page.getByRole('heading', { name: 'Trastevere Loft' })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('CIN valido')).toBeVisible();
+    await expect(page.getByText('CIN: IT058091C27G5FFZDZ')).toBeVisible();
     await expect(page.getByText('Rome (00153)')).toBeVisible();
-    await expect(page.getByText('CIN mancante')).toBeVisible();
+    // The compliance state is for the host only: no "valid"/"missing" badge for guests
+    await expect(page.getByTestId('public-cin')).toHaveCount(1);
+    await expect(page.getByText(/CIN (valido|mancante|non valido)/)).toHaveCount(0);
 
     const bodyText = await page.locator('body').innerText();
     expect(bodyText.toLowerCase()).not.toContain('ownerid');

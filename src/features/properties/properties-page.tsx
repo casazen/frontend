@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Segmented } from '@/components/ui/segmented';
 import {
   Dialog,
   DialogContent,
@@ -13,37 +14,70 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MoreHorizontal, Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useProperties, useUpdateProperty, useCreateProperty } from '@/queries/use-properties';
+import {
+  useProperties,
+  usePauseProperty,
+  useActivateProperty,
+  useCreateProperty,
+  useDeleteProperty,
+} from '@/queries/use-properties';
 import { useCinCompliance } from '@/queries/use-cin';
 import { CinDeadlineBanner } from '@/features/cin';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PropertyForm } from './components/property-form';
 import { isPlanLimitError, getPlanLimitMessage } from '@/lib/entitlement-error';
-import type { Property } from '@/types';
-import type { PropertyFormValues } from './schemas/property.schema';
+import { getAmenityLabel } from '@/lib/i18n-labels';
+import { formatCurrency } from '@/lib/utils';
+import type { CreatePropertyDto, Property } from '@/types';
+import { formatPropertyLocation } from './property-location';
+
+/** "At a glance" filter over the already-fetched list (A2-05): who is paused is never a second request. */
+type StatusFilter = 'all' | 'active' | 'paused';
+const STATUS_FILTERS: readonly StatusFilter[] = ['all', 'active', 'paused'];
 
 export function PropertiesPage() {
   const { t } = useTranslation();
   const { data: properties, isLoading, error } = useProperties();
   const { data: cinCompliance } = useCinCompliance();
-  const updateProperty = useUpdateProperty();
+  const pauseProperty = usePauseProperty();
+  const activateProperty = useActivateProperty();
   const createProperty = useCreateProperty();
+  const deleteProperty = useDeleteProperty();
+  const { hasPermission } = useWorkspace();
+  const canDelete = hasPermission('short-rent', 'property.write');
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  const toggleActive = async (property: Property) => {
+  // Pausing/activating is a dedicated action (A2-05): never the generic PUT, so it can never fail on an
+  // unrelated required field, and never sets `isActive` (soft delete's own flag, PC-05).
+  const togglePause = async (property: Property) => {
     try {
-      await updateProperty.mutateAsync({
-        id: property.id,
-        data: { isActive: !property.isActive },
-      });
+      if (property.isPaused) {
+        await activateProperty.mutateAsync(property.id);
+      } else {
+        await pauseProperty.mutateAsync(property.id);
+      }
     } catch {
-      // Error toast already handled by mutation
+      // Error toast already handled by the mutation
     }
   };
 
-  const handleCreateProperty = async (data: PropertyFormValues) => {
+  // The backend decides whether it can go (409 with upcoming bookings / active leases): the mutation's own toast says why.
+  const confirmDelete = async () => {
+    if (!propertyToDelete) return;
+    try {
+      await deleteProperty.mutateAsync(propertyToDelete.id);
+    } catch {
+      // Error toast already handled by the mutation
+    }
+  };
+
+  const handleCreateProperty = async (data: CreatePropertyDto) => {
     try {
       await createProperty.mutateAsync(data);
       setIsDialogOpen(false);
@@ -59,7 +93,7 @@ export function PropertiesPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen className="h-auto flex-1" />;
   }
 
   if (error) {
@@ -76,6 +110,12 @@ export function PropertiesPage() {
   }
 
   const propertyList = properties ?? [];
+  const pausedCount = propertyList.filter((p) => p.isPaused).length;
+  const filteredList = propertyList.filter((p) => {
+    if (statusFilter === 'active') return !p.isPaused;
+    if (statusFilter === 'paused') return p.isPaused;
+    return true;
+  });
 
   return (
     <AppShell>
@@ -90,6 +130,25 @@ export function PropertiesPage() {
           </Button>
         </div>
 
+        {/* UI-07 pilot of Segmented: the same three buttons with aria-pressed, as one control. */}
+        {propertyList.length > 0 && (
+          <Segmented
+            label={t('property.page.filterLabel')}
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            options={STATUS_FILTERS.map((filter) => ({
+              value: filter,
+              testId: `property-filter-${filter}`,
+              label:
+                filter === 'all'
+                  ? t('property.page.filterAll', { count: propertyList.length })
+                  : filter === 'active'
+                    ? t('property.page.filterActive', { count: propertyList.length - pausedCount })
+                    : t('property.page.filterPaused', { count: pausedCount }),
+            }))}
+          />
+        )}
+
         {propertyList.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -101,6 +160,12 @@ export function PropertiesPage() {
                 <Plus className="mr-2 h-4 w-4" />
                 {t('property.page.emptyCta')}
               </Button>
+            </CardContent>
+          </Card>
+        ) : filteredList.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-sm text-muted-foreground">{t('property.page.filterEmpty')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -118,28 +183,35 @@ export function PropertiesPage() {
                         t('property.table.priceNight'),
                         t('property.table.amenities'),
                         t('property.table.status'),
-                        '',
+                        t('property.table.actions'),
                       ].map((h) => (
                         <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {propertyList.map((p) => (
+                    {filteredList.map((p) => (
                       <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="px-4 py-3 font-medium">
                           <Link to={`/properties/${p.id}`} className="hover:underline">
                             {p.name}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">{p.city}, {p.country}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{p.bedrooms}bd · {p.bathrooms}ba</td>
+                        <td className="px-4 py-3 text-muted-foreground">{formatPropertyLocation(p)}</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {t('property.table.bedroomsCount', { count: p.bedrooms })}
+                          {' · '}
+                          {t('property.table.bathroomsCount', { count: p.bathrooms })}
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground">{p.maxGuests}</td>
-                        <td className="px-4 py-3 font-medium">{p.currency === 'EUR' ? '€' : '$'}{p.nightlyRate}</td>
+                        <td className="px-4 py-3 font-medium">
+                          {/* Amounts are in euros (the API has no currency per property); 0 = no short-stay rate. */}
+                          {p.nightlyRate > 0 ? formatCurrency(p.nightlyRate) : t('property.table.noRate')}
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1">
                             {(p.amenities || []).slice(0, 3).map((a) => (
-                              <Badge key={a} variant="secondary" className="text-xs">{a}</Badge>
+                              <Badge key={a} variant="secondary" className="text-xs">{getAmenityLabel(a, t)}</Badge>
                             ))}
                             {(p.amenities || []).length > 3 && (
                               <Badge variant="outline" className="text-xs">+{p.amenities.length - 3}</Badge>
@@ -147,8 +219,8 @@ export function PropertiesPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={p.isActive ? 'default' : 'secondary'}>
-                            {p.isActive ? t('property.table.active') : t('property.table.paused')}
+                          <Badge variant={p.isPaused ? 'secondary' : 'default'}>
+                            {p.isPaused ? t('property.table.paused') : t('property.table.active')}
                           </Badge>
                         </td>
                         <td className="px-4 py-3">
@@ -156,15 +228,33 @@ export function PropertiesPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => toggleActive(p)}
-                              disabled={updateProperty.isPending}
+                              onClick={() => togglePause(p)}
+                              disabled={pauseProperty.isPending || activateProperty.isPending}
                               className="text-xs"
                             >
-                              {p.isActive ? t('property.table.pause') : t('property.table.activate')}
+                              {p.isPaused ? t('property.table.activate') : t('property.table.pause')}
                             </Button>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button asChild variant="ghost" size="icon">
+                              <Link
+                                to={`/app/short-rent/properties/${p.id}/edit`}
+                                aria-label={t('property.table.editAria', { name: p.name })}
+                                title={t('property.table.edit')}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Link>
                             </Button>
+                            {canDelete && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setPropertyToDelete(p)}
+                                aria-label={t('property.table.deleteAria', { name: p.name })}
+                                title={t('property.table.delete')}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -175,6 +265,21 @@ export function PropertiesPage() {
             </CardContent>
           </Card>
         )}
+
+        <ConfirmationDialog
+          open={propertyToDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setPropertyToDelete(null);
+          }}
+          title={t('property.deleteDialog.title')}
+          description={t('property.deleteDialog.description', { name: propertyToDelete?.name ?? '' })}
+          confirmLabel={t('property.deleteDialog.confirm')}
+          variant="destructive"
+          requireText={propertyToDelete?.name ?? ''}
+          consequences={[t('property.deleteDialog.consequenceHidden'), t('property.deleteDialog.consequenceBlocked')]}
+          onConfirm={confirmDelete}
+          isLoading={deleteProperty.isPending}
+        />
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

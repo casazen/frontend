@@ -6,6 +6,7 @@ import { isDemoMode } from '@/config/demo.config';
 import { hasRole } from '@/lib/auth-roles';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
+  const { t } = useTranslation();
   const { isLoading, isAuthenticated, user } = useAuth();
   const roles = useUserRoles();
   const hasShownRoleToast = useRef(false);
@@ -22,9 +24,9 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   useEffect(() => {
     if (!isDemoMode && !isLoading && isAuthenticated && role && !isAuthorized && !hasShownRoleToast.current) {
       hasShownRoleToast.current = true;
-      toast.error('You do not have access to this section');
+      toast.error(t('shared.auth.noSectionAccess'));
     }
-  }, [isLoading, isAuthenticated, role, isAuthorized]);
+  }, [isLoading, isAuthenticated, role, isAuthorized, t]);
 
   if (isDemoMode) {
     if (role && !hasRole(user, role)) {
@@ -34,7 +36,7 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   }
 
   if (isLoading) {
-    return <LoadingScreen message="Authenticating..." />;
+    return <LoadingScreen message={t('shared.auth.authenticating')} />;
   }
 
   if (!isAuthenticated) {

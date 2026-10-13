@@ -82,25 +82,6 @@ test.describe('Stripe Connect onboarding (#222)', () => {
       requirementsDue: [],
     });
 
-    await page.route('**/api/connect/account', async (route) => {
-      if (route.request().method() !== 'POST') {
-        await route.fallback();
-        return;
-      }
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          connectedAccountId: 'acct_test_new',
-          chargesEnabled: false,
-          payoutsEnabled: false,
-          detailsSubmitted: false,
-          requirementsDue: ['individual.verification.document'],
-        }),
-      });
-    });
-
     let onboardingUrl = '';
     await page.route('**/api/connect/onboarding-link', async (route) => {
       if (route.request().method() !== 'POST') {
@@ -108,9 +89,8 @@ test.describe('Stripe Connect onboarding (#222)', () => {
         return;
       }
 
-      const body = route.request().postDataJSON() as { returnUrl?: string; refreshUrl?: string };
-      expect(body.returnUrl).toContain('stripe_return=1');
-      expect(body.refreshUrl).toContain('stripe_refresh=1');
+      // BK-09 (A3-42): the API builds the return and refresh pages; the client sends no URL.
+      expect(route.request().postData() ?? '').not.toContain('returnUrl');
       onboardingUrl = 'https://connect.stripe.test/onboard/acct_test_new';
 
       await route.fulfill({
@@ -123,5 +103,24 @@ test.describe('Stripe Connect onboarding (#222)', () => {
     await page.goto(demoUrl(PAYMENTS_SETTINGS_URL, 'short-stay'));
     await page.getByTestId('connect-stripe-cta').click();
     await expect.poll(() => onboardingUrl).not.toBe('');
+  });
+
+  test('Stripe unavailable shows the error with Riprova, never "Non collegato"', async ({ page }) => {
+    await page.route('**/api/connect/status**', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/problem+json',
+        headers: { 'Retry-After': '10' },
+        body: JSON.stringify({ status: 503, code: 'stripe_connect_unavailable', detail: 'Stripe non risponde' }),
+      });
+    });
+
+    await page.goto(demoUrl(PAYMENTS_SETTINGS_URL, 'short-stay'));
+
+    // The query retries a 5xx twice (1 s, 2 s) before showing the error.
+    await expect(page.getByTestId('connect-status-error')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('connect-status-error').getByRole('button', { name: 'Riprova' })).toBeVisible();
+    await expect(page.getByTestId('connect-status-badge')).toHaveCount(0);
+    await expect(page.getByTestId('connect-checkout-gate-banner')).toHaveCount(0);
   });
 });

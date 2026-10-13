@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { AdminJobsTable } from './components/admin-jobs-table';
 import { useAdminJobs } from '@/queries/use-admin';
 
 export function AdminJobsPage() {
   const { t } = useTranslation();
-  const { data, isLoading } = useAdminJobs();
+  const { data, isLoading, isError, refetch } = useAdminJobs();
 
   return (
     <div className="space-y-6">
@@ -16,7 +17,16 @@ export function AdminJobsPage() {
       />
       <Card>
         <CardContent className="pt-6">
-          <AdminJobsTable jobs={data ?? []} isLoading={isLoading} />
+          {isError ? (
+            <div className="space-y-3 py-8 text-center">
+              <p className="text-destructive">{t('admin.jobs.loadError')}</p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                {t('admin.jobs.retry')}
+              </Button>
+            </div>
+          ) : (
+            <AdminJobsTable jobs={data ?? []} isLoading={isLoading} />
+          )}
         </CardContent>
       </Card>
     </div>

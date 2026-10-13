@@ -7,7 +7,11 @@ import { formatUserDisplayName } from '@/lib/user-display';
 import { ChangeRoleDialog } from './change-role-dialog';
 import { ChangeOrgPlanDialog } from './change-org-plan-dialog';
 import { DeactivateUserDialog } from './deactivate-user-dialog';
+import { DeleteUserDialog } from './delete-user-dialog';
 import type { UserSummary } from '@/types';
+import { getPlanTierLabel, getRoleLabel } from '@/lib/i18n-labels';
+import { formatDate } from '@/lib/utils';
+import { useReactivateUser } from '@/queries/use-users';
 
 interface UserManagementTableProps {
   users: UserSummary[];
@@ -19,6 +23,8 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
   const [roleTarget, setRoleTarget] = useState<UserSummary | null>(null);
   const [planTarget, setPlanTarget] = useState<UserSummary | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<UserSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<UserSummary | null>(null);
+  const { mutate: reactivate, isPending: isReactivating, variables: reactivatingId } = useReactivateUser();
 
   if (isLoading) {
     return (
@@ -41,6 +47,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
               <th className="pb-2 pr-4 font-medium">{t('admin.users.table.role')}</th>
               <th className="pb-2 pr-4 font-medium">{t('admin.users.table.plan')}</th>
               <th className="pb-2 pr-4 font-medium">{t('admin.users.table.status')}</th>
+              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.createdAt')}</th>
               <th className="pb-2 font-medium">{t('admin.users.table.actions')}</th>
             </tr>
           </thead>
@@ -52,10 +59,10 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                 </td>
                 <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
                 <td className="py-3 pr-4">
-                  <Badge variant="outline">{user.role}</Badge>
+                  <Badge variant="outline">{getRoleLabel(user.role, t)}</Badge>
                 </td>
                 <td className="py-3 pr-4">
-                  <Badge variant="secondary">{user.planTier ?? '—'}</Badge>
+                  <Badge variant="secondary">{user.planTier ? getPlanTierLabel(user.planTier, t) : '—'}</Badge>
                 </td>
                 <td className="py-3 pr-4">
                   {user.isActive ? (
@@ -64,6 +71,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                     <Badge variant="secondary">{t('admin.users.table.inactive')}</Badge>
                   )}
                 </td>
+                <td className="py-3 pr-4 text-muted-foreground">{formatDate(user.createdAt)}</td>
                 <td className="py-3">
                   <div className="flex gap-2">
                     <Button
@@ -81,7 +89,7 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                     >
                       {t('admin.users.table.roleAction')}
                     </Button>
-                    {user.isActive && (
+                    {user.isActive ? (
                       <Button
                         variant="destructive"
                         size="sm"
@@ -89,14 +97,30 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
                       >
                         {t('admin.users.table.deactivateAction')}
                       </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => reactivate(user.id)}
+                        disabled={isReactivating && reactivatingId === user.id}
+                      >
+                        {t('admin.users.table.reactivateAction')}
+                      </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDeleteTarget(user)}
+                    >
+                      {t('admin.users.table.removeAction')}
+                    </Button>
                   </div>
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                <td colSpan={7} className="py-8 text-center text-muted-foreground">
                   {t('admin.users.table.empty')}
                 </td>
               </tr>
@@ -120,6 +144,11 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
         user={deactivateTarget}
         open={deactivateTarget !== null}
         onOpenChange={(open) => { if (!open) setDeactivateTarget(null); }}
+      />
+      <DeleteUserDialog
+        user={deleteTarget}
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
       />
     </>
   );

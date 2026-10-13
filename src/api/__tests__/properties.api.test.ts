@@ -18,7 +18,7 @@ const mockListItem: PublicPropertyDto = {
   cleaningFee: 50,
   amenities: ['Wifi'],
   photoUrls: ['https://cdn.example.com/photo.jpg'],
-  cinCode: 'IT-12345-0123456789',
+  cinCode: 'IT058091C27G5FFZDZ',
   cinStatus: 'Valid',
   timezone: 'Europe/Rome',
 };
@@ -41,13 +41,44 @@ describe('propertiesApi public read-model (#212)', () => {
 
     const result = await propertiesApi.search({ city: 'Rome', minBedrooms: 2, maxPrice: 200 });
 
-    expect(ApiClient.get).toHaveBeenCalledWith('/properties/search', {
-      city: 'Rome',
-      bedrooms: 2,
-      maxPrice: 200,
-    });
+    expect(ApiClient.get).toHaveBeenCalledWith(
+      '/properties/search',
+      {
+        city: 'Rome',
+        bedrooms: 2,
+        maxPrice: 200,
+      },
+      { public: true },
+    );
     expect(result).toEqual([mockListItem]);
     expect(result[0]).not.toHaveProperty('ownerId');
+  });
+
+  it('BK-20: search sends every filter of the form, none is dropped', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce([mockListItem]);
+
+    await propertiesApi.search({
+      city: ' Como ',
+      minPrice: 40,
+      maxPrice: 180,
+      minBedrooms: 2,
+      minBathrooms: 1,
+      guests: 4,
+    });
+
+    expect(ApiClient.get).toHaveBeenCalledWith(
+      '/properties/search',
+      { city: 'Como', minPrice: 40, maxPrice: 180, bedrooms: 2, bathrooms: 1, guests: 4 },
+      { public: true },
+    );
+  });
+
+  it('BK-20: search keeps a zero minimum and leaves out blank or missing filters', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValueOnce([]);
+
+    await propertiesApi.search({ city: '   ', minPrice: 0, minBedrooms: 0 });
+
+    expect(ApiClient.get).toHaveBeenCalledWith('/properties/search', { minPrice: 0, bedrooms: 0 }, { public: true });
   });
 
   it('AC10: getPublicProperty calls GET /properties/:id/public', async () => {
@@ -55,7 +86,7 @@ describe('propertiesApi public read-model (#212)', () => {
 
     const result = await propertiesApi.getPublicProperty(mockListItem.id);
 
-    expect(ApiClient.get).toHaveBeenCalledWith(`/properties/${mockListItem.id}/public`);
+    expect(ApiClient.get).toHaveBeenCalledWith(`/properties/${mockListItem.id}/public`, undefined, { public: true });
     expect(result.currency).toBe('EUR');
     expect(result).not.toHaveProperty('ownerId');
   });

@@ -1,17 +1,33 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E configuration for CasaZen frontend.
- *
- * Tests run against the Vite dev server in demo mode so Auth0 is bypassed.
- * All backend API calls are intercepted inside each test via page.route().
+ * Playwright E2E — three modes:
+ * - default / CI: L2 demo (`page.route` mocks OK)
+ * - E2E_LOCAL=1: L3 against local InMemory API (no mock of paths under test)
+ * - E2E_STAGING=1: L3 / smoke against Railway test API
+ * - E2E_GJ_L3=1: Golden Journey L3 from the UI on an ephemeral stack (real backend + PostgreSQL + mock IdP), three
+ *   distinct actors; `e2e/stack/up.sh` first, runbook backend docs/runbooks/golden-journey-l3.md
  *
  * @see https://playwright.dev/docs/test-configuration
  */
 const isLocalRun = process.env.E2E_LOCAL === '1';
 const isStagingRun = process.env.E2E_STAGING === '1';
 const isDeploySmokeRun = process.env.E2E_DEPLOY_SMOKE === '1';
+/** Golden Journey L3 on the ephemeral stack (FN-03): `e2e/stack/up.sh` starts it, `e2e/gj-l3/` is the suite. */
+const isGjL3Run = process.env.E2E_GJ_L3 === '1';
 const isProdSmokeRun = process.env.E2E_PROD_SMOKE === '1';
+
+/**
+ * Auth0 tenant of a real-login run (E2E_LOCAL / E2E_STAGING): no default tenant in code (PL-11, A1-32). The test
+ * tenant is set per run, never the production one (backend docs/runbooks/auth0.md section 1).
+ */
+function requiredAuth0Env(name: 'VITE_AUTH0_DOMAIN' | 'VITE_AUTH0_CLIENT_ID'): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is required for E2E_LOCAL / E2E_STAGING runs: set it to the Auth0 test tenant.`);
+  }
+  return value;
+}
 
 export default defineConfig({
   testDir: './e2e',
@@ -19,15 +35,29 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? 'github' : 'html',
 
   use: {
-    baseURL: 'http://localhost:5173',
+    // Prefer localhost over 127.0.0.1 so Auth0 callback URLs match the tenant allowlist.
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
     trace: 'on-first-retry',
     viewport: { width: 1280, height: 720 },
   },
 
-  projects: isProdSmokeRun
+  projects: isGjL3Run
+    ? [
+        {
+          name: 'gj-l3',
+          testMatch: '**/gj-l3/**/*.spec.ts',
+          // The mock IdP serves a throw-away self-signed certificate (the backend trusts it via SSL_CERT_FILE).
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+            ignoreHTTPSErrors: true,
+          },
+        },
+      ]
+    : isProdSmokeRun
     ? [
         {
           name: 'prod-smoke',
@@ -54,13 +84,23 @@ export default defineConfig({
         {
           name: 'setup',
           testMatch: /auth\.setup\.ts/,
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+          },
         },
         {
           name: 'local',
-          testMatch: /\/(property-staging|local-integration)\.spec\.ts/,
+          testMatch: [
+            '**/property-staging.spec.ts',
+            '**/local-integration.spec.ts',
+            '**/l3/**/*.spec.ts',
+            '**/*-l3.spec.ts',
+          ],
           dependencies: ['setup'],
           use: {
             ...devices['Desktop Chrome'],
+            // Must be localhost (not 127.0.0.1) — Auth0 Allowed Callback URLs use localhost.
             baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
             storageState: 'e2e/.auth/long-term-user.json',
           },
@@ -71,10 +111,31 @@ export default defineConfig({
         {
           name: 'setup',
           testMatch: /auth\.setup\.ts/,
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+          },
         },
         {
           name: 'staging',
-          testMatch: /\/(property-staging|api-regression-smoke)\.spec\.ts/,
+          testMatch: [
+            '**/property-staging.spec.ts',
+            '**/api-regression-smoke.spec.ts',
+          ],
+          dependencies: ['setup'],
+          use: {
+            ...devices['Desktop Chrome'],
+            baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
+            storageState: 'e2e/.auth/long-term-user.json',
+          },
+        },
+        {
+          name: 'staging-gj',
+          // Real-API L3 only (the Golden Journey is the gj-l3 project on the ephemeral stack, FN-03)
+          testMatch: [
+            '**/l3/**/*.spec.ts',
+            '**/*-l3.spec.ts',
+          ],
           dependencies: ['setup'],
           use: {
             ...devices['Desktop Chrome'],
@@ -91,53 +152,62 @@ export default defineConfig({
             '**/api-regression-smoke.spec.ts',
             '**/vercel-deploy-smoke.spec.ts',
             '**/local-integration.spec.ts',
+            '**/l3/**',
+            '**/gj-l3/**',
+            '**/*-l3.spec.ts',
+            '**/prod-deploy-smoke.spec.ts',
           ],
           use: { ...devices['Desktop Chrome'] },
         },
       ],
 
-  webServer: isDeploySmokeRun || isProdSmokeRun
+  // The L3 stack is started by e2e/stack/up.sh (database, backend, mock services and Vite), not by Playwright.
+  webServer: isDeploySmokeRun || isProdSmokeRun || isGjL3Run
     ? undefined
     : isLocalRun
     ? {
-        command: 'npm run dev',
+        // Bind localhost so Auth0 redirect_uri (window.location.origin) matches Allowed Callback URLs.
+        command: 'npx vite --host localhost --port 5173',
         url: 'http://localhost:5173',
         reuseExistingServer: true,
-        timeout: 120_000,
+        timeout: 180_000,
         env: {
+          VITE_HTTPS: '0',
           VITE_API_BASE_URL:
             process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api',
-          VITE_AUTH0_DOMAIN:
-            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
-          VITE_AUTH0_CLIENT_ID:
-            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
+          VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
           VITE_AUTH0_AUDIENCE:
             process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
         },
       }
     : isStagingRun
     ? {
-        command: 'npm run dev',
+        command: 'npx vite --host localhost --port 5173',
         url: 'http://localhost:5173',
-        reuseExistingServer: false,
-        timeout: 120_000,
+        reuseExistingServer: !process.env.CI,
+        timeout: 180_000,
         env: {
+          VITE_HTTPS: '0',
           VITE_API_BASE_URL:
             process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
-          VITE_AUTH0_DOMAIN:
-            process.env.VITE_AUTH0_DOMAIN ?? 'dev-mp6wadq7j6bophl5.us.auth0.com',
-          VITE_AUTH0_CLIENT_ID:
-            process.env.VITE_AUTH0_CLIENT_ID ?? 'xmZPesTR04r349c14n77MgJ2iSCeFaJb',
+          VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
+          VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
           VITE_AUTH0_AUDIENCE:
             process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
         },
       }
     : {
-        command: 'npm run dev:demo',
+        command: 'npx vite --host localhost --port 5173',
         url: 'http://localhost:5173',
-        reuseExistingServer: !process.env.CI,
+        // Always start a dedicated demo server so .env (VITE_DEMO_MODE=false / staging API) cannot leak in.
+        reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
+        timeout: 180_000,
         env: {
           VITE_DEMO_MODE: 'true',
+          VITE_HTTPS: '0',
+          // Same-origin relative API so page.route mocks work without hitting Railway/local HTTPS.
+          VITE_API_BASE_URL: '/api',
         },
       },
 });

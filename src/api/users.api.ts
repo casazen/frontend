@@ -4,10 +4,14 @@ import type {
   UserDetail,
   UserSummary,
   UpdateProfileRequest,
-  ChangeRoleRequest,
   PagedResult,
   OnboardingRequest,
   OnboardingResponse,
+  UserActivationResponse,
+  UserRole,
+  UserRolesResponse,
+  SignupAttribution,
+  SignupAttributionResult,
 } from '@/types';
 
 interface GetUsersParams {
@@ -46,15 +50,31 @@ export const UsersApi = {
   updateMe: (body: UpdateProfileRequest): Promise<UserDetail> =>
     ApiClient.put<UserDetail>('/users/me', body),
 
-  changeRole: (id: string, role: string): Promise<{ id: string; role: string }> =>
-    ApiClient.put<{ id: string; role: string }>(`/users/${id}/role`, { role } as ChangeRoleRequest),
+  /** Roles the user currently holds, restricted to the ones an admin can manage (A1-17). */
+  getRoles: (id: string): Promise<UserRolesResponse> =>
+    ApiClient.get<UserRolesResponse>(`/users/${encodeURIComponent(id)}/roles`),
 
-  deactivateUser: (id: string): Promise<void> =>
-    ApiClient.delete<void>(`/users/${id}`),
+  /** Sets the user's exact admin-manageable role set (A1-17): grants and revokes the difference. */
+  updateRoles: (id: string, roles: UserRole[]): Promise<UserRolesResponse> =>
+    ApiClient.put<UserRolesResponse>(`/users/${encodeURIComponent(id)}/roles`, { roles }),
+
+  deactivateUser: (id: string): Promise<UserActivationResponse> =>
+    ApiClient.delete<UserActivationResponse>(`/users/${encodeURIComponent(id)}`),
+
+  /** Permanently removes the account (`DELETE /users/{id}/account`). Auth0 is deleted first. */
+  deleteRegisteredUser: (id: string): Promise<void> =>
+    ApiClient.delete<void>(`/users/${encodeURIComponent(id)}/account`),
+
+  reactivateUser: (id: string): Promise<UserActivationResponse> =>
+    ApiClient.post<UserActivationResponse>(`/users/${encodeURIComponent(id)}/reactivate`),
 
   postOnboarding: (body: OnboardingRequest): Promise<OnboardingResponse> =>
     ApiClient.post<OnboardingResponse>('/users/onboarding', body),
 
   putOnboarding: (body: OnboardingRequest): Promise<OnboardingResponse> =>
     ApiClient.put<OnboardingResponse>('/users/onboarding', body),
+
+  /** SE-03: where the signup came from, sent once after the first onboarding (the backend keeps the first one). */
+  recordSignupAttribution: (body: SignupAttribution): Promise<SignupAttributionResult> =>
+    ApiClient.post<SignupAttributionResult>('/users/me/signup-attribution', body),
 };

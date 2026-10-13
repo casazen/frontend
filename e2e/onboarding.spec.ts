@@ -1,24 +1,7 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { mockPlansCatalog } from './helpers/org-api-mock';
-
-async function completeOnboardingFromRentalChoice(
-  page: import('@playwright/test').Page,
-  rentalButtonIndex: number,
-) {
-  await page.getByRole('button', { name: 'Scegli' }).nth(rentalButtonIndex).click();
-
-  // Consents step — accept all required checkboxes
-  const checkboxes = page.getByTestId('onboarding-consents-step').getByRole('checkbox');
-  const count = await checkboxes.count();
-  for (let i = 0; i < Math.min(count, 4); i++) {
-    await checkboxes.nth(i).check();
-  }
-  await page.getByTestId('onboarding-consents-continue').click();
-
-  await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-  await page.getByTestId('onboarding-plan-confirm').click();
-}
+import { completeOnboardingFromRentalChoice } from './helpers/onboarding';
 
 test.describe('Role-based onboarding (#198)', () => {
   test.beforeEach(async ({ page }) => {
@@ -33,16 +16,16 @@ test.describe('Role-based onboarding (#198)', () => {
     await page.goto(demoUrl('/', 'onboarding'));
 
     await expect(page).toHaveURL(/\/onboarding/, { timeout: 15_000 });
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
   });
 
   test('AC2 onboarding shows three rental type cards', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
-    await expect(page.getByText('Affitti brevi')).toBeVisible();
-    await expect(page.getByText('Locazioni di lungo periodo')).toBeVisible();
-    await expect(page.getByText('Entrambi')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Affitti brevi' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Locazioni di lungo periodo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Entrambi' })).toBeVisible();
   });
 
   test('AC3 short-term choice navigates to short-rent home', async ({ page }) => {
@@ -52,11 +35,12 @@ test.describe('Role-based onboarding (#198)', () => {
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
   });
 
-  test('AC3 long-term choice navigates to leases home', async ({ page }) => {
+  test('AC3 long-term choice opens the first property', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await completeOnboardingFromRentalChoice(page, 1);
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/, { timeout: 15_000 });
+    // A new landlord starts with the first property (the guide of the leases page asks for the lease next).
+    await expect(page).toHaveURL(/\/app\/long-rent\/properties\/new\?first=1/, { timeout: 15_000 });
   });
 
   test('AC5 user with roles visiting onboarding is redirected away', async ({ page }) => {
@@ -80,13 +64,13 @@ test.describe('Persistent onboarding completion (#277)', () => {
     await page.goto(demoUrl('/onboarding', 'short-stay'));
 
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).not.toBeVisible();
   });
 
   test('AC3 user without completion sees onboarding on first visit', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
   });
 
   test('AC4 edit mode only accessible after onboarding completed', async ({ page }) => {

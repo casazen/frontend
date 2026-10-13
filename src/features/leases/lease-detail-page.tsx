@@ -1,47 +1,72 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Loader2, PenLine } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  useInitiateSigning,
-  useLease,
-  useLeaseRegistration,
-  useTriggerRegistration,
-} from '@/queries/use-leases';
+import { useLease, useRliChecklist, useTriggerRegistration } from '@/queries/use-leases';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { LeaseStatusBadge } from './components/lease-status-badge';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RegistrationStatusPanel } from './components/registration-status-panel';
 import { ExtraEUWarningBanner } from './components/extra-eu-warning-banner';
-import { getFiscalRegimeLabel } from '@/lib/i18n-labels';
-import type { SignerInfo } from '@/types';
+import { CanoneConcordatoCalculator } from './components/canone-concordato-calculator';
+import { AttestationGuidancePanel } from './components/attestation-guidance-panel';
+import { ImuNotificationExportButton } from './components/imu-notification-export-button';
+import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
+import { RliChecklist } from './components/rli-checklist';
+import { QuesturaCommunicationPanel } from './components/questura-communication-panel';
+import { DelegaCaptureDialog } from './components/delega-capture-dialog';
+import { getLeaseEventTypeLabel, getLeasePartyRoleLabel, getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
+import { ConcordatoAssessmentPanel } from './components/concordato-assessment-panel';
+import { RentSchedulePanel } from './components/rent-schedule-panel';
 
 export function LeaseDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: lease, isLoading } = useLease(id!);
-  const { data: registration } = useLeaseRegistration(id!, lease?.status);
-  const initiateSigning = useInitiateSigning();
+  const { data: lease, isLoading, isError, error, refetch, isFetching } = useLease(id!);
+  const { data: checklist } = useRliChecklist(id!);
   const triggerRegistration = useTriggerRegistration();
-  const [signers, setSigners] = useState<SignerInfo[]>([]);
+  const [delegaOpen, setDelegaOpen] = useState(false);
 
   if (isLoading) {
-    return <LoadingScreen message={t('leases.detailLoading')} />;
+    return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
+  }
+
+  const backToList = () => navigate('/app/long-rent/leases');
+
+  // Only a 404 means "not found": a 500, a 403 or a network error is a load error with retry (A7-27).
+  if (isError && getHttpStatus(error) !== 404) {
+    const reason = getProblemMessage(error, t);
+    return (
+      <div className="py-12 text-center" role="alert" data-testid="lease-load-error">
+        <AlertCircle className="mx-auto mb-3 h-8 w-8 text-destructive" />
+        <h2 className="mb-2 text-2xl font-bold">{t('leases.detailLoadError')}</h2>
+        {reason && <p className="text-muted-foreground">{reason}</p>}
+        <div className="mt-4 flex justify-center gap-2">
+          <Button onClick={() => void refetch()} disabled={isFetching}>
+            {t('leases.retry')}
+          </Button>
+          <Button variant="outline" onClick={backToList}>
+            {t('leases.backToList')}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (!lease) {
     return (
-      <div className="py-12 text-center">
+      <div className="py-12 text-center" data-testid="lease-not-found">
         <h2 className="mb-2 text-2xl font-bold">{t('leases.notFound')}</h2>
         <p className="text-muted-foreground">
           {t('leases.notFoundDescription')}
         </p>
-        <Button className="mt-4" variant="outline" onClick={() => navigate('/app/long-rent/leases')}>
+        <Button className="mt-4" variant="outline" onClick={backToList}>
           {t('leases.backToList')}
         </Button>
       </div>
@@ -54,27 +79,35 @@ export function LeaseDetailPage() {
     lease.hasExtraEUTenant ||
     parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
 
-  const activeSigners = signers.length > 0 ? signers : [];
-  const showSigningPanel =
-    activeSigners.length > 0 ||
-    lease.status === 'AwaitingSignature' ||
-    lease.status === 'PartiallySigned';
-
-  const handleInitiateSigning = async () => {
-    const result = await initiateSigning.mutateAsync(lease.id);
-    setSigners(result.signers);
+  // The mutations report their own errors (toast with the server's reason): only swallow the rejection.
+  const handleSubmitToProvider = () => {
+    setDelegaOpen(true);
   };
 
-  const handleRegister = async () => {
-    await triggerRegistration.mutateAsync(lease.id);
+  const handleDelegaConfirm = async (payload: {
+    tosVersion: string;
+    attestationAccepted: boolean;
+  }) => {
+    try {
+      await triggerRegistration.mutateAsync({
+        id: lease.id,
+        tosVersion: payload.tosVersion,
+        attestationAccepted: payload.attestationAccepted,
+      });
+      setDelegaOpen(false);
+    } catch {
+      // Reported by useTriggerRegistration.onError (the lease is reloaded with the recorded failure).
+      setDelegaOpen(false);
+    }
   };
 
-  const registrationData = registration ?? lease.registration;
+  // The provider path exists only when the API says so (flag on and configured provider, LT-01); otherwise manual.
+  const providerFilingAvailable = checklist?.providerFilingAvailable === true;
 
   return (
     <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/app/long-rent/leases')}>
+          <Button variant="ghost" size="icon" onClick={backToList} aria-label={t('leases.backToList')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <PageHeader
@@ -103,11 +136,27 @@ export function LeaseDetailPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.fiscalRegime')}</p>
-                  <p className="font-medium">{getFiscalRegimeLabel(lease.fiscalRegime, t)}</p>
+                  <p className="font-medium" data-testid="lease-type-regime">{getLeaseTypeAndRegimeLabel(lease, t)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t('leases.securityDeposit')}</p>
+                  <p className="font-medium">
+                    {lease.securityDeposit != null ? formatCurrency(lease.securityDeposit) : t('leases.securityDepositMissing')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t('leases.stipulaDate')}</p>
+                  <p className="font-medium" data-testid="lease-stipula-date">
+                    {lease.stipulaDate ? formatDate(lease.stipulaDate) : t('leases.stipulaDateMissing')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.registrationDeadline')}</p>
-                  <p className="font-medium">{formatDate(lease.registrationDeadline)}</p>
+                  <p className="font-medium" data-testid="lease-registration-deadline">
+                    {lease.registrationDeadline
+                      ? formatDate(lease.registrationDeadline)
+                      : t('leases.registrationDeadlineToBeDetermined')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('leases.created')}</p>
@@ -121,64 +170,75 @@ export function LeaseDetailPage() {
                 <CardTitle>{t('leases.parties')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {parties.length === 0 && (
+                  <p className="text-sm text-muted-foreground">{t('leases.noParties')}</p>
+                )}
                 {parties.map((party) => (
                   <div
                     key={party.id}
+                    data-testid="lease-party"
                     className="flex flex-col gap-1 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <p className="font-medium">
                         {party.firstName} {party.lastName}
                       </p>
-                      <p className="text-sm text-muted-foreground">{party.role}</p>
+                      <p className="text-sm text-muted-foreground">{getLeasePartyRoleLabel(party.role, t)}</p>
+                      {/* Masked by the server: the clear fiscal code and email never reach the browser (A7-17). */}
+                      <p className="text-sm text-muted-foreground">
+                        {t('leases.fiscalCodeMasked')}: {party.fiscalCodeMasked}
+                      </p>
                     </div>
-                    <p className="text-sm">{party.contactEmail}</p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">{t('leases.contactEmailMasked')}: </span>
+                      {party.contactEmailMasked}
+                    </p>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            {lease.status === 'Draft' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('leases.signing')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {t('leases.signingDescription')}
-                  </p>
-                  <Button
-                    onClick={handleInitiateSigning}
-                    disabled={initiateSigning.isPending}
-                  >
-                    {initiateSigning.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('leases.initiating')}
-                      </>
-                    ) : (
-                      <>
-                        <PenLine className="mr-2 h-4 w-4" />
-                        {t('leases.initiateSigning')}
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            {/* LT-02: offline signature by default, provider only when the API says it is available. */}
+            <LeaseSigningPanel lease={lease} />
 
-            {showSigningPanel && activeSigners.length > 0 && (
-              <LeaseSigningPanel signers={activeSigners} />
-            )}
-
+            <CedolareDecisionPanel leaseId={lease.id} />
+            <RliChecklist leaseId={lease.id} />
+            {/* LT-07: extra-EU tenant, the 48-hour Questura communication is declared by the landlord. */}
+            {showExtraEuBanner && <QuesturaCommunicationPanel leaseId={lease.id} leaseEndDate={lease.endDate} />}
             <RegistrationStatusPanel
               leaseId={lease.id}
               leaseStatus={lease.status}
-              registration={registrationData}
-              canRegister={lease.status === 'Signed'}
-              onRegister={handleRegister}
-              isRegistering={triggerRegistration.isPending}
+              registration={lease.registration}
+              registrationDeadline={lease.registrationDeadline}
+              providerFilingAvailable={providerFilingAvailable}
+              onSubmitToProvider={handleSubmitToProvider}
+              isSubmittingToProvider={triggerRegistration.isPending}
             />
+            {/* LT-06: recurring rent, once the lease is signed. */}
+            <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />
+            {providerFilingAvailable && checklist && (
+              <DelegaCaptureDialog
+                open={delegaOpen}
+                onOpenChange={setDelegaOpen}
+                tosVersion={checklist.tosVersion}
+                attestationText={checklist.attestationText}
+                isSubmitting={triggerRegistration.isPending}
+                onConfirm={handleDelegaConfirm}
+              />
+            )}
+
+            {/* Calculator, attestation guidance and IMU only for a canone concordato contract (A7-24, LT-13). */}
+            {lease.contractType === 'Concordato' && (
+              <div className="space-y-6" data-testid="lease-concordato-sections">
+                {lease.concordatoAssessment ? (
+                  <ConcordatoAssessmentPanel assessment={lease.concordatoAssessment} />
+                ) : (
+                  <CanoneConcordatoCalculator propertyId={lease.propertyId} startDate={lease.startDate} endDate={lease.endDate} />
+                )}
+                <AttestationGuidancePanel propertyId={lease.propertyId} />
+                <ImuNotificationExportButton leaseId={lease.id} />
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -189,8 +249,8 @@ export function LeaseDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   {lease.events.map((event, index) => (
-                    <div key={`${event.eventType}-${index}`} className="border-l-2 pl-3">
-                      <p className="font-medium">{event.eventType}</p>
+                    <div key={`${event.eventType}-${index}`} className="border-l-2 pl-3" data-testid="lease-event">
+                      <p className="font-medium">{getLeaseEventTypeLabel(event.eventType, t)}</p>
                       <p className="text-muted-foreground">
                         {formatDateTime(event.occurredAt)}
                       </p>

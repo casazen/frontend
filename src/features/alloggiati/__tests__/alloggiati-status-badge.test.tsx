@@ -1,42 +1,78 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
+import { AlloggiatiStatusBadge } from '../components/alloggiati-status-badge';
 import {
-  AlloggiatiStatusBadge,
-} from '../components/alloggiati-status-badge';
-import { getAlloggiatiStatusLabel } from '../alloggiati-status.utils';
+  canMarkAlloggiatiSentManually,
+  formatRecordDate,
+  getAlloggiatiStatusLabel,
+  isAlloggiatiSent,
+  todayInRomeIso,
+} from '../alloggiati-status.utils';
 
 afterEach(() => {
   cleanup();
 });
 
-describe('AlloggiatiStatusBadge (#1 AC9)', () => {
-  it('renders Pending status in Italian', () => {
-    render(<AlloggiatiStatusBadge status="Pending" />);
-    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('In attesa');
+describe('AlloggiatiStatusBadge (CO-11)', () => {
+  it('statusBadge_ToSendManually_IsOrangeNeverGreen', () => {
+    render(<AlloggiatiStatusBadge status="DaInviareManualmente" />);
+    const badge = screen.getByTestId('alloggiati-status-badge');
+    expect(badge).toHaveTextContent('Da inviare manualmente');
+    expect(badge.className).toContain('bg-orange-500');
+    expect(badge.className).not.toContain('bg-green');
   });
 
-  it('renders Submitted status', () => {
-    render(<AlloggiatiStatusBadge status="Submitted" />);
-    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Inviato');
+  it('statusBadge_DeclaredByHost_IsNotTheReceiptGreen', () => {
+    render(<AlloggiatiStatusBadge status="InviatoManualmente" />);
+    const badge = screen.getByTestId('alloggiati-status-badge');
+    expect(badge).toHaveTextContent('Inviato manualmente');
+    expect(badge.className).not.toContain('bg-green');
   });
 
-  it('renders Confirmed status', () => {
-    render(<AlloggiatiStatusBadge status="Confirmed" />);
-    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Confermato');
+  it('statusBadge_SentWithReceipt_IsGreen', () => {
+    render(<AlloggiatiStatusBadge status="Inviato" />);
+    expect(screen.getByTestId('alloggiati-status-badge').className).toContain('bg-green-500');
   });
 
-  it('renders Failed status', () => {
-    render(<AlloggiatiStatusBadge status="Failed" />);
-    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Errore');
+  it('statusBadge_WaitingForArrival_ShowsToSend', () => {
+    render(<AlloggiatiStatusBadge status="DaInviare" />);
+    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Da inviare');
   });
 
-  it('renders overdue label when isOverdue is true', () => {
-    render(<AlloggiatiStatusBadge status="Pending" isOverdue />);
-    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Scaduto');
+  it('statusBadge_Overdue_KeepsTheStatusAndAddsDeadlinePassed', () => {
+    render(<AlloggiatiStatusBadge status="DaInviareManualmente" isOverdue />);
+    expect(screen.getByTestId('alloggiati-status-badge')).toHaveTextContent('Da inviare manualmente');
+    expect(screen.getByTestId('alloggiati-overdue-badge')).toHaveTextContent('Scadenza superata');
+  });
+});
+
+describe('alloggiati status utils', () => {
+  it('isAlloggiatiSent_OnlyReceiptOrHostDeclaration_IsSent', () => {
+    expect(isAlloggiatiSent('Inviato')).toBe(true);
+    expect(isAlloggiatiSent('InviatoManualmente')).toBe(true);
+    expect(isAlloggiatiSent('DaInviareManualmente')).toBe(false);
+    expect(isAlloggiatiSent('Errore')).toBe(false);
   });
 
-  it('getAlloggiatiStatusLabel returns overdue over status', () => {
-    expect(getAlloggiatiStatusLabel('Confirmed', true)).toBe('Scaduto');
-    expect(getAlloggiatiStatusLabel('Failed', false)).toBe('Errore');
+  it('canMarkAlloggiatiSentManually_BeforeArrivalOrSent_IsFalse', () => {
+    expect(canMarkAlloggiatiSentManually('DaInviare')).toBe(false);
+    expect(canMarkAlloggiatiSentManually('Inviato')).toBe(false);
+    expect(canMarkAlloggiatiSentManually('InviatoManualmente')).toBe(false);
+    expect(canMarkAlloggiatiSentManually('DaInviareManualmente')).toBe(true);
+    expect(canMarkAlloggiatiSentManually('Rifiutato')).toBe(true);
+  });
+
+  it('todayInRomeIso_AfterMidnightInRome_ReturnsTheRomeDate', () => {
+    expect(todayInRomeIso(new Date('2026-09-30T22:30:00Z'))).toBe('2026-10-01');
+    expect(todayInRomeIso(new Date('2026-12-31T22:59:00Z'))).toBe('2026-12-31');
+  });
+
+  it('formatRecordDate_DateOnlyValue_UsesTheRecordFormatWithoutTimezoneShift', () => {
+    expect(formatRecordDate('2026-10-10T00:00:00Z')).toBe('10/10/2026');
+  });
+
+  it('getAlloggiatiStatusLabel_ReturnsTranslatedLabel', () => {
+    expect(getAlloggiatiStatusLabel('Errore')).toBe('Errore');
+    expect(getAlloggiatiStatusLabel('DaInviareManualmente')).toBe('Da inviare manualmente');
   });
 });

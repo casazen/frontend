@@ -1,0 +1,190 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen, within } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import type { SeoPagePublic } from '@/types/seo.types';
+import { ComplianceGuidePage } from './compliance-guide-page';
+import { TouristTaxCalculatorPage } from './tourist-tax-calculator-page';
+
+// A8-08: a body that slipped past the backend must still be neutralised before dangerouslySetInnerHTML.
+const { page } = vi.hoisted(() => {
+  const bodyHtml =
+    '<h2>Guida Como</h2><img src=x onerror=alert(1)><svg/onload=alert(1)>' +
+    '<ul><li ONCLICK="alert(1)">CIN</li></ul>' +
+    '<p><a href="&#106;avascript:alert(1)">trappola</a> <a href="https://www.example.com/cin">fonte</a></p>' +
+    '<iframe src="https://evil.example"></iframe><style>body{display:none}</style>';
+
+  const page: SeoPagePublic = {
+    id: 'page-1',
+    pageType: 'ComplianceGuide',
+    title: 'Affitti brevi a Como',
+    metaDescription: 'Guida',
+    bodyHtml,
+    comuneName: 'Como',
+    comuneCode: '013075',
+    regionCode: 'LOM',
+    regionSlug: 'lombardia',
+    comuneSlug: 'como',
+    canonicalUrl: 'https://example.test/p/affitti-brevi/lombardia/como',
+    lastRefreshedAt: null,
+    aiGenerated: true,
+    contentLanguage: 'it',
+    cta: { signupUrl: 'https://example.test/signup?comune=como&utm_source=seo-compliance&utm_medium=cta' },
+    touristTaxRates: [],
+  };
+  return { page };
+});
+
+vi.mock('@/queries/use-public-seo', () => ({
+  useComplianceGuide: () => ({ data: page, isLoading: false, isError: false }),
+  useTouristTaxPage: () => ({ data: page, isLoading: false, isError: false }),
+  useFeaturedProperties: () => ({
+    data: { comuneSlug: 'como', comuneName: 'Como', properties: [] },
+    isLoading: false,
+    isError: false,
+    error: null,
+    isFetching: false,
+    refetch: vi.fn(),
+  }),
+  useCalculateTouristTax: () => ({ mutateAsync: vi.fn(), data: undefined, isPending: false }),
+}));
+
+afterEach(() => {
+  cleanup();
+});
+
+function expectSanitizedBody(body: HTMLElement) {
+  expect(body.querySelector('img, svg, iframe, style, script')).toBeNull();
+  for (const el of Array.from(body.querySelectorAll('*'))) {
+    for (const attr of Array.from(el.attributes)) {
+      expect(attr.name.toLowerCase().startsWith('on')).toBe(false);
+    }
+  }
+
+  // Legitimate editorial content survives.
+  expect(body.querySelector('h2')).toHaveTextContent('Guida Como');
+  expect(body.querySelector('ul > li')).toHaveTextContent('CIN');
+  const links = Array.from(body.querySelectorAll('a'));
+  expect(links).toHaveLength(2);
+  expect(links[0]).not.toHaveAttribute('href');
+  expect(links[0]).toHaveTextContent('trappola');
+  expect(links[1]).toHaveAttribute('href', 'https://www.example.com/cin');
+  expect(links[1]).toHaveAttribute('rel', 'noopener noreferrer');
+}
+
+describe('public SEO pages render the body through the allowlist sanitizer', () => {
+  it('ComplianceGuidePage_MaliciousBodyHtml_RendersOnlyAllowlistedMarkup', () => {
+    render(
+      <MemoryRouter initialEntries={['/p/affitti-brevi/lombardia/como']}>
+        <Routes>
+          <Route path="/p/affitti-brevi/:region/:comune" element={<ComplianceGuidePage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expectSanitizedBody(screen.getByTestId('compliance-guide-body'));
+  });
+
+  it('TouristTaxCalculatorPage_MaliciousBodyHtml_RendersOnlyAllowlistedMarkup', () => {
+    render(
+      <MemoryRouter initialEntries={['/p/tassa-soggiorno/como']}>
+        <Routes>
+          <Route path="/p/tassa-soggiorno/:comune" element={<TouristTaxCalculatorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expectSanitizedBody(screen.getByTestId('tourist-tax-page-body'));
+  });
+});
+
+// SE-05 (A8-27): the AI Act notice is mounted on the public pages and follows the flag of the API, never a constant.
+describe('public SEO pages and the AI Act transparency notice', () => {
+  function renderGuide() {
+    return render(
+      <MemoryRouter initialEntries={['/p/affitti-brevi/lombardia/como']}>
+        <Routes>
+          <Route path="/p/affitti-brevi/:region/:comune" element={<ComplianceGuidePage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  function renderTouristTax() {
+    return render(
+      <MemoryRouter initialEntries={['/p/tassa-soggiorno/como']}>
+        <Routes>
+          <Route path="/p/tassa-soggiorno/:comune" element={<TouristTaxCalculatorPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  afterEach(() => {
+    page.aiGenerated = true;
+  });
+
+  it('ComplianceGuidePage_AiGeneratedText_ShowsTheNoticeInTheFooter', () => {
+    renderGuide();
+
+    const footer = screen.getByTestId('seo-disclaimer-footer');
+    expect(within(footer).getByTestId('ai-content-notice')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-guide-body')).toHaveAttribute('lang', 'it');
+  });
+
+  it('TouristTaxCalculatorPage_AiGeneratedText_ShowsTheNoticeInTheFooter', () => {
+    renderTouristTax();
+
+    expect(within(screen.getByTestId('seo-disclaimer-footer')).getByTestId('ai-content-notice')).toBeInTheDocument();
+    expect(screen.getByTestId('tourist-tax-page-body')).toHaveAttribute('lang', 'it');
+  });
+
+  it('ComplianceGuidePage_TextNotGeneratedByAi_ShowsNoNotice', () => {
+    page.aiGenerated = false;
+
+    renderGuide();
+
+    expect(screen.queryByTestId('ai-content-notice')).not.toBeInTheDocument();
+  });
+});
+
+// SEO-INVITE: CasaZen is on private invitation, so the backend sends `cta: null` and the pages show no sign-up button.
+describe('public SEO pages and the sign-up call to action', () => {
+  const originalCta = page.cta;
+
+  afterEach(() => {
+    page.cta = originalCta;
+  });
+
+  it.each([
+    ['ComplianceGuidePage', '/p/affitti-brevi/lombardia/como', '/p/affitti-brevi/:region/:comune', ComplianceGuidePage],
+    ['TouristTaxCalculatorPage', '/p/tassa-soggiorno/como', '/p/tassa-soggiorno/:comune', TouristTaxCalculatorPage],
+  ])('%s_WithACta_ShowsTheSignupBlock', (_name, entry, route, Component) => {
+    render(
+      <MemoryRouter initialEntries={[entry]}>
+        <Routes>
+          <Route path={route} element={<Component />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('seo-cta-block')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['ComplianceGuidePage', '/p/affitti-brevi/lombardia/como', '/p/affitti-brevi/:region/:comune', ComplianceGuidePage],
+    ['TouristTaxCalculatorPage', '/p/tassa-soggiorno/como', '/p/tassa-soggiorno/:comune', TouristTaxCalculatorPage],
+  ])('%s_WithoutACta_ShowsNoSignupBlockAndNoLinkToSignup', (_name, entry, route, Component) => {
+    page.cta = null;
+
+    const { container } = render(
+      <MemoryRouter initialEntries={[entry]}>
+        <Routes>
+          <Route path={route} element={<Component />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByTestId('seo-cta-block')).not.toBeInTheDocument();
+    expect(container.querySelector('a[href*="/signup"]')).toBeNull();
+  });
+});

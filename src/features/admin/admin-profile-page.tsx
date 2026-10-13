@@ -16,12 +16,12 @@ export function AdminProfilePage() {
   const { data: profile, isLoading: profileLoading } = useMe();
 
   if (isLoading || profileLoading || !user) {
-    return <LoadingScreen />;
+    return <LoadingScreen className="h-auto flex-1" />;
   }
 
   const displayRole = roles.includes(ROLE_ADMIN)
     ? 'Admin'
-    : roles[0] ?? profile?.role ?? 'User';
+    : roles[0] ?? profile?.role;
   const displayName =
     user.name ||
     [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') ||

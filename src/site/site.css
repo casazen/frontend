@@ -1,0 +1,11 @@
+/*
+ * Styles of the public site (SEO-VETRINA): Tailwind limited to the files of `src/site/`, so the static pages ship only the
+ * utilities they use (the app's stylesheet scans the whole project). Inter is the self-hosted font of the public pages.
+ */
+@import "tailwindcss" source(none);
+@source "./";
+@import "../styles/public-fonts.css";
+
+html {
+  font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,26 +1,125 @@
-import { Auth0Provider } from '@auth0/auth0-react';
+import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { AppToaster } from '@/components/shared/app-toaster';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { AuthInitializer } from '@/components/auth/auth-initializer';
-import { authConfig } from '@/config/auth.config';
+import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
+import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { queryClient } from '@/lib/query-client';
-import { router } from '@/routes';
+import {
+  ACCOUNT_INACTIVE_PATH,
+  NO_ACCESS_PATH,
+  setApiAccountInactiveHandler,
+  setApiForbiddenHandler,
+  setApiOnboardingRequiredHandler,
+} from '@/lib/axios';
+import { openOnboardingAfterGate } from '@/lib/onboarding-gate';
+import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
+import { safeReturnTo } from '@/lib/auth-return-to';
+import { recordLandingTouch } from '@/lib/signup-attribution';
+import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
+import { InsecureOriginPage } from '@/pages/insecure-origin-page';
+import { getRouter } from '@/routes';
+import { UiVersionSync } from '@/routes/ui-version-sync';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
+import { getHostSite } from '@/lib/host-site';
+
+function AppShell() {
+  const router = getRouter();
+  useEffect(() => {
+    // 403 on a protected read → existing no-access page. `replace` keeps Back from reopening the
+    // forbidden page (which would 403 again).
+    setApiForbiddenHandler(() => {
+      if (router.state.location.pathname !== NO_ACCESS_PATH) {
+        void router.navigate(NO_ACCESS_PATH, { replace: true });
+      }
+    });
+    // 403 onboarding_required (PL-02): the backend withholds the host features until the onboarding and the current
+    // consents; open the onboarding (the wizard shows the consents step), never the no-access page.
+    setApiOnboardingRequiredHandler(() => {
+      openOnboardingAfterGate(router, queryClient);
+    });
+    // 403 account_inactive (PL-03): the account was deactivated, every request would fail. Show the dedicated page
+    // (support contact + logout) instead of a UI full of errors. It takes precedence over onboarding_required.
+    setApiAccountInactiveHandler(() => {
+      if (router.state.location.pathname !== ACCOUNT_INACTIVE_PATH) {
+        void router.navigate(ACCOUNT_INACTIVE_PATH, { replace: true });
+      }
+    });
+    return () => {
+      setApiForbiddenHandler(null);
+      setApiOnboardingRequiredHandler(null);
+      setApiAccountInactiveHandler(null);
+    };
+  }, [router]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <I18nLocaleSync />
+      <FeatureFlagsProvider>
+        <UiVersionSync router={router} />
+        <RouterProvider router={router} />
+      </FeatureFlagsProvider>
+      <AppToaster />
+    </QueryClientProvider>
+  );
+}
+
+/**
+ * After the Auth0 redirect: open the `returnTo` path passed to `login` through the router (a bare
+ * `history.replaceState` would not re-render the route), otherwise only drop `code`/`state` from the
+ * URL as the SDK does by default.
+ */
+function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unknown }) {
+  // Supplier registered without an account (SU-02): keep the claim for `/register/claim`, even when it could not be
+  // stored before the redirect.
+  const supplierClaim = parsePendingSupplierClaim(appState?.supplierClaim);
+  if (supplierClaim) savePendingSupplierClaim(supplierClaim);
+
+  const returnTo = safeReturnTo(appState?.returnTo);
+  if (returnTo) {
+    void getRouter().navigate(returnTo, { replace: true });
+    return;
+  }
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
 
 function App() {
+  const pathname = window.location.pathname;
+  // An org's own host (BK-16) only ever shows the org's public booking site, whatever the clean address looks like.
+  const publicPath = getHostSite() !== null || isPublicUnauthenticatedPath(pathname);
+  const secureOrigin = isSecureAuth0Origin();
+
+  useEffect(() => {
+    // SE-03: first page of the visit (landing path, referrer host, UTM) for the signup attribution.
+    if (publicPath) recordLandingTouch();
+  }, [publicPath]);
+
+  // Direct booking & other public surfaces must never load auth0-spa-js
+  // (it throws on http://LAN-IP — see Auth0 SPA FAQ secure origin).
+  if (publicPath) {
+    return (
+      <ErrorBoundary>
+        <PublicAppProviders>
+          <AppShell />
+        </PublicAppProviders>
+      </ErrorBoundary>
+    );
+  }
+
+  if (!secureOrigin) {
+    return (
+      <ErrorBoundary>
+        <InsecureOriginPage />
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
-      <Auth0Provider {...authConfig}>
-        <AuthInitializer>
-          <QueryClientProvider client={queryClient}>
-            <I18nLocaleSync />
-            <RouterProvider router={router} />
-            <Toaster position="top-right" richColors />
-          </QueryClientProvider>
-        </AuthInitializer>
-      </Auth0Provider>
+      <AuthAppProviders onRedirectCallback={handleAuthRedirect}>
+        <AppShell />
+      </AuthAppProviders>
     </ErrorBoundary>
   );
 }

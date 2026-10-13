@@ -36,6 +36,6 @@ test.describe('Multi-tenant Org boundary (#202)', () => {
     await expect(page.getByRole('link', { name: 'Passa a un piano superiore' })).toBeVisible();
 
     // Server stays the source of truth, but the client pre-disables submit while over the limit.
-    await expect(page.getByRole('button', { name: 'Create Property' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Crea immobile', exact: true })).toBeDisabled();
   });
 });

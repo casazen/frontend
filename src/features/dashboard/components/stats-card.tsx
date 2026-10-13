@@ -11,11 +11,12 @@ interface StatsCardProps {
     value: number;
     isPositive: boolean;
   };
+  testId?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, description, trend }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, description, trend, testId }: StatsCardProps) {
   return (
-    <Card>
+    <Card data-testid={testId}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -23,7 +24,9 @@ export function StatsCard({ title, value, icon: Icon, description, trend }: Stat
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold" data-testid={testId ? `${testId}-value` : undefined}>
+          {value}
+        </div>
         <div className="mt-1 flex items-center gap-1">
           {trend && (
             <span

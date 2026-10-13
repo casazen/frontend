@@ -1,23 +1,92 @@
-[data-theme='mare'],
-[data-theme='montagna'],
-[data-theme='urban'] {
-  --cz-public-font-display: 'Fraunces', Georgia, serif;
-  --cz-public-font-body: 'Inter', system-ui, sans-serif;
-  --cz-public-primary: #e07a5f;
-  --cz-public-bg: #f5f0e8;
+@import './public-fonts.css';
+
+/*
+ * Design tokens of the public booking site: one block per theme (`Org.PublicThemeId`, BK-12/BK-13).
+ *
+ * The three lists of themes must stay in sync: `Casazen.Core/Branding/PublicSiteThemes.cs` (accepted ids),
+ * `src/lib/public-site-themes.ts` (ids and the palette below, mirrored) and this file. A test
+ * (`src/styles/__tests__/public-tokens.test.ts`) parses this file and fails when the palette drifts from
+ * `public-site-themes.ts` or when a pair of colors falls below WCAG 2.1 AA:
+ *   - text, muted text and primary text on the page background and on the cards: 4.5:1
+ *   - text on the primary color (`--cz-public-on-primary` on `--cz-public-primary`): 4.5:1
+ *
+ * Colors a host can override (`primary`, `on-primary`, `primary-text`) are set inline on `.public-site-root` by
+ * `publicSiteColorStyle` (`src/lib/public-site-colors.ts`), which derives the other two from the chosen primary so
+ * that the AA pairs still hold.
+ *
+ *   --cz-public-primary       fill of buttons and accents (never used as text color: see primary-text)
+ *   --cz-public-on-primary    text and icons placed on a primary fill
+ *   --cz-public-primary-text  the primary color as text, link hover and focus ring on the page background / cards
+ */
+
+[data-theme='mare'] {
+  --cz-public-font-display: 'Fraunces Variable', Fraunces, Georgia, 'Times New Roman', serif;
+  --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cz-public-display-weight: 600;
+  --cz-public-display-tracking: -0.01em;
+  --cz-public-primary: #b4492f;
+  --cz-public-on-primary: #ffffff;
+  --cz-public-primary-text: #b4492f;
+  --cz-public-bg: #f6f1e7;
   --cz-public-surface: #ffffff;
-  --cz-public-text: #1a2b3c;
-  --cz-public-muted: #5c6b7a;
-  --cz-public-radius: 12px;
-  --cz-public-shadow-widget: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --cz-public-text: #16324f;
+  --cz-public-muted: #52606d;
+  --cz-public-border: rgba(22, 50, 79, 0.14);
+  --cz-public-radius: 14px;
+  --cz-public-shadow-card: 0 1px 2px rgba(22, 50, 79, 0.08), 0 8px 20px rgba(22, 50, 79, 0.06);
+  --cz-public-shadow-widget: 0 10px 36px rgba(22, 50, 79, 0.16);
   --cz-public-section-y: 4rem;
 }
 
+[data-theme='montagna'] {
+  --cz-public-font-display: 'Lora Variable', Lora, Georgia, 'Times New Roman', serif;
+  --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cz-public-display-weight: 600;
+  --cz-public-display-tracking: 0;
+  --cz-public-primary: #2e6a4a;
+  --cz-public-on-primary: #ffffff;
+  --cz-public-primary-text: #2e6a4a;
+  --cz-public-bg: #edf1ea;
+  --cz-public-surface: #fbfcfa;
+  --cz-public-text: #1c2b22;
+  --cz-public-muted: #4a5a50;
+  --cz-public-border: rgba(28, 43, 34, 0.2);
+  --cz-public-radius: 6px;
+  --cz-public-shadow-card: 0 1px 0 rgba(28, 43, 34, 0.06);
+  --cz-public-shadow-widget: 0 6px 24px rgba(28, 43, 34, 0.18);
+  --cz-public-section-y: 3.5rem;
+}
+
+[data-theme='urban'] {
+  --cz-public-font-display: 'Space Grotesk Variable', 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cz-public-display-weight: 700;
+  --cz-public-display-tracking: -0.02em;
+  --cz-public-primary: #2f3bd1;
+  --cz-public-on-primary: #ffffff;
+  --cz-public-primary-text: #2f3bd1;
+  --cz-public-bg: #f1f2f4;
+  --cz-public-surface: #ffffff;
+  --cz-public-text: #111318;
+  --cz-public-muted: #555b66;
+  --cz-public-border: rgba(17, 19, 24, 0.22);
+  --cz-public-radius: 2px;
+  --cz-public-shadow-card: none;
+  --cz-public-shadow-widget: 0 12px 32px rgba(17, 19, 24, 0.2);
+  --cz-public-section-y: 3rem;
+}
+
 @media (max-width: 767px) {
-  [data-theme='mare'],
-  [data-theme='montagna'],
-  [data-theme='urban'] {
+  [data-theme='mare'] {
     --cz-public-section-y: 2rem;
+  }
+
+  [data-theme='montagna'] {
+    --cz-public-section-y: 1.75rem;
+  }
+
+  [data-theme='urban'] {
+    --cz-public-section-y: 1.5rem;
   }
 }
 
@@ -25,29 +94,103 @@
   background: var(--cz-public-bg);
   color: var(--cz-public-text);
   font-family: var(--cz-public-font-body);
-  min-height: 100vh;
+
+  /*
+   * The shared UI components (Button, Input, Badge...) read the console's design tokens (`bg-primary`,
+   * `text-muted-foreground`...). Inside the public site those tokens follow the theme, so that the booking widget and
+   * the forms look like the site and not like the host console. Content in portals (dialogs) is outside this element.
+   */
+  --color-primary: var(--cz-public-primary);
+  --color-primary-foreground: var(--cz-public-on-primary);
+  --color-ring: var(--cz-public-primary-text);
+  --color-foreground: var(--cz-public-text);
+  --color-muted-foreground: var(--cz-public-muted);
+  --color-background: var(--cz-public-surface);
+  --color-card: var(--cz-public-surface);
+  --color-card-foreground: var(--cz-public-text);
+  --color-border: var(--cz-public-border);
+  --color-input: var(--cz-public-border);
 }
 
 .public-site-root h1,
 .public-site-root h2,
+.public-site-root h3,
 .public-site-root .public-display {
   font-family: var(--cz-public-font-display);
+  font-weight: var(--cz-public-display-weight);
+  letter-spacing: var(--cz-public-display-tracking);
 }
 
 .public-site-root a:focus-visible,
 .public-site-root button:focus-visible,
-.public-site-root input:focus-visible {
-  outline: 2px solid var(--cz-public-primary);
+.public-site-root input:focus-visible,
+.public-site-root textarea:focus-visible,
+.public-site-root select:focus-visible {
+  outline: 2px solid var(--cz-public-primary-text);
   outline-offset: 2px;
 }
 
+.public-site-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.public-site-link:hover {
+  color: var(--cz-public-primary-text);
+}
+
+/* Filled call to action: the text color is chosen against the primary color, never fixed to white (A3-32). */
 .public-site-cta {
   background: var(--cz-public-primary);
-  color: #fff;
+  color: var(--cz-public-on-primary);
+  border-radius: var(--cz-public-radius);
+  font-weight: 600;
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.public-site-cta:hover:not(:disabled) {
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--cz-public-primary) 45%, transparent);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site-cta {
+    transition: none;
+  }
+
+  .public-site-cta:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* The same call to action on a primary-colored surface (hero without image): inverted, same AA contrast pair. */
+.public-site-cta-inverse {
+  background: var(--cz-public-on-primary);
+  color: var(--cz-public-primary-text);
+  border-radius: var(--cz-public-radius);
+  font-weight: 600;
 }
 
 .public-site-card {
   background: var(--cz-public-surface);
+  border: 1px solid var(--cz-public-border);
   border-radius: var(--cz-public-radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--cz-public-shadow-card);
+}
+
+/* Hero: the caption always sits on a dark band (photo) or on the primary color, so its text color is a known pair. */
+.public-hero-frame {
+  background: var(--cz-public-primary);
+  color: var(--cz-public-on-primary);
+}
+
+.public-hero-caption {
+  background: rgba(0, 0, 0, 0.62);
+  color: #ffffff;
+}
+
+.public-hero-fade {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0));
 }

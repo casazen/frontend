@@ -4,6 +4,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Mail, User, Shield } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import { getRoleLabel } from '@/lib/i18n-labels';
 
 interface ProfileInfoProps {
   user: {
@@ -21,7 +22,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
   const userId = user.id || user.sub || t('profile.notAvailable');
   const userName = user.name || t('profile.unknownUser');
   const userEmail = user.email || t('profile.notAvailable');
-  const userRole = user.role || t('profile.user');
+  const userRole = user.role ? getRoleLabel(user.role, t) : t('profile.user');
 
   return (
     <Card>

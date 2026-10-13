@@ -1,7 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 
 test.describe('Guest check-in portal', () => {
   test('shows invalid link for unknown token', async ({ page }) => {
+    // L2 has no backend: the API answers 404 for a token it does not know, as the real one does.
+    await page.route('**/api/public/checkin/**', async (route) => {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/problem+json',
+        body: JSON.stringify({ status: 404, title: 'Not Found' }),
+      });
+    });
     await page.goto('/checkin/invalid-token-00000000000000000000000000000000');
     await expect(page.getByText(/invalid|non valido/i)).toBeVisible({ timeout: 15_000 });
   });
@@ -13,20 +21,26 @@ test.describe('Guest check-in portal', () => {
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
+            completed: false,
             sessionId: '11111111-1111-1111-1111-111111111111',
             propertyName: 'Villa Demo',
             checkInDate: '2026-07-10T00:00:00Z',
             checkOutDate: '2026-07-12T00:00:00Z',
             status: 'Inviato',
-            guestPrefill: {
+            declaredGuests: 1,
+            guests: [{
+              type: 'SingleGuest',
               firstName: 'Mario',
               lastName: 'Rossi',
-              email: 'mario@example.com',
-              nationality: 'IT',
-              documentNumber: '',
-              documentIssuingCountry: 'IT',
-              placeOfBirth: 'Roma',
-            },
+              gender: 'Male',
+              dateOfBirth: '1990-05-15',
+              bornInItaly: true,
+              birthComuneName: 'Roma',
+              birthProvince: 'RM',
+              birthCountryName: 'Italia',
+              citizenshipName: 'Italiana',
+              documentIssuePlaceName: 'Roma',
+            }],
           }),
         });
         return;

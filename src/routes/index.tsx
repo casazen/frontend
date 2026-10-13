@@ -1,46 +1,86 @@
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { buildHostSiteRoutes } from './host-site-routes';
+import { createHostSiteWindow } from './host-site-window';
+import { getHostSite } from '@/lib/host-site';
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
+import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
+import { SignupPage } from '@/pages/signup-page';
+import { EmailVerifiedPage } from '@/pages/email-verified-page';
+import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
+import { SupplierClaimPage } from '@/pages/supplier-claim-page';
+import { HostInvitePage } from '@/pages/host-invite-page';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
+import { AreaProvider } from '@/contexts/area-provider';
+import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
 import { ContextLayout } from '@/components/layout/context-layout';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { ContextPickerPage } from '@/pages/context-picker-page';
 import { NoAccessPage } from '@/pages/no-access-page';
+import { AccountInactivePage } from '@/pages/account-inactive-page';
+import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
-import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
+import { getOrgBillingPageAlternates, ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
+import { ContextIndexRoute } from './context-index-route';
+import { CatchAllRedirect } from './catch-all-redirect';
+import { LegacyPropertyBookingRedirect } from './legacy-property-booking-redirect';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
+import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { OrgLandingPage } from '@/features/public-booking/org-landing-page';
 import { PublicPropertyPage } from '@/features/public-booking/public-property-page';
+import { OrgPrivacyPage, OrgTermsPage } from '@/features/public-booking/org-document-page';
+import { ORG_DOCUMENT_SEGMENTS } from '@/lib/org-document-paths';
 import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
+import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
+import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
-import { SupplierCheckInPage } from '@/pages/supplier-check-in';
-import { SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
+import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
+import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
 import { TouristTaxCalculatorPage } from '@/features/public-seo/tourist-tax-calculator-page';
+import { SeoHubPage } from '@/features/public-seo/seo-hub-page';
+import { LegalIndexPage } from '@/features/legal/legal-index-page';
+import { DpaPage, PrivacyPage, TermsPage } from '@/features/legal/legal-document-page';
+import { SubprocessorsPage } from '@/features/legal/subprocessors-page';
+import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
+import { devRoutes } from './dev-routes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
   const entries = ROUTE_MANIFEST.filter((entry) => entry.context === contextKey);
 
-  return entries.map((entry) => {
+  const children: RouteObject[] = entries.map((entry) => {
     const relativePath = entry.path === prefix ? '' : entry.path.slice(`${prefix}/`.length);
     return {
       path: relativePath,
       element: (
-        <ContextRouteGuard contextKey={contextKey} requiredPermissions={entry.requiredPermissions}>
+        <ContextRouteGuard
+          contextKey={contextKey}
+          requiredPermissions={entry.requiredPermissions}
+          featureFlag={entry.featureFlag}
+          alternatePaths={getOrgBillingPageAlternates(entry)}
+        >
           <ManifestRoute entry={entry} />
         </ContextRouteGuard>
       ),
     } satisfies RouteObject;
   });
+
+  // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
+  // the area (UI-00). Short-rent and admin have the page in the manifest.
+  if (!entries.some((entry) => entry.path === prefix)) {
+    children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
+  }
+  return children;
 }
 
 const legacyPaths = Array.from(
@@ -55,7 +95,10 @@ const workspaceRoutes: RouteObject[] = [
     path: '/app',
     element: (
       <WorkspaceProvider>
-        <Outlet />
+        {/* data-area on <html>: the accent of the area (UI-01); the area picker and the pages outside an area have none. */}
+        <AreaProvider>
+          <Outlet />
+        </AreaProvider>
       </WorkspaceProvider>
     ),
     children: [
@@ -107,51 +150,126 @@ const workspaceRoutes: RouteObject[] = [
   })),
 ];
 
-export const router = createBrowserRouter([
+/** Route table of the app (exported for the routing tests; the app uses `router`). */
+export const appRoutes: RouteObject[] = [
   {
-    path: '/login',
-    element: <LoginPage />,
+    // Pages that need Auth0: reached client-side from a public page (no Auth0 loaded), they reload themselves.
+    element: <AuthProviderBoundary />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <SupplierRegisterPage />,
+      },
+      {
+        // Link of the email that invites an independent host: under Auth0 (it leads to the signup or login) but outside
+        // the protected route and the onboarding guard, which would send a new account to the onboarding first.
+        path: '/invito-host/:token',
+        element: <HostInvitePage />,
+      },
+      {
+        // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
+        path: SIGNUP_PATH,
+        element: <SignupPage />,
+      },
+      {
+        // Auth0 verification email Redirect To. Not the OAuth callback: Auth0 adds `code=success`.
+        path: '/email-verified',
+        element: <EmailVerifiedPage />,
+      },
+      {
+        // Deactivated account (PL-03): under the Auth0 boundary so that its logout button always works, but outside
+        // the protected route, the onboarding guard and the workspace, which would call the API again.
+        path: ACCOUNT_INACTIVE_PATH,
+        element: <AccountInactivePage />,
+      },
+      {
+        element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: '/onboarding',
+            element: <OnboardingPage />,
+          },
+          {
+            element: <OnboardingGuard />,
+            children: workspaceRoutes,
+          },
+        ],
+      },
+    ],
   },
   {
-    path: '/register',
-    element: <SupplierRegisterPage />,
-  },
-  {
-    path: '/search',
-    element: (
-      <WorkspaceProvider>
-        <SearchPage />
-      </WorkspaceProvider>
-    ),
+    // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
+    // onboarding redirect (SU-02).
+    path: '/register/claim',
+    element: <SupplierClaimPage />,
   },
   {
     path: '/book/:orgSlug',
     element: <PublicSiteShell mode="org" />,
+    // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       { index: true, element: <OrgLandingPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
+      // The operator's own privacy notice and booking terms (BK-14, A3-21), not the CasaZen ones (/legale/*).
+      { path: ORG_DOCUMENT_SEGMENTS.privacy, element: <OrgPrivacyPage /> },
+      { path: ORG_DOCUMENT_SEGMENTS.terms, element: <OrgTermsPage /> },
+      // English spelling of the terms address, e.g. typed by hand or linked by older sites.
+      { path: 'terms', element: <Navigate to={`../${ORG_DOCUMENT_SEGMENTS.terms}`} relative="path" replace /> },
+      // Link of the "request received" email of a "pay at the property" request (BK-06).
+      { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
+      // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
+      { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
+      // Compat for links missing `/property/` (e.g. older mobile share URLs)
+      { path: ':propertySlugOrId', element: <LegacyPropertyBookingRedirect /> },
     ],
   },
   {
     element: <PublicSiteShell mode="default" />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
+      // Public search across the booking sites (BK-20): in the public shell, never in the host console.
+      { path: '/search', element: <SearchPage /> },
+      { path: SEO_HUB_PATH, element: <SeoHubPage /> },
       { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
       { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
+      // CasaZen legal documents (PL-14): public, texts provided by the product owner (D14).
+      { path: LEGAL_INDEX_PATH, element: <LegalIndexPage /> },
+      { path: LEGAL_DOCUMENT_PATHS.tos, element: <TermsPage /> },
+      { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
+      { path: LEGAL_DOCUMENT_PATHS.dpa, element: <DpaPage /> },
+      { path: LEGAL_SUBPROCESSORS_PATH, element: <SubprocessorsPage /> },
+      // Public showcase of a supplier (SU-13, A4-16): in the public shell, `noindex` (see the page).
+      { path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`, element: <SupplierShowcasePage /> },
     ],
   },
   {
+    // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.
     path: '/s/:slug',
-    element: <SupplierShowcasePage />,
+    element: <LegacySupplierShowcaseRedirect />,
   },
   {
-    path: '/check-in/:jobId',
-    element: <SupplierCheckInPage />,
-  },
-  {
+    // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).
     path: '/checkin/:token',
     element: <CheckInPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // Link of the rent payment request email (LT-06): the tenant pays an installment on the landlord's Stripe account.
+    // A tenant's page, not the landlord's console: it keeps its look until it is redesigned.
+    path: '/rent/pay/:installmentId',
+    element: <RentPaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     path: '/supplier',
@@ -165,25 +283,30 @@ export const router = createBrowserRouter([
     path: '/help/ical',
     element: <IcalHelpPage />,
   },
+  // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
+  ...devRoutes,
   {
-    element: (
-      <ProtectedRoute>
-        <Outlet />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: '/onboarding',
-        element: <OnboardingPage />,
-      },
-      {
-        element: <OnboardingGuard />,
-        children: workspaceRoutes,
-      },
-    ],
-  },
-  {
+    // Public 404 (A8-03): never a redirect to the login.
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <CatchAllRedirect />,
   },
-]);
+];
+
+type AppRouter = ReturnType<typeof createBrowserRouter>;
+
+let routerInstance: AppRouter | undefined;
+
+/**
+ * The router of the app, created on first use: the start-up has found out by then whether the host is the app's own or an
+ * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site and shows clean
+ * addresses (`/`, `/property/…`); anywhere else it is the full app.
+ */
+export function getRouter(): AppRouter {
+  if (!routerInstance) {
+    const hostSite = getHostSite();
+    routerInstance = hostSite
+      ? createBrowserRouter(buildHostSiteRoutes(appRoutes), { window: createHostSiteWindow(window, hostSite.slug) })
+      : createBrowserRouter(appRoutes);
+  }
+  return routerInstance;
+}

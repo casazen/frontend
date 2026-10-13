@@ -2,23 +2,37 @@ import { test, expect } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 import { pinE2eLocale, resetE2eStorage } from './helpers/locale';
+import { moreOfTheBar } from './helpers/profile-menu';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
-    test('full activation: completes 2-step wizard, lands on dashboard', async ({ page }) => {
+    test('full activation: completes the three screens, lands on dashboard', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page);
 
       await page.goto(demoUrl('/app/supplier/activation', 'supplier'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('supplier-activation-page')).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier Profile Activation/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier profile activation/i })).toBeVisible();
 
-      // Step 1: categories + comuni
-      await page.getByRole('button', { name: 'Pulizie' }).click();
-      await page.locator('#comuni').fill('H501');
-      await page.getByRole('button', { name: /Continua|Continue/i }).click();
+      // The server opens the first incomplete step: services. It saves category codes, never labels (SU-03, A4-05).
+      await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/1 di 3|1 of 3/);
+      await page.getByTestId('service-category-cleaning').click();
+      // The comuni are picked from the official ISTAT list and saved as ISTAT codes (SU-04).
+      await page.locator('#comuni').fill('Roma');
+      await page.getByRole('option', { name: /^Roma/ }).first().click();
+      await expect(page.getByTestId('supplier-comune-chip-058091')).toBeVisible();
+      const profileSave = page.waitForRequest((r) => r.url().includes('/api/supplier/profile') && r.method() === 'PUT');
+      await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
+      const saved = (await profileSave).postDataJSON();
+      expect(saved.categories).toEqual(['cleaning']);
+      expect(saved.comuneIstatCodes).toEqual(['058091']);
 
-      // Step 2: ToS + activate
+      // Presentation: description (the photos on the same screen are optional).
+      await page.locator('#bio').fill('Pulizie professionali a Roma');
+      await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
+
+      // Terms + activate.
+      await expect(page.getByTestId('supplier-activation-summary')).toBeVisible();
       await page.locator('#tos').click();
       await page.getByRole('button', { name: /Attiva profilo|Activate profile/i }).click();
 
@@ -67,19 +81,24 @@ test.describe('Supplier layout standardization', () => {
       const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
       await expect(sidebar).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Dashboard/i })).toBeVisible();
-      await expect(sidebar.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
+      await expect(sidebar.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
+      // UI-04a: the iCal calendar hangs from the availability (no entry of its own); the profile is in "Altro".
+      await expect(sidebar.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
+      await expect(sidebar.getByRole('link', { name: /Profilo|Profile/i })).toHaveCount(0);
+      await sidebar.getByRole('button', { name: /Altro|More/i }).click();
       await expect(sidebar.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
     });
 
-    test('sidebar shows Fornitore subtitle', async ({ page }) => {
+    test('sidebar is headed by the supplier area', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
+      // A single area has nothing to choose: the heading of the sidebar, not a switcher (UI-04a).
       const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
-      await expect(sidebar.getByText(/Fornitore|Supplier/i)).toBeVisible();
+      await expect(sidebar.getByTestId('area-header')).toContainText(/Portale fornitori|Supplier portal/i);
     });
 
     test('inbox link has aria-current when on inbox page', async ({ page }) => {
@@ -120,44 +139,48 @@ test.describe('Supplier layout standardization', () => {
       const bottomNav = page.getByRole('navigation', { name: 'Navigazione mobile' });
       await expect(bottomNav).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Dashboard/i })).toBeVisible();
-      await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
+      await expect(bottomNav.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
+      // The iCal calendar hangs from the availability: it is not a destination of the bar (UI-04a).
+      await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
     });
 
-    test('drawer opens from hamburger and shows secondary items', async ({ page }) => {
+    test('the sheet opens from "Altro" of the bottom bar and shows secondary items', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await expect(drawer).toBeVisible();
-      await expect(drawer.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
+      await moreOfTheBar(page).click();
+      const sheet = page.getByRole('dialog');
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
     });
 
-    test('drawer closes on navigation', async ({ page }) => {
+    test('the sheet closes on navigation', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await drawer.getByRole('link', { name: /Profilo|Profile/i }).click();
+      await moreOfTheBar(page).click();
+      const sheet = page.getByRole('dialog');
+      await sheet.getByRole('link', { name: /Profilo|Profile/i }).click();
       await expect(page).toHaveURL(/\/app\/supplier\/profile/);
-      await expect(drawer).not.toBeVisible();
+      await expect(sheet).not.toBeVisible();
     });
   });
 
-  test.describe('WorkspaceSwitcher', () => {
+  test.describe('Area switcher', () => {
     test.use({ viewport: { width: 1280, height: 720 } });
 
-    test('supplier-only user does not see workspace switcher', async ({ page }) => {
+    test('supplier-only user does not see the area switcher', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByRole('tablist', { name: 'Workspace context' })).toHaveCount(0);
+      await expect(page.getByTestId('area-header')).toBeVisible();
+      await expect(page.getByTestId('area-switcher')).toHaveCount(0);
+      await expect(page.getByRole('tablist')).toHaveCount(0);
     });
   });
 });

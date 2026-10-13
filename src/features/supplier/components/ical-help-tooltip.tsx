@@ -48,7 +48,7 @@ export function IcalHelpTooltip() {
             type="button"
             onClick={() => setOpen(false)}
             className="absolute top-2 right-2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
-            aria-label="Chiudi"
+            aria-label={t('shared.close')}
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -61,7 +61,7 @@ export function IcalHelpTooltip() {
             type="button"
             onClick={() => {
               setOpen(false);
-              navigate('/help/ical');
+              navigate('/app/supplier/help/ical');
             }}
             className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >

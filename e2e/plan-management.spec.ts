@@ -1,8 +1,11 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
+import { completeOnboardingConsents } from './helpers/onboarding';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   mockAdminUpdateOrgPlan,
+  mockBillingPlans,
+  mockBillingSubscription,
   mockCurrentUserWithOrg,
   mockEntitlement,
   mockPlansCatalog,
@@ -23,64 +26,54 @@ test.describe('Plan management (#202 extension)', () => {
     await mockPlansCatalog(page);
   });
 
+  // The backend starts every org on Starter (a paid plan comes from Stripe), so the wizard never asks for a plan.
+  test('onboarding wizard does not ask for a plan and opens the first property', async ({ page }) => {
+    await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
+
+    await page.getByRole('button', { name: 'Scegli' }).first().click();
+    await completeOnboardingConsents(page);
+
+    await expect(page.getByTestId('plan-selection-grid')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/app\/short-rent\/properties\/create\?first=1/);
+  });
+
+  // PL-12: a paid plan is bought through Stripe Checkout, never switched for free (FD-18).
   for (const tier of PLAN_TIERS) {
-    test(`onboarding wizard allows selecting ${tier} plan`, async ({ page }) => {
-      await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
-
-      await page.getByRole('button', { name: 'Scegli' }).first().click();
-
-      const checkboxes = page.getByTestId('onboarding-consents-step').getByRole('checkbox');
-      const cbCount = await checkboxes.count();
-      for (let i = 0; i < Math.min(cbCount, 4); i++) {
-        await checkboxes.nth(i).check();
-      }
-      await page.getByTestId('onboarding-consents-continue').click();
-
-      await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-
-      await page.getByTestId(`plan-card-${tier}`).getByRole('button', { name: 'Seleziona' }).click();
-      await page.getByTestId('onboarding-plan-confirm').click();
-
-      await expect(page).not.toHaveURL(/\/onboarding/);
-    });
-  }
-
-  for (const tier of PLAN_TIERS) {
-    test(`owner can switch plan to ${tier} from settings`, async ({ page }) => {
+    test(`owner starts the Stripe checkout of ${tier} from the plan page`, async ({ page }) => {
       await mockCurrentUserWithOrg(page, { name: 'Acme Stays', planTier: 'Starter' });
       await mockEntitlement(page, { planTier: 'Starter', maxProperties: 3, properties: 1 });
+      await mockBillingPlans(page);
+      await mockBillingSubscription(page, { status: 'none' });
 
-      let updatedTier = '';
-      await page.route('**/api/orgs/me/plan', async (route) => {
-        if (route.request().method() !== 'PUT') {
-          await route.fallback();
-          return;
-        }
-        updatedTier = (route.request().postDataJSON() as { planTier?: string }).planTier ?? '';
+      let checkoutRequest: { planTier?: string; billingCountry?: string } | null = null;
+      await page.route('**/api/billing/checkout-session', async (route) => {
+        checkoutRequest = route.request().postDataJSON() as { planTier?: string; billingCountry?: string };
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({
-            orgId: 'org-e2e-0001',
-            planTier: updatedTier,
-            limits: { maxProperties: updatedTier === 'Pro' ? 50 : updatedTier === 'Scale' ? 999999 : 3 },
-            usage: { properties: 1 },
-            canAddProperty: true,
-          }),
+          body: JSON.stringify({ checkoutUrl: 'https://checkout.stripe.com/c/pay/cs_test_e2e' }),
         });
       });
+      await page.route('https://checkout.stripe.com/**', (route) =>
+        route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Stripe Checkout</p>' }),
+      );
 
       await page.goto(demoUrl(PLAN_SETTINGS_URL, 'short-stay'));
 
       await expect(page.getByTestId('plan-usage-summary')).toBeVisible();
       const card = page.getByTestId(`plan-card-${tier}`);
       if (tier === 'Starter') {
-        await expect(card.getByRole('button', { name: 'Piano attuale' })).toBeVisible();
+        await expect(card.getByRole('button', { name: 'Piano attuale' })).toBeDisabled();
         return;
       }
 
-      await card.getByRole('button', { name: 'Passa a questo piano' }).click();
-      await expect.poll(() => updatedTier).toBe(tier);
+      await card.getByRole('button', { name: 'Scegli piano' }).click();
+      const dialog = page.getByTestId('checkout-dialog');
+      await dialog.getByLabel('Paese').selectOption('IT');
+      await dialog.getByRole('button', { name: 'Procedi al pagamento' }).click();
+
+      await expect(page).toHaveURL(/checkout\.stripe\.com/);
+      expect(checkoutRequest).toMatchObject({ planTier: tier, billingCountry: 'IT' });
     });
   }
 

@@ -7,6 +7,8 @@ CASAZEN supporta due modalità di esecuzione:
 1. **Modalità Normale**: Richiede autenticazione Auth0
 2. **Modalità Demo**: Salta l'autenticazione per dimostrazioni e test
 
+Procedura Vercel e verifiche: `backend/docs/runbooks/demo-mode.md`.
+
 ## Come Usare la Demo Mode
 
 ### Avvio in modalità demo
@@ -21,7 +23,7 @@ npm run dev:demo
 npm run dev
 ```
 
-## Build per la produzione
+## Build
 
 ### Build normale (con autenticazione)
 
@@ -29,25 +31,69 @@ npm run dev
 npm run build
 ```
 
+Una build normale non è **mai** in modalità demo: se `VITE_DEMO_MODE=true` è presente nell'ambiente (o in un file
+`.env*`), la build fallisce con un errore esplicito.
+
 ### Build demo (senza autenticazione)
 
 ```bash
 npm run build:demo
 ```
 
+Esegue `vite build --mode demo` con `VITE_DEMO_MODE=true`. È rifiutata sull'ambiente Production di Vercel
+(`VERCEL_ENV=production`): per una demo pubblica usa un progetto Vercel separato con deployment Preview.
+
 ## Cosa Cambia in Demo Mode
 
-- ✅ **Nessun login richiesto**: L'app si apre direttamente sulla dashboard
-- ✅ **Utente demo**: Viene simulato un utente "Demo User" (demo@casazen.com)
-- ✅ **Banner visibile**: Un banner giallo in alto indica che l'app è in modalità demo
-- ✅ **Tutte le funzionalità accessibili**: Puoi navigare in tutte le sezioni dell'app
-- ⚠️ **Nessuna chiamata API reale**: Le chiamate API non includeranno token di autenticazione
+- ✅ **Nessun login richiesto**: l'app si apre direttamente sulla home della persona demo
+- ✅ **Utente demo**: viene simulato un utente "Demo User" (demo@casazen.com)
+- ✅ **Persona**: `?demoProfile=short-stay|long-term|dual|admin|triple|supplier|onboarding` (oppure
+  `VITE_DEMO_PROFILE`, default `long-term`)
+- ✅ **Profilo**: se `GET /users/me` non risponde (fuori da Playwright il token demo viene rifiutato), il profilo
+  deriva dalla persona: nessun loop verso `/onboarding`
+- ✅ **Banner visibile**: un banner giallo in alto indica che l'app è in modalità demo
+- ⚠️ **Chiamate API**: partono con il token finto `demo-token` e il backend reale le rifiuta (401): le pagine con
+  dati mostrano un errore, salvo i mock di Playwright
+
+## Vedere la nuova interfaccia (redesign)
+
+La nuova interfaccia (neutri caldi, un accento per area, font Inter) è dietro un interruttore ed è **spenta** di
+default: senza interruttore l'app è identica a prima. Per vederla:
+
+- **in un solo browser** (QA): dalla console `localStorage.setItem('casazen:ui', 'v2')` e ricarica;
+  `localStorage.removeItem('casazen:ui')` la spegne;
+- **per chi apre una build** (anteprima, prova locale): `VITE_UI_V2=true`, ad esempio
+  `npx cross-env VITE_UI_V2=true npm run dev:demo`;
+- **per tutti**: il flag `UiRedesign` del backend (lo aggiunge il task BL-01), letto da `GET /api/public/features`.
+
+Il sito pubblico di prenotazione (`/book/...`, ricerca, guide, pagine legali, vetrina fornitore) e le pagine di ospiti e
+inquilini (check-in, pagamento dell'affitto) non la ricevono mai: restano come sono fino alla loro migrazione (DB-01).
+Il colore d'area (`data-area` su `<html>`) segue la rotta `/app/<area>/…`; fuori da un'area (accesso, scelta area) c'è
+l'inchiostro del marchio.
+
+### Le primitive su una pagina sola
+
+Con il dev server (`npm run dev:demo`) la pagina `/dev/primitives` mostra insieme dialogo (foglio dal basso su telefono),
+suggerimento «?», schede, controlli segmentati e a scelta, quantità, elenco tabella/card e toast con «Annulla» (UI-07). Serve a
+guardarli e a farci girare axe e gli Playwright dei telefoni (`e2e/ui-primitives-b.spec.ts`). **Non esiste nella build**:
+la rotta c'è solo se `import.meta.env.DEV` è vero.
+
+### L'elenco unico su una pagina sola
+
+Sempre con il dev server, la pagina `/dev/list-view` mostra l'elenco unico (UI-14, `ListView`) su prenotazioni finte che cambiano
+davvero quando si esegue un'azione: ricerca, filtri rapidi, filtri nel cassetto, viste (anche salvate, nel browser), colonne e
+ordine, CSV, selezione e azioni di massa con «Annulla», swipe e menu «⋯» delle card, cassetto di dettaglio e vista a colonne
+(trascinamento con il mouse, «Sposta in…» con tastiera e dito). I pulsanti in alto cambiano lo stato dell'elenco (caricamento,
+aggiornamento, errore, vuoto) con `?scenario=`. Serve a guardarlo e a farci girare axe e gli Playwright dei telefoni
+(`e2e/list-view.spec.ts`). Come si configura un elenco, con un esempio, è nel `README.md` di `src/components/shared/list-view/`;
+la prima pagina vera che lo usa è l'elenco **Ospiti** (`features/guests/guests-list.ts`). **Non esiste nella build.**
 
 ## Configurazione
 
-La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`:
+La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`, valida solo con il dev server o con
+`npm run build:demo`:
 
-- `VITE_DEMO_MODE=true` → Modalità demo attiva
+- `VITE_DEMO_MODE=true` → Modalità demo attiva (dev server / build demo)
 - `VITE_DEMO_MODE=false` → Modalità normale (default)
 
 ## Quando Usare la Demo Mode
@@ -60,5 +106,5 @@ La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`:
 ## Note Importanti
 
 - La demo mode **NON** deve essere usata in produzione con dati reali
-- La demo mode bypassa completamente l'autenticazione
+- La demo mode bypassa completamente l'autenticazione lato frontend
 - I dati visualizzati in demo mode sono simulati

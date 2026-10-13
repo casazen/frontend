@@ -25,7 +25,7 @@ export function PublicBreadcrumb({ segments }: PublicBreadcrumbProps) {
             <li key={`${seg.label}-${i}`} className="flex items-center gap-1">
               {i > 0 ? <ChevronRight className="h-3 w-3 shrink-0" aria-hidden /> : null}
               {seg.href && !isLast ? (
-                <Link to={seg.href} className="hover:text-[var(--cz-public-primary)] hover:underline">
+                <Link to={seg.href} className="hover:text-[var(--cz-public-primary-text)] hover:underline">
                   {seg.label}
                 </Link>
               ) : (

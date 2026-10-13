@@ -1,22 +1,45 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
   completeServiceRequest,
+  createLongRentServiceRequest,
   createServiceRequest,
-  fetchServiceRequest,
+  fetchLongRentServiceRequests,
+  fetchLongRentSuppliers,
   fetchServiceRequests,
-  fetchSuppliersByComune,
   fetchSuppliersByProperty,
+  markLongRentServiceRequestPaid,
   markServiceRequestPaid,
-  matchSupplier,
   rejectServiceRequest,
   takeServiceRequest,
 } from '@/api/service-requests.api';
-import type { CreateServiceRequestDto, MatchSupplierDto } from '@/types/service-request';
+import type { CreateLongRentServiceRequestDto, CreateServiceRequestDto } from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { isAxiosError } from 'axios';
+import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
+/** Supplier dashboard KPIs (every period): a supplier transition changes them (SU-11). */
+const SUPPLIER_KPIS_KEY = ['supplier', 'dashboard', 'kpis'];
 
+/** 422 code of a supplier action refused because the supplier is suspended or not active (SU-12). */
+const SUPPLIER_NOT_ACTIVE_CODE = 'service_request_supplier_not_active';
+
+/**
+ * Toast of a failed supplier action. When the API says the supplier is not active (an admin suspended it while the page
+ * was open) the supplier profile is reloaded, so the console shows the suspension banner and disables the actions.
+ */
+function onSupplierActionError(queryClient: QueryClient, error: unknown) {
+  if (isAxiosError(error) && getProblemCode(error.response?.data) === SUPPLIER_NOT_ACTIVE_CODE) {
+    void queryClient.invalidateQueries({ queryKey: ['supplier', 'profile'] });
+  }
+  toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+}
+
+/**
+ * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
+ * scope. Nothing is fetched without one of them.
+ */
 export function useServiceRequests(params?: {
   propertyId?: string;
   bookingId?: string;
@@ -32,25 +55,20 @@ export function useServiceRequests(params?: {
   });
 }
 
-export function useMatchSupplier() {
-  return useMutation({
-    mutationFn: (payload: MatchSupplierDto) => matchSupplier(payload),
+/** Long-rent requests (D2) of a property, or of every property in scope without `propertyId`. */
+export function useLongRentServiceRequests(propertyId?: string) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', propertyId ?? null],
+    queryFn: () => fetchLongRentServiceRequests({ propertyId, pageSize: 50 }),
   });
 }
 
-export function useServiceRequest(id: string) {
+/** Active suppliers for a property, searched in the long-rent context. */
+export function useLongRentSuppliers(propertyId?: string, category?: string) {
   return useQuery({
-    queryKey: [SERVICE_REQUESTS_KEY, id],
-    queryFn: () => fetchServiceRequest(id),
-    enabled: !!id,
-  });
-}
-
-export function useSuppliersByComune(comune?: string, category?: string) {
-  return useQuery({
-    queryKey: ['suppliers', comune, category],
-    queryFn: () => fetchSuppliersByComune(comune!, category),
-    enabled: !!comune,
+    queryKey: ['suppliers', 'long-rent', propertyId, category],
+    queryFn: () => fetchLongRentSuppliers(propertyId!, category),
+    enabled: !!propertyId,
   });
 }
 
@@ -71,7 +89,20 @@ export function useCreateServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       toast.success(i18n.t('serviceRequest.created'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.createFailed')),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.createFailed')),
+  });
+}
+
+/** Long-rent request for a property (D2). */
+export function useCreateLongRentServiceRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateLongRentServiceRequestDto) => createLongRentServiceRequest(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.success(i18n.t('serviceRequest.created'));
+    },
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.createFailed')),
   });
 }
 
@@ -82,9 +113,10 @@ export function useTakeServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => onSupplierActionError(queryClient, error),
   });
 }
 
@@ -95,9 +127,10 @@ export function useCompleteServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.completed'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => onSupplierActionError(queryClient, error),
   });
 }
 
@@ -108,9 +141,10 @@ export function useRejectServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
       toast.success(i18n.t('serviceRequest.rejected'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => onSupplierActionError(queryClient, error),
   });
 }
 
@@ -122,6 +156,26 @@ export function useMarkServiceRequestPaid() {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       toast.success(i18n.t('serviceRequest.markedPaid'));
     },
-    onError: () => toast.error(i18n.t('serviceRequest.actionFailed')),
+    onError: (error) => {
+      // A 409/422 means the request changed meanwhile (already paid from another tab): show it as it is now.
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+    },
+  });
+}
+
+export function useMarkLongRentServiceRequestPaid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => markLongRentServiceRequestPaid(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.success(i18n.t('serviceRequest.markedPaid'));
+    },
+    onError: (error) => {
+      // A 409/422 means the request changed meanwhile (already paid from another tab): show it as it is now.
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+    },
   });
 }

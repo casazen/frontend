@@ -15,17 +15,7 @@ export const otaIntegrationFormSchema = z.object({
   isActive: z.boolean(),
 });
 
-export const pricingUpdateSchema = z.object({
-  propertyId: z.string().min(1, 'ota.validation.propertyId.required'),
-  nightlyRate: z.number().min(0.01, 'ota.validation.nightlyRate.min'),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  platforms: z.array(z.enum(['AIRBNB', 'BOOKING_COM', 'EXPEDIA', 'VRBO', 'TRIPADVISOR', 'AGODA'])).optional(),
-});
-
-export type OtaCredentialsFormValues = z.infer<typeof otaCredentialsSchema>;
 export type OtaIntegrationFormValues = z.infer<typeof otaIntegrationFormSchema>;
-export type PricingUpdateFormValues = z.infer<typeof pricingUpdateSchema>;
 
 /** @deprecated Use getOtaPlatformLabel from @/lib/i18n-labels */
 export const OTA_PLATFORM_COLORS: Record<string, string> = {
@@ -44,11 +34,4 @@ export const OTA_PLATFORM_ICONS: Record<string, string> = {
   VRBO: '🏡',
   TRIPADVISOR: '🦉',
   AGODA: '🌴',
-};
-
-export const SYNC_STATUS_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'secondary'> = {
-  PENDING: 'warning',
-  IN_PROGRESS: 'default',
-  COMPLETED: 'success',
-  FAILED: 'destructive',
 };

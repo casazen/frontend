@@ -1,11 +1,12 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PropertyForm } from './components/property-form';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { Button } from '@/components/ui/button';
 import { useProperty, useUpdateProperty } from '@/queries/use-properties';
-import type { PropertyFormValues } from './schemas/property.schema';
+import type { CreatePropertyDto } from '@/types';
 
 export function PropertyEditPage() {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ export function PropertyEditPage() {
   const { data: property, isLoading } = useProperty(id!);
   const updateProperty = useUpdateProperty();
 
-  const handleSubmit = async (data: PropertyFormValues) => {
+  const handleSubmit = async (data: CreatePropertyDto) => {
     if (id) {
       await updateProperty.mutateAsync({ id, data });
       navigate('/app/short-rent/properties');
@@ -22,7 +23,7 @@ export function PropertyEditPage() {
   };
 
   if (isLoading) {
-    return <LoadingScreen message={t('property.edit.loading')} />;
+    return <LoadingScreen message={t('property.edit.loading')} className="h-auto flex-1" />;
   }
 
   if (!property) {
@@ -43,6 +44,14 @@ export function PropertyEditPage() {
           title={t('property.edit.title')}
           description={t('property.edit.description', { name: property.name })}
         />
+
+        <div className="flex flex-wrap gap-3" data-testid="property-activation-cta">
+          <Button asChild variant="outline">
+            <Link to={`/app/short-rent/properties/${property.id}/activation`}>
+              {t('compliance.activation.openWizard')}
+            </Link>
+          </Button>
+        </div>
 
         <PropertyForm
           property={property}

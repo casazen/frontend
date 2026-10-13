@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -6,12 +7,13 @@ import { useEmptyWorkspaceRecovery } from '@/hooks/use-empty-workspace-recovery'
 import { LoadingScreen } from '@/components/shared/loading-screen';
 
 export function LegacyRedirect() {
+  const { t } = useTranslation();
   const location = useLocation();
   const { contexts, activeContext, isReady, getDefaultRoute } = useWorkspace();
   const isRecovering = useEmptyWorkspaceRecovery(contexts.length, isReady);
 
   if (!isReady || isRecovering) {
-    return <LoadingScreen message="Loading workspace..." />;
+    return <LoadingScreen message={t('shared.auth.loadingWorkspace')} />;
   }
 
   if (contexts.length === 0) {
@@ -35,7 +37,9 @@ export function LegacyRedirect() {
         const resolved = Object.entries(match.params).reduce((acc, [key, value]) => {
           return acc.replace(`:${key}`, value ?? '');
         }, entry.path);
-        return <Navigate to={resolved} replace />;
+        // Query and fragment travel with the page: Stripe return pages (`?checkout=success`, `?stripe_return=1`) and the
+        // links of the emails reach the console through these old addresses.
+        return <Navigate to={`${resolved}${location.search}${location.hash}`} replace />;
       }
     }
   }

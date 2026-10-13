@@ -14,6 +14,7 @@ import { useProperties } from '@/queries/use-properties';
 import { getOtaPlatformLabel } from '@/lib/i18n-labels';
 import { otaIntegrationFormSchema, OTA_PLATFORM_COLORS, OTA_PLATFORM_ICONS } from './schemas/ota.schema';
 import type { OtaIntegrationFormValues } from './schemas/ota.schema';
+import { FormFieldError } from '@/components/shared/form-field-error';
 
 export function OtaSetupPage() {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ export function OtaSetupPage() {
     defaultValues: {
       isActive: true,
       credentials: {},
-    } as any,
+    },
   });
 
   const selectedPlatform = watch('platform');
@@ -75,9 +76,7 @@ export function OtaSetupPage() {
                     </option>
                   ))}
                 </select>
-                {errors.platform && (
-                  <p className="text-sm text-destructive">{errors.platform.message}</p>
-                )}
+                <FormFieldError error={errors.platform} />
               </div>
 
               <div className="space-y-2">
@@ -94,9 +93,7 @@ export function OtaSetupPage() {
                     </option>
                   ))}
                 </select>
-                {errors.propertyId && (
-                  <p className="text-sm text-destructive">{errors.propertyId.message}</p>
-                )}
+                <FormFieldError error={errors.propertyId} />
               </div>
 
               <div className="flex items-center space-x-2">

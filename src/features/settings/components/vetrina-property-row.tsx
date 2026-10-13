@@ -21,7 +21,11 @@ export function VetrinaPropertyRow({ property, orgSlug, isSelected, onSelect }: 
 
   const bookingPath = buildPropertyBookingPath(orgSlug, property);
   const absoluteUrl = `${window.location.origin}${bookingPath}`;
-  const publishable = isPropertyPublishable({ isActive: property.isActive, complianceStatus: property.complianceStatus ?? undefined });
+  const publishable = isPropertyPublishable({
+    isActive: property.isActive,
+    isPaused: property.isPaused,
+    complianceStatus: property.complianceStatus ?? undefined,
+  });
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -21,12 +21,23 @@ function unwrap<T>(responseData: ApiResponse<T> | T): T {
   return responseData as T;
 }
 
+/** Query-string parameters; any plain object (interfaces included) serialised by axios. */
+type QueryParams = object;
+
+export interface ApiRequestOptions {
+  /**
+   * Anonymous endpoint (backend `[AllowAnonymous]`): the request is sent without an access
+   * token. Leave unset for every authenticated endpoint.
+   */
+  public?: boolean;
+}
+
 export class ApiClient {
   /**
    * GET request - handles both wrapped and unwrapped backend responses
    */
-  static async get<T>(url: string, params?: Record<string, any>): Promise<T> {
-    const response = await axios.get<ApiResponse<T> | T>(url, { params });
+  static async get<T>(url: string, params?: QueryParams, options?: ApiRequestOptions): Promise<T> {
+    const response = await axios.get<ApiResponse<T> | T>(url, { params, ...options });
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
 
@@ -35,41 +46,42 @@ export class ApiClient {
    */
   static async getPaginated<T>(
     url: string,
-    params?: Record<string, any>
+    params?: QueryParams,
+    options?: ApiRequestOptions,
   ): Promise<PaginatedResponse<T>> {
-    const response = await axios.get<PaginatedResponse<T>>(url, { params });
+    const response = await axios.get<PaginatedResponse<T>>(url, { params, ...options });
     return response.data;
   }
 
   /**
    * POST request - handles both wrapped and unwrapped backend responses
    */
-  static async post<T>(url: string, data?: any): Promise<T> {
-    const response = await axios.post<ApiResponse<T> | T>(url, data);
+  static async post<T>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+    const response = await axios.post<ApiResponse<T> | T>(url, data, options);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
 
   /**
    * PUT request - handles both wrapped and unwrapped backend responses
    */
-  static async put<T>(url: string, data?: any): Promise<T> {
-    const response = await axios.put<ApiResponse<T> | T>(url, data);
+  static async put<T>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+    const response = await axios.put<ApiResponse<T> | T>(url, data, options);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
 
   /**
    * PATCH request - handles both wrapped and unwrapped backend responses
    */
-  static async patch<T>(url: string, data?: any): Promise<T> {
-    const response = await axios.patch<ApiResponse<T> | T>(url, data);
+  static async patch<T>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+    const response = await axios.patch<ApiResponse<T> | T>(url, data, options);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
 
   /**
    * DELETE request - handles both wrapped and unwrapped backend responses
    */
-  static async delete<T>(url: string): Promise<T> {
-    const response = await axios.delete<ApiResponse<T> | T>(url);
+  static async delete<T>(url: string, options?: ApiRequestOptions): Promise<T> {
+    const response = await axios.delete<ApiResponse<T> | T>(url, options);
     return unwrap<T>(response.data as ApiResponse<T> | T);
   }
 }

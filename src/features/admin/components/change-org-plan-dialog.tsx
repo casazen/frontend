@@ -10,6 +10,7 @@ import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
 import { useTranslation } from 'react-i18next';
 import { useAdminUpdateOrgPlan } from '@/queries/use-admin-orgs';
 import type { PlanTier, UserSummary } from '@/types';
+import { getPlanTierLabel } from '@/lib/i18n-labels';
 
 interface ChangeOrgPlanDialogProps {
   user: UserSummary | null;
@@ -22,12 +23,18 @@ export function ChangeOrgPlanDialog({ user, open, onOpenChange }: ChangeOrgPlanD
   const updatePlan = useAdminUpdateOrgPlan();
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
 
-  const handleSelect = async (tier: PlanTier) => {
+  // A refused change (409 managed_by_stripe or subscription_required, FD-18) is reported by the hook's onError with
+  // getProblemMessage; the dialog stays open on the current plan. mutate: no promise left unhandled.
+  const handleSelect = (tier: PlanTier) => {
     if (!user?.orgId) return;
     setSelectedTier(tier);
-    await updatePlan.mutateAsync({ orgId: user.orgId, planTier: tier });
-    onOpenChange(false);
-    setSelectedTier(null);
+    updatePlan.mutate(
+      { orgId: user.orgId, planTier: tier },
+      {
+        onSuccess: () => onOpenChange(false),
+        onSettled: () => setSelectedTier(null),
+      },
+    );
   };
 
   if (!user?.orgId) {
@@ -45,19 +52,21 @@ export function ChangeOrgPlanDialog({ user, open, onOpenChange }: ChangeOrgPlanD
     );
   }
 
+  const currentTier: PlanTier = (user.planTier as PlanTier | null) ?? 'Starter';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>{t('admin.users.planDialog.changeTitle', { name: user.orgName ?? user.email })}</DialogTitle>
           <DialogDescription>
-            {t('admin.users.planDialog.changeDescription')} <strong>{user.planTier ?? 'Starter'}</strong>
+            {t('admin.users.planDialog.changeDescription')} <strong>{getPlanTierLabel(currentTier, t)}</strong>
           </DialogDescription>
         </DialogHeader>
         <PlanSelectionGrid
           selectedTier={selectedTier}
-          currentTier={(user.planTier as PlanTier | null) ?? 'Starter'}
-          onSelect={(tier) => void handleSelect(tier)}
+          currentTier={currentTier}
+          onSelect={handleSelect}
           isLoading={updatePlan.isPending}
           actionLabel={t('admin.users.planDialog.actionLabel')}
         />

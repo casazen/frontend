@@ -1,0 +1,51 @@
+/*
+ * Text of an operator document on the public site (BK-14): the sanitized HTML the backend builds from the host's text
+ * (paragraphs, h2-h4, bullet lists, bold, italic, links). No typography plugin is installed, so the elements are styled
+ * here, with the public theme tokens.
+ */
+.public-document {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.public-document > :first-child {
+  margin-top: 0;
+}
+
+.public-document h2 {
+  font-size: 1.4rem;
+  line-height: 1.3;
+  margin: 2rem 0 0.75rem;
+}
+
+.public-document h3 {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.public-document h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.public-document p {
+  margin: 0 0 1rem;
+}
+
+.public-document ul {
+  list-style: disc;
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+
+.public-document li {
+  margin: 0.25rem 0;
+}
+
+.public-document a {
+  color: var(--cz-public-primary-text, var(--cz-public-primary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

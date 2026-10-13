@@ -1,14 +1,19 @@
 import { ApiClient } from '@/api/client';
 import type {
+  ApproveSeoRevisionRequest,
+  AiAdminSettings,
   PlatformAiBudget,
-  SeoBulkApproveResult,
+  SaveSeoDraftRequest,
   SeoComuneRegistryItem,
   SeoGenerateAccepted,
   SeoGenerateRequest,
   SeoPageAdmin,
+  SeoPageAdminDetail,
   SeoPagesPagedResult,
   SeoPagesQuery,
-  UpdateSeoReviewStatusRequest,
+  SeoTopComuniResponse,
+  UpdateAiSettingsRequest,
+  WithdrawSeoPageRequest,
 } from '@/types/seo.types';
 
 interface BackendPagedResult<T> {
@@ -27,21 +32,35 @@ export const AdminSeoApi = {
       pageSize: res.pageSize ?? 20,
     })),
 
+  /** Review screen: published and pending text (sanitized) and the review audit. */
+  getPage: (pageId: string): Promise<SeoPageAdminDetail> =>
+    ApiClient.get<SeoPageAdminDetail>(`/admin/seo/pages/${pageId}`),
+
   generatePages: (request: SeoGenerateRequest): Promise<SeoGenerateAccepted> =>
     ApiClient.post<SeoGenerateAccepted>('/admin/seo/generate', request),
 
-  updateReviewStatus: (
-    pageId: string,
-    body: UpdateSeoReviewStatusRequest,
-  ): Promise<SeoPageAdmin> =>
-    ApiClient.patch<SeoPageAdmin>(`/admin/seo/pages/${pageId}/review-status`, body),
+  approveRevision: (pageId: string, body: ApproveSeoRevisionRequest): Promise<SeoPageAdmin> =>
+    ApiClient.post<SeoPageAdmin>(`/admin/seo/pages/${pageId}/approve`, body),
+
+  withdrawPage: (pageId: string, body: WithdrawSeoPageRequest): Promise<SeoPageAdmin> =>
+    ApiClient.post<SeoPageAdmin>(`/admin/seo/pages/${pageId}/withdraw`, body),
 
   getBudget: (): Promise<PlatformAiBudget> =>
     ApiClient.get<PlatformAiBudget>('/admin/seo/budget'),
 
+  getAiSettings: (): Promise<AiAdminSettings> =>
+    ApiClient.get<AiAdminSettings>('/admin/seo/ai'),
+
+  updateAiSettings: (body: UpdateAiSettingsRequest): Promise<AiAdminSettings> =>
+    ApiClient.put<AiAdminSettings>('/admin/seo/ai', body),
+
+  saveDraft: (pageId: string, body: SaveSeoDraftRequest): Promise<SeoPageAdminDetail> =>
+    ApiClient.post<SeoPageAdminDetail>(`/admin/seo/pages/${pageId}/draft`, body),
+
   listComuni: (): Promise<SeoComuneRegistryItem[]> =>
     ApiClient.get<SeoComuneRegistryItem[]>('/admin/seo/comuni'),
 
-  approveAllDrafts: (counselApproved = true): Promise<SeoBulkApproveResult> =>
-    ApiClient.post<SeoBulkApproveResult>('/admin/seo/approve-all-drafts', { counselApproved }),
+  /** Comuni by CTA clicks of the SEO pages in the last `days` days, with their started signups and signups (SE-04, AC9). */
+  getTopComuni: (days = 30): Promise<SeoTopComuniResponse> =>
+    ApiClient.get<SeoTopComuniResponse>('/admin/seo/top-comuni', { days }),
 };

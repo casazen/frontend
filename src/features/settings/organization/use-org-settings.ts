@@ -1,0 +1,60 @@
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { OrgsApi } from '@/api/orgs.api';
+import type { UpdateOrgSettingsRequest } from '@/types';
+import { toast } from 'sonner';
+import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
+import { ME_QUERY_KEY } from '@/lib/onboarding-gate';
+
+export const ORG_SETTINGS_QUERY_KEY = ['org-settings'] as const;
+
+/** Delay before the availability of a slug being typed is checked. */
+export const SLUG_CHECK_DEBOUNCE_MS = 400;
+
+/** A1-22, A1-23: name, public slug and contact email opt-in of the caller's org. Org billing admin only (403 otherwise). */
+export function useOrgSettings(enabled = true) {
+  return useQuery({
+    queryKey: ORG_SETTINGS_QUERY_KEY,
+    queryFn: () => OrgsApi.getSettings(),
+    enabled,
+    retry: false,
+  });
+}
+
+/** `value`, once it stopped changing for `delayMs`. */
+export function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+  return debounced;
+}
+
+/** A1-23: availability of a new public slug for the caller's org; advisory only, the save checks again. */
+export function useOrgSlugAvailability(slug: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['org-settings', 'slug-availability', slug] as const,
+    queryFn: () => OrgsApi.checkSlugAvailability(slug),
+    enabled: enabled && slug.length > 0,
+    retry: false,
+    staleTime: 30_000,
+  });
+}
+
+export function useUpdateOrgSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateOrgSettingsRequest) => OrgsApi.updateSettings(payload),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(ORG_SETTINGS_QUERY_KEY, settings);
+      // The name/slug also back the nav org badge and vetrina links (OrgSummaryDto, GET /users/me).
+      void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+      toast.success(i18n.t('orgSettings.saved'));
+    },
+    // e.g. 409 org_slug_taken or 422 org_slug_invalid/org_slug_reserved: the reason, not a generic failure.
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('orgSettings.saveFailed')),
+  });
+}

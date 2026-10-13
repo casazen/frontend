@@ -17,6 +17,8 @@ const ACCEPTED_TYPES = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
 
 interface DocumentUploadDialogProps {
   propertyId: string;
+  /** Type selected when the dialog opens (default: CIN certificate). */
+  defaultDocumentType?: PropertyDocumentType;
 }
 
 function getDocumentTypeLabels(t: ReturnType<typeof useTranslation>['t']): { value: PropertyDocumentType; label: string }[] {
@@ -31,11 +33,11 @@ function getDocumentTypeLabels(t: ReturnType<typeof useTranslation>['t']): { val
   ];
 }
 
-export function DocumentUploadDialog({ propertyId }: DocumentUploadDialogProps) {
+export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCertificate' }: DocumentUploadDialogProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState<PropertyDocumentType>('CinCertificate');
+  const [documentType, setDocumentType] = useState<PropertyDocumentType>(defaultDocumentType);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadPropertyDocument();
@@ -44,9 +46,9 @@ export function DocumentUploadDialog({ propertyId }: DocumentUploadDialogProps) 
 
   const reset = useCallback(() => {
     setFile(null);
-    setDocumentType('CinCertificate');
+    setDocumentType(defaultDocumentType);
     setDragOver(false);
-  }, []);
+  }, [defaultDocumentType]);
 
   const handleFile = (selected: File | null) => {
     if (selected) setFile(selected);

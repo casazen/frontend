@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CinApi } from '@/api/cin.api';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { getProblemMessage } from '@/lib/api-errors';
 
 const CIN_KEY = 'cin';
 
@@ -23,8 +24,8 @@ export function useUpdatePropertyCin() {
       queryClient.invalidateQueries({ queryKey: ['properties'] });
       toast.success(i18n.t('toast.cinCodeUpdated'));
     },
-    onError: () => {
-      toast.error(i18n.t('toast.cinCodeUpdateFailed'));
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.cinCodeUpdateFailed'));
     },
   });
 }

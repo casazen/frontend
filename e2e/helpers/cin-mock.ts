@@ -15,7 +15,7 @@ export const demoCinCompliance: CinComplianceResponse = {
     {
       propertyId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
       propertyName: 'Monolocale Mare',
-      cinCode: 'IT-12345-0123456789',
+      cinCode: 'IT058091C27G5FFZDZ',
       cinStatus: 'valid',
       city: 'Napoli',
     },
@@ -25,8 +25,10 @@ export const demoCinCompliance: CinComplianceResponse = {
     valid: 1,
     missing: 1,
     invalid: 0,
-    daysUntilDeadline: 0,
-    deadline: '2026-03-01',
+    // CO-20: no deadline configured by default (Cin:ExposureDeadline): the banner shows the obligation without a date.
+    daysUntilDeadline: null,
+    deadline: null,
+    deadlineStatus: 'none',
     hasNonCompliant: true,
   },
 };
