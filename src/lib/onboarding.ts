@@ -224,12 +224,17 @@ export function getStaleConsentDocuments(error: unknown): string[] | null {
  * the consents step is needed, submitted with the rental type already chosen.
  */
 export function needsConsentRenewal(profile?: OnboardingProfile | null): boolean {
-  return (
-    !!profile?.orgId &&
-    !!profile.onboardingCompletedAt &&
-    !!profile.rentalType &&
-    profile.consentsAccepted === false
-  );
+  return lacksCurrentConsents(profile) && !!profile?.rentalType;
+}
+
+/**
+ * The backend gate says the current legal documents are not accepted for the user's org, whatever the rental type. A plain
+ * update (PUT, no consents) cannot fix it, so the wizard must collect the consents and POST: with no rental type yet it
+ * asks the role first, then the documents. Treating it as an update there left the "Account e consensi" step open for
+ * good (the update never records a consent).
+ */
+export function lacksCurrentConsents(profile?: OnboardingProfile | null): boolean {
+  return !!profile?.orgId && !!profile.onboardingCompletedAt && profile.consentsAccepted === false;
 }
 
 /**

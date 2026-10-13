@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -326,6 +326,23 @@ export function SupplierDashboardPage() {
             <Button size="sm" variant="outline" className="border-amber-400 text-amber-900 shrink-0"
                     onClick={() => navigate('/app/supplier/profile')}>
               {t('supplier.completeNow')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {(dashboard.calendarSyncStatus?.pendingFreeEventsCount ?? 0) > 0 && (
+        <Card className="mb-4 border-amber-300 bg-amber-50" data-testid="supplier-free-events-card">
+          <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center">
+            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-900">
+                {t('supplier.freeEventsDashboardTitle', { count: dashboard.calendarSyncStatus.pendingFreeEventsCount })}
+              </p>
+              <p className="text-xs text-amber-900">{t('supplier.freeEventsDashboardHint')}</p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="shrink-0 border-amber-400 text-amber-900">
+              <Link to="/app/supplier/availability">{t('supplier.freeEventsDashboardCta')}</Link>
             </Button>
           </CardContent>
         </Card>

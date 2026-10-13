@@ -11,6 +11,7 @@ import {
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
+  lacksCurrentConsents,
   needsConsentRenewal,
   needsFirstProperty,
   needsOnboarding,
@@ -79,6 +80,18 @@ describe('onboarding helpers', () => {
     expect(needsConsentRenewal({ ...onboarded, onboardingCompletedAt: null, consentsAccepted: false })).toBe(false);
     expect(needsConsentRenewal({ ...onboarded, orgId: null, consentsAccepted: false })).toBe(false);
     expect(needsConsentRenewal(null)).toBe(false);
+  });
+
+  it('lacksCurrentConsents_WithOrgAndCompletedOnboarding_IgnoresTheRentalType', () => {
+    // No rental type yet: not a renewal of the same type, but a plain update still cannot record the consents.
+    const noType = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: null };
+    expect(lacksCurrentConsents({ ...noType, consentsAccepted: false })).toBe(true);
+    expect(needsConsentRenewal({ ...noType, consentsAccepted: false })).toBe(false);
+    expect(lacksCurrentConsents({ ...noType, consentsAccepted: true })).toBe(false);
+    expect(lacksCurrentConsents(noType)).toBe(false);
+    expect(lacksCurrentConsents({ ...noType, orgId: null, consentsAccepted: false })).toBe(false);
+    expect(lacksCurrentConsents({ ...noType, onboardingCompletedAt: null, consentsAccepted: false })).toBe(false);
+    expect(lacksCurrentConsents(null)).toBe(false);
   });
 
   it('isExemptFromHostOnboarding_OnlyAdminsAndSupplierOnlyUsers', () => {

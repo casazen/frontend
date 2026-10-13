@@ -381,6 +381,32 @@ describe('OnboardingPage (PL-01)', () => {
     expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
   });
 
+  it('OnboardingPage_OnboardedWithOrgButNoRentalTypeAndOldConsents_CollectsTheConsentsInsteadOfAPlainUpdate', async () => {
+    // The loop of the checklist: onboarding completed and an org, but no rental type yet and the legal documents not
+    // accepted (backend consentsAccepted=false). A plain update records no consent, so the step would stay open for good.
+    mockAuth(['PropertyOwner']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        orgId: 'org-1',
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        rentalType: null,
+        onboardingRequired: true,
+        consentsAccepted: false,
+      }),
+    );
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ orgId: 'org-1' }));
+
+    renderPage({ pathname: '/onboarding', state: { completeStep: true } });
+    await chooseShortTermWithConsents();
+
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
+      rentalType: 'ShortTerm',
+      consents: CONSENTS,
+    });
+    expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
+  });
+
   it('OnboardingPage_HostWithOrgButOnboardingRequired_StaysOnTheWizard', async () => {
     // Org created before PL-02 without the onboarding: the roles and the org no longer skip the wizard.
     mockAuth(['PropertyOwner']);
