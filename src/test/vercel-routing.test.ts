@@ -149,13 +149,61 @@ describe('vercel.json routing', () => {
     });
   });
 
-  it('vercelJson_hasNoDomainOfOurOwn', () => {
+  it('vercelJson_hasNoDomainOfOurOwn_outsideTheVercelAppRedirect', () => {
     // Decision D3: the public domain comes only from environment variables (VITE_PUBLIC_SITE_URL,
-    // VITE_API_BASE_URL); the only absolute URLs allowed here are the third-party origins of the CSP.
-    const hosts = [...vercelJson.matchAll(/https?:\/\/([^\s'";/]+)/g)].map((match) => match[1]);
+    // VITE_API_BASE_URL); the only absolute URLs allowed here are the third-party origins of the CSP. The one exception
+    // is the permanent redirect of the old production host (below, runbook seo-domain.md §1): a redirect in vercel.json
+    // is static and cannot read an environment variable.
+    const config = JSON.parse(vercelJson) as Record<string, unknown>;
+    delete config.redirects;
+    const withoutRedirects = JSON.stringify(config);
+    const hosts = [...withoutRedirects.matchAll(/https?:\/\/([^\s'";/]+)/g)].map((match) => match[1]);
     for (const host of hosts) {
       expect(host).toMatch(/(^|\.)(stripe\.com|auth0\.com|supabase\.co)$/);
     }
-    expect(vercelJson).not.toMatch(/casazen|vercel\.app|railway\.app/i);
+    expect(withoutRedirects).not.toMatch(/casazen|vercel\.app|railway\.app/i);
+  });
+
+  describe('redirect of the old production host (D3 exception)', () => {
+    const redirects = (JSON.parse(vercelJson) as { redirects: Redirect[] }).redirects;
+
+    it('redirects_onlyTheOldProductionHost_permanentlyToThePublicDomain', () => {
+      expect(redirects).toHaveLength(1);
+      const [redirect] = redirects;
+      expect(redirect.source).toBe('/:path*');
+      expect(redirect.permanent).toBe(true);
+      expect(redirect.has).toEqual([{ type: 'host', value: 'casazen-app\\.vercel\\.app' }]);
+      expect(redirect.destination).toBe('https://casazen.space/:path*');
+    });
+
+    it.each(['casazen-app.vercel.app'])('redirects_host_%s_isRedirected', (host) => {
+      expect(hostMatches(redirects[0], host)).toBe(true);
+    });
+
+    it.each([
+      // Preview deployments and the deployment URLs keep working: only the exact production alias is moved.
+      'casazen-app-git-feature-seo-casazen.vercel.app',
+      'casazen-app-3x7k2l9q-casazen.vercel.app',
+      'casazen.space',
+      'www.casazen.space',
+      'villa-rossi.example.test',
+    ])('redirects_host_%s_isNotRedirected', (host) => {
+      expect(hostMatches(redirects[0], host)).toBe(false);
+    });
   });
 });
+
+interface Redirect {
+  source: string;
+  destination: string;
+  permanent: boolean;
+  has: { type: string; value: string }[];
+}
+
+/**
+ * A `has` value is a regular expression. Read unanchored here, the stricter reading for the hosts that must not be
+ * redirected: a value that does not even occur in a host cannot match it, anchored or not.
+ */
+function hostMatches(redirect: Redirect, host: string): boolean {
+  return redirect.has.every((condition) => condition.type === 'host' && new RegExp(condition.value).test(host));
+}
