@@ -32,7 +32,7 @@ Create `.env.local`:
 ```
 VITE_AUTH0_DOMAIN=your-domain.auth0.com
 VITE_AUTH0_CLIENT_ID=your-client-id
-VITE_AUTH0_AUDIENCE=https://casazen-api-test
+VITE_AUTH0_AUDIENCE=https://casazen-api
 VITE_API_BASE_URL=http://localhost:3000/api
 ```
 
