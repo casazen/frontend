@@ -166,7 +166,29 @@ export interface CalendarSyncStatus {
   lastSyncStatus?: SupplierCalendarSyncState;
   calendarSyncErrorCode?: string | null;
   calendarSyncError?: string | null;
+  /** "Disponibile" events of the feed the supplier has not answered yet: they block their days until then. */
+  pendingFreeEventsCount?: number;
 }
+
+/** A calendar event marked "Disponibile" (free) that holds its days until the supplier answers. The title is personal data of the owner. */
+export interface PendingFreeEvent {
+  id: string;
+  summary: string;
+  isAllDay: boolean;
+  recurring: boolean;
+  /** Number of dates of the series that are held. */
+  occurrences: number;
+  nextStartUtc: string;
+  nextEndUtc: string;
+  firstSeenAt: string;
+}
+
+export interface PendingFreeEventsResponse {
+  items: PendingFreeEvent[];
+  pendingCount: number;
+}
+
+export type FreeEventDecision = 'Available' | 'Busy';
 
 export interface SupplierDashboard {
   profileCompletionPercent: number;

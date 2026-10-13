@@ -6,11 +6,14 @@ import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { getProblemMessage } from '@/lib/api-errors';
 import {
+  useCalendarSyncStatus,
+  usePendingFreeEvents,
   useSupplierAgendaCalendar,
   useSupplierAvailability,
   useUpdateSupplierAvailability,
@@ -18,6 +21,8 @@ import {
 import { addDays, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { buildWorkingDays, minutesToHm } from './lib/supplier-agenda';
 import type { DayEvent } from './lib/supplier-agenda';
+import { FreeEventsBanner } from './components/free-events-banner';
+import { pendingFreeEventDates } from './lib/free-events';
 
 const VISIBLE_DAYS = 14;
 
@@ -52,17 +57,32 @@ export function SupplierAvailabilityPage() {
   const availabilityQuery = useSupplierAvailability(from, to);
   const agendaQuery = useSupplierAgendaCalendar(from, to);
   const updateAvailability = useUpdateSupplierAvailability();
+  const freeEventsQuery = usePendingFreeEvents();
+  const syncQuery = useCalendarSyncStatus();
+  const syncing = syncQuery.data?.lastSyncStatus === 'Syncing';
+  const freeEvents = freeEventsQuery.data?.items;
+  const pendingDates = useMemo(() => pendingFreeEventDates(freeEvents ?? []), [freeEvents]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
-  const [initialized, setInitialized] = useState(false);
+  // Days the user toggled by hand: they keep their value when fresh data (e.g. after an answer to a free event) arrives.
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [loadedFrom, setLoadedFrom] = useState<{ availability: unknown; agenda: unknown } | null>(null);
 
-  // Initialize local overrides from the closed days / availability once both sources have loaded.
-  if (!initialized && availabilityQuery.data?.dates && agendaQuery.data) {
-    setInitialized(true);
+  // Initialize local overrides from the closed days / availability when both sources load, and again when they are
+  // refreshed (the days a free event held are released once its sync ends), keeping what the user toggled.
+  if (
+    availabilityQuery.data?.dates &&
+    agendaQuery.data &&
+    (loadedFrom === null || loadedFrom.availability !== availabilityQuery.data || loadedFrom.agenda !== agendaQuery.data)
+  ) {
+    setLoadedFrom({ availability: availabilityQuery.data, agenda: agendaQuery.data });
     const fromApi = Object.fromEntries(availabilityQuery.data.dates.map((entry) => [entry.date, entry.available]));
     const closed = new Set(agendaQuery.data.closedDays.map((day) => day.date));
-    setSelected(
+    setSelected((previous) =>
       Object.fromEntries(
-        days.map((date) => [date, closed.has(date) ? false : (fromApi[date] ?? true)]),
+        days.map((date) => [
+          date,
+          touched[date] ? (previous[date] ?? true) : closed.has(date) ? false : (fromApi[date] ?? true),
+        ]),
       ),
     );
   }
@@ -87,6 +107,7 @@ export function SupplierAvailabilityPage() {
 
   const toggleDay = (key: string) => {
     setSelected((prev) => ({ ...prev, [key]: !(prev[key] ?? true) }));
+    setTouched((prev) => ({ ...prev, [key]: true }));
   };
 
   const save = async () => {
@@ -142,6 +163,30 @@ export function SupplierAvailabilityPage() {
         action={<NavChildLinks parentPath="/app/supplier/availability" />}
       />
 
+      {freeEventsQuery.isError ? (
+        <Alert
+          variant="warning"
+          data-testid="free-events-error"
+          action={
+            <Button size="sm" variant="outline" onClick={() => void freeEventsQuery.refetch()}>
+              {t('supplier.retry')}
+            </Button>
+          }
+        >
+          {t('supplier.freeEventsLoadError')}
+        </Alert>
+      ) : freeEventsQuery.isLoading ? (
+        <p className="text-sm text-muted-foreground" role="status" data-testid="free-events-loading">
+          {t('supplier.freeEventsLoading')}
+        </p>
+      ) : freeEventsQuery.data && freeEventsQuery.data.pendingCount > 0 ? (
+        <FreeEventsBanner
+          items={freeEventsQuery.data.items}
+          pendingCount={freeEventsQuery.data.pendingCount}
+          syncing={syncing}
+        />
+      ) : null}
+
       {!hoursConfigured && (
         <Card className="border-amber-300 bg-amber-50" data-testid="supplier-hours-empty">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -166,6 +211,14 @@ export function SupplierAvailabilityPage() {
                   <p className="text-sm font-medium">
                     {formatStayDate(day.date, i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
                   </p>
+                  {pendingDates.has(day.date) ? (
+                    <span
+                      className="mb-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-950"
+                      data-testid={`availability-pending-${day.date}`}
+                    >
+                      {t('supplier.freeEventPendingBadge')}
+                    </span>
+                  ) : null}
                   <p className="text-xs text-muted-foreground">
                     {available ? t('supplier.available') : t('supplier.notAvailable')}
                     {day.closed?.source === 'ICalFeed' ? ` · ${t('supplier.closedByCalendar')}` : null}

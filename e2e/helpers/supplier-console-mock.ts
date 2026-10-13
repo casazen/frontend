@@ -236,6 +236,11 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    if (url.includes('/calendar/free-events') && method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], pendingCount: 0 }) });
+      return;
+    }
+
     if (url.includes('/calendar/status')) {
       await route.fulfill({
         status: 200,

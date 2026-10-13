@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
@@ -118,6 +119,20 @@ export function SupplierCalendarSyncPage() {
                 {t('supplier.edit')}
               </Button>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {(syncStatus?.pendingFreeEventsCount ?? 0) > 0 && (
+        <Card className="mb-4 border-amber-300 bg-amber-50 p-4" data-testid="calendar-free-events-note">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
+            <p className="flex-1 text-sm text-amber-900">
+              {t('supplier.freeEventsSyncNote', { count: syncStatus?.pendingFreeEventsCount })}
+            </p>
+            <Button asChild size="sm" variant="outline" className="shrink-0 border-amber-400 text-amber-900">
+              <Link to="/app/supplier/availability">{t('supplier.freeEventsSyncNoteCta')}</Link>
+            </Button>
           </div>
         </Card>
       )}

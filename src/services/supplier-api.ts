@@ -2,6 +2,8 @@ import { ApiClient } from '@/api/client';
 import type {
   ActivationStatus,
   CalendarSyncStatus,
+  FreeEventDecision,
+  PendingFreeEventsResponse,
   SupplierAgendaCalendar,
   SupplierAgendaHoursDay,
   SupplierAvailabilityResponse,
@@ -285,4 +287,14 @@ export async function uploadSupplierPhotos(files: File[]): Promise<{ urls: strin
 /** The owner's preview of the public showcase and where it is (or will be) published (SU-13). */
 export async function fetchSupplierShowcasePreview(): Promise<SupplierShowcasePreview> {
   return ApiClient.get<SupplierShowcasePreview>('/supplier/showcase');
+}
+
+/** Calendar events marked "Disponibile" that wait for the supplier's answer (they block their days meanwhile). */
+export async function fetchPendingFreeEvents(): Promise<PendingFreeEventsResponse> {
+  return ApiClient.get<PendingFreeEventsResponse>('/supplier/calendar/free-events');
+}
+
+/** The supplier's answer for one free event (one decision per recurring series): 204, and "Available" queues a sync. */
+export async function decideFreeEvent(id: string, decision: FreeEventDecision): Promise<void> {
+  await ApiClient.post(`/supplier/calendar/free-events/${encodeURIComponent(id)}/decision`, { decision });
 }

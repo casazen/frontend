@@ -6,7 +6,9 @@ import {
   fetchAdminInvites,
   fetchAdminSuppliers,
   fetchSupplierAudit,
+  decideFreeEvent,
   fetchCalendarSyncStatus,
+  fetchPendingFreeEvents,
   fetchSupplierActivation,
   fetchSupplierShowcasePreview,
   fetchSupplierAgendaCalendar,
@@ -36,6 +38,7 @@ import type { SupplierRegisterPayload } from '@/services/supplier-api';
 import type { AdminInvitesParams, AdminSuppliersParams } from '@/types/admin-suppliers';
 import type {
   CalendarSyncStatus,
+  FreeEventDecision,
   SupplierAgendaHoursDay,
   SupplierInboxParams,
   SupplierKpiPeriod,
@@ -356,6 +359,36 @@ export function useSyncSupplierCalendarNow() {
     mutationFn: syncSupplierCalendarNow,
     onSuccess: (status) => {
       queryClient.setQueryData(CALENDAR_SYNC_KEY, status);
+    },
+  });
+}
+
+/** Calendar events marked "Disponibile" waiting for the supplier's answer (only the owner reads them). */
+export function usePendingFreeEvents() {
+  return useQuery({
+    queryKey: ['supplier', 'free-events'],
+    queryFn: fetchPendingFreeEvents,
+  });
+}
+
+/**
+ * The supplier's answer for a free event. "Available" frees the days again and the backend queues a sync: the status is
+ * marked `Syncing` at once (the polling of `useCalendarSyncStatus` takes over and refreshes agenda, availability and
+ * dashboard when it ends). Either way the list, the agenda, the availability and the dashboard are reloaded.
+ */
+export function useDecideFreeEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, decision }: { id: string; decision: FreeEventDecision }) => decideFreeEvent(id, decision),
+    onSuccess: (_data, { decision }) => {
+      if (decision === 'Available') {
+        queryClient.setQueryData<CalendarSyncStatus>(CALENDAR_SYNC_KEY, (previous) =>
+          previous ? { ...previous, lastSyncStatus: 'Syncing' } : previous,
+        );
+      }
+      for (const key of ['free-events', 'agenda', 'availability', 'dashboard', 'calendar-sync']) {
+        void queryClient.invalidateQueries({ queryKey: ['supplier', key] });
+      }
     },
   });
 }
