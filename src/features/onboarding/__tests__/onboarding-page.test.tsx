@@ -409,6 +409,25 @@ describe('OnboardingPage (PL-01)', () => {
     expect(await screen.findByTestId('short-rent-home')).toBeInTheDocument();
   });
 
+  it('OnboardingPage_AdminOpensItFromAnOpenChecklistStep_StaysOnTheWizard', async () => {
+    mockAuth(['Admin']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({ ...ONBOARDED, onboardingRequired: false, consentsAccepted: true });
+
+    renderPage({ pathname: '/onboarding', state: { completeStep: true } });
+
+    expect((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') })).length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('admin-area')).not.toBeInTheDocument();
+  });
+
+  it('OnboardingPage_AdminWithOrgOpensItWithoutChecklistIntent_GoesToTheAdminArea', async () => {
+    mockAuth(['Admin']);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({ ...ONBOARDED, onboardingRequired: false, consentsAccepted: true });
+
+    renderPage();
+
+    expect(await screen.findByTestId('admin-area')).toBeInTheDocument();
+  });
+
   it('OnboardingPage_AdminWithOrgAndOnboardingRequired_CanSkipToTheAdminArea', async () => {
     mockAuth(['Admin']);
     vi.mocked(UsersApi.getMe).mockResolvedValue(

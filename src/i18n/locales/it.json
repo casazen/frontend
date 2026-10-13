@@ -196,8 +196,6 @@
       "scenariosTitle": "Cosa mostra il template"
     },
     "supplierInvite": {
-      "title": "Invita fornitore",
-      "description": "Invia un invito pilota per comune",
       "newInvite": "Nuovo invito",
       "email": "Email",
       "comuneCode": "Codice comune",
@@ -485,6 +483,15 @@
       "copied": "Link copiato.",
       "copyError": "Impossibile copiare il link.",
       "popupBlocked": "Il browser ha bloccato la finestra di stampa: consenti i popup per questo sito e riprova."
+    },
+    "invites": {
+      "title": "Inviti",
+      "description": "Invita fornitori e host indipendenti e segui lo stato degli inviti inviati.",
+      "typeLabel": "Tipo di invito",
+      "type": {
+        "supplier": "Fornitore",
+        "host": "Host"
+      }
     }
   },
   "nav": {
@@ -520,7 +527,8 @@
     "brandSupplier": "CASAZEN Fornitore",
     "vetrina": "Vetrina",
     "directBooking": "Sito di prenotazione",
-    "inviteSupplier": "Invita fornitore",
+    "invites": "Inviti",
+    "hostInvites": "Consiglia CasaZen",
     "supplierDashboard": "Dashboard",
     "supplierCalendar": "Calendario",
     "supplierInbox": "Richieste",
@@ -1951,7 +1959,16 @@
       "actions": "Azioni",
       "edit": "Modifica",
       "editAria": "Modifica {{name}}",
+      "delete": "Elimina",
+      "deleteAria": "Elimina {{name}}",
       "noRate": "Non impostato"
+    },
+    "deleteDialog": {
+      "title": "Eliminare l'immobile?",
+      "description": "Stai per eliminare «{{name}}». L'immobile scomparirà dall'elenco.",
+      "confirm": "Elimina immobile",
+      "consequenceHidden": "L'immobile non sarà più visibile nell'elenco.",
+      "consequenceBlocked": "Non puoi eliminarlo se ha prenotazioni future o locazioni attive."
     },
     "detail": {
       "loading": "Caricamento proprietà...",
@@ -2421,7 +2438,8 @@
       "gardening": "Giardinaggio",
       "events": "Eventi",
       "rental": "Noleggio",
-      "excursions": "Escursioni"
+      "excursions": "Escursioni",
+      "electrical": "Elettricista"
     },
     "status": {
       "Richiesto": "Richiesto",
@@ -5544,7 +5562,8 @@
       "domain": "dominio|indirizzo|url|sito web|collega dominio",
       "fiscal": "tasse|imposte|cedolare secca|regime fiscale|fisco|partita iva",
       "guests": "clienti|anagrafica|rubrica|ospite|persone",
-      "inviteSupplier": "invita|nuovo fornitore|aggiungi fornitore|partner",
+      "invites": "invita|invito|inviti|nuovo fornitore|aggiungi fornitore|nuovo host|partner",
+      "hostInvites": "invita|invito|inviti|nuovo host|collega|passaparola|collega host",
       "jobs": "job|code|automazioni|processi in background|lavori programmati",
       "leases": "locazioni|affitti|inquilini|canoni|scadenze|contratto",
       "ltrReferenceData": "canone concordato|zone|accordi territoriali|dati normativi",
@@ -6274,6 +6293,8 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
+      "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
@@ -6479,7 +6500,9 @@
       "rentNoTenantEmail": "Nessun conduttore ha un indirizzo email a cui inviare la richiesta di pagamento.",
       "rentPaymentRequestNotSent": "La richiesta di pagamento non è stata inviata: il servizio email non è disponibile.",
       "rentPaidOnInvalid": "Indica una data di pagamento valida, non futura.",
-      "rentPaymentLinkInvalid": "Il link di pagamento non è valido o è stato sostituito da uno più recente."
+      "rentPaymentLinkInvalid": "Il link di pagamento non è valido o è stato sostituito da uno più recente.",
+      "hostInviteQuotaExceeded": "Hai raggiunto il limite di inviti di oggi. Riprova domani.",
+      "hostEmailTaken": "Questa email ha già un account su CasaZen: non serve invitarla."
     }
   },
   "appShell": {
@@ -7204,6 +7227,118 @@
         "title": "Crea il primo contratto di locazione",
         "hint": "Ti guidiamo fino a firma e registrazione, con cedolare secca e scadenze.",
         "cta": "Crea contratto"
+      }
+    }
+  },
+  "hostInvites": {
+    "title": "Consiglia CasaZen a un amico",
+    "description": "Conosci un altro host a cui CasaZen può servire? Invitalo: si registra come tutti gli altri e l'invito non gli assegna ruoli.",
+    "retry": "Riprova",
+    "form": {
+      "title": "Nuovo invito",
+      "email": "Email dell'host da invitare",
+      "emailFriend": "Email del tuo amico",
+      "message": "Messaggio (facoltativo)",
+      "locale": "Lingua dell'email (facoltativa)",
+      "localeDefault": "Predefinita",
+      "localeOption": {
+        "it": "Italiano",
+        "en": "Inglese"
+      },
+      "send": "Invia invito",
+      "sending": "Invio in corso…",
+      "errors": {
+        "emailRequired": "Inserisci l'email dell'host.",
+        "emailRequiredFriend": "Inserisci l'email del tuo amico.",
+        "emailInvalid": "Inserisci un'email valida."
+      }
+    },
+    "quota": {
+      "label": "Inviti di oggi",
+      "usage": "Inviti di oggi: {{used}} di {{limit}}",
+      "remaining_one": "Te ne resta {{count}}",
+      "remaining_other": "Te ne restano {{count}}",
+      "exhausted": "Hai usato tutti gli inviti di oggi. Potrai inviarne altri dal {{date}}.",
+      "resets": "La quota si azzera il {{date}}.",
+      "loadError": "Impossibile caricare la quota degli inviti."
+    },
+    "list": {
+      "title": "I tuoi inviti",
+      "searchPlaceholder": "Cerca per email invitata",
+      "email": "Email invitata",
+      "invitedBy": "Invitato da",
+      "inviter": "{{name}} ({{org}})",
+      "noInviter": "—",
+      "state": "Stato dell'invito",
+      "allStates": "Tutti gli stati",
+      "expiresAt": "Scade il",
+      "sentOn": "Inviato il {{date}}",
+      "usedOn": "Usato il {{date}}",
+      "actions": "Azioni",
+      "resend": "Reinvia",
+      "revoke": "Revoca",
+      "empty": "Non ci sono ancora inviti.",
+      "emptyFiltered": "Nessun invito corrisponde ai filtri.",
+      "loadError": "Impossibile caricare gli inviti."
+    },
+    "stateLabel": {
+      "Pending": "In attesa",
+      "Used": "Usato",
+      "Expired": "Scaduto",
+      "Revoked": "Revocato"
+    },
+    "resendDialog": {
+      "title": "Reinvia l'invito",
+      "description": "Verrà inviata una nuova email a {{email}} con un nuovo link. Il link precedente smette di funzionare."
+    },
+    "revokeDialog": {
+      "title": "Revoca l'invito",
+      "description": "Il link inviato a {{email}} non funzionerà più. Potrai creare un nuovo invito per la stessa email."
+    },
+    "toast": {
+      "sent": "Invito inviato a {{email}}, valido fino al {{expiresAt}}.",
+      "resent": "Invito reinviato a {{email}}.",
+      "revoked": "Invito per {{email}} revocato.",
+      "error": "Operazione non riuscita. Riprova."
+    }
+  },
+  "hostInvite": {
+    "loading": "Verifica dell'invito…",
+    "retry": "Riprova",
+    "errorTitle": "Invito non verificabile",
+    "errorGeneric": "Non riusciamo a verificare l'invito. Riprova tra poco.",
+    "invitedBy": "{{name}} ti ha invitato su CasaZen",
+    "invited": "Sei stato invitato su CasaZen",
+    "description": "CasaZen aiuta gli host indipendenti a gestire affitti brevi e lunghi nel rispetto delle norme italiane.",
+    "forEmail": "Invito per {{email}}",
+    "useSameEmail": "Registrati con l'email a cui è arrivato l'invito. Il link non ti assegna ruoli: crei il tuo account come tutti gli altri.",
+    "signup": "Crea il tuo account",
+    "login": "Ho già un account",
+    "accepting": "Collegamento dell'invito…",
+    "acceptedTitle": "Invito accettato",
+    "accepted": "Il tuo account è collegato all'invito.",
+    "acceptedWithInviter": "Il tuo account è collegato all'invito di {{name}}.",
+    "continue": "Continua",
+    "acceptErrorTitle": "Invito non collegato",
+    "acceptErrorGeneric": "Non siamo riusciti a collegare l'invito al tuo account. Puoi continuare: il tuo account funziona comunque.",
+    "continueWithout": "Continua senza invito",
+    "unusable": {
+      "login": "Vai all'accesso",
+      "invalid": {
+        "title": "Invito non valido",
+        "description": "Il link è incompleto o non esiste. Apri di nuovo il link ricevuto via email o chiedi un nuovo invito."
+      },
+      "expired": {
+        "title": "Invito scaduto",
+        "description": "Questo invito non è più valido perché è scaduto. Chiedi a chi ti ha invitato di inviartene uno nuovo."
+      },
+      "revoked": {
+        "title": "Invito revocato",
+        "description": "Chi ti ha invitato ha annullato questo invito. Chiedi di inviartene uno nuovo."
+      },
+      "used": {
+        "title": "Invito già usato",
+        "description": "Questo invito è già stato utilizzato. Se hai già un account, accedi."
       }
     }
   },

@@ -36,7 +36,7 @@ export function FiscalDashboardPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-3xl mx-auto" data-testid="fiscal-dashboard-page">
+      <div className="space-y-6" data-testid="fiscal-dashboard-page">
         <PageHeader title={t('fiscal.page.title', { year: taxYear })} description={t('fiscal.page.description')} />
         <FiscalDisclaimer />
         {isLoading && <p data-testid="fiscal-loading">{t('fiscal.loading')}</p>}

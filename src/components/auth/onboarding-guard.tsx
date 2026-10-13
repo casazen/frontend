@@ -4,7 +4,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { useUserRoleState } from '@/hooks/use-user-roles';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
-import { isLinkedSupplier, isProfileLoadFailure, needsOnboarding } from '@/lib/onboarding';
+import {
+  getFirstPropertyRoute,
+  isLinkedSupplier,
+  isProfileLoadFailure,
+  needsFirstProperty,
+  needsOnboarding,
+} from '@/lib/onboarding';
 import { readPendingSupplierClaim, SUPPLIER_CLAIM_PATH } from '@/lib/supplier-claim';
 import { useMe } from '@/queries/use-users';
 import { isAccountInactiveError } from '@/lib/api-errors';
@@ -16,7 +22,8 @@ import { useSignupAttributionSync } from '@/hooks/use-signup-attribution-sync';
  * onboarding. Platform admins and supplier-only users pass without an org, and so does an account linked to a supplier
  * profile (`supplierOrgId`, SU-02) even before the Supplier role reaches its token. A supplier who registered without
  * an account and still holds the claim token goes to `/register/claim` first (A4-02). A failed profile load is shown
- * as an error with retry, never as "not onboarded" (A1-19).
+ * as an error with retry, never as "not onboarded" (A1-19). A host onboarded but without any property goes on to the
+ * creation of the first one (`hasProperties === false`).
  */
 export function OnboardingGuard() {
   const { t } = useTranslation();
@@ -53,6 +60,15 @@ export function OnboardingGuard() {
 
   if (isAuthenticated && needsOnboarding(user, profile, roles)) {
     return <Navigate to="/onboarding" replace state={{ from: `${location.pathname}${location.search}` }} />;
+  }
+
+  // Onboarded host whose org has no property yet: the creation of the first one, never the whole wizard again.
+  if (
+    isAuthenticated &&
+    profile?.rentalType &&
+    needsFirstProperty(user, profile, roles, location.pathname)
+  ) {
+    return <Navigate to={getFirstPropertyRoute(profile.rentalType)} replace />;
   }
 
   return <Outlet />;

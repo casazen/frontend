@@ -81,6 +81,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/settings/payments',
       '/app/short-rent/settings/domain',
       '/app/short-rent/settings/organization',
+      '/app/short-rent/settings/invitations',
     ]);
 
     const withFlag = paths(getSecondaryNavEntries('short-rent', allowAll, { otaPartnerApi: true }));
@@ -96,6 +97,7 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
       '/app/long-rent/profile',
       '/app/long-rent/settings/organization',
+      '/app/long-rent/settings/invitations',
     ]);
 
     expect(paths(getPrimaryNavEntries('supplier', allowAll))).toEqual([
@@ -583,8 +585,33 @@ describe('route-manifest nav helpers', () => {
   // UI-00 (merged separately) opens the first page of the menu the user can open when the default one is closed to it.
   it('lists the main menu before "Altro", whatever the order numbers of the entries say', () => {
     const visible = getVisibleNavEntries('long-rent', without('lease.read'));
-    expect(paths(visible)).toEqual(['/app/long-rent/properties', '/app/long-rent/profile', '/app/long-rent/settings/organization']);
+    expect(paths(visible)).toEqual([
+      '/app/long-rent/properties',
+      '/app/long-rent/profile',
+      '/app/long-rent/settings/organization',
+      '/app/long-rent/settings/invitations',
+    ]);
     const nothing = getVisibleNavEntries('long-rent', (_ctx, permission) => !permission);
     expect(paths(nothing)).toEqual(['/app/long-rent/profile']);
+  });
+
+  // A host invites other independent hosts from "Altro" of both rental areas; the admin has one section for all the invites.
+  it('puts the invitation of hosts in "Altro" of both rental areas, open to every member of a host org', () => {
+    for (const context of ['short-rent', 'long-rent'] as const) {
+      const entry = entryOf(`/app/${context}/settings/invitations`);
+      expect(entry.context).toBe(context);
+      expect(entry.navKey).toBe('nav.hostInvites');
+      expect(entry.navPlacement).toBe('secondary');
+      // Backend policy SharedPropertyRead: the permission every host role holds, owner or collaborator.
+      expect(entry.requiredPermissions).toEqual(['property.read']);
+      expect(entry.orgBillingAdmin).toBeUndefined();
+    }
+  });
+
+  it('keeps the section of the invites of the admin at the address of the supplier invite, admin only', () => {
+    const entry = entryOf('/app/admin/suppliers/invite');
+    expect(entry.navKey).toBe('nav.invites');
+    expect(entry.requiredPermissions).toEqual(['admin.users.manage']);
+    expect(entry.legacyPaths).toEqual(['/admin/suppliers/invite']);
   });
 });

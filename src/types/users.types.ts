@@ -48,6 +48,11 @@ export interface UserDetail extends UserSummary {
   onboardingRequired?: boolean | null;
   /** Own profile only: the current Terms, Privacy notice and DPA are accepted (false after a new document version). */
   consentsAccepted?: boolean | null;
+  /**
+   * Own profile only: the org has at least one property. `false` means the first property is still to be created
+   * (the web app then opens its creation). Missing on older backends and for users without a host org.
+   */
+  hasProperties?: boolean | null;
 }
 
 export interface UpdateProfileRequest {

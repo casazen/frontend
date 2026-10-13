@@ -9,7 +9,7 @@ export function ComplianceSummaryPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-3xl mx-auto" data-testid="compliance-summary-page">
+      <div className="space-y-6" data-testid="compliance-summary-page">
         <PageHeader
           title={t('compliance.page.title')}
           description={t('compliance.page.description')}

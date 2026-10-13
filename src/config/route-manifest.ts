@@ -256,6 +256,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // A host recommends CasaZen to a friend: any member of a host org, whatever the role (backend policy `SharedPropertyRead`, held by every
+    // host role). Daily quota per org. No role is assigned: the invited person signs up as usual.
+    path: '/app/short-rent/settings/invitations',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.hostInvites',
+    navPlacement: 'secondary',
+    navOrder: 34,
+    icon: 'UserPlus',
+    component: async () => ({
+      default: (await import('@/features/invites/host-invites-page')).HostInvitesPage,
+    }),
+  },
+  {
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
@@ -544,6 +558,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    path: '/app/long-rent/settings/invitations',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.hostInvites',
+    navPlacement: 'secondary',
+    navOrder: 34,
+    icon: 'UserPlus',
+    component: async () => ({
+      default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
+    }),
+  },
+  {
     path: '/app/admin',
     context: 'admin',
     requiredPermissions: ['admin.stats.read'],
@@ -596,11 +622,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    navKey: 'nav.inviteSupplier',
+    // The one section of the invites (supplier and host); the address stays the one of the supplier invite.
+    navKey: 'nav.invites',
     navPlacement: 'secondary',
     navOrder: 21,
     icon: 'UserPlus',
-    component: async () => ({ default: (await import('@/features/admin/admin-supplier-invite-page')).AdminSupplierInvitePage }),
+    component: async () => ({ default: (await import('@/features/admin/admin-invites-page')).AdminInvitesPage }),
     legacyPaths: ['/admin/suppliers/invite'],
   },
   {

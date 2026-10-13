@@ -6,8 +6,6 @@ import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import type {
-  AdminInvite,
-  AdminInvitesParams,
   AdminSupplier,
   AdminSupplierAuditEntry,
   AdminSuppliersParams,
@@ -20,9 +18,6 @@ const api = vi.hoisted(() => ({
   suspendSupplier: vi.fn(),
   reactivateSupplier: vi.fn(),
   fetchSupplierAudit: vi.fn(),
-  fetchAdminInvites: vi.fn(),
-  resendSupplierInvite: vi.fn(),
-  revokeSupplierInvite: vi.fn(),
 }));
 
 vi.mock('@/services/supplier-api', async (importOriginal) => ({
@@ -57,22 +52,6 @@ const SUSPENDED: AdminSupplier = {
   openRequests: 0,
 };
 
-const PENDING_INVITE: AdminInvite = {
-  id: 'i-pending',
-  email: 'nuovo@example.it',
-  comuneCode: 'H501',
-  categories: ['cleaning'],
-  message: null,
-  state: 'Pending',
-  createdAt: '2026-09-25T10:00:00Z',
-  expiresAt: '2026-10-02T10:00:00Z',
-  revokedAt: null,
-};
-
-const EXPIRED_INVITE: AdminInvite = { ...PENDING_INVITE, id: 'i-expired', email: 'scaduto@example.it', state: 'Expired' };
-const USED_INVITE: AdminInvite = { ...PENDING_INVITE, id: 'i-used', email: 'usato@example.it', state: 'Used' };
-const REVOKED_INVITE: AdminInvite = { ...PENDING_INVITE, id: 'i-revoked', email: 'revocato@example.it', state: 'Revoked' };
-
 function page<T>(items: T[], totalCount = items.length, pageNumber = 1): PagedResult<T> {
   return { items, totalCount, page: pageNumber, pageSize: 20 };
 }
@@ -91,7 +70,6 @@ function renderPage() {
 }
 
 const lastSupplierParams = () => api.fetchAdminSuppliers.mock.calls.at(-1)?.[0] as AdminSuppliersParams;
-const lastInviteParams = () => api.fetchAdminInvites.mock.calls.at(-1)?.[0] as AdminInvitesParams;
 
 function problem(status: number, code: string, detail: string) {
   return Object.assign(new Error(detail), { isAxiosError: true, response: { status, data: { code, detail } } });
@@ -101,11 +79,8 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     api.fetchAdminSuppliers.mockResolvedValue(page([ACTIVE, SUSPENDED]));
-    api.fetchAdminInvites.mockResolvedValue(page([PENDING_INVITE, EXPIRED_INVITE, USED_INVITE, REVOKED_INVITE]));
     api.suspendSupplier.mockResolvedValue({ ...ACTIVE, status: 'Suspended' });
     api.reactivateSupplier.mockResolvedValue({ ...SUSPENDED, status: 'Active' });
-    api.resendSupplierInvite.mockResolvedValue({ inviteId: 'i-pending', expiresAt: '2026-10-08T10:00:00Z' });
-    api.revokeSupplierInvite.mockResolvedValue(undefined);
     api.fetchSupplierAudit.mockResolvedValue([]);
     await i18n.changeLanguage('it');
   });
@@ -320,97 +295,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     expect(await screen.findByTestId('supplier-audit-empty')).toHaveTextContent('Nessuna azione registrata');
   });
 
-  // ─── Invites ───
-
-  async function openInvitesTab() {
-    renderPage();
-    await screen.findByTestId('admin-supplier-s-active');
-    fireEvent.click(screen.getByTestId('admin-suppliers-tab-invites'));
-    await screen.findByTestId('admin-invites-table');
-  }
-
-  it('AdminSuppliersPage_Invites_ShowStateAndOnlyTheActionsTheStateAllows', async () => {
-    await openInvitesTab();
-
-    expect(lastInviteParams()).toEqual({ search: undefined, state: undefined, page: 1, pageSize: 20 });
-    expect(screen.getByTestId('admin-invite-state-i-pending')).toHaveTextContent('In attesa');
-    expect(screen.getByTestId('admin-invite-resend-i-pending')).toBeInTheDocument();
-    expect(screen.getByTestId('admin-invite-revoke-i-pending')).toBeInTheDocument();
-    // An expired invite can be sent again but not revoked.
-    expect(screen.getByTestId('admin-invite-resend-i-expired')).toBeInTheDocument();
-    expect(screen.queryByTestId('admin-invite-revoke-i-expired')).not.toBeInTheDocument();
-    // A used or revoked invite has no action.
-    for (const id of ['i-used', 'i-revoked']) {
-      expect(screen.queryByTestId(`admin-invite-resend-${id}`)).not.toBeInTheDocument();
-      expect(screen.queryByTestId(`admin-invite-revoke-${id}`)).not.toBeInTheDocument();
-    }
-    expect(screen.getByTestId('admin-invite-state-i-revoked')).toHaveTextContent('Revocato');
-  });
-
-  it('AdminSuppliersPage_InvitesStateFilter_IsSentToTheServer', async () => {
-    await openInvitesTab();
-
-    fireEvent.change(screen.getByTestId('admin-invites-state'), { target: { value: 'Expired' } });
-
-    await waitFor(() => expect(lastInviteParams()).toMatchObject({ state: 'Expired', page: 1 }));
-  });
-
-  it('AdminSuppliersPage_ResendInvite_AsksForConfirmationAndCallsTheApi', async () => {
-    await openInvitesTab();
-    fireEvent.click(screen.getByTestId('admin-invite-resend-i-pending'));
-
-    const dialog = await screen.findByTestId('admin-confirm-dialog');
-    expect(api.resendSupplierInvite).not.toHaveBeenCalled();
-    expect(dialog).toHaveTextContent('nuovo@example.it');
-    fireEvent.click(within(dialog).getByTestId('admin-confirm-submit'));
-
-    await waitFor(() => expect(api.resendSupplierInvite).toHaveBeenCalledWith('i-pending'));
-    expect(toast.success).toHaveBeenCalledWith('Invito reinviato a nuovo@example.it.');
-  });
-
-  it('AdminSuppliersPage_ResendInviteRefused_ShowsTheServerMessage', async () => {
-    api.resendSupplierInvite.mockRejectedValue(
-      problem(409, 'duplicate_invite', 'Esiste già un altro invito in attesa per questa email: revocalo prima di reinviare questo.'),
-    );
-    await openInvitesTab();
-    fireEvent.click(screen.getByTestId('admin-invite-resend-i-expired'));
-    fireEvent.click(within(await screen.findByTestId('admin-confirm-dialog')).getByTestId('admin-confirm-submit'));
-
-    // The translation of the stable code wins over the server text (getProblemMessage).
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Esiste già un invito in attesa per questa email.'));
-  });
-
-  it('AdminSuppliersPage_RevokeInvite_AsksForConfirmationAndCallsTheApi', async () => {
-    await openInvitesTab();
-    fireEvent.click(screen.getByTestId('admin-invite-revoke-i-pending'));
-
-    const dialog = await screen.findByTestId('admin-confirm-dialog');
-    expect(api.revokeSupplierInvite).not.toHaveBeenCalled();
-    fireEvent.click(within(dialog).getByTestId('admin-confirm-submit'));
-
-    await waitFor(() => expect(api.revokeSupplierInvite).toHaveBeenCalledWith('i-pending'));
-    expect(toast.success).toHaveBeenCalledWith('Invito per nuovo@example.it revocato.');
-  });
-
-  it('AdminSuppliersPage_InvitesLoadFails_ShowsAnErrorAndNotAnEmptyList', async () => {
-    api.fetchAdminInvites.mockRejectedValue(new Error('boom'));
-    renderPage();
-    await screen.findByTestId('admin-supplier-s-active');
-    fireEvent.click(screen.getByTestId('admin-suppliers-tab-invites'));
-
-    expect(await screen.findByTestId('admin-suppliers-error')).toHaveTextContent('Impossibile caricare gli inviti.');
-    expect(screen.queryByTestId('admin-invites-empty')).not.toBeInTheDocument();
-  });
-
-  it('AdminSuppliersPage_NoInvites_ShowsTheEmptyState', async () => {
-    api.fetchAdminInvites.mockResolvedValue(page([]));
-    renderPage();
-    await screen.findByTestId('admin-supplier-s-active');
-    fireEvent.click(screen.getByTestId('admin-suppliers-tab-invites'));
-
-    expect(await screen.findByTestId('admin-invites-empty')).toHaveTextContent('Non ci sono ancora inviti.');
-  });
-
   it('AdminSuppliersPage_InviteButton_LinksToTheInvitePage', async () => {
     renderPage();
     await screen.findByTestId('admin-supplier-s-active');
@@ -426,6 +310,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     expect(within(suspended).getByTestId('admin-supplier-status-s-suspended')).toHaveTextContent('Suspended');
     expect(within(suspended).getByTestId('admin-supplier-reactivate-s-suspended')).toHaveTextContent('Reactivate');
     expect(screen.getByRole('heading', { name: 'Suppliers' })).toBeInTheDocument();
-    expect(screen.getByTestId('admin-suppliers-tab-invites')).toHaveTextContent('Invites');
+    expect(screen.getByTestId('admin-suppliers-invite')).toHaveTextContent('Invite supplier');
   });
 });
