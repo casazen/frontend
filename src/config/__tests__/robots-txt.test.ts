@@ -29,8 +29,10 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /booking/',
       'Disallow: /requests/',
       'Disallow: /property/*/checkout',
+      'Disallow: /_site/',
       `Sitemap: ${PUBLIC_SITE}/sitemap.xml`,
       `Sitemap: ${PUBLIC_SITE}/sitemap-book.xml`,
+      `Sitemap: ${PUBLIC_SITE}/sitemap-site.xml`,
     ]);
   });
 
@@ -50,6 +52,12 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/',
       '/property/villa',
       '/sitemap.xml',
+      // SEO-VETRINA: the pages of the public site and their sitemap.
+      '/funzionalita',
+      '/prezzi',
+      '/per-i-fornitori',
+      '/chi-siamo',
+      '/sitemap-site.xml',
     ]) {
       expect(isDisallowed(indexed), indexed).toBe(false);
     }
@@ -67,6 +75,8 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/booking/0f6c',
       '/requests/0f6c/confirm',
       '/property/villa/checkout',
+      // The files behind the public site's pages, which are served at their own paths.
+      '/_site/index.html',
     ]) {
       expect(isDisallowed(hidden), hidden).toBe(true);
     }

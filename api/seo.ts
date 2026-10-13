@@ -207,7 +207,8 @@ export async function GET(request: Request): Promise<Response> {
   if (route.kind === 'host') {
     // Only a plain host name is ever compared, sent upstream or used to build a URL.
     if (!host || !PLAIN_HOST.test(host)) return notFound();
-    // `/` and `/property/…` of the app's own host are not an org's pages: the single-page app, as before.
+    // `/` and `/property/…` of the app's own host are not an org's pages: the single-page app, as before. (`/` there is
+    // normally answered earlier by `middleware.ts` with the public site's home page, SEO-VETRINA.)
     if (isAppHost(host, process.env.VITE_PUBLIC_SITE_URL)) return singlePageApp(request.headers, host);
   }
 

@@ -4,13 +4,15 @@
  *
  * - Vercel production (`VERCEL_ENV=production`): indexing allowed (except the private pages of `DISALLOWED_PATHS`) and
  *   the sitemaps declared on the public domain `VITE_PUBLIC_SITE_URL` (the same domain as the backend
- *   `App__PublicSiteBaseUrl`): the guides and the index of the booking sites. No default domain (decision D3):
+ *   `App__PublicSiteBaseUrl`): the guides, the index of the booking sites and the public site (SEO-VETRINA). No default domain (decision D3):
  *   a missing or invalid value fails the build, so Vercel keeps the previous deployment.
  * - Everywhere else (Vercel preview and the `develop` test deployment, local and CI builds): `Disallow: /`, so a test
  *   environment is never indexed.
  *
  * Runbook: backend `docs/runbooks/seo-domain.md`.
  */
+
+import { SITE_ASSET_DIR, SITE_SITEMAP_PATH } from '../site/site-pages';
 
 /** Path of the sitemap on the web app domain (served by the Vercel function `api/sitemap.ts`). */
 export const SITEMAP_PATH = '/sitemap.xml';
@@ -39,6 +41,9 @@ export const DISALLOWED_PATHS = [
   '/booking/',
   '/requests/',
   '/property/*/checkout',
+  // The files of the public site (SEO-VETRINA): served at their public paths (`/`, `/prezzi`, ...) by the Routing
+  // Middleware, never linked under this folder, which would only duplicate them.
+  `/${SITE_ASSET_DIR}/`,
 ] as const;
 
 export interface RobotsTxtInput {
@@ -96,6 +101,7 @@ export function buildRobotsTxt({ vercelEnv, publicSiteUrl }: RobotsTxtInput): st
     '',
     `Sitemap: ${parsed.origin}${SITEMAP_PATH}`,
     `Sitemap: ${parsed.origin}${BOOKING_SITEMAP_PATH}`,
+    `Sitemap: ${parsed.origin}${SITE_SITEMAP_PATH}`,
     '',
   ].join('\n');
 }

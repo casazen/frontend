@@ -2,6 +2,8 @@
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "entry": [
     "api/*.ts",
+    "middleware.ts",
+    "src/site/entry-server.ts",
     "scripts/*.mjs",
     "e2e/auth.setup.ts"
   ],

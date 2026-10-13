@@ -5,7 +5,18 @@ const COMPLETE = {
   VITE_API_BASE_URL: 'https://backend.example.test/api',
   VITE_AUTH0_DOMAIN: 'tenant.eu.auth0.com',
   VITE_AUTH0_CLIENT_ID: 'spa-client-id',
+  // SEO-VETRINA: company data of the public site's home page (production only).
+  VITE_LEGAL_NAME: 'Esempio S.r.l.',
+  VITE_LEGAL_VAT_ID: '01234567890',
 };
+
+/** COMPLETE without the company data of the public site. */
+function withoutCompanyData(): Record<string, string> {
+  const env: Record<string, string> = { ...COMPLETE };
+  delete env.VITE_LEGAL_NAME;
+  delete env.VITE_LEGAL_VAT_ID;
+  return env;
+}
 
 describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
   it.each(['preview', 'production'])('findVercelBuildEnvProblems_%sWithEveryVariable_ReturnsNoProblem', (vercelEnv) => {
@@ -63,6 +74,40 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
       });
 
       expect(problems).toEqual([expect.stringMatching(/^VITE_AUTH0_DOMAIN: must be a bare host name/)]);
+    },
+  );
+
+  it('findVercelBuildEnvProblems_ProductionWithoutCompanyData_NamesNameAndPartitaIva', () => {
+    const problems = findVercelBuildEnvProblems({ vercelEnv: 'production', demoBuild: false, env: withoutCompanyData() });
+    expect(problems).toEqual([
+      expect.stringMatching(/^VITE_LEGAL_NAME: missing/),
+      expect.stringMatching(/^VITE_LEGAL_VAT_ID: missing/),
+    ]);
+  });
+
+  it('findVercelBuildEnvProblems_PreviewWithoutCompanyData_IsNotAProblem', () => {
+    // A preview is never indexed: the public site simply leaves the missing company data out.
+    expect(findVercelBuildEnvProblems({ vercelEnv: 'preview', demoBuild: false, env: withoutCompanyData() })).toEqual([]);
+  });
+
+  it.each(['IT 0123456789', '0123456789X', 'DE123456789'])(
+    'findVercelBuildEnvProblems_ProductionWithInvalidPartitaIva_%s_IsAProblem',
+    (value) => {
+      const problems = findVercelBuildEnvProblems({
+        vercelEnv: 'production',
+        demoBuild: false,
+        env: { ...COMPLETE, VITE_LEGAL_VAT_ID: value },
+      });
+      expect(problems).toEqual([expect.stringMatching(/^VITE_LEGAL_VAT_ID: must be an Italian partita IVA/)]);
+    },
+  );
+
+  it.each(['01234567890', 'IT01234567890', 'it 012 345 678 90'])(
+    'findVercelBuildEnvProblems_ProductionWithPartitaIva_%s_IsAccepted',
+    (value) => {
+      expect(
+        findVercelBuildEnvProblems({ vercelEnv: 'production', demoBuild: false, env: { ...COMPLETE, VITE_LEGAL_VAT_ID: value } }),
+      ).toEqual([]);
     },
   );
 

@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:demo": "cross-env VITE_DEMO_MODE=true vite",
-    "build": "tsc -b && vite build",
-    "build:demo": "tsc -b && cross-env VITE_DEMO_MODE=true vite build --mode demo",
+    "build": "tsc -b && vite build && vite build --ssr src/site/entry-server.ts --outDir dist-ssr && node scripts/prerender-site.mjs",
+    "build:demo": "tsc -b && cross-env VITE_DEMO_MODE=true vite build --mode demo && cross-env VITE_DEMO_MODE=true vite build --mode demo --ssr src/site/entry-server.ts --outDir dist-ssr && node scripts/prerender-site.mjs",
     "typecheck": "tsc -b --noEmit",
     "knip": "knip",
     "lint": "eslint .",
@@ -38,6 +38,7 @@
     "@stripe/react-stripe-js": "^6.6.0",
     "@stripe/stripe-js": "^9.8.0",
     "@tanstack/react-query": "^5.95.2",
+    "@vercel/functions": "^3.9.11",
     "axios": "^1.13.6",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
