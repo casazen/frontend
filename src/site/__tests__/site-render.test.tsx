@@ -46,16 +46,35 @@ describe('public site render (SEO-VETRINA)', () => {
     expect(html).toContain('© 2026 CasaZen');
   });
 
-  it('render_home_linksSignupWithUtmTheGuidesAndTheLogin', () => {
+  it('render_home_linksTheGuidesTheLoginAndAnInvitationRequestByEmail', () => {
     const html = render('home');
-    expect(html).toContain('href="/signup?utm_source=casazen-site&amp;utm_medium=cta&amp;utm_content=home-hero"');
     expect(html).toContain('href="/p/affitti-brevi"');
     expect(html).toContain('href="/login"');
     expect(html).toContain('href="/per-i-fornitori"');
+    expect(html).toContain('href="mailto:info@example.com?subject=Richiesta%20di%20invito%20a%20CasaZen"');
+    expect(html).toContain('Richiedi un invito');
   });
 
-  it('render_suppliers_linksTheSupplierRegistration', () => {
-    expect(render('suppliers')).toContain('href="/register"');
+  it.each(SITE_PAGES.map((page) => page.id))('render_%s_hasNoSignupNoRegistrationAndNoPrices', (page) => {
+    // CasaZen is on private invitation, with no prices or plans defined yet (product owner, 2026-10-13).
+    for (const lng of ['it', 'en'] as const) {
+      const html = render(page, LEGAL, lng);
+      expect(html, `${page} ${lng}`).not.toMatch(/href="\/(signup|register)/);
+      expect(html, `${page} ${lng}`).not.toMatch(/href="\/prezzi/);
+      expect(html, `${page} ${lng}`).not.toMatch(/€|\bStarter\b|\bScale\b/);
+    }
+  });
+
+  it('render_withoutAContactAddress_saysTheAccessIsByInvitationAndShowsNoMailto', () => {
+    const html = render('home', { ...LEGAL, email: null });
+    expect(html).not.toContain('mailto:');
+    expect(html).toContain("l&#x27;accesso è solo su invito");
+  });
+
+  it('render_suppliers_offersAnInvitationNotARegistration', () => {
+    const html = render('suppliers');
+    expect(html).toContain('Richiedi un invito');
+    expect(html).not.toContain('Registrati come fornitore');
   });
 
   it.each(SITE_PAGES.map((page) => page.id))('hydrate_%s_matchesTheStaticHtml', async (page) => {

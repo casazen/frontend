@@ -2,16 +2,28 @@ import { useTranslation } from 'react-i18next';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
-import { signupHref, SUPPLIER_REGISTER_PATH } from '../site-links';
+import { inviteHref } from '../site-links';
 import { BulletList, CardGrid, FeatureCard, PageHeader, PrimaryLink, SecondaryLink, Section } from './site-blocks';
 
 /**
  * Content of the pages of the public site (SEO-VETRINA). Every claim matches a feature that exists today (inventory of
  * 2026-10-13): no channel-manager API, no automatic Alloggiati Web transmission, no Ross1000/CIR in the product, no team,
  * mobile app or AI features, which are not available.
+ *
+ * CasaZen is on private invitation (product owner, 2026-10-13): there is no sign-up button, no prices and no plans. The call
+ * to action is "ask for an invitation", an e-mail to the configured contact address (`InviteCta`).
  */
 
-export function HomePage() {
+/** "Ask for an invitation": an e-mail link when the contact address is configured, otherwise only the notice. */
+function InviteCta({ legal, variant = 'primary' }: { legal: SiteLegal; variant?: 'primary' | 'secondary' }) {
+  const { t } = useTranslation();
+  const href = inviteHref(legal.email, t('site.invite.subject'));
+  if (!href) return <p className="text-slate-600">{t('site.invite.notice')}</p>;
+  const Link = variant === 'primary' ? PrimaryLink : SecondaryLink;
+  return <Link href={href}>{t('site.invite.cta')}</Link>;
+}
+
+export function HomePage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
@@ -20,10 +32,11 @@ export function HomePage() {
           <p className="text-sm font-medium uppercase tracking-wide text-indigo-700">{t('site.home.hero.eyebrow')}</p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">{t('site.home.hero.title')}</h1>
           <p className="mt-5 max-w-2xl text-lg text-slate-600">{t('site.home.hero.subtitle')}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryLink href={signupHref('home', 'hero')}>{t('site.home.hero.ctaSignup')}</PrimaryLink>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <InviteCta legal={legal} />
             <SecondaryLink href={sitePageById('features').path}>{t('site.home.hero.ctaFeatures')}</SecondaryLink>
           </div>
+          {legal.email && <p className="mt-4 text-sm text-slate-600">{t('site.invite.notice')}</p>}
         </div>
       </section>
 
@@ -59,7 +72,7 @@ export function HomePage() {
       </Section>
 
       <Section title={t('site.home.finalCta.title')} intro={t('site.home.finalCta.text')} muted>
-        <PrimaryLink href={signupHref('home', 'final')}>{t('site.home.finalCta.cta')}</PrimaryLink>
+        <InviteCta legal={legal} />
       </Section>
     </>
   );
@@ -98,7 +111,7 @@ const FEATURE_GROUPS: { title: string; items: string[] }[] = [
   },
 ];
 
-export function FeaturesPage() {
+export function FeaturesPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
@@ -113,41 +126,7 @@ export function FeaturesPage() {
         </CardGrid>
       </div>
       <Section title={t('site.home.finalCta.title')} intro={t('site.home.finalCta.text')} muted>
-        <PrimaryLink href={signupHref('features', 'final')}>{t('site.features.cta')}</PrimaryLink>
-      </Section>
-    </>
-  );
-}
-
-const PLANS = ['starter', 'pro', 'scale'] as const;
-
-const INCLUDED_KEYS = [1, 2, 3, 4, 5, 6, 7].map((index) => `site.pricing.included${index}`);
-
-export function PricingPage() {
-  const { t } = useTranslation();
-  return (
-    <>
-      <PageHeader title={t('site.pricing.title')} intro={t('site.pricing.intro')} />
-      <div className="mx-auto max-w-6xl px-4 py-14">
-        <div className="grid gap-4 md:grid-cols-3">
-          {PLANS.map((plan) => (
-            <div key={plan} className="rounded-lg border border-slate-200 bg-white p-6">
-              <h3 className="text-xl font-semibold">{t(`site.pricing.${plan}Name`)}</h3>
-              <p className="mt-2 text-lg font-medium text-indigo-700">{t(`site.pricing.${plan}Limit`)}</p>
-              <p className="mt-2 text-sm text-slate-600">{t(`site.pricing.${plan}Text`)}</p>
-              <p className="mt-4 text-sm text-slate-600">{t(`site.pricing.${plan}Note`)}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-6 text-sm text-slate-600">{t('site.pricing.priceNote')}</p>
-      </div>
-      <Section title={t('site.pricing.includedTitle')} muted>
-        <BulletList
-          items={INCLUDED_KEYS.map((key) => t(key))}
-        />
-        <div className="mt-8">
-          <PrimaryLink href={signupHref('pricing', 'final')}>{t('site.pricing.cta')}</PrimaryLink>
-        </div>
+        <InviteCta legal={legal} />
       </Section>
     </>
   );
@@ -168,12 +147,12 @@ const SUPPLIER_CATEGORY_KEYS = [
   'categoryExcursions',
 ] as const;
 
-export function SuppliersPage() {
+export function SuppliersPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
       <PageHeader title={t('site.suppliers.title')} intro={t('site.suppliers.subtitle')}>
-        <PrimaryLink href={SUPPLIER_REGISTER_PATH}>{t('site.suppliers.cta')}</PrimaryLink>
+        <InviteCta legal={legal} />
       </PageHeader>
       <Section title={t('site.suppliers.howTitle')}>
         <ol className="grid gap-4 md:grid-cols-3">
@@ -201,7 +180,7 @@ export function SuppliersPage() {
           ))}
         </ul>
         <div className="mt-8">
-          <PrimaryLink href={SUPPLIER_REGISTER_PATH}>{t('site.suppliers.cta')}</PrimaryLink>
+          <InviteCta legal={legal} />
         </div>
       </Section>
     </>
@@ -215,12 +194,13 @@ export function AboutPage({ legal }: { legal: SiteLegal }) {
     { label: t('site.about.vatIdLabel'), value: legal.vatId },
     { label: t('site.about.addressLabel'), value: legal.address },
   ];
+  const company = rows.filter((row) => row.value);
   return (
     <>
       <PageHeader title={t('site.about.title')} intro={t('site.about.intro')} />
       <Section title={t('site.about.contactsTitle')} intro={t('site.about.approach')}>
-        <dl className="grid gap-4 sm:grid-cols-2">
-          {legal.email && (
+        {legal.email ? (
+          <dl className="grid gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm font-semibold">{t('site.about.emailLabel')}</dt>
               <dd className="mt-1">
@@ -229,21 +209,23 @@ export function AboutPage({ legal }: { legal: SiteLegal }) {
                 </a>
               </dd>
             </div>
-          )}
-        </dl>
+          </dl>
+        ) : (
+          <p className="text-slate-600">{t('site.invite.notice')}</p>
+        )}
       </Section>
-      <Section title={t('site.about.companyTitle')} muted>
-        <dl className="grid gap-4 sm:grid-cols-3">
-          {rows
-            .filter((row) => row.value)
-            .map((row) => (
+      {company.length > 0 && (
+        <Section title={t('site.about.companyTitle')} muted>
+          <dl className="grid gap-4 sm:grid-cols-3">
+            {company.map((row) => (
               <div key={row.label}>
                 <dt className="text-sm font-semibold">{row.label}</dt>
                 <dd className="mt-1 text-slate-700">{row.value}</dd>
               </div>
             ))}
-        </dl>
-      </Section>
+          </dl>
+        </Section>
+      )}
     </>
   );
 }

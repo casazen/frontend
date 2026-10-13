@@ -9,6 +9,8 @@
  * keeps the previous deployment and the log names the variable. Local and CI builds (no `VERCEL_ENV`) are not affected.
  */
 
+import { normalizeVatId } from '../site/site-gate';
+
 /** Value of `VERCEL_ENV` for which the variables below are required. */
 const VERCEL_RELEASE_ENVIRONMENTS = ['preview', 'production'] as const;
 
@@ -24,8 +26,6 @@ export interface VercelBuildEnvInput {
 // Bare host name such as `tenant.eu.auth0.com`: no scheme, no path.
 const DOMAIN_PATTERN = /^(?=.{4,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
 const LOCAL_HOST_PATTERN = /^(localhost|.*\.localhost|127(\.\d{1,3}){3}|0\.0\.0\.0|\[::1?\])$/i;
-// Italian partita IVA: 11 digits, optionally with the IT prefix (same rule as `normalizeVatId` of src/site/site-config.ts).
-const VAT_ID_PATTERN = /^(IT)?\d{11}$/;
 
 function readValue(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
@@ -74,18 +74,11 @@ export function findVercelBuildEnvProblems({ vercelEnv, demoBuild, env }: Vercel
     problems.push('VITE_AUTH0_CLIENT_ID: missing (SPA client id of the Auth0 tenant of this Vercel environment)');
   }
 
-  // SEO-VETRINA: the public site's home page must show the company name and the partita IVA (art. 35 DPR 633/1972).
-  // Production only: preview deployments are never indexed and simply leave the missing values out.
-  if (vercelEnv === 'production') {
-    if (!readValue(env.VITE_LEGAL_NAME)) {
-      problems.push('VITE_LEGAL_NAME: missing (company name shown in the footer of the public site)');
-    }
-    const vatId = readValue(env.VITE_LEGAL_VAT_ID);
-    if (!vatId) {
-      problems.push('VITE_LEGAL_VAT_ID: missing (partita IVA shown on the home page of the public site)');
-    } else if (!VAT_ID_PATTERN.test(vatId.replace(/\s+/g, '').toUpperCase())) {
-      problems.push('VITE_LEGAL_VAT_ID: must be an Italian partita IVA (11 digits, optionally with the IT prefix)');
-    }
+  // SEO-VETRINA: the company data is optional (the company does not exist yet): without it, production does not serve the
+  // public site (src/site/site-gate.ts). A partita IVA that is set must be a real one, or the site would stay off silently.
+  const vatId = readValue(env.VITE_LEGAL_VAT_ID);
+  if (vatId && normalizeVatId(vatId) === null) {
+    problems.push('VITE_LEGAL_VAT_ID: must be an Italian partita IVA (11 digits, optionally with the IT prefix)');
   }
 
   return problems;

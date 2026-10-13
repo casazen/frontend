@@ -7217,10 +7217,6 @@
         "title": "Features | CasaZen",
         "description": "Compliance, iCal calendar, direct booking site with Stripe payments, supplier requests and long-term rentals: every CasaZen feature for hosts and property managers."
       },
-      "pricing": {
-        "title": "Plans | CasaZen",
-        "description": "CasaZen's Starter, Pro and Scale plans: the same management and compliance features, with a different number of properties."
-      },
       "suppliers": {
         "title": "For suppliers: work with the hosts in your area | CasaZen",
         "description": "Cleaning, maintenance, laundry and service businesses for holiday rentals: sign up on CasaZen and receive requests from hosts in the comuni where you work."
@@ -7234,12 +7230,10 @@
       "home": "CasaZen, home page",
       "main": "Main menu",
       "features": "Features",
-      "pricing": "Plans",
       "suppliers": "For suppliers",
       "guides": "Guides",
       "about": "About us",
       "login": "Log in",
-      "signup": "Create account",
       "switchLanguage": "Italiano",
       "switchLanguageLabel": "Switch to Italian"
     },
@@ -7262,7 +7256,6 @@
         "eyebrow": "For hosts and property managers",
         "title": "Short-term rentals by the rules, without spreadsheets",
         "subtitle": "CasaZen brings compliance (CIN, guest reporting, tourist tax), your calendar and your direct booking site together in one app.",
-        "ctaSignup": "Create your account",
         "ctaFeatures": "See the features"
       },
       "compliance": {
@@ -7282,7 +7275,7 @@
       "booking": {
         "title": "Your direct booking site",
         "text": "A site with your properties, your logo and your colours. Guests pay online with Stripe straight into your account: CasaZen takes no commission on bookings (Stripe's fees still apply). They can pay now, later or at the property.",
-        "domain": "Publish it on a CasaZen address or, on the Pro and Scale plans, on your own domain."
+        "domain": "Publish it on a CasaZen address or connect your own domain."
       },
       "operations": {
         "title": "The everyday work",
@@ -7306,9 +7299,8 @@
         "cta": "See how it works"
       },
       "finalCta": {
-        "title": "Start today",
-        "text": "Create your account and activate your first property with the guided flow.",
-        "cta": "Create your account"
+        "title": "Want to try CasaZen?",
+        "text": "For now you can only join by invitation. Write to us and we will get back to you."
       }
     },
     "features": {
@@ -7326,7 +7318,7 @@
       "bookingTitle": "Direct booking site",
       "bookingItem1": "Three visual styles with your logo and colour, and your own privacy and terms pages.",
       "bookingItem2": "Stripe payments into your account with no CasaZen commission on bookings: now, later or at the property.",
-      "bookingItem3": "A CasaZen address or, on the Pro and Scale plans, your own domain.",
+      "bookingItem3": "A CasaZen address or your own domain.",
       "bookingItem4": "Search-engine-ready pages: title, description and structured data for every property.",
       "calendarTitle": "Calendar",
       "calendarItem1": "Bookings, manual blocks and iCal calendars imported from Airbnb, Booking.com and other portals.",
@@ -7340,41 +7332,13 @@
       "longRentTitle": "Long-term rentals",
       "longRentItem1": "4+4, 3+2 and transitional contracts, with cedolare secca or the ordinary regime.",
       "longRentItem2": "Rent paid online with Stripe or marked as paid, with email reminders.",
-      "longRentItem3": "Reminders of the contract registration (RLI) deadlines.",
-      "cta": "Create your account"
-    },
-    "pricing": {
-      "title": "Plans",
-      "intro": "Every plan includes the same management and compliance features. What changes is the number of properties and a few options of the booking site.",
-      "starterName": "Starter",
-      "starterLimit": "Up to 3 properties",
-      "starterText": "To get started.",
-      "starterNote": "The booking site shows the label “Made with CasaZen”.",
-      "proName": "Pro",
-      "proLimit": "Up to 50 properties",
-      "proText": "For growing operators.",
-      "proNote": "Booking site on your own domain as well.",
-      "scaleName": "Scale",
-      "scaleLimit": "Unlimited properties",
-      "scaleText": "For agencies and property managers.",
-      "scaleNote": "Booking site on your own domain as well.",
-      "includedTitle": "Included in every plan",
-      "included1": "CIN checks and guided property activation",
-      "included2": "Guest data for Alloggiati Web and online check-in",
-      "included3": "Tourist tax and reports per comune",
-      "included4": "Calendar with iCal sync",
-      "included5": "Direct booking site with Stripe payments",
-      "included6": "Requests to local suppliers",
-      "included7": "Long-term rental management",
-      "priceNote": "The price of each plan is shown before you pay.",
-      "cta": "Create your account"
+      "longRentItem3": "Reminders of the contract registration (RLI) deadlines."
     },
     "suppliers": {
       "title": "Work with the hosts in your area",
       "subtitle": "CasaZen connects businesses and professionals with short- and long-term rental hosts looking for services for their properties.",
-      "cta": "Sign up as a supplier",
       "howTitle": "How it works",
-      "step1": "Sign up: choose the categories of your services and the comuni where you work.",
+      "step1": "Receive your invitation and choose the categories of your services and the comuni where you work.",
       "step2": "Complete the activation in a few steps and accept the terms of service.",
       "step3": "Receive requests from hosts: accept or decline them and follow them to completion.",
       "featuresTitle": "What you get",
@@ -7406,6 +7370,11 @@
       "nameLabel": "Company name",
       "vatIdLabel": "VAT number",
       "addressLabel": "Registered office"
+    },
+    "invite": {
+      "notice": "CasaZen is just getting started: for now access is by invitation only.",
+      "cta": "Ask for an invitation",
+      "subject": "Invitation request for CasaZen"
     }
   }
 }

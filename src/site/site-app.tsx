@@ -1,7 +1,7 @@
 import type { i18n as I18n } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { SiteLayout } from './components/site-layout';
-import { AboutPage, FeaturesPage, HomePage, PricingPage, SuppliersPage } from './components/site-pages-content';
+import { AboutPage, FeaturesPage, HomePage, SuppliersPage } from './components/site-pages-content';
 import type { SiteLegal } from './site-config';
 import type { SitePageId } from './site-pages';
 
@@ -15,13 +15,11 @@ export interface SiteAppProps {
 function PageContent({ page, legal }: { page: SitePageId; legal: SiteLegal }) {
   switch (page) {
     case 'home':
-      return <HomePage />;
+      return <HomePage legal={legal} />;
     case 'features':
-      return <FeaturesPage />;
-    case 'pricing':
-      return <PricingPage />;
+      return <FeaturesPage legal={legal} />;
     case 'suppliers':
-      return <SuppliersPage />;
+      return <SuppliersPage legal={legal} />;
     case 'about':
       return <AboutPage legal={legal} />;
   }

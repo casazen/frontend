@@ -1,4 +1,5 @@
 import { resolveSupportEmail } from '@/config/support.config';
+import { normalizeVatId } from './site-gate';
 
 /**
  * Company data of CasaZen shown by the public site (SEO-VETRINA): the footer of every page and the JSON-LD `Organization`
@@ -8,9 +9,9 @@ import { resolveSupportEmail } from '@/config/support.config';
  * - `VITE_SUPPORT_EMAIL` (contact address, the one the app already shows);
  * - `VITE_PUBLIC_SITE_URL` (origin of the canonical URLs and of the sitemap).
  *
- * The partita IVA must be on the home page of the website of a VAT-registered business (art. 35 DPR 633/1972): a Vercel
- * production build without name and partita IVA fails (`src/config/vercel-build-env.ts`). Elsewhere a missing value is
- * simply not shown.
+ * The partita IVA must be on the home page of the website of a VAT-registered business (art. 35 DPR 633/1972): on Vercel
+ * production the site is served only once name and partita IVA are configured (`site-gate.ts`). Elsewhere a missing value
+ * is simply not shown.
  */
 export interface SiteLegal {
   name: string | null;
@@ -19,21 +20,10 @@ export interface SiteLegal {
   email: string | null;
 }
 
-/** Italian partita IVA: 11 digits, optionally written with the `IT` prefix (spaces ignored). */
-const VAT_ID = /^(IT)?\d{11}$/;
-
 function text(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim().replace(/\s+/g, ' ');
   return trimmed && trimmed.length <= maxLength ? trimmed : null;
-}
-
-/** The partita IVA as written on the site (`IT` + 11 digits), or null when the value is not one. */
-export function normalizeVatId(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const compact = value.replace(/\s+/g, '').toUpperCase();
-  if (!VAT_ID.test(compact)) return null;
-  return compact.startsWith('IT') ? compact : `IT${compact}`;
 }
 
 export function readSiteLegal(env: Record<string, unknown>): SiteLegal {

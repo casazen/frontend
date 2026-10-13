@@ -146,3 +146,45 @@ describe('public SEO pages and the AI Act transparency notice', () => {
     expect(screen.queryByTestId('ai-content-notice')).not.toBeInTheDocument();
   });
 });
+
+// SEO-INVITE: CasaZen is on private invitation, so the backend sends `cta: null` and the pages show no sign-up button.
+describe('public SEO pages and the sign-up call to action', () => {
+  const originalCta = page.cta;
+
+  afterEach(() => {
+    page.cta = originalCta;
+  });
+
+  it.each([
+    ['ComplianceGuidePage', '/p/affitti-brevi/lombardia/como', '/p/affitti-brevi/:region/:comune', ComplianceGuidePage],
+    ['TouristTaxCalculatorPage', '/p/tassa-soggiorno/como', '/p/tassa-soggiorno/:comune', TouristTaxCalculatorPage],
+  ])('%s_WithACta_ShowsTheSignupBlock', (_name, entry, route, Component) => {
+    render(
+      <MemoryRouter initialEntries={[entry]}>
+        <Routes>
+          <Route path={route} element={<Component />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('seo-cta-block')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['ComplianceGuidePage', '/p/affitti-brevi/lombardia/como', '/p/affitti-brevi/:region/:comune', ComplianceGuidePage],
+    ['TouristTaxCalculatorPage', '/p/tassa-soggiorno/como', '/p/tassa-soggiorno/:comune', TouristTaxCalculatorPage],
+  ])('%s_WithoutACta_ShowsNoSignupBlockAndNoLinkToSignup', (_name, entry, route, Component) => {
+    page.cta = null;
+
+    const { container } = render(
+      <MemoryRouter initialEntries={[entry]}>
+        <Routes>
+          <Route path={route} element={<Component />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByTestId('seo-cta-block')).not.toBeInTheDocument();
+    expect(container.querySelector('a[href*="/signup"]')).toBeNull();
+  });
+});

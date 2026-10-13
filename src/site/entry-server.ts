@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { createSiteI18n } from './site-i18n';
 import { SiteApp } from './site-app';
 import { readSiteLegal, readSiteOrigin } from './site-config';
+import { isPublicSiteEnabled } from './site-gate';
 import { buildSiteHead } from './site-head';
 import { buildSiteSitemap, SITE_ASSET_DIR, SITE_PAGES, type SitePage } from './site-pages';
 
@@ -43,8 +44,17 @@ export function renderSitePages(year: number): RenderedSitePage[] {
   });
 }
 
-/** The sitemap of the public site, or null without a public origin (preview and local builds are never indexed). */
-export function renderSiteSitemap(): string | null {
+/** Whether this build serves the public site: always outside Vercel production, in production only with the company data. */
+export function isSiteServed(vercelEnv: string | undefined): boolean {
+  const env = import.meta.env as Record<string, unknown>;
+  return isPublicSiteEnabled({ vercelEnv, legalName: env.VITE_LEGAL_NAME, legalVatId: env.VITE_LEGAL_VAT_ID });
+}
+
+/**
+ * The sitemap of the public site, or null without a public origin (preview and local builds are never indexed) and on
+ * production while the site is not served (no company data yet, `site-gate.ts`). `vercelEnv` is `VERCEL_ENV` of the build.
+ */
+export function renderSiteSitemap(vercelEnv: string | undefined): string | null {
   const origin = readSiteOrigin((import.meta.env as Record<string, unknown>).VITE_PUBLIC_SITE_URL);
-  return origin ? buildSiteSitemap(origin) : null;
+  return origin && isSiteServed(vercelEnv) ? buildSiteSitemap(origin) : null;
 }

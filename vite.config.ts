@@ -5,6 +5,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 import { assertDemoBuildAllowed } from './src/config/demo-build-guard'
 import { buildRobotsTxt } from './src/config/robots-txt'
+import { isPublicSiteEnabled } from './src/site/site-gate'
 import { assertVercelBuildEnv } from './src/config/vercel-build-env'
 
 /** SE-02 (A8-02): `dist/robots.txt`, allowing indexing only on the Vercel production environment. */
@@ -43,7 +44,18 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
   // The SSR build only bundles the public site's renderer for the prerender (SEO-VETRINA): robots.txt belongs to dist/.
   if (command === 'build' && !isSsrBuild) {
     plugins.push(
-      robotsTxt(buildRobotsTxt({ vercelEnv: process.env.VERCEL_ENV, publicSiteUrl: viteEnv.VITE_PUBLIC_SITE_URL })),
+      robotsTxt(
+        buildRobotsTxt({
+          vercelEnv: process.env.VERCEL_ENV,
+          publicSiteUrl: viteEnv.VITE_PUBLIC_SITE_URL,
+          // SEO-VETRINA: production serves the public site only with the company data (src/site/site-gate.ts).
+          publicSiteEnabled: isPublicSiteEnabled({
+            vercelEnv: process.env.VERCEL_ENV,
+            legalName: viteEnv.VITE_LEGAL_NAME,
+            legalVatId: viteEnv.VITE_LEGAL_VAT_ID,
+          }),
+        }),
+      ),
     );
   }
 

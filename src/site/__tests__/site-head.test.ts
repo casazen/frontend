@@ -14,18 +14,18 @@ const LEGAL: SiteLegal = {
 describe('buildSiteHead (SEO-VETRINA)', () => {
   it('buildSiteHead_withPublicOrigin_writesCanonicalHreflangAndOgUrlOnThePublicPath', () => {
     const head = buildSiteHead({
-      page: sitePageById('pricing'),
-      title: 'Piani | CasaZen',
+      page: sitePageById('features'),
+      title: 'Funzionalità | CasaZen',
       description: 'Descrizione',
       origin: 'https://site.example.test',
       legal: NO_LEGAL,
     });
-    expect(head).toContain('<title>Piani | CasaZen</title>');
+    expect(head).toContain('<title>Funzionalità | CasaZen</title>');
     expect(head).toContain('<meta name="description" content="Descrizione" />');
-    expect(head).toContain('<link rel="canonical" href="https://site.example.test/prezzi" />');
-    expect(head).toContain('<link rel="alternate" hreflang="it" href="https://site.example.test/prezzi" />');
-    expect(head).toContain('<link rel="alternate" hreflang="x-default" href="https://site.example.test/prezzi" />');
-    expect(head).toContain('<meta property="og:url" content="https://site.example.test/prezzi" />');
+    expect(head).toContain('<link rel="canonical" href="https://site.example.test/funzionalita" />');
+    expect(head).toContain('<link rel="alternate" hreflang="it" href="https://site.example.test/funzionalita" />');
+    expect(head).toContain('<link rel="alternate" hreflang="x-default" href="https://site.example.test/funzionalita" />');
+    expect(head).toContain('<meta property="og:url" content="https://site.example.test/funzionalita" />');
     // The JSON-LD Organization is on the home page only.
     expect(head).not.toContain('application/ld+json');
   });

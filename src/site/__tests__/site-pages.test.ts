@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { SIGNUP_PATH, readUtm } from '@/lib/signup-attribution';
 import { buildSiteSitemap, SITE_PAGES, sitePageByPath, sitePageUrl } from '../site-pages';
-import { signupHref, SITE_SIGNUP_PATH } from '../site-links';
-import { normalizeVatId, readSiteLegal, readSiteOrigin } from '../site-config';
+import { inviteHref } from '../site-links';
+import { readSiteLegal, readSiteOrigin } from '../site-config';
+import { isPublicSiteEnabled, normalizeVatId } from '../site-gate';
 
 describe('site pages (SEO-VETRINA)', () => {
   it('sitePages_pathsAndFiles_areUnique', () => {
@@ -13,14 +13,13 @@ describe('site pages (SEO-VETRINA)', () => {
 
   it.each([
     ['/', 'home'],
-    ['/prezzi', 'pricing'],
-    ['/prezzi/', 'pricing'],
+    ['/funzionalita/', 'features'],
     ['/per-i-fornitori', 'suppliers'],
   ])('sitePageByPath_%s_isThePage', (path, id) => {
     expect(sitePageByPath(path)?.id).toBe(id);
   });
 
-  it.each(['/app', '/fornitori/pulizie-roma', '/p/affitti-brevi', '/prezzi/extra'])('sitePageByPath_%s_isNotAPage', (path) => {
+  it.each(['/app', '/fornitori/pulizie-roma', '/p/affitti-brevi', '/prezzi', '/signup', '/funzionalita/extra'])('sitePageByPath_%s_isNotAPage', (path) => {
     expect(sitePageByPath(path)).toBeNull();
   });
 
@@ -34,19 +33,20 @@ describe('site pages (SEO-VETRINA)', () => {
 });
 
 describe('site links (SEO-VETRINA)', () => {
-  it('siteSignupPath_isTheSignupPathOfTheApp', () => {
-    expect(SITE_SIGNUP_PATH).toBe(SIGNUP_PATH);
+  it('inviteHref_withAContactAddress_isAMailtoWithTheSubject', () => {
+    expect(inviteHref('info@example.com', 'Richiesta di invito a CasaZen')).toBe(
+      'mailto:info@example.com?subject=Richiesta%20di%20invito%20a%20CasaZen',
+    );
   });
 
-  it('signupHref_carriesUtmValuesTheSignupAttributionAccepts', () => {
-    const href = signupHref('home', 'hero');
-    expect(href.startsWith(`${SIGNUP_PATH}?`)).toBe(true);
-    // The same reader as /signup: values outside the attribution rules would be dropped here.
-    expect(readUtm(href.slice(href.indexOf('?')))).toEqual({
-      utm_source: 'casazen-site',
-      utm_medium: 'cta',
-      utm_content: 'home-hero',
-    });
+  it('inviteHref_withoutAContactAddress_isNull', () => {
+    // No address is invented: the site only says that the access is by invitation.
+    expect(inviteHref(null, 'x')).toBeNull();
+  });
+
+  it('sitePages_doNotIncludeThePricingPageOrAnySignupPath', () => {
+    // CasaZen is on private invitation and prices are not defined (product owner, 2026-10-13).
+    expect(SITE_PAGES.map((page) => page.path)).toEqual(['/', '/funzionalita', '/per-i-fornitori', '/chi-siamo']);
   });
 });
 
@@ -83,5 +83,26 @@ describe('site company data (SEO-VETRINA)', () => {
     [undefined, null],
   ])('readSiteOrigin_%s', (value, expected) => {
     expect(readSiteOrigin(value)).toBe(expected);
+  });
+});
+
+describe('site gate (SEO-VETRINA)', () => {
+  it.each([undefined, 'preview', 'development'])('isPublicSiteEnabled_%s_isAlwaysOn', (vercelEnv) => {
+    expect(isPublicSiteEnabled({ vercelEnv, legalName: undefined, legalVatId: undefined })).toBe(true);
+  });
+
+  it('isPublicSiteEnabled_productionWithNameAndPartitaIva_isOn', () => {
+    expect(isPublicSiteEnabled({ vercelEnv: 'production', legalName: 'Esempio S.r.l.', legalVatId: '01234567890' })).toBe(true);
+  });
+
+  it.each([
+    [undefined, undefined],
+    ['Esempio S.r.l.', undefined],
+    [undefined, '01234567890'],
+    ['  ', '01234567890'],
+    ['Esempio S.r.l.', '0123456789'],
+  ])('isPublicSiteEnabled_productionWith_%s_%s_isOff', (legalName, legalVatId) => {
+    // The company does not exist yet: production keeps / as the console until name and partita IVA are set.
+    expect(isPublicSiteEnabled({ vercelEnv: 'production', legalName, legalVatId })).toBe(false);
   });
 });

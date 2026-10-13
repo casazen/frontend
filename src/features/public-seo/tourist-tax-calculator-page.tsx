@@ -75,7 +75,7 @@ export function TouristTaxCalculatorPage() {
 
       <FeaturedProperties comuneSlug={page.comuneSlug} comuneName={page.comuneName} />
 
-      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />
+      {page.cta && <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />}
       <SeoDisclaimerFooter lastRefreshedAt={page.lastRefreshedAt} aiGenerated={page.aiGenerated} />
     </main>
   );

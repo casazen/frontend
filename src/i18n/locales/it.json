@@ -7217,10 +7217,6 @@
         "title": "Funzionalità | CasaZen",
         "description": "Adempimenti, calendario con iCal, sito di prenotazione diretta con pagamenti Stripe, richieste ai fornitori e affitti lunghi: tutte le funzionalità di CasaZen per host e property manager."
       },
-      "pricing": {
-        "title": "Piani | CasaZen",
-        "description": "I piani Starter, Pro e Scale di CasaZen: le stesse funzionalità di gestione e conformità, con un numero diverso di alloggi."
-      },
       "suppliers": {
         "title": "Per i fornitori: lavora con gli host della tua zona | CasaZen",
         "description": "Imprese di pulizie, manutenzione, lavanderia e servizi per affitti brevi: registrati su CasaZen e ricevi le richieste degli host dei comuni in cui lavori."
@@ -7234,12 +7230,10 @@
       "home": "CasaZen, pagina iniziale",
       "main": "Menu principale",
       "features": "Funzionalità",
-      "pricing": "Piani",
       "suppliers": "Per i fornitori",
       "guides": "Guide",
       "about": "Chi siamo",
       "login": "Accedi",
-      "signup": "Crea account",
       "switchLanguage": "English",
       "switchLanguageLabel": "Passa all'inglese"
     },
@@ -7262,7 +7256,6 @@
         "eyebrow": "Per host e property manager",
         "title": "Affitti brevi in regola, senza fogli di calcolo",
         "subtitle": "CasaZen riunisce in un'unica app gli adempimenti (CIN, comunicazione degli ospiti, imposta di soggiorno), il calendario e il tuo sito di prenotazione diretta.",
-        "ctaSignup": "Crea il tuo account",
         "ctaFeatures": "Scopri le funzionalità"
       },
       "compliance": {
@@ -7282,7 +7275,7 @@
       "booking": {
         "title": "Il tuo sito di prenotazione diretta",
         "text": "Un sito con i tuoi alloggi, il tuo logo e i tuoi colori. L'ospite paga online con Stripe direttamente sul tuo conto: CasaZen non trattiene commissioni sulle prenotazioni (restano quelle di Stripe). Può pagare subito, più tardi o in struttura.",
-        "domain": "Puoi pubblicarlo su un indirizzo CasaZen oppure, con i piani Pro e Scale, sul tuo dominio."
+        "domain": "Puoi pubblicarlo su un indirizzo CasaZen oppure collegare il tuo dominio."
       },
       "operations": {
         "title": "Il lavoro di tutti i giorni",
@@ -7306,9 +7299,8 @@
         "cta": "Scopri come funziona"
       },
       "finalCta": {
-        "title": "Inizia oggi",
-        "text": "Crea il tuo account e attiva il primo alloggio con la procedura guidata.",
-        "cta": "Crea il tuo account"
+        "title": "Vuoi provare CasaZen?",
+        "text": "Per ora si entra solo su invito. Scrivici e ti ricontattiamo."
       }
     },
     "features": {
@@ -7326,7 +7318,7 @@
       "bookingTitle": "Sito di prenotazione diretta",
       "bookingItem1": "Tre stili grafici, con il tuo logo e il tuo colore, e le tue pagine di privacy e termini.",
       "bookingItem2": "Pagamento con Stripe sul tuo conto, senza commissioni CasaZen sulle prenotazioni: subito, più tardi o in struttura.",
-      "bookingItem3": "Indirizzo CasaZen oppure, con i piani Pro e Scale, il tuo dominio.",
+      "bookingItem3": "Un indirizzo CasaZen oppure il tuo dominio.",
       "bookingItem4": "Pagine pronte per i motori di ricerca: titolo, descrizione e dati strutturati di ogni alloggio.",
       "calendarTitle": "Calendario",
       "calendarItem1": "Prenotazioni, blocchi manuali e calendari iCal importati da Airbnb, Booking.com e altri portali.",
@@ -7340,41 +7332,13 @@
       "longRentTitle": "Affitti lunghi",
       "longRentItem1": "Contratti 4+4, 3+2 e transitori, con cedolare secca o regime ordinario.",
       "longRentItem2": "Canoni pagabili online con Stripe o segnati come pagati, con promemoria via email.",
-      "longRentItem3": "Promemoria delle scadenze di registrazione del contratto (RLI).",
-      "cta": "Crea il tuo account"
-    },
-    "pricing": {
-      "title": "Piani",
-      "intro": "Tutti i piani includono le stesse funzionalità di gestione e conformità. Cambiano il numero di alloggi e alcune opzioni del sito di prenotazione.",
-      "starterName": "Starter",
-      "starterLimit": "Fino a 3 alloggi",
-      "starterText": "Per iniziare.",
-      "starterNote": "Il sito di prenotazione mostra la dicitura «Realizzato con CasaZen».",
-      "proName": "Pro",
-      "proLimit": "Fino a 50 alloggi",
-      "proText": "Per operatori in crescita.",
-      "proNote": "Sito di prenotazione anche sul tuo dominio.",
-      "scaleName": "Scale",
-      "scaleLimit": "Alloggi illimitati",
-      "scaleText": "Per agenzie e property manager.",
-      "scaleNote": "Sito di prenotazione anche sul tuo dominio.",
-      "includedTitle": "Incluso in tutti i piani",
-      "included1": "Controllo del CIN e attivazione guidata degli alloggi",
-      "included2": "Dati degli ospiti per Alloggiati Web e check-in online",
-      "included3": "Imposta di soggiorno e report per comune",
-      "included4": "Calendario con sincronizzazione iCal",
-      "included5": "Sito di prenotazione diretta con pagamenti Stripe",
-      "included6": "Richieste ai fornitori della zona",
-      "included7": "Gestione degli affitti lunghi",
-      "priceNote": "Il prezzo di ogni piano è indicato prima del pagamento.",
-      "cta": "Crea il tuo account"
+      "longRentItem3": "Promemoria delle scadenze di registrazione del contratto (RLI)."
     },
     "suppliers": {
       "title": "Lavora con gli host della tua zona",
       "subtitle": "CasaZen mette in contatto imprese e professionisti con gli host di affitti brevi e lunghi che cercano servizi per i propri alloggi.",
-      "cta": "Registrati come fornitore",
       "howTitle": "Come funziona",
-      "step1": "Registrati: scegli le categorie dei tuoi servizi e i comuni in cui lavori.",
+      "step1": "Ricevi il tuo invito e scegli le categorie dei tuoi servizi e i comuni in cui lavori.",
       "step2": "Completa l'attivazione in pochi passaggi e accetta i termini del servizio.",
       "step3": "Ricevi le richieste degli host: accettale o rifiutale e seguile fino al completamento.",
       "featuresTitle": "Cosa trovi",
@@ -7406,6 +7370,11 @@
       "nameLabel": "Ragione sociale",
       "vatIdLabel": "Partita IVA",
       "addressLabel": "Sede legale"
+    },
+    "invite": {
+      "notice": "CasaZen è in fase di avvio: per ora l'accesso è solo su invito.",
+      "cta": "Richiedi un invito",
+      "subject": "Richiesta di invito a CasaZen"
     }
   }
 }

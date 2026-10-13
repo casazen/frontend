@@ -12,22 +12,24 @@ import { next, rewrite } from '@vercel/functions';
  *   single-page app, which completes the login there (`redirect_uri` is the origin, `src/config/auth.config.ts`).
  * - The web app's own hosts are the host of `VITE_PUBLIC_SITE_URL` (read at runtime, no domain written here, decision D3),
  *   `localhost` and the Vercel deployments: the same rule as `isAppHost` of `api/seo.ts`.
+ * - On Vercel production the site is served only once the company name and a valid partita IVA are configured
+ *   (`VITE_LEGAL_NAME`, `VITE_LEGAL_VAT_ID`): the company does not exist yet, and its home page must show the partita IVA
+ *   (art. 35 DPR 633/1972). Until then every request goes on unchanged. Same rule as `src/site/site-gate.ts`.
  *
  * Self-contained on purpose (no imports from `src/`): Vercel bundles it on its own. `src/test/site-middleware.test.ts`
- * checks that the paths below are the pages of `src/site/site-pages.ts`.
+ * checks that the paths below are the pages of `src/site/site-pages.ts` and that the gate is the one of `site-gate.ts`.
  */
 
 /** Public path → file under `dist/_site/` (`SITE_PAGES` of `src/site/site-pages.ts`). */
 export const SITE_PAGE_FILES: Readonly<Record<string, string>> = {
   '/': 'index.html',
   '/funzionalita': 'funzionalita.html',
-  '/prezzi': 'prezzi.html',
   '/per-i-fornitori': 'per-i-fornitori.html',
   '/chi-siamo': 'chi-siamo.html',
 };
 
 export const config = {
-  matcher: ['/', '/funzionalita', '/prezzi', '/per-i-fornitori', '/chi-siamo'],
+  matcher: ['/', '/funzionalita', '/per-i-fornitori', '/chi-siamo'],
 };
 
 const SITE_ASSET_DIR = '_site';
@@ -48,22 +50,33 @@ export function isAppHost(host: string, publicSiteUrl: string | undefined): bool
   return APP_HOST_SUFFIXES.some((suffix) => name === suffix || name.endsWith(`.${suffix}`));
 }
 
+/** Italian partita IVA: 11 digits, optionally with the `IT` prefix (spaces ignored). */
+const VAT_ID = /^(IT)?\d{11}$/;
+
+/** Whether the public site is served here: always outside production, in production only with the company data. */
+export function isSiteEnabled(env: Record<string, string | undefined>): boolean {
+  if (env.VERCEL_ENV !== 'production') return true;
+  const vatId = (env.VITE_LEGAL_VAT_ID ?? '').replace(/\s+/g, '').toUpperCase();
+  return (env.VITE_LEGAL_NAME ?? '').trim() !== '' && VAT_ID.test(vatId);
+}
+
 /** True for the redirect back from the Auth0 login (OAuth 2.0 authorization response: `code` or `error`, with `state`). */
 export function isAuthRedirect(url: URL): boolean {
   return url.searchParams.has('state') && (url.searchParams.has('code') || url.searchParams.has('error'));
 }
 
 /** Path of the static page to serve for the request, or null when the request must go on unchanged. */
-export function sitePagePath(request: Request, publicSiteUrl: string | undefined): string | null {
+export function sitePagePath(request: Request, env: Record<string, string | undefined>): string | null {
+  if (!isSiteEnabled(env)) return null;
   const url = new URL(request.url);
   const file = SITE_PAGE_FILES[url.pathname];
   if (!file) return null;
   if (url.pathname === '/' && isAuthRedirect(url)) return null;
-  if (!isAppHost(url.host, publicSiteUrl)) return null;
+  if (!isAppHost(url.host, env.VITE_PUBLIC_SITE_URL)) return null;
   return `/${SITE_ASSET_DIR}/${file}`;
 }
 
 export default function middleware(request: Request): Response {
-  const path = sitePagePath(request, process.env.VITE_PUBLIC_SITE_URL);
+  const path = sitePagePath(request, process.env);
   return path ? rewrite(new URL(path, request.url)) : next();
 }

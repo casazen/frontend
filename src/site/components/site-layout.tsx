@@ -5,7 +5,6 @@ import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { sitePageById, type SitePageId } from '../site-pages';
 import type { SiteLegal } from '../site-config';
-import { signupHref } from '../site-links';
 
 interface SiteLayoutProps {
   current: SitePageId;
@@ -17,7 +16,6 @@ interface SiteLayoutProps {
 
 const NAV: { id: SitePageId; key: string }[] = [
   { id: 'features', key: 'site.nav.features' },
-  { id: 'pricing', key: 'site.nav.pricing' },
   { id: 'suppliers', key: 'site.nav.suppliers' },
   { id: 'about', key: 'site.nav.about' },
 ];
@@ -72,12 +70,6 @@ export function SiteLayout({ current, legal, year, children }: SiteLayoutProps) 
             </button>
             <a href="/login" className="text-slate-700 hover:text-indigo-700">
               {t('site.nav.login')}
-            </a>
-            <a
-              href={signupHref(current, 'header')}
-              className="rounded-md bg-indigo-700 px-3 py-2 font-medium text-white hover:bg-indigo-800"
-            >
-              {t('site.nav.signup')}
             </a>
           </div>
         </div>

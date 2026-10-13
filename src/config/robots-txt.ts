@@ -41,7 +41,7 @@ export const DISALLOWED_PATHS = [
   '/booking/',
   '/requests/',
   '/property/*/checkout',
-  // The files of the public site (SEO-VETRINA): served at their public paths (`/`, `/prezzi`, ...) by the Routing
+  // The files of the public site (SEO-VETRINA): served at their public paths (`/`, `/funzionalita`, ...) by the Routing
   // Middleware, never linked under this folder, which would only duplicate them.
   `/${SITE_ASSET_DIR}/`,
 ] as const;
@@ -51,6 +51,8 @@ export interface RobotsTxtInput {
   vercelEnv: string | undefined;
   /** Value of `VITE_PUBLIC_SITE_URL` seen by Vite (process environment or `.env` files). */
   publicSiteUrl: string | undefined;
+  /** Whether the public site is served (`isPublicSiteEnabled` of `src/site/site-gate.ts`): only then its sitemap is declared. */
+  publicSiteEnabled: boolean;
 }
 
 /** Origin of the public site (`https://host[:port]`), or an error message when the value cannot be one. */
@@ -80,7 +82,7 @@ export function parsePublicSiteUrl(value: string | undefined): { origin: string 
 }
 
 /** Content of `robots.txt` for a build; throws on a production build without a valid public URL. */
-export function buildRobotsTxt({ vercelEnv, publicSiteUrl }: RobotsTxtInput): string {
+export function buildRobotsTxt({ vercelEnv, publicSiteUrl, publicSiteEnabled }: RobotsTxtInput): string {
   if (vercelEnv !== 'production') {
     return ['# Not a production deployment: nothing here may be indexed.', 'User-agent: *', 'Disallow: /', ''].join(
       '\n',
@@ -101,7 +103,7 @@ export function buildRobotsTxt({ vercelEnv, publicSiteUrl }: RobotsTxtInput): st
     '',
     `Sitemap: ${parsed.origin}${SITEMAP_PATH}`,
     `Sitemap: ${parsed.origin}${BOOKING_SITEMAP_PATH}`,
-    `Sitemap: ${parsed.origin}${SITE_SITEMAP_PATH}`,
+    ...(publicSiteEnabled ? [`Sitemap: ${parsed.origin}${SITE_SITEMAP_PATH}`] : []),
     '',
   ].join('\n');
 }

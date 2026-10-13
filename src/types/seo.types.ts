@@ -42,7 +42,11 @@ export interface SeoPagePublic {
   aiGenerated: boolean;
   /** Language of `title`, `metaDescription` and `bodyHtml` (`it`): the regulations are Italian. */
   contentLanguage: string;
-  cta: SeoCta;
+  /**
+   * Call to action to sign up. `null` while CasaZen is on private invitation (backend flag `SeoSignupCta` off, SEO-INVITE):
+   * the page then shows no sign-up button.
+   */
+  cta: SeoCta | null;
   /** Rates in force today; empty when CasaZen has no rate for the comune (A8-12). */
   touristTaxRates: PublicTouristTaxRateSummary[];
 }

@@ -77,17 +77,10 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
     },
   );
 
-  it('findVercelBuildEnvProblems_ProductionWithoutCompanyData_NamesNameAndPartitaIva', () => {
-    const problems = findVercelBuildEnvProblems({ vercelEnv: 'production', demoBuild: false, env: withoutCompanyData() });
-    expect(problems).toEqual([
-      expect.stringMatching(/^VITE_LEGAL_NAME: missing/),
-      expect.stringMatching(/^VITE_LEGAL_VAT_ID: missing/),
-    ]);
-  });
-
-  it('findVercelBuildEnvProblems_PreviewWithoutCompanyData_IsNotAProblem', () => {
-    // A preview is never indexed: the public site simply leaves the missing company data out.
-    expect(findVercelBuildEnvProblems({ vercelEnv: 'preview', demoBuild: false, env: withoutCompanyData() })).toEqual([]);
+  it.each(['production', 'preview'])('findVercelBuildEnvProblems_%sWithoutCompanyData_IsNotAProblem', (vercelEnv) => {
+    // SEO-VETRINA: the company does not exist yet. Without its data production simply does not serve the public site
+    // (src/site/site-gate.ts): no deployment is blocked for it.
+    expect(findVercelBuildEnvProblems({ vercelEnv, demoBuild: false, env: withoutCompanyData() })).toEqual([]);
   });
 
   it.each(['IT 0123456789', '0123456789X', 'DE123456789'])(
