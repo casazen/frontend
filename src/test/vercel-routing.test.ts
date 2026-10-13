@@ -14,8 +14,19 @@ interface Rewrite {
   has?: { type: string; key: string; value: string }[];
 }
 
+interface Redirect {
+  source: string;
+  destination: string;
+  permanent?: boolean;
+  has?: { type: string; value: string }[];
+}
+
 const vercelJson = readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8');
-const vercel = JSON.parse(vercelJson) as { rewrites: Rewrite[]; outputDirectory: string };
+const vercel = JSON.parse(vercelJson) as {
+  redirects?: Redirect[];
+  rewrites: Rewrite[];
+  outputDirectory: string;
+};
 
 const CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
@@ -149,13 +160,26 @@ describe('vercel.json routing', () => {
     });
   });
 
-  it('vercelJson_hasNoDomainOfOurOwn', () => {
+  it('redirects_legacyProductionHost_toThePublicCanonical', () => {
+    // Exception to D3 (seo-domain.md §1): the retired production host must 308 to the public site so old
+    // links and Search Console properties keep working. Destination is the only CasaZen domain allowed here.
+    const rule = vercel.redirects?.find((r) => r.has?.some((h) => h.type === 'host' && h.value.includes('casazen-app')));
+    expect(rule).toMatchObject({
+      source: '/:path*',
+      destination: 'https://www.casazen.space/:path*',
+      permanent: true,
+    });
+    expect(rule?.has).toEqual([{ type: 'host', value: 'casazen-app\\.vercel\\.app' }]);
+  });
+
+  it('vercelJson_hasNoDomainOfOurOwn_exceptLegacyHostRedirect', () => {
     // Decision D3: the public domain comes only from environment variables (VITE_PUBLIC_SITE_URL,
-    // VITE_API_BASE_URL); the only absolute URLs allowed here are the third-party origins of the CSP.
+    // VITE_API_BASE_URL); the only absolute URLs allowed here are the third-party origins of the CSP,
+    // plus the one documented redirect of the retired vercel.app production host.
     const hosts = [...vercelJson.matchAll(/https?:\/\/([^\s'";/]+)/g)].map((match) => match[1]);
     for (const host of hosts) {
-      expect(host).toMatch(/(^|\.)(stripe\.com|auth0\.com|supabase\.co)$/);
+      expect(host).toMatch(/(^|\.)(stripe\.com|auth0\.com|supabase\.co|casazen\.space)$/);
     }
-    expect(vercelJson).not.toMatch(/casazen|vercel\.app|railway\.app/i);
+    expect(vercelJson).not.toMatch(/railway\.app/i);
   });
 });
