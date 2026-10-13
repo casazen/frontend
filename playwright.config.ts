@@ -178,7 +178,7 @@ export default defineConfig({
           VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
           VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
           VITE_AUTH0_AUDIENCE:
-            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
+            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api-test',
         },
       }
     : isStagingRun
@@ -194,7 +194,7 @@ export default defineConfig({
           VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
           VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
           VITE_AUTH0_AUDIENCE:
-            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api',
+            process.env.VITE_AUTH0_AUDIENCE ?? 'https://casazen-api-test',
         },
       }
     : {

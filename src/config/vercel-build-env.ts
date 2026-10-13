@@ -74,6 +74,12 @@ export function findVercelBuildEnvProblems({ vercelEnv, demoBuild, env }: Vercel
     problems.push('VITE_AUTH0_CLIENT_ID: missing (SPA client id of the Auth0 tenant of this Vercel environment)');
   }
 
+  // Preview and Production can share one tenant: the API identifier is then the only thing that tells the backends apart,
+  // and the code default (src/config/env.config.ts) is the production one. A silent default is not acceptable here.
+  if (!readValue(env.VITE_AUTH0_AUDIENCE)) {
+    problems.push('VITE_AUTH0_AUDIENCE: missing (API identifier of this Vercel environment; it must equal Auth0__Audience of the matching Railway environment)');
+  }
+
   // SEO-VETRINA: the company data is optional (the company does not exist yet): without it, production does not serve the
   // public site (src/site/site-gate.ts). What is set must be valid, or the site would stay off silently; and an explicit
   // choice to publish without a partita IVA must identify the holder (name and contact e-mail), or the build stops.
