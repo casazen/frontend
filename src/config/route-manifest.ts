@@ -256,10 +256,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // A host invites other independent hosts (daily quota per host). No role is assigned: the invited person signs up as usual.
+    // A host invites other independent hosts (daily quota per org). No role is assigned: the invited person signs up as usual.
+    // Backend policy `OrgMembersManage` (owner and admin of the org): `orgBillingAdmin` is the closest owner mirror, menu only.
     path: '/app/short-rent/settings/invitations',
     context: 'short-rent',
     requiredPermissions: [],
+    orgBillingAdmin: true,
     navKey: 'nav.hostInvites',
     navPlacement: 'secondary',
     navOrder: 34,
@@ -560,6 +562,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/settings/invitations',
     context: 'long-rent',
     requiredPermissions: [],
+    orgBillingAdmin: true,
     navKey: 'nav.hostInvites',
     navPlacement: 'secondary',
     navOrder: 34,

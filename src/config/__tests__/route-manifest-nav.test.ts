@@ -592,18 +592,19 @@ describe('route-manifest nav helpers', () => {
       '/app/long-rent/settings/invitations',
     ]);
     const nothing = getVisibleNavEntries('long-rent', (_ctx, permission) => !permission);
-    expect(paths(nothing)).toEqual(['/app/long-rent/profile', '/app/long-rent/settings/invitations']);
+    expect(paths(nothing)).toEqual(['/app/long-rent/profile']);
   });
 
   // A host invites other independent hosts from "Altro" of both rental areas; the admin has one section for all the invites.
-  it('puts the invitation of hosts in "Altro" of both rental areas, open to any member of the area', () => {
+  it('puts the invitation of hosts in "Altro" of both rental areas, in the menu of the org owner only', () => {
     for (const context of ['short-rent', 'long-rent'] as const) {
       const entry = entryOf(`/app/${context}/settings/invitations`);
       expect(entry.context).toBe(context);
       expect(entry.navKey).toBe('nav.hostInvites');
       expect(entry.navPlacement).toBe('secondary');
       expect(entry.requiredPermissions).toEqual([]);
-      expect(entry.orgBillingAdmin).toBeUndefined();
+      // Backend policy OrgMembersManage (owner and admin of the org): menu only, the backend stays the authority.
+      expect(entry.orgBillingAdmin).toBe(true);
     }
   });
 

@@ -49,7 +49,8 @@ export async function fetchHostInviteQuota(): Promise<HostInviteQuota> {
 
 /** Anonymous: what the link of an invite is worth. The token is a secret of the link: never logged or tracked. */
 export async function lookupHostInvite(token: string): Promise<HostInviteLookup> {
-  return ApiClient.get<HostInviteLookup>('/host-invites/lookup', { token }, { public: true });
+  // POST with the token in the body: a query string would put the secret in access logs.
+  return ApiClient.post<HostInviteLookup>('/host-invites/lookup', { token }, { public: true });
 }
 
 /** Signed in: binds the invite to the account (204, no body). */
