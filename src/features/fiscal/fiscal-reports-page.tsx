@@ -84,7 +84,7 @@ export function FiscalReportsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-5xl mx-auto" data-testid="fiscal-reports-page">
+      <div className="space-y-6" data-testid="fiscal-reports-page">
         <PageHeader title={t('fiscal.reports.title')} description={t('fiscal.reports.description')} />
         <FiscalDisclaimer />
         <p data-testid="fiscal-pack-label" className="text-sm font-medium">
