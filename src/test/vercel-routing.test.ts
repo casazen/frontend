@@ -173,7 +173,7 @@ describe('vercel.json routing', () => {
       expect(redirect.source).toBe('/:path*');
       expect(redirect.permanent).toBe(true);
       expect(redirect.has).toEqual([{ type: 'host', value: 'casazen-app\\.vercel\\.app' }]);
-      expect(redirect.destination).toBe('https://casazen.space/:path*');
+      expect(redirect.destination).toBe('https://www.casazen.space/:path*');
     });
 
     it.each(['casazen-app.vercel.app'])('redirects_host_%s_isRedirected', (host) => {
