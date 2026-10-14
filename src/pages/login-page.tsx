@@ -2,12 +2,13 @@ import { useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, LogIn } from 'lucide-react';
 
 export function LoginPage() {
-  const { isAuthenticated, user, login } = useAuth();
+  const { isAuthenticated, user, error, login } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -16,6 +17,10 @@ export function LoginPage() {
       navigate('/app/choose-context', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
+
+  // Auth0 rejected the request (e.g. `invalid_request`, `access_denied`): the SDK error carries the OAuth code. The raw
+  // `error_description` is never shown (it names client and API identifiers); only the code, to quote to support.
+  const authErrorCode = error ? ((error as { error?: unknown }).error ?? error.name) : undefined;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -28,6 +33,14 @@ export function LoginPage() {
           <CardDescription>{t('login.platformDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="danger" title={t('login.errorTitle')}>
+              {t('login.errorMessage')}
+              {typeof authErrorCode === 'string' && authErrorCode && (
+                <span className="mt-1 block text-xs">{t('login.errorCode', { code: authErrorCode })}</span>
+              )}
+            </Alert>
+          )}
           <p className="text-center text-sm text-muted-foreground">
             {t('login.signInMessage')}
           </p>

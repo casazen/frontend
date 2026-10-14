@@ -5649,7 +5649,10 @@
     "platformDescription": "Vacation Property Management Platform",
     "signInMessage": "Sign in to manage your properties, bookings, and payments",
     "signInButton": "Sign in with Auth0",
-    "signIn": "Log in"
+    "signIn": "Log in",
+    "errorTitle": "Sign-in failed",
+    "errorMessage": "We could not complete the sign-in. Try again in a moment; if the problem persists, contact support.",
+    "errorCode": "Error code: {{code}}"
   },
   "signup": {
     "title": "Sign up to CasaZen",

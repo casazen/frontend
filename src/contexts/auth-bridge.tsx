@@ -37,6 +37,8 @@ export type AuthBridgeValue = {
   kind: 'auth0' | 'anonymous' | 'demo';
   isLoading: boolean;
   isAuthenticated: boolean;
+  /** Error of the Auth0 SDK (e.g. the redirect callback came back with `?error=`); `undefined` when there is none. */
+  error: Error | undefined;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
   login: (options?: LoginOptions) => void;
   logout: () => void;
@@ -77,6 +79,7 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
       kind: 'demo',
       isLoading: false,
       isAuthenticated: true,
+      error: undefined,
       user: demoUser,
       // Demo mode: the demo user is always signed in, login and logout have nothing to do.
       login: () => {},
@@ -103,6 +106,7 @@ function AnonymousAuthBridge({ children }: { children: ReactNode }) {
       kind: 'anonymous',
       isLoading: false,
       isAuthenticated: false,
+      error: undefined,
       user: undefined,
       login: (options?: LoginOptions) => {
         window.location.assign(options?.authorizationParams?.screen_hint === 'signup' ? SIGNUP_PATH : '/login');
@@ -123,6 +127,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   const {
     isLoading,
     isAuthenticated,
+    error,
     user,
     loginWithRedirect,
     logout: auth0Logout,
@@ -192,6 +197,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
       kind: 'auth0',
       isLoading,
       isAuthenticated,
+      error,
       user,
       login,
       logout,
@@ -203,6 +209,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     [
       isLoading,
       isAuthenticated,
+      error,
       user,
       login,
       logout,

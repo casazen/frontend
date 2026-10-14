@@ -5649,7 +5649,10 @@
     "platformDescription": "Piattaforma gestione affitti brevi",
     "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
     "signInButton": "Accedi con Auth0",
-    "signIn": "Accedi"
+    "signIn": "Accedi",
+    "errorTitle": "Accesso non riuscito",
+    "errorMessage": "Non è stato possibile completare l'accesso. Riprova tra qualche istante; se il problema persiste contatta il supporto.",
+    "errorCode": "Codice errore: {{code}}"
   },
   "signup": {
     "title": "Registrati su CasaZen",
