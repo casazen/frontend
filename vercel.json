@@ -6,7 +6,7 @@
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "casazen-app\\.vercel\\.app" }],
-      "destination": "https://casazen.space/:path*",
+      "destination": "https://www.casazen.space/:path*",
       "permanent": true
     }
   ],

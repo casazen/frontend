@@ -216,4 +216,30 @@ describe('SupplierDashboardPage (SU-11, A4-15)', () => {
     await screen.findByTestId('supplier-kpi-completed');
     expect(screen.queryByTestId('supplier-tos-reacceptance-banner')).not.toBeInTheDocument();
   });
+
+  it('SupplierDashboardPage_PendingFreeEvents_ShowsTheCardWithCountAndLinkToAvailability', async () => {
+    api.fetchSupplierDashboard.mockResolvedValue({
+      ...DASHBOARD,
+      calendarSyncStatus: { calendarSyncType: 'ICalFeed', pendingFreeEventsCount: 3 },
+    });
+    renderPage();
+
+    const card = await screen.findByTestId('supplier-free-events-card');
+    expect(card).toHaveTextContent('3 eventi del calendario da confermare');
+    expect(within(card).getByRole('link', { name: i18n.t('supplier.freeEventsDashboardCta') })).toHaveAttribute(
+      'href',
+      '/app/supplier/availability',
+    );
+  });
+
+  it('SupplierDashboardPage_NoPendingFreeEvents_ShowsNoCard', async () => {
+    api.fetchSupplierDashboard.mockResolvedValue({
+      ...DASHBOARD,
+      calendarSyncStatus: { calendarSyncType: 'ICalFeed', pendingFreeEventsCount: 0 },
+    });
+    renderPage();
+
+    await screen.findByTestId('supplier-kpi-completed');
+    expect(screen.queryByTestId('supplier-free-events-card')).not.toBeInTheDocument();
+  });
 });

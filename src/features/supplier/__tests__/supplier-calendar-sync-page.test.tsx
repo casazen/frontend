@@ -183,4 +183,26 @@ describe('supplierSyncRefetchInterval (SU-15)', () => {
     expect(supplierSyncRefetchInterval(query, start + 59_000)).toBe(3_000);
     expect(supplierSyncRefetchInterval(query, start + 61_000)).toBe(15_000);
   });
+
+  it('render_PendingFreeEvents_ShowsTheNoteWithLinkToAvailability', async () => {
+    vi.mocked(fetchCalendarSyncStatus).mockResolvedValue({ ...synced, pendingFreeEventsCount: 2 });
+
+    renderPage();
+
+    const note = await screen.findByTestId('calendar-free-events-note');
+    expect(note).toHaveTextContent('2 eventi del calendario segnati Disponibile');
+    expect(screen.getByRole('link', { name: i18n.t('supplier.freeEventsSyncNoteCta') })).toHaveAttribute(
+      'href',
+      '/app/supplier/availability',
+    );
+  });
+
+  it('render_NoPendingFreeEvents_ShowsNoNote', async () => {
+    vi.mocked(fetchCalendarSyncStatus).mockResolvedValue({ ...synced, pendingFreeEventsCount: 0 });
+
+    renderPage();
+
+    await screen.findByText('Sincronizzato');
+    expect(screen.queryByTestId('calendar-free-events-note')).not.toBeInTheDocument();
+  });
 });

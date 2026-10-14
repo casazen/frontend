@@ -18,6 +18,7 @@ import {
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
+  lacksCurrentConsents,
   needsConsentRenewal,
   needsOrgSetup,
   SUPPLIER_HOME_ROUTE,
@@ -94,7 +95,7 @@ export function OnboardingPage() {
   const renewsConsents = needsConsentRenewal(profile) && !isEditMode;
   // A1-01: PUT (no consents) only when the backend already has a completed onboarding with an org and current consents.
   // Any other case, with JWT roles or not, goes through the consents step and the POST.
-  const isUpdate = canEditOnboarding(profile) && !consentsForced && !needsConsentRenewal(profile);
+  const isUpdate = canEditOnboarding(profile) && !consentsForced && !lacksCurrentConsents(profile);
   const needsConsentsStep = !isUpdate;
   // Admins and supplier-only users do not need a host org: they may leave the wizard.
   const canSkip = !isEditMode && isExemptFromHostOnboarding(roles) && (!hasOrg || hostAccessWithheld);
