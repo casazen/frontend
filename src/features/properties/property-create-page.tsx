@@ -24,7 +24,7 @@ export function PropertyCreatePage() {
   // First property of a new host (`?first=1`, set by the onboarding): the short form, then the checklist asks the rest.
   const [searchParams] = useSearchParams();
   const quick = searchParams.get('first') === '1';
-  const createProperty = useCreateProperty();
+  const createProperty = useCreateProperty('Short');
   const queryClient = useQueryClient();
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);

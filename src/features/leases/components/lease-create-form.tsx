@@ -41,7 +41,7 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
     error: propertiesError,
     refetch: refetchProperties,
     isFetching: isFetchingProperties,
-  } = useProperties();
+  } = useProperties({ mode: 'long' });
   const properties = propertiesData ?? [];
   // A failed load (e.g. 403) is an explicit error, never an empty list to pick from (A7-06).
   const noProperties = !isLoadingProperties && !propertiesFailed && propertiesData !== undefined && properties.length === 0;

@@ -20,7 +20,7 @@ export function OtaSetupPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const createIntegration = useCreateOtaIntegration();
-  const { data: propertiesData } = useProperties();
+  const { data: propertiesData } = useProperties({ mode: 'short' });
   const properties = propertiesData ?? [];
 
   const {

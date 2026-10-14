@@ -196,7 +196,7 @@ function BlockDetails({
 export function CalendarPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: properties, isLoading: propertiesLoading } = useProperties();
+  const { data: properties, isLoading: propertiesLoading } = useProperties({ mode: 'short' });
   const propertyList = Array.isArray(properties) ? properties : [];
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
   const [view, setView] = useState<HostCalendarView>('month');

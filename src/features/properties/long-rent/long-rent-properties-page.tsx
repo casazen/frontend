@@ -15,7 +15,7 @@ import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from './paths';
 export function LongRentPropertiesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: properties, isLoading, isError, error, refetch, isFetching } = useProperties();
+  const { data: properties, isLoading, isError, error, refetch, isFetching } = useProperties({ mode: 'long' });
 
   const goToCreate = () => navigate(LONG_RENT_PROPERTY_CREATE_PATH);
 

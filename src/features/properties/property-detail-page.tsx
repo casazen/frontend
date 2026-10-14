@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { longRentPropertyPath } from './long-rent/paths';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -92,6 +93,9 @@ export function PropertyDetailPage() {
       </AppShell>
     );
   }
+
+  // A long-term property lives in the long-rent section only.
+  if (property?.rentalMode === 'Long') return <Navigate to={longRentPropertyPath(property.id)} replace />;
 
   if (!property) {
     return (

@@ -105,6 +105,7 @@ describe('LongRentPropertiesPage (A7-06)', () => {
 
     renderAt('/app/long-rent/properties');
 
+    expect(propertyQueries.useProperties).toHaveBeenCalledWith({ mode: 'long' });
     expect(screen.getByText('Bilocale Monza')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: i18n.t('longRentProperties.list.open') })).toHaveAttribute(
       'href',
