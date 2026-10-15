@@ -41,11 +41,11 @@ const STATUS_FILTERS: readonly StatusFilter[] = ['all', 'active', 'paused'];
 
 export function PropertiesPage() {
   const { t } = useTranslation();
-  const { data: properties, isLoading, error } = useProperties();
+  const { data: properties, isLoading, error } = useProperties({ mode: 'short' });
   const { data: cinCompliance } = useCinCompliance();
   const pauseProperty = usePauseProperty();
   const activateProperty = useActivateProperty();
-  const createProperty = useCreateProperty();
+  const createProperty = useCreateProperty('Short');
   const deleteProperty = useDeleteProperty();
   const { hasPermission } = useWorkspace();
   const canDelete = hasPermission('short-rent', 'property.write');

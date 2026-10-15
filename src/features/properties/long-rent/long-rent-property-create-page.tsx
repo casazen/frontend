@@ -23,7 +23,7 @@ export function LongRentPropertyCreatePage() {
   // First property of a new landlord (`?first=1`, set by the onboarding): the short form, then the guide asks the rest.
   const [searchParams] = useSearchParams();
   const quick = searchParams.get('first') === '1';
-  const createProperty = useCreateProperty();
+  const createProperty = useCreateProperty('Long');
   const queryClient = useQueryClient();
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);

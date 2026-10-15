@@ -5,6 +5,7 @@ import type {
   UpdatePropertyDto,
   PropertySearchParams,
   PropertyDocumentType,
+  RentalMode,
   PropertyCadastralData,
   ApeIdentification,
 } from '@/types';
@@ -63,11 +64,12 @@ export function usePropertyDetail(id: string, options: { fresh?: boolean } = {})
   });
 }
 
-export function useCreateProperty() {
+/** The section that creates the property decides its mode: it is always sent, never inferred from guests and rate. */
+export function useCreateProperty(rentalMode: RentalMode) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePropertyDto) => propertiesApi.create(data),
+    mutationFn: (data: CreatePropertyDto) => propertiesApi.create({ ...data, rentalMode }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
       // Usage changed → plan badge / create gating must refetch (#202, AC8).

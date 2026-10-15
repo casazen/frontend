@@ -1,3 +1,6 @@
+/** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
+export type RentalMode = 'Short' | 'Long';
+
 /**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
  * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
@@ -21,6 +24,8 @@ export interface Property {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
+  /** `Short` = short-rent section, `Long` = long-rent section. Set at creation, changed only by the scheduled mode change. */
+  rentalMode?: RentalMode;
   cleaningFee: number;
   damageDeposit: number;
   amenities: string[];
@@ -96,6 +101,8 @@ export interface CreatePropertyDto {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
+  /** Sent on creation only (an update must carry the stored mode: 422 `property_rental_mode_change_not_allowed`). */
+  rentalMode?: RentalMode;
   cleaningFee?: number;
   damageDeposit?: number;
   amenities?: string[];
@@ -239,6 +246,8 @@ export interface PricingAdapterSummaryDto {
 export interface PropertyDetailDto {
   id: string;
   ownerId: string;
+  /** Section the property belongs to (PM-01). */
+  rentalMode?: RentalMode;
   name: string;
   description: string;
   address: string;

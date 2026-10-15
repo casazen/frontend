@@ -16,7 +16,7 @@ const LEASE_PATH = '/app/long-rent/leases/new';
  */
 export function LongRentGuide() {
   const { t } = useTranslation();
-  const properties = useProperties();
+  const properties = useProperties({ mode: 'long' });
   const leases = useLeases();
 
   if (!properties.data || !leases.data) return null;

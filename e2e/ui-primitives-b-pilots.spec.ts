@@ -150,7 +150,7 @@ async function openProperties(page: Page, width = 1280) {
   const calls: string[] = [];
   await mockPropertiesApi(page, []);
   // Later routes are tried first: the list, and the pause and the activation, with a state that follows them.
-  await page.route('**/api/properties', async (route) => {
+  await page.route(/\/api\/properties(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;

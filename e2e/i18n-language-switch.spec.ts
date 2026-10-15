@@ -42,7 +42,7 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
     });
   });
 
-  await page.route('**/api/properties', async (route) => {
+  await page.route(/\/api\/properties(\?.*)?$/, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;

@@ -107,6 +107,15 @@ describe('PropertiesPage (A2-27)', () => {
     );
   });
 
+  it('PropertiesPage_List_AsksForTheShortRentSectionOnly', () => {
+    mockList({ data: [STUDIO] });
+
+    renderPage();
+
+    expect(propertyQueries.useProperties).toHaveBeenCalledWith({ mode: 'short' });
+    expect(propertyQueries.useCreateProperty).toHaveBeenCalledWith('Short');
+  });
+
   it('PropertiesPage_Row_ShowsEuroPriceFullAddressTranslatedLabelsAndAnEditAction', () => {
     mockList({ data: [STUDIO] });
 

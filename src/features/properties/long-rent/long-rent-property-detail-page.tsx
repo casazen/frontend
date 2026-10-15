@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Edit, FilePlus2, TriangleAlert } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
@@ -35,6 +35,9 @@ export function LongRentPropertyDetailPage() {
       />
     );
   }
+
+  // A short-rent property lives in the short-rent section only.
+  if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}`} replace />;
 
   const hasApe = documents.data?.some((doc) => doc.documentType === 'Ape') ?? false;
 

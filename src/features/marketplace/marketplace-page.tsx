@@ -28,7 +28,7 @@ export function MarketplacePage() {
   const [selectedSupplier, setSelectedSupplier] = useState<SupplierPicker | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
-  const { data: properties } = useProperties();
+  const { data: properties } = useProperties({ mode: 'short' });
   const propertyIdParam = searchParams.get('propertyId') ?? '';
   const [selectedPropertyId, setSelectedPropertyId] = useState(propertyIdParam);
 
