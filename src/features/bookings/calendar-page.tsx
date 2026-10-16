@@ -1,5 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -248,7 +248,11 @@ export function CalendarPage() {
   // The "Blocca date" form, open with the nights selected on the calendar (or from today).
   const [blockDraft, setBlockDraft] = useState<{ start?: string; end?: string } | null>(null);
 
-  const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';
+  // The calendar of one property, from the list of the properties (`?propertyId=`): one that is not in the list is ignored.
+  const [searchParams] = useSearchParams();
+  const requestedPropertyId = searchParams.get('propertyId') ?? '';
+  const requestedProperty = propertyList.some((property) => property.id === requestedPropertyId) ? requestedPropertyId : '';
+  const activePropertyId = selectedPropertyId || requestedProperty || propertyList[0]?.id || '';
   // First and last stay date of the month, week or day shown, both included (backend MO-06): part of the query key,
   // so every navigation asks for its own range.
   const { startDate, endDate } = useMemo(() => hostCalendarRange(view, shownDate), [view, shownDate]);

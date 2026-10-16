@@ -19,10 +19,18 @@ import { isPlanLimitError } from '@/lib/entitlement-error';
 
 const PROPERTIES_KEY = 'properties';
 
-export function useProperties(params?: Record<string, string | number | boolean | undefined>) {
+/**
+ * `fresh`: read again from the server every time the list is shown, even when it is cached (the page of the list: a property
+ * is created, edited or paused on other pages, where this list is not watched, so a refresh there would not reach it).
+ */
+export function useProperties(
+  params?: Record<string, string | number | boolean | undefined>,
+  options: { fresh?: boolean } = {},
+) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, params],
     queryFn: () => propertiesApi.getAll(params),
+    ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
   });
 }
 

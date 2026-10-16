@@ -2071,26 +2071,67 @@
       "description": "Manage your vacation rental properties",
       "addButton": "Add Property",
       "errorLoad": "Failed to load properties",
-      "errorHint": "Please try refreshing the page",
       "emptyTitle": "No properties yet",
       "emptyDescription": "Get started by adding your first vacation rental property",
-      "emptyCta": "Add Your First Property",
-      "addDialogTitle": "Add New Property",
-      "addDialogDescription": "Create a new vacation rental property",
-      "filterLabel": "Filter by status",
-      "filterAll": "All ({{count}})",
-      "filterActive": "Active ({{count}})",
-      "filterPaused": "Paused ({{count}})",
-      "filterEmpty": "No properties with this status."
+      "emptyCta": "Add Your First Property"
+    },
+    "list": {
+      "actions": {
+        "calendar": "Open calendar",
+        "complete": "Complete",
+        "delete": "Delete property",
+        "edit": "Edit",
+        "page": "Full page",
+        "pause": "Pause",
+        "reactivate": "Reactivate",
+        "requestService": "Request an intervention"
+      },
+      "chips": {
+        "active": "Active",
+        "all": "All",
+        "paused": "Paused",
+        "todo": "To complete",
+        "todoHint": "They cannot receive bookings yet"
+      },
+      "columns": {
+        "price": "Base price",
+        "property": "Property",
+        "spaces": "Rooms and guests",
+        "status": "Status"
+      },
+      "count_one": "{{count}} property",
+      "count_other": "{{count}} properties",
+      "filters": {
+        "allCities": "All cities",
+        "city": "City"
+      },
+      "guestsCount_one": "{{count}} guest",
+      "guestsCount_other": "{{count}} guests",
+      "noResults": {
+        "description": "Try removing a filter or searching by the name of the city.",
+        "title": "No property matches these filters"
+      },
+      "pausedSince": "Paused since {{date}}",
+      "perNight": "per night",
+      "plan": {
+        "usage": "{{plan}} plan: {{used}} of {{max}} properties (short and long term).",
+        "usageUnlimited": "{{plan}} plan: {{used}} properties (short and long term)."
+      },
+      "search": "Search properties",
+      "searchPlaceholder": "Search by name, city or address"
+    },
+    "drawer": {
+      "address": "Address",
+      "bookings": "Bookings of this property",
+      "cin": "CIN",
+      "cinMissing": "Missing",
+      "complete": "Complete the activation",
+      "keyData": "Key facts",
+      "moreActions": "More actions",
+      "price": "Base price",
+      "spaces": "Spaces"
     },
     "table": {
-      "property": "Property",
-      "location": "Location",
-      "rooms": "Rooms",
-      "guests": "Guests",
-      "priceNight": "Price / night",
-      "amenities": "Amenities",
-      "status": "Status",
       "active": "Active",
       "paused": "Paused",
       "pause": "Pause",
@@ -2100,11 +2141,6 @@
       "bathroomsCount_one": "{{count}} bathroom",
       "bathroomsCount_other": "{{count}} bathrooms",
       "bedroomsCount_zero": "Studio",
-      "actions": "Actions",
-      "edit": "Edit",
-      "editAria": "Edit {{name}}",
-      "delete": "Delete",
-      "deleteAria": "Delete {{name}}",
       "noRate": "Not set"
     },
     "deleteDialog": {

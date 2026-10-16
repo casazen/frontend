@@ -2071,26 +2071,67 @@
       "description": "Gestisci le tue strutture ricettive per affitti brevi",
       "addButton": "Aggiungi immobile",
       "errorLoad": "Impossibile caricare gli immobili",
-      "errorHint": "Prova ad aggiornare la pagina",
       "emptyTitle": "Nessun immobile",
       "emptyDescription": "Inizia aggiungendo la tua prima struttura ricettiva",
-      "emptyCta": "Aggiungi il primo immobile",
-      "addDialogTitle": "Nuovo immobile",
-      "addDialogDescription": "Crea una nuova struttura ricettiva per affitti brevi",
-      "filterLabel": "Filtra per stato",
-      "filterAll": "Tutti ({{count}})",
-      "filterActive": "Attivi ({{count}})",
-      "filterPaused": "In pausa ({{count}})",
-      "filterEmpty": "Nessun immobile con questo stato."
+      "emptyCta": "Aggiungi il primo immobile"
+    },
+    "list": {
+      "actions": {
+        "calendar": "Apri calendario",
+        "complete": "Completa",
+        "delete": "Elimina immobile",
+        "edit": "Modifica",
+        "page": "Scheda completa",
+        "pause": "Metti in pausa",
+        "reactivate": "Riattiva",
+        "requestService": "Richiedi intervento"
+      },
+      "chips": {
+        "active": "Attivi",
+        "all": "Tutti",
+        "paused": "In pausa",
+        "todo": "Da completare",
+        "todoHint": "Non possono ancora ricevere prenotazioni"
+      },
+      "columns": {
+        "price": "Prezzo base",
+        "property": "Immobile",
+        "spaces": "Camere e ospiti",
+        "status": "Stato"
+      },
+      "count_one": "{{count}} immobile",
+      "count_other": "{{count}} immobili",
+      "filters": {
+        "allCities": "Tutte le città",
+        "city": "Città"
+      },
+      "guestsCount_one": "{{count}} ospite",
+      "guestsCount_other": "{{count}} ospiti",
+      "noResults": {
+        "description": "Prova a togliere un filtro o a cercare con il nome della città.",
+        "title": "Nessun immobile con questi filtri"
+      },
+      "pausedSince": "In pausa dal {{date}}",
+      "perNight": "a notte",
+      "plan": {
+        "usage": "Piano {{plan}}: {{used}} di {{max}} immobili (brevi e lunghi).",
+        "usageUnlimited": "Piano {{plan}}: {{used}} immobili (brevi e lunghi)."
+      },
+      "search": "Cerca immobili",
+      "searchPlaceholder": "Cerca per nome, città o indirizzo"
+    },
+    "drawer": {
+      "address": "Indirizzo",
+      "bookings": "Prenotazioni di questo immobile",
+      "cin": "CIN",
+      "cinMissing": "Mancante",
+      "complete": "Completa l'attivazione",
+      "keyData": "Dati chiave",
+      "moreActions": "Altre azioni",
+      "price": "Prezzo base",
+      "spaces": "Spazi"
     },
     "table": {
-      "property": "Immobile",
-      "location": "Località",
-      "rooms": "Locali",
-      "guests": "Ospiti",
-      "priceNight": "Prezzo / notte",
-      "amenities": "Servizi",
-      "status": "Stato",
       "active": "Attivo",
       "paused": "In pausa",
       "pause": "Pausa",
@@ -2100,11 +2141,6 @@
       "bathroomsCount_one": "{{count}} bagno",
       "bathroomsCount_other": "{{count}} bagni",
       "bedroomsCount_zero": "Monolocale",
-      "actions": "Azioni",
-      "edit": "Modifica",
-      "editAria": "Modifica {{name}}",
-      "delete": "Elimina",
-      "deleteAria": "Elimina {{name}}",
       "noRate": "Non impostato"
     },
     "deleteDialog": {
