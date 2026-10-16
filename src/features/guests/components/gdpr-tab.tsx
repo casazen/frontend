@@ -13,7 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { Fact, Facts } from '@/features/bookings/components/booking-facts';
 import { gdprApi } from '@/api/gdpr.api';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatDate, formatDateTime } from '@/lib/utils';
@@ -31,9 +33,9 @@ const ERASURE_REASON = 'User requested erasure';
 const WITHDRAWAL_NOTE_MAX_LENGTH = 500;
 
 /**
- * GDPR tab of a guest (CO-15): consents with their versions, retention per category, export, anonymization and
- * erasure. The host can never grant the marketing consent (A5-14): only the guest does, on the check-in portal; the
- * host can only withdraw it on the guest's documented request.
+ * The tab Privacy of a guest (CO-15): consents with their versions, retention per category, export, anonymization and
+ * erasure, in sections without a box (SR-04b). The host can never grant the marketing consent (A5-14): only the guest does, on
+ * the check-in portal; the host can only withdraw it on the guest's documented request.
  */
 export function GdprTab({ guest }: GdprTabProps) {
   const { t } = useTranslation();
@@ -103,7 +105,7 @@ export function GdprTab({ guest }: GdprTabProps) {
 
   if (summary.isLoading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="gdpr-loading">
+      <div className="flex items-center gap-2 text-sm text-foreground/70" data-testid="gdpr-loading">
         <Loader2 className="h-4 w-4 animate-spin" />
         {t('guests.gdprTab.loading')}
       </div>
@@ -129,40 +131,35 @@ export function GdprTab({ guest }: GdprTabProps) {
   const note = withdrawalNote.trim();
 
   return (
-    <div className="space-y-6">
-      {/* Privacy notice and marketing consent */}
-      <div className="grid gap-4 md:grid-cols-2 text-sm">
-        <div data-testid="gdpr-privacy-notice">
-          <span className="text-muted-foreground">{t('guests.gdprTab.privacyNotice')}</span>
-          <p className="font-medium">
-            {data.privacyNotice.version
-              ? t('guests.gdprTab.privacyNoticeVersion', {
-                  version: data.privacyNotice.version,
-                  date: data.privacyNotice.presentedAt ? formatDate(data.privacyNotice.presentedAt) : '—',
-                })
-              : t('guests.gdprTab.privacyNoticeNone')}
-          </p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">{t('guests.gdprTab.processingPurpose')}</span>
-          <p className="font-medium">{guest.dataProcessingPurpose || '—'}</p>
-        </div>
-      </div>
-
-      <div className="rounded-lg border p-4 space-y-3" data-testid="gdpr-marketing">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">{t('guests.gdprTab.marketingTitle')}</p>
-            <p className="text-sm" data-testid="gdpr-marketing-state">
-              {data.marketing.granted
-                ? t(data.marketing.version ? 'guests.gdprTab.marketingGranted' : 'guests.gdprTab.marketingGrantedNoVersion', {
-                    date: data.marketing.since ? formatDate(data.marketing.since) : '—',
-                    version: data.marketing.version,
+    <div className="space-y-8">
+      {/* Privacy notice and purpose */}
+      <PlainSection title={t('guests.gdprTab.noticeTitle')}>
+        <Facts>
+          <Fact label={t('guests.gdprTab.privacyNotice')}>
+            <span data-testid="gdpr-privacy-notice">
+              {data.privacyNotice.version
+                ? t('guests.gdprTab.privacyNoticeVersion', {
+                    version: data.privacyNotice.version,
+                    date: data.privacyNotice.presentedAt ? formatDate(data.privacyNotice.presentedAt) : '—',
                   })
-                : t('guests.gdprTab.marketingNotGranted')}
-            </p>
-            <p className="text-xs text-muted-foreground">{t('guests.gdprTab.marketingOnlyGuest')}</p>
-          </div>
+                : t('guests.gdprTab.privacyNoticeNone')}
+            </span>
+          </Fact>
+          <Fact label={t('guests.gdprTab.processingPurpose')}>{guest.dataProcessingPurpose || '—'}</Fact>
+        </Facts>
+      </PlainSection>
+
+      <PlainSection title={t('guests.gdprTab.marketingTitle')} data-testid="gdpr-marketing">
+        <div className="space-y-3">
+          <p data-testid="gdpr-marketing-state">
+            {data.marketing.granted
+              ? t(data.marketing.version ? 'guests.gdprTab.marketingGranted' : 'guests.gdprTab.marketingGrantedNoVersion', {
+                  date: data.marketing.since ? formatDate(data.marketing.since) : '—',
+                  version: data.marketing.version,
+                })
+              : t('guests.gdprTab.marketingNotGranted')}
+          </p>
+          <p className="text-sm text-foreground/70">{t('guests.gdprTab.marketingOnlyGuest')}</p>
           {data.marketing.granted && (
             <Button
               variant="outline"
@@ -176,73 +173,77 @@ export function GdprTab({ guest }: GdprTabProps) {
             </Button>
           )}
         </div>
-      </div>
+      </PlainSection>
 
       <ConsentHistory items={data.consentHistory} />
 
       <RetentionSchedule items={data.retention} />
 
       {/* Actions */}
-      {blockedByOpenBookings && (
-        <p className="text-sm text-amber-700" data-testid="gdpr-open-bookings">
-          {t('guests.gdprTab.openBookings')}
-        </p>
-      )}
-      <div className="flex flex-wrap gap-3">
-        <Button
-          variant="outline"
-          onClick={() => exportMutation.mutate()}
-          disabled={exportMutation.isPending}
-          data-testid="gdpr-export-button"
-        >
-          {exportMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-          {t('guests.export')}
-        </Button>
+      <PlainSection title={t('guests.gdprTab.actionsTitle')}>
+        <div className="space-y-4">
+          {blockedByOpenBookings && (
+            <p className="text-sm text-warning-foreground" data-testid="gdpr-open-bookings">
+              {t('guests.gdprTab.openBookings')}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={() => exportMutation.mutate()}
+              disabled={exportMutation.isPending}
+              data-testid="gdpr-export-button"
+            >
+              {exportMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {t('guests.export')}
+            </Button>
 
-        <Button
-          variant="outline"
-          onClick={() => setShowAnonymizeConfirm(true)}
-          disabled={anonymizeMutation.isPending || anonymized || blockedByOpenBookings}
-          data-testid="gdpr-anonymize-button"
-        >
-          {anonymizeMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
-          {anonymized ? t('guests.gdprTab.anonymized') : t('guests.anonymize')}
-        </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowAnonymizeConfirm(true)}
+              disabled={anonymizeMutation.isPending || anonymized || blockedByOpenBookings}
+              data-testid="gdpr-anonymize-button"
+            >
+              {anonymizeMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
+              {anonymized ? t('guests.gdprTab.anonymized') : t('guests.anonymize')}
+            </Button>
 
-        <Button
-          variant="destructive"
-          onClick={() => setShowDeleteConfirm(true)}
-          disabled={deleteMutation.isPending || data.isDeleted || blockedByOpenBookings}
-          data-testid="gdpr-delete-button"
-        >
-          {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-          {data.isDeleted ? t('guests.gdprTab.deleted') : t('guests.delete')}
-        </Button>
-      </div>
+            <Button
+              variant="danger-outline"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={deleteMutation.isPending || data.isDeleted || blockedByOpenBookings}
+              data-testid="gdpr-delete-button"
+            >
+              {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              {data.isDeleted ? t('guests.gdprTab.deleted') : t('guests.delete')}
+            </Button>
+          </div>
 
-      {/* Status indicators */}
-      <div className="text-sm space-y-1 border-t pt-4">
-        {guest.erasureRequested && (
-          <p className="text-amber-600">
-            {t('guests.gdprTab.erasureRequested')} {guest.erasureRequestedDate ? formatDate(guest.erasureRequestedDate) : '—'}
-          </p>
-        )}
-        {data.alloggiatiDataErasedAt && !anonymized && (
-          <p className="text-muted-foreground">
-            {t('guests.gdprTab.alloggiatiDataErasedOn', { date: formatDate(data.alloggiatiDataErasedAt) })}
-          </p>
-        )}
-        {data.anonymizedAt && (
-          <p className="text-muted-foreground">
-            {t('guests.gdprTab.anonymizedOn')} {formatDate(data.anonymizedAt)}
-          </p>
-        )}
-        {data.isDeleted && (
-          <p className="text-destructive">
-            {t('guests.gdprTab.deletedOn')} {data.deletedAt ? formatDate(data.deletedAt) : '—'}
-          </p>
-        )}
-      </div>
+          {/* Status indicators */}
+          <div className="space-y-1 text-sm">
+            {guest.erasureRequested && (
+              <p className="text-warning-foreground">
+                {t('guests.gdprTab.erasureRequested')} {guest.erasureRequestedDate ? formatDate(guest.erasureRequestedDate) : '—'}
+              </p>
+            )}
+            {data.alloggiatiDataErasedAt && !anonymized && (
+              <p className="text-foreground/70">
+                {t('guests.gdprTab.alloggiatiDataErasedOn', { date: formatDate(data.alloggiatiDataErasedAt) })}
+              </p>
+            )}
+            {data.anonymizedAt && (
+              <p className="text-foreground/70">
+                {t('guests.gdprTab.anonymizedOn')} {formatDate(data.anonymizedAt)}
+              </p>
+            )}
+            {data.isDeleted && (
+              <p className="text-destructive">
+                {t('guests.gdprTab.deletedOn')} {data.deletedAt ? formatDate(data.deletedAt) : '—'}
+              </p>
+            )}
+          </div>
+        </div>
+      </PlainSection>
 
       <ConfirmationDialog
         open={showAnonymizeConfirm}
@@ -304,12 +305,11 @@ export function GdprTab({ guest }: GdprTabProps) {
 function ConsentHistory({ items }: { items: GuestConsentHistoryItem[] }) {
   const { t } = useTranslation();
   return (
-    <div className="space-y-2" data-testid="gdpr-consent-history">
-      <p className="text-sm font-medium">{t('guests.gdprTab.historyTitle')}</p>
+    <PlainSection title={t('guests.gdprTab.historyTitle')} data-testid="gdpr-consent-history">
       {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('guests.gdprTab.historyEmpty')}</p>
+        <p className="text-sm text-foreground/70">{t('guests.gdprTab.historyEmpty')}</p>
       ) : (
-        <ul className="space-y-1 text-sm">
+        <ul role="list" className="space-y-2 break-words text-sm">
           {[...items].reverse().map((item) => (
             <li key={`${item.recordedAt}-${item.purpose}-${item.action}`}>
               <span className="font-medium">{t(`guests.gdprTab.action.${item.action}`)}</span>
@@ -321,12 +321,12 @@ function ConsentHistory({ items }: { items: GuestConsentHistoryItem[] }) {
               {t(`guests.gdprTab.source.${item.source}`)}
               {' · '}
               {formatDateTime(item.recordedAt)}
-              {item.note && <span className="block text-muted-foreground">{item.note}</span>}
+              {item.note && <span className="block text-foreground/70">{item.note}</span>}
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </PlainSection>
   );
 }
 
@@ -343,30 +343,29 @@ function RetentionSchedule({ items }: { items: GuestRetentionScheduleItem[] }) {
       .join(' + ');
 
   return (
-    <div className="space-y-2" data-testid="gdpr-retention">
-      <p className="text-sm font-medium">{t('guests.gdprTab.retentionTitle')}</p>
-      <ul className="space-y-2 text-sm">
+    <PlainSection title={t('guests.gdprTab.retentionTitle')} data-testid="gdpr-retention">
+      <ul role="list" className="divide-y divide-border text-sm">
         {items.map((item) => (
-          <li key={item.category} data-testid={`gdpr-retention-${item.category}`} className="rounded-md border p-3">
+          <li key={item.category} data-testid={`gdpr-retention-${item.category}`} className="break-words py-3 first:pt-0 last:pb-0">
             <p className="font-medium">{t(`guests.gdprTab.category.${item.category}`)}</p>
             {item.configured ? (
               <>
                 <p>{t('guests.gdprTab.retentionPeriod', { period: period(item), source: item.source ?? '—' })}</p>
-                <p className="text-muted-foreground">
+                <p className="text-foreground/70">
                   {item.dueDate
                     ? t('guests.gdprTab.retentionDue', { date: formatDate(parseStayDate(item.dueDate)) })
                     : t('guests.gdprTab.retentionNoReference')}
                 </p>
               </>
             ) : (
-              <p className="text-amber-700">{t('guests.gdprTab.retentionNotConfigured')}</p>
+              <p className="text-warning-foreground">{t('guests.gdprTab.retentionNotConfigured')}</p>
             )}
             {item.appliedAt && (
-              <p className="text-muted-foreground">{t('guests.gdprTab.retentionApplied', { date: formatDate(item.appliedAt) })}</p>
+              <p className="text-foreground/70">{t('guests.gdprTab.retentionApplied', { date: formatDate(item.appliedAt) })}</p>
             )}
           </li>
         ))}
       </ul>
-    </div>
+    </PlainSection>
   );
 }

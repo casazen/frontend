@@ -496,6 +496,7 @@
   },
   "nav": {
     "accountHome": "Home",
+    "people": "Persone",
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
@@ -615,8 +616,6 @@
     "notFound": "Contratto non trovato",
     "notFoundDescription": "Il contratto che stai cercando non esiste o non hai i permessi per visualizzarlo.",
     "backToList": "Torna ai contratti",
-    "leaseContract": "Contratto di locazione",
-    "contractTerms": "Termini contrattuali",
     "monthlyRent": "Canone mensile",
     "fiscalRegime": "Regime fiscale",
     "registrationDeadline": "Scadenza registrazione",
@@ -1208,6 +1207,41 @@
       "missing": "Conduttore da indicare"
     },
     "term": "dal {{from}} al {{to}}"
+  },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Condizioni economiche"
+    },
+    "dates": {
+      "end": "Fine del contratto",
+      "start": "Inizio del contratto",
+      "title": "Durata e date"
+    },
+    "details": "Mostra dettagli",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "Tu"
+      },
+      "more": "Mostra tutta la cronologia"
+    },
+    "party": {
+      "extraEu": "Extra-UE"
+    },
+    "property": {
+      "open": "Apri l'immobile",
+      "title": "Immobile"
+    },
+    "status": {
+      "explain": "Cosa significa questo stato"
+    },
+    "tabs": {
+      "data": "Dati",
+      "deadlines": "Scadenze",
+      "documents": "Documenti",
+      "label": "Sezioni del contratto",
+      "payments": "Pagamenti"
+    }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -3020,8 +3054,7 @@
   "supplier": {
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
-    "profileDescription": "Account e dati visibili ai host nel picker",
-    "professionalProfile": "Profilo professionale",
+    "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",
     "status": "Stato",
     "statusActive": "Attivo",
     "statusPending": "In attesa",
@@ -3030,20 +3063,56 @@
     "noneSet": "Non impostato",
     "welcomeBack": "Bentornato",
     "companyName": "Ragione sociale",
-    "email": "Email",
     "phone": "Telefono",
-    "categories": "Categorie",
-    "municipalities": "Comuni",
-    "bioEmpty": "Bio non ancora compilata.",
     "supplierDefault": "Fornitore",
+    "agenda": {
+      "close": "Chiudi questo giorno",
+      "dayEmpty": "Niente in agenda per questo giorno.",
+      "description": "I tuoi lavori e i tuoi impegni, giorno per giorno. I clienti prenotano solo quando sei libero.",
+      "emptyRange": "Nessun lavoro né impegno in questo periodo. Quando accetti una richiesta compare qui.",
+      "emptyRangeCta": "Vai alle richieste",
+      "eventsCount_one": "{{count}} impegno",
+      "eventsCount_other": "{{count}} impegni",
+      "hours": {
+        "edit": "Modifica gli orari",
+        "empty": "Non hai ancora scelto gli orari in cui lavori.",
+        "title": "I tuoi orari"
+      },
+      "legend": {
+        "events": "Lavori e impegni",
+        "label": "Legenda del mese",
+        "unavailable": "Chiuso o non disponibile"
+      },
+      "next": "Periodo successivo",
+      "period": "Periodo",
+      "previous": "Periodo precedente",
+      "reasons": {
+        "Holiday": "Festività",
+        "Illness": "Malattia",
+        "Other": "Non disponibile",
+        "Vacation": "Ferie"
+      },
+      "reopen": "Riapri questo giorno",
+      "state": {
+        "closed": "Chiuso da te",
+        "closedByCalendar": "Chiuso dal calendario",
+        "rest": "Giorno di riposo"
+      },
+      "title": "Agenda e disponibilità",
+      "today": "Oggi",
+      "views": {
+        "day": "Giorno",
+        "label": "Vista dell'agenda",
+        "month": "Mese",
+        "week": "Settimana"
+      }
+    },
     "allDay": "tutto il giorno",
     "availabilityLoading": "Caricamento disponibilità...",
     "availabilityUpdated": "Disponibilità aggiornata",
     "availabilitySaveError": "Impossibile salvare la disponibilità",
     "availabilityTitle": "Disponibilità",
-    "availabilityDescription": "Giornate lavorative con orari di servizio e impegni del calendario collegato. Tocca un giorno per segnare indisponibilità.",
     "available": "Disponibile",
-    "closedByCalendar": "dal calendario",
     "eventBlock": "blocco",
     "eventExtraOpening": "apertura extra",
     "eventFromCalendar": "dal calendario",
@@ -3065,7 +3134,6 @@
     "hoursUpdated": "Orari di lavoro aggiornati",
     "noWorkingHoursToday": "Nessuna fascia di servizio",
     "notAvailable": "Non disponibile",
-    "saveAvailability": "Salva disponibilità",
     "weekday": {
       "Friday": "Venerdì",
       "Monday": "Lunedì",
@@ -3078,14 +3146,10 @@
     "workingHoursLabel": "Orario",
     "calendarSyncTitle": "Sincronizzazione Calendario",
     "calendarSyncDescription": "Scegli come gestire la tua disponibilità. Zero sforzo dopo il setup iniziale.",
-    "googleCalendar": "Google Calendar",
-    "googleCalendarHint": "Collega il tuo Google Calendar in un click. Leggiamo solo quando sei occupato.",
     "connectCalendar": "Collega calendario",
     "icalFeed": "Apple / Outlook / Airbnb",
     "icalFeedHint": "Incolla il link iCal del tuo calendario. Funziona con Apple, Outlook, Airbnb e Booking.",
     "pasteIcalUrl": "Incolla link iCal",
-    "whatsappOption": "WhatsApp",
-    "whatsappHint": "Niente calendario? Ti mandiamo un messaggio ogni settimana. Rispondi con un tap.",
     "enableWhatsapp": "Attiva WhatsApp",
     "dashboardTitle": "Dashboard",
     "dashboardDescription": "La tua operatività su CasaZen",
@@ -3095,18 +3159,14 @@
     "completeProfileTitle": "Completa il tuo profilo",
     "completeProfileDescription": "Questi dettagli aiutano gli host a sceglierti. Il profilo non può rimanere incompleto.",
     "saveAndContinue": "Salva e continua",
-    "editProfile": "Modifica profilo",
-    "saveProfile": "Salva profilo",
     "vatNumber": "Partita IVA",
     "photoUrls": "Foto",
     "photoUrlsHint": "Un URL per riga. Le prime foto appariranno nella tua vetrina pubblica.",
-    "bio": "Descrizione",
     "activationLoading": "Caricamento attivazione...",
     "categoriesHint": "Scegli una o più categorie. Potrai aggiungerne altre dopo.",
     "comuniHint": "Inserisci i nomi delle città dove operi, separati da virgola.",
     "comuniPlaceholder": "es. Roma, Milano, Napoli",
     "connectLater": "Configura dopo",
-    "progressSaveError": "Impossibile salvare. Riprova.",
     "activationStatus": "Stato attivazione",
     "serviceCategories": "Categorie di servizio",
     "operatingMunicipalities": "Comuni di operatività",
@@ -3114,7 +3174,6 @@
     "description": "Descrizione",
     "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
     "saveProgress": "Salva progresso",
-    "progressSaved": "Progresso salvato",
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
@@ -3506,7 +3565,6 @@
     "setupCalendarCTAHint": "Sincronizza la disponibilità in automatico",
     "setAvailabilityCTA": "Disponibilità manuale",
     "setAvailabilityCTAHint": "Imposta i giorni disponibili",
-    "comingSoon": "Presto disponibile",
     "icalFeedUrlTitle": "Collega feed iCal",
     "icalFeedUrlDescription": "Incolla l'URL del tuo calendario iCal. Supportiamo Apple Calendar, Outlook, Airbnb e Booking.com.",
     "icalFeedUrlLabel": "URL feed iCal",
@@ -3549,21 +3607,8 @@
     "calendarStatusLoadError": "Impossibile caricare lo stato del calendario.",
     "syncError": "Errore durante la sincronizzazione",
     "icalConnected": "Feed iCal connesso",
-    "editIcalUrl": "Modifica URL iCal",
     "edit": "Modifica",
     "syncStatusTitle": "Stato sincronizzazione",
-    "companyInfo": "Informazioni azienda",
-    "categoriesAndComuni": "Categorie e comuni",
-    "currentPhotos": "Foto esistenti",
-    "newPhotos": "Nuove foto",
-    "addPhotos": "Aggiungi foto",
-    "uploadPhotos": "Carica foto",
-    "photosUploaded": "Foto caricate",
-    "photosUploadError": "Errore durante il caricamento foto",
-    "maxPhotosError": "Massimo {{max}} foto consentite",
-    "photoCount": "{{current}}/{{max}} foto",
-    "photoGallery": "Galleria foto",
-    "noPhotos": "Nessuna foto caricata",
     "help": {
       "icalPageTitle": "Come collegare il calendario via iCal",
       "icalPageDescription": "Istruzioni passo passo per esportare l'URL iCal dalle piattaforme più diffuse. Copia il link e incollalo nella pagina di sincronizzazione.",
@@ -4112,6 +4157,65 @@
       }
     },
     "profileLoadError": "Impossibile caricare il profilo fornitore.",
+    "profile": {
+      "accountEmail": "Email dell'account",
+      "accountEmailHint": "Per cambiarla scrivi al supporto.",
+      "business": {
+        "title": "Dati dell'attività"
+      },
+      "focus": {
+        "hours": {
+          "action": "Imposta gli orari",
+          "body": "Senza orari non risultano slot di servizio: i clienti non trovano un momento libero per prenotarti.",
+          "title": "Imposta i tuoi orari di lavoro"
+        },
+        "kicker": "Stato del profilo",
+        "ready": {
+          "action": "Vedi il tuo sito vetrina",
+          "title": "Il tuo profilo è attivo"
+        }
+      },
+      "hours": {
+        "end": "{{day}}: fine",
+        "start": "{{day}}: inizio"
+      },
+      "phoneHint": "Con il prefisso se non italiano, ad esempio +39 06 1234567. Gli host lo vedono solo quando prendi in carico un incarico.",
+      "photos": {
+        "add": "Aggiungi foto",
+        "adding": "Carico le foto…",
+        "alt": "Foto {{number}} del tuo lavoro",
+        "counter_one": "{{count}} foto su {{max}}",
+        "counter_other": "{{count}} foto su {{max}}",
+        "cover": "Prima foto",
+        "empty": "Non ci sono ancora foto. Aggiungine qualcuna per mostrare il tuo lavoro.",
+        "errors": {
+          "save": "Non siamo riusciti a salvare le foto. Riprova.",
+          "tooMany": "Puoi avere al massimo {{max}} foto. Togline una prima di aggiungerne altre.",
+          "upload": "Non siamo riusciti a caricare le foto. Usa immagini JPEG, PNG o WebP fino a 5 MB e riprova."
+        },
+        "hint": "Compaiono sul tuo sito vetrina, nell'ordine che vedi qui. Le foto si salvano appena le carichi o le sposti.",
+        "moveEarlier": "Sposta la foto {{number}} prima",
+        "moveLater": "Sposta la foto {{number}} dopo",
+        "preview": "Vedi come compari sul sito vetrina",
+        "remove": "Togli la foto {{number}}",
+        "removeConfirm": "Togli la foto",
+        "removeDescription": "La foto esce dal tuo profilo e non si può rimettere: per riaverla la carichi di nuovo.",
+        "removeTitle": "Togliere questa foto?",
+        "title": "Foto del tuo lavoro",
+        "unavailable": "Foto non disponibile"
+      },
+      "presentation": {
+        "hint": "Racconta chi sei, cosa fai e in quali situazioni sei utile. La leggono gli host e i clienti.",
+        "label": "Descrizione",
+        "title": "Presentazione"
+      },
+      "save": "Salva i dati",
+      "saveError": "Impossibile salvare. Riprova.",
+      "saved": "Dati salvati",
+      "services": {
+        "title": "Servizi e zona"
+      }
+    },
     "availabilityLoadError": "Impossibile caricare la disponibilità.",
     "showcase": {
       "title": "Vetrina pubblica",
@@ -4126,8 +4230,7 @@
       "copyLink": "Copia il link",
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
-      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link.",
-      "previewLink": "Anteprima vetrina"
+      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
     }
   },
   "settings": {
@@ -5312,11 +5415,8 @@
     "title": "Ospiti",
     "search": "Cerca per nome o email...",
     "empty": "Nessun ospite trovato",
-    "detail": "Dettaglio ospite",
     "anagrafica": "Anagrafica",
-    "bookings": "Prenotazioni",
     "documents": "Documenti",
-    "gdpr": "GDPR",
     "export": "Esporta dati",
     "anonymize": "Anonimizza",
     "delete": "Cancella dati",
@@ -5324,11 +5424,9 @@
     "noDocument": "Nessun documento caricato",
     "notFound": "Ospite non trovato",
     "notFoundDescription": "L'ospite che stai cercando non esiste o non può essere caricato.",
-    "retry": "Riprova",
     "createdAt": "Data Creazione",
     "viewDetails": "Dettagli",
     "backToGuests": "Torna agli ospiti",
-    "name": "Nome",
     "email": "Email",
     "phone": "Telefono",
     "gender": "Sesso",
@@ -5341,14 +5439,37 @@
     "country": "Paese",
     "notes": "Note",
     "addressSection": "Indirizzo",
-    "noBookings": "Nessuna prenotazione",
     "noBookingsDescription": "Questo ospite non ha ancora prenotazioni registrate nel sistema.",
     "documentType": "Tipo documento",
     "documentNumber": "Numero documento",
     "documentIssueDate": "Data rilascio",
     "documentExpiryDate": "Data scadenza",
     "documentIssuingCountry": "Paese rilascio",
+    "detailPage": {
+      "documentMissing": "Documento non registrato",
+      "documentOnFile": "Documento registrato",
+      "fallbackTitle": "Ospite",
+      "focus": {
+        "inProgress": "In casa ora",
+        "open": "Apri la prenotazione",
+        "past": "Ultimo soggiorno",
+        "upcoming": "Prossimo soggiorno"
+      },
+      "loadError": "Impossibile caricare l'ospite.",
+      "loading": "Caricamento ospite...",
+      "staysLoadError": "Impossibile caricare i soggiorni.",
+      "staysTitle": "Soggiorni",
+      "tabs": {
+        "details": "Dati dell'ospite",
+        "documents": "Documenti",
+        "privacy": "Privacy",
+        "stays": "Soggiorni"
+      },
+      "tabsLabel": "Sezioni della scheda dell'ospite"
+    },
     "gdprTab": {
+      "actionsTitle": "Esporta, anonimizza o cancella",
+      "noticeTitle": "Informativa e finalità",
       "processingPurpose": "Finalità trattamento",
       "anonymized": "Anonimizzato",
       "deleted": "Cancellato",
@@ -8027,6 +8148,99 @@
     "switcher": {
       "current": "Area attuale: {{name}}. Cambia area"
     }
+  },
+  "team": {
+    "capabilities": {
+      "billing": "Piano e fatture",
+      "booking": "Prenotazioni e calendario",
+      "guests": "Ospiti e documenti",
+      "jobs": "Interventi dei fornitori",
+      "leases": "Contratti e inquilini",
+      "money": "Incassi e pagamenti ai fornitori",
+      "people": "Persone e permessi",
+      "prices": "Prezzi e regole",
+      "rents": "Canoni e solleciti",
+      "security": "Sicurezza e registro attività",
+      "settings": "Impostazioni dell'azienda",
+      "suppliers": "Fornitori di fiducia"
+    },
+    "description": "Chi lavora con te, con quale ruolo e cosa vede ognuno.",
+    "drawer": {
+      "allProperties": "Tutti gli immobili",
+      "data": "Chi è",
+      "deactivatedOn": "Accesso disattivato il",
+      "email": "Email",
+      "expires": "Il link scade il",
+      "invitedBy": "Invitato da",
+      "loadError": "Non riusciamo a caricare i dati della persona.",
+      "noProperties": "Nessun immobile",
+      "notFound": "Persona non trovata",
+      "notFoundDescription": "L'invito potrebbe essere stato annullato o la persona non fa più parte del team.",
+      "properties": "Immobili",
+      "role": "Ruolo",
+      "sent": "Invito inviato il",
+      "since": "Nel team dal",
+      "someOfThem": "Solo alcuni immobili",
+      "someProperties": "Solo alcuni immobili ({{total}})"
+    },
+    "invitationsUnavailable": "Non riusciamo a leggere gli inviti: l'elenco mostra solo chi fa già parte del team.",
+    "list": {
+      "allProperties": "Tutti gli immobili",
+      "chips": {
+        "active": "Attive",
+        "all": "Tutte",
+        "deactivated": "Disattivate",
+        "invited": "Invitate",
+        "invitedHint": "Persone invitate che non hanno ancora accettato"
+      },
+      "columns": {
+        "access": "Aree e immobili",
+        "person": "Persona",
+        "role": "Ruolo",
+        "status": "Stato"
+      },
+      "count_one": "{{count}} persona",
+      "count_other": "{{count}} persone",
+      "emptyDescription": "Qui compaiono le persone che lavorano con te e quelle che hai invitato.",
+      "emptyTitle": "Nessuna persona",
+      "filters": {
+        "allAreas": "Tutte le aree",
+        "allRoles": "Tutti i ruoli",
+        "area": "Area",
+        "role": "Ruolo"
+      },
+      "noAreas": "Nessuna area",
+      "noResults": {
+        "description": "Prova a togliere un filtro o a cercare solo il nome.",
+        "title": "Nessuna persona con questi filtri"
+      },
+      "search": "Cerca persone",
+      "searchPlaceholder": "Cerca per nome o email",
+      "someProperties": "Solo alcuni immobili",
+      "you": "sei tu"
+    },
+    "loadError": "Non riusciamo a caricare le persone.",
+    "preview": {
+      "can": "Può gestire",
+      "cannot": "Non può",
+      "cannotEnter": "{{area}}: non può entrare",
+      "deactivated": "L'accesso è disattivato: non può entrare in nessuna area.",
+      "noAreas": "Non ha nessuna area: entra ma non vede niente.",
+      "read": "Può solo guardare",
+      "title": "Cosa vede questo utente",
+      "titleInvited": "Cosa vedrà questo utente",
+      "unavailable": "Non riusciamo a leggere cosa può fare questo ruolo.",
+      "where": "Aree"
+    },
+    "retry": "Riprova",
+    "roleDescriptions": {
+      "Accountant": "Sola lettura: prenotazioni, incassi, contratti, canoni e fatture. Non modifica niente.",
+      "Admin": "Tutto: persone, permessi, piano, fatture e impostazioni.",
+      "Collaborator": "Lavoro di ogni giorno sugli immobili assegnati: arrivi, ospiti, interventi. Vede i prezzi ma non li cambia; non vede gli incassi.",
+      "Owner": "È il proprietario dell'account: può fare tutto e non si può togliere.",
+      "PropertyManager": "Immobili, prenotazioni, contratti, incassi e fornitori. Niente piano e fatture."
+    },
+    "title": "Persone"
   },
   "pageHeader": {
     "moreActions": "Altre azioni",

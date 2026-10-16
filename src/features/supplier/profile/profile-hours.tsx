@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { LoadingScreen } from '@/components/shared/loading-screen';
+import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useSaveSupplierHours, useSupplierHours } from '@/queries/use-supplier';
 import type { SupplierAgendaHoursDay, SupplierHoursBand } from '@/types/supplier';
 import { WEEKDAYS, emptyWeekHours, hmToMinutes, minutesToHm, type WeekdayName } from '../lib/supplier-agenda';
+import { HOURS_SECTION_ID } from './hours-section';
 
 type DayDraft = { open: boolean; start: string; end: string };
 
@@ -49,21 +50,22 @@ function toPayload(draft: Record<WeekdayName, DayDraft>): SupplierAgendaHoursDay
   return days;
 }
 
-/**
- * Weekly working hours on the supplier profile (and reusable elsewhere): one band per weekday on the Rome clock.
- * Empty week = rest every day until the supplier sets hours.
- */
 function hoursPayloadKey(data: { configuredAt?: string | null; days: SupplierAgendaHoursDay[] }): string {
   // Prefer configuredAt when the API sends it; otherwise fingerprint days so mocks / empty weeks still hydrate once.
   return data.configuredAt ?? JSON.stringify(data.days);
 }
 
-export function SupplierWorkingHoursCard() {
+/**
+ * The weekly working hours on the profile: one band per weekday on the Rome clock, one line a day, saved with their own button.
+ * An empty week is rest every day until the supplier sets hours.
+ */
+export function ProfileHours() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierHours();
   const saveHours = useSaveSupplierHours();
   const [draft, setDraft] = useState<Record<WeekdayName, DayDraft>>(() => toDraft(emptyWeekHours()));
   const [hydratedKey, setHydratedKey] = useState<string | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   // Hydrate once per server payload key (not object identity — query mocks often return a new object each render).
   const payloadKey = data ? hoursPayloadKey(data) : null;
@@ -72,98 +74,91 @@ export function SupplierWorkingHoursCard() {
     setDraft(toDraft(data.days));
   }
 
-  if (isLoading) {
-    return <LoadingScreen message={t('supplier.hoursLoading')} className="h-auto py-8" />;
-  }
-
-  if (isError) {
-    return (
-      <ErrorState
-        testId="supplier-hours-error"
-        title={t('supplier.hoursLoadError')}
-        error={error}
-        onRetry={() => void refetch()}
-      />
-    );
-  }
-
   const setDay = (weekday: WeekdayName, patch: Partial<DayDraft>) => {
+    setProblem(null);
     setDraft((prev) => ({ ...prev, [weekday]: { ...prev[weekday], ...patch } }));
   };
 
   const save = async () => {
     const days = toPayload(draft);
     if (!days) {
-      toast.error(t('supplier.hoursInvalid'));
+      setProblem(t('supplier.hoursInvalid'));
       return;
     }
+    setProblem(null);
     try {
       await saveHours.mutateAsync(days);
       toast.success(t('supplier.hoursUpdated'));
     } catch (saveError) {
-      toast.error(getProblemMessage(saveError, t) ?? t('supplier.hoursSaveError'));
+      setProblem(getProblemMessage(saveError, t) ?? t('supplier.hoursSaveError'));
     }
   };
 
-  return (
-    <Card data-testid="supplier-working-hours">
-      <CardHeader>
-        <CardTitle>{t('supplier.hoursTitle')}</CardTitle>
-        <p className="text-sm text-muted-foreground">{t('supplier.hoursDescription')}</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {WEEKDAYS.map((weekday) => {
-          const row = draft[weekday];
-          return (
-            <div
-              key={weekday}
-              className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
-              data-testid={`hours-day-${weekday}`}
-            >
-              <label className="flex min-w-[7rem] items-center gap-2 text-sm font-medium">
-                <Checkbox
-                  checked={row.open}
-                  onCheckedChange={(checked) => setDay(weekday, { open: checked === true })}
-                  aria-label={t(`supplier.weekday.${weekday}`)}
-                />
-                {t(`supplier.weekday.${weekday}`)}
-              </label>
-              {row.open ? (
-                <div className="flex flex-1 items-center gap-2">
-                  <div className="flex-1">
-                    <Label htmlFor={`hours-start-${weekday}`} className="sr-only">
-                      {t('supplier.hoursStart')}
-                    </Label>
+  let content: ReactNode;
+  if (isLoading) {
+    content = <SkeletonLine lines={4} label={t('supplier.hoursLoading')} />;
+  } else if (isError) {
+    content = <ErrorState testId="supplier-hours-error" title={t('supplier.hoursLoadError')} error={error} onRetry={() => void refetch()} />;
+  } else {
+    content = (
+      <>
+        <ul role="list" className="divide-y border-y">
+          {WEEKDAYS.map((weekday) => {
+            const row = draft[weekday];
+            const day = t(`supplier.weekday.${weekday}`);
+            return (
+              <li key={weekday} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-1.5" data-testid={`hours-day-${weekday}`}>
+                <label className="flex min-h-11 flex-1 cursor-pointer items-center gap-3 text-sm font-medium sm:w-40 sm:flex-none">
+                  <Checkbox checked={row.open} onCheckedChange={(checked) => setDay(weekday, { open: checked === true })} aria-label={day} />
+                  {day}
+                </label>
+                {row.open ? (
+                  <div className="flex min-w-0 basis-full items-center gap-2 sm:flex-1 sm:basis-0">
                     <Input
                       id={`hours-start-${weekday}`}
                       type="time"
+                      aria-label={t('supplier.profile.hours.start', { day })}
                       value={row.start}
+                      className="min-w-0 flex-1 pointer-coarse:h-11"
                       onChange={(e) => setDay(weekday, { start: e.target.value })}
                     />
-                  </div>
-                  <span className="text-muted-foreground">–</span>
-                  <div className="flex-1">
-                    <Label htmlFor={`hours-end-${weekday}`} className="sr-only">
-                      {t('supplier.hoursEnd')}
-                    </Label>
+                    <span aria-hidden="true" className="text-foreground/70">
+                      –
+                    </span>
                     <Input
                       id={`hours-end-${weekday}`}
                       type="time"
+                      aria-label={t('supplier.profile.hours.end', { day })}
                       value={row.end}
+                      className="min-w-0 flex-1 pointer-coarse:h-11"
                       onChange={(e) => setDay(weekday, { end: e.target.value })}
                     />
                   </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">{t('supplier.hoursRestDay')}</p>
-              )}
-            </div>
-          );
-        })}
-        <Button onClick={() => void save()} disabled={saveHours.isPending} data-testid="supplier-hours-save">
-          {t('supplier.hoursSave')}
-        </Button>
-      </CardContent>
-    </Card>
+                ) : (
+                  <p className="text-sm text-foreground/70">{t('supplier.hoursRestDay')}</p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        {problem ? (
+          <Alert variant="danger" data-testid="supplier-hours-problem">
+            {problem}
+          </Alert>
+        ) : null}
+        <div>
+          <Button type="button" loading={saveHours.isPending} className="w-full sm:w-auto" onClick={() => void save()} data-testid="supplier-hours-save">
+            {t('supplier.hoursSave')}
+          </Button>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <PlainSection id={HOURS_SECTION_ID} title={t('supplier.hoursTitle')} data-testid="supplier-working-hours">
+      <p className="text-sm text-foreground/70">{t('supplier.hoursDescription')}</p>
+      {content}
+    </PlainSection>
   );
 }
