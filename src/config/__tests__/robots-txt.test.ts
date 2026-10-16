@@ -24,7 +24,6 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /book/*/booking/',
       'Disallow: /book/*/requests/',
       'Disallow: /book/*/property/*/checkout',
-      'Disallow: /fornitori/',
       'Disallow: /my-bookings',
       'Disallow: /booking/',
       'Disallow: /requests/',
@@ -32,6 +31,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /_site/',
       `Sitemap: ${PUBLIC_SITE}/sitemap.xml`,
       `Sitemap: ${PUBLIC_SITE}/sitemap-book.xml`,
+      `Sitemap: ${PUBLIC_SITE}/sitemap-supplier.xml`,
       `Sitemap: ${PUBLIC_SITE}/sitemap-site.xml`,
     ]);
   });
@@ -60,6 +60,9 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/',
       '/property/villa',
       '/sitemap.xml',
+      // The supplier showcases and their sitemap are indexed.
+      '/fornitori/pulizie-roma',
+      '/sitemap-supplier.xml',
       // SEO-VETRINA: the pages of the public site and their sitemap.
       '/funzionalita',
       '/per-i-fornitori',
@@ -76,8 +79,6 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/book/x/booking/123',
       '/book/x/requests/123/confirm',
       '/book/x/property/villa/checkout',
-      // SU-13: the supplier showcase is noindex in v0.
-      '/fornitori/pulizie-roma',
       '/my-bookings',
       '/booking/0f6c',
       '/requests/0f6c/confirm',
