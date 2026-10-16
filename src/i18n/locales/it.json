@@ -496,6 +496,7 @@
   },
   "nav": {
     "accountHome": "Home",
+    "people": "Persone",
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
@@ -8139,6 +8140,99 @@
     "switcher": {
       "current": "Area attuale: {{name}}. Cambia area"
     }
+  },
+  "team": {
+    "capabilities": {
+      "billing": "Piano e fatture",
+      "booking": "Prenotazioni e calendario",
+      "guests": "Ospiti e documenti",
+      "jobs": "Interventi dei fornitori",
+      "leases": "Contratti e inquilini",
+      "money": "Incassi e pagamenti ai fornitori",
+      "people": "Persone e permessi",
+      "prices": "Prezzi e regole",
+      "rents": "Canoni e solleciti",
+      "security": "Sicurezza e registro attività",
+      "settings": "Impostazioni dell'azienda",
+      "suppliers": "Fornitori di fiducia"
+    },
+    "description": "Chi lavora con te, con quale ruolo e cosa vede ognuno.",
+    "drawer": {
+      "allProperties": "Tutti gli immobili",
+      "data": "Chi è",
+      "deactivatedOn": "Accesso disattivato il",
+      "email": "Email",
+      "expires": "Il link scade il",
+      "invitedBy": "Invitato da",
+      "loadError": "Non riusciamo a caricare i dati della persona.",
+      "noProperties": "Nessun immobile",
+      "notFound": "Persona non trovata",
+      "notFoundDescription": "L'invito potrebbe essere stato annullato o la persona non fa più parte del team.",
+      "properties": "Immobili",
+      "role": "Ruolo",
+      "sent": "Invito inviato il",
+      "since": "Nel team dal",
+      "someOfThem": "Solo alcuni immobili",
+      "someProperties": "Solo alcuni immobili ({{total}})"
+    },
+    "invitationsUnavailable": "Non riusciamo a leggere gli inviti: l'elenco mostra solo chi fa già parte del team.",
+    "list": {
+      "allProperties": "Tutti gli immobili",
+      "chips": {
+        "active": "Attive",
+        "all": "Tutte",
+        "deactivated": "Disattivate",
+        "invited": "Invitate",
+        "invitedHint": "Persone invitate che non hanno ancora accettato"
+      },
+      "columns": {
+        "access": "Aree e immobili",
+        "person": "Persona",
+        "role": "Ruolo",
+        "status": "Stato"
+      },
+      "count_one": "{{count}} persona",
+      "count_other": "{{count}} persone",
+      "emptyDescription": "Qui compaiono le persone che lavorano con te e quelle che hai invitato.",
+      "emptyTitle": "Nessuna persona",
+      "filters": {
+        "allAreas": "Tutte le aree",
+        "allRoles": "Tutti i ruoli",
+        "area": "Area",
+        "role": "Ruolo"
+      },
+      "noAreas": "Nessuna area",
+      "noResults": {
+        "description": "Prova a togliere un filtro o a cercare solo il nome.",
+        "title": "Nessuna persona con questi filtri"
+      },
+      "search": "Cerca persone",
+      "searchPlaceholder": "Cerca per nome o email",
+      "someProperties": "Solo alcuni immobili",
+      "you": "sei tu"
+    },
+    "loadError": "Non riusciamo a caricare le persone.",
+    "preview": {
+      "can": "Può gestire",
+      "cannot": "Non può",
+      "cannotEnter": "{{area}}: non può entrare",
+      "deactivated": "L'accesso è disattivato: non può entrare in nessuna area.",
+      "noAreas": "Non ha nessuna area: entra ma non vede niente.",
+      "read": "Può solo guardare",
+      "title": "Cosa vede questo utente",
+      "titleInvited": "Cosa vedrà questo utente",
+      "unavailable": "Non riusciamo a leggere cosa può fare questo ruolo.",
+      "where": "Aree"
+    },
+    "retry": "Riprova",
+    "roleDescriptions": {
+      "Accountant": "Sola lettura: prenotazioni, incassi, contratti, canoni e fatture. Non modifica niente.",
+      "Admin": "Tutto: persone, permessi, piano, fatture e impostazioni.",
+      "Collaborator": "Lavoro di ogni giorno sugli immobili assegnati: arrivi, ospiti, interventi. Vede i prezzi ma non li cambia; non vede gli incassi.",
+      "Owner": "È il proprietario dell'account: può fare tutto e non si può togliere.",
+      "PropertyManager": "Immobili, prenotazioni, contratti, incassi e fornitori. Niente piano e fatture."
+    },
+    "title": "Persone"
   },
   "pageHeader": {
     "moreActions": "Altre azioni",
