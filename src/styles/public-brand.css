@@ -1,0 +1,63 @@
+/*
+ * The look of CasaZen's own public pages: the search, the guides and calculators of the SEO hub, the legal documents and the
+ * supplier showcase. The brand's ink and terracotta (the colors of the logo) over warm paper, with Fraunces for the headings:
+ * the same palette as the public site of CasaZen (`src/site/site.css`) and the primitives of the redesign (`tokens.css`).
+ *
+ * Scoped by `data-brand='casazen'`, which `PublicSiteShell` sets only outside an org's booking site (`mode="default"`): a
+ * host's site keeps its own theme and color. It is deliberately not a `[data-theme]` block: the themes a host can choose are a
+ * closed list that the backend, `public-site-themes.ts` and `public-tokens.css` keep in step (`public-tokens.test.ts`).
+ *
+ * Every token of `public-tokens.css` is set here, so the page does not depend on which theme is the default. WCAG AA pairs
+ * (checked when the palette was chosen): text `#1f3a3d` on the page `#f8f1e6` 10.8, muted `#4a6d71` on the page 5.0 and on white
+ * 5.7, white on the primary `#b53a0a` 5.9, primary as text `#a8380a` on the page 5.8 and on white 6.5. The primary is a shade
+ * deeper than the terracotta of the app (`--terra-600`, #c2410c) on purpose: the shared components also paint it as text on its
+ * own 10% tint (`bg-primary/10 text-primary`, the chips), and that pair needs 4.5:1 on white and on the paper (4.5 and 5.0).
+ */
+.public-site-root[data-brand='casazen'] {
+  --cz-public-font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cz-public-display-weight: 600;
+  --cz-public-display-tracking: -0.01em;
+  --cz-public-primary: #b53a0a;
+  --cz-public-on-primary: #ffffff;
+  --cz-public-primary-text: #a8380a;
+  --cz-public-bg: #f8f1e6;
+  --cz-public-surface: #ffffff;
+  --cz-public-text: #1f3a3d;
+  --cz-public-muted: #4a6d71;
+  --cz-public-border: rgba(31, 58, 61, 0.14);
+  --cz-public-radius: 14px;
+  --cz-public-shadow-card: 0 1px 2px rgba(23, 44, 46, 0.06), 0 10px 28px rgba(23, 44, 46, 0.07);
+  --cz-public-shadow-widget: 0 12px 36px rgba(23, 44, 46, 0.16);
+  --cz-public-section-y: 4rem;
+
+  /* Used only by the brand pages: the ink, its soft and deep tones, the terracotta tints and the paper tones. */
+  --cz-brand-ink: #1f3a3d;
+  --cz-brand-ink-deep: #172c2e;
+  --cz-brand-ink-soft: #e9f1f0;
+  --cz-brand-ink-hover: #2b4f53;
+  --cz-brand-tint: #fff1ea;
+  --cz-brand-tint-strong: #ffe2d3;
+  --cz-brand-tint-text: #9a3412;
+  --cz-brand-paper: #fdfaf6;
+  --cz-brand-paper-deep: #f1e6d4;
+
+  /*
+   * The shared UI components read the console's tokens; `.public-site-root` (public-tokens.css) maps the main ones to the
+   * theme. These are the ones it leaves to the app, which would show the app's cool grays on warm paper: `bg-muted` (the
+   * placeholder of a missing photo, the muted blocks), hover and selected states, popovers.
+   */
+  --color-muted: var(--cz-brand-paper-deep);
+  --color-accent: var(--cz-brand-ink-soft);
+  --color-accent-foreground: var(--cz-public-text);
+  --color-secondary: var(--cz-brand-ink-soft);
+  --color-secondary-foreground: var(--cz-public-text);
+  --color-popover: var(--cz-public-surface);
+  --color-popover-foreground: var(--cz-public-text);
+}
+
+@media (max-width: 767px) {
+  .public-site-root[data-brand='casazen'] {
+    --cz-public-section-y: 2rem;
+  }
+}

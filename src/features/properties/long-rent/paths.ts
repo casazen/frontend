@@ -9,3 +9,9 @@ export const LONG_RENT_PROPERTY_CREATE_PATH = `${LONG_RENT_PROPERTIES_PATH}/new`
 
 /** Lease form with the property preselected. */
 export const newLeaseForPropertyPath = (id: string) => `/app/long-rent/leases/new?propertyId=${encodeURIComponent(id)}`;
+
+/** The page of a lease: where the list of the properties leads from the tenant of a property. */
+export const longRentLeasePath = (id: string) => `/app/long-rent/leases/${id}`;
+
+/** What the address calls the drawer of a property of this section: `?detail=long-rent-property:<id>`. */
+export const LONG_RENT_PROPERTY_DRAWER_KIND = 'long-rent-property';

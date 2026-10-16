@@ -113,7 +113,7 @@ test.describe('Business Golden Path', () => {
     await expect(page.getByText('On', { exact: true })).toBeVisible();
   });
 
-  test('booking create with tourist tax → verify on detail page', async ({ page }) => {
+  test('booking create with tourist tax → the summary shows the quoted tax, then the confirmation', async ({ page }) => {
     await mockPropertiesApi(page, [buildCreatedProperty({ id: PROPERTY_ID })]);
     await mockCurrentUserWithOrg(page);
 
@@ -191,20 +191,27 @@ test.describe('Business Golden Path', () => {
 
     await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
+    // Step 1, the stay: the arrival cannot be in the past, so far-future dates (the mocked API quotes the same whatever they are).
     await page.locator('#propertyId').selectOption({ index: 1 });
-    await page.getByLabel(/Check-in/i).fill('2026-08-01');
-    await page.getByLabel(/Check-out/i).fill('2026-08-07');
-    await page.getByLabel(/Guests|Ospiti/i).fill('4');
+    await page.getByLabel(/Check-in/i).fill('2099-08-01');
+    await page.getByLabel(/Check-out/i).fill('2099-08-07');
+    await page.getByTestId('booking-wizard-next').click();
+
+    // Step 2, the guest.
     await fillHostBookingGuestContact(page);
+    await page.getByTestId('booking-wizard-next').click();
+
+    // Step 3, the summary: the price is the quote of the API, tourist tax included.
+    await expect(page.getByTestId('booking-price-tax')).toContainText(/30[,.]00/, { timeout: 10_000 });
 
     const resp = page.waitForResponse(
       (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
     );
-    await page.getByRole('button', { name: /Create|Crea/i }).click();
+    await page.getByTestId('booking-create-button').click();
     expect((await resp).status()).toBe(201);
 
-    // Should redirect to booking detail
-    await expect(page.getByTestId('booking-price-tax')).toContainText(/30[,.]00/, { timeout: 10_000 });
+    // The confirmation leads to the booking.
+    await expect(page.getByTestId('wizard-done-primary')).toBeVisible({ timeout: 10_000 });
   });
 
   test('payment create → recorded as pending and listed', async ({ page }) => {
@@ -230,14 +237,23 @@ test.describe('Business Golden Path', () => {
       });
     });
 
+    // A payment as the list gives it (SR-03): the guest, the property and the code of the booking, the amounts in euros and cents.
     const created = {
       id: PAYMENT_ID,
       bookingId: BOOKING_ID,
+      bookingCode: 'ABCDE-FGHIJ',
+      propertyId: PROPERTY_ID,
+      propertyName: 'Casa Business',
+      guestName: 'Mario Rossi',
       amount: 930,
+      amountCents: 93000,
       currency: 'EUR',
       refundedAmount: 0,
+      refundedAmountCents: 0,
       status: 'Pending',
       method: 'BankTransfer',
+      description: '',
+      processedAt: null,
       createdAt: '2026-07-01T10:00:00Z',
     };
     let postedBody: Record<string, unknown> | null = null;
@@ -268,9 +284,9 @@ test.describe('Business Golden Path', () => {
 
     await expect.poll(() => postedBody).toMatchObject({ bookingId: BOOKING_ID, amount: 930, method: 'BankTransfer' });
 
-    // Back on the list, the payment is there, waiting for settlement.
+    // Back on the list, the payment is there, still to collect.
     await expect(page).toHaveURL(/\/app\/short-rent\/payments$/);
     const row = page.getByRole('row', { name: /Bonifico bancario/ });
-    await expect(row).toContainText('In attesa');
+    await expect(row).toContainText('Da incassare');
   });
 });

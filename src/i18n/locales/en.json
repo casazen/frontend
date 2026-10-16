@@ -495,6 +495,7 @@
     }
   },
   "nav": {
+    "accountHome": "Home",
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
@@ -537,6 +538,7 @@
     "supplierServicesBar": "Services",
     "supplierHelpIcal": "iCal guide",
     "group": {
+      "account": "Your account",
       "activity": "Your business",
       "everyday": "Every day",
       "management": "Management",
@@ -1548,6 +1550,7 @@
         "format": "Invalid email address"
       },
       "phone": {
+        "maxLength": "The phone number can have at most 20 characters",
         "minLength": "Phone number must be at least 10 digits"
       },
       "country": {
@@ -1557,6 +1560,7 @@
         "required": "Property is required"
       },
       "checkInDate": {
+        "inPast": "The arrival date has already passed: choose an arrival from today on.",
         "required": "Check-in date is required"
       },
       "checkOutDate": {
@@ -1729,8 +1733,82 @@
       }
     },
     "create": {
-      "title": "Create Booking",
-      "description": "Create a new booking reservation"
+      "description": "For a booking taken by phone or in person: three short steps, and the draft saves itself.",
+      "done": {
+        "calendar": "The nights from {{from}} to {{to}} are now taken on the calendar and on the booking site.",
+        "checkin": "A few days before arrival {{name}} gets the link for the online check-in by email.",
+        "description": "{{property}}, from {{from}} to {{to}}",
+        "guestFallback": "the guest",
+        "open": "Open the booking",
+        "payment": "No payment has been recorded: if the guest pays by hand, you record it under Payments.",
+        "title": "Booking for {{name}} added",
+        "toList": "All bookings"
+      },
+      "finish": "Create the booking",
+      "guest": {
+        "checkinNote": "The guest fills in the documents and the details of all the guests with the online check-in.",
+        "country": "Country",
+        "countryExample": "Italy",
+        "email": "Email",
+        "emailExample": "mary.smith@example.com",
+        "emailHint": "The link for the online check-in is sent to this address.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "notes": "Notes",
+        "notesHint": "For example the arrival time or a special request.",
+        "phone": "Phone",
+        "phoneExample": "+39 333 123 4567"
+      },
+      "stay": {
+        "adults": "Adults",
+        "adultsHint": "18 or older",
+        "capacity_one": "The property sleeps up to {{count}} person.",
+        "capacity_other": "The property sleeps up to {{count}} people.",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "guestsTitle": "How many people?",
+        "minors": "Minors",
+        "minorsHint": "Under 18",
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights",
+        "overCapacity_one": "The property sleeps up to {{count}} person: with more guests the booking is not accepted.",
+        "overCapacity_other": "The property sleeps up to {{count}} people: with more guests the booking is not accepted.",
+        "property": "Property",
+        "propertyPlaceholder": "Choose the property"
+      },
+      "steps": {
+        "guest": {
+          "label": "Guest",
+          "purpose": "We need the contact details of the person who booked.",
+          "title": "Who is coming to stay?"
+        },
+        "stay": {
+          "label": "Stay",
+          "purpose": "Choose the property, the dates and how many people are coming.",
+          "title": "Which property, and which dates?"
+        },
+        "summary": {
+          "label": "Summary and price",
+          "purpose": "CasaZen works out the price from the settings of the property.",
+          "title": "Check and create the booking"
+        }
+      },
+      "summary": {
+        "adults_one": "{{count}} adult",
+        "adults_other": "{{count}} adults",
+        "contact": "Contact",
+        "dates": "Dates",
+        "datesValue_one": "From {{from}} to {{to}} · {{count}} night",
+        "datesValue_other": "From {{from}} to {{to}} · {{count}} nights",
+        "guest": "Guest",
+        "guests": "People",
+        "minors_one": "{{count}} minor",
+        "minors_other": "{{count}} minors",
+        "notes": "Notes",
+        "property": "Property",
+        "stayMissing": "The property and the dates are missing: without them we cannot work out the price."
+      },
+      "title": "New booking"
     },
     "edit": {
       "title": "Edit Booking",
@@ -3056,6 +3134,97 @@
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
+    "home": {
+      "first": {
+        "availability": "Set your availability",
+        "body": "Tell us which days and hours you work and add your services: that is where requests come from.",
+        "kicker": "To get started",
+        "service": "Add a service",
+        "title": "Tell customers when you work"
+      },
+      "free": {
+        "body": "No jobs or requests in the next few days. Keep your hours and services up to date to get more.",
+        "title": "A free day"
+      },
+      "greeting": "Good morning, {{name}}",
+      "greetingAnonymous": "Good morning",
+      "menu": {
+        "newService": "Add a service",
+        "requests": "All requests"
+      },
+      "next": {
+        "continue": "Continue",
+        "loadError": "The next steps could not be loaded.",
+        "next": "Next: {{step}}",
+        "progress": "{{done}} of {{total}}",
+        "title": "Set up your profile"
+      },
+      "numbers": {
+        "acceptance": "Accepted",
+        "delta": "{{value}} vs the period before",
+        "deltaFaster": "{{amount}} faster than the period before",
+        "deltaSame": "Same as the period before",
+        "deltaSlower": "{{amount}} slower than the period before",
+        "earnings": "Net earnings",
+        "jobs": "Jobs completed",
+        "loadError": "Your numbers could not be loaded.",
+        "period": "Period",
+        "periods": {
+          "currentMonth": "This month",
+          "last30Days": "Last 30 days",
+          "last3Months": "Last 3 months"
+        },
+        "points_one": "{{count}} point",
+        "points_other": "{{count}} points",
+        "quiet": "Your numbers show up here once the first requests arrive.",
+        "response": "Response time",
+        "title": "Your numbers"
+      },
+      "purpose": {
+        "jobsToday_one": "{{count}} job today",
+        "jobsToday_other": "{{count}} jobs today",
+        "line": "{{day}} · {{what}}",
+        "quiet": "a quiet day, nothing urgent",
+        "toAnswer_one": "{{count}} request to answer",
+        "toAnswer_other": "{{count}} requests to answer"
+      },
+      "steps": {
+        "firstRequest": "Answer your first request",
+        "hours": "Set your availability",
+        "profile": "Complete your profile",
+        "services": "Add your first service",
+        "showcase": "Publish your showcase"
+      },
+      "today": {
+        "completed": "Done: waiting for payment",
+        "filterLabel": "Show by type",
+        "inProgress": "In progress",
+        "inProgressSince": "In progress since {{time}}",
+        "kinds": {
+          "all": "All",
+          "jobs": "Jobs",
+          "requests": "To answer"
+        },
+        "loadError": "Your day could not be loaded.",
+        "moreRequests_one": "{{count}} more request to answer",
+        "moreRequests_other": "{{count}} more requests to answer",
+        "openAvailability": "Open availability",
+        "paymentLate": "Payment is late",
+        "takeAria": "Accept: {{name}}",
+        "title": "Today and the next days"
+      },
+      "todo": {
+        "allClear": "All clear",
+        "allClearHint": "Nothing is waiting for your answer. We tell you here when something comes up.",
+        "loadError": "The to-do list could not be loaded.",
+        "paymentsLate_one": "{{count}} late payment",
+        "paymentsLate_other": "{{count}} late payments",
+        "paymentsLateAction": "See the jobs to collect",
+        "paymentsLateHint": "A customer has not paid a finished job yet. From the request you can remind them.",
+        "requests": "See the requests",
+        "title": "To do"
+      }
+    },
     "requests": {
       "action": {
         "complete": "Mark as done",
@@ -4390,6 +4559,19 @@
         ]
       }
     },
+    "longRentProperty": {
+      "Rented": {
+        "label": "Rented",
+        "explain": "There is a registered lease in force."
+      },
+      "Free": {
+        "label": "Vacant",
+        "explain": "No registered lease in force: the property is ready for a new tenant.",
+        "need": [
+          "The lease with the new tenant, signed and registered"
+        ]
+      }
+    },
     "request": {
       "Richiesto": {
         "label": "Requested",
@@ -4640,6 +4822,36 @@
         "explain": "The rent schedule was disabled before this installment was paid."
       }
     },
+    "payment": {
+      "Pending": {
+        "label": "To collect",
+        "explain": "The payment is recorded but the money has not arrived yet."
+      },
+      "Processing": {
+        "label": "Processing",
+        "explain": "The payment has started: the bank or the card network is confirming it."
+      },
+      "Completed": {
+        "label": "Collected",
+        "explain": "The payment has arrived."
+      },
+      "Failed": {
+        "label": "Failed",
+        "explain": "The payment did not go through: the money has not arrived."
+      },
+      "Refunded": {
+        "label": "Refunded",
+        "explain": "The whole amount was given back to the guest."
+      },
+      "PartiallyRefunded": {
+        "label": "Partly refunded",
+        "explain": "Part of the amount was given back to the guest: the rest is collected."
+      },
+      "Canceled": {
+        "label": "Canceled",
+        "explain": "The payment was canceled before it arrived, usually together with the booking."
+      }
+    },
     "supplier": {
       "Pending": {
         "label": "Pending",
@@ -4701,6 +4913,20 @@
         "need": [
           "Send a new link"
         ]
+      }
+    },
+    "cin": {
+      "valid": {
+        "label": "Valid",
+        "explain": "The CIN is on record in the official format. It must be displayed outside the property and stated in every listing."
+      },
+      "missing": {
+        "label": "Missing",
+        "explain": "This property has no CIN yet: it is mandatory to rent for short periods."
+      },
+      "invalid": {
+        "label": "Invalid",
+        "explain": "The code entered is not in the official format: check it and correct it."
       }
     },
     "alloggiati": {
@@ -4947,6 +5173,19 @@
     "title": "Alloggiati Web",
     "description": "Police reporting communication status (Art. 109 TULPS)",
     "noPendingReport": "No bookings with pending Alloggiati report.",
+    "list": {
+      "title": "Communications"
+    },
+    "focus": {
+      "send": "Send the communication of {{name}}",
+      "fix": "Fix the communication of {{name}}",
+      "then_one": "Then: {{count}} more communication to send",
+      "then_other": "Then: {{count}} more communications to send",
+      "ok": {
+        "title": "Nothing to send right now",
+        "cta": "Open bookings"
+      }
+    },
     "bookings": "Bookings",
     "guest": "Guest",
     "property": "Property",
@@ -5341,6 +5580,14 @@
       "Missing": "Missing",
       "Invalid": "Invalid"
     },
+    "list": {
+      "title": "Your properties"
+    },
+    "focus": {
+      "ok": {
+        "title": "Every property has a valid CIN"
+      }
+    },
     "summary": {
       "valid": "Valid",
       "missing": "Missing",
@@ -5357,7 +5604,9 @@
       "city": "City",
       "cinCode": "CIN code",
       "status": "Status",
-      "editCin": "Edit CIN"
+      "editCin": "Edit CIN",
+      "addCin": "Add the CIN",
+      "fixCin": "Fix the CIN"
     },
     "banner": {
       "title": "CIN compliance required (D.L. 145/2023)",
@@ -5387,7 +5636,8 @@
       "BankTransfer": "Bank Transfer",
       "PayPal": "PayPal",
       "ApplePay": "Apple Pay",
-      "GooglePay": "Google Pay"
+      "GooglePay": "Google Pay",
+      "CashOnArrival": "At the property"
     },
     "validation": {
       "bookingId": {
@@ -5398,31 +5648,59 @@
       }
     },
     "list": {
-      "title": "Payments",
-      "description": "Track revenue, transactions and refunds",
-      "kpi": {
-        "totalRevenue": "Total Revenue",
-        "completedPayments": "Completed payments",
-        "pending": "Pending",
-        "awaitingSettlement": "Awaiting settlement",
+      "actions": {
+        "booking": "View the booking",
+        "details": "Open the details"
+      },
+      "chips": {
+        "all": "All",
+        "collected": "Collected",
+        "collectedHint": "Payments that arrived, even if partly refunded",
         "refunded": "Refunded",
-        "totalRefunded": "Total refunded"
+        "refundedHint": "Payments given back, in full or in part",
+        "toCollect": "To collect",
+        "toCollectHint": "Payments recorded or being processed, not arrived yet"
       },
-      "transactions": "Transactions",
-      "loading": "Loading payments...",
-      "loadError": "Failed to load payments. Please try again.",
-      "noResults": "No payments found.",
       "columns": {
-        "paymentId": "Payment ID",
-        "bookingId": "Booking ID",
         "amount": "Amount",
+        "code": "Booking",
         "method": "Method",
-        "date": "Date",
-        "status": "Status"
+        "property": "Property",
+        "refunded": "Refunded",
+        "status": "Status",
+        "when": "When",
+        "who": "Who and what for"
       },
-      "emptyTitle": "No payments found",
-      "emptyDescription": "Get started by creating your first payment",
-      "addAction": "Add Payment"
+      "count_one": "{{count}} payment",
+      "count_other": "{{count}} payments",
+      "description": "What you have collected and what you are waiting for.",
+      "emptyDescription": "Payments from your bookings and refunds show up here by themselves, with the numbers of the month.",
+      "emptyTitle": "The money coming in will show up here",
+      "filters": {
+        "allMethods": "All methods",
+        "allProperties": "All properties",
+        "date": "Date between",
+        "method": "Method",
+        "property": "Property"
+      },
+      "forBooking": "Booking {{code}}",
+      "loadError": "Failed to load payments. Please try again.",
+      "noResultsDescription": "Try removing a filter or searching with another name.",
+      "noResultsTitle": "No payments with these filters",
+      "refundedAmount": "Refunded {{amount}}",
+      "searchLabel": "Search payments",
+      "searchPlaceholder": "Search guest, property or code",
+      "summary": {
+        "collected": "Collected in {{month}}",
+        "label": "This month's payments",
+        "refunded": "Refunded in {{month}}",
+        "waiting": "Waiting to be collected"
+      },
+      "title": "Payments",
+      "views": {
+        "lastMonth": "Last month",
+        "thisMonth": "This month"
+      }
     },
     "detail": {
       "title": "Payment #",
@@ -6556,8 +6834,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance cockpit",
-      "description": "Pending compliance tasks for properties and bookings"
+      "title": "Compliance",
+      "description": "What is missing to be compliant, for your properties and your stays."
     },
     "summary": {
       "title": "Compliance overview",
@@ -6575,6 +6853,32 @@
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
       "turnoversPending": "Properties to declare ready"
+    },
+    "cockpit": {
+      "kicker": "What is missing",
+      "allClear": {
+        "title": "You are all set",
+        "body": "Nothing is pending: your properties are active and your stays are in order.",
+        "cta": "Open properties"
+      },
+      "then_one": "Then: {{count}} more thing to fix",
+      "then_other": "Then: {{count}} more things to fix",
+      "stays": {
+        "title": "To do"
+      },
+      "properties": {
+        "title": "Your properties"
+      },
+      "seeAll": "See all ({{count}})",
+      "showLess": "Show less",
+      "missing": {
+        "lead": "Missing: {{what}}",
+        "guests_one": "{{count}} guest",
+        "guests_other": "{{count}} guests",
+        "notConfirmed": "Final confirmation",
+        "composition": "Guest composition",
+        "guestData": "Guest details"
+      }
     },
     "properties": {
       "openWizard": "Activation wizard",
@@ -7629,6 +7933,7 @@
       "description": "Your role does not include access to this page. If you need it for your work, you can ask for access.",
       "backToToday": "Back to Today",
       "backToOverview": "Back to Overview",
+      "backToStart": "Back to the start page",
       "requestAccess": "Request access",
       "requestAccessGeneric": "To request access, contact whoever administers your account.",
       "mailSubject": "Access request for a CasaZen page",
@@ -7639,10 +7944,89 @@
       "profileAndLanguage": "Profile and language"
     }
   },
+  "account": {
+    "activity": {
+      "accessRequested": "Request for access to an area or a page",
+      "formerMember": "Former member",
+      "invitationAccepted": "Invitation accepted ({{role}})",
+      "invitationRevoked": "Invitation withdrawn ({{role}})",
+      "memberAreasChanged": "Areas of {{member}} changed",
+      "memberDeactivated": "Access of {{member}} switched off",
+      "memberInvited": "Invitation sent ({{role}})",
+      "memberPropertyAccessChanged": "Properties of {{member}} changed",
+      "memberReactivated": "Access of {{member}} switched back on",
+      "memberRemoved": "{{member}} removed from the team",
+      "memberRoleChanged": "Role of {{member}} changed: from {{from}} to {{to}}",
+      "other": "Change to the account",
+      "planChanged": "Plan changed: from {{from}} to {{to}}",
+      "system": "System"
+    },
+    "home": {
+      "activity": {
+        "empty": "When the team works, the activity shows up here.",
+        "seeAll": "See all",
+        "title": "Recent activity"
+      },
+      "attention": "To check",
+      "description": "People, properties and the state of your account.",
+      "items": {
+        "alloggiati": {
+          "body": "They are needed to report your guests to the police (Questura).",
+          "title_one": "Alloggiati Web: credentials missing for {{count}} property",
+          "title_other": "Alloggiati Web: credentials missing for {{count}} properties"
+        },
+        "billing": {
+          "action": "Update payment",
+          "body": "Check the payment method: we will take you to Stripe's secure portal.",
+          "title": "There is a problem with the plan payment"
+        },
+        "invitations": {
+          "title_one": "{{count}} invitation not accepted yet",
+          "title_other": "{{count}} invitations not accepted yet",
+          "waiting_one": "The oldest has been waiting for {{count}} day.",
+          "waiting_other": "The oldest has been waiting for {{count}} days.",
+          "waitingToday": "The oldest was sent today."
+        },
+        "properties": {
+          "body": "Complete the activation so they can receive bookings.",
+          "title_one": "{{count}} property cannot receive bookings yet",
+          "title_other": "{{count}} properties cannot receive bookings yet"
+        }
+      },
+      "loadError": "We cannot load the account data.",
+      "loading": "Loading the account Home",
+      "noUrgent": {
+        "body": "Nothing needs your attention right now.",
+        "title": "Nothing urgent"
+      },
+      "now": "Now",
+      "numbers": {
+        "byMode": "{{short}} short-term · {{long}} long-term",
+        "people": "Active people",
+        "properties": "Properties",
+        "seatsOf_one": "of {{count}} seat",
+        "seatsOf_other": "of {{count}} seats",
+        "seatsUnlimited": "Unlimited seats"
+      },
+      "open": "Open {{name}}",
+      "retry": "Try again"
+    },
+    "roles": {
+      "Accountant": "Accountant",
+      "Admin": "Administrator",
+      "Collaborator": "Collaborator",
+      "Owner": "Owner",
+      "PropertyManager": "Property manager"
+    }
+  },
   "areas": {
+    "account": {
+      "description": "People, properties and the state of your account",
+      "name": "Administration"
+    },
     "admin": {
       "description": "Users, suppliers, jobs and compliance checks of the platform",
-      "name": "Administration"
+      "name": "Staff console"
     },
     "longRent": {
       "description": "Contracts, tenants, due dates and rents",
@@ -7920,14 +8304,47 @@
     "retry": "Retry",
     "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
     "list": {
-      "title": "Properties",
-      "description": "The properties you let with long-term leases",
+      "actions": {
+        "createLease": "Create lease",
+        "edit": "Edit",
+        "openLease": "Open lease",
+        "page": "Full page"
+      },
       "add": "Add property",
-      "loading": "Loading properties...",
-      "loadError": "The properties could not be loaded.",
-      "emptyTitle": "No properties",
+      "chips": {
+        "all": "All",
+        "free": "Vacant",
+        "freeHint": "No registered lease in force, even if one is being prepared",
+        "rented": "Rented",
+        "rentedHint": "With a registered lease in force"
+      },
+      "columns": {
+        "property": "Property",
+        "rent": "Rent",
+        "spaces": "Bedrooms and bathrooms",
+        "status": "Status",
+        "tenant": "Tenant"
+      },
+      "count_one": "{{count}} property",
+      "count_other": "{{count}} properties",
+      "description": "Your long-term properties: who lives there, the rent and until when.",
       "emptyDescription": "Add a property and upload its APE to create a lease.",
-      "open": "Open"
+      "emptyTitle": "No properties",
+      "leasesUnavailable": "The leases could not be read, so for now you cannot see who lives in the properties.",
+      "loadError": "The properties could not be loaded.",
+      "noResults": {
+        "description": "Change the search or the tab to see the other properties.",
+        "title": "No property found"
+      },
+      "noTenant": "No tenant",
+      "perMonth": "a month",
+      "preparing": "Lease: {{status}} · from {{date}}",
+      "search": "Search properties",
+      "searchPlaceholder": "Search by name, address or tenant",
+      "tenantAnonymized": "Data removed",
+      "tenantMissing": "Not added yet",
+      "title": "Properties",
+      "until": "Until {{date}}"
     },
     "create": {
       "title": "New property",
@@ -7949,6 +8366,17 @@
       "documentsLoadError": "The property documents could not be loaded.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    },
+    "drawer": {
+      "keyData": "Property details",
+      "leaseSection": "Tenant and lease",
+      "leaseStatus": "Lease",
+      "notFound": "Property not found",
+      "notFoundDescription": "The property you are looking for is gone, or it is not one of your long-term properties.",
+      "rent": "Rent",
+      "tenant": "Tenant",
+      "term": "Term",
+      "termValue": "from {{from}} to {{to}}"
     },
     "cadastral": {
       "title": "Cadastral data",

@@ -5,10 +5,10 @@ import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { AppShellLayout } from './app-shell-layout';
 
-const KNOWN_CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'admin', 'supplier'];
+const KNOWN_CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'admin', 'supplier', 'account'];
 
 /**
- * Layout route of the four areas: the one shell around the page of the route (UI-03). The shell stays mounted while the
+ * Layout route of the five areas: the one shell around the page of the route (UI-03). The shell stays mounted while the
  * user moves between pages, and between areas, so only the content changes.
  */
 export function ContextLayout() {

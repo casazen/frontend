@@ -7,6 +7,7 @@ import type {
   SupplierAgendaCalendar,
   SupplierAgendaHoursDay,
   SupplierAvailabilityResponse,
+  SupplierChecklist,
   SupplierDashboard,
   SupplierHoursResponse,
   SupplierInboxCounts,
@@ -14,8 +15,11 @@ import type {
   SupplierInboxResponse,
   SupplierKpiPeriod,
   SupplierKpis,
+  SupplierOverview,
+  SupplierOverviewPeriod,
   SupplierProfile,
   SupplierShowcasePreview,
+  SupplierToday,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
 import axios from '@/lib/axios';
@@ -273,6 +277,21 @@ export async function fetchSupplierDashboard(): Promise<SupplierDashboard> {
 /** Service-request KPIs of the supplier org for a Europe/Rome period (SU-11). */
 export async function fetchSupplierKpis(period: SupplierKpiPeriod): Promise<SupplierKpis> {
   return ApiClient.get<SupplierKpis>('/supplier/dashboard/kpis', { period });
+}
+
+/** The new requests to answer and the jobs of today and the next `days` days, 1 to 7 (SP-04, SP-04e): the data of the home. */
+export async function fetchSupplierToday(days: number): Promise<SupplierToday> {
+  return ApiClient.get<SupplierToday>('/supplier/today', { days });
+}
+
+/** The three numbers of the home for a period and the one just before it (SP-04e). */
+export async function fetchSupplierOverview(period: SupplierOverviewPeriod): Promise<SupplierOverview> {
+  return ApiClient.get<SupplierOverview>('/supplier/dashboard/overview', { period });
+}
+
+/** The steps of the activation, each from what the supplier really did (SP-04). */
+export async function fetchSupplierChecklist(): Promise<SupplierChecklist> {
+  return ApiClient.get<SupplierChecklist>('/supplier/checklist');
 }
 
 export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {

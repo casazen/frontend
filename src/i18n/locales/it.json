@@ -495,6 +495,7 @@
     }
   },
   "nav": {
+    "accountHome": "Home",
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
@@ -537,6 +538,7 @@
     "supplierServicesBar": "Servizi",
     "supplierHelpIcal": "Guida iCal",
     "group": {
+      "account": "Il tuo account",
       "activity": "La tua attività",
       "everyday": "Ogni giorno",
       "management": "Gestione",
@@ -1548,23 +1550,25 @@
         "format": "Indirizzo email non valido"
       },
       "phone": {
+        "maxLength": "Il numero di telefono può avere al massimo 20 caratteri",
         "minLength": "Il numero di telefono deve essere di almeno 10 cifre"
       },
       "country": {
-        "required": "Il paese e' obbligatorio"
+        "required": "Il paese è obbligatorio"
       },
       "propertyId": {
-        "required": "La proprieta' e' obbligatoria"
+        "required": "Scegli l'immobile"
       },
       "checkInDate": {
-        "required": "La data di check-in e' obbligatoria"
+        "inPast": "La data di arrivo è già passata: scegli un arrivo da oggi in poi.",
+        "required": "Indica la data di arrivo"
       },
       "checkOutDate": {
-        "required": "La data di check-out e' obbligatoria",
+        "required": "Indica la data di partenza",
         "afterCheckIn": "La data di check-out deve essere successiva al check-in"
       },
       "numberOfGuests": {
-        "min": "Almeno 1 ospite e' obbligatorio"
+        "min": "Serve almeno un adulto"
       },
       "numberOfChildren": {
         "invalid": "Indica un numero di minori valido",
@@ -1729,8 +1733,82 @@
       }
     },
     "create": {
-      "title": "Nuova prenotazione",
-      "description": "Crea una nuova prenotazione"
+      "description": "Per una prenotazione presa per telefono o di persona: tre passi brevi, la bozza si salva da sola.",
+      "done": {
+        "calendar": "Le notti dal {{from}} al {{to}} risultano subito occupate sul calendario e sul sito di prenotazione.",
+        "checkin": "Pochi giorni prima dell'arrivo {{name}} riceve per email il link per il check-in online.",
+        "description": "{{property}}, dal {{from}} al {{to}}",
+        "guestFallback": "l'ospite",
+        "open": "Apri la prenotazione",
+        "payment": "Nessun pagamento è stato registrato: se l'ospite paga a mano, lo segni tu da Pagamenti.",
+        "title": "Prenotazione di {{name}} inserita",
+        "toList": "Tutte le prenotazioni"
+      },
+      "finish": "Crea la prenotazione",
+      "guest": {
+        "checkinNote": "I documenti e i dati di tutti gli ospiti li compila l'ospite col check-in online.",
+        "country": "Paese",
+        "countryExample": "Italia",
+        "email": "Email",
+        "emailExample": "maria.rossi@esempio.com",
+        "emailHint": "A questo indirizzo arriva il link per il check-in online.",
+        "firstName": "Nome",
+        "lastName": "Cognome",
+        "notes": "Note",
+        "notesHint": "Per esempio l'orario di arrivo o una richiesta particolare.",
+        "phone": "Telefono",
+        "phoneExample": "+39 333 123 4567"
+      },
+      "stay": {
+        "adults": "Adulti",
+        "adultsHint": "18 anni o più",
+        "capacity_one": "L'immobile ospita al massimo {{count}} persona.",
+        "capacity_other": "L'immobile ospita al massimo {{count}} persone.",
+        "checkIn": "Arrivo (check-in)",
+        "checkOut": "Partenza (check-out)",
+        "guestsTitle": "Quante persone?",
+        "minors": "Minori",
+        "minorsHint": "Meno di 18 anni",
+        "nights_one": "{{count}} notte",
+        "nights_other": "{{count}} notti",
+        "overCapacity_one": "L'immobile ospita al massimo {{count}} persona: con più ospiti la prenotazione non viene accettata.",
+        "overCapacity_other": "L'immobile ospita al massimo {{count}} persone: con più ospiti la prenotazione non viene accettata.",
+        "property": "Immobile",
+        "propertyPlaceholder": "Scegli l'immobile"
+      },
+      "steps": {
+        "guest": {
+          "label": "Ospite",
+          "purpose": "Ci servono i dati di contatto di chi ha prenotato.",
+          "title": "Chi viene a soggiornare?"
+        },
+        "stay": {
+          "label": "Soggiorno",
+          "purpose": "Scegli l'immobile, le date e quante persone arrivano.",
+          "title": "Per quale casa e quali date?"
+        },
+        "summary": {
+          "label": "Riepilogo e prezzo",
+          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "title": "Controlla e crea la prenotazione"
+        }
+      },
+      "summary": {
+        "adults_one": "{{count}} adulto",
+        "adults_other": "{{count}} adulti",
+        "contact": "Contatti",
+        "dates": "Date",
+        "datesValue_one": "Dal {{from}} al {{to}} · {{count}} notte",
+        "datesValue_other": "Dal {{from}} al {{to}} · {{count}} notti",
+        "guest": "Ospite",
+        "guests": "Persone",
+        "minors_one": "{{count}} minore",
+        "minors_other": "{{count}} minori",
+        "notes": "Note",
+        "property": "Immobile",
+        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo."
+      },
+      "title": "Nuova prenotazione"
     },
     "edit": {
       "title": "Modifica prenotazione",
@@ -3056,6 +3134,97 @@
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
+    "home": {
+      "first": {
+        "availability": "Imposta la tua disponibilità",
+        "body": "Indica i giorni e gli orari in cui lavori e aggiungi i tuoi servizi: è da qui che arrivano le richieste.",
+        "kicker": "Per cominciare",
+        "service": "Aggiungi un servizio",
+        "title": "Dì ai clienti quando lavori"
+      },
+      "free": {
+        "body": "Nessun lavoro né richieste nei prossimi giorni. Tieni aggiornati orari e servizi per riceverne di più.",
+        "title": "Giornata libera"
+      },
+      "greeting": "Buongiorno, {{name}}",
+      "greetingAnonymous": "Buongiorno",
+      "menu": {
+        "newService": "Aggiungi un servizio",
+        "requests": "Tutte le richieste"
+      },
+      "next": {
+        "continue": "Continua",
+        "loadError": "Impossibile caricare i prossimi passi.",
+        "next": "Prossimo: {{step}}",
+        "progress": "{{done}} di {{total}}",
+        "title": "Configura il tuo profilo"
+      },
+      "numbers": {
+        "acceptance": "Accettate",
+        "delta": "{{value}} sul periodo prima",
+        "deltaFaster": "{{amount}} più veloce del periodo prima",
+        "deltaSame": "Come nel periodo prima",
+        "deltaSlower": "{{amount}} più lento del periodo prima",
+        "earnings": "Incassi netti",
+        "jobs": "Lavori completati",
+        "loadError": "Impossibile caricare i tuoi numeri.",
+        "period": "Periodo",
+        "periods": {
+          "currentMonth": "Questo mese",
+          "last30Days": "Ultimi 30 giorni",
+          "last3Months": "Ultimi 3 mesi"
+        },
+        "points_one": "{{count}} punto",
+        "points_other": "{{count}} punti",
+        "quiet": "I tuoi numeri compaiono qui quando arrivano le prime richieste.",
+        "response": "Tempo di risposta",
+        "title": "I tuoi numeri"
+      },
+      "purpose": {
+        "jobsToday_one": "{{count}} lavoro oggi",
+        "jobsToday_other": "{{count}} lavori oggi",
+        "line": "{{day}} · {{what}}",
+        "quiet": "giornata tranquilla, niente di urgente",
+        "toAnswer_one": "{{count}} richiesta da rispondere",
+        "toAnswer_other": "{{count}} richieste da rispondere"
+      },
+      "steps": {
+        "firstRequest": "Rispondi alla tua prima richiesta",
+        "hours": "Imposta la tua disponibilità",
+        "profile": "Completa il profilo",
+        "services": "Aggiungi il tuo primo servizio",
+        "showcase": "Pubblica la tua vetrina"
+      },
+      "today": {
+        "completed": "Finito: aspetta il pagamento",
+        "filterLabel": "Mostra per tipo",
+        "inProgress": "In corso",
+        "inProgressSince": "In corso dalle {{time}}",
+        "kinds": {
+          "all": "Tutti",
+          "jobs": "Lavori",
+          "requests": "Da rispondere"
+        },
+        "loadError": "Impossibile caricare la tua giornata.",
+        "moreRequests_one": "{{count}} altra richiesta da rispondere",
+        "moreRequests_other": "Altre {{count}} richieste da rispondere",
+        "openAvailability": "Apri la disponibilità",
+        "paymentLate": "Pagamento in ritardo",
+        "takeAria": "Accetta: {{name}}",
+        "title": "Oggi e prossimi giorni"
+      },
+      "todo": {
+        "allClear": "Tutto in ordine",
+        "allClearHint": "Niente aspetta una tua risposta. Ti avvisiamo qui quando arriva qualcosa.",
+        "loadError": "Impossibile caricare le cose da fare.",
+        "paymentsLate_one": "{{count}} pagamento in ritardo",
+        "paymentsLate_other": "{{count}} pagamenti in ritardo",
+        "paymentsLateAction": "Vedi i lavori da incassare",
+        "paymentsLateHint": "Un cliente non ha ancora pagato un lavoro finito. Dalla richiesta puoi ricordarglielo.",
+        "requests": "Vedi le richieste",
+        "title": "Da fare"
+      }
+    },
     "requests": {
       "action": {
         "complete": "Segna come completato",
@@ -4390,6 +4559,19 @@
         ]
       }
     },
+    "longRentProperty": {
+      "Rented": {
+        "label": "Affittato",
+        "explain": "C'è un contratto registrato e in corso."
+      },
+      "Free": {
+        "label": "Libero",
+        "explain": "Nessun contratto registrato e in corso: l'immobile è pronto per un nuovo inquilino.",
+        "need": [
+          "Il contratto con il nuovo inquilino, firmato e registrato"
+        ]
+      }
+    },
     "request": {
       "Richiesto": {
         "label": "Richiesto",
@@ -4640,6 +4822,36 @@
         "explain": "Il piano dei canoni è stato disattivato prima del pagamento di questa rata."
       }
     },
+    "payment": {
+      "Pending": {
+        "label": "Da incassare",
+        "explain": "Il pagamento è registrato ma i soldi non sono ancora arrivati."
+      },
+      "Processing": {
+        "label": "In elaborazione",
+        "explain": "Il pagamento è partito: la banca o il circuito della carta lo stanno confermando."
+      },
+      "Completed": {
+        "label": "Incassato",
+        "explain": "Il pagamento è arrivato."
+      },
+      "Failed": {
+        "label": "Non riuscito",
+        "explain": "Il pagamento non è andato a buon fine: i soldi non sono arrivati."
+      },
+      "Refunded": {
+        "label": "Rimborsato",
+        "explain": "Hai restituito tutta la somma all'ospite."
+      },
+      "PartiallyRefunded": {
+        "label": "Rimborsato in parte",
+        "explain": "Hai restituito all'ospite una parte della somma: il resto è incassato."
+      },
+      "Canceled": {
+        "label": "Annullato",
+        "explain": "Il pagamento è stato annullato prima di arrivare, di solito insieme alla prenotazione."
+      }
+    },
     "supplier": {
       "Pending": {
         "label": "In attesa",
@@ -4701,6 +4913,20 @@
         "need": [
           "Invia un nuovo link"
         ]
+      }
+    },
+    "cin": {
+      "valid": {
+        "label": "Valido",
+        "explain": "Il codice CIN è registrato nel formato ufficiale. Va esposto all'esterno dell'immobile e indicato in ogni annuncio."
+      },
+      "missing": {
+        "label": "Mancante",
+        "explain": "Per questo immobile non c'è ancora un codice CIN: è obbligatorio per affittare per brevi periodi."
+      },
+      "invalid": {
+        "label": "Non valido",
+        "explain": "Il codice inserito non è nel formato ufficiale: controllalo e correggilo."
       }
     },
     "alloggiati": {
@@ -4947,6 +5173,19 @@
     "title": "Alloggiati Web",
     "description": "Stato delle comunicazioni alla Questura (Art. 109 TULPS)",
     "noPendingReport": "Nessuna prenotazione con comunicazione Alloggiati in sospeso.",
+    "list": {
+      "title": "Comunicazioni"
+    },
+    "focus": {
+      "send": "Invia la comunicazione di {{name}}",
+      "fix": "Correggi la comunicazione di {{name}}",
+      "then_one": "Poi: ancora {{count}} comunicazione da inviare",
+      "then_other": "Poi: ancora {{count}} comunicazioni da inviare",
+      "ok": {
+        "title": "Niente da inviare adesso",
+        "cta": "Apri le prenotazioni"
+      }
+    },
     "bookings": "Prenotazioni",
     "guest": "Ospite",
     "property": "Proprietà",
@@ -5341,6 +5580,14 @@
       "Missing": "Mancante",
       "Invalid": "Non valido"
     },
+    "list": {
+      "title": "I tuoi immobili"
+    },
+    "focus": {
+      "ok": {
+        "title": "Tutti gli immobili hanno un CIN valido"
+      }
+    },
     "summary": {
       "valid": "Validi",
       "missing": "Mancanti",
@@ -5357,7 +5604,9 @@
       "city": "Città",
       "cinCode": "Codice CIN",
       "status": "Stato",
-      "editCin": "Modifica CIN"
+      "editCin": "Modifica CIN",
+      "addCin": "Aggiungi il CIN",
+      "fixCin": "Correggi il CIN"
     },
     "banner": {
       "title": "Conformità CIN richiesta (D.L. 145/2023)",
@@ -5387,7 +5636,8 @@
       "BankTransfer": "Bonifico bancario",
       "PayPal": "PayPal",
       "ApplePay": "Apple Pay",
-      "GooglePay": "Google Pay"
+      "GooglePay": "Google Pay",
+      "CashOnArrival": "In struttura"
     },
     "validation": {
       "bookingId": {
@@ -5398,31 +5648,59 @@
       }
     },
     "list": {
-      "title": "Pagamenti",
-      "description": "Monitora ricavi, transazioni e rimborsi",
-      "kpi": {
-        "totalRevenue": "Ricavi totali",
-        "completedPayments": "Pagamenti completati",
-        "pending": "In attesa",
-        "awaitingSettlement": "In attesa di regolamento",
+      "actions": {
+        "booking": "Vedi la prenotazione",
+        "details": "Apri i dettagli"
+      },
+      "chips": {
+        "all": "Tutti",
+        "collected": "Incassati",
+        "collectedHint": "Pagamenti arrivati, anche se in parte rimborsati",
         "refunded": "Rimborsati",
-        "totalRefunded": "Totale rimborsato"
+        "refundedHint": "Pagamenti restituiti, in tutto o in parte",
+        "toCollect": "Da incassare",
+        "toCollectHint": "Pagamenti registrati o in elaborazione, non ancora arrivati"
       },
-      "transactions": "Transazioni",
-      "loading": "Caricamento pagamenti...",
-      "loadError": "Impossibile caricare i pagamenti. Riprova.",
-      "noResults": "Nessun pagamento trovato.",
       "columns": {
-        "paymentId": "ID Pagamento",
-        "bookingId": "ID Prenotazione",
         "amount": "Importo",
+        "code": "Prenotazione",
         "method": "Metodo",
-        "date": "Data",
-        "status": "Stato"
+        "property": "Immobile",
+        "refunded": "Rimborsato",
+        "status": "Stato",
+        "when": "Quando",
+        "who": "Chi e per cosa"
       },
-      "emptyTitle": "Nessun pagamento trovato",
-      "emptyDescription": "Inizia creando il tuo primo pagamento",
-      "addAction": "Aggiungi pagamento"
+      "count_one": "{{count}} pagamento",
+      "count_other": "{{count}} pagamenti",
+      "description": "Cosa hai incassato e cosa aspetti.",
+      "emptyDescription": "Gli incassi delle prenotazioni e i rimborsi compaiono qui da soli, con i numeri del mese.",
+      "emptyTitle": "Qui vedrai i soldi che entrano",
+      "filters": {
+        "allMethods": "Tutti i metodi",
+        "allProperties": "Tutti gli immobili",
+        "date": "Data tra",
+        "method": "Metodo",
+        "property": "Immobile"
+      },
+      "forBooking": "Prenotazione {{code}}",
+      "loadError": "Impossibile caricare i pagamenti. Riprova.",
+      "noResultsDescription": "Prova a togliere un filtro o a cercare con un altro nome.",
+      "noResultsTitle": "Nessun pagamento con questi filtri",
+      "refundedAmount": "Rimborsati {{amount}}",
+      "searchLabel": "Cerca pagamenti",
+      "searchPlaceholder": "Cerca ospite, immobile o codice",
+      "summary": {
+        "collected": "Incassato in {{month}}",
+        "label": "I pagamenti del mese",
+        "refunded": "Rimborsato in {{month}}",
+        "waiting": "In attesa di incasso"
+      },
+      "title": "Pagamenti",
+      "views": {
+        "lastMonth": "Mese scorso",
+        "thisMonth": "Questo mese"
+      }
     },
     "detail": {
       "title": "Pagamento #",
@@ -6556,8 +6834,8 @@
       "Suspended": "Sospeso"
     },
     "page": {
-      "title": "Cockpit compliance",
-      "description": "Attività di compliance in sospeso per immobili e prenotazioni"
+      "title": "Adempimenti",
+      "description": "Cosa manca per essere in regola, per gli immobili e per i soggiorni."
     },
     "summary": {
       "title": "Panoramica compliance",
@@ -6575,6 +6853,32 @@
       "moreItems_one": "e {{count}} altro",
       "moreItems_other": "e altri {{count}}",
       "turnoversPending": "Proprietà da dichiarare pronte"
+    },
+    "cockpit": {
+      "kicker": "Cosa manca",
+      "allClear": {
+        "title": "Sei in regola",
+        "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
+        "cta": "Apri gli immobili"
+      },
+      "then_one": "Poi: ancora {{count}} cosa da sistemare",
+      "then_other": "Poi: ancora {{count}} cose da sistemare",
+      "stays": {
+        "title": "Da fare"
+      },
+      "properties": {
+        "title": "I tuoi immobili"
+      },
+      "seeAll": "Vedi tutte ({{count}})",
+      "showLess": "Mostra meno",
+      "missing": {
+        "lead": "Manca: {{what}}",
+        "guests_one": "{{count}} ospite",
+        "guests_other": "{{count}} ospiti",
+        "notConfirmed": "Conferma finale",
+        "composition": "Composizione degli ospiti",
+        "guestData": "Dati degli ospiti"
+      }
     },
     "properties": {
       "openWizard": "Wizard attivazione",
@@ -7629,6 +7933,7 @@
       "description": "Il tuo ruolo non include l'accesso a questa pagina. Se ti serve per lavorare, puoi chiedere l'accesso.",
       "backToToday": "Torna a Oggi",
       "backToOverview": "Torna alla Panoramica",
+      "backToStart": "Torna alla pagina iniziale",
       "requestAccess": "Chiedi l'accesso",
       "requestAccessGeneric": "Per chiedere l'accesso rivolgiti a chi amministra il tuo account.",
       "mailSubject": "Richiesta di accesso a una pagina di CasaZen",
@@ -7639,10 +7944,89 @@
       "profileAndLanguage": "Profilo e lingua"
     }
   },
+  "account": {
+    "activity": {
+      "accessRequested": "Richiesta di accesso a un'area o a una pagina",
+      "formerMember": "Ex membro",
+      "invitationAccepted": "Invito accettato ({{role}})",
+      "invitationRevoked": "Invito annullato ({{role}})",
+      "memberAreasChanged": "Aree di {{member}} modificate",
+      "memberDeactivated": "Accesso di {{member}} disattivato",
+      "memberInvited": "Invito inviato ({{role}})",
+      "memberPropertyAccessChanged": "Immobili di {{member}} modificati",
+      "memberReactivated": "Accesso di {{member}} riattivato",
+      "memberRemoved": "{{member}} rimosso dal team",
+      "memberRoleChanged": "Ruolo di {{member}} cambiato: da {{from}} a {{to}}",
+      "other": "Modifica all'account",
+      "planChanged": "Piano cambiato: da {{from}} a {{to}}",
+      "system": "Sistema"
+    },
+    "home": {
+      "activity": {
+        "empty": "Quando il team lavora, le attività compaiono qui.",
+        "seeAll": "Vedi tutto",
+        "title": "Attività recente"
+      },
+      "attention": "Da controllare",
+      "description": "Persone, immobili e stato del tuo account.",
+      "items": {
+        "alloggiati": {
+          "body": "Servono per comunicare gli ospiti alla Questura.",
+          "title_one": "Alloggiati Web: mancano le credenziali di {{count}} immobile",
+          "title_other": "Alloggiati Web: mancano le credenziali di {{count}} immobili"
+        },
+        "billing": {
+          "action": "Aggiorna il pagamento",
+          "body": "Controlla il metodo di pagamento: ti porteremo sul portale sicuro di Stripe.",
+          "title": "C'è un problema con il pagamento del piano"
+        },
+        "invitations": {
+          "title_one": "{{count}} invito non ancora accettato",
+          "title_other": "{{count}} inviti non ancora accettati",
+          "waiting_one": "Il più vecchio aspetta da {{count}} giorno.",
+          "waiting_other": "Il più vecchio aspetta da {{count}} giorni.",
+          "waitingToday": "Il più vecchio è stato inviato oggi."
+        },
+        "properties": {
+          "body": "Completa l'attivazione per poter ricevere prenotazioni.",
+          "title_one": "{{count}} immobile non può ancora ricevere prenotazioni",
+          "title_other": "{{count}} immobili non possono ancora ricevere prenotazioni"
+        }
+      },
+      "loadError": "Non riusciamo a caricare i dati dell'account.",
+      "loading": "Caricamento della Home dell'account",
+      "noUrgent": {
+        "body": "Non c'è niente che richieda subito la tua attenzione.",
+        "title": "Niente di urgente"
+      },
+      "now": "Adesso",
+      "numbers": {
+        "byMode": "{{short}} in affitto breve · {{long}} in affitto lungo",
+        "people": "Persone attive",
+        "properties": "Immobili",
+        "seatsOf_one": "su {{count}} posto",
+        "seatsOf_other": "su {{count}} posti",
+        "seatsUnlimited": "Posti illimitati"
+      },
+      "open": "Apri {{name}}",
+      "retry": "Riprova"
+    },
+    "roles": {
+      "Accountant": "Contabile",
+      "Admin": "Amministratore",
+      "Collaborator": "Collaboratore",
+      "Owner": "Titolare",
+      "PropertyManager": "Property manager"
+    }
+  },
   "areas": {
+    "account": {
+      "description": "Persone, immobili e stato del tuo account",
+      "name": "Amministrazione"
+    },
     "admin": {
       "description": "Utenti, fornitori, processi e controlli di conformità della piattaforma",
-      "name": "Amministrazione"
+      "name": "Console staff"
     },
     "longRent": {
       "description": "Contratti, inquilini, scadenze e canoni",
@@ -7920,14 +8304,47 @@
     "retry": "Riprova",
     "roomsValue": "{{bedrooms}} camere · {{bathrooms}} bagni",
     "list": {
-      "title": "Immobili",
-      "description": "Gli immobili che affitti con contratti di lungo periodo",
+      "actions": {
+        "createLease": "Crea contratto",
+        "edit": "Modifica",
+        "openLease": "Apri contratto",
+        "page": "Scheda completa"
+      },
       "add": "Aggiungi immobile",
-      "loading": "Caricamento immobili...",
-      "loadError": "Impossibile caricare gli immobili.",
-      "emptyTitle": "Nessun immobile",
+      "chips": {
+        "all": "Tutti",
+        "free": "Liberi",
+        "freeHint": "Senza un contratto registrato e in corso, anche se ne hai uno in preparazione",
+        "rented": "Affittati",
+        "rentedHint": "Con un contratto registrato e in corso"
+      },
+      "columns": {
+        "property": "Immobile",
+        "rent": "Canone",
+        "spaces": "Camere e bagni",
+        "status": "Stato",
+        "tenant": "Inquilino"
+      },
+      "count_one": "{{count}} immobile",
+      "count_other": "{{count}} immobili",
+      "description": "I tuoi immobili in affitto lungo: chi ci abita, il canone e fino a quando.",
       "emptyDescription": "Aggiungi un immobile e carica il suo APE per poter creare un contratto.",
-      "open": "Apri"
+      "emptyTitle": "Nessun immobile",
+      "leasesUnavailable": "Non riesco a leggere i contratti: per ora non vedi chi abita negli immobili.",
+      "loadError": "Impossibile caricare gli immobili.",
+      "noResults": {
+        "description": "Cambia la ricerca o la scheda per vedere gli altri immobili.",
+        "title": "Nessun immobile trovato"
+      },
+      "noTenant": "Nessun inquilino",
+      "perMonth": "al mese",
+      "preparing": "Contratto: {{status}} · dal {{date}}",
+      "search": "Cerca immobili",
+      "searchPlaceholder": "Cerca per nome, indirizzo o inquilino",
+      "tenantAnonymized": "Dati rimossi",
+      "tenantMissing": "Da indicare",
+      "title": "Immobili",
+      "until": "Fino al {{date}}"
     },
     "create": {
       "title": "Nuovo immobile",
@@ -7949,6 +8366,17 @@
       "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+    },
+    "drawer": {
+      "keyData": "Dati dell'immobile",
+      "leaseSection": "Inquilino e contratto",
+      "leaseStatus": "Contratto",
+      "notFound": "Immobile non trovato",
+      "notFoundDescription": "L'immobile che cerchi non c'è più o non è tra i tuoi immobili in affitto lungo.",
+      "rent": "Canone",
+      "tenant": "Inquilino",
+      "term": "Durata",
+      "termValue": "dal {{from}} al {{to}}"
     },
     "cadastral": {
       "title": "Dati catastali",

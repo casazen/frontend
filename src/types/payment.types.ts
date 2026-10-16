@@ -15,7 +15,9 @@ export type PaymentMethod =
   | 'BankTransfer'
   | 'PayPal'
   | 'ApplePay'
-  | 'GooglePay';
+  | 'GooglePay'
+  /** The guest pays at the property (a booking on request): the backend has had it since BK-01. */
+  | 'CashOnArrival';
 
 export interface Payment {
   id: string;
@@ -33,6 +35,33 @@ export interface Payment {
   netAmountAfterWithholding?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * A payment as `GET /payments` lists it (SR-03, `PaymentListItemDto`): the guest, the property and the code of its booking,
+ * the amounts in euros and in cents (exact), the status and the method by name. The days are UTC instants: `processedAt` is
+ * when the money came in (null until then), `createdAt` when the payment was recorded.
+ */
+export interface PaymentListItem {
+  id: string;
+  bookingId: string;
+  /** The code the guest knows, `XXXXX-XXXXX`. */
+  bookingCode: string;
+  propertyId: string;
+  propertyName: string;
+  /** First and last name of the guest of the booking; empty when the booking has no name. */
+  guestName: string;
+  amount: number;
+  amountCents: number;
+  /** What was given back so far. */
+  refundedAmount: number;
+  refundedAmountCents: number;
+  currency: string;
+  status: PaymentStatus;
+  method: PaymentMethod;
+  description: string;
+  processedAt: string | null;
+  createdAt: string;
 }
 
 export interface CreatePaymentDto {
