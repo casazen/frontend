@@ -24,7 +24,7 @@ import { useAccountSubscription } from './use-account-subscription';
 function AccountBillingBody() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const { planTier } = useCurrentUser();
+  const { planTier, isLoading: profileLoading } = useCurrentUser();
   const entitlementQuery = useEntitlement();
   const plansQuery = useBillingPlans();
   const { subscriptionQuery, checkoutReturn, timedOut } = useAccountSubscription();
@@ -62,9 +62,9 @@ function AccountBillingBody() {
         </Button>
       </div>
     );
-  } else if (!subscription || !tier || entitlementQuery.isLoading || plansQuery.isPending) {
-    // The plan block says different things once the plans are known (open access, prices not defined): it waits for them, so that the
-    // words do not change under the person's eyes.
+  } else if (!subscription || !tier || profileLoading || entitlementQuery.isLoading || plansQuery.isPending) {
+    // The plan block says different things once the entitlement and the plans are known (open access, prices not defined): it waits for
+    // them, so that the words do not change under the person's eyes.
     content = (
       <div data-testid="billing-loading">
         <SkeletonCard lines={4} label={t('accountBilling.loading')} />
