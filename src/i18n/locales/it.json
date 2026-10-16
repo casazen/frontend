@@ -5645,9 +5645,8 @@
     "title": "Cerca"
   },
   "login": {
-    "brand": "CASAZEN",
-    "platformDescription": "Piattaforma gestione affitti brevi",
-    "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
+    "redirecting": "Ti stiamo portando all'accesso…",
+    "signInMessage": "Accedi per gestire proprietà, prenotazioni e pagamenti",
     "signInButton": "Accedi con Auth0",
     "signIn": "Accedi"
   },

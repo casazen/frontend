@@ -319,7 +319,6 @@ test.describe('Onboarding L3 (real stack)', () => {
     const { page, context } = await newActor(browser);
     try {
       await page.goto('/login');
-      await page.getByRole('button', { name: /accedi|sign in|log in|login/i }).first().click();
       await signInAtIdp(page, `lost-${unique()}@example.test`);
       await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
       await page.getByTestId('onboarding-supplier-register').click();
