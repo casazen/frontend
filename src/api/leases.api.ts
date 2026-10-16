@@ -6,6 +6,7 @@ import type {
   CedolareAdvisoryInput,
   CreateLeaseDto,
   LeaseDetail,
+  LeaseListView,
   LeaseRegistration,
   LeaseSigningState,
   LeaseSummary,
@@ -33,8 +34,15 @@ function expectObjectWithId<T>(data: unknown, url: string): T {
   return data as T;
 }
 
+/** What `GET /leases` can narrow the list by (LR-01): a property, a view of the list and a text to look for. */
+export interface LeaseListParams {
+  propertyId?: string;
+  view?: LeaseListView;
+  q?: string;
+}
+
 export const leasesApi = {
-  getAll: async (params?: { propertyId?: string; status?: string }): Promise<LeaseSummary[]> =>
+  getAll: async (params?: LeaseListParams): Promise<LeaseSummary[]> =>
     expectArray<LeaseSummary>(await ApiClient.get<unknown>('/leases', params), '/leases'),
 
   getById: async (id: string): Promise<LeaseDetail> =>

@@ -237,14 +237,23 @@ test.describe('Business Golden Path', () => {
       });
     });
 
+    // A payment as the list gives it (SR-03): the guest, the property and the code of the booking, the amounts in euros and cents.
     const created = {
       id: PAYMENT_ID,
       bookingId: BOOKING_ID,
+      bookingCode: 'ABCDE-FGHIJ',
+      propertyId: PROPERTY_ID,
+      propertyName: 'Casa Business',
+      guestName: 'Mario Rossi',
       amount: 930,
+      amountCents: 93000,
       currency: 'EUR',
       refundedAmount: 0,
+      refundedAmountCents: 0,
       status: 'Pending',
       method: 'BankTransfer',
+      description: '',
+      processedAt: null,
       createdAt: '2026-07-01T10:00:00Z',
     };
     let postedBody: Record<string, unknown> | null = null;
@@ -275,9 +284,9 @@ test.describe('Business Golden Path', () => {
 
     await expect.poll(() => postedBody).toMatchObject({ bookingId: BOOKING_ID, amount: 930, method: 'BankTransfer' });
 
-    // Back on the list, the payment is there, waiting for settlement.
+    // Back on the list, the payment is there, still to collect.
     await expect(page).toHaveURL(/\/app\/short-rent\/payments$/);
     const row = page.getByRole('row', { name: /Bonifico bancario/ });
-    await expect(row).toContainText('In attesa');
+    await expect(row).toContainText('Da incassare');
   });
 });

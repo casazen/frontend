@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
+import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { BookingCalendar } from './components/booking-calendar';
@@ -19,7 +20,6 @@ import { ManualBlockForm } from './components/manual-block-form';
 import { useDeleteManualBlock } from '@/queries/use-manual-blocks';
 import { MODE_CHANGE_BLOCK_REASON } from '@/types/calendar.types';
 import { propertyModePath } from '@/features/properties/mode/paths';
-import { usePropertyModeEnabled } from '@/features/properties/mode/use-mode-entry';
 import type { SlotInfo } from 'react-big-calendar';
 import { getProblemMessage } from '@/lib/api-errors';
 import { addDays, formatStayDate, toStayDate, todayInRome } from '@/lib/stay-dates';
@@ -62,16 +62,15 @@ function ManualBlockActions({ block, propertyId, canWriteProperty, onDeleted }: 
   const { t } = useTranslation();
   const deleteBlock = useDeleteManualBlock();
   const [confirming, setConfirming] = useState(false);
-  const modeChangeEnabled = usePropertyModeEnabled();
 
   // The nights a scheduled change to long-term closes (PM-02): the host did not close them and cannot open them from here (the
   // API refuses with `calendar_block_held_by_mode_change`); they open again when the change is withdrawn. That way out is
-  // offered only to who has it: with the permission to write the property and the flag on.
+  // offered only to who has it: with the permission to write the property.
   if (block.reason === MODE_CHANGE_BLOCK_REASON) {
     return (
       <div className="space-y-2" data-testid="mode-change-block">
         <p className="text-muted-foreground">{t('propertyMode.calendar.explanation')}</p>
-        {canWriteProperty && modeChangeEnabled && (
+        {canWriteProperty && (
           <>
             <p className="text-muted-foreground">{t('propertyMode.calendar.reopen')}</p>
             <Button variant="outline" size="sm" asChild>
@@ -233,6 +232,7 @@ function BlockDetails({
 export function CalendarPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const detailDrawer = useDetailDrawer();
   const { data: properties, isLoading: propertiesLoading } = useProperties({ mode: 'short' });
   const propertyList = Array.isArray(properties) ? properties : [];
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
@@ -273,13 +273,14 @@ export function CalendarPage() {
   const handleSelectEvent = useCallback(
     (event: HostCalendarEvent) => {
       if (event.kind === 'booking') {
-        navigate(`${BOOKINGS_PATH}/${event.id}`);
+        // The drawer of the booking (UI-15), as in the Home and the list; a page without a drawer goes to the page of the booking.
+        if (!detailDrawer.open('booking', event.id)) navigate(`${BOOKINGS_PATH}/${event.id}`);
       } else {
         setBlockDraft(null);
         setSelectedBlockId(event.id);
       }
     },
-    [navigate],
+    [detailDrawer, navigate],
   );
 
   const handleNavigate = useCallback((date: string) => {
