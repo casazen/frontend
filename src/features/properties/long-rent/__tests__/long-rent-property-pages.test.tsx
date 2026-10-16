@@ -19,6 +19,8 @@ vi.mock('@/queries/use-leases');
 // The list asks who may write and read (the page is always inside the workspace) and whose saved views these are.
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true, activeContext: 'long-rent' }) }));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => null }));
+// The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
+vi.mock('@/features/properties/mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
 // Covered by its own tests (long-rent-service-requests.test.tsx): here only the APE and the property core.
 vi.mock('@/features/service-requests/components/long-rent-service-requests', () => ({
   LongRentServiceRequests: ({ propertyId }: { propertyId: string }) => <div data-testid={`long-rent-requests-${propertyId}`} />,

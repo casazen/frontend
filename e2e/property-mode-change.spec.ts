@@ -11,8 +11,7 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 /**
  * PM-03: the wizard that changes the rental mode of a property (short stays <-> long-term leases), its entries in the pages
- * of the property and the row of status with "Annulla il passaggio". L2 (demo mode, mocked API: the four endpoints of PM-02
- * and the flag `propertyModeChange`).
+ * of the property and the row of status with "Annulla il passaggio". L2 (demo mode, mocked API: the four endpoints of PM-02).
  */
 const SHORT_ID = 'prop-mode-short-1';
 const LONG_ID = 'prop-mode-long-1';
@@ -24,14 +23,14 @@ const next = (page: Page) => page.getByTestId('property-mode-next');
 const finish = (page: Page) => page.getByTestId('property-mode-finish');
 const date = (page: Page) => page.getByTestId('property-mode-date');
 
-async function openShortProperty(page: Page, options: { flag?: boolean; scheduledFor?: string } = {}): Promise<PropertyModeMock> {
+async function openShortProperty(page: Page, options: { scheduledFor?: string } = {}): Promise<PropertyModeMock> {
   await mockPropertiesApi(page, [
     buildCreatedProperty({ id: SHORT_ID, name: 'Villa Aurora', city: 'Roma', rentalMode: 'Short' }),
   ]);
   return mockPropertyModeApi(page, { propertyId: SHORT_ID, rentalMode: 'Short', ...options });
 }
 
-async function openLongProperty(page: Page, options: { flag?: boolean } = {}): Promise<PropertyModeMock> {
+async function openLongProperty(page: Page): Promise<PropertyModeMock> {
   await mockLeasesApiEmpty(page);
   await mockPropertiesApi(page, [
     buildCreatedProperty({ id: LONG_ID, name: 'Bilocale Monza', city: 'Monza', rentalMode: 'Long', maxGuests: 0, nightlyRate: 0 }),
@@ -44,7 +43,7 @@ async function openLongProperty(page: Page, options: { flag?: boolean } = {}): P
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
-  return mockPropertyModeApi(page, { propertyId: LONG_ID, rentalMode: 'Long', ...options });
+  return mockPropertyModeApi(page, { propertyId: LONG_ID, rentalMode: 'Long' });
 }
 
 /** Every control that has to be hit with a thumb is at least 44 px tall (the sr-only radio of a choice card is not one: its card is). */
@@ -202,21 +201,6 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/long-rent/properties');
   });
 
-  test('PM-03: with the flag off there is no entry, no row and no way in', async ({ page }) => {
-    const mock = await openShortProperty(page, { flag: false });
-    await page.goto(demoUrl(SHORT_PAGE, 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { level: 1, name: 'Villa Aurora' })).toBeVisible({ timeout: 20_000 });
-
-    // The header is the one it always was: no menu "⋯", and the actions of the page are where they were.
-    await expect(page.getByRole('button', { name: 'Altre azioni' })).toHaveCount(0);
-    await expect(page.getByTestId('property-pause-toggle')).toBeVisible();
-
-    // The address of the wizard leads to the home of the area, and nothing asked the server about the mode.
-    await page.goto(demoUrl(`${SHORT_PAGE}/mode`, 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/\/app\/short-rent(\?.*)?$/, { timeout: 20_000 });
-    expect(mock.requests).toBe(0);
-  });
-
   test('PM-03: opened from the account, the way out and the way back lead to the list of the account', async ({ page }) => {
     const mock = await openShortProperty(page, { scheduledFor: addDays(todayInRome(), 20) });
     await page.goto(demoUrl(`${SHORT_PAGE}/mode?from=account`, 'short-stay'), { waitUntil: 'domcontentloaded' });
@@ -236,9 +220,6 @@ test.describe('Change of rental mode (PM-03)', () => {
   for (const width of [360, 390] as const) {
     test(`PM-03: on a phone of ${width} px every step fits, with wide letters, every control is 44 px and axe finds nothing`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
-      // The look the product is moving to (UI-01): its tokens are the ones that meet AA. The shared pieces of the page (the
-      // description under the title, the "step 2 of 4" line) are muted text, 4.4:1 in the colors of today, which axe refuses.
-      await page.addInitScript(() => localStorage.setItem('casazen:ui', 'v2'));
       const mock = await openShortProperty(page);
       mock.busyUntil = addDays(todayInRome(), 3);
       await page.goto(demoUrl(`${SHORT_PAGE}/mode`, 'short-stay'), { waitUntil: 'domcontentloaded' });
@@ -280,7 +261,6 @@ test.describe('Change of rental mode (PM-03)', () => {
 
     test(`PM-03: on a phone of ${width} px the row of status of the property fits, its button is 44 px and axe finds nothing`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
-      await page.addInitScript(() => localStorage.setItem('casazen:ui', 'v2'));
       await openShortProperty(page, { scheduledFor: addDays(todayInRome(), 20) });
       await page.goto(demoUrl(SHORT_PAGE, 'short-stay'), { waitUntil: 'domcontentloaded' });
 

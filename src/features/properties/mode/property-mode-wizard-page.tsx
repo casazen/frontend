@@ -115,8 +115,7 @@ function WizardLoader({ propertyId, propertyName, area, entry, currentMode, wait
 /**
  * "Cambia modalità" (PM-03, D16): the wizard that programs the passage of a property from short stays to long-term leases, or
  * back, on a day. The same page serves both sections, at `/app/<section>/properties/:id/mode`; the one of the section the
- * property is in opens it, and the other redirects there. Behind the flag `propertyModeChange` (the route redirects to the home
- * of the area while it is off) and the permission to write the property.
+ * property is in opens it, and the other redirects there. Behind the permission to write the property.
  *
  * A property can have one change at a time: with one waiting the page says so and offers to withdraw it. `?from=account`
  * (the list of properties of the account, AM-13) makes the way out lead back there.

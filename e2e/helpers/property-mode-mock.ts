@@ -10,9 +10,9 @@ import type {
 } from '../../src/types/property-mode.types';
 
 /**
- * L2 mock of the change of rental mode (PM-02, flag `propertyModeChange`): the four endpoints of
- * `/api/properties/{id}/mode`, stateful like the server (one change at a time, withdrawn or programmed), plus the flag of
- * `GET /api/public/features`. The day of the preview is worked out from the clock of the machine, in Rome, as the product does.
+ * L2 mock of the change of rental mode (PM-02): the four endpoints of `/api/properties/{id}/mode`, stateful like the server
+ * (one change at a time, withdrawn or programmed). The day of the preview is worked out from the clock of the machine, in
+ * Rome, as the product does.
  */
 
 type Mode = RentalMode;
@@ -21,8 +21,6 @@ export interface PropertyModeMockOptions {
   propertyId: string;
   /** The mode the property is in. */
   rentalMode?: Mode;
-  /** `false` leaves the flag off: the app must show nothing of the feature. */
-  flag?: boolean;
   /** A change that already waits for its day. */
   scheduledFor?: string;
 }
@@ -34,16 +32,14 @@ export interface PropertyModeMock {
   cancels: string[];
   /** The last day a stay (to long-term) or a lease (to short stays) stands in the way of; `null` when nothing does. */
   busyUntil: string | null;
-  /** Requests to the mode endpoints of any kind: with the flag off it must stay at zero. */
-  requests: number;
 }
 
 /** Installs the mock; call it after `mockPropertiesApi` (the property itself) and before opening the page. */
 export async function mockPropertyModeApi(page: Page, options: PropertyModeMockOptions): Promise<PropertyModeMock> {
-  const { propertyId, flag = true } = options;
+  const { propertyId } = options;
   const mode: Mode = options.rentalMode ?? 'Short';
   const target: Mode = mode === 'Short' ? 'Long' : 'Short';
-  const mock: PropertyModeMock = { schedules: [], cancels: [], busyUntil: null, requests: 0 };
+  const mock: PropertyModeMock = { schedules: [], cancels: [], busyUntil: null };
   const aChange = (id: string, toMode: Mode, effectiveDate: string): PropertyModeChange => ({
     id,
     propertyId,
@@ -60,23 +56,10 @@ export async function mockPropertyModeApi(page: Page, options: PropertyModeMockO
   let scheduled: PropertyModeChange | null = options.scheduledFor ? aChange('change-e2e-0', target, options.scheduledFor) : null;
   let last: PropertyModeChange | null = null;
 
-  await page.route('**/api/public/features', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.fallback();
-      return;
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ otaPartnerApi: false, propertyModeChange: flag }),
-    });
-  });
-
   const json = (route: Route, status: number, body: unknown) =>
     route.fulfill({ status, contentType: 'application/json', body: body === undefined ? '' : JSON.stringify(body) });
 
   await page.route(`**/api/properties/${propertyId}/mode**`, async (route) => {
-    mock.requests += 1;
     const request = route.request();
     const url = new URL(request.url());
     const path = url.pathname;

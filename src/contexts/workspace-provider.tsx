@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
+import { AREA_ORDER } from '@/config/areas';
 import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
@@ -32,6 +33,14 @@ function readStoredContext(): AppContextKey | null {
     return 'long-rent';
   }
   return null;
+}
+
+/**
+ * The API lists the `account` context of the org team (AM-01) for every member, which the app has no area for yet. The list is
+ * sorted by key, so it would come first and become the active context: only the contexts of an area of the app are kept.
+ */
+function isKnownContext(context: ContextBootstrapDto): boolean {
+  return AREA_ORDER.includes(context.contextKey);
 }
 
 function resolveActiveContext(
@@ -120,7 +129,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       try {
         const bootstrap = await contextsApi.getContexts();
         if (!mounted) return;
-        let loaded = bootstrap.contexts ?? [];
+        let loaded = (bootstrap.contexts ?? []).filter(isKnownContext);
         if (loaded.length === 0) {
           loaded = await resolveContextsFromAuth(authUser, getAccessToken);
         }

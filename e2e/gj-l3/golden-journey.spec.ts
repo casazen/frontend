@@ -257,7 +257,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
         .toBe('CheckedOut');
 
       await host.goto('/app/short-rent');
-      await expect(host.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 20_000 });
+      await expect(host.getByTestId('sr-home')).toBeVisible({ timeout: 20_000 });
       const summary = await hostApi.get<{
         checkoutsDue?: { items?: { id?: string }[] };
         turnoversPending?: { items?: { id?: string }[] };

@@ -13,11 +13,10 @@
  * shadcn's `--color-accent` is the grey of hover states, not the demo's `--accent`: it only gets a warm grey.
  *
  * GRADUAL RELEASE (decisions 01-D8 and D26). Whatever changes the look of a token the app already has lives under
- * `html[data-ui='v2']`, which `UiVersionSync` sets when the backend flag `uiRedesign` is on, or
- * `localStorage['casazen:ui'] === 'v2'` (QA), or the build has `VITE_UI_V2=true`. Without the attribute this file only
- * adds names nothing reads yet (the primitives, the new tokens, the `v2:` variant), so the app looks exactly as before.
- * The attribute is never set where the app is not redesigned yet: the public booking site (DB-01 migrates it) and the
- * pages of guests and tenants (`NOT_REDESIGNED_ROUTE_HANDLE`). `tokens.test.ts` enforces the first rule,
+ * `html[data-ui='v2']`, which `index.html` sets for every page of the app. Without the attribute this file only adds names
+ * nothing reads yet (the primitives, the new tokens, the `v2:` variant), so a page without it looks as before. `UiVersionSync`
+ * takes the attribute off where the app is not redesigned yet: the public booking site (DB-01 migrates it) and the pages
+ * of guests and tenants (`NOT_REDESIGNED_ROUTE_HANDLE`). `tokens.test.ts` enforces the first rule,
  * `ui-version-sync.test.tsx` and `not-redesigned-routes.test.tsx` the second.
  *
  * The area comes from `html[data-area=...]` (`AreaProvider`): it is on <html> and not on the shell because Radix portals

@@ -41,7 +41,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       page,
     }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
       await page.evaluate(() => {
         document.querySelector('header')?.setAttribute('data-e2e-mounted', 'yes');
         document.querySelector('aside')?.setAttribute('data-e2e-mounted', 'yes');
@@ -60,7 +60,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
 
     test('<html lang> follows the language chosen in the profile menu', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('lang', 'it');
 
       await chooseLanguage(page, 'English');
@@ -72,7 +72,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
 
     test('the profile menu works from the keyboard: the arrows, Enter on a language, Escape and the focus back', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
       const avatar = profileMenuTrigger(page);
 
       // The name of the avatar says whose menu it is, and it opens with Enter.
@@ -98,13 +98,13 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await menu.getByRole('menuitemradio', { name: 'English' }).focus();
       await page.keyboard.press('Enter');
       await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-      await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Good morning/ })).toBeVisible();
       await expect(avatar).toBeFocused();
     });
 
     test('the profile menu offers the areas of the user and goes to the one chosen', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
 
       const menu = await openProfileMenu(page);
       await expect(menu.getByRole('menuitemradio', { name: 'Affitti brevi' })).toHaveAttribute('aria-checked', 'true');
@@ -147,7 +147,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
 
     test('opening a page from the menu leaves the focus on its heading, with no horizontal scroll', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
 
       await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
@@ -165,7 +165,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
 
     test('the sheet "Altro" ends with the account: the profile, the language in buttons a finger tall, and the exit', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
 
       await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
