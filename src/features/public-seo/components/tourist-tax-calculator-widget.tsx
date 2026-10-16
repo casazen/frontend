@@ -92,7 +92,7 @@ export function TouristTaxCalculatorWidget({ comuneSlug, comuneName, rates }: To
   }
 
   return (
-    <section className="my-8 rounded-lg border p-6" data-testid="tourist-tax-calculator-widget">
+    <section className="public-site-card my-8 p-6" data-testid="tourist-tax-calculator-widget">
       <h2 className="text-xl font-semibold">{t('publicSeo.calculateTax')}</h2>
       <ul className="mt-2 space-y-1 text-sm text-muted-foreground" data-testid="tourist-tax-rate-summary">
         {rates.map((rate, index) => (
