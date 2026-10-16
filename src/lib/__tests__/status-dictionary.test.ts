@@ -42,6 +42,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   supplier: [...ADMIN_SUPPLIER_STATUSES],
   // GuestCheckInSessionStatus
   checkin: ["Inviato", "InCompilazione", "Completo", "AlloggiatiInviato", "Scaduto"],
+  // The CIN status of `GET /api/properties/cin-compliance`
+  cin: ["valid", "missing", "invalid"],
   // AlloggiatiWebStatus
   alloggiati: ["DaInviare", "DaInviareManualmente", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
   // SupplierServiceListingStatus (SP-06)

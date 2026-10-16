@@ -1,7 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlainSection } from '@/components/shared/calm';
+import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,26 +75,19 @@ export function CedolareDecisionPanel({ leaseId }: Props) {
   const { data, isLoading, isError, error, isFetching } = useRliAdvisory(leaseId, input);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('leases.rli.advisory.title')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
-        <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-950">
-          {t('leases.rli.advisory.disclaimer')}
+    <PlainSection title={t('leases.rli.advisory.title')} className="space-y-4 text-sm">
+      <Alert variant="info">{t('leases.rli.advisory.disclaimer')}</Alert>
+      {isLoading && <p>{t('leases.rli.advisoryLoading')}</p>}
+      {isError && (
+        <p className="text-destructive" role="alert">
+          {getProblemMessage(error, t) ?? t('leases.rli.advisoryError')}
         </p>
-        {isLoading && <p>{t('leases.rli.advisoryLoading')}</p>}
-        {isError && (
-          <p className="text-destructive" role="alert">
-            {getProblemMessage(error, t) ?? t('leases.rli.advisoryError')}
-          </p>
-        )}
-        {data && <AdvisoryBody data={data} />}
-        {!isLoading && (
-          <AdvisoryInputs pending={isFetching} onSubmit={setInput} />
-        )}
-      </CardContent>
-    </Card>
+      )}
+      {data && <AdvisoryBody data={data} />}
+      {!isLoading && (
+        <AdvisoryInputs pending={isFetching} onSubmit={setInput} />
+      )}
+    </PlainSection>
   );
 }
 
@@ -178,7 +172,7 @@ function Option({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="space-y-3 rounded-md border p-3" data-testid={testId}>
+    <section className="space-y-3 border-s-2 border-border ps-4" data-testid={testId}>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-semibold">{title}</h3>
         {chosen && <Badge variant="secondary">{t('leases.rli.advisory.chosen')}</Badge>}
@@ -346,7 +340,7 @@ function AdvisoryInputs({
   };
 
   return (
-    <form className="space-y-3 rounded-md border p-3" onSubmit={submit} noValidate>
+    <form className="space-y-3 border-t border-border pt-4" onSubmit={submit} noValidate>
       <div className="space-y-0.5">
         <p className="font-medium">{t('leases.rli.advisory.inputs.title')}</p>
         <p className="text-xs text-muted-foreground">{t('leases.rli.advisory.inputs.privacy')}</p>
