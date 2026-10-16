@@ -6317,6 +6317,199 @@
       "action": "Aggiungi un immobile"
     }
   },
+  "propertyMode": {
+    "calendar": {
+      "blockReason": "Passaggio all'affitto lungo",
+      "explanation": "Queste notti sono chiuse da un passaggio all'affitto lungo programmato: non si possono prenotare e non si riaprono da qui.",
+      "manage": "Vai al passaggio",
+      "reopen": "Si riaprono se annulli il passaggio."
+    },
+    "cancel": {
+      "action": "Annulla il passaggio",
+      "description": "Il passaggio non avverrà e l'immobile resterà com'è ora.",
+      "done": "Passaggio annullato",
+      "failed": "Impossibile annullare il passaggio. Riprova.",
+      "keep": "Mantieni il passaggio",
+      "toLong": {
+        "calendar": "Il calendario si riapre: le notti chiuse per il passaggio tornano prenotabili sul sito e sui portali.",
+        "stays": "L'immobile resta in Affitti brevi.",
+        "title": "Annullare il passaggio all'affitto lungo?"
+      },
+      "toShort": {
+        "again": "Potrai programmare un nuovo passaggio quando vuoi.",
+        "stays": "L'immobile resta in Affitti lunghi.",
+        "title": "Annullare il passaggio all'affitto breve?"
+      }
+    },
+    "checks": {
+      "blockedText": "Risolvi quello che segue o scegli un altro giorno, poi puoi continuare.",
+      "blockedTitle": "Il {{date}} non è possibile",
+      "blockers": {
+        "DraftLease": {
+          "open": "Apri la bozza",
+          "title": "Bozza di contratto"
+        },
+        "ImportedBlock": {
+          "open": "Apri i calendari",
+          "title": "Date occupate su un portale"
+        },
+        "Lease": {
+          "open": "Apri il contratto",
+          "title": "Contratto"
+        },
+        "Stay": {
+          "open": "Apri la prenotazione",
+          "title": "Soggiorno"
+        }
+      },
+      "bookings": {
+        "found": "Soggiorni e date occupate che finiscono il {{date}} o dopo:",
+        "none": "Nessun soggiorno o data occupata finisce il {{date}} o dopo.",
+        "portalHint": "Le date dei portali si liberano quando finiscono o se scolleghi il calendario collegato.",
+        "seeAll": "Vedi tutte le prenotazioni",
+        "title": "Soggiorni e date dei portali"
+      },
+      "drafts": {
+        "found": "Bozze di contratto da eliminare:",
+        "help": "Una bozza va eliminata prima del passaggio, ma le bozze non si possono ancora eliminare da qui.",
+        "title": "Bozze di contratto"
+      },
+      "leases": {
+        "found": "Contratti che finiscono il {{date}} o dopo:",
+        "none": "Nessun contratto finisce il {{date}} o dopo.",
+        "seeAll": "Vedi tutti i contratti",
+        "title": "Contratti"
+      },
+      "loadFailed": "Non siamo riusciti a controllare questa data. Riprova.",
+      "loading": "Controllo soggiorni e contratti...",
+      "more_one": "...e {{count}} altro",
+      "more_other": "...e altri {{count}}",
+      "noDate": "Scegli prima il giorno del passaggio.",
+      "okText": "Niente impedisce il passaggio in quel giorno.",
+      "okTitle": "Tutto a posto per il {{date}}",
+      "range": "dal {{start}} al {{end}}",
+      "unexplained": "In quel giorno il passaggio non è possibile. Scegli un altro giorno."
+    },
+    "choice": {
+      "legend": "Che cosa vuoi fare con questo immobile?",
+      "toLong": {
+        "description": "Contratti e canoni al posto delle prenotazioni: l'immobile esce dal sito di prenotazione.",
+        "title": "Passa all'affitto lungo"
+      },
+      "toShort": {
+        "description": "Prenotazioni e sito di prenotazione al posto dei contratti: l'immobile passa in Affitti brevi.",
+        "title": "Passa all'affitto breve"
+      }
+    },
+    "confirm": {
+      "consequences": "Cosa succede",
+      "date": "Dal giorno",
+      "email": "Ti scriviamo un'email di conferma.",
+      "from": "Ora in",
+      "property": "Immobile",
+      "to": "Passa a",
+      "toLong": {
+        "calendar": "Da subito il sito e i portali non accettano più prenotazioni con partenza dal {{date}} in poi.",
+        "site": "Dal {{date}} il sito di prenotazione non mostra più l'immobile.",
+        "stays": "I soggiorni già prenotati che finiscono prima di quel giorno restano validi."
+      },
+      "toShort": {
+        "leases": "Fino ad allora contratti e canoni restano come sono.",
+        "listing": "Per accettare prenotazioni dovrai completare l'annuncio: prezzi, ospiti e CIN.",
+        "section": "Dal {{date}} l'immobile esce da Affitti lunghi e compare in Affitti brevi."
+      },
+      "withdraw": "Puoi annullare il passaggio fino al giorno prima."
+    },
+    "date": {
+      "hint": "Puoi scegliere da {{earliest}} a {{latest}}.",
+      "labelToLong": "Primo giorno in affitto lungo",
+      "labelToShort": "Primo giorno in affitto breve",
+      "reason": {
+        "draft": "Le bozze di contratto vanno eliminate prima del passaggio.",
+        "freeToLong": "Nessun soggiorno o data dei portali lo impedisce: puoi partire da domani.",
+        "freeToShort": "Nessun contratto lo impedisce: puoi partire da domani.",
+        "last": {
+          "ImportedBlock": "Le date occupate sui portali arrivano fino al {{date}}: il passaggio può partire il {{earliest}}.",
+          "Lease": "Il contratto finisce il {{date}}: il passaggio può partire dal giorno dopo, il {{earliest}}.",
+          "Stay": "L'ultimo soggiorno finisce il {{date}}: il passaggio può partire dal giorno dopo, il {{earliest}}."
+        }
+      },
+      "useEarliest": "Usa il {{date}}"
+    },
+    "done": {
+      "backToList": "Torna all'elenco",
+      "descriptionToLong": "«{{name}}» passerà all'affitto lungo il {{date}}.",
+      "descriptionToShort": "«{{name}}» passerà all'affitto breve il {{date}}.",
+      "email": "Ti abbiamo scritto un'email. Puoi annullare il passaggio fino al giorno prima, dalla pagina dell'immobile.",
+      "title": "Passaggio programmato",
+      "toLong": {
+        "calendar": "Da ora il calendario non accetta più prenotazioni con partenza dal {{date}} in poi.",
+        "section": "Dal {{date}} l'immobile compare in Affitti lunghi e non è più in Affitti brevi."
+      },
+      "toShort": {
+        "listing": "Per accettare prenotazioni dovrai completare l'annuncio: prezzi, ospiti e CIN.",
+        "section": "Dal {{date}} l'immobile compare in Affitti brevi e non è più in Affitti lunghi."
+      },
+      "viewProperty": "Vedi l'immobile"
+    },
+    "entry": {
+      "change": "Cambia modalità"
+    },
+    "errors": {
+      "checksFailed": "Risolvi gli ostacoli, o aspetta la fine del controllo, prima di continuare.",
+      "dateInvalid": "Scegli il giorno da cui parte il passaggio.",
+      "dateTooEarly": "Il passaggio non può partire prima del primo giorno possibile.",
+      "dateTooFar": "La data è troppo lontana: scegli un giorno entro dieci anni.",
+      "scheduleFailed": "Non siamo riusciti a programmare il passaggio. Controlla la data e riprova."
+    },
+    "finish": {
+      "toLong": "Programma il passaggio all'affitto lungo",
+      "toShort": "Programma il passaggio all'affitto breve"
+    },
+    "loadFailed": "Non siamo riusciti a caricare l'immobile. Riprova.",
+    "loading": "Carico l'immobile...",
+    "loadingChecks": "Controllo la prima data possibile...",
+    "notFound": "Immobile non trovato.",
+    "notice": {
+      "toLong": "Passaggio all'affitto lungo il {{date}}",
+      "toShort": "Passaggio all'affitto breve il {{date}}",
+      "until": "Fino ad allora l'immobile resta in {{area}}."
+    },
+    "page": {
+      "title": "Cambia modalità"
+    },
+    "retry": "Riprova",
+    "scheduled": {
+      "back": "Torna all'immobile",
+      "hint": "Finché non inizia puoi annullarlo; poi potrai programmarne un altro.",
+      "title": "C'è già un passaggio in programma"
+    },
+    "steps": {
+      "checks": {
+        "label": "Controlli",
+        "next": "Rivedi e conferma",
+        "purpose": "Guardiamo soggiorni, date dei portali e contratti.",
+        "title": "Controlli"
+      },
+      "choice": {
+        "label": "Scelta",
+        "next": "Scegli la data",
+        "purpose": "«{{name}}» è ora in {{area}}. Un immobile sta in una sola modalità alla volta.",
+        "title": "Cosa vuoi fare?"
+      },
+      "confirm": {
+        "label": "Conferma",
+        "purpose": "Controlla i dati prima di programmare il passaggio.",
+        "title": "Controlla e conferma"
+      },
+      "date": {
+        "label": "Data",
+        "next": "Controlla la data",
+        "purpose": "Il passaggio avviene all'inizio del giorno che scegli.",
+        "title": "Da quando?"
+      }
+    }
+  },
   "apiErrors": {
     "network": "Impossibile contattare il server. Controlla la connessione e riprova.",
     "sessionExpired": "La sessione è scaduta. Accedi di nuovo per continuare.",
@@ -6508,11 +6701,25 @@
       "supplierInviteNotResendable": "Un invito già usato o revocato non si può reinviare: crea un nuovo invito.",
       "supplierInviteRevoked": "Questo invito è stato revocato. Chiedi al team CasaZen di inviartene uno nuovo.",
       "calendarBlockOverlapsBooking": "Una prenotazione occupa già una di queste notti: annullala o scegli altre date.",
-      "calendarBlockOverlapsBlock": "Hai già bloccato una di queste notti: elimina quel blocco o scegli altre date.",
+      "calendarBlockOverlapsBlock": "Una di queste notti è già chiusa da un altro blocco: eliminalo o scegli altre date. Il blocco di un passaggio di modalità si toglie annullando il passaggio.",
       "calendarBlockInPast": "Non puoi bloccare date già passate.",
       "calendarBlockInvalidRange": "La data di fine deve essere successiva alla data di inizio.",
       "calendarBlockNotManual": "Questo blocco arriva dal calendario di un canale: si toglie dal canale o scollegando il calendario.",
       "calendarBlockNotFound": "Il blocco non esiste più: aggiorna il calendario.",
+      "calendarBlockHeldByModeChange": "Queste notti sono chiuse dal passaggio all'affitto lungo: per riaprirle annulla il passaggio.",
+      "propertyModeBlockedByBookings": "In quel giorno ci sono ancora soggiorni o date occupate sui portali. Scegli un giorno più avanti.",
+      "propertyModeBlockedByDraftLease": "C'è una bozza di contratto: va eliminata prima del passaggio.",
+      "propertyModeBlockedByLease": "In quel giorno c'è ancora un contratto in corso. Scegli il giorno dopo la sua fine.",
+      "propertyModeChangeExists": "C'è già un passaggio in programma per questo immobile: annullalo prima di programmarne un altro.",
+      "propertyModeChangeNotFound": "Il passaggio non esiste più: aggiorna la pagina.",
+      "propertyModeChangeNotScheduled": "Il passaggio non è più in programma: è già avvenuto, è stato annullato o non è riuscito.",
+      "propertyModeChanged": "L'immobile è stato spostato di modalità a mano: il passaggio non è stato eseguito.",
+      "propertyModeDateTooEarly": "Il passaggio può partire da domani: scegli un giorno futuro.",
+      "propertyModeDateTooFar": "La data è troppo lontana: scegli un giorno entro dieci anni.",
+      "propertyModeTargetInvalid": "La modalità richiesta non è valida.",
+      "propertyModeUnchanged": "L'immobile è già in questa modalità.",
+      "propertyNotBookableInLongMode": "Questo immobile è in affitto lungo: non accetta prenotazioni brevi.",
+      "propertyRentalModeChangeNotAllowed": "La modalità di un immobile non si cambia dal modulo di modifica: usa «Cambia modalità».",
       "propertyPhotoNone": "Seleziona almeno una foto da caricare.",
       "propertyPhotoTooManyFiles": "Hai selezionato troppe foto in una volta sola: caricane meno.",
       "propertyPhotoLimitReached": "Hai raggiunto il numero massimo di foto della proprietà: elimina una foto prima di caricarne altre.",

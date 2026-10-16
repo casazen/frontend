@@ -517,6 +517,7 @@ describe('route-manifest nav helpers', () => {
       '/app/long-rent/properties/new',
       '/app/long-rent/properties/:id',
       '/app/long-rent/properties/:id/edit',
+      '/app/long-rent/properties/:id/mode',
     ]);
     for (const entry of propertyRoutes) {
       expect(entry.context).toBe('long-rent');

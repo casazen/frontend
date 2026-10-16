@@ -8,6 +8,8 @@ import { useProperty, usePropertyDocuments } from '@/queries/use-properties';
 import { PropertyDocumentsSection } from '../components/property-documents-section';
 import { LongRentServiceRequests } from '@/features/service-requests/components/long-rent-service-requests';
 import { PropertyCadastralCard } from '../components/property-cadastral-card';
+import { ScheduledChangeNotice } from '../mode/components/scheduled-change-notice';
+import { useModeChangeMenuItems } from '../mode/use-mode-entry';
 import { LoadErrorCard } from './load-error-card';
 import { longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
 
@@ -20,6 +22,8 @@ export function LongRentPropertyDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { data: property, isLoading, isError, error, refetch, isFetching } = useProperty(id);
   const documents = usePropertyDocuments(id);
+  // "Cambia modalità" in the menu "⋯" (PM-03): none while the flag is off.
+  const modeChangeItems = useModeChangeMenuItems('long-rent', id);
 
   if (isLoading) {
     return <LoadingScreen message={t('longRentProperties.detail.loading')} className="h-auto flex-1" />;
@@ -61,8 +65,11 @@ export function LongRentPropertyDetailPage() {
             to: longRentPropertyEditPath(property.id),
             testId: 'long-rent-property-edit',
           },
+          ...modeChangeItems,
         ]}
       />
+
+      <ScheduledChangeNotice area="long-rent" propertyId={property.id} />
 
       <Card>
         <CardHeader>

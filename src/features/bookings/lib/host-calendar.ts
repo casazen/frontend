@@ -1,6 +1,12 @@
 import { addDays, endOfMonth, nightsBetween, parseStayDate, startOfMonth, startOfWeek, stayDateToLocalDate } from '@/lib/stay-dates';
 import type { TFunction } from 'i18next';
-import { MANUAL_BLOCK_REASONS, type CalendarItemDto, type ManualBlockReason, type OtaReviewReason } from '@/types/calendar.types';
+import {
+  MANUAL_BLOCK_REASONS,
+  MODE_CHANGE_BLOCK_REASON,
+  type BlockReason,
+  type CalendarItemDto,
+  type OtaReviewReason,
+} from '@/types/calendar.types';
 
 /**
  * Host calendar of the web console (PC-08, A2-06): the range asked to `GET /api/bookings/calendar` follows the view and
@@ -76,8 +82,11 @@ export interface HostCalendarBlockEvent extends HostCalendarEventBase {
   summary: string | null;
   /** Entered by hand by the host, not imported from a feed. */
   manual: boolean;
-  /** Why the host closed the dates (manual block only, PC-09); `Other` for an unknown value. */
-  reason: ManualBlockReason | null;
+  /**
+   * Why the dates are closed (manual block only, PC-09); `Other` for an unknown value. `ModeChange` is the block the system
+   * writes for a change of rental mode (PM-02): the host does not choose it and cannot delete it.
+   */
+  reason: BlockReason | null;
   /** The OTA stay the host created from this block (CO-21), while not cancelled. */
   stayId: string | null;
   /** "Crea soggiorno OTA" is offered (CO-21): imported, not a stay yet, not over. */
@@ -90,8 +99,9 @@ function toChannel(value: string | null | undefined): HostCalendarChannel | null
   return HOST_CALENDAR_CHANNELS.find((channel) => channel === value) ?? null;
 }
 
-function toReason(manual: boolean, value: string | null | undefined): ManualBlockReason | null {
+function toReason(manual: boolean, value: string | null | undefined): BlockReason | null {
   if (!manual) return null;
+  if (value === MODE_CHANGE_BLOCK_REASON) return MODE_CHANGE_BLOCK_REASON;
   return MANUAL_BLOCK_REASONS.find((reason) => reason === value) ?? 'Other';
 }
 
@@ -148,6 +158,7 @@ export function toHostCalendarEvents(items: readonly CalendarItemDto[]): HostCal
  * otherwise the label of the feed, else its channel, else a generic label.
  */
 export function blockSourceLabel(event: HostCalendarBlockEvent, t: TFunction): string {
+  if (event.manual && event.reason === MODE_CHANGE_BLOCK_REASON) return t('propertyMode.calendar.blockReason');
   if (event.manual) return t(`booking.calendar.manualBlock.reasons.${event.reason ?? 'Other'}`);
   if (event.feedLabel) return event.feedLabel;
   if (event.channel) return t(`ical.channels.${event.channel}`);
