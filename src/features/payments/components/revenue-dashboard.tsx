@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { StatStrip, StatTile } from '@/components/shared/calm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
-import { TrendingUp, DollarSign, CreditCard, Users } from 'lucide-react';
 import type { RevenueAnalytics } from '@/types';
 
 interface RevenueDashboardProps {
@@ -22,52 +22,13 @@ export function RevenueDashboard({ analytics, currency = 'EUR' }: RevenueDashboa
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.totalRevenue')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(analytics.totalRevenue, currency)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.totalBookings')}</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalBookings}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.avgBookingValue')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(analytics.averageBookingValue, currency)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('payment.revenue.stats.periods')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{rows.length}</div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* The numbers, quiet and in one row (UI-16) */}
+      <StatStrip>
+        <StatTile label={t('payment.revenue.stats.totalRevenue')} value={formatCurrency(analytics.totalRevenue, currency)} />
+        <StatTile label={t('payment.revenue.stats.totalBookings')} value={analytics.totalBookings} />
+        <StatTile label={t('payment.revenue.stats.avgBookingValue')} value={formatCurrency(analytics.averageBookingValue, currency)} />
+        <StatTile label={t('payment.revenue.stats.periods')} value={rows.length} />
+      </StatStrip>
 
       {/* Revenue Chart */}
       <Card>

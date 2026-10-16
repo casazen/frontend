@@ -87,7 +87,7 @@ describe('ContextSidebar (UI-04a)', () => {
     arrange(['admin']);
     renderSidebar('admin', '/app/admin');
 
-    expect(within(screen.getByTestId('area-header')).getByText('Amministrazione')).toBeInTheDocument();
+    expect(within(screen.getByTestId('area-header')).getByText('Console staff')).toBeInTheDocument();
     expect(screen.getByText('v1.0.0 · Admin')).toBeInTheDocument();
   });
 

@@ -35,7 +35,7 @@ describe('usePageTitle (UI-05)', () => {
     ['short-rent', 'Affitti brevi'],
     ['long-rent', 'Affitti lunghi'],
     ['supplier', 'Portale fornitori'],
-    ['admin', 'Amministrazione'],
+    ['admin', 'Console staff'],
   ])('usePageTitle_%s_NamesItsOwnArea', (contextKey, areaName) => {
     render(inShell(contextKey, <Page title="Profilo" />));
 

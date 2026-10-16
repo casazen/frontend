@@ -20,6 +20,7 @@ import {
   Send,
   ShieldCheck,
   FileSignature,
+  Undo2,
   Wrench,
   XCircle,
   type LucideIcon,
@@ -49,6 +50,7 @@ export const STATUS_ICONS: Record<StatusIconName, LucideIcon> = {
   send: Send,
   "shield-check": ShieldCheck,
   signature: FileSignature,
+  undo: Undo2,
   wrench: Wrench,
   "x-circle": XCircle,
 };
