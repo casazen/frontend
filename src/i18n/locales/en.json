@@ -6898,8 +6898,7 @@
     "title": "Search"
   },
   "login": {
-    "brand": "CASAZEN",
-    "platformDescription": "Vacation Property Management Platform",
+    "redirecting": "Taking you to sign in…",
     "signInMessage": "Sign in to manage your properties, bookings, and payments",
     "signInButton": "Sign in with Auth0",
     "signIn": "Log in"

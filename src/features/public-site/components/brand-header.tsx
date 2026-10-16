@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
+import { showLoginEntryPoints } from '@/config/login-entry';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { sitePageById, type SitePageId } from '@/site/site-pages';
 
@@ -17,7 +18,8 @@ const NAV_LINK = 'text-[var(--cz-public-muted)] hover:text-[var(--cz-public-text
 /**
  * Header of CasaZen's own public pages (search, guides, legal documents, supplier showcase): the logo, the pages of the
  * public site, the search and the way in to the app, the same as the header of the public site (`SiteLayout`). An org's
- * booking site has its own (`PublicSiteShell`): the host's name or logo, never CasaZen's.
+ * booking site has its own (`PublicSiteShell`): the host's name or logo, never CasaZen's. The way in ("Accedi") is not
+ * offered on the production site (`src/config/login-entry.ts`): the app is reached there by its address only.
  *
  * The pages of the public site (`/`, `/funzionalita`, ...) are static files that the routing middleware serves, and
  * `/login` needs Auth0, which the public pages do not load: they are plain links (a router link would stay in the app,
@@ -56,12 +58,14 @@ export function BrandHeader() {
             <Search className="h-4 w-4" aria-hidden="true" />
             {t('publicSite.explore')}
           </Link>
-          <a
-            href="/login"
-            className="rounded-full bg-[var(--cz-brand-ink)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--cz-brand-ink-hover)]"
-          >
-            {t('site.nav.login')}
-          </a>
+          {showLoginEntryPoints(import.meta.env.VITE_PUBLIC_SITE_URL) ? (
+            <a
+              href="/login"
+              className="rounded-full bg-[var(--cz-brand-ink)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--cz-brand-ink-hover)]"
+            >
+              {t('site.nav.login')}
+            </a>
+          ) : null}
         </div>
       </div>
     </header>
