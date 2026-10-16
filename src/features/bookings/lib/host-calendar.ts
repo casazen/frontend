@@ -1,4 +1,14 @@
-import { addDays, endOfMonth, nightsBetween, parseStayDate, startOfMonth, startOfWeek, stayDateToLocalDate } from '@/lib/stay-dates';
+import {
+  addDays,
+  endOfMonth,
+  formatStayDate,
+  nightsBetween,
+  parseStayDate,
+  startOfMonth,
+  startOfWeek,
+  stayDateToLocalDate,
+  utcStayDate,
+} from '@/lib/stay-dates';
 import type { TFunction } from 'i18next';
 import {
   MANUAL_BLOCK_REASONS,
@@ -37,6 +47,48 @@ export function hostCalendarRange(view: HostCalendarView, date: string): { start
       return { startDate: date, endDate: date };
     default:
       return { startDate: startOfMonth(date), endDate: endOfMonth(date) };
+  }
+}
+
+/** `date` moved by `months` months, keeping the day of the month or, in a shorter month, its last day (31 January + 1 = 28 February). */
+function addMonths(date: string, months: number): string {
+  const first = startOfMonth(date);
+  if (!first) return '';
+  const [year, month] = first.split('-').map(Number);
+  const targetFirst = utcStayDate(new Date(Date.UTC(year, month - 1 + months, 1)));
+  const lastDay = Number(endOfMonth(targetFirst).slice(8, 10));
+  return addDays(targetFirst, Math.min(Number(date.slice(8, 10)), lastDay) - 1);
+}
+
+/** The day to show after the arrows of the toolbar: one month, one week or one day back (`-1`) or forward (`1`). */
+export function shiftHostCalendarDate(view: HostCalendarView, date: string, direction: -1 | 1): string {
+  switch (view) {
+    case 'week':
+      return addDays(date, direction * 7);
+    case 'day':
+      return addDays(date, direction);
+    default:
+      return addMonths(date, direction);
+  }
+}
+
+/** What the toolbar says the calendar is showing: "settembre 2026", "21–27 settembre 2026" or "giovedì 24 settembre 2026". */
+export function hostCalendarLabel(view: HostCalendarView, date: string, language: string): string {
+  switch (view) {
+    case 'week': {
+      const { startDate, endDate } = hostCalendarRange('week', date);
+      const sameYear = startDate.slice(0, 4) === endDate.slice(0, 4);
+      if (sameYear && startDate.slice(0, 7) === endDate.slice(0, 7)) {
+        const from = formatStayDate(startDate, language, { day: 'numeric' });
+        return `${from}–${formatStayDate(endDate, language, { day: 'numeric', month: 'long', year: 'numeric' })}`;
+      }
+      const from = formatStayDate(startDate, language, sameYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
+      return `${from} – ${formatStayDate(endDate, language, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    }
+    case 'day':
+      return formatStayDate(date, language, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    default:
+      return formatStayDate(date, language, { month: 'long', year: 'numeric' });
   }
 }
 

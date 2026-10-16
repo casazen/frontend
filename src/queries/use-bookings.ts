@@ -2,6 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClie
 import { asBookingPage, bookingsApi } from '@/api/bookings.api';
 import type {
   Booking,
+  BookingFilterParams,
+  BookingListParams,
   CancelBookingDto,
   CreateBookingDto,
   UpdateBookingDto,
@@ -31,6 +33,32 @@ export function usePropertyBookings(propertyId?: string) {
     queryKey: [BOOKINGS_KEY, { propertyId }],
     queryFn: async () => asBookingPage(await bookingsApi.getAll({ propertyId, page: 1, pageSize: 100 })).items,
     enabled: !!propertyId,
+  });
+}
+
+/**
+ * One page of the list of bookings (SR-04): the server narrows it by chip, filters and text, orders it and pages it. The rows
+ * of the last view stay on the screen until the next ones arrive. Other screens change the bookings (made, accepted, cancelled
+ * there), so the list reads again when it is opened: the client does not, by default (`refetchOnMount: false`).
+ */
+export function useBookingList(params: BookingListParams, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, 'list', params],
+    queryFn: () => bookingsApi.search(params),
+    placeholderData: keepPreviousData,
+    refetchOnMount: true,
+    enabled: options.enabled ?? true,
+  });
+}
+
+/** How many bookings are in each chip of the list, for the filters in force (the number on "Da confermare"). */
+export function useBookingCounts(params: BookingFilterParams, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, 'counts', params],
+    queryFn: () => bookingsApi.counts(params),
+    placeholderData: keepPreviousData,
+    refetchOnMount: true,
+    enabled: options.enabled ?? true,
   });
 }
 

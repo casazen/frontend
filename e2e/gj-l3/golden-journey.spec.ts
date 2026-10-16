@@ -136,7 +136,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await step('Guest confirms the email, the host accepts the request in the console', async () => {
         const mail = await waitForMail(request, stack, guest.email, /Conferma la tua richiesta/i);
         await guestConfirmsEmail(guestPage, linkIn(mail, '/book/'));
-        await host.goto('/app/short-rent/bookings?view=requests');
+        await host.goto('/app/short-rent/bookings?chip=toConfirm');
         await expect(host.getByText(`${guest.firstName} ${guest.lastName}`).first()).toBeVisible({ timeout: 30_000 });
         await host.getByRole('button', { name: 'Accetta' }).click();
       });
