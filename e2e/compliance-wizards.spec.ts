@@ -166,12 +166,12 @@ test.describe('Compliance wizards (#295)', () => {
     });
   });
 
-  test('AC11: dashboard loads compliance summary counts from API', async ({ page }) => {
+  test('AC11: the compliance page loads the summary counts from API', async ({ page }) => {
     const summaryPromise = page.waitForResponse(
       (r) => r.request().method() === 'GET' && r.url().includes('/api/compliance/summary'),
       { timeout: 30_000 },
     );
-    await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/short-rent/compliance', 'short-stay'), { waitUntil: 'domcontentloaded' });
     const summaryResp = await summaryPromise;
     expect(summaryResp.status()).toBe(200);
 
@@ -203,7 +203,7 @@ test.describe('Compliance wizards (#295)', () => {
 
   // The mock has the contract of the API (action + target, CO-04): the routes come from the app, not from the mock.
   test('AC13: summary widget rows deep-link to relevant wizards', async ({ page }) => {
-    await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/short-rent/compliance', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
 
     const propertyLink = page.getByTestId('compliance-summary-properties-link').first();
