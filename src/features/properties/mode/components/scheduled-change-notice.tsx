@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { usePropertyModeState } from '@/queries/use-property-mode';
 import type { ModeArea } from '../paths';
-import { usePropertyModeEnabled } from '../use-mode-entry';
 import { useDayLabel, useModeName } from '../use-mode-labels';
 import { CancelModeChangeDialog } from './cancel-mode-change-dialog';
 
@@ -17,14 +16,9 @@ interface ScheduledChangeNoticeProps {
 
 /**
  * The row of status on the page of a property: "Passaggio all'affitto lungo il 1 dicembre", with "Annulla il passaggio" for who
- * may write the property. Nothing at all when no change waits for its day, and nothing (not even the request) while the flag is
- * off: the page is then exactly what it was.
+ * may write the property. Nothing at all when no change waits for its day.
  */
-export function ScheduledChangeNotice(props: ScheduledChangeNoticeProps) {
-  return usePropertyModeEnabled() ? <ScheduledChangeRow {...props} /> : null;
-}
-
-function ScheduledChangeRow({ area, propertyId }: ScheduledChangeNoticeProps) {
+export function ScheduledChangeNotice({ area, propertyId }: ScheduledChangeNoticeProps) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();
   const modeName = useModeName();

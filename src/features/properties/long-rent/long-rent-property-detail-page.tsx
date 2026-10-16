@@ -22,7 +22,7 @@ export function LongRentPropertyDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { data: property, isLoading, isError, error, refetch, isFetching } = useProperty(id);
   const documents = usePropertyDocuments(id);
-  // "Cambia modalità" in the menu "⋯" (PM-03): none while the flag is off.
+  // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('long-rent', id);
 
   if (isLoading) {

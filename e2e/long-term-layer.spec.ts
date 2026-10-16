@@ -50,7 +50,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await page.goto(demoUrl('/leases', 'long-term'), { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Contratti lungo termine|long-term leases/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { level: 1, name: /^(Contratti|Leases)$/ })).toBeVisible({ timeout: 15_000 });
   });
 
   test('AC5 PropertyOwner-only is redirected away from /leases', async ({ page }) => {

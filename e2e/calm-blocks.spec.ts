@@ -11,18 +11,11 @@ import { WIDER_LETTERS, expectNoAxeViolations, expectNothingSticksOut, untilStil
 const GALLERY = '/dev/calm-blocks';
 const PHONES = [360, 390] as const;
 const AREAS = ['short-rent', 'long-rent', 'supplier', 'admin'] as const;
-/** `UI_VERSION_STORAGE_KEY` of `src/lib/ui-version.ts` (that file reads `import.meta`, which a spec cannot import). */
-const UI_VERSION_KEY = 'casazen:ui';
 
 async function openGallery(page: Page, width: number, height = 900) {
   await page.setViewportSize({ width, height });
   await page.goto(GALLERY, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { level: 1, name: 'Blocchi calmi' })).toBeVisible();
-}
-
-/** The redesign on, as a QA person turns it on in one browser (`UiVersionSync`): before the page opens. */
-async function underTheRedesign(page: Page) {
-  await page.addInitScript((key) => window.localStorage.setItem(key, 'v2'), UI_VERSION_KEY);
 }
 
 async function boxes(locator: Locator) {
@@ -54,8 +47,7 @@ test.describe('axe, in a real browser (colors and contrast included)', () => {
   }
 
   for (const area of AREAS) {
-    test(`under the redesign, in the area ${area}, the page of the blocks has no violation`, async ({ page }) => {
-      await underTheRedesign(page);
+    test(`in the area ${area}, the page of the blocks has no violation`, async ({ page }) => {
       await openGallery(page, 1280);
       await page.evaluate((value) => document.documentElement.setAttribute('data-area', value), area);
       await expect(page.locator('html')).toHaveAttribute('data-ui', 'v2');
@@ -223,13 +215,12 @@ test.describe('keyboard', () => {
   });
 });
 
-// A phone under the redesign: a finger (a coarse pointer) and `data-ui="v2"`, where `tokens.css` gives every link and button its
-// own hit area. What a block does there is not what it does with a mouse on the current look, and nothing else looks at it.
+// A phone: a finger (a coarse pointer) and `data-ui="v2"`, where `tokens.css` gives every link and button its own hit area.
+// What a block does there is not what it does with a mouse, and nothing else looks at it.
 test.describe('a phone under the redesign', () => {
   test.use({ hasTouch: true, isMobile: true });
 
   test.beforeEach(async ({ page }) => {
-    await underTheRedesign(page);
     await openGallery(page, 390, 844);
     await expect(page.locator('html')).toHaveAttribute('data-ui', 'v2');
     expect(await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches), 'the pointer is a finger').toBe(true);
