@@ -587,10 +587,7 @@
     "layerSwitcherLabel": "Application layer"
   },
   "leases": {
-    "pageTitle": "Long-term leases",
-    "pageDescription": "Manage contract drafts, signing, and RLI registration",
     "createLease": "Create lease",
-    "loading": "Loading leases...",
     "emptyTitle": "No leases yet",
     "emptyDescription": "Create your first long-term lease contract.",
     "guide": {
@@ -612,9 +609,6 @@
       }
     },
     "loadError": "Failed to load leases. Please try again.",
-    "rentLabel": "Rent ",
-    "regimeLabel": "Regime ",
-    "partiesLabel": "Parties ",
     "detailLoading": "Loading lease...",
     "notFound": "Lease not found",
     "notFoundDescription": "The lease you are looking for does not exist or you do not have access.",
@@ -1157,6 +1151,62 @@
       }
     }
   },
+  "leaseList": {
+    "chips": {
+      "active": "Active",
+      "activeHint": "Registered and not over yet, including those about to expire",
+      "all": "All",
+      "ended": "Ended",
+      "endedHint": "Past their end date, or with a registration that was refused",
+      "expiring": "Expiring",
+      "expiringHint": "Registered, with less than six months to go",
+      "preparing": "In preparation",
+      "preparingHint": "Not registered yet: drafts, out for signing or waiting to be registered"
+    },
+    "columns": {
+      "parties": "Parties",
+      "regime": "Tax regime",
+      "rent": "Rent",
+      "status": "Status",
+      "tenant": "Tenant and property",
+      "term": "Term"
+    },
+    "count_one": "{{count}} lease",
+    "count_other": "{{count}} leases",
+    "description": "All your long-term leases and where each one stands.",
+    "detail": {
+      "events": "Latest events",
+      "eventsEmpty": "Nothing has happened yet.",
+      "eventsError": "Could not load the history of the lease.",
+      "eventsLoading": "Loading the history...",
+      "eventsMore": "Show more",
+      "property": "Property",
+      "tenant": "Tenant"
+    },
+    "noResults": {
+      "description": "Try another tab or search with another word.",
+      "title": "No leases here"
+    },
+    "open": "Open",
+    "property": {
+      "unknown": "Property not available"
+    },
+    "rent": {
+      "next": "Next rent: {{date}}",
+      "overdue_one": "{{count}} day late · {{amount}}",
+      "overdue_other": "{{count}} days late · {{amount}}",
+      "overdueNoDays": "Rent overdue · {{amount}}"
+    },
+    "search": {
+      "label": "Search leases",
+      "placeholder": "Search by tenant, property or city"
+    },
+    "tenant": {
+      "anonymized": "Tenant anonymized",
+      "missing": "Tenant to be added"
+    },
+    "term": "from {{from}} to {{to}}"
+  },
   "revenue": {
     "pageTitle": "Revenue analytics",
     "pageDescription": "Track and analyze revenue performance",
@@ -1178,74 +1228,203 @@
     "empty": "No revenue data available"
   },
   "dashboard": {
-    "title": "Dashboard",
-    "description": "Welcome to CASAZEN — your vacation property management platform",
-    "period": {
-      "label": "Period",
-      "currentMonth": "Current month",
-      "last30Days": "Last 30 days",
-      "otherMonths": "Other months",
-      "range": "From {{from}} to {{to}}"
+    "title": "Good morning, {{name}}",
+    "titleNoName": "Good morning",
+    "actions": {
+      "addProperty": "Add a property",
+      "createBooking": "Create booking",
+      "requestService": "Request a service"
     },
-    "stats": {
-      "occupancy": {
-        "title": "Occupancy",
-        "description_one": "{{occupied}} nights booked out of {{available}} available · {{count}} property",
-        "description_other": "{{occupied}} nights booked out of {{available}} available · {{count}} properties",
-        "descriptionWithClosed_one": "{{occupied}} nights booked out of {{available}} available ({{closed}} closed by you) · {{count}} property",
-        "descriptionWithClosed_other": "{{occupied}} nights booked out of {{available}} available ({{closed}} closed by you) · {{count}} properties"
+    "chart": {
+      "basis": "Revenue by accrual: the nights of the confirmed stays, in the period they are spent.",
+      "empty": "No revenue in this period yet.",
+      "forecast": "Forecast",
+      "locked": {
+        "text": "Occupancy, arrivals and things to do stay available to you.",
+        "title": "Revenue is for whoever manages payments"
       },
+      "period": "Period",
+      "previous": "Previous period",
+      "revenue": "Revenue",
+      "titleMonth": "Revenue by month",
+      "titleWeek": "Revenue by week"
+    },
+    "error": {
+      "overview": "The numbers could not be loaded.",
+      "today": "The day could not be loaded."
+    },
+    "filter": {
+      "allProperties": "All properties",
+      "label": "Home filters",
+      "period": "Period",
+      "property": "Property"
+    },
+    "first": {
+      "body": "Once it is active, you will find the day, the things to do and the numbers here. We save everything as you go: you can stop whenever you like.",
+      "ctaNew": "Add the first property",
+      "ctaResume": "Pick up where you left off",
+      "kicker": "To begin with",
+      "titleNew": "Add your first property",
+      "titleResume": "Finish your first property"
+    },
+    "nextStep": {
+      "all": "All steps"
+    },
+    "numbers": {
+      "delta": {
+        "count": "{{value}} on the previous period",
+        "percent": "{{value}} on the previous period",
+        "points_one": "{{value}} point on the previous period",
+        "points_other": "{{value}} points on the previous period"
+      },
+      "label": "The numbers that matter",
+      "nextArrivals": "Next arrivals",
+      "noArrivals": "No arrivals scheduled.",
+      "occupancy": "Occupancy",
+      "pending_one": "{{count}} to approve",
+      "pending_other": "{{count}} to approve",
       "revenue": {
-        "title": "Revenue for the period",
-        "description_one": "{{count}} confirmed stay, per night in the period, tourist tax excluded",
-        "description_other": "{{count}} confirmed stays, per night in the period, tourist tax excluded"
+        "30d": "Revenue, last 30 days",
+        "3m": "Revenue, last 3 months",
+        "month": "This month's revenue",
+        "year": "This year's revenue"
       },
-      "arrivalsToday": {
-        "title": "Arrivals today",
-        "description": "Check-ins on {{date}}"
-      },
-      "departuresToday": {
-        "title": "Departures today",
-        "description": "Check-outs on {{date}}"
+      "upcoming": "Bookings to come",
+      "when": {
+        "today": "today",
+        "tomorrow": "tomorrow"
       }
+    },
+    "period": {
+      "30d": "Last 30 days",
+      "3m": "Last 3 months",
+      "month": "This month",
+      "year": "This year"
+    },
+    "row": {
+      "actionFor": "{{action}}: {{name}}"
+    },
+    "summary": {
+      "arrivals_one": "{{count}} arrival",
+      "arrivals_other": "{{count}} arrivals",
+      "departures_one": "{{count}} departure",
+      "departures_other": "{{count}} departures",
+      "quiet": "a quiet day, nothing urgent",
+      "requests_one": "{{count}} request to approve",
+      "requests_other": "{{count}} requests to approve"
+    },
+    "todo": {
+      "ActivateProperty": {
+        "cta": "Finish",
+        "ctaCin": "Add the CIN",
+        "title": "Finish activating {{label}}"
+      },
+      "CheckOut": {
+        "cta": "Register departure",
+        "title": "Close {{label}}'s departure"
+      },
+      "CompleteGuestCheckIn": {
+        "cta": "Complete the data",
+        "title": "Complete {{label}}'s guest data"
+      },
+      "ConfirmFinalAmount": {
+        "cta": "Confirm",
+        "title": "Confirm {{label}}'s final amount"
+      },
+      "ConfirmPropertyReady": {
+        "cta": "Confirm",
+        "title": "Declare the property ready after {{label}}"
+      },
+      "PayServiceRequest": {
+        "cta": "Pay",
+        "title": "Pay {{label}}'s job"
+      },
+      "RespondToRequest": {
+        "cta": "Accept",
+        "title": "Answer {{label}}'s request"
+      },
+      "RespondToServiceRequest": {
+        "cta": "Answer",
+        "title": "Answer {{label}}"
+      },
+      "ResolveAlloggiatiFailure": {
+        "cta": "Fix it",
+        "title": "Alloggiati Web not accepted: {{label}}"
+      },
+      "ReviewFailedPayment": {
+        "cta": "Check",
+        "title": "Payment failed: {{label}}"
+      },
+      "SendAlloggiati": {
+        "cta": "Prepare the data",
+        "title": "Alloggiati Web to send: {{label}}"
+      },
+      "decline": {
+        "description": "The guest gets an email and the dates become available again.",
+        "title": "Decline the request?"
+      },
+      "empty": {
+        "text": "Nothing is waiting for your answer. We will tell you here when something comes up.",
+        "title": "All in order"
+      },
+      "ical": {
+        "cta": "Check",
+        "note": "To check",
+        "title": "The {{feed}} calendar of {{property}} is not updating"
+      },
+      "missing": {
+        "guestData": "Guest data are missing",
+        "guestFields_one": "Data of {{count}} guest are missing",
+        "guestFields_other": "Data of {{count}} guests are missing"
+      },
+      "seeAll": "See all ({{count}})",
+      "showLess": "Show fewer",
+      "title": "To do",
+      "urgency": {
+        "dateAt": "By {{date}} at {{time}}",
+        "overdue": "Overdue",
+        "todayAt": "By today at {{time}}",
+        "tomorrowAt": "By tomorrow at {{time}}",
+        "whenYouCan": "Whenever you can"
+      },
+      "open": "Open"
     },
     "today": {
-      "title": "Today",
-      "description": "Today's arrivals and departures, Italian time",
-      "arrivals": "Arrivals",
-      "departures": "Departures",
-      "noArrivals": "No arrivals today.",
-      "noDepartures": "No departures today."
-    },
-    "upcoming": {
-      "title": "Upcoming check-ins",
-      "description_one": "{{count}} confirmed arrival scheduled",
-      "description_other": "{{count}} confirmed arrivals scheduled",
-      "empty": "No check-ins scheduled."
-    },
-    "moreItems_one": "+{{count}} more",
-    "moreItems_other": "+{{count}} more",
-    "loadError": "Could not load the dashboard indicators.",
-    "retry": "Retry",
-    "ical": {
-      "title": "iCal calendars",
-      "description": "Last sync of the calendars linked to Airbnb, Booking.com and the other channels",
-      "empty": "No iCal calendar linked: add one from a property page, iCal calendars section.",
-      "loadError": "Could not load the state of the iCal calendars.",
-      "failing_one": "{{count}} with errors",
-      "failing_other": "{{count}} with errors"
-    },
-    "recentBookings": {
-      "title": "Recent Bookings",
-      "description": "Latest booking activity",
-      "empty": "No bookings yet.",
-      "columns": {
-        "guest": "Guest",
-        "property": "Property",
-        "dates": "Dates",
-        "amount": "Amount",
-        "status": "Status"
-      }
+      "action": {
+        "registerArrival": "Register arrival",
+        "registerDeparture": "Register departure",
+        "resendLink": "Send again",
+        "sendLink": "Send check-in link"
+      },
+      "arrivalLoadFailed": "The booking could not be opened. Try again.",
+      "filterLabel": "Show by type",
+      "free": {
+        "cta": "Open the calendar",
+        "text": "No arrivals, departures or jobs today.",
+        "title": "A free day"
+      },
+      "guests_one": "{{count}} guest",
+      "guests_other": "{{count}} guests",
+      "kinds": {
+        "all": "All",
+        "arrivals": "Arrivals",
+        "cleaning": "Cleanings",
+        "departures": "Departures",
+        "jobs": "Jobs"
+      },
+      "more_one": "{{count}} more today.",
+      "more_other": "{{count}} more today.",
+      "moreLink": "See the bookings",
+      "note": {
+        "arrived": "Arrival registered",
+        "cleaning": "Cleaning: {{status}}",
+        "departed": "Departure registered",
+        "docsOk": "Documents ok",
+        "linkNotSent": "Check-in link not sent yet",
+        "linkSent": "Link sent: waiting for the guest",
+        "noCleaning": "No cleaning requested"
+      },
+      "title": "Today"
     },
     "otaStatus": {
       "title": "OTA Channel Status",
@@ -1583,23 +1762,17 @@
     "detailPage": {
       "loading": "Loading booking...",
       "notFound": "Booking not found",
-      "notFoundDescription": "The booking you're looking for doesn't exist.",
+      "notFoundDescription": "It may have been deleted, or the link is not correct.",
       "editBooking": "Edit Booking",
       "tabs": {
-        "details": "Details",
-        "guest": "Guest",
-        "payment": "Payment",
-        "alloggiati": "Alloggiati"
+        "details": "Stay",
+        "guest": "Documents",
+        "payment": "Payment"
       },
       "tabsLabel": "Booking sections",
-      "viewProperty": "View property",
-      "bookingDetailsTitle": "Booking details",
-      "specialRequests": "Special Requests",
-      "timeline": "Timeline",
-      "created": "Created",
+      "created": "Created on",
       "lastUpdated": "Last Updated",
       "guestInformationTitle": "Guest information",
-      "guestName": "Name",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -1608,7 +1781,6 @@
       "incompleteGuestData": "Incomplete guest data",
       "noAlloggiatiInfo": "No Alloggiati information available for this booking.",
       "source": "Source",
-      "title": "Booking {{code}}",
       "loadError": "The booking could not be loaded.",
       "retry": "Retry",
       "childrenCount_one": "including {{count}} minor",
@@ -1618,7 +1790,72 @@
       "lodgingPerNight_other": "Stay: {{count}} nights × {{perNight}}",
       "cleaningFee": "Cleaning",
       "touristTax": "Tourist tax",
-      "noPriceBreakdown": "Price breakdown not available for this booking."
+      "noPriceBreakdown": "Price breakdown not available for this booking.",
+      "checkInOnline": "Online check-in",
+      "code": "Booking code",
+      "fallbackTitle": "Booking",
+      "openProperty": "Open the property",
+      "property": "Property",
+      "stayTitle": "The stay"
+    },
+    "next": {
+      "allInOrder": {
+        "body": "{{guest}} arrives on {{date}}: nothing to do for now.",
+        "title": "All set"
+      },
+      "answerRequest": {
+        "body": "The guest wants to pay at the property: the booking is valid only if you accept it. Without an answer the request expires and the dates are free again.",
+        "title": "Answer {{guest}}'s request"
+      },
+      "cancelled": {
+        "title": "The booking is cancelled"
+      },
+      "completed": {
+        "title": "The stay is over"
+      },
+      "confirmManual": {
+        "title": "Confirm the booking"
+      },
+      "heading": "What happens now",
+      "registerArrival": {
+        "body": "When the guest is at the property, confirm the arrival here. Check-in: {{date}}.",
+        "title": "Register {{guest}}'s arrival"
+      },
+      "registerDeparture": {
+        "body": "A guided procedure closes the stay: departure, Alloggiati Web, cleaning, tourist tax and property ready.",
+        "title": "Register {{guest}}'s departure"
+      },
+      "resendLink": {
+        "body": "The guests can no longer use it: send a new one.",
+        "title": "The link for the documents has expired"
+      },
+      "sendAlloggiati": {
+        "action": "Prepare the data",
+        "title": "Report the guests to Alloggiati Web"
+      },
+      "sendLink": {
+        "body": "With the online check-in the guests fill in the Alloggiati Web data themselves: the link goes out by email.",
+        "title": "Send the guest the link for the documents"
+      },
+      "stayInProgress": {
+        "body": "Departure is expected on {{date}}. When the guest leaves, register it: a guided procedure closes the stay.",
+        "title": "{{guest}} is at the property"
+      },
+      "toBookings": "Go to bookings",
+      "waitingDocuments": {
+        "body": "The online check-in link has been sent. If needed, you can send it again.",
+        "title": "Wait for the guests' documents"
+      },
+      "waitingGuestEmail": {
+        "body": "The guest still has to confirm their email: only then can you answer the request.",
+        "title": "Wait for the guest to confirm the email"
+      },
+      "waitingPayment": {
+        "body": "The guest has not completed the payment yet. If they don't in time, the booking expires and the dates are free again.",
+        "title": "Wait for the guest's payment"
+      },
+      "whoGuest": "The guest's turn",
+      "whoHost": "Your turn"
     },
     "card": {
       "checkOutAction": "Check Out"
@@ -1995,26 +2232,67 @@
       "description": "Manage your vacation rental properties",
       "addButton": "Add Property",
       "errorLoad": "Failed to load properties",
-      "errorHint": "Please try refreshing the page",
       "emptyTitle": "No properties yet",
       "emptyDescription": "Get started by adding your first vacation rental property",
-      "emptyCta": "Add Your First Property",
-      "addDialogTitle": "Add New Property",
-      "addDialogDescription": "Create a new vacation rental property",
-      "filterLabel": "Filter by status",
-      "filterAll": "All ({{count}})",
-      "filterActive": "Active ({{count}})",
-      "filterPaused": "Paused ({{count}})",
-      "filterEmpty": "No properties with this status."
+      "emptyCta": "Add Your First Property"
+    },
+    "list": {
+      "actions": {
+        "calendar": "Open calendar",
+        "complete": "Complete",
+        "delete": "Delete property",
+        "edit": "Edit",
+        "page": "Full page",
+        "pause": "Pause",
+        "reactivate": "Reactivate",
+        "requestService": "Request an intervention"
+      },
+      "chips": {
+        "active": "Active",
+        "all": "All",
+        "paused": "Paused",
+        "todo": "To complete",
+        "todoHint": "They cannot receive bookings yet"
+      },
+      "columns": {
+        "price": "Base price",
+        "property": "Property",
+        "spaces": "Rooms and guests",
+        "status": "Status"
+      },
+      "count_one": "{{count}} property",
+      "count_other": "{{count}} properties",
+      "filters": {
+        "allCities": "All cities",
+        "city": "City"
+      },
+      "guestsCount_one": "{{count}} guest",
+      "guestsCount_other": "{{count}} guests",
+      "noResults": {
+        "description": "Try removing a filter or searching by the name of the city.",
+        "title": "No property matches these filters"
+      },
+      "pausedSince": "Paused since {{date}}",
+      "perNight": "per night",
+      "plan": {
+        "usage": "{{plan}} plan: {{used}} of {{max}} properties (short and long term).",
+        "usageUnlimited": "{{plan}} plan: {{used}} properties (short and long term)."
+      },
+      "search": "Search properties",
+      "searchPlaceholder": "Search by name, city or address"
+    },
+    "drawer": {
+      "address": "Address",
+      "bookings": "Bookings of this property",
+      "cin": "CIN",
+      "cinMissing": "Missing",
+      "complete": "Complete the activation",
+      "keyData": "Key facts",
+      "moreActions": "More actions",
+      "price": "Base price",
+      "spaces": "Spaces"
     },
     "table": {
-      "property": "Property",
-      "location": "Location",
-      "rooms": "Rooms",
-      "guests": "Guests",
-      "priceNight": "Price / night",
-      "amenities": "Amenities",
-      "status": "Status",
       "active": "Active",
       "paused": "Paused",
       "pause": "Pause",
@@ -2024,11 +2302,6 @@
       "bathroomsCount_one": "{{count}} bathroom",
       "bathroomsCount_other": "{{count}} bathrooms",
       "bedroomsCount_zero": "Studio",
-      "actions": "Actions",
-      "edit": "Edit",
-      "editAria": "Edit {{name}}",
-      "delete": "Delete",
-      "deleteAria": "Delete {{name}}",
       "noRate": "Not set"
     },
     "deleteDialog": {
@@ -2759,6 +3032,97 @@
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
+    "home": {
+      "first": {
+        "availability": "Set your availability",
+        "body": "Tell us which days and hours you work and add your services: that is where requests come from.",
+        "kicker": "To get started",
+        "service": "Add a service",
+        "title": "Tell customers when you work"
+      },
+      "free": {
+        "body": "No jobs or requests in the next few days. Keep your hours and services up to date to get more.",
+        "title": "A free day"
+      },
+      "greeting": "Good morning, {{name}}",
+      "greetingAnonymous": "Good morning",
+      "menu": {
+        "newService": "Add a service",
+        "requests": "All requests"
+      },
+      "next": {
+        "continue": "Continue",
+        "loadError": "The next steps could not be loaded.",
+        "next": "Next: {{step}}",
+        "progress": "{{done}} of {{total}}",
+        "title": "Set up your profile"
+      },
+      "numbers": {
+        "acceptance": "Accepted",
+        "delta": "{{value}} vs the period before",
+        "deltaFaster": "{{amount}} faster than the period before",
+        "deltaSame": "Same as the period before",
+        "deltaSlower": "{{amount}} slower than the period before",
+        "earnings": "Net earnings",
+        "jobs": "Jobs completed",
+        "loadError": "Your numbers could not be loaded.",
+        "period": "Period",
+        "periods": {
+          "currentMonth": "This month",
+          "last30Days": "Last 30 days",
+          "last3Months": "Last 3 months"
+        },
+        "points_one": "{{count}} point",
+        "points_other": "{{count}} points",
+        "quiet": "Your numbers show up here once the first requests arrive.",
+        "response": "Response time",
+        "title": "Your numbers"
+      },
+      "purpose": {
+        "jobsToday_one": "{{count}} job today",
+        "jobsToday_other": "{{count}} jobs today",
+        "line": "{{day}} · {{what}}",
+        "quiet": "a quiet day, nothing urgent",
+        "toAnswer_one": "{{count}} request to answer",
+        "toAnswer_other": "{{count}} requests to answer"
+      },
+      "steps": {
+        "firstRequest": "Answer your first request",
+        "hours": "Set your availability",
+        "profile": "Complete your profile",
+        "services": "Add your first service",
+        "showcase": "Publish your showcase"
+      },
+      "today": {
+        "completed": "Done: waiting for payment",
+        "filterLabel": "Show by type",
+        "inProgress": "In progress",
+        "inProgressSince": "In progress since {{time}}",
+        "kinds": {
+          "all": "All",
+          "jobs": "Jobs",
+          "requests": "To answer"
+        },
+        "loadError": "Your day could not be loaded.",
+        "moreRequests_one": "{{count}} more request to answer",
+        "moreRequests_other": "{{count}} more requests to answer",
+        "openAvailability": "Open availability",
+        "paymentLate": "Payment is late",
+        "takeAria": "Accept: {{name}}",
+        "title": "Today and the next days"
+      },
+      "todo": {
+        "allClear": "All clear",
+        "allClearHint": "Nothing is waiting for your answer. We tell you here when something comes up.",
+        "loadError": "The to-do list could not be loaded.",
+        "paymentsLate_one": "{{count}} late payment",
+        "paymentsLate_other": "{{count}} late payments",
+        "paymentsLateAction": "See the jobs to collect",
+        "paymentsLateHint": "A customer has not paid a finished job yet. From the request you can remind them.",
+        "requests": "See the requests",
+        "title": "To do"
+      }
+    },
     "requests": {
       "action": {
         "complete": "Mark as done",
@@ -7472,6 +7836,15 @@
         "success": "Done",
         "warning": "Needs attention"
       }
+    },
+    "booking": {
+      "title": "Booking",
+      "now": "What to do now",
+      "loadError": "The booking could not be shown.",
+      "respond": "This request is waiting for your answer.",
+      "respondCta": "Answer the request",
+      "arrival": "When the guest arrives, register the arrival.",
+      "departure": "At departure, close the stay."
     }
   },
   "helpTip": {

@@ -8,8 +8,6 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { propertyModeApi } from '@/api/property-mode.api';
 import { AppShellContext } from '@/components/layout/app-shell-context';
-import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
-import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import * as propertyQueries from '@/queries/use-properties';
 import type { Property, PropertyDetailDto } from '@/types';
@@ -40,12 +38,11 @@ vi.mock('@/features/service-requests/components/long-rent-service-requests', () 
 const WAIT = { timeout: 5000 };
 
 interface Setup {
-  flag?: boolean;
   /** The areas where the person may write properties. */
   writes?: Array<'short-rent' | 'long-rent'>;
 }
 
-function providers({ flag = true, writes = ['short-rent', 'long-rent'] }: Setup = {}) {
+function providers({ writes = ['short-rent', 'long-rent'] }: Setup = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = {
     hasPermission: (area: string, permission: string) => permission === 'property.write' && (writes as string[]).includes(area),
@@ -54,13 +51,11 @@ function providers({ flag = true, writes = ['short-rent', 'long-rent'] }: Setup 
     return (
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={client}>
-          <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, propertyModeChange: flag }, isLoading: false }}>
-            <WorkspaceContext.Provider value={workspace}>
-              <AppShellContext.Provider value={{ contextKey: 'long-rent' }}>
-                <MemoryRouter initialEntries={[path ?? '/']}>{children}</MemoryRouter>
-              </AppShellContext.Provider>
-            </WorkspaceContext.Provider>
-          </FeatureFlagsContext.Provider>
+          <WorkspaceContext.Provider value={workspace}>
+            <AppShellContext.Provider value={{ contextKey: 'long-rent' }}>
+              <MemoryRouter initialEntries={[path ?? '/']}>{children}</MemoryRouter>
+            </AppShellContext.Provider>
+          </WorkspaceContext.Provider>
         </QueryClientProvider>
       </I18nextProvider>
     );
@@ -76,12 +71,11 @@ beforeEach(async () => {
 afterEach(() => cleanup());
 
 describe('useModeChangeMenuItems (PM-03)', () => {
-  it('useModeChangeMenuItems_FlagOffOrNoPermission_GivesNoEntry', () => {
+  it('useModeChangeMenuItems_NoPermission_GivesNoEntry', () => {
     const entries = [
-      { setup: { flag: false }, area: 'short-rent' as const },
-      { setup: { flag: true, writes: [] }, area: 'short-rent' as const },
+      { setup: { writes: [] }, area: 'short-rent' as const },
       // The permission of the other area does not open this one.
-      { setup: { flag: true, writes: ['long-rent' as const] }, area: 'short-rent' as const },
+      { setup: { writes: ['long-rent' as const] }, area: 'short-rent' as const },
     ];
     for (const { setup, area } of entries) {
       const { result } = renderHook(() => useModeChangeMenuItems(area, PROPERTY_ID), { wrapper: providers(setup) });
@@ -89,7 +83,7 @@ describe('useModeChangeMenuItems (PM-03)', () => {
     }
   });
 
-  it('useModeChangeMenuItems_FlagOnAndPermission_IsTheWizardOfTheSectionOfThePage', () => {
+  it('useModeChangeMenuItems_WithPermission_IsTheWizardOfTheSectionOfThePage', () => {
     const short = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: providers() });
     expect(short.result.current).toEqual([
       expect.objectContaining({ label: 'Cambia modalità', to: `/app/short-rent/properties/${PROPERTY_ID}/mode`, testId: 'property-mode-change' }),
@@ -99,12 +93,8 @@ describe('useModeChangeMenuItems (PM-03)', () => {
   });
 
   it('useModeChangeMenuItems_OutsideTheWorkspace_GivesNoEntryInsteadOfFailing', () => {
-    const OnlyFlag = ({ children }: { children: ReactNode }) => (
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, propertyModeChange: true }, isLoading: false }}>
-        {children}
-      </FeatureFlagsContext.Provider>
-    );
-    const { result } = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: OnlyFlag });
+    const OnlyI18n = ({ children }: { children: ReactNode }) => <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
+    const { result } = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: OnlyI18n });
     expect(result.current).toEqual([]);
   });
 });
@@ -183,7 +173,7 @@ describe('the pages of a property (PM-03)', () => {
     return screen.findByRole('menu');
   }
 
-  it('PropertyDetailPage_FlagOn_OffersTheChangeInTheMenuOfTheThreeDots', async () => {
+  it('PropertyDetailPage_OffersTheChangeInTheMenuOfTheThreeDots', async () => {
     renderShort();
 
     // The other actions of the page stay where they were (the pause, the supplier, the edit); this one is in the menu.
@@ -192,22 +182,13 @@ describe('the pages of a property (PM-03)', () => {
     expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}/mode`);
   });
 
-  it('PropertyDetailPage_FlagOff_HasNoMenuNoRowAndNeverAsksForTheMode', () => {
-    renderShort({ flag: false });
-
-    // The header is the one it always was: no "⋯" at all, and nothing of the feature runs, not even the request for the state.
-    expect(screen.queryByRole('button', { name: i18n.t('pageHeader.moreActions') })).not.toBeInTheDocument();
-    expect(screen.getByTestId('property-pause-toggle')).toBeInTheDocument();
-    expect(propertyModeApi.getState).not.toHaveBeenCalled();
-  });
-
   it('PropertyDetailPage_WithoutTheWritePermission_HasNoEntry', () => {
-    renderShort({ flag: true, writes: [] });
+    renderShort({ writes: [] });
 
     expect(screen.queryByRole('button', { name: i18n.t('pageHeader.moreActions') })).not.toBeInTheDocument();
   });
 
-  it('LongRentPropertyDetailPage_FlagOn_PutsTheChangeInTheMenuNextToTheEdit', async () => {
+  it('LongRentPropertyDetailPage_PutsTheChangeInTheMenuNextToTheEdit', async () => {
     renderLong();
 
     fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
@@ -217,16 +198,6 @@ describe('the pages of a property (PM-03)', () => {
       'href',
       `/app/long-rent/properties/${PROPERTY_ID}/mode`,
     );
-  });
-
-  it('LongRentPropertyDetailPage_FlagOff_TheMenuIsWhatItWas', async () => {
-    renderLong({ flag: false });
-
-    fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
-    const menu = await screen.findByRole('menu');
-    expect(within(menu).getAllByRole('menuitem')).toHaveLength(1);
-    expect(within(menu).queryByRole('menuitem', { name: 'Cambia modalità' })).not.toBeInTheDocument();
-    expect(propertyModeApi.getState).not.toHaveBeenCalled();
   });
 
   it('thePages_AChangeWaits_ShowTheRowOfStatusInTheirOwnSection', async () => {
@@ -254,14 +225,6 @@ describe('ScheduledChangeNotice (PM-03)', () => {
       </Providers>,
     );
   }
-
-  it('ScheduledChangeNotice_FlagOff_RendersNothingAndAsksForNothing', () => {
-    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
-    const { container } = renderNotice({ flag: false });
-
-    expect(container).toBeEmptyDOMElement();
-    expect(propertyModeApi.getState).not.toHaveBeenCalled();
-  });
 
   it('ScheduledChangeNotice_NoChangeWaiting_RendersNothing', async () => {
     const { container } = renderNotice();

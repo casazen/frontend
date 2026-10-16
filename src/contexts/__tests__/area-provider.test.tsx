@@ -81,7 +81,7 @@ describe('AreaProvider (data-area on <html>)', () => {
   it('AreaProvider_RendersItsChildrenAndNeverTouchesDataUi', () => {
     renderAt('/book/villa');
     expect(screen.getByText('outside the app')).toBeInTheDocument();
-    // The area is inert without the redesign: the provider never sets `data-ui` (UiVersionSync does).
+    // The area is inert without the redesign: the provider never sets `data-ui` (`index.html` does).
     expect(root.hasAttribute('data-ui')).toBe(false);
     expect(root.hasAttribute('data-area')).toBe(false);
 

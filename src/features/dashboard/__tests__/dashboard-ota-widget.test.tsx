@@ -12,18 +12,16 @@ vi.mock('@/api/ota.api', () => ({
   otaApi: { getAll: vi.fn() },
 }));
 vi.mock('@/api/dashboard.api', () => ({
-  dashboardApi: { getKpis: vi.fn(() => new Promise(() => {})), getIcalFeeds: vi.fn().mockResolvedValue([]) },
+  dashboardApi: {
+    getToday: vi.fn(() => new Promise(() => {})),
+    getOverview: vi.fn(() => new Promise(() => {})),
+    getIcalFeeds: vi.fn().mockResolvedValue([]),
+  },
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
-vi.mock('@/features/compliance/compliance-summary-widget', () => ({
-  ComplianceSummaryWidget: () => null,
-}));
-vi.mock('@/features/settings/domain/site-address-card', () => ({
-  SiteAddressCard: () => null,
-}));
-vi.mock('@/features/onboarding/components/activation-checklist', () => ({
-  ActivationChecklist: () => null,
-}));
+vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: null }) }));
+vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [], isSuccess: true }) }));
+vi.mock('../components/home-next-step', () => ({ HomeNextStep: () => null }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
@@ -51,8 +49,7 @@ describe('DashboardPage OTA widget', () => {
   it('neither renders the OTA widget nor calls the OTA API when the flag is off', async () => {
     renderDashboard(false);
 
-    // The iCal calendars take the place of the OTA channels (PC-16).
-    expect(screen.getByTestId('dashboard-ical-widget')).toBeInTheDocument();
+    expect(screen.getByTestId('sr-home')).toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-ota-status')).not.toBeInTheDocument();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(otaApi.getAll).not.toHaveBeenCalled();

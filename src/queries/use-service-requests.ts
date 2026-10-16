@@ -19,8 +19,8 @@ import { isAxiosError } from 'axios';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
-/** Supplier dashboard KPIs (every period): a supplier transition changes them (SU-11). */
-const SUPPLIER_KPIS_KEY = ['supplier', 'dashboard', 'kpis'];
+/** What the dashboard reads about the work (the KPIs of every period, the three numbers of the home): a supplier transition changes it (SU-11). */
+const SUPPLIER_DASHBOARD_KEY = ['supplier', 'dashboard'];
 
 /** 422 code of a supplier action refused because the supplier is suspended or not active (SU-12). */
 const SUPPLIER_NOT_ACTIVE_CODE = 'service_request_supplier_not_active';
@@ -113,7 +113,7 @@ export function useTakeServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
@@ -127,7 +127,7 @@ export function useCompleteServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.completed'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
@@ -141,7 +141,7 @@ export function useRejectServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.rejected'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
