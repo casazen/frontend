@@ -533,6 +533,7 @@
     "supplierCalendar": "Calendario",
     "supplierInbox": "Richieste",
     "supplierAvailability": "Disponibilità",
+    "supplierServices": "Servizi e prezzi",
     "supplierHelpIcal": "Guida iCal",
     "group": {
       "activity": "La tua attività",
@@ -2995,6 +2996,358 @@
       "emptyHint": "Gli incarichi che gli host ti assegnano compaiono qui e nella tua casella incarichi.",
       "openInbox": "Apri gli incarichi"
     },
+    "services": {
+      "actions": {
+        "add": "Aggiungi un servizio",
+        "continue": "Continua",
+        "delete": "Elimina",
+        "deleteConfirm": "Elimina il servizio",
+        "deleted": "«{{name}}» è stato eliminato.",
+        "deleteDescription": "Una volta eliminato non si può ripristinare.",
+        "deleteDraftGone": "La bozza viene eliminata.",
+        "deleteGone": "Non è più nel tuo catalogo e i clienti non lo vedono.",
+        "deleteRequestsStay": "Le richieste già ricevute restano dove sono.",
+        "deleteTitle": "Eliminare «{{name}}»?",
+        "duplicate": "Duplica",
+        "edit": "Modifica",
+        "pause": "Metti in pausa",
+        "paused": "«{{name}}» è in pausa: i clienti non lo vedono finché non lo riattivi.",
+        "preview": "Come lo vedono i clienti",
+        "previewAll": "Come lo vedono i clienti",
+        "publish": "Pubblica",
+        "published": "«{{name}}» è pubblicato.",
+        "reactivate": "Riattiva",
+        "showcase": "Il mio sito vetrina"
+      },
+      "description": "Quello che offri e quanto costa: nome, prezzo, durata e foto di ogni servizio.",
+      "detail": {
+        "loadError": "Impossibile caricare il servizio",
+        "loadErrorTitle": "Servizio",
+        "loading": "Carico il servizio…",
+        "notFoundDescription": "Forse è stato eliminato, o il link non è più valido.",
+        "notFoundTitle": "Non troviamo questo servizio",
+        "previewNote": "Così si presenta il servizio ai clienti. Cambia i campi e guarda come diventa.",
+        "previewTitle": "Come lo vedono i clienti",
+        "reload": "Ricarica",
+        "save": "Salva le modifiche",
+        "saved": "Modifiche salvate",
+        "sections": {
+          "booking": "Durata e prenotazione",
+          "photos": "Foto",
+          "price": "Prezzo",
+          "service": "Il servizio",
+          "serviceHint": "Nome, categoria, descrizione",
+          "zone": "Dove lo offri",
+          "zoneHint": "Le stesse di tutti i tuoi servizi"
+        },
+        "toList": "Torna ai servizi",
+        "visible": {
+          "Active": "È in elenco: i clienti lo vedono. Spegni per metterlo in pausa.",
+          "Draft": "È ancora una bozza: lo vedi solo tu. Accendi per pubblicarlo.",
+          "label": "Visibile ai clienti",
+          "Paused": "È in pausa: i clienti non lo vedono. Accendi per riattivarlo."
+        },
+        "weekdaysAll": "Tutti i giorni",
+        "weekdaysSome_one": "{{count}} giorno",
+        "weekdaysSome_other": "{{count}} giorni"
+      },
+      "duration": {
+        "hours": "{{hours}} h",
+        "hoursMinutes": "{{hours}} h {{minutes}} min",
+        "minutes": "{{minutes}} min",
+        "notSet": "Durata da indicare"
+      },
+      "empty": {
+        "description": "Servono un nome, un prezzo e una durata. Ti guidiamo in quattro passi.",
+        "steps": {
+          "booking": "Quanto dura e quando lo offri",
+          "photos": "Le foto: poi pubblichi",
+          "price": "Quanto costa",
+          "service": "Cosa fai"
+        },
+        "stepsLabel": "I quattro passi",
+        "title": "Crea il tuo primo servizio"
+      },
+      "errors": {
+        "amountInvalid": "Scrivi l’importo in euro, per esempio 45 o 45,50.",
+        "amountRange": "L’importo deve essere almeno 0,01 € e al massimo 100.000 €.",
+        "amountRequired": "Scrivi un importo, oppure scegli «Su preventivo».",
+        "cannotPause": "Solo un servizio pubblicato si può mettere in pausa.",
+        "categoryRequired": "Scegli una categoria.",
+        "changed": "Questo servizio è stato modificato altrove. Ricarica per vedere la versione salvata.",
+        "descriptionTooLong": "La descrizione può avere al massimo 2000 caratteri.",
+        "durationRequired": "Scegli quanto dura di solito.",
+        "generic": "Non siamo riusciti a completare l’operazione. Riprova tra poco.",
+        "limit": "Hai già {{max}} servizi, che è il massimo. Elimina o riutilizza un servizio prima di crearne un altro.",
+        "listItemTooLong": "Ogni voce può avere al massimo 100 caratteri.",
+        "listTooMany": "Al massimo 10 voci: una per riga.",
+        "nameRequired": "Scrivi come si chiama il servizio.",
+        "nameTooLong": "Il nome può avere al massimo 60 caratteri.",
+        "notFound": "Non troviamo più questo servizio: forse è stato eliminato.",
+        "photoFailed": "Non siamo riusciti a caricare le foto. Riprova tra poco.",
+        "requiredToPublish": "Serve per pubblicare il servizio.",
+        "serverField": "Controlla questo valore.",
+        "serverInvalid": "Controlla questi dati: {{fields}}.",
+        "serverInvalidAny": "Alcuni dati non sono validi. Controllali e riprova.",
+        "serverNotPublishable": "Per pubblicare servono ancora: {{fields}}.",
+        "serverNotPublishableAny": "Per pubblicare mancano ancora dei dati.",
+        "summaryTooLong": "La riga può avere al massimo 200 caratteri.",
+        "supplementAmountRequired": "Scrivi l’importo del supplemento.",
+        "supplementLabelRequired": "Scrivi il nome del supplemento.",
+        "supplementLabelTooLong": "Il nome può avere al massimo 80 caratteri.",
+        "supplementMaxInvalid": "Scrivi un numero da 1 a 99, oppure lascia vuoto.",
+        "supplementsTooMany": "Al massimo 10 supplementi.",
+        "weekdaysRequired": "Scegli almeno un giorno."
+      },
+      "fields": {
+        "category": "Categoria",
+        "description": "Descrizione",
+        "duration": "Durata",
+        "excluded": "Cosa non è incluso",
+        "included": "Cosa è incluso",
+        "name": "Nome",
+        "notice": "Preavviso",
+        "photos": "Foto",
+        "price": "Prezzo",
+        "summary": "In una riga",
+        "supplements": "Supplementi",
+        "weekdays": "Giorni"
+      },
+      "filters": {
+        "Active": "Pubblicati",
+        "all": "Tutti",
+        "Draft": "Bozze",
+        "emptyDescription": "Prova a guardare tutti i servizi.",
+        "emptyTitle": "Nessun servizio con questo stato",
+        "label": "Filtra per stato",
+        "Paused": "In pausa",
+        "showAll": "Mostra tutti"
+      },
+      "form": {
+        "booking": {
+          "confirmNote": "Ogni prenotazione arriva come richiesta e la confermi tu."
+        },
+        "category": {
+          "hint": "Serve a far trovare il servizio a chi lo cerca.",
+          "label": "Categoria",
+          "placeholder": "Scegli una categoria"
+        },
+        "description": {
+          "hint": "Cosa fai e come lavori, in poche frasi.",
+          "label": "Descrizione"
+        },
+        "duration": {
+          "hint": "Serve a mostrare ai clienti solo gli orari in cui ci stai.",
+          "label": "Quanto dura di solito",
+          "placeholder": "Scegli la durata"
+        },
+        "excluded": {
+          "example": "vetri esterni, interno del forno",
+          "hint": "Una voce per riga.",
+          "label": "Cosa non è incluso"
+        },
+        "included": {
+          "hint": "Una voce per riga.",
+          "label": "Cosa è incluso"
+        },
+        "name": {
+          "example": "Pulizia cambio ospiti",
+          "hint": "Il nome che leggono i clienti.",
+          "label": "Come si chiama?"
+        },
+        "notice": {
+          "hint": "Quanto prima di un lavoro devono chiederlo i clienti.",
+          "label": "Preavviso minimo"
+        },
+        "price": {
+          "amount": "Importo",
+          "amountHint": "È il prezzo di partenza: i supplementi si aggiungono se il lavoro è più grande.",
+          "hourlyAmount": "Tariffa oraria",
+          "hourlyUnit": "Si paga all’ora",
+          "modeLegend": "Come fai pagare",
+          "modes": {
+            "fixed": {
+              "description": "Una cifra per lavoro, chiara a chi prenota.",
+              "title": "Prezzo fisso"
+            },
+            "hourly": {
+              "description": "Una tariffa per ogni ora di lavoro.",
+              "title": "A ore"
+            },
+            "quote": {
+              "description": "Il prezzo lo dici dopo aver visto il lavoro.",
+              "title": "Su preventivo"
+            }
+          },
+          "quoteNote": "I clienti vedranno «Su preventivo». Il prezzo lo indichi tu quando arriva la richiesta.",
+          "unit": "Si paga",
+          "vat": {
+            "hint": "Lo mostriamo ai clienti solo se lo attivi. Altrimenti non diciamo nulla sull’IVA.",
+            "label": "I miei prezzi includono l’IVA"
+          }
+        },
+        "summary": {
+          "example": "La casa pronta per il prossimo ospite.",
+          "hint": "Compare sotto il nome, nell’elenco.",
+          "label": "In una riga"
+        },
+        "supplements": {
+          "add": "Aggiungi un supplemento",
+          "amount": "Importo (€)",
+          "hint": "Si aggiungono al prezzo di partenza quando il lavoro è più grande.",
+          "label": "Supplemento {{number}}",
+          "labelPlaceholder": "Per esempio: Bagno in più",
+          "max": "Massimo",
+          "maxHint": "Quante volte al massimo.",
+          "per": "Quando si aggiunge",
+          "remove": "Togli il supplemento {{number}} {{name}}",
+          "tip": "Si aggiungono al prezzo di partenza quando il lavoro è più grande: per esempio ogni bagno in più, o ogni 30 m² oltre i 60.",
+          "title": "Supplementi"
+        },
+        "weekdays": {
+          "hint": "Il servizio si prenota solo nei giorni scelti, dentro i tuoi orari.",
+          "label": "Giorni in cui lo offri"
+        }
+      },
+      "list": {
+        "limitReached": "Hai raggiunto il limite di {{max}} servizi: per aggiungerne un altro, eliminane uno.",
+        "loadError": "Impossibile caricare i servizi",
+        "loading": "Carico i servizi…",
+        "missing": "Da completare: {{fields}}."
+      },
+      "notice": {
+        "days_one": "{{count}} giorno",
+        "days_other": "{{count}} giorni",
+        "default": "Quello delle regole di disponibilità",
+        "hours_one": "{{count}} ora",
+        "hours_other": "{{count}} ore",
+        "none": "Nessun preavviso"
+      },
+      "photos": {
+        "add": "Aggiungi foto",
+        "adding": "Carico le foto…",
+        "alt": "Foto {{number}} di {{name}}",
+        "counter_one": "{{count}} foto su {{max}}",
+        "counter_other": "{{count}} foto su {{max}}",
+        "cover": "Copertina",
+        "empty": "Non ci sono ancora foto. La prima sarà la copertina.",
+        "errors": {
+          "full": "Hai già {{max}} foto: toglierne una prima di aggiungerne altre.",
+          "size": "«{{name}}» è vuota o troppo grande: al massimo {{max}} MB.",
+          "tooMany_one": "Puoi aggiungere ancora {{count}} foto: ne hai scelte {{chosen}}.",
+          "tooMany_other": "Puoi aggiungere ancora {{count}} foto: ne hai scelte {{chosen}}.",
+          "type": "«{{name}}» non è una foto valida: usa immagini JPEG, PNG o WebP."
+        },
+        "moveEarlier": "Sposta la foto {{number}} prima",
+        "moveLater": "Sposta la foto {{number}} dopo",
+        "remove": "Togli la foto {{number}}",
+        "removeConfirm": "Togli la foto",
+        "removeDescription": "La foto esce dal servizio e non si può rimettere: per riaverla la carichi di nuovo.",
+        "removeTitle": "Togliere questa foto?",
+        "unavailable": "Foto non disponibile"
+      },
+      "preview": {
+        "includesVat": "IVA inclusa",
+        "label": "Anteprima: come lo vedono i clienti",
+        "namePlaceholder": "Il nome del servizio",
+        "noPhoto": "Nessuna foto",
+        "summaryPlaceholder": "Una riga che spiega il servizio",
+        "supplements_one": "{{count}} supplemento",
+        "supplements_other": "{{count}} supplementi"
+      },
+      "price": {
+        "fromUnit": "da {{amount}} {{unit}}",
+        "notSet": "Prezzo da indicare",
+        "onQuote": "Su preventivo"
+      },
+      "supplementUnits": {
+        "bathroom": "Per ogni bagno in più",
+        "flat": "Una volta sola",
+        "hour": "Per ogni ora in più",
+        "set": "Per ogni set",
+        "sqm30": "Ogni 30 m² oltre i 60"
+      },
+      "table": {
+        "duration": "Durata",
+        "price": "Prezzo",
+        "service": "Servizio",
+        "status": "Stato"
+      },
+      "title": "Servizi e prezzi",
+      "units": {
+        "PerHour": "all’ora",
+        "PerJob": "a intervento",
+        "PerSet": "a set",
+        "PerSquareMeter": "al m²"
+      },
+      "view": {
+        "cards": "Schede",
+        "label": "Come vedere i servizi",
+        "table": "Tabella"
+      },
+      "wizard": {
+        "description": "Quattro passi: cosa fai, quanto costa, quando lo offri e le foto. La bozza si salva a ogni passo.",
+        "done": {
+          "availability": "Gli orari che i clienti possono scegliere dipendono dalla tua disponibilità e dalla durata che hai indicato.",
+          "back": "Torna ai servizi",
+          "catalog": "Lo trovi in Servizi e prezzi: lo cambi quando vuoi.",
+          "draftHidden": "Resta una bozza: la vedi solo tu.",
+          "draftPublish": "Per metterlo in elenco aprilo da Servizi e prezzi e accendi «Visibile ai clienti».",
+          "draftTitle": "Il servizio è salvato come bozza",
+          "open": "Apri il servizio",
+          "publishedTitle": "Il servizio è pubblicato"
+        },
+        "draftErrorDescription": "Non siamo riusciti a riaprire la bozza. Riprova tra poco.",
+        "draftErrorTitle": "Non riusciamo ad aprire la bozza",
+        "duplicating": "Preparo la copia…",
+        "failed": "Non siamo riusciti a salvare il servizio. Controlla i dati e riprova.",
+        "limitTitle": "Non puoi aggiungere altri servizi",
+        "loadingDraft": "Riapro la bozza…",
+        "needsDraft": "Completa prima i passi precedenti: le foto si aggiungono a un servizio già salvato.",
+        "photosTitle": "Foto del servizio",
+        "previewTitle": "Come lo vedranno i clienti",
+        "publish": "Pubblica il servizio",
+        "publishNow": "Pubblica subito",
+        "publishNowHint": "Spento: lo salvi come bozza e lo pubblichi quando vuoi.",
+        "savedAt": "Bozza salvata alle {{time}}",
+        "saveDraft": "Salva come bozza",
+        "startNew": "Comincia un nuovo servizio",
+        "steps": {
+          "booking": {
+            "label": "Durata e prenotazione",
+            "purpose": "La durata riserva il tempo in agenda. Le richieste arrivano a te e le confermi tu.",
+            "title": "Quanto dura e quando lo offri?"
+          },
+          "photos": {
+            "label": "Foto e anteprima",
+            "purpose": "Aggiungi le foto e controlla l’anteprima. Poi pubblica, o salva come bozza.",
+            "title": "Come lo vedranno i clienti?"
+          },
+          "price": {
+            "label": "Prezzo",
+            "purpose": "Scegli come fai pagare. Con «Su preventivo» il prezzo lo dici dopo aver visto il lavoro.",
+            "title": "Quanto costa?"
+          },
+          "service": {
+            "label": "Il servizio",
+            "purpose": "Un nome chiaro e una riga che spiega il servizio. Il resto lo puoi aggiungere dopo.",
+            "title": "Cosa offri?"
+          }
+        },
+        "title": "Aggiungi un servizio"
+      },
+      "zone": {
+        "change": "Cambia la zona",
+        "count_one": "{{count}} comune",
+        "count_other": "{{count}} comuni",
+        "hint": "La zona è la stessa per tutti i tuoi servizi: la cambi una volta sola.",
+        "loadError": "Non riusciamo a leggere i tuoi comuni.",
+        "loading": "Carico i comuni…",
+        "more_one": "e altro {{count}}",
+        "more_other": "e altri {{count}}",
+        "none": "Non hai ancora scelto i comuni in cui lavori."
+      }
+    },
     "statusSuspended": "Sospeso",
     "suspendedHint": "Contatta il supporto CasaZen per riattivare l'account.",
     "suspended": {
@@ -3793,6 +4146,20 @@
       "Suspended": {
         "label": "Sospeso",
         "explain": "Il profilo è stato sospeso da CasaZen: non ricevi richieste finché non viene riattivato."
+      }
+    },
+    "serviceListing": {
+      "Active": {
+        "explain": "È in elenco: i clienti lo vedono.",
+        "label": "Pubblicato"
+      },
+      "Draft": {
+        "explain": "Lo vedi solo tu: non è ancora pubblicato.",
+        "label": "Bozza"
+      },
+      "Paused": {
+        "explain": "I clienti non lo vedono finché non lo riattivi.",
+        "label": "In pausa"
       }
     },
     "checkin": {
@@ -5614,6 +5981,7 @@
       "supplierDashboard": "inizio|panoramica|home|oggi",
       "supplierHelpIcal": "ical|calendario|guida|aiuto|sincronizzazione",
       "supplierInbox": "richieste|lavori|messaggi|clienti|preventivi",
+      "supplierServices": "servizi|prezzi|listino|tariffe|catalogo",
       "supplierShowcase": "vetrina|servizi|profilo pubblico|prezzi|listino",
       "suppliers": "partner|professionisti|aziende|approvazione",
       "taxRates": "tassa di soggiorno|imposta di soggiorno|aliquote|comuni",

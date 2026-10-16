@@ -533,6 +533,7 @@
     "supplierCalendar": "Calendar",
     "supplierInbox": "Requests",
     "supplierAvailability": "Availability",
+    "supplierServices": "Services and prices",
     "supplierHelpIcal": "iCal guide",
     "group": {
       "activity": "Your business",
@@ -2995,6 +2996,358 @@
       "emptyHint": "The assignments hosts give you appear here and in your assignment inbox.",
       "openInbox": "Open assignments"
     },
+    "services": {
+      "actions": {
+        "add": "Add a service",
+        "continue": "Continue",
+        "delete": "Delete",
+        "deleteConfirm": "Delete the service",
+        "deleted": "“{{name}}” was deleted.",
+        "deleteDescription": "Once deleted it cannot be restored.",
+        "deleteDraftGone": "The draft is deleted.",
+        "deleteGone": "It is no longer in your catalog and customers do not see it.",
+        "deleteRequestsStay": "The requests you already received stay where they are.",
+        "deleteTitle": "Delete “{{name}}”?",
+        "duplicate": "Duplicate",
+        "edit": "Edit",
+        "pause": "Pause",
+        "paused": "“{{name}}” is paused: customers do not see it until you turn it back on.",
+        "preview": "How customers see it",
+        "previewAll": "How customers see it",
+        "publish": "Publish",
+        "published": "“{{name}}” is published.",
+        "reactivate": "Turn back on",
+        "showcase": "My showcase site"
+      },
+      "description": "What you offer and what it costs: the name, price, duration and photos of each service.",
+      "detail": {
+        "loadError": "Could not load the service",
+        "loadErrorTitle": "Service",
+        "loading": "Loading the service…",
+        "notFoundDescription": "It may have been deleted, or the link is no longer valid.",
+        "notFoundTitle": "We cannot find this service",
+        "previewNote": "This is how the service looks to customers. Change the fields and watch it change.",
+        "previewTitle": "How customers see it",
+        "reload": "Reload",
+        "save": "Save changes",
+        "saved": "Changes saved",
+        "sections": {
+          "booking": "Duration and booking",
+          "photos": "Photos",
+          "price": "Price",
+          "service": "The service",
+          "serviceHint": "Name, category, description",
+          "zone": "Where you offer it",
+          "zoneHint": "The same for all your services"
+        },
+        "toList": "Back to services",
+        "visible": {
+          "Active": "It is listed: customers see it. Turn off to pause it.",
+          "Draft": "It is still a draft: only you see it. Turn on to publish it.",
+          "label": "Visible to customers",
+          "Paused": "It is paused: customers do not see it. Turn on to bring it back."
+        },
+        "weekdaysAll": "Every day",
+        "weekdaysSome_one": "{{count}} day",
+        "weekdaysSome_other": "{{count}} days"
+      },
+      "duration": {
+        "hours": "{{hours}} h",
+        "hoursMinutes": "{{hours}} h {{minutes}} min",
+        "minutes": "{{minutes}} min",
+        "notSet": "Duration to be set"
+      },
+      "empty": {
+        "description": "You need a name, a price and a duration. We guide you through four steps.",
+        "steps": {
+          "booking": "How long it takes and when you offer it",
+          "photos": "The photos, then you publish",
+          "price": "What it costs",
+          "service": "What you do"
+        },
+        "stepsLabel": "The four steps",
+        "title": "Create your first service"
+      },
+      "errors": {
+        "amountInvalid": "Write the amount in euros, for example 45 or 45.50.",
+        "amountRange": "The amount must be at least €0.01 and at most €100,000.",
+        "amountRequired": "Write an amount, or choose “On quote”.",
+        "cannotPause": "Only a published service can be paused.",
+        "categoryRequired": "Choose a category.",
+        "changed": "This service was changed elsewhere. Reload to see the saved version.",
+        "descriptionTooLong": "The description can have at most 2000 characters.",
+        "durationRequired": "Choose how long it usually takes.",
+        "generic": "We could not complete the operation. Try again in a moment.",
+        "limit": "You already have {{max}} services, which is the maximum. Delete or reuse a service before creating another.",
+        "listItemTooLong": "Each item can have at most 100 characters.",
+        "listTooMany": "At most 10 items: one per line.",
+        "nameRequired": "Write the name of the service.",
+        "nameTooLong": "The name can have at most 60 characters.",
+        "notFound": "We cannot find this service any more: it may have been deleted.",
+        "photoFailed": "We could not upload the photos. Try again in a moment.",
+        "requiredToPublish": "It is needed to publish the service.",
+        "serverField": "Check this value.",
+        "serverInvalid": "Check this data: {{fields}}.",
+        "serverInvalidAny": "Some data is not valid. Check it and try again.",
+        "serverNotPublishable": "To publish you still need: {{fields}}.",
+        "serverNotPublishableAny": "Some data is still missing to publish.",
+        "summaryTooLong": "The line can have at most 200 characters.",
+        "supplementAmountRequired": "Write the amount of the supplement.",
+        "supplementLabelRequired": "Write the name of the supplement.",
+        "supplementLabelTooLong": "The name can have at most 80 characters.",
+        "supplementMaxInvalid": "Write a number from 1 to 99, or leave it empty.",
+        "supplementsTooMany": "At most 10 supplements.",
+        "weekdaysRequired": "Choose at least one day."
+      },
+      "fields": {
+        "category": "Category",
+        "description": "Description",
+        "duration": "Duration",
+        "excluded": "What is not included",
+        "included": "What is included",
+        "name": "Name",
+        "notice": "Notice",
+        "photos": "Photos",
+        "price": "Price",
+        "summary": "In one line",
+        "supplements": "Supplements",
+        "weekdays": "Days"
+      },
+      "filters": {
+        "Active": "Published",
+        "all": "All",
+        "Draft": "Drafts",
+        "emptyDescription": "Try looking at all the services.",
+        "emptyTitle": "No service in this state",
+        "label": "Filter by state",
+        "Paused": "Paused",
+        "showAll": "Show all"
+      },
+      "form": {
+        "booking": {
+          "confirmNote": "Every booking arrives as a request and you confirm it."
+        },
+        "category": {
+          "hint": "It helps the people who look for it to find the service.",
+          "label": "Category",
+          "placeholder": "Choose a category"
+        },
+        "description": {
+          "hint": "What you do and how you work, in a few sentences.",
+          "label": "Description"
+        },
+        "duration": {
+          "hint": "It lets customers see only the times when you can do it.",
+          "label": "How long it usually takes",
+          "placeholder": "Choose the duration"
+        },
+        "excluded": {
+          "example": "outside windows, inside of the oven",
+          "hint": "One item per line.",
+          "label": "What is not included"
+        },
+        "included": {
+          "hint": "One item per line.",
+          "label": "What is included"
+        },
+        "name": {
+          "example": "Guest turnover cleaning",
+          "hint": "The name customers read.",
+          "label": "What is it called?"
+        },
+        "notice": {
+          "hint": "How long before a job customers have to ask for it.",
+          "label": "Minimum notice"
+        },
+        "price": {
+          "amount": "Amount",
+          "amountHint": "It is the starting price: supplements are added if the job is bigger.",
+          "hourlyAmount": "Hourly rate",
+          "hourlyUnit": "Paid per hour",
+          "modeLegend": "How you charge",
+          "modes": {
+            "fixed": {
+              "description": "One amount per job, clear to whoever books.",
+              "title": "Fixed price"
+            },
+            "hourly": {
+              "description": "A rate for every hour of work.",
+              "title": "By the hour"
+            },
+            "quote": {
+              "description": "You say the price after you have seen the job.",
+              "title": "On quote"
+            }
+          },
+          "quoteNote": "Customers will see “On quote”. You give the price when the request arrives.",
+          "unit": "Paid",
+          "vat": {
+            "hint": "We show it to customers only if you turn it on. Otherwise we say nothing about VAT.",
+            "label": "My prices include VAT"
+          }
+        },
+        "summary": {
+          "example": "The home ready for the next guest.",
+          "hint": "It shows under the name, in the list.",
+          "label": "In one line"
+        },
+        "supplements": {
+          "add": "Add a supplement",
+          "amount": "Amount (€)",
+          "hint": "They are added to the starting price when the job is bigger.",
+          "label": "Supplement {{number}}",
+          "labelPlaceholder": "For example: Extra bathroom",
+          "max": "Maximum",
+          "maxHint": "How many times at most.",
+          "per": "When it is added",
+          "remove": "Remove supplement {{number}} {{name}}",
+          "tip": "They are added to the starting price when the job is bigger: for example each extra bathroom, or each 30 m² over 60.",
+          "title": "Supplements"
+        },
+        "weekdays": {
+          "hint": "The service can be booked only on the chosen days, within your hours.",
+          "label": "Days you offer it"
+        }
+      },
+      "list": {
+        "limitReached": "You reached the limit of {{max}} services: to add another one, delete one.",
+        "loadError": "Could not load the services",
+        "loading": "Loading the services…",
+        "missing": "To complete: {{fields}}."
+      },
+      "notice": {
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "default": "The one of your availability rules",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "none": "No notice"
+      },
+      "photos": {
+        "add": "Add photos",
+        "adding": "Uploading photos…",
+        "alt": "Photo {{number}} of {{name}}",
+        "counter_one": "{{count}} photo out of {{max}}",
+        "counter_other": "{{count}} photos out of {{max}}",
+        "cover": "Cover",
+        "empty": "There are no photos yet. The first one will be the cover.",
+        "errors": {
+          "full": "You already have {{max}} photos: remove one before adding more.",
+          "size": "“{{name}}” is empty or too large: {{max}} MB at most.",
+          "tooMany_one": "You can add {{count}} more photo: you chose {{chosen}}.",
+          "tooMany_other": "You can add {{count}} more photos: you chose {{chosen}}.",
+          "type": "“{{name}}” is not a valid photo: use JPEG, PNG or WebP images."
+        },
+        "moveEarlier": "Move photo {{number}} earlier",
+        "moveLater": "Move photo {{number}} later",
+        "remove": "Remove photo {{number}}",
+        "removeConfirm": "Remove the photo",
+        "removeDescription": "The photo leaves the service and cannot be put back: to have it again you upload it again.",
+        "removeTitle": "Remove this photo?",
+        "unavailable": "Photo not available"
+      },
+      "preview": {
+        "includesVat": "VAT included",
+        "label": "Preview: how customers see it",
+        "namePlaceholder": "The name of the service",
+        "noPhoto": "No photo",
+        "summaryPlaceholder": "A line that explains the service",
+        "supplements_one": "{{count}} supplement",
+        "supplements_other": "{{count}} supplements"
+      },
+      "price": {
+        "fromUnit": "from {{amount}} {{unit}}",
+        "notSet": "Price to be set",
+        "onQuote": "On quote"
+      },
+      "supplementUnits": {
+        "bathroom": "For each extra bathroom",
+        "flat": "Once",
+        "hour": "For each extra hour",
+        "set": "For each set",
+        "sqm30": "Each 30 m² over 60"
+      },
+      "table": {
+        "duration": "Duration",
+        "price": "Price",
+        "service": "Service",
+        "status": "State"
+      },
+      "title": "Services and prices",
+      "units": {
+        "PerHour": "per hour",
+        "PerJob": "per job",
+        "PerSet": "per set",
+        "PerSquareMeter": "per m²"
+      },
+      "view": {
+        "cards": "Cards",
+        "label": "How to see the services",
+        "table": "Table"
+      },
+      "wizard": {
+        "description": "Four steps: what you do, what it costs, when you offer it and the photos. The draft is saved at every step.",
+        "done": {
+          "availability": "The times customers can choose depend on your availability and on the duration you set.",
+          "back": "Back to services",
+          "catalog": "You find it in Services and prices: you can change it whenever you like.",
+          "draftHidden": "It stays a draft: only you see it.",
+          "draftPublish": "To list it, open it from Services and prices and turn on “Visible to customers”.",
+          "draftTitle": "The service is saved as a draft",
+          "open": "Open the service",
+          "publishedTitle": "The service is published"
+        },
+        "draftErrorDescription": "We could not reopen the draft. Try again in a moment.",
+        "draftErrorTitle": "We cannot open the draft",
+        "duplicating": "Preparing the copy…",
+        "failed": "We could not save the service. Check the data and try again.",
+        "limitTitle": "You cannot add more services",
+        "loadingDraft": "Reopening the draft…",
+        "needsDraft": "Complete the previous steps first: photos are added to a service that is already saved.",
+        "photosTitle": "Photos of the service",
+        "previewTitle": "How customers will see it",
+        "publish": "Publish the service",
+        "publishNow": "Publish now",
+        "publishNowHint": "Off: you save it as a draft and publish it when you like.",
+        "savedAt": "Draft saved at {{time}}",
+        "saveDraft": "Save as a draft",
+        "startNew": "Start a new service",
+        "steps": {
+          "booking": {
+            "label": "Duration and booking",
+            "purpose": "The duration reserves the time in your calendar. Requests come to you and you confirm them.",
+            "title": "How long does it take and when do you offer it?"
+          },
+          "photos": {
+            "label": "Photos and preview",
+            "purpose": "Add the photos and check the preview. Then publish, or save as a draft.",
+            "title": "How will customers see it?"
+          },
+          "price": {
+            "label": "Price",
+            "purpose": "Choose how you charge. With “On quote” you give the price after you have seen the job.",
+            "title": "What does it cost?"
+          },
+          "service": {
+            "label": "The service",
+            "purpose": "A clear name and a line that explains the service. You can add the rest later.",
+            "title": "What do you offer?"
+          }
+        },
+        "title": "Add a service"
+      },
+      "zone": {
+        "change": "Change the zone",
+        "count_one": "{{count}} comune",
+        "count_other": "{{count}} comuni",
+        "hint": "The zone is the same for all your services: you change it once.",
+        "loadError": "We cannot read your comuni.",
+        "loading": "Loading the comuni…",
+        "more_one": "and {{count}} more",
+        "more_other": "and {{count}} more",
+        "none": "You have not chosen the comuni you work in yet."
+      }
+    },
     "statusSuspended": "Suspended",
     "suspendedHint": "Contact CasaZen support to reactivate the account.",
     "suspended": {
@@ -3793,6 +4146,20 @@
       "Suspended": {
         "label": "Suspended",
         "explain": "The profile was suspended by CasaZen: you receive no requests until it is reactivated."
+      }
+    },
+    "serviceListing": {
+      "Active": {
+        "explain": "It is listed: customers see it.",
+        "label": "Published"
+      },
+      "Draft": {
+        "explain": "Only you see it: it is not published yet.",
+        "label": "Draft"
+      },
+      "Paused": {
+        "explain": "Customers do not see it until you turn it back on.",
+        "label": "Paused"
       }
     },
     "checkin": {
@@ -5614,6 +5981,7 @@
       "supplierDashboard": "start|overview|home|today",
       "supplierHelpIcal": "ical|calendar|guide|help|sync",
       "supplierInbox": "requests|jobs|messages|clients|quotes",
+      "supplierServices": "services|prices|price list|rates|catalog",
       "supplierShowcase": "showcase|services|public profile|prices|price list",
       "suppliers": "partners|professionals|companies|approval",
       "taxRates": "tourist tax|city tax|rates|municipalities",

@@ -40,6 +40,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   checkin: ["Inviato", "InCompilazione", "Completo", "AlloggiatiInviato", "Scaduto"],
   // AlloggiatiWebStatus
   alloggiati: ["DaInviare", "DaInviareManualmente", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
+  // SupplierServiceListingStatus (SP-06)
+  serviceListing: ["Draft", "Active", "Paused"],
 };
 
 const kinds = Object.keys(STATUS_DICTIONARY) as StatusKind[];
