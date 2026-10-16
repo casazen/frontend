@@ -88,6 +88,14 @@ aggiornamento, errore, vuoto) con `?scenario=`. Serve a guardarlo e a farci gira
 (`e2e/list-view.spec.ts`). Come si configura un elenco, con un esempio, è nel `README.md` di `src/components/shared/list-view/`;
 la prima pagina vera che lo usa è l'elenco **Ospiti** (`features/guests/guests-list.ts`). **Non esiste nella build.**
 
+### I blocchi calmi su una pagina sola
+
+Sempre con il dev server, la pagina `/dev/calm-blocks` mostra i blocchi delle home d'area (UI-16): il blocco in evidenza nei cinque toni,
+la riga di numeri, la sezione senza scatola, l'elenco per giorno e quello in «oggi / domani / più avanti», la striscia dei sette giorni,
+l'attività recente, il prossimo passo e la checklist compatta, più una home composta con tutti insieme. Serve a guardarli e a farci girare
+axe e gli Playwright dei telefoni (`e2e/calm-blocks.spec.ts`). Quando usare quale blocco è nel `README.md` di
+`src/components/shared/calm/`. **Non esiste nella build.**
+
 ## Configurazione
 
 La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`, valida solo con il dev server o con
