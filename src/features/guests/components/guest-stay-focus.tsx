@@ -25,7 +25,7 @@ export function GuestStayFocus({ stay }: GuestStayFocusProps) {
   const { booking, phase } = stay;
   const nights = bookingNights(booking);
   const title = [booking.propertyName, stayRangeText(booking, i18n.language, todayInRome())].filter(Boolean).join(' · ');
-  const details = [nights > 0 ? t('booking.list.nights', { count: nights }) : '', t('booking.list.guestCount', { count: booking.numberOfGuests })]
+  const details = [nights > 0 ? t('booking.list.nights', { count: nights }) : '', booking.numberOfGuests > 0 ? t('booking.list.guestCount', { count: booking.numberOfGuests }) : '']
     .filter(Boolean)
     .join(' · ');
 

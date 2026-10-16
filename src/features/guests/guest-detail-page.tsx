@@ -181,7 +181,7 @@ export function GuestDetailPage() {
             <GuestStaysTab
               stays={stays}
               isLoading={staysQuery.isLoading}
-              isError={staysQuery.isError}
+              isError={staysQuery.isError && staysQuery.data === undefined}
               error={staysQuery.error}
               onRetry={() => void staysQuery.refetch()}
             />
