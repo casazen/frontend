@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Calculator, Loader2, MapPin, type LucideIcon } from 'lucide-react';
 import { usePublishedSeoPages } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { Button } from '@/components/ui/button';
+import { BrandHero } from '@/features/public-site/components/brand-hero';
 import type { SeoPublishedPage } from '@/types/seo.types';
 
 /**
@@ -36,8 +37,9 @@ export function SeoHubPage() {
   const calculators = pages.filter((page) => page.pageType === 'TouristTaxCalc');
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8" data-testid="seo-hub-page">
-      <h1 className="text-3xl font-bold">{t('publicSeo.hub.title')}</h1>
+    // Inside the `<main>` of the public shell: a second one would be a second landmark.
+    <div className="mx-auto max-w-4xl space-y-8" data-testid="seo-hub-page">
+      <BrandHero title={t('publicSeo.hub.title')} />
 
       {isError ? (
         <div className="mt-6 rounded-lg border border-destructive/40 p-4" role="alert" data-testid="seo-hub-error">
@@ -47,20 +49,21 @@ export function SeoHubPage() {
           </Button>
         </div>
       ) : pages.length === 0 ? (
-        <p className="mt-6 text-muted-foreground" data-testid="seo-hub-empty">
+        <p className="text-muted-foreground" data-testid="seo-hub-empty">
           {t('publicSeo.hub.empty')}
         </p>
       ) : (
         <>
-          <HubSection heading={t('publicSeo.hub.guidesHeading')} pages={guides} testId="seo-hub-guides" />
+          <HubSection heading={t('publicSeo.hub.guidesHeading')} pages={guides} testId="seo-hub-guides" icon={MapPin} />
           <HubSection
             heading={t('publicSeo.hub.calculatorsHeading')}
             pages={calculators}
             testId="seo-hub-calculators"
+            icon={Calculator}
           />
         </>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -68,20 +71,40 @@ interface HubSectionProps {
   heading: string;
   pages: SeoPublishedPage[];
   testId: string;
+  icon: LucideIcon;
 }
 
-function HubSection({ heading, pages, testId }: HubSectionProps) {
+/**
+ * The pages of one kind as cards: the title is the link (a whole-card link, so the card opens in a new tab and a screen
+ * reader reads the title alone), the comune sits next to it.
+ */
+function HubSection({ heading, pages, testId, icon: Icon }: HubSectionProps) {
   if (pages.length === 0) return null;
 
   return (
-    <section className="mt-8" data-testid={testId}>
-      <h2 className="text-xl font-semibold">{heading}</h2>
-      <ul className="mt-3 space-y-2">
+    <section data-testid={testId}>
+      <h2 className="public-display text-xl">{heading}</h2>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
         {pages.map((page) => (
-          <li key={page.path}>
-            <Link to={page.path} className="underline hover:text-primary">
-              {page.title}
-            </Link>
+          <li
+            key={page.path}
+            className="public-site-card relative flex items-center gap-3 p-4 transition-shadow focus-within:ring-2 focus-within:ring-[var(--cz-public-primary-text)] hover:shadow-[var(--cz-public-shadow-widget)] motion-reduce:transition-none"
+          >
+            <span
+              aria-hidden="true"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--cz-brand-tint)] text-[var(--cz-brand-tint-text)]"
+            >
+              <Icon className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <Link
+                to={page.path}
+                className="font-semibold outline-none after:absolute after:inset-0 hover:text-[var(--cz-public-primary-text)]"
+              >
+                {page.title}
+              </Link>
+              <p className="text-sm text-[var(--cz-public-muted)]">{page.comuneName}</p>
+            </div>
           </li>
         ))}
       </ul>

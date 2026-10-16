@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { useTouristTaxPage } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
+import { BrandEyebrow, BrandHero } from '@/features/public-site/components/brand-hero';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
 import { SeoContentLanguageNote } from './components/seo-content-language-note';
 import { SeoCtaBlock } from './components/seo-cta-block';
@@ -39,21 +40,24 @@ export function TouristTaxCalculatorPage() {
 
   if (isError || !page) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-12" data-testid="tourist-tax-page-not-found">
+      <div className="mx-auto max-w-3xl py-8" data-testid="tourist-tax-page-not-found">
         <h1 className="text-2xl font-bold">{t('publicSeo.notFound')}</h1>
         <p className="mt-2 text-muted-foreground">
           {t('publicSeo.calculatorNotAvailable')}
         </p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8" data-testid="tourist-tax-calculator-page">
-      <header className="mb-6">
-        <p className="text-sm text-muted-foreground">{page.comuneName}</p>
-        <h1 className="mt-1 text-3xl font-bold">{page.title}</h1>
-      </header>
+    // Inside the `<main>` of the public shell: a second one would be a second landmark.
+    <div className="mx-auto max-w-3xl" data-testid="tourist-tax-calculator-page">
+      <div className="mb-6">
+        <BrandHero
+          eyebrow={<BrandEyebrow icon={<MapPin className="h-4 w-4" aria-hidden="true" />}>{page.comuneName}</BrandEyebrow>}
+          title={page.title}
+        />
+      </div>
 
       {page.bodyHtml && (
         <>
@@ -77,6 +81,6 @@ export function TouristTaxCalculatorPage() {
 
       {page.cta && <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />}
       <SeoDisclaimerFooter lastRefreshedAt={page.lastRefreshedAt} aiGenerated={page.aiGenerated} />
-    </main>
+    </div>
   );
 }
