@@ -11,9 +11,10 @@ import { supplierShowcasePath } from '@/features/supplier/lib/showcase-paths';
 import { useSeoMeta } from '@/lib/seo-meta';
 
 /**
- * Public showcase of a supplier, `/fornitori/:slug` (SU-13, A4-16), in the public shell of CasaZen. `noindex` in v0 and
- * in `robots.txt`, whatever the state: nothing of it is indexed until the product owner decides so. Only a 404 means
- * "this showcase does not exist"; any other failure is an error with a retry.
+ * Public showcase of a supplier, `/fornitori/:slug` (SU-13, A4-16), in the public shell of CasaZen. Indexable: crawlers get
+ * its HTML from the backend through `api/seo.ts` and the sitemap `/sitemap-supplier.xml` lists it; here `noindex` only
+ * applies to a showcase that does not exist or fails to load. Only a 404 means "this showcase does not exist"; any other
+ * failure is an error with a retry.
  */
 export function SupplierShowcasePage() {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export function SupplierShowcasePage() {
   useSeoMeta({
     title: data ? t('supplierShowcase.pageTitle', { name: data.legalName }) : t('supplierShowcase.title'),
     description: data ? t('supplierShowcase.pageDescription', { name: data.legalName }) : undefined,
-    noindex: true,
+    noindex: isError,
   });
 
   if (isLoading || !slug) {

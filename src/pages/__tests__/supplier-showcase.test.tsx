@@ -80,12 +80,12 @@ describe('SupplierShowcasePage: public showcase /fornitori/:slug (SU-13, A4-16)'
     expect(screen.getByText('1 giorno disponibile nelle prossime 2 settimane')).toBeInTheDocument();
   });
 
-  it('is noindex while it loads, when it shows the supplier and when it fails', async () => {
+  it('is indexable when it shows the supplier', async () => {
     api.getShowcase.mockResolvedValue(SHOWCASE);
     renderAt('/fornitori/pulizie-roma');
 
     await screen.findByTestId('supplier-showcase-name');
-    expect(robots()).toBe('noindex,nofollow');
+    expect(robots()).not.toBe('noindex,nofollow');
     expect(document.title).toContain('Pulizie Roma Srl');
   });
 
