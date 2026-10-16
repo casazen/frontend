@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import '@/config/detail-kinds';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUiStore } from '@/store/ui-store';
@@ -60,7 +61,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
 
   return (
     <AppShellContext.Provider value={shell}>
-      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once its flag exists. */}
+      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
       <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
         <SkipLink targetId={MAIN_CONTENT_ID} />
         <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
