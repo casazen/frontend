@@ -1393,32 +1393,93 @@
       }
     },
     "list": {
-      "title": "Prenotazioni",
-      "description": "Gestisci tutte le prenotazioni dei tuoi immobili",
-      "searchPlaceholder": "Cerca prenotazioni...",
-      "loading": "Caricamento prenotazioni...",
-      "loadError": "Impossibile caricare le prenotazioni. Riprova.",
-      "noResults": "Nessuna prenotazione trovata.",
-      "view": "Visualizza",
-      "all": "Tutte",
+      "actions": {
+        "accept": "Accetta",
+        "decline": "Rifiuta la richiesta",
+        "departure": "Registra partenza",
+        "sendLink": "Invia il link di check-in"
+      },
+      "channels": {
+        "Airbnb": "Airbnb",
+        "BookingCom": "Booking.com",
+        "Direct": "Sito diretto",
+        "Manual": "Inserita a mano",
+        "Other": "Altri canali"
+      },
+      "chips": {
+        "all": "Tutte",
+        "cancelled": "Cancellate",
+        "completed": "Concluse",
+        "inProgress": "In corso",
+        "toConfirm": "Da confermare",
+        "toConfirmHint": "Richieste che aspettano la tua risposta",
+        "upcoming": "In arrivo"
+      },
       "columns": {
-        "id": "ID",
-        "guest": "Ospite",
+        "channel": "Canale",
         "checkIn": "Check-in",
         "checkOut": "Check-out",
-        "nights": "Notti",
+        "code": "Codice",
+        "dates": "Date",
+        "email": "Email",
+        "guestAndProperty": "Ospite e immobile",
         "guests": "Ospiti",
-        "total": "Totale",
+        "payment": "Pagamento",
         "status": "Stato",
-        "source": "Origine e canale"
+        "total": "Totale"
       },
+      "count_one": "{{count}} prenotazione",
+      "count_other": "{{count}} prenotazioni",
+      "decline": {
+        "description": "{{guest}} riceverà un'email e le date torneranno disponibili.",
+        "title": "Rifiuta la richiesta"
+      },
+      "description": "Gestisci tutte le prenotazioni dei tuoi immobili",
+      "emptyDescription": "Dal tuo sito, da Airbnb e Booking.com, o inserite a mano. Quando ne arriva una la trovi qui.",
+      "emptyTitle": "Qui arrivano tutte le tue prenotazioni",
+      "filters": {
+        "allProperties": "Tutti gli immobili",
+        "arrival": "Arrivo tra le date",
+        "channel": "Canale",
+        "checkIn": "Check-in online",
+        "checkInAll": "Tutti",
+        "checkInChoices": {
+          "done": "Documenti ricevuti",
+          "toSend": "Link da inviare",
+          "waiting": "In attesa dell'ospite"
+        },
+        "property": "Immobile"
+      },
+      "guestCount_one": "{{count}} ospite",
+      "guestCount_other": "{{count}} ospiti",
+      "loadError": "Impossibile caricare le prenotazioni. Riprova.",
+      "loading": "Caricamento prenotazioni...",
       "newBooking": "Nuova prenotazione",
-      "filteredByProperty": "Prenotazioni di {{name}}",
-      "filteredByAProperty": "Prenotazioni di una proprietà",
-      "showAll": "Mostra tutte",
-      "prevPage": "Precedente",
-      "nextPage": "Successiva",
-      "pageOf": "Pagina {{page}} di {{totalPages}}"
+      "nights_one": "{{count}} notte",
+      "nights_other": "{{count}} notti",
+      "noResultsDescription": "Prova a togliere un filtro, a cambiare scheda o a cercare per codice.",
+      "noResultsTitle": "Nessuna prenotazione con questi filtri",
+      "payment": {
+        "None": "Non incassato",
+        "Paid": "Incassato",
+        "Partial": "Incassato in parte",
+        "Refunded": "Rimborsato"
+      },
+      "respondBy": "Rispondi entro {{date}}",
+      "searchLabel": "Cerca prenotazioni",
+      "searchPlaceholder": "Cerca ospite, codice o immobile",
+      "title": "Prenotazioni",
+      "views": {
+        "arrivalsWeek": "Arrivi dei prossimi 7 giorni",
+        "direct": "Solo prenotazioni dirette",
+        "documents": "Documenti da ricevere"
+      }
+    },
+    "sections": {
+      "bookings": "Prenotazioni",
+      "guests": "Ospiti",
+      "label": "Sezioni di Prenotazioni",
+      "payments": "Pagamenti"
     },
     "detail": {
       "guestInformation": "Informazioni ospite",
