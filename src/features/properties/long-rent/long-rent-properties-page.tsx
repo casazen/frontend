@@ -1,90 +1,69 @@
-import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { EmptyState } from '@/components/shared/empty-state';
-import { LoadingScreen } from '@/components/shared/loading-screen';
+import { ListView } from '@/components/shared/list-view/list-view';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { useProperties } from '@/queries/use-properties';
 import { LongRentGuide } from '@/features/onboarding/components/long-rent-guide';
-import { LoadErrorCard } from './load-error-card';
-import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from './paths';
+import { useListViewsScope } from '@/hooks/use-list-views-scope';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { useLongRentPropertiesList } from './long-rent-properties-list';
+import { useLongRentPropertyRows } from './long-rent-property-rows';
+import { LONG_RENT_PROPERTY_CREATE_PATH } from './paths';
 
-/** Properties of a long-term landlord (A7-06): the list the lease form picks from, with the way to add one. */
+/**
+ * Immobili of Affitti lunghi (LR-07): the properties of a long-term landlord in the unified list, one state each (let or free),
+ * who lives there until when and the rent, the one thing to do about it and the rest in "⋯". The name opens the drawer of the
+ * property; its page, its form and the creation of a new one are the pages they always were. The list is one request for the
+ * properties and one for the leases, whatever the number of rows, and it filters and searches them itself.
+ */
 export function LongRentPropertiesPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { data: properties, isLoading, isError, error, refetch, isFetching } = useProperties({ mode: 'long' });
+  const { hasPermission } = useWorkspace();
+  const viewsScope = useListViewsScope();
+  const { rows, isLoading, isError, error, refetch, leasesKnown, leasesFailed, refetchLeases } = useLongRentPropertyRows({ fresh: true });
+  const canWrite = hasPermission('long-rent', 'property.write');
 
-  const goToCreate = () => navigate(LONG_RENT_PROPERTY_CREATE_PATH);
-
-  const header = (
-    <PageHeader
-      title={t('longRentProperties.list.title')}
-      description={t('longRentProperties.list.description')}
-      action={
-        <Button onClick={goToCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('longRentProperties.list.add')}
-        </Button>
-      }
-    />
-  );
-
-  if (isLoading) {
-    return <LoadingScreen message={t('longRentProperties.list.loading')} className="h-auto flex-1" />;
-  }
-
-  if (isError || !properties) {
-    return (
-      <div className="space-y-6">
-        {header}
-        <LoadErrorCard
-          error={error}
-          fallbackKey="longRentProperties.list.loadError"
-          onRetry={() => void refetch()}
-          retrying={isFetching}
-          testId="long-rent-properties-load-error"
-        />
-      </div>
-    );
-  }
+  const list = useLongRentPropertiesList({
+    canWrite,
+    canCreateLease: hasPermission('long-rent', 'lease.create'),
+    canReadLease: hasPermission('long-rent', 'lease.read'),
+    leasesKnown,
+  });
 
   return (
-    <div className="space-y-6">
-      {header}
+    <div className="min-w-0 space-y-6" data-testid="long-rent-properties-page">
+      <PageHeader
+        title={t('longRentProperties.list.title')}
+        description={t('longRentProperties.list.description')}
+        crumbs="auto"
+        primary={
+          canWrite ? { label: t('longRentProperties.list.add'), icon: Plus, to: LONG_RENT_PROPERTY_CREATE_PATH, testId: 'long-rent-property-add' } : undefined
+        }
+      />
+
       <LongRentGuide />
 
-      {properties.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title={t('longRentProperties.list.emptyTitle')}
-          description={t('longRentProperties.list.emptyDescription')}
-          action={{ label: t('longRentProperties.list.add'), onClick: goToCreate }}
-        />
-      ) : (
-        <div className="grid gap-4" data-testid="long-rent-properties-list">
-          {properties.map((property) => (
-            <Card key={property.id}>
-              <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{property.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {[property.address, property.unit?.trim(), property.postalCode, property.city].filter(Boolean).join(', ')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('longRentProperties.roomsValue', { bedrooms: property.bedrooms, bathrooms: property.bathrooms })}
-                  </p>
-                </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link to={longRentPropertyPath(property.id)}>{t('longRentProperties.list.open')}</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+      {/* The properties are there without their leases: it is said, never guessed (a property is not "free" because a list failed). */}
+      {leasesFailed ? (
+        <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-foreground/70" data-testid="long-rent-properties-leases-note">
+          <p className="min-w-0 break-words">{t('longRentProperties.list.leasesUnavailable')}</p>
+          <Button type="button" variant="outline" size="sm" onClick={refetchLeases}>
+            {t('longRentProperties.retry')}
+          </Button>
         </div>
-      )}
+      ) : null}
+
+      <ListView
+        list={list}
+        rows={rows ?? []}
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        errorTitle={t('longRentProperties.list.loadError')}
+        onRetry={refetch}
+        viewsScope={viewsScope}
+        testId="long-rent-properties-list"
+      />
     </div>
   );
 }

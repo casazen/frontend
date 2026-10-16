@@ -58,6 +58,7 @@ describe('buildSiteHead (SEO-VETRINA)', () => {
       '@type': 'Organization',
       name: 'CasaZen',
       url: 'https://site.example.test/',
+      logo: 'https://site.example.test/icon-512.png',
       email: 'info@example.com',
     });
   });
@@ -73,6 +74,7 @@ describe('buildSiteHead (SEO-VETRINA)', () => {
       '@type': 'Organization',
       name: 'CasaZen',
       url: 'https://site.example.test/',
+      logo: 'https://site.example.test/icon-512.png',
       legalName: 'Esempio S.r.l.',
       vatID: 'IT01234567890',
       address: 'Via Esempio 1, 22100 Como',

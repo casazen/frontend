@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearchProperties } from '@/queries/use-properties';
 import { useSeoMeta } from '@/lib/seo-meta';
+import { BrandHero } from '@/features/public-site/components/brand-hero';
 import { SearchFilters } from './components/search-filters';
 import { SearchResults } from './components/search-results';
 import { filtersFromSearchParams, filtersToSearchParams } from './search-params';
@@ -34,10 +35,7 @@ export function SearchPage() {
 
   return (
     <div className="space-y-6" data-testid="search-page">
-      <header className="space-y-1">
-        <h1 className="public-display text-3xl">{t('search.page.title')}</h1>
-        <p className="text-[var(--cz-public-muted)]">{t('search.page.description')}</p>
-      </header>
+      <BrandHero title={t('search.page.title')} description={t('search.page.description')} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         <div className="lg:col-span-1">

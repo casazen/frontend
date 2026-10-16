@@ -29,12 +29,15 @@ function jsonForScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
+/** The logo of CasaZen (`public/icon-512.png`, the app icon) on the public origin: the image of link previews and the logo of the Organization. */
+const LOGO_PATH = '/icon-512.png';
+
 export function buildOrganizationJsonLd(origin: string | null, legal: SiteLegal): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'CasaZen',
-    ...(origin ? { url: `${origin}/` } : {}),
+    ...(origin ? { url: `${origin}/`, logo: `${origin}${LOGO_PATH}` } : {}),
     // A legal entity only: a holder without a partita IVA (a person) is shown in the page, not declared as an organization.
     ...(legal.name && legal.vatId ? { legalName: legal.name, vatID: legal.vatId } : {}),
     ...(legal.address ? { address: legal.address } : {}),
@@ -63,6 +66,9 @@ export function buildSiteHead({ page, title, description, origin, legal }: SiteH
       `<link rel="alternate" hreflang="it" href="${url}" />`,
       `<link rel="alternate" hreflang="x-default" href="${url}" />`,
       `<meta property="og:url" content="${url}" />`,
+      // The preview of a shared link carries the logo (an absolute address, so only with a public origin).
+      `<meta property="og:image" content="${escapeHtml(`${origin}${LOGO_PATH}`)}" />`,
+      `<meta name="twitter:image" content="${escapeHtml(`${origin}${LOGO_PATH}`)}" />`,
     );
   }
 

@@ -6,14 +6,19 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { AppShellContext } from '@/components/layout/app-shell-context';
 import { useUiStore } from '@/store/ui-store';
+import * as leaseQueries from '@/queries/use-leases';
 import * as propertyQueries from '@/queries/use-properties';
-import type { Property, PropertyDocumentDto } from '@/types';
+import type { LeaseSummary, Property, PropertyDocumentDto } from '@/types';
 import { LongRentPropertiesPage } from '../long-rent-properties-page';
 import { LongRentPropertyDetailPage } from '../long-rent-property-detail-page';
 
 // The first-steps guide has its own tests and reads other endpoints.
 vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
 vi.mock('@/queries/use-properties');
+vi.mock('@/queries/use-leases');
+// The list asks who may write and read (the page is always inside the workspace) and whose saved views these are.
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true, activeContext: 'long-rent' }) }));
+vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => null }));
 // The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
 vi.mock('@/features/properties/mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
 // Covered by its own tests (long-rent-service-requests.test.tsx): here only the APE and the property core.
@@ -63,6 +68,9 @@ function renderAt(path: string) {
 
 beforeEach(() => {
   void i18n.changeLanguage('it');
+  vi.mocked(leaseQueries.useLeases).mockReturnValue(
+    query({ data: [] as LeaseSummary[] }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
+  );
   vi.mocked(propertyQueries.useUploadPropertyDocument).mockReturnValue({
     mutateAsync: vi.fn(),
     isPending: false,
@@ -85,7 +93,7 @@ describe('LongRentPropertiesPage (A7-06)', () => {
 
     renderAt('/app/long-rent/properties');
 
-    expect(screen.getByTestId('long-rent-properties-load-error')).toHaveTextContent(i18n.t('apiErrors.forbidden'));
+    expect(screen.getByTestId('error-state')).toHaveTextContent(i18n.t('apiErrors.forbidden'));
     expect(screen.queryByText(i18n.t('longRentProperties.list.emptyTitle'))).not.toBeInTheDocument();
   });
 
@@ -97,21 +105,41 @@ describe('LongRentPropertiesPage (A7-06)', () => {
     renderAt('/app/long-rent/properties');
 
     expect(screen.getByText(i18n.t('longRentProperties.list.emptyTitle'))).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: i18n.t('longRentProperties.list.add') }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: i18n.t('longRentProperties.list.add') }).length).toBeGreaterThan(0);
   });
 
-  it('LongRentPropertiesPage_WithProperties_LinksToTheLongRentDetail', () => {
+  it('LongRentPropertiesPage_WithProperties_ShowsTheStateTheTenantAndTheWayToTheLease', () => {
     vi.mocked(propertyQueries.useProperties).mockReturnValue(
       query({ data: [PROPERTY] }) as unknown as ReturnType<typeof propertyQueries.useProperties>,
+    );
+    vi.mocked(leaseQueries.useLeases).mockReturnValue(
+      query({
+        data: [
+          {
+            id: 'lease-1',
+            propertyId: 'prop-1',
+            status: 'Registered',
+            startDate: '2020-01-01T00:00:00Z',
+            endDate: '2099-12-31T00:00:00Z',
+            monthlyRent: 850,
+            updatedAt: '2026-01-01T00:00:00Z',
+            tenantFirstName: 'Mario',
+            tenantLastName: 'Rossi',
+          },
+        ] as unknown as LeaseSummary[],
+      }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
     );
 
     renderAt('/app/long-rent/properties');
 
-    expect(propertyQueries.useProperties).toHaveBeenCalledWith({ mode: 'long' });
-    expect(screen.getByText('Bilocale Monza')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: i18n.t('longRentProperties.list.open') })).toHaveAttribute(
+    expect(propertyQueries.useProperties).toHaveBeenCalledWith({ mode: 'long' }, { fresh: true });
+    const table = within(screen.getByRole('table'));
+    expect(table.getByText('Bilocale Monza')).toBeInTheDocument();
+    expect(table.getByText(i18n.t('status.longRentProperty.Rented.label'))).toBeInTheDocument();
+    expect(table.getByText('Mario Rossi')).toBeInTheDocument();
+    expect(table.getByRole('link', { name: i18n.t('longRentProperties.list.actions.openLease') })).toHaveAttribute(
       'href',
-      '/app/long-rent/properties/prop-1',
+      '/app/long-rent/leases/lease-1',
     );
   });
 });

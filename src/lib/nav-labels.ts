@@ -26,6 +26,7 @@ const NAV_GROUP_LABELS: Record<NavGroup, { labelKey: string }> = {
   work: { labelKey: 'nav.group.work' },
   activity: { labelKey: 'nav.group.activity' },
   platform: { labelKey: 'nav.group.platform' },
+  account: { labelKey: 'nav.group.account' },
 };
 
 export function getNavGroupLabel(group: NavGroup, t: TFunction): string {

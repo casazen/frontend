@@ -9,11 +9,13 @@ import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
 import { Footer } from '@/features/public-site/components/Footer';
+import { BrandHeader } from '@/features/public-site/components/brand-header';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { publicSiteColorVars } from '@/lib/public-site-colors';
 import { normalizeHexColor, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';
+import '@/styles/public-brand.css';
 
 interface PublicSiteShellProps {
   mode?: 'org' | 'default';
@@ -93,6 +95,9 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
     <div
       className="public-site-root flex min-h-screen flex-col"
       data-theme={themeId}
+      // CasaZen's own pages (search, guides, legal, supplier showcase) have the brand's look; an org's booking site keeps
+      // the theme and color its host chose (public-brand.css).
+      data-brand={isOrgMode ? undefined : 'casazen'}
       // On the root itself: the [data-theme] tokens are declared on this element and would override a value
       // inherited from <html> (A3-17). Color, text on it and readable variant (BK-13).
       style={colorStyle ?? undefined}
@@ -102,17 +107,17 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         {t('publicSite.skipToContent')}
       </a>
 
-      <header className="border-b border-[var(--cz-public-border)] bg-[var(--cz-public-surface)]">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4 md:py-4">
-          <Link to={isOrgMode ? basePath : '/search'} className="flex min-w-0 flex-1 items-center">
-            {org?.logoUrl ? (
-              <img src={org.logoUrl} alt={displayName} className="h-9 w-auto max-w-[160px] object-contain md:h-10 md:max-w-[200px]" />
-            ) : (
-              <span className="public-display truncate text-base font-semibold md:text-lg">{displayName}</span>
-            )}
-          </Link>
+      {isOrgMode ? (
+        <header className="border-b border-[var(--cz-public-border)] bg-[var(--cz-public-surface)]">
+          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4 md:py-4">
+            <Link to={basePath} className="flex min-w-0 flex-1 items-center">
+              {org?.logoUrl ? (
+                <img src={org.logoUrl} alt={displayName} className="h-9 w-auto max-w-[160px] object-contain md:h-10 md:max-w-[200px]" />
+              ) : (
+                <span className="public-display truncate text-base font-semibold md:text-lg">{displayName}</span>
+              )}
+            </Link>
 
-          {isOrgMode ? (
             <div className="flex shrink-0 items-center gap-1 md:gap-2">
               {showBookingCta ? (
                 <Button
@@ -142,13 +147,11 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
                 </SheetContent>
               </Sheet>
             </div>
-          ) : (
-            <Link to="/search" className="text-sm underline hover:text-[var(--cz-public-primary-text)]">
-              {t('publicSite.explore')}
-            </Link>
-          )}
-        </div>
-      </header>
+          </div>
+        </header>
+      ) : (
+        <BrandHeader />
+      )}
 
       <main id="main-content" className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 md:px-4 md:py-8 md:pb-8">
         {isOrgMode ? <Outlet context={{ org }} /> : <Outlet />}
