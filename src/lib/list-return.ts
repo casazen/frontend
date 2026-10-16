@@ -1,3 +1,5 @@
+import { hasDetailParam, searchWithDetail } from '@/lib/detail-address';
+
 /**
  * Where the lists were left (UI-05): the query string (filters, search, tab) of each list page, kept for the session of the
  * tab, so that the way back from a detail page leads to the list as the user left it. The key of a list is its address
@@ -23,10 +25,15 @@ function isQueryString(value: unknown): value is string {
   return typeof value === 'string' && /^\?[^#]+$/.test(value);
 }
 
-/** Keeps `search` (`?status=Confirmed`) as the state of the list `listKey`; an empty one forgets it. */
+/**
+ * Keeps `search` (`?status=Confirmed`) as the state of the list `listKey`; an empty one forgets it. The detail drawer that may be
+ * open on the list (`?detail=booking:…`, UI-15) is not part of the list: the way back from the page of that booking leads to the
+ * list, not to the list with the drawer open again.
+ */
 export function rememberList(listKey: string, search: string): void {
   const remembered = readRemembered();
-  if (isQueryString(search)) remembered[listKey] = search;
+  const kept = hasDetailParam(search) ? searchWithDetail(search, null) : search;
+  if (isQueryString(kept)) remembered[listKey] = kept;
   else delete remembered[listKey];
   try {
     window.sessionStorage.setItem(LIST_RETURN_STORAGE_KEY, JSON.stringify(remembered));

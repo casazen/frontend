@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- A helper of the tests: it has a component of its own (the probe of the address) next to the functions the tests call. */
+import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
@@ -29,15 +30,18 @@ export interface HarnessOptions {
   list?: ListDefinition<Stay>;
   rows?: readonly Stay[];
   props?: Partial<ListViewProps<Stay>>;
+  /** Anything else to put in the router next to the list: the host of the global drawer (UI-15). */
+  beside?: ReactNode;
 }
 
 /** The list in a memory router, in English. */
-export function renderList({ initial = '/app/short-rent/bookings', list = stayList(), rows = STAYS, props = {} }: HarnessOptions = {}) {
+export function renderList({ initial = '/app/short-rent/bookings', list = stayList(), rows = STAYS, props = {}, beside }: HarnessOptions = {}) {
   const view = render(
     <I18nextProvider i18n={i18n}>
       <MemoryRouter initialEntries={[initial]}>
         <ListView list={list} rows={rows} viewsScope={SCOPE} {...props} />
         <Probe />
+        {beside}
       </MemoryRouter>
     </I18nextProvider>,
   );

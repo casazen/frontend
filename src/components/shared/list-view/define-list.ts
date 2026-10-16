@@ -1,4 +1,5 @@
-import { LIST_MAX_DEFAULT_COLUMNS, type ListDefinition } from './list-types';
+import { isValidDetailKind } from '@/lib/detail-address';
+import { isDrawerDetail, LIST_MAX_DEFAULT_COLUMNS, type ListDefinition } from './list-types';
 
 /** Ids go in the address and in lists separated by a comma or a colon: they stay plain. */
 const PLAIN_ID = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
@@ -46,6 +47,9 @@ export function defineList<Row>(definition: ListDefinition<Row>): ListDefinition
     if (!name?.always) {
       fail(key, 'a list that opens its rows needs a `rowHeader` column that is `always` there: it holds what the keyboard and a screen reader press to open a row');
     }
+  }
+  if (isDrawerDetail(definition.detail) && !isValidDetailKind(definition.detail.drawerKind)) {
+    fail(key, `the drawer kind "${definition.detail.drawerKind}" must be a lowercase word (letters, digits and "-"), the one given to \`registerDetail\``);
   }
   if (columns.filter((column) => column.cardStatus).length > 1) fail(key, 'only one column can be the `cardStatus`');
 
