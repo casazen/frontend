@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { CommandPaletteProvider } from '@/components/shared/command-palette/command-palette-provider';
 import { CommandPaletteTrigger } from '@/components/shared/command-palette/command-palette-trigger';
 import { DemoBanner } from '@/components/shared/demo-banner';
+import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
@@ -86,6 +87,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
           </div>
         </div>
         <RouteFocus mainRef={mainRef} />
+        {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
+        <DetailDrawerHost />
       </CommandPaletteProvider>
     </AppShellContext.Provider>
   );

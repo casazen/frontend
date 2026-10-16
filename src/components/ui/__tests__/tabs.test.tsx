@@ -284,6 +284,29 @@ describe('Tabs (UI-07)', () => {
       expect(tab(/Dettagli/)).toHaveTextContent('99+');
     });
 
+    it.each(['neutral', 'info', 'success', 'warning', 'danger'] as const)('Tabs_CountWithTone%s_IsColoredLikeAStatusAndStillTheNumber', (tone) => {
+      renderTabs('/bookings/7', {
+        items: [
+          { value: 'details', label: 'Dettagli' },
+          { value: 'requests', label: 'Richieste', count: 3, countLabel: 'da approvare', tone },
+        ],
+      });
+
+      const pill = within(tab(/Richieste/)).getByText('3').parentElement as HTMLElement;
+      expect(pill).toHaveAttribute('data-tone', tone);
+      expect(pill.className).toContain(`bg-${tone === 'neutral' ? 'muted' : `${tone}-soft`}`);
+      expect(pill).not.toHaveClass('bg-primary');
+      expect(tab(/Richieste/)).toHaveAccessibleName(/^Richieste.*da approvare$/);
+    });
+
+    it('Tabs_CountWithoutATone_StaysTheAccentOfTheAppAsItWas', () => {
+      renderTabs('/bookings/7', { items: [{ value: 'details', label: 'Dettagli', count: 2 }] });
+
+      const pill = within(tab(/Dettagli/)).getByText('2').parentElement as HTMLElement;
+      expect(pill).toHaveClass('bg-primary', 'text-primary-foreground');
+      expect(pill).not.toHaveAttribute('data-tone');
+    });
+
     it('Tabs_Icon_IsDecorative', () => {
       renderTabs('/bookings/7', {
         items: [{ value: 'details', label: 'Dettagli', icon: Users }],

@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
+import { registerDetail } from '@/components/shared/detail-drawer/detail-registry';
 import type { AppContextKey } from '@/config/route-manifest';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { useUiStore } from '@/store/ui-store';
@@ -146,6 +147,40 @@ describe('AppShellLayout (UI-03)', () => {
     fireEvent.keyDown(document.body, { key: 'k', ctrlKey: true });
 
     expect(await screen.findByRole('dialog', { name: i18n.t('commandPalette.title') })).toBeInTheDocument();
+  });
+
+  it('AppShellLayout_AddressWithADetailDrawer_ShowsItOnceAndTheShellStaysAsItWas', async () => {
+    const unregister = registerDetail('shell-probe', { title: 'detailDrawer.fallbackTitle', Content: () => <p>dentro il cassetto</p> });
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <h1>Prenotazioni</h1>
+      </AppShellLayout>,
+      '/app/short-rent?detail=shell-probe:42',
+    );
+
+    // The drawer of the shell (UI-15) is one dialog in a portal: it takes no room in the layout and moves nothing in it.
+    const dialog = await screen.findByRole('dialog', { name: 'Dettaglio' });
+    expect(within(dialog).getByText('dentro il cassetto')).toBeInTheDocument();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByTestId('app-shell')).not.toContainElement(dialog);
+    expect(document.querySelectorAll('header')).toHaveLength(1);
+    expect(document.querySelectorAll('main')).toHaveLength(1);
+    // The skip link is still the first thing the Tab key reaches.
+    const focusable = document.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea');
+    expect(focusable[0]).toBe(screen.getByTestId('skip-link'));
+    unregister();
+  });
+
+  it('AppShellLayout_NoDetailDrawerInTheAddress_DrawsNoDialog', () => {
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <h1>Prenotazioni</h1>
+      </AppShellLayout>,
+      '/app/short-rent?detail=nobody-registered:42',
+    );
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeInTheDocument();
   });
 
   it.each<[AppContextKey, string]>([

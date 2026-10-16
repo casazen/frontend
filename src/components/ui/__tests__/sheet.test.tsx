@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import i18n from '@/i18n/config';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../sheet';
+import { Sheet, SheetContent, SheetHandle, SheetHeader, SheetTitle } from '../sheet';
 
 function Harness({
   side,
@@ -39,6 +39,31 @@ function pull(distance: number, { release = true }: { release?: boolean } = {}) 
   fireEvent.pointerMove(handle(), { pointerId: 1, pointerType: 'touch', clientY: 400 + distance });
   if (release) fireEvent.pointerUp(handle(), { pointerId: 1, pointerType: 'touch', clientY: 400 + distance });
 }
+
+describe('Handle of the detail drawer (UI-15)', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('SheetHandle_InsideTheDetailDrawer_MovesTheDrawerItselfAsItIsASheetFromTheBottomOnAPhone', () => {
+    const onClose = vi.fn();
+    render(
+      <div data-detail-sheet="" data-testid="drawer">
+        <SheetHandle onClose={onClose} />
+      </div>,
+    );
+
+    fireEvent.pointerDown(handle(), { pointerId: 1, pointerType: 'touch', clientY: 400 });
+    fireEvent.pointerMove(handle(), { pointerId: 1, pointerType: 'touch', clientY: 470 });
+
+    expect(screen.getByTestId('drawer').style.transform).toBe('translateY(70px)');
+    expect(screen.getByTestId('drawer').style.getPropertyValue('--sheet-drag')).toBe('70px');
+
+    fireEvent.pointerUp(handle(), { pointerId: 1, pointerType: 'touch', clientY: 560 });
+
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+});
 
 describe('Sheet from the bottom (UI-04b)', () => {
   beforeEach(async () => {

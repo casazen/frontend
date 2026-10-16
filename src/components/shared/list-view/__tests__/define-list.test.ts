@@ -121,6 +121,22 @@ describe('defineList', () => {
     expect(() => defineList(definition(columns, { bulk: ['export', 'export'] }))).toThrow(/bulk action id "export" is used twice/);
   });
 
+  it('accepts a detail that is the global drawer (UI-15) and checks that its kind can travel in the address', () => {
+    const named = [column('name', { default: true, always: true, rowHeader: true })];
+
+    expect(() => defineList(definition(named, { detail: { drawerKind: 'booking' } }))).not.toThrow();
+    expect(() => defineList(definition(named, { detail: { drawerKind: 'service-request', drawerId: (row) => row.id } }))).not.toThrow();
+    for (const drawerKind of ['Booking', 'a b', '', '9lives']) {
+      expect(() => defineList(definition(named, { detail: { drawerKind } }))).toThrow(/drawer kind ".*" must be a lowercase word/);
+    }
+  });
+
+  it('asks the same of the rows of a list that opens the global drawer as of one that opens its own slot', () => {
+    expect(() => defineList(definition([column('a', { default: true })], { detail: { drawerKind: 'booking' } }))).toThrow(
+      /needs a `rowHeader` column that is `always`/,
+    );
+  });
+
   it('accepts the list of stays of the tests (a little of everything)', () => {
     const list = stayList();
 
