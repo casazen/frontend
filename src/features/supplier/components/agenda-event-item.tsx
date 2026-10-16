@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { cn } from '@/lib/utils';
 import type { ServiceRequestStatus } from '@/types/service-request';
+import { requestPath } from '../requests/request-model';
 import { DAY_STATE_LABEL_KEYS, type DayEvent, type DayEventKind, type DayState } from '../lib/supplier-agenda';
 
 // Each kind of entry has its icon, its color and its name, so that none is told apart by color alone.
@@ -68,7 +69,7 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
     );
   const content = event.requestId ? (
     <Link
-      to={`/app/supplier/inbox/${event.requestId}`}
+      to={requestPath(event.requestId)}
       className="flex min-h-11 min-w-0 items-start gap-2 rounded-md py-1 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {body}
