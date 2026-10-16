@@ -1369,6 +1369,7 @@
         "format": "Indirizzo email non valido"
       },
       "phone": {
+        "maxLength": "Il numero di telefono può avere al massimo 20 caratteri",
         "minLength": "Il numero di telefono deve essere di almeno 10 cifre"
       },
       "country": {
@@ -1378,6 +1379,7 @@
         "required": "La proprieta' e' obbligatoria"
       },
       "checkInDate": {
+        "inPast": "La data di arrivo è già passata: scegli un arrivo da oggi in poi.",
         "required": "La data di check-in e' obbligatoria"
       },
       "checkOutDate": {
@@ -1550,8 +1552,82 @@
       }
     },
     "create": {
-      "title": "Nuova prenotazione",
-      "description": "Crea una nuova prenotazione"
+      "description": "Per una prenotazione presa per telefono o di persona: tre passi brevi, la bozza si salva da sola.",
+      "done": {
+        "calendar": "Le notti dal {{from}} al {{to}} risultano subito occupate sul calendario e sul sito di prenotazione.",
+        "checkin": "Pochi giorni prima dell'arrivo {{name}} riceve per email il link per il check-in online.",
+        "description": "{{property}}, dal {{from}} al {{to}}",
+        "guestFallback": "l'ospite",
+        "open": "Apri la prenotazione",
+        "payment": "Nessun pagamento è stato registrato: se l'ospite paga a mano, lo segni tu da Pagamenti.",
+        "title": "Prenotazione di {{name}} inserita",
+        "toList": "Tutte le prenotazioni"
+      },
+      "finish": "Crea la prenotazione",
+      "guest": {
+        "checkinNote": "I documenti e i dati di tutti gli ospiti li compila l'ospite col check-in online.",
+        "country": "Paese",
+        "countryExample": "Italia",
+        "email": "Email",
+        "emailExample": "maria.rossi@esempio.com",
+        "emailHint": "A questo indirizzo arriva il link per il check-in online.",
+        "firstName": "Nome",
+        "lastName": "Cognome",
+        "notes": "Note",
+        "notesHint": "Per esempio l'orario di arrivo o una richiesta particolare.",
+        "phone": "Telefono",
+        "phoneExample": "+39 333 123 4567"
+      },
+      "stay": {
+        "adults": "Adulti",
+        "adultsHint": "18 anni o più",
+        "capacity_one": "L'immobile ospita al massimo {{count}} persona.",
+        "capacity_other": "L'immobile ospita al massimo {{count}} persone.",
+        "checkIn": "Arrivo (check-in)",
+        "checkOut": "Partenza (check-out)",
+        "guestsTitle": "Quante persone?",
+        "minors": "Minori",
+        "minorsHint": "Meno di 18 anni",
+        "nights_one": "{{count}} notte",
+        "nights_other": "{{count}} notti",
+        "overCapacity_one": "L'immobile ospita al massimo {{count}} persona: con più ospiti la prenotazione non viene accettata.",
+        "overCapacity_other": "L'immobile ospita al massimo {{count}} persone: con più ospiti la prenotazione non viene accettata.",
+        "property": "Immobile",
+        "propertyPlaceholder": "Scegli l'immobile"
+      },
+      "steps": {
+        "guest": {
+          "label": "Ospite",
+          "purpose": "Ci servono i dati di contatto di chi ha prenotato.",
+          "title": "Chi viene a soggiornare?"
+        },
+        "stay": {
+          "label": "Soggiorno",
+          "purpose": "Scegli l'immobile, le date e quante persone arrivano.",
+          "title": "Per quale casa e quali date?"
+        },
+        "summary": {
+          "label": "Riepilogo e prezzo",
+          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "title": "Controlla e crea la prenotazione"
+        }
+      },
+      "summary": {
+        "adults_one": "{{count}} adulto",
+        "adults_other": "{{count}} adulti",
+        "contact": "Contatti",
+        "dates": "Date",
+        "datesValue_one": "Dal {{from}} al {{to}} · {{count}} notte",
+        "datesValue_other": "Dal {{from}} al {{to}} · {{count}} notti",
+        "guest": "Ospite",
+        "guests": "Persone",
+        "minors_one": "{{count}} minore",
+        "minors_other": "{{count}} minori",
+        "notes": "Note",
+        "property": "Immobile",
+        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo."
+      },
+      "title": "Nuova prenotazione"
     },
     "edit": {
       "title": "Modifica prenotazione",
