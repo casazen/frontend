@@ -4,6 +4,7 @@ import type { BillingSubscriptionStatus } from "@/types/billing.types";
 import type { BookingStatus } from "@/types/booking.types";
 import type { PropertyComplianceStatus } from "@/types/compliance.types";
 import type { LeaseStatus } from "@/types/lease.types";
+import type { PaymentStatus } from "@/types/payment.types";
 import type { GuestCheckInSessionStatus } from "@/types/public-checkin.types";
 import type { RentInstallmentStatus } from "@/types/rent.types";
 import type { ServiceRequestStatus } from "@/types/service-request";
@@ -52,6 +53,7 @@ export type StatusIconName =
   | "send"
   | "shield-check"
   | "signature"
+  | "undo"
   | "wrench"
   | "x-circle";
 
@@ -146,6 +148,16 @@ export const STATUS_DICTIONARY = {
     Paid: { tone: "success", icon: "check-circle" },
     Failed: { tone: "danger", icon: "alert-circle", next: "Paid", need: true },
     Cancelled: { tone: "neutral", icon: "ban" },
+  }),
+  /** A payment of a booking (SR-04c), as the host reads it: money that came in, that is still to come, or that went back. */
+  payment: defineKind<PaymentStatus>({
+    Pending: { tone: "warning", icon: "clock" },
+    Processing: { tone: "info", icon: "hourglass" },
+    Completed: { tone: "success", icon: "check-circle" },
+    Failed: { tone: "danger", icon: "alert-circle" },
+    Refunded: { tone: "neutral", icon: "undo" },
+    PartiallyRefunded: { tone: "neutral", icon: "undo" },
+    Canceled: { tone: "neutral", icon: "ban" },
   }),
   supplier: defineKind<AdminSupplierStatus>({
     Pending: { tone: "warning", icon: "hourglass", next: "Active", need: true },

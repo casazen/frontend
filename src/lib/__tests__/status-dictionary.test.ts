@@ -37,6 +37,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   lease: [...LEASE_STATUSES],
   // RentLedgerStatus, and the overdue installment that the API flags with `isOverdue`
   rent: ["Scheduled", "Overdue", "Processing", "Paid", "Failed", "Cancelled"],
+  // Casazen.Core.Entities.PaymentStatus
+  payment: ["Pending", "Processing", "Completed", "Failed", "Refunded", "PartiallyRefunded", "Canceled"],
   supplier: [...ADMIN_SUPPLIER_STATUSES],
   // GuestCheckInSessionStatus
   checkin: ["Inviato", "InCompilazione", "Completo", "AlloggiatiInviato", "Scaduto"],
