@@ -220,3 +220,19 @@ export function useMarkQuesturaCommunicationDone() {
     },
   });
 }
+
+/**
+ * Every lease of the org: the same query as `useLeases()` with no filter, so it is one request with the other screens that ask for
+ * it (the guide of the first steps), with two things more. `enabled`: not for who may not read leases (a 403 on a read sends the
+ * person to the page of no access). `fresh`: read again every time the screen opens, because the leases are created and registered
+ * on other pages, where this list is not watched (`refetchOnMount` is off for the whole app). The properties of Affitti lunghi
+ * use it to know which of them is let and who lives there (LR-07).
+ */
+export function useAllLeases({ fresh = false, enabled = true }: { fresh?: boolean; enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [LEASES_KEY, undefined],
+    queryFn: () => leasesApi.getAll(),
+    enabled,
+    ...(fresh ? { refetchOnMount: 'always' as const } : {}),
+  });
+}

@@ -26,6 +26,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   booking: ["Pending", "Confirmed", "CheckedIn", "CheckedOut", "Cancelled"],
   // PropertyComplianceStatus, and the pause the host sets (`IsPaused`, not an enum value)
   property: ["Pending", "Active", "Suspended", "Paused"],
+  // No enum: a property of Affitti lunghi is let or free, as the interface works it out from its leases (LR-07)
+  longRentProperty: ["Rented", "Free"],
   // ServiceRequestStatus, with Annullato (SP-04)
   request: ["Richiesto", "PresoInCarico", "InCorso", "Completato", "Pagato", "Rifiutato", "Annullato"],
   // OrgMemberStatus (AM-01) and OrgInvitationStatus (AM-02)
@@ -70,7 +72,7 @@ describe("dictionary and enums", () => {
   it("dictionary_DerivedStates_AreTheOnesTheInterfaceWorksOut", () => {
     const derived = entries.filter(({ definition }) => definition.derived).map(({ kind, status }) => `${kind}.${status}`);
 
-    expect(derived.sort()).toEqual(["property.Paused", "rent.Overdue"]);
+    expect(derived.sort()).toEqual(["longRentProperty.Free", "longRentProperty.Rented", "property.Paused", "rent.Overdue"]);
   });
 
   it("dictionary_RequestKind_HasInCorsoAndAnnullatoOfSP04", () => {

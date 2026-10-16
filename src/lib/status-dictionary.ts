@@ -77,6 +77,8 @@ function defineKind<Key extends string>(definitions: Record<Key, StatusDefinitio
 
 /** Status of a property: the compliance status of the API, plus the pause that the host sets (`isPaused`). */
 export type PropertyStatus = PropertyComplianceStatus | "Paused";
+/** What a property of Affitti lunghi is doing: `Rented` has a registered lease in force, `Free` has none. The interface works it out from the leases (LR-07). */
+export type LongRentPropertyStatus = "Rented" | "Free";
 /** `OrgMemberStatus` (a member) and `OrgInvitationStatus` (an invitation) of the backend: the list of people shows both. */
 export type MemberStatus = "Active" | "Deactivated" | "Pending" | "Accepted" | "Revoked" | "Expired";
 /** Status of a rent installment: the one of the API, plus `Overdue` (not paid after its due date: the API says it with `isOverdue`). */
@@ -95,6 +97,11 @@ export const STATUS_DICTIONARY = {
     Active: { tone: "success", icon: "check-circle" },
     Suspended: { tone: "danger", icon: "ban", next: "Active", need: true },
     Paused: { tone: "neutral", icon: "pause", next: "Active", need: true, derived: true },
+  }),
+  /** A property of Affitti lunghi: let or free. A lease still being prepared does not make it let, a registered one does. */
+  longRentProperty: defineKind<LongRentPropertyStatus>({
+    Rented: { tone: "info", icon: "key", derived: true },
+    Free: { tone: "neutral", icon: "circle-dashed", next: "Rented", need: true, derived: true },
   }),
   request: defineKind<ServiceRequestStatus>({
     Richiesto: { tone: "info", icon: "send", next: "PresoInCarico", need: true, supplier: { tone: "warning", icon: "inbox", label: true, need: true } },
