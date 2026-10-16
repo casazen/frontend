@@ -6790,6 +6790,17 @@
     "withArea": "{{page}} · {{area}} · CasaZen",
     "withoutArea": "{{page}} · CasaZen"
   },
+  "calm": {
+    "statStrip": {
+      "label": "At a glance"
+    },
+    "weekStrip": {
+      "items_one": "{{count}} item",
+      "items_other": "{{count}} items",
+      "label": "Days of the week",
+      "today": "today"
+    }
+  },
   "dataView": {
     "selectAll": "Select all rows",
     "selectRow": "Select row",
@@ -6802,6 +6813,26 @@
     "loadError": "Could not load the list",
     "emptyTitle": "No items",
     "emptyDescription": "There is nothing to show in this list yet."
+  },
+  "detailDrawer": {
+    "cannotOpen": "The details could not be opened.",
+    "errorTitle": "The details could not be shown",
+    "fallbackTitle": "Details",
+    "loading": "Loading the details",
+    "openPage": "Open the full page",
+    "timeline": {
+      "by": "by {{actor}}",
+      "empty": "Nothing has happened yet.",
+      "label": "History",
+      "showMore_one": "Show {{count}} more event",
+      "showMore_other": "Show {{count}} more events",
+      "tone": {
+        "danger": "Problem",
+        "info": "Information",
+        "success": "Done",
+        "warning": "Needs attention"
+      }
+    }
   },
   "helpTip": {
     "label": "More information",

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, Clock, ListChecks, Loader2, Lock } from 'lucide-react';
+import { NextStepCard } from '@/components/shared/calm';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,29 +60,22 @@ function NextStep({ step, index, total }: { step: ActivationStep; index: number;
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const route = activationStepRoute(step, hasPermission);
-  const title = t(`activation.steps.${step.key}.title`);
 
   return (
-    <div
-      className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-left"
+    <NextStepCard
+      kicker={t('activation.next.kicker')}
+      title={t(`activation.steps.${step.key}.title`)}
+      // The card sits inside the checklist, which has its own heading: the step is not a heading of the page.
+      titleAs="p"
+      detail={activationStepDetail(step, t, (key) => i18n.exists(key))}
+      position={t('activation.next.position', { current: index, total })}
+      cta={
+        route
+          ? { label: t(activationStepCtaKey(step)), href: route, state: activationStepLinkState(step), testId: 'activation-next-step-cta' }
+          : undefined
+      }
       data-testid="activation-next-step"
-    >
-      <p className="text-xs font-semibold uppercase tracking-wide text-primary">{t('activation.next.kicker')}</p>
-      <p className="mt-1 text-base font-semibold">{title}</p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {activationStepDetail(step, t, (key) => i18n.exists(key))}
-      </p>
-      <p className="mt-2 text-xs text-muted-foreground">
-        {t('activation.next.position', { current: index, total })}
-      </p>
-      {route ? (
-        <Button className="mt-3" asChild>
-          <Link to={route} state={activationStepLinkState(step)} data-testid="activation-next-step-cta">
-            {t(activationStepCtaKey(step))}
-          </Link>
-        </Button>
-      ) : null}
-    </div>
+    />
   );
 }
 
