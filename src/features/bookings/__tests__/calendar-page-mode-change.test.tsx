@@ -7,8 +7,6 @@ import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { manualBlocksApi } from '@/api/manual-blocks.api';
 import { useProperties } from '@/queries/use-properties';
-import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
-import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { freezeClock, withBrowserTimeZone } from '@/test/clock';
 import type { CalendarItemDto, CalendarResponseDto } from '@/types/calendar.types';
@@ -49,20 +47,18 @@ function calendarResponse(items: CalendarItemDto[]): CalendarResponseDto {
   return { timezone: 'Europe/Rome', utcOffsetMinutes: 120, bookings: [], items };
 }
 
-function renderPage({ flag = true, permissions = ['property.write', 'booking.write'] }: { flag?: boolean; permissions?: string[] } = {}) {
+function renderPage({ permissions = ['property.write', 'booking.write'] }: { permissions?: string[] } = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = {
     hasPermission: (context: string, permission: string) => context === 'short-rent' && permissions.includes(permission),
   } as unknown as WorkspaceContextValue;
   render(
     <QueryClientProvider client={queryClient}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, propertyModeChange: flag }, isLoading: false }}>
-        <WorkspaceContext.Provider value={workspace}>
-          <MemoryRouter>
-            <CalendarPage />
-          </MemoryRouter>
-        </WorkspaceContext.Provider>
-      </FeatureFlagsContext.Provider>
+      <WorkspaceContext.Provider value={workspace}>
+        <MemoryRouter>
+          <CalendarPage />
+        </MemoryRouter>
+      </WorkspaceContext.Provider>
     </QueryClientProvider>,
   );
 }
@@ -107,17 +103,10 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
     expect(manualBlocksApi.remove).not.toHaveBeenCalled();
   });
 
-  it('CalendarPage_ModeChangeBlock_FlagOffOrNoWritePermission_ExplainsWithoutTheLink', async () => {
-    renderPage({ flag: false });
-    let details = await openTheBlock();
-    // Whoever looks at the calendar is told why the nights are closed; "they open again if you cancel" is a way out they do not have.
-    expect(within(details).getByTestId('mode-change-block')).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
-    expect(within(details).queryByText(i18n.t('propertyMode.calendar.reopen'))).not.toBeInTheDocument();
-    expect(within(details).queryByTestId('mode-change-block-manage')).not.toBeInTheDocument();
-    cleanup();
-
+  it('CalendarPage_ModeChangeBlock_NoWritePermission_ExplainsWithoutTheLink', async () => {
     renderPage({ permissions: ['booking.write'] });
-    details = await openTheBlock();
+    const details = await openTheBlock();
+    // Whoever looks at the calendar is told why the nights are closed; "they open again if you cancel" is a way out they do not have.
     expect(within(details).getByTestId('mode-change-block')).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
     expect(within(details).queryByText(i18n.t('propertyMode.calendar.reopen'))).not.toBeInTheDocument();
     expect(within(details).queryByTestId('mode-change-block-manage')).not.toBeInTheDocument();

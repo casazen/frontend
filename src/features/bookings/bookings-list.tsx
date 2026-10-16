@@ -274,7 +274,10 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
         return primary ? { left: { id: primary.id, label: primary.label, icon: primary.icon, tone: 'success', href: primary.href, onSelect: primary.onSelect } } : undefined;
       },
 
+      // The name of a booking opens its drawer (UI-15, the one the Home opens too); "Apri la scheda completa" leads to the page, which
+      // is also where a row goes when the drawer cannot open it.
       rowHref: bookingPath,
+      detail: { drawerKind: 'booking' },
       rowTone: (booking) => (isAwaitingHost(booking) ? 'urgent' : booking.status === 'CheckedOut' || booking.status === 'Cancelled' ? 'done' : undefined),
       // With the sidebar open (from `lg`) five columns and the actions do not fit under 1280 px: cards until then.
       cardsUntil: 'xl',
