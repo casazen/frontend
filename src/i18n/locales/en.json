@@ -589,10 +589,7 @@
     "layerSwitcherLabel": "Application layer"
   },
   "leases": {
-    "pageTitle": "Long-term leases",
-    "pageDescription": "Manage contract drafts, signing, and RLI registration",
     "createLease": "Create lease",
-    "loading": "Loading leases...",
     "emptyTitle": "No leases yet",
     "emptyDescription": "Create your first long-term lease contract.",
     "guide": {
@@ -614,9 +611,6 @@
       }
     },
     "loadError": "Failed to load leases. Please try again.",
-    "rentLabel": "Rent ",
-    "regimeLabel": "Regime ",
-    "partiesLabel": "Parties ",
     "detailLoading": "Loading lease...",
     "notFound": "Lease not found",
     "notFoundDescription": "The lease you are looking for does not exist or you do not have access.",
@@ -1158,6 +1152,62 @@
         "cancel": "Cancel"
       }
     }
+  },
+  "leaseList": {
+    "chips": {
+      "active": "Active",
+      "activeHint": "Registered and not over yet, including those about to expire",
+      "all": "All",
+      "ended": "Ended",
+      "endedHint": "Past their end date, or with a registration that was refused",
+      "expiring": "Expiring",
+      "expiringHint": "Registered, with less than six months to go",
+      "preparing": "In preparation",
+      "preparingHint": "Not registered yet: drafts, out for signing or waiting to be registered"
+    },
+    "columns": {
+      "parties": "Parties",
+      "regime": "Tax regime",
+      "rent": "Rent",
+      "status": "Status",
+      "tenant": "Tenant and property",
+      "term": "Term"
+    },
+    "count_one": "{{count}} lease",
+    "count_other": "{{count}} leases",
+    "description": "All your long-term leases and where each one stands.",
+    "detail": {
+      "events": "Latest events",
+      "eventsEmpty": "Nothing has happened yet.",
+      "eventsError": "Could not load the history of the lease.",
+      "eventsLoading": "Loading the history...",
+      "eventsMore": "Show more",
+      "property": "Property",
+      "tenant": "Tenant"
+    },
+    "noResults": {
+      "description": "Try another tab or search with another word.",
+      "title": "No leases here"
+    },
+    "open": "Open",
+    "property": {
+      "unknown": "Property not available"
+    },
+    "rent": {
+      "next": "Next rent: {{date}}",
+      "overdue_one": "{{count}} day late · {{amount}}",
+      "overdue_other": "{{count}} days late · {{amount}}",
+      "overdueNoDays": "Rent overdue · {{amount}}"
+    },
+    "search": {
+      "label": "Search leases",
+      "placeholder": "Search by tenant, property or city"
+    },
+    "tenant": {
+      "anonymized": "Tenant anonymized",
+      "missing": "Tenant to be added"
+    },
+    "term": "from {{from}} to {{to}}"
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
