@@ -615,8 +615,6 @@
     "notFound": "Contratto non trovato",
     "notFoundDescription": "Il contratto che stai cercando non esiste o non hai i permessi per visualizzarlo.",
     "backToList": "Torna ai contratti",
-    "leaseContract": "Contratto di locazione",
-    "contractTerms": "Termini contrattuali",
     "monthlyRent": "Canone mensile",
     "fiscalRegime": "Regime fiscale",
     "registrationDeadline": "Scadenza registrazione",
@@ -1208,6 +1206,41 @@
       "missing": "Conduttore da indicare"
     },
     "term": "dal {{from}} al {{to}}"
+  },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Condizioni economiche"
+    },
+    "dates": {
+      "end": "Fine del contratto",
+      "start": "Inizio del contratto",
+      "title": "Durata e date"
+    },
+    "details": "Mostra dettagli",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "Tu"
+      },
+      "more": "Mostra tutta la cronologia"
+    },
+    "party": {
+      "extraEu": "Extra-UE"
+    },
+    "property": {
+      "open": "Apri l'immobile",
+      "title": "Immobile"
+    },
+    "status": {
+      "explain": "Cosa significa questo stato"
+    },
+    "tabs": {
+      "data": "Dati",
+      "deadlines": "Scadenze",
+      "documents": "Documenti",
+      "label": "Sezioni del contratto",
+      "payments": "Pagamenti"
+    }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -3012,8 +3045,7 @@
   "supplier": {
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
-    "profileDescription": "Account e dati visibili ai host nel picker",
-    "professionalProfile": "Profilo professionale",
+    "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",
     "status": "Stato",
     "statusActive": "Attivo",
     "statusPending": "In attesa",
@@ -3022,11 +3054,7 @@
     "noneSet": "Non impostato",
     "welcomeBack": "Bentornato",
     "companyName": "Ragione sociale",
-    "email": "Email",
     "phone": "Telefono",
-    "categories": "Categorie",
-    "municipalities": "Comuni",
-    "bioEmpty": "Bio non ancora compilata.",
     "supplierDefault": "Fornitore",
     "agenda": {
       "close": "Chiudi questo giorno",
@@ -3122,18 +3150,14 @@
     "completeProfileTitle": "Completa il tuo profilo",
     "completeProfileDescription": "Questi dettagli aiutano gli host a sceglierti. Il profilo non può rimanere incompleto.",
     "saveAndContinue": "Salva e continua",
-    "editProfile": "Modifica profilo",
-    "saveProfile": "Salva profilo",
     "vatNumber": "Partita IVA",
     "photoUrls": "Foto",
     "photoUrlsHint": "Un URL per riga. Le prime foto appariranno nella tua vetrina pubblica.",
-    "bio": "Descrizione",
     "activationLoading": "Caricamento attivazione...",
     "categoriesHint": "Scegli una o più categorie. Potrai aggiungerne altre dopo.",
     "comuniHint": "Inserisci i nomi delle città dove operi, separati da virgola.",
     "comuniPlaceholder": "es. Roma, Milano, Napoli",
     "connectLater": "Configura dopo",
-    "progressSaveError": "Impossibile salvare. Riprova.",
     "activationStatus": "Stato attivazione",
     "serviceCategories": "Categorie di servizio",
     "operatingMunicipalities": "Comuni di operatività",
@@ -3141,7 +3165,6 @@
     "description": "Descrizione",
     "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
     "saveProgress": "Salva progresso",
-    "progressSaved": "Progresso salvato",
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
@@ -3577,18 +3600,6 @@
     "icalConnected": "Feed iCal connesso",
     "edit": "Modifica",
     "syncStatusTitle": "Stato sincronizzazione",
-    "companyInfo": "Informazioni azienda",
-    "categoriesAndComuni": "Categorie e comuni",
-    "currentPhotos": "Foto esistenti",
-    "newPhotos": "Nuove foto",
-    "addPhotos": "Aggiungi foto",
-    "uploadPhotos": "Carica foto",
-    "photosUploaded": "Foto caricate",
-    "photosUploadError": "Errore durante il caricamento foto",
-    "maxPhotosError": "Massimo {{max}} foto consentite",
-    "photoCount": "{{current}}/{{max}} foto",
-    "photoGallery": "Galleria foto",
-    "noPhotos": "Nessuna foto caricata",
     "help": {
       "icalPageTitle": "Come collegare il calendario via iCal",
       "icalPageDescription": "Istruzioni passo passo per esportare l'URL iCal dalle piattaforme più diffuse. Copia il link e incollalo nella pagina di sincronizzazione.",
@@ -4137,6 +4148,65 @@
       }
     },
     "profileLoadError": "Impossibile caricare il profilo fornitore.",
+    "profile": {
+      "accountEmail": "Email dell'account",
+      "accountEmailHint": "Per cambiarla scrivi al supporto.",
+      "business": {
+        "title": "Dati dell'attività"
+      },
+      "focus": {
+        "hours": {
+          "action": "Imposta gli orari",
+          "body": "Senza orari non risultano slot di servizio: i clienti non trovano un momento libero per prenotarti.",
+          "title": "Imposta i tuoi orari di lavoro"
+        },
+        "kicker": "Stato del profilo",
+        "ready": {
+          "action": "Vedi il tuo sito vetrina",
+          "title": "Il tuo profilo è attivo"
+        }
+      },
+      "hours": {
+        "end": "{{day}}: fine",
+        "start": "{{day}}: inizio"
+      },
+      "phoneHint": "Con il prefisso se non italiano, ad esempio +39 06 1234567. Gli host lo vedono solo quando prendi in carico un incarico.",
+      "photos": {
+        "add": "Aggiungi foto",
+        "adding": "Carico le foto…",
+        "alt": "Foto {{number}} del tuo lavoro",
+        "counter_one": "{{count}} foto su {{max}}",
+        "counter_other": "{{count}} foto su {{max}}",
+        "cover": "Prima foto",
+        "empty": "Non ci sono ancora foto. Aggiungine qualcuna per mostrare il tuo lavoro.",
+        "errors": {
+          "save": "Non siamo riusciti a salvare le foto. Riprova.",
+          "tooMany": "Puoi avere al massimo {{max}} foto. Togline una prima di aggiungerne altre.",
+          "upload": "Non siamo riusciti a caricare le foto. Usa immagini JPEG, PNG o WebP fino a 5 MB e riprova."
+        },
+        "hint": "Compaiono sul tuo sito vetrina, nell'ordine che vedi qui. Le foto si salvano appena le carichi o le sposti.",
+        "moveEarlier": "Sposta la foto {{number}} prima",
+        "moveLater": "Sposta la foto {{number}} dopo",
+        "preview": "Vedi come compari sul sito vetrina",
+        "remove": "Togli la foto {{number}}",
+        "removeConfirm": "Togli la foto",
+        "removeDescription": "La foto esce dal tuo profilo e non si può rimettere: per riaverla la carichi di nuovo.",
+        "removeTitle": "Togliere questa foto?",
+        "title": "Foto del tuo lavoro",
+        "unavailable": "Foto non disponibile"
+      },
+      "presentation": {
+        "hint": "Racconta chi sei, cosa fai e in quali situazioni sei utile. La leggono gli host e i clienti.",
+        "label": "Descrizione",
+        "title": "Presentazione"
+      },
+      "save": "Salva i dati",
+      "saveError": "Impossibile salvare. Riprova.",
+      "saved": "Dati salvati",
+      "services": {
+        "title": "Servizi e zona"
+      }
+    },
     "availabilityLoadError": "Impossibile caricare la disponibilità.",
     "showcase": {
       "title": "Vetrina pubblica",
@@ -4151,8 +4221,7 @@
       "copyLink": "Copia il link",
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
-      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link.",
-      "previewLink": "Anteprima vetrina"
+      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
     }
   },
   "settings": {
