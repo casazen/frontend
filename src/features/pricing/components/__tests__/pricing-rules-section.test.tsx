@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import type { PricingAdapterConfig } from '@/types';
-import { PricingConfigCard } from '../pricing-config-card';
+import { PricingRulesSection } from '../pricing-rules-section';
 
 const BASE_CONFIG: PricingAdapterConfig = {
   propertyId: 'prop-1',
@@ -22,27 +22,20 @@ const BASE_CONFIG: PricingAdapterConfig = {
   updatedAt: '2026-05-01T00:00:00Z',
 };
 
-function card(config: PricingAdapterConfig | undefined) {
+function card(config: PricingAdapterConfig) {
   return (
     <I18nextProvider i18n={i18n}>
-      <PricingConfigCard
-        config={config}
-        isSaving={false}
-        isRecalculating={false}
-        onToggle={vi.fn()}
-        onSave={vi.fn()}
-        onRecalculate={vi.fn()}
-      />
+      <PricingRulesSection config={config} isSaving={false} onToggle={vi.fn()} onSave={vi.fn()} />
     </I18nextProvider>
   );
 }
 
-describe('PricingConfigCard', () => {
+describe('PricingRulesSection', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en');
   });
 
-  it('PricingConfigCard_ServerConfigChanges_ResyncsFormFields', () => {
+  it('PricingRulesSection_ServerConfigChanges_ResyncsFormFields', () => {
     const { rerender } = render(card(BASE_CONFIG));
     expect(screen.getByTestId('frequency-daily')).toBeChecked();
 
@@ -51,7 +44,7 @@ describe('PricingConfigCard', () => {
     expect(screen.getByTestId('frequency-weekly')).toBeChecked();
   });
 
-  it('PricingConfigCard_SameConfigRerendered_KeepsLocalEdits', () => {
+  it('PricingRulesSection_SameConfigRerendered_KeepsLocalEdits', () => {
     const { rerender } = render(card(BASE_CONFIG));
 
     fireEvent.click(screen.getByTestId('frequency-weekly'));
@@ -60,7 +53,7 @@ describe('PricingConfigCard', () => {
     expect(screen.getByTestId('frequency-weekly')).toBeChecked();
   });
 
-  it('PricingConfigCard_ServerRulesChange_ResyncsMonthsAndMultipliers', () => {
+  it('PricingRulesSection_ServerRulesChange_ResyncsMonthsAndMultipliers', () => {
     const { rerender } = render(card(BASE_CONFIG));
     expect(screen.getByTestId('high-month-8')).toHaveAttribute('aria-pressed', 'true');
 
@@ -70,7 +63,7 @@ describe('PricingConfigCard', () => {
     expect(screen.getByTestId('high-season-multiplier')).toHaveValue(1.2);
   });
 
-  it('PricingConfigCard_EnabledNeverComputed_SaysNextNightlyRun', () => {
+  it('PricingRulesSection_EnabledNeverComputed_SaysNextNightlyRun', () => {
     render(card(BASE_CONFIG));
 
     expect(screen.getByTestId('next-run')).toHaveTextContent('At the next nightly run');

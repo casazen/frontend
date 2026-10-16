@@ -2735,7 +2735,6 @@
   "pricing": {
     "dashboard": {
       "title": "Suggerimenti stagionali",
-      "description": "Prezzi suggeriti per le prossime notti, calcolati dal prezzo per notte della struttura con regole stagionali che scegli tu.",
       "loading": "Caricamento dei suggerimenti stagionali...",
       "disabledTitle": "Suggerimenti stagionali disattivati",
       "disabledDescription": "Attivali per vedere, per i prossimi 90 giorni, il prezzo suggerito per ogni notte in base alle tue regole su stagioni e festività.",
@@ -2745,11 +2744,9 @@
       "basePriceMissingDescription": "I suggerimenti partono dal prezzo per notte della struttura, che non è ancora impostato. Impostalo nella scheda della struttura.",
       "editProperty": "Modifica la struttura",
       "configLoadError": "Impossibile caricare la configurazione dei suggerimenti.",
-      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali.",
-      "retry": "Riprova"
+      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali."
     },
     "config": {
-      "title": "Suggerimenti stagionali",
       "active": "Attivi",
       "disabled": "Disattivati",
       "enableLabel": "Attiva i suggerimenti stagionali",
@@ -2774,11 +2771,21 @@
       "recalculating": "Calcolo in corso...",
       "recalculateNow": "Ricalcola ora"
     },
+    "focus": {
+      "baseChangedTitle": "I suggerimenti non sono aggiornati",
+      "enable": "Attiva i suggerimenti",
+      "kicker": "Prezzo base",
+      "noRules": "Nessuna regola attiva: ogni notte ha il prezzo base.",
+      "offPrice": "Senza suggerimenti il prezzo resta {{price}} a notte in ogni data.",
+      "price": "{{price}} a notte"
+    },
+    "summary": {
+      "down": "scende del {{percent}}%",
+      "holidays": "Festività nazionali: il prezzo {{change}}.",
+      "season": "{{season}} ({{months}}): il prezzo {{change}}.",
+      "up": "sale del {{percent}}%"
+    },
     "suggestions": {
-      "basePriceLabel": "Prezzo base:",
-      "perNight": "a notte",
-      "basePriceHint": "È il prezzo per notte della struttura: preventivi e prenotazioni usano questo prezzo.",
-      "readOnlyNotice": "I suggerimenti sono proposte: si applicano a preventivi e prenotazioni solo se confermi. Puoi modificare il prezzo a mano prima di applicare.",
       "applyNotice": "I suggerimenti restano proposte finché non li confermi. Il prezzo applicato è modificabile a mano.",
       "applyAll": "Applica tutti i suggerimenti",
       "applyOne": "Applica",
@@ -2790,8 +2797,9 @@
       "details": "Dettaglio per data",
       "date": "Data",
       "base": "Prezzo base",
+      "priceFor": "Prezzo per il {{date}}",
+      "showAll": "Mostra tutte le {{count}} notti",
       "suggested": "Suggerito",
-      "delta": "Δ",
       "rule": "Regola applicata"
     },
     "rules": {

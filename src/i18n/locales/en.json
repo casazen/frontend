@@ -2735,7 +2735,6 @@
   "pricing": {
     "dashboard": {
       "title": "Seasonal suggestions",
-      "description": "Suggested prices for the coming nights, computed from the property's nightly rate with seasonal rules you choose.",
       "loading": "Loading seasonal suggestions...",
       "disabledTitle": "Seasonal suggestions are off",
       "disabledDescription": "Turn them on to see, for the next 90 days, the suggested price of every night based on your season and holiday rules.",
@@ -2745,11 +2744,9 @@
       "basePriceMissingDescription": "Suggestions start from the property's nightly rate, which is not set yet. Set it in the property details.",
       "editProperty": "Edit property",
       "configLoadError": "Could not load the suggestions settings.",
-      "suggestionsLoadError": "Could not load the seasonal suggestions.",
-      "retry": "Retry"
+      "suggestionsLoadError": "Could not load the seasonal suggestions."
     },
     "config": {
-      "title": "Seasonal suggestions",
       "active": "On",
       "disabled": "Off",
       "enableLabel": "Turn on seasonal suggestions",
@@ -2774,11 +2771,21 @@
       "recalculating": "Computing...",
       "recalculateNow": "Recalculate now"
     },
+    "focus": {
+      "baseChangedTitle": "The suggestions are out of date",
+      "enable": "Turn on suggestions",
+      "kicker": "Base price",
+      "noRules": "No rule is on: every night has the base price.",
+      "offPrice": "Without suggestions the price stays {{price}} per night on every date.",
+      "price": "{{price}} per night"
+    },
+    "summary": {
+      "down": "goes down by {{percent}}%",
+      "holidays": "National holidays: the price {{change}}.",
+      "season": "{{season}} ({{months}}): the price {{change}}.",
+      "up": "goes up by {{percent}}%"
+    },
     "suggestions": {
-      "basePriceLabel": "Base price:",
-      "perNight": "per night",
-      "basePriceHint": "This is the property's nightly rate: quotes and bookings use this price.",
-      "readOnlyNotice": "Suggestions are proposals: they apply to quotes and bookings only after you confirm them. You can edit the price by hand before applying.",
       "applyNotice": "Suggestions stay proposals until you confirm them. The applied price can be edited by hand.",
       "applyAll": "Apply all suggestions",
       "applyOne": "Apply",
@@ -2790,8 +2797,9 @@
       "details": "Details by date",
       "date": "Date",
       "base": "Base price",
+      "priceFor": "Price for {{date}}",
+      "showAll": "Show all {{count}} nights",
       "suggested": "Suggested",
-      "delta": "Δ",
       "rule": "Rule applied"
     },
     "rules": {
