@@ -6320,8 +6320,9 @@
   "propertyMode": {
     "calendar": {
       "blockReason": "Change to long-term rental",
-      "explanation": "These nights are closed by the change to long-term rental you scheduled: they cannot be booked and cannot be reopened from here. They open again if you cancel the change.",
-      "manage": "Go to the change"
+      "explanation": "These nights are closed by a scheduled change to long-term rental: they cannot be booked and cannot be reopened from here.",
+      "manage": "Go to the change",
+      "reopen": "They open again if you cancel the change."
     },
     "cancel": {
       "action": "Cancel the change",
@@ -6362,19 +6363,21 @@
         }
       },
       "bookings": {
-        "found": "These stays and taken dates end on {{date}} or later:",
+        "found": "Stays and taken dates that end on {{date}} or later:",
         "none": "No stay or taken date ends on {{date}} or later.",
         "portalHint": "Portal dates free up when they end or if you disconnect the linked calendar.",
+        "seeAll": "See all bookings",
         "title": "Stays and portal dates"
       },
       "drafts": {
-        "found": "There is a draft lease:",
+        "found": "Draft leases to delete:",
         "help": "A draft has to be deleted before the change, but drafts cannot be deleted from here yet.",
         "title": "Draft leases"
       },
       "leases": {
-        "found": "These leases end on {{date}} or later:",
+        "found": "Leases that end on {{date}} or later:",
         "none": "No lease ends on {{date}} or later.",
+        "seeAll": "See all leases",
         "title": "Leases"
       },
       "loadFailed": "We could not check this date. Try again.",
@@ -6422,7 +6425,7 @@
       "labelToLong": "First day of long-term rental",
       "labelToShort": "First day of short-term rental",
       "reason": {
-        "draft": "There is also a draft lease: it has to be deleted before the change.",
+        "draft": "Draft leases have to be deleted before the change.",
         "freeToLong": "No stay or portal date stands in the way: you can start tomorrow.",
         "freeToShort": "No lease stands in the way: you can start tomorrow.",
         "last": {
@@ -6479,8 +6482,6 @@
     "scheduled": {
       "back": "Back to the property",
       "hint": "You can cancel it until it starts; then you can schedule another one.",
-      "textToLong": "\"{{name}}\" will switch to long-term rental on {{date}}.",
-      "textToShort": "\"{{name}}\" will switch to short-term rental on {{date}}.",
       "title": "A change is already scheduled"
     },
     "steps": {
@@ -6498,13 +6499,13 @@
       },
       "confirm": {
         "label": "Confirm",
-        "purpose": "You can cancel the change until it starts.",
+        "purpose": "Check the details before you schedule the change.",
         "title": "Review and confirm"
       },
       "date": {
         "label": "Date",
         "next": "Check the date",
-        "purpose": "The change happens at the start of the day you choose. Until then everything stays as it is.",
+        "purpose": "The change happens at the start of the day you choose.",
         "title": "From when?"
       }
     }
@@ -6700,7 +6701,7 @@
       "supplierInviteNotResendable": "An invite that was already used or revoked cannot be sent again: create a new invite.",
       "supplierInviteRevoked": "This invite was revoked. Ask the CasaZen team to send you a new one.",
       "calendarBlockOverlapsBooking": "A booking already takes one of these nights: cancel it or choose other dates.",
-      "calendarBlockOverlapsBlock": "You have already blocked one of these nights: remove that block or choose other dates.",
+      "calendarBlockOverlapsBlock": "One of these nights is already closed by another block: delete it or choose other dates. The block of a mode change is removed by cancelling the change.",
       "calendarBlockInPast": "Past dates cannot be blocked.",
       "calendarBlockInvalidRange": "The end date must be after the start date.",
       "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",

@@ -6320,8 +6320,9 @@
   "propertyMode": {
     "calendar": {
       "blockReason": "Passaggio all'affitto lungo",
-      "explanation": "Queste notti sono chiuse dal passaggio all'affitto lungo che hai programmato: non si possono prenotare e non si riaprono da qui. Si riaprono se annulli il passaggio.",
-      "manage": "Vai al passaggio"
+      "explanation": "Queste notti sono chiuse da un passaggio all'affitto lungo programmato: non si possono prenotare e non si riaprono da qui.",
+      "manage": "Vai al passaggio",
+      "reopen": "Si riaprono se annulli il passaggio."
     },
     "cancel": {
       "action": "Annulla il passaggio",
@@ -6362,19 +6363,21 @@
         }
       },
       "bookings": {
-        "found": "Questi soggiorni e queste date occupate finiscono il {{date}} o dopo:",
+        "found": "Soggiorni e date occupate che finiscono il {{date}} o dopo:",
         "none": "Nessun soggiorno o data occupata finisce il {{date}} o dopo.",
         "portalHint": "Le date dei portali si liberano quando finiscono o se scolleghi il calendario collegato.",
+        "seeAll": "Vedi tutte le prenotazioni",
         "title": "Soggiorni e date dei portali"
       },
       "drafts": {
-        "found": "C'è una bozza di contratto:",
+        "found": "Bozze di contratto da eliminare:",
         "help": "Una bozza va eliminata prima del passaggio, ma le bozze non si possono ancora eliminare da qui.",
         "title": "Bozze di contratto"
       },
       "leases": {
-        "found": "Questi contratti finiscono il {{date}} o dopo:",
+        "found": "Contratti che finiscono il {{date}} o dopo:",
         "none": "Nessun contratto finisce il {{date}} o dopo.",
+        "seeAll": "Vedi tutti i contratti",
         "title": "Contratti"
       },
       "loadFailed": "Non siamo riusciti a controllare questa data. Riprova.",
@@ -6422,7 +6425,7 @@
       "labelToLong": "Primo giorno in affitto lungo",
       "labelToShort": "Primo giorno in affitto breve",
       "reason": {
-        "draft": "C'è anche una bozza di contratto: va eliminata prima del passaggio.",
+        "draft": "Le bozze di contratto vanno eliminate prima del passaggio.",
         "freeToLong": "Nessun soggiorno o data dei portali lo impedisce: puoi partire da domani.",
         "freeToShort": "Nessun contratto lo impedisce: puoi partire da domani.",
         "last": {
@@ -6479,8 +6482,6 @@
     "scheduled": {
       "back": "Torna all'immobile",
       "hint": "Finché non inizia puoi annullarlo; poi potrai programmarne un altro.",
-      "textToLong": "«{{name}}» passerà all'affitto lungo il {{date}}.",
-      "textToShort": "«{{name}}» passerà all'affitto breve il {{date}}.",
       "title": "C'è già un passaggio in programma"
     },
     "steps": {
@@ -6498,13 +6499,13 @@
       },
       "confirm": {
         "label": "Conferma",
-        "purpose": "Puoi annullare il passaggio finché non inizia.",
+        "purpose": "Controlla i dati prima di programmare il passaggio.",
         "title": "Controlla e conferma"
       },
       "date": {
         "label": "Data",
         "next": "Controlla la data",
-        "purpose": "Il passaggio avviene all'inizio del giorno che scegli. Fino ad allora tutto resta com'è.",
+        "purpose": "Il passaggio avviene all'inizio del giorno che scegli.",
         "title": "Da quando?"
       }
     }
@@ -6700,7 +6701,7 @@
       "supplierInviteNotResendable": "Un invito già usato o revocato non si può reinviare: crea un nuovo invito.",
       "supplierInviteRevoked": "Questo invito è stato revocato. Chiedi al team CasaZen di inviartene uno nuovo.",
       "calendarBlockOverlapsBooking": "Una prenotazione occupa già una di queste notti: annullala o scegli altre date.",
-      "calendarBlockOverlapsBlock": "Hai già bloccato una di queste notti: elimina quel blocco o scegli altre date.",
+      "calendarBlockOverlapsBlock": "Una di queste notti è già chiusa da un altro blocco: eliminalo o scegli altre date. Il blocco di un passaggio di modalità si toglie annullando il passaggio.",
       "calendarBlockInPast": "Non puoi bloccare date già passate.",
       "calendarBlockInvalidRange": "La data di fine deve essere successiva alla data di inizio.",
       "calendarBlockNotManual": "Questo blocco arriva dal calendario di un canale: si toglie dal canale o scollegando il calendario.",

@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowRightLeft, CalendarOff, FileText, Mail, Sun } from 'lucide-react';
 import { WizardDone } from '@/components/shared/wizard/wizard-done';
-import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import type { PropertyModeChange } from '@/types/property-mode.types';
 import { listPathFor, propertyDetailPath, type ModeArea, type ModeEntry } from '../paths';
+import { useDayLabel } from '../use-mode-labels';
 
 interface ModeDoneProps {
   propertyId: string;
@@ -20,9 +20,10 @@ interface ModeDoneProps {
  * from the day of the change the redirects of the property pages (#246) take whoever opens it to the new one.
  */
 export function ModeDone({ propertyId, propertyName, area, entry, change }: ModeDoneProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const dayLabel = useDayLabel();
   const toLong = change.toMode === 'Long';
-  const date = formatStayDate(parseStayDate(change.effectiveDate), i18n.language);
+  const date = dayLabel(change.effectiveDate);
 
   return (
     <WizardDone

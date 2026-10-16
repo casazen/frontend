@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, CalendarDays, CalendarOff, FilePen, FileText, type LucideIcon } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status/status-badge';
-import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import type { StatusOf } from '@/lib/status-dictionary';
 import type { PropertyModeBlocker, PropertyModeBlockerKind } from '@/types/property-mode.types';
 import { blockerPath } from '../mode-wizard-model';
+import { useRangeLabel } from '../use-mode-labels';
 
 const KIND_ICON: Record<PropertyModeBlockerKind, LucideIcon> = {
   Stay: CalendarDays,
@@ -29,17 +29,19 @@ interface BlockerListProps {
   propertyId: string;
   /** Rows shown before "and N more": a busy property can have dozens of stays after a near date. */
   limit?: number;
+  /** Where the whole list is (the bookings of the property, the leases): offered next to "and N more". */
+  seeAll?: { to: string; label: string };
 }
 
 /**
  * What stands in the way of the day chosen: the stays, the dates taken on a portal, the leases, the drafts. Ids, dates and a
  * status only (the API sends no name), each with the place where it is dealt with: the booking, the calendars of the
- * property, the contract. The list is short on purpose; the rest is counted.
+ * property, the contract. The list is short on purpose; the rest is counted, with the way to all of it.
  */
-export function BlockerList({ blockers, propertyId, limit = 5 }: BlockerListProps) {
-  const { t, i18n } = useTranslation();
+export function BlockerList({ blockers, propertyId, limit = 5, seeAll }: BlockerListProps) {
+  const { t } = useTranslation();
+  const range = useRangeLabel();
   const shown = blockers.slice(0, limit);
-  const day = (value: string) => formatStayDate(parseStayDate(value), i18n.language, { day: 'numeric', month: 'long' });
 
   return (
     <div className="space-y-2">
@@ -56,9 +58,7 @@ export function BlockerList({ blockers, propertyId, limit = 5 }: BlockerListProp
                 <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 space-y-1">
                   <p className="break-words font-medium">{t(`propertyMode.checks.blockers.${blocker.kind}.title`)}</p>
-                  <p className="break-words text-muted-foreground">
-                    {t('propertyMode.checks.range', { start: day(blocker.start), end: day(blocker.end) })}
-                  </p>
+                  <p className="break-words text-muted-foreground">{range(blocker.start, blocker.end)}</p>
                   <BlockerStatus blocker={blocker} />
                 </div>
               </div>
@@ -75,8 +75,17 @@ export function BlockerList({ blockers, propertyId, limit = 5 }: BlockerListProp
         })}
       </ul>
       {blockers.length > shown.length && (
-        <p className="text-sm text-muted-foreground" data-testid="property-mode-blockers-more">
-          {t('propertyMode.checks.more', { count: blockers.length - shown.length })}
+        <p className="flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground" data-testid="property-mode-blockers-more">
+          <span>{t('propertyMode.checks.more', { count: blockers.length - shown.length })}</span>
+          {seeAll && (
+            <Link
+              to={seeAll.to}
+              data-testid="property-mode-blockers-see-all"
+              className="inline-flex min-h-11 items-center rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {seeAll.label}
+            </Link>
+          )}
         </p>
       )}
     </div>

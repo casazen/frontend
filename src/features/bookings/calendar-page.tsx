@@ -59,17 +59,21 @@ function ManualBlockActions({ block, propertyId, canWriteProperty, onDeleted }: 
   const modeChangeEnabled = usePropertyModeEnabled();
 
   // The nights a scheduled change to long-term closes (PM-02): the host did not close them and cannot open them from here (the
-  // API refuses with `calendar_block_held_by_mode_change`); they open again when the change is withdrawn.
+  // API refuses with `calendar_block_held_by_mode_change`); they open again when the change is withdrawn. That way out is
+  // offered only to who has it: with the permission to write the property and the flag on.
   if (block.reason === MODE_CHANGE_BLOCK_REASON) {
     return (
       <div className="space-y-2" data-testid="mode-change-block">
         <p className="text-muted-foreground">{t('propertyMode.calendar.explanation')}</p>
         {canWriteProperty && modeChangeEnabled && (
-          <Button variant="outline" size="sm" asChild>
-            <Link to={propertyModePath('short-rent', propertyId)} data-testid="mode-change-block-manage">
-              {t('propertyMode.calendar.manage')}
-            </Link>
-          </Button>
+          <>
+            <p className="text-muted-foreground">{t('propertyMode.calendar.reopen')}</p>
+            <Button variant="outline" size="sm" asChild>
+              <Link to={propertyModePath('short-rent', propertyId)} data-testid="mode-change-block-manage">
+                {t('propertyMode.calendar.manage')}
+              </Link>
+            </Button>
+          </>
         )}
       </div>
     );

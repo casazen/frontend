@@ -3,12 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { CalendarClock } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { getArea } from '@/config/areas';
 import { WorkspaceContext } from '@/contexts/workspace-context';
-import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import { usePropertyModeState } from '@/queries/use-property-mode';
-import { areaOfMode, type ModeArea } from '../paths';
+import type { ModeArea } from '../paths';
 import { usePropertyModeEnabled } from '../use-mode-entry';
+import { useDayLabel, useModeName } from '../use-mode-labels';
 import { CancelModeChangeDialog } from './cancel-mode-change-dialog';
 
 interface ScheduledChangeNoticeProps {
@@ -26,7 +25,9 @@ export function ScheduledChangeNotice(props: ScheduledChangeNoticeProps) {
 }
 
 function ScheduledChangeRow({ area, propertyId }: ScheduledChangeNoticeProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const dayLabel = useDayLabel();
+  const modeName = useModeName();
   const workspace = useContext(WorkspaceContext);
   const state = usePropertyModeState(propertyId);
   const [cancelling, setCancelling] = useState(false);
@@ -37,7 +38,6 @@ function ScheduledChangeRow({ area, propertyId }: ScheduledChangeNoticeProps) {
 
   const canCancel = workspace?.hasPermission(area, 'property.write') ?? false;
   const toLong = change.toMode === 'Long';
-  const date = formatStayDate(parseStayDate(change.effectiveDate), i18n.language);
 
   return (
     <>
@@ -45,7 +45,7 @@ function ScheduledChangeRow({ area, propertyId }: ScheduledChangeNoticeProps) {
         variant="info"
         icon={CalendarClock}
         data-testid="property-mode-notice"
-        title={t(toLong ? 'propertyMode.notice.toLong' : 'propertyMode.notice.toShort', { date })}
+        title={t(toLong ? 'propertyMode.notice.toLong' : 'propertyMode.notice.toShort', { date: dayLabel(change.effectiveDate) })}
         action={
           canCancel ? (
             <Button
@@ -61,7 +61,7 @@ function ScheduledChangeRow({ area, propertyId }: ScheduledChangeNoticeProps) {
           ) : undefined
         }
       >
-        {t('propertyMode.notice.until', { area: t(getArea(areaOfMode(change.fromMode)).nameKey) })}
+        {t('propertyMode.notice.until', { area: modeName(change.fromMode) })}
       </Alert>
       {canCancel && (
         <CancelModeChangeDialog open={cancelling} onOpenChange={setCancelling} propertyId={propertyId} change={change} />

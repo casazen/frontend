@@ -1,7 +1,6 @@
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
-import { getArea } from '@/config/areas';
 import { addDays, todayInRome } from '@/lib/stay-dates';
 import { useSchedulePropertyModeChange } from '@/queries/use-property-mode';
 import type { RentalMode } from '@/types/property.types';
@@ -12,7 +11,8 @@ import {
   modeStepSchemas,
   type ModeWizardValues,
 } from '../mode-wizard-model';
-import { areaOfMode, exitPathFor, oppositeMode, propertyDetailPath, type ModeArea, type ModeEntry } from '../paths';
+import { exitPathFor, oppositeMode, propertyDetailPath, type ModeArea, type ModeEntry } from '../paths';
+import { useModeName } from '../use-mode-labels';
 import { ModeDone } from './mode-done';
 import { ChecksStep, ChoiceStep, ConfirmStep, DateStep } from './mode-wizard-steps';
 
@@ -28,7 +28,7 @@ interface ModeWizardProps {
   /** The change the server already has waiting: the last screen shows it when the page is opened again on it. */
   waiting: PropertyModeChange | null;
   /** The change was programmed: the page must not swap this wizard for the "already programmed" screen when it refreshes. */
-  onScheduled: (change: PropertyModeChange) => void;
+  onScheduled: () => void;
 }
 
 /**
@@ -46,7 +46,7 @@ export function ModeWizard({ propertyId, propertyName, area, entry, currentMode,
   const today = firstPreview?.today ?? todayInRome();
   const bounds = { earliest: firstPreview?.earliestDate ?? addDays(today, 1), latest: lastPossibleDate(today) };
   const schemas = modeStepSchemas(bounds);
-  const currentName = t(getArea(areaOfMode(currentMode)).nameKey);
+  const currentName = useModeName()(currentMode);
 
   const steps: WizardStep<ModeWizardValues>[] = [
     {
@@ -92,12 +92,17 @@ export function ModeWizard({ propertyId, propertyName, area, entry, currentMode,
       finishLabel={t(toLong ? 'propertyMode.finish.toLong' : 'propertyMode.finish.toShort')}
       finishFailedMessage={t('propertyMode.errors.scheduleFailed')}
       onFinish={async (values) => {
-        const change = await schedule.mutateAsync({ to: values.target || target, effectiveDate: values.date });
-        onScheduled(change);
+        const change = await schedule.mutateAsync({ to: target, effectiveDate: values.date });
+        onScheduled();
         return change;
       }}
-      // A draft of another direction (the property changed mode since) is not this wizard's: it would offer a change that makes no sense.
-      draft={{ exclude: MODE_WIZARD_DRAFT_EXCLUDE, accept: (saved) => saved.values.target === target }}
+      // A draft of another direction (the property changed mode since) is not this wizard's: it would offer a change that makes no
+      // sense. One whose day is no longer possible (it was kept overnight) would start the person on a day the server refuses.
+      draft={{
+        exclude: MODE_WIZARD_DRAFT_EXCLUDE,
+        accept: (saved) =>
+          saved.values.target === target && !(typeof saved.values.date === 'string' && saved.values.date < bounds.earliest),
+      }}
       onExit={() => navigate(exitPathFor(area, propertyId, entry))}
       // Opened again on the last screen (a reload): it shows the change that waits; with none there is nothing to confirm.
       renderDone={({ result }) => {

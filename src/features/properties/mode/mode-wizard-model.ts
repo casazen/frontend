@@ -20,9 +20,6 @@ export interface ModeWizardValues {
   checksOk: boolean;
 }
 
-export const MODE_WIZARD_STEPS = ['choice', 'date', 'checks', 'confirm'] as const;
-export type ModeWizardStepId = (typeof MODE_WIZARD_STEPS)[number];
-
 /** Fields that are not worth keeping in the draft: they are worked out again when the step opens. */
 export const MODE_WIZARD_DRAFT_EXCLUDE: readonly string[] = ['checksOk'];
 
@@ -48,12 +45,19 @@ export interface DateBounds {
   latest: string;
 }
 
+type StepSchema = ZodType<unknown, FieldValues>;
+
+/** The checks step opens the way only once the server has said that the chosen day is free. */
+const CHECKS_SCHEMA: StepSchema = z.object({
+  checksOk: z.literal(true, 'propertyMode.errors.checksFailed'),
+});
+
 /**
- * The rules of each step before the next one opens (the messages are i18n keys, as in every form). The first step has none:
- * the only choice is already made. The date has to be a real day inside the bounds the server gave; the checks step only
- * opens the way once the server has said that the day is free.
+ * The rules of the steps that have any, checked before the next one opens (the messages are i18n keys, as in every form). The
+ * choice has none (the only choice is already made), nor has the confirmation. The date has to be a real day inside the bounds
+ * the server gave.
  */
-export function modeStepSchemas(bounds: DateBounds): Partial<Record<ModeWizardStepId, ZodType<unknown, FieldValues>>> {
+export function modeStepSchemas(bounds: DateBounds): { date: StepSchema; checks: StepSchema } {
   return {
     date: z.object({
       date: z
@@ -62,9 +66,7 @@ export function modeStepSchemas(bounds: DateBounds): Partial<Record<ModeWizardSt
         .refine((day) => !isStayDate(day) || day >= bounds.earliest, 'propertyMode.errors.dateTooEarly')
         .refine((day) => !isStayDate(day) || day <= bounds.latest, 'propertyMode.errors.dateTooFar'),
     }),
-    checks: z.object({
-      checksOk: z.literal(true, 'propertyMode.errors.checksFailed'),
-    }),
+    checks: CHECKS_SCHEMA,
   };
 }
 

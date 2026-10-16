@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import type { PropertyModeChange } from '@/types/property-mode.types';
 import { propertyDetailPath, type ModeArea } from '../paths';
+import { useDayLabel } from '../use-mode-labels';
 import { CancelModeChangeDialog } from './cancel-mode-change-dialog';
 
 interface ScheduledChangePanelProps {
@@ -23,10 +23,11 @@ interface ScheduledChangePanelProps {
  * one the page says what is programmed and offers the one thing that can be done, withdraw it.
  */
 export function ScheduledChangePanel({ propertyId, propertyName, area, change, backTo }: ScheduledChangePanelProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const dayLabel = useDayLabel();
   const navigate = useNavigate();
   const [cancelling, setCancelling] = useState(false);
-  const date = formatStayDate(parseStayDate(change.effectiveDate), i18n.language);
+  const date = dayLabel(change.effectiveDate);
 
   return (
     <section className="space-y-6" aria-labelledby="property-mode-scheduled-title" data-testid="property-mode-scheduled">
@@ -36,7 +37,7 @@ export function ScheduledChangePanel({ propertyId, propertyName, area, change, b
           {t('propertyMode.scheduled.title')}
         </h2>
         <p className="break-words">
-          {t(change.toMode === 'Long' ? 'propertyMode.scheduled.textToLong' : 'propertyMode.scheduled.textToShort', {
+          {t(change.toMode === 'Long' ? 'propertyMode.done.descriptionToLong' : 'propertyMode.done.descriptionToShort', {
             name: propertyName,
             date,
           })}
