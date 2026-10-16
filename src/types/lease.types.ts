@@ -148,7 +148,17 @@ export interface LeasePropertySummary {
   city?: string;
 }
 
-/** Row of `GET /leases`: no personal data of the parties, only their number. */
+/**
+ * The views of the lease list (backend `LeaseListView`, LR-01), asked with `GET /leases?view=`. `Expiring` is a part of
+ * `Active`; `Ended` holds the leases that ended and the rejected ones; `InPreparation` every lease not registered yet.
+ */
+export const LEASE_LIST_VIEWS = ['All', 'Active', 'InPreparation', 'Expiring', 'Ended'] as const;
+export type LeaseListView = (typeof LEASE_LIST_VIEWS)[number];
+
+/**
+ * Row of `GET /leases`: of the parties only their number and the name of the first tenant, never the fiscal code or the
+ * e-mail. The tenant and rent fields are those of LR-01; they are optional here because an older answer lacks them.
+ */
 export interface LeaseSummary {
   id: string;
   propertyId: string;
@@ -169,6 +179,16 @@ export interface LeaseSummary {
   hasExtraEUTenant: boolean;
   createdAt: string;
   updatedAt: string;
+  /** First and last name of the first tenant; both null while the lease has none or once that tenant's data were anonymized. */
+  tenantFirstName?: string | null;
+  tenantLastName?: string | null;
+  tenantAnonymized?: boolean;
+  /** Due day (`YYYY-MM-DD`) of the first installment still to collect (the overdue one if there is one); null without a rent schedule. */
+  nextRentDueDate?: string | null;
+  /** Installments past due, what they add up to and the days since the oldest was due: 0 / 0 / null when none is. */
+  overdueRentCount?: number;
+  overdueRentAmount?: number;
+  overdueDays?: number | null;
 }
 
 /** `GET /leases/:id` (and the `POST /leases` response). */
