@@ -495,6 +495,7 @@
     }
   },
   "nav": {
+    "accountHome": "Home",
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
@@ -537,6 +538,7 @@
     "supplierServicesBar": "Services",
     "supplierHelpIcal": "iCal guide",
     "group": {
+      "account": "Your account",
       "activity": "Your business",
       "everyday": "Every day",
       "management": "Management",
@@ -7844,6 +7846,7 @@
       "description": "Your role does not include access to this page. If you need it for your work, you can ask for access.",
       "backToToday": "Back to Today",
       "backToOverview": "Back to Overview",
+      "backToStart": "Back to the start page",
       "requestAccess": "Request access",
       "requestAccessGeneric": "To request access, contact whoever administers your account.",
       "mailSubject": "Access request for a CasaZen page",
@@ -7854,10 +7857,89 @@
       "profileAndLanguage": "Profile and language"
     }
   },
+  "account": {
+    "activity": {
+      "accessRequested": "Request for access to an area or a page",
+      "formerMember": "Former member",
+      "invitationAccepted": "Invitation accepted ({{role}})",
+      "invitationRevoked": "Invitation withdrawn ({{role}})",
+      "memberAreasChanged": "Areas of {{member}} changed",
+      "memberDeactivated": "Access of {{member}} switched off",
+      "memberInvited": "Invitation sent ({{role}})",
+      "memberPropertyAccessChanged": "Properties of {{member}} changed",
+      "memberReactivated": "Access of {{member}} switched back on",
+      "memberRemoved": "{{member}} removed from the team",
+      "memberRoleChanged": "Role of {{member}} changed: from {{from}} to {{to}}",
+      "other": "Change to the account",
+      "planChanged": "Plan changed: from {{from}} to {{to}}",
+      "system": "System"
+    },
+    "home": {
+      "activity": {
+        "empty": "When the team works, the activity shows up here.",
+        "seeAll": "See all",
+        "title": "Recent activity"
+      },
+      "attention": "To check",
+      "description": "People, properties and the state of your account.",
+      "items": {
+        "alloggiati": {
+          "body": "They are needed to report your guests to the police (Questura).",
+          "title_one": "Alloggiati Web: credentials missing for {{count}} property",
+          "title_other": "Alloggiati Web: credentials missing for {{count}} properties"
+        },
+        "billing": {
+          "action": "Update payment",
+          "body": "Check the payment method: we will take you to Stripe's secure portal.",
+          "title": "There is a problem with the plan payment"
+        },
+        "invitations": {
+          "title_one": "{{count}} invitation not accepted yet",
+          "title_other": "{{count}} invitations not accepted yet",
+          "waiting_one": "The oldest has been waiting for {{count}} day.",
+          "waiting_other": "The oldest has been waiting for {{count}} days.",
+          "waitingToday": "The oldest was sent today."
+        },
+        "properties": {
+          "body": "Complete the activation so they can receive bookings.",
+          "title_one": "{{count}} property cannot receive bookings yet",
+          "title_other": "{{count}} properties cannot receive bookings yet"
+        }
+      },
+      "loadError": "We cannot load the account data.",
+      "loading": "Loading the account Home",
+      "noUrgent": {
+        "body": "Nothing needs your attention right now.",
+        "title": "Nothing urgent"
+      },
+      "now": "Now",
+      "numbers": {
+        "byMode": "{{short}} short-term · {{long}} long-term",
+        "people": "Active people",
+        "properties": "Properties",
+        "seatsOf_one": "of {{count}} seat",
+        "seatsOf_other": "of {{count}} seats",
+        "seatsUnlimited": "Unlimited seats"
+      },
+      "open": "Open {{name}}",
+      "retry": "Try again"
+    },
+    "roles": {
+      "Accountant": "Accountant",
+      "Admin": "Administrator",
+      "Collaborator": "Collaborator",
+      "Owner": "Owner",
+      "PropertyManager": "Property manager"
+    }
+  },
   "areas": {
+    "account": {
+      "description": "People, properties and the state of your account",
+      "name": "Administration"
+    },
     "admin": {
       "description": "Users, suppliers, jobs and compliance checks of the platform",
-      "name": "Administration"
+      "name": "Staff console"
     },
     "longRent": {
       "description": "Contracts, tenants, due dates and rents",

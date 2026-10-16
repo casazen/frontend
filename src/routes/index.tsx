@@ -76,7 +76,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   });
 
   // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
-  // the area (UI-00). Short-rent and admin have the page in the manifest.
+  // the area (UI-00). Short-rent, account and admin have the page in the manifest.
   if (!entries.some((entry) => entry.path === prefix)) {
     children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
   }
@@ -119,6 +119,11 @@ const workspaceRoutes: RouteObject[] = [
         path: 'long-rent',
         element: <ContextLayout />,
         children: [...buildContextChildren('long-rent')],
+      },
+      {
+        path: 'account',
+        element: <ContextLayout />,
+        children: [...buildContextChildren('account')],
       },
       {
         path: 'admin',
