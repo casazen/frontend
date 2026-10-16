@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import '@/config/detail-kinds';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUiStore } from '@/store/ui-store';

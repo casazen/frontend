@@ -76,7 +76,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
 
     test('"Altro" opens the sheet from the bottom, a page of it is reached, and Back comes back', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
 
       await expect(more(page)).toHaveAttribute('aria-haspopup', 'dialog');
       await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
