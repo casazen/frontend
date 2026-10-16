@@ -61,13 +61,40 @@ export interface SupplierInboxResponse {
  */
 export type SupplierInboxStatus = 'open' | 'history' | 'all' | import('@/types/service-request').ServiceRequestStatus;
 
-/** Filters of the supplier inbox: `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request. */
+/**
+ * `tab` of `GET /supplier/inbox` (SP-04e): the console's own way to pick the requests, with its own order. `da-rispondere` still
+ * has to be answered, `in-attesa` waits for the customer, `programmate` is taken or in progress, `da-incassare` is completed and not
+ * paid, `archivio` is paid, rejected or cancelled.
+ */
+export type SupplierInboxTab = 'da-rispondere' | 'in-attesa' | 'programmate' | 'da-incassare' | 'archivio';
+
+/** `when` of `GET /supplier/inbox`: the day of the job is today, in the next 7 days or this month (Europe/Rome). */
+export type SupplierInboxWhen = 'oggi' | 'settimana' | 'mese';
+
+/**
+ * Filters of the supplier inbox: `tab` says which requests (and `status` is then ignored by the server); `q` is 2 to 60 characters;
+ * `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request.
+ */
 export interface SupplierInboxParams {
-  status: SupplierInboxStatus;
+  status?: SupplierInboxStatus;
+  tab?: SupplierInboxTab;
+  q?: string;
+  when?: SupplierInboxWhen;
   from?: string;
   to?: string;
   page?: number;
   pageSize?: number;
+}
+
+/** `GET /supplier/inbox/counts` (SP-04e): the numbers of the tabs, computed with the same rules as the lists. */
+export interface SupplierInboxCounts {
+  toAnswer: number;
+  awaitingCustomer: number;
+  scheduled: number;
+  toCollect: number;
+  archive: number;
+  /** Payments asked for that are late and still owed. */
+  paymentsLate: number;
 }
 
 export interface UpdateAvailabilityEntry {
