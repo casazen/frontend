@@ -1,4 +1,4 @@
-import { Component, Suspense, createElement, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, createElement, useEffect, useRef, useState, type ReactNode } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -61,13 +61,28 @@ function DetailPanel({ shown, def, close }: PanelProps) {
   const { t } = useTranslation();
   const closeRef = useRef<HTMLButtonElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  // The element the title is drawn in. A state and not a ref: the content of a dialog is mounted a moment after the panel (Radix
+  // draws a portal in a second pass), and a title that is replaced (a retry, another drawer) is a new element.
+  const [titleSlot, setTitleSlot] = useState<HTMLSpanElement | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [untitled, setUntitled] = useState(false);
 
   const fallbackTitle = t('detailDrawer.fallbackTitle');
   const pageHref = def.pageHref?.(shown.id);
   const retryKey = `${shown.kind}:${shown.id}:${attempt}`;
 
   const title = typeof def.title === 'string' ? t(def.title) : createElement(def.title, { id: shown.id });
+
+  // A title that comes with the data draws nothing until the data has arrived, and a dialog with no name tells a screen reader
+  // nothing. While the title is empty the generic name is there, for assistive technology only; it goes when the title comes.
+  useEffect(() => {
+    if (!titleSlot) return;
+    const sync = () => setUntitled((titleSlot.textContent ?? '').trim() === '');
+    const observer = new MutationObserver(sync);
+    observer.observe(titleSlot, { childList: true, subtree: true, characterData: true });
+    queueMicrotask(sync);
+    return () => observer.disconnect();
+  }, [titleSlot]);
 
   return (
     <DialogPortal>
@@ -76,9 +91,7 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         data-detail-sheet=""
         data-testid="detail-drawer"
         data-detail-kind={shown.kind}
-        // The name is the title (Radix points `aria-labelledby` at it). While a title that comes with the data is still
-        // loading, the generic name is what a screen reader gets.
-        aria-label={fallbackTitle}
+        // The name is the title (Radix points `aria-labelledby` at it); there is no description to read out.
         aria-describedby={undefined}
         // The container of the content takes the focus, not the first control: a drawer that opens on "Accetta" must not have
         // it focused, and the arrow keys scroll what has the focus.
@@ -109,7 +122,10 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         <div className="shrink-0 px-4 pb-3 pr-16 max-md:pt-0 md:px-6 md:pb-4 md:pt-6">
           <DetailBoundary key={retryKey} fallback={<DialogTitle className="break-words text-lg leading-snug">{fallbackTitle}</DialogTitle>}>
             <DialogTitle className="break-words text-lg leading-snug">
-              <Suspense fallback={fallbackTitle}>{title}</Suspense>
+              <span ref={setTitleSlot}>
+                <Suspense fallback={fallbackTitle}>{title}</Suspense>
+              </span>
+              {untitled ? <span className="sr-only">{fallbackTitle}</span> : null}
             </DialogTitle>
           </DetailBoundary>
         </div>
