@@ -8548,7 +8548,6 @@
   },
   "longRentProperties": {
     "retry": "Retry",
-    "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
     "list": {
       "actions": {
         "createLease": "Create lease",
@@ -8601,17 +8600,35 @@
       "description": "Update the details of {{name}}"
     },
     "detail": {
-      "loading": "Loading property...",
-      "loadError": "The property could not be loaded.",
-      "edit": "Edit",
-      "newLease": "New lease",
-      "infoTitle": "Property details",
       "address": "Address",
-      "rooms": "Bedrooms and bathrooms",
-      "documentsLoading": "Loading documents...",
-      "documentsLoadError": "The property documents could not be loaded.",
+      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
-      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+      "backToList": "Back to properties",
+      "contractsLoadError": "The leases of this property could not be read.",
+      "contractsTitle": "Linked leases",
+      "description": "Description",
+      "documentsLoadError": "The property documents could not be loaded.",
+      "documentsLoading": "Loading documents...",
+      "edit": "Edit",
+      "fallbackTitle": "Property",
+      "infoTitle": "Property details",
+      "loadError": "The property could not be loaded.",
+      "loading": "Loading property...",
+      "newLease": "New lease",
+      "next": {
+        "free": {
+          "body": "The property is vacant. Create the lease with the new tenant: the APE and the cadastral data are needed.",
+          "kicker": "Next step",
+          "title": "Create the lease"
+        },
+        "preparing": {
+          "kicker": "Lease in preparation"
+        },
+        "rented": {
+          "kicker": "Lease in force"
+        }
+      },
+      "rooms": "Bedrooms and bathrooms"
     },
     "drawer": {
       "keyData": "Property details",
