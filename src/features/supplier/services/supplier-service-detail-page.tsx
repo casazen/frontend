@@ -7,10 +7,10 @@ import { Check, Copy, Eye, Tag, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
-import { LoadingScreen } from '@/components/shared/loading-screen';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useSupplierService, useUpdateSupplierService } from '@/queries/use-supplier-services';
@@ -230,8 +230,10 @@ function ServiceEditor({ service }: { service: SupplierService }) {
 
       <FormProvider {...form}>
         <form noValidate onSubmit={(event) => { event.preventDefault(); void submit(); }} className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <div className="min-w-0 space-y-4">
-            <div className="flex min-w-0 flex-col gap-3 rounded-xl bg-card p-4 shadow-sm ring-1 ring-inset ring-border" data-testid="service-visibility">
+          {/* One box for the whole service, its parts told apart by a line: no card inside a card (the same as the details of a request).
+              The box is as tall as its parts; the column of the preview takes the whole height, so that the preview can follow the scroll. */}
+          <div className="min-w-0 divide-y overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-border lg:self-start" data-testid="service-sections">
+            <div className="flex min-w-0 flex-col gap-3 p-4" data-testid="service-visibility">
               <StatusBadge kind="serviceListing" status={service.status} className="self-start" />
               <SwitchRow
                 checked={live}
@@ -247,7 +249,7 @@ function ServiceEditor({ service }: { service: SupplierService }) {
               <BasicsFields />
             </FormSection>
             <FormSection title={t(`${T}.sections.price`)} summary={price} {...sections.price}>
-              <PriceFields />
+              <PriceFields flat />
             </FormSection>
             <FormSection
               title={t(`${T}.sections.booking`)}
@@ -299,6 +301,13 @@ export function SupplierServiceDetailPage() {
       </div>
     );
   }
-  if (isLoading || !data) return <LoadingScreen message={t(`${T}.loading`)} className="h-auto flex-1" />;
+  if (isLoading || !data) {
+    return (
+      <div className="min-w-0 space-y-6" data-testid="supplier-service-loading" aria-busy="true">
+        <PageHeader title={t(`${T}.loadErrorTitle`)} crumbs="auto" />
+        <SkeletonLine lines={8} label={t(`${T}.loading`)} />
+      </div>
+    );
+  }
   return <ServiceEditor key={data.id} service={data} />;
 }
