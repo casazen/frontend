@@ -1,4 +1,13 @@
 import type { Page, Route } from '@playwright/test';
+import { addDays, todayInRome } from '../../src/lib/stay-dates';
+import type { RentalMode } from '../../src/types/property.types';
+import type {
+  PropertyModeBlocker,
+  PropertyModeChange,
+  PropertyModePreview,
+  PropertyModeState,
+  SchedulePropertyModeChangeDto,
+} from '../../src/types/property-mode.types';
 
 /**
  * L2 mock of the change of rental mode (PM-02, flag `propertyModeChange`): the four endpoints of
@@ -6,34 +15,7 @@ import type { Page, Route } from '@playwright/test';
  * `GET /api/public/features`. The day of the preview is worked out from the clock of the machine, in Rome, as the product does.
  */
 
-const UTC_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' });
-const ROME_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' });
-
-/** Today in Rome (`2026-10-16`). */
-export function romeToday(): string {
-  return ROME_DAY.format(new Date());
-}
-
-/** `day` moved by `days` calendar days. */
-export function plusDays(day: string, days: number): string {
-  return UTC_DAY.format(new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000));
-}
-
-type Mode = 'Short' | 'Long';
-
-interface MockChange {
-  id: string;
-  propertyId: string;
-  fromMode: Mode;
-  toMode: Mode;
-  effectiveDate: string;
-  status: 'Scheduled' | 'Cancelled';
-  createdAt: string;
-  appliedAt: null;
-  cancelledAt: string | null;
-  failedAt: null;
-  failureReason: null;
-}
+type Mode = RentalMode;
 
 export interface PropertyModeMockOptions {
   propertyId: string;
@@ -47,7 +29,7 @@ export interface PropertyModeMockOptions {
 
 export interface PropertyModeMock {
   /** The bodies of the `POST .../mode/change` the page sent. */
-  schedules: Array<{ to: string; effectiveDate: string }>;
+  schedules: SchedulePropertyModeChangeDto[];
   /** The ids of the changes withdrawn. */
   cancels: string[];
   /** The last day a stay (to long-term) or a lease (to short stays) stands in the way of; `null` when nothing does. */
@@ -62,22 +44,21 @@ export async function mockPropertyModeApi(page: Page, options: PropertyModeMockO
   const mode: Mode = options.rentalMode ?? 'Short';
   const target: Mode = mode === 'Short' ? 'Long' : 'Short';
   const mock: PropertyModeMock = { schedules: [], cancels: [], busyUntil: null, requests: 0 };
-  let scheduled: MockChange | null = options.scheduledFor
-    ? {
-        id: 'change-e2e-0',
-        propertyId,
-        fromMode: mode,
-        toMode: target,
-        effectiveDate: options.scheduledFor,
-        status: 'Scheduled',
-        createdAt: new Date().toISOString(),
-        appliedAt: null,
-        cancelledAt: null,
-        failedAt: null,
-        failureReason: null,
-      }
-    : null;
-  let last: MockChange | null = null;
+  const aChange = (id: string, toMode: Mode, effectiveDate: string): PropertyModeChange => ({
+    id,
+    propertyId,
+    fromMode: mode,
+    toMode,
+    effectiveDate,
+    status: 'Scheduled',
+    createdAt: new Date().toISOString(),
+    appliedAt: null,
+    cancelledAt: null,
+    failedAt: null,
+    failureReason: null,
+  });
+  let scheduled: PropertyModeChange | null = options.scheduledFor ? aChange('change-e2e-0', target, options.scheduledFor) : null;
+  let last: PropertyModeChange | null = null;
 
   await page.route('**/api/public/features', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -102,31 +83,33 @@ export async function mockPropertyModeApi(page: Page, options: PropertyModeMockO
     const method = request.method();
 
     if (method === 'GET' && path.endsWith('/mode/preview')) {
-      const today = romeToday();
-      const tomorrow = plusDays(today, 1);
-      const freeFrom = mock.busyUntil ? plusDays(mock.busyUntil, 1) : null;
+      const today = todayInRome();
+      const tomorrow = addDays(today, 1);
+      const busyUntil = mock.busyUntil;
+      const freeFrom = busyUntil ? addDays(busyUntil, 1) : null;
       const earliest = freeFrom && freeFrom > tomorrow ? freeFrom : tomorrow;
       const date = url.searchParams.get('date') || earliest;
-      const blocked = mock.busyUntil !== null && date <= mock.busyUntil;
-      const blockers = blocked
-        ? [
-            {
-              kind: mode === 'Short' ? 'Stay' : 'Lease',
-              id: mode === 'Short' ? 'stay-e2e-1' : 'lease-e2e-1',
-              start: plusDays(mock.busyUntil!, -4),
-              end: mock.busyUntil,
-              freeFrom,
-              status: mode === 'Short' ? 'Confirmed' : 'Registered',
-              source: mode === 'Short' ? 'Direct' : null,
-            },
-          ]
-        : [];
+      const blocked = busyUntil !== null && date <= busyUntil;
+      const blockers: PropertyModeBlocker[] =
+        busyUntil !== null && blocked
+          ? [
+              {
+                kind: mode === 'Short' ? 'Stay' : 'Lease',
+                id: mode === 'Short' ? 'stay-e2e-1' : 'lease-e2e-1',
+                start: addDays(busyUntil, -4),
+                end: busyUntil,
+                freeFrom,
+                status: mode === 'Short' ? 'Confirmed' : 'Registered',
+                source: mode === 'Short' ? 'Direct' : null,
+              },
+            ]
+          : [];
       const issues = [
         ...(scheduled ? ['property_mode_change_exists'] : []),
         ...(date < tomorrow ? ['property_mode_date_too_early'] : []),
         ...(blocked ? [mode === 'Short' ? 'property_mode_blocked_by_bookings' : 'property_mode_blocked_by_lease'] : []),
       ];
-      await json(route, 200, {
+      const answer: PropertyModePreview = {
         propertyId,
         currentMode: mode,
         targetMode: target,
@@ -136,37 +119,27 @@ export async function mockPropertyModeApi(page: Page, options: PropertyModeMockO
         canSchedule: issues.length === 0,
         issues,
         blockers,
-        calendarClosedUntil: target === 'Long' ? plusDays(date, 730) : null,
+        calendarClosedUntil: target === 'Long' ? addDays(date, 730) : null,
         scheduledChange: scheduled,
-      });
+      };
+      await json(route, 200, answer);
       return;
     }
 
     if (method === 'GET' && path.endsWith('/mode')) {
-      await json(route, 200, { propertyId, rentalMode: mode, scheduledChange: scheduled, lastChange: last });
+      const answer: PropertyModeState = { propertyId, rentalMode: mode, scheduledChange: scheduled, lastChange: last };
+      await json(route, 200, answer);
       return;
     }
 
     if (method === 'POST' && path.endsWith('/mode/change')) {
-      const body = request.postDataJSON() as { to: string; effectiveDate: string };
+      const body = request.postDataJSON() as SchedulePropertyModeChangeDto;
       mock.schedules.push(body);
       if (scheduled) {
         await json(route, 409, { status: 409, code: 'property_mode_change_exists' });
         return;
       }
-      scheduled = {
-        id: `change-e2e-${mock.schedules.length}`,
-        propertyId,
-        fromMode: mode,
-        toMode: body.to as Mode,
-        effectiveDate: body.effectiveDate,
-        status: 'Scheduled',
-        createdAt: new Date().toISOString(),
-        appliedAt: null,
-        cancelledAt: null,
-        failedAt: null,
-        failureReason: null,
-      };
+      scheduled = aChange(`change-e2e-${mock.schedules.length}`, body.to, body.effectiveDate);
       await json(route, 201, scheduled);
       return;
     }
