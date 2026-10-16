@@ -18,8 +18,10 @@ interface AgendaDayViewProps {
 export function AgendaDayView({ day, today, pending, busy, onToggle }: AgendaDayViewProps) {
   const { t } = useTranslation();
   const state = dayStateOf(day);
-  // Only a day still to come is closed or reopened here; a rest day of the week and time off are not decided in this place.
-  const toggleable = day.date >= today && (state === 'open' || state === 'closed' || state === 'closedByCalendar');
+  // Only a day still to come that has hours is closed or reopened here: a rest day of the week and time off are not decided in this
+  // place, and a day that an event of the calendar holds is decided by the answer to that event (the block above the agenda).
+  const toggleable =
+    !pending && day.date >= today && day.bands.length > 0 && (state === 'open' || state === 'closed' || state === 'closedByCalendar');
   const reopens = state !== 'open';
 
   return (
