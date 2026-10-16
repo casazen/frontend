@@ -109,7 +109,7 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
 
   if (sorted.length === 0) {
     return (
-      <p data-testid={testId ? `${testId}-empty` : 'timeline-empty'} className={cn('text-sm text-foreground/70', className)}>
+      <p data-testid={testId ?? 'timeline-empty'} className={cn('text-sm text-foreground/70', className)}>
         {emptyText ?? t('detailDrawer.timeline.empty')}
       </p>
     );
