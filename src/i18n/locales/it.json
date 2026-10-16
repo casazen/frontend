@@ -4459,6 +4459,19 @@
         ]
       }
     },
+    "longRentProperty": {
+      "Rented": {
+        "label": "Affittato",
+        "explain": "C'è un contratto registrato e in corso."
+      },
+      "Free": {
+        "label": "Libero",
+        "explain": "Nessun contratto registrato e in corso: l'immobile è pronto per un nuovo inquilino.",
+        "need": [
+          "Il contratto con il nuovo inquilino, firmato e registrato"
+        ]
+      }
+    },
     "request": {
       "Richiesto": {
         "label": "Richiesto",
@@ -4707,6 +4720,36 @@
       "Cancelled": {
         "label": "Annullata",
         "explain": "Il piano dei canoni è stato disattivato prima del pagamento di questa rata."
+      }
+    },
+    "payment": {
+      "Pending": {
+        "label": "Da incassare",
+        "explain": "Il pagamento è registrato ma i soldi non sono ancora arrivati."
+      },
+      "Processing": {
+        "label": "In elaborazione",
+        "explain": "Il pagamento è partito: la banca o il circuito della carta lo stanno confermando."
+      },
+      "Completed": {
+        "label": "Incassato",
+        "explain": "Il pagamento è arrivato."
+      },
+      "Failed": {
+        "label": "Non riuscito",
+        "explain": "Il pagamento non è andato a buon fine: i soldi non sono arrivati."
+      },
+      "Refunded": {
+        "label": "Rimborsato",
+        "explain": "Hai restituito tutta la somma all'ospite."
+      },
+      "PartiallyRefunded": {
+        "label": "Rimborsato in parte",
+        "explain": "Hai restituito all'ospite una parte della somma: il resto è incassato."
+      },
+      "Canceled": {
+        "label": "Annullato",
+        "explain": "Il pagamento è stato annullato prima di arrivare, di solito insieme alla prenotazione."
       }
     },
     "supplier": {
@@ -5456,7 +5499,8 @@
       "BankTransfer": "Bonifico bancario",
       "PayPal": "PayPal",
       "ApplePay": "Apple Pay",
-      "GooglePay": "Google Pay"
+      "GooglePay": "Google Pay",
+      "CashOnArrival": "In struttura"
     },
     "validation": {
       "bookingId": {
@@ -5467,31 +5511,59 @@
       }
     },
     "list": {
-      "title": "Pagamenti",
-      "description": "Monitora ricavi, transazioni e rimborsi",
-      "kpi": {
-        "totalRevenue": "Ricavi totali",
-        "completedPayments": "Pagamenti completati",
-        "pending": "In attesa",
-        "awaitingSettlement": "In attesa di regolamento",
+      "actions": {
+        "booking": "Vedi la prenotazione",
+        "details": "Apri i dettagli"
+      },
+      "chips": {
+        "all": "Tutti",
+        "collected": "Incassati",
+        "collectedHint": "Pagamenti arrivati, anche se in parte rimborsati",
         "refunded": "Rimborsati",
-        "totalRefunded": "Totale rimborsato"
+        "refundedHint": "Pagamenti restituiti, in tutto o in parte",
+        "toCollect": "Da incassare",
+        "toCollectHint": "Pagamenti registrati o in elaborazione, non ancora arrivati"
       },
-      "transactions": "Transazioni",
-      "loading": "Caricamento pagamenti...",
-      "loadError": "Impossibile caricare i pagamenti. Riprova.",
-      "noResults": "Nessun pagamento trovato.",
       "columns": {
-        "paymentId": "ID Pagamento",
-        "bookingId": "ID Prenotazione",
         "amount": "Importo",
+        "code": "Prenotazione",
         "method": "Metodo",
-        "date": "Data",
-        "status": "Stato"
+        "property": "Immobile",
+        "refunded": "Rimborsato",
+        "status": "Stato",
+        "when": "Quando",
+        "who": "Chi e per cosa"
       },
-      "emptyTitle": "Nessun pagamento trovato",
-      "emptyDescription": "Inizia creando il tuo primo pagamento",
-      "addAction": "Aggiungi pagamento"
+      "count_one": "{{count}} pagamento",
+      "count_other": "{{count}} pagamenti",
+      "description": "Cosa hai incassato e cosa aspetti.",
+      "emptyDescription": "Gli incassi delle prenotazioni e i rimborsi compaiono qui da soli, con i numeri del mese.",
+      "emptyTitle": "Qui vedrai i soldi che entrano",
+      "filters": {
+        "allMethods": "Tutti i metodi",
+        "allProperties": "Tutti gli immobili",
+        "date": "Data tra",
+        "method": "Metodo",
+        "property": "Immobile"
+      },
+      "forBooking": "Prenotazione {{code}}",
+      "loadError": "Impossibile caricare i pagamenti. Riprova.",
+      "noResultsDescription": "Prova a togliere un filtro o a cercare con un altro nome.",
+      "noResultsTitle": "Nessun pagamento con questi filtri",
+      "refundedAmount": "Rimborsati {{amount}}",
+      "searchLabel": "Cerca pagamenti",
+      "searchPlaceholder": "Cerca ospite, immobile o codice",
+      "summary": {
+        "collected": "Incassato in {{month}}",
+        "label": "I pagamenti del mese",
+        "refunded": "Rimborsato in {{month}}",
+        "waiting": "In attesa di incasso"
+      },
+      "title": "Pagamenti",
+      "views": {
+        "lastMonth": "Mese scorso",
+        "thisMonth": "Questo mese"
+      }
     },
     "detail": {
       "title": "Pagamento #",
@@ -8069,14 +8141,47 @@
     "retry": "Riprova",
     "roomsValue": "{{bedrooms}} camere · {{bathrooms}} bagni",
     "list": {
-      "title": "Immobili",
-      "description": "Gli immobili che affitti con contratti di lungo periodo",
+      "actions": {
+        "createLease": "Crea contratto",
+        "edit": "Modifica",
+        "openLease": "Apri contratto",
+        "page": "Scheda completa"
+      },
       "add": "Aggiungi immobile",
-      "loading": "Caricamento immobili...",
-      "loadError": "Impossibile caricare gli immobili.",
-      "emptyTitle": "Nessun immobile",
+      "chips": {
+        "all": "Tutti",
+        "free": "Liberi",
+        "freeHint": "Senza un contratto registrato e in corso, anche se ne hai uno in preparazione",
+        "rented": "Affittati",
+        "rentedHint": "Con un contratto registrato e in corso"
+      },
+      "columns": {
+        "property": "Immobile",
+        "rent": "Canone",
+        "spaces": "Camere e bagni",
+        "status": "Stato",
+        "tenant": "Inquilino"
+      },
+      "count_one": "{{count}} immobile",
+      "count_other": "{{count}} immobili",
+      "description": "I tuoi immobili in affitto lungo: chi ci abita, il canone e fino a quando.",
       "emptyDescription": "Aggiungi un immobile e carica il suo APE per poter creare un contratto.",
-      "open": "Apri"
+      "emptyTitle": "Nessun immobile",
+      "leasesUnavailable": "Non riesco a leggere i contratti: per ora non vedi chi abita negli immobili.",
+      "loadError": "Impossibile caricare gli immobili.",
+      "noResults": {
+        "description": "Cambia la ricerca o la scheda per vedere gli altri immobili.",
+        "title": "Nessun immobile trovato"
+      },
+      "noTenant": "Nessun inquilino",
+      "perMonth": "al mese",
+      "preparing": "Contratto: {{status}} · dal {{date}}",
+      "search": "Cerca immobili",
+      "searchPlaceholder": "Cerca per nome, indirizzo o inquilino",
+      "tenantAnonymized": "Dati rimossi",
+      "tenantMissing": "Da indicare",
+      "title": "Immobili",
+      "until": "Fino al {{date}}"
     },
     "create": {
       "title": "Nuovo immobile",
@@ -8098,6 +8203,17 @@
       "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+    },
+    "drawer": {
+      "keyData": "Dati dell'immobile",
+      "leaseSection": "Inquilino e contratto",
+      "leaseStatus": "Contratto",
+      "notFound": "Immobile non trovato",
+      "notFoundDescription": "L'immobile che cerchi non c'è più o non è tra i tuoi immobili in affitto lungo.",
+      "rent": "Canone",
+      "tenant": "Inquilino",
+      "term": "Durata",
+      "termValue": "dal {{from}} al {{to}}"
     },
     "cadastral": {
       "title": "Dati catastali",
