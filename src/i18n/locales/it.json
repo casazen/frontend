@@ -1373,21 +1373,21 @@
         "minLength": "Il numero di telefono deve essere di almeno 10 cifre"
       },
       "country": {
-        "required": "Il paese e' obbligatorio"
+        "required": "Il paese è obbligatorio"
       },
       "propertyId": {
-        "required": "La proprieta' e' obbligatoria"
+        "required": "Scegli l'immobile"
       },
       "checkInDate": {
         "inPast": "La data di arrivo è già passata: scegli un arrivo da oggi in poi.",
-        "required": "La data di check-in e' obbligatoria"
+        "required": "Indica la data di arrivo"
       },
       "checkOutDate": {
-        "required": "La data di check-out e' obbligatoria",
+        "required": "Indica la data di partenza",
         "afterCheckIn": "La data di check-out deve essere successiva al check-in"
       },
       "numberOfGuests": {
-        "min": "Almeno 1 ospite e' obbligatorio"
+        "min": "Serve almeno un adulto"
       },
       "numberOfChildren": {
         "invalid": "Indica un numero di minori valido",

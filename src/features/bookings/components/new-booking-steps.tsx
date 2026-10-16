@@ -154,7 +154,6 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
             />
           </GuestCountRow>
         </div>
-        {ageRulesApply && <p className="text-sm text-foreground/70">{t('booking.form.numberOfChildrenHint')}</p>}
         {capacity !== null &&
           (total > capacity ? (
             <Alert variant="warning" data-testid="booking-over-capacity">
