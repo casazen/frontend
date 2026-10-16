@@ -11,6 +11,9 @@ export function usePayments(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [PAYMENTS_KEY, params],
     queryFn: () => paymentsApi.getAll(params),
+    // The list changes from other pages (a payment recorded, a refund): an invalidation reaches it only while it is on screen, so it
+    // asks again when it opens if what it holds is stale (the client has `refetchOnMount: false`).
+    refetchOnMount: true,
   });
 }
 
