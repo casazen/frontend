@@ -14,8 +14,8 @@ const LEGAL: SiteLegal = {
   email: 'info@example.com',
 };
 
-function render(page: SitePageId, legal: SiteLegal = LEGAL, lng: 'it' | 'en' = 'it'): string {
-  return renderToString(<SiteApp page={page} i18n={createSiteI18n(lng)} legal={legal} year={2026} />);
+function render(page: SitePageId, legal: SiteLegal = LEGAL, lng: 'it' | 'en' = 'it', showLogin = true): string {
+  return renderToString(<SiteApp page={page} i18n={createSiteI18n(lng)} legal={legal} year={2026} showLogin={showLogin} />);
 }
 
 afterEach(() => {
@@ -53,6 +53,15 @@ describe('public site render (SEO-VETRINA)', () => {
     expect(html).toContain('href="/per-i-fornitori"');
     expect(html).toContain('href="mailto:info@example.com?subject=Richiesta%20di%20invito%20a%20CasaZen"');
     expect(html).toContain('Richiedi un invito');
+  });
+
+  it.each(SITE_PAGES.map((page) => page.id))('render_%s_onTheProductionSiteHasNoWayInToTheApp', (page) => {
+    // Production: the app is reached by its address only (product owner, 2026-10-16); the invitation request stays.
+    for (const lng of ['it', 'en'] as const) {
+      const html = render(page, LEGAL, lng, false);
+      expect(html, `${page} ${lng}`).not.toContain('href="/login"');
+    }
+    expect(render('home', LEGAL, 'it', false)).toContain('href="mailto:info@example.com');
   });
 
   it.each(SITE_PAGES.map((page) => page.id))('render_%s_hasNoSignupNoRegistrationAndNoPrices', (page) => {
