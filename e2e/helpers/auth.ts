@@ -15,22 +15,17 @@ export async function loginViaAuth0(page: Page): Promise<void> {
     consoleLogs.push(`[PAGE_ERROR] ${err.message}`);
   });
 
+  // `/login` has no page of its own: the address sends the browser straight to Auth0.
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(3000);
-
-  const loginButton = page.locator('button').filter({ hasText: /sign in|accedi|log in|login|auth0/i }).first();
   try {
-    await loginButton.waitFor({ state: 'visible', timeout: 10_000 });
+    await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
   } catch {
     await page.screenshot({ path: 'test-results/login-debug.png' });
     const bodyText = await page.locator('body').innerText().catch(() => '(body not found)');
     const title = await page.title().catch(() => '(no title)');
     const consoleDump = consoleLogs.length > 0 ? ` Console errors: ${consoleLogs.join(' | ')}` : '';
-    throw new Error(`Login button not found. Page title: "${title}". Body text preview: "${bodyText.slice(0, 300)}".${consoleDump}`);
+    throw new Error(`/login did not lead to Auth0. Page title: "${title}". Body text preview: "${bodyText.slice(0, 300)}".${consoleDump}`);
   }
-  await loginButton.click();
-
-  await page.waitForURL(/auth0\.com/, { timeout: 30_000 });
   await page.waitForLoadState('domcontentloaded');
 
   // New Universal Login sometimes shows a database-connection picker first.
