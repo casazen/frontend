@@ -12,12 +12,12 @@ function lookup(tree: Tree, dotted: string): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
-const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'admin'];
+const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'account', 'admin'];
 
 describe('areas (UI-04a)', () => {
   it('defines every area the manifest has a context for, in the order of the selector', () => {
     expect(Object.keys(AREAS).sort()).toEqual([...CONTEXTS].sort());
-    expect([...AREA_ORDER]).toEqual(['short-rent', 'long-rent', 'supplier', 'admin']);
+    expect([...AREA_ORDER]).toEqual(['short-rent', 'long-rent', 'supplier', 'account', 'admin']);
     expect(new Set(ROUTE_MANIFEST.map((entry) => entry.context))).toEqual(new Set(CONTEXTS));
   });
 
@@ -33,14 +33,15 @@ describe('areas (UI-04a)', () => {
     }
   });
 
-  it('names the areas as the demo does, and keeps the staff console as it is today', () => {
+  it('names the areas as the demo does, and the staff console apart from the customer\'s Amministrazione', () => {
     const names = Object.fromEntries(CONTEXTS.map((key) => [key, lookup(it_ as Tree, AREAS[key].nameKey)]));
     expect(names).toEqual({
       'short-rent': 'Affitti brevi',
       'long-rent': 'Affitti lunghi',
       supplier: 'Portale fornitori',
-      // `/app/admin` is the staff console, not the customer's "Amministrazione" of the demo (decision D1): same name as before.
-      admin: 'Amministrazione',
+      // `/app/account` is the customer's "Amministrazione" of the demo; `/app/admin` is the staff console (decision D1).
+      account: 'Amministrazione',
+      admin: 'Console staff',
     });
     expect(lookup(it_ as Tree, AREAS['short-rent'].descriptionKey)).toBe('Prenotazioni, calendario, prezzi e sito diretto');
     expect(lookup(it_ as Tree, AREAS['long-rent'].descriptionKey)).toBe('Contratti, inquilini, scadenze e canoni');

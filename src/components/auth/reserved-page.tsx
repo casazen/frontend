@@ -11,6 +11,8 @@ const BACK_TO_HOME: Record<AppContextKey, { labelKey: string }> = {
   supplier: { labelKey: 'appShell.reserved.backToToday' },
   'long-rent': { labelKey: 'appShell.reserved.backToOverview' },
   admin: { labelKey: 'appShell.reserved.backToOverview' },
+  // The first page of the area the role may open is not always a "home" (the accountant's is the profile, for now).
+  account: { labelKey: 'appShell.reserved.backToStart' },
 };
 
 interface ReservedPageProps {

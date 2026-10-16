@@ -30,7 +30,7 @@ const childLinks = (page: Page) => page.getByTestId('nav-child-links');
 
 const PAGES: HeaderPage[] = [
   { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('dashboard-period') },
-  { name: 'compliance (pages that hang from it)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Cockpit compliance', controls: childLinks },
+  { name: 'compliance (pages that hang from it)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Adempimenti', controls: childLinks },
   { name: 'booking site (pages that hang from it)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: childLinks },
   { name: 'CIN audit of the console (pages that hang from it)', path: '/app/admin/cin', profile: 'admin', heading: 'Conformità CIN', controls: childLinks },
   { name: 'supplier availability (link to the calendar)', path: '/app/supplier/availability', profile: 'supplier', heading: 'Disponibilità', controls: childLinks, supplier: true },

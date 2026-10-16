@@ -5,6 +5,7 @@ import type { AppContextKey } from '@/config/route-manifest';
  * of the phone): each area has its own profile page. Without an area the profile of Affitti brevi, where the account lives.
  */
 export function profilePathForContext(context: AppContextKey | null): string {
+  if (context === 'account') return '/app/account/profile';
   if (context === 'admin') return '/app/admin/profile';
   if (context === 'long-rent') return '/app/long-rent/profile';
   if (context === 'supplier') return '/app/supplier/profile';
