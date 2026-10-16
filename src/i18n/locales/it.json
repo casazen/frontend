@@ -495,6 +495,7 @@
     }
   },
   "nav": {
+    "accountHome": "Home",
     "dashboard": "Cruscotto",
     "properties": "Immobili",
     "profile": "Profilo",
@@ -537,6 +538,7 @@
     "supplierServicesBar": "Servizi",
     "supplierHelpIcal": "Guida iCal",
     "group": {
+      "account": "Il tuo account",
       "activity": "La tua attività",
       "everyday": "Ogni giorno",
       "management": "Gestione",
@@ -7768,6 +7770,7 @@
       "description": "Il tuo ruolo non include l'accesso a questa pagina. Se ti serve per lavorare, puoi chiedere l'accesso.",
       "backToToday": "Torna a Oggi",
       "backToOverview": "Torna alla Panoramica",
+      "backToStart": "Torna alla pagina iniziale",
       "requestAccess": "Chiedi l'accesso",
       "requestAccessGeneric": "Per chiedere l'accesso rivolgiti a chi amministra il tuo account.",
       "mailSubject": "Richiesta di accesso a una pagina di CasaZen",
@@ -7778,10 +7781,89 @@
       "profileAndLanguage": "Profilo e lingua"
     }
   },
+  "account": {
+    "activity": {
+      "accessRequested": "Richiesta di accesso a un'area o a una pagina",
+      "formerMember": "Ex membro",
+      "invitationAccepted": "Invito accettato ({{role}})",
+      "invitationRevoked": "Invito annullato ({{role}})",
+      "memberAreasChanged": "Aree di {{member}} modificate",
+      "memberDeactivated": "Accesso di {{member}} disattivato",
+      "memberInvited": "Invito inviato ({{role}})",
+      "memberPropertyAccessChanged": "Immobili di {{member}} modificati",
+      "memberReactivated": "Accesso di {{member}} riattivato",
+      "memberRemoved": "{{member}} rimosso dal team",
+      "memberRoleChanged": "Ruolo di {{member}} cambiato: da {{from}} a {{to}}",
+      "other": "Modifica all'account",
+      "planChanged": "Piano cambiato: da {{from}} a {{to}}",
+      "system": "Sistema"
+    },
+    "home": {
+      "activity": {
+        "empty": "Quando il team lavora, le attività compaiono qui.",
+        "seeAll": "Vedi tutto",
+        "title": "Attività recente"
+      },
+      "attention": "Da controllare",
+      "description": "Persone, immobili e stato del tuo account.",
+      "items": {
+        "alloggiati": {
+          "body": "Servono per comunicare gli ospiti alla Questura.",
+          "title_one": "Alloggiati Web: mancano le credenziali di {{count}} immobile",
+          "title_other": "Alloggiati Web: mancano le credenziali di {{count}} immobili"
+        },
+        "billing": {
+          "action": "Aggiorna il pagamento",
+          "body": "Controlla il metodo di pagamento: ti porteremo sul portale sicuro di Stripe.",
+          "title": "C'è un problema con il pagamento del piano"
+        },
+        "invitations": {
+          "title_one": "{{count}} invito non ancora accettato",
+          "title_other": "{{count}} inviti non ancora accettati",
+          "waiting_one": "Il più vecchio aspetta da {{count}} giorno.",
+          "waiting_other": "Il più vecchio aspetta da {{count}} giorni.",
+          "waitingToday": "Il più vecchio è stato inviato oggi."
+        },
+        "properties": {
+          "body": "Completa l'attivazione per poter ricevere prenotazioni.",
+          "title_one": "{{count}} immobile non può ancora ricevere prenotazioni",
+          "title_other": "{{count}} immobili non possono ancora ricevere prenotazioni"
+        }
+      },
+      "loadError": "Non riusciamo a caricare i dati dell'account.",
+      "loading": "Caricamento della Home dell'account",
+      "noUrgent": {
+        "body": "Non c'è niente che richieda subito la tua attenzione.",
+        "title": "Niente di urgente"
+      },
+      "now": "Adesso",
+      "numbers": {
+        "byMode": "{{short}} in affitto breve · {{long}} in affitto lungo",
+        "people": "Persone attive",
+        "properties": "Immobili",
+        "seatsOf_one": "su {{count}} posto",
+        "seatsOf_other": "su {{count}} posti",
+        "seatsUnlimited": "Posti illimitati"
+      },
+      "open": "Apri {{name}}",
+      "retry": "Riprova"
+    },
+    "roles": {
+      "Accountant": "Contabile",
+      "Admin": "Amministratore",
+      "Collaborator": "Collaboratore",
+      "Owner": "Titolare",
+      "PropertyManager": "Property manager"
+    }
+  },
   "areas": {
+    "account": {
+      "description": "Persone, immobili e stato del tuo account",
+      "name": "Amministrazione"
+    },
     "admin": {
       "description": "Utenti, fornitori, processi e controlli di conformità della piattaforma",
-      "name": "Amministrazione"
+      "name": "Console staff"
     },
     "longRent": {
       "description": "Contratti, inquilini, scadenze e canoni",

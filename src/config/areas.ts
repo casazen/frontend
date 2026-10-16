@@ -4,9 +4,9 @@ import type { AppContextKey } from './route-manifest';
  * The areas of the app as the user sees them (UI-04a): name, what they are for, icon and accent. They replace the
  * `displayName` the backend sends for each context ("Affitti lungo termine"), which the area selector no longer shows.
  *
- * Names and descriptions come from the demo (`redesign/assets/shell.js`). The `admin` area is the staff console of the
- * platform (`/app/admin`), not the customer's "Amministrazione" of the demo: it keeps the name it has today and gets a
- * description of what it really does, until the customer's account area exists (decision D1, context `account`).
+ * Names and descriptions come from the demo (`redesign/assets/shell.js`). The `account` area is the customer's
+ * "Amministrazione" (AM-04, decision D1, `/app/account`); the `admin` area is the staff console of the platform
+ * (`/app/admin`), named "Console staff" so that a person who has both does not see two areas with one name.
  */
 export interface AreaDefinition {
   key: AppContextKey;
@@ -18,7 +18,7 @@ export interface AreaDefinition {
   icon: string;
   /**
    * Accent of the area: the `data-area` of `<html>` while the user is in it (UI-01), which sets `--color-primary` to the
-   * accent when the redesign is on. Same value as the area key; `account` will share the one of `admin`.
+   * accent when the redesign is on. Same value as the area key; `account` shares the amethyst of `admin` (`styles/tokens.css`).
    */
   accent: AppContextKey;
   /** i18n key of the line at the bottom of the sidebar, when the area has its own (default: the version). */
@@ -47,18 +47,25 @@ export const AREAS: Record<AppContextKey, AreaDefinition> = {
     icon: 'Wrench',
     accent: 'supplier',
   },
+  account: {
+    key: 'account',
+    nameKey: 'areas.account.name',
+    descriptionKey: 'areas.account.description',
+    icon: 'Shield',
+    accent: 'account',
+  },
   admin: {
     key: 'admin',
     nameKey: 'areas.admin.name',
     descriptionKey: 'areas.admin.description',
-    icon: 'Shield',
+    icon: 'Settings',
     accent: 'admin',
     footerKey: 'shell.adminFooter',
   },
 };
 
-/** Order of the areas in the selector. */
-export const AREA_ORDER: readonly AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'admin'];
+/** Order of the areas in the selector: the customer's areas, then the staff console. */
+export const AREA_ORDER: readonly AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'account', 'admin'];
 
 export function getArea(key: AppContextKey): AreaDefinition {
   return AREAS[key];
