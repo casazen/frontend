@@ -1,24 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
-import { AxiosError, AxiosHeaders } from 'axios';
-import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { propertyModeApi } from '@/api/property-mode.api';
 import { propertiesApi } from '@/api/properties.api';
 import { expectNoAxeViolations } from '@/test/axe';
 import { NOON_UTC, freezeClock } from '@/test/clock';
-import { readWizardDraft } from '@/lib/wizard-draft';
+import { readWizardDraft, writeWizardDraft } from '@/lib/wizard-draft';
 import type { Property } from '@/types';
-import type {
-  PropertyModeBlocker,
-  PropertyModeChange,
-  PropertyModePreview,
-  PropertyModeState,
-} from '@/types/property-mode.types';
+import type { PropertyModeChange } from '@/types/property-mode.types';
 import { LongRentPropertyModePage, ShortRentPropertyModePage } from '../property-mode-wizard-page';
+import { PROPERTY_ID, TOMORROW, axiosError, blocker, change, preview, state } from './mode-fixtures';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/queries/use-users', async (importOriginal) => ({
@@ -31,87 +25,37 @@ vi.mock('@/api/property-mode.api', () => ({
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getById: vi.fn() } }));
 
 const WAIT = { timeout: 5000 };
-const PROPERTY_ID = 'c0c1d2e3-0000-4000-8000-0000000000aa';
-const MODE_URL = (area: 'short-rent' | 'long-rent', search = '') => `/app/${area}/properties/${PROPERTY_ID}/mode${search}`;
-
-// The clock is fixed at noon of 24/09/2026 in UTC: 14:00 of the same day in Rome. Tomorrow is the 25th.
-const TOMORROW = '2026-09-25';
+const OTHER_ID = 'c0c1d2e3-0000-4000-8000-0000000000bb';
+const MODE_URL = (area: 'short-rent' | 'long-rent', search = '', id = PROPERTY_ID) => `/app/${area}/properties/${id}/mode${search}`;
+const SCOPE = { userId: 'user-1', orgId: 'org-1' };
 
 const property = (overrides: Partial<Property> = {}): Property =>
   ({ id: PROPERTY_ID, name: 'Villa Aurora', city: 'Roma', rentalMode: 'Short', ...overrides }) as Property;
-
-const state = (overrides: Partial<PropertyModeState> = {}): PropertyModeState => ({
-  propertyId: PROPERTY_ID,
-  rentalMode: 'Short',
-  scheduledChange: null,
-  lastChange: null,
-  ...overrides,
-});
-
-const change = (overrides: Partial<PropertyModeChange> = {}): PropertyModeChange => ({
-  id: 'c1',
-  propertyId: PROPERTY_ID,
-  fromMode: 'Short',
-  toMode: 'Long',
-  effectiveDate: '2026-12-01',
-  status: 'Scheduled',
-  createdAt: '2026-09-24T10:00:00Z',
-  appliedAt: null,
-  cancelledAt: null,
-  failedAt: null,
-  failureReason: null,
-  ...overrides,
-});
-
-const blocker = (overrides: Partial<PropertyModeBlocker> = {}): PropertyModeBlocker => ({
-  id: 'b1',
-  kind: 'Stay',
-  start: '2026-09-28',
-  end: '2026-10-03',
-  freeFrom: '2026-10-04',
-  status: 'Confirmed',
-  source: 'Direct',
-  ...overrides,
-});
-
-const preview = (overrides: Partial<PropertyModePreview> = {}): PropertyModePreview => ({
-  propertyId: PROPERTY_ID,
-  currentMode: 'Short',
-  targetMode: 'Long',
-  today: '2026-09-24',
-  earliestDate: TOMORROW,
-  date: TOMORROW,
-  canSchedule: true,
-  issues: [],
-  blockers: [],
-  calendarClosedUntil: null,
-  scheduledChange: null,
-  ...overrides,
-});
-
-function axiosError(status: number, data: unknown): AxiosError {
-  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
-  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
-    status,
-    data,
-    statusText: '',
-    headers: {},
-    config,
-  });
-}
 
 function LocationProbe() {
   const location = useLocation();
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 }
 
-function renderPage(url: string) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+/** A way to go from one page to another without leaving the app, as the history does. */
+function Jump({ to }: { to: string }) {
+  const navigate = useNavigate();
+  return (
+    <button type="button" data-testid="jump" onClick={() => navigate(to)}>
+      jump
+    </button>
+  );
+}
+
+const newClient = () => new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+
+function renderPage(url: string, client = newClient(), jumpTo?: string) {
+  const view = render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <MemoryRouter initialEntries={[url]}>
           <LocationProbe />
+          {jumpTo ? <Jump to={jumpTo} /> : null}
           <Routes>
             <Route path="/app/short-rent/properties/:id/mode" element={<ShortRentPropertyModePage />} />
             <Route path="/app/long-rent/properties/:id/mode" element={<LongRentPropertyModePage />} />
@@ -123,6 +67,7 @@ function renderPage(url: string) {
       </QueryClientProvider>
     </I18nextProvider>,
   );
+  return { ...view, client };
 }
 
 const next = () => fireEvent.click(screen.getByTestId('property-mode-next'));
@@ -137,10 +82,22 @@ const setDate = (value: string) =>
 
 /** Opens the wizard of a short-stay property that can go long-term at once, up to the "Date" step. */
 async function openAtTheDateStep(url = MODE_URL('short-rent')) {
-  renderPage(url);
+  const view = renderPage(url);
   await onStep('choice');
   next();
   await onStep('date');
+  return view;
+}
+
+/** Walks the wizard with the day it proposes up to the confirmation: the server has said yes to it. */
+async function walkToConfirm(url = MODE_URL('short-rent')) {
+  const view = await openAtTheDateStep(url);
+  next();
+  await onStep('checks');
+  await screen.findByTestId('property-mode-checks-result', undefined, WAIT);
+  next();
+  await onStep('confirm');
+  return view;
 }
 
 beforeEach(async () => {
@@ -201,7 +158,6 @@ describe('PropertyModeWizard: from short stays to long-term (PM-03)', { timeout:
     expect(await screen.findByTestId('property-mode-checks-result', undefined, WAIT)).toHaveTextContent('Tutto a posto per il 1 ottobre 2026');
     expect(propertyModeApi.preview).toHaveBeenCalledWith(PROPERTY_ID, 'Long', '2026-10-01');
     expect(screen.getByTestId('property-mode-check-passed')).toHaveTextContent('Nessun soggiorno o data occupata finisce il 1 ottobre 2026 o dopo.');
-    await waitFor(() => expect(screen.getByTestId('property-mode-next')).toBeEnabled());
     next();
 
     // 4. Confirm: the answers (the day can be edited from here) and what the passage does, only true things.
@@ -309,7 +265,7 @@ describe('PropertyModeWizard: from short stays to long-term (PM-03)', { timeout:
     // Each obstacle says what it is and where it is dealt with.
     const stay = screen.getByTestId('property-mode-blocker-Stay');
     expect(stay).toHaveTextContent('Soggiorno');
-    expect(stay).toHaveTextContent('dal 28 settembre al 3 ottobre');
+    expect(stay).toHaveTextContent('dal 28 settembre al 3 ottobre 2026');
     expect(stay).toHaveTextContent('Confermata');
     expect(within(stay).getByTestId('property-mode-blocker-open-Stay')).toHaveAttribute('href', '/app/short-rent/bookings/stay-1');
     const portal = screen.getByTestId('property-mode-blocker-ImportedBlock');
@@ -324,8 +280,10 @@ describe('PropertyModeWizard: from short stays to long-term (PM-03)', { timeout:
     expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(i18n.t('propertyMode.errors.checksFailed'));
     await onStep('checks');
 
-    // One click puts the first free day in the field and the server checks it again.
+    // One click puts the first free day in the field and the server checks it again; the button goes away with the old answer, so the
+    // focus stays in the step instead of falling to the top of the page.
     fireEvent.click(screen.getByTestId('property-mode-pick-earliest'));
+    expect(screen.getByRole('group', { name: 'Controlli' })).toHaveFocus();
     await waitFor(() => expect(propertyModeApi.preview).toHaveBeenCalledWith(PROPERTY_ID, 'Long', '2026-10-04'), WAIT);
     expect(await screen.findByText('Tutto a posto per il 4 ottobre 2026', undefined, WAIT)).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId('property-mode-checks-result')).toHaveTextContent('Tutto a posto per il 4 ottobre 2026'));
@@ -344,7 +302,6 @@ describe('PropertyModeWizard: from short stays to long-term (PM-03)', { timeout:
     next();
     await onStep('checks');
     await waitFor(() => expect(screen.getByTestId('property-mode-checks-result')).toBeInTheDocument(), WAIT);
-    await waitFor(() => expect(screen.getByTestId('property-mode-next')).toBeEnabled());
     next();
     await onStep('confirm');
     finish();
@@ -505,7 +462,6 @@ describe('PropertyModeWizard: from long-term leases to short stays (PM-03)', { t
     next();
     await onStep('checks');
     await waitFor(() => expect(screen.getByTestId('property-mode-checks-result')).toBeInTheDocument(), WAIT);
-    await waitFor(() => expect(screen.getByTestId('property-mode-next')).toBeEnabled());
     next();
     await onStep('confirm');
     expect(screen.getByTestId('property-mode-confirm')).toHaveTextContent("Dal 25 settembre 2026 l'immobile esce da Affitti lunghi e compare in Affitti brevi.");
@@ -597,7 +553,6 @@ describe('PropertyModeWizard: where the person is and where they came from (PM-0
     next();
     await onStep('checks');
     await waitFor(() => expect(screen.getByTestId('property-mode-checks-result')).toBeInTheDocument(), WAIT);
-    await waitFor(() => expect(screen.getByTestId('property-mode-next')).toBeEnabled());
     next();
     await onStep('confirm');
     finish();
@@ -615,20 +570,23 @@ describe('PropertyModeWizard: where the person is and where they came from (PM-0
 
     const error = await screen.findByTestId('property-mode-load-error', undefined, WAIT);
     expect(error).toHaveTextContent(i18n.t('propertyMode.loadFailed'));
+    expect(within(error).getByTestId('property-mode-load-error-back')).toHaveAttribute('href', '/app/short-rent/properties');
 
     vi.mocked(propertyModeApi.getState).mockResolvedValue(state());
     fireEvent.click(within(error).getByRole('button', { name: i18n.t('propertyMode.retry') }));
     await onStep('choice');
   });
 
-  it('PropertyModeWizard_AnUnknownProperty_IsNotFoundWithNoRetry', async () => {
+  it('PropertyModeWizard_AnUnknownProperty_IsNotFoundWithNoRetryButAWayBack', async () => {
     vi.mocked(propertiesApi.getById).mockRejectedValue(axiosError(404, { code: 'property_not_found' }));
     vi.mocked(propertyModeApi.getState).mockRejectedValue(axiosError(404, { code: 'property_not_found' }));
-    renderPage(MODE_URL('short-rent'));
+    renderPage(MODE_URL('short-rent', '?from=account'));
 
     const error = await screen.findByTestId('property-mode-load-error', undefined, WAIT);
     expect(error).toHaveTextContent(i18n.t('propertyMode.notFound'));
     expect(within(error).queryByRole('button')).not.toBeInTheDocument();
+    // Every state has a way on: back to the list the person came from.
+    expect(within(error).getByTestId('property-mode-load-error-back')).toHaveAttribute('href', '/app/account/properties');
   });
 
   it('PropertyModeWizard_English_UsesTheEnglishTexts', async () => {
@@ -639,5 +597,243 @@ describe('PropertyModeWizard: where the person is and where they came from (PM-0
     expect(screen.getByRole('heading', { level: 2, name: 'What do you want to do?' })).toBeInTheDocument();
     expect(screen.getByText('Switch to long-term rental')).toBeInTheDocument();
     expect(screen.getByTestId('property-mode-next')).toHaveTextContent('Choose the date');
+  });
+});
+
+describe('PropertyModeWizard: a refresh that fails does not take the screen away (PM-03)', { timeout: 30000 }, () => {
+  it('PropertyModeWizard_EverythingReadAgainFails_TheWizardStaysWhereItWas', async () => {
+    const { client } = await openAtTheDateStep();
+    setDate('2026-10-01');
+
+    // The tab comes back on a bad network: the property, the state and the first answer cannot be refreshed. Their data is kept,
+    // and so is the wizard, with the day the person typed.
+    const serverError = () => axiosError(500, { title: 'Internal Server Error' });
+    vi.mocked(propertiesApi.getById).mockRejectedValue(serverError());
+    vi.mocked(propertyModeApi.getState).mockRejectedValue(serverError());
+    vi.mocked(propertyModeApi.preview).mockRejectedValue(serverError());
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ['properties'] });
+    });
+
+    await waitFor(() => expect(client.getQueryState(['properties', PROPERTY_ID])?.status).toBe('error'), WAIT);
+    expect(client.getQueryState(['properties', PROPERTY_ID, 'mode'])?.status).toBe('error');
+    expect(screen.queryByTestId('property-mode-load-error')).not.toBeInTheDocument();
+    expect(screen.getByTestId('property-mode-wizard')).toHaveAttribute('data-step', 'date');
+    expect(screen.getByTestId('property-mode-date')).toHaveValue('2026-10-01');
+  });
+
+  it('PropertyModeWizard_TheRefreshAfterTheChangeFails_StillShowsThatItWasProgrammed', async () => {
+    const { client } = await walkToConfirm();
+    vi.mocked(propertiesApi.getById).mockRejectedValue(axiosError(500, {}));
+    vi.mocked(propertyModeApi.getState).mockRejectedValue(axiosError(500, {}));
+
+    finish();
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Passaggio programmato' }, WAIT)).toBeInTheDocument();
+    // The change was programmed; the property and the state were read again after it and could not be. The confirmation is not
+    // replaced by "could not load" (the person would think it failed and try again).
+    await waitFor(() => expect(client.getQueryState(['properties', PROPERTY_ID])?.status).toBe('error'), WAIT);
+    expect(screen.getByRole('heading', { level: 2, name: 'Passaggio programmato' })).toBeInTheDocument();
+    expect(screen.queryByTestId('property-mode-load-error')).not.toBeInTheDocument();
+  });
+});
+
+describe('PropertyModeWizard: the state moves under the wizard (PM-03)', { timeout: 30000 }, () => {
+  it('PropertyModeWizard_AChangeWasProgrammedElsewhere_TheRefusalBringsThePanelThatWithdrawsIt', async () => {
+    let elsewhere: PropertyModeChange | null = null;
+    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ scheduledChange: elsewhere }));
+    vi.mocked(propertyModeApi.schedule).mockImplementation(async () => {
+      elsewhere = change();
+      throw axiosError(409, { code: 'property_mode_change_exists' });
+    });
+    await walkToConfirm();
+
+    finish();
+
+    // The refusal read the state again: the page shows the change that is there, with the way to withdraw it, instead of the
+    // same wizard that can only be refused again.
+    const panel = await screen.findByTestId('property-mode-scheduled', undefined, WAIT);
+    expect(panel).toHaveTextContent("C'è già un passaggio in programma");
+    expect(screen.queryByTestId('property-mode-wizard')).not.toBeInTheDocument();
+  });
+
+  it('PropertyModeWizard_TheModeChangedMeanwhile_TheRefusalMovesTheWizardToTheOtherSection', async () => {
+    let mode: 'Short' | 'Long' = 'Short';
+    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ rentalMode: mode }));
+    vi.mocked(propertiesApi.getById).mockImplementation(async () => property({ rentalMode: mode }));
+    vi.mocked(propertyModeApi.schedule).mockImplementation(async () => {
+      mode = 'Long';
+      throw axiosError(422, { code: 'property_mode_unchanged' });
+    });
+    await walkToConfirm();
+
+    finish();
+
+    // The hourly job changed the property while the person was reading: the wizard goes to the section it is in now, from the
+    // start (the step of the other question means nothing there).
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(`/app/long-rent/properties/${PROPERTY_ID}/mode`), WAIT);
+    expect(screen.getByTestId('location')).not.toHaveTextContent('step=');
+    await onStep('choice');
+    expect(screen.getByText(i18n.t('propertyMode.choice.toShort.title'))).toBeInTheDocument();
+  });
+});
+
+describe('PropertyModeWizard: every visit starts from what the server says now (PM-03)', { timeout: 30000 }, () => {
+  it('PropertyModeWizard_ReopenedAfterAStayCameIn_StartsFromTheNewFirstDay', async () => {
+    const first = renderPage(MODE_URL('short-rent'));
+    await onStep('choice');
+    first.unmount();
+    // The answers of a visit are not kept once nobody shows them.
+    await waitFor(
+      () => expect(first.client.getQueryCache().findAll({ queryKey: ['properties', PROPERTY_ID, 'mode', 'preview'] })).toHaveLength(0),
+      WAIT,
+    );
+
+    // A longer stay is booked while the person is away.
+    vi.mocked(propertyModeApi.preview).mockImplementation(async (_id, to, date) =>
+      preview({
+        targetMode: to,
+        date: date || '2026-10-10',
+        earliestDate: '2026-10-10',
+        canSchedule: false,
+        blockers: [blocker({ end: '2026-10-09', freeFrom: '2026-10-10' })],
+      }),
+    );
+    renderPage(MODE_URL('short-rent'), first.client);
+    await onStep('choice');
+    next();
+    await onStep('date');
+
+    expect(screen.getByTestId('property-mode-date')).toHaveValue('2026-10-10');
+    expect(screen.getByTestId('property-mode-date')).toHaveAttribute('min', '2026-10-10');
+  });
+
+  it('PropertyModeWizard_GoingToAnotherProperty_StartsItsOwnWizard', async () => {
+    vi.mocked(propertiesApi.getById).mockImplementation(async (id) =>
+      property({ id, name: id === OTHER_ID ? 'Casa Bianca' : 'Villa Aurora' }),
+    );
+    vi.mocked(propertyModeApi.getState).mockImplementation(async (id) => state({ propertyId: id }));
+    renderPage(MODE_URL('short-rent'), undefined, MODE_URL('short-rent', '', OTHER_ID));
+    await onStep('choice');
+    next();
+    await onStep('date');
+    setDate('2026-10-20');
+
+    fireEvent.click(screen.getByTestId('jump'));
+
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(OTHER_ID), WAIT);
+    expect((await screen.findAllByText('Casa Bianca', undefined, WAIT)).length).toBeGreaterThan(0);
+    // The wizard of the other property begins at its first step and with its own day, not with the answers of the first.
+    await onStep('choice');
+    next();
+    await onStep('date');
+    expect(screen.getByTestId('property-mode-date')).toHaveValue(TOMORROW);
+  });
+
+  it('PropertyModeWizard_ADraftWithADayThatIsGone_IsNotResumedButAGoodOneIs', async () => {
+    writeWizardDraft(`property-mode-${PROPERTY_ID}`, SCOPE, { step: 'checks', values: { target: 'Long', date: '2026-09-20' } });
+    renderPage(MODE_URL('short-rent'));
+    await onStep('choice');
+    expect(screen.queryByTestId('wizard-draft-banner')).not.toBeInTheDocument();
+    next();
+    await onStep('date');
+    expect(screen.getByTestId('property-mode-date')).toHaveValue(TOMORROW);
+    cleanup();
+    sessionStorage.clear();
+
+    writeWizardDraft(`property-mode-${PROPERTY_ID}`, SCOPE, { step: 'checks', values: { target: 'Long', date: '2026-10-05' } });
+    renderPage(MODE_URL('short-rent'));
+    expect(await screen.findByTestId('wizard-draft-banner', undefined, WAIT)).toBeInTheDocument();
+  });
+
+  it('PropertyModeWizard_OpenedOnTheConfirmationWithoutTheChecks_GoesToTheChecksWithoutAnError', async () => {
+    // A reload on the last step, or "Resume" from a draft: the result of the checks is never kept.
+    renderPage(MODE_URL('short-rent', '?step=confirm'));
+
+    await onStep('checks');
+    expect(screen.queryByTestId('wizard-error-summary')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('property-mode-checks-result', undefined, WAIT)).toBeInTheDocument();
+    next();
+    await onStep('confirm');
+  });
+});
+
+describe('PropertyModeWizard: the day step and the checks, in the details (PM-03)', { timeout: 30000 }, () => {
+  it('PropertyModeWizard_UseTheFirstPossibleDay_ClearsTheErrorOfTheFieldAndKeepsTheFocusThere', async () => {
+    vi.mocked(propertyModeApi.preview).mockImplementation(async (_id, to, date) =>
+      preview({
+        targetMode: to,
+        date: date || TOMORROW,
+        earliestDate: '2026-11-15',
+        blockers: [blocker({ end: '2026-11-14', freeFrom: '2026-11-15' })],
+      }),
+    );
+    await openAtTheDateStep();
+    setDate('2026-10-01');
+    fireEvent.blur(screen.getByTestId('property-mode-date'));
+    await screen.findByText(i18n.t('propertyMode.errors.dateTooEarly'), undefined, WAIT);
+
+    fireEvent.click(screen.getByTestId('property-mode-use-earliest'));
+
+    await waitFor(() => expect(screen.queryByText(i18n.t('propertyMode.errors.dateTooEarly'))).not.toBeInTheDocument(), WAIT);
+    const day = screen.getByTestId('property-mode-date');
+    expect(day).toHaveValue('2026-11-15');
+    expect(day).not.toHaveAttribute('aria-invalid', 'true');
+    // The button went away with the click: the focus is on the field, not at the top of the page.
+    expect(day).toHaveFocus();
+  });
+
+  it('PropertyModeWizard_ManyStaysInTheWay_ShowTheFirstFiveAndTheWayToAllOfThem', async () => {
+    vi.mocked(propertyModeApi.preview).mockImplementation(async (_id, to, date) => {
+      const day = date || TOMORROW;
+      if (day === TOMORROW) return preview({ targetMode: to, date: day });
+      return preview({
+        targetMode: to,
+        date: day,
+        earliestDate: '2026-10-20',
+        canSchedule: false,
+        issues: ['property_mode_blocked_by_bookings'],
+        blockers: Array.from({ length: 7 }, (_, index) =>
+          blocker({ id: `s${index}`, start: `2026-09-${26 + index}`, end: '2026-10-19', freeFrom: '2026-10-20' }),
+        ),
+      });
+    });
+    await openAtTheDateStep();
+    setDate('2026-10-01');
+    next();
+    await onStep('checks');
+    await screen.findByTestId('property-mode-blockers', undefined, WAIT);
+
+    expect(screen.getAllByTestId('property-mode-blocker-Stay')).toHaveLength(5);
+    expect(screen.getByTestId('property-mode-blockers-more')).toHaveTextContent('...e altri 2');
+    expect(screen.getByTestId('property-mode-blockers-see-all')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings?propertyId=${PROPERTY_ID}`,
+    );
+  });
+
+  it('PropertyModeWizard_OnlyADraftInTheWay_DoesNotSayThatNothingStandsInTheWay', async () => {
+    vi.mocked(propertiesApi.getById).mockResolvedValue(property({ rentalMode: 'Long' }));
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ rentalMode: 'Long' }));
+    vi.mocked(propertyModeApi.preview).mockImplementation(async (_id, to, date) =>
+      preview({
+        targetMode: to,
+        currentMode: 'Long',
+        date: date || TOMORROW,
+        canSchedule: false,
+        issues: ['property_mode_blocked_by_draft_lease'],
+        blockers: [blocker({ id: 'draft-1', kind: 'DraftLease', start: '2027-01-01', end: '2027-12-31', freeFrom: null, status: 'Draft' })],
+      }),
+    );
+
+    renderPage(MODE_URL('long-rent'));
+    await onStep('choice');
+    next();
+    await onStep('date');
+
+    // A draft frees no day, so the first day is tomorrow, but it is not true that nothing stands in the way: it is named alone.
+    const reason = screen.getByTestId('property-mode-date-reason');
+    expect(reason).toHaveTextContent(i18n.t('propertyMode.date.reason.draft'));
+    expect(reason).not.toHaveTextContent(i18n.t('propertyMode.date.reason.freeToShort'));
   });
 });

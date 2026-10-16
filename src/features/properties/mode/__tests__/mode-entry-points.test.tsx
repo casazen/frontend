@@ -4,8 +4,6 @@ import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
-import { AxiosError, AxiosHeaders } from 'axios';
-import type { InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { propertyModeApi } from '@/api/property-mode.api';
@@ -15,11 +13,12 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import * as propertyQueries from '@/queries/use-properties';
 import type { Property, PropertyDetailDto } from '@/types';
-import type { PropertyModeChange, PropertyModeState } from '@/types/property-mode.types';
+import type { PropertyModeChange } from '@/types/property-mode.types';
 import { PropertyDetailPage } from '../../property-detail-page';
 import { LongRentPropertyDetailPage } from '../../long-rent/long-rent-property-detail-page';
 import { ScheduledChangeNotice } from '../components/scheduled-change-notice';
 import { useModeChangeMenuItems } from '../use-mode-entry';
+import { PROPERTY_ID, axiosError, change, state } from './mode-fixtures';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/queries/use-properties');
@@ -38,30 +37,7 @@ vi.mock('../../components/property-cadastral-card', () => ({ PropertyCadastralCa
 vi.mock('../../components/property-documents-section', () => ({ PropertyDocumentsSection: () => <div /> }));
 vi.mock('@/features/service-requests/components/long-rent-service-requests', () => ({ LongRentServiceRequests: () => <div /> }));
 
-const PROPERTY_ID = 'prop-1';
 const WAIT = { timeout: 5000 };
-
-const waiting = (overrides: Partial<PropertyModeChange> = {}): PropertyModeChange => ({
-  id: 'c1',
-  propertyId: PROPERTY_ID,
-  fromMode: 'Short',
-  toMode: 'Long',
-  effectiveDate: '2026-12-01',
-  status: 'Scheduled',
-  createdAt: '2026-10-01T10:00:00Z',
-  appliedAt: null,
-  cancelledAt: null,
-  failedAt: null,
-  failureReason: null,
-  ...overrides,
-});
-
-const state = (scheduledChange: PropertyModeChange | null = null, rentalMode: 'Short' | 'Long' = 'Short'): PropertyModeState => ({
-  propertyId: PROPERTY_ID,
-  rentalMode,
-  scheduledChange,
-  lastChange: null,
-});
 
 interface Setup {
   flag?: boolean;
@@ -91,11 +67,6 @@ function providers({ flag = true, writes = ['short-rent', 'long-rent'] }: Setup 
   };
 }
 
-function axiosError(status: number, data: unknown): AxiosError {
-  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
-  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
-}
-
 beforeEach(async () => {
   vi.clearAllMocks();
   await i18n.changeLanguage('it');
@@ -121,10 +92,10 @@ describe('useModeChangeMenuItems (PM-03)', () => {
   it('useModeChangeMenuItems_FlagOnAndPermission_IsTheWizardOfTheSectionOfThePage', () => {
     const short = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: providers() });
     expect(short.result.current).toEqual([
-      expect.objectContaining({ label: 'Cambia modalità', to: '/app/short-rent/properties/prop-1/mode', testId: 'property-mode-change' }),
+      expect.objectContaining({ label: 'Cambia modalità', to: `/app/short-rent/properties/${PROPERTY_ID}/mode`, testId: 'property-mode-change' }),
     ]);
     const long = renderHook(() => useModeChangeMenuItems('long-rent', PROPERTY_ID), { wrapper: providers() });
-    expect(long.result.current[0]).toMatchObject({ to: '/app/long-rent/properties/prop-1/mode' });
+    expect(long.result.current[0]).toMatchObject({ to: `/app/long-rent/properties/${PROPERTY_ID}/mode` });
   });
 
   it('useModeChangeMenuItems_OutsideTheWorkspace_GivesNoEntryInsteadOfFailing', () => {
@@ -218,7 +189,7 @@ describe('the pages of a property (PM-03)', () => {
     // The other actions of the page stay where they were (the pause, the supplier, the edit); this one is in the menu.
     expect(screen.getByTestId('property-pause-toggle')).toBeInTheDocument();
     const menu = await openTheMenu();
-    expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', '/app/short-rent/properties/prop-1/mode');
+    expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}/mode`);
   });
 
   it('PropertyDetailPage_FlagOff_HasNoMenuNoRowAndNeverAsksForTheMode', () => {
@@ -244,7 +215,7 @@ describe('the pages of a property (PM-03)', () => {
     expect(within(menu).getByRole('menuitem', { name: i18n.t('longRentProperties.detail.edit') })).toBeInTheDocument();
     expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute(
       'href',
-      '/app/long-rent/properties/prop-1/mode',
+      `/app/long-rent/properties/${PROPERTY_ID}/mode`,
     );
   });
 
@@ -259,12 +230,14 @@ describe('the pages of a property (PM-03)', () => {
   });
 
   it('thePages_AChangeWaits_ShowTheRowOfStatusInTheirOwnSection', async () => {
-    vi.mocked(propertyModeApi.getState).mockResolvedValue(state(waiting()));
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
     renderShort();
     expect(await screen.findByTestId('property-mode-notice', undefined, WAIT)).toHaveTextContent("Passaggio all'affitto lungo il 1 dicembre 2026");
     cleanup();
 
-    vi.mocked(propertyModeApi.getState).mockResolvedValue(state(waiting({ fromMode: 'Long', toMode: 'Short' }), 'Long'));
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(
+      state({ rentalMode: 'Long', scheduledChange: change({ fromMode: 'Long', toMode: 'Short' }) }),
+    );
     renderLong();
     const notice = await screen.findByTestId('property-mode-notice', undefined, WAIT);
     expect(notice).toHaveTextContent("Passaggio all'affitto breve il 1 dicembre 2026");
@@ -283,7 +256,7 @@ describe('ScheduledChangeNotice (PM-03)', () => {
   }
 
   it('ScheduledChangeNotice_FlagOff_RendersNothingAndAsksForNothing', () => {
-    vi.mocked(propertyModeApi.getState).mockResolvedValue(state(waiting()));
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
     const { container } = renderNotice({ flag: false });
 
     expect(container).toBeEmptyDOMElement();
@@ -298,8 +271,8 @@ describe('ScheduledChangeNotice (PM-03)', () => {
   });
 
   it('ScheduledChangeNotice_AChangeWaits_SaysWhatAndWhenAndWithdrawsItAfterAsking', async () => {
-    let current: PropertyModeChange | null = waiting();
-    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state(current));
+    let current: PropertyModeChange | null = change();
+    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ scheduledChange: current }));
     vi.mocked(propertyModeApi.cancel).mockImplementation(async () => {
       current = null;
     });
@@ -323,7 +296,7 @@ describe('ScheduledChangeNotice (PM-03)', () => {
   });
 
   it('ScheduledChangeNotice_KeepTheChange_WithdrawsNothing', async () => {
-    vi.mocked(propertyModeApi.getState).mockResolvedValue(state(waiting()));
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
     renderNotice();
 
     fireEvent.click(await screen.findByTestId('property-mode-notice-cancel', undefined, WAIT));
@@ -336,7 +309,7 @@ describe('ScheduledChangeNotice (PM-03)', () => {
   });
 
   it('ScheduledChangeNotice_WithoutTheWritePermission_ShowsTheRowButNotTheWithdrawal', async () => {
-    vi.mocked(propertyModeApi.getState).mockResolvedValue(state(waiting()));
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
     renderNotice({ writes: [] });
 
     expect(await screen.findByTestId('property-mode-notice', undefined, WAIT)).toHaveTextContent('Passaggio');
@@ -344,8 +317,8 @@ describe('ScheduledChangeNotice (PM-03)', () => {
   });
 
   it('ScheduledChangeNotice_TheWithdrawalFails_SaysWhyAndShowsTheStateTheServerHas', async () => {
-    let current: PropertyModeChange | null = waiting();
-    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state(current));
+    let current: PropertyModeChange | null = change();
+    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ scheduledChange: current }));
     vi.mocked(propertyModeApi.cancel).mockImplementation(async () => {
       // Someone else did it first: the change is not waiting any more.
       current = null;

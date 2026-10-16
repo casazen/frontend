@@ -57,37 +57,36 @@ describe('modeStepSchemas', () => {
   const bounds = { earliest: '2026-11-15', latest: '2036-10-16' };
   const { date, checks } = modeStepSchemas(bounds);
 
-  const issueOf = (result: ReturnType<NonNullable<typeof date>['safeParse']>) =>
-    result.success ? null : result.error.issues[0]?.message;
+  const issueOf = (result: ReturnType<typeof date.safeParse>) => (result.success ? null : result.error.issues[0]?.message);
 
   it('date_AValidDayInsideTheBounds_Passes', () => {
-    expect(date!.safeParse({ date: '2026-11-15' }).success).toBe(true);
-    expect(date!.safeParse({ date: '2030-01-01' }).success).toBe(true);
-    expect(date!.safeParse({ date: '2036-10-16' }).success).toBe(true);
+    expect(date.safeParse({ date: '2026-11-15' }).success).toBe(true);
+    expect(date.safeParse({ date: '2030-01-01' }).success).toBe(true);
+    expect(date.safeParse({ date: '2036-10-16' }).success).toBe(true);
   });
 
   it('date_EmptyOrNotARealDay_AsksForTheDay', () => {
-    expect(issueOf(date!.safeParse({ date: '' }))).toBe('propertyMode.errors.dateInvalid');
-    expect(issueOf(date!.safeParse({ date: '2026-02-30' }))).toBe('propertyMode.errors.dateInvalid');
-    expect(issueOf(date!.safeParse({ date: 'domani' }))).toBe('propertyMode.errors.dateInvalid');
+    expect(issueOf(date.safeParse({ date: '' }))).toBe('propertyMode.errors.dateInvalid');
+    expect(issueOf(date.safeParse({ date: '2026-02-30' }))).toBe('propertyMode.errors.dateInvalid');
+    expect(issueOf(date.safeParse({ date: 'domani' }))).toBe('propertyMode.errors.dateInvalid');
   });
 
   it('date_BeforeTheFirstPossibleDay_IsTooEarly', () => {
-    expect(issueOf(date!.safeParse({ date: '2026-11-14' }))).toBe('propertyMode.errors.dateTooEarly');
+    expect(issueOf(date.safeParse({ date: '2026-11-14' }))).toBe('propertyMode.errors.dateTooEarly');
   });
 
   it('date_AfterTenYears_IsTooFar', () => {
-    expect(issueOf(date!.safeParse({ date: '2036-10-17' }))).toBe('propertyMode.errors.dateTooFar');
+    expect(issueOf(date.safeParse({ date: '2036-10-17' }))).toBe('propertyMode.errors.dateTooFar');
   });
 
   it('checks_OnlyOpensTheWayWhenTheServerSaidYes', () => {
-    expect(checks!.safeParse({ checksOk: true }).success).toBe(true);
-    expect(issueOf(checks!.safeParse({ checksOk: false }))).toBe('propertyMode.errors.checksFailed');
+    expect(checks.safeParse({ checksOk: true }).success).toBe(true);
+    expect(issueOf(checks.safeParse({ checksOk: false }))).toBe('propertyMode.errors.checksFailed');
   });
 
-  it('theFirstStep_HasNoRules_BecauseTheOnlyChoiceIsAlreadyMade', () => {
-    expect(modeStepSchemas(bounds).choice).toBeUndefined();
-    expect(modeStepSchemas(bounds).confirm).toBeUndefined();
+  it('modeStepSchemas_OnlyTheDateAndTheChecksHaveRules_TheChoiceAndTheConfirmationHaveNone', () => {
+    // The only choice is already made, and the confirmation has nothing to check: the wizard gives them no schema.
+    expect(Object.keys(modeStepSchemas(bounds))).toEqual(['date', 'checks']);
   });
 
   it('theDraft_NeverKeepsTheResultOfTheChecks', () => {

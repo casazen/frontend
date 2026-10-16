@@ -98,7 +98,9 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
     const details = await openTheBlock();
 
     // Said as it is: the host did not close these nights, the change did, and they open again if the change is cancelled.
-    expect(within(details).getByTestId('mode-change-block')).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
+    const block = within(details).getByTestId('mode-change-block');
+    expect(block).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
+    expect(block).toHaveTextContent(i18n.t('propertyMode.calendar.reopen'));
     expect(within(details).queryByRole('button', { name: 'Elimina blocco' })).not.toBeInTheDocument();
     expect(within(details).queryByText(i18n.t('booking.calendar.manualBlock.explanation'))).not.toBeInTheDocument();
     expect(within(details).getByTestId('mode-change-block-manage')).toHaveAttribute('href', '/app/short-rent/properties/p1/mode');
@@ -108,12 +110,16 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
   it('CalendarPage_ModeChangeBlock_FlagOffOrNoWritePermission_ExplainsWithoutTheLink', async () => {
     renderPage({ flag: false });
     let details = await openTheBlock();
-    expect(within(details).getByTestId('mode-change-block')).toBeInTheDocument();
+    // Whoever looks at the calendar is told why the nights are closed; "they open again if you cancel" is a way out they do not have.
+    expect(within(details).getByTestId('mode-change-block')).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
+    expect(within(details).queryByText(i18n.t('propertyMode.calendar.reopen'))).not.toBeInTheDocument();
     expect(within(details).queryByTestId('mode-change-block-manage')).not.toBeInTheDocument();
     cleanup();
 
     renderPage({ permissions: ['booking.write'] });
     details = await openTheBlock();
+    expect(within(details).getByTestId('mode-change-block')).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
+    expect(within(details).queryByText(i18n.t('propertyMode.calendar.reopen'))).not.toBeInTheDocument();
     expect(within(details).queryByTestId('mode-change-block-manage')).not.toBeInTheDocument();
     expect(within(details).queryByRole('button', { name: 'Elimina blocco' })).not.toBeInTheDocument();
   });
