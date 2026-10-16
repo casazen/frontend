@@ -4905,6 +4905,20 @@
         "explain": "Il codice inserito non è nel formato ufficiale: controllalo e correggilo."
       }
     },
+    "fiscalRegime": {
+      "Confirmed": {
+        "label": "Regime scelto",
+        "explain": "Hai scelto e confermato il regime fiscale di questo immobile per quest'anno."
+      },
+      "ToConfirm": {
+        "label": "Da confermare",
+        "explain": "CasaZen ha rilevato un regime ma non lo applica da solo: confermalo o scegline un altro."
+      },
+      "NotChosen": {
+        "label": "Da scegliere",
+        "explain": "Per quest'anno questo immobile non ha ancora un regime fiscale: scegline uno per stimare l'imposta."
+      }
+    },
     "alloggiati": {
       "DaInviare": {
         "label": "Da inviare",
@@ -7473,6 +7487,28 @@
       "title": "Nessun immobile con affitti brevi",
       "description": "Aggiungi un immobile per scegliere il regime fiscale e preparare i report.",
       "action": "Aggiungi un immobile"
+    },
+    "focus": {
+      "choose": {
+        "cta": "Scegli il regime",
+        "title": "Scegli il regime fiscale di {{name}}"
+      },
+      "confirm": {
+        "body": "Consigliato: {{regime}}. Non viene applicato da solo: confermalo o scegline un altro.",
+        "title": "Conferma il regime fiscale di {{name}}"
+      },
+      "ok": {
+        "title": "Il regime fiscale {{year}} è a posto"
+      },
+      "reports": {
+        "title": "Prepara i dati per il commercialista"
+      },
+      "vat": {
+        "title": "Un titolare supera la soglia degli affitti brevi"
+      }
+    },
+    "list": {
+      "title": "Immobili"
     }
   },
   "propertyMode": {
