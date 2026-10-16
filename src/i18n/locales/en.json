@@ -615,8 +615,6 @@
     "notFound": "Lease not found",
     "notFoundDescription": "The lease you are looking for does not exist or you do not have access.",
     "backToList": "Back to leases",
-    "leaseContract": "Lease contract",
-    "contractTerms": "Contract terms",
     "monthlyRent": "Monthly rent",
     "fiscalRegime": "Fiscal regime",
     "registrationDeadline": "Registration deadline",
@@ -1209,6 +1207,41 @@
     },
     "term": "from {{from}} to {{to}}"
   },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Economic terms"
+    },
+    "dates": {
+      "end": "End of the lease",
+      "start": "Start of the lease",
+      "title": "Term and dates"
+    },
+    "details": "Show details",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "You"
+      },
+      "more": "Show the whole history"
+    },
+    "party": {
+      "extraEu": "Non-EU"
+    },
+    "property": {
+      "open": "Open the property",
+      "title": "Property"
+    },
+    "status": {
+      "explain": "What this status means"
+    },
+    "tabs": {
+      "data": "Details",
+      "deadlines": "Deadlines",
+      "documents": "Documents",
+      "label": "Sections of the lease",
+      "payments": "Payments"
+    }
+  },
   "revenue": {
     "pageTitle": "Revenue analytics",
     "pageDescription": "Track and analyze revenue performance",
@@ -1550,6 +1583,7 @@
         "format": "Invalid email address"
       },
       "phone": {
+        "maxLength": "The phone number can have at most 20 characters",
         "minLength": "Phone number must be at least 10 digits"
       },
       "country": {
@@ -1559,6 +1593,7 @@
         "required": "Property is required"
       },
       "checkInDate": {
+        "inPast": "The arrival date has already passed: choose an arrival from today on.",
         "required": "Check-in date is required"
       },
       "checkOutDate": {
@@ -1731,8 +1766,82 @@
       }
     },
     "create": {
-      "title": "Create Booking",
-      "description": "Create a new booking reservation"
+      "description": "For a booking taken by phone or in person: three short steps, and the draft saves itself.",
+      "done": {
+        "calendar": "The nights from {{from}} to {{to}} are now taken on the calendar and on the booking site.",
+        "checkin": "A few days before arrival {{name}} gets the link for the online check-in by email.",
+        "description": "{{property}}, from {{from}} to {{to}}",
+        "guestFallback": "the guest",
+        "open": "Open the booking",
+        "payment": "No payment has been recorded: if the guest pays by hand, you record it under Payments.",
+        "title": "Booking for {{name}} added",
+        "toList": "All bookings"
+      },
+      "finish": "Create the booking",
+      "guest": {
+        "checkinNote": "The guest fills in the documents and the details of all the guests with the online check-in.",
+        "country": "Country",
+        "countryExample": "Italy",
+        "email": "Email",
+        "emailExample": "mary.smith@example.com",
+        "emailHint": "The link for the online check-in is sent to this address.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "notes": "Notes",
+        "notesHint": "For example the arrival time or a special request.",
+        "phone": "Phone",
+        "phoneExample": "+39 333 123 4567"
+      },
+      "stay": {
+        "adults": "Adults",
+        "adultsHint": "18 or older",
+        "capacity_one": "The property sleeps up to {{count}} person.",
+        "capacity_other": "The property sleeps up to {{count}} people.",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "guestsTitle": "How many people?",
+        "minors": "Minors",
+        "minorsHint": "Under 18",
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights",
+        "overCapacity_one": "The property sleeps up to {{count}} person: with more guests the booking is not accepted.",
+        "overCapacity_other": "The property sleeps up to {{count}} people: with more guests the booking is not accepted.",
+        "property": "Property",
+        "propertyPlaceholder": "Choose the property"
+      },
+      "steps": {
+        "guest": {
+          "label": "Guest",
+          "purpose": "We need the contact details of the person who booked.",
+          "title": "Who is coming to stay?"
+        },
+        "stay": {
+          "label": "Stay",
+          "purpose": "Choose the property, the dates and how many people are coming.",
+          "title": "Which property, and which dates?"
+        },
+        "summary": {
+          "label": "Summary and price",
+          "purpose": "CasaZen works out the price from the settings of the property.",
+          "title": "Check and create the booking"
+        }
+      },
+      "summary": {
+        "adults_one": "{{count}} adult",
+        "adults_other": "{{count}} adults",
+        "contact": "Contact",
+        "dates": "Dates",
+        "datesValue_one": "From {{from}} to {{to}} · {{count}} night",
+        "datesValue_other": "From {{from}} to {{to}} · {{count}} nights",
+        "guest": "Guest",
+        "guests": "People",
+        "minors_one": "{{count}} minor",
+        "minors_other": "{{count}} minors",
+        "notes": "Notes",
+        "property": "Property",
+        "stayMissing": "The property and the dates are missing: without them we cannot work out the price."
+      },
+      "title": "New booking"
     },
     "edit": {
       "title": "Edit Booking",
@@ -2936,8 +3045,7 @@
   "supplier": {
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
-    "profileDescription": "Account and data visible to hosts in the supplier picker",
-    "professionalProfile": "Professional Profile",
+    "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
     "status": "Status",
     "statusActive": "Active",
     "statusPending": "Pending",
@@ -2946,20 +3054,56 @@
     "noneSet": "Not set",
     "welcomeBack": "Welcome back",
     "companyName": "Company name",
-    "email": "Email",
     "phone": "Phone",
-    "categories": "Categories",
-    "municipalities": "Municipalities",
-    "bioEmpty": "No bio written yet.",
     "supplierDefault": "Supplier",
+    "agenda": {
+      "close": "Close this day",
+      "dayEmpty": "Nothing on the agenda for this day.",
+      "description": "Your jobs and commitments, day by day. Customers only book when you are free.",
+      "emptyRange": "No jobs or commitments in this period. When you accept a request it shows up here.",
+      "emptyRangeCta": "Go to requests",
+      "eventsCount_one": "{{count}} entry",
+      "eventsCount_other": "{{count}} entries",
+      "hours": {
+        "edit": "Edit your hours",
+        "empty": "You have not chosen your working hours yet.",
+        "title": "Your working hours"
+      },
+      "legend": {
+        "events": "Jobs and commitments",
+        "label": "Month legend",
+        "unavailable": "Closed or unavailable"
+      },
+      "next": "Next period",
+      "period": "Period",
+      "previous": "Previous period",
+      "reasons": {
+        "Holiday": "Public holiday",
+        "Illness": "Illness",
+        "Other": "Unavailable",
+        "Vacation": "Time off"
+      },
+      "reopen": "Reopen this day",
+      "state": {
+        "closed": "Closed by you",
+        "closedByCalendar": "Closed by your calendar",
+        "rest": "Day off"
+      },
+      "title": "Agenda and availability",
+      "today": "Today",
+      "views": {
+        "day": "Day",
+        "label": "Agenda view",
+        "month": "Month",
+        "week": "Week"
+      }
+    },
     "allDay": "all day",
     "availabilityLoading": "Loading availability...",
     "availabilityUpdated": "Availability updated",
     "availabilitySaveError": "Could not save availability",
     "availabilityTitle": "Availability",
-    "availabilityDescription": "Working days with service hours and events from your linked calendar. Tap a day to mark it as unavailable.",
     "available": "Available",
-    "closedByCalendar": "from calendar",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
     "eventFromCalendar": "from calendar",
@@ -2981,7 +3125,6 @@
     "hoursUpdated": "Working hours updated",
     "noWorkingHoursToday": "No service band today",
     "notAvailable": "Not available",
-    "saveAvailability": "Save availability",
     "weekday": {
       "Friday": "Friday",
       "Monday": "Monday",
@@ -2994,14 +3137,10 @@
     "workingHoursLabel": "Hours",
     "calendarSyncTitle": "Calendar Sync",
     "calendarSyncDescription": "Choose how to manage your availability. Zero effort after initial setup.",
-    "googleCalendar": "Google Calendar",
-    "googleCalendarHint": "Connect your Google Calendar in one click. We only read when you're busy.",
     "connectCalendar": "Connect calendar",
     "icalFeed": "Apple / Outlook / Airbnb",
     "icalFeedHint": "Paste the iCal link from your calendar. Works with Apple, Outlook, Airbnb and Booking.",
     "pasteIcalUrl": "Paste iCal link",
-    "whatsappOption": "WhatsApp",
-    "whatsappHint": "No calendar? We'll message you weekly. Reply with one tap.",
     "enableWhatsapp": "Enable WhatsApp",
     "dashboardTitle": "Dashboard",
     "dashboardDescription": "Your operational overview on CasaZen",
@@ -3011,18 +3150,14 @@
     "completeProfileTitle": "Complete your profile",
     "completeProfileDescription": "These details help hosts choose you. Your profile cannot remain incomplete.",
     "saveAndContinue": "Save and continue",
-    "editProfile": "Edit profile",
-    "saveProfile": "Save profile",
     "vatNumber": "VAT number",
     "photoUrls": "Photos",
     "photoUrlsHint": "One URL per line. The first photos will appear in your public showcase.",
-    "bio": "Description",
     "activationLoading": "Loading activation...",
     "categoriesHint": "Choose one or more categories. You can add more later.",
     "comuniHint": "Enter the names of the comuni in Italian where you operate, separated by commas.",
     "comuniPlaceholder": "e.g. Roma, Milano, Napoli",
     "connectLater": "Set up later",
-    "progressSaveError": "Could not save. Try again.",
     "activationStatus": "Activation status",
     "serviceCategories": "Service categories",
     "operatingMunicipalities": "Municipalities of operation",
@@ -3030,7 +3165,6 @@
     "description": "Description",
     "describeServicesPlaceholder": "Describe your services...",
     "saveProgress": "Save progress",
-    "progressSaved": "Progress saved",
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
@@ -3422,7 +3556,6 @@
     "setupCalendarCTAHint": "Automatically sync your availability",
     "setAvailabilityCTA": "Set availability",
     "setAvailabilityCTAHint": "Set your available days manually",
-    "comingSoon": "Coming soon",
     "icalFeedUrlTitle": "Connect iCal feed",
     "icalFeedUrlDescription": "Paste your iCal calendar URL. We support Apple Calendar, Outlook, Airbnb, and Booking.com.",
     "icalFeedUrlLabel": "iCal feed URL",
@@ -3465,21 +3598,8 @@
     "calendarStatusLoadError": "Could not load the calendar status.",
     "syncError": "Sync error",
     "icalConnected": "iCal feed connected",
-    "editIcalUrl": "Edit iCal URL",
     "edit": "Edit",
     "syncStatusTitle": "Sync status",
-    "companyInfo": "Company information",
-    "categoriesAndComuni": "Categories & municipalities",
-    "currentPhotos": "Current photos",
-    "newPhotos": "New photos",
-    "addPhotos": "Add photos",
-    "uploadPhotos": "Upload photos",
-    "photosUploaded": "Photos uploaded",
-    "photosUploadError": "Error uploading photos",
-    "maxPhotosError": "Maximum {{max}} photos allowed",
-    "photoCount": "{{current}}/{{max}} photos",
-    "photoGallery": "Photo gallery",
-    "noPhotos": "No photos uploaded",
     "help": {
       "icalPageTitle": "How to connect your calendar via iCal",
       "icalPageDescription": "Step-by-step instructions to export the iCal URL from the most popular platforms. Copy the link and paste it in the calendar sync page.",
@@ -4028,6 +4148,65 @@
       }
     },
     "profileLoadError": "Could not load the supplier profile.",
+    "profile": {
+      "accountEmail": "Account email",
+      "accountEmailHint": "To change it, write to support.",
+      "business": {
+        "title": "Business details"
+      },
+      "focus": {
+        "hours": {
+          "action": "Set your hours",
+          "body": "Without working hours there are no service slots: customers can't find a free time to book you.",
+          "title": "Set your working hours"
+        },
+        "kicker": "Profile status",
+        "ready": {
+          "action": "See your showcase site",
+          "title": "Your profile is live"
+        }
+      },
+      "hours": {
+        "end": "{{day}}: end",
+        "start": "{{day}}: start"
+      },
+      "phoneHint": "With the country code if not Italian, for example +39 06 1234567. Hosts only see it when you take on a job.",
+      "photos": {
+        "add": "Add photos",
+        "adding": "Uploading photos…",
+        "alt": "Photo {{number}} of your work",
+        "counter_one": "{{count}} photo of {{max}}",
+        "counter_other": "{{count}} photos of {{max}}",
+        "cover": "First photo",
+        "empty": "There are no photos yet. Add a few to show your work.",
+        "errors": {
+          "save": "We couldn't save the photos. Try again.",
+          "tooMany": "You can have {{max}} photos at most. Remove one before adding more.",
+          "upload": "We couldn't upload the photos. Use JPEG, PNG or WebP images up to 5 MB and try again."
+        },
+        "hint": "They appear on your showcase site, in the order you see here. Photos are saved as soon as you add or move them.",
+        "moveEarlier": "Move photo {{number}} earlier",
+        "moveLater": "Move photo {{number}} later",
+        "preview": "See how you look on the showcase site",
+        "remove": "Remove photo {{number}}",
+        "removeConfirm": "Remove the photo",
+        "removeDescription": "The photo leaves your profile and cannot be put back: to have it again you upload it again.",
+        "removeTitle": "Remove this photo?",
+        "title": "Photos of your work",
+        "unavailable": "Photo not available"
+      },
+      "presentation": {
+        "hint": "Tell who you are, what you do and when you can help. Hosts and customers read it.",
+        "label": "Description",
+        "title": "Presentation"
+      },
+      "save": "Save details",
+      "saveError": "Couldn't save. Try again.",
+      "saved": "Details saved",
+      "services": {
+        "title": "Services and area"
+      }
+    },
     "availabilityLoadError": "Could not load the availability.",
     "showcase": {
       "title": "Public showcase",
@@ -4042,8 +4221,7 @@
       "copyLink": "Copy the link",
       "linkCopied": "Link copied",
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
-      "notIndexed": "The page does not appear in search engines: it is reached only through the link.",
-      "previewLink": "Showcase preview"
+      "notIndexed": "The page does not appear in search engines: it is reached only through the link."
     }
   },
   "settings": {
@@ -4815,6 +4993,20 @@
         ]
       }
     },
+    "cin": {
+      "valid": {
+        "label": "Valid",
+        "explain": "The CIN is on record in the official format. It must be displayed outside the property and stated in every listing."
+      },
+      "missing": {
+        "label": "Missing",
+        "explain": "This property has no CIN yet: it is mandatory to rent for short periods."
+      },
+      "invalid": {
+        "label": "Invalid",
+        "explain": "The code entered is not in the official format: check it and correct it."
+      }
+    },
     "alloggiati": {
       "DaInviare": {
         "label": "To send",
@@ -5059,6 +5251,19 @@
     "title": "Alloggiati Web",
     "description": "Police reporting communication status (Art. 109 TULPS)",
     "noPendingReport": "No bookings with pending Alloggiati report.",
+    "list": {
+      "title": "Communications"
+    },
+    "focus": {
+      "send": "Send the communication of {{name}}",
+      "fix": "Fix the communication of {{name}}",
+      "then_one": "Then: {{count}} more communication to send",
+      "then_other": "Then: {{count}} more communications to send",
+      "ok": {
+        "title": "Nothing to send right now",
+        "cta": "Open bookings"
+      }
+    },
     "bookings": "Bookings",
     "guest": "Guest",
     "property": "Property",
@@ -5453,6 +5658,14 @@
       "Missing": "Missing",
       "Invalid": "Invalid"
     },
+    "list": {
+      "title": "Your properties"
+    },
+    "focus": {
+      "ok": {
+        "title": "Every property has a valid CIN"
+      }
+    },
     "summary": {
       "valid": "Valid",
       "missing": "Missing",
@@ -5469,7 +5682,9 @@
       "city": "City",
       "cinCode": "CIN code",
       "status": "Status",
-      "editCin": "Edit CIN"
+      "editCin": "Edit CIN",
+      "addCin": "Add the CIN",
+      "fixCin": "Fix the CIN"
     },
     "banner": {
       "title": "CIN compliance required (D.L. 145/2023)",
@@ -6697,8 +6912,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance cockpit",
-      "description": "Pending compliance tasks for properties and bookings"
+      "title": "Compliance",
+      "description": "What is missing to be compliant, for your properties and your stays."
     },
     "summary": {
       "title": "Compliance overview",
@@ -6716,6 +6931,32 @@
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
       "turnoversPending": "Properties to declare ready"
+    },
+    "cockpit": {
+      "kicker": "What is missing",
+      "allClear": {
+        "title": "You are all set",
+        "body": "Nothing is pending: your properties are active and your stays are in order.",
+        "cta": "Open properties"
+      },
+      "then_one": "Then: {{count}} more thing to fix",
+      "then_other": "Then: {{count}} more things to fix",
+      "stays": {
+        "title": "To do"
+      },
+      "properties": {
+        "title": "Your properties"
+      },
+      "seeAll": "See all ({{count}})",
+      "showLess": "Show less",
+      "missing": {
+        "lead": "Missing: {{what}}",
+        "guests_one": "{{count}} guest",
+        "guests_other": "{{count}} guests",
+        "notConfirmed": "Final confirmation",
+        "composition": "Guest composition",
+        "guestData": "Guest details"
+      }
     },
     "properties": {
       "openWizard": "Activation wizard",

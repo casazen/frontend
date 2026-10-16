@@ -16,6 +16,10 @@ vi.mock('@/api/compliance.api', () => ({
   completeCheckoutWizard: vi.fn(),
 }));
 
+// The property, the deadline and the state of a row come from these two reads: the tests of the cockpit do without them.
+vi.mock('@/queries/use-dashboard', () => ({ useDashboardToday: () => ({ data: undefined }) }));
+vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: undefined }) }));
+
 const permissions = vi.hoisted(() => ({ granted: [] as string[] }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
@@ -120,13 +124,13 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
 
     renderWidget();
 
-    expect(await screen.findByTestId('compliance-summary-properties-count')).toHaveTextContent('1');
-    expect(screen.getByTestId('compliance-summary-alloggiati-manual-count')).toHaveTextContent('1');
-    expect(screen.getByTestId('compliance-summary-alloggiati-count')).toHaveTextContent('0');
-    expect(screen.queryByText('Tutte le attività di compliance sono aggiornate.')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('compliance-summary-properties-link')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-summary-alloggiati-manual-link')).toBeInTheDocument();
+    expect(screen.queryByTestId('compliance-summary-alloggiati-link')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
   });
 
-  it('widget_AlloggiatiToSendManually_IsCountedInOrangeNotAllClear', async () => {
+  it('widget_AlloggiatiToSendManually_IsAThingToDoNeverAllClear', async () => {
     const summary: ComplianceSummaryResult = {
       propertiesPending: empty,
       guestCheckInsIncomplete: empty,
@@ -139,16 +143,13 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
 
     renderWidget();
 
-    const count = await screen.findByTestId('compliance-summary-alloggiati-manual-count');
-    expect(count).toHaveTextContent('12');
-    expect(count.className).toContain('bg-orange-500');
-    expect(count.className).not.toContain('bg-green');
-    expect(screen.getByText('Alloggiati da inviare manualmente')).toBeInTheDocument();
-    expect(screen.getByTestId('compliance-summary-alloggiati-manual-more')).toHaveTextContent('e altri 11');
-    expect(screen.queryByText('Tutte le attività di compliance sono aggiornate.')).not.toBeInTheDocument();
+    // The most pressing thing is the highlighted block, with the button that leads to it; the server lists one of the twelve.
+    expect(await screen.findByTestId('compliance-summary-focus')).toHaveTextContent('Alloggiati Web da inviare: Mario Rossi');
+    expect(screen.getByTestId('compliance-summary-more')).toHaveTextContent('e altri 11');
+    expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
   });
 
-  it('widget_CheckedOutStayWithPropertyNotReady_IsCountedAsATurnoverToClose', async () => {
+  it('widget_CheckedOutStayWithPropertyNotReady_IsAThingToDoNeverAllClear', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue({
       propertiesPending: empty,
       guestCheckInsIncomplete: empty,
@@ -161,12 +162,9 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
     renderWidget();
 
     // CO-17: "check-out completato ma property non pronta" is a pending task, never "all clear".
-    const count = await screen.findByTestId('compliance-summary-turnovers-count');
-    expect(count).toHaveTextContent('1');
-    expect(count.className).toContain('bg-orange-500');
-    expect(screen.getByText('Proprietà da dichiarare pronte')).toBeInTheDocument();
-    expect(screen.getByTestId('compliance-summary-turnovers-link')).toHaveTextContent('Villa Test · Paolo Gialli');
-    expect(screen.queryByText('Tutte le attività di compliance sono aggiornate.')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('compliance-summary-turnovers-link')).toBeInTheDocument();
+    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Villa Test · Paolo Gialli');
+    expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
   });
 });
 

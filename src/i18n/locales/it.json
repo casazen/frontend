@@ -615,8 +615,6 @@
     "notFound": "Contratto non trovato",
     "notFoundDescription": "Il contratto che stai cercando non esiste o non hai i permessi per visualizzarlo.",
     "backToList": "Torna ai contratti",
-    "leaseContract": "Contratto di locazione",
-    "contractTerms": "Termini contrattuali",
     "monthlyRent": "Canone mensile",
     "fiscalRegime": "Regime fiscale",
     "registrationDeadline": "Scadenza registrazione",
@@ -1209,6 +1207,41 @@
     },
     "term": "dal {{from}} al {{to}}"
   },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Condizioni economiche"
+    },
+    "dates": {
+      "end": "Fine del contratto",
+      "start": "Inizio del contratto",
+      "title": "Durata e date"
+    },
+    "details": "Mostra dettagli",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "Tu"
+      },
+      "more": "Mostra tutta la cronologia"
+    },
+    "party": {
+      "extraEu": "Extra-UE"
+    },
+    "property": {
+      "open": "Apri l'immobile",
+      "title": "Immobile"
+    },
+    "status": {
+      "explain": "Cosa significa questo stato"
+    },
+    "tabs": {
+      "data": "Dati",
+      "deadlines": "Scadenze",
+      "documents": "Documenti",
+      "label": "Sezioni del contratto",
+      "payments": "Pagamenti"
+    }
+  },
   "revenue": {
     "pageTitle": "Analisi ricavi",
     "pageDescription": "Monitora e analizza l'andamento dei ricavi",
@@ -1550,23 +1583,25 @@
         "format": "Indirizzo email non valido"
       },
       "phone": {
+        "maxLength": "Il numero di telefono può avere al massimo 20 caratteri",
         "minLength": "Il numero di telefono deve essere di almeno 10 cifre"
       },
       "country": {
-        "required": "Il paese e' obbligatorio"
+        "required": "Il paese è obbligatorio"
       },
       "propertyId": {
-        "required": "La proprieta' e' obbligatoria"
+        "required": "Scegli l'immobile"
       },
       "checkInDate": {
-        "required": "La data di check-in e' obbligatoria"
+        "inPast": "La data di arrivo è già passata: scegli un arrivo da oggi in poi.",
+        "required": "Indica la data di arrivo"
       },
       "checkOutDate": {
-        "required": "La data di check-out e' obbligatoria",
+        "required": "Indica la data di partenza",
         "afterCheckIn": "La data di check-out deve essere successiva al check-in"
       },
       "numberOfGuests": {
-        "min": "Almeno 1 ospite e' obbligatorio"
+        "min": "Serve almeno un adulto"
       },
       "numberOfChildren": {
         "invalid": "Indica un numero di minori valido",
@@ -1731,8 +1766,82 @@
       }
     },
     "create": {
-      "title": "Nuova prenotazione",
-      "description": "Crea una nuova prenotazione"
+      "description": "Per una prenotazione presa per telefono o di persona: tre passi brevi, la bozza si salva da sola.",
+      "done": {
+        "calendar": "Le notti dal {{from}} al {{to}} risultano subito occupate sul calendario e sul sito di prenotazione.",
+        "checkin": "Pochi giorni prima dell'arrivo {{name}} riceve per email il link per il check-in online.",
+        "description": "{{property}}, dal {{from}} al {{to}}",
+        "guestFallback": "l'ospite",
+        "open": "Apri la prenotazione",
+        "payment": "Nessun pagamento è stato registrato: se l'ospite paga a mano, lo segni tu da Pagamenti.",
+        "title": "Prenotazione di {{name}} inserita",
+        "toList": "Tutte le prenotazioni"
+      },
+      "finish": "Crea la prenotazione",
+      "guest": {
+        "checkinNote": "I documenti e i dati di tutti gli ospiti li compila l'ospite col check-in online.",
+        "country": "Paese",
+        "countryExample": "Italia",
+        "email": "Email",
+        "emailExample": "maria.rossi@esempio.com",
+        "emailHint": "A questo indirizzo arriva il link per il check-in online.",
+        "firstName": "Nome",
+        "lastName": "Cognome",
+        "notes": "Note",
+        "notesHint": "Per esempio l'orario di arrivo o una richiesta particolare.",
+        "phone": "Telefono",
+        "phoneExample": "+39 333 123 4567"
+      },
+      "stay": {
+        "adults": "Adulti",
+        "adultsHint": "18 anni o più",
+        "capacity_one": "L'immobile ospita al massimo {{count}} persona.",
+        "capacity_other": "L'immobile ospita al massimo {{count}} persone.",
+        "checkIn": "Arrivo (check-in)",
+        "checkOut": "Partenza (check-out)",
+        "guestsTitle": "Quante persone?",
+        "minors": "Minori",
+        "minorsHint": "Meno di 18 anni",
+        "nights_one": "{{count}} notte",
+        "nights_other": "{{count}} notti",
+        "overCapacity_one": "L'immobile ospita al massimo {{count}} persona: con più ospiti la prenotazione non viene accettata.",
+        "overCapacity_other": "L'immobile ospita al massimo {{count}} persone: con più ospiti la prenotazione non viene accettata.",
+        "property": "Immobile",
+        "propertyPlaceholder": "Scegli l'immobile"
+      },
+      "steps": {
+        "guest": {
+          "label": "Ospite",
+          "purpose": "Ci servono i dati di contatto di chi ha prenotato.",
+          "title": "Chi viene a soggiornare?"
+        },
+        "stay": {
+          "label": "Soggiorno",
+          "purpose": "Scegli l'immobile, le date e quante persone arrivano.",
+          "title": "Per quale casa e quali date?"
+        },
+        "summary": {
+          "label": "Riepilogo e prezzo",
+          "purpose": "Il prezzo lo calcola CasaZen in base alle impostazioni dell'immobile.",
+          "title": "Controlla e crea la prenotazione"
+        }
+      },
+      "summary": {
+        "adults_one": "{{count}} adulto",
+        "adults_other": "{{count}} adulti",
+        "contact": "Contatti",
+        "dates": "Date",
+        "datesValue_one": "Dal {{from}} al {{to}} · {{count}} notte",
+        "datesValue_other": "Dal {{from}} al {{to}} · {{count}} notti",
+        "guest": "Ospite",
+        "guests": "Persone",
+        "minors_one": "{{count}} minore",
+        "minors_other": "{{count}} minori",
+        "notes": "Note",
+        "property": "Immobile",
+        "stayMissing": "Mancano casa e date: senza non possiamo calcolare il prezzo."
+      },
+      "title": "Nuova prenotazione"
     },
     "edit": {
       "title": "Modifica prenotazione",
@@ -2936,8 +3045,7 @@
   "supplier": {
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
-    "profileDescription": "Account e dati visibili ai host nel picker",
-    "professionalProfile": "Profilo professionale",
+    "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",
     "status": "Stato",
     "statusActive": "Attivo",
     "statusPending": "In attesa",
@@ -2946,20 +3054,56 @@
     "noneSet": "Non impostato",
     "welcomeBack": "Bentornato",
     "companyName": "Ragione sociale",
-    "email": "Email",
     "phone": "Telefono",
-    "categories": "Categorie",
-    "municipalities": "Comuni",
-    "bioEmpty": "Bio non ancora compilata.",
     "supplierDefault": "Fornitore",
+    "agenda": {
+      "close": "Chiudi questo giorno",
+      "dayEmpty": "Niente in agenda per questo giorno.",
+      "description": "I tuoi lavori e i tuoi impegni, giorno per giorno. I clienti prenotano solo quando sei libero.",
+      "emptyRange": "Nessun lavoro né impegno in questo periodo. Quando accetti una richiesta compare qui.",
+      "emptyRangeCta": "Vai alle richieste",
+      "eventsCount_one": "{{count}} impegno",
+      "eventsCount_other": "{{count}} impegni",
+      "hours": {
+        "edit": "Modifica gli orari",
+        "empty": "Non hai ancora scelto gli orari in cui lavori.",
+        "title": "I tuoi orari"
+      },
+      "legend": {
+        "events": "Lavori e impegni",
+        "label": "Legenda del mese",
+        "unavailable": "Chiuso o non disponibile"
+      },
+      "next": "Periodo successivo",
+      "period": "Periodo",
+      "previous": "Periodo precedente",
+      "reasons": {
+        "Holiday": "Festività",
+        "Illness": "Malattia",
+        "Other": "Non disponibile",
+        "Vacation": "Ferie"
+      },
+      "reopen": "Riapri questo giorno",
+      "state": {
+        "closed": "Chiuso da te",
+        "closedByCalendar": "Chiuso dal calendario",
+        "rest": "Giorno di riposo"
+      },
+      "title": "Agenda e disponibilità",
+      "today": "Oggi",
+      "views": {
+        "day": "Giorno",
+        "label": "Vista dell'agenda",
+        "month": "Mese",
+        "week": "Settimana"
+      }
+    },
     "allDay": "tutto il giorno",
     "availabilityLoading": "Caricamento disponibilità...",
     "availabilityUpdated": "Disponibilità aggiornata",
     "availabilitySaveError": "Impossibile salvare la disponibilità",
     "availabilityTitle": "Disponibilità",
-    "availabilityDescription": "Giornate lavorative con orari di servizio e impegni del calendario collegato. Tocca un giorno per segnare indisponibilità.",
     "available": "Disponibile",
-    "closedByCalendar": "dal calendario",
     "eventBlock": "blocco",
     "eventExtraOpening": "apertura extra",
     "eventFromCalendar": "dal calendario",
@@ -2981,7 +3125,6 @@
     "hoursUpdated": "Orari di lavoro aggiornati",
     "noWorkingHoursToday": "Nessuna fascia di servizio",
     "notAvailable": "Non disponibile",
-    "saveAvailability": "Salva disponibilità",
     "weekday": {
       "Friday": "Venerdì",
       "Monday": "Lunedì",
@@ -2994,14 +3137,10 @@
     "workingHoursLabel": "Orario",
     "calendarSyncTitle": "Sincronizzazione Calendario",
     "calendarSyncDescription": "Scegli come gestire la tua disponibilità. Zero sforzo dopo il setup iniziale.",
-    "googleCalendar": "Google Calendar",
-    "googleCalendarHint": "Collega il tuo Google Calendar in un click. Leggiamo solo quando sei occupato.",
     "connectCalendar": "Collega calendario",
     "icalFeed": "Apple / Outlook / Airbnb",
     "icalFeedHint": "Incolla il link iCal del tuo calendario. Funziona con Apple, Outlook, Airbnb e Booking.",
     "pasteIcalUrl": "Incolla link iCal",
-    "whatsappOption": "WhatsApp",
-    "whatsappHint": "Niente calendario? Ti mandiamo un messaggio ogni settimana. Rispondi con un tap.",
     "enableWhatsapp": "Attiva WhatsApp",
     "dashboardTitle": "Dashboard",
     "dashboardDescription": "La tua operatività su CasaZen",
@@ -3011,18 +3150,14 @@
     "completeProfileTitle": "Completa il tuo profilo",
     "completeProfileDescription": "Questi dettagli aiutano gli host a sceglierti. Il profilo non può rimanere incompleto.",
     "saveAndContinue": "Salva e continua",
-    "editProfile": "Modifica profilo",
-    "saveProfile": "Salva profilo",
     "vatNumber": "Partita IVA",
     "photoUrls": "Foto",
     "photoUrlsHint": "Un URL per riga. Le prime foto appariranno nella tua vetrina pubblica.",
-    "bio": "Descrizione",
     "activationLoading": "Caricamento attivazione...",
     "categoriesHint": "Scegli una o più categorie. Potrai aggiungerne altre dopo.",
     "comuniHint": "Inserisci i nomi delle città dove operi, separati da virgola.",
     "comuniPlaceholder": "es. Roma, Milano, Napoli",
     "connectLater": "Configura dopo",
-    "progressSaveError": "Impossibile salvare. Riprova.",
     "activationStatus": "Stato attivazione",
     "serviceCategories": "Categorie di servizio",
     "operatingMunicipalities": "Comuni di operatività",
@@ -3030,7 +3165,6 @@
     "description": "Descrizione",
     "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
     "saveProgress": "Salva progresso",
-    "progressSaved": "Progresso salvato",
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
@@ -3422,7 +3556,6 @@
     "setupCalendarCTAHint": "Sincronizza la disponibilità in automatico",
     "setAvailabilityCTA": "Disponibilità manuale",
     "setAvailabilityCTAHint": "Imposta i giorni disponibili",
-    "comingSoon": "Presto disponibile",
     "icalFeedUrlTitle": "Collega feed iCal",
     "icalFeedUrlDescription": "Incolla l'URL del tuo calendario iCal. Supportiamo Apple Calendar, Outlook, Airbnb e Booking.com.",
     "icalFeedUrlLabel": "URL feed iCal",
@@ -3465,21 +3598,8 @@
     "calendarStatusLoadError": "Impossibile caricare lo stato del calendario.",
     "syncError": "Errore durante la sincronizzazione",
     "icalConnected": "Feed iCal connesso",
-    "editIcalUrl": "Modifica URL iCal",
     "edit": "Modifica",
     "syncStatusTitle": "Stato sincronizzazione",
-    "companyInfo": "Informazioni azienda",
-    "categoriesAndComuni": "Categorie e comuni",
-    "currentPhotos": "Foto esistenti",
-    "newPhotos": "Nuove foto",
-    "addPhotos": "Aggiungi foto",
-    "uploadPhotos": "Carica foto",
-    "photosUploaded": "Foto caricate",
-    "photosUploadError": "Errore durante il caricamento foto",
-    "maxPhotosError": "Massimo {{max}} foto consentite",
-    "photoCount": "{{current}}/{{max}} foto",
-    "photoGallery": "Galleria foto",
-    "noPhotos": "Nessuna foto caricata",
     "help": {
       "icalPageTitle": "Come collegare il calendario via iCal",
       "icalPageDescription": "Istruzioni passo passo per esportare l'URL iCal dalle piattaforme più diffuse. Copia il link e incollalo nella pagina di sincronizzazione.",
@@ -4028,6 +4148,65 @@
       }
     },
     "profileLoadError": "Impossibile caricare il profilo fornitore.",
+    "profile": {
+      "accountEmail": "Email dell'account",
+      "accountEmailHint": "Per cambiarla scrivi al supporto.",
+      "business": {
+        "title": "Dati dell'attività"
+      },
+      "focus": {
+        "hours": {
+          "action": "Imposta gli orari",
+          "body": "Senza orari non risultano slot di servizio: i clienti non trovano un momento libero per prenotarti.",
+          "title": "Imposta i tuoi orari di lavoro"
+        },
+        "kicker": "Stato del profilo",
+        "ready": {
+          "action": "Vedi il tuo sito vetrina",
+          "title": "Il tuo profilo è attivo"
+        }
+      },
+      "hours": {
+        "end": "{{day}}: fine",
+        "start": "{{day}}: inizio"
+      },
+      "phoneHint": "Con il prefisso se non italiano, ad esempio +39 06 1234567. Gli host lo vedono solo quando prendi in carico un incarico.",
+      "photos": {
+        "add": "Aggiungi foto",
+        "adding": "Carico le foto…",
+        "alt": "Foto {{number}} del tuo lavoro",
+        "counter_one": "{{count}} foto su {{max}}",
+        "counter_other": "{{count}} foto su {{max}}",
+        "cover": "Prima foto",
+        "empty": "Non ci sono ancora foto. Aggiungine qualcuna per mostrare il tuo lavoro.",
+        "errors": {
+          "save": "Non siamo riusciti a salvare le foto. Riprova.",
+          "tooMany": "Puoi avere al massimo {{max}} foto. Togline una prima di aggiungerne altre.",
+          "upload": "Non siamo riusciti a caricare le foto. Usa immagini JPEG, PNG o WebP fino a 5 MB e riprova."
+        },
+        "hint": "Compaiono sul tuo sito vetrina, nell'ordine che vedi qui. Le foto si salvano appena le carichi o le sposti.",
+        "moveEarlier": "Sposta la foto {{number}} prima",
+        "moveLater": "Sposta la foto {{number}} dopo",
+        "preview": "Vedi come compari sul sito vetrina",
+        "remove": "Togli la foto {{number}}",
+        "removeConfirm": "Togli la foto",
+        "removeDescription": "La foto esce dal tuo profilo e non si può rimettere: per riaverla la carichi di nuovo.",
+        "removeTitle": "Togliere questa foto?",
+        "title": "Foto del tuo lavoro",
+        "unavailable": "Foto non disponibile"
+      },
+      "presentation": {
+        "hint": "Racconta chi sei, cosa fai e in quali situazioni sei utile. La leggono gli host e i clienti.",
+        "label": "Descrizione",
+        "title": "Presentazione"
+      },
+      "save": "Salva i dati",
+      "saveError": "Impossibile salvare. Riprova.",
+      "saved": "Dati salvati",
+      "services": {
+        "title": "Servizi e zona"
+      }
+    },
     "availabilityLoadError": "Impossibile caricare la disponibilità.",
     "showcase": {
       "title": "Vetrina pubblica",
@@ -4042,8 +4221,7 @@
       "copyLink": "Copia il link",
       "linkCopied": "Link copiato",
       "linkCopyError": "Impossibile copiare il link: selezionalo e copialo a mano.",
-      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link.",
-      "previewLink": "Anteprima vetrina"
+      "notIndexed": "La pagina non compare nei motori di ricerca: la raggiungi solo con il link."
     }
   },
   "settings": {
@@ -4815,6 +4993,20 @@
         ]
       }
     },
+    "cin": {
+      "valid": {
+        "label": "Valido",
+        "explain": "Il codice CIN è registrato nel formato ufficiale. Va esposto all'esterno dell'immobile e indicato in ogni annuncio."
+      },
+      "missing": {
+        "label": "Mancante",
+        "explain": "Per questo immobile non c'è ancora un codice CIN: è obbligatorio per affittare per brevi periodi."
+      },
+      "invalid": {
+        "label": "Non valido",
+        "explain": "Il codice inserito non è nel formato ufficiale: controllalo e correggilo."
+      }
+    },
     "alloggiati": {
       "DaInviare": {
         "label": "Da inviare",
@@ -5059,6 +5251,19 @@
     "title": "Alloggiati Web",
     "description": "Stato delle comunicazioni alla Questura (Art. 109 TULPS)",
     "noPendingReport": "Nessuna prenotazione con comunicazione Alloggiati in sospeso.",
+    "list": {
+      "title": "Comunicazioni"
+    },
+    "focus": {
+      "send": "Invia la comunicazione di {{name}}",
+      "fix": "Correggi la comunicazione di {{name}}",
+      "then_one": "Poi: ancora {{count}} comunicazione da inviare",
+      "then_other": "Poi: ancora {{count}} comunicazioni da inviare",
+      "ok": {
+        "title": "Niente da inviare adesso",
+        "cta": "Apri le prenotazioni"
+      }
+    },
     "bookings": "Prenotazioni",
     "guest": "Ospite",
     "property": "Proprietà",
@@ -5453,6 +5658,14 @@
       "Missing": "Mancante",
       "Invalid": "Non valido"
     },
+    "list": {
+      "title": "I tuoi immobili"
+    },
+    "focus": {
+      "ok": {
+        "title": "Tutti gli immobili hanno un CIN valido"
+      }
+    },
     "summary": {
       "valid": "Validi",
       "missing": "Mancanti",
@@ -5469,7 +5682,9 @@
       "city": "Città",
       "cinCode": "Codice CIN",
       "status": "Stato",
-      "editCin": "Modifica CIN"
+      "editCin": "Modifica CIN",
+      "addCin": "Aggiungi il CIN",
+      "fixCin": "Correggi il CIN"
     },
     "banner": {
       "title": "Conformità CIN richiesta (D.L. 145/2023)",
@@ -6697,8 +6912,8 @@
       "Suspended": "Sospeso"
     },
     "page": {
-      "title": "Cockpit compliance",
-      "description": "Attività di compliance in sospeso per immobili e prenotazioni"
+      "title": "Adempimenti",
+      "description": "Cosa manca per essere in regola, per gli immobili e per i soggiorni."
     },
     "summary": {
       "title": "Panoramica compliance",
@@ -6716,6 +6931,32 @@
       "moreItems_one": "e {{count}} altro",
       "moreItems_other": "e altri {{count}}",
       "turnoversPending": "Proprietà da dichiarare pronte"
+    },
+    "cockpit": {
+      "kicker": "Cosa manca",
+      "allClear": {
+        "title": "Sei in regola",
+        "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
+        "cta": "Apri gli immobili"
+      },
+      "then_one": "Poi: ancora {{count}} cosa da sistemare",
+      "then_other": "Poi: ancora {{count}} cose da sistemare",
+      "stays": {
+        "title": "Da fare"
+      },
+      "properties": {
+        "title": "I tuoi immobili"
+      },
+      "seeAll": "Vedi tutte ({{count}})",
+      "showLess": "Mostra meno",
+      "missing": {
+        "lead": "Manca: {{what}}",
+        "guests_one": "{{count}} ospite",
+        "guests_other": "{{count}} ospiti",
+        "notConfirmed": "Conferma finale",
+        "composition": "Composizione degli ospiti",
+        "guestData": "Dati degli ospiti"
+      }
     },
     "properties": {
       "openWizard": "Wizard attivazione",
