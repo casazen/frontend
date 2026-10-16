@@ -98,7 +98,7 @@ of the definition.
 | `primaryAction`, `menu` | the one thing to do about a row, always in sight; the rest in "⋯" |
 | `bulk` | actions on the selected rows. `confirm` asks first (destructive), `undo` offers "Annulla" with a toast after it. `'export'` is the built-in CSV |
 | `card`, `swipe` | the card of a phone when the priorities of the columns are not enough; what a swipe to the right and to the left does (the same actions are put in the menu of the row: **a gesture is never the only way**) |
-| `detail` | the drawer that opens on a row (a sheet from the bottom on a phone): a slot, `render(row)` |
+| `detail` | the drawer that opens on a row. Either a slot of the list (a sheet from the bottom on a phone): `render(row)`, state of the list. Or **the global drawer of the shell** (UI-15): `{ drawerKind: 'booking' }`, with `drawerId: (row) => …` when the key of the row is not an id an address can carry. Then the row opens the kind that a feature registered, the address says it (`?detail=booking:3f2a`, so it can be shared and Back closes it), and the same drawer opens from outside the list too (Home, Calendar). See `components/shared/detail-drawer/README.md` |
 | `board` | the columns by state: `columns` (which rows are in each), `onMove(row, to, from)` that answers `{ ok: false, title, reason }` to say why a move is not allowed |
 | `rowTone` | `urgent` (a bar at the start of the row) or `done` (quieter) |
 | `csv`, `cardsUntil`, `countLabel`, `empty`, `noResults` | the file name and separator (or `false`), the width under which the table is cards, the words for "12 guests", the empty states |
@@ -116,9 +116,9 @@ of the definition.
 | page | `page` (from 2) | `?page=2` |
 
 What is not asked for is the default and is not written, so the plain address is the plain list; what is not valid is ignored;
-the parameters that are not the list's (`propertyId`, `tab`) are left alone. Each change adds a step to the history (Back gives
+the parameters that are not the list's (`propertyId`, `tab`, `detail` of the global drawer) are left alone. Each change adds a step to the history (Back gives
 the view before), except a search being typed, which makes one step for the whole word. `useListReturn` remembers the list, so
-the way back from a page of detail leads to the list as it was left.
+the way back from a page of detail leads to the list as it was left (an open drawer is not part of it).
 
 ## Rules the list keeps for you
 
