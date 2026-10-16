@@ -76,7 +76,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
 
     test('"Altro" opens the sheet from the bottom, a page of it is reached, and Back comes back', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
 
       await expect(more(page)).toHaveAttribute('aria-haspopup', 'dialog');
       await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
@@ -332,7 +332,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
 
       // Pulled down and let go it does not ease back either: it is where it was at once.
       await dragDown(page, handle(page), 20);
-      expect(await sheet(page).evaluate((element) => getComputedStyle(element).transitionDuration)).toBe('0s');
+      // `0s` in the look of before, `0.01ms` (what the redesign sets for reduced motion): no time to see it move.
+      const transition = await sheet(page).evaluate((element) => getComputedStyle(element).transitionDuration);
+      expect(Number.parseFloat(transition)).toBeLessThan(0.001);
       await page.keyboard.press('Escape');
       await expect(sheet(page)).toBeHidden();
     });

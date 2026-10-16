@@ -250,8 +250,8 @@ test.describe('The title of the tab (UI-05)', () => {
 
   test('every page puts its own name on the tab, with the area it is in', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
-    await expect(page).toHaveTitle('Cruscotto · Affitti brevi · CasaZen');
+    await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
+    await expect(page).toHaveTitle(/^Buongiorno.* · Affitti brevi · CasaZen$/);
 
     await page.getByRole('complementary', { name: 'Navigazione principale' }).getByRole('link', { name: 'Prenotazioni' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeVisible();

@@ -2,8 +2,8 @@ import type { RentalMode } from './property.types';
 
 /**
  * The scheduled change of the rental mode of a property (backend PM-02, decision D16): short stays to long-term leases or
- * back, on a day, never over a stay or a lease. Behind the flag `propertyModeChange`. Dates are calendar days of
- * Europe/Rome written `2026-12-01` (read them with `parseStayDate`, never with `new Date()`); the instants are UTC.
+ * back, on a day, never over a stay or a lease. Dates are calendar days of Europe/Rome written `2026-12-01` (read them
+ * with `parseStayDate`, never with `new Date()`); the instants are UTC.
  */
 
 /** Where a change is (`PropertyModeChangeStatus`): only a `Scheduled` one can be cancelled; the others are history. */

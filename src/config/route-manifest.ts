@@ -138,7 +138,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/properties/mode/property-mode-wizard-page')).ShortRentPropertyModePage,
     }),
-    featureFlag: 'propertyModeChange',
   },
   {
     path: '/app/short-rent/properties/:id/pricing',
@@ -539,7 +538,6 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/properties/mode/property-mode-wizard-page')).LongRentPropertyModePage,
     }),
-    featureFlag: 'propertyModeChange',
   },
   {
     path: '/app/long-rent/profile',
