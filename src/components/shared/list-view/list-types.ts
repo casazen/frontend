@@ -201,6 +201,22 @@ export interface ListDetail<Row> {
   pageHref?: (row: Row) => string | undefined;
 }
 
+/**
+ * The detail of a row opens in the global drawer of the shell (UI-15) instead of in a slot of the list: `drawerKind` is the kind
+ * the feature registered with `registerDetail`, and the drawer is opened with the id of the row (`rowKey`, or `drawerId`). The
+ * address then says it (`?detail=booking:s1`), so the drawer can be shared and Back closes it.
+ */
+export interface ListDrawerDetail<Row> {
+  drawerKind: string;
+  /** The id the drawer is opened with. Default: the `rowKey` of the row. */
+  drawerId?: (row: Row) => string;
+}
+
+/** The drawer is the global one, not the slot of the list. */
+export function isDrawerDetail<Row>(detail: ListDetail<Row> | ListDrawerDetail<Row> | undefined): detail is ListDrawerDetail<Row> {
+  return detail !== undefined && 'drawerKind' in detail;
+}
+
 export interface ListBoardColumn<Row> {
   id: string;
   label: string;
@@ -289,8 +305,11 @@ export interface ListDefinition<Row> {
 
   /** Where the name of a row leads (a page of the app) when the row has no drawer. */
   rowHref?: (row: Row) => string | undefined;
-  /** The drawer that opens on a row. */
-  detail?: ListDetail<Row>;
+  /**
+   * The drawer that opens on a row: a slot of the list (`ListDetail`, local to the list), or the global drawer of the shell
+   * (`{ drawerKind: 'booking' }`, UI-15), which can also be opened from outside the list.
+   */
+  detail?: ListDetail<Row> | ListDrawerDetail<Row>;
   /** Columns by state. */
   board?: ListBoard<Row>;
 

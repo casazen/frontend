@@ -4,6 +4,7 @@ import { Download, Inbox, SearchX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
@@ -23,15 +24,16 @@ import { ListPanel } from './list-panels';
 import { ListRowActions } from './list-row-actions';
 import { isRefined } from './list-state';
 import { ListToolbar } from './list-toolbar';
-import type {
-  ListBulkAction,
-  ListCell,
-  ListDefinition,
-  ListMenuEntry,
-  ListMode,
-  ListRowAction,
-  ListSwipeAction,
-  ListViewsScope,
+import {
+  isDrawerDetail,
+  type ListBulkAction,
+  type ListCell,
+  type ListDefinition,
+  type ListMenuEntry,
+  type ListMode,
+  type ListRowAction,
+  type ListSwipeAction,
+  type ListViewsScope,
 } from './list-types';
 import { useListState } from './use-list-state';
 import { useReturnFocus } from './use-return-focus';
@@ -115,6 +117,7 @@ export function ListView<Row>({
   const { state } = listState;
   const savedViews = useSavedViews(list.key, viewsScope);
   const detailFocus = useReturnFocus();
+  const detailDrawer = useDetailDrawer();
 
   const isBoard = state.layout === 'board' && Boolean(list.board);
   const columns = useMemo(() => visibleColumns(list, state.columns), [list, state.columns]);
@@ -129,12 +132,20 @@ export function ListView<Row>({
 
   /* ------------------------------------------------------------------------------------------------ Opening a row */
 
+  // The detail of a row is either a slot of this list (`localDetail`, a panel that is state of the list) or the global drawer of
+  // the shell (`drawerDetail`, UI-15: it opens from the address, the list only asks for it).
+  const localDetail = list.detail && !isDrawerDetail(list.detail) ? list.detail : undefined;
+  const drawerDetail = isDrawerDetail(list.detail) ? list.detail : undefined;
   const [detailKey, setDetailKey] = useState<string | null>(null);
-  const detailRow = list.detail && detailKey !== null ? rows.find((row) => list.rowKey(row) === detailKey) : undefined;
+  const detailRow = localDetail && detailKey !== null ? rows.find((row) => list.rowKey(row) === detailKey) : undefined;
   const canOpen = Boolean(list.detail) || Boolean(list.rowHref);
 
   const openRow = (row: Row, from: HTMLElement | null) => {
-    if (list.detail) {
+    if (drawerDetail) {
+      detailDrawer.open(drawerDetail.drawerKind, drawerDetail.drawerId ? drawerDetail.drawerId(row) : list.rowKey(row), { opener: from });
+      return;
+    }
+    if (localDetail) {
       detailFocus.remember(from);
       setDetailKey(list.rowKey(row));
       return;
@@ -439,24 +450,24 @@ export function ListView<Row>({
         </div>
       ) : null}
 
-      {list.detail && detailRow ? (
+      {localDetail && detailRow ? (
         <ListPanel
           open
           onOpenChange={(next) => !next && setDetailKey(null)}
-          title={list.detail.title(detailRow)}
-          description={list.detail.description?.(detailRow) ?? t('listView.detail.description')}
+          title={localDetail.title(detailRow)}
+          description={localDetail.description?.(detailRow) ?? t('listView.detail.description')}
           onCloseAutoFocus={detailFocus.onCloseAutoFocus}
           testId="list-detail-panel"
           wide
           footer={
-            list.detail.pageHref?.(detailRow) ? (
+            localDetail.pageHref?.(detailRow) ? (
               <Button asChild variant="outline">
-                <Link to={list.detail.pageHref(detailRow) ?? ''}>{t('listView.detail.openPage')}</Link>
+                <Link to={localDetail.pageHref(detailRow) ?? ''}>{t('listView.detail.openPage')}</Link>
               </Button>
             ) : undefined
           }
         >
-          {list.detail.render(detailRow, { close: () => setDetailKey(null) })}
+          {localDetail.render(detailRow, { close: () => setDetailKey(null) })}
         </ListPanel>
       ) : null}
 
