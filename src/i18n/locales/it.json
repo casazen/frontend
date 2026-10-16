@@ -2690,83 +2690,228 @@
     "describeServicesPlaceholder": "Descrivi i tuoi servizi...",
     "saveProgress": "Salva progresso",
     "progressSaved": "Progresso salvato",
-    "inboxTitle": "Inbox incarichi",
-    "inboxDescription": "Le richieste di servizio degli host: apri un incarico per vedere dove, quando e chi contattare.",
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
-    "inbox": {
-      "tabsLabel": "Incarichi",
-      "tabOpen": "Da fare",
-      "tabHistory": "Storico",
-      "loading": "Caricamento degli incarichi…",
-      "loadError": "Impossibile caricare gli incarichi.",
-      "emptyOpen": "Nessun incarico aperto.",
-      "emptyHistory": "Nessun incarico nello storico per questi filtri.",
-      "statusFilter": "Stato",
-      "statusAllHistory": "Tutti (completati, pagati, rifiutati)",
-      "from": "Dal",
-      "to": "Al",
-      "periodHint": "Giorni in ora italiana: data di completamento per i lavori completati o pagati, data del rifiuto per quelli rifiutati.",
-      "periodInvalid": "La data di inizio non può essere successiva alla data di fine.",
-      "clearFilters": "Azzera filtri",
-      "pageInfo": "Pagina {{page}} di {{pages}}",
-      "total_one": "{{count}} incarico",
-      "total_other": "{{count}} incarichi",
-      "previous": "Precedente",
-      "next": "Successiva",
-      "details": "Dettagli",
-      "dayOf": "Giorno: {{date}}",
-      "noDate": "Data da concordare",
-      "slot": "{{date}}, {{from}}–{{to}} · {{duration}}",
-      "noTime": "orario mancante",
-      "conflict": "Conflitto: hai già un incarico che si sovrappone. Nello stesso giorno puoi accettarne più di uno solo se gli orari non si toccano.",
-      "receivedOn": "Ricevuto il {{date}}",
-      "completedOn": "Completato il {{date}}",
-      "rejectedOn": "Rifiutato il {{date}}"
-    },
-    "request": {
-      "back": "Torna agli incarichi",
-      "loading": "Caricamento dell'incarico…",
-      "loadError": "Impossibile caricare l'incarico.",
-      "notFound": "Incarico non trovato: non esiste o non è stato inviato a te.",
-      "whereTitle": "Dove",
-      "whenTitle": "Quando",
-      "hostTitle": "Contatto dell'host",
-      "notesTitle": "Note dell'host",
-      "historyTitle": "Storico",
-      "actionsTitle": "Azioni",
-      "property": "Immobile",
-      "comune": "Comune",
-      "postalCode": "CAP",
-      "address": "Indirizzo",
-      "addressAfterTake": "L'indirizzo completo è visibile dopo la presa in carico.",
-      "scheduledFor": "Giorno del lavoro",
-      "scheduledForHint": "Giorno del check-out dell'ospite (ora italiana).",
-      "time": "Orario",
-      "duration": "Durata",
-      "noTimeHint": "Manca l'orario: proponi uno slot all'host oppure chiedi di ricreare la richiesta con inizio e durata.",
-      "hasTimeHint": "Puoi accettare un altro incarico lo stesso giorno solo se gli orari non si sovrappongono.",
-      "noDate": "Nessuna data: da concordare con l'host.",
-      "stay": "Soggiorno",
-      "stayDates": "Dal {{from}} al {{to}}",
-      "longRent": "Affitto lungo: la richiesta riguarda l'immobile, senza un soggiorno.",
-      "hostName": "Nome",
-      "phone": "Telefono",
-      "email": "Email",
-      "contactAfterTake": "Nome e recapiti dell'host sono visibili dopo la presa in carico.",
-      "contactRejected": "Hai rifiutato questa richiesta: i dati dell'host non sono disponibili.",
-      "noContactDetails": "L'host non ha indicato recapiti.",
-      "rejectionReason": "Motivo del rifiuto",
-      "actorHost": "Host",
-      "actorSupplier": "Il tuo team",
-      "historyReason": "Motivo: {{reason}}",
-      "closedCompleted": "Lavoro completato: in attesa che l'host lo segni come pagato.",
-      "closedPaid": "L'host ha segnato il lavoro come pagato.",
-      "closedRejected": "Hai rifiutato questa richiesta.",
-      "cancel": "Annulla",
-      "rejectReasonHint": "L'host vede il motivo (massimo 500 caratteri).",
-      "actionsSuspended": "Azioni non disponibili: l'account fornitore è sospeso."
+    "requests": {
+      "action": {
+        "complete": "Segna come completato",
+        "completeShort": "Completa",
+        "openPage": "Apri la scheda completa",
+        "reject": "Rifiuta",
+        "take": "Accetta"
+      },
+      "actor": {
+        "client": "Il cliente",
+        "system": "CasaZen",
+        "you": "Tu"
+      },
+      "answerUrgent": "Rispondi alla più urgente",
+      "chips": {
+        "all": "Tutte",
+        "archive": "Archivio",
+        "archiveHint": "Pagate, rifiutate o annullate",
+        "awaiting": "In attesa del cliente",
+        "awaitingHint": "Hai proposto un altro orario e aspetti il cliente",
+        "scheduled": "Programmate",
+        "scheduledHint": "Accettate e in agenda, o in corso",
+        "toAnswer": "Da rispondere",
+        "toAnswerHint": "Aspettano la tua risposta",
+        "toCollect": "Da incassare",
+        "toCollectHint": "Lavori finiti, in attesa del pagamento"
+      },
+      "contact": {
+        "address": "Indirizzo",
+        "afterTake": "Indirizzo e contatti del cliente compaiono dopo che accetti.",
+        "closed": "Questa richiesta è chiusa: i dati del cliente non sono disponibili.",
+        "email": "Email",
+        "name": "Nome",
+        "none": "Il cliente non ha indicato recapiti.",
+        "phone": "Telefono",
+        "subClosed": "Non disponibili",
+        "subHidden": "Dopo che accetti",
+        "subShown": "Visibili: hai accettato",
+        "title": "Indirizzo e contatti"
+      },
+      "description": "Rispondi ai clienti e segui ogni lavoro fino alla fine.",
+      "empty": {
+        "availability": "Imposta la disponibilità",
+        "description": "Le richieste dei clienti arrivano qui, con il tempo che hai per rispondere. Servizi e disponibilità sono ciò che le fa arrivare.",
+        "services": "Aggiungi un servizio",
+        "title": "Qui arrivano le richieste"
+      },
+      "facts": {
+        "addressAfterTake": "Indirizzo dopo che accetti",
+        "client": "Cliente",
+        "clientUnknown": "Non indicato",
+        "fromHost": "Host di CasaZen",
+        "fromShowcase": "Dal tuo sito",
+        "net": "Netto {{amount}} dopo la commissione",
+        "price": "Prezzo",
+        "priceTbd": "Da concordare",
+        "urgency": "Urgenza: {{level}}",
+        "when": "Quando",
+        "whenTbd": "Da concordare",
+        "where": "Dove"
+      },
+      "filters": {
+        "month": "Questo mese",
+        "period": "Ultima attività tra",
+        "today": "Oggi",
+        "week": "Prossimi 7 giorni",
+        "when": "Giorno del lavoro",
+        "whenAll": "Tutti i giorni"
+      },
+      "history": {
+        "Annullato": "Il cliente ha annullato la richiesta",
+        "AnnullatoBySupplier": "Hai annullato il lavoro",
+        "AnnullatoBySystem": "Richiesta annullata da CasaZen",
+        "Completato": "Lavoro completato",
+        "InCorso": "Lavoro iniziato",
+        "label": "Cronologia della richiesta",
+        "Pagato": "Pagato",
+        "PresoInCarico": "Hai accettato la richiesta",
+        "Richiesto": "Richiesta ricevuta",
+        "Rifiutato": "Hai rifiutato la richiesta",
+        "sub": "Cosa è successo finora",
+        "title": "Cronologia"
+      },
+      "job": {
+        "longRent": "Affitto lungo: la richiesta riguarda l’immobile, senza un soggiorno.",
+        "notes": "Note del cliente",
+        "property": "Immobile",
+        "service": "Servizio",
+        "stay": "Soggiorno",
+        "stayDates": "Dal {{from}} al {{to}}",
+        "sub": "Servizio, urgenza e note",
+        "title": "Il lavoro",
+        "urgency": "Urgenza"
+      },
+      "list": {
+        "columns": {
+          "price": "Prezzo",
+          "request": "Richiesta",
+          "state": "Stato",
+          "when": "Quando",
+          "where": "Dove"
+        },
+        "count_one": "{{count}} richiesta",
+        "count_other": "{{count}} richieste",
+        "loadError": "Impossibile caricare le richieste.",
+        "search": "Cerca richieste",
+        "searchPlaceholder": "Cerca servizio o comune"
+      },
+      "loadError": "Impossibile caricare la richiesta.",
+      "loading": "Caricamento della richiesta…",
+      "noResults": {
+        "description": "Cambia elenco o togli i filtri per vedere le altre richieste.",
+        "title": "Nessuna richiesta qui"
+      },
+      "notFound": {
+        "back": "Vai alle richieste",
+        "description": "Può darsi che il link sia vecchio o che la richiesta non sia stata inviata a te. Cercala nell’elenco: ci sono anche quelle chiuse.",
+        "title": "Non troviamo questa richiesta"
+      },
+      "now": {
+        "amountToConfirm": "In attesa che il cliente confermi l’importo.",
+        "cancelled": {
+          "client": "La richiesta è chiusa.",
+          "title": "La richiesta è stata annullata",
+          "you": "Non devi fare altro: se avevi un orario in agenda, è di nuovo libero."
+        },
+        "completed": {
+          "client": "Vede il lavoro completato.",
+          "title": "Aspetta il pagamento",
+          "you": "Il cliente deve pagare il lavoro e segnare la richiesta come pagata.",
+          "youOnline": "Il cliente paga online da CasaZen: ti avvisiamo appena succede."
+        },
+        "inProgress": {
+          "client": "Vede che l’intervento è in corso.",
+          "then": "Poi: il cliente vede che hai finito.",
+          "title": "Stai lavorando",
+          "you": "Quando hai finito, segna il lavoro come completato."
+        },
+        "kicker": "Adesso",
+        "label": {
+          "client": "Il cliente",
+          "you": "Tu"
+        },
+        "paid": {
+          "client": "Ha pagato il lavoro.",
+          "title": "Lavoro pagato",
+          "you": "Non devi fare altro."
+        },
+        "proposalPending": {
+          "client": "Vede il nuovo orario e può accettarlo.",
+          "title": "Aspetta la risposta del cliente",
+          "you": "Hai proposto un altro orario: non devi fare altro."
+        },
+        "quietTitle": "Stato della richiesta",
+        "reason": "Motivo: {{reason}}",
+        "rejected": {
+          "client": "Ha ricevuto il tuo motivo e può scegliere un altro fornitore.",
+          "title": "Hai rifiutato la richiesta",
+          "you": "La richiesta è chiusa."
+        },
+        "scheduled": {
+          "client": "Vede giorno e ora confermati.",
+          "then": "Poi: il cliente vede che il lavoro è finito.",
+          "title": "Il lavoro è in programma",
+          "you": "Fai il lavoro all’orario indicato e, quando hai finito, segnalo come completato."
+        },
+        "toAnswer": {
+          "client": "Ha inviato la richiesta e aspetta la tua risposta.",
+          "then": "Poi: dopo che accetti vedi indirizzo e contatti del cliente.",
+          "title": "Rispondi alla richiesta",
+          "you": "Accetta se puoi fare il lavoro, altrimenti rifiutalo e spiega il motivo."
+        },
+        "unknown": {
+          "client": "Vede la richiesta nel suo elenco.",
+          "title": "Segui la richiesta",
+          "you": "Questa richiesta è in uno stato che l’app non conosce ancora: aggiorna la pagina."
+        }
+      },
+      "payment": {
+        "amount": "Importo",
+        "commission": "Commissione CasaZen",
+        "late": "Il cliente è in ritardo con il pagamento.",
+        "net": "Compenso netto",
+        "paidAt": "Pagato il",
+        "state": "Stato del pagamento",
+        "status": {
+          "Failed": "Pagamento non riuscito",
+          "NeedsReview": "In verifica da CasaZen",
+          "Paid": "Pagato",
+          "PartiallyRefunded": "Rimborsato in parte",
+          "Processing": "In elaborazione",
+          "Refunded": "Rimborsato",
+          "Requested": "Richiesto al cliente",
+          "unknown": "In verifica"
+        },
+        "subNet": "Netto {{amount}}",
+        "title": "Pagamento e compenso"
+      },
+      "phase": {
+        "proposalPending": "In attesa del cliente"
+      },
+      "reason": {
+        "CancelledByCustomer": "Il cliente ha annullato la richiesta.",
+        "NoResponse": "Nessuno ha risposto in tempo.",
+        "ProposalNotAnswered": "Il cliente non ha risposto al nuovo orario."
+      },
+      "reject": {
+        "cancel": "Annulla",
+        "hint": "Il cliente vede il motivo (massimo 500 caratteri)."
+      },
+      "requestTitle": "Richiesta",
+      "respondByDay": "Rispondi entro il {{day}} alle {{time}}",
+      "respondByToday": "Rispondi entro le {{time}}",
+      "suspendedHint": "Azioni non disponibili: l’account fornitore è sospeso.",
+      "title": "Richieste",
+      "views": {
+        "today": "Di oggi",
+        "week": "Dei prossimi 7 giorni"
+      }
     },
     "register": {
       "title": "Registrazione fornitore",
