@@ -3,6 +3,10 @@ import type {
   Booking,
   BookingApprovalRequest,
   BookingCancellationQuote,
+  BookingCounts,
+  BookingFilterParams,
+  BookingListItem,
+  BookingListParams,
   CancelBookingDto,
   CancelBookingResult,
   CreateBookingDto,
@@ -36,6 +40,12 @@ export const bookingsApi = {
 
   getByGuestId: (guestId: string) =>
     ApiClient.get<PagedResult<Booking> | Booking[]>('/bookings', { guestId }),
+
+  /** One page of the list of bookings: the server narrows it by chip, filters and text, orders it and pages it (SR-03b). */
+  search: (params: BookingListParams) => ApiClient.get<PagedResult<BookingListItem>>('/bookings/search', params),
+
+  /** How many bookings are in each chip of the list, for the same filters (SR-03b). */
+  counts: (params: BookingFilterParams) => ApiClient.get<BookingCounts>('/bookings/counts', params),
 
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
 

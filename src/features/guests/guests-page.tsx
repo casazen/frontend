@@ -6,6 +6,7 @@ import { ListView } from '@/components/shared/list-view/list-view';
 import { useListState } from '@/components/shared/list-view/use-list-state';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { guestsApi } from '@/api/guests.api';
+import { BookingsSectionTabs } from '@/features/bookings/components/bookings-section-tabs';
 import { useGuestsList } from './guests-list';
 
 const PAGE_SIZE = 20;
@@ -32,6 +33,8 @@ export function GuestsPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader title={t('guests.title')} description={t('guests.search')} />
+
+        <BookingsSectionTabs />
 
         <ListView
           list={list}

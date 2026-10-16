@@ -56,6 +56,58 @@ export interface Booking {
   updatedAt: string;
 }
 
+/** The chip of the list of bookings, which is the `view` of `GET /api/bookings/search`: what the host is doing with them. */
+export type BookingListView = 'all' | 'toConfirm' | 'upcoming' | 'inProgress' | 'completed' | 'cancelled';
+
+/** Where a booking came from, in the words of the channel filter of the list; the exact source stays in `source`. */
+export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Other';
+
+/** How much of the total of a booking has come in. */
+export type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
+
+/** A row of `GET /api/bookings/search` (SR-03b): the booking and what a list says besides it. */
+export interface BookingListItem extends Booking {
+  /** The code the guest knows (`XXXXX-XXXXX`). */
+  bookingCode: string;
+  channel: BookingChannel;
+  paymentState: BookingPaymentState;
+  /** The money that came in; missing for who may not read payments (the collaborator). */
+  paidAmount?: number | null;
+  /** Until when the host may answer a "pay at the property" request (UTC); null for any other booking. */
+  respondBy?: string | null;
+}
+
+/** `GET /api/bookings/counts`: how many bookings are in each chip, for the filters of the list. */
+export interface BookingCounts {
+  all: number;
+  toConfirm: number;
+  upcoming: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+}
+
+/** The filters of the list as the API takes them, for the rows and for the counters (several values are comma-separated). */
+export interface BookingFilterParams {
+  q?: string;
+  propertyId?: string;
+  /** `Direct,Airbnb`: names of `BookingChannel`. */
+  channel?: string;
+  /** `Sent,InProgress`: the state of the online check-in link. */
+  checkInStatus?: string;
+  /** First and last arrival day (`yyyy-MM-dd`, both included). */
+  arrivalFrom?: string;
+  arrivalTo?: string;
+}
+
+/** What `GET /api/bookings/search` takes: the filters, the chip, the order (`checkIn:asc`) and the page. */
+export interface BookingListParams extends BookingFilterParams {
+  view?: BookingListView;
+  sort?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 /** The iCal block of an OTA stay (CO-21). */
 export interface OtaChannelBlock {
   id: string;
