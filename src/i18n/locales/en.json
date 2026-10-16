@@ -6317,6 +6317,198 @@
       "action": "Add a property"
     }
   },
+  "propertyMode": {
+    "calendar": {
+      "blockReason": "Change to long-term rental",
+      "explanation": "These nights are closed by the change to long-term rental you scheduled: they cannot be booked and cannot be reopened from here. They open again if you cancel the change.",
+      "manage": "Go to the change"
+    },
+    "cancel": {
+      "action": "Cancel the change",
+      "description": "The change will not happen and the property stays as it is now.",
+      "done": "Change cancelled",
+      "failed": "Could not cancel the change. Try again.",
+      "keep": "Keep the change",
+      "toLong": {
+        "calendar": "The calendar opens again: the nights closed for the change can be booked on the site and on the portals.",
+        "stays": "The property stays in Short-term rentals.",
+        "title": "Cancel the change to long-term rental?"
+      },
+      "toShort": {
+        "again": "You can schedule a new change whenever you like.",
+        "stays": "The property stays in Long-term rentals.",
+        "title": "Cancel the change to short-term rental?"
+      }
+    },
+    "checks": {
+      "blockedText": "Fix what follows or choose another day, then you can continue.",
+      "blockedTitle": "{{date}} is not possible",
+      "blockers": {
+        "DraftLease": {
+          "open": "Open the draft",
+          "title": "Draft lease"
+        },
+        "ImportedBlock": {
+          "open": "Open the calendars",
+          "title": "Dates taken on a portal"
+        },
+        "Lease": {
+          "open": "Open the lease",
+          "title": "Lease"
+        },
+        "Stay": {
+          "open": "Open the booking",
+          "title": "Stay"
+        }
+      },
+      "bookings": {
+        "found": "These stays and taken dates end on {{date}} or later:",
+        "none": "No stay or taken date ends on {{date}} or later.",
+        "portalHint": "Portal dates free up when they end or if you disconnect the linked calendar.",
+        "title": "Stays and portal dates"
+      },
+      "drafts": {
+        "found": "There is a draft lease:",
+        "help": "A draft has to be deleted before the change, but drafts cannot be deleted from here yet.",
+        "title": "Draft leases"
+      },
+      "leases": {
+        "found": "These leases end on {{date}} or later:",
+        "none": "No lease ends on {{date}} or later.",
+        "title": "Leases"
+      },
+      "loadFailed": "We could not check this date. Try again.",
+      "loading": "Checking stays and leases...",
+      "more_one": "...and {{count}} more",
+      "more_other": "...and {{count}} more",
+      "noDate": "Choose the day of the change first.",
+      "okText": "Nothing stands in the way of the change on that day.",
+      "okTitle": "All clear for {{date}}",
+      "range": "from {{start}} to {{end}}",
+      "unexplained": "The change is not possible on that day. Choose another day."
+    },
+    "choice": {
+      "legend": "What do you want to do with this property?",
+      "toLong": {
+        "description": "Leases and rents instead of bookings: the property leaves the booking site.",
+        "title": "Switch to long-term rental"
+      },
+      "toShort": {
+        "description": "Bookings and the booking site instead of leases: the property moves to Short-term rentals.",
+        "title": "Switch to short-term rental"
+      }
+    },
+    "confirm": {
+      "consequences": "What happens",
+      "date": "From",
+      "email": "We send you a confirmation email.",
+      "from": "Now in",
+      "property": "Property",
+      "to": "Switches to",
+      "toLong": {
+        "calendar": "From now on the site and the portals no longer accept bookings that depart on {{date}} or later.",
+        "site": "From {{date}} the booking site no longer shows the property.",
+        "stays": "Stays already booked that end before that day stay valid."
+      },
+      "toShort": {
+        "leases": "Until then leases and rents stay as they are.",
+        "listing": "To accept bookings you will have to complete the listing: prices, guests and CIN.",
+        "section": "From {{date}} the property leaves Long-term rentals and appears in Short-term rentals."
+      },
+      "withdraw": "You can cancel the change until the day before."
+    },
+    "date": {
+      "hint": "You can choose from {{earliest}} to {{latest}}.",
+      "labelToLong": "First day of long-term rental",
+      "labelToShort": "First day of short-term rental",
+      "reason": {
+        "draft": "There is also a draft lease: it has to be deleted before the change.",
+        "freeToLong": "No stay or portal date stands in the way: you can start tomorrow.",
+        "freeToShort": "No lease stands in the way: you can start tomorrow.",
+        "last": {
+          "ImportedBlock": "Dates taken on the portals run until {{date}}: the change can start on {{earliest}}.",
+          "Lease": "The lease ends on {{date}}: the change can start the day after, on {{earliest}}.",
+          "Stay": "The last stay ends on {{date}}: the change can start the day after, on {{earliest}}."
+        }
+      },
+      "useEarliest": "Use {{date}}"
+    },
+    "done": {
+      "backToList": "Back to the list",
+      "descriptionToLong": "\"{{name}}\" will switch to long-term rental on {{date}}.",
+      "descriptionToShort": "\"{{name}}\" will switch to short-term rental on {{date}}.",
+      "email": "We sent you an email. You can cancel the change until the day before, from the property page.",
+      "title": "Change scheduled",
+      "toLong": {
+        "calendar": "From now on the calendar no longer accepts bookings that depart on {{date}} or later.",
+        "section": "From {{date}} the property appears in Long-term rentals and leaves Short-term rentals."
+      },
+      "toShort": {
+        "listing": "To accept bookings you will have to complete the listing: prices, guests and CIN.",
+        "section": "From {{date}} the property appears in Short-term rentals and leaves Long-term rentals."
+      },
+      "viewProperty": "View the property"
+    },
+    "entry": {
+      "change": "Change rental mode"
+    },
+    "errors": {
+      "checksFailed": "Fix the obstacles, or wait for the check to finish, before continuing.",
+      "dateInvalid": "Choose the day the change starts.",
+      "dateTooEarly": "The change cannot start before the first possible day.",
+      "dateTooFar": "The date is too far away: choose a day within ten years.",
+      "scheduleFailed": "We could not schedule the change. Check the date and try again."
+    },
+    "finish": {
+      "toLong": "Schedule the change to long-term rental",
+      "toShort": "Schedule the change to short-term rental"
+    },
+    "loadFailed": "We could not load the property. Try again.",
+    "loading": "Loading the property...",
+    "loadingChecks": "Checking the first possible date...",
+    "notFound": "Property not found.",
+    "notice": {
+      "toLong": "Change to long-term rental on {{date}}",
+      "toShort": "Change to short-term rental on {{date}}",
+      "until": "Until then the property stays in {{area}}."
+    },
+    "page": {
+      "title": "Change rental mode"
+    },
+    "retry": "Try again",
+    "scheduled": {
+      "back": "Back to the property",
+      "hint": "You can cancel it until it starts; then you can schedule another one.",
+      "textToLong": "\"{{name}}\" will switch to long-term rental on {{date}}.",
+      "textToShort": "\"{{name}}\" will switch to short-term rental on {{date}}.",
+      "title": "A change is already scheduled"
+    },
+    "steps": {
+      "checks": {
+        "label": "Checks",
+        "next": "Review and confirm",
+        "purpose": "We look at stays, portal dates and leases.",
+        "title": "Checks"
+      },
+      "choice": {
+        "label": "Choice",
+        "next": "Choose the date",
+        "purpose": "\"{{name}}\" is now in {{area}}. A property is in one mode at a time.",
+        "title": "What do you want to do?"
+      },
+      "confirm": {
+        "label": "Confirm",
+        "purpose": "You can cancel the change until it starts.",
+        "title": "Review and confirm"
+      },
+      "date": {
+        "label": "Date",
+        "next": "Check the date",
+        "purpose": "The change happens at the start of the day you choose. Until then everything stays as it is.",
+        "title": "From when?"
+      }
+    }
+  },
   "apiErrors": {
     "network": "Unable to reach the server. Check your connection and try again.",
     "sessionExpired": "Your session has expired. Sign in again to continue.",
@@ -6513,6 +6705,20 @@
       "calendarBlockInvalidRange": "The end date must be after the start date.",
       "calendarBlockNotManual": "This block comes from a channel calendar: remove it on the channel or unlink the calendar.",
       "calendarBlockNotFound": "The block no longer exists: refresh the calendar.",
+      "calendarBlockHeldByModeChange": "These nights are closed by the change to long-term rental: to reopen them, cancel the change.",
+      "propertyModeBlockedByBookings": "On that day there are still stays or dates taken on the portals. Choose a later day.",
+      "propertyModeBlockedByDraftLease": "There is a draft lease: it has to be deleted before the change.",
+      "propertyModeBlockedByLease": "On that day there is still a lease running. Choose the day after it ends.",
+      "propertyModeChangeExists": "A change is already scheduled for this property: cancel it before scheduling another one.",
+      "propertyModeChangeNotFound": "The change no longer exists: refresh the page.",
+      "propertyModeChangeNotScheduled": "The change is no longer scheduled: it already happened, was cancelled or failed.",
+      "propertyModeChanged": "The property was moved to another mode by hand: the change was not carried out.",
+      "propertyModeDateTooEarly": "The change can start tomorrow: choose a future day.",
+      "propertyModeDateTooFar": "The date is too far away: choose a day within ten years.",
+      "propertyModeTargetInvalid": "The requested mode is not valid.",
+      "propertyModeUnchanged": "The property is already in this mode.",
+      "propertyNotBookableInLongMode": "This property is in long-term rental: it does not accept short-term bookings.",
+      "propertyRentalModeChangeNotAllowed": "The mode of a property is not changed from the edit form: use \"Change rental mode\".",
       "propertyPhotoNone": "Select at least one photo to upload.",
       "propertyPhotoTooManyFiles": "You selected too many photos at once: upload fewer.",
       "propertyPhotoLimitReached": "You have reached the maximum number of photos for this property: delete a photo before uploading more.",
