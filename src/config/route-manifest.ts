@@ -616,6 +616,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/account-home-page')).AccountHomePage }),
   },
   {
+    // The people who work with the owner (AM-04b): the pages of the team ask for `org.members.manage`, like the home.
+    path: '/app/account/people',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.people',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 2,
+    navBottom: 2,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
     // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
