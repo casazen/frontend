@@ -616,6 +616,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/account-home-page')).AccountHomePage }),
   },
   {
+    // The people who work with the owner (AM-04b): the pages of the team ask for `org.members.manage`, like the home.
+    path: '/app/account/people',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.people',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 2,
+    navBottom: 2,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
+  },
+  {
     path: '/app/account/profile',
     context: 'account',
     requiredPermissions: [],
