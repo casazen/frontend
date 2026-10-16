@@ -24,15 +24,6 @@ async function openServices(page: Page, path: string, options: { services?: Mock
   return catalog;
 }
 
-/**
- * The look of the redesign (`html[data-ui="v2"]`), as QA turns it on in one browser. In the look of today the muted token that the
- * shared hints, counters and step names use is 4.36:1 on white (3.9:1 on the muted background): a defect that UI-01 fixes with the
- * token of the redesign (5.3:1), and not a part of this task. The pages are checked in the look they are built for.
- */
-async function inRedesign(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('casazen:ui', 'v2'));
-}
-
 /** What the screen sent to change the catalog, in order (the reads are not interesting). */
 const writes = (catalog: SupplierServicesMock) => catalog.calls.filter((call) => call.method !== 'GET').map((call) => `${call.method} ${call.path}`);
 
@@ -283,7 +274,6 @@ test.describe('Servizi e prezzi (SP-06)', () => {
     });
 
     test('has nothing axe can find in a browser (colors included): the list, a step of the creation and the page of a service', async ({ page }) => {
-      await inRedesign(page);
       await openServices(page, '/app/supplier/services', { services: [mockService({ photoUrls: [drawing('a')] }), mockService({ id: 'svc-2', slug: 'b', name: 'Lavanderia', status: 'Paused' })] });
       await expect(page.getByTestId('supplier-service-svc-1')).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('data-ui', 'v2');

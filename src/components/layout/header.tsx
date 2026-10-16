@@ -11,9 +11,8 @@ import { NavIcon } from './nav-icon';
 interface HeaderProps {
   /**
    * Global search (UI-06, `CommandPaletteTrigger`), the notifications bell (UI-12) and the help centre (UI-08): the places
-   * where they plug in. Each one is mounted only by who builds the function, and only when the function exists (its flag is
-   * on): a function that is not there leaves nothing in the header, no empty box and no button that does nothing. The
-   * profile is always there.
+   * where they plug in. Each one is mounted only by who builds the function, and only when the function exists: a function
+   * that is not there leaves nothing in the header, no empty box and no button that does nothing. The profile is always there.
    */
   search?: React.ReactNode;
   notifications?: React.ReactNode;
