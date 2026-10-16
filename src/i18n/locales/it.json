@@ -6583,6 +6583,17 @@
     "withArea": "{{page}} · {{area}} · CasaZen",
     "withoutArea": "{{page}} · CasaZen"
   },
+  "calm": {
+    "statStrip": {
+      "label": "In breve"
+    },
+    "weekStrip": {
+      "items_one": "{{count}} elemento",
+      "items_other": "{{count}} elementi",
+      "label": "Giorni della settimana",
+      "today": "oggi"
+    }
+  },
   "dataView": {
     "selectAll": "Seleziona tutte le righe",
     "selectRow": "Seleziona la riga",

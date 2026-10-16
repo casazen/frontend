@@ -97,6 +97,14 @@ dal basso, da `md` un pannello a destra. Sulla stessa pagina: la `Timeline` in t
 tono del numero sulle schede (`Tabs`). Come si registra un tipo è nel `README.md` di `src/components/shared/detail-drawer/`.
 **Non esiste nella build.**
 
+### I blocchi calmi su una pagina sola
+
+Sempre con il dev server, la pagina `/dev/calm-blocks` mostra i blocchi delle home d'area (UI-16): il blocco in evidenza nei cinque toni,
+la riga di numeri, la sezione senza scatola, l'elenco per giorno e quello in «oggi / domani / più avanti», la striscia dei sette giorni,
+l'attività recente, il prossimo passo e la checklist compatta, più una home composta con tutti insieme. Serve a guardarli e a farci girare
+axe e gli Playwright dei telefoni (`e2e/calm-blocks.spec.ts`). Quando usare quale blocco è nel `README.md` di
+`src/components/shared/calm/`. **Non esiste nella build.**
+
 ## Configurazione
 
 La modalità demo è controllata dalla variabile d'ambiente `VITE_DEMO_MODE`, valida solo con il dev server o con
