@@ -34,7 +34,8 @@ export interface DayListProps extends React.HTMLAttributes<HTMLUListElement> {
 const DATE = 'pt-0.5 text-sm font-semibold tabular-nums text-foreground/70';
 const TITLE = 'block break-words text-left font-semibold';
 // The title is the link (or the button) of the row and its hit area is the whole row: a `::after` that fills the `li`. The
-// note and the action sit above it (`z-10`), so the direct action still gets its own click.
+// action sits above it (`z-10`) and is the only thing there that takes a click, so a click anywhere else on the row (the note, the
+// space around the action) still reaches the title.
 const TITLE_LINK = cn(
   TITLE,
   'outline-none after:absolute after:inset-0 after:content-[""] hover:underline',
@@ -75,14 +76,14 @@ function DayRow({ item }: { item: DayListItem }) {
         {item.subtitle ? <span className="block break-words text-sm text-foreground/70">{item.subtitle}</span> : null}
       </div>
       {item.meta || item.action ? (
-        <div className="relative z-10 col-start-2 flex flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-3 sm:justify-end">
+        <div className="pointer-events-none relative z-10 col-start-2 flex flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-3 sm:justify-end">
           {item.meta ? (
-            <span className={cn('pointer-events-none inline-flex items-center gap-1.5 text-sm', ToneIcon ? cn('font-medium', style.accent) : 'text-foreground/70')}>
+            <span className={cn('inline-flex items-center gap-1.5 text-sm', ToneIcon ? cn('font-medium', style.accent) : 'text-foreground/70')}>
               {ToneIcon ? <ToneIcon aria-hidden="true" className="size-4 shrink-0" /> : null}
               {item.meta}
             </span>
           ) : null}
-          {item.action ? <CalmActionButton action={item.action} variant="outline" size="sm" /> : null}
+          {item.action ? <CalmActionButton action={item.action} variant="outline" size="sm" className="pointer-events-auto" /> : null}
         </div>
       ) : null}
     </li>

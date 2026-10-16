@@ -198,6 +198,18 @@ test.describe('keyboard', () => {
     await expect(page).toHaveURL(/\/dev\/calm-blocks\?aperto=rossi$/);
   });
 
+  test('a click on the note of a row, away from its action, opens the row too', async ({ page }) => {
+    await openGallery(page, 1280);
+    const note = page.getByTestId('day-list').getByText('tra 12 giorni');
+    await note.scrollIntoViewIfNeeded();
+    const box = (await boxes(note))[0];
+
+    // The note is in the layer of the action, but it does not take the click: the title, stretched over the row, does.
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+    await expect(page).toHaveURL(/\/dev\/calm-blocks\?aperto=rossi$/);
+  });
+
   test('the activity list shows more and the focus goes to the first new entry', async ({ page }) => {
     await openGallery(page, 1280);
     const list = page.getByTestId('activity-list');
