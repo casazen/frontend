@@ -13,6 +13,8 @@ import i18n from '@/i18n/config';
 import { AxiosError, AxiosHeaders } from 'axios';
 
 vi.mock('@/queries/use-properties');
+// The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
+vi.mock('../mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
 vi.mock('@/api/service-requests.api', () => ({
   fetchServiceRequests: vi.fn(),
   markServiceRequestPaid: vi.fn(),

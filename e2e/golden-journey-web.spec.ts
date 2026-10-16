@@ -96,7 +96,7 @@ test.describe('Golden Journey web (#301)', () => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), {
       waitUntil: 'domcontentloaded',
     });
-    await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('sr-home')).toBeVisible({ timeout: 15_000 });
 
     expect(api500).toEqual([]);
   });

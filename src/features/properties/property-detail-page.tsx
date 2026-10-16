@@ -77,7 +77,7 @@ export function PropertyDetailPage() {
   const canEditPhotos = hasPermission('short-rent', 'property.write');
   // Overview of the property's short-rent requests, each linked to its stay (D2).
   const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
-  // "Cambia modalità" in the menu "⋯" (PM-03): none while the flag is off, and then the header is the one it always was.
+  // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('short-rent', id!);
 
   if (isLoading) {
