@@ -86,7 +86,8 @@ describe('BottomNav (UI-04b)', () => {
 
       arrange(['supplier']);
       renderBar('supplier', '/app/supplier/dashboard');
-      expect(labels()).toEqual(['Dashboard', 'Richieste', 'Disponibilità', 'Vetrina']);
+      // The fourth place of the supplier is "Servizi e prezzi" (SP-06, SP-D11); the showcase is in "Altro".
+      expect(labels()).toEqual(['Dashboard', 'Richieste', 'Disponibilità', 'Servizi e prezzi']);
     });
 
     it('BottomNav_LongRent_ListsTheTwoDestinationsItHasAndAltro', () => {

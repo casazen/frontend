@@ -835,6 +835,37 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
   },
   {
+    // The catalog of services with prices (SP-06): the fourth place of the bar of the phone (SP-D11), the showcase goes to the menu.
+    path: '/app/supplier/services',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierServices',
+    navGroup: 'activity',
+    navPlacement: 'primary',
+    navOrder: 4,
+    navBottom: 4,
+    icon: 'Tag',
+    component: async () => ({ default: (await import('@/features/supplier/services/supplier-services-page')).SupplierServicesPage }),
+  },
+  {
+    // The guided creation of a service, in four steps; the draft is the service itself, saved at every step (SP-06).
+    path: '/app/supplier/services/new',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/services/supplier-service-wizard-page')).SupplierServiceWizardPage,
+    }),
+  },
+  {
+    // One service: every field, the preview that follows what is typed, "Visibile ai clienti" (SP-06).
+    path: '/app/supplier/services/:id',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/services/supplier-service-detail-page')).SupplierServiceDetailPage,
+    }),
+  },
+  {
     // Preview of the public showcase and where it is published (SU-13, A4-16).
     path: '/app/supplier/showcase',
     context: 'supplier',
@@ -842,8 +873,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.supplierShowcase',
     navGroup: 'activity',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
+    navOrder: 5,
     icon: 'Store',
     component: async () => ({ default: (await import('@/features/supplier/supplier-showcase-preview-page')).SupplierShowcasePreviewPage }),
   },
