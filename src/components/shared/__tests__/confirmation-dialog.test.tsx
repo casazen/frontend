@@ -186,6 +186,24 @@ describe('ConfirmationDialog (UI-07: requireText and consequences)', () => {
     });
   });
 
+  describe('inside a form', () => {
+    it('ConfirmationDialog_InsideAForm_ConfirmsWithoutSubmittingTheFormAroundIt', async () => {
+      const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+      const onConfirm = vi.fn();
+      render(
+        <form onSubmit={onSubmit}>
+          <Harness onConfirm={onConfirm} />
+        </form>,
+      );
+
+      fireEvent.click(confirmButton());
+
+      await waitFor(() => expect(onConfirm).toHaveBeenCalledTimes(1));
+      // The dialog is on the page outside the form, but inside it for React: its own submit has to stop there.
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+  });
+
   describe('accessibility', () => {
     it('ConfirmationDialog_WithEverything_HasNoAxeViolations', async () => {
       render(<Harness requireText="ELIMINA" consequences={['Le prenotazioni restano', 'Il rimborso va fatto a mano']} />);

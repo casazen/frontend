@@ -7,6 +7,7 @@ import type { LeaseStatus } from "@/types/lease.types";
 import type { GuestCheckInSessionStatus } from "@/types/public-checkin.types";
 import type { RentInstallmentStatus } from "@/types/rent.types";
 import type { ServiceRequestStatus } from "@/types/service-request";
+import type { SupplierServiceStatus } from "@/types/supplier-services";
 
 /**
  * The states of the things a person manages, each told the same way: an icon and a word (never only a color), a sentence
@@ -158,6 +159,12 @@ export const STATUS_DICTIONARY = {
     Inviato: { tone: "success", icon: "shield-check" },
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
+  }),
+  /** A service of the catalog of the supplier (SP-06): a draft is seen only by its supplier, a paused one is off offer but kept. */
+  serviceListing: defineKind<SupplierServiceStatus>({
+    Draft: { tone: "neutral", icon: "pencil" },
+    Active: { tone: "success", icon: "check-circle" },
+    Paused: { tone: "warning", icon: "pause" },
   }),
 } as const;
 
