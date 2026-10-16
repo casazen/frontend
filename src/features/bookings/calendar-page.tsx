@@ -1,5 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -19,7 +19,6 @@ import { ManualBlockForm } from './components/manual-block-form';
 import { useDeleteManualBlock } from '@/queries/use-manual-blocks';
 import { MODE_CHANGE_BLOCK_REASON } from '@/types/calendar.types';
 import { propertyModePath } from '@/features/properties/mode/paths';
-import { usePropertyModeEnabled } from '@/features/properties/mode/use-mode-entry';
 import type { SlotInfo } from 'react-big-calendar';
 import { getProblemMessage } from '@/lib/api-errors';
 import { addDays, formatStayDate, toStayDate, todayInRome } from '@/lib/stay-dates';
@@ -62,16 +61,15 @@ function ManualBlockActions({ block, propertyId, canWriteProperty, onDeleted }: 
   const { t } = useTranslation();
   const deleteBlock = useDeleteManualBlock();
   const [confirming, setConfirming] = useState(false);
-  const modeChangeEnabled = usePropertyModeEnabled();
 
   // The nights a scheduled change to long-term closes (PM-02): the host did not close them and cannot open them from here (the
   // API refuses with `calendar_block_held_by_mode_change`); they open again when the change is withdrawn. That way out is
-  // offered only to who has it: with the permission to write the property and the flag on.
+  // offered only to who has it: with the permission to write the property.
   if (block.reason === MODE_CHANGE_BLOCK_REASON) {
     return (
       <div className="space-y-2" data-testid="mode-change-block">
         <p className="text-muted-foreground">{t('propertyMode.calendar.explanation')}</p>
-        {canWriteProperty && modeChangeEnabled && (
+        {canWriteProperty && (
           <>
             <p className="text-muted-foreground">{t('propertyMode.calendar.reopen')}</p>
             <Button variant="outline" size="sm" asChild>
@@ -248,7 +246,11 @@ export function CalendarPage() {
   // The "Blocca date" form, open with the nights selected on the calendar (or from today).
   const [blockDraft, setBlockDraft] = useState<{ start?: string; end?: string } | null>(null);
 
-  const activePropertyId = selectedPropertyId || propertyList[0]?.id || '';
+  // The calendar of one property, from the list of the properties (`?propertyId=`): one that is not in the list is ignored.
+  const [searchParams] = useSearchParams();
+  const requestedPropertyId = searchParams.get('propertyId') ?? '';
+  const requestedProperty = propertyList.some((property) => property.id === requestedPropertyId) ? requestedPropertyId : '';
+  const activePropertyId = selectedPropertyId || requestedProperty || propertyList[0]?.id || '';
   // First and last stay date of the month, week or day shown, both included (backend MO-06): part of the query key,
   // so every navigation asks for its own range.
   const { startDate, endDate } = useMemo(() => hostCalendarRange(view, shownDate), [view, shownDate]);

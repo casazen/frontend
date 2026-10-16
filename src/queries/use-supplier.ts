@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   acceptSupplierTos,
   completeSupplierActivation,
@@ -15,6 +15,7 @@ import {
   fetchSupplierDashboard,
   fetchSupplierHours,
   fetchSupplierInbox,
+  fetchSupplierInboxCounts,
   fetchSupplierInboxItem,
   fetchSupplierKpis,
   fetchSupplierProfile,
@@ -85,24 +86,40 @@ export function useSupplierProfile() {
   });
 }
 
-/** A page of the supplier inbox (SU-08): open requests or history, filtered and paginated by the server. */
+/**
+ * A page of the supplier inbox (SU-08): the requests of a tab or of a status, filtered and paginated by the server. The rows of the
+ * last search stay, a little dimmed, until those of the next one arrive. It is read again when the page opens: a take, a refusal or a
+ * completion made on another page (the request's own) changed it, and the shared client does not read again on mount.
+ */
 export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' }, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'list', params],
     queryFn: () => fetchSupplierInbox(params),
     enabled: options?.enabled ?? true,
+    placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
+  });
+}
+
+/** The numbers on the chips of the list of requests (SP-04e). Under `['supplier', 'inbox']`: every action of the supplier reloads them. */
+export function useSupplierInboxCounts() {
+  return useQuery({
+    queryKey: ['supplier', 'inbox', 'counts'],
+    queryFn: fetchSupplierInboxCounts,
+    refetchOnMount: 'always',
   });
 }
 
 /**
  * One request of the supplier inbox with its history (SU-08). Under `['supplier', 'inbox']`, so take, complete and
- * reject reload it.
+ * reject reload it; and read again when the page or the drawer opens, so that what was done from the list shows.
  */
 export function useSupplierInboxItem(id: string | undefined) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'item', id],
     queryFn: () => fetchSupplierInboxItem(id!),
     enabled: !!id,
+    refetchOnMount: 'always',
   });
 }
 

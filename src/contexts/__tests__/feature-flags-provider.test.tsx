@@ -68,25 +68,4 @@ describe('parseFeatureFlags', () => {
     expect(parseFeatureFlags(null)).toEqual(allOff);
     expect(parseFeatureFlags({})).toEqual(allOff);
   });
-
-  it('reads the redesign flag defensively: only a real true turns it on (UI-01)', () => {
-    // The API of an environment that does not know the flag (BL-01 adds it to the backend) simply omits the key.
-    expect(parseFeatureFlags({ uiRedesign: true }).uiRedesign).toBe(true);
-    expect(parseFeatureFlags({}).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ otaPartnerApi: true }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: 'true' }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: 1 }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: null }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags('uiRedesign').uiRedesign).toBe(false);
-    expect(DEFAULT_FEATURE_FLAGS.uiRedesign).toBe(false);
-  });
-
-  it('reads the property mode flag defensively: off unless the API sends a real true (PM-03)', () => {
-    expect(parseFeatureFlags({ propertyModeChange: true }).propertyModeChange).toBe(true);
-    expect(parseFeatureFlags({}).propertyModeChange).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: true }).propertyModeChange).toBe(false);
-    expect(parseFeatureFlags({ propertyModeChange: 'true' }).propertyModeChange).toBe(false);
-    expect(parseFeatureFlags({ propertyModeChange: 1 }).propertyModeChange).toBe(false);
-    expect(DEFAULT_FEATURE_FLAGS.propertyModeChange).toBe(false);
-  });
 });

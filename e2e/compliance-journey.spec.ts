@@ -173,7 +173,7 @@ test.describe('Italian Compliance Golden Path', () => {
     test('property create accepts a real CIN written with hyphens', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
-      await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
+      await page.getByRole('link', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
 
       // Real CIN (official BDSR format) typed with separators: accepted, the backend stores it normalized
       await fillPropertyForm(page, {

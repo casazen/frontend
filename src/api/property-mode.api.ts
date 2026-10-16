@@ -7,10 +7,7 @@ import type {
   SchedulePropertyModeChangeDto,
 } from '@/types/property-mode.types';
 
-/**
- * The scheduled change of the rental mode of a property (PM-02, decision D16). Every call answers 404 while the backend
- * flag `PropertyModeChange` is off, so nothing here is called unless `propertyModeChange` is on.
- */
+/** The scheduled change of the rental mode of a property (PM-02, decision D16). */
 export const propertyModeApi = {
   /** The mode of the property, the change waiting for its day and the last one that is over. */
   getState: (propertyId: string) => ApiClient.get<PropertyModeState>(`/properties/${propertyId}/mode`),
