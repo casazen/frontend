@@ -4,7 +4,10 @@ import { formatStayDate, parseStayDate, todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 
 export interface WeekStripDay {
-  /** The calendar day, `YYYY-MM-DD`. The caller chooses the seven days (a week from Monday, the next seven days...). */
+  /**
+   * The calendar day, `YYYY-MM-DD` (a day written with a time is read as the day it starts with, as the date fields of the API
+   * are; for an instant use `romeDateOf`). The caller chooses the seven days (a week from Monday, the next seven days...).
+   */
   date: string;
   /** How many things there are that day. A day with some gets a dot; a screen reader is told the number. */
   count?: number;
@@ -12,7 +15,7 @@ export interface WeekStripDay {
 
 export interface WeekStripProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange' | 'children'> {
   days: readonly WeekStripDay[];
-  /** The day that is chosen, when the page decides it. Without it the strip remembers the choice itself. */
+  /** The day that is chosen (`YYYY-MM-DD`), when the page decides it. Without it the strip remembers the choice itself. */
   value?: string;
   /** The day that is chosen until the person chooses one (default: today, if it is among the days). */
   defaultValue?: string;
@@ -22,6 +25,9 @@ export interface WeekStripProps extends Omit<React.HTMLAttributes<HTMLDivElement
   /** The name of the group for a screen reader. Default: "Giorni della settimana". */
   label?: string;
 }
+
+/** The identity of a day in the strip: the calendar day it says, or its text when it says none (what `onValueChange` gives back). */
+const idOf = (date: string) => parseStayDate(date) || date;
 
 const SHORT = { weekday: 'short' } as const;
 const NUMBER = { day: 'numeric' } as const;
@@ -60,7 +66,7 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
           .filter(Boolean)
           .join(', ');
         return {
-          date: day.date,
+          id: stay || day.date,
           count,
           isToday,
           name,
@@ -80,15 +86,15 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
 
   if (days.length === 0) return null;
 
-  const known = (date: string | undefined): date is string => date !== undefined && days.some((day) => day.date === date);
-  const fallback = [defaultValue, cells.find((cell) => cell.isToday)?.date].find(known);
-  const selected = value ?? (known(chosen) ? chosen : fallback);
+  const known = (id: string | undefined): id is string => id !== undefined && cells.some((cell) => cell.id === id);
+  const fallback = [defaultValue === undefined ? undefined : idOf(defaultValue), cells.find((cell) => cell.isToday)?.id].find(known);
+  const selected = value === undefined ? (known(chosen) ? chosen : fallback) : idOf(value);
   // The Tab order enters on the chosen day, or on the first one when none of the days is chosen.
-  const tabStop = known(selected) ? selected : days[0].date;
+  const tabStop = known(selected) ? selected : cells[0].id;
 
-  const choose = (date: string) => {
-    if (value === undefined) setChosen(date);
-    onValueChange?.(date);
+  const choose = (id: string) => {
+    if (value === undefined) setChosen(id);
+    onValueChange?.(id);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -120,7 +126,7 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
     }
     event.preventDefault();
     radios[next].focus();
-    choose(days[next].date);
+    choose(cells[next].id);
   };
 
   return (
@@ -132,18 +138,18 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
       className={cn('grid grid-cols-7 gap-0.5', className)}
     >
       {cells.map((cell) => {
-        const isSelected = cell.date === selected;
+        const isSelected = cell.id === selected;
         return (
           <button
-            key={cell.date}
+            key={cell.id}
             type="button"
             role="radio"
             aria-checked={isSelected}
             aria-label={cell.name}
-            tabIndex={cell.date === tabStop ? 0 : -1}
-            data-date={cell.date}
+            tabIndex={cell.id === tabStop ? 0 : -1}
+            data-date={cell.id}
             data-today={cell.isToday ? 'true' : undefined}
-            onClick={() => choose(cell.date)}
+            onClick={() => choose(cell.id)}
             className={cn(
               'flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 py-1 transition-colors motion-reduce:transition-none',
               'ring-offset-background focus-visible:z-10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
@@ -155,7 +161,7 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
             </span>
             <span
               aria-hidden="true"
-              className={cn('grid size-7 place-items-center rounded-full text-base font-semibold tabular-nums', cell.isToday && 'ring-1 ring-current forced-colors:outline forced-colors:outline-1')}
+              className={cn('grid size-7 place-items-center rounded-full text-base font-semibold tabular-nums', cell.isToday && 'ring-1 ring-current forced-colors:outline-1')}
             >
               {cell.number}
             </span>

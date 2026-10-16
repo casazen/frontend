@@ -90,6 +90,18 @@ describe('DayList (UI-16)', () => {
     expect(link).not.toHaveTextContent('tra 12 giorni');
   });
 
+  it('DayList_TitleOfAnOpenableRow_UnderlinesOnTheHoverOfItsOwnRowOnlyNotOfAnyGroupAboveIt', () => {
+    renderList();
+
+    const [link] = screen.getAllByRole('link');
+    expect(link).toHaveClass('group/open');
+    expect(link.querySelector('span')).toHaveClass('group-hover/open:underline');
+    // A row that only reads has no link to underline.
+    cleanup();
+    renderList([{ id: 'c', date: '10 nov', title: 'Una riga da leggere' }]);
+    expect(screen.getByText('Una riga da leggere')).not.toHaveClass('group-hover/open:underline');
+  });
+
   it('DayList_LinkWithAState_HandsItToThePageThatOpens', () => {
     render(
       <MemoryRouter initialEntries={['/start']}>
@@ -233,7 +245,8 @@ describe('TodayList (UI-16)', () => {
   it('TodayList_DayWrittenWithATime_IsReadAsTheDayItStartsWith', () => {
     renderToday([
       { id: 'a', day: '2026-10-16T09:30:00', date: '09:30', title: 'Oggi alle nove e mezza' },
-      { id: 'b', day: '2026-10-17T15:00:00Z', date: '15:00', title: 'Domani alle tre' },
+      // The stored midnight of the day, as the API writes the dates of a stay: the day, not an instant.
+      { id: 'b', day: '2026-10-17T00:00:00Z', date: '15:00', title: 'Domani alle tre' },
     ]);
 
     expect(titlesOf('Oggi')).toEqual(['09:30Oggi alle nove e mezza']);

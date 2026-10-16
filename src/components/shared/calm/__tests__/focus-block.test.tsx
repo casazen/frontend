@@ -95,6 +95,12 @@ describe('FocusBlock (UI-16)', () => {
     expect(new Set(CALM_TONES.map((tone) => TONE_STYLES[tone].surface)).size).toBe(CALM_TONES.length);
   });
 
+  it('FocusBlock_Edge_SurvivesForcedColorsWhichDropTheTintAndTheRing', () => {
+    const { container } = renderBlock();
+
+    expect(container.querySelector('section')).toHaveClass('forced-colors:outline-1');
+  });
+
   it('FocusBlock_NoTone_IsTheAccentOfTheArea', () => {
     const { container } = renderBlock();
 

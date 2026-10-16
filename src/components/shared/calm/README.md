@@ -40,10 +40,11 @@ block in every variant, and a composed home at the bottom.
   for decoration: most blocks are `neutral`.
 - **Every action is at least 44 px high**, on a phone and on a laptop, and a long label wraps instead of pushing the page. So
   does a row of a `DayList` (its title is a link or a button of 44 px) and a day of a `WeekStrip` (56 px).
-- **No overlay.** The redesign gives every link and button of a phone its own hit area (`styles/tokens.css`, under
-  `pointer: coarse`), so a block does not stretch a link over its parent with `::after`: a stretched link would be anchored to
-  the link itself there and stop covering the row. A `DayList` row has its link around the title and the line under it, and the
-  date, the note and the action are beside it.
+- **No overlay.** On a phone (`pointer: coarse`) the redesign makes every link and button `position: relative` and gives the
+  buttons an invisible hit area of 44 px (`styles/tokens.css`), so a block does not stretch a link over its parent with
+  `::after`: a stretched link would be anchored to the link itself there and stop covering the row. A `DayList` row has its
+  link around the title and the line under it, and the date, the note and the action are beside it. Links get no extra hit
+  area: a link you write yourself is 44 px high or sits in a row that is.
 - **Secondary text is `foreground/70`**, not `muted-foreground` (4.4:1 on white: a hair under AA). `-foreground` on `-soft`,
   the pairs of the tones, meet AA in every area (`styles/__tests__/tokens.test.ts`, and axe in a real browser on the dev page).
 - **Headings.** `FocusBlock`, `PlainSection` and `ChecklistCompact` are `region`s named by their `h2`. `TodayList` names its
@@ -124,7 +125,8 @@ one button, with `onOpen`); `action` is a separate button for what is done witho
 end ("tra 5 giorni"), and with a `tone` it gets the icon and the color of the tone. It renders nothing when it has no rows:
 what to say then is the page's. **`TodayList`**: `items` (each with its `day`), `labels` (`today`, `tomorrow`, `later`, in your
 words), `today?` (default: today in Europe/Rome). A day that is already past stays in today's group (it is still to be done);
-a `day` that cannot be read goes last.
+a `day` that cannot be read goes last. A day is a calendar day: written with a time it is read as the day it starts with, as
+the date fields of the API are; an instant (`2026-10-16T22:30:00Z`) is not one, give `romeDateOf(instant)`.
 
 **`WeekStrip`**: `days` of `{ date (YYYY-MM-DD), count? }`, `value?` / `defaultValue?` / `onValueChange?`, `today?`, `label?`.
 A group of radio buttons: one in the Tab order, arrows (and Home, End) move the choice, from the last it goes round (Alt, Ctrl
@@ -134,7 +136,7 @@ applies again. It only chooses: what it shows, and other weeks, are the page's.
 
 **`ActivityList`**: `items` of `{ id, at (ISO instant with its offset), when?, text, actor? }`, `order?` (`newest` default, or
 `oldest`), `more?` (`{ limit, label }`: only `limit` entries and a button to show the rest; the focus goes to the first new
-entry), `label?` (the name of the list). It puts the entries in order itself. Without `when`, the date is day, month and time in
+entry; the list remembers it was opened, so give it a `key` that changes with its subject), `label?` (the name of the list). It puts the entries in order itself. Without `when`, the date is day, month and time in
 Europe/Rome, in the language of the app, with the year when it is not this year. Extra props go to the box around the list.
 
 **`NextStepCard`**: `kicker`, `title`, `titleAs?` (`h2` default, `p` inside a block that has its own heading), `detail?`,

@@ -43,7 +43,7 @@ describe('ChecklistCompact (UI-16)', () => {
   it('ChecklistCompact_Everything_ShowsExactlyTheWordsOfTheCallerAndNoFixedText', () => {
     const { container } = renderChecklist();
 
-    expect(container.textContent).toBe('Configura Affitti brevi 2 di 5Prossimo: Collega Stripe · 5 minutiTutti i passiContinua');
+    expect(container.textContent).toBe('Configura Affitti brevi 2 di 5Prossimo: Collega Stripe · 5 minutiContinuaTutti i passi');
   });
 
   it('ChecklistCompact_Bar_IsTheProgressBarOfTheProductReadAsTheCountOfTheCaller', async () => {
@@ -76,6 +76,14 @@ describe('ChecklistCompact (UI-16)', () => {
 
     renderChecklist({ done: -1, total: 0 });
     expect(screen.getByRole('progressbar').firstElementChild).toHaveStyle({ width: '0%' });
+  });
+
+  it('ChecklistCompact_Actions_TheStepComesFirstThenTheWholeListInTheOrderOfReadingAndOfTheTabKey', () => {
+    renderChecklist();
+
+    const step = screen.getByRole('link', { name: 'Continua' });
+    const list = screen.getByRole('button', { name: 'Tutti i passi' });
+    expect(step.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('ChecklistCompact_Actions_AreALinkForTheStepAndAButtonForTheWholeList', () => {

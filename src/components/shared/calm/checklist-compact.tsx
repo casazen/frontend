@@ -23,7 +23,7 @@ export interface ChecklistCompactProps extends Omit<React.HTMLAttributes<HTMLEle
 }
 
 /**
- * The checklist of a home in one line: a title with how far it is, the step to take next, a thin bar and the way on. A home
+ * The checklist of a home in one line: a title with how far it is, the step to take next, the way on and a thin bar. A home
  * shows it only while the list is incomplete (the redesign conventions, §7bis); the full list lives behind "Tutti i passi".
  */
 export function ChecklistCompact({ title, done, total, progress, next, progressLabel, primary, secondary, className, ...props }: ChecklistCompactProps) {
@@ -46,8 +46,8 @@ export function ChecklistCompact({ title, done, total, progress, next, progressL
 
       {primary || secondary ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          {secondary ? <CalmActionButton action={secondary} variant="ghost" size="sm" /> : null}
           {primary ? <CalmActionButton action={primary} variant="outline" size="sm" iconRight={<ArrowRight />} /> : null}
+          {secondary ? <CalmActionButton action={secondary} variant="ghost" size="sm" /> : null}
         </div>
       ) : null}
 

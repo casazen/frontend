@@ -36,7 +36,7 @@ export function StatTile({ label, value, tone = 'neutral', delta, href, state, c
 
   const content = (
     <>
-      <span className="flex items-center gap-1.5 text-sm text-foreground/70 group-hover:underline">
+      <span className={cn('flex items-center gap-1.5 text-sm text-foreground/70', href !== undefined && 'group-hover/tile:underline')}>
         {ToneIcon ? <ToneIcon aria-hidden="true" className={cn('size-4 shrink-0', style.accent)} /> : null}
         <span className="min-w-0 break-words">{label}</span>
         {href !== undefined ? <ChevronRight aria-hidden="true" className="ml-auto size-4 shrink-0" /> : null}
@@ -53,7 +53,7 @@ export function StatTile({ label, value, tone = 'neutral', delta, href, state, c
         to={href}
         state={state}
         className={cn(
-          'group block min-w-0 rounded-md py-3 outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'group/tile block min-w-0 rounded-md py-3 outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           className,
         )}
       >

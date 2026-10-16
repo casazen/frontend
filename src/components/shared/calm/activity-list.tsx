@@ -40,7 +40,8 @@ function instantOf(at: string): number | null {
  * What happened, in order: a date, a sentence and who did it, on a thin line. For the recent activity of an account and the
  * history of a contract. Entries are put in order here, so the page does not have to; one whose date cannot be read goes last.
  * With `more`, only the first entries are shown and the button shows the rest: the focus then goes to the first entry that
- * appeared, so a screen reader goes on from where the list went on.
+ * appeared, so a screen reader goes on from where the list went on. The list remembers that it was opened: when it is used for
+ * another subject (the history of another contract, on the same page) give it a `key` that changes with the subject.
  * The extra props (`className`, `data-testid`, `id`) go to the box around the list and its button, `label` to the list.
  * It renders nothing when it has no entries.
  */
@@ -82,7 +83,7 @@ export function ActivityList({ items, order = 'newest', more, label, className, 
           const when = item.when || (readable ? formatRomeDateTime(item.at, i18n.language, romeDateOf(item.at).startsWith(thisYear) ? THIS_YEAR : OTHER_YEAR) : '');
           return (
             <li key={item.id} ref={index === revealedFrom ? firstRevealed : undefined} tabIndex={index === revealedFrom ? -1 : undefined} className="relative break-words ps-5">
-              <span aria-hidden="true" className="absolute -start-[0.34375rem] top-1.5 size-2.5 rounded-full bg-foreground/30 ring-4 ring-background" />
+              <span aria-hidden="true" className="absolute -start-[0.34375rem] top-1.5 size-2.5 rounded-full bg-foreground/30 ring-4 ring-background forced-colors:bg-[CanvasText]" />
               <p className="text-sm">{item.text}</p>
               {item.actor || when ? (
                 <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-foreground/70">

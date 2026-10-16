@@ -301,6 +301,24 @@ describe('WeekStrip (UI-16)', () => {
     expect(radios()[0]).toHaveTextContent('mer14');
   });
 
+  it('WeekStrip_DaysWrittenWithATime_AreChosenAndReportedAsTheirCalendarDayEverywhere', () => {
+    const onValueChange = vi.fn();
+    const days = [{ date: '2026-10-14T00:00:00Z' }, { date: '2026-10-15T00:00:00Z' }, { date: '2026-10-16T00:00:00Z' }];
+    const { rerender } = render(<WeekStrip days={days} today={TODAY} onValueChange={onValueChange} />);
+    // Today is among them: it is chosen by default, although the day is written with a time.
+    expect(checked()).toEqual(['2026-10-14']);
+
+    // The page speaks in calendar days: `value` and `defaultValue` find the day, and the strip gives back the calendar day.
+    rerender(<WeekStrip days={days} today={TODAY} value="2026-10-15" onValueChange={onValueChange} />);
+    expect(checked()).toEqual(['2026-10-15']);
+    expect(radios().map((radio) => radio.tabIndex)).toEqual([-1, 0, -1]);
+    fireEvent.click(radios()[2]);
+    expect(onValueChange).toHaveBeenLastCalledWith('2026-10-16');
+
+    rerender(<WeekStrip days={days} today="2026-11-30" defaultValue="2026-10-16" />);
+    expect(checked()).toEqual(['2026-10-16']);
+  });
+
   it('WeekStrip_DayThatCannotBeRead_IsStillThereWithItsOwnTextAndTheDeveloperIsTold', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     render(<WeekStrip days={[{ date: 'giovedì' }, ...WEEK.slice(0, 2)]} today={TODAY} />);

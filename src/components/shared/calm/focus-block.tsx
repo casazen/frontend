@@ -48,7 +48,7 @@ export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, p
       {...props}
       aria-labelledby={titleId}
       data-tone={tone}
-      className={cn('flex min-w-0 flex-col gap-3 rounded-xl p-4 ring-1 ring-inset sm:flex-row sm:gap-4 sm:p-6', style.surface, className)}
+      className={cn('flex min-w-0 flex-col gap-3 rounded-xl p-4 ring-1 ring-inset forced-colors:outline-1 sm:flex-row sm:gap-4 sm:p-6', style.surface, className)}
     >
       <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-full bg-background sm:size-12', style.accent)}>
         <Icon className="size-5 sm:size-6" />

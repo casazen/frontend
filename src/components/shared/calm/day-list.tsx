@@ -15,8 +15,9 @@ export type DayListItem = DayListItemOpen & {
   /** Stable, for React: the id of the thing the row is about. */
   id: string;
   /**
-   * The calendar day of the row (`YYYY-MM-DD`). It is the machine value of the date (`<time datetime>`) and, when `date` is not
-   * given, the text of the date too ("12 ott"), in the language of the app. A `TodayList` needs it to group the rows.
+   * The calendar day of the row (`YYYY-MM-DD`; written with a time it is read as the day it starts with, as the date fields of
+   * the API are: for an instant use `romeDateOf`). It is the machine value of the date (`<time datetime>`) and, when `date` is
+   * not given, the text of the date too ("12 ott"), in the language of the app. A `TodayList` needs it to group the rows.
    */
   day?: string;
   /** The first column as the person reads it: a time ("09:30") or a short text. Default: the `day`, short ("12 ott"). */
@@ -40,10 +41,10 @@ export interface DayListProps extends Omit<React.HTMLAttributes<HTMLUListElement
 
 const DATE = 'min-w-0 break-words pt-0.5 text-sm font-semibold tabular-nums text-foreground/70';
 // The title and the line under it are one control: a link or a button as wide as the column and at least 44 px high. It is not
-// stretched over the rest of the row: the redesign puts its own hit area on every link and button of a phone (`tokens.css`),
-// and a stretched `::after` would fight it.
+// stretched over the rest of the row: on a phone the redesign makes every link and button `position: relative` and gives the
+// buttons a hit area of their own (`tokens.css`), and a stretched `::after` would be anchored to the link itself.
 const OPEN =
-  'group flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 function DayRow({ item }: { item: DayListItem }) {
   const { i18n } = useTranslation();
@@ -58,7 +59,7 @@ function DayRow({ item }: { item: DayListItem }) {
 
   const text = (
     <>
-      <span className={cn('block break-words font-semibold', opens && 'group-hover:underline')}>{item.title}</span>
+      <span className={cn('block break-words font-semibold', opens && 'group-hover/open:underline')}>{item.title}</span>
       {item.subtitle ? <span className="block break-words text-sm text-foreground/70">{item.subtitle}</span> : null}
     </>
   );

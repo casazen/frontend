@@ -181,17 +181,28 @@ describe('StatStrip and StatTile (UI-16)', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('StatTile_Alone_IsADivKeepsItsExtraPropsAndHasNoClick', () => {
-    render(
-      <>
-        <StatTile label="Aperte" value={5} data-testid="aperte" className="py-6" />
-        {/* @ts-expect-error a tile that is not a link is not a control: it takes no onClick */}
-        <StatTile label="Chiuse" value={1} onClick={() => undefined} />
-      </>,
-    );
+  it('StatTile_Alone_IsADivAndKeepsItsExtraProps', () => {
+    render(<StatTile label="Aperte" value={5} data-testid="aperte" className="py-6" />);
 
     expect(screen.getByTestId('aperte').tagName).toBe('DIV');
     expect(screen.getByTestId('aperte')).toHaveClass('py-6');
+  });
+
+  it('StatTile_NotALink_TakesNoOnClickBecauseItIsNotAControl', () => {
+    // The type is the guard (the line below must not compile): a tile that is clickable is a link, with an `href`.
+    // @ts-expect-error a tile that is not a link is not a control: it takes no onClick
+    const tile = <StatTile label="Chiuse" value={1} onClick={() => undefined} />;
+
+    expect(tile.props.label).toBe('Chiuse');
+  });
+
+  it('StatTile_HoverUnderline_BelongsToTheLinkOfTheTileAndNotToAnyGroupAboveIt', () => {
+    renderStrip(THREE);
+
+    const [plain, linked] = [screen.getByText('Incassati a ottobre'), screen.getByText('In ritardo')];
+    expect(plain.parentElement?.className).not.toMatch(/group-hover/);
+    expect(linked.parentElement).toHaveClass('group-hover/tile:underline');
+    expect(screen.getByRole('link')).toHaveClass('group/tile');
   });
 
   it('StatTile_LongLabelsAndValues_CanBreak', () => {
