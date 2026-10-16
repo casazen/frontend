@@ -2,6 +2,7 @@ import type { AlloggiatiWebStatus } from "@/types/alloggiati.types";
 import type { AdminSupplierStatus } from "@/types/admin-suppliers";
 import type { BillingSubscriptionStatus } from "@/types/billing.types";
 import type { BookingStatus } from "@/types/booking.types";
+import type { CinStatus } from "@/types/cin.types";
 import type { PropertyComplianceStatus } from "@/types/compliance.types";
 import type { LeaseStatus } from "@/types/lease.types";
 import type { GuestCheckInSessionStatus } from "@/types/public-checkin.types";
@@ -159,6 +160,12 @@ export const STATUS_DICTIONARY = {
     Inviato: { tone: "success", icon: "shield-check" },
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
+  }),
+  /** The CIN of a property, as `GET /properties/cin-compliance` says it. The deadline and the penalties are the page's: they come from the backend. */
+  cin: defineKind<CinStatus>({
+    valid: { tone: "success", icon: "id-card" },
+    missing: { tone: "warning", icon: "alert-triangle" },
+    invalid: { tone: "danger", icon: "alert-circle" },
   }),
   /** A service of the catalog of the supplier (SP-06): a draft is seen only by its supplier, a paused one is off offer but kept. */
   serviceListing: defineKind<SupplierServiceStatus>({

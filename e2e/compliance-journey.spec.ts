@@ -205,11 +205,11 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await page.goto(demoUrl('/app/short-rent/compliance/cin', 'short-stay'));
       await expect(page.getByTestId('cin-compliance-page')).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByTestId('cin-summary-cards')).toBeVisible();
+      await expect(page.getByTestId('cin-focus')).toBeVisible();
       await expect(page.getByTestId('cin-compliance-table')).toBeVisible();
       const table = page.getByTestId('cin-compliance-table');
-      await expect(table.getByRole('row', { name: /Appartamento Centro/ })).toContainText(/Mancante/);
-      await expect(table.getByRole('row', { name: /Monolocale Mare/ })).toContainText(/Valido/);
+      await expect(table.getByRole('listitem').filter({ hasText: /Appartamento Centro/ })).toContainText(/Mancante/);
+      await expect(table.getByRole('listitem').filter({ hasText: /Monolocale Mare/ })).toContainText(/Valido/);
     });
   });
 
