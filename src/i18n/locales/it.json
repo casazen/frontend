@@ -613,8 +613,6 @@
     "notFound": "Contratto non trovato",
     "notFoundDescription": "Il contratto che stai cercando non esiste o non hai i permessi per visualizzarlo.",
     "backToList": "Torna ai contratti",
-    "leaseContract": "Contratto di locazione",
-    "contractTerms": "Termini contrattuali",
     "monthlyRent": "Canone mensile",
     "fiscalRegime": "Regime fiscale",
     "registrationDeadline": "Scadenza registrazione",
@@ -1206,6 +1204,41 @@
       "missing": "Conduttore da indicare"
     },
     "term": "dal {{from}} al {{to}}"
+  },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Condizioni economiche"
+    },
+    "dates": {
+      "end": "Fine del contratto",
+      "start": "Inizio del contratto",
+      "title": "Durata e date"
+    },
+    "details": "Mostra dettagli",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "Tu"
+      },
+      "more": "Mostra tutta la cronologia"
+    },
+    "party": {
+      "extraEu": "Extra-UE"
+    },
+    "property": {
+      "open": "Apri l'immobile",
+      "title": "Immobile"
+    },
+    "status": {
+      "explain": "Cosa significa questo stato"
+    },
+    "tabs": {
+      "data": "Dati",
+      "deadlines": "Scadenze",
+      "documents": "Documenti",
+      "label": "Sezioni del contratto",
+      "payments": "Pagamenti"
+    }
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",

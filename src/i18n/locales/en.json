@@ -613,8 +613,6 @@
     "notFound": "Lease not found",
     "notFoundDescription": "The lease you are looking for does not exist or you do not have access.",
     "backToList": "Back to leases",
-    "leaseContract": "Lease contract",
-    "contractTerms": "Contract terms",
     "monthlyRent": "Monthly rent",
     "fiscalRegime": "Fiscal regime",
     "registrationDeadline": "Registration deadline",
@@ -1206,6 +1204,41 @@
       "missing": "Tenant to be added"
     },
     "term": "from {{from}} to {{to}}"
+  },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Economic terms"
+    },
+    "dates": {
+      "end": "End of the lease",
+      "start": "Start of the lease",
+      "title": "Term and dates"
+    },
+    "details": "Show details",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "You"
+      },
+      "more": "Show the whole history"
+    },
+    "party": {
+      "extraEu": "Non-EU"
+    },
+    "property": {
+      "open": "Open the property",
+      "title": "Property"
+    },
+    "status": {
+      "explain": "What this status means"
+    },
+    "tabs": {
+      "data": "Details",
+      "deadlines": "Deadlines",
+      "documents": "Documents",
+      "label": "Sections of the lease",
+      "payments": "Payments"
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
