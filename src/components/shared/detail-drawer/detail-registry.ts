@@ -65,6 +65,24 @@ export function getDetail(kind: string): DetailDef | undefined {
   return definitions.get(kind);
 }
 
+let hosts = 0;
+
+/**
+ * The host of the drawer says it is on the page. `open` needs one to show anything: on a route outside the shell (a public
+ * page) it would only add a history entry that nothing draws. A second host would draw every drawer twice, so it is said loudly.
+ */
+export function registerHost(): () => void {
+  hosts += 1;
+  if (import.meta.env.DEV && hosts > 1) console.error('DetailDrawerHost is mounted more than once: the one host of the app is in AppShellLayout.');
+  return () => {
+    hosts -= 1;
+  };
+}
+
+export function isHostMounted(): boolean {
+  return hosts > 0;
+}
+
 /** For `useSyncExternalStore`: a kind that registers after the first render (a chunk that loaded later) is picked up. */
 export function subscribeToDetails(listener: () => void): () => void {
   listeners.add(listener);

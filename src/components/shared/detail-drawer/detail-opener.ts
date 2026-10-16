@@ -15,6 +15,14 @@ export function rememberOpener(element: HTMLElement | null) {
   opener = element;
 }
 
+/**
+ * Remembers `element` unless `open` already said who opened the drawer: for a drawer that an address opened (a link, Forward),
+ * whose opener is whatever had the focus when the drawer came up.
+ */
+export function rememberOpenerIfNone(element: HTMLElement | null) {
+  if (!opener?.isConnected) opener = element;
+}
+
 /** The element to give the focus back to, and forget it: only if it is still on the page. */
 export function takeOpener(): HTMLElement | null {
   const element = opener;

@@ -110,6 +110,15 @@ describe('address of the detail drawer (UI-15)', () => {
       expect(new URLSearchParams(search).get('detail')).toBe('booking:a');
     });
 
+    it('searchWithDetail_AnotherParameterWithAColon_KeepsItsValue', () => {
+      const search = searchWithDetail('?sort=total:desc&f_arrival=2026-10-01..2026-10-31', { kind: 'booking', id: 'a' });
+
+      const params = new URLSearchParams(search);
+      expect(params.get('sort')).toBe('total:desc');
+      expect(params.get('f_arrival')).toBe('2026-10-01..2026-10-31');
+      expect(params.get('detail')).toBe('booking:a');
+    });
+
     it('searchWithDetail_ResultCanBeReadBack', () => {
       const ref = { kind: 'service-request', id: '3f2a9c1e-7b1d' };
 

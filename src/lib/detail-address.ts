@@ -22,6 +22,9 @@ const KIND = /^[a-z][a-z0-9-]{0,31}$/;
  */
 const ID = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,127}$/;
 
+/** The `detail=…` pair of a serialized query (not `f_detail=…`): the first one, with what comes before it. */
+const DETAIL_PAIR = new RegExp(`(^|&)${DETAIL_PARAM}=([^&]*)`);
+
 /** What a drawer shows: the kind that was registered, and the id of the thing. */
 export interface DetailRef {
   kind: string;
@@ -65,8 +68,6 @@ export function searchWithDetail(search: string | URLSearchParams, ref: DetailRe
   const params = new URLSearchParams(search);
   if (ref) params.set(DETAIL_PARAM, `${ref.kind}:${ref.id}`);
   else params.delete(DETAIL_PARAM);
-  const query = params
-    .toString()
-    .replace(new RegExp(`(^|&)${DETAIL_PARAM}=([^&]*)`), (_match, lead: string, value: string) => `${lead}${DETAIL_PARAM}=${value.replace(/%3A/gi, ':')}`);
+  const query = params.toString().replace(DETAIL_PAIR, (_match, lead: string, value: string) => `${lead}${DETAIL_PARAM}=${value.replace(/%3A/gi, ':')}`);
   return query ? `?${query}` : '';
 }

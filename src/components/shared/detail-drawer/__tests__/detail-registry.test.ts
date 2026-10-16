@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getDetail, getDetailsVersion, registerDetail, subscribeToDetails, type DetailDef } from '../detail-registry';
+import { getDetail, getDetailsVersion, isHostMounted, registerDetail, registerHost, subscribeToDetails, type DetailDef } from '../detail-registry';
 
 const def = (title = 'detailDrawer.fallbackTitle'): DetailDef => ({ title, Content: () => null });
 
@@ -54,6 +54,31 @@ describe('registry of the detail drawer (UI-15)', () => {
     unregisterFirst();
 
     expect(getDetail('probe')).toBe(second);
+  });
+
+  it('registerHost_TheHostOfTheShell_IsKnownWhileItIsThereAndForgottenWhenItGoes', () => {
+    expect(isHostMounted()).toBe(false);
+
+    const unregister = registerHost();
+    expect(isHostMounted()).toBe(true);
+
+    unregister();
+    expect(isHostMounted()).toBe(false);
+  });
+
+  it('registerHost_ASecondHost_IsToldLoudlyAndTheFirstStillCounts', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const first = registerHost();
+    expect(error).not.toHaveBeenCalled();
+
+    const second = registerHost();
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('mounted more than once'));
+
+    second();
+    expect(isHostMounted()).toBe(true);
+    first();
+    expect(isHostMounted()).toBe(false);
+    error.mockRestore();
   });
 
   it('subscribeToDetails_ARegistration_TellsTheListenersAndChangesTheVersion', () => {
