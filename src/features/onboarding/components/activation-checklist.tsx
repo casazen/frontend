@@ -8,10 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { activationStepDetail } from '@/lib/activation-labels';
+import { nextActionableStep, normalizeSteps } from '@/lib/activation-steps';
 import { activationStepCtaKey, activationStepLinkState, activationStepRoute } from '@/lib/activation-routes';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useOnboardingStatus } from '@/queries/use-onboarding-status';
-import type { ActivationStep, ActivationStepKey, ActivationStepState } from '@/types/onboarding.types';
+import type { ActivationStep, ActivationStepState } from '@/types/onboarding.types';
 
 const STATE_BADGE: Record<ActivationStepState, BadgeProps['variant']> = {
   done: 'success',
@@ -19,23 +20,6 @@ const STATE_BADGE: Record<ActivationStepState, BadgeProps['variant']> = {
   todo: 'outline',
   blocked: 'secondary',
 };
-
-const KNOWN_STEP_KEYS: ReadonlySet<ActivationStepKey> = new Set([
-  'account',
-  'organization',
-  'property',
-  'cin',
-  'payments',
-  'sitePublished',
-  'firstBooking',
-]);
-
-function normalizeSteps(value: unknown): ActivationStep[] {
-  const steps = (value as { steps?: unknown } | null | undefined)?.steps;
-  if (!Array.isArray(steps)) return [];
-  // A step this version of the app does not know has no text to show: it is left out, never shown as a bare key.
-  return steps.filter((step): step is ActivationStep => !!step && KNOWN_STEP_KEYS.has((step as ActivationStep).key));
-}
 
 function StateIcon({ state }: { state: ActivationStepState }) {
   switch (state) {
@@ -48,12 +32,6 @@ function StateIcon({ state }: { state: ActivationStepState }) {
     default:
       return <Circle className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />;
   }
-}
-
-/** The step the host should do now: the first one that is open and not waiting on another step. */
-function nextActionableStep(steps: ActivationStep[]): ActivationStep | null {
-  const open = steps.filter((step) => step.state !== 'done');
-  return open.find((step) => step.state !== 'blocked') ?? open[0] ?? null;
 }
 
 function NextStep({ step, index, total }: { step: ActivationStep; index: number; total: number }) {
