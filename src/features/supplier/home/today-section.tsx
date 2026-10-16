@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sun } from 'lucide-react';
 import { DayList, FocusBlock, type DayListItem } from '@/components/shared/calm';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { ErrorState } from '@/components/shared/error-state';
-import { SkeletonList } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Segmented } from '@/components/ui/segmented';
+import { SkeletonCard } from '@/components/ui/skeleton';
 import { formatRomeDateTime, romeDateOf, romeWallClock } from '@/lib/stay-dates';
 import { useSupplierChecklist, useSupplierToday } from '@/queries/use-supplier';
 import type { SupplierServiceRequest } from '@/types/service-request';
@@ -18,6 +20,11 @@ import { AVAILABILITY_PATH, HOME_DAYS, hasNotBegun, todayRows } from './home-mod
 const TIME: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
 /** The day of a job that has none yet ("da concordare") has nothing to write in the first column. */
 const NO_DAY = '—';
+
+/** `?oggi=` of the address: which kind of row the block shows. Nothing is every kind. */
+const FILTER_PARAM = 'oggi';
+type Kind = 'requests' | 'jobs';
+const KIND_PARAMS: Record<Kind, string> = { requests: 'richieste', jobs: 'lavori' };
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -49,66 +56,110 @@ function MoreLink({ to, children }: { to: string; children: string }) {
 /**
  * "Oggi e prossimi giorni", the one highlighted block of the home: the requests that wait for the answer (each with its "Accetta"), then
  * the jobs of the next days. A row opens the request in the drawer of the shell; "Accetta" is the same action as in the list of the
- * requests, and the server may refuse it (409) when the supplier already has a job in that time: the toast says why.
+ * requests, and the server may refuse it (409) when the supplier already has a job in that time: the toast says why. The chips show one
+ * kind of row without leaving the page.
  */
 export function TodaySection({ actions }: { actions: RequestActions }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const drawer = useDetailDrawer();
+  const [params, setParams] = useSearchParams();
   const query = useSupplierToday(HOME_DAYS);
   const checklist = useSupplierChecklist();
 
-  if (query.isLoading) return <SkeletonList items={3} className="rounded-xl bg-primary-soft p-4 sm:p-6" />;
+  if (query.isLoading) return <SkeletonCard lines={5} />;
   if (query.isError || !query.data) {
     return <ErrorState title={t('supplier.home.today.loadError')} error={query.error} onRetry={() => void query.refetch()} testId="supplier-today-error" />;
   }
 
   const today = query.data;
   const { requests, jobs, moreRequests } = todayRows(today);
+  const open = (id: string) => drawer.open(REQUEST_DRAWER_KIND, id);
 
   if (requests.length === 0 && jobs.length === 0) {
     // Nothing to do. For a supplier who has not begun (no service, no working hours) that is the moment to say where to begin.
-    if (checklist.isLoading) return <SkeletonList items={1} className="rounded-xl bg-primary-soft p-4 sm:p-6" />;
-    return hasNotBegun(checklist.data) ? (
-      <FocusBlock
-        data-testid="supplier-today"
-        kicker={t('supplier.home.first.kicker')}
-        title={t('supplier.home.first.title')}
-        body={t('supplier.home.first.body')}
-        primary={{ label: t('supplier.home.first.availability'), href: AVAILABILITY_PATH }}
-        secondary={{ label: t('supplier.home.first.service'), href: NEW_SERVICE_PATH }}
-      />
-    ) : (
-      <FocusBlock
-        tone="success"
-        data-testid="supplier-today"
-        kicker={t('supplier.home.today.title')}
-        title={t('supplier.home.free.title')}
-        body={t('supplier.home.free.body')}
-        primary={{ label: t('supplier.home.today.openAvailability'), href: AVAILABILITY_PATH }}
-      />
-    );
+    if (checklist.isLoading) return <SkeletonCard lines={2} />;
+    if (hasNotBegun(checklist.data)) {
+      return (
+        <FocusBlock
+          data-testid="supplier-today"
+          kicker={t('supplier.home.first.kicker')}
+          title={t('supplier.home.first.title')}
+          body={t('supplier.home.first.body')}
+          primary={{ label: t('supplier.home.first.availability'), href: AVAILABILITY_PATH }}
+          secondary={{ label: t('supplier.home.first.service'), href: NEW_SERVICE_PATH }}
+        />
+      );
+    }
   }
 
-  const items: DayListItem[] = [
-    ...requests.map((request) => requestRow(request, { t, locale, today: today.date, actions, open: (id) => drawer.open(REQUEST_DRAWER_KIND, id) })),
-    ...jobs.map((job) => jobRow(job, { t, locale, today: today.date, open: (id) => drawer.open(REQUEST_DRAWER_KIND, id) })),
+  const rows = [
+    ...requests.map((request) => ({ kind: 'requests' as const, item: requestRow(request, { t, locale, today: today.date, actions, open }) })),
+    ...jobs.map((job) => ({ kind: 'jobs' as const, item: jobRow(job, { t, locale, today: today.date, open }) })),
   ];
+  const counts: Record<Kind, number> = { requests: requests.length, jobs: jobs.length };
+  const asked = (Object.keys(KIND_PARAMS) as Kind[]).find((kind) => KIND_PARAMS[kind] === params.get(FILTER_PARAM));
+  const current = asked && counts[asked] > 0 ? asked : null;
+  const shown = current ? rows.filter((row) => row.kind === current) : rows;
+  const choose = (kind: Kind | 'all') =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (kind === 'all') next.delete(FILTER_PARAM);
+        else next.set(FILTER_PARAM, KIND_PARAMS[kind]);
+        return next;
+      },
+      { replace: true },
+    );
 
   return (
     <section
       aria-labelledby="supplier-today-title"
       data-testid="supplier-today"
-      className="min-w-0 rounded-xl bg-primary-soft p-4 ring-1 ring-inset ring-primary/20 sm:p-6"
+      className="min-w-0 overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-primary/25"
     >
-      <h2 id="supplier-today-title" className="mb-2 break-words text-lg font-semibold sm:text-xl">
-        {t('supplier.home.today.title')}
-      </h2>
-      <DayList items={items} />
-      <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
-        {moreRequests > 0 ? <MoreLink to={`${INBOX_PATH}?chip=da-rispondere`}>{t('supplier.home.today.moreRequests', { count: moreRequests })}</MoreLink> : null}
-        <MoreLink to={AVAILABILITY_PATH}>{t('supplier.home.today.openAvailability')}</MoreLink>
-      </div>
+      <header className="space-y-3 bg-primary-soft px-4 py-4 sm:px-5">
+        <h2 id="supplier-today-title" className="break-words text-xl font-bold tracking-tight">
+          {t('supplier.home.today.title')}
+        </h2>
+        {requests.length > 0 && jobs.length > 0 ? (
+          <Segmented<Kind | 'all'>
+            label={t('supplier.home.today.filterLabel')}
+            value={current ?? 'all'}
+            onValueChange={choose}
+            options={[
+              { value: 'all', label: `${t('supplier.home.today.kinds.all')} ${rows.length}` },
+              { value: 'requests', label: `${t('supplier.home.today.kinds.requests')} ${counts.requests}` },
+              { value: 'jobs', label: `${t('supplier.home.today.kinds.jobs')} ${counts.jobs}` },
+            ]}
+          />
+        ) : null}
+      </header>
+
+      {rows.length > 0 ? (
+        <>
+          <div className="px-4 sm:px-5">
+            <DayList items={shown.map((row) => row.item)} className="border-y-0" />
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-border px-4 py-1 sm:px-5">
+            {moreRequests > 0 ? <MoreLink to={`${INBOX_PATH}?chip=da-rispondere`}>{t('supplier.home.today.moreRequests', { count: moreRequests })}</MoreLink> : null}
+            <MoreLink to={AVAILABILITY_PATH}>{t('supplier.home.today.openAvailability')}</MoreLink>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3 p-4 sm:p-5" data-testid="supplier-today-free">
+          <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-foreground/70">
+            <Sun className="size-[22px]" />
+          </span>
+          <div className="min-w-0 flex-1 basis-52">
+            <p className="font-semibold">{t('supplier.home.free.title')}</p>
+            <p className="text-sm text-foreground/70">{t('supplier.home.free.body')}</p>
+          </div>
+          <Button asChild variant="outline" size="sm" className="h-auto min-h-11 whitespace-normal py-2">
+            <Link to={AVAILABILITY_PATH}>{t('supplier.home.today.openAvailability')}</Link>
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
@@ -118,7 +169,7 @@ interface RowContext {
   locale: string;
   /** Today in Europe/Rome, as the server says it. */
   today: string;
-  open: (id: string) => void;
+  open: (id: string) => boolean;
 }
 
 /** A new request: who asks and where, until when to answer, and the button that takes it. */
@@ -135,7 +186,7 @@ function requestRow(request: SupplierServiceRequest, { t, locale, today, actions
       .join(' · '),
     meta: respond ?? undefined,
     tone: respond ? 'warning' : undefined,
-    onOpen: () => open(request.id),
+    onOpen: () => void open(request.id),
     action: {
       label: t('supplier.requests.action.take'),
       ariaLabel: t('supplier.home.today.takeAria', { name }),
@@ -168,6 +219,6 @@ function jobRow(job: SupplierServiceRequest, { t, locale, today, open }: RowCont
     title: job.propertyName || name,
     subtitle: [job.propertyName ? name : job.clientName, job.city].filter(Boolean).join(' · '),
     ...note,
-    onOpen: () => open(job.id),
+    onOpen: () => void open(job.id),
   };
 }

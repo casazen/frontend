@@ -2987,8 +2987,14 @@
       },
       "today": {
         "completed": "Finito: aspetta il pagamento",
+        "filterLabel": "Mostra per tipo",
         "inProgress": "In corso",
         "inProgressSince": "In corso dalle {{time}}",
+        "kinds": {
+          "all": "Tutti",
+          "jobs": "Lavori",
+          "requests": "Da rispondere"
+        },
         "loadError": "Impossibile caricare la tua giornata.",
         "moreRequests_one": "{{count}} altra richiesta da rispondere",
         "moreRequests_other": "Altre {{count}} richieste da rispondere",

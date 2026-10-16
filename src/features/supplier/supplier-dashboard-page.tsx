@@ -18,6 +18,9 @@ import { INBOX_PATH, requestPath } from './requests/request-model';
 import { useRequestActions } from './requests/use-request-actions';
 import { NEW_SERVICE_PATH } from './services/lib/service-paths';
 
+/** Two columns from a wide screen, as the Home of Affitti brevi: the day on the left (60 %), what waits on the right. */
+const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
+
 /**
  * An active supplier whose accepted Terms of Service are not the current version (SU-05, A4-31): says what happens and links the
  * acceptance. It stays out of the way while the status loads or fails.
@@ -94,7 +97,7 @@ export function SupplierDashboardPage() {
   }
 
   return (
-    <div className="min-w-0 space-y-8" data-testid="supplier-home">
+    <div className="min-w-0 space-y-6 md:space-y-8" data-testid="supplier-home">
       <PageHeader
         title={name ? t('supplier.home.greeting', { name }) : t('supplier.home.greetingAnonymous')}
         description={description}
@@ -109,8 +112,10 @@ export function SupplierDashboardPage() {
         <TosReacceptanceNotice />
         <ActivationNotice />
       </div>
-      <TodaySection actions={actions} />
-      <TodoSection />
+      <div className={TWO_COLUMNS}>
+        <TodaySection actions={actions} />
+        <TodoSection />
+      </div>
       <NumbersSection />
       <NextStepSection />
     </div>

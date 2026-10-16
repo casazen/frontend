@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { StatStrip, StatTile } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Select } from '@/components/ui/select';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { formatWorkDuration } from '@/lib/work-duration';
 import { useSupplierOverview } from '@/queries/use-supplier';
 import { formatMoney } from '../services/lib/service-money';
@@ -12,6 +13,10 @@ import { numbersOf, PERIOD_PARAM, PERIODS, periodOf } from './home-model';
 /** What a figure that does not exist says: a dash, never a number made up. */
 const NO_VALUE = '—';
 const sign = (change: number) => (change > 0 ? '+' : '−');
+
+// On a phone the three numbers scroll sideways, one at a time (the same strip as the Home of Affitti brevi).
+const CAROUSEL =
+  'max-sm:[&>ul]:flex max-sm:[&>ul]:snap-x max-sm:[&>ul]:snap-mandatory max-sm:[&>ul]:overflow-x-auto max-sm:[&>ul>li]:w-[78%] max-sm:[&>ul>li]:shrink-0 max-sm:[&>ul>li]:snap-start';
 
 /**
  * "I tuoi numeri": three figures in one quiet row, each against the period just before it. The server works the figures and the
@@ -44,14 +49,7 @@ export function NumbersSection() {
 
   let content: ReactNode;
   if (query.isLoading) {
-    content = (
-      <div role="status" aria-busy="true" className="grid gap-x-8 gap-y-3 border-y border-border py-3 sm:grid-cols-3" data-testid="supplier-kpis-loading">
-        <span className="sr-only">{t('shared.loading.srOnly')}</span>
-        <Skeleton className="h-16" />
-        <Skeleton className="h-16" />
-        <Skeleton className="h-16" />
-      </div>
-    );
+    content = <SkeletonLine lines={3} />;
   } else if (query.isError || !query.data?.current || !query.data.previous) {
     content = <ErrorState title={t('supplier.home.numbers.loadError')} error={query.error} onRetry={() => void query.refetch()} testId="supplier-kpis-error" />;
   } else {
@@ -65,7 +63,7 @@ export function NumbersSection() {
     } else {
       const { acceptancePoints: points, responseChange: response, thirdChange: third } = numbers;
       content = (
-        <StatStrip label={t('supplier.home.numbers.title')}>
+        <StatStrip label={t('supplier.home.numbers.title')} className={CAROUSEL}>
           <StatTile
             data-testid="supplier-kpi-acceptance"
             label={t('supplier.home.numbers.acceptance')}
@@ -103,21 +101,20 @@ export function NumbersSection() {
         <h2 id={titleId} className="min-w-0 break-words text-lg font-semibold">
           {t('supplier.home.numbers.title')}
         </h2>
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-foreground/70">{t('supplier.home.numbers.period')}</span>
-          <select
-            value={period.value}
-            onChange={changePeriod}
-            className="h-11 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            data-testid="supplier-kpi-period"
-          >
-            {PERIODS.map((candidate) => (
-              <option key={candidate.value} value={candidate.value}>
-                {t(candidate.labelKey)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          size="sm"
+          aria-label={t('supplier.home.numbers.period')}
+          data-testid="supplier-kpi-period"
+          wrapperClassName="w-full sm:w-52"
+          value={period.value}
+          onChange={changePeriod}
+        >
+          {PERIODS.map((candidate) => (
+            <option key={candidate.value} value={candidate.value}>
+              {t(candidate.labelKey)}
+            </option>
+          ))}
+        </Select>
       </div>
       {content}
     </section>

@@ -2987,8 +2987,14 @@
       },
       "today": {
         "completed": "Done: waiting for payment",
+        "filterLabel": "Show by type",
         "inProgress": "In progress",
         "inProgressSince": "In progress since {{time}}",
+        "kinds": {
+          "all": "All",
+          "jobs": "Jobs",
+          "requests": "To answer"
+        },
         "loadError": "Your day could not be loaded.",
         "moreRequests_one": "{{count}} more request to answer",
         "moreRequests_other": "{{count}} more requests to answer",
