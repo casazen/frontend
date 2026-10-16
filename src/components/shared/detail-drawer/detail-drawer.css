@@ -1,0 +1,11 @@
+/*
+ * While the detail drawer is open (`DetailDrawerHost` sets `data-detail-drawer-open` on <body>) the page behind it is inert:
+ * Radix puts `pointer-events: none` on <body>, and the toasts, which sit in the page, inherit it. A press on a toast then falls
+ * through to whatever is under it (a toast at the top right of a wide screen lies over the close button of the drawer), and
+ * "Annulla" of a toast raised by an action taken in the drawer cannot be pressed. The toasts take their pointer events back; the
+ * drawer does not take a press on one for a press outside it. Toasts that are stacked out of sight keep the `pointer-events: none`
+ * of sonner. Only this drawer does it: the dialogs of the app are as they were.
+ */
+body[data-detail-drawer-open] [data-sonner-toast]:not([data-visible='false']) {
+  pointer-events: auto;
+}

@@ -1,8 +1,9 @@
-import { Component, Suspense, createElement, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Suspense, createElement, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
@@ -10,39 +11,23 @@ import { SheetHandle } from '@/components/ui/sheet';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { DetailRef } from '@/lib/detail-address';
-import { takeOpener } from './detail-opener';
-import { getDetail, type DetailDef } from './detail-registry';
+import { isChunkLoadError } from './detail-chunk-error';
+import { focusedElement, rememberOpenerIfNone, takeOpener } from './detail-opener';
+import { getDetail, registerHost, type DetailDef } from './detail-registry';
 import { useDetailDrawer } from './use-detail-drawer';
+import './detail-drawer.css';
+
+/** The attribute of `<body>` while a drawer is open: `detail-drawer.css` lets the toasts be pressed under it. */
+const OPEN_ATTRIBUTE = 'data-detail-drawer-open';
 
 /**
  * A toast is not part of the drawer, but a press on one is not a press "outside" it: it must not dismiss the drawer in which
- * the action that raised the toast ("Annulla") was taken.
+ * the action that raised the toast ("Annulla") was taken. (While the drawer is open the toasts can be pressed at all only
+ * because of `detail-drawer.css`.)
  */
 function ignoreToasts(event: Event) {
   const target = event.target;
   if (target instanceof Element && target.closest('[data-sonner-toaster]')) event.preventDefault();
-}
-
-interface BoundaryProps {
-  fallback: ReactNode;
-  children: ReactNode;
-}
-
-/** A content that fails to draw must not take the page with it: the drawer says so and offers to try again. */
-class DetailBoundary extends Component<BoundaryProps, { failed: boolean }> {
-  state = { failed: false };
-
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-
-  componentDidCatch(error: unknown) {
-    console.error('DetailDrawer: the content of a drawer failed to render', error);
-  }
-
-  render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
 }
 
 interface PanelProps {
@@ -69,7 +54,8 @@ function DetailPanel({ shown, def, close }: PanelProps) {
 
   const fallbackTitle = t('detailDrawer.fallbackTitle');
   const pageHref = def.pageHref?.(shown.id);
-  const retryKey = `${shown.kind}:${shown.id}:${attempt}`;
+  const thing = `${shown.kind}:${shown.id}`;
+  const retryKey = `${thing}:${attempt}`;
 
   const title = typeof def.title === 'string' ? t(def.title) : createElement(def.title, { id: shown.id });
 
@@ -84,6 +70,12 @@ function DetailPanel({ shown, def, close }: PanelProps) {
     return () => observer.disconnect();
   }, [titleSlot]);
 
+  // Another drawer in the place of this one (`open` while one is open, or Back to an earlier one): the control that had the focus
+  // is gone with its content, and Radix would leave the focus on the frame. The new content has its own container, at the top.
+  useEffect(() => {
+    bodyRef.current?.focus({ preventScroll: true });
+  }, [thing]);
+
   return (
     <DialogPortal>
       <DialogOverlay className="bg-black/50 md:bg-black/80" />
@@ -94,8 +86,10 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         // The name is the title (Radix points `aria-labelledby` at it); there is no description to read out.
         aria-describedby={undefined}
         // The container of the content takes the focus, not the first control: a drawer that opens on "Accetta" must not have
-        // it focused, and the arrow keys scroll what has the focus.
+        // it focused, and the arrow keys scroll what has the focus. Before that, whatever had the focus (the link that was
+        // followed) is noted as the opener, if `open` did not say who it was.
         onOpenAutoFocus={(event) => {
+          rememberOpenerIfNone(focusedElement());
           event.preventDefault();
           bodyRef.current?.focus({ preventScroll: true });
         }}
@@ -119,30 +113,44 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         )}
       >
         <SheetHandle className="md:hidden" onClose={() => closeRef.current?.click()} />
-        <div className="shrink-0 px-4 pb-3 pr-16 max-md:pt-0 md:px-6 md:pb-4 md:pt-6">
-          <DetailBoundary key={retryKey} fallback={<DialogTitle className="break-words text-lg leading-snug">{fallbackTitle}</DialogTitle>}>
+        {/* `pr-16`: room for the close button, which is 44 px wide and sits over the right corner. */}
+        <div className="shrink-0 px-4 pb-3 pr-16 md:pb-4 md:pl-6 md:pr-16 md:pt-6">
+          <ErrorBoundary
+            key={retryKey}
+            fallbackRender={() => <DialogTitle className="break-words text-lg leading-snug">{fallbackTitle}</DialogTitle>}
+          >
             <DialogTitle className="break-words text-lg leading-snug">
               <span ref={setTitleSlot}>
                 <Suspense fallback={fallbackTitle}>{title}</Suspense>
               </span>
               {untitled ? <span className="sr-only">{fallbackTitle}</span> : null}
             </DialogTitle>
-          </DetailBoundary>
+          </ErrorBoundary>
         </div>
+        {/* Keyed by what is shown: another drawer starts at the top, not where the last one was scrolled to. */}
         <div
+          key={thing}
           ref={bodyRef}
           tabIndex={-1}
           data-testid="detail-drawer-body"
           className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain break-words px-4 pb-6 outline-none md:px-6"
         >
-          <DetailBoundary
+          {/* A content that fails to draw must not take the page with it: the drawer says so and offers to try again. */}
+          <ErrorBoundary
             key={retryKey}
-            fallback={<ErrorState title={t('detailDrawer.errorTitle')} onRetry={() => setAttempt((count) => count + 1)} testId="detail-drawer-error" />}
+            fallbackRender={(error) => (
+              <ErrorState
+                title={t('detailDrawer.errorTitle')}
+                // A `lazy` content whose chunk did not load stays failed in place (React keeps it): the page is loaded again.
+                onRetry={() => (isChunkLoadError(error) ? window.location.reload() : setAttempt((count) => count + 1))}
+                testId="detail-drawer-error"
+              />
+            )}
           >
             <Suspense fallback={<SkeletonLine lines={5} label={t('detailDrawer.loading')} />}>
               {createElement(def.Content, { id: shown.id, close })}
             </Suspense>
-          </DetailBoundary>
+          </ErrorBoundary>
         </div>
         {pageHref ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t px-4 py-3 md:px-6">
@@ -172,6 +180,19 @@ function DetailPanel({ shown, def, close }: PanelProps) {
  */
 export function DetailDrawerHost() {
   const { current, close } = useDetailDrawer();
+  const open = current !== null;
+
+  // `open` refuses to add a history entry on a page that has no host to draw it. A layout effect, so that it is known before the
+  // effects of the page run (a page may open a drawer as it mounts).
+  useLayoutEffect(() => registerHost(), []);
+
+  // While a drawer is open the page behind it is inert, toasts included (Radix, on `<body>`): the stylesheet gives the toasts back
+  // their pointer events, so that "Annulla" can be pressed after an action taken in the drawer.
+  useEffect(() => {
+    if (!open) return;
+    document.body.setAttribute(OPEN_ATTRIBUTE, '');
+    return () => document.body.removeAttribute(OPEN_ATTRIBUTE);
+  }, [open]);
 
   // The last drawer stays in place while the panel slides out: by then the address no longer says what it was.
   const [last, setLast] = useState<DetailRef | null>(current);
@@ -182,9 +203,9 @@ export function DetailDrawerHost() {
 
   return (
     <Dialog
-      open={current !== null}
-      onOpenChange={(open) => {
-        if (!open) close();
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) close();
       }}
     >
       {/* Swapping one drawer for another keeps the panel and mounts the content again (its boundaries are keyed by what is shown). */}

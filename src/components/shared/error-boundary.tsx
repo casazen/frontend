@@ -52,6 +52,12 @@ function ErrorFallback({ error, onReload }: { error: Error; onReload: () => void
   );
 }
 
-export function ErrorBoundary({ children }: { children: React.ReactNode }) {
-  return <ErrorBoundaryInner>{children}</ErrorBoundaryInner>;
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  /** What to show instead of the children when one of them throws, in place of the full-page message (a part of a page that fails alone). */
+  fallbackRender?: (error: Error) => React.ReactNode;
+}
+
+export function ErrorBoundary({ children, fallbackRender }: ErrorBoundaryProps) {
+  return <ErrorBoundaryInner fallbackRender={fallbackRender}>{children}</ErrorBoundaryInner>;
 }

@@ -2,12 +2,12 @@ import { lazy, useEffect } from 'react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router-dom';
+import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
+import { settleDrawer } from '@/test/drawer';
 import { stubViewportWidth } from '@/test/viewport';
 import { DetailDrawerHost } from '../detail-drawer-host';
-import { takeOpener } from '../detail-opener';
 import { registerDetail, type DetailContentProps, type DetailTitleProps } from '../detail-registry';
 import { useDetailDrawer, type DetailDrawerApi } from '../use-detail-drawer';
 
@@ -51,6 +51,10 @@ function EmptyTitle() {
   return null;
 }
 
+function ThrowingTitle(): never {
+  throw new Error('the title failed');
+}
+
 function Page() {
   const drawer = useDetailDrawer();
   const location = useLocation();
@@ -66,6 +70,7 @@ function Page() {
       <button type="button" onClick={(event) => drawer.open('probe-wide', 'w-2', { opener: event.currentTarget })}>
         Apri largo
       </button>
+      <Link to="?detail=probe:abc-1">Link al cassetto</Link>
       <output data-testid="where">{location.pathname + location.search}</output>
     </div>
   );
@@ -119,6 +124,7 @@ describe('Detail drawer (UI-15)', () => {
       registerDetail('probe-boom', { title: 'detailDrawer.fallbackTitle', Content: Bomb }),
       registerDetail('probe-lazy', { title: 'detailDrawer.fallbackTitle', Content: LazyContent }),
       registerDetail('probe-untitled', { title: EmptyTitle, Content: ProbeContent }),
+      registerDetail('probe-bad-title', { title: ThrowingTitle, Content: ProbeContent }),
     );
   });
 
@@ -134,11 +140,7 @@ describe('Detail drawer (UI-15)', () => {
 
   afterEach(async () => {
     cleanup();
-    // The focus scope of a dialog that was open says goodbye one tick after it unmounts: let it, before the next test starts.
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    takeOpener();
+    await settleDrawer();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -339,6 +341,17 @@ describe('Detail drawer (UI-15)', () => {
       expect(router.state.location.search).toBe('?chip=pending');
     });
 
+    it('DetailDrawerHost_Open_PutsAnAttributeOnBodyThatLetsTheToastsBePressedAndTakesItAwayWhenClosed', async () => {
+      renderPage('/app/page?detail=probe:abc-1');
+      await screen.findByRole('dialog');
+      expect(document.body).toHaveAttribute('data-detail-drawer-open');
+
+      fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(document.body).not.toHaveAttribute('data-detail-drawer-open');
+    });
+
     it('DetailDrawerHost_FollowingTheLinkToTheFullPage_LeavesTheDrawerBehind', async () => {
       renderPage('/app/page?detail=probe:abc-1');
       const link = await screen.findByRole('link', { name: 'Apri la scheda completa' });
@@ -402,6 +415,32 @@ describe('Detail drawer (UI-15)', () => {
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     });
 
+    it('DetailDrawerHost_OpenedByALinkNotByOpen_GivesTheFocusBackToTheLinkAnyway', async () => {
+      renderPage();
+      const link = screen.getByRole('link', { name: 'Link al cassetto' });
+      link.focus();
+      fireEvent.click(link);
+      fireEvent.keyDown(await screen.findByRole('dialog'), { key: 'Escape' });
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      await waitFor(() => expect(link).toHaveFocus());
+    });
+
+    it('DetailDrawerHost_AnotherDrawerInThePlaceOfThisOne_StartsAtTheTopOfANewContainerAndTheFocusGoesThere', async () => {
+      renderPage('/app/page?detail=probe:abc-1');
+      const dialog = await screen.findByRole('dialog');
+      await within(dialog).findByText('Ospite abc-1');
+      const before = within(dialog).getByTestId('detail-drawer-body');
+
+      fireEvent.click(within(dialog).getByRole('button', { name: "Vai all'altro" }));
+      await waitFor(() => expect(where()).toContain('probe-wide:z-9'));
+
+      // The old container (and the place it was scrolled to) goes with the old content; the control that had the focus is gone.
+      const after = within(screen.getByRole('dialog')).getByTestId('detail-drawer-body');
+      expect(after).not.toBe(before);
+      await waitFor(() => expect(after).toHaveFocus());
+    });
+
     it('DetailDrawerHost_Tab_StaysInsideTheDrawerAndGoesRoundFromTheLastControlToTheFirst', async () => {
       renderPage('/app/page?detail=probe:abc-1');
       const dialog = await screen.findByRole('dialog');
@@ -429,6 +468,14 @@ describe('Detail drawer (UI-15)', () => {
       // The motion of a panel is for the panel only: a sheet from the bottom moves with its own CSS (`styles/sheet-bottom.css`).
       expect(dialog).toHaveClass('md:data-[state=open]:slide-in-from-right');
       expect(dialog.className).not.toMatch(/(^|\s)(data-\[state=open\]:animate-in|slide-in-from-right)/);
+    });
+
+    it('DetailDrawerHost_Header_KeepsTheTitleClearOfTheCloseButtonOnThePhoneAndFromMd', async () => {
+      renderPage('/app/page?detail=probe:abc-1');
+
+      // `md:px-6` alone would take the room away again from `md` up: the right padding is said for both.
+      const header = (await screen.findByRole('heading', { level: 2 })).parentElement;
+      expect(header).toHaveClass('pr-16', 'md:pr-16');
     });
 
     it('DetailDrawerHost_Handle_IsThereForAFingerAndHiddenFromMd', async () => {
@@ -512,6 +559,14 @@ describe('Detail drawer (UI-15)', () => {
       renderPage('/app/page?detail=probe-wide:w-2');
 
       expect(await screen.findByRole('dialog', { name: 'Details' })).toBeInTheDocument();
+    });
+
+    it('DetailDrawerHost_TitleThatFails_LeavesTheGenericNameAndTheContentStillWorks', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      renderPage('/app/page?detail=probe-bad-title:t-1');
+
+      expect(await screen.findByRole('dialog', { name: 'Dettaglio' })).toBeInTheDocument();
+      expect(await screen.findByText('Ospite t-1')).toBeInTheDocument();
     });
 
     it('DetailDrawerHost_TitleThatDrawsNothingYet_LeavesTheDrawerWithAGenericName', async () => {
