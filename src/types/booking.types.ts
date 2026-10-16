@@ -15,6 +15,8 @@ export interface BookingGuest {
 
 export interface Booking {
   id: string;
+  /** The code the guest knows (`XXXXX-XXXXX`): the API sends it on every booking, the list and the detail alike. */
+  bookingCode?: string;
   propertyId: string;
   propertyName?: string;
   userId: string;
