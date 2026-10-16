@@ -1262,7 +1262,7 @@
       "cancelled": "Cancelled"
     },
     "calendar": {
-      "pageTitle": "Bookings Calendar",
+      "pageTitle": "Calendar",
       "pageDescription": "View and manage bookings in calendar format",
       "listView": "List View",
       "loading": "Loading calendar...",
@@ -1271,11 +1271,16 @@
       "goToProperties": "Go to properties",
       "property": "Property",
       "loadError": "Unable to load the calendar. Please try again later.",
-      "retry": "Try again",
       "guestUnknown": "Unnamed guest",
       "dates_one": "{{arrival}} → {{departure}} · {{count}} night",
       "dates_other": "{{arrival}} → {{departure}} · {{count}} nights",
+      "filters": {
+        "label": "Calendar filters",
+        "period": "Period",
+        "view": "View"
+      },
       "legend": {
+        "summary": "Legend",
         "title": "Calendar legend",
         "confirmed": "Confirmed booking",
         "pending": "Request awaiting confirmation",
@@ -2809,83 +2814,228 @@
     "describeServicesPlaceholder": "Describe your services...",
     "saveProgress": "Save progress",
     "progressSaved": "Progress saved",
-    "inboxTitle": "Assignment Inbox",
-    "inboxDescription": "Service requests from hosts: open an assignment to see where, when and whom to contact.",
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
-    "inbox": {
-      "tabsLabel": "Assignments",
-      "tabOpen": "To do",
-      "tabHistory": "History",
-      "loading": "Loading assignments…",
-      "loadError": "Could not load the assignments.",
-      "emptyOpen": "No open assignments.",
-      "emptyHistory": "No assignments in the history for these filters.",
-      "statusFilter": "Status",
-      "statusAllHistory": "All (completed, paid, declined)",
-      "from": "From",
-      "to": "To",
-      "periodHint": "Days in Italian time: completion date for completed or paid jobs, date of the decline for declined ones.",
-      "periodInvalid": "The start date cannot be after the end date.",
-      "clearFilters": "Clear filters",
-      "pageInfo": "Page {{page}} of {{pages}}",
-      "total_one": "{{count}} assignment",
-      "total_other": "{{count}} assignments",
-      "previous": "Previous",
-      "next": "Next",
-      "details": "Details",
-      "dayOf": "Day: {{date}}",
-      "noDate": "Date to be agreed",
-      "slot": "{{date}}, {{from}}–{{to}} · {{duration}}",
-      "noTime": "time missing",
-      "conflict": "Conflict: you already have a job that overlaps. On the same day you may accept more than one only when the times do not touch.",
-      "receivedOn": "Received on {{date}}",
-      "completedOn": "Completed on {{date}}",
-      "rejectedOn": "Declined on {{date}}"
-    },
-    "request": {
-      "back": "Back to assignments",
-      "loading": "Loading the assignment…",
-      "loadError": "Could not load the assignment.",
-      "notFound": "Assignment not found: it does not exist or was not sent to you.",
-      "whereTitle": "Where",
-      "whenTitle": "When",
-      "hostTitle": "Host contact",
-      "notesTitle": "Host notes",
-      "historyTitle": "History",
-      "actionsTitle": "Actions",
-      "property": "Property",
-      "comune": "Municipality",
-      "postalCode": "Postal code",
-      "address": "Address",
-      "addressAfterTake": "The full address is shown once you accept the request.",
-      "scheduledFor": "Job day",
-      "scheduledForHint": "The guest's check-out day (Italian time).",
-      "time": "Time",
-      "duration": "Duration",
-      "noTimeHint": "The time is missing: propose a slot to the host, or ask them to recreate the request with a start and a duration.",
-      "hasTimeHint": "You can accept another job on the same day only when the times do not overlap.",
-      "noDate": "No date: to be agreed with the host.",
-      "stay": "Stay",
-      "stayDates": "From {{from}} to {{to}}",
-      "longRent": "Long-term rental: the request is for the property, without a stay.",
-      "hostName": "Name",
-      "phone": "Phone",
-      "email": "Email",
-      "contactAfterTake": "The host's name and contact details are shown once you accept the request.",
-      "contactRejected": "You declined this request: the host's details are not available.",
-      "noContactDetails": "The host gave no contact details.",
-      "rejectionReason": "Reason for declining",
-      "actorHost": "Host",
-      "actorSupplier": "Your team",
-      "historyReason": "Reason: {{reason}}",
-      "closedCompleted": "Work completed: waiting for the host to mark it as paid.",
-      "closedPaid": "The host marked the work as paid.",
-      "closedRejected": "You declined this request.",
-      "cancel": "Cancel",
-      "rejectReasonHint": "The host sees the reason (at most 500 characters).",
-      "actionsSuspended": "Actions are not available: the supplier account is suspended."
+    "requests": {
+      "action": {
+        "complete": "Mark as done",
+        "completeShort": "Complete",
+        "openPage": "Open the full page",
+        "reject": "Decline",
+        "take": "Accept"
+      },
+      "actor": {
+        "client": "The customer",
+        "system": "CasaZen",
+        "you": "You"
+      },
+      "answerUrgent": "Answer the most urgent",
+      "chips": {
+        "all": "All",
+        "archive": "Archive",
+        "archiveHint": "Paid, declined or cancelled",
+        "awaiting": "Waiting for the customer",
+        "awaitingHint": "You proposed another time and wait for the customer",
+        "scheduled": "Scheduled",
+        "scheduledHint": "Accepted and on your calendar, or in progress",
+        "toAnswer": "To answer",
+        "toAnswerHint": "Waiting for your answer",
+        "toCollect": "To collect",
+        "toCollectHint": "Finished jobs waiting to be paid"
+      },
+      "contact": {
+        "address": "Address",
+        "afterTake": "The customer’s address and contact details appear once you accept.",
+        "closed": "This request is closed: the customer’s details are not available.",
+        "email": "Email",
+        "name": "Name",
+        "none": "The customer left no contact details.",
+        "phone": "Phone",
+        "subClosed": "Not available",
+        "subHidden": "After you accept",
+        "subShown": "Visible: you accepted",
+        "title": "Address and contacts"
+      },
+      "description": "Answer your customers and follow every job through to the end.",
+      "empty": {
+        "availability": "Set your availability",
+        "description": "Your customers’ requests arrive here, with the time you have to answer. Services and availability are what make them arrive.",
+        "services": "Add a service",
+        "title": "Requests arrive here"
+      },
+      "facts": {
+        "addressAfterTake": "Address after you accept",
+        "client": "Customer",
+        "clientUnknown": "Not given",
+        "fromHost": "CasaZen host",
+        "fromShowcase": "From your site",
+        "net": "Net {{amount}} after the commission",
+        "price": "Price",
+        "priceTbd": "To be agreed",
+        "urgency": "Urgency: {{level}}",
+        "when": "When",
+        "whenTbd": "To be agreed",
+        "where": "Where"
+      },
+      "filters": {
+        "month": "This month",
+        "period": "Last activity between",
+        "today": "Today",
+        "week": "Next 7 days",
+        "when": "Day of the job",
+        "whenAll": "Any day"
+      },
+      "history": {
+        "Annullato": "The customer cancelled the request",
+        "AnnullatoBySupplier": "You cancelled the job",
+        "AnnullatoBySystem": "Request cancelled by CasaZen",
+        "Completato": "Job completed",
+        "InCorso": "Job started",
+        "label": "History of the request",
+        "Pagato": "Paid",
+        "PresoInCarico": "You accepted the request",
+        "Richiesto": "Request received",
+        "Rifiutato": "You declined the request",
+        "sub": "What has happened so far",
+        "title": "History"
+      },
+      "job": {
+        "longRent": "Long-term rental: the request is about the property, with no stay.",
+        "notes": "Customer’s notes",
+        "property": "Property",
+        "service": "Service",
+        "stay": "Stay",
+        "stayDates": "From {{from}} to {{to}}",
+        "sub": "Service, urgency and notes",
+        "title": "The job",
+        "urgency": "Urgency"
+      },
+      "list": {
+        "columns": {
+          "price": "Price",
+          "request": "Request",
+          "state": "State",
+          "when": "When",
+          "where": "Where"
+        },
+        "count_one": "{{count}} request",
+        "count_other": "{{count}} requests",
+        "loadError": "Could not load the requests.",
+        "search": "Search requests",
+        "searchPlaceholder": "Search by service or comune"
+      },
+      "loadError": "Could not load the request.",
+      "loading": "Loading the request…",
+      "noResults": {
+        "description": "Change the list or clear the filters to see the other requests.",
+        "title": "No requests here"
+      },
+      "notFound": {
+        "back": "Go to the requests",
+        "description": "The link may be old, or the request was not sent to you. Look for it in the list: closed ones are there too.",
+        "title": "We can’t find this request"
+      },
+      "now": {
+        "amountToConfirm": "Waiting for the customer to confirm the amount.",
+        "cancelled": {
+          "client": "The request is closed.",
+          "title": "The request was cancelled",
+          "you": "There is nothing else to do: if you had a time on your calendar, it is free again."
+        },
+        "completed": {
+          "client": "Sees the completed job.",
+          "title": "Waiting for the payment",
+          "you": "The customer has to pay for the job and mark the request as paid.",
+          "youOnline": "The customer pays online through CasaZen: we let you know as soon as it happens."
+        },
+        "inProgress": {
+          "client": "Sees that the job is under way.",
+          "then": "Next: the customer sees that you are done.",
+          "title": "You are working",
+          "you": "When you are done, mark the job as completed."
+        },
+        "kicker": "Now",
+        "label": {
+          "client": "The customer",
+          "you": "You"
+        },
+        "paid": {
+          "client": "Has paid for the job.",
+          "title": "Job paid",
+          "you": "There is nothing else to do."
+        },
+        "proposalPending": {
+          "client": "Sees the new time and can accept it.",
+          "title": "Wait for the customer’s answer",
+          "you": "You proposed another time: there is nothing else to do."
+        },
+        "quietTitle": "State of the request",
+        "reason": "Reason: {{reason}}",
+        "rejected": {
+          "client": "Received your reason and can choose another supplier.",
+          "title": "You declined the request",
+          "you": "The request is closed."
+        },
+        "scheduled": {
+          "client": "Sees the confirmed day and time.",
+          "then": "Next: the customer sees that the job is done.",
+          "title": "The job is scheduled",
+          "you": "Do the job at the time given and, when you are done, mark it as completed."
+        },
+        "toAnswer": {
+          "client": "Sent the request and is waiting for your answer.",
+          "then": "Next: once you accept you see the customer’s address and contact details.",
+          "title": "Answer the request",
+          "you": "Accept if you can do the job, otherwise decline it and say why."
+        },
+        "unknown": {
+          "client": "Sees the request in their list.",
+          "title": "Follow the request",
+          "you": "This request is in a state the app does not know yet: reload the page."
+        }
+      },
+      "payment": {
+        "amount": "Amount",
+        "commission": "CasaZen commission",
+        "late": "The customer is late with the payment.",
+        "net": "Net pay",
+        "paidAt": "Paid on",
+        "state": "Payment status",
+        "status": {
+          "Failed": "Payment failed",
+          "NeedsReview": "Being checked by CasaZen",
+          "Paid": "Paid",
+          "PartiallyRefunded": "Partly refunded",
+          "Processing": "Being processed",
+          "Refunded": "Refunded",
+          "Requested": "Asked of the customer",
+          "unknown": "Being checked"
+        },
+        "subNet": "Net {{amount}}",
+        "title": "Payment and pay"
+      },
+      "phase": {
+        "proposalPending": "Waiting for the customer"
+      },
+      "reason": {
+        "CancelledByCustomer": "The customer cancelled the request.",
+        "NoResponse": "Nobody answered in time.",
+        "ProposalNotAnswered": "The customer did not answer the new time."
+      },
+      "reject": {
+        "cancel": "Cancel",
+        "hint": "The customer sees the reason (500 characters at most)."
+      },
+      "requestTitle": "Request",
+      "respondByDay": "Answer by {{day}} at {{time}}",
+      "respondByToday": "Answer by {{time}}",
+      "suspendedHint": "Actions are not available: the supplier account is suspended.",
+      "title": "Requests",
+      "views": {
+        "today": "Today’s",
+        "week": "Next 7 days"
+      }
     },
     "register": {
       "title": "Supplier registration",

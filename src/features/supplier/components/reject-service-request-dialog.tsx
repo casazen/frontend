@@ -48,13 +48,13 @@ export function RejectServiceRequestDialog({
             aria-describedby="reject-reason-hint"
             data-testid="reject-reason"
           />
-          <p id="reject-reason-hint" className="text-xs text-muted-foreground">
-            {t('supplier.request.rejectReasonHint')}
+          <p id="reject-reason-hint" className="text-sm text-foreground/70">
+            {t('supplier.requests.reject.hint')}
           </p>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={close}>
-            {t('supplier.request.cancel')}
+            {t('supplier.requests.reject.cancel')}
           </Button>
           <Button
             onClick={() => onConfirm(trimmed)}
