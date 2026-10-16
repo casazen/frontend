@@ -134,6 +134,10 @@ export function useBookingCalendar(params?: {
   });
 }
 
+/**
+ * Creates a booking entered by hand. No error toast: the wizard of the new booking shows the error above its buttons
+ * (e.g. 409 on overlapping dates).
+ */
 export function useCreateBooking() {
   const queryClient = useQueryClient();
 
@@ -142,9 +146,6 @@ export function useCreateBooking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       toast.success(i18n.t('toast.bookingCreated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingCreateFailed'));
     },
   });
 }
@@ -188,18 +189,32 @@ export function useConfirmBooking() {
   });
 }
 
+const hostBookingQuoteKey = (payload: HostBookingQuotePayload | null) => [BOOKINGS_KEY, 'quote', payload] as const;
+
 /**
  * Price of the stay in the host form, tourist tax included (BK-03): it also says whether the ages of the minors
  * matter (`touristTax.ageRulesApply`).
  */
 export function useHostBookingQuote(payload: HostBookingQuotePayload | null) {
   return useQuery({
-    queryKey: [BOOKINGS_KEY, 'quote', payload],
+    queryKey: hostBookingQuoteKey(payload),
     queryFn: () => bookingsApi.quote(payload!),
     enabled: payload !== null,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     retry: false,
+  });
+}
+
+/**
+ * The same quote, asked once from an event handler (the wizard of the new booking checks it before it moves on): it uses
+ * and fills the cache of `useHostBookingQuote`. A refusal of the API (too many guests, dates out of range) is thrown.
+ */
+export function fetchHostBookingQuote(queryClient: QueryClient, payload: HostBookingQuotePayload) {
+  return queryClient.fetchQuery({
+    queryKey: hostBookingQuoteKey(payload),
+    queryFn: () => bookingsApi.quote(payload),
+    staleTime: 30_000,
   });
 }
 

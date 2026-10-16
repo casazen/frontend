@@ -88,10 +88,15 @@ export function useSaveSafetyChecklist(propertyId: string) {
   });
 }
 
+/**
+ * What the host still has to do: read again every time the page opens, because the stays, the check-ins and the properties
+ * change it from other screens, where this page is not watched (an invalidation would not reach it).
+ */
 export function useComplianceSummary() {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'summary'],
     queryFn: fetchComplianceSummary,
+    refetchOnMount: 'always',
   });
 }
 
