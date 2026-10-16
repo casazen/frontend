@@ -1550,6 +1550,7 @@
         "format": "Invalid email address"
       },
       "phone": {
+        "maxLength": "The phone number can have at most 20 characters",
         "minLength": "Phone number must be at least 10 digits"
       },
       "country": {
@@ -1559,6 +1560,7 @@
         "required": "Property is required"
       },
       "checkInDate": {
+        "inPast": "The arrival date has already passed: choose an arrival from today on.",
         "required": "Check-in date is required"
       },
       "checkOutDate": {
@@ -1731,8 +1733,82 @@
       }
     },
     "create": {
-      "title": "Create Booking",
-      "description": "Create a new booking reservation"
+      "description": "For a booking taken by phone or in person: three short steps, and the draft saves itself.",
+      "done": {
+        "calendar": "The nights from {{from}} to {{to}} are now taken on the calendar and on the booking site.",
+        "checkin": "A few days before arrival {{name}} gets the link for the online check-in by email.",
+        "description": "{{property}}, from {{from}} to {{to}}",
+        "guestFallback": "the guest",
+        "open": "Open the booking",
+        "payment": "No payment has been recorded: if the guest pays by hand, you record it under Payments.",
+        "title": "Booking for {{name}} added",
+        "toList": "All bookings"
+      },
+      "finish": "Create the booking",
+      "guest": {
+        "checkinNote": "The guest fills in the documents and the details of all the guests with the online check-in.",
+        "country": "Country",
+        "countryExample": "Italy",
+        "email": "Email",
+        "emailExample": "mary.smith@example.com",
+        "emailHint": "The link for the online check-in is sent to this address.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "notes": "Notes",
+        "notesHint": "For example the arrival time or a special request.",
+        "phone": "Phone",
+        "phoneExample": "+39 333 123 4567"
+      },
+      "stay": {
+        "adults": "Adults",
+        "adultsHint": "18 or older",
+        "capacity_one": "The property sleeps up to {{count}} person.",
+        "capacity_other": "The property sleeps up to {{count}} people.",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "guestsTitle": "How many people?",
+        "minors": "Minors",
+        "minorsHint": "Under 18",
+        "nights_one": "{{count}} night",
+        "nights_other": "{{count}} nights",
+        "overCapacity_one": "The property sleeps up to {{count}} person: with more guests the booking is not accepted.",
+        "overCapacity_other": "The property sleeps up to {{count}} people: with more guests the booking is not accepted.",
+        "property": "Property",
+        "propertyPlaceholder": "Choose the property"
+      },
+      "steps": {
+        "guest": {
+          "label": "Guest",
+          "purpose": "We need the contact details of the person who booked.",
+          "title": "Who is coming to stay?"
+        },
+        "stay": {
+          "label": "Stay",
+          "purpose": "Choose the property, the dates and how many people are coming.",
+          "title": "Which property, and which dates?"
+        },
+        "summary": {
+          "label": "Summary and price",
+          "purpose": "CasaZen works out the price from the settings of the property.",
+          "title": "Check and create the booking"
+        }
+      },
+      "summary": {
+        "adults_one": "{{count}} adult",
+        "adults_other": "{{count}} adults",
+        "contact": "Contact",
+        "dates": "Dates",
+        "datesValue_one": "From {{from}} to {{to}} · {{count}} night",
+        "datesValue_other": "From {{from}} to {{to}} · {{count}} nights",
+        "guest": "Guest",
+        "guests": "People",
+        "minors_one": "{{count}} minor",
+        "minors_other": "{{count}} minors",
+        "notes": "Notes",
+        "property": "Property",
+        "stayMissing": "The property and the dates are missing: without them we cannot work out the price."
+      },
+      "title": "New booking"
     },
     "edit": {
       "title": "Edit Booking",
@@ -4809,6 +4885,20 @@
         ]
       }
     },
+    "cin": {
+      "valid": {
+        "label": "Valid",
+        "explain": "The CIN is on record in the official format. It must be displayed outside the property and stated in every listing."
+      },
+      "missing": {
+        "label": "Missing",
+        "explain": "This property has no CIN yet: it is mandatory to rent for short periods."
+      },
+      "invalid": {
+        "label": "Invalid",
+        "explain": "The code entered is not in the official format: check it and correct it."
+      }
+    },
     "alloggiati": {
       "DaInviare": {
         "label": "To send",
@@ -5053,6 +5143,19 @@
     "title": "Alloggiati Web",
     "description": "Police reporting communication status (Art. 109 TULPS)",
     "noPendingReport": "No bookings with pending Alloggiati report.",
+    "list": {
+      "title": "Communications"
+    },
+    "focus": {
+      "send": "Send the communication of {{name}}",
+      "fix": "Fix the communication of {{name}}",
+      "then_one": "Then: {{count}} more communication to send",
+      "then_other": "Then: {{count}} more communications to send",
+      "ok": {
+        "title": "Nothing to send right now",
+        "cta": "Open bookings"
+      }
+    },
     "bookings": "Bookings",
     "guest": "Guest",
     "property": "Property",
@@ -5447,6 +5550,14 @@
       "Missing": "Missing",
       "Invalid": "Invalid"
     },
+    "list": {
+      "title": "Your properties"
+    },
+    "focus": {
+      "ok": {
+        "title": "Every property has a valid CIN"
+      }
+    },
     "summary": {
       "valid": "Valid",
       "missing": "Missing",
@@ -5463,7 +5574,9 @@
       "city": "City",
       "cinCode": "CIN code",
       "status": "Status",
-      "editCin": "Edit CIN"
+      "editCin": "Edit CIN",
+      "addCin": "Add the CIN",
+      "fixCin": "Fix the CIN"
     },
     "banner": {
       "title": "CIN compliance required (D.L. 145/2023)",
@@ -6691,8 +6804,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance cockpit",
-      "description": "Pending compliance tasks for properties and bookings"
+      "title": "Compliance",
+      "description": "What is missing to be compliant, for your properties and your stays."
     },
     "summary": {
       "title": "Compliance overview",
@@ -6710,6 +6823,32 @@
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
       "turnoversPending": "Properties to declare ready"
+    },
+    "cockpit": {
+      "kicker": "What is missing",
+      "allClear": {
+        "title": "You are all set",
+        "body": "Nothing is pending: your properties are active and your stays are in order.",
+        "cta": "Open properties"
+      },
+      "then_one": "Then: {{count}} more thing to fix",
+      "then_other": "Then: {{count}} more things to fix",
+      "stays": {
+        "title": "To do"
+      },
+      "properties": {
+        "title": "Your properties"
+      },
+      "seeAll": "See all ({{count}})",
+      "showLess": "Show less",
+      "missing": {
+        "lead": "Missing: {{what}}",
+        "guests_one": "{{count}} guest",
+        "guests_other": "{{count}} guests",
+        "notConfirmed": "Final confirmation",
+        "composition": "Guest composition",
+        "guestData": "Guest details"
+      }
     },
     "properties": {
       "openWizard": "Activation wizard",

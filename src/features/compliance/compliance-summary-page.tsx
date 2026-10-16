@@ -9,10 +9,11 @@ export function ComplianceSummaryPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6" data-testid="compliance-summary-page">
+      <div className="space-y-6 md:space-y-8" data-testid="compliance-summary-page">
         <PageHeader
           title={t('compliance.page.title')}
           description={t('compliance.page.description')}
+          crumbs="auto"
           action={<NavChildLinks parentPath="/app/short-rent/compliance" />}
         />
         <ComplianceSummaryWidget />

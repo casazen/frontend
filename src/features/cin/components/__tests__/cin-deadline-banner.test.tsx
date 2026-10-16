@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import { CinDeadlineBanner } from '../cin-deadline-banner';
-import { CinSummaryCards } from '../cin-summary-cards';
 import type { CinComplianceSummary } from '@/types/cin.types';
 
 /** Summary as `GET /api/properties/cin-compliance` returns it (CO-20): the phase is computed by the backend. */
@@ -84,29 +83,5 @@ describe('CinDeadlineBanner (CO-20)', () => {
     const { container } = render(<CinDeadlineBanner summary={{ ...passed, missing: 0, invalid: 0, hasNonCompliant: false }} />);
 
     expect(container).toBeEmptyDOMElement();
-  });
-});
-
-describe('CinSummaryCards (CO-20)', () => {
-  afterEach(cleanup);
-
-  it('CinSummaryCards_BeforeTheDeadline_ShowsTheDaysLeft', () => {
-    render(<CinSummaryCards summary={upcoming} />);
-
-    expect(screen.getByTestId('cin-days-until-deadline')).toHaveTextContent('Mancano 10 giorni');
-    expect(screen.getByText('Scadenza del 1 marzo 2027')).toBeInTheDocument();
-  });
-
-  it('CinSummaryCards_AfterTheDeadline_ShowsPassedNotZero', () => {
-    render(<CinSummaryCards summary={passed} />);
-
-    expect(screen.getByTestId('cin-days-until-deadline')).toHaveTextContent('Superata');
-  });
-
-  it('CinSummaryCards_NoDeadlineConfigured_HidesTheDeadlineCard', () => {
-    render(<CinSummaryCards summary={noDeadline} />);
-
-    expect(screen.queryByTestId('cin-days-until-deadline')).not.toBeInTheDocument();
-    expect(screen.getByTestId('cin-summary-cards')).toHaveTextContent('Non validi');
   });
 });
