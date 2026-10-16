@@ -68,14 +68,29 @@ function withAccountHome(contexts: ContextBootstrapDto[]): ContextBootstrapDto[]
   });
 }
 
+/**
+ * The contexts as the workspace keeps them: the account one with its own home, and last. The API lists them sorted by key, so
+ * `account` would come first, and the first context is where a person with no saved area starts (`resolveActiveContext`, and the
+ * guard and the legacy redirect, read `contexts[0]`): a person with another area starts there, as before, and the account area
+ * stays one click away in the area selector.
+ */
+function arrangeContexts(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
+  const withHome = withAccountHome(contexts);
+  return [
+    ...withHome.filter((context) => context.contextKey !== 'account'),
+    ...withHome.filter((context) => context.contextKey === 'account'),
+  ];
+}
+
 function applyResolvedContext(
   available: ContextBootstrapDto[],
   preferred: AppContextKey | null | undefined,
   setContexts: (contexts: ContextBootstrapDto[]) => void,
   setActiveContextState: (context: AppContextKey | null) => void,
 ) {
-  setContexts(withAccountHome(available));
-  const resolved = resolveActiveContext(available, preferred);
+  const arranged = arrangeContexts(available);
+  setContexts(arranged);
+  const resolved = resolveActiveContext(arranged, preferred);
   setActiveContextState(resolved);
   if (resolved) {
     localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, resolved);
