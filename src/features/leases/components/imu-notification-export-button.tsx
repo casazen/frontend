@@ -1,7 +1,7 @@
 import { Download, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import {
   useExportImuNotification,
@@ -62,11 +62,8 @@ export function ImuNotificationExportButton({ leaseId }: Props) {
   };
 
   return (
-    <Card data-testid="imu-notification">
-      <CardHeader>
-        <CardTitle>{t('leases.canoneConcordato.exportImu')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
+    <PlainSection title={t('leases.canoneConcordato.exportImu')} data-testid="imu-notification">
+      <div className="space-y-3 pt-2 text-sm">
         <p className="text-muted-foreground">{t('leases.canoneConcordato.exportImuHint')}</p>
 
         {status.isLoading && (
@@ -89,7 +86,7 @@ export function ImuNotificationExportButton({ leaseId }: Props) {
         )}
 
         {status.data && !available && (
-          <p className="rounded-md border p-3" data-testid="imu-unavailable-reason">
+          <p data-testid="imu-unavailable-reason">
             {reasonText(status.data, t)}
           </p>
         )}
@@ -119,8 +116,8 @@ export function ImuNotificationExportButton({ leaseId }: Props) {
             {t('leases.canoneConcordato.markSent')}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PlainSection>
   );
 }
 
@@ -148,7 +145,7 @@ async function blobProblemMessage(error: unknown, t: TranslateFn): Promise<strin
 function ChannelDetails({ channel }: { channel: ImuNotificationChannel }) {
   const { t } = useTranslation();
   return (
-    <div className="space-y-1 rounded-md bg-muted/40 p-3" data-testid="imu-channel">
+    <div className="space-y-1 border-s-2 border-border ps-4" data-testid="imu-channel">
       <p className="font-medium">{channel.recipientOffice}</p>
       {channel.email && (
         <p>
