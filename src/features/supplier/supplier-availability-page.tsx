@@ -25,7 +25,7 @@ import { AgendaToolbar } from './components/agenda-toolbar';
 import { AgendaWeekView } from './components/agenda-week-view';
 import { FreeEventsBanner } from './components/free-events-banner';
 import { HOURS_EDIT_PATH, WeeklyHoursSection } from './components/weekly-hours-section';
-import { AGENDA_PATH, agendaParams, agendaRange, eachDay, readAgendaView, type AgendaView } from './lib/agenda-range';
+import { agendaParams, agendaRange, eachDay, readAgendaView, type AgendaView } from './lib/agenda-range';
 import { pendingFreeEventDates } from './lib/free-events';
 import { buildWorkingDays } from './lib/supplier-agenda';
 
@@ -122,7 +122,7 @@ export function SupplierAvailabilityPage() {
         title={t('supplier.agenda.title')}
         description={t('supplier.agenda.description')}
         crumbs="auto"
-        action={<NavChildLinks parentPath={AGENDA_PATH} />}
+        action={<NavChildLinks parentPath="/app/supplier/availability" />}
       />
 
       {notice}
