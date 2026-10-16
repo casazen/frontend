@@ -12,14 +12,17 @@ import {
   fetchSupplierActivation,
   fetchSupplierShowcasePreview,
   fetchSupplierAgendaCalendar,
+  fetchSupplierChecklist,
   fetchSupplierDashboard,
   fetchSupplierHours,
   fetchSupplierInbox,
   fetchSupplierInboxCounts,
   fetchSupplierInboxItem,
   fetchSupplierKpis,
+  fetchSupplierOverview,
   fetchSupplierProfile,
   fetchSupplierRegistrationOptions,
+  fetchSupplierToday,
   inviteSupplier,
   lookupSupplierInvite,
   reactivateSupplier,
@@ -42,6 +45,7 @@ import type {
   SupplierAgendaHoursDay,
   SupplierInboxParams,
   SupplierKpiPeriod,
+  SupplierOverviewPeriod,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
 
@@ -106,6 +110,36 @@ export function useSupplierInboxCounts() {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'counts'],
     queryFn: fetchSupplierInboxCounts,
+    refetchOnMount: 'always',
+  });
+}
+
+/**
+ * What the home shows of today and the next `days` days (SP-04e): the new requests to answer and the jobs. Under `['supplier', 'inbox']`:
+ * every action of the supplier reloads it, and it is read again when the page opens (the shared client does not read again on mount).
+ */
+export function useSupplierToday(days: number) {
+  return useQuery({
+    queryKey: ['supplier', 'inbox', 'today', days],
+    queryFn: () => fetchSupplierToday(days),
+    refetchOnMount: 'always',
+  });
+}
+
+/** The three numbers of the home for a period and the one before it (SP-04e). Under `['supplier', 'dashboard']`: a take or a refusal reloads it. */
+export function useSupplierOverview(period: SupplierOverviewPeriod) {
+  return useQuery({
+    queryKey: ['supplier', 'dashboard', 'overview', period],
+    queryFn: () => fetchSupplierOverview(period),
+    refetchOnMount: 'always',
+  });
+}
+
+/** The steps of the activation checklist (SP-04): what the supplier did, and so the next step. Read again when the home opens. */
+export function useSupplierChecklist() {
+  return useQuery({
+    queryKey: ['supplier', 'checklist'],
+    queryFn: fetchSupplierChecklist,
     refetchOnMount: 'always',
   });
 }

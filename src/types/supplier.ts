@@ -243,6 +243,65 @@ export interface SupplierKpis {
   totalRequests: number;
 }
 
+/**
+ * `GET /supplier/today?days=` (SP-04, SP-04e): the home of the console. `jobs` are the ones taken, in progress, completed or paid from
+ * `date` (today in Europe/Rome) to `dateTo`, the first in time first (at most 50, `jobsTotal` says how many there are); `newRequests` are
+ * the first new requests waiting for the answer, the one to answer first on top, and `newRequestsTotal` how many there are in all.
+ */
+export interface SupplierToday {
+  date: string;
+  dateTo?: string;
+  days?: number;
+  jobs: import('@/types/service-request').SupplierServiceRequest[];
+  jobsTotal?: number;
+  newRequests: import('@/types/service-request').SupplierServiceRequest[];
+  newRequestsTotal: number;
+}
+
+/** `period` of `GET /supplier/dashboard/overview` (SP-04e): Europe/Rome days, today at most. */
+export type SupplierOverviewPeriod = 'current-month' | 'last-30-days' | 'last-3-months';
+
+/** The figures of one period of the overview. One that does not exist (a rate when nobody was answered) is `null`, never 0. */
+export interface SupplierOverviewFigures {
+  from: string;
+  to: string;
+  received: number;
+  accepted: number;
+  rejected: number;
+  /** Accepted over accepted plus rejected, from 0 to 1. */
+  acceptanceRate: number | null;
+  /** Average minutes from the arrival of a request to its take. */
+  averageResponseMinutes: number | null;
+  completedJobs: number;
+  /** The net of the payments paid in the period, in cents: 0 unless `onlinePayments`. */
+  paidNetCents: number;
+}
+
+/**
+ * `GET /supplier/dashboard/overview?period=` (SP-04e): the three numbers of the home for a period and for the same number of days just
+ * before it, so that the page says "better" or "worse" without a calculation of its own. With `onlinePayments` false the money is 0 and
+ * the page talks about the jobs completed, never about "Incassi".
+ */
+export interface SupplierOverview {
+  period: SupplierOverviewPeriod;
+  onlinePayments: boolean;
+  current: SupplierOverviewFigures;
+  previous: SupplierOverviewFigures;
+}
+
+/** `GET /supplier/checklist` (SP-04): the steps of the activation, each from what the supplier really did. */
+export interface SupplierChecklist {
+  profileCompletionPercent: number;
+  profileComplete: boolean;
+  /** Published services: the step is done with at least one. */
+  activeServices: number;
+  hoursConfigured: boolean;
+  showcasePublished: boolean;
+  firstRequestAnswered: boolean;
+  /** `null` means "not available yet", not "no": the step is not counted. */
+  paymentsActive?: boolean | null;
+}
+
 /** `GET /supplier/showcase` (SU-13): the same content as the public page, from the caller's own profile. */
 export interface SupplierShowcasePreview {
   showcase: import('@/api/public-supplier.api').SupplierShowcaseDto;

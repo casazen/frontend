@@ -3067,6 +3067,97 @@
     "loading": "Caricamento...",
     "noAssignments": "Nessun incarico aperto",
     "assignmentsCount": "{{count}} incarichi",
+    "home": {
+      "first": {
+        "availability": "Imposta la tua disponibilità",
+        "body": "Indica i giorni e gli orari in cui lavori e aggiungi i tuoi servizi: è da qui che arrivano le richieste.",
+        "kicker": "Per cominciare",
+        "service": "Aggiungi un servizio",
+        "title": "Dì ai clienti quando lavori"
+      },
+      "free": {
+        "body": "Nessun lavoro né richieste nei prossimi giorni. Tieni aggiornati orari e servizi per riceverne di più.",
+        "title": "Giornata libera"
+      },
+      "greeting": "Buongiorno, {{name}}",
+      "greetingAnonymous": "Buongiorno",
+      "menu": {
+        "newService": "Aggiungi un servizio",
+        "requests": "Tutte le richieste"
+      },
+      "next": {
+        "continue": "Continua",
+        "loadError": "Impossibile caricare i prossimi passi.",
+        "next": "Prossimo: {{step}}",
+        "progress": "{{done}} di {{total}}",
+        "title": "Configura il tuo profilo"
+      },
+      "numbers": {
+        "acceptance": "Accettate",
+        "delta": "{{value}} sul periodo prima",
+        "deltaFaster": "{{amount}} più veloce del periodo prima",
+        "deltaSame": "Come nel periodo prima",
+        "deltaSlower": "{{amount}} più lento del periodo prima",
+        "earnings": "Incassi netti",
+        "jobs": "Lavori completati",
+        "loadError": "Impossibile caricare i tuoi numeri.",
+        "period": "Periodo",
+        "periods": {
+          "currentMonth": "Questo mese",
+          "last30Days": "Ultimi 30 giorni",
+          "last3Months": "Ultimi 3 mesi"
+        },
+        "points_one": "{{count}} punto",
+        "points_other": "{{count}} punti",
+        "quiet": "I tuoi numeri compaiono qui quando arrivano le prime richieste.",
+        "response": "Tempo di risposta",
+        "title": "I tuoi numeri"
+      },
+      "purpose": {
+        "jobsToday_one": "{{count}} lavoro oggi",
+        "jobsToday_other": "{{count}} lavori oggi",
+        "line": "{{day}} · {{what}}",
+        "quiet": "giornata tranquilla, niente di urgente",
+        "toAnswer_one": "{{count}} richiesta da rispondere",
+        "toAnswer_other": "{{count}} richieste da rispondere"
+      },
+      "steps": {
+        "firstRequest": "Rispondi alla tua prima richiesta",
+        "hours": "Imposta la tua disponibilità",
+        "profile": "Completa il profilo",
+        "services": "Aggiungi il tuo primo servizio",
+        "showcase": "Pubblica la tua vetrina"
+      },
+      "today": {
+        "completed": "Finito: aspetta il pagamento",
+        "filterLabel": "Mostra per tipo",
+        "inProgress": "In corso",
+        "inProgressSince": "In corso dalle {{time}}",
+        "kinds": {
+          "all": "Tutti",
+          "jobs": "Lavori",
+          "requests": "Da rispondere"
+        },
+        "loadError": "Impossibile caricare la tua giornata.",
+        "moreRequests_one": "{{count}} altra richiesta da rispondere",
+        "moreRequests_other": "Altre {{count}} richieste da rispondere",
+        "openAvailability": "Apri la disponibilità",
+        "paymentLate": "Pagamento in ritardo",
+        "takeAria": "Accetta: {{name}}",
+        "title": "Oggi e prossimi giorni"
+      },
+      "todo": {
+        "allClear": "Tutto in ordine",
+        "allClearHint": "Niente aspetta una tua risposta. Ti avvisiamo qui quando arriva qualcosa.",
+        "loadError": "Impossibile caricare le cose da fare.",
+        "paymentsLate_one": "{{count}} pagamento in ritardo",
+        "paymentsLate_other": "{{count}} pagamenti in ritardo",
+        "paymentsLateAction": "Vedi i lavori da incassare",
+        "paymentsLateHint": "Un cliente non ha ancora pagato un lavoro finito. Dalla richiesta puoi ricordarglielo.",
+        "requests": "Vedi le richieste",
+        "title": "Da fare"
+      }
+    },
     "requests": {
       "action": {
         "complete": "Segna come completato",
