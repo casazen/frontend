@@ -2292,6 +2292,39 @@
       "price": "Base price",
       "spaces": "Spaces"
     },
+    "next": {
+      "allInOrder": {
+        "nextArrival": "Next arrival: {{date}}",
+        "title": "All in order"
+      },
+      "cinInvalid": {
+        "action": "Fix the CIN",
+        "title": "The CIN is not in the official format"
+      },
+      "cinMissing": {
+        "action": "Enter the CIN",
+        "title": "The CIN code is missing"
+      },
+      "heading": "What to do now",
+      "paused": {
+        "title": "The property is paused"
+      },
+      "pending": {
+        "action": "Continue the activation",
+        "missing": "Still missing: {{steps}}.",
+        "title": "Complete the activation"
+      },
+      "photos": {
+        "body": "Guests also choose by looking at the pictures: the first photo is the cover.",
+        "title": "Add the photos"
+      },
+      "suspended": {
+        "action": "Fix the mandatory items",
+        "title": "The property is suspended"
+      },
+      "toProperties": "Back to the properties",
+      "whoHost": "Your turn"
+    },
     "table": {
       "active": "Active",
       "paused": "Paused",
@@ -2312,44 +2345,36 @@
       "consequenceBlocked": "It cannot be deleted while it has upcoming bookings or active leases."
     },
     "detail": {
-      "loading": "Loading property...",
+      "loading": "Loading the property…",
       "notFound": "Property not found",
-      "notFoundDescription": "The property you are looking for does not exist.",
+      "notFoundDescription": "The property you are looking for does not exist or you do not have access.",
       "loadError": "Could not load the property.",
-      "retry": "Retry",
       "tabs": {
-        "info": "Info & Photos",
+        "info": "Overview",
         "photos": "Photos",
-        "pricing": "Seasonal suggestions",
+        "activity": "Bookings and interventions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
-        "documents": "Documents",
-        "cin": "CIN & Compliance"
+        "documents": "Documents and compliance"
       },
       "edit": "Edit",
-      "bookingsLink": "Bookings for this property",
       "description": "Description",
       "cinTitle": "CIN Code",
       "cinDescription": "The National Identification Code (CIN) is mandatory under D.L. 145/2023 for all accommodation facilities in Italy. Format: IT + ISTAT municipality code (6 digits) + category (2 characters) + alphanumeric code (up to 8 characters), e.g. IT015146C2ABCDEFGH.",
       "editCin": "Edit CIN",
-      "complianceSummary": "Compliance summary",
-      "cinStatus": "CIN status",
-      "propertyActive": "Property status",
-      "documents": "Documents",
-      "documentsCount_one": "{{count}} uploaded",
-      "documentsCount_other": "{{count}} uploaded",
-      "pricingTitle": "Seasonal suggestions",
-      "pricingDescription": "Suggested nightly prices based on the property's rate and your season and holiday rules. They are proposals: they do not change the prices applied.",
       "managePricing": "Manage suggestions",
       "viewOnPublicSite": "View on public site",
-      "publicSiteHint": "Preview how guests see this property on your direct booking site.",
-      "newBooking": "New booking"
+      "newBooking": "New booking",
+      "allBookings": "See the bookings",
+      "fallbackTitle": "Property",
+      "onSite": "On the booking site",
+      "sections": {
+        "data": "Property details",
+        "pricing": "Prices"
+      },
+      "tabsLabel": "Sections of the property"
     },
     "info": {
-      "title": "Property details",
-      "bedrooms": "Bedrooms",
-      "bathrooms": "Bathrooms",
-      "maxGuests": "Max guests",
       "timezone": "Timezone",
       "nightlyRate": "Nightly rate",
       "cleaning": "Cleaning",
@@ -2464,8 +2489,7 @@
       "on": "ON",
       "off": "OFF",
       "lastAdaptation": "Last computed",
-      "nextRun": "Next update",
-      "manage": "Manage suggestions"
+      "nextRun": "Next update"
     },
     "edit": {
       "loading": "Loading property...",
