@@ -458,7 +458,7 @@ test.describe('Italian Compliance Golden Path', () => {
 
     test('GDPR data export returns guest personal data', async ({ page }) => {
       await page.goto(demoUrl(`/app/short-rent/guests/${GUEST_ID}`, 'short-stay'));
-      await page.getByRole('button', { name: /GDPR|Privacy/i }).click();
+      await page.getByRole('tab', { name: /GDPR|Privacy/i }).click();
 
       const exportBtn = page.getByTestId('gdpr-export-button');
       await expect(exportBtn).toBeVisible({ timeout: 10_000 });
@@ -472,7 +472,7 @@ test.describe('Italian Compliance Golden Path', () => {
 
     test('GDPR anonymization masks guest data', async ({ page }) => {
       await page.goto(demoUrl(`/app/short-rent/guests/${GUEST_ID}`, 'short-stay'));
-      await page.getByRole('button', { name: /GDPR|Privacy/i }).click();
+      await page.getByRole('tab', { name: /GDPR|Privacy/i }).click();
 
       const anonBtn = page.getByTestId('gdpr-anonymize-button');
       await expect(anonBtn).toBeVisible({ timeout: 10_000 });
