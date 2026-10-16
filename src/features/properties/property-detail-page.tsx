@@ -32,6 +32,8 @@ import { PropertyBookingsKpi } from './components/property-bookings-kpi';
 import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
 import { useServiceRequests } from '@/queries/use-service-requests';
+import { ScheduledChangeNotice } from './mode/components/scheduled-change-notice';
+import { useModeChangeMenuItems } from './mode/use-mode-entry';
 
 type PropertyTab = 'info' | 'photos' | 'pricing' | 'ical' | 'documents' | 'cin';
 
@@ -75,6 +77,8 @@ export function PropertyDetailPage() {
   const canEditPhotos = hasPermission('short-rent', 'property.write');
   // Overview of the property's short-rent requests, each linked to its stay (D2).
   const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
+  // "Cambia modalità" in the menu "⋯" (PM-03): none while the flag is off, and then the header is the one it always was.
+  const modeChangeItems = useModeChangeMenuItems('short-rent', id!);
 
   if (isLoading) {
     return <LoadingScreen message={t('property.detail.loading')} className="h-auto flex-1" />;
@@ -134,6 +138,7 @@ export function PropertyDetailPage() {
         <PageHeader
           title={property.name}
           description={formatPropertyLocation(property)}
+          secondary={modeChangeItems}
           action={
             <div className="flex items-center gap-3">
               <PropertyCinBadge
@@ -167,6 +172,8 @@ export function PropertyDetailPage() {
             </div>
           }
         />
+
+        <ScheduledChangeNotice area="short-rent" propertyId={property.id} />
 
         {property.cinIstatMismatch && (
           <p

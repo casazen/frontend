@@ -125,6 +125,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/activation'],
   },
   {
+    // "Cambia modalità" (PM-03, D16): the wizard that programs the passage to long-term leases, from the page of the property
+    // (menu "⋯"). The same wizard has its route in long-rent; the one of the section the property is in opens it.
+    path: '/app/short-rent/properties/:id/mode',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/mode/property-mode-wizard-page')).ShortRentPropertyModePage,
+    }),
+    featureFlag: 'propertyModeChange',
+  },
+  {
     path: '/app/short-rent/properties/:id/pricing',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
@@ -514,6 +525,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertyEditPage,
     }),
+  },
+  {
+    // "Cambia modalità" (PM-03, D16): the passage back to short stays; the same wizard as `/app/short-rent/properties/:id/mode`.
+    path: '/app/long-rent/properties/:id/mode',
+    context: 'long-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/mode/property-mode-wizard-page')).LongRentPropertyModePage,
+    }),
+    featureFlag: 'propertyModeChange',
   },
   {
     path: '/app/long-rent/profile',

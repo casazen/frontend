@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'uiRedesign';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'uiRedesign' | 'propertyModeChange';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -33,6 +33,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * without the backend, for QA and for a build (`src/lib/ui-version.ts`).
    */
   uiRedesign: false,
+  /**
+   * PM-03 / D16: the scheduled change of the rental mode of a property (backend `Features:PropertyModeChange`, PM-02), off.
+   * While it is off there is no "Cambia modalità" entry, no wizard route (it redirects to the home of the area) and no
+   * status row on the property pages; nothing reads the mode endpoints.
+   */
+  propertyModeChange: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
