@@ -2934,8 +2934,7 @@
   "supplier": {
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
-    "profileDescription": "Account and data visible to hosts in the supplier picker",
-    "professionalProfile": "Professional Profile",
+    "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
     "status": "Status",
     "statusActive": "Active",
     "statusPending": "Pending",
@@ -2944,11 +2943,7 @@
     "noneSet": "Not set",
     "welcomeBack": "Welcome back",
     "companyName": "Company name",
-    "email": "Email",
     "phone": "Phone",
-    "categories": "Categories",
-    "municipalities": "Municipalities",
-    "bioEmpty": "No bio written yet.",
     "supplierDefault": "Supplier",
     "allDay": "all day",
     "availabilityLoading": "Loading availability...",
@@ -3009,18 +3004,14 @@
     "completeProfileTitle": "Complete your profile",
     "completeProfileDescription": "These details help hosts choose you. Your profile cannot remain incomplete.",
     "saveAndContinue": "Save and continue",
-    "editProfile": "Edit profile",
-    "saveProfile": "Save profile",
     "vatNumber": "VAT number",
     "photoUrls": "Photos",
     "photoUrlsHint": "One URL per line. The first photos will appear in your public showcase.",
-    "bio": "Description",
     "activationLoading": "Loading activation...",
     "categoriesHint": "Choose one or more categories. You can add more later.",
     "comuniHint": "Enter the names of the comuni in Italian where you operate, separated by commas.",
     "comuniPlaceholder": "e.g. Roma, Milano, Napoli",
     "connectLater": "Set up later",
-    "progressSaveError": "Could not save. Try again.",
     "activationStatus": "Activation status",
     "serviceCategories": "Service categories",
     "operatingMunicipalities": "Municipalities of operation",
@@ -3028,7 +3019,6 @@
     "description": "Description",
     "describeServicesPlaceholder": "Describe your services...",
     "saveProgress": "Save progress",
-    "progressSaved": "Progress saved",
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
@@ -3375,18 +3365,6 @@
     "editIcalUrl": "Edit iCal URL",
     "edit": "Edit",
     "syncStatusTitle": "Sync status",
-    "companyInfo": "Company information",
-    "categoriesAndComuni": "Categories & municipalities",
-    "currentPhotos": "Current photos",
-    "newPhotos": "New photos",
-    "addPhotos": "Add photos",
-    "uploadPhotos": "Upload photos",
-    "photosUploaded": "Photos uploaded",
-    "photosUploadError": "Error uploading photos",
-    "maxPhotosError": "Maximum {{max}} photos allowed",
-    "photoCount": "{{current}}/{{max}} photos",
-    "photoGallery": "Photo gallery",
-    "noPhotos": "No photos uploaded",
     "help": {
       "icalPageTitle": "How to connect your calendar via iCal",
       "icalPageDescription": "Step-by-step instructions to export the iCal URL from the most popular platforms. Copy the link and paste it in the calendar sync page.",
@@ -3935,6 +3913,65 @@
       }
     },
     "profileLoadError": "Could not load the supplier profile.",
+    "profile": {
+      "accountEmail": "Account email",
+      "accountEmailHint": "To change it, write to support.",
+      "business": {
+        "title": "Business details"
+      },
+      "focus": {
+        "hours": {
+          "action": "Set your hours",
+          "body": "Without working hours there are no service slots: customers can't find a free time to book you.",
+          "title": "Set your working hours"
+        },
+        "kicker": "Profile status",
+        "ready": {
+          "action": "See your showcase site",
+          "title": "Your profile is live"
+        }
+      },
+      "hours": {
+        "end": "{{day}}: end",
+        "start": "{{day}}: start"
+      },
+      "phoneHint": "With the country code if not Italian, for example +39 06 1234567. Hosts only see it when you take on a job.",
+      "photos": {
+        "add": "Add photos",
+        "adding": "Uploading photos…",
+        "alt": "Photo {{number}} of your work",
+        "counter_one": "{{count}} photo of {{max}}",
+        "counter_other": "{{count}} photos of {{max}}",
+        "cover": "First photo",
+        "empty": "There are no photos yet. Add a few to show your work.",
+        "errors": {
+          "save": "We couldn't save the photos. Try again.",
+          "tooMany": "You can have {{max}} photos at most. Remove one before adding more.",
+          "upload": "We couldn't upload the photos. Use JPEG, PNG or WebP images up to 5 MB and try again."
+        },
+        "hint": "They appear on your showcase site, in the order you see here. Photos are saved as soon as you add or move them.",
+        "moveEarlier": "Move photo {{number}} earlier",
+        "moveLater": "Move photo {{number}} later",
+        "preview": "See how you look on the showcase site",
+        "remove": "Remove photo {{number}}",
+        "removeConfirm": "Remove the photo",
+        "removeDescription": "The photo leaves your profile and cannot be put back: to have it again you upload it again.",
+        "removeTitle": "Remove this photo?",
+        "title": "Photos of your work",
+        "unavailable": "Photo not available"
+      },
+      "presentation": {
+        "hint": "Tell who you are, what you do and when you can help. Hosts and customers read it.",
+        "label": "Description",
+        "title": "Presentation"
+      },
+      "save": "Save details",
+      "saveError": "Couldn't save. Try again.",
+      "saved": "Details saved",
+      "services": {
+        "title": "Services and area"
+      }
+    },
     "availabilityLoadError": "Could not load the availability.",
     "showcase": {
       "title": "Public showcase",
@@ -3949,8 +3986,7 @@
       "copyLink": "Copy the link",
       "linkCopied": "Link copied",
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
-      "notIndexed": "The page does not appear in search engines: it is reached only through the link.",
-      "previewLink": "Showcase preview"
+      "notIndexed": "The page does not appear in search engines: it is reached only through the link."
     }
   },
   "settings": {
