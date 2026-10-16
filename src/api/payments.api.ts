@@ -2,6 +2,7 @@ import { ApiClient } from './client';
 import { buildRevenueAnalytics } from '@/lib/revenue-analytics';
 import type {
   Payment,
+  PaymentListItem,
   PaymentRefund,
   PaymentRefundsResponse,
   CreatePaymentDto,
@@ -11,8 +12,9 @@ import type {
 } from '@/types';
 
 export const paymentsApi = {
+  /** All the payments of the host, newest first (SR-03). `propertyId`, `bookingId`, `from` and `to` narrow them. */
   getAll: (params?: Record<string, unknown>) =>
-    ApiClient.get<Payment[]>('/payments', params),
+    ApiClient.get<PaymentListItem[]>('/payments', params),
 
   getById: (id: string) => ApiClient.get<Payment>(`/payments/${id}`),
 
