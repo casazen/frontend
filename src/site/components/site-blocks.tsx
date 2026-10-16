@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import { Check, ChevronDown, X, type LucideIcon } from 'lucide-react';
 import { CasaZenRing } from '@/components/brand/casazen-mark';
 
 /**
@@ -148,5 +148,112 @@ export function PageHeader({ title, intro, children }: { title: string; intro: s
         {children && <div className="mt-8 flex flex-wrap gap-3">{children}</div>}
       </div>
     </section>
+  );
+}
+
+/** A row of figures under the hero: facts about the product, each with the sentence that says what it counts. */
+export function FactsStrip({ items }: { items: { value: string; label: string }[] }) {
+  return (
+    <section className="border-y border-ink-700/10 bg-white">
+      <dl className="mx-auto grid max-w-6xl gap-x-8 gap-y-8 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
+        {items.map((item) => (
+          <div key={item.value}>
+            <dt className="font-display text-3xl font-semibold tracking-tight text-terra-700 lining-nums sm:text-4xl">{item.value}</dt>
+            <dd className="mt-2 text-sm leading-relaxed text-ink-500">{item.label}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+/** A list of short points with a check mark: the points of a feature, on a light or on the dark band. */
+export function CheckList({ items, onDark = false }: { items: string[]; onDark?: boolean }) {
+  return (
+    <ul className="space-y-3">
+      {items.map((item) => (
+        <li key={item} className="flex gap-3">
+          <span
+            aria-hidden="true"
+            className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ${onDark ? 'bg-terra-400 text-ink-800' : 'bg-terra-100 text-terra-800'}`}
+          >
+            <Check className="size-3" strokeWidth={3.5} />
+          </span>
+          <span className={onDark ? 'text-ink-100' : 'text-ink-600'}>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+interface CompareProps {
+  beforeTitle: string;
+  before: string[];
+  afterTitle: string;
+  after: string[];
+}
+
+/** The usual way against the way with CasaZen, two columns: the plain one first, the dark one that carries the answer. */
+export function Compare({ beforeTitle, before, afterTitle, after }: CompareProps) {
+  return (
+    <div className="grid gap-5 lg:grid-cols-2">
+      <div className="rounded-3xl border border-ink-700/10 bg-white p-7">
+        <h3 className="text-lg font-semibold text-ink-500">{beforeTitle}</h3>
+        <ul className="mt-5 space-y-4">
+          {before.map((item) => (
+            <li key={item} className="flex gap-3 text-ink-500">
+              <X aria-hidden="true" className="mt-0.5 size-5 shrink-0" strokeWidth={2} />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="rounded-3xl bg-ink-700 p-7 shadow-xl shadow-ink-900/15">
+        <h3 className="text-lg font-semibold text-white">{afterTitle}</h3>
+        <div className="mt-5">
+          <CheckList items={after} onDark />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Numbered cards, one per step. A step with a title has a text under it; one without is a sentence on its own. */
+export function Steps({ items }: { items: { title?: string; text: string }[] }) {
+  return (
+    <ol className="grid gap-5 md:grid-cols-3">
+      {items.map((item, index) => (
+        <li key={item.text} className="rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft">
+          <span className="grid size-10 place-items-center rounded-full bg-terra-100 font-display text-lg font-semibold text-terra-800 lining-nums">
+            {index + 1}
+          </span>
+          {item.title ? <h3 className="mt-4 text-lg font-semibold text-ink-800">{item.title}</h3> : null}
+          <p className={`leading-relaxed ${item.title ? 'mt-2 text-[0.95rem] text-ink-500' : 'mt-4 text-ink-600'}`}>{item.text}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/**
+ * Questions and answers that open on a click: native `<details>`, so they work in the static page without a script and with
+ * the keyboard. All closed when the page loads (the same HTML on the server and in the browser).
+ */
+export function Faq({ items }: { items: { question: string; answer: string }[] }) {
+  return (
+    <div className="max-w-3xl divide-y divide-ink-700/10 rounded-3xl border border-ink-700/10 bg-white shadow-soft">
+      {items.map((item) => (
+        <details key={item.question} className="group px-6 py-5">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-semibold text-ink-800 marker:content-none [&::-webkit-details-marker]:hidden">
+            <span>{item.question}</span>
+            <ChevronDown
+              aria-hidden="true"
+              className="size-5 shrink-0 text-ink-500 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+            />
+          </summary>
+          <p className="mt-3 leading-relaxed text-ink-500">{item.answer}</p>
+        </details>
+      ))}
+    </div>
   );
 }

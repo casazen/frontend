@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { showLoginEntryPoints } from '@/config/login-entry';
+import { supportConfig } from '@/config/support.config';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
+import { inviteHref } from '@/site/site-links';
 import { sitePageById, type SitePageId } from '@/site/site-pages';
 
 /** The pages of the public site of CasaZen that the header leads to (`src/site/site-pages.ts`). */
@@ -27,6 +29,8 @@ const NAV_LINK = 'text-[var(--cz-public-muted)] hover:text-[var(--cz-public-text
  */
 export function BrandHeader() {
   const { t } = useTranslation();
+  // The invitation request (only with a contact address), the same as the header of the public site.
+  const inviteLink = inviteHref(supportConfig.email, t('site.invite.subject'));
 
   return (
     <header
@@ -58,6 +62,14 @@ export function BrandHeader() {
             <Search className="h-4 w-4" aria-hidden="true" />
             {t('publicSite.explore')}
           </Link>
+          {inviteLink ? (
+            <a
+              href={inviteLink}
+              className="rounded-full bg-[var(--cz-public-primary)] px-4 py-2 font-semibold text-[var(--cz-public-on-primary)] transition-opacity hover:opacity-90"
+            >
+              {t('site.invite.cta')}
+            </a>
+          ) : null}
           {showLoginEntryPoints(import.meta.env.VITE_PUBLIC_SITE_URL) ? (
             <a
               href="/login"
