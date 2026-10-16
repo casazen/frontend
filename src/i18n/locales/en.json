@@ -4457,6 +4457,19 @@
         ]
       }
     },
+    "longRentProperty": {
+      "Rented": {
+        "label": "Rented",
+        "explain": "There is a registered lease in force."
+      },
+      "Free": {
+        "label": "Vacant",
+        "explain": "No registered lease in force: the property is ready for a new tenant.",
+        "need": [
+          "The lease with the new tenant, signed and registered"
+        ]
+      }
+    },
     "request": {
       "Richiesto": {
         "label": "Requested",
@@ -8046,14 +8059,47 @@
     "retry": "Retry",
     "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
     "list": {
-      "title": "Properties",
-      "description": "The properties you let with long-term leases",
+      "actions": {
+        "createLease": "Create lease",
+        "edit": "Edit",
+        "openLease": "Open lease",
+        "page": "Full page"
+      },
       "add": "Add property",
-      "loading": "Loading properties...",
-      "loadError": "The properties could not be loaded.",
-      "emptyTitle": "No properties",
+      "chips": {
+        "all": "All",
+        "free": "Vacant",
+        "freeHint": "No registered lease in force, even if one is being prepared",
+        "rented": "Rented",
+        "rentedHint": "With a registered lease in force"
+      },
+      "columns": {
+        "property": "Property",
+        "rent": "Rent",
+        "spaces": "Bedrooms and bathrooms",
+        "status": "Status",
+        "tenant": "Tenant"
+      },
+      "count_one": "{{count}} property",
+      "count_other": "{{count}} properties",
+      "description": "Your long-term properties: who lives there, the rent and until when.",
       "emptyDescription": "Add a property and upload its APE to create a lease.",
-      "open": "Open"
+      "emptyTitle": "No properties",
+      "leasesUnavailable": "The leases could not be read, so for now you cannot see who lives in the properties.",
+      "loadError": "The properties could not be loaded.",
+      "noResults": {
+        "description": "Change the search or the tab to see the other properties.",
+        "title": "No property found"
+      },
+      "noTenant": "No tenant",
+      "perMonth": "a month",
+      "preparing": "Lease: {{status}} · from {{date}}",
+      "search": "Search properties",
+      "searchPlaceholder": "Search by name, address or tenant",
+      "tenantAnonymized": "Data removed",
+      "tenantMissing": "Not added yet",
+      "title": "Properties",
+      "until": "Until {{date}}"
     },
     "create": {
       "title": "New property",
@@ -8075,6 +8121,17 @@
       "documentsLoadError": "The property documents could not be loaded.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    },
+    "drawer": {
+      "keyData": "Property details",
+      "leaseSection": "Tenant and lease",
+      "leaseStatus": "Lease",
+      "notFound": "Property not found",
+      "notFoundDescription": "The property you are looking for is gone, or it is not one of your long-term properties.",
+      "rent": "Rent",
+      "tenant": "Tenant",
+      "term": "Term",
+      "termValue": "from {{from}} to {{to}}"
     },
     "cadastral": {
       "title": "Cadastral data",
