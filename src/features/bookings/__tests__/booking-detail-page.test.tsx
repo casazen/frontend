@@ -40,9 +40,29 @@ vi.mock('@/hooks/use-workspace', () => ({
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
+interface HeaderAction {
+  label: string;
+  to?: string;
+  onClick?: () => void;
+  testId?: string;
+}
+// The real header keeps `secondary` in the menu "⋯" (a closed menu has no items in the page): here they are plain buttons and links.
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title, action }: { title: string; action?: React.ReactNode }) =>
-    createElement('div', null, createElement('h1', null, title), action),
+  PageHeader: ({ title, action, secondary }: { title: string; action?: React.ReactNode; secondary?: (HeaderAction | { separator: true })[] }) =>
+    createElement(
+      'div',
+      null,
+      createElement('h1', null, title),
+      action,
+      ...(secondary ?? []).flatMap((item, index) => {
+        if ('separator' in item) return [];
+        return [
+          item.to
+            ? createElement('a', { key: index, href: item.to, 'data-testid': item.testId }, item.label)
+            : createElement('button', { key: index, type: 'button', onClick: item.onClick, 'data-testid': item.testId }, item.label),
+        ];
+      }),
+    ),
 }));
 vi.mock('@/components/shared/breadcrumb', () => ({ Breadcrumb: () => null }));
 
@@ -105,14 +125,15 @@ beforeEach(async () => {
 });
 
 describe('BookingDetailPage', { timeout: 20000 }, () => {
-  it.each(['it', 'en'])('BookingDetailPage_Title_IsTranslatedNotBookingHash (%s)', async (lng) => {
+  it.each(['it', 'en'])('BookingDetailPage_Title_IsTheGuestAndTheCodeIsTheOneTheGuestKnows (%s)', async (lng) => {
     await i18n.changeLanguage(lng);
-    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ bookingCode: 'ABCDE-12345' }));
 
     renderPage();
 
-    const expected = i18n.t('booking.detailPage.title', { code: BOOKING_ID.slice(0, 8) });
-    expect(await screen.findByRole('heading', { name: expected }, WAIT)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Mario Rossi' }, WAIT)).toBeInTheDocument();
+    expect(screen.getByText('ABCDE-12345')).toBeInTheDocument();
+    expect(screen.queryByText(BOOKING_ID.slice(0, 8))).not.toBeInTheDocument();
     expect(screen.queryByText(/Booking #/)).not.toBeInTheDocument();
   });
 
@@ -307,13 +328,13 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByTestId('open-register-arrival')).not.toBeInTheDocument();
   });
 
-  it('BookingDetailPage_TabInTheUrl_OpensTheAlloggiatiTab', async () => {
+  it('BookingDetailPage_AlloggiatiTabInTheUrl_OpensTheDocumentsTab', async () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
 
     renderPage(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
 
     expect(await screen.findByTestId('alloggiati-panel-stub', undefined, WAIT)).toBeInTheDocument();
-    expect(screen.getByTestId('booking-tab-alloggiati')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(screen.getByTestId('booking-tab-details'));
     expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-panel-stub')).not.toBeInTheDocument();
@@ -332,10 +353,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
       'href',
       `/app/short-rent/bookings/${BOOKING_ID}?from=calendar&tab=guest`,
     );
-    expect(screen.getByTestId('booking-tab-alloggiati')).toHaveAttribute(
-      'href',
-      `/app/short-rent/bookings/${BOOKING_ID}?from=calendar&tab=alloggiati`,
-    );
+    // The fourth tab of the old page is gone: its links (`?tab=alloggiati`) open Documenti.
+    expect(screen.queryByTestId('booking-tab-alloggiati')).not.toBeInTheDocument();
   });
 
   it('BookingDetailPage_PaymentTab_PricePerNightIsLodgingOnlyWithoutTaxAndCleaning', async () => {
