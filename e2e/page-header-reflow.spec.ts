@@ -20,7 +20,7 @@ interface HeaderPage {
   name: string;
   path: string;
   profile: DemoProfile;
-  heading: string;
+  heading: string | RegExp;
   /** The controls of the header: they are on the screen too, not only the document does not scroll sideways. */
   controls: (page: Page) => Locator;
   supplier?: boolean;
@@ -29,7 +29,7 @@ interface HeaderPage {
 const childLinks = (page: Page) => page.getByTestId('nav-child-links');
 
 const PAGES: HeaderPage[] = [
-  { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: 'Cruscotto', controls: (page) => page.getByTestId('dashboard-period') },
+  { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('dashboard-period') },
   { name: 'compliance (pages that hang from it)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Cockpit compliance', controls: childLinks },
   { name: 'booking site (pages that hang from it)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: childLinks },
   { name: 'CIN audit of the console (pages that hang from it)', path: '/app/admin/cin', profile: 'admin', heading: 'Conformità CIN', controls: childLinks },
