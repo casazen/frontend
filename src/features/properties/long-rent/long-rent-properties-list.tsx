@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BedDouble, Building2, Euro, Expand, FileSignature, FileText, Pencil, User } from 'lucide-react';
+import { ArrowRightLeft, BedDouble, Building2, Euro, Expand, FileSignature, FileText, Pencil, User } from 'lucide-react';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListCardContent, ListMenuEntry, ListRowAction, ListSwipeAction } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import type { LongRentPropertyStatus } from '@/lib/status-dictionary';
 import { formatCurrency } from '@/lib/utils';
 import { PropertyThumb } from '../components/property-thumb';
+import { propertyModePath } from '../mode/paths';
 import { formatPropertyLocation } from '../property-location';
 // The drawer registers its kind when its module is loaded: the list is what opens it.
 import './long-rent-property-drawer';
@@ -167,6 +168,11 @@ export function useLongRentPropertiesList({ canWrite, canCreateLease, canReadLea
           // When the property has a lease, that is its button above; a new lease (another tenant) is here.
           canCreateLease && leaseOfRow(row)
             ? { id: 'new-lease', label: t('longRentProperties.list.actions.createLease'), icon: FileSignature, href: newLeaseForPropertyPath(row.property.id), testId: 'long-rent-property-new-lease' }
+            : null,
+          // The same entry as the menu of the page of the property: the wizard that moves it to Affitti brevi.
+          canWrite ? 'separator' : null,
+          canWrite
+            ? { id: 'mode', label: t('propertyMode.entry.change'), icon: ArrowRightLeft, href: propertyModePath('long-rent', row.property.id), testId: 'long-rent-property-mode' }
             : null,
         ];
         return entries.filter((entry): entry is ListMenuEntry => entry !== null);
