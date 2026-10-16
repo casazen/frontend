@@ -512,6 +512,7 @@
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
+    "accountSettings": "Impostazioni",
     "ota": "OTA",
     "leases": "Contratti",
     "users": "Utenti",
@@ -4132,7 +4133,7 @@
     "connectStatusDisconnected": "Non collegato",
     "connectStatusPending": "In verifica",
     "connectStatusActive": "Attivo",
-    "connectPaymentsTitle": "Pagamenti / Payouts",
+    "connectPaymentsTitle": "Incassi online",
     "connectDescription": "Collega il tuo account Stripe per ricevere i pagamenti degli ospiti direttamente sul tuo conto.",
     "yourBookingSite": "Il tuo sito di prenotazioni",
     "visitPublicSiteDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
@@ -4259,7 +4260,6 @@
       "description": "Queste impostazioni sono gestite dall'amministratore della tua organizzazione: contatta l'amministratore per modificarle."
     },
     "loadError": "Impossibile caricare le impostazioni dell'organizzazione.",
-    "formTitle": "Identità organizzazione",
     "formDescription": "Nome e indirizzo sono visibili sul tuo sito di prenotazione pubblico; l'email solo se scegli di mostrarla.",
     "nameLabel": "Nome organizzazione",
     "slugLabel": "Indirizzo pubblico",
@@ -4284,6 +4284,22 @@
     },
     "siteAppearanceHint": "Logo, colori e tema del sito pubblico si modificano in Aspetto sito.",
     "siteAppearanceLink": "Vai ad Aspetto sito"
+  },
+  "accountSettings": {
+    "billing": {
+      "action": "Apri Fatturazione e piano",
+      "body": "Partita IVA, codice destinatario (SDI) e PEC per le fatture si gestiscono in Fatturazione e piano.",
+      "title": "Dati di fatturazione"
+    },
+    "description": "I dati dell'account che valgono in tutte le aree.",
+    "focus": {
+      "kicker": "Da sistemare",
+      "organization": {
+        "action": "Compila i dati",
+        "body": "Gli ospiti vedono il nome e l'indirizzo sul tuo sito di prenotazione: per ora sono ancora quelli provvisori.",
+        "title": "Scegli il nome e l'indirizzo del tuo sito"
+      }
+    }
   },
   "siteAppearance": {
     "title": "Aspetto sito",
