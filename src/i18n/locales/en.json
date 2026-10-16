@@ -1762,23 +1762,17 @@
     "detailPage": {
       "loading": "Loading booking...",
       "notFound": "Booking not found",
-      "notFoundDescription": "The booking you're looking for doesn't exist.",
+      "notFoundDescription": "It may have been deleted, or the link is not correct.",
       "editBooking": "Edit Booking",
       "tabs": {
-        "details": "Details",
-        "guest": "Guest",
-        "payment": "Payment",
-        "alloggiati": "Alloggiati"
+        "details": "Stay",
+        "guest": "Documents",
+        "payment": "Payment"
       },
       "tabsLabel": "Booking sections",
-      "viewProperty": "View property",
-      "bookingDetailsTitle": "Booking details",
-      "specialRequests": "Special Requests",
-      "timeline": "Timeline",
-      "created": "Created",
+      "created": "Created on",
       "lastUpdated": "Last Updated",
       "guestInformationTitle": "Guest information",
-      "guestName": "Name",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -1787,7 +1781,6 @@
       "incompleteGuestData": "Incomplete guest data",
       "noAlloggiatiInfo": "No Alloggiati information available for this booking.",
       "source": "Source",
-      "title": "Booking {{code}}",
       "loadError": "The booking could not be loaded.",
       "retry": "Retry",
       "childrenCount_one": "including {{count}} minor",
@@ -1797,7 +1790,72 @@
       "lodgingPerNight_other": "Stay: {{count}} nights × {{perNight}}",
       "cleaningFee": "Cleaning",
       "touristTax": "Tourist tax",
-      "noPriceBreakdown": "Price breakdown not available for this booking."
+      "noPriceBreakdown": "Price breakdown not available for this booking.",
+      "checkInOnline": "Online check-in",
+      "code": "Booking code",
+      "fallbackTitle": "Booking",
+      "openProperty": "Open the property",
+      "property": "Property",
+      "stayTitle": "The stay"
+    },
+    "next": {
+      "allInOrder": {
+        "body": "{{guest}} arrives on {{date}}: nothing to do for now.",
+        "title": "All set"
+      },
+      "answerRequest": {
+        "body": "The guest wants to pay at the property: the booking is valid only if you accept it. Without an answer the request expires and the dates are free again.",
+        "title": "Answer {{guest}}'s request"
+      },
+      "cancelled": {
+        "title": "The booking is cancelled"
+      },
+      "completed": {
+        "title": "The stay is over"
+      },
+      "confirmManual": {
+        "title": "Confirm the booking"
+      },
+      "heading": "What happens now",
+      "registerArrival": {
+        "body": "When the guest is at the property, confirm the arrival here. Check-in: {{date}}.",
+        "title": "Register {{guest}}'s arrival"
+      },
+      "registerDeparture": {
+        "body": "A guided procedure closes the stay: departure, Alloggiati Web, cleaning, tourist tax and property ready.",
+        "title": "Register {{guest}}'s departure"
+      },
+      "resendLink": {
+        "body": "The guests can no longer use it: send a new one.",
+        "title": "The link for the documents has expired"
+      },
+      "sendAlloggiati": {
+        "action": "Prepare the data",
+        "title": "Report the guests to Alloggiati Web"
+      },
+      "sendLink": {
+        "body": "With the online check-in the guests fill in the Alloggiati Web data themselves: the link goes out by email.",
+        "title": "Send the guest the link for the documents"
+      },
+      "stayInProgress": {
+        "body": "Departure is expected on {{date}}. When the guest leaves, register it: a guided procedure closes the stay.",
+        "title": "{{guest}} is at the property"
+      },
+      "toBookings": "Go to bookings",
+      "waitingDocuments": {
+        "body": "The online check-in link has been sent. If needed, you can send it again.",
+        "title": "Wait for the guests' documents"
+      },
+      "waitingGuestEmail": {
+        "body": "The guest still has to confirm their email: only then can you answer the request.",
+        "title": "Wait for the guest to confirm the email"
+      },
+      "waitingPayment": {
+        "body": "The guest has not completed the payment yet. If they don't in time, the booking expires and the dates are free again.",
+        "title": "Wait for the guest's payment"
+      },
+      "whoGuest": "The guest's turn",
+      "whoHost": "Your turn"
     },
     "card": {
       "checkOutAction": "Check Out"

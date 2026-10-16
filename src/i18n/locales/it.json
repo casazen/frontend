@@ -1762,23 +1762,17 @@
     "detailPage": {
       "loading": "Caricamento prenotazione...",
       "notFound": "Prenotazione non trovata",
-      "notFoundDescription": "La prenotazione che stai cercando non esiste.",
+      "notFoundDescription": "Potrebbe essere stata cancellata o il link non è corretto.",
       "editBooking": "Modifica prenotazione",
       "tabs": {
-        "details": "Dettagli",
-        "guest": "Ospite",
-        "payment": "Pagamento",
-        "alloggiati": "Alloggiati"
+        "details": "Soggiorno",
+        "guest": "Documenti",
+        "payment": "Pagamento"
       },
       "tabsLabel": "Sezioni della prenotazione",
-      "viewProperty": "Vedi proprieta",
-      "bookingDetailsTitle": "Dettagli prenotazione",
-      "specialRequests": "Richieste speciali",
-      "timeline": "Cronologia",
-      "created": "Creato",
+      "created": "Creata il",
       "lastUpdated": "Ultimo aggiornamento",
       "guestInformationTitle": "Informazioni ospite",
-      "guestName": "Nome",
       "paymentSummaryTitle": "Riepilogo pagamento",
       "total": "Totale",
       "alloggiatiWeb": "Alloggiati Web",
@@ -1787,7 +1781,6 @@
       "incompleteGuestData": "Dati ospite incompleti",
       "noAlloggiatiInfo": "Nessuna informazione Alloggiati disponibile per questa prenotazione.",
       "source": "Origine",
-      "title": "Prenotazione {{code}}",
       "loadError": "Impossibile caricare la prenotazione.",
       "retry": "Riprova",
       "childrenCount_one": "di cui {{count}} minore",
@@ -1797,7 +1790,72 @@
       "lodgingPerNight_other": "Soggiorno: {{count}} notti × {{perNight}}",
       "cleaningFee": "Pulizia",
       "touristTax": "Tassa di soggiorno",
-      "noPriceBreakdown": "Dettaglio del prezzo non disponibile per questa prenotazione."
+      "noPriceBreakdown": "Dettaglio del prezzo non disponibile per questa prenotazione.",
+      "checkInOnline": "Check-in online",
+      "code": "Codice prenotazione",
+      "fallbackTitle": "Prenotazione",
+      "openProperty": "Apri l'immobile",
+      "property": "Immobile",
+      "stayTitle": "Il soggiorno"
+    },
+    "next": {
+      "allInOrder": {
+        "body": "{{guest}} arriva il {{date}}: per ora non c'è nulla da fare.",
+        "title": "Tutto a posto"
+      },
+      "answerRequest": {
+        "body": "L'ospite vuole pagare in struttura: la prenotazione vale solo se la accetti. Senza risposta la richiesta scade e le date tornano libere.",
+        "title": "Rispondi alla richiesta di {{guest}}"
+      },
+      "cancelled": {
+        "title": "La prenotazione è annullata"
+      },
+      "completed": {
+        "title": "Il soggiorno è concluso"
+      },
+      "confirmManual": {
+        "title": "Conferma la prenotazione"
+      },
+      "heading": "Cosa succede ora",
+      "registerArrival": {
+        "body": "Quando l'ospite è nell'immobile, conferma qui l'arrivo. Check-in: {{date}}.",
+        "title": "Registra l'arrivo di {{guest}}"
+      },
+      "registerDeparture": {
+        "body": "Una procedura guidata chiude il soggiorno: partenza, Alloggiati Web, pulizia, tassa di soggiorno e immobile pronto.",
+        "title": "Registra la partenza di {{guest}}"
+      },
+      "resendLink": {
+        "body": "Gli ospiti non possono più usarlo: mandane uno nuovo.",
+        "title": "Il link per i documenti è scaduto"
+      },
+      "sendAlloggiati": {
+        "action": "Prepara i dati",
+        "title": "Comunica gli ospiti ad Alloggiati Web"
+      },
+      "sendLink": {
+        "body": "Con il check-in online gli ospiti compilano da soli i dati per Alloggiati Web: il link parte per email.",
+        "title": "Manda all'ospite il link per i documenti"
+      },
+      "stayInProgress": {
+        "body": "La partenza è prevista il {{date}}. Quando l'ospite parte, registrala: una procedura guidata chiude il soggiorno.",
+        "title": "{{guest}} è nell'immobile"
+      },
+      "toBookings": "Vai alle prenotazioni",
+      "waitingDocuments": {
+        "body": "Il link per il check-in online è stato inviato. Se serve, puoi mandarlo di nuovo.",
+        "title": "Aspetta i documenti degli ospiti"
+      },
+      "waitingGuestEmail": {
+        "body": "L'ospite deve ancora confermare la sua email: solo dopo potrai rispondere alla richiesta.",
+        "title": "Aspetta che l'ospite confermi l'email"
+      },
+      "waitingPayment": {
+        "body": "L'ospite non ha ancora completato il pagamento. Se non lo fa in tempo, la prenotazione scade e le date tornano libere.",
+        "title": "Aspetta il pagamento dell'ospite"
+      },
+      "whoGuest": "Tocca all'ospite",
+      "whoHost": "Tocca a te"
     },
     "card": {
       "checkOutAction": "Check-out"

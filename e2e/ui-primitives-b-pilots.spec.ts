@@ -133,7 +133,7 @@ async function openBooking(page: Page, width: number, search = '') {
   await mockBookingDetailApi(page);
   await page.setViewportSize({ width, height: 800 });
   await page.goto(demoUrl(`/app/short-rent/bookings/${DEMO_BOOKING_ID}${search}`, 'short-stay'), { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Prenotazione', { timeout: 15_000 });
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Mario Rossi', { timeout: 15_000 });
 }
 
 test.describe('Tabs in the booking detail (pilot)', () => {
@@ -141,7 +141,7 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await openBooking(page, 1280);
     const tabs = page.getByRole('tablist', { name: 'Sezioni della prenotazione' });
 
-    await expect(tabs.getByRole('tab')).toHaveText(['Dettagli', 'Ospite', 'Pagamento', 'Alloggiati']);
+    await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Documenti', 'Pagamento']);
     await expect(page.getByTestId('booking-tab-details')).toHaveAttribute('aria-selected', 'true');
     // The other parameters of the address (here the profile of the demo) are kept, in their order.
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('href', `/app/short-rent/bookings/${DEMO_BOOKING_ID}?demoProfile=short-stay&tab=guest`);
@@ -150,14 +150,14 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await page.getByTestId('booking-tab-guest').click();
     await expect(page).toHaveURL(/tab=guest/);
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Ospite');
-    await expect(page.getByText('mario.rossi@example.com').first()).toBeVisible();
+    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Documenti');
+    await expect(page.getByRole('heading', { name: 'Check-in online' })).toBeVisible();
   });
 
-  test('a link to ?tab=alloggiati opens that tab, as the links of the arrival and the cockpit do', async ({ page }) => {
+  test('a link to ?tab=alloggiati opens Documenti at its Alloggiati Web section, as the links of the arrival and the cockpit do', async ({ page }) => {
     await openBooking(page, 1280, '?tab=alloggiati');
 
-    await expect(page.getByTestId('booking-tab-alloggiati')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
   });
 
@@ -183,8 +183,8 @@ test.describe('Tabs in the booking detail (pilot)', () => {
       const menu = page.getByTestId('booking-tabs-select');
       await expectInsideTheScreen(page, menu, `${width} px, the menu of the tabs`);
 
-      await menu.selectOption('alloggiati');
-      await expect(page).toHaveURL(/tab=alloggiati/);
+      await menu.selectOption('guest');
+      await expect(page).toHaveURL(/tab=guest/);
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
       // What this checks is the menu of the tabs, not the rest of the page: the content of the tab is the page's own, and with
       // the wide letters of the runner (Linux) a button of the guest section ("Segna come inviato manualmente") is 14 px past
