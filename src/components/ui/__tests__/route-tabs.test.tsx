@@ -145,6 +145,16 @@ describe('RouteTabs (UI-15)', () => {
       expect(link('Prenotazioni')).not.toHaveAttribute('aria-current');
     });
 
+    it('RouteTabs_HrefWithAFragmentOrATrailingSlash_StillMatchesItsPage', () => {
+      renderTabs(`${BASE}/guests`, [
+        { label: 'Prenotazioni', href: `${BASE}/bookings/#top` },
+        { label: 'Ospiti', href: `${BASE}/guests/` },
+      ]);
+
+      expect(link('Ospiti')).toHaveAttribute('aria-current', 'page');
+      expect(currentLinks()).toHaveLength(1);
+    });
+
     it('RouteTabs_AddressOnNoSection_MarksNone', () => {
       renderTabs(`${BASE}/properties`);
 
@@ -156,11 +166,12 @@ describe('RouteTabs (UI-15)', () => {
     it('RouteTabs_Count_ShowsTheNumberWithItsToneAndSaysWhatItCounts', () => {
       renderTabs(`${BASE}/bookings`, [
         { label: 'Prenotazioni', href: `${BASE}/bookings` },
-        { label: 'Pagamenti', href: `${BASE}/payments`, count: 3, countLabel: 'da incassare', tone: 'warning' },
+        { label: 'Pagamenti', href: `${BASE}/payments`, count: 3, countLabel: '3 da incassare', tone: 'warning' },
       ]);
 
       const payments = link(/Pagamenti/);
-      expect(payments).toHaveAccessibleName(/^Pagamenti.*da incassare$/);
+      // The label says the number (once): the number itself is hidden from assistive technology.
+      expect(payments).toHaveAccessibleName(/^Pagamenti.*3 da incassare$/);
       const pill = within(payments).getByText('3').parentElement as HTMLElement;
       expect(pill).toHaveAttribute('data-tone', 'warning');
       expect(pill.className).toContain('bg-warning-soft');
@@ -250,7 +261,7 @@ describe('RouteTabs (UI-15)', () => {
     it('RouteTabs_OnATabletOrADesktop_HasNoAxeViolations', async () => {
       renderTabs(`${BASE}/payments`, [
         ...ITEMS.slice(0, 2),
-        { label: 'Pagamenti', href: `${BASE}/payments`, count: 2, countLabel: 'da incassare', tone: 'danger' },
+        { label: 'Pagamenti', href: `${BASE}/payments`, count: 2, countLabel: '2 da incassare', tone: 'danger' },
       ]);
 
       await expectNoAxeViolations(document.body);

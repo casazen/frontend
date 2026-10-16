@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import { takeOpener } from '@/components/shared/detail-drawer/detail-opener';
 import { expectNoAxeViolations } from '@/test/axe';
+import { settleDrawer } from '@/test/drawer';
 import DetailDrawerPage from '../detail-drawer-page';
 
 function Where() {
@@ -29,11 +29,7 @@ function renderPage(entry = '/dev/detail-drawer') {
 describe('DetailDrawerPage (UI-15, the page of the detail drawer for developers)', () => {
   afterEach(async () => {
     cleanup();
-    // The focus scope of a dialog that was open says goodbye one tick after it unmounts.
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    takeOpener();
+    await settleDrawer();
   });
 
   it('DetailDrawerPage_Renders_EveryPartOnTheSamePage', () => {

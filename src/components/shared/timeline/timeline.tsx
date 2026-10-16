@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import { Button } from '@/components/ui/button';
+import { safeReturnTo } from '@/lib/auth-return-to';
 import type { StatusTone } from '@/lib/status-dictionary';
 import { cn } from '@/lib/utils';
 import { formatAbsolute, formatRelative } from './timeline-time';
@@ -53,9 +54,6 @@ const TONE_ICONS: Record<TimelineTone, LucideIcon> = {
   warning: AlertTriangle,
   danger: AlertCircle,
 };
-
-/** The thing the title leads to: a page of the app. Anything else (`javascript:`, another site, `//host`) is not made a link. */
-const isAppPath = (href: string) => href.startsWith('/') && !href.startsWith('//') && !href.includes('\\');
 
 /** The time now, again every minute: "3 minutes ago" does not stay "now" in a drawer that is left open. */
 function useNow(): Date {
@@ -126,6 +124,8 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
           const Icon = event.icon ?? TONE_ICONS[tone];
           const toneWord = tone === DEFAULT_TONE ? null : t(`detailDrawer.timeline.tone.${tone}`);
           const relative = time ? formatRelative(time, now, i18n.language) : null;
+          // A page of the app, and nothing else: the check of the return path of the login (no other site, no `javascript:`, no tab or newline that hides a host).
+          const href = safeReturnTo(event.href);
           return (
             <li
               key={event.id}
@@ -142,8 +142,12 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
               <div className="min-w-0 flex-1">
                 <p className="break-words text-sm font-medium leading-6 text-foreground">
                   {toneWord ? <span className="sr-only">{toneWord}: </span> : null}
-                  {event.href && isAppPath(event.href) ? (
-                    <Link to={event.href} className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  {href ? (
+                    // Underlined at rest, not only on hover: a title that leads somewhere must not look like the ones that do not. On a touch screen the line of text is padded to a finger.
+                    <Link
+                      to={href}
+                      className="rounded-sm underline decoration-foreground/40 underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:py-2.5"
+                    >
                       {event.title}
                     </Link>
                   ) : (

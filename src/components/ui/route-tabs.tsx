@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, parsePath, useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { TabCount, type TabTone } from './tab-count';
+import { TAB_SELECT_CLASS, tabLinkClass } from './tab-styles';
 
 export interface RouteTabItem {
   label: string;
@@ -11,7 +12,10 @@ export interface RouteTabItem {
   href: string;
   /** A number beside the name: things waiting in that section. Nothing when it is 0 or missing. */
   count?: number;
-  /** What the number counts, for a screen reader ("2 da incassare"). */
+  /**
+   * What the number counts, for a screen reader, **with the number**: "2 da incassare". With it the number itself is hidden from
+   * assistive technology (the label says it once); without it only the number is read.
+   */
   countLabel?: string;
   /** How the number weighs: `warning` for what needs an answer, `danger` for what failed. Without it, the accent of the app. */
   tone?: TabTone;
@@ -34,32 +38,25 @@ export interface RouteTabsProps {
   selectTestId?: string;
 }
 
-const SELECT_CLASS =
-  'flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-
-/** Only the origin matters to split a path from its query; it never reaches a request. */
-const BASE = 'http://route-tabs.invalid';
-
-function splitHref(href: string): { pathname: string; params: URLSearchParams } {
-  const url = new URL(href, BASE);
-  return { pathname: url.pathname.replace(/\/+$/, '') || '/', params: url.searchParams };
-}
+/** The path of an address without its trailing slash (`/` stays `/`). */
+const trimmed = (pathname: string) => pathname.replace(/\/+$/, '') || '/';
 
 /** The tab the address is on: the longest path that is the address or contains it, then the one that asks for most of the query. */
 function currentTab(items: readonly RouteTabItem[], pathname: string, search: string): number {
   if (items.some((item) => item.current !== undefined)) return items.findIndex((item) => item.current === true);
 
   const here = new URLSearchParams(search);
-  const place = pathname.replace(/\/+$/, '') || '/';
+  const place = trimmed(pathname);
   let best = -1;
   let bestScore = -1;
   items.forEach((item, index) => {
-    const target = splitHref(item.href);
-    const onPath = place === target.pathname || place.startsWith(target.pathname === '/' ? '/' : `${target.pathname}/`);
+    const { pathname: path = '/', search: query = '' } = parsePath(item.href);
+    const target = trimmed(path);
+    const onPath = place === target || place.startsWith(target === '/' ? '/' : `${target}/`);
     if (!onPath) return;
-    const wanted = [...target.params];
+    const wanted = [...new URLSearchParams(query)];
     if (!wanted.every(([name, value]) => here.get(name) === value)) return;
-    const score = target.pathname.length * 100 + wanted.length;
+    const score = target.length * 100 + wanted.length;
     if (score > bestScore) {
       best = index;
       bestScore = score;
@@ -97,7 +94,7 @@ export function RouteTabs({ label, items, className, selectTestId }: RouteTabsPr
           </label>
           <select
             id={`${baseId}-select`}
-            className={SELECT_CLASS}
+            className={TAB_SELECT_CLASS}
             value={current >= 0 ? items[current].href : ''}
             data-testid={selectTestId}
             onChange={(event) => void navigate(event.target.value)}
@@ -115,21 +112,10 @@ export function RouteTabs({ label, items, className, selectTestId }: RouteTabsPr
         <div className="mb-6 border-b">
           <ul role="list" className="-mb-px flex list-none gap-1 overflow-x-auto [scrollbar-width:none]">
             {items.map((item, index) => {
-              const selected = index === current;
               const Icon = item.icon;
               return (
                 <li key={item.href} className="shrink-0">
-                  <Link
-                    to={item.href}
-                    aria-current={selected ? 'page' : undefined}
-                    data-testid={item.testId}
-                    className={cn(
-                      'relative inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-t-sm px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      "after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-transparent after:content-['']",
-                      // Same colors as `Tabs`: `foreground/65`, not `muted-foreground`, which is a hair under AA on white.
-                      selected ? 'text-primary after:bg-primary' : 'text-foreground/65 hover:bg-muted hover:text-foreground',
-                    )}
-                  >
+                  <Link to={item.href} aria-current={index === current ? 'page' : undefined} data-testid={item.testId} className={tabLinkClass(index === current)}>
                     {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
                     {item.label}
                     <TabCount count={item.count} label={item.countLabel} tone={item.tone} />

@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { TabCount, type TabTone } from './tab-count';
+import { TAB_SELECT_CLASS, tabLinkClass } from './tab-styles';
 
 export interface TabItem<T extends string = string> {
   /** What goes in the address (`?tab=ical`): short, lowercase, and the same forever, because emails and links point at it. */
@@ -39,9 +40,6 @@ export interface TabsProps<T extends string> {
   panelTestId?: string;
   selectTestId?: string;
 }
-
-const SELECT_CLASS =
-  'flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 /**
  * Tabs that are links (UI-07). Each tab is a real link to the same page with `?tab=…` (the name of the parameter is yours),
@@ -123,7 +121,7 @@ export function Tabs<T extends string>({
           </label>
           <select
             id={`${baseId}-select`}
-            className={SELECT_CLASS}
+            className={TAB_SELECT_CLASS}
             value={active}
             aria-controls={children ? panelId : undefined}
             data-testid={selectTestId}
@@ -162,15 +160,7 @@ export function Tabs<T extends string>({
                   replace
                   preventScrollReset
                   data-testid={item.testId}
-                  className={cn(
-                    'relative inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-t-sm px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    "after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-transparent after:content-['']",
-                    // The name of a tab that is not open is `foreground/65`, not `muted-foreground`: that token is 4.4:1 on
-                    // white (4.0 on the track of a control), a hair under what a text needs (4.5:1).
-                    selected
-                      ? 'text-primary after:bg-primary'
-                      : 'text-foreground/65 hover:bg-muted hover:text-foreground',
-                  )}
+                  className={tabLinkClass(selected)}
                 >
                   {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
                   {item.label}

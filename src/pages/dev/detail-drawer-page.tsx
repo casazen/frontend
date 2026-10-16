@@ -218,8 +218,8 @@ export default function DetailDrawerPage() {
         label="Sezioni della pagina di prova"
         items={[
           { label: 'Cassetto', href: '/dev/detail-drawer' },
-          { label: 'Timeline', href: '/dev/detail-drawer?section=timeline', count: 2, countLabel: 'da vedere', tone: 'warning' },
-          { label: 'Schede', href: '/dev/detail-drawer?section=tabs', count: 1, countLabel: 'con un errore', tone: 'danger' },
+          { label: 'Timeline', href: '/dev/detail-drawer?section=timeline', count: 2, countLabel: '2 da vedere', tone: 'warning' },
+          { label: 'Schede', href: '/dev/detail-drawer?section=tabs', count: 1, countLabel: '1 con un errore', tone: 'danger' },
         ]}
       />
 
@@ -279,10 +279,10 @@ export default function DetailDrawerPage() {
         <Tabs
           label="Schede con il numero"
           items={[
-            { value: 'a', label: 'Da approvare', count: 3, countLabel: 'da approvare', tone: 'warning' },
-            { value: 'b', label: 'Con un errore', count: 2, countLabel: 'con un errore', tone: 'danger' },
-            { value: 'c', label: 'Pronte', count: 5, countLabel: 'pronte', tone: 'success' },
-            { value: 'd', label: 'Novità', count: 1, countLabel: 'nuova', tone: 'info' },
+            { value: 'a', label: 'Da approvare', count: 3, countLabel: '3 da approvare', tone: 'warning' },
+            { value: 'b', label: 'Con un errore', count: 2, countLabel: '2 con un errore', tone: 'danger' },
+            { value: 'c', label: 'Pronte', count: 5, countLabel: '5 pronte', tone: 'success' },
+            { value: 'd', label: 'Novità', count: 1, countLabel: '1 nuova', tone: 'info' },
             { value: 'e', label: 'Senza tono', count: 4 },
           ]}
           param="scheda"

@@ -198,7 +198,14 @@ describe('Timeline (UI-15)', () => {
       expect(screen.getByRole('link', { name: 'Pagamento ricevuto' })).toHaveAttribute('href', '/app/short-rent/payments/p-1');
     });
 
-    it.each(['javascript:alert(1)', '//evil.example/x', 'https://evil.example', '/\\evil.example', 'payments/1'])(
+    it('Timeline_LinkTitle_IsUnderlinedAtRestAndPaddedToAFingerOnATouchScreen', () => {
+      renderTimeline({ events: [{ id: 'p', at: NOW, title: 'Pagamento ricevuto', href: '/app/short-rent/payments/p-1' }] });
+
+      expect(screen.getByRole('link', { name: 'Pagamento ricevuto' })).toHaveClass('underline', 'pointer-coarse:py-2.5');
+    });
+
+    // A tab or a newline is dropped by the browser when it reads an address: '/' + TAB + '/evil.example' is '//evil.example' to it.
+    it.each(['javascript:alert(1)', '//evil.example/x', 'https://evil.example', '/\\evil.example', 'payments/1', '/\t/evil.example', '/\n/evil.example', '/\r/evil.example', '/app/\u0000x'])(
       'Timeline_Href%j_IsNotMadeALinkBecauseItIsNotAPageOfTheApp',
       (href) => {
         renderTimeline({ events: [{ id: 'p', at: NOW, title: 'Pagamento ricevuto', href }] });
