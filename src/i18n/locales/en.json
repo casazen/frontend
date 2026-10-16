@@ -7856,6 +7856,62 @@
       "PropertyManager": "Property manager"
     }
   },
+  "accountBilling": {
+    "compare": {
+      "current": "Your plan",
+      "note": "Prices exclude VAT. With an active subscription the change is confirmed in the Stripe portal.",
+      "overLimit_one": "You have {{count}} property and the plan includes {{allowance}}: it stays, but you will not be able to add more until you are back within the limit.",
+      "overLimit_other": "You have {{count}} properties and the plan includes {{allowance}}: they all stay, but you will not be able to add more until you are back within the limit.",
+      "price": "{{price}} a month + VAT",
+      "priceTbd": "Price being defined",
+      "properties_one": "Up to {{count}} property",
+      "properties_other": "Up to {{count}} properties",
+      "propertiesUnlimited": "Unlimited properties",
+      "title": "Compare plans"
+    },
+    "data": {
+      "eInvoice": "E-invoicing",
+      "empty": "To complete",
+      "fiscalCode": "Tax code",
+      "pec": "PEC",
+      "sdi": "SDI code",
+      "title": "Billing details"
+    },
+    "description": "{{plan}} plan: usage and payment for CasaZen.",
+    "descriptionGeneric": "Plan, usage and payment for CasaZen.",
+    "loading": "Loading billing and plan",
+    "payment": {
+      "noSubscription": "You will enter your card on the secure Stripe page when you choose a paid plan.",
+      "open": "Open the secure payment portal",
+      "text": "The card is managed on Stripe, never in CasaZen: we do not see it or store it here.",
+      "title": "Payment method"
+    },
+    "plan": {
+      "change": "Change plan",
+      "choose": "Choose a plan",
+      "kicker": "Your plan",
+      "nextCharge": "Next charge",
+      "noCharge": "None",
+      "notice": {
+        "openAccess": "Open access: for now we charge nothing and every feature is unlocked. The plan you choose today applies when billing restarts: we will let you know before it does.",
+        "openAccessPricesPending": "Open access: for now we charge nothing and every feature is unlocked. The prices of the plans are being defined: we will let you know before billing restarts.",
+        "pricesPending": "The prices of the plans are being defined: they cannot be purchased yet."
+      },
+      "people": "People",
+      "peopleHelp": "They count the active users plus the pending invitations, the accountant included. Someone who is deactivated takes no seat.",
+      "peopleHelpTitle": "Plan seats",
+      "properties": "Properties",
+      "title": "{{plan}} plan",
+      "unlimited": "{{used}} (no limit)",
+      "usage": "{{used}} of {{max}}",
+      "view": "See the plans"
+    },
+    "states": {
+      "now": "Now: {{status}}",
+      "title": "What the subscription states mean"
+    },
+    "title": "Billing and plan"
+  },
   "areas": {
     "account": {
       "description": "People, properties and the state of your account",
