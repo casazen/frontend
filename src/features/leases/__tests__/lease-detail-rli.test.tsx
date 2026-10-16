@@ -96,8 +96,8 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(within(steps).getByRole('link')).toHaveAttribute('href', RLI_OFFICIAL_INFO_URL);
     expect(panel.getByRole('button', { name: 'Inserisci estremi di registrazione' })).toBeInTheDocument();
     expect(panel.queryByRole('button', { name: /provider/i })).not.toBeInTheDocument();
-    // Nothing says "sent" or "registered" for a lease that is only signed.
-    expect(screen.getByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
+    // Nothing says "sent" or "registered" for a lease that is only signed (the checklist loads with its own request).
+    expect(await screen.findByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
     expect(screen.queryByText(/inviat[oa] con successo/i)).not.toBeInTheDocument();
   });
 
@@ -260,7 +260,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(panel.getByRole('status')).toHaveTextContent('il contratto NON è ancora registrato');
     expect(panel.queryByRole('button', { name: 'Inserisci estremi di registrazione' })).not.toBeInTheDocument();
     expect(panel.queryByRole('button', { name: /Scarica ricevuta/ })).not.toBeInTheDocument();
-    expect(screen.getByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
+    expect(await screen.findByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
   });
 
   it('render_Registered_ShowsDeclaredDetailsAndReceiptDownload', async () => {
