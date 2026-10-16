@@ -3695,9 +3695,7 @@
         "Draft": "Drafts",
         "emptyDescription": "Try looking at all the services.",
         "emptyTitle": "No service in this state",
-        "label": "Filter by state",
-        "Paused": "Paused",
-        "showAll": "Show all"
+        "Paused": "Paused"
       },
       "form": {
         "booking": {
@@ -3786,9 +3784,10 @@
         }
       },
       "list": {
+        "count_one": "{{count}} service",
+        "count_other": "{{count}} services",
         "limitReached": "You reached the limit of {{max}} services: to add another one, delete one.",
         "loadError": "Could not load the services",
-        "loading": "Loading the services…",
         "missing": "To complete: {{fields}}."
       },
       "notice": {
@@ -3855,11 +3854,6 @@
         "PerJob": "per job",
         "PerSet": "per set",
         "PerSquareMeter": "per m²"
-      },
-      "view": {
-        "cards": "Cards",
-        "label": "How to see the services",
-        "table": "Table"
       },
       "wizard": {
         "changed": "This draft was changed elsewhere. If you continue, what you see here replaces the saved version.",

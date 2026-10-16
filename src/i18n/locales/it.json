@@ -3695,9 +3695,7 @@
         "Draft": "Bozze",
         "emptyDescription": "Prova a guardare tutti i servizi.",
         "emptyTitle": "Nessun servizio con questo stato",
-        "label": "Filtra per stato",
-        "Paused": "In pausa",
-        "showAll": "Mostra tutti"
+        "Paused": "In pausa"
       },
       "form": {
         "booking": {
@@ -3786,9 +3784,10 @@
         }
       },
       "list": {
+        "count_one": "{{count}} servizio",
+        "count_other": "{{count}} servizi",
         "limitReached": "Hai raggiunto il limite di {{max}} servizi: per aggiungerne un altro, eliminane uno.",
         "loadError": "Impossibile caricare i servizi",
-        "loading": "Carico i servizi…",
         "missing": "Da completare: {{fields}}."
       },
       "notice": {
@@ -3855,11 +3854,6 @@
         "PerJob": "a intervento",
         "PerSet": "a set",
         "PerSquareMeter": "al m²"
-      },
-      "view": {
-        "cards": "Schede",
-        "label": "Come vedere i servizi",
-        "table": "Tabella"
       },
       "wizard": {
         "changed": "Questa bozza è stata modificata altrove. Se continui, quello che vedi qui prende il posto della versione salvata.",

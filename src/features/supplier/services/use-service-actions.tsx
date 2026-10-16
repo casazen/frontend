@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useCallback, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -41,38 +41,50 @@ export function useServiceActions(options: { onDeleted?: (service: SupplierServi
   const forget = useForgetSupplierService();
   const [toDelete, setToDelete] = useState<SupplierService | null>(null);
   const { onDeleted } = options;
+  const { mutateAsync: publishAsync } = publish;
+  const { mutateAsync: pauseAsync } = pause;
 
   /** Tells the person what the API refused. A service that is not there any more (deleted elsewhere) stops being shown. */
-  const fail = (error: unknown, service: SupplierService) => {
-    const found = describeServiceError(error, t);
-    if (found.kind === 'notFound') forget(service.id);
-    toast.error(found.message);
-    return null;
-  };
+  const fail = useCallback(
+    (error: unknown, service: SupplierService) => {
+      const found = describeServiceError(error, t);
+      if (found.kind === 'notFound') forget(service.id);
+      toast.error(found.message);
+      return null;
+    },
+    [t, forget],
+  );
 
-  const publishService = async (service: SupplierService) => {
-    try {
-      const updated = await publish.mutateAsync(service.id);
-      if (service.status === 'Paused') {
-        toastUndo(t(`${T}.published`, { name: service.name }), { undo: async () => void (await pause.mutateAsync(service.id)) });
-      } else {
-        toast.success(t(`${T}.published`, { name: service.name }));
+  // `publishService`, `pauseService` and `askDelete` are the same functions on every render, so that the list that holds them is not built again for nothing.
+  const publishService = useCallback(
+    async (service: SupplierService) => {
+      try {
+        const updated = await publishAsync(service.id);
+        if (service.status === 'Paused') {
+          toastUndo(t(`${T}.published`, { name: service.name }), { undo: async () => void (await pauseAsync(service.id)) });
+        } else {
+          toast.success(t(`${T}.published`, { name: service.name }));
+        }
+        return updated;
+      } catch (error) {
+        return fail(error, service);
       }
-      return updated;
-    } catch (error) {
-      return fail(error, service);
-    }
-  };
+    },
+    [publishAsync, pauseAsync, t, fail],
+  );
 
-  const pauseService = async (service: SupplierService) => {
-    try {
-      const updated = await pause.mutateAsync(service.id);
-      toastUndo(t(`${T}.paused`, { name: service.name }), { undo: async () => void (await publish.mutateAsync(service.id)) });
-      return updated;
-    } catch (error) {
-      return fail(error, service);
-    }
-  };
+  const pauseService = useCallback(
+    async (service: SupplierService) => {
+      try {
+        const updated = await pauseAsync(service.id);
+        toastUndo(t(`${T}.paused`, { name: service.name }), { undo: async () => void (await publishAsync(service.id)) });
+        return updated;
+      } catch (error) {
+        return fail(error, service);
+      }
+    },
+    [publishAsync, pauseAsync, t, fail],
+  );
 
   const confirmDelete = async () => {
     if (!toDelete) return;
