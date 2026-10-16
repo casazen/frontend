@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatStayDate, parseStayDate, todayInRome } from '@/lib/stay-dates';
+import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
+import { calendarDayOf } from './calm-day';
 
 export interface WeekStripDay {
   /**
-   * The calendar day, `YYYY-MM-DD` (a day written with a time is read as the day it starts with, as the date fields of the API
-   * are; for an instant use `romeDateOf`). The caller chooses the seven days (a week from Monday, the next seven days...).
+   * The calendar day: `YYYY-MM-DD`, or an instant with its `Z` or offset (the day it falls on in Europe/Rome; see
+   * `calendarDayOf`). The caller chooses the seven days (a week from Monday, the next seven days...).
    */
   date: string;
   /** How many things there are that day. A day with some gets a dot; a screen reader is told the number. */
@@ -27,7 +28,7 @@ export interface WeekStripProps extends Omit<React.HTMLAttributes<HTMLDivElement
 }
 
 /** The identity of a day in the strip: the calendar day it says, or its text when it says none (what `onValueChange` gives back). */
-const idOf = (date: string) => parseStayDate(date) || date;
+const idOf = (date: string) => calendarDayOf(date) || date;
 
 const SHORT = { weekday: 'short' } as const;
 const NUMBER = { day: 'numeric' } as const;
@@ -46,7 +47,7 @@ const FULL = { weekday: 'long', day: 'numeric', month: 'long' } as const;
 export function WeekStrip({ days, value, defaultValue, onValueChange, today, label, className, onKeyDown, ...props }: WeekStripProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const todayDate = parseStayDate(today) || todayInRome();
+  const todayDate = calendarDayOf(today) || todayInRome();
   // What the person chose in this strip. The choice that counts is worked out below, so that a new set of days (the next week)
   // finds its own default instead of a day that is no longer there.
   const [chosen, setChosen] = React.useState<string | undefined>(undefined);
@@ -55,7 +56,7 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
   const cells = React.useMemo(
     () =>
       days.map((day) => {
-        const stay = parseStayDate(day.date);
+        const stay = calendarDayOf(day.date);
         const count = day.count ?? 0;
         const isToday = stay !== '' && stay === todayDate;
         const name = [
@@ -77,7 +78,7 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
     [days, locale, todayDate, t],
   );
 
-  const unreadable = days.filter((day) => !parseStayDate(day.date)).length;
+  const unreadable = days.filter((day) => !calendarDayOf(day.date)).length;
   React.useEffect(() => {
     if (import.meta.env.DEV && unreadable > 0) {
       console.warn(`WeekStrip: ${unreadable} of the days are not a calendar day written YYYY-MM-DD, and are shown without a name.`);

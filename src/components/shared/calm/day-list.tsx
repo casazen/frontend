@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { addDays, formatStayDate, parseStayDate, todayInRome } from '@/lib/stay-dates';
+import { addDays, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import { CalmActionButton, type CalmAction } from './calm-action';
+import { calendarDayOf } from './calm-day';
 import { TONE_STYLES, type CalmTone } from './calm-tone';
 
 type DayListItemOpen =
@@ -15,9 +16,9 @@ export type DayListItem = DayListItemOpen & {
   /** Stable, for React: the id of the thing the row is about. */
   id: string;
   /**
-   * The calendar day of the row (`YYYY-MM-DD`; written with a time it is read as the day it starts with, as the date fields of
-   * the API are: for an instant use `romeDateOf`). It is the machine value of the date (`<time datetime>`) and, when `date` is
-   * not given, the text of the date too ("12 ott"), in the language of the app. A `TodayList` needs it to group the rows.
+   * The calendar day of the row: `YYYY-MM-DD`, or an instant with its `Z` or offset (the day it falls on in Europe/Rome; see
+   * `calendarDayOf`). It is the machine value of the date (`<time datetime>`) and, when `date` is not given, the text of the
+   * date too ("12 ott"), in the language of the app. A `TodayList` needs it to group the rows.
    */
   day?: string;
   /** The first column as the person reads it: a time ("09:30") or a short text. Default: the `day`, short ("12 ott"). */
@@ -53,7 +54,7 @@ function DayRow({ item }: { item: DayListItem }) {
   const { onOpen } = item;
   const opens = item.href !== undefined || onOpen !== undefined;
 
-  const day = parseStayDate(item.day);
+  const day = calendarDayOf(item.day);
   const dateText = item.date ?? (day ? formatStayDate(day, i18n.language, { day: 'numeric', month: 'short' }) : '');
   const dateTime = item.dateTime ?? (day || undefined);
 
@@ -156,10 +157,10 @@ function TodayGroup({ label, items }: { label: string; items: readonly DayListIt
  * inside a `PlainSection`: the group names are `h3`.
  */
 export function TodayList({ items, labels, today, className, ...props }: TodayListProps) {
-  const first = parseStayDate(today) || todayInRome();
+  const first = calendarDayOf(today) || todayInRome();
   const second = addDays(first, 1);
   const groupOf = (item: TodayListItem): TodayGroupKey => {
-    const day = parseStayDate(item.day);
+    const day = calendarDayOf(item.day);
     if (!day) return 'later';
     return day <= first ? 'today' : day === second ? 'tomorrow' : 'later';
   };

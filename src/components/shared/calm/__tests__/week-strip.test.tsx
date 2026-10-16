@@ -319,6 +319,15 @@ describe('WeekStrip (UI-16)', () => {
     expect(checked()).toEqual(['2026-10-16']);
   });
 
+  it('WeekStrip_DayGivenAsAnInstant_IsTheDayItFallsOnInRome', () => {
+    // 22:30 UTC of the 13th is half past midnight of the 14th in Rome.
+    render(<WeekStrip days={[{ date: '2026-10-13T22:30:00Z' }, { date: '2026-10-15T00:00:00Z' }]} today={TODAY} />);
+
+    expect(radios().map((radio) => radio.getAttribute('data-date'))).toEqual(['2026-10-14', '2026-10-15']);
+    expect(radios()[0].getAttribute('aria-label')).toBe('mercoledì 14 ottobre, oggi');
+    expect(checked()).toEqual(['2026-10-14']);
+  });
+
   it('WeekStrip_DayThatCannotBeRead_IsStillThereWithItsOwnTextAndTheDeveloperIsTold', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     render(<WeekStrip days={[{ date: 'giovedì' }, ...WEEK.slice(0, 2)]} today={TODAY} />);

@@ -63,6 +63,15 @@ describe('DayList (UI-16)', () => {
     expect(time).toHaveAttribute('datetime', '2026-10-16T09:30');
   });
 
+  it('DayList_DayGivenAsAnInstant_ShowsTheDayItFallsOnInRome', () => {
+    // 22:30 UTC of the 16th is half past midnight of the 17th in Rome.
+    renderList([{ id: 'a', day: '2026-10-16T22:30:00Z', title: 'Dopo mezzanotte' }]);
+
+    const time = screen.getByRole('listitem').querySelector('time');
+    expect(time).toHaveTextContent('17 ott');
+    expect(time).toHaveAttribute('datetime', '2026-10-17');
+  });
+
   it('DayList_DateWithoutAMachineValue_IsAPlainSpanAndNoDayAtAllLeavesTheCellEmpty', () => {
     renderList([
       { id: 'a', date: '5 ott', title: 'Solo testo' },
@@ -251,6 +260,20 @@ describe('TodayList (UI-16)', () => {
 
     expect(titlesOf('Oggi')).toEqual(['09:30Oggi alle nove e mezza']);
     expect(titlesOf('Domani')).toEqual(['15:00Domani alle tre']);
+  });
+
+  it('TodayList_DayGivenAsAnInstant_IsTheDayItFallsOnInRomeNotTheDayOfUtc', () => {
+    renderToday([
+      // 22:30 UTC of the 16th is half past midnight of the 17th in Rome: tomorrow, and its date says so.
+      { id: 'a', day: '2026-10-16T22:30:00Z', date: '00:30', title: 'Dopo mezzanotte' },
+      // 21:30 UTC of the 16th is 23:30 in Rome: still today.
+      { id: 'b', day: '2026-10-16T21:30:00Z', date: '23:30', title: 'Prima di mezzanotte' },
+      { id: 'c', day: '2026-10-19T08:00:00+02:00', title: 'Con un fuso' },
+    ]);
+
+    expect(titlesOf('Oggi')).toEqual(['23:30Prima di mezzanotte']);
+    expect(titlesOf('Domani')).toEqual(['00:30Dopo mezzanotte']);
+    expect(titlesOf('Più avanti')).toEqual(['19 ottCon un fuso']);
   });
 
   it('TodayList_DayThatCannotBeRead_GoesLastAndNeverWithToday', () => {

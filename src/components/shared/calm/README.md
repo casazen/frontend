@@ -125,8 +125,9 @@ one button, with `onOpen`); `action` is a separate button for what is done witho
 end ("tra 5 giorni"), and with a `tone` it gets the icon and the color of the tone. It renders nothing when it has no rows:
 what to say then is the page's. **`TodayList`**: `items` (each with its `day`), `labels` (`today`, `tomorrow`, `later`, in your
 words), `today?` (default: today in Europe/Rome). A day that is already past stays in today's group (it is still to be done);
-a `day` that cannot be read goes last. A day is a calendar day: written with a time it is read as the day it starts with, as
-the date fields of the API are; an instant (`2026-10-16T22:30:00Z`) is not one, give `romeDateOf(instant)`.
+a `day` that cannot be read goes last. A day is `YYYY-MM-DD`; `2026-10-16T09:30:00` (a time and no zone: a date field of the
+API) is the day it says, and an instant with a `Z` or an offset (`2026-10-16T22:30:00Z`) is the day it falls on in Europe/Rome
+(the 17th): `calendarDayOf` reads them for `DayList`, `TodayList` and `WeekStrip`.
 
 **`WeekStrip`**: `days` of `{ date (YYYY-MM-DD), count? }`, `value?` / `defaultValue?` / `onValueChange?`, `today?`, `label?`.
 A group of radio buttons: one in the Tab order, arrows (and Home, End) move the choice, from the last it goes round (Alt, Ctrl
