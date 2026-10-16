@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { PlainSection } from '@/components/shared/calm';
+import { Alert } from '@/components/ui/alert';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -44,32 +45,29 @@ export function RentSchedulePanel({ leaseId, leaseStatus }: RentSchedulePanelPro
   const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
 
   return (
-    <Card data-testid="rent-schedule-panel">
-      <CardHeader>
-        <CardTitle>{t('rent.title')}</CardTitle>
-        <CardDescription>{t('rent.description')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {isLoading && (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="rent-loading">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {t('rent.loading')}
-          </p>
-        )}
-        {isError && (
-          <div className="space-y-2" role="alert" data-testid="rent-load-error">
-            <p className="flex items-center gap-2 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              {getProblemMessage(error, t) ?? t('rent.loadError')}
-            </p>
+    <PlainSection title={t('rent.title')} data-testid="rent-schedule-panel" className="space-y-4">
+      <p className="text-sm text-foreground/70">{t('rent.description')}</p>
+      {isLoading && (
+        <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="rent-loading">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {t('rent.loading')}
+        </p>
+      )}
+      {isError && (
+        <Alert
+          variant="danger"
+          data-testid="rent-load-error"
+          action={
             <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
               {t('rent.retry')}
             </Button>
-          </div>
-        )}
-        {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} />}
-      </CardContent>
-    </Card>
+          }
+        >
+          {getProblemMessage(error, t) ?? t('rent.loadError')}
+        </Alert>
+      )}
+      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} />}
+    </PlainSection>
   );
 }
 
@@ -92,17 +90,17 @@ function RentLedgerContent({ leaseId, ledger }: { leaseId: string; ledger: RentL
   return (
     <div className="space-y-4">
       {!ledger.onlinePaymentsAvailable && (
-        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm" data-testid="rent-online-unavailable">
+        <Alert variant="warning" data-testid="rent-online-unavailable">
           {t('rent.onlineUnavailable')}{' '}
           <Link to={PAYMENTS_SETTINGS_PATH} className="font-medium underline">
             {t('rent.onlineUnavailableLink')}
           </Link>
-        </p>
+        </Alert>
       )}
       {ledger.onlinePaymentsAvailable && !ledger.hasTenantEmail && (
-        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm" data-testid="rent-no-tenant-email">
+        <Alert variant="warning" data-testid="rent-no-tenant-email">
           {t('rent.noTenantEmail')}
-        </p>
+        </Alert>
       )}
 
       {schedule && !showForm && (
@@ -187,7 +185,7 @@ function RentScheduleForm({ leaseId, ledger, onDone, onCancel }: RentScheduleFor
   }
 
   return (
-    <div className="grid gap-4 rounded-md border p-4 sm:grid-cols-3" data-testid="rent-schedule-form">
+    <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-3" data-testid="rent-schedule-form">
       <div className="space-y-2">
         <Label htmlFor={`rent-cadence-${leaseId}`}>{t('rent.cadenceLabel')}</Label>
         <select

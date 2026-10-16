@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -19,8 +18,9 @@ interface FreeEventsBannerProps {
 }
 
 /**
- * Calendar events marked "Disponibile" that block their days until the supplier answers. Full width, above the days.
- * Titles are personal data: they are shown here, to the owner, and nowhere else.
+ * Calendar events marked "Disponibile" that block their days until the supplier answers: the one block of the page that asks for
+ * something, in the calm look of the focus block (a tinted block, an icon, the words say it; the rows inside are plain, no box in a
+ * box). Titles are personal data: they are shown here, to the owner, and nowhere else.
  */
 export function FreeEventsBanner({ items, pendingCount, syncing = false }: FreeEventsBannerProps) {
   const { t } = useTranslation();
@@ -42,42 +42,49 @@ export function FreeEventsBanner({ items, pendingCount, syncing = false }: FreeE
   };
 
   const titleOf = (event: PendingFreeEvent) => event.summary.trim() || t('supplier.freeEventsUntitled');
+  const detailOf = (event: PendingFreeEvent) =>
+    [
+      describeFreeEventWhen(event, i18n.language),
+      event.isAllDay ? t('supplier.freeEventsAllDay') : null,
+      event.recurring ? t('supplier.freeEventsRecurring', { count: event.occurrences }) : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
 
   return (
     <section aria-labelledby="free-events-title" className="w-full" data-testid="free-events-banner">
-      <Alert variant="warning" className="w-full">
-        <div className="space-y-3">
-          <div>
-            <h2 id="free-events-title" className="font-semibold">
+      <div className="flex min-w-0 flex-col gap-3 rounded-xl bg-warning-soft p-4 ring-1 ring-inset ring-warning-border forced-colors:outline-1 sm:flex-row sm:gap-4 sm:p-6">
+        <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-warning-foreground sm:size-12">
+          <AlertTriangle className="size-5 sm:size-6" />
+        </span>
+
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="space-y-2">
+            <h2 id="free-events-title" className="break-words text-lg font-semibold leading-snug sm:text-xl">
               {t('supplier.freeEventsBannerTitle', { count: pendingCount })}
             </h2>
-            <p className="text-sm">{t('supplier.freeEventsBannerHint')}</p>
+            <p className="break-words text-sm text-foreground/80 sm:text-base">{t('supplier.freeEventsBannerHint')}</p>
             {syncing ? (
-              <p className="mt-1 flex items-center gap-1 text-sm" data-testid="free-events-syncing">
-                <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+              <p className="flex items-center gap-1.5 text-sm text-foreground/70" data-testid="free-events-syncing">
+                <Loader2 className="size-4 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                 {t('supplier.freeEventsSyncing')}
               </p>
             ) : null}
           </div>
 
-          <ul className="w-full space-y-2" aria-label={t('supplier.freeEventsListLabel')}>
+          <ul className="w-full divide-y divide-warning-border" aria-label={t('supplier.freeEventsListLabel')}>
             {items.map((event) => {
               const title = titleOf(event);
               const busy = busyId === event.id;
               return (
                 <li
                   key={event.id}
-                  className="flex w-full flex-col gap-2 rounded-md bg-background/70 p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex w-full flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                   data-testid={`free-event-${event.id}`}
                 >
                   <div className="min-w-0">
-                    <p className="break-words text-sm font-medium">{title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {describeFreeEventWhen(event, i18n.language)}
-                      {' · '}
-                      {event.isAllDay ? t('supplier.freeEventsAllDay') : null}
-                      {event.recurring ? `${event.isAllDay ? ' · ' : ''}${t('supplier.freeEventsRecurring', { count: event.occurrences })}` : null}
-                    </p>
+                    <p className="break-words font-semibold">{title}</p>
+                    <p className="break-words text-sm text-foreground/70">{detailOf(event)}</p>
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
                     <Button
@@ -96,7 +103,7 @@ export function FreeEventsBanner({ items, pendingCount, syncing = false }: FreeE
                       onClick={() => void send(event, 'Busy')}
                     >
                       {busy && decide.variables?.decision === 'Busy' ? (
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" aria-hidden="true" />
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                       ) : null}
                       {t('supplier.freeEventsBusyCta')}
                     </Button>
@@ -106,7 +113,7 @@ export function FreeEventsBanner({ items, pendingCount, syncing = false }: FreeE
             })}
           </ul>
         </div>
-      </Alert>
+      </div>
 
       <ConfirmationDialog
         open={confirming !== null}

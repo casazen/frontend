@@ -2,7 +2,7 @@ import { Download, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { useExportRli, useRliChecklist } from '@/queries/use-leases';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -58,11 +58,8 @@ export function RliChecklist({ leaseId }: Props) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('leases.rli.checklistTitle')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+    <PlainSection title={t('leases.rli.checklistTitle')}>
+      <div className="space-y-4 pt-2 text-sm">
         {isLoading && <p>{t('leases.rli.checklistLoading')}</p>}
         {isError && (
           <p className="text-destructive" role="alert">
@@ -144,7 +141,7 @@ export function RliChecklist({ leaseId }: Props) {
             </Button>
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PlainSection>
   );
 }
