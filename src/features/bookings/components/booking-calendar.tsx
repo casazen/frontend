@@ -1,12 +1,23 @@
-import { useCallback, useMemo, type CSSProperties } from 'react';
-import { Calendar, dateFnsLocalizer, type Messages, type NavigateAction, type SlotInfo, type View } from 'react-big-calendar';
+import { useCallback, useMemo } from 'react';
+import {
+  Calendar,
+  dateFnsLocalizer,
+  type EventProps,
+  type Messages,
+  type NavigateAction,
+  type SlotInfo,
+  type View,
+} from 'react-big-calendar';
 import { format, getDay, startOfWeek, type Locale } from 'date-fns';
 import { enGB, it } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import './host-calendar.css';
+import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { formatStayDate, stayDateToLocalDate, toStayDate, todayInRome } from '@/lib/stay-dates';
+import { calendarKindInfo, calendarKindOf } from '../lib/calendar-kinds';
 import {
   HOST_CALENDAR_VIEWS,
   HOST_CALENDAR_WEEK_STARTS_ON,
@@ -15,6 +26,7 @@ import {
   type HostCalendarEvent,
   type HostCalendarView,
 } from '../lib/host-calendar';
+import { CalendarLegend } from './calendar-legend';
 
 const CALENDAR_LOCALES: Record<string, Locale> = { it, en: enGB };
 
@@ -27,46 +39,28 @@ const localizer = dateFnsLocalizer({
   locales: CALENDAR_LOCALES,
 });
 
-type LegendKey = 'Confirmed' | 'Pending' | 'CheckedIn' | 'CheckedOut' | 'toReview' | 'block' | 'manualBlock';
-
-/**
- * One style per kind of entry, used by the events and by the legend. Pending requests (BK-06: "pay at the property"
- * waiting for the host, checkout in progress) are dashed and light, so they never read as confirmed stays.
- */
-const EVENT_STYLES: Record<LegendKey, CSSProperties> = {
-  Confirmed: { backgroundColor: '#2563eb', color: '#ffffff', border: '1px solid #2563eb' },
-  Pending: { backgroundColor: '#fef3c7', color: '#78350f', border: '1px dashed #b45309' },
-  CheckedIn: { backgroundColor: '#047857', color: '#ffffff', border: '1px solid #047857' },
-  CheckedOut: { backgroundColor: '#6b7280', color: '#ffffff', border: '1px solid #6b7280' },
-  // OTA stay created from an iCal block that a sync marked "da verificare" (CO-21): the reservation changed on the channel.
-  toReview: { backgroundColor: '#fff7ed', color: '#9a3412', border: '2px solid #ea580c' },
-  block: { backgroundColor: '#9333ea', color: '#ffffff', border: '1px solid #9333ea' },
-  // Dates closed by the host (PC-09: owner stay, maintenance): not sellable, but not a guest either.
-  manualBlock: { backgroundColor: '#334155', color: '#ffffff', border: '1px solid #334155' },
-};
-
-const LEGEND: { key: LegendKey; labelKey: string }[] = [
-  { key: 'Confirmed', labelKey: 'booking.calendar.legend.confirmed' },
-  { key: 'Pending', labelKey: 'booking.calendar.legend.pending' },
-  { key: 'CheckedIn', labelKey: 'booking.calendar.legend.checkedIn' },
-  { key: 'CheckedOut', labelKey: 'booking.calendar.legend.checkedOut' },
-  { key: 'toReview', labelKey: 'booking.calendar.legend.toReview' },
-  { key: 'block', labelKey: 'booking.calendar.legend.block' },
-  { key: 'manualBlock', labelKey: 'booking.calendar.legend.manualBlock' },
-];
-
-function styleKey(event: HostCalendarEvent): LegendKey {
-  if (event.kind === 'block') return event.manual ? 'manualBlock' : 'block';
-  if (event.otaReviewReason) return 'toReview';
-  return event.status === 'Pending' || event.status === 'CheckedIn' || event.status === 'CheckedOut'
-    ? event.status
-    : 'Confirmed';
-}
-
 function eventTitle(event: HostCalendarEvent, t: TFunction): string {
   if (event.kind === 'block') return blockSourceLabel(event, t);
   return event.guestName || t('booking.calendar.guestUnknown');
 }
+
+/**
+ * What an entry shows on the grid: its icon and its title, and for a screen reader the kind in words (the color and the shape
+ * of the box are for the eyes; the icon and the word are there so that nothing depends on them).
+ */
+function CalendarEvent({ event }: EventProps<HostCalendarEvent>) {
+  const { t } = useTranslation();
+  const { icon: Icon, labelKey } = calendarKindInfo(calendarKindOf(event));
+  return (
+    <span className="host-calendar-event__body">
+      <Icon className="host-calendar-event__icon" aria-hidden="true" />
+      <span className="host-calendar-event__title">{eventTitle(event, t)}</span>
+      <span className="sr-only">{t(labelKey)}</span>
+    </span>
+  );
+}
+
+const CALENDAR_COMPONENTS = { event: CalendarEvent };
 
 interface BookingCalendarProps {
   events: HostCalendarEvent[];
@@ -81,6 +75,11 @@ interface BookingCalendarProps {
   loading?: boolean;
 }
 
+/**
+ * The grid of the host calendar: the library draws it (month, week, day) and `host-calendar.css` dresses it with the tokens.
+ * The legend sits above it; the arrows, the view and the label of the period are the toolbar of the page (`CalendarToolbar`),
+ * so the library's own toolbar is off.
+ */
 export function BookingCalendar({
   events,
   date,
@@ -149,16 +148,9 @@ export function BookingCalendar({
   );
 
   return (
-    <div className="space-y-3">
-      <ul className="flex flex-wrap gap-4 text-sm text-muted-foreground" aria-label={t('booking.calendar.legend.title')}>
-        {LEGEND.map((entry) => (
-          <li key={entry.key} className="inline-flex items-center gap-2">
-            <span className="h-3 w-3 rounded" style={EVENT_STYLES[entry.key]} aria-hidden="true" />
-            {t(entry.labelKey)}
-          </li>
-        ))}
-      </ul>
-      <div className="relative h-[600px] rounded-lg border bg-white p-4" aria-busy={loading}>
+    <div className="flex flex-1 flex-col gap-3">
+      <CalendarLegend />
+      <div className={`host-calendar host-calendar--${view}`} aria-busy={loading}>
         <Calendar<HostCalendarEvent>
           localizer={localizer}
           culture={culture}
@@ -167,6 +159,8 @@ export function BookingCalendar({
           date={shownDate}
           view={view}
           views={[...HOST_CALENDAR_VIEWS]}
+          toolbar={false}
+          components={CALENDAR_COMPONENTS}
           onNavigate={handleNavigate}
           onView={handleView}
           startAccessor="start"
@@ -174,22 +168,24 @@ export function BookingCalendar({
           allDayAccessor="allDay"
           titleAccessor={(event) => eventTitle(event, t)}
           tooltipAccessor={tooltip}
-          style={{ height: '100%' }}
           onSelectEvent={onSelectEvent}
           onSelectSlot={onSelectSlot}
           selectable={Boolean(onSelectSlot)}
-          eventPropGetter={(event) => ({
-            className: `host-calendar-event host-calendar-event--${styleKey(event)}`,
-            style: { ...EVENT_STYLES[styleKey(event)], borderRadius: '5px', display: 'block' },
-          })}
+          eventPropGetter={(event) => ({ className: `host-calendar-event host-calendar-event--${calendarKindOf(event)}` })}
         />
         {loading && (
           <div
             role="status"
-            className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70 text-sm font-medium"
+            className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-card/70 text-sm font-medium"
           >
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
             {t('booking.calendar.loading')}
           </div>
+        )}
+        {!loading && events.length === 0 && (
+          <p className="pointer-events-none absolute inset-x-0 bottom-4 z-10 mx-auto w-fit max-w-[calc(100%-2rem)] rounded-full border bg-card px-4 py-1.5 text-center text-sm text-foreground/70">
+            {t('booking.calendar.toolbar.noEventsInRange')}
+          </p>
         )}
       </div>
     </div>

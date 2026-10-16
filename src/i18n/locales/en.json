@@ -1262,7 +1262,7 @@
       "cancelled": "Cancelled"
     },
     "calendar": {
-      "pageTitle": "Bookings Calendar",
+      "pageTitle": "Calendar",
       "pageDescription": "View and manage bookings in calendar format",
       "listView": "List View",
       "loading": "Loading calendar...",
@@ -1271,11 +1271,16 @@
       "goToProperties": "Go to properties",
       "property": "Property",
       "loadError": "Unable to load the calendar. Please try again later.",
-      "retry": "Try again",
       "guestUnknown": "Unnamed guest",
       "dates_one": "{{arrival}} → {{departure}} · {{count}} night",
       "dates_other": "{{arrival}} → {{departure}} · {{count}} nights",
+      "filters": {
+        "label": "Calendar filters",
+        "period": "Period",
+        "view": "View"
+      },
       "legend": {
+        "summary": "Legend",
         "title": "Calendar legend",
         "confirmed": "Confirmed booking",
         "pending": "Request awaiting confirmation",
