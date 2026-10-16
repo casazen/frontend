@@ -57,8 +57,9 @@ function mockApi(lease: () => LeaseDetail, rliChecklist: RliChecklist = checklis
   });
 }
 
-function renderPage() {
-  return renderAt('/app/long-rent/leases/lease-1', '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
+// A lease that is signed and not registered opens on the tab of the registration (`scadenze`); its dates are in `dati`.
+function renderPage(search = '') {
+  return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
 
 async function registrationPanel() {
@@ -106,10 +107,11 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
       signedLease({ stipulaDate: '2026-08-01T00:00:00Z', registrationDeadline: '2026-08-31T00:00:00Z' }),
     );
 
-    renderPage();
+    renderPage('?tab=dati');
 
     expect(await screen.findByTestId('lease-stipula-date')).toHaveTextContent(formatDate('2026-08-01T00:00:00Z'));
     expect(screen.getByTestId('lease-registration-deadline')).toHaveTextContent(formatDate('2026-08-31T00:00:00Z'));
+    fireEvent.click(screen.getByRole('tab', { name: 'Scadenze' }));
     const panel = await registrationPanel();
     expect(panel.getByTestId('rli-registration-deadline')).toHaveTextContent(
       `Scadenza per la registrazione: ${formatDate('2026-08-31T00:00:00Z')}`,
@@ -122,10 +124,11 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
       checklist({ registrationDeadline: null, daysRemaining: null }),
     );
 
-    renderPage();
+    renderPage('?tab=dati');
 
     expect(await screen.findByTestId('lease-registration-deadline')).toHaveTextContent('Da determinare');
     expect(screen.getByTestId('lease-stipula-date')).toHaveTextContent('Non ancora disponibile');
+    fireEvent.click(screen.getByRole('tab', { name: 'Scadenze' }));
     const panel = await registrationPanel();
     expect(panel.getByTestId('rli-registration-deadline')).toHaveTextContent(
       'Scadenza per la registrazione: da determinare',
@@ -270,7 +273,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
       checklist({ items: [{ key: 'rli_registered', label: 'x', done: true }] }),
     );
 
-    renderPage();
+    renderPage('?tab=scadenze');
 
     const panel = await registrationPanel();
     expect(panel.getByTestId('rli-registration-state')).toHaveTextContent('Registrato');
