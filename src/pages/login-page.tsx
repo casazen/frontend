@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, LogIn } from 'lucide-react';
+import { CasaZenMark } from '@/components/brand/casazen-mark';
+import { LogIn } from 'lucide-react';
 
 export function LoginPage() {
   const { isAuthenticated, user, login } = useAuth();
@@ -18,13 +19,13 @@ export function LoginPage() {
   }, [isAuthenticated, user, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Card className="w-full max-w-md">
+    // The brand's warm terracotta tint into its ink tint (the primitives of tokens.css), in place of the generic blue.
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#fff7f2] via-[#fbfaf8] to-[#e9f1f0] px-4">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Home className="h-8 w-8" />
-          </div>
-          <CardTitle className="text-3xl">{t('login.brand')}</CardTitle>
+          <CasaZenMark size={72} className="mx-auto mb-4" />
+          {/* "CASAZEN" in the text of the translation, shown as the lowercase wordmark of the logo. */}
+          <CardTitle className="text-3xl font-semibold lowercase tracking-[-0.03em] text-[#1f3a3d]">{t('login.brand')}</CardTitle>
           <CardDescription>{t('login.platformDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
