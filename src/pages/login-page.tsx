@@ -32,7 +32,9 @@ export function LoginPage() {
           <p className="text-center text-sm text-muted-foreground">
             {t('login.signInMessage')}
           </p>
-          <Button onClick={() => login()} className="w-full" size="lg">
+          {/* The brand's ink, which is also the primary of the redesign on this page: without it (the older look) the button would be
+              the older indigo next to the terracotta of the logo. */}
+          <Button onClick={() => login()} className="w-full bg-[#1f3a3d] text-white hover:bg-[#2b4f53]" size="lg">
             <LogIn className="mr-2 h-5 w-5" />
             {t('login.signInButton')}
           </Button>
