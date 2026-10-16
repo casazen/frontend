@@ -85,8 +85,10 @@ async function mockBookings(page: Page, all = BOOKINGS, viewOf = VIEW_OF) {
 const rows = (page: Page) => page.locator('tbody tr').filter({ hasText: 'Rossi' });
 const search = (page: Page) => page.getByPlaceholder(/Cerca|Search/);
 const chip = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
-/** The booking of Mario, whichever way the list shows it (a row of the table, a card on a phone). */
-const marioLink = (page: Page) => page.getByRole('link', { name: 'Mario Rossi' }).first();
+/** The booking of Mario, whichever way the list shows it (a row of the table, a card on a phone): its name opens the drawer of the booking (UI-15). */
+const marioOpener = (page: Page) => page.getByRole('button', { name: 'Mario Rossi', exact: true }).first();
+/** "Apri la scheda completa" of the drawer that is open: the page of the booking. */
+const openThePage = (page: Page) => page.getByRole('link', { name: 'Apri la scheda completa' }).click();
 
 /** Filters the list: the "Tutte" chip (the list starts from "In arrivo") and "mar" in the search. */
 async function filterTheList(page: Page) {
@@ -143,6 +145,7 @@ test.describe('Filters of the list in the address (UI-05, SR-04)', () => {
       await filterTheList(page);
 
       await rows(page).first().click();
+      await openThePage(page);
       await expect(page).toHaveURL(/\/app\/short-rent\/bookings\/bk-1/);
       const trail = page.getByRole('navigation', { name: 'Percorso di navigazione' });
       await expect(trail.getByRole('listitem')).toHaveText(['Affitti brevi', 'Prenotazioni', 'Mario Rossi']);
@@ -160,6 +163,7 @@ test.describe('Filters of the list in the address (UI-05, SR-04)', () => {
     test('the Back button of the browser gives the list as it was left too', async ({ page }) => {
       await filterTheList(page);
       await rows(page).first().click();
+      await openThePage(page);
       await expect(page).toHaveURL(/\/bookings\/bk-1/);
 
       await page.goBack();
@@ -171,6 +175,7 @@ test.describe('Filters of the list in the address (UI-05, SR-04)', () => {
     test('the menu opens the plain list again: the way back from a booking is the way back, not a trap', async ({ page }) => {
       await filterTheList(page);
       await rows(page).first().click();
+      await openThePage(page);
       await expect(page).toHaveURL(/\/bookings\/bk-1/);
 
       await page.getByRole('complementary', { name: 'Navigazione principale' }).getByRole('link', { name: 'Prenotazioni' }).click();
@@ -206,7 +211,8 @@ test.describe('Filters of the list in the address (UI-05, SR-04)', () => {
 
     test('the link back of the booking leads to the list with the filters', async ({ page }) => {
       await filterTheList(page);
-      await marioLink(page).click();
+      await marioOpener(page).click();
+      await openThePage(page);
       await expect(page).toHaveURL(/\/bookings\/bk-1/);
       await expect(page.getByTestId('page-crumbs')).toBeHidden();
 
