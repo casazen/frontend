@@ -3032,6 +3032,97 @@
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
+    "home": {
+      "first": {
+        "availability": "Set your availability",
+        "body": "Tell us which days and hours you work and add your services: that is where requests come from.",
+        "kicker": "To get started",
+        "service": "Add a service",
+        "title": "Tell customers when you work"
+      },
+      "free": {
+        "body": "No jobs or requests in the next few days. Keep your hours and services up to date to get more.",
+        "title": "A free day"
+      },
+      "greeting": "Good morning, {{name}}",
+      "greetingAnonymous": "Good morning",
+      "menu": {
+        "newService": "Add a service",
+        "requests": "All requests"
+      },
+      "next": {
+        "continue": "Continue",
+        "loadError": "The next steps could not be loaded.",
+        "next": "Next: {{step}}",
+        "progress": "{{done}} of {{total}}",
+        "title": "Set up your profile"
+      },
+      "numbers": {
+        "acceptance": "Accepted",
+        "delta": "{{value}} vs the period before",
+        "deltaFaster": "{{amount}} faster than the period before",
+        "deltaSame": "Same as the period before",
+        "deltaSlower": "{{amount}} slower than the period before",
+        "earnings": "Net earnings",
+        "jobs": "Jobs completed",
+        "loadError": "Your numbers could not be loaded.",
+        "period": "Period",
+        "periods": {
+          "currentMonth": "This month",
+          "last30Days": "Last 30 days",
+          "last3Months": "Last 3 months"
+        },
+        "points_one": "{{count}} point",
+        "points_other": "{{count}} points",
+        "quiet": "Your numbers show up here once the first requests arrive.",
+        "response": "Response time",
+        "title": "Your numbers"
+      },
+      "purpose": {
+        "jobsToday_one": "{{count}} job today",
+        "jobsToday_other": "{{count}} jobs today",
+        "line": "{{day}} · {{what}}",
+        "quiet": "a quiet day, nothing urgent",
+        "toAnswer_one": "{{count}} request to answer",
+        "toAnswer_other": "{{count}} requests to answer"
+      },
+      "steps": {
+        "firstRequest": "Answer your first request",
+        "hours": "Set your availability",
+        "profile": "Complete your profile",
+        "services": "Add your first service",
+        "showcase": "Publish your showcase"
+      },
+      "today": {
+        "completed": "Done: waiting for payment",
+        "filterLabel": "Show by type",
+        "inProgress": "In progress",
+        "inProgressSince": "In progress since {{time}}",
+        "kinds": {
+          "all": "All",
+          "jobs": "Jobs",
+          "requests": "To answer"
+        },
+        "loadError": "Your day could not be loaded.",
+        "moreRequests_one": "{{count}} more request to answer",
+        "moreRequests_other": "{{count}} more requests to answer",
+        "openAvailability": "Open availability",
+        "paymentLate": "Payment is late",
+        "takeAria": "Accept: {{name}}",
+        "title": "Today and the next days"
+      },
+      "todo": {
+        "allClear": "All clear",
+        "allClearHint": "Nothing is waiting for your answer. We tell you here when something comes up.",
+        "loadError": "The to-do list could not be loaded.",
+        "paymentsLate_one": "{{count}} late payment",
+        "paymentsLate_other": "{{count}} late payments",
+        "paymentsLateAction": "See the jobs to collect",
+        "paymentsLateHint": "A customer has not paid a finished job yet. From the request you can remind them.",
+        "requests": "See the requests",
+        "title": "To do"
+      }
+    },
     "requests": {
       "action": {
         "complete": "Mark as done",
