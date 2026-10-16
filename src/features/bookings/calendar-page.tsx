@@ -3,14 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { BookingCalendar } from './components/booking-calendar';
+import { CalendarToolbar } from './components/calendar-toolbar';
 import { useBookingCalendar } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
-import { CalendarOff, CalendarPlus, List, Trash2, X } from 'lucide-react';
+import { CalendarDays, CalendarOff, CalendarPlus, List, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import type { Booking } from '@/types';
+import { cn } from '@/lib/utils';
 import { OtaStayForm } from './components/ota-stay-form';
 import { ManualBlockForm } from './components/manual-block-form';
 import { useDeleteManualBlock } from '@/queries/use-manual-blocks';
@@ -20,6 +23,7 @@ import { usePropertyModeEnabled } from '@/features/properties/mode/use-mode-entr
 import type { SlotInfo } from 'react-big-calendar';
 import { getProblemMessage } from '@/lib/api-errors';
 import { addDays, formatStayDate, toStayDate, todayInRome } from '@/lib/stay-dates';
+import { calendarKindInfo, calendarKindOf } from './lib/calendar-kinds';
 import {
   blockSourceLabel,
   hostCalendarRange,
@@ -28,6 +32,8 @@ import {
   type HostCalendarEvent,
   type HostCalendarView,
 } from './lib/host-calendar';
+
+const BOOKINGS_PATH = '/app/short-rent/bookings';
 
 interface BlockDetailsProps {
   block: HostCalendarBlockEvent;
@@ -88,7 +94,7 @@ function ManualBlockActions({ block, propertyId, canWriteProperty, onDeleted }: 
       {!canWriteProperty ? (
         <p className="text-muted-foreground">{t('booking.calendar.manualBlock.readOnly')}</p>
       ) : confirming ? (
-        <div className="space-y-2 rounded-md border bg-white px-3 py-2" data-testid="manual-block-delete-confirm">
+        <div className="space-y-2 rounded-lg border bg-background px-3 py-2" data-testid="manual-block-delete-confirm">
           <p>{t('booking.calendar.manualBlock.deleteConfirm')}</p>
           {deleteBlock.isError && (
             <p className="text-sm text-destructive" role="alert">
@@ -145,17 +151,22 @@ function BlockDetails({
 }: BlockDetailsProps) {
   const { t, i18n } = useTranslation();
   const [creating, setCreating] = useState(false);
+  const kind = calendarKindOf(block);
+  const KindIcon = calendarKindInfo(kind).icon;
   return (
-    <section
-      aria-labelledby="calendar-block-title"
-      className="space-y-2 rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm"
-    >
+    <section aria-labelledby="calendar-block-title" className="space-y-3 rounded-xl border bg-card p-4 text-sm">
       <div className="flex items-start justify-between gap-4">
-        <h2 id="calendar-block-title" className="font-medium">
-          {block.manual
-            ? t('booking.calendar.manualBlock.title', { reason: blockSourceLabel(block, t) })
-            : t('booking.calendar.block.title', { source: blockSourceLabel(block, t) })}
-        </h2>
+        <div className="flex min-w-0 items-center gap-2">
+          {/* The same small box as in the legend and on the grid: what these dates are, by shape and icon and not by color alone. */}
+          <span className={cn('host-calendar-swatch', `host-calendar-event--${kind}`)} aria-hidden="true">
+            <KindIcon />
+          </span>
+          <h2 id="calendar-block-title" className="min-w-0 break-words font-semibold">
+            {block.manual
+              ? t('booking.calendar.manualBlock.title', { reason: blockSourceLabel(block, t) })
+              : t('booking.calendar.block.title', { source: blockSourceLabel(block, t) })}
+          </h2>
+        </div>
         <Button variant="ghost" size="sm" onClick={onClose} aria-label={t('booking.calendar.block.close')}>
           <X className="h-4 w-4" />
         </Button>
@@ -183,7 +194,7 @@ function BlockDetails({
         </>
       )}
       {block.stayId ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-white px-3 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-background px-3 py-2">
           <span>{t('booking.icalBlock.converted')}</span>
           <Button variant="outline" size="sm" asChild>
             <Link to={`/app/short-rent/bookings/${block.stayId}`} data-testid="calendar-block-open-stay">
@@ -198,7 +209,7 @@ function BlockDetails({
       ) : !canWrite ? (
         <p className="text-muted-foreground">{t('booking.icalBlock.readOnly')}</p>
       ) : creating ? (
-        <div className="rounded-md border bg-white p-4">
+        <div className="rounded-lg border bg-background p-4">
           <OtaStayForm
             blockId={block.id}
             channel={block.channel}
@@ -258,7 +269,7 @@ export function CalendarPage() {
   const handleSelectEvent = useCallback(
     (event: HostCalendarEvent) => {
       if (event.kind === 'booking') {
-        navigate(`/app/short-rent/bookings/${event.id}`);
+        navigate(`${BOOKINGS_PATH}/${event.id}`);
       } else {
         setBlockDraft(null);
         setSelectedBlockId(event.id);
@@ -283,73 +294,74 @@ export function CalendarPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      {/* A column that fills the content region: the calendar takes the height the screen has left (`host-calendar.css`). */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
         <PageHeader
           title={t('booking.calendar.pageTitle')}
           description={t('booking.calendar.pageDescription')}
+          crumbs="auto"
+          primary={
+            canWriteBookings && propertyList.length > 0
+              ? { label: t('booking.list.newBooking'), icon: Plus, to: `${BOOKINGS_PATH}/create`, testId: 'calendar-new-booking' }
+              : undefined
+          }
+          secondary={[{ label: t('booking.calendar.listView'), icon: List, to: BOOKINGS_PATH }]}
+          mobilePrimary="none"
           action={
-            <div className="flex flex-wrap justify-end gap-2">
-              {canWriteProperty && propertyList.length > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedBlockId(null);
-                    setBlockDraft({});
-                  }}
-                  data-testid="manual-block-open"
-                >
-                  <CalendarOff className="mr-2 h-4 w-4" />
-                  {t('booking.calendar.manualBlock.action')}
-                </Button>
-              )}
-              <Button variant="outline" onClick={() => navigate('/app/short-rent/bookings')}>
-                <List className="mr-2 h-4 w-4" />
-                {t('booking.calendar.listView')}
+            canWriteProperty && propertyList.length > 0 ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedBlockId(null);
+                  setBlockDraft({});
+                }}
+                data-testid="manual-block-open"
+              >
+                <CalendarOff className="mr-2 h-4 w-4" />
+                {t('booking.calendar.manualBlock.action')}
               </Button>
-            </div>
+            ) : undefined
           }
         />
 
         {propertiesLoading ? (
-          <div className="flex h-[600px] items-center justify-center" role="status">
-            <p>{t('booking.calendar.loading')}</p>
+          <div
+            role="status"
+            aria-busy="true"
+            className="flex min-h-[28rem] flex-1 items-center justify-center gap-2 rounded-xl border bg-card text-sm text-foreground/70"
+          >
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            {t('booking.calendar.loading')}
           </div>
         ) : propertyList.length === 0 ? (
-          <div className="flex h-[400px] flex-col items-center justify-center gap-2 text-center">
-            <p className="font-medium">{t('booking.calendar.noProperties')}</p>
-            <p className="text-sm text-muted-foreground">
-              {t('booking.calendar.noPropertiesHint')}
-            </p>
-            <Button onClick={() => navigate('/app/short-rent/properties')}>{t('booking.calendar.goToProperties')}</Button>
+          <div className="flex min-h-[28rem] flex-1 items-center justify-center rounded-xl border bg-card">
+            <EmptyState
+              icon={CalendarDays}
+              title={t('booking.calendar.noProperties')}
+              description={t('booking.calendar.noPropertiesHint')}
+              action={{ label: t('booking.calendar.goToProperties'), href: '/app/short-rent/properties' }}
+            />
           </div>
         ) : (
           <>
-            <div className="max-w-sm space-y-2">
-              <Label htmlFor="calendar-property">{t('booking.calendar.property')}</Label>
-              <select
-                id="calendar-property"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={activePropertyId}
-                onChange={(e) => {
-                  setSelectedPropertyId(e.target.value);
-                  setSelectedBlockId(null);
-                  setBlockDraft(null);
-                }}
-              >
-                {propertyList.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CalendarToolbar
+              properties={propertyList}
+              propertyId={activePropertyId}
+              onPropertyChange={(propertyId) => {
+                setSelectedPropertyId(propertyId);
+                setSelectedBlockId(null);
+                setBlockDraft(null);
+              }}
+              view={view}
+              date={shownDate}
+              onViewChange={setView}
+              onDateChange={handleNavigate}
+              showPeriod={!isError}
+            />
 
             {blockDraft && activePropertyId && (
-              <section
-                aria-labelledby="manual-block-form-title"
-                className="space-y-3 rounded-lg border border-slate-300 bg-slate-50 p-4"
-              >
-                <h2 id="manual-block-form-title" className="font-medium">
+              <section aria-labelledby="manual-block-form-title" className="space-y-3 rounded-xl border bg-card p-4">
+                <h2 id="manual-block-form-title" className="font-semibold">
                   {t('booking.calendar.manualBlock.formTitle')}
                 </h2>
                 <ManualBlockForm
@@ -365,30 +377,10 @@ export function CalendarPage() {
 
             {isError ? (
               // An API error is never shown as an empty calendar.
-              <div
-                role="alert"
-                className="flex h-[400px] flex-col items-center justify-center gap-3 rounded-lg border text-center"
-              >
-                <p className="font-medium text-destructive">{t('booking.calendar.loadError')}</p>
-                {getProblemMessage(error, t) && (
-                  <p className="max-w-md text-sm text-muted-foreground">{getProblemMessage(error, t)}</p>
-                )}
-                <Button variant="outline" onClick={() => void refetch()}>
-                  {t('booking.calendar.retry')}
-                </Button>
-              </div>
+              <ErrorState title={t('booking.calendar.loadError')} error={error} onRetry={() => void refetch()} />
             ) : (
               <>
-                <BookingCalendar
-                  events={calendarLoading ? [] : events}
-                  date={shownDate}
-                  view={view}
-                  onNavigate={handleNavigate}
-                  onView={setView}
-                  onSelectEvent={handleSelectEvent}
-                  onSelectSlot={canWriteProperty ? handleSelectSlot : undefined}
-                  loading={calendarLoading}
-                />
+                {/* Above the grid, not under it: the grid fills the screen, and what a click opens must be seen where it was clicked. */}
                 {selectedBlock && (
                   <BlockDetails
                     key={selectedBlock.id}
@@ -401,10 +393,20 @@ export function CalendarPage() {
                     onStayCreated={(booking) => {
                       setSelectedBlockId(null);
                       // The guest tab: the check-in link of the new stay is sent from there (CO-09).
-                      navigate(`/app/short-rent/bookings/${booking.id}?tab=guest`);
+                      navigate(`${BOOKINGS_PATH}/${booking.id}?tab=guest`);
                     }}
                   />
                 )}
+                <BookingCalendar
+                  events={calendarLoading ? [] : events}
+                  date={shownDate}
+                  view={view}
+                  onNavigate={handleNavigate}
+                  onView={setView}
+                  onSelectEvent={handleSelectEvent}
+                  onSelectSlot={canWriteProperty ? handleSelectSlot : undefined}
+                  loading={calendarLoading}
+                />
               </>
             )}
           </>
