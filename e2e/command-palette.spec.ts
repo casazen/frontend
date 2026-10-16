@@ -89,6 +89,9 @@ async function mockBookingsAndGuests(page: Page) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     });
   await answerWith('/api/bookings', { items: [BOOKING], totalCount: 1, page: 1, pageSize: 10 });
+  // The page of the bookings (SR-04) asks for its rows and for the counters of its chips.
+  await answerWith('/api/bookings/search', { items: [BOOKING], totalCount: 1, page: 1, pageSize: 20 });
+  await answerWith('/api/bookings/counts', { all: 1, toConfirm: 0, upcoming: 1, inProgress: 0, completed: 0, cancelled: 0 });
   await answerWith('/api/guests', { items: [GUEST], totalCount: 1, page: 1, pageSize: 20 });
 }
 
@@ -164,7 +167,7 @@ test.describe('Command palette (UI-06)', () => {
       await mockBookingsAndGuests(page);
       await openPage(page, '/app/short-rent/bookings', 'short-stay');
       await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeVisible();
-      const field = page.getByRole('main').getByRole('textbox').first();
+      const field = page.getByRole('main').getByRole('searchbox');
       await field.focus();
 
       await openFromKeyboard(page);

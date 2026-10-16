@@ -1,0 +1,301 @@
+/*
+ * The host calendar (react-big-calendar) drawn with the tokens of the redesign (SR-02): no color of its own, everything reads
+ * the semantic tokens (`--color-*`), so it follows the area accent and, when it arrives, the dark theme.
+ *
+ * The library's own stylesheet (`react-big-calendar.css`) is loaded first and gives the layout; here the colors, the borders and
+ * the sizes are put right, and the height: the card fills what the screen has left under the header instead of being 600 px.
+ * Everything is under `.host-calendar` (specificity above the library's, which is not in a layer).
+ */
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * The kinds of entry. Color, shape and icon say the same thing, so no kind is told apart by color alone:
+ *   confirmed = full · pending = dashed edge and light stripes · arrived = a thick bar at the start · over = quiet ·
+ *   to check = red frame · blocked by a channel (iCal) = blue stripes and a lock · closed by the host = grey stripes.
+ * Text always uses the `-foreground` of its tone on the `-soft` of the same tone (the pairs that meet AA).
+ * ---------------------------------------------------------------------------------------------------------------- */
+.host-calendar-event--Confirmed {
+  --hc-fg: var(--color-primary-text);
+  --hc-bg: var(--color-primary-soft);
+  --hc-line: var(--color-primary);
+}
+
+.host-calendar-event--Pending {
+  --hc-fg: var(--color-warning-foreground);
+  --hc-bg: var(--color-warning-soft);
+  --hc-line: var(--color-warning);
+  --hc-style: dashed;
+  --hc-fill: repeating-linear-gradient(
+    -45deg,
+    var(--color-warning-soft) 0 6px,
+    color-mix(in oklab, var(--color-warning-soft) 35%, var(--color-card)) 6px 11px
+  );
+}
+
+.host-calendar-event--CheckedIn {
+  --hc-fg: var(--color-success-foreground);
+  --hc-bg: var(--color-success-soft);
+  --hc-line: var(--color-success);
+  --hc-bar: 8px;
+}
+
+.host-calendar-event--CheckedOut {
+  --hc-fg: var(--color-muted-foreground);
+  --hc-bg: var(--color-muted);
+  --hc-line: var(--color-border-strong);
+  --hc-bar: 2px;
+}
+
+.host-calendar-event--toReview {
+  --hc-fg: var(--color-danger-foreground);
+  --hc-bg: var(--color-danger-soft);
+  --hc-line: var(--color-danger);
+  --hc-edge: var(--color-danger);
+  --hc-width: 2px;
+  --hc-bar: 2px;
+}
+
+.host-calendar-event--block {
+  --hc-fg: var(--color-info-foreground);
+  --hc-bg: var(--color-info-soft);
+  --hc-line: var(--color-info);
+  --hc-fill: repeating-linear-gradient(
+    -45deg,
+    var(--color-info-soft) 0 8px,
+    color-mix(in oklab, var(--color-info-soft) 40%, var(--color-card)) 8px 11px
+  );
+}
+
+.host-calendar-event--manualBlock {
+  --hc-fg: var(--color-foreground);
+  --hc-bg: var(--color-muted);
+  --hc-line: var(--color-muted-foreground);
+  --hc-fill: repeating-linear-gradient(-45deg, var(--color-muted) 0 6px, var(--color-surface-2) 6px 12px);
+}
+
+/* The box of an entry, on the calendar and in the legend (the swatch is a small copy of an event). */
+.host-calendar .rbc-event.host-calendar-event,
+.host-calendar-swatch {
+  background: var(--hc-fill, var(--hc-bg));
+  color: var(--hc-fg);
+  border: var(--hc-width, 1px) var(--hc-style, solid) var(--hc-edge, color-mix(in oklab, var(--hc-line) 55%, transparent));
+  border-left: var(--hc-bar, 4px) solid var(--hc-line);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.host-calendar-swatch {
+  display: inline-grid;
+  flex: none;
+  box-sizing: border-box;
+  width: 1.75rem;
+  height: 1rem;
+  place-items: center;
+}
+
+.host-calendar-swatch svg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.host-calendar .rbc-event.host-calendar-event {
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0 0.375rem;
+  box-shadow: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.host-calendar .rbc-event.host-calendar-event:hover {
+  filter: brightness(0.97);
+}
+
+/* The library draws a 5 px browser outline on focus: the focus ring of the redesign instead, for the keyboard only. */
+.host-calendar .rbc-event.host-calendar-event:focus {
+  outline: none;
+}
+
+.host-calendar .rbc-event.host-calendar-event:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* A stay that goes on from the week before does not start here: no thick bar at its start. */
+.host-calendar .rbc-event.host-calendar-event.rbc-event-continues-prior {
+  border-left: var(--hc-width, 1px) var(--hc-style, solid) var(--hc-edge, color-mix(in oklab, var(--hc-line) 55%, transparent));
+}
+
+.host-calendar .rbc-event-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.host-calendar-event__body {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.host-calendar-event__icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
+}
+
+.host-calendar-event__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * The card: the grid is the focal block of the page. It takes the height that is left on the screen (the page is a column
+ * that fills the content region) and never less than a month needs to be readable.
+ * ---------------------------------------------------------------------------------------------------------------- */
+.host-calendar {
+  position: relative;
+  display: flex;
+  min-height: 28rem;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 14px);
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+}
+
+.host-calendar .rbc-calendar {
+  min-height: 0;
+  flex: 1 1 auto;
+  height: auto;
+  font: inherit;
+}
+
+.host-calendar .rbc-month-view,
+.host-calendar .rbc-time-view {
+  border: 0;
+  background: transparent;
+}
+
+/* Days of the week (month) and days of the week with their number (week). */
+.host-calendar .rbc-header {
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.host-calendar .rbc-header + .rbc-header {
+  border-left: 1px solid var(--color-border);
+}
+
+.host-calendar .rbc-header.rbc-today {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+}
+
+/* The grid of the month and the cells of the days. */
+.host-calendar .rbc-month-row + .rbc-month-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.host-calendar .rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid var(--color-border);
+}
+
+.host-calendar .rbc-off-range-bg {
+  background: var(--color-surface-2);
+}
+
+.host-calendar .rbc-off-range {
+  color: var(--color-muted-foreground);
+}
+
+.host-calendar .rbc-today {
+  background: var(--color-primary-soft);
+}
+
+.host-calendar .rbc-selected-cell {
+  background: color-mix(in oklab, var(--color-primary) 16%, transparent);
+}
+
+.host-calendar .rbc-row-segment {
+  padding: 0 2px 2px;
+}
+
+.host-calendar .rbc-date-cell {
+  padding: 0.25rem 0.375rem 0 0;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.host-calendar .rbc-date-cell .rbc-button-link {
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.host-calendar .rbc-date-cell .rbc-button-link:hover {
+  background: var(--color-muted);
+}
+
+.host-calendar .rbc-date-cell.rbc-now .rbc-button-link {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.host-calendar .rbc-show-more {
+  padding: 0 0.375rem;
+  background: transparent;
+  color: var(--color-primary-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.host-calendar .rbc-show-more:hover,
+.host-calendar .rbc-show-more:focus {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * Week and day. The entries are whole days (nights), so the hours grid under them is empty and says nothing: it is not shown,
+ * and the row of the days takes its place, full height, with the same cells (and the same selection of days) as the month.
+ * ---------------------------------------------------------------------------------------------------------------- */
+.host-calendar .rbc-time-content,
+.host-calendar .rbc-time-header-gutter {
+  display: none;
+}
+
+.host-calendar .rbc-time-header {
+  flex: 1 1 auto;
+  margin-right: 0 !important;
+  border-right: 0;
+}
+
+.host-calendar .rbc-time-header-content {
+  border-left: 0;
+}
+
+.host-calendar .rbc-time-header > .rbc-row:first-child {
+  border-bottom: 0;
+}
+
+.host-calendar .rbc-time-view .rbc-allday-cell {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 8rem;
+}
+
+/* A day is one single column: tinting it as "today" would paint the whole card (the title of the period says the day). */
+.host-calendar--day .rbc-today {
+  background: transparent;
+}
