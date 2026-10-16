@@ -30,6 +30,11 @@ interface ConfirmationDialogProps {
   requireText?: string;
   /** What will happen if the user confirms, one short sentence each, listed above the buttons. */
   consequences?: readonly string[];
+  /**
+   * Where the focus goes when the dialog has closed. By default it goes back to what had it before; when the confirmation
+   * removes that (a photo of a list), call `event.preventDefault()` and give the focus to something that is still there.
+   */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 /** What the user typed and what is asked of them are the same word, whatever the capital letters or the spaces around it. */
@@ -70,6 +75,9 @@ function ConfirmationForm({
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    // The dialog is drawn outside the page's form but sits inside it for React, which hands an event to the parents of a portal:
+    // without this, confirming here would submit the form around the dialog (a wizard that publishes, a page that saves).
+    event.stopPropagation();
     if (mayConfirm && !isLoading) onSubmit();
   };
 
@@ -143,6 +151,7 @@ export function ConfirmationDialog({
   isLoading = false,
   requireText,
   consequences,
+  onCloseAutoFocus,
 }: ConfirmationDialogProps) {
   const { t } = useTranslation();
   const resolvedConfirmLabel = confirmLabel ?? t('shared.confirm');
@@ -154,7 +163,7 @@ export function ConfirmationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <ConfirmationForm
           title={title}
           description={description}
