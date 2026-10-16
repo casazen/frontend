@@ -176,9 +176,10 @@ test.describe('Compliance wizards (#295)', () => {
     expect(summaryResp.status()).toBe(200);
 
     await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('compliance-summary-properties-count')).toHaveText('1');
-    await expect(page.getByTestId('compliance-summary-checkouts-count')).toHaveText('1');
-    await expect(page.getByTestId('compliance-summary-checkins-count')).toHaveText('1');
+    // Each thing the cockpit counts is a row with its own button.
+    await expect(page.getByTestId('compliance-summary-properties-link')).toHaveCount(1);
+    await expect(page.getByTestId('compliance-summary-checkouts-link')).toHaveCount(1);
+    await expect(page.getByTestId('compliance-summary-checkins-link')).toHaveCount(1);
   });
 
   test('AC12: property edit links to multi-step activation wizard with progress bar', async ({ page }) => {

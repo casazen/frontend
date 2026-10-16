@@ -1,4 +1,5 @@
 import type { AlloggiatiWebStatus } from '@/types/alloggiati.types';
+import type { DashboardMissing } from '@/types/dashboard.types';
 import type { TouristTaxRateRule, TouristTaxRateVerification } from '@/types/tourist-tax.types';
 
 export type PropertyComplianceStatus = 'Pending' | 'Active' | 'Suspended';
@@ -201,6 +202,12 @@ export interface ComplianceSummaryItem {
   propertyId: string | null;
   /** Set for every action on a booking, null for `ActivateProperty`. */
   bookingId: string | null;
+  /**
+   * What the item still lacks, with stable codes (SR-03): the blockers of a property to activate (`field` is the step of the
+   * wizard), the fields of the Alloggiati record that the guests of a stay lack, the single thing left for the others.
+   * Absent on an API that does not send it yet.
+   */
+  missing?: DashboardMissing[];
 }
 
 export interface ComplianceSummarySection {
