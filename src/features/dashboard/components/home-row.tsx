@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, AlertTriangle, Check, CheckCircle2, Clock, Info, type LucideIcon } from 'lucide-react';
+import { Check, type LucideIcon } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { Button } from '@/components/ui/button';
@@ -9,32 +9,14 @@ import { useApproveBookingRequest, useDeclineBookingRequest } from '@/queries/us
 import { useResendCheckInLink } from '@/queries/use-checkin';
 import { useRefreshDashboard } from '@/queries/use-dashboard';
 import { cn } from '@/lib/utils';
-import type { HomeRow, NoteTone, RowAction, RowNote } from '../lib/home-model';
-
-const NOTE_ICONS: Record<NoteTone, LucideIcon> = { neutral: Clock, info: Info, success: CheckCircle2, warning: AlertTriangle, danger: AlertCircle };
-const NOTE_TEXT: Record<NoteTone, string> = {
-  neutral: 'text-foreground/70',
-  info: 'text-info-foreground',
-  success: 'text-success-foreground',
-  warning: 'text-warning-foreground',
-  danger: 'text-danger-foreground',
-};
+import type { HomeRow, RowAction } from '../lib/home-model';
+import { NoteLine } from './note-line';
 
 // At least 44 px high on every device, and a long label wraps instead of pushing the page sideways (the calm blocks' rule).
 const TOUCH = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 // The title and the line under it are one control, as wide as the column and at least 44 px high.
 const OPEN =
   'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
-
-function NoteLine({ note }: { note: RowNote }) {
-  const Icon = NOTE_ICONS[note.tone];
-  return (
-    <span className={cn('inline-flex items-start gap-1.5 text-sm font-medium', NOTE_TEXT[note.tone])}>
-      <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-      <span className="min-w-0 break-words">{note.text}</span>
-    </span>
-  );
-}
 
 /** "Invia link check-in" / "Invia di nuovo": the email goes at once and the toast says what really happened. */
 function SendLinkButton({ action, ariaLabel }: { action: Extract<RowAction, { kind: 'sendLink' }>; ariaLabel: string }) {
