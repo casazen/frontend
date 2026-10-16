@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { AlertCircle, AlertTriangle, CalendarCheck, Download, ExternalLink, FileText, Loader2, PenLine, Upload } from 'lucide-react';
+import { CalendarCheck, Download, ExternalLink, FileText, Loader2, PenLine, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlainSection } from '@/components/shared/calm';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { leasesApi } from '@/api/leases.api';
@@ -48,10 +49,7 @@ function SignerRow({ signer }: { signer: LeaseSigner }) {
   const link = !signed && signer.method === 'Provider' ? signer.signingUrl : null;
 
   return (
-    <li
-      data-testid="lease-signer"
-      className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-    >
+    <li data-testid="lease-signer" className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">
@@ -137,19 +135,12 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
   };
 
   return (
-    <Card data-testid="lease-signing-panel">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <CardTitle>{t('leases.signature.title')}</CardTitle>
-            <CardDescription>{t('leases.signature.description')}</CardDescription>
-          </div>
-          <Badge variant={beforeSignature ? 'outline' : 'success'} data-testid="lease-signing-state">
-            {t(statusKey)}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+    <PlainSection title={t('leases.signature.title')} data-testid="lease-signing-panel">
+      <p className="text-sm text-foreground/70">{t('leases.signature.description')}</p>
+      <Badge variant={beforeSignature ? 'outline' : 'success'} data-testid="lease-signing-state">
+        {t(statusKey)}
+      </Badge>
+      <div className="space-y-4 pt-2 text-sm">
         {signing.isLoading && (
           <p className="flex items-center gap-2 text-muted-foreground" data-testid="lease-signing-loading">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -158,20 +149,18 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
         )}
 
         {signing.isError && (
-          <div
-            role="alert"
+          <Alert
+            variant="danger"
+            title={t('leases.signature.loadError')}
             data-testid="lease-signing-error"
-            className="space-y-2 rounded-md border border-destructive/50 bg-destructive/10 p-3"
+            action={
+              <Button variant="outline" size="sm" onClick={() => void signing.refetch()} disabled={signing.isFetching}>
+                {t('leases.retry')}
+              </Button>
+            }
           >
-            <p className="flex items-start gap-2 font-medium text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-              {t('leases.signature.loadError')}
-            </p>
-            {getProblemMessage(signing.error, t) && <p>{getProblemMessage(signing.error, t)}</p>}
-            <Button variant="outline" size="sm" onClick={() => void signing.refetch()} disabled={signing.isFetching}>
-              {t('leases.retry')}
-            </Button>
-          </div>
+            {getProblemMessage(signing.error, t)}
+          </Alert>
         )}
 
         {state && (
@@ -179,7 +168,7 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
             {state.signers.length === 0 ? (
               <p className="text-muted-foreground">{t('leases.signature.noSigners')}</p>
             ) : (
-              <ul className="space-y-3" aria-label={t('leases.signature.signersTitle')}>
+              <ul className="divide-y divide-border border-y border-border" aria-label={t('leases.signature.signersTitle')}>
                 {state.signers.map((signer) => (
                   <SignerRow key={signer.partyId} signer={signer} />
                 ))}
@@ -189,12 +178,12 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
             {beforeSignature && (
               <>
                 {providerInProgress && (
-                  <p className="rounded-md border p-3" data-testid="lease-signing-provider-note">
+                  <Alert variant="info" data-testid="lease-signing-provider-note">
                     {t('leases.signature.providerInProgress')}
-                  </p>
+                  </Alert>
                 )}
 
-                <div className="space-y-3 rounded-md border p-3" data-testid="lease-signing-offline">
+                <div className="space-y-3" data-testid="lease-signing-offline">
                   <p className="font-medium">
                     {t(providerInProgress ? 'leases.signature.offlineAlternativeTitle' : 'leases.signature.offlineTitle')}
                   </p>
@@ -206,14 +195,9 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
                   <p className="text-xs text-muted-foreground">{t('leases.signature.offlineNotVerified')}</p>
 
                   {!state.contractAvailable && (
-                    <p
-                      role="status"
-                      data-testid="lease-contract-unavailable"
-                      className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3"
-                    >
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden />
+                    <Alert variant="warning" data-testid="lease-contract-unavailable">
                       {t(contractUnavailableKey(state.contractUnavailableCode))}
-                    </p>
+                    </Alert>
                   )}
 
                   <div className="flex flex-wrap gap-3">
@@ -244,7 +228,7 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
                 </div>
 
                 {state.providerSigningAvailable && lease.status === 'Draft' && (
-                  <div className="space-y-2 rounded-md border p-3" data-testid="lease-signing-provider">
+                  <div className="space-y-2" data-testid="lease-signing-provider">
                     <p className="font-medium">{t('leases.signature.providerTitle')}</p>
                     <p className="text-muted-foreground">{t('leases.signature.providerDescription')}</p>
                     <Button
@@ -268,20 +252,18 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
                     {t('leases.signature.stipulaRecorded', { date: formatDate(lease.stipulaDate) })}
                   </p>
                 ) : (
-                  <div
-                    role="status"
+                  <Alert
+                    variant="warning"
                     data-testid="lease-stipula-missing"
-                    className="space-y-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3"
+                    action={
+                      <Button size="sm" onClick={() => setStipulaOpen(true)}>
+                        <CalendarCheck className="mr-2 h-4 w-4" aria-hidden />
+                        {t('leases.signature.declareStipula')}
+                      </Button>
+                    }
                   >
-                    <p className="flex items-start gap-2">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden />
-                      {t('leases.signature.stipulaMissing')}
-                    </p>
-                    <Button size="sm" onClick={() => setStipulaOpen(true)}>
-                      <CalendarCheck className="mr-2 h-4 w-4" aria-hidden />
-                      {t('leases.signature.declareStipula')}
-                    </Button>
-                  </div>
+                    {t('leases.signature.stipulaMissing')}
+                  </Alert>
                 )}
                 {lease.hasSignedPdf ? (
                   <Button
@@ -299,7 +281,7 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
             )}
           </>
         )}
-      </CardContent>
+      </div>
 
       {beforeSignature && (
         <SignedContractDialog leaseId={lease.id} open={uploadOpen} onOpenChange={setUploadOpen} />
@@ -307,6 +289,6 @@ export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
       {!beforeSignature && !lease.stipulaDate && (
         <StipulaDeclarationDialog leaseId={lease.id} open={stipulaOpen} onOpenChange={setStipulaOpen} />
       )}
-    </Card>
+    </PlainSection>
   );
 }

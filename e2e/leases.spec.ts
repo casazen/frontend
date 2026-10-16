@@ -57,11 +57,13 @@ test.describe('Lease flow (long-term landlord)', () => {
     ]);
     expect(calls.created[0]).toMatchObject({ propertyId: FLOW_PROPERTY.id, monthlyRent: 1200, contractType: 'Libero' });
 
-    // Before the signature: every party is to sign, the rent has nothing to schedule and the RLI is not yet possible.
+    // Before the signature (the draft opens on the tab of the signature): every party is to sign and the rent has nothing to schedule.
     const signing = page.getByTestId('lease-signing-panel');
     await expect(signing.getByTestId('lease-signer')).toHaveCount(4);
     await expect(signing.getByTestId('lease-signer-status')).toHaveText(['Da firmare', 'Da firmare', 'Da firmare', 'Da firmare']);
+    await page.getByTestId('lease-tab-pagamenti').click();
     await expect(page.getByTestId('rent-not-signed')).toBeVisible();
+    await page.getByTestId('lease-tab-documenti').click();
 
     // The contract to sign is requested from the API.
     const downloadPromise = page.waitForEvent('download');
@@ -83,6 +85,8 @@ test.describe('Lease flow (long-term landlord)', () => {
 
     await expect(page.getByTestId('lease-signing-state')).toHaveText('Firmato');
     expect(calls.signedUploads).toEqual([{ stipulaDate: '2026-08-20', hasPdf: true }]);
+    // The registration and its deadline are in the tab of the deadlines.
+    await page.getByTestId('lease-tab-scadenze').click();
     await expect(page.getByTestId('rli-registration-deadline')).toContainText('19/09/2026');
 
     // Manual RLI: the receipt number and date come from the landlord; the registration is shown only after the API saved it.
@@ -102,6 +106,7 @@ test.describe('Lease flow (long-term landlord)', () => {
     await expect(page.getByTestId('rli-registration-panel')).toContainText('24091234567890123-000001');
 
     // Rent: the schedule is generated from the lease (48 monthly installments), all to collect.
+    await page.getByTestId('lease-tab-pagamenti').click();
     const rent = page.getByTestId('rent-schedule-panel');
     await expect(page.getByTestId('rent-not-signed')).toHaveCount(0);
     await rent.getByLabel('Giorno di scadenza (1-28)').fill('5');

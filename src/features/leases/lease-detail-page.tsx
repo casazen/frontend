@@ -1,266 +1,156 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useId, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import type { TFunction } from 'i18next';
+import { ChevronDown, FileText } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
+import { BackLink } from '@/components/shared/back-link';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLease, useRliChecklist, useTriggerRegistration } from '@/queries/use-leases';
-import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
-import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { LeaseStatusBadge } from './components/lease-status-badge';
-import { LeaseSigningPanel } from './components/lease-signing-panel';
-import { RegistrationStatusPanel } from './components/registration-status-panel';
+import { StatusBadge } from '@/components/shared/status/status-badge';
+import { StatusExplainer } from '@/components/shared/status/status-explainer';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
+import { useLease } from '@/queries/use-leases';
+import { getHttpStatus } from '@/lib/api-errors';
+import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labels';
+import { cn } from '@/lib/utils';
+import type { LeaseDetail, LeaseStatus } from '@/types';
 import { ExtraEUWarningBanner } from './components/extra-eu-warning-banner';
-import { CanoneConcordatoCalculator } from './components/canone-concordato-calculator';
-import { AttestationGuidancePanel } from './components/attestation-guidance-panel';
-import { ImuNotificationExportButton } from './components/imu-notification-export-button';
-import { CedolareDecisionPanel } from './components/cedolare-decision-panel';
-import { RliChecklist } from './components/rli-checklist';
-import { QuesturaCommunicationPanel } from './components/questura-communication-panel';
-import { DelegaCaptureDialog } from './components/delega-capture-dialog';
-import { getLeaseEventTypeLabel, getLeasePartyRoleLabel, getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
-import { ConcordatoAssessmentPanel } from './components/concordato-assessment-panel';
+import { LeaseDataTab } from './components/lease-data-tab';
+import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
+import { LeaseHistory } from './components/lease-history';
+import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
+import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
+import { defaultLeaseTab, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
+
+const LEASES_PATH = '/app/long-rent/leases';
+
+/** The tenants by name ("Giulia Verdi e Acme Srl"), or what stands in their place while there is none. */
+function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string {
+  const names = (lease.parties ?? [])
+    .filter((party) => party.role === 'Tenant')
+    .map((party) => `${party.firstName} ${party.lastName}`.trim())
+    .filter(Boolean);
+  if (names.length === 0) return t('leaseList.tenant.missing');
+  return new Intl.ListFormat(language, { style: 'long', type: 'conjunction' }).format(names);
+}
+
+/** Under the title: "Casa Trastevere · Roma · Canone libero (4+4) · 950,00 €/mese". */
+function leasePurpose(lease: LeaseDetail, t: TFunction): string {
+  const type = lease.contractType ? getLeaseContractTypeLabel(lease.contractType, t) : getFiscalRegimeLabel(lease.fiscalRegime, t);
+  return [leasePropertyLine(lease, t), type, leaseRentText(lease, t)].join(' · ');
+}
+
+/** The state of the lease: a badge that is also the button that explains it. */
+function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatus; open: boolean; controls: string; onToggle: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-controls={open ? controls : undefined}
+      onClick={onToggle}
+      data-testid="lease-status-toggle"
+      className="inline-flex min-h-11 max-w-full items-center gap-1 rounded-full outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:min-h-0"
+    >
+      <StatusBadge kind="lease" status={status} size="lg" />
+      <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')} />
+      <span className="sr-only">{t('leaseSheet.status.explain')}</span>
+    </button>
+  );
+}
+
+/**
+ * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, then what the page always had in
+ * four tabs (Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The panels of the
+ * signature, the registration, the Questura communication, the tax advisory and the rent are the ones that existed, moved here.
+ */
+function LeaseSheet({ lease }: { lease: LeaseDetail }) {
+  const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
+  // The tab a lease opens on is decided once, from the state it had when the page opened: signing it or registering it does not
+  // move the person to another tab under their hands.
+  const [opensOn] = useState(() => defaultLeaseTab(lease.status));
+  const tab = leaseTabOf(searchParams.get('tab'), opensOn);
+  const [explainOpen, setExplainOpen] = useState(false);
+  const explainId = useId();
+
+  const parties = lease.parties ?? [];
+  const showExtraEuBanner = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
+
+  const tabs: TabItem<LeaseTab>[] = [
+    { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
+    { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
+    { value: 'pagamenti', label: t('leaseSheet.tabs.payments'), testId: 'lease-tab-pagamenti' },
+    { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
+  ];
+
+  return (
+    <div className="min-w-0 space-y-6" data-testid="lease-sheet">
+      <PageHeader
+        crumbs="auto"
+        title={leaseTitle(lease, i18n.language, t)}
+        description={leasePurpose(lease, t)}
+        action={<StatusToggle status={lease.status} open={explainOpen} controls={explainId} onToggle={() => setExplainOpen((open) => !open)} />}
+      />
+
+      {explainOpen ? (
+        <div id={explainId} data-testid="lease-status-explainer" className="border-s-2 border-border ps-4">
+          <StatusExplainer kind="lease" status={lease.status} />
+        </div>
+      ) : null}
+
+      {showExtraEuBanner && <ExtraEUWarningBanner />}
+
+      {/* One column under 780 px of room (measured on this box, not on the screen: the menu takes part of it). */}
+      <div className="@container min-w-0">
+        <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
+          <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={opensOn}>
+            {tab === 'dati' && <LeaseDataTab lease={lease} />}
+            {tab === 'documenti' && <LeaseSigningPanel lease={lease} />}
+            {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />}
+            {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showExtraEuBanner} />}
+          </Tabs>
+          <LeaseHistory leaseId={lease.id} events={lease.events ?? []} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function LeaseDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { data: lease, isLoading, isError, error, refetch, isFetching } = useLease(id!);
-  const { data: checklist } = useRliChecklist(id!);
-  const triggerRegistration = useTriggerRegistration();
-  const [delegaOpen, setDelegaOpen] = useState(false);
+  const { data: lease, isLoading, isError, error, refetch } = useLease(id!);
 
   if (isLoading) {
     return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
   }
 
-  const backToList = () => navigate('/app/long-rent/leases');
-
   // Only a 404 means "not found": a 500, a 403 or a network error is a load error with retry (A7-27).
   if (isError && getHttpStatus(error) !== 404) {
-    const reason = getProblemMessage(error, t);
     return (
-      <div className="py-12 text-center" role="alert" data-testid="lease-load-error">
-        <AlertCircle className="mx-auto mb-3 h-8 w-8 text-destructive" />
-        <h2 className="mb-2 text-2xl font-bold">{t('leases.detailLoadError')}</h2>
-        {reason && <p className="text-muted-foreground">{reason}</p>}
-        <div className="mt-4 flex justify-center gap-2">
-          <Button onClick={() => void refetch()} disabled={isFetching}>
-            {t('leases.retry')}
-          </Button>
-          <Button variant="outline" onClick={backToList}>
-            {t('leases.backToList')}
-          </Button>
-        </div>
+      <div className="min-w-0 space-y-4">
+        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <ErrorState testId="lease-load-error" title={t('leases.detailLoadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
   }
 
   if (!lease) {
     return (
-      <div className="py-12 text-center" data-testid="lease-not-found">
-        <h2 className="mb-2 text-2xl font-bold">{t('leases.notFound')}</h2>
-        <p className="text-muted-foreground">
-          {t('leases.notFoundDescription')}
-        </p>
-        <Button className="mt-4" variant="outline" onClick={backToList}>
-          {t('leases.backToList')}
-        </Button>
+      <div data-testid="lease-not-found">
+        <EmptyState
+          icon={FileText}
+          title={t('leases.notFound')}
+          description={t('leases.notFoundDescription')}
+          action={{ label: t('leases.backToList'), href: LEASES_PATH }}
+        />
       </div>
     );
   }
 
-  const parties = lease.parties ?? [];
-
-  const showExtraEuBanner =
-    lease.hasExtraEUTenant ||
-    parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
-
-  // The mutations report their own errors (toast with the server's reason): only swallow the rejection.
-  const handleSubmitToProvider = () => {
-    setDelegaOpen(true);
-  };
-
-  const handleDelegaConfirm = async (payload: {
-    tosVersion: string;
-    attestationAccepted: boolean;
-  }) => {
-    try {
-      await triggerRegistration.mutateAsync({
-        id: lease.id,
-        tosVersion: payload.tosVersion,
-        attestationAccepted: payload.attestationAccepted,
-      });
-      setDelegaOpen(false);
-    } catch {
-      // Reported by useTriggerRegistration.onError (the lease is reloaded with the recorded failure).
-      setDelegaOpen(false);
-    }
-  };
-
-  // The provider path exists only when the API says so (flag on and configured provider, LT-01); otherwise manual.
-  const providerFilingAvailable = checklist?.providerFilingAvailable === true;
-
-  return (
-    <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={backToList} aria-label={t('leases.backToList')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <PageHeader
-            title={lease.property?.name ?? t('leases.leaseContract')}
-            description={`${formatDate(lease.startDate)} — ${formatDate(lease.endDate)}`}
-          />
-          <div className="ml-auto">
-            <LeaseStatusBadge status={lease.status} className="text-sm px-3 py-1" />
-          </div>
-        </div>
-
-        {showExtraEuBanner && <ExtraEUWarningBanner />}
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('leases.contractTerms')}</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 text-sm sm:grid-cols-2">
-                <div>
-                  <p className="text-muted-foreground">{t('leases.monthlyRent')}</p>
-                  <p className="text-lg font-semibold">
-                    {formatCurrency(lease.monthlyRent)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('leases.fiscalRegime')}</p>
-                  <p className="font-medium" data-testid="lease-type-regime">{getLeaseTypeAndRegimeLabel(lease, t)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('leases.securityDeposit')}</p>
-                  <p className="font-medium">
-                    {lease.securityDeposit != null ? formatCurrency(lease.securityDeposit) : t('leases.securityDepositMissing')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('leases.stipulaDate')}</p>
-                  <p className="font-medium" data-testid="lease-stipula-date">
-                    {lease.stipulaDate ? formatDate(lease.stipulaDate) : t('leases.stipulaDateMissing')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('leases.registrationDeadline')}</p>
-                  <p className="font-medium" data-testid="lease-registration-deadline">
-                    {lease.registrationDeadline
-                      ? formatDate(lease.registrationDeadline)
-                      : t('leases.registrationDeadlineToBeDetermined')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('leases.created')}</p>
-                  <p className="font-medium">{formatDateTime(lease.createdAt)}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('leases.parties')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {parties.length === 0 && (
-                  <p className="text-sm text-muted-foreground">{t('leases.noParties')}</p>
-                )}
-                {parties.map((party) => (
-                  <div
-                    key={party.id}
-                    data-testid="lease-party"
-                    className="flex flex-col gap-1 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">
-                        {party.firstName} {party.lastName}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{getLeasePartyRoleLabel(party.role, t)}</p>
-                      {/* Masked by the server: the clear fiscal code and email never reach the browser (A7-17). */}
-                      <p className="text-sm text-muted-foreground">
-                        {t('leases.fiscalCodeMasked')}: {party.fiscalCodeMasked}
-                      </p>
-                    </div>
-                    <p className="text-sm">
-                      <span className="text-muted-foreground">{t('leases.contactEmailMasked')}: </span>
-                      {party.contactEmailMasked}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* LT-02: offline signature by default, provider only when the API says it is available. */}
-            <LeaseSigningPanel lease={lease} />
-
-            <CedolareDecisionPanel leaseId={lease.id} />
-            <RliChecklist leaseId={lease.id} />
-            {/* LT-07: extra-EU tenant, the 48-hour Questura communication is declared by the landlord. */}
-            {showExtraEuBanner && <QuesturaCommunicationPanel leaseId={lease.id} leaseEndDate={lease.endDate} />}
-            <RegistrationStatusPanel
-              leaseId={lease.id}
-              leaseStatus={lease.status}
-              registration={lease.registration}
-              registrationDeadline={lease.registrationDeadline}
-              providerFilingAvailable={providerFilingAvailable}
-              onSubmitToProvider={handleSubmitToProvider}
-              isSubmittingToProvider={triggerRegistration.isPending}
-            />
-            {/* LT-06: recurring rent, once the lease is signed. */}
-            <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />
-            {providerFilingAvailable && checklist && (
-              <DelegaCaptureDialog
-                open={delegaOpen}
-                onOpenChange={setDelegaOpen}
-                tosVersion={checklist.tosVersion}
-                attestationText={checklist.attestationText}
-                isSubmitting={triggerRegistration.isPending}
-                onConfirm={handleDelegaConfirm}
-              />
-            )}
-
-            {/* Calculator, attestation guidance and IMU only for a canone concordato contract (A7-24, LT-13). */}
-            {lease.contractType === 'Concordato' && (
-              <div className="space-y-6" data-testid="lease-concordato-sections">
-                {lease.concordatoAssessment ? (
-                  <ConcordatoAssessmentPanel assessment={lease.concordatoAssessment} />
-                ) : (
-                  <CanoneConcordatoCalculator propertyId={lease.propertyId} startDate={lease.startDate} endDate={lease.endDate} />
-                )}
-                <AttestationGuidancePanel propertyId={lease.propertyId} />
-                <ImuNotificationExportButton leaseId={lease.id} />
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            {lease.events && lease.events.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('leases.timeline')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  {lease.events.map((event, index) => (
-                    <div key={`${event.eventType}-${index}`} className="border-l-2 pl-3" data-testid="lease-event">
-                      <p className="font-medium">{getLeaseEventTypeLabel(event.eventType, t)}</p>
-                      <p className="text-muted-foreground">
-                        {formatDateTime(event.occurredAt)}
-                      </p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-    </div>
-  );
+  return <LeaseSheet key={lease.id} lease={lease} />;
 }

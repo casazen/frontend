@@ -496,6 +496,7 @@
   },
   "nav": {
     "accountHome": "Home",
+    "people": "People",
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
@@ -615,8 +616,6 @@
     "notFound": "Lease not found",
     "notFoundDescription": "The lease you are looking for does not exist or you do not have access.",
     "backToList": "Back to leases",
-    "leaseContract": "Lease contract",
-    "contractTerms": "Contract terms",
     "monthlyRent": "Monthly rent",
     "fiscalRegime": "Fiscal regime",
     "registrationDeadline": "Registration deadline",
@@ -1208,6 +1207,41 @@
       "missing": "Tenant to be added"
     },
     "term": "from {{from}} to {{to}}"
+  },
+  "leaseSheet": {
+    "conditions": {
+      "title": "Economic terms"
+    },
+    "dates": {
+      "end": "End of the lease",
+      "start": "Start of the lease",
+      "title": "Term and dates"
+    },
+    "details": "Show details",
+    "history": {
+      "actor": {
+        "casazen": "CasaZen",
+        "you": "You"
+      },
+      "more": "Show the whole history"
+    },
+    "party": {
+      "extraEu": "Non-EU"
+    },
+    "property": {
+      "open": "Open the property",
+      "title": "Property"
+    },
+    "status": {
+      "explain": "What this status means"
+    },
+    "tabs": {
+      "data": "Details",
+      "deadlines": "Deadlines",
+      "documents": "Documents",
+      "label": "Sections of the lease",
+      "payments": "Payments"
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -3036,8 +3070,7 @@
   "supplier": {
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
-    "profileDescription": "Account and data visible to hosts in the supplier picker",
-    "professionalProfile": "Professional Profile",
+    "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
     "status": "Status",
     "statusActive": "Active",
     "statusPending": "Pending",
@@ -3046,20 +3079,56 @@
     "noneSet": "Not set",
     "welcomeBack": "Welcome back",
     "companyName": "Company name",
-    "email": "Email",
     "phone": "Phone",
-    "categories": "Categories",
-    "municipalities": "Municipalities",
-    "bioEmpty": "No bio written yet.",
     "supplierDefault": "Supplier",
+    "agenda": {
+      "close": "Close this day",
+      "dayEmpty": "Nothing on the agenda for this day.",
+      "description": "Your jobs and commitments, day by day. Customers only book when you are free.",
+      "emptyRange": "No jobs or commitments in this period. When you accept a request it shows up here.",
+      "emptyRangeCta": "Go to requests",
+      "eventsCount_one": "{{count}} entry",
+      "eventsCount_other": "{{count}} entries",
+      "hours": {
+        "edit": "Edit your hours",
+        "empty": "You have not chosen your working hours yet.",
+        "title": "Your working hours"
+      },
+      "legend": {
+        "events": "Jobs and commitments",
+        "label": "Month legend",
+        "unavailable": "Closed or unavailable"
+      },
+      "next": "Next period",
+      "period": "Period",
+      "previous": "Previous period",
+      "reasons": {
+        "Holiday": "Public holiday",
+        "Illness": "Illness",
+        "Other": "Unavailable",
+        "Vacation": "Time off"
+      },
+      "reopen": "Reopen this day",
+      "state": {
+        "closed": "Closed by you",
+        "closedByCalendar": "Closed by your calendar",
+        "rest": "Day off"
+      },
+      "title": "Agenda and availability",
+      "today": "Today",
+      "views": {
+        "day": "Day",
+        "label": "Agenda view",
+        "month": "Month",
+        "week": "Week"
+      }
+    },
     "allDay": "all day",
     "availabilityLoading": "Loading availability...",
     "availabilityUpdated": "Availability updated",
     "availabilitySaveError": "Could not save availability",
     "availabilityTitle": "Availability",
-    "availabilityDescription": "Working days with service hours and events from your linked calendar. Tap a day to mark it as unavailable.",
     "available": "Available",
-    "closedByCalendar": "from calendar",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
     "eventFromCalendar": "from calendar",
@@ -3081,7 +3150,6 @@
     "hoursUpdated": "Working hours updated",
     "noWorkingHoursToday": "No service band today",
     "notAvailable": "Not available",
-    "saveAvailability": "Save availability",
     "weekday": {
       "Friday": "Friday",
       "Monday": "Monday",
@@ -3094,14 +3162,10 @@
     "workingHoursLabel": "Hours",
     "calendarSyncTitle": "Calendar Sync",
     "calendarSyncDescription": "Choose how to manage your availability. Zero effort after initial setup.",
-    "googleCalendar": "Google Calendar",
-    "googleCalendarHint": "Connect your Google Calendar in one click. We only read when you're busy.",
     "connectCalendar": "Connect calendar",
     "icalFeed": "Apple / Outlook / Airbnb",
     "icalFeedHint": "Paste the iCal link from your calendar. Works with Apple, Outlook, Airbnb and Booking.",
     "pasteIcalUrl": "Paste iCal link",
-    "whatsappOption": "WhatsApp",
-    "whatsappHint": "No calendar? We'll message you weekly. Reply with one tap.",
     "enableWhatsapp": "Enable WhatsApp",
     "dashboardTitle": "Dashboard",
     "dashboardDescription": "Your operational overview on CasaZen",
@@ -3111,18 +3175,14 @@
     "completeProfileTitle": "Complete your profile",
     "completeProfileDescription": "These details help hosts choose you. Your profile cannot remain incomplete.",
     "saveAndContinue": "Save and continue",
-    "editProfile": "Edit profile",
-    "saveProfile": "Save profile",
     "vatNumber": "VAT number",
     "photoUrls": "Photos",
     "photoUrlsHint": "One URL per line. The first photos will appear in your public showcase.",
-    "bio": "Description",
     "activationLoading": "Loading activation...",
     "categoriesHint": "Choose one or more categories. You can add more later.",
     "comuniHint": "Enter the names of the comuni in Italian where you operate, separated by commas.",
     "comuniPlaceholder": "e.g. Roma, Milano, Napoli",
     "connectLater": "Set up later",
-    "progressSaveError": "Could not save. Try again.",
     "activationStatus": "Activation status",
     "serviceCategories": "Service categories",
     "operatingMunicipalities": "Municipalities of operation",
@@ -3130,7 +3190,6 @@
     "description": "Description",
     "describeServicesPlaceholder": "Describe your services...",
     "saveProgress": "Save progress",
-    "progressSaved": "Progress saved",
     "loading": "Loading...",
     "noAssignments": "No open assignments",
     "assignmentsCount": "{{count}} assignments",
@@ -3522,7 +3581,6 @@
     "setupCalendarCTAHint": "Automatically sync your availability",
     "setAvailabilityCTA": "Set availability",
     "setAvailabilityCTAHint": "Set your available days manually",
-    "comingSoon": "Coming soon",
     "icalFeedUrlTitle": "Connect iCal feed",
     "icalFeedUrlDescription": "Paste your iCal calendar URL. We support Apple Calendar, Outlook, Airbnb, and Booking.com.",
     "icalFeedUrlLabel": "iCal feed URL",
@@ -3565,21 +3623,8 @@
     "calendarStatusLoadError": "Could not load the calendar status.",
     "syncError": "Sync error",
     "icalConnected": "iCal feed connected",
-    "editIcalUrl": "Edit iCal URL",
     "edit": "Edit",
     "syncStatusTitle": "Sync status",
-    "companyInfo": "Company information",
-    "categoriesAndComuni": "Categories & municipalities",
-    "currentPhotos": "Current photos",
-    "newPhotos": "New photos",
-    "addPhotos": "Add photos",
-    "uploadPhotos": "Upload photos",
-    "photosUploaded": "Photos uploaded",
-    "photosUploadError": "Error uploading photos",
-    "maxPhotosError": "Maximum {{max}} photos allowed",
-    "photoCount": "{{current}}/{{max}} photos",
-    "photoGallery": "Photo gallery",
-    "noPhotos": "No photos uploaded",
     "help": {
       "icalPageTitle": "How to connect your calendar via iCal",
       "icalPageDescription": "Step-by-step instructions to export the iCal URL from the most popular platforms. Copy the link and paste it in the calendar sync page.",
@@ -4128,6 +4173,65 @@
       }
     },
     "profileLoadError": "Could not load the supplier profile.",
+    "profile": {
+      "accountEmail": "Account email",
+      "accountEmailHint": "To change it, write to support.",
+      "business": {
+        "title": "Business details"
+      },
+      "focus": {
+        "hours": {
+          "action": "Set your hours",
+          "body": "Without working hours there are no service slots: customers can't find a free time to book you.",
+          "title": "Set your working hours"
+        },
+        "kicker": "Profile status",
+        "ready": {
+          "action": "See your showcase site",
+          "title": "Your profile is live"
+        }
+      },
+      "hours": {
+        "end": "{{day}}: end",
+        "start": "{{day}}: start"
+      },
+      "phoneHint": "With the country code if not Italian, for example +39 06 1234567. Hosts only see it when you take on a job.",
+      "photos": {
+        "add": "Add photos",
+        "adding": "Uploading photos…",
+        "alt": "Photo {{number}} of your work",
+        "counter_one": "{{count}} photo of {{max}}",
+        "counter_other": "{{count}} photos of {{max}}",
+        "cover": "First photo",
+        "empty": "There are no photos yet. Add a few to show your work.",
+        "errors": {
+          "save": "We couldn't save the photos. Try again.",
+          "tooMany": "You can have {{max}} photos at most. Remove one before adding more.",
+          "upload": "We couldn't upload the photos. Use JPEG, PNG or WebP images up to 5 MB and try again."
+        },
+        "hint": "They appear on your showcase site, in the order you see here. Photos are saved as soon as you add or move them.",
+        "moveEarlier": "Move photo {{number}} earlier",
+        "moveLater": "Move photo {{number}} later",
+        "preview": "See how you look on the showcase site",
+        "remove": "Remove photo {{number}}",
+        "removeConfirm": "Remove the photo",
+        "removeDescription": "The photo leaves your profile and cannot be put back: to have it again you upload it again.",
+        "removeTitle": "Remove this photo?",
+        "title": "Photos of your work",
+        "unavailable": "Photo not available"
+      },
+      "presentation": {
+        "hint": "Tell who you are, what you do and when you can help. Hosts and customers read it.",
+        "label": "Description",
+        "title": "Presentation"
+      },
+      "save": "Save details",
+      "saveError": "Couldn't save. Try again.",
+      "saved": "Details saved",
+      "services": {
+        "title": "Services and area"
+      }
+    },
     "availabilityLoadError": "Could not load the availability.",
     "showcase": {
       "title": "Public showcase",
@@ -4142,8 +4246,7 @@
       "copyLink": "Copy the link",
       "linkCopied": "Link copied",
       "linkCopyError": "Could not copy the link: select it and copy it by hand.",
-      "notIndexed": "The page does not appear in search engines: it is reached only through the link.",
-      "previewLink": "Showcase preview"
+      "notIndexed": "The page does not appear in search engines: it is reached only through the link."
     }
   },
   "settings": {
@@ -5328,11 +5431,8 @@
     "title": "Guests",
     "search": "Search by name or email...",
     "empty": "No guests found",
-    "detail": "Guest Detail",
     "anagrafica": "Personal Info",
-    "bookings": "Bookings",
     "documents": "Documents",
-    "gdpr": "GDPR",
     "export": "Export Data",
     "anonymize": "Anonymize",
     "delete": "Delete Data",
@@ -5340,11 +5440,9 @@
     "noDocument": "No document uploaded",
     "notFound": "Guest not found",
     "notFoundDescription": "The guest you are looking for does not exist or could not be loaded.",
-    "retry": "Retry",
     "createdAt": "Created At",
     "viewDetails": "Details",
     "backToGuests": "Back to guests",
-    "name": "First Name",
     "email": "Email",
     "phone": "Phone",
     "gender": "Gender",
@@ -5357,14 +5455,37 @@
     "country": "Country",
     "notes": "Notes",
     "addressSection": "Address",
-    "noBookings": "No bookings",
     "noBookingsDescription": "This guest has no bookings registered in the system yet.",
     "documentType": "Document type",
     "documentNumber": "Document number",
     "documentIssueDate": "Issue date",
     "documentExpiryDate": "Expiry date",
     "documentIssuingCountry": "Issuing country",
+    "detailPage": {
+      "documentMissing": "No document on file",
+      "documentOnFile": "Document on file",
+      "fallbackTitle": "Guest",
+      "focus": {
+        "inProgress": "Staying now",
+        "open": "Open the booking",
+        "past": "Last stay",
+        "upcoming": "Next stay"
+      },
+      "loadError": "Could not load the guest.",
+      "loading": "Loading guest...",
+      "staysLoadError": "Could not load the stays.",
+      "staysTitle": "Stays",
+      "tabs": {
+        "details": "Guest details",
+        "documents": "Documents",
+        "privacy": "Privacy",
+        "stays": "Stays"
+      },
+      "tabsLabel": "Guest page sections"
+    },
     "gdprTab": {
+      "actionsTitle": "Export, anonymize or delete",
+      "noticeTitle": "Notice and purpose",
       "processingPurpose": "Processing purpose",
       "anonymized": "Anonymized",
       "deleted": "Deleted",
@@ -8044,6 +8165,99 @@
       "current": "Current area: {{name}}. Change area"
     }
   },
+  "team": {
+    "capabilities": {
+      "billing": "Plan and invoices",
+      "booking": "Bookings and calendar",
+      "guests": "Guests and documents",
+      "jobs": "Supplier jobs",
+      "leases": "Leases and tenants",
+      "money": "Income and payments to suppliers",
+      "people": "People and permissions",
+      "prices": "Prices and rules",
+      "rents": "Rent and reminders",
+      "security": "Security and activity log",
+      "settings": "Company settings",
+      "suppliers": "Trusted suppliers"
+    },
+    "description": "Who works with you, in which role, and what each person can see.",
+    "drawer": {
+      "allProperties": "All properties",
+      "data": "Who they are",
+      "deactivatedOn": "Access switched off on",
+      "email": "Email",
+      "expires": "The link expires on",
+      "invitedBy": "Invited by",
+      "loadError": "We could not load this person's details.",
+      "noProperties": "No properties",
+      "notFound": "Person not found",
+      "notFoundDescription": "The invitation may have been withdrawn, or the person is no longer in the team.",
+      "properties": "Properties",
+      "role": "Role",
+      "sent": "Invitation sent on",
+      "since": "In the team since",
+      "someOfThem": "Only some properties",
+      "someProperties": "Only some properties ({{total}})"
+    },
+    "invitationsUnavailable": "We could not read the invitations: the list shows only the people who are already in the team.",
+    "list": {
+      "allProperties": "All properties",
+      "chips": {
+        "active": "Active",
+        "all": "All",
+        "deactivated": "Switched off",
+        "invited": "Invited",
+        "invitedHint": "People who were invited and have not accepted yet"
+      },
+      "columns": {
+        "access": "Areas and properties",
+        "person": "Person",
+        "role": "Role",
+        "status": "Status"
+      },
+      "count_one": "{{count}} person",
+      "count_other": "{{count}} people",
+      "emptyDescription": "The people who work with you, and the ones you invited, appear here.",
+      "emptyTitle": "No people yet",
+      "filters": {
+        "allAreas": "All areas",
+        "allRoles": "All roles",
+        "area": "Area",
+        "role": "Role"
+      },
+      "noAreas": "No area",
+      "noResults": {
+        "description": "Try removing a filter or searching by name only.",
+        "title": "Nobody matches these filters"
+      },
+      "search": "Search people",
+      "searchPlaceholder": "Search by name or email",
+      "someProperties": "Only some properties",
+      "you": "you"
+    },
+    "loadError": "We could not load the people.",
+    "preview": {
+      "can": "Can manage",
+      "cannot": "Cannot",
+      "cannotEnter": "{{area}}: cannot enter",
+      "deactivated": "Access is switched off: they cannot enter any area.",
+      "noAreas": "No area: they can sign in but see nothing.",
+      "read": "Can only look at",
+      "title": "What this person can see",
+      "titleInvited": "What this person will see",
+      "unavailable": "We could not read what this role can do.",
+      "where": "Areas"
+    },
+    "retry": "Try again",
+    "roleDescriptions": {
+      "Accountant": "Read only: bookings, income, leases, rent and invoices. Changes nothing.",
+      "Admin": "Everything: people, permissions, plan, invoices and settings.",
+      "Collaborator": "Everyday work on the properties they are given: arrivals, guests, interventions. Sees the prices but cannot change them; does not see the income.",
+      "Owner": "The owner of the account: can do everything and cannot be removed.",
+      "PropertyManager": "Properties, bookings, leases, income and suppliers. No plan and no invoices."
+    },
+    "title": "People"
+  },
   "pageHeader": {
     "moreActions": "More actions",
     "backTo": "Back to {{name}}"
@@ -8302,7 +8516,6 @@
   },
   "longRentProperties": {
     "retry": "Retry",
-    "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
     "list": {
       "actions": {
         "createLease": "Create lease",
@@ -8355,17 +8568,35 @@
       "description": "Update the details of {{name}}"
     },
     "detail": {
-      "loading": "Loading property...",
-      "loadError": "The property could not be loaded.",
-      "edit": "Edit",
-      "newLease": "New lease",
-      "infoTitle": "Property details",
       "address": "Address",
-      "rooms": "Bedrooms and bathrooms",
-      "documentsLoading": "Loading documents...",
-      "documentsLoadError": "The property documents could not be loaded.",
+      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
-      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+      "backToList": "Back to properties",
+      "contractsLoadError": "The leases of this property could not be read.",
+      "contractsTitle": "Linked leases",
+      "description": "Description",
+      "documentsLoadError": "The property documents could not be loaded.",
+      "documentsLoading": "Loading documents...",
+      "edit": "Edit",
+      "fallbackTitle": "Property",
+      "infoTitle": "Property details",
+      "loadError": "The property could not be loaded.",
+      "loading": "Loading property...",
+      "newLease": "New lease",
+      "next": {
+        "free": {
+          "body": "The property is vacant. Create the lease with the new tenant: the APE and the cadastral data are needed.",
+          "kicker": "Next step",
+          "title": "Create the lease"
+        },
+        "preparing": {
+          "kicker": "Lease in preparation"
+        },
+        "rented": {
+          "kicker": "Lease in force"
+        }
+      },
+      "rooms": "Bedrooms and bathrooms"
     },
     "drawer": {
       "keyData": "Property details",

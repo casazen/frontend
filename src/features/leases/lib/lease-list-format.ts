@@ -23,7 +23,7 @@ export function leaseTenantName(lease: LeaseSummary, t: TFunction): string {
 }
 
 /** "Casa Trastevere · Roma". */
-export function leasePropertyLine(lease: LeaseSummary, t: TFunction): string {
+export function leasePropertyLine(lease: Pick<LeaseSummary, 'property'>, t: TFunction): string {
   if (!lease.property) return t('leaseList.property.unknown');
   return [lease.property.name, lease.property.city].filter(Boolean).join(' · ');
 }
@@ -36,7 +36,7 @@ export function leaseTermText(lease: LeaseSummary, t: TFunction, language: strin
 }
 
 /** "950,00 €/mese". */
-export function leaseRentText(lease: LeaseSummary, t: TFunction): string {
+export function leaseRentText(lease: Pick<LeaseSummary, 'monthlyRent'>, t: TFunction): string {
   return t('leases.monthlyRentValue', { amount: formatCurrency(lease.monthlyRent) });
 }
 

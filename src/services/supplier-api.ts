@@ -6,7 +6,6 @@ import type {
   PendingFreeEventsResponse,
   SupplierAgendaCalendar,
   SupplierAgendaHoursDay,
-  SupplierAvailabilityResponse,
   SupplierChecklist,
   SupplierDashboard,
   SupplierHoursResponse,
@@ -107,16 +106,7 @@ export async function fetchSupplierInboxItem(id: string): Promise<SupplierServic
   return ApiClient.get<SupplierServiceRequestDetail>(`/supplier/inbox/${encodeURIComponent(id)}`);
 }
 
-export async function fetchSupplierAvailability(
-  from: string,
-  to: string,
-): Promise<SupplierAvailabilityResponse> {
-  const { data } = await axios.get<SupplierAvailabilityResponse>('/supplier/availability', {
-    params: { from, to },
-  });
-  return data;
-}
-
+/** Opens or closes days for the customers: only the days sent change (`PUT api/supplier/availability`). */
 export async function updateSupplierAvailability(dates: UpdateAvailabilityEntry[]): Promise<{ updated: number }> {
   const { data } = await axios.put<{ updated: number }>('/supplier/availability', { dates });
   return data;
