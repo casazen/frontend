@@ -496,6 +496,7 @@
   },
   "nav": {
     "accountHome": "Home",
+    "people": "People",
     "dashboard": "Dashboard",
     "properties": "Properties",
     "profile": "Profile",
@@ -8139,6 +8140,99 @@
     "switcher": {
       "current": "Current area: {{name}}. Change area"
     }
+  },
+  "team": {
+    "capabilities": {
+      "billing": "Plan and invoices",
+      "booking": "Bookings and calendar",
+      "guests": "Guests and documents",
+      "jobs": "Supplier jobs",
+      "leases": "Leases and tenants",
+      "money": "Income and payments to suppliers",
+      "people": "People and permissions",
+      "prices": "Prices and rules",
+      "rents": "Rent and reminders",
+      "security": "Security and activity log",
+      "settings": "Company settings",
+      "suppliers": "Trusted suppliers"
+    },
+    "description": "Who works with you, in which role, and what each person can see.",
+    "drawer": {
+      "allProperties": "All properties",
+      "data": "Who they are",
+      "deactivatedOn": "Access switched off on",
+      "email": "Email",
+      "expires": "The link expires on",
+      "invitedBy": "Invited by",
+      "loadError": "We could not load this person's details.",
+      "noProperties": "No properties",
+      "notFound": "Person not found",
+      "notFoundDescription": "The invitation may have been withdrawn, or the person is no longer in the team.",
+      "properties": "Properties",
+      "role": "Role",
+      "sent": "Invitation sent on",
+      "since": "In the team since",
+      "someOfThem": "Only some properties",
+      "someProperties": "Only some properties ({{total}})"
+    },
+    "invitationsUnavailable": "We could not read the invitations: the list shows only the people who are already in the team.",
+    "list": {
+      "allProperties": "All properties",
+      "chips": {
+        "active": "Active",
+        "all": "All",
+        "deactivated": "Switched off",
+        "invited": "Invited",
+        "invitedHint": "People who were invited and have not accepted yet"
+      },
+      "columns": {
+        "access": "Areas and properties",
+        "person": "Person",
+        "role": "Role",
+        "status": "Status"
+      },
+      "count_one": "{{count}} person",
+      "count_other": "{{count}} people",
+      "emptyDescription": "The people who work with you, and the ones you invited, appear here.",
+      "emptyTitle": "No people yet",
+      "filters": {
+        "allAreas": "All areas",
+        "allRoles": "All roles",
+        "area": "Area",
+        "role": "Role"
+      },
+      "noAreas": "No area",
+      "noResults": {
+        "description": "Try removing a filter or searching by name only.",
+        "title": "Nobody matches these filters"
+      },
+      "search": "Search people",
+      "searchPlaceholder": "Search by name or email",
+      "someProperties": "Only some properties",
+      "you": "you"
+    },
+    "loadError": "We could not load the people.",
+    "preview": {
+      "can": "Can manage",
+      "cannot": "Cannot",
+      "cannotEnter": "{{area}}: cannot enter",
+      "deactivated": "Access is switched off: they cannot enter any area.",
+      "noAreas": "No area: they can sign in but see nothing.",
+      "read": "Can only look at",
+      "title": "What this person can see",
+      "titleInvited": "What this person will see",
+      "unavailable": "We could not read what this role can do.",
+      "where": "Areas"
+    },
+    "retry": "Try again",
+    "roleDescriptions": {
+      "Accountant": "Read only: bookings, income, leases, rent and invoices. Changes nothing.",
+      "Admin": "Everything: people, permissions, plan, invoices and settings.",
+      "Collaborator": "Everyday work on the properties they are given: arrivals, guests, interventions. Sees the prices but cannot change them; does not see the income.",
+      "Owner": "The owner of the account: can do everything and cannot be removed.",
+      "PropertyManager": "Properties, bookings, leases, income and suppliers. No plan and no invoices."
+    },
+    "title": "People"
   },
   "pageHeader": {
     "moreActions": "More actions",
