@@ -1,16 +1,18 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './test';
-import { WIDER_LETTERS, expectNoAxeViolations, expectNothingSticksOut } from './helpers/ui-checks';
+import { WIDER_LETTERS, expectNoAxeViolations, expectNothingSticksOut, untilStill } from './helpers/ui-checks';
 
 /**
  * UI-16, the calm blocks of the screens in a real browser. They are on one page that only the dev server has
- * (`/dev/calm-blocks`, `routes/dev-routes.tsx`), so that axe (colors and contrast included), the widths of a phone and the
- * keyboard can walk through all of them without a mock of the API. The unit tests of each block are next to it.
+ * (`/dev/calm-blocks`, `routes/dev-routes.tsx`), so that axe (colors and contrast included), the widths of a phone, the
+ * keyboard and a finger can walk through all of them without a mock of the API. The unit tests of each block are next to it.
  */
 
 const GALLERY = '/dev/calm-blocks';
 const PHONES = [360, 390] as const;
 const AREAS = ['short-rent', 'long-rent', 'supplier', 'admin'] as const;
+/** `UI_VERSION_STORAGE_KEY` of `src/lib/ui-version.ts` (that file reads `import.meta`, which a spec cannot import). */
+const UI_VERSION_KEY = 'casazen:ui';
 
 async function openGallery(page: Page, width: number, height = 900) {
   await page.setViewportSize({ width, height });
@@ -18,10 +20,28 @@ async function openGallery(page: Page, width: number, height = 900) {
   await expect(page.getByRole('heading', { level: 1, name: 'Blocchi calmi' })).toBeVisible();
 }
 
+/** The redesign on, as a QA person turns it on in one browser (`UiVersionSync`): before the page opens. */
+async function underTheRedesign(page: Page) {
+  await page.addInitScript((key) => window.localStorage.setItem(key, 'v2'), UI_VERSION_KEY);
+}
+
 async function boxes(locator: Locator) {
   const found = await Promise.all((await locator.all()).map((item) => item.boundingBox()));
   expect(found.every((item) => item !== null), 'every element is on the page').toBe(true);
   return found as NonNullable<(typeof found)[number]>[];
+}
+
+/** Every button, link and day of the gallery that is under 44 px high (what a finger needs), one line each. */
+async function smallTargets(page: Page) {
+  return page.locator('[data-testid="calm-blocks-page"]').evaluate((root) => {
+    const found: string[] = [];
+    for (const element of Array.from(root.querySelectorAll<HTMLElement>('a, button, [role="radio"]'))) {
+      const box = element.getBoundingClientRect();
+      if (box.width === 0) continue;
+      if (box.height < 43.5) found.push(`<${element.tagName.toLowerCase()}> "${(element.textContent ?? '').trim().slice(0, 30)}" is ${Math.round(box.height)} px high`);
+    }
+    return found;
+  });
 }
 
 test.describe('axe, in a real browser (colors and contrast included)', () => {
@@ -35,7 +55,7 @@ test.describe('axe, in a real browser (colors and contrast included)', () => {
 
   for (const area of AREAS) {
     test(`under the redesign, in the area ${area}, the page of the blocks has no violation`, async ({ page }) => {
-      await page.addInitScript(() => window.localStorage.setItem('casazen:ui', 'v2'));
+      await underTheRedesign(page);
       await openGallery(page, 1280);
       await page.evaluate((value) => document.documentElement.setAttribute('data-area', value), area);
       await expect(page.locator('html')).toHaveAttribute('data-ui', 'v2');
@@ -47,8 +67,10 @@ test.describe('axe, in a real browser (colors and contrast included)', () => {
   test('with a day chosen and more activity shown, the page has no violation', async ({ page }) => {
     await openGallery(page, 390);
     await page.getByTestId('week-strip').getByRole('radio').nth(4).click();
-    await page.getByRole('button', { name: 'Mostra altro' }).click();
-    await expect(page.getByTestId('activity-list').getByRole('listitem')).toHaveCount(6);
+    const activity = page.getByTestId('activity-list');
+    await activity.getByRole('button', { name: 'Mostra altro' }).click();
+    await expect(activity.getByRole('listitem')).toHaveCount(6);
+    await untilStill(page);
 
     await expectNoAxeViolations(page);
   });
@@ -56,11 +78,20 @@ test.describe('axe, in a real browser (colors and contrast included)', () => {
 
 test.describe('widths', () => {
   for (const width of PHONES) {
-    test(`nothing sticks out at ${width} px, even with wider letters`, async ({ page }) => {
+    test(`nothing sticks out at ${width} px, even with wider letters and names that have no space in them`, async ({ page }) => {
       await openGallery(page, width);
       await page.addStyleTag({ content: WIDER_LETTERS });
 
       await expectNothingSticksOut(page, `${width} px, the blocks with wider letters`, '[data-testid="calm-blocks-page"]');
+      // The words of a long name wrap inside the block that holds them: the page does not scroll sideways (the check above) and
+      // the name does not stand out of its own box either.
+      for (const testId of ['plain-long', 'checklist-long', 'day-list']) {
+        const stickingOut = await page.getByTestId(testId).evaluate((root) => {
+          const right = root.getBoundingClientRect().right;
+          return Array.from(root.querySelectorAll('*')).filter((element) => element.getBoundingClientRect().right > right + 0.5).length;
+        });
+        expect(stickingOut, `${testId} at ${width} px: elements past the right edge of the block`).toBe(0);
+      }
     });
   }
 
@@ -96,23 +127,10 @@ test.describe('widths', () => {
 
 test.describe('touch targets', () => {
   for (const width of [1280, ...PHONES]) {
-    test(`every button, link and day is at least 44 px high at ${width} px, and a row is as high as its hit area`, async ({ page }) => {
+    test(`every button, link and day is at least 44 px high at ${width} px`, async ({ page }) => {
       await openGallery(page, width);
 
-      const small = await page.locator('[data-testid="calm-blocks-page"]').evaluate((root) => {
-        const found: string[] = [];
-        for (const element of Array.from(root.querySelectorAll<HTMLElement>('a, button, [role="radio"]'))) {
-          const box = element.getBoundingClientRect();
-          if (box.width === 0) continue;
-          // The title of a row is a link that stretches over the whole row: what has to be 44 px is the row.
-          const stretched = element.className.includes('after:absolute');
-          const target = stretched ? (element.closest('li') as HTMLElement).getBoundingClientRect() : box;
-          if (target.height < 43.5) found.push(`<${element.tagName.toLowerCase()}> "${(element.textContent ?? '').trim().slice(0, 30)}" is ${Math.round(target.height)} px high`);
-        }
-        return found;
-      });
-
-      expect(small).toEqual([]);
+      expect(await smallTargets(page)).toEqual([]);
     });
   }
 
@@ -150,63 +168,46 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Home');
     await expect(days.first()).toBeFocused();
 
+    // A shortcut of the browser is not taken for a choice of day (Alt+Left is Back).
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect(days.first()).toBeFocused();
+
     // Tab leaves the week: it is one stop.
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement?.closest('[role="radiogroup"]'))).toBeNull();
   });
 
-  test('a day, a row and a button show where the focus is', async ({ page }) => {
+  test('a day, a row and a button show where the focus is, and show nothing when it is not there', async ({ page }) => {
     await openGallery(page, 1280);
 
+    const day = page.getByTestId('week-strip').getByRole('radio').first();
+    const row = page.getByTestId('day-list').getByRole('link').first();
+    const button = page.getByTestId('focus-warning').getByRole('button', { name: 'Registra il contratto' });
+    const ring = (locator: Locator) => locator.evaluate((element) => getComputedStyle(element).boxShadow);
+
+    // Before the focus: no ring (a static shadow of the element would not count as one).
+    const before = [await ring(day), await ring(row), await ring(button)];
     // A key press first, so that the browser treats the next focus as the keyboard's (`:focus-visible`).
     await page.keyboard.press('Tab');
-    const ring = async (locator: Locator, pseudo?: string) => {
+    for (const [index, locator] of [day, row, button].entries()) {
       await locator.focus();
-      return locator.evaluate((element, which) => {
-        const style = getComputedStyle(element, which ?? null);
-        return { shadow: style.boxShadow, outline: `${style.outlineStyle} ${style.outlineWidth}` };
-      }, pseudo);
-    };
-
-    const day = await ring(page.getByTestId('week-strip').getByRole('radio').first());
-    expect(day.shadow, 'a day').not.toBe('none');
-    const row = await ring(page.getByTestId('day-list').getByRole('link').first(), '::after');
-    expect(row.shadow, 'the hit area of a row').not.toBe('none');
-    const button = await ring(page.getByTestId('focus-warning').getByRole('button', { name: 'Registra il contratto' }));
-    expect(button.shadow, 'a button').not.toBe('none');
+      expect(await ring(locator), ['a day', 'a row', 'a button'][index]).not.toBe(before[index]);
+      expect(await ring(locator), ['a day', 'a row', 'a button'][index]).not.toBe('none');
+    }
   });
 
-  test('a row opens by its title, its action does not open the row', async ({ page }) => {
+  test('a row opens by its title and its line, its action does not open the row', async ({ page }) => {
     await openGallery(page, 1280);
+    const list = page.getByTestId('day-list');
 
-    await page.getByTestId('day-list').getByRole('button', { name: 'Invia il sollecito: canone Bianchi' }).click();
+    await list.getByRole('button', { name: 'Invia il sollecito: canone Bianchi' }).click();
     await expect(page.getByTestId('last-action')).toHaveText('Ultima azione: sollecito Bianchi');
 
-    await page.getByTestId('day-list').getByRole('button', { name: 'Canone di ottobre · Bianchi' }).click();
+    await list.getByRole('button', { name: /Canone di ottobre · Bianchi/ }).click();
     await expect(page.getByTestId('last-action')).toHaveText('Ultima azione: apri canone Bianchi');
-  });
 
-  test('the link of a row opens the page by a click anywhere on the row', async ({ page }) => {
-    await openGallery(page, 1280);
-    const row = page.getByTestId('day-list').getByRole('listitem').first();
-    await row.scrollIntoViewIfNeeded();
-    const box = (await boxes(row))[0];
-
-    // On the date, away from the title: the hit area is the row.
-    await page.mouse.click(box.x + 20, box.y + box.height / 2);
-
-    await expect(page).toHaveURL(/\/dev\/calm-blocks\?aperto=rossi$/);
-  });
-
-  test('a click on the note of a row, away from its action, opens the row too', async ({ page }) => {
-    await openGallery(page, 1280);
-    const note = page.getByTestId('day-list').getByText('tra 12 giorni');
-    await note.scrollIntoViewIfNeeded();
-    const box = (await boxes(note))[0];
-
-    // The note is in the layer of the action, but it does not take the click: the title, stretched over the row, does.
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-
+    // The line under the title is part of the link.
+    await list.getByText('Elisa Rossi · Via Roma 12, Bari').click();
     await expect(page).toHaveURL(/\/dev\/calm-blocks\?aperto=rossi$/);
   });
 
@@ -215,10 +216,67 @@ test.describe('keyboard', () => {
     const list = page.getByTestId('activity-list');
     await expect(list.getByRole('listitem')).toHaveCount(3);
 
-    await list.locator('xpath=ancestor::div[1]').getByRole('button', { name: 'Mostra altro' }).click();
+    await list.getByRole('button', { name: 'Mostra altro' }).click();
 
     await expect(list.getByRole('listitem')).toHaveCount(6);
     await expect(list.getByRole('listitem').nth(3)).toBeFocused();
+  });
+});
+
+// A phone under the redesign: a finger (a coarse pointer) and `data-ui="v2"`, where `tokens.css` gives every link and button its
+// own hit area. What a block does there is not what it does with a mouse on the current look, and nothing else looks at it.
+test.describe('a phone under the redesign', () => {
+  test.use({ hasTouch: true, isMobile: true });
+
+  test.beforeEach(async ({ page }) => {
+    await underTheRedesign(page);
+    await openGallery(page, 390, 844);
+    await expect(page.locator('html')).toHaveAttribute('data-ui', 'v2');
+    expect(await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches), 'the pointer is a finger').toBe(true);
+  });
+
+  test('a tap on the line under the title of a row that is a link opens it', async ({ page }) => {
+    const subline = page.getByTestId('day-list').getByText('Elisa Rossi · Via Roma 12, Bari');
+    await subline.scrollIntoViewIfNeeded();
+
+    await subline.tap();
+
+    await expect(page).toHaveURL(/\/dev\/calm-blocks\?aperto=rossi$/);
+  });
+
+  test('a tap on the line under the title of a row that is a button opens it, and a tap on its action only runs the action', async ({ page }) => {
+    const list = page.getByTestId('day-list');
+    const subline = list.getByText('Marco Bianchi · Corso Vittorio 3');
+    await subline.scrollIntoViewIfNeeded();
+
+    await subline.tap();
+    await expect(page.getByTestId('last-action')).toHaveText('Ultima azione: apri canone Bianchi');
+
+    await list.getByRole('button', { name: 'Invia il sollecito: canone Bianchi' }).tap();
+    await expect(page.getByTestId('last-action')).toHaveText('Ultima azione: sollecito Bianchi');
+  });
+
+  test('the title of a row is a target as high as a finger needs', async ({ page }) => {
+    const rows = page.getByTestId('day-list').getByRole('listitem');
+    for (const link of await boxes(rows.getByRole('link').or(rows.getByRole('button', { name: /Canone di ottobre/ })))) expect(link.height).toBeGreaterThanOrEqual(43.5);
+  });
+
+  test('every button, link and day is at least 44 px high', async ({ page }) => {
+    expect(await smallTargets(page)).toEqual([]);
+  });
+
+  test('a day of the week is chosen with a tap', async ({ page }) => {
+    const days = page.getByTestId('week-strip').getByRole('radio');
+    await days.nth(3).scrollIntoViewIfNeeded();
+
+    await days.nth(3).tap();
+
+    await expect(days.nth(3)).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('week-selected')).toHaveText(`Giorno scelto: ${await days.nth(3).getAttribute('data-date')}`);
+  });
+
+  test('the page has no violation', async ({ page }) => {
+    await expectNoAxeViolations(page);
   });
 });
 

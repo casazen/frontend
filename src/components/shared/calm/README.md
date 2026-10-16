@@ -1,13 +1,13 @@
 # Calm blocks (UI-16)
 
 The blocks of the home screens and the summary screens of the four areas (Affitti brevi, Affitti lunghi, Portale fornitori,
-Amministrazione), built once. They are what the redesign conventions ask for (`redesign/docs/CONVENZIONI.md` §7bis of the workspace): **one focal point per screen**, at most three
-sections, three or four numbers without charts, no card inside a card, short lists. A page that follows the rules is made of
-these blocks and little else.
+Amministrazione), built once. They are what the redesign conventions ask for (`redesign/docs/CONVENZIONI.md` §7bis of the
+workspace): **one focal point per screen**, at most three sections, a short row of numbers without charts, no card inside a
+card, short lists. A page that follows the rules is made of these blocks and little else.
 
 They only present. No call to the network, no knowledge of bookings or contracts: the caller hands in texts that are already
 translated, dates and money that are already formatted, and what to do when a button is pressed. The only words that live
-here are a few `aria-label`s that every area would otherwise repeat (the `calm` namespace of `it.json` and `en.json`).
+here are the common `aria-label`s that every area would otherwise repeat (the `calm` namespace of `it.json` and `en.json`).
 
 ```tsx
 import { FocusBlock, StatStrip, StatTile, PlainSection, DayList } from '@/components/shared/calm';
@@ -33,17 +33,27 @@ block in every variant, and a composed home at the bottom.
 - **One `FocusBlock` per page.** Two colored blocks together and the person does not know where to look. The page is made of
   at most three sections after it (`PlainSection`s), then the numbers, then at most one of `NextStepCard` and `ChecklistCompact`:
   never both (the guide arrives one thing at a time). The blocks cannot count themselves across a page, so this is the page's
-  to keep. `StatStrip` does warn in the console, in development, when it gets more than four tiles.
+  to keep. §7bis says three numbers; a `StatStrip` takes a fourth where the area needs it (the brief of UI-16: "massimo 4
+  tile") and warns in the console, in development, beyond that.
 - **Tone is never only color.** `tone` (`neutral`, `info`, `success`, `warning`, `danger`) changes the tint, and every tone has
   its own icon; the words of the block say the rest. `neutral` is the accent of the area. A tone is for what the news is, not
   for decoration: most blocks are `neutral`.
-- **Every action is at least 44 px high**, on a phone and on a laptop, and a long label wraps instead of pushing the page.
-- **Secondary text is `foreground/70`**, not `muted-foreground` (4.4:1 on white: a hair under AA). The tokens of the tones
-  (`-foreground` on `-soft`) are 6:1 and more in every area (`styles/__tests__/tokens.test.ts`).
+- **Every action is at least 44 px high**, on a phone and on a laptop, and a long label wraps instead of pushing the page. So
+  does a row of a `DayList` (its title is a link or a button of 44 px) and a day of a `WeekStrip` (56 px).
+- **No overlay.** The redesign gives every link and button of a phone its own hit area (`styles/tokens.css`, under
+  `pointer: coarse`), so a block does not stretch a link over its parent with `::after`: a stretched link would be anchored to
+  the link itself there and stop covering the row. A `DayList` row has its link around the title and the line under it, and the
+  date, the note and the action are beside it.
+- **Secondary text is `foreground/70`**, not `muted-foreground` (4.4:1 on white: a hair under AA). `-foreground` on `-soft`,
+  the pairs of the tones, meet AA in every area (`styles/__tests__/tokens.test.ts`, and axe in a real browser on the dev page).
 - **Headings.** `FocusBlock`, `PlainSection` and `ChecklistCompact` are `region`s named by their `h2`. `TodayList` names its
-  groups with `h3`, so use it inside a `PlainSection`. `NextStepCard` takes `titleAs`.
+  groups with `h3`, so use it inside a `PlainSection`. `NextStepCard` takes `titleAs`. A title is text, not a flex box, so a
+  long name in it (a property, a file) wraps.
 - **Text.** Nothing is written inside the blocks: each one shows exactly the words it is given (its test checks it). So `then`
   is the whole line ("Poi: la firma del conduttore"), `who` the whole phrase ("Tocca a te").
+- **Props.** A block takes the attributes of its element (`className`, `data-testid`, `id`...) and puts them on its root; the
+  ones it manages itself (the name, the role, the keyboard) it keeps. None takes `children` unless it is a container
+  (`PlainSection`, `StatStrip`): the type refuses them.
 
 ## `CalmAction`: how a block asks for a button
 
@@ -52,11 +62,14 @@ Every block that has a button takes the same description:
 ```ts
 { label: 'Registra', onClick: () => register() }                       // runs something: a <button>
 { label: 'Apri il contratto', href: '/app/long-rent/contracts/42' }    // goes somewhere: a link of the router
-{ label: 'Aiuto', href: 'https://…' }                                  // an address with a scheme: a plain link
-// also: state (handed to the page that opens), ariaLabel (must start with the label), testId
+{ label: 'Aiuto', href: 'https://…' }                                  // an address with a scheme: the router makes it a plain link
+{ label: 'Invia', onClick: mutation.mutate, loading: mutation.isPending }  // busy: a spinner, aria-busy, clicks ignored
+// also: state (handed to the page that opens), ariaLabel (must start with the label), testId,
+// disabled (an action that runs something, not available now)
 ```
 
-Give `ariaLabel` when several buttons say the same thing on the page (`Apri` in each row: `Apri: contratto Rossi`).
+`onClick` is called without arguments (never with the click event), so a mutation or a refetch can be handed in as it is. Give
+`ariaLabel` when several buttons say the same thing on the page (`Apri` in each row: `Apri: contratto Rossi`).
 
 ## Composing a home
 
@@ -70,7 +83,7 @@ Give `ariaLabel` when several buttons say the same thing on the page (`Apri` in 
     who={t('home.lateRent.who')}          // "Tocca a te"
     when={t('home.lateRent.late', { count: days })}
     then={t('home.lateRent.then')}        // "Poi: se non paga entro il 25, puoi avviare la diffida"
-    primary={{ label: t('home.lateRent.remind'), onClick: sendReminder }}
+    primary={{ label: t('home.lateRent.remind'), onClick: sendReminder.mutate, loading: sendReminder.isPending }}
     secondary={{ label: t('home.lateRent.open'), href: contractPath }}
   />
 
@@ -96,39 +109,46 @@ When there is nothing to do, the `FocusBlock` still says so ("Niente di urgente"
 **`FocusBlock`**: `tone?`, `kicker?`, `title`, `body?`, `who?` (whose turn), `when?` (how long or until when), `primary`,
 `secondary?`, `then?`, `icon?` (replaces the icon of the tone). Extra props go to the `section`.
 
-**`StatStrip`**: `label?` (default "In breve"), the tiles as children. **`StatTile`**: `label`, `value`, `tone?`, `delta?` (the
-text is yours: "+6% su settembre"), `href?` (the whole tile is the link; a chevron says so), `state?`. One column on a phone,
+**`StatStrip`**: `label?` (default "In breve"), the tiles as children (directly, in a fragment or in a list; a component that
+renders tiles is not seen). **`StatTile`**: `label`, `value`, `tone?`, `delta?` (the text is yours: "+6% su settembre"), `href?`
+(the whole tile is the link; a chevron says so), `state?`. A tile that is not a link takes no click. One column on a phone,
 two from `sm`, three or four from `lg`.
 
-**`PlainSection`**: `title`, `count?`, and either `actionLabel` + `href` or `actionLabel` + `onAction`. Extra props (`id`,
-`data-testid`) go to the `section`.
+**`PlainSection`**: `title`, `count?`, and either `actionLabel` + `href` or `actionLabel` + `onAction`; `actionAriaLabel?` and
+`actionTestId?` tell apart two actions that say the same ("Vedi tutto"). Extra props (`id`, `data-testid`) go to the `section`.
 
-**`DayList`**: `items` of `{ id, date, dateTime?, title, subtitle?, meta?, tone?, href | onOpen, action? }`. The title is the
-link (or the button) of the row and its hit area is the whole row; `action` is a separate button for what is done without
-opening the item; `meta` is a note at the end ("tra 5 giorni"), and with a `tone` it gets the icon and the color of the tone.
-It renders nothing when it has no rows: what to say then is the page's. **`TodayList`**: `items` (each with its `day`,
-`YYYY-MM-DD`), `labels` (`today`, `tomorrow`, `later`, in your words), `today?` (default: today in Europe/Rome). A day that is
-already past stays in today's group: it is still to be done.
+**`DayList`**: `items` of `{ id, day?, date?, dateTime?, title, subtitle?, meta?, tone?, href | onOpen, action? }`. The date
+comes from `day` (`YYYY-MM-DD`: "12 ott" in the language of the app, and the machine value of the `<time>`); give `date` for a
+time of the day ("09:30", with `dateTime` for the machine) or any short text. The title and the line under it are one link (or
+one button, with `onOpen`); `action` is a separate button for what is done without opening the item; `meta` is a note at the
+end ("tra 5 giorni"), and with a `tone` it gets the icon and the color of the tone. It renders nothing when it has no rows:
+what to say then is the page's. **`TodayList`**: `items` (each with its `day`), `labels` (`today`, `tomorrow`, `later`, in your
+words), `today?` (default: today in Europe/Rome). A day that is already past stays in today's group (it is still to be done);
+a `day` that cannot be read goes last.
 
-**`WeekStrip`**: `days` of `{ date, count? }`, `value?` / `defaultValue?` / `onValueChange?`, `today?`, `label?`. A group of
-radio buttons: one in the Tab order, arrows (and Home, End) move the choice, from the last it goes round. A dot marks a day
-that has things; each day is read in full ("lunedì 12 ottobre, oggi, 3 elementi"). It only chooses: what it shows, and other
-weeks, are the page's.
+**`WeekStrip`**: `days` of `{ date (YYYY-MM-DD), count? }`, `value?` / `defaultValue?` / `onValueChange?`, `today?`, `label?`.
+A group of radio buttons: one in the Tab order, arrows (and Home, End) move the choice, from the last it goes round (Alt, Ctrl
+and Cmd with them are the browser's). A dot marks a day that has things; each day is read in full ("lunedì 12 ottobre, oggi, 3
+elementi"). When the page gives other days (the next week) the choice that no longer fits is dropped and the default (today)
+applies again. It only chooses: what it shows, and other weeks, are the page's.
 
-**`ActivityList`**: `items` of `{ id, at (ISO instant), when?, text, actor? }`, `order?` (`newest` default, or `oldest`),
-`more?` (`{ limit, label }`: only `limit` entries and a button to show the rest; the focus goes to the first new entry).
-It puts the entries in order itself. Without `when`, the date is day, month and time in Europe/Rome, in the language of the
-app.
+**`ActivityList`**: `items` of `{ id, at (ISO instant with its offset), when?, text, actor? }`, `order?` (`newest` default, or
+`oldest`), `more?` (`{ limit, label }`: only `limit` entries and a button to show the rest; the focus goes to the first new
+entry), `label?` (the name of the list). It puts the entries in order itself. Without `when`, the date is day, month and time in
+Europe/Rome, in the language of the app, with the year when it is not this year. Extra props go to the box around the list.
 
 **`NextStepCard`**: `kicker`, `title`, `titleAs?` (`h2` default, `p` inside a block that has its own heading), `detail?`,
 `position?` ("Passo 3 di 7"), `cta?`. It is the "next step" of the activation checklist taken out (`features/onboarding`), with
 the same words and the same `data-testid`s (`activation-next-step`, `activation-next-step-cta`), now shared.
 
-**`ChecklistCompact`**: `title`, `done`, `total`, `progress` ("2 di 5"), `next?`, `progressLabel?`, `primary?`, `secondary?`.
+**`ChecklistCompact`**: `title`, `done`, `total`, `progress` ("2 di 5": it is also what a screen reader says as the value of
+the bar), `next?`, `progressLabel?`, `primary?`, `secondary?`.
 
 ## Tests
 
 Each block has its test next to it (`__tests__/`): the variants, the tone, that no word of its own is added, the keyboard of
-`WeekStrip`, one `h2` per block, and `vitest-axe` (`@/test/axe`). The colors and the widths are checked in a real browser by
-`e2e/calm-blocks.spec.ts` on `/dev/calm-blocks`: axe with contrast at four widths, in every area, nothing sticking out at
-360 and 390 px with wider letters, and targets of 44 px.
+`WeekStrip`, one `h2` per block, and `vitest-axe` (`@/test/axe`). The wiring of `NextStepCard` in the activation checklist has
+its own (`features/onboarding/components/__tests__/activation-next-step.test.tsx`). The colors, the widths and the finger are
+checked in a real browser by `e2e/calm-blocks.spec.ts` on `/dev/calm-blocks`: axe with contrast at four widths, in every area and
+on a phone under the redesign, nothing sticking out at 360 and 390 px with wider letters and names without a space, targets of
+44 px, the keyboard of the week and of the rows, and taps.

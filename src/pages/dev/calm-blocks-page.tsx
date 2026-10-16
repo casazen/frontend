@@ -32,6 +32,9 @@ const TONE_NAME: Record<CalmTone, string> = {
 
 const TODAY_LABELS = { today: 'Oggi', tomorrow: 'Domani', later: 'Più avanti' };
 
+/** A name with no space in it, as a property or a file has: it must wrap, not push the page sideways. */
+const LONG_NAME = 'Casa_Vacanze_Trullo_dei_Sogni_Alberobello_Via_Roma_12_interno_3';
+
 /** The calm blocks of UI-16 on one page, in every variant, to look at them and to let Playwright and axe walk through them. */
 export default function CalmBlocksPage() {
   const today = todayInRome();
@@ -40,25 +43,24 @@ export default function CalmBlocksPage() {
 
   const [day, setDay] = useState(today);
   const monday = startOfWeek(today);
-  const week: WeekStripDay[] = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(monday, index);
-    return { date, count: [2, 0, 1, 4, 0, 0, 3][index] };
-  });
+  const week: WeekStripDay[] = Array.from({ length: 7 }, (_, index) => ({ date: addDays(monday, index), count: [2, 0, 1, 4, 0, 0, 3][index] }));
 
   const writeToSupplier: CalmAction = { label: 'Scrivi al fornitore o scegline un altro per questo intervento', onClick: done('scrivi al fornitore') };
 
+  // The date of a row is worked out from its day ("12 ott"); a time of the day is the row's own words.
   const deadlines: DayListItem[] = [
-    { id: 'registration', date: '28 ott', dateTime: addDays(today, 12), title: 'Registrazione del contratto Rossi', subtitle: 'Elisa Rossi · Via Roma 12, Bari', meta: 'tra 12 giorni', href: '/dev/calm-blocks?aperto=rossi' },
-    { id: 'late-rent', date: '5 ott', dateTime: addDays(today, -11), title: 'Canone di ottobre · Bianchi', subtitle: 'Marco Bianchi · Corso Vittorio 3', meta: 'in ritardo di 11 giorni', tone: 'danger', onOpen: done('apri canone Bianchi'), action: { label: 'Invia il sollecito', ariaLabel: 'Invia il sollecito: canone Bianchi', onClick: done('sollecito Bianchi') } },
-    { id: 'deposit', date: '3 nov', dateTime: addDays(today, 18), title: 'Restituzione del deposito · Verdi', subtitle: 'Giulia Verdi · Via Sparano 40', meta: 'da preparare', tone: 'warning', action: { label: 'Prepara', ariaLabel: 'Prepara: restituzione deposito Verdi', href: '/dev/calm-blocks?aperto=verdi' } },
-    { id: 'plain', date: '10 nov', title: 'Una riga solo da leggere, con un titolo molto lungo che deve andare a capo senza spingere la pagina di lato', subtitle: 'Nessuna azione' },
+    { id: 'registration', day: addDays(today, 12), title: 'Registrazione del contratto Rossi', subtitle: 'Elisa Rossi · Via Roma 12, Bari', meta: 'tra 12 giorni', href: '/dev/calm-blocks?aperto=rossi' },
+    { id: 'late-rent', day: addDays(today, -11), title: 'Canone di ottobre · Bianchi', subtitle: 'Marco Bianchi · Corso Vittorio 3', meta: 'in ritardo di 11 giorni', tone: 'danger', onOpen: done('apri canone Bianchi'), action: { label: 'Invia il sollecito', ariaLabel: 'Invia il sollecito: canone Bianchi', onClick: done('sollecito Bianchi') } },
+    { id: 'deposit', day: addDays(today, 18), title: 'Restituzione del deposito · Verdi', subtitle: 'Giulia Verdi · Via Sparano 40', meta: 'da preparare', tone: 'warning', action: { label: 'Prepara', ariaLabel: 'Prepara: restituzione deposito Verdi', href: '/dev/calm-blocks?aperto=verdi' } },
+    { id: 'plain', day: addDays(today, 25), title: 'Una riga solo da leggere, con un titolo molto lungo che deve andare a capo senza spingere la pagina di lato', subtitle: 'Nessuna azione' },
+    { id: 'long-name', day: addDays(today, 30), title: LONG_NAME, subtitle: `${LONG_NAME}, scala B`, href: '/dev/calm-blocks?aperto=nome-lungo' },
   ];
 
   const todayItems: TodayListItem[] = [
     { id: 't1', day: today, date: '09:30', dateTime: `${today}T09:30`, title: 'Arrivo · Anna Neri', subtitle: 'Casa Bianca · 2 notti', action: { label: 'Fai il check-in', ariaLabel: 'Fai il check-in: Anna Neri', onClick: done('check-in Neri') } },
     { id: 't2', day: today, date: '11:00', dateTime: `${today}T11:00`, title: 'Pulizia · Trullo dei Sogni', subtitle: 'Splendore Pulizie', meta: 'in corso', onOpen: done('apri pulizia') },
     { id: 't3', day: addDays(today, 1), date: '15:00', dateTime: `${addDays(today, 1)}T15:00`, title: 'Partenza · Luigi Verdi', subtitle: 'Masseria Ulivi', href: '/dev/calm-blocks?aperto=partenza' },
-    { id: 't4', day: addDays(today, 3), date: '19 ott', dateTime: addDays(today, 3), title: 'Manutenzione caldaia', subtitle: 'Termoidraulica Rossi', meta: 'da confermare', tone: 'warning', href: '/dev/calm-blocks?aperto=caldaia' },
+    { id: 't4', day: addDays(today, 3), title: 'Manutenzione caldaia', subtitle: 'Termoidraulica Rossi', meta: 'da confermare', tone: 'warning', href: '/dev/calm-blocks?aperto=caldaia' },
   ];
 
   const activity: ActivityItem[] = [
@@ -67,7 +69,7 @@ export default function CalmBlocksPage() {
     { id: 'a3', at: '2026-10-15T09:05:00Z', actor: 'CasaZen', text: 'ha registrato i dati degli ospiti su Alloggiati Web', when: 'ieri alle 11:05' },
     { id: 'a4', at: '2026-10-14T18:30:00Z', actor: 'Giulia', text: 'ha caricato il certificato energetico' },
     { id: 'a5', at: '2026-10-13T10:00:00Z', text: 'Canone di settembre incassato' },
-    { id: 'a6', at: '2026-10-11T12:20:00Z', actor: 'Tu', text: 'hai aggiunto l’immobile Trullo dei Sogni' },
+    { id: 'a6', at: '2025-10-11T12:20:00Z', actor: 'Tu', text: 'hai aggiunto l’immobile Trullo dei Sogni' },
   ];
 
   return (
@@ -150,6 +152,9 @@ export default function CalmBlocksPage() {
         <PlainSection title="Senza azione" data-testid="plain-bare">
           <p className="text-sm text-foreground/80">Solo il titolo e il contenuto.</p>
         </PlainSection>
+        <PlainSection title={LONG_NAME} count={12} actionLabel="Vedi la scheda completa dell’immobile" href="/dev/calm-blocks?sezione=immobile" data-testid="plain-long">
+          <p className="text-sm text-foreground/80">Il titolo non ha spazi e a 360 px va a capo senza far scorrere la pagina.</p>
+        </PlainSection>
       </section>
 
       <section aria-labelledby="dev-days" className="space-y-6">
@@ -178,7 +183,7 @@ export default function CalmBlocksPage() {
           <ActivityList items={activity} more={{ limit: 3, label: 'Mostra altro' }} data-testid="activity-list" />
         </PlainSection>
         <PlainSection title="Cronologia del contratto, dalla prima voce">
-          <ActivityList items={activity.slice(0, 3)} order="oldest" data-testid="activity-oldest" />
+          <ActivityList items={activity.slice(0, 3)} order="oldest" label="Cronologia del contratto" data-testid="activity-oldest" />
         </PlainSection>
       </section>
 
@@ -205,6 +210,7 @@ export default function CalmBlocksPage() {
           primary={{ label: 'Continua', href: '/dev/calm-blocks?passo=continua' }}
           secondary={{ label: 'Tutti i passi', onClick: done('tutti i passi') }}
         />
+        <ChecklistCompact data-testid="checklist-long" title={`Configura ${LONG_NAME}`} done={0} total={4} progress="0 di 4" next={`Prossimo: ${LONG_NAME}`} />
       </section>
 
       <section aria-labelledby="dev-home" className="space-y-6">
@@ -223,11 +229,11 @@ export default function CalmBlocksPage() {
             primary={{ label: 'Invia il sollecito', onClick: done('home: sollecito') }}
             secondary={{ label: 'Vedi il contratto', href: '/dev/calm-blocks?aperto=bianchi' }}
           />
-          <PlainSection title="Da fare" count={2} actionLabel="Vedi tutto" href="/dev/calm-blocks?sezione=da-fare">
+          <PlainSection title="Da fare" count={2} actionLabel="Vedi tutto" actionAriaLabel="Vedi tutto: da fare" href="/dev/calm-blocks?sezione=da-fare">
             <DayList
               items={[
-                { id: 'h1', date: '12 ott', title: 'Firma del contratto Neri', subtitle: 'Aspetta la firma del conduttore', onOpen: done('home: contratto Neri'), action: { label: 'Ricorda', ariaLabel: 'Ricorda: firma contratto Neri', onClick: done('home: ricorda') } },
-                { id: 'h2', date: '18 ott', title: 'Registrazione del contratto Rossi', subtitle: 'Scade tra 2 giorni', meta: 'tra 2 giorni', tone: 'warning', href: '/dev/calm-blocks?aperto=rossi' },
+                { id: 'h1', day: addDays(today, -4), title: 'Firma del contratto Neri', subtitle: 'Aspetta la firma del conduttore', onOpen: done('home: contratto Neri'), action: { label: 'Ricorda', ariaLabel: 'Ricorda: firma contratto Neri', onClick: done('home: ricorda') } },
+                { id: 'h2', day: addDays(today, 2), title: 'Registrazione del contratto Rossi', subtitle: 'Scade tra 2 giorni', meta: 'tra 2 giorni', tone: 'warning', href: '/dev/calm-blocks?aperto=rossi' },
               ]}
             />
           </PlainSection>
@@ -236,7 +242,7 @@ export default function CalmBlocksPage() {
             <StatTile label="In ritardo" value="1.200 €" tone="danger" href="/dev/calm-blocks?numeri=ritardo" />
             <StatTile label="Da incassare" value="0 €" />
           </StatStrip>
-          <PlainSection title="Cosa è successo di recente" actionLabel="Vedi tutto" href="/dev/calm-blocks?sezione=attivita">
+          <PlainSection title="Cosa è successo di recente" actionLabel="Vedi tutto" actionAriaLabel="Vedi tutto: cosa è successo di recente" href="/dev/calm-blocks?sezione=attivita">
             <ActivityList items={activity.slice(0, 2)} />
           </PlainSection>
           <ChecklistCompact

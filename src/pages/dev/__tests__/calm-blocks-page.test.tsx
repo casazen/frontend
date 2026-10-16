@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { freezeClock } from '@/test/clock';
 import { expectNoAxeViolations } from '@/test/axe';
 import CalmBlocksPage from '../calm-blocks-page';
 
@@ -14,6 +15,7 @@ function renderPage(entry = '/dev/calm-blocks') {
 
 describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', () => {
   afterEach(() => {
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -22,12 +24,12 @@ describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', (
 
     expect(screen.getByRole('heading', { level: 1, name: 'Blocchi calmi' })).toBeInTheDocument();
     for (const tone of ['neutral', 'info', 'success', 'warning', 'danger', 'long']) expect(screen.getByTestId(`focus-${tone}`)).toBeInTheDocument();
-    for (const id of ['strip-2', 'strip-3', 'strip-4', 'plain-link', 'plain-action', 'plain-bare', 'day-list', 'today-list', 'week-strip', 'activity-list', 'activity-oldest', 'next-step', 'next-step-bare', 'checklist', 'home-example']) {
+    for (const id of ['strip-2', 'strip-3', 'strip-4', 'plain-link', 'plain-action', 'plain-bare', 'plain-long', 'day-list', 'today-list', 'week-strip', 'activity-list', 'activity-oldest', 'next-step', 'next-step-bare', 'checklist', 'checklist-long', 'home-example']) {
       expect(screen.getByTestId(id), id).toBeInTheDocument();
     }
   });
 
-  it('CalmBlocksPage_HomeExample_HasOneFocusBlockAndAtMostFourNumbers', () => {
+  it('CalmBlocksPage_HomeExample_HasOneFocusBlockAndThreeNumbers', () => {
     renderPage();
 
     const home = within(screen.getByTestId('home-example'));
@@ -44,6 +46,13 @@ describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', (
     expect(new Set(names).size).toBe(names.length);
   });
 
+  it('CalmBlocksPage_TwoActionsThatSayTheSame_AreToldApartByTheirNames', () => {
+    renderPage();
+
+    const home = within(screen.getByTestId('home-example'));
+    expect(home.getAllByRole('link', { name: /^Vedi tutto/ }).map((link) => link.getAttribute('aria-label'))).toEqual(['Vedi tutto: da fare', 'Vedi tutto: cosa è successo di recente']);
+  });
+
   it('CalmBlocksPage_Actions_ReportWhatTheyDo', () => {
     renderPage();
 
@@ -52,15 +61,20 @@ describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', (
     expect(screen.getByTestId('last-action')).toHaveTextContent('Ultima azione: primaria avviso');
   });
 
-  it('CalmBlocksPage_WeekStrip_ChoosesADayWhenAnArrowIsPressed', () => {
+  it('CalmBlocksPage_WeekStrip_MovesTheChoiceToTheNextDayWhenAnArrowIsPressed', () => {
+    // Whatever day it is: Tuesday is not special.
+    freezeClock('2026-10-13T10:00:00Z');
     renderPage();
 
-    const strip = within(screen.getByTestId('week-strip'));
-    const radios = strip.getAllByRole('radio');
-    radios[0].focus();
-    fireEvent.keyDown(radios[0], { key: 'ArrowRight' });
+    const radios = within(screen.getByTestId('week-strip')).getAllByRole('radio');
+    const chosen = radios.findIndex((radio) => radio.getAttribute('aria-checked') === 'true');
+    expect(radios[chosen].getAttribute('data-date')).toBe('2026-10-13');
+    expect(screen.getByTestId('week-selected')).toHaveTextContent('Giorno scelto: 2026-10-13');
 
-    expect(screen.getByTestId('week-selected')).toHaveTextContent(`Giorno scelto: ${radios[1].getAttribute('data-date')}`);
+    radios[chosen].focus();
+    fireEvent.keyDown(radios[chosen], { key: 'ArrowRight' });
+
+    expect(screen.getByTestId('week-selected')).toHaveTextContent('Giorno scelto: 2026-10-14');
   });
 
   it('CalmBlocksPage_HasNoAxeViolations', { timeout: 60_000 }, async () => {

@@ -46,12 +46,14 @@ describe('ChecklistCompact (UI-16)', () => {
     expect(container.textContent).toBe('Configura Affitti brevi 2 di 5Prossimo: Collega Stripe · 5 minutiTutti i passiContinua');
   });
 
-  it('ChecklistCompact_Bar_IsAProgressBarWithTheStepsDoneAndTheCommonName', async () => {
+  it('ChecklistCompact_Bar_IsTheProgressBarOfTheProductReadAsTheCountOfTheCaller', async () => {
     const { unmount } = renderChecklist();
     const bar = screen.getByRole('progressbar', { name: 'Avanzamento' });
     expect(bar).toHaveAttribute('aria-valuemin', '0');
-    expect(bar).toHaveAttribute('aria-valuemax', '5');
-    expect(bar).toHaveAttribute('aria-valuenow', '2');
+    expect(bar).toHaveAttribute('aria-valuemax', '100');
+    expect(bar).toHaveAttribute('aria-valuenow', '40');
+    // What a screen reader says is the count in the words of the caller, not "40".
+    expect(bar).toHaveAttribute('aria-valuetext', '2 di 5');
     expect(bar.firstElementChild).toHaveStyle({ width: '40%' });
     unmount();
 
@@ -68,7 +70,7 @@ describe('ChecklistCompact (UI-16)', () => {
 
   it('ChecklistCompact_DoneBeyondTheRange_IsKeptInside', () => {
     const { unmount } = renderChecklist({ done: 9 });
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '5');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
     expect(screen.getByRole('progressbar').firstElementChild).toHaveStyle({ width: '100%' });
     unmount();
 
@@ -92,6 +94,25 @@ describe('ChecklistCompact (UI-16)', () => {
     expect(container.textContent).toBe('Configura Affitti brevi 2 di 5');
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('ChecklistCompact_LongTitle_IsTextThatWrapsNotAFlexItemThatKeepsItsWidth', () => {
+    renderChecklist({ title: 'Configura_Casa_Vacanze_Trullo_dei_Sogni_Alberobello_Via_Roma_12_interno_3' });
+
+    const heading = screen.getByRole('heading');
+    expect(heading).toHaveClass('break-words');
+    expect(heading).not.toHaveClass('flex');
+  });
+
+  it('ChecklistCompact_Children_AreNotAccepted', () => {
+    render(
+      <MemoryRouter>
+        {/* @ts-expect-error the actions have their own props: children would be dropped without a word */}
+        <ChecklistCompact {...FULL}>un testo</ChecklistCompact>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('un testo')).not.toBeInTheDocument();
   });
 
   it('ChecklistCompact_Everything_HasNoAxeViolations', async () => {

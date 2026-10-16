@@ -1,8 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Wrench } from 'lucide-react';
-import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
 import { CALM_TONES, TONE_STYLES, type CalmTone } from '../calm-tone';
 import { FocusBlock, type FocusBlockProps } from '../focus-block';
@@ -27,10 +26,6 @@ function renderBlock(props: Partial<FocusBlockProps> = {}) {
 }
 
 describe('FocusBlock (UI-16)', () => {
-  beforeEach(async () => {
-    await i18n.changeLanguage('it');
-  });
-
   afterEach(() => {
     cleanup();
   });
@@ -95,8 +90,9 @@ describe('FocusBlock (UI-16)', () => {
       unmount();
     }
 
-    // Five tones, five different icons.
+    // Five tones, five different icons and five different tints.
     expect(icons.size).toBe(CALM_TONES.length);
+    expect(new Set(CALM_TONES.map((tone) => TONE_STYLES[tone].surface)).size).toBe(CALM_TONES.length);
   });
 
   it('FocusBlock_NoTone_IsTheAccentOfTheArea', () => {
@@ -120,6 +116,18 @@ describe('FocusBlock (UI-16)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Registra ora' }));
 
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('FocusBlock_PrimaryLoading_IsBusyAndCannotBeSentTwice', () => {
+    const onClick = vi.fn();
+    renderBlock({ primary: { label: 'Invia il sollecito', onClick, loading: true } });
+
+    const button = screen.getByRole('button', { name: 'Invia il sollecito' });
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('FocusBlock_PrimaryAsAPage_IsALinkAndSecondaryComesAfterItAsAnOutline', () => {
@@ -151,11 +159,23 @@ describe('FocusBlock (UI-16)', () => {
     expect(screen.getByRole('region')).toHaveClass('min-w-0');
   });
 
-  it('FocusBlock_ExtraProps_GoToTheRegion', () => {
-    renderBlock({ 'data-testid': 'adesso', className: 'mt-4' } as Partial<FocusBlockProps>);
+  it('FocusBlock_ExtraProps_GoToTheRegionButCannotTakeItsNameAway', () => {
+    renderBlock({ 'data-testid': 'adesso', className: 'mt-4', 'aria-labelledby': 'altro' } as Partial<FocusBlockProps>);
 
-    expect(screen.getByTestId('adesso')).toBe(screen.getByRole('region'));
-    expect(screen.getByTestId('adesso')).toHaveClass('mt-4');
+    const region = screen.getByRole('region', { name: 'Registra il contratto di Elisa Rossi' });
+    expect(screen.getByTestId('adesso')).toBe(region);
+    expect(region).toHaveClass('mt-4');
+  });
+
+  it('FocusBlock_Children_AreNotAccepted', () => {
+    render(
+      <MemoryRouter>
+        {/* @ts-expect-error a block has no children: they would be dropped without a word */}
+        <FocusBlock {...FULL}>un testo</FocusBlock>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('un testo')).not.toBeInTheDocument();
   });
 
   it('FocusBlock_TwoBlocks_HaveDifferentNamesBecauseTheNameIsTheirOwnTitle', () => {

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { CalmActionButton, type CalmAction } from './calm-action';
 import { TONE_STYLES, type CalmTone } from './calm-tone';
 
-export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>, 'title'> {
+export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>, 'title' | 'children'> {
   /** How it feels: the accent of the area (`neutral`, default), or good, bad or urgent news. The icon follows the tone. */
   tone?: CalmTone;
   /** A few words above the title: "Adesso", "Da sistemare". */
@@ -29,7 +29,7 @@ export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>,
 
 /**
  * The one highlighted block of a screen: what to do now, whose turn it is, how long it takes, what comes after, and the
- * button that does it. A page has at most one (`CONVENZIONI.md` §7bis, "un solo punto focale"): two colored blocks together
+ * button that does it. A page has at most one (the redesign conventions, §7bis, "un solo punto focale"): two colored blocks together
  * and the person does not know where to look.
  *
  * It is a `region` named by its title, so a screen reader finds it from the list of landmarks; the title is the `h2` of the
@@ -45,10 +45,10 @@ export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, p
 
   return (
     <section
+      {...props}
       aria-labelledby={titleId}
       data-tone={tone}
       className={cn('flex min-w-0 flex-col gap-3 rounded-xl p-4 ring-1 ring-inset sm:flex-row sm:gap-4 sm:p-6', style.surface, className)}
-      {...props}
     >
       <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-full bg-background sm:size-12', style.accent)}>
         <Icon className="size-5 sm:size-6" />

@@ -6,12 +6,10 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Compass, Info, type LucideIco
  */
 export type CalmTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
-export const CALM_TONES: readonly CalmTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
-
 interface ToneStyle {
   /** The soft background and the hairline edge of a block painted in this tone (an inset ring: `border-*` colors are overridden by a global rule today). */
   surface: string;
-  /** Text and icon of the tone on `surface` and on the page: `-foreground` is 6:1 and more on both (`tokens.test.ts`). */
+  /** Text and icon of the tone on `surface` and on the page: `-foreground` on `-soft` and on the surfaces meets AA (`styles/__tests__/tokens.test.ts`). */
   accent: string;
   Icon: LucideIcon;
 }
@@ -25,3 +23,6 @@ export const TONE_STYLES: Record<CalmTone, ToneStyle> = {
   warning: { surface: 'bg-warning-soft ring-warning-border', accent: 'text-warning-foreground', Icon: AlertTriangle },
   danger: { surface: 'bg-danger-soft ring-danger-border', accent: 'text-danger-foreground', Icon: AlertCircle },
 };
+
+/** Every tone, in the order of the table above (it cannot fall behind it: the keys are the tones). */
+export const CALM_TONES = Object.keys(TONE_STYLES) as CalmTone[];

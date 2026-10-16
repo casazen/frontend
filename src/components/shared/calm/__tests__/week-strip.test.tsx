@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import i18n from '@/i18n/config';
+import { freezeClock } from '@/test/clock';
 import { expectNoAxeViolations } from '@/test/axe';
 import { WeekStrip, type WeekStripDay } from '../week-strip';
 
@@ -15,6 +16,9 @@ const WEEK: WeekStripDay[] = [
   { date: '2026-10-17' },
   { date: '2026-10-18', count: 3 },
 ];
+
+// Monday 19 to Sunday 25 October 2026.
+const NEXT_WEEK: WeekStripDay[] = Array.from({ length: 7 }, (_, index) => ({ date: `2026-10-${19 + index}` }));
 
 const TODAY = '2026-10-14';
 
@@ -42,6 +46,8 @@ describe('WeekStrip (UI-16)', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -104,6 +110,15 @@ describe('WeekStrip (UI-16)', () => {
     expect(radios()[0]).not.toHaveAttribute('data-today');
   });
 
+  it('WeekStrip_Colors_AreTheOnesOfTheSystemWhenTheUserForcesColors', () => {
+    render(<WeekStrip days={WEEK} today={TODAY} defaultValue="2026-10-16" />);
+
+    // In forced-colors mode the browser drops backgrounds and shadows: the chosen day, the dot and the ring keep a cue.
+    expect(radios()[4]).toHaveClass('forced-colors:bg-[Highlight]', 'forced-colors:text-[HighlightText]');
+    expect(radios()[2].children[1]).toHaveClass('forced-colors:outline-1');
+    expect(radios()[0].lastElementChild).toHaveClass('forced-colors:bg-[CanvasText]');
+  });
+
   it('WeekStrip_Click_ChoosesTheDayAndReportsIt', () => {
     const onValueChange = vi.fn();
     render(<Harness onValueChange={onValueChange} initial={TODAY} />);
@@ -130,6 +145,47 @@ describe('WeekStrip (UI-16)', () => {
 
     expect(onValueChange).toHaveBeenCalledWith('2026-10-18');
     expect(checked()).toEqual(['2026-10-13']);
+  });
+
+  it('WeekStrip_ControlledWithADayThatIsNotAmongTheDays_ChoosesNoneAndEntersOnTheFirstDay', () => {
+    render(<WeekStrip days={WEEK} today={TODAY} value="2026-11-30" />);
+
+    expect(checked()).toEqual([]);
+    expect(radios().map((radio) => radio.tabIndex)).toEqual([0, -1, -1, -1, -1, -1, -1]);
+  });
+
+  it('WeekStrip_NewDays_FindTheirOwnDefaultInsteadOfADayThatIsNoLongerThere', () => {
+    freezeClock('2026-10-14T10:00:00Z');
+    const { rerender } = render(<WeekStrip days={WEEK} />);
+    fireEvent.click(radios()[4]);
+    expect(checked()).toEqual(['2026-10-16']);
+
+    // The next week: the chosen day is gone and today is not in it: nothing is chosen, the Tab order enters on the first day.
+    rerender(<WeekStrip days={NEXT_WEEK} />);
+    expect(checked()).toEqual([]);
+    expect(radios().map((radio) => radio.tabIndex)).toEqual([0, -1, -1, -1, -1, -1, -1]);
+
+    // Back to the first week: the choice the person made there is back with it.
+    rerender(<WeekStrip days={WEEK} />);
+    expect(checked()).toEqual(['2026-10-16']);
+  });
+
+  it('WeekStrip_FirstRenderedWithoutDaysAndThenWithThem_ChoosesToday', () => {
+    const { rerender } = render(<WeekStrip days={[]} today={TODAY} />);
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+
+    rerender(<WeekStrip days={WEEK} today={TODAY} />);
+
+    expect(checked()).toEqual([TODAY]);
+  });
+
+  it('WeekStrip_DefaultValue_IsChosenUntilThePersonChoosesAndWinsOverToday', () => {
+    render(<WeekStrip days={WEEK} today={TODAY} defaultValue="2026-10-17" />);
+    expect(checked()).toEqual(['2026-10-17']);
+
+    fireEvent.click(radios()[0]);
+
+    expect(checked()).toEqual(['2026-10-12']);
   });
 
   it('WeekStrip_TabOrder_EntersOnTheChosenDayOnly', () => {
@@ -182,6 +238,21 @@ describe('WeekStrip (UI-16)', () => {
     expect(checked()).toEqual(['2026-10-12']);
   });
 
+  it.each([{ altKey: true }, { ctrlKey: true }, { metaKey: true }])('WeekStrip_ArrowWith%j_IsTheBrowsersAndChangesNothing', (modifier) => {
+    const onValueChange = vi.fn();
+    render(<Harness onValueChange={onValueChange} initial={TODAY} />);
+
+    radios()[2].focus();
+    // `fireEvent` says whether the event was left alone (true) or its default was prevented (false).
+    const left = fireEvent.keyDown(radios()[2], { key: 'ArrowLeft', ...modifier });
+    const endLeft = fireEvent.keyDown(radios()[2], { key: 'End', ...modifier });
+
+    expect(left).toBe(true);
+    expect(endLeft).toBe(true);
+    expect(onValueChange).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(radios()[2]);
+  });
+
   it('WeekStrip_OtherKeys_ChangeNothing', () => {
     const onValueChange = vi.fn();
     render(<Harness onValueChange={onValueChange} initial={TODAY} />);
@@ -192,6 +263,51 @@ describe('WeekStrip (UI-16)', () => {
 
     expect(onValueChange).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(radios()[2]);
+  });
+
+  it('WeekStrip_OnKeyDownOfTheCaller_IsCalledAndTheKeyboardOfTheStripStillWorks', () => {
+    const onKeyDown = vi.fn();
+    render(<WeekStrip days={WEEK} today={TODAY} onKeyDown={onKeyDown} />);
+
+    radios()[2].focus();
+    fireEvent.keyDown(radios()[2], { key: 'ArrowRight' });
+
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(radios()[3]);
+    expect(checked()).toEqual(['2026-10-15']);
+  });
+
+  it('WeekStrip_OnKeyDownThatPreventsTheDefault_KeepsTheStripWhereItIs', () => {
+    render(<WeekStrip days={WEEK} today={TODAY} onKeyDown={(event) => event.preventDefault()} />);
+
+    radios()[2].focus();
+    fireEvent.keyDown(radios()[2], { key: 'ArrowRight' });
+
+    expect(checked()).toEqual([TODAY]);
+  });
+
+  it('WeekStrip_ExtraProps_GoToTheGroupButCannotTakeItsRoleOrNameAway', () => {
+    render(<WeekStrip days={WEEK} today={TODAY} role="group" aria-label={undefined} data-testid="week" className="mt-4" />);
+
+    const group = screen.getByRole('radiogroup', { name: 'Giorni della settimana' });
+    expect(screen.getByTestId('week')).toBe(group);
+    expect(group).toHaveClass('mt-4', 'grid-cols-7');
+  });
+
+  it('WeekStrip_DayWrittenWithATime_IsReadAsTheDayItStartsWith', () => {
+    render(<WeekStrip days={[{ date: '2026-10-14T00:00:00Z', count: 1 }, { date: '2026-10-15T00:00:00Z' }]} today={TODAY} />);
+
+    expect(radios().map((radio) => radio.getAttribute('aria-label'))).toEqual(['mercoledì 14 ottobre, oggi, 1 elemento', 'giovedì 15 ottobre']);
+    expect(radios()[0]).toHaveTextContent('mer14');
+  });
+
+  it('WeekStrip_DayThatCannotBeRead_IsStillThereWithItsOwnTextAndTheDeveloperIsTold', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    render(<WeekStrip days={[{ date: 'giovedì' }, ...WEEK.slice(0, 2)]} today={TODAY} />);
+
+    expect(radios()[0]).toHaveAttribute('aria-label', 'giovedì');
+    expect(radios()[0].textContent).toBe('');
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/WeekStrip: 1 of the days/));
   });
 
   it('WeekStrip_EveryDay_IsATargetOfAtLeast44PxHigh', () => {
@@ -207,10 +323,17 @@ describe('WeekStrip (UI-16)', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('WeekStrip_CustomLabelAndProps_GoToTheGroup', () => {
-    render(<WeekStrip days={WEEK} today={TODAY} label="Disponibilità della settimana" data-testid="week" />);
+  it('WeekStrip_CustomLabel_NamesTheGroup', () => {
+    render(<WeekStrip days={WEEK} today={TODAY} label="Disponibilità della settimana" />);
 
-    expect(screen.getByTestId('week')).toBe(screen.getByRole('radiogroup', { name: 'Disponibilità della settimana' }));
+    expect(screen.getByRole('radiogroup', { name: 'Disponibilità della settimana' })).toBeInTheDocument();
+  });
+
+  it('WeekStrip_Children_AreNotAccepted', () => {
+    // @ts-expect-error the days are in `days`: children would be dropped without a word
+    render(<WeekStrip days={WEEK} today={TODAY}>un testo</WeekStrip>);
+
+    expect(screen.queryByText('un testo')).not.toBeInTheDocument();
   });
 
   it('WeekStrip_Everything_HasNoAxeViolations', async () => {

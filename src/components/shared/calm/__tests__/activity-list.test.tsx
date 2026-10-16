@@ -1,6 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
+import { freezeClock } from '@/test/clock';
 import { expectNoAxeViolations } from '@/test/axe';
 import { ActivityList, type ActivityItem } from '../activity-list';
 
@@ -17,9 +18,11 @@ const texts = () => screen.getAllByRole('listitem').map((item) => item.querySele
 describe('ActivityList (UI-16)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
+    freezeClock('2026-10-16T12:00:00Z');
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -47,12 +50,21 @@ describe('ActivityList (UI-16)', () => {
   it('ActivityList_DateWithoutWhen_IsDayMonthAndTimeInRomeInTheLanguageOfTheApp', async () => {
     const { unmount } = render(<ActivityList items={ITEMS.slice(1, 2)} />);
     // 08:12 UTC of 16 October is 10:12 in Rome (summer time).
-    expect(screen.getByRole('listitem').querySelector('time')).toHaveTextContent(/16 ott.*10:12/);
+    expect(screen.getByRole('listitem').querySelector('time')).toHaveTextContent(/^16 ott.*10:12$/);
     unmount();
 
     await i18n.changeLanguage('en');
     render(<ActivityList items={ITEMS.slice(1, 2)} />);
     expect(screen.getByRole('listitem').querySelector('time')).toHaveTextContent(/Oct 16.*10:12/);
+  });
+
+  it('ActivityList_DateOfAnotherYear_SaysTheYear', () => {
+    render(<ActivityList items={[{ id: 'a', at: '2025-03-05T09:00:00Z', text: 'un anno fa' }, { id: 'b', at: '2026-03-05T09:00:00Z', text: 'quest’anno' }]} />);
+
+    const times = screen.getAllByRole('listitem').map((item) => item.querySelector('time')?.textContent);
+    // This year (2026, the clock is fixed): no year. Another year: with it.
+    expect(times[0]).toMatch(/^5 mar\D+10:00$/);
+    expect(times[1]).toMatch(/^5 mar 2025\D+10:00$/);
   });
 
   it('ActivityList_When_ReplacesTheDefaultTextButKeepsTheInstant', () => {
@@ -61,6 +73,12 @@ describe('ActivityList (UI-16)', () => {
     const time = screen.getByRole('listitem').querySelector('time');
     expect(time).toHaveTextContent('ieri alle 18:40');
     expect(time).toHaveAttribute('datetime', '2026-10-15T16:40:00Z');
+  });
+
+  it('ActivityList_EmptyWhen_FallsBackToTheDefaultText', () => {
+    render(<ActivityList items={[{ id: 'a', at: '2026-10-16T08:12:00Z', text: 'Firmato', when: '' }]} />);
+
+    expect(screen.getByRole('listitem').querySelector('time')).toHaveTextContent(/^16 ott.*10:12$/);
   });
 
   it('ActivityList_Entry_ShowsOnlyWhatItHasAndNoFixedText', () => {
@@ -76,10 +94,31 @@ describe('ActivityList (UI-16)', () => {
     expect(screen.getAllByRole('listitem')[2].querySelector('time')).toBeNull();
   });
 
-  it('ActivityList_Entries_AreAnOrderedList', () => {
-    render(<ActivityList items={ITEMS} aria-label="Attività recente" />);
+  it('ActivityList_DateThatCannotBeReadButWithItsOwnWords_ShowsThemWithoutAMachineValue', () => {
+    render(<ActivityList items={[{ id: 'bad', at: 'non è una data', when: 'ieri sera', text: 'Senza data' }]} />);
+
+    const entry = screen.getByRole('listitem');
+    expect(entry.querySelector('time')).toBeNull();
+    expect(entry).toHaveTextContent('ieri sera');
+  });
+
+  it('ActivityList_Entries_AreAnOrderedListNamedByTheCaller', () => {
+    render(<ActivityList items={ITEMS} label="Attività recente" />);
 
     expect(screen.getByRole('list', { name: 'Attività recente' }).tagName).toBe('OL');
+  });
+
+  it('ActivityList_ExtraProps_GoToTheBoxAroundTheListAndItsButton', () => {
+    render(<ActivityList items={ITEMS} more={{ limit: 2, label: 'Mostra altro' }} id="history" data-testid="act" className="mt-4" />);
+
+    const box = screen.getByTestId('act');
+    expect(box).toHaveAttribute('id', 'history');
+    expect(box).toHaveClass('mt-4');
+    expect(within(box).getByRole('list')).toBeInTheDocument();
+    expect(within(box).getByRole('button', { name: 'Mostra altro' })).toBeInTheDocument();
+    // The list keeps its own id, the one the button controls.
+    expect(within(box).getByRole('button')).toHaveAttribute('aria-controls', within(box).getByRole('list').id);
+    expect(within(box).getByRole('list').id).not.toBe('history');
   });
 
   it('ActivityList_NoEntries_RendersNothing', () => {
@@ -94,8 +133,7 @@ describe('ActivityList (UI-16)', () => {
     expect(texts()).toEqual(['ha firmato il contratto', 'Canone incassato']);
     const button = screen.getByRole('button', { name: 'Mostra altro' });
     expect(button).toHaveAttribute('aria-expanded', 'false');
-    expect(button).toHaveAttribute('aria-controls', screen.getByRole('list').id);
-    expect(button).toHaveClass('min-h-11');
+    expect(button).toHaveClass('min-h-11', 'whitespace-normal');
   });
 
   it('ActivityList_MoreClicked_ShowsAllTheEntriesAndTheFocusGoesToTheFirstNewOne', () => {
@@ -109,11 +147,28 @@ describe('ActivityList (UI-16)', () => {
     expect(document.activeElement).toHaveTextContent('hai aggiunto un immobile');
   });
 
+  it('ActivityList_MoreWithTheOldestFirst_ShowsTheOldestAndThenTheRest', () => {
+    render(<ActivityList items={ITEMS} order="oldest" more={{ limit: 2, label: 'Mostra altro' }} />);
+
+    expect(texts()).toEqual(['ha inviato il promemoria', 'ha registrato gli ospiti']);
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra altro' }));
+    expect(texts()).toHaveLength(5);
+    expect(document.activeElement).toHaveTextContent('hai aggiunto un immobile');
+  });
+
   it('ActivityList_MoreWithEnoughRoom_ShowsEverythingAndNoButton', () => {
     render(<ActivityList items={ITEMS} more={{ limit: 5, label: 'Mostra altro' }} />);
 
     expect(texts()).toHaveLength(5);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('ActivityList_MoreWithALimitOfZero_ShowsOnlyTheButton', () => {
+    render(<ActivityList items={ITEMS} more={{ limit: 0, label: 'Mostra altro' }} />);
+
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra altro' }));
+    expect(texts()).toHaveLength(5);
   });
 
   it('ActivityList_LongText_CanBreak', () => {
@@ -122,8 +177,15 @@ describe('ActivityList (UI-16)', () => {
     expect(screen.getByRole('listitem')).toHaveClass('break-words');
   });
 
+  it('ActivityList_Children_AreNotAccepted', () => {
+    // @ts-expect-error the entries are in `items`: children would be dropped without a word
+    render(<ActivityList items={ITEMS}>un testo</ActivityList>);
+
+    expect(screen.queryByText('un testo')).not.toBeInTheDocument();
+  });
+
   it('ActivityList_Everything_HasNoAxeViolations', async () => {
-    const { container } = render(<ActivityList items={ITEMS} more={{ limit: 3, label: 'Mostra altro' }} aria-label="Attività recente" />);
+    const { container } = render(<ActivityList items={ITEMS} more={{ limit: 3, label: 'Mostra altro' }} label="Attività recente" />);
 
     await expectNoAxeViolations(container);
   });

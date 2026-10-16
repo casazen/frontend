@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
 import { CALM_TONES } from '../calm-tone';
@@ -27,6 +27,7 @@ describe('StatStrip and StatTile (UI-16)', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     cleanup();
   });
 
@@ -66,10 +67,30 @@ describe('StatStrip and StatTile (UI-16)', () => {
     expect(screen.getAllByRole('listitem')[0].querySelector('a')).toBeNull();
   });
 
-  it('StatTile_Tone_AddsTheIconOfTheToneAndColorsTheNumberAndNeutralIsPlain', () => {
-    renderStrip(
-      CALM_TONES.map((tone) => <StatTile key={tone} label={`Numero ${tone}`} value={1} tone={tone} />),
+  it('StatTile_LinkWithAState_HandsItToThePageThatOpens', () => {
+    render(
+      <MemoryRouter initialEntries={['/start']}>
+        <Routes>
+          <Route
+            path="/start"
+            element={
+              <StatStrip>
+                <StatTile label="In ritardo" value={2} href="/app/long-rent/rents" state={{ filter: 'late' }} />
+              </StatStrip>
+            }
+          />
+          <Route path="*" element={<Arrived />} />
+        </Routes>
+      </MemoryRouter>,
     );
+
+    fireEvent.click(screen.getByRole('link', { name: /In ritardo/ }));
+
+    expect(screen.getByTestId('arrived')).toHaveTextContent('{"filter":"late"}');
+  });
+
+  it('StatTile_Tone_AddsTheIconOfTheToneAndColorsTheNumberAndNeutralIsPlain', () => {
+    renderStrip(CALM_TONES.map((tone) => <StatTile key={tone} label={`Numero ${tone}`} value={1} tone={tone} />));
 
     const items = screen.getAllByRole('listitem');
     // Neutral: no icon, the text color of the page. The others: an icon before the label and the color of the tone.
@@ -109,6 +130,16 @@ describe('StatStrip and StatTile (UI-16)', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(5);
   });
 
+  it('StatStrip_MoreThanFourTiles_StaysSilentInABuild', () => {
+    vi.stubEnv('DEV', false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    renderStrip([...THREE, <StatTile key="four" label="Quarto" value={4} />, <StatTile key="five" label="Quinto" value={5} />]);
+
+    expect(warn).not.toHaveBeenCalled();
+    expect(screen.getAllByRole('listitem')).toHaveLength(5);
+  });
+
   it('StatStrip_TilesInAFragmentAListAndBehindAFalseCondition_AreAllFoundAndCounted', () => {
     const hidden = false as boolean;
     renderStrip(
@@ -125,14 +156,39 @@ describe('StatStrip and StatTile (UI-16)', () => {
     expect(screen.getByRole('list')).toHaveClass('lg:grid-cols-3');
   });
 
+  it('StatStrip_ATileThatGoes_DoesNotMakeTheOnesAfterItStartAgain', () => {
+    const tiles = (names: string[]) => names.map((name) => <StatTile key={name} label={name} value={1} href={`/app/${name}`} />);
+    const { rerender } = render(
+      <MemoryRouter>
+        <StatStrip>{tiles(['uno', 'due', 'tre'])}</StatStrip>
+      </MemoryRouter>,
+    );
+    const third = screen.getByRole('link', { name: /tre/ });
+
+    rerender(
+      <MemoryRouter>
+        <StatStrip>{tiles(['due', 'tre'])}</StatStrip>
+      </MemoryRouter>,
+    );
+
+    // The same element, so a link that had the focus keeps it.
+    expect(screen.getByRole('link', { name: /tre/ })).toBe(third);
+  });
+
   it('StatStrip_NoTiles_RendersNothing', () => {
     const { container } = renderStrip(null);
 
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('StatTile_Alone_IsADivAndKeepsItsExtraProps', () => {
-    render(<StatTile label="Aperte" value={5} data-testid="aperte" className="py-6" />);
+  it('StatTile_Alone_IsADivKeepsItsExtraPropsAndHasNoClick', () => {
+    render(
+      <>
+        <StatTile label="Aperte" value={5} data-testid="aperte" className="py-6" />
+        {/* @ts-expect-error a tile that is not a link is not a control: it takes no onClick */}
+        <StatTile label="Chiuse" value={1} onClick={() => undefined} />
+      </>,
+    );
 
     expect(screen.getByTestId('aperte').tagName).toBe('DIV');
     expect(screen.getByTestId('aperte')).toHaveClass('py-6');
@@ -158,3 +214,7 @@ describe('StatStrip and StatTile (UI-16)', () => {
     await expectNoAxeViolations(container);
   });
 });
+
+function Arrived() {
+  return <p data-testid="arrived">{JSON.stringify(useLocation().state)}</p>;
+}

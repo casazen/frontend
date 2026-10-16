@@ -104,6 +104,17 @@ describe('NextStepCard (UI-16)', () => {
     expect(screen.getByTestId('activation-next-step')).toHaveClass('p-4');
   });
 
+  it('NextStepCard_Children_AreNotAccepted', () => {
+    render(
+      <MemoryRouter>
+        {/* @ts-expect-error the card has its own parts: children would be dropped without a word */}
+        <NextStepCard {...FULL}>un testo</NextStepCard>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('un testo')).not.toBeInTheDocument();
+  });
+
   it('NextStepCard_Everything_HasNoAxeViolations', async () => {
     const { container } = renderCard();
 

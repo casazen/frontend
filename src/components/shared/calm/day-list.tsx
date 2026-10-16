@@ -1,7 +1,9 @@
 import * as React from 'react';
-import { addDays, todayInRome } from '@/lib/stay-dates';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { addDays, formatStayDate, parseStayDate, todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
-import { CalmActionButton, CalmLink, type CalmAction } from './calm-action';
+import { CalmActionButton, type CalmAction } from './calm-action';
 import { TONE_STYLES, type CalmTone } from './calm-tone';
 
 type DayListItemOpen =
@@ -12,9 +14,14 @@ type DayListItemOpen =
 export type DayListItem = DayListItemOpen & {
   /** Stable, for React: the id of the thing the row is about. */
   id: string;
-  /** The first column, as the person reads it: a time ("09:30") or a date ("12 ott"). Short: it has 3.5 rem. */
-  date: string;
-  /** The same moment for machines (`<time datetime>`): `2026-10-16` or `2026-10-16T09:30`. */
+  /**
+   * The calendar day of the row (`YYYY-MM-DD`). It is the machine value of the date (`<time datetime>`) and, when `date` is not
+   * given, the text of the date too ("12 ott"), in the language of the app. A `TodayList` needs it to group the rows.
+   */
+  day?: string;
+  /** The first column as the person reads it: a time ("09:30") or a short text. Default: the `day`, short ("12 ott"). */
+  date?: string;
+  /** The machine value of `date` when it has a time ("2026-10-16T09:30"). Default: the `day`. */
   dateTime?: string;
   title: string;
   /** One line under the title: who, where, how much ("Elisa Neri · Via Roma 12"). */
@@ -27,63 +34,69 @@ export type DayListItem = DayListItemOpen & {
   action?: CalmAction;
 };
 
-export interface DayListProps extends React.HTMLAttributes<HTMLUListElement> {
+export interface DayListProps extends Omit<React.HTMLAttributes<HTMLUListElement>, 'children'> {
   items: readonly DayListItem[];
 }
 
-const DATE = 'pt-0.5 text-sm font-semibold tabular-nums text-foreground/70';
-const TITLE = 'block break-words text-left font-semibold';
-// The title is the link (or the button) of the row and its hit area is the whole row: a `::after` that fills the `li`. The
-// action sits above it (`z-10`) and is the only thing there that takes a click, so a click anywhere else on the row (the note, the
-// space around the action) still reaches the title.
-const TITLE_LINK = cn(
-  TITLE,
-  'outline-none after:absolute after:inset-0 after:content-[""] hover:underline',
-  'focus-visible:after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-ring',
-);
+const DATE = 'min-w-0 break-words pt-0.5 text-sm font-semibold tabular-nums text-foreground/70';
+// The title and the line under it are one control: a link or a button as wide as the column and at least 44 px high. It is not
+// stretched over the rest of the row: the redesign puts its own hit area on every link and button of a phone (`tokens.css`),
+// and a stretched `::after` would fight it.
+const OPEN =
+  'group flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 function DayRow({ item }: { item: DayListItem }) {
+  const { i18n } = useTranslation();
   const style = TONE_STYLES[item.tone ?? 'neutral'];
   const ToneIcon = item.tone && item.tone !== 'neutral' ? style.Icon : null;
+  const { onOpen } = item;
+  const opens = item.href !== undefined || onOpen !== undefined;
 
-  const title =
-    item.href !== undefined ? (
-      <CalmLink href={item.href} state={item.state} className={TITLE_LINK}>
-        {item.title}
-      </CalmLink>
-    ) : item.onOpen ? (
-      <button type="button" onClick={item.onOpen} className={TITLE_LINK}>
-        {item.title}
-      </button>
-    ) : (
-      <span className={TITLE}>{item.title}</span>
-    );
+  const day = parseStayDate(item.day);
+  const dateText = item.date ?? (day ? formatStayDate(day, i18n.language, { day: 'numeric', month: 'short' }) : '');
+  const dateTime = item.dateTime ?? (day || undefined);
+
+  const text = (
+    <>
+      <span className={cn('block break-words font-semibold', opens && 'group-hover:underline')}>{item.title}</span>
+      {item.subtitle ? <span className="block break-words text-sm text-foreground/70">{item.subtitle}</span> : null}
+    </>
+  );
 
   return (
     <li
       data-tone={item.tone}
-      className="relative grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-1 py-3 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center sm:gap-x-4"
+      className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 gap-y-1 py-3 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center sm:gap-x-4"
     >
-      {item.dateTime ? (
-        <time dateTime={item.dateTime} className={DATE}>
-          {item.date}
+      {dateTime && dateText ? (
+        <time dateTime={dateTime} className={DATE}>
+          {dateText}
         </time>
       ) : (
-        <span className={DATE}>{item.date}</span>
+        <span className={DATE}>{dateText}</span>
       )}
-      <div className="min-w-0">
-        {title}
-        {item.subtitle ? <span className="block break-words text-sm text-foreground/70">{item.subtitle}</span> : null}
-      </div>
+
+      {item.href !== undefined ? (
+        <Link to={item.href} state={item.state} className={OPEN}>
+          {text}
+        </Link>
+      ) : onOpen ? (
+        <button type="button" onClick={() => onOpen()} className={OPEN}>
+          {text}
+        </button>
+      ) : (
+        <div className="min-w-0">{text}</div>
+      )}
+
       {item.meta || item.action ? (
-        <div className="pointer-events-none relative z-10 col-start-2 flex flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-3 sm:justify-end">
+        <div className="col-start-2 flex flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-3 sm:justify-end">
           {item.meta ? (
             <span className={cn('inline-flex items-center gap-1.5 text-sm', ToneIcon ? cn('font-medium', style.accent) : 'text-foreground/70')}>
               {ToneIcon ? <ToneIcon aria-hidden="true" className="size-4 shrink-0" /> : null}
               {item.meta}
             </span>
           ) : null}
-          {item.action ? <CalmActionButton action={item.action} variant="outline" size="sm" className="pointer-events-auto" /> : null}
+          {item.action ? <CalmActionButton action={item.action} variant="outline" size="sm" /> : null}
         </div>
       ) : null}
     </li>
@@ -92,16 +105,16 @@ function DayRow({ item }: { item: DayListItem }) {
 
 /**
  * Rows with a date, a title, a line under it and, if it helps, a note and a direct action: today's list, the deadlines, the
- * recent activity. The title opens the thing (`href` for a page, `onOpen` for a drawer) and the whole row is its target; the
- * action is a separate button for what is done without opening it. Without either the row is only to read.
+ * recent activity. The title and the line under it open the thing (`href` for a page, `onOpen` for a drawer); the action is a
+ * separate button for what is done without opening it. Without either the row is only to read.
  * It renders nothing when it has no rows: what to say then (a sentence, an empty state) is the page's to decide.
  *
- * The caller puts the rows in the order to read them, and writes the dates as people read them.
+ * The caller puts the rows in the order to read them.
  */
 export function DayList({ items, className, ...props }: DayListProps) {
   if (items.length === 0) return null;
   return (
-    <ul role="list" className={cn('divide-y divide-border border-y border-border', className)} {...props}>
+    <ul {...props} role="list" className={cn('divide-y divide-border border-y border-border', className)}>
       {items.map((item) => (
         <DayRow key={item.id} item={item} />
       ))}
@@ -114,7 +127,7 @@ export type TodayListItem = DayListItem & {
   day: string;
 };
 
-export interface TodayListProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TodayListProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   items: readonly TodayListItem[];
   /** The names of the three groups, already translated. They are the caller's: each area says it in its own words. */
   labels: { today: string; tomorrow: string; later: string };
@@ -138,20 +151,25 @@ function TodayGroup({ label, items }: { label: string; items: readonly DayListIt
 
 /**
  * A `DayList` in three groups, "oggi", "domani" and "più avanti". A row of a day that is already past is still to be done, so
- * it stays with today's. Empty groups are not shown. Use it inside a `PlainSection`: the group names are `h3`.
+ * it stays with today's; a row whose day cannot be read goes last, never with today's. Empty groups are not shown. Use it
+ * inside a `PlainSection`: the group names are `h3`.
  */
 export function TodayList({ items, labels, today, className, ...props }: TodayListProps) {
-  const first = today ?? todayInRome();
+  const first = parseStayDate(today) || todayInRome();
   const second = addDays(first, 1);
-  const groupOf = (day: string): TodayGroupKey => (day <= first ? 'today' : day === second ? 'tomorrow' : 'later');
+  const groupOf = (item: TodayListItem): TodayGroupKey => {
+    const day = parseStayDate(item.day);
+    if (!day) return 'later';
+    return day <= first ? 'today' : day === second ? 'tomorrow' : 'later';
+  };
 
   const groups = (['today', 'tomorrow', 'later'] as const)
-    .map((key) => ({ key, items: items.filter((item) => groupOf(item.day) === key) }))
+    .map((key) => ({ key, items: items.filter((item) => groupOf(item) === key) }))
     .filter((group) => group.items.length > 0);
   if (groups.length === 0) return null;
 
   return (
-    <div className={cn('space-y-5', className)} {...props}>
+    <div {...props} className={cn('space-y-5', className)}>
       {groups.map((group) => (
         <TodayGroup key={group.key} label={labels[group.key]} items={group.items} />
       ))}
