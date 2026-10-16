@@ -35,8 +35,7 @@ const PAGES: HeaderPage[] = [
   { name: 'CIN audit of the console (pages that hang from it)', path: '/app/admin/cin', profile: 'admin', heading: 'Conformità CIN', controls: childLinks },
   { name: 'supplier availability (link to the calendar)', path: '/app/supplier/availability', profile: 'supplier', heading: 'Disponibilità', controls: childLinks, supplier: true },
   { name: 'bookings (new booking)', path: '/app/short-rent/bookings', profile: 'dual', heading: 'Prenotazioni', controls: (page) => page.getByTestId('new-booking') },
-  // The empty list repeats "Nuovo contratto" under the header: the first one in the page is the button of the header.
-  { name: 'long-term contracts (new contract)', path: '/app/long-rent/leases', profile: 'dual', heading: 'Contratti lungo termine', controls: (page) => page.getByRole('button', { name: 'Nuovo contratto' }).first() },
+  { name: 'long-term contracts (new contract)', path: '/app/long-rent/leases', profile: 'dual', heading: 'Contratti', controls: (page) => page.getByTestId('lease-list-new') },
 ];
 
 test.describe('Page header on a phone (UI-04a CI fix)', () => {

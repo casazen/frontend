@@ -587,10 +587,7 @@
     "layerSwitcherLabel": "Area applicativa"
   },
   "leases": {
-    "pageTitle": "Contratti lungo termine",
-    "pageDescription": "Gestisci bozze, firma e registrazione RLI",
     "createLease": "Nuovo contratto",
-    "loading": "Caricamento contratti...",
     "emptyTitle": "Nessun contratto",
     "emptyDescription": "Crea il primo contratto di locazione lungo termine.",
     "guide": {
@@ -612,9 +609,6 @@
       }
     },
     "loadError": "Impossibile caricare i contratti. Riprova.",
-    "rentLabel": "Canone ",
-    "regimeLabel": "Regime ",
-    "partiesLabel": "Parti ",
     "detailLoading": "Caricamento contratto...",
     "notFound": "Contratto non trovato",
     "notFoundDescription": "Il contratto che stai cercando non esiste o non hai i permessi per visualizzarlo.",
@@ -1156,6 +1150,62 @@
         "cancel": "Annulla"
       }
     }
+  },
+  "leaseList": {
+    "chips": {
+      "active": "Attivi",
+      "activeHint": "Registrati e non ancora terminati, compresi quelli in scadenza",
+      "all": "Tutti",
+      "ended": "Terminati",
+      "endedHint": "Arrivati alla data di fine, o con la registrazione rifiutata",
+      "expiring": "In scadenza",
+      "expiringHint": "Registrati, con meno di sei mesi alla fine",
+      "preparing": "In preparazione",
+      "preparingHint": "Non ancora registrati: bozze, in firma o da registrare"
+    },
+    "columns": {
+      "parties": "Parti",
+      "regime": "Regime fiscale",
+      "rent": "Canone",
+      "status": "Stato",
+      "tenant": "Conduttore e immobile",
+      "term": "Durata"
+    },
+    "count_one": "{{count}} contratto",
+    "count_other": "{{count}} contratti",
+    "description": "Tutti i contratti di affitto lungo e a che punto sono.",
+    "detail": {
+      "events": "Ultimi eventi",
+      "eventsEmpty": "Non è ancora successo nulla.",
+      "eventsError": "Non riesco a caricare la cronologia del contratto.",
+      "eventsLoading": "Caricamento della cronologia...",
+      "eventsMore": "Mostra altri",
+      "property": "Immobile",
+      "tenant": "Conduttore"
+    },
+    "noResults": {
+      "description": "Prova un'altra scheda o cerca con un'altra parola.",
+      "title": "Nessun contratto qui"
+    },
+    "open": "Apri",
+    "property": {
+      "unknown": "Immobile non disponibile"
+    },
+    "rent": {
+      "next": "Prossimo canone: {{date}}",
+      "overdue_one": "In ritardo da {{count}} giorno · {{amount}}",
+      "overdue_other": "In ritardo da {{count}} giorni · {{amount}}",
+      "overdueNoDays": "Canone in ritardo · {{amount}}"
+    },
+    "search": {
+      "label": "Cerca contratti",
+      "placeholder": "Cerca conduttore, immobile o città"
+    },
+    "tenant": {
+      "anonymized": "Conduttore anonimizzato",
+      "missing": "Conduttore da indicare"
+    },
+    "term": "dal {{from}} al {{to}}"
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
