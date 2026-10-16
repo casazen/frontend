@@ -8057,7 +8057,6 @@
   },
   "longRentProperties": {
     "retry": "Riprova",
-    "roomsValue": "{{bedrooms}} camere · {{bathrooms}} bagni",
     "list": {
       "actions": {
         "createLease": "Crea contratto",
@@ -8110,17 +8109,35 @@
       "description": "Aggiorna i dati di {{name}}"
     },
     "detail": {
-      "loading": "Caricamento immobile...",
-      "loadError": "Impossibile caricare l'immobile.",
-      "edit": "Modifica",
-      "newLease": "Nuovo contratto",
-      "infoTitle": "Dati dell'immobile",
       "address": "Indirizzo",
-      "rooms": "Camere e bagni",
-      "documentsLoading": "Caricamento documenti...",
-      "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
+      "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
-      "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+      "backToList": "Torna agli immobili",
+      "contractsLoadError": "Non riesco a leggere i contratti di questo immobile.",
+      "contractsTitle": "Contratti collegati",
+      "description": "Descrizione",
+      "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
+      "documentsLoading": "Caricamento documenti...",
+      "edit": "Modifica",
+      "fallbackTitle": "Immobile",
+      "infoTitle": "Dati dell'immobile",
+      "loadError": "Impossibile caricare l'immobile.",
+      "loading": "Caricamento immobile...",
+      "newLease": "Nuovo contratto",
+      "next": {
+        "free": {
+          "body": "L'immobile è libero. Crea il contratto con il nuovo inquilino: servono l'APE e i dati catastali.",
+          "kicker": "Prossimo passo",
+          "title": "Crea il contratto"
+        },
+        "preparing": {
+          "kicker": "Contratto in preparazione"
+        },
+        "rented": {
+          "kicker": "Contratto in corso"
+        }
+      },
+      "rooms": "Camere e bagni"
     },
     "drawer": {
       "keyData": "Dati dell'immobile",
