@@ -120,6 +120,27 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
+  // The list of bookings (SR-04) asks for a page and for the counters of its chips: none, unless a spec answers otherwise.
+  await page.route('**/api/bookings/search**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], totalCount: 0, page: 1, pageSize: 20 }) });
+  });
+
+  await page.route('**/api/bookings/counts**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ all: 0, toConfirm: 0, upcoming: 0, inProgress: 0, completed: 0, cancelled: 0 }),
+    });
+  });
+
   await page.route('**/api/payments**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();

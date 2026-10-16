@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { bookingsApi } from '@/api/bookings.api';
-import { CHECK_IN_LINK_EMAIL_ERRORS, type PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
+import { CHECK_IN_LINK_EMAIL_ERRORS, type CheckInLinkResponse, type PublicCheckInSubmitRequest } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
@@ -62,10 +62,16 @@ export function checkInEmailErrorLabel(code: string | null | undefined, t: (key:
   return t(`checkin.link.emailError.${key}`);
 }
 
-/**
- * Sends a new link by email (also the reminder). The toast says what really happened: the email is queued, or it could
- * not be sent and the host copies the link, which the response always carries (A5-26).
- */
+/** What really happened to the email of a new link: queued, or not sent (and the host copies the link, which the response always carries, A5-26). */
+function toastLinkEmail(data: CheckInLinkResponse) {
+  if (data.emailStatus === 'Failed') {
+    toast.error(i18n.t('checkin.link.toast.emailFailed', { reason: checkInEmailErrorLabel(data.emailError, i18n.t) }));
+  } else {
+    toast.success(i18n.t('checkin.link.toast.emailQueued'));
+  }
+}
+
+/** Sends a new link by email (also the reminder). The toast says what really happened to the email. */
 export function useResendCheckInLink(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -73,11 +79,23 @@ export function useResendCheckInLink(bookingId: string) {
     mutationFn: () => bookingsApi.resendCheckInLink(bookingId),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
-      if (data.emailStatus === 'Failed') {
-        toast.error(i18n.t('checkin.link.toast.emailFailed', { reason: checkInEmailErrorLabel(data.emailError, i18n.t) }));
-      } else {
-        toast.success(i18n.t('checkin.link.toast.emailQueued'));
-      }
+      toastLinkEmail(data);
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('checkin.resendError'));
+    },
+  });
+}
+
+/** The same call for a list (SR-04): the booking is the one given to `mutate`, so one hook serves the menu of every row. */
+export function useSendCheckInLink() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (bookingId: string) => bookingsApi.resendCheckInLink(bookingId),
+    onSuccess: (data, bookingId) => {
+      queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+      toastLinkEmail(data);
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('checkin.resendError'));
