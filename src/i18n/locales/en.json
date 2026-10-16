@@ -4891,6 +4891,20 @@
         ]
       }
     },
+    "cin": {
+      "valid": {
+        "label": "Valid",
+        "explain": "The CIN is on record in the official format. It must be displayed outside the property and stated in every listing."
+      },
+      "missing": {
+        "label": "Missing",
+        "explain": "This property has no CIN yet: it is mandatory to rent for short periods."
+      },
+      "invalid": {
+        "label": "Invalid",
+        "explain": "The code entered is not in the official format: check it and correct it."
+      }
+    },
     "alloggiati": {
       "DaInviare": {
         "label": "To send",
@@ -5135,6 +5149,19 @@
     "title": "Alloggiati Web",
     "description": "Police reporting communication status (Art. 109 TULPS)",
     "noPendingReport": "No bookings with pending Alloggiati report.",
+    "list": {
+      "title": "Communications"
+    },
+    "focus": {
+      "send": "Send the communication of {{name}}",
+      "fix": "Fix the communication of {{name}}",
+      "then_one": "Then: {{count}} more communication to send",
+      "then_other": "Then: {{count}} more communications to send",
+      "ok": {
+        "title": "Nothing to send right now",
+        "cta": "Open bookings"
+      }
+    },
     "bookings": "Bookings",
     "guest": "Guest",
     "property": "Property",
@@ -5529,6 +5556,14 @@
       "Missing": "Missing",
       "Invalid": "Invalid"
     },
+    "list": {
+      "title": "Your properties"
+    },
+    "focus": {
+      "ok": {
+        "title": "Every property has a valid CIN"
+      }
+    },
     "summary": {
       "valid": "Valid",
       "missing": "Missing",
@@ -5545,7 +5580,9 @@
       "city": "City",
       "cinCode": "CIN code",
       "status": "Status",
-      "editCin": "Edit CIN"
+      "editCin": "Edit CIN",
+      "addCin": "Add the CIN",
+      "fixCin": "Fix the CIN"
     },
     "banner": {
       "title": "CIN compliance required (D.L. 145/2023)",
@@ -6773,8 +6810,8 @@
       "Suspended": "Suspended"
     },
     "page": {
-      "title": "Compliance cockpit",
-      "description": "Pending compliance tasks for properties and bookings"
+      "title": "Compliance",
+      "description": "What is missing to be compliant, for your properties and your stays."
     },
     "summary": {
       "title": "Compliance overview",
@@ -6792,6 +6829,32 @@
       "moreItems_one": "and {{count}} more",
       "moreItems_other": "and {{count}} more",
       "turnoversPending": "Properties to declare ready"
+    },
+    "cockpit": {
+      "kicker": "What is missing",
+      "allClear": {
+        "title": "You are all set",
+        "body": "Nothing is pending: your properties are active and your stays are in order.",
+        "cta": "Open properties"
+      },
+      "then_one": "Then: {{count}} more thing to fix",
+      "then_other": "Then: {{count}} more things to fix",
+      "stays": {
+        "title": "To do"
+      },
+      "properties": {
+        "title": "Your properties"
+      },
+      "seeAll": "See all ({{count}})",
+      "showLess": "Show less",
+      "missing": {
+        "lead": "Missing: {{what}}",
+        "guests_one": "{{count}} guest",
+        "guests_other": "{{count}} guests",
+        "notConfirmed": "Final confirmation",
+        "composition": "Guest composition",
+        "guestData": "Guest details"
+      }
     },
     "properties": {
       "openWizard": "Activation wizard",
