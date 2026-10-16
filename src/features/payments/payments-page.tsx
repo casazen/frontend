@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CreditCard, Clock, RotateCcw, Loader2 } from 'lucide-react';
 import { usePayments } from '@/queries/use-payments';
 import { getPaymentStatusLabel } from '@/lib/i18n-labels';
+import { BookingsSectionTabs } from '@/features/bookings/components/bookings-section-tabs';
 
 const PAY_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   Completed: 'default',
@@ -42,6 +43,8 @@ export function PaymentsPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader title={t('payment.list.title')} description={t('payment.list.description')} />
+
+        <BookingsSectionTabs />
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-3">
