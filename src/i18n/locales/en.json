@@ -4490,6 +4490,19 @@
         ]
       }
     },
+    "longRentProperty": {
+      "Rented": {
+        "label": "Rented",
+        "explain": "There is a registered lease in force."
+      },
+      "Free": {
+        "label": "Vacant",
+        "explain": "No registered lease in force: the property is ready for a new tenant.",
+        "need": [
+          "The lease with the new tenant, signed and registered"
+        ]
+      }
+    },
     "request": {
       "Richiesto": {
         "label": "Requested",
@@ -4738,6 +4751,36 @@
       "Cancelled": {
         "label": "Cancelled",
         "explain": "The rent schedule was disabled before this installment was paid."
+      }
+    },
+    "payment": {
+      "Pending": {
+        "label": "To collect",
+        "explain": "The payment is recorded but the money has not arrived yet."
+      },
+      "Processing": {
+        "label": "Processing",
+        "explain": "The payment has started: the bank or the card network is confirming it."
+      },
+      "Completed": {
+        "label": "Collected",
+        "explain": "The payment has arrived."
+      },
+      "Failed": {
+        "label": "Failed",
+        "explain": "The payment did not go through: the money has not arrived."
+      },
+      "Refunded": {
+        "label": "Refunded",
+        "explain": "The whole amount was given back to the guest."
+      },
+      "PartiallyRefunded": {
+        "label": "Partly refunded",
+        "explain": "Part of the amount was given back to the guest: the rest is collected."
+      },
+      "Canceled": {
+        "label": "Canceled",
+        "explain": "The payment was canceled before it arrived, usually together with the booking."
       }
     },
     "supplier": {
@@ -5487,7 +5530,8 @@
       "BankTransfer": "Bank Transfer",
       "PayPal": "PayPal",
       "ApplePay": "Apple Pay",
-      "GooglePay": "Google Pay"
+      "GooglePay": "Google Pay",
+      "CashOnArrival": "At the property"
     },
     "validation": {
       "bookingId": {
@@ -5498,31 +5542,59 @@
       }
     },
     "list": {
-      "title": "Payments",
-      "description": "Track revenue, transactions and refunds",
-      "kpi": {
-        "totalRevenue": "Total Revenue",
-        "completedPayments": "Completed payments",
-        "pending": "Pending",
-        "awaitingSettlement": "Awaiting settlement",
+      "actions": {
+        "booking": "View the booking",
+        "details": "Open the details"
+      },
+      "chips": {
+        "all": "All",
+        "collected": "Collected",
+        "collectedHint": "Payments that arrived, even if partly refunded",
         "refunded": "Refunded",
-        "totalRefunded": "Total refunded"
+        "refundedHint": "Payments given back, in full or in part",
+        "toCollect": "To collect",
+        "toCollectHint": "Payments recorded or being processed, not arrived yet"
       },
-      "transactions": "Transactions",
-      "loading": "Loading payments...",
-      "loadError": "Failed to load payments. Please try again.",
-      "noResults": "No payments found.",
       "columns": {
-        "paymentId": "Payment ID",
-        "bookingId": "Booking ID",
         "amount": "Amount",
+        "code": "Booking",
         "method": "Method",
-        "date": "Date",
-        "status": "Status"
+        "property": "Property",
+        "refunded": "Refunded",
+        "status": "Status",
+        "when": "When",
+        "who": "Who and what for"
       },
-      "emptyTitle": "No payments found",
-      "emptyDescription": "Get started by creating your first payment",
-      "addAction": "Add Payment"
+      "count_one": "{{count}} payment",
+      "count_other": "{{count}} payments",
+      "description": "What you have collected and what you are waiting for.",
+      "emptyDescription": "Payments from your bookings and refunds show up here by themselves, with the numbers of the month.",
+      "emptyTitle": "The money coming in will show up here",
+      "filters": {
+        "allMethods": "All methods",
+        "allProperties": "All properties",
+        "date": "Date between",
+        "method": "Method",
+        "property": "Property"
+      },
+      "forBooking": "Booking {{code}}",
+      "loadError": "Failed to load payments. Please try again.",
+      "noResultsDescription": "Try removing a filter or searching with another name.",
+      "noResultsTitle": "No payments with these filters",
+      "refundedAmount": "Refunded {{amount}}",
+      "searchLabel": "Search payments",
+      "searchPlaceholder": "Search guest, property or code",
+      "summary": {
+        "collected": "Collected in {{month}}",
+        "label": "This month's payments",
+        "refunded": "Refunded in {{month}}",
+        "waiting": "Waiting to be collected"
+      },
+      "title": "Payments",
+      "views": {
+        "lastMonth": "Last month",
+        "thisMonth": "This month"
+      }
     },
     "detail": {
       "title": "Payment #",
@@ -8020,14 +8092,47 @@
     "retry": "Retry",
     "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
     "list": {
-      "title": "Properties",
-      "description": "The properties you let with long-term leases",
+      "actions": {
+        "createLease": "Create lease",
+        "edit": "Edit",
+        "openLease": "Open lease",
+        "page": "Full page"
+      },
       "add": "Add property",
-      "loading": "Loading properties...",
-      "loadError": "The properties could not be loaded.",
-      "emptyTitle": "No properties",
+      "chips": {
+        "all": "All",
+        "free": "Vacant",
+        "freeHint": "No registered lease in force, even if one is being prepared",
+        "rented": "Rented",
+        "rentedHint": "With a registered lease in force"
+      },
+      "columns": {
+        "property": "Property",
+        "rent": "Rent",
+        "spaces": "Bedrooms and bathrooms",
+        "status": "Status",
+        "tenant": "Tenant"
+      },
+      "count_one": "{{count}} property",
+      "count_other": "{{count}} properties",
+      "description": "Your long-term properties: who lives there, the rent and until when.",
       "emptyDescription": "Add a property and upload its APE to create a lease.",
-      "open": "Open"
+      "emptyTitle": "No properties",
+      "leasesUnavailable": "The leases could not be read, so for now you cannot see who lives in the properties.",
+      "loadError": "The properties could not be loaded.",
+      "noResults": {
+        "description": "Change the search or the tab to see the other properties.",
+        "title": "No property found"
+      },
+      "noTenant": "No tenant",
+      "perMonth": "a month",
+      "preparing": "Lease: {{status}} · from {{date}}",
+      "search": "Search properties",
+      "searchPlaceholder": "Search by name, address or tenant",
+      "tenantAnonymized": "Data removed",
+      "tenantMissing": "Not added yet",
+      "title": "Properties",
+      "until": "Until {{date}}"
     },
     "create": {
       "title": "New property",
@@ -8049,6 +8154,17 @@
       "documentsLoadError": "The property documents could not be loaded.",
       "apePresent": "APE on file: you can create a lease for this property.",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+    },
+    "drawer": {
+      "keyData": "Property details",
+      "leaseSection": "Tenant and lease",
+      "leaseStatus": "Lease",
+      "notFound": "Property not found",
+      "notFoundDescription": "The property you are looking for is gone, or it is not one of your long-term properties.",
+      "rent": "Rent",
+      "tenant": "Tenant",
+      "term": "Term",
+      "termValue": "from {{from}} to {{to}}"
     },
     "cadastral": {
       "title": "Cadastral data",
