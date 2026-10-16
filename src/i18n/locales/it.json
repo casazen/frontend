@@ -6596,6 +6596,25 @@
     "emptyTitle": "Nessun elemento",
     "emptyDescription": "Non c'è ancora niente da mostrare in questo elenco."
   },
+  "detailDrawer": {
+    "errorTitle": "Impossibile mostrare il dettaglio",
+    "fallbackTitle": "Dettaglio",
+    "loading": "Caricamento del dettaglio",
+    "openPage": "Apri la scheda completa",
+    "timeline": {
+      "by": "da {{actor}}",
+      "empty": "Ancora nessun evento.",
+      "label": "Cronologia",
+      "showMore_one": "Mostra {{count}} altro evento",
+      "showMore_other": "Mostra altri {{count}} eventi",
+      "tone": {
+        "danger": "Problema",
+        "info": "Informazione",
+        "success": "Completato",
+        "warning": "Attenzione"
+      }
+    }
+  },
   "helpTip": {
     "label": "Maggiori informazioni",
     "labelFor": "Cos'è: {{title}}",
