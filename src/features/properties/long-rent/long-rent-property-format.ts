@@ -1,7 +1,8 @@
 import type { TFunction } from 'i18next';
 import { getLeaseStatusLabel } from '@/lib/i18n-labels';
 import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
-import type { LeaseRow, LongRentPropertyRow } from './long-rent-property-rows';
+import type { LeaseSummary } from '@/types';
+import type { LongRentPropertyRow } from './long-rent-property-rows';
 
 /**
  * What the list of the properties of Affitti lunghi and its drawer say about a row, in words. Everything here reads what the API
@@ -16,7 +17,7 @@ export function leaseDay(value: string, language: string): string {
 }
 
 /** "Mario Rossi", or what stands in its place: the data of the tenant were removed (LT-12), or the lease has no tenant yet. */
-export function tenantNameOf(lease: LeaseRow, t: TFunction): string {
+export function tenantNameOf(lease: LeaseSummary, t: TFunction): string {
   if (lease.tenantAnonymized) return t('longRentProperties.list.tenantAnonymized');
   const name = [lease.tenantFirstName, lease.tenantLastName]
     .map((part) => part?.trim())
@@ -26,7 +27,7 @@ export function tenantNameOf(lease: LeaseRow, t: TFunction): string {
 }
 
 /** The lease that tells who is there: the one in force, or else the one being prepared. */
-export const leaseOfRow = (row: LongRentPropertyRow): LeaseRow | null => row.current ?? row.preparing;
+export const leaseOfRow = (row: LongRentPropertyRow): LeaseSummary | null => row.current ?? row.preparing;
 
 /**
  * Who is in the property and until when ("Fino al 29 feb 2028"), or who is coming and with what lease ("Contratto: Bozza · dal 1 nov

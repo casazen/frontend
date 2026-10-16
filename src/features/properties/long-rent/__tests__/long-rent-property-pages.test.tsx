@@ -68,8 +68,8 @@ function renderAt(path: string) {
 
 beforeEach(() => {
   void i18n.changeLanguage('it');
-  vi.mocked(leaseQueries.useAllLeases).mockReturnValue(
-    query({ data: [] as LeaseSummary[] }) as unknown as ReturnType<typeof leaseQueries.useAllLeases>,
+  vi.mocked(leaseQueries.useLeases).mockReturnValue(
+    query({ data: [] as LeaseSummary[] }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
   );
   vi.mocked(propertyQueries.useUploadPropertyDocument).mockReturnValue({
     mutateAsync: vi.fn(),
@@ -112,7 +112,7 @@ describe('LongRentPropertiesPage (A7-06)', () => {
     vi.mocked(propertyQueries.useProperties).mockReturnValue(
       query({ data: [PROPERTY] }) as unknown as ReturnType<typeof propertyQueries.useProperties>,
     );
-    vi.mocked(leaseQueries.useAllLeases).mockReturnValue(
+    vi.mocked(leaseQueries.useLeases).mockReturnValue(
       query({
         data: [
           {
@@ -127,7 +127,7 @@ describe('LongRentPropertiesPage (A7-06)', () => {
             tenantLastName: 'Rossi',
           },
         ] as unknown as LeaseSummary[],
-      }) as unknown as ReturnType<typeof leaseQueries.useAllLeases>,
+      }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
     );
 
     renderAt('/app/long-rent/properties');

@@ -2,19 +2,9 @@ import { useContext, useMemo } from 'react';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { parseStayDate, todayInRome } from '@/lib/stay-dates';
 import type { LongRentPropertyStatus } from '@/lib/status-dictionary';
-import { useAllLeases } from '@/queries/use-leases';
+import { useLeases } from '@/queries/use-leases';
 import { useProperties } from '@/queries/use-properties';
 import type { LeaseSummary, Property } from '@/types';
-
-/**
- * A row of `GET /leases`. Since LR-01 it carries the first and the last name of the first tenant (never the fiscal code or the
- * e-mail); the shared `LeaseSummary` type names them with LR-02, until then they are named here.
- */
-export type LeaseRow = LeaseSummary & {
-  tenantFirstName?: string | null;
-  tenantLastName?: string | null;
-  tenantAnonymized?: boolean;
-};
 
 /** A property of Affitti lunghi with what its leases say about it. */
 export interface LongRentPropertyRow {
@@ -22,32 +12,36 @@ export interface LongRentPropertyRow {
   /** `null` when the leases are not known (the person may not read them, or they did not load): then nothing is said of it. */
   status: LongRentPropertyStatus | null;
   /** The lease that holds the property now: registered and not ended. Its tenant is who lives there. */
-  current: LeaseRow | null;
+  current: LeaseSummary | null;
   /** A lease on its way (not registered yet) of a property that has none in force: it is free, and this is who is coming. */
-  preparing: LeaseRow | null;
+  preparing: LeaseSummary | null;
 }
 
 /** Registered and not ended, the last day included: the same rule as the view `Active` of `GET /leases` (LR-01). */
-export function isInForce(lease: LeaseRow, today: string): boolean {
+export function isInForce(lease: LeaseSummary, today: string): boolean {
   return lease.status === 'Registered' && parseStayDate(lease.endDate) >= today;
 }
 
 /** Not registered yet and not rejected: draft, in signature, signed and waiting for the registration (the view `InPreparation`). */
-export function isInPreparation(lease: LeaseRow): boolean {
+export function isInPreparation(lease: LeaseSummary): boolean {
   return lease.status !== 'Registered' && lease.status !== 'Rejected';
 }
 
-const startedLast = (a: LeaseRow, b: LeaseRow) => parseStayDate(b.startDate).localeCompare(parseStayDate(a.startDate));
-const touchedLast = (a: LeaseRow, b: LeaseRow) => b.updatedAt.localeCompare(a.updatedAt);
+const startedLast = (a: LeaseSummary, b: LeaseSummary) => parseStayDate(b.startDate).localeCompare(parseStayDate(a.startDate));
+const touchedLast = (a: LeaseSummary, b: LeaseSummary) => b.updatedAt.localeCompare(a.updatedAt);
 
 /**
  * The properties with their state: let when a registered lease is in force, free otherwise (a lease still being prepared does not
  * make it let). Without the leases (`undefined`) no property has a state.
  */
-export function longRentPropertyRows(properties: readonly Property[], leases: readonly LeaseRow[] | undefined, today: string): LongRentPropertyRow[] {
+export function longRentPropertyRows(
+  properties: readonly Property[],
+  leases: readonly LeaseSummary[] | undefined,
+  today: string,
+): LongRentPropertyRow[] {
   if (!leases) return properties.map((property) => ({ property, status: null, current: null, preparing: null }));
 
-  const byProperty = new Map<string, LeaseRow[]>();
+  const byProperty = new Map<string, LeaseSummary[]>();
   for (const lease of leases) byProperty.set(lease.propertyId, [...(byProperty.get(lease.propertyId) ?? []), lease]);
 
   return properties.map((property) => {
@@ -71,7 +65,8 @@ export function useLongRentPropertyRows({ fresh = false }: { fresh?: boolean } =
   const workspace = useContext(WorkspaceContext);
   const canReadLeases = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
   const properties = useProperties({ mode: 'long' }, { fresh });
-  const leases = useAllLeases({ fresh, enabled: canReadLeases });
+  // The plain list of leases: the same request as the guide of the first steps, so it is one.
+  const leases = useLeases(undefined, { refetchOnMount: fresh ? 'always' : undefined, enabled: canReadLeases });
   // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const loaded = Array.isArray(properties.data) ? properties.data : undefined;
 
