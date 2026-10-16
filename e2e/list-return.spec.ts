@@ -145,7 +145,7 @@ test.describe('Filters of the list in the address (UI-05, SR-04)', () => {
       await rows(page).first().click();
       await expect(page).toHaveURL(/\/app\/short-rent\/bookings\/bk-1/);
       const trail = page.getByRole('navigation', { name: 'Percorso di navigazione' });
-      await expect(trail.getByRole('listitem')).toHaveText(['Affitti brevi', 'Prenotazioni', 'Prenotazione bk-1']);
+      await expect(trail.getByRole('listitem')).toHaveText(['Affitti brevi', 'Prenotazioni', 'Mario Rossi']);
 
       await trail.getByRole('link', { name: 'Prenotazioni' }).click();
 
