@@ -208,7 +208,11 @@ export interface ListDetail<Row> {
  */
 export interface ListDrawerDetail<Row> {
   drawerKind: string;
-  /** The id the drawer is opened with. Default: the `rowKey` of the row. */
+  /**
+   * The id the drawer is opened with. Default: the `rowKey` of the row. It travels in the address, so it has to be an id that
+   * the address can carry (letters, digits, `_`, `-`, `.`, `:`; see `lib/detail-address`): give `drawerId` when the key of the row
+   * is not one (an e-mail, a path). A row that cannot be opened goes to its `rowHref` if the list has one.
+   */
   drawerId?: (row: Row) => string;
 }
 

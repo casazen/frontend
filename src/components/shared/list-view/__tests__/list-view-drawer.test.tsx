@@ -1,27 +1,13 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
-import { takeOpener } from '@/components/shared/detail-drawer/detail-opener';
 import { registerDetail, type DetailContentProps } from '@/components/shared/detail-drawer/detail-registry';
-import { ListView } from '../list-view';
+import { settleDrawer } from '@/test/drawer';
 import type { ListDefinition } from '../list-types';
-import { STAYS, stayList, type Stay } from './list-fixtures';
-import { SCOPE, stayTable } from './list-harness';
-
-function Probe() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  return (
-    <>
-      <output data-testid="search">{location.search}</output>
-      <button type="button" data-testid="probe-back" onClick={() => void navigate(-1)}>
-        back
-      </button>
-    </>
-  );
-}
+import { stayList, type Stay } from './list-fixtures';
+import { addressNow, goBack, renderList, stayTable } from './list-harness';
 
 function StayContent({ id }: DetailContentProps) {
   return <p data-testid="drawer-body-text">Stay {id} in the global drawer</p>;
@@ -31,16 +17,10 @@ const withDrawer = (extra: Partial<ListDefinition<Stay>> = {}) =>
   stayList({ extra: { detail: { drawerKind: 'stay-probe' }, rowHref: undefined, ...extra } });
 
 function renderWithDrawer(list: ListDefinition<Stay> = withDrawer(), initial = '/app/short-rent/bookings') {
-  render(
-    <MemoryRouter initialEntries={[initial]}>
-      <ListView list={list} rows={STAYS} viewsScope={SCOPE} />
-      <DetailDrawerHost />
-      <Probe />
-    </MemoryRouter>,
-  );
+  return renderList({ list, initial, beside: <DetailDrawerHost /> });
 }
 
-const address = () => new URLSearchParams(screen.getByTestId('search').textContent ?? '');
+const address = () => new URLSearchParams(addressNow());
 /** The button that opens a row, in the table (the cards of a phone are in the page too, and a media query shows one of the two). */
 const nameButton = (name: string) => within(stayTable()).getByRole('button', { name });
 
@@ -61,11 +41,8 @@ describe('ListView opens the global drawer (UI-15)', () => {
 
   afterEach(async () => {
     cleanup();
-    // The focus scope of a dialog that was open says goodbye one tick after it unmounts.
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    takeOpener();
+    vi.restoreAllMocks();
+    await settleDrawer();
   });
 
   it('ListView_DrawerKind_PressingTheNameOfARowOpensTheGlobalDrawerWithTheKeyOfTheRow', async () => {
@@ -126,7 +103,7 @@ describe('ListView opens the global drawer (UI-15)', () => {
     fireEvent.click(nameButton('Mario Rossi'));
     await screen.findByRole('dialog');
 
-    fireEvent.click(screen.getByTestId('probe-back'));
+    goBack();
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(address().get('detail')).toBeNull();
@@ -151,14 +128,40 @@ describe('ListView opens the global drawer (UI-15)', () => {
     expect(within(stayTable()).queryByRole('link', { name: 'Mario Rossi' })).not.toBeInTheDocument();
   });
 
-  it('ListView_DrawerKindNobodyRegistered_DoesNotOpenAnythingAndDoesNotBreakTheList', () => {
-    renderWithDrawer(withDrawer({ detail: { drawerKind: 'nobody-registered' } }));
+  describe('a row that the drawer cannot show', () => {
+    it('ListView_DrawerKindNobodyRegistered_GoesToThePageOfTheRowWhenTheListHasOne', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      renderWithDrawer(withDrawer({ detail: { drawerKind: 'nobody-registered' }, rowHref: (stay) => `/app/short-rent/bookings/${stay.id}` }));
 
-    fireEvent.click(nameButton('Mario Rossi'));
+      fireEvent.click(nameButton('Mario Rossi'));
 
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(address().get('detail')).toBeNull();
-    expect(within(stayTable()).getByTestId('list-row-s1')).toBeInTheDocument();
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/app/short-rent/bookings/s1');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('ListView_DrawerKindNobodyRegistered_WithNoPageToGoToSaysSoInsteadOfDoingNothing', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const error = vi.spyOn(toast, 'error').mockImplementation(() => '');
+      renderWithDrawer(withDrawer({ detail: { drawerKind: 'nobody-registered' } }));
+
+      fireEvent.click(nameButton('Mario Rossi'));
+
+      expect(error).toHaveBeenCalledWith('The details could not be opened.');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(address().get('detail')).toBeNull();
+      expect(within(stayTable()).getByTestId('list-row-s1')).toBeInTheDocument();
+    });
+
+    it('ListView_ARowKeyThatIsNotAnId_SaysSoUntilTheListGivesADrawerId', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const error = vi.spyOn(toast, 'error').mockImplementation(() => '');
+      renderWithDrawer(withDrawer({ detail: { drawerKind: 'stay-probe', drawerId: () => 'mario@example.com' } }));
+
+      fireEvent.click(nameButton('Mario Rossi'));
+
+      expect(error).toHaveBeenCalledOnce();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
   });
 
   describe('the slot of the list, as it was', () => {

@@ -6597,6 +6597,7 @@
     "emptyDescription": "Non c'è ancora niente da mostrare in questo elenco."
   },
   "detailDrawer": {
+    "cannotOpen": "Non riesco ad aprire il dettaglio.",
     "errorTitle": "Impossibile mostrare il dettaglio",
     "fallbackTitle": "Dettaglio",
     "loading": "Caricamento del dettaglio",

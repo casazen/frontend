@@ -142,7 +142,14 @@ export function ListView<Row>({
 
   const openRow = (row: Row, from: HTMLElement | null) => {
     if (drawerDetail) {
-      detailDrawer.open(drawerDetail.drawerKind, drawerDetail.drawerId ? drawerDetail.drawerId(row) : list.rowKey(row), { opener: from });
+      const opened = detailDrawer.open(drawerDetail.drawerKind, drawerDetail.drawerId ? drawerDetail.drawerId(row) : list.rowKey(row), { opener: from });
+      if (!opened) {
+        // The drawer cannot show this row: its kind is not registered (yet), or the key of the row is not an id that an address can
+        // carry. The page of the row, if the list has one; otherwise a word, never a press that does nothing.
+        const href = list.rowHref?.(row);
+        if (href) void navigate(href);
+        else toast.error(t('detailDrawer.cannotOpen'));
+      }
       return;
     }
     if (localDetail) {
