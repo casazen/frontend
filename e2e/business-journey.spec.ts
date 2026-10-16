@@ -33,7 +33,7 @@ test.describe('Business Golden Path', () => {
 
     await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
-    await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
+    await page.getByRole('link', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
     await fillPropertyForm(page, {
       name: 'Casa Business',
       description: 'Golden path test property.',
@@ -52,9 +52,10 @@ test.describe('Business Golden Path', () => {
     await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
     expect((await resp).status()).toBe(201);
 
-    // Navigate to detail
-    await expect(page.getByRole('link', { name: 'Casa Business', exact: true })).toBeVisible();
-    await page.getByRole('link', { name: 'Casa Business', exact: true }).click();
+    // Navigate to detail: the name in the list opens the drawer of the property, which leads to its page
+    await expect(page.getByRole('button', { name: 'Casa Business', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Casa Business', exact: true }).click();
+    await page.getByRole('link', { name: 'Apri la scheda completa' }).click();
 
     await expect(page.getByRole('heading', { name: 'Casa Business' })).toBeVisible();
     await expect(page.getByText(/CIN mancante|Missing CIN/i)).toBeVisible();
