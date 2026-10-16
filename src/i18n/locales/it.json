@@ -4621,6 +4621,20 @@
         ]
       }
     },
+    "cin": {
+      "valid": {
+        "label": "Valido",
+        "explain": "Il codice CIN è registrato nel formato ufficiale. Va esposto all'esterno dell'immobile e indicato in ogni annuncio."
+      },
+      "missing": {
+        "label": "Mancante",
+        "explain": "Per questo immobile non c'è ancora un codice CIN: è obbligatorio per affittare per brevi periodi."
+      },
+      "invalid": {
+        "label": "Non valido",
+        "explain": "Il codice inserito non è nel formato ufficiale: controllalo e correggilo."
+      }
+    },
     "alloggiati": {
       "DaInviare": {
         "label": "Da inviare",
@@ -4865,6 +4879,19 @@
     "title": "Alloggiati Web",
     "description": "Stato delle comunicazioni alla Questura (Art. 109 TULPS)",
     "noPendingReport": "Nessuna prenotazione con comunicazione Alloggiati in sospeso.",
+    "list": {
+      "title": "Comunicazioni"
+    },
+    "focus": {
+      "send": "Invia la comunicazione di {{name}}",
+      "fix": "Correggi la comunicazione di {{name}}",
+      "then_one": "Poi: ancora {{count}} comunicazione da inviare",
+      "then_other": "Poi: ancora {{count}} comunicazioni da inviare",
+      "ok": {
+        "title": "Niente da inviare adesso",
+        "cta": "Apri le prenotazioni"
+      }
+    },
     "bookings": "Prenotazioni",
     "guest": "Ospite",
     "property": "Proprietà",
@@ -5259,6 +5286,14 @@
       "Missing": "Mancante",
       "Invalid": "Non valido"
     },
+    "list": {
+      "title": "I tuoi immobili"
+    },
+    "focus": {
+      "ok": {
+        "title": "Tutti gli immobili hanno un CIN valido"
+      }
+    },
     "summary": {
       "valid": "Validi",
       "missing": "Mancanti",
@@ -5275,7 +5310,9 @@
       "city": "Città",
       "cinCode": "Codice CIN",
       "status": "Stato",
-      "editCin": "Modifica CIN"
+      "editCin": "Modifica CIN",
+      "addCin": "Aggiungi il CIN",
+      "fixCin": "Correggi il CIN"
     },
     "banner": {
       "title": "Conformità CIN richiesta (D.L. 145/2023)",
@@ -6474,8 +6511,8 @@
       "Suspended": "Sospeso"
     },
     "page": {
-      "title": "Cockpit compliance",
-      "description": "Attività di compliance in sospeso per immobili e prenotazioni"
+      "title": "Adempimenti",
+      "description": "Cosa manca per essere in regola, per gli immobili e per i soggiorni."
     },
     "summary": {
       "title": "Panoramica compliance",
@@ -6493,6 +6530,32 @@
       "moreItems_one": "e {{count}} altro",
       "moreItems_other": "e altri {{count}}",
       "turnoversPending": "Proprietà da dichiarare pronte"
+    },
+    "cockpit": {
+      "kicker": "Cosa manca",
+      "allClear": {
+        "title": "Sei in regola",
+        "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
+        "cta": "Apri gli immobili"
+      },
+      "then_one": "Poi: ancora {{count}} cosa da sistemare",
+      "then_other": "Poi: ancora {{count}} cose da sistemare",
+      "stays": {
+        "title": "Da fare"
+      },
+      "properties": {
+        "title": "I tuoi immobili"
+      },
+      "seeAll": "Vedi tutte ({{count}})",
+      "showLess": "Mostra meno",
+      "missing": {
+        "lead": "Manca: {{what}}",
+        "guests_one": "{{count}} ospite",
+        "guests_other": "{{count}} ospiti",
+        "notConfirmed": "Conferma finale",
+        "composition": "Composizione degli ospiti",
+        "guestData": "Dati degli ospiti"
+      }
     },
     "properties": {
       "openWizard": "Wizard attivazione",
