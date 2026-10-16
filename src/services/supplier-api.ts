@@ -9,6 +9,7 @@ import type {
   SupplierAvailabilityResponse,
   SupplierDashboard,
   SupplierHoursResponse,
+  SupplierInboxCounts,
   SupplierInboxParams,
   SupplierInboxResponse,
   SupplierKpiPeriod,
@@ -67,21 +68,34 @@ export async function updateSupplierProfile(
   return ApiClient.put<SupplierProfile>('/supplier/profile', payload);
 }
 
-/** A page of the supplier inbox, paginated and filtered by the server (SU-08). Empty `from`/`to` are not sent. */
+/**
+ * A page of the supplier inbox, paginated and filtered by the server (SU-08, SP-04e). A `tab` says which requests, and then
+ * `status` is not sent (the server ignores it); the filters that are empty are not sent either.
+ */
 export async function fetchSupplierInbox({
   status,
+  tab,
+  q,
+  when,
   from,
   to,
   page = 1,
   pageSize = 20,
 }: SupplierInboxParams): Promise<SupplierInboxResponse> {
   return ApiClient.get<SupplierInboxResponse>('/supplier/inbox', {
-    status,
+    ...(tab ? { tab } : { status: status ?? 'open' }),
     page,
     pageSize,
+    ...(q ? { q } : {}),
+    ...(when ? { when } : {}),
     ...(from ? { from } : {}),
     ...(to ? { to } : {}),
   });
+}
+
+/** The numbers on the chips of the list of requests (SP-04e): they agree with the lists because the server counts with their rules. */
+export async function fetchSupplierInboxCounts(): Promise<SupplierInboxCounts> {
+  return ApiClient.get<SupplierInboxCounts>('/supplier/inbox/counts');
 }
 
 /** One request sent to the caller's supplier org, with its history (404 for another supplier's request). */

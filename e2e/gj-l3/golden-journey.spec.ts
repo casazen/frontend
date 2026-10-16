@@ -205,14 +205,17 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     await step('F1: supplier (phone) takes the request in charge from the inbox', async () => {
       await supplier.goto('/app/supplier/inbox');
       await expect(supplier.getByTestId('supplier-inbox-page')).toBeVisible({ timeout: 20_000 });
-      await supplier.getByTestId(`take-${ids.serviceRequestId}`).click();
-      await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`)).toBeVisible({ timeout: 15_000 });
+      // The list is a table and, on a phone, cards: both are in the page, so the button is the one that can be seen.
+      await supplier.getByTestId(`take-${ids.serviceRequestId}`).locator('visible=true').click();
+      // Taken, the request leaves "Da rispondere" and is in "Programmate", where it is completed.
+      await supplier.getByTestId('list-chip-programmate').click();
+      await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`).locator('visible=true')).toBeVisible({ timeout: 15_000 });
       expect((await supplierApi.get<ServiceRequest>(`/service-requests/${ids.serviceRequestId}`)).status).toBe('PresoInCarico');
     });
 
     await step('F2: supplier completes; the host console shows Completato within 30 s', async () => {
       await host.goto(`/app/short-rent/bookings/${ids.bookingId}`); // the host's session was already open on this stay
-      await supplier.getByTestId(`complete-${ids.serviceRequestId}`).click();
+      await supplier.getByTestId(`complete-${ids.serviceRequestId}`).locator('visible=true').click();
       await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`)).toHaveCount(0, { timeout: 15_000 });
       await expect(async () => {
         await host.reload();
