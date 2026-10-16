@@ -29,7 +29,8 @@ test.describe('Business Golden Path', () => {
   test('property create → detail shows CIN + OTA + pricing sections', async ({ page }) => {
     await mockPropertiesApi(page);
     await mockCurrentUserWithOrg(page);
-    await mockEntitlement(page);
+    // The plan still has room (the default of the mock is a plan that is full): the page of creation blocks the form at the limit.
+    await mockEntitlement(page, { properties: 0 });
 
     await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
