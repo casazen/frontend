@@ -1,13 +1,18 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 
-export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
+/**
+ * The areas of the app. `account` is the customer's "Amministrazione" (decision D1): its context exists only for the people of
+ * an org (owner, administrators, property managers, accountants: the backend sends it in `GET /api/me/contexts`), never from a
+ * JWT role. `admin` is the staff console of the platform.
+ */
+export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier' | 'account';
 
 /**
  * Group of the main menu (UI-04a): a labelled set of primary entries. The groups of an area follow the order of their
  * entries (`navOrder`); the labels are `nav.group.<group>`. The entries of "Altro" have no group.
  */
-export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work' | 'activity' | 'platform';
+export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work' | 'activity' | 'platform' | 'account';
 
 /**
  * Where an entry shows: `primary` in the main menu (at most {@link MAX_PRIMARY_NAV_ENTRIES} per area), `secondary` in
@@ -595,6 +600,32 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
     }),
+  },
+  // Amministrazione of the customer (AM-04, decision D1). The pages come with their tasks; the menu shows only the pages that exist,
+  // each with the permission the backend asks for it (`org.members.manage` for the owner and the administrators; the accountant and
+  // the property manager hold other permissions of the context, so their first page is the first one they may open).
+  {
+    path: '/app/account',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.accountHome',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 1,
+    navBottom: 1,
+    icon: 'LayoutDashboard',
+    isDefault: true,
+    component: async () => ({ default: (await import('@/features/account/account-home-page')).AccountHomePage }),
+  },
+  {
+    path: '/app/account/profile',
+    context: 'account',
+    requiredPermissions: [],
+    navKey: 'nav.profile',
+    navPlacement: 'secondary',
+    navOrder: 30,
+    icon: 'User',
+    component: async () => ({ default: (await import('@/features/account/account-profile-page')).AccountProfilePage }),
   },
   {
     path: '/app/admin',

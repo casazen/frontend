@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
-import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
+import { getDefaultRoute, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
 import { isAccountInactiveError } from '@/lib/api-errors';
@@ -20,7 +20,7 @@ import {
 
 function readStoredContext(): AppContextKey | null {
   const stored = localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY);
-  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin' || stored === 'supplier') {
+  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin' || stored === 'supplier' || stored === 'account') {
     return stored;
   }
 
@@ -46,13 +46,26 @@ function resolveActiveContext(
   return available[0]?.contextKey ?? null;
 }
 
+/**
+ * The backend names `/app/account` as the home of the account area for every role, but only the owner and the administrators
+ * may open that page: the accountant and the property manager hold other permissions of the context. The home of the area is
+ * the first page of its menu that the role may open (AM-04, decision AM-D26).
+ */
+function withAccountHome(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
+  return contexts.map((context) => {
+    if (context.contextKey !== 'account') return context;
+    const home = getVisibleNavEntries('account', (_, permission) => context.permissions.includes(permission))[0];
+    return home ? { ...context, defaultRoute: home.path } : context;
+  });
+}
+
 function applyResolvedContext(
   available: ContextBootstrapDto[],
   preferred: AppContextKey | null | undefined,
   setContexts: (contexts: ContextBootstrapDto[]) => void,
   setActiveContextState: (context: AppContextKey | null) => void,
 ) {
-  setContexts(available);
+  setContexts(withAccountHome(available));
   const resolved = resolveActiveContext(available, preferred);
   setActiveContextState(resolved);
   if (resolved) {
@@ -175,7 +188,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
     // The area in the address is the active one, supplier console included (UI-00). The old `/supplier/...` addresses
     // never get here: they are redirected to `/app/supplier/...` by routes outside this provider.
-    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin|supplier)(?:\/|$)/);
+    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin|supplier|account)(?:\/|$)/);
     if (appMatch) {
       const fromUrl = appMatch[1] as AppContextKey;
       if (!contexts.some((c) => c.contextKey === fromUrl)) {
