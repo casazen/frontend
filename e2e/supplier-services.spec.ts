@@ -113,8 +113,16 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await page.getByTestId('service-wizard-next').click();
 
       await expect(page.getByRole('heading', { level: 2, name: 'Come lo vedranno i clienti?' })).toBeVisible();
-      await page.getByTestId('service-photos-input').setInputFiles({ name: 'cucina.png', mimeType: 'image/png', buffer: PNG });
+      await page.getByTestId('service-photos-input').setInputFiles([
+        { name: 'cucina.png', mimeType: 'image/png', buffer: PNG },
+        { name: 'sbagliata.png', mimeType: 'image/png', buffer: PNG },
+      ]);
+      await expect(page.getByTestId('photo-list-item')).toHaveCount(2);
+      // A photo that was a mistake is taken away after asking; confirming is not the last button of the creation (it does not publish).
+      await page.getByRole('button', { name: 'Togli la foto 2' }).click();
+      await page.getByRole('dialog', { name: 'Togliere questa foto?' }).getByRole('button', { name: 'Togli la foto' }).click();
       await expect(page.getByTestId('photo-list-item')).toHaveCount(1);
+      await expect(page.getByRole('heading', { level: 2, name: 'Come lo vedranno i clienti?' })).toBeVisible();
       await expect(page.getByTestId('photo-list-cover')).toBeVisible();
       const preview = page.getByTestId('service-preview-card');
       await expect(preview.getByTestId('service-preview-name')).toHaveText('Pulizia cambio ospiti');
@@ -129,6 +137,8 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         'PUT /api/supplier/services/e2e-1',
         'PUT /api/supplier/services/e2e-1',
         'POST /api/supplier/services/e2e-1/photos',
+        // The removal of the photo that was a mistake, and then the last button, which saves the form before it publishes.
+        'PUT /api/supplier/services/e2e-1',
         'PUT /api/supplier/services/e2e-1',
         'POST /api/supplier/services/e2e-1/publish',
       ]);
@@ -234,6 +244,21 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await expect(page.getByTestId('supplier-service-svc-2').getByRole('button', { name: 'Riattiva' })).toBeVisible();
     });
 
+    test('duplicates a service from its menu: the copy is made once, its draft opens, and the list has it when the person leaves', async ({ page }) => {
+      // The app runs under React StrictMode here, as in development: its effects run twice, and the copy must still be made once.
+      const catalog = await openServices(page, '/app/supplier/services', { services: [mockService()] });
+      await page.getByTestId('supplier-service-svc-1').getByRole('button', { name: 'Altre azioni: Pulizia cambio ospiti' }).click();
+      await page.getByRole('menuitem', { name: 'Duplica' }).click();
+
+      await expect(page).toHaveURL(/\/app\/supplier\/services\/new\?bozza=e2e-1/);
+      await expect(page.getByTestId('service-name')).toHaveValue('Pulizia cambio ospiti (copia)');
+      expect(writes(catalog)).toEqual(['POST /api/supplier/services/svc-1/duplicate']);
+
+      await page.getByTestId('service-wizard-exit').click();
+      await expect(page.getByTestId('supplier-service-e2e-1')).toContainText('Bozza');
+      await expect(page.getByTestId('supplier-service-svc-1')).toBeVisible();
+    });
+
     test('moves a photo with the keyboard and removes one after asking', async ({ page }) => {
       const catalog = await openServices(page, '/app/supplier/services/svc-1', { services: [mockService({ photoUrls: [drawing('uno'), drawing('due'), drawing('tre')] })] });
       await page.getByTestId('service-section-photos').getByText('Foto', { exact: true }).click();
@@ -251,6 +276,10 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       await dialog.getByRole('button', { name: 'Togli la foto' }).click();
       await expect(page.getByTestId('photo-list-item')).toHaveCount(2);
       expect(catalog.services()[0]?.photoUrls).toEqual([drawing('due'), drawing('uno')]);
+      // One save for the move and one for the removal: confirming the dialog did not also submit the form around it.
+      expect(writes(catalog)).toEqual(['PUT /api/supplier/services/svc-1', 'PUT /api/supplier/services/svc-1']);
+      // The focus is on a photo that is still there, not on the page: the keyboard goes on from the neighbor of the removed one.
+      await expect(page.getByRole('button', { name: 'Togli la foto 2' })).toBeFocused();
     });
 
     test('has nothing axe can find in a browser (colors included): the list, a step of the creation and the page of a service', async ({ page }) => {

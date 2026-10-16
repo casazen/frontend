@@ -26,37 +26,61 @@ export const supplierServiceKeys = {
 
 /**
  * Every answer that changes a service carries the whole service with its new `version`: it goes into the cache of the
- * service and into the list, so that what is on screen is what the server has without another request. The list is also
- * marked stale, because a creation or a deletion changes how many services the supplier has.
+ * service and into the list, so that what is on screen is what the server has without another request. A service the list
+ * does not have yet (a creation, a copy) goes last, as the API puts it. The list is also marked stale, so that it is read
+ * again by whoever shows it, now or when it opens.
  */
 function keepService(client: QueryClient, service: SupplierService) {
   client.setQueryData<SupplierService>(supplierServiceKeys.detail(service.id), service);
-  client.setQueryData<SupplierServiceList>(supplierServiceKeys.list(), (list) =>
-    list ? { ...list, items: list.items.map((item) => (item.id === service.id ? service : item)) } : list,
-  );
+  client.setQueryData<SupplierServiceList>(supplierServiceKeys.list(), (list) => {
+    if (!list) return list;
+    if (list.items.some((item) => item.id === service.id)) {
+      return { ...list, items: list.items.map((item) => (item.id === service.id ? service : item)) };
+    }
+    return { ...list, items: [...list.items, service], total: list.total + 1 };
+  });
   void client.invalidateQueries({ queryKey: supplierServiceKeys.list() });
 }
 
-/** The catalog of the supplier (30 services at most, so it is one request). */
-export function useSupplierServices() {
-  return useQuery({ queryKey: supplierServiceKeys.list(), queryFn: fetchSupplierServices });
+/** Takes a service out of the cache and out of the list: it was deleted, here or somewhere else. */
+function dropService(client: QueryClient, id: string) {
+  client.removeQueries({ queryKey: supplierServiceKeys.detail(id) });
+  client.setQueryData<SupplierServiceList>(supplierServiceKeys.list(), (list) => {
+    if (!list || !list.items.some((item) => item.id === id)) return list;
+    return { ...list, items: list.items.filter((item) => item.id !== id), total: Math.max(0, list.total - 1) };
+  });
+  void client.invalidateQueries({ queryKey: supplierServiceKeys.list() });
 }
 
 /**
- * One service. It is read when the screen opens and after what the screen itself does (every answer of the API puts the
- * service in the cache), never in the background: a service that is being edited must keep the `version` it was read at, or
- * the 409 of the API (changed elsewhere) would be defeated by a refresh that quietly brings the new one. A screen that
- * already has the service from its own answers passes `refetchOnMount: false`.
+ * The catalog of the supplier (30 services at most, so it is one request). It is read again when a screen opens it after it was
+ * marked stale (a service made or copied while no screen showed the list): the app does not do that by default.
  */
-export function useSupplierService(id: string | undefined, options: { refetchOnMount?: boolean } = {}) {
+export function useSupplierServices() {
+  return useQuery({ queryKey: supplierServiceKeys.list(), queryFn: fetchSupplierServices, refetchOnMount: true });
+}
+
+/**
+ * One service. It is read when the screen opens it for the first time and after what the screen itself does (every answer of
+ * the API puts the service in the cache), never in the background (not on opening it again, not on focus): a service that is
+ * being edited must keep the `version` it was read at, together with the values the form was filled with, or the 409 of the
+ * API (changed elsewhere) would be defeated by a refresh that quietly brings a new `version` under the old values.
+ */
+export function useSupplierService(id: string | undefined) {
   return useQuery({
     queryKey: supplierServiceKeys.detail(id),
     queryFn: () => fetchSupplierService(id!),
     enabled: !!id,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    refetchOnMount: options.refetchOnMount ?? true,
+    refetchOnMount: false,
   });
+}
+
+/** What a screen does when it learns that a service is not there any more (a 404 on an action): forget it. */
+export function useForgetSupplierService() {
+  const client = useQueryClient();
+  return (id: string) => dropService(client, id);
 }
 
 export function useCreateSupplierService() {
@@ -111,12 +135,6 @@ export function useDeleteSupplierService() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteSupplierService(id),
-    onSuccess: (_result, id) => {
-      client.removeQueries({ queryKey: supplierServiceKeys.detail(id) });
-      client.setQueryData<SupplierServiceList>(supplierServiceKeys.list(), (list) =>
-        list ? { ...list, items: list.items.filter((item) => item.id !== id), total: Math.max(0, list.total - 1) } : list,
-      );
-      void client.invalidateQueries({ queryKey: supplierServiceKeys.list() });
-    },
+    onSuccess: (_result, id) => dropService(client, id),
   });
 }

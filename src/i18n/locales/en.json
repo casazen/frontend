@@ -534,6 +534,7 @@
     "supplierInbox": "Requests",
     "supplierAvailability": "Availability",
     "supplierServices": "Services and prices",
+    "supplierServicesBar": "Services",
     "supplierHelpIcal": "iCal guide",
     "group": {
       "activity": "Your business",
@@ -3286,6 +3287,7 @@
         "table": "Table"
       },
       "wizard": {
+        "changed": "This draft was changed elsewhere. If you continue, what you see here replaces the saved version.",
         "description": "Four steps: what you do, what it costs, when you offer it and the photos. The draft is saved at every step.",
         "done": {
           "availability": "The times customers can choose depend on your availability and on the duration you set.",

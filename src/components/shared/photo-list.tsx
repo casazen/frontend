@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ChangeEvent } from 'react';
 import { ArrowLeft, ArrowRight, ImageOff, Star, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isDisplayableMediaUrl } from '@/lib/media-url';
@@ -50,6 +50,15 @@ export interface PhotoListProps {
   testId?: string;
 }
 
+/** What the owner of a list can ask of it. */
+export interface PhotoListHandle {
+  /**
+   * A photo was removed (the owner asked first, so only the owner knows when it is done): the focus goes to the photo that took
+   * its place (the one before it when it was the last), or to "add" when none is left, instead of falling to the page.
+   */
+  focusAfterRemoval: (removedIndex: number) => void;
+}
+
 type Direction = 'earlier' | 'later';
 
 /**
@@ -61,13 +70,28 @@ type Direction = 'earlier' | 'later';
  * It is a controlled list: it never changes what it shows by itself. The owner saves (`onChange`, `onAdd`) and passes the
  * list back.
  */
-export function PhotoList({ items, max, labels, onChange, onRemove, onAdd, accept, busy = false, uploading = false, error, testId = 'photo-list' }: PhotoListProps) {
+export const PhotoList = forwardRef<PhotoListHandle, PhotoListProps>(function PhotoList(
+  { items, max, labels, onChange, onRemove, onAdd, accept, busy = false, uploading = false, error, testId = 'photo-list' },
+  handle,
+) {
   const input = useRef<HTMLInputElement>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
   const buttons = useRef(new Map<string, HTMLButtonElement>());
   const refocus = useRef<{ url: string; direction: Direction } | null>(null);
   const full = items.length >= max;
   // The order in which the photos are on screen: what changes when a move is saved (the list itself is a new array at each render).
   const order = items.map((item) => item.url).join('\n');
+
+  useImperativeHandle(
+    handle,
+    () => ({
+      focusAfterRemoval: (removedIndex) => {
+        const next = items[Math.min(removedIndex, items.length - 1)];
+        (next ? buttons.current.get(`${next.url}|remove`) : addButton.current)?.focus();
+      },
+    }),
+    [items],
+  );
 
   // Once the new order is on screen, the focus goes back to the photo that was moved (the keys of the tiles are the URLs): a tile
   // that changes place in the page loses the focus of the browser. The owner saves first and answers later, so this waits for the
@@ -116,7 +140,8 @@ export function PhotoList({ items, max, labels, onChange, onRemove, onAdd, accep
   return (
     <div className="min-w-0 space-y-3" data-testid={testId}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p className="text-sm text-foreground/70" data-testid={`${testId}-counter`}>
+        {/* A status: the count changes when a photo goes up or is removed, and a screen reader says so. */}
+        <p role="status" className="text-sm text-foreground/70" data-testid={`${testId}-counter`}>
           {labels.counter}
         </p>
         {onAdd ? (
@@ -133,6 +158,7 @@ export function PhotoList({ items, max, labels, onChange, onRemove, onAdd, accep
               data-testid={`${testId}-input`}
             />
             <Button
+              ref={addButton}
               type="button"
               variant="outline"
               className="min-h-11 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
@@ -181,7 +207,7 @@ export function PhotoList({ items, max, labels, onChange, onRemove, onAdd, accep
       )}
     </div>
   );
-}
+});
 
 interface PhotoTileProps {
   item: PhotoListItem;
@@ -246,6 +272,7 @@ function PhotoTile({ item, position, isFirst, isLast, labels, busy, registerButt
           <ArrowRight aria-hidden="true" className="size-4" />
         </Button>
         <Button
+          ref={registerButton(`${item.url}|remove`)}
           type="button"
           variant="ghost"
           className={cn(button, 'ml-auto text-danger-foreground hover:text-danger-foreground')}

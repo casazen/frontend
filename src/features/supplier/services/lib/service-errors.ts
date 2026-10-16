@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 import type { TFunction } from 'i18next';
 import type { FieldValues, Path, UseFormReturn } from 'react-hook-form';
-import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { SERVICE_LIMITS } from './service-limits';
 
 /** What went wrong with a call of the catalog, in the terms the screens act on. */
@@ -115,7 +115,7 @@ function fieldNames(fields: readonly string[], t: TFunction): string {
  * names the API gives the fields (they are English words of a JSON), only the names the form shows.
  */
 export function describeServiceError(error: unknown, t: TFunction): ServiceProblem {
-  const status = isAxiosError(error) ? error.response?.status : undefined;
+  const status = getHttpStatus(error);
   const data: unknown = isAxiosError(error) ? error.response?.data : undefined;
   const code = getProblemCode(data);
   const kind = (code ? KIND_OF_CODE[code] : undefined) ?? 'other';

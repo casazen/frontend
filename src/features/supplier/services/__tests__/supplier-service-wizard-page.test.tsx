@@ -28,9 +28,9 @@ const PATH = '/app/supplier/services/new';
 const LIST = '/app/supplier/services';
 const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-function renderWizard(search = '', catalog = createFakeCatalog()) {
+function renderWizard(search = '', catalog = createFakeCatalog(), options: { strict?: boolean } = {}) {
   connectApi(api, catalog);
-  const view = renderRouted({ at: `${PATH}${search}`, routes: [{ path: PATH, element: <SupplierServiceWizardPage /> }] });
+  const view = renderRouted({ at: `${PATH}${search}`, routes: [{ path: PATH, element: <SupplierServiceWizardPage /> }], strict: options.strict });
   return { catalog, ...view };
 }
 
@@ -190,6 +190,26 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(catalog.create).toHaveBeenCalledTimes(1);
       expect(catalog.update).toHaveBeenCalledWith('new-1', expect.objectContaining({ name: 'Pulizia a fondo e igienizzazione', version: 1 }));
       expect(catalog.items()).toHaveLength(1);
+    });
+
+    it('saves a step reached from a half-typed one without being refused: what is not finished is not sent, and stays on the screen', async () => {
+      const { catalog } = renderWizard();
+      await fillFirstStep();
+      next();
+      await stepTitle('Quanto costa?');
+      // The price step is left with a supplement that has nothing in it and a price of 0 ("Back" does not check the step).
+      fireEvent.click(screen.getByTestId('service-supplement-add'));
+      type('service-amount', '0');
+      fireEvent.click(screen.getByTestId('service-wizard-back'));
+      await stepTitle('Cosa offri?');
+
+      next();
+
+      await stepTitle('Quanto costa?');
+      expect(screen.queryByTestId('service-wizard-error')).not.toBeInTheDocument();
+      expect(catalog.update).toHaveBeenLastCalledWith('new-1', expect.objectContaining({ priceFromCents: null, supplements: [] }));
+      expect(screen.getAllByTestId('service-supplement')).toHaveLength(1);
+      expect(screen.getByTestId('service-amount')).toHaveValue('0');
     });
 
     it('leaves from the first step to the list, before anything is saved', async () => {
@@ -361,7 +381,7 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       await stepTitle('Quanto dura e quando lo offri?');
     });
 
-    it('tells it, and does not overwrite, when the service was changed elsewhere meanwhile', async () => {
+    it('tells it, and does not overwrite, when the service was changed elsewhere meanwhile; the next try takes the version it now has', async () => {
       const { catalog } = renderWizard();
       await fillFirstStep();
       next();
@@ -371,9 +391,16 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
 
       next();
 
-      expect(await screen.findByTestId('service-wizard-error')).toHaveTextContent('Questo servizio è stato modificato altrove. Ricarica per vedere la versione salvata.');
+      expect(await screen.findByTestId('service-wizard-error')).toHaveTextContent(
+        'Questa bozza è stata modificata altrove. Se continui, quello che vedi qui prende il posto della versione salvata.',
+      );
       expect(catalog.items()[0]?.name).toBe('Cambiato da un altro');
       expect(screen.getByRole('heading', { level: 2, name: 'Quanto costa?' })).toBeInTheDocument();
+
+      // Not a dead end: the version of the draft was read again, so going on saves what is on the screen over the other one.
+      next();
+      await stepTitle('Quanto dura e quando lo offri?');
+      expect(catalog.items()[0]?.name).toBe('Pulizia cambio ospiti');
     });
 
     it('says the draft is not there any more when it was deleted meanwhile', async () => {
@@ -473,6 +500,11 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
 
       await waitFor(() => expect(names()).toEqual(['due.png', 'tre.png']));
       expect(catalog.items()[0]?.photoUrls).toEqual(['https://cdn.example/new-1/due.png', 'https://cdn.example/new-1/tre.png']);
+      // The button that opened the dialog went with its photo: the focus is on the "remove" button of the photo that took its place.
+      await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 2' })));
+      // Confirming the removal is not the last button of the wizard: nothing was published, and the step is still this one.
+      expect(catalog.publish).not.toHaveBeenCalled();
+      expect(screen.getByRole('heading', { level: 2, name: 'Come lo vedranno i clienti?' })).toBeInTheDocument();
     });
   });
 
@@ -511,6 +543,29 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(error).toHaveTextContent('Non troviamo più questo servizio: forse è stato eliminato.');
       expect(within(error).getByRole('link', { name: 'Comincia un nuovo servizio' })).toHaveAttribute('href', PATH);
       expect(within(error).getByRole('link', { name: 'Torna ai servizi' })).toHaveAttribute('href', LIST);
+
+      // The page stays where it is when only its address changes: the way to begin anew has to begin, not show the same error.
+      fireEvent.click(within(error).getByRole('link', { name: 'Comincia un nuovo servizio' }));
+      expect(await screen.findByTestId('service-name')).toBeInTheDocument();
+      expect(screen.queryByTestId('service-wizard-draft-error')).not.toBeInTheDocument();
+      expect(addressNow(screen)).toBe(PATH);
+    });
+
+    it('shows the confirmation after publishing a draft that was reopened: the page of the service does not take its place', async () => {
+      const { catalog } = renderWizard('?bozza=d1', createFakeCatalog([DRAFT]));
+      await screen.findByRole('option', { name: 'Pulizie' });
+      next();
+      await stepTitle('Quanto costa?');
+      next();
+      await stepTitle('Quanto dura e quando lo offri?');
+      next();
+      await stepTitle('Come lo vedranno i clienti?');
+
+      finish();
+
+      expect(await screen.findByRole('heading', { level: 2, name: 'Il servizio è pubblicato' })).toBeInTheDocument();
+      expect(catalog.items()[0]?.status).toBe('Active');
+      expect(addressNow(screen)).not.toContain(`${LIST}/d1`);
     });
 
     it('sends to the page of a service that is already on offer: it is not a draft', async () => {
@@ -519,12 +574,19 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       await waitFor(() => expect(addressNow(screen)).toBe(`${LIST}/live`));
     });
 
-    it('sends back to the start a link to a step of a service that was never started', async () => {
-      renderWizard('?step=booking');
+    it('sends back to the start a link to a step of a service that was never started, and lets the person go on from there', async () => {
+      const { catalog } = renderWizard('?step=booking');
 
       await screen.findByRole('option', { name: 'Pulizie' });
       expect(screen.getByRole('heading', { level: 2, name: 'Cosa offri?' })).toBeInTheDocument();
       expect(addressNow(screen)).toBe(PATH);
+
+      // The wizard writes the step in the address before the one of the draft: that is not a stale link again, and must not take the form away.
+      await fillFirstStep();
+      next();
+      await stepTitle('Quanto costa?');
+      expect(catalog.create).toHaveBeenCalledTimes(1);
+      expect(screen.queryByTestId('service-name')).not.toBeInTheDocument();
     });
 
     it('does not keep the confirmation: a reload of it goes to the list', async () => {
@@ -544,6 +606,14 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(catalog.duplicate).toHaveBeenCalledTimes(1);
       expect(catalog.duplicate).toHaveBeenCalledWith('a');
       expect(catalog.items()).toHaveLength(2);
+    });
+
+    it('makes the copy once and goes on even when the page runs its effects twice, as it does in development', async () => {
+      const { catalog } = renderWizard('?duplica=a', createFakeCatalog([makeService({ id: 'a' })]), { strict: true });
+
+      await waitFor(() => expect(addressNow(screen)).toBe(`${PATH}?bozza=copy-1`));
+      expect(catalog.duplicate).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText('Preparo la copia…')).not.toBeInTheDocument();
     });
 
     it('says the maximum has been reached when there is no room for a copy', async () => {

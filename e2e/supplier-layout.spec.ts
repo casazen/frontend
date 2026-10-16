@@ -168,6 +168,21 @@ test.describe('Supplier layout standardization', () => {
       await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
     });
 
+    test('no name on the bottom bar ends in an ellipsis, not even on the narrowest phones', async ({ page }) => {
+      await setDemoProfile(page, 'supplier');
+      await mockSupplierConsoleApi(page, { active: true });
+
+      for (const width of [320, 360, 390]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
+        const names = page.getByRole('navigation', { name: 'Navigazione mobile' }).locator('a span.truncate');
+        await expect(names).toHaveCount(4);
+        // "Servizi e prezzi" alone is wider than a column of 360 px (72 px): the bar says "Servizi" for it.
+        const cut = await names.evaluateAll((spans) => spans.filter((span) => span.scrollWidth > span.clientWidth).map((span) => span.textContent));
+        expect(cut, `${width} px: names that are cut`).toEqual([]);
+      }
+    });
+
     test('the sheet opens from "Altro" of the bottom bar and shows secondary items', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });

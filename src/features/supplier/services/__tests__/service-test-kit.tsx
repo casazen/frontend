@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- A helper of the tests: the probe of the address is a component next to the functions the tests call. */
-import type { ReactElement } from 'react';
+import { StrictMode, type ReactElement } from 'react';
 import { vi, type Mock } from 'vitest';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,7 +8,9 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
+import { queryClient as appQueryClient } from '@/lib/query-client';
 import type { SaveSupplierServiceBody, SupplierService, SupplierServiceList } from '@/types/supplier-services';
+import { SERVICE_LIMITS } from '../lib/service-limits';
 
 /** A service as the API answers it: an active one with a fixed price, two photos and a supplement, unless the test says otherwise. */
 export function makeService(overrides: Partial<SupplierService> = {}): SupplierService {
@@ -80,12 +82,22 @@ export interface Routed {
   at: string;
   /** The pages: the one under test first. Any other address shows its own path, so a test sees where a link went. */
   routes: { path: string; element: ReactElement }[];
+  /** Runs the pages under `<StrictMode>`, as the app does in development: the effects run twice. */
+  strict?: boolean;
+  /** Puts things in the cache before the pages open (a service the person looked at some time ago). */
+  seed?: (client: QueryClient) => void;
 }
 
-/** The page in a memory router, in Italian, with a query client that never retries. */
-export function renderRouted({ at, routes }: Routed) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  const view = render(
+/**
+ * The page in a memory router, in Italian, with the cache the app has (a list is fresh for 5 minutes and is not read again when a
+ * screen opens it: a test of how a screen behaves with its cache needs that cache) and no retry, so that a refusal is seen at once.
+ */
+export function renderRouted({ at, routes, strict = false, seed }: Routed) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { ...appQueryClient.getDefaultOptions().queries, retry: false }, mutations: { retry: false } },
+  });
+  seed?.(client);
+  const tree = (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <MemoryRouter initialEntries={[at]}>
@@ -98,8 +110,9 @@ export function renderRouted({ at, routes }: Routed) {
           <Probe />
         </MemoryRouter>
       </QueryClientProvider>
-    </I18nextProvider>,
+    </I18nextProvider>
   );
+  const view = render(strict ? <StrictMode>{tree}</StrictMode> : tree);
   return { ...view, client };
 }
 
@@ -107,6 +120,51 @@ export function renderRouted({ at, routes }: Routed) {
 export const addressNow = (screen: { getByTestId: (id: string) => HTMLElement }) => screen.getByTestId('location').textContent ?? '';
 
 // ─── A catalog that behaves like the API ──────────────────────────────────────────────────────────────────────────────
+
+const CATEGORIES = ['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in', 'gardening', 'events', 'rental', 'excursions', 'electrical'];
+const noControl = (text: string) => !/\p{Cc}/u.test(text);
+
+/**
+ * The fields the API refuses in a body, named as it names them (`SupplierServiceListingRules.Normalize`): a draft may be
+ * incomplete, but whatever it holds has to be valid, a supplement without a name or an amount of 0 included. A fake that took
+ * anything would let the tests pass while the real API answers 422.
+ */
+function invalidFields(body: SaveSupplierServiceBody): string[] {
+  const invalid: string[] = [];
+  const add = (field: string) => {
+    if (!invalid.includes(field)) invalid.push(field);
+  };
+  const name = body.name.trim();
+  if (name === '' || name.length > SERVICE_LIMITS.nameMaxLength || !noControl(name)) add('name');
+  if (body.summary && (body.summary.length > SERVICE_LIMITS.summaryMaxLength || !noControl(body.summary))) add('summary');
+  if (body.description && body.description.length > SERVICE_LIMITS.descriptionMaxLength) add('description');
+  if (body.priceFromCents !== null && (body.priceFromCents < 1 || body.priceFromCents > SERVICE_LIMITS.maxAmountCents)) add('priceFromCents');
+  if (body.durationMinutes !== null && (body.durationMinutes < SERVICE_LIMITS.minDurationMinutes || body.durationMinutes > SERVICE_LIMITS.maxDurationMinutes)) {
+    add('durationMinutes');
+  }
+  if (body.minNoticeHours !== null && (body.minNoticeHours < 0 || body.minNoticeHours > SERVICE_LIMITS.maxNoticeHours)) add('minNoticeHours');
+  if (body.supplements.length > SERVICE_LIMITS.maxSupplements) add('supplements');
+  const codes = new Set<string>();
+  body.supplements.forEach((supplement, index) => {
+    const path = `supplements[${index}]`;
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(supplement.code) || supplement.code.length > SERVICE_LIMITS.supplementCodeMaxLength || codes.has(supplement.code)) add(`${path}.code`);
+    codes.add(supplement.code);
+    if (supplement.label.trim() === '' || supplement.label.length > SERVICE_LIMITS.supplementLabelMaxLength || !noControl(supplement.label)) add(`${path}.label`);
+    if (supplement.amountCents < 1 || supplement.amountCents > SERVICE_LIMITS.maxAmountCents) add(`${path}.amountCents`);
+    if (supplement.max !== null && supplement.max !== undefined && (supplement.max < 1 || supplement.max > SERVICE_LIMITS.maxSupplementQuantity)) add(`${path}.max`);
+  });
+  for (const [field, lines] of [['included', body.included], ['excluded', body.excluded]] as const) {
+    if (lines.length > SERVICE_LIMITS.maxListItems || lines.some((line) => line.length > SERVICE_LIMITS.listItemMaxLength || !noControl(line))) add(field);
+  }
+  return invalid;
+}
+
+/** What the API does first with a body: a category that is not one of the catalog's is 422 `invalid_service_category`, then the other fields. */
+function refuseBody(body: SaveSupplierServiceBody) {
+  if (!CATEGORIES.includes(body.category)) throw problem(422, { code: 'invalid_service_category' });
+  const invalid = invalidFields(body);
+  if (invalid.length > 0) throw problem(422, { code: 'supplier_service_invalid', fields: invalid });
+}
 
 function missingFor(service: Pick<SupplierService, 'name' | 'category' | 'durationMinutes' | 'requiresQuote' | 'priceFromCents'>): string[] {
   const missing: string[] = [];
@@ -168,6 +226,7 @@ export function createFakeCatalog(initial: SupplierService[] = [], limit = 30) {
     fetchList: vi.fn(async () => catalog.list()),
     fetchOne: vi.fn(async (id: string) => get(id)),
     create: vi.fn(async (body: SaveSupplierServiceBody) => {
+      refuseBody(body);
       if (store.size >= limit) throw problem(422, { code: 'supplier_service_limit_reached' });
       counter += 1;
       return put({ ...withContent(undefined, body), id: `new-${counter}`, slug: `servizio-${counter}`, status: 'Draft', version: 1 });
@@ -175,6 +234,7 @@ export function createFakeCatalog(initial: SupplierService[] = [], limit = 30) {
     update: vi.fn(async (id: string, body: SaveSupplierServiceBody & { version: number }) => {
       const previous = get(id);
       if (body.version !== previous.version) throw problem(409, { code: 'supplier_service_changed' });
+      refuseBody(body);
       const missing = missingFor({ ...previous, ...body });
       if (previous.status === 'Active' && missing.length > 0) throw problem(422, { code: 'supplier_service_not_publishable', fields: missing });
       if (body.photoUrls?.some((url) => !previous.photoUrls.includes(url))) throw problem(422, { code: 'supplier_service_invalid', fields: ['photoUrls'] });

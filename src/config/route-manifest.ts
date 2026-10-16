@@ -45,6 +45,12 @@ export interface RouteManifestEntry {
   navParent?: string;
   /** Place (1..{@link MAX_BOTTOM_NAV_ENTRIES}) of a primary entry in the bottom bar of the phone (UI-04b draws the bar). */
   navBottom?: number;
+  /**
+   * A shorter name for the bottom bar, when the name of the menu does not fit a column of it (about 67 px at 360 px, in 11 px type):
+   * the bar shows this one and the link keeps the full name for a screen reader. Not for an entry that has a counter (its name and
+   * its counter are read together).
+   */
+  navBarKey?: string;
   /** Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). */
   navCount?: NavCountKey;
   isDefault?: boolean;
@@ -844,6 +850,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 4,
     navBottom: 4,
+    // "Servizi e prezzi" is 74 px in the bar and "Services and prices" 95 px: neither fits a column of 72 px (360 px screen).
+    navBarKey: 'nav.supplierServicesBar',
     icon: 'Tag',
     component: async () => ({ default: (await import('@/features/supplier/services/supplier-services-page')).SupplierServicesPage }),
   },

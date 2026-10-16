@@ -72,20 +72,35 @@ function ServiceEditor({ service }: { service: SupplierService }) {
   const navigate = useNavigate();
   const decimal = i18n.language.startsWith('it') ? ',' : '.';
   const update = useUpdateSupplierService();
-  const { refetch } = useSupplierService(service.id, { refetchOnMount: false });
+  const { refetch } = useSupplierService(service.id);
   const actions = useServiceActions({ onDeleted: () => navigate(SERVICES_PATH) });
   const [conflict, setConflict] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [open, setOpen] = useState<ReadonlySet<SectionId>>(new Set<SectionId>(['service', 'price']));
   const focusAfterOpen = useRef<string | null>(null);
+  // A notice that comes up after the person pressed "Save" takes the focus: it is announced, and on a phone it is above the screen.
+  const conflictRef = useRef<HTMLDivElement>(null);
+  const problemRef = useRef<HTMLDivElement>(null);
+  const [problemFocus, setProblemFocus] = useState(0);
 
   const form = useForm<ServiceFormValues>({
     defaultValues: serviceToForm(service, decimal),
     resolver: serviceFormResolver,
     mode: 'onTouched',
   });
-  const values = useWatch({ control: form.control });
+  // Only what the summaries of the parts say: typing in the other fields does not draw the page again (the preview has its own watch).
+  const [category, priceMode, fixedUnit, amount, durationMinutes, weekdays] = useWatch({
+    control: form.control,
+    name: ['category', 'priceMode', 'fixedUnit', 'amount', 'durationMinutes', 'weekdays'],
+  });
   const { isDirty } = form.formState;
+
+  useEffect(() => {
+    if (conflict) conflictRef.current?.focus();
+  }, [conflict]);
+  useEffect(() => {
+    if (problemFocus > 0) problemRef.current?.focus();
+  }, [problemFocus]);
 
   // The part that holds a refused field opens, and only then the focus can go to the field (a shut part cannot take it).
   const reveal = (sections: readonly SectionId[], firstPath: string | undefined) => {
@@ -114,7 +129,9 @@ function ServiceEditor({ service }: { service: SupplierService }) {
       } else {
         setProblem(found.message);
         const paths = markServerFields(form, found);
+        // A refused field takes the focus; a refusal that is about no field is told by its notice, which takes it instead.
         if (paths.length > 0) reveal(paths.map(sectionOfField), paths[0]);
+        else setProblemFocus((count) => count + 1);
       }
       return false;
     }
@@ -135,13 +152,17 @@ function ServiceEditor({ service }: { service: SupplierService }) {
 
   const reload = async () => {
     const result = await refetch();
-    if (result.data) {
-      form.reset(serviceToForm(result.data, decimal));
-      setConflict(false);
-      setProblem(null);
-    } else {
+    // A read that failed still has the data of the one before it: that is not the service as the server has it now.
+    if (result.isError || !result.data) {
       setProblem(describeServiceError(result.error, t).message);
+      setProblemFocus((count) => count + 1);
+      return;
     }
+    form.reset(serviceToForm(result.data, decimal));
+    setConflict(false);
+    setProblem(null);
+    // The button that was pressed goes away with the notice: the focus goes to the first field, on the service as it is now.
+    reveal(['service'], 'name');
   };
 
   /** "Visibile ai clienti": on puts the service on offer (saving first what is typed, so that what goes live is what is on screen), off pauses it. */
@@ -155,8 +176,8 @@ function ServiceEditor({ service }: { service: SupplierService }) {
   };
 
   const live = service.status === 'Active';
-  const price = formatPrice(priceInputOf({ priceMode: values.priceMode ?? 'fixed', fixedUnit: values.fixedUnit ?? 'PerJob', amount: values.amount ?? '' }), t, i18n.language);
-  const weekdayCount = (values.weekdays ?? []).length;
+  const price = formatPrice(priceInputOf({ priceMode, fixedUnit, amount }), t, i18n.language);
+  const weekdayCount = weekdays.length;
   const sectionOf = (id: SectionId) => ({
     open: open.has(id),
     onOpenChange: (next: boolean) =>
@@ -187,7 +208,10 @@ function ServiceEditor({ service }: { service: SupplierService }) {
 
       {conflict ? (
         <Alert
+          ref={conflictRef}
           variant="warning"
+          role="alert"
+          tabIndex={-1}
           data-testid="service-conflict"
           action={
             <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={() => void reload()} data-testid="service-reload">
@@ -199,7 +223,7 @@ function ServiceEditor({ service }: { service: SupplierService }) {
         </Alert>
       ) : null}
       {problem ? (
-        <Alert variant="danger" data-testid="service-problem">
+        <Alert ref={problemRef} variant="danger" tabIndex={-1} data-testid="service-problem">
           {problem}
         </Alert>
       ) : null}
@@ -219,7 +243,7 @@ function ServiceEditor({ service }: { service: SupplierService }) {
               />
             </div>
 
-            <FormSection title={t(`${T}.sections.service`)} summary={values.category ? getServiceCategoryLabel(values.category, t) : t(`${T}.sections.serviceHint`)} {...sections.service}>
+            <FormSection title={t(`${T}.sections.service`)} summary={category ? getServiceCategoryLabel(category, t) : t(`${T}.sections.serviceHint`)} {...sections.service}>
               <BasicsFields />
             </FormSection>
             <FormSection title={t(`${T}.sections.price`)} summary={price} {...sections.price}>
@@ -227,7 +251,7 @@ function ServiceEditor({ service }: { service: SupplierService }) {
             </FormSection>
             <FormSection
               title={t(`${T}.sections.booking`)}
-              summary={[formatDuration(values.durationMinutes ?? null, t), weekdayCount === 7 ? t(`${T}.weekdaysAll`) : t(`${T}.weekdaysSome`, { count: weekdayCount })].join(' · ')}
+              summary={[formatDuration(durationMinutes, t), weekdayCount === 7 ? t(`${T}.weekdaysAll`) : t(`${T}.weekdaysSome`, { count: weekdayCount })].join(' · ')}
               {...sections.booking}
             >
               <BookingFields />
@@ -264,7 +288,8 @@ export function SupplierServiceDetailPage() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierService(id);
 
-  if (isError) {
+  // A failed read of a service that is already on screen (a reload that did not work) leaves the page as it is: its form must not be lost.
+  if (isError && !data) {
     const gone = getHttpStatus(error) === 404;
     if (gone) return <NotFound />;
     return (

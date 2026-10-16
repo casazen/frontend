@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
+import { SupplierServiceWizardPage } from '../supplier-service-wizard-page';
 import { SupplierServicesPage } from '../supplier-services-page';
-import { addressNow, listOf, makeDraft, makeService, problem, renderRouted } from './service-test-kit';
+import { addressNow, connectApi, createFakeCatalog, listOf, makeDraft, makeService, problem, renderRouted } from './service-test-kit';
 
 const api = vi.hoisted(() => ({
   fetchSupplierServices: vi.fn(),
@@ -17,6 +18,7 @@ const api = vi.hoisted(() => ({
   uploadSupplierServicePhotos: vi.fn(),
 }));
 vi.mock('@/api/supplier-services.api', () => api);
+vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: vi.fn().mockResolvedValue(['cleaning', 'laundry', 'maintenance']) }));
 
 const sonner = vi.hoisted(() => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), dismiss: vi.fn() }),
@@ -51,6 +53,8 @@ function undoOf(toastFn: ReturnType<typeof vi.fn>): { message: string; run: () =
 describe('SupplierServicesPage (SP-06)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    // A test that connected the fake catalog must not leave its answers to the next one.
+    for (const fn of Object.values(api)) fn.mockReset();
     await i18n.changeLanguage('it');
   });
 
@@ -265,6 +269,42 @@ describe('SupplierServicesPage (SP-06)', () => {
 
       const complete = await openMenu('Pronto');
       expect(within(complete).getByRole('menuitem', { name: 'Pubblica' })).toBeInTheDocument();
+    });
+
+    it('has the copy in the list when the person comes back from it having done nothing, not only after the window is focused again', async () => {
+      const catalog = createFakeCatalog([ACTIVE]);
+      connectApi(api, catalog);
+      renderRouted({
+        at: PATH,
+        routes: [
+          { path: PATH, element: <SupplierServicesPage /> },
+          { path: `${PATH}/new`, element: <SupplierServiceWizardPage /> },
+        ],
+      });
+      await screen.findByTestId('supplier-service-a');
+
+      fireEvent.click(within(await openMenu('Pulizia cambio ospiti')).getByRole('menuitem', { name: 'Duplica' }));
+      // The copy is made while no screen shows the list, and its draft opens...
+      await waitFor(() => expect(addressNow(screen)).toBe(`${PATH}/new?bozza=copy-1`));
+      fireEvent.click(await screen.findByTestId('service-wizard-exit'));
+
+      // ...and the list, when it opens again, has it: what was made while it was away is not missing until something else reads it.
+      expect(await screen.findByTestId('supplier-service-copy-1')).toBeInTheDocument();
+      expect(screen.getByTestId('supplier-service-copy-1')).toHaveTextContent('Pulizia cambio ospiti (copia)');
+    });
+
+    it('stops showing a service that was deleted elsewhere when an action on it finds it gone', async () => {
+      api.pauseSupplierService.mockRejectedValue(problem(404, { code: 'supplier_service_not_found' }));
+      renderPage();
+      await screen.findByTestId('supplier-service-a');
+      // The server no longer has it: the list it answers from now on does not.
+      api.fetchSupplierServices.mockResolvedValue(listOf([PAUSED, DRAFT]));
+
+      fireEvent.click(within(await openMenu('Pulizia cambio ospiti')).getByRole('menuitem', { name: 'Metti in pausa' }));
+
+      await waitFor(() => expect(sonner.toast.error).toHaveBeenCalledWith('Non troviamo più questo servizio: forse è stato eliminato.'));
+      await waitFor(() => expect(screen.queryByTestId('supplier-service-a')).not.toBeInTheDocument());
+      expect(screen.getByTestId('supplier-service-p')).toBeInTheDocument();
     });
 
     it('tells what is missing when the API refuses to publish, without a word of its JSON', async () => {

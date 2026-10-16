@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Ellipsis } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getNavLabel } from '@/lib/nav-labels';
+import { getNavBarLabel, getNavLabel } from '@/lib/nav-labels';
 import { useMobileNav } from '@/hooks/use-mobile-nav';
 import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useUiStore } from '@/store/ui-store';
@@ -80,15 +80,18 @@ export function BottomNav({ contextKey }: BottomNavProps) {
       <div className="flex h-full items-stretch pb-[env(safe-area-inset-bottom)]">
         {bottomEntries.map((entry) => {
           const isActive = activeTab === entry.path;
+          const shortName = getNavBarLabel(entry, t);
           return (
             <Link
               key={entry.path}
               to={entry.path}
+              // A shorter name on the bar is only what is seen: the link is still called by the name of the menu (it contains the short one).
+              aria-label={shortName ? getNavLabel(entry, t) : undefined}
               aria-current={isActive ? 'page' : undefined}
               className={cn(ITEM_CLASS, isActive ? ITEM_ACTIVE : ITEM_INACTIVE)}
             >
               {isActive ? <ActiveLine /> : null}
-              <span className="max-w-full truncate">{getNavLabel(entry, t)}</span>
+              <span className="max-w-full truncate">{shortName ?? getNavLabel(entry, t)}</span>
               <BarIcon active={isActive}>
                 <NavIcon name={entry.icon} className="h-6 w-6 shrink-0" />
                 <NavCountPill

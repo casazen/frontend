@@ -10,6 +10,9 @@ import type {
 const BASE = '/supplier/services';
 const urlOf = (id: string) => `${BASE}/${encodeURIComponent(id)}`;
 
+/** Up to 6 photos of 10 MB in one request: more than the default 30 s on a slow connection (as the photos of a property). */
+const UPLOAD_TIMEOUT_MS = 120_000;
+
 /** The services that are not deleted, by position, and how many the supplier can have (`GET api/supplier/services`). */
 export async function fetchSupplierServices(): Promise<SupplierServiceList> {
   return ApiClient.get<SupplierServiceList>(BASE);
@@ -59,6 +62,7 @@ export async function uploadSupplierServicePhotos(id: string, files: File[]): Pr
   files.forEach((file) => formData.append('photos', file));
   const { data } = await axios.post<SupplierService>(`${urlOf(id)}/photos`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: UPLOAD_TIMEOUT_MS,
   });
   return data;
 }

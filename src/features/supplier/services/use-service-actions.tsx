@@ -5,6 +5,7 @@ import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { toastUndo } from '@/lib/toast-undo';
 import {
   useDeleteSupplierService,
+  useForgetSupplierService,
   usePauseSupplierService,
   usePublishSupplierService,
 } from '@/queries/use-supplier-services';
@@ -37,11 +38,15 @@ export function useServiceActions(options: { onDeleted?: (service: SupplierServi
   const publish = usePublishSupplierService();
   const pause = usePauseSupplierService();
   const remove = useDeleteSupplierService();
+  const forget = useForgetSupplierService();
   const [toDelete, setToDelete] = useState<SupplierService | null>(null);
   const { onDeleted } = options;
 
-  const fail = (error: unknown) => {
-    toast.error(describeServiceError(error, t).message);
+  /** Tells the person what the API refused. A service that is not there any more (deleted elsewhere) stops being shown. */
+  const fail = (error: unknown, service: SupplierService) => {
+    const found = describeServiceError(error, t);
+    if (found.kind === 'notFound') forget(service.id);
+    toast.error(found.message);
     return null;
   };
 
@@ -55,7 +60,7 @@ export function useServiceActions(options: { onDeleted?: (service: SupplierServi
       }
       return updated;
     } catch (error) {
-      return fail(error);
+      return fail(error, service);
     }
   };
 
@@ -65,7 +70,7 @@ export function useServiceActions(options: { onDeleted?: (service: SupplierServi
       toastUndo(t(`${T}.paused`, { name: service.name }), { undo: async () => void (await publish.mutateAsync(service.id)) });
       return updated;
     } catch (error) {
-      return fail(error);
+      return fail(error, service);
     }
   };
 
@@ -76,7 +81,7 @@ export function useServiceActions(options: { onDeleted?: (service: SupplierServi
       toast.success(t(`${T}.deleted`, { name: toDelete.name }));
       onDeleted?.(toDelete);
     } catch (error) {
-      fail(error);
+      fail(error, toDelete);
     }
   };
 

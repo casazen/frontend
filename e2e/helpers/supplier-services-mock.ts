@@ -1,32 +1,8 @@
 import type { Page, Route } from '@playwright/test';
+import type { SupplierService, SupplierServiceWeekday } from '../../src/types/supplier-services';
 
-/** A service of the catalog as `GET api/supplier/services` answers it (SP-02): the fields the screens of SP-06 read. */
-export interface MockService {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  summary: string | null;
-  description: string | null;
-  priceFromCents: number | null;
-  priceUnit: 'PerJob' | 'PerHour' | 'PerSet' | 'PerSquareMeter';
-  pricesIncludeVat: boolean;
-  requiresQuote: boolean;
-  durationMinutes: number | null;
-  minNoticeHours: number | null;
-  weekdays: string[];
-  supplements: { code: string; label: string; amountCents: number; per: string; max?: number | null }[];
-  included: string[];
-  excluded: string[];
-  photoUrls: string[];
-  status: 'Draft' | 'Active' | 'Paused';
-  sortOrder: number;
-  publishable: boolean;
-  missingForPublication: string[];
-  createdAt: string;
-  updatedAt: string;
-  version: number;
-}
+/** A service of the catalog as `GET api/supplier/services` answers it (SP-02): the type the screens read. */
+export type MockService = SupplierService;
 
 export interface SupplierServicesMock {
   /** The services as the API holds them now. */
@@ -37,7 +13,7 @@ export interface SupplierServicesMock {
   touch: (id: string, changes?: Partial<MockService>) => void;
 }
 
-const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const WEEK: SupplierServiceWeekday[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 /** A photo that needs no network: a small drawing as a `data:` address (the screens show absolute `https`, `http`, `blob` and `data` addresses). */
 export function drawing(label: string): string {

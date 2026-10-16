@@ -1,6 +1,7 @@
 /**
- * The limits of the catalog (`SupplierServiceCatalogLimits`, backend SP-02), written once here: the forms check them before
- * asking, the API checks them again (422 `supplier_service_invalid` with the fields at fault).
+ * The limits of the catalog (`SupplierServiceCatalogLimits`, backend SP-02) as the forms use them: the forms check them before
+ * asking, the API checks them again (422 `supplier_service_invalid` with the fields at fault). The messages that name a limit
+ * (`supplier.services.errors.nameTooLong`, `amountRange`, …) say the number in their text: a limit that changes changes there too.
  */
 export const SERVICE_LIMITS = {
   /** Services a supplier can have; the list answers with its own `limit`, this is only what a form shows before it loads. */

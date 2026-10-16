@@ -3,6 +3,7 @@ import type { SupplierService } from '@/types/supplier-services';
 import {
   bodyFromService,
   bookingStepSchema,
+  draftValues,
   emptyServiceForm,
   priceInputOf,
   priceStepSchema,
@@ -67,6 +68,11 @@ describe('splitLines', () => {
   it('SplitLines_Empty_IsAnEmptyList', () => {
     expect(splitLines('')).toEqual([]);
     expect(splitLines('\n \n')).toEqual([]);
+  });
+
+  it('SplitLines_ATabPastedFromASpreadsheet_IsASpaceAndALoneCarriageReturnEndsALine', () => {
+    // The API refuses a control character in an entry of a list: the tab becomes a space, the carriage return is a line break.
+    expect(splitLines('Pulizia bagni\tinclusa\rCambio biancheria')).toEqual(['Pulizia bagni inclusa', 'Cambio biancheria']);
   });
 });
 
@@ -144,6 +150,23 @@ describe('toServiceBody', () => {
       { code: 'bagno-in-piu-2', label: 'Bagno in più', amountCents: 800, per: 'flat', max: null },
       { code: 'la-piu-e-gia-cosi', label: 'Là più è già così!', amountCents: 100, per: 'hour', max: 2 },
     ]);
+  });
+
+  it('ToServiceBody_ControlCharacters_AreSpacesInTextsOfOneLineAndTheDescriptionKeepsItsLineBreaksAndTabs', () => {
+    const bell = String.fromCharCode(7);
+    const body = toServiceBody(
+      form({
+        name: 'Pulizia\tcambio ospiti',
+        summary: 'Una\triga',
+        description: `Prima riga\nSeconda${bell}riga\tcon tab`,
+        supplements: [{ code: '', label: 'Bagno\tin più', amount: '10', per: 'flat', max: '' }],
+      }),
+    );
+
+    expect(body.name).toBe('Pulizia cambio ospiti');
+    expect(body.summary).toBe('Una riga');
+    expect(body.description).toBe('Prima riga\nSeconda riga\tcon tab');
+    expect(body.supplements[0]?.label).toBe('Bagno in più');
   });
 
   it('ToServiceBody_SupplementWithoutALetter_GetsTheDefaultCode', () => {
@@ -336,6 +359,51 @@ describe('the rules of the third step', () => {
     expect(problems(bookingStepSchema, form({ durationMinutes: 1440, minNoticeHours: 720 }))).toEqual([]);
     expect(problems(bookingStepSchema, form({ durationMinutes: 4 }))).toEqual([`durationMinutes: ${ERR}durationRequired`]);
     expect(problems(bookingStepSchema, form({ durationMinutes: 1441 }))).toEqual([`durationMinutes: ${ERR}durationRequired`]);
+  });
+});
+
+describe('draftValues (what a save of the creation may send)', () => {
+  const saved = () => serviceToForm(service(), ',');
+  const blankSupplement = { code: '', label: '', amount: '', per: 'flat' as const, max: '' };
+
+  it('DraftValues_EveryStepHolds_IsTheFormAsTyped', () => {
+    const typed = form({ name: 'Nuovo nome', amount: '50', durationMinutes: 90 });
+
+    expect(draftValues(typed, saved())).toEqual(typed);
+  });
+
+  it('DraftValues_ASupplementWithoutANameOrAnAmount_KeepsTheSavedPriceStepAndTheTypedRest', () => {
+    const typed = form({ name: 'Nuovo nome', amount: '60', supplements: [blankSupplement], durationMinutes: 90 });
+
+    const draft = draftValues(typed, saved());
+
+    // The first and the third step hold: as typed. The second does not: what the server has, so the save is not refused.
+    expect(draft).toMatchObject({ name: 'Nuovo nome', durationMinutes: 90 });
+    expect(draft.supplements).toEqual(saved().supplements);
+    expect(draft.amount).toBe('45,50');
+    expect(problems(priceStepSchema, typed)).not.toEqual([]);
+  });
+
+  it('DraftValues_APriceOfZero_KeepsTheSavedPriceStep', () => {
+    const draft = draftValues(form({ amount: '0', priceMode: 'hourly' }), saved());
+
+    expect(draft).toMatchObject({ amount: '45,50', priceMode: 'fixed' });
+  });
+
+  it('DraftValues_AListThatIsTooLongInTheFirstStep_KeepsTheSavedFirstStep', () => {
+    const eleven = Array.from({ length: 11 }, (_, i) => `voce ${i}`).join('\n');
+
+    const draft = draftValues(form({ name: 'Nome nuovo', included: eleven, amount: '70' }), saved());
+
+    expect(draft).toMatchObject({ name: 'Pulizia cambio ospiti', included: 'Pulizia completa\nCambio biancheria', amount: '70' });
+  });
+
+  it('DraftValues_ANewDraftThatHasNotBeenToThePriceStep_SendsNoPriceAndNoSupplement', () => {
+    const typed = form({ amount: '' });
+
+    const body = toServiceBody(draftValues(typed, emptyServiceForm()));
+
+    expect(body).toMatchObject({ priceFromCents: null, supplements: [], requiresQuote: false });
   });
 });
 

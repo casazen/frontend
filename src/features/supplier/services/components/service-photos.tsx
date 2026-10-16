@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
-import { PhotoList, type PhotoListLabels } from '@/components/shared/photo-list';
+import { PhotoList, type PhotoListHandle, type PhotoListLabels } from '@/components/shared/photo-list';
 import { useUpdateSupplierService, useUploadSupplierServicePhotos } from '@/queries/use-supplier-services';
 import type { SupplierService } from '@/types/supplier-services';
 import { bodyFromService } from '../lib/service-form';
@@ -29,6 +29,9 @@ export function ServicePhotos({ service, onConflict }: ServicePhotosProps) {
   const update = useUpdateSupplierService();
   const [problem, setProblem] = useState<string | null>(null);
   const [toRemove, setToRemove] = useState<string | null>(null);
+  const list = useRef<PhotoListHandle>(null);
+  /** Where in the list the photo that is being removed was: once the dialog has closed the focus goes to its neighbor. */
+  const removedAt = useRef<number | null>(null);
   const busy = upload.isPending || update.isPending;
 
   const report = (error: unknown) => {
@@ -67,6 +70,7 @@ export function ServicePhotos({ service, onConflict }: ServicePhotosProps) {
   return (
     <>
       <PhotoList
+        ref={list}
         items={service.photoUrls.map((url, index) => ({ url, alt: t(`${T}.alt`, { number: index + 1, name: service.name }) }))}
         max={SERVICE_LIMITS.maxPhotos}
         labels={labels}
@@ -89,7 +93,18 @@ export function ServicePhotos({ service, onConflict }: ServicePhotosProps) {
         confirmLabel={t(`${T}.removeConfirm`)}
         variant="destructive"
         isLoading={update.isPending}
-        onConfirm={() => keep(service.photoUrls.filter((url) => url !== toRemove))}
+        onConfirm={() => {
+          removedAt.current = toRemove === null ? null : service.photoUrls.indexOf(toRemove);
+          return keep(service.photoUrls.filter((url) => url !== toRemove));
+        }}
+        // The button that opened the dialog is gone with its photo: the focus goes to the photo that took its place.
+        onCloseAutoFocus={(event) => {
+          const index = removedAt.current;
+          removedAt.current = null;
+          if (index === null || index < 0) return;
+          event.preventDefault();
+          list.current?.focusAfterRemoval(index);
+        }}
       />
     </>
   );

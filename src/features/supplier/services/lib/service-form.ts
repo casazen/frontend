@@ -75,12 +75,18 @@ export function emptyServiceForm(): ServiceFormValues {
   };
 }
 
+/** A text of one line: the API refuses control characters in it (a tab pasted from a spreadsheet), so each one becomes a space. */
+const oneLine = (text: string): string => text.replace(/\p{Cc}/gu, ' ').trim();
+
+/** A text of several lines keeps its line breaks and tabs (the API accepts them there) and loses the other control characters. */
+const manyLines = (text: string): string => text.replace(/(?![\n\r\t])\p{Cc}/gu, ' ').trim();
+
 /** The lines of a text box as a list: trimmed, without the blank ones or the repeated ones (as the API does). */
 export function splitLines(text: string): string[] {
   const seen = new Set<string>();
   const lines: string[] = [];
-  for (const raw of text.split(/\r?\n/)) {
-    const line = raw.trim();
+  for (const raw of text.split(/\r\n|\r|\n/)) {
+    const line = oneLine(raw);
     const key = line.toLocaleLowerCase();
     if (line === '' || seen.has(key)) continue;
     seen.add(key);
@@ -121,7 +127,7 @@ function toSupplementBodies(rows: readonly SupplementFormValue[]): SupplierServi
     const max = row.per === 'flat' || row.max.trim() === '' ? null : Number(row.max);
     return {
       code: row.code || newSupplementCode(row.label, taken),
-      label: row.label.trim(),
+      label: oneLine(row.label),
       amountCents: parseEuros(row.amount).cents ?? 0,
       per: row.per,
       max: max !== null && Number.isFinite(max) ? max : null,
@@ -129,7 +135,7 @@ function toSupplementBodies(rows: readonly SupplementFormValue[]): SupplierServi
   });
 }
 
-const emptyToNull = (text: string): string | null => (text.trim() === '' ? null : text.trim());
+const emptyToNull = (text: string): string | null => (text === '' ? null : text);
 
 /**
  * The price the form describes, as the API holds it: a service on quote has no price and the default unit, "per hour" is a
@@ -152,10 +158,10 @@ export function priceInputOf(values: Pick<ServiceFormValues, 'priceMode' | 'fixe
 export function toServiceBody(values: ServiceFormValues): SaveSupplierServiceBody {
   const price = priceInputOf(values);
   return {
-    name: values.name.trim(),
+    name: oneLine(values.name),
     category: values.category,
-    summary: emptyToNull(values.summary),
-    description: emptyToNull(values.description),
+    summary: emptyToNull(oneLine(values.summary)),
+    description: emptyToNull(manyLines(values.description)),
     priceFromCents: price.priceFromCents,
     priceUnit: price.priceUnit,
     pricesIncludeVat: values.pricesIncludeVat,
@@ -318,6 +324,28 @@ export const bookingStepSchema = z.object({
   weekdays: z.array(z.enum(SUPPLIER_SERVICE_WEEKDAYS)).min(1, 'supplier.services.errors.weekdaysRequired'),
 });
 
+/** The three steps with the fields each one answers for. */
+const STEPS = [
+  { schema: serviceStepSchema, fields: ['name', 'category', 'summary', 'description', 'included', 'excluded'] },
+  { schema: priceStepSchema, fields: ['priceMode', 'fixedUnit', 'amount', 'pricesIncludeVat', 'supplements'] },
+  { schema: bookingStepSchema, fields: ['durationMinutes', 'minNoticeHours', 'weekdays'] },
+] as const satisfies readonly { schema: z.ZodType; fields: readonly (keyof ServiceFormValues)[] }[];
+
+/**
+ * What a draft save may send. The creation saves at every step, but the form holds all the steps: a step that was left with
+ * something half typed (a supplement without a name, a price of 0, a list that is too long: "Back" and the stepper do not check)
+ * would make the API refuse the whole save and the person could not go on. So a step that does not hold keeps what was saved
+ * for it before (`saved`, the form of the service as the server has it, or of an empty one); the steps that hold are saved as typed.
+ */
+export function draftValues(values: ServiceFormValues, saved: ServiceFormValues): ServiceFormValues {
+  const draft = { ...values };
+  for (const { schema, fields } of STEPS) {
+    if (schema.safeParse(values).success) continue;
+    for (const field of fields) Object.assign(draft, { [field]: saved[field] });
+  }
+  return draft;
+}
+
 /**
  * The rules of the three steps at once, for the page of a service where they are one form (the resolver of react-hook-form).
  * Each step is judged on its own schema, so there is one set of rules for both screens, and a problem in one step never
@@ -326,9 +354,7 @@ export const bookingStepSchema = z.object({
  */
 export const serviceFormResolver: Resolver<ServiceFormValues> = async (values, context, options) => {
   const results = await Promise.all(
-    [serviceStepSchema, priceStepSchema, bookingStepSchema].map((schema) =>
-      (zodResolver(schema) as unknown as Resolver<ServiceFormValues>)(values, context, options),
-    ),
+    STEPS.map(({ schema }) => (zodResolver(schema) as unknown as Resolver<ServiceFormValues>)(values, context, options)),
   );
   const errors = Object.assign({}, ...results.map((result) => result.errors));
   return Object.keys(errors).length === 0 ? { values, errors: {} } : { values: {}, errors };

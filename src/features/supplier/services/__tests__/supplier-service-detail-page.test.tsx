@@ -3,6 +3,7 @@ import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { SupplierProfile } from '@/types/supplier';
+import { supplierServiceKeys } from '@/queries/use-supplier-services';
 import { SupplierServiceDetailPage } from '../supplier-service-detail-page';
 import { addressNow, connectApi, createFakeCatalog, makeDraft, makeService, problem, renderRouted } from './service-test-kit';
 
@@ -330,6 +331,9 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       // The typing is not thrown away behind the person's back.
       expect(screen.getByTestId('service-name')).toHaveValue('Il mio cambiamento');
       expect(sonner.toast.success).not.toHaveBeenCalled();
+      // It is announced at once and it takes the focus: on a phone it is above the screen, where the person pressed "Save".
+      expect(conflict).toHaveAttribute('role', 'alert');
+      await waitFor(() => expect(document.activeElement).toBe(conflict));
 
       fireEvent.click(within(conflict).getByRole('button', { name: 'Ricarica' }));
 
@@ -337,11 +341,53 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
       expect(screen.getByTestId('service-name')).toHaveValue('Cambiato da un collega');
       expect(screen.getByTestId('service-amount')).toHaveValue('99');
       expect(screen.getByRole('heading', { level: 1, name: 'Cambiato da un collega' })).toBeInTheDocument();
+      // The button that was pressed went away with the notice: the focus is on the first field, not lost.
+      await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('service-name')));
 
       // From the reload on, a save carries the version it brought.
       type('service-name', 'Ora sì');
       save();
       await waitFor(() => expect(catalog.items()[0]?.name).toBe('Ora sì'));
+    });
+
+    it('keeps the form and says so when the reload does not work: the page is not replaced by the error of the load', async () => {
+      const { catalog } = renderPage();
+      await page();
+      catalog.touch('a', { name: 'Cambiato da un collega' });
+      type('service-name', 'Il mio cambiamento');
+      save();
+      const conflict = await screen.findByTestId('service-conflict');
+      api.fetchSupplierService.mockRejectedValueOnce(problem(500, { title: 'Internal Server Error' }));
+
+      fireEvent.click(within(conflict).getByRole('button', { name: 'Ricarica' }));
+
+      expect(await screen.findByTestId('service-problem')).toBeInTheDocument();
+      expect(screen.queryByTestId('supplier-service-load-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('service-name')).toHaveValue('Il mio cambiamento');
+      expect(screen.getByTestId('service-conflict')).toBeInTheDocument();
+    });
+
+    it('does not read the service again behind the form when the cache had it: the version is the one of what is shown, so the API still refuses a stale save', async () => {
+      const catalog = createFakeCatalog([SERVICE]);
+      connectApi(api, catalog);
+      supplierApi.fetchSupplierProfile.mockResolvedValue(PROFILE);
+      // Seen six minutes ago (version 3), changed since by a colleague (version 4): the cache is stale, not forgotten.
+      catalog.touch('a', { name: 'Cambiato da un collega', priceFromCents: 9900 });
+      renderRouted({
+        at: `${LIST}/a`,
+        routes: [{ path: `${LIST}/:id`, element: <SupplierServiceDetailPage /> }],
+        seed: (client) => client.setQueryData(supplierServiceKeys.detail('a'), SERVICE, { updatedAt: Date.now() - 6 * 60_000 }),
+      });
+      await page();
+
+      // What is shown is what the cache had, with the version it had; a read in the background would bring version 4 under these values.
+      expect(screen.getByTestId('service-name')).toHaveValue('Pulizia cambio ospiti');
+      expect(catalog.fetchOne).not.toHaveBeenCalled();
+      type('service-name', 'Il mio cambiamento');
+      save();
+
+      expect(await screen.findByTestId('service-conflict')).toBeInTheDocument();
+      expect(catalog.items()[0]).toMatchObject({ name: 'Cambiato da un collega', priceFromCents: 9900 });
     });
 
     it('says the service is gone when it was deleted meanwhile', async () => {
@@ -509,6 +555,11 @@ describe('SupplierServiceDetailPage (SP-06)', () => {
 
       await waitFor(() => expect(screen.getAllByTestId('photo-list-item')).toHaveLength(1));
       expect(catalog.update).toHaveBeenCalledWith('a', expect.objectContaining({ photoUrls: ['https://cdn.example/b.jpg'] }));
+      // Confirming is not "Save": the form around the dialog was not submitted, so the photos were the only thing saved.
+      expect(catalog.update).toHaveBeenCalledTimes(1);
+      expect(sonner.toast.success).not.toHaveBeenCalled();
+      // The button that opened the dialog went with its photo: the focus is on the one of the photo that is first now.
+      await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 1' })));
     });
 
     it('offers the reload when a photo is changed on a service that moved on elsewhere', async () => {

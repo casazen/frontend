@@ -607,6 +607,17 @@ describe('route-manifest nav helpers', () => {
     expect(paths(phoneMenu.sections.flatMap((section) => section.entries))).toEqual(['/app/supplier/showcase']);
   });
 
+  // A shorter name on the bar is for an entry of the bar, and never for one with a counter (name and counter are read together).
+  it('gives a short name for the bar only to entries that are on the bar and have no counter', () => {
+    const withShortName = ROUTE_MANIFEST.filter((entry) => entry.navBarKey);
+
+    expect(withShortName.map((entry) => entry.path)).toEqual(['/app/supplier/services']);
+    for (const entry of withShortName) {
+      expect(entry.navBottom, entry.path).toBeDefined();
+      expect(entry.navCount, entry.path).toBeUndefined();
+    }
+  });
+
   it('keeps the creation and the page of a service out of the menus: the entry of the catalog stands for them', () => {
     for (const path of ['/app/supplier/services/new', '/app/supplier/services/:id']) {
       const entry = entryOf(path);

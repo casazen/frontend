@@ -534,6 +534,7 @@
     "supplierInbox": "Richieste",
     "supplierAvailability": "Disponibilità",
     "supplierServices": "Servizi e prezzi",
+    "supplierServicesBar": "Servizi",
     "supplierHelpIcal": "Guida iCal",
     "group": {
       "activity": "La tua attività",
@@ -3286,6 +3287,7 @@
         "table": "Tabella"
       },
       "wizard": {
+        "changed": "Questa bozza è stata modificata altrove. Se continui, quello che vedi qui prende il posto della versione salvata.",
         "description": "Quattro passi: cosa fai, quanto costa, quando lo offri e le foto. La bozza si salva a ogni passo.",
         "done": {
           "availability": "Gli orari che i clienti possono scegliere dipendono dalla tua disponibilità e dalla durata che hai indicato.",

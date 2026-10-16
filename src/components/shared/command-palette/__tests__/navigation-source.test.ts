@@ -127,6 +127,15 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
     expect(dashboard?.label).not.toContain('|');
   });
 
+  it('NavigationSource_ServicesAndPrices_IsFoundByTheWordsOfTheSupplierNotOnlyByItsName', () => {
+    const italian = pagesOf(makeContext({ areas: ['supplier'], locale: 'it' })).find((entry) => entry.to === '/app/supplier/services');
+    const english = pagesOf(makeContext({ areas: ['supplier'], locale: 'en' })).find((entry) => entry.to === '/app/supplier/services');
+
+    expect(italian).toMatchObject({ label: 'Servizi e prezzi', area: 'supplier' });
+    expect(italian?.keywords).toEqual(expect.arrayContaining(['tariffe', 'listino', 'catalogo']));
+    expect(english?.keywords).toEqual(expect.arrayContaining(['rates', 'price list', 'catalog']));
+  });
+
   it('NavigationSource_EveryPageOfTheMenus_HasAnIconALabelAndAPathWithNoParameter', () => {
     const everything = AREAS.flatMap((area) => pagesOf(makeContext({ areas: [area], flags: FLAGS_ON })));
 

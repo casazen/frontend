@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { createRef, useRef, useState, type Ref } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { expectNoAxeViolations } from '@/test/axe';
-import { PhotoList, type PhotoListItem, type PhotoListLabels, type PhotoListProps } from '../photo-list';
+import { PhotoList, type PhotoListHandle, type PhotoListItem, type PhotoListLabels, type PhotoListProps } from '../photo-list';
 
 const LABELS: PhotoListLabels = {
   add: 'Aggiungi foto',
@@ -17,7 +17,6 @@ const LABELS: PhotoListLabels = {
 };
 
 const ITEMS: PhotoListItem[] = ['a', 'b', 'c'].map((name) => ({ url: `https://cdn.example/${name}.jpg`, alt: `Foto ${name}` }));
-const urls = (items: readonly PhotoListItem[]) => items.map((item) => item.url);
 
 function renderList(props: Partial<PhotoListProps> = {}) {
   const onChange = vi.fn();
@@ -276,11 +275,55 @@ describe('PhotoList', () => {
   });
 
   it('PhotoList_ChangeOfOrder_ReturnsUrlsInTheSameOrderAsTheItems', () => {
+    // The items come in the order c, b, a: moving the first one later swaps c and b.
     const { onChange } = renderList({ items: [...ITEMS].reverse() });
 
     fireEvent.click(screen.getByRole('button', { name: 'Sposta la foto 1 dopo' }));
 
-    expect(urls(ITEMS)).toEqual(['https://cdn.example/a.jpg', 'https://cdn.example/b.jpg', 'https://cdn.example/c.jpg']);
     expect(onChange).toHaveBeenCalledWith(['https://cdn.example/b.jpg', 'https://cdn.example/c.jpg', 'https://cdn.example/a.jpg']);
+  });
+
+  it('PhotoList_Counter_IsAStatusSoThatAScreenReaderSaysWhenItChanges', () => {
+    renderList();
+
+    expect(screen.getByTestId('photo-list-counter')).toHaveAttribute('role', 'status');
+  });
+
+  describe('focusAfterRemoval (the owner has asked, removed, and the dialog has closed)', () => {
+    const [a, b, c] = ITEMS as [PhotoListItem, PhotoListItem, PhotoListItem];
+    const listWith = (ref: Ref<PhotoListHandle>, items: PhotoListItem[]) => (
+      <PhotoList ref={ref} items={items} max={6} labels={LABELS} onChange={vi.fn()} onAdd={vi.fn()} />
+    );
+
+    it('PhotoList_FocusAfterRemoval_GoesToThePhotoThatTookThePlaceOfTheRemovedOne', () => {
+      const ref = createRef<PhotoListHandle>();
+      const view = render(listWith(ref, [a, b, c]));
+      view.rerender(listWith(ref, [a, c]));
+
+      act(() => ref.current?.focusAfterRemoval(1));
+
+      // "c" is the second photo now, and it is its "remove" button that has the focus: the keyboard can go on.
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 2' }));
+    });
+
+    it('PhotoList_FocusAfterRemoval_OfTheLastPhoto_GoesToThePhotoBeforeIt', () => {
+      const ref = createRef<PhotoListHandle>();
+      const view = render(listWith(ref, [a, b, c]));
+      view.rerender(listWith(ref, [a, b]));
+
+      act(() => ref.current?.focusAfterRemoval(2));
+
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 2' }));
+    });
+
+    it('PhotoList_FocusAfterRemoval_OfTheOnlyPhoto_GoesToAdd', () => {
+      const ref = createRef<PhotoListHandle>();
+      const view = render(listWith(ref, [a]));
+      view.rerender(listWith(ref, []));
+
+      act(() => ref.current?.focusAfterRemoval(0));
+
+      expect(document.activeElement).toBe(screen.getByTestId('photo-list-add'));
+    });
   });
 });
