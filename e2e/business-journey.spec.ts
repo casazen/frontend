@@ -60,14 +60,14 @@ test.describe('Business Golden Path', () => {
 
     await expect(page.getByRole('heading', { name: 'Casa Business' })).toBeVisible();
     await expect(page.getByText(/CIN mancante|Missing CIN/i)).toBeVisible();
-    // The detail is split in tabs (info, seasonal suggestions, iCal calendars: the OTA channels are frozen, D10).
-    await expect(page.getByRole('heading', { name: 'Dettagli proprietà' })).toBeVisible();
+    // The detail is split in tabs (overview with the seasonal suggestions, iCal calendars: the OTA channels are frozen, D10).
+    await expect(page.getByRole('heading', { name: "Dati dell'immobile" })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Calendari iCal' }).click();
+    await page.getByRole('tab', { name: 'Calendari iCal' }).click();
     await expect(page.getByTestId('property-ical-settings')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Suggerimenti stagionali' }).click();
-    await expect(page.getByRole('button', { name: 'Gestisci i suggerimenti' }).first()).toBeVisible();
+    await page.getByRole('tab', { name: 'Panoramica' }).click();
+    await expect(page.getByRole('link', { name: 'Gestisci i suggerimenti' }).first()).toBeVisible();
   });
 
   test('seasonal suggestions: enable toggle → save config → verify On badge', async ({ page }) => {
