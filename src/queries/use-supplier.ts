@@ -12,7 +12,6 @@ import {
   fetchSupplierActivation,
   fetchSupplierShowcasePreview,
   fetchSupplierAgendaCalendar,
-  fetchSupplierAvailability,
   fetchSupplierDashboard,
   fetchSupplierHours,
   fetchSupplierInbox,
@@ -146,18 +145,15 @@ export function useUpdateSupplierProfile() {
   });
 }
 
-export function useSupplierAvailability(from: string, to: string) {
-  return useQuery({
-    queryKey: ['supplier', 'availability', from, to],
-    queryFn: () => fetchSupplierAvailability(from, to),
-  });
-}
-
-/** Agenda (hours, closed days, calendar events, requests) for the availability page. */
+/**
+ * What the agenda shows from `from` to `to` (at most 62 days): the weekly hours, the closed days, the time off, the blocks and
+ * calendar events, and the requests. Fetched again every time the page opens: a request taken on another page puts a job in it.
+ */
 export function useSupplierAgendaCalendar(from: string, to: string) {
   return useQuery({
     queryKey: ['supplier', 'agenda', from, to],
     queryFn: () => fetchSupplierAgendaCalendar(from, to),
+    refetchOnMount: 'always',
   });
 }
 

@@ -2677,14 +2677,54 @@
     "municipalities": "Municipalities",
     "bioEmpty": "No bio written yet.",
     "supplierDefault": "Supplier",
+    "agenda": {
+      "close": "Close this day",
+      "dayEmpty": "Nothing on the agenda for this day.",
+      "description": "Your jobs and commitments, day by day. Customers only book when you are free.",
+      "emptyRange": "No jobs or commitments in this period. When you accept a request it shows up here.",
+      "emptyRangeCta": "Go to requests",
+      "eventsCount_one": "{{count}} entry",
+      "eventsCount_other": "{{count}} entries",
+      "hours": {
+        "edit": "Edit your hours",
+        "empty": "You have not chosen your working hours yet.",
+        "title": "Your working hours"
+      },
+      "legend": {
+        "events": "Jobs and commitments",
+        "label": "Month legend",
+        "unavailable": "Closed or unavailable"
+      },
+      "next": "Next period",
+      "period": "Period",
+      "previous": "Previous period",
+      "reasons": {
+        "Holiday": "Public holiday",
+        "Illness": "Illness",
+        "Other": "Unavailable",
+        "Vacation": "Time off"
+      },
+      "reopen": "Reopen this day",
+      "state": {
+        "closed": "Closed by you",
+        "closedByCalendar": "Closed by your calendar",
+        "rest": "Day off"
+      },
+      "title": "Agenda and availability",
+      "today": "Today",
+      "views": {
+        "day": "Day",
+        "label": "Agenda view",
+        "month": "Month",
+        "week": "Week"
+      }
+    },
     "allDay": "all day",
     "availabilityLoading": "Loading availability...",
     "availabilityUpdated": "Availability updated",
     "availabilitySaveError": "Could not save availability",
     "availabilityTitle": "Availability",
-    "availabilityDescription": "Working days with service hours and events from your linked calendar. Tap a day to mark it as unavailable.",
     "available": "Available",
-    "closedByCalendar": "from calendar",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
     "eventFromCalendar": "from calendar",
@@ -2706,7 +2746,6 @@
     "hoursUpdated": "Working hours updated",
     "noWorkingHoursToday": "No service band today",
     "notAvailable": "Not available",
-    "saveAvailability": "Save availability",
     "weekday": {
       "Friday": "Friday",
       "Monday": "Monday",

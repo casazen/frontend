@@ -75,10 +75,6 @@ export interface UpdateAvailabilityEntry {
   available: boolean;
 }
 
-export interface SupplierAvailabilityResponse {
-  dates: UpdateAvailabilityEntry[];
-}
-
 /** Weekday names of `GET/PUT api/supplier/availability/hours` (Monday first). */
 export type SupplierWeekday =
   | 'Monday'
