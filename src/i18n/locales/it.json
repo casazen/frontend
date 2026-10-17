@@ -4765,6 +4765,10 @@
     "contactEmailHelp": "Qui ricevi le notifiche di CasaZen (prenotazioni, richieste, avvisi).",
     "contactEmailPublicLabel": "Mostra l'email di contatto agli ospiti",
     "contactEmailPublicHelp": "Non pubblicata di default. Attiva questa opzione per mostrarla sul tuo sito di prenotazione pubblico.",
+    "operatorHelp": "Obbligatori per legge se eserciti un'attività. Compaiono nel piè di pagina del tuo sito di prenotazione, con la partita IVA del profilo fiscale se ne hai una. (Testo in bozza, da rivedere.)",
+    "legalNameLabel": "Ragione sociale",
+    "registeredOfficeLabel": "Sede legale",
+    "registeredOfficeExample": "Via Roma 1, 70121 Bari (BA)",
     "save": "Salva impostazioni",
     "saved": "Impostazioni organizzazione salvate",
     "saveFailed": "Impossibile salvare le impostazioni dell'organizzazione",
@@ -6698,7 +6702,9 @@
     "legalDocuments": "Documenti legali",
     "footer": {
       "contact": "Contatti",
-      "info": "Informazioni"
+      "info": "Informazioni",
+      "operator": "Operatore",
+      "vatNumber": "P.IVA {{vat}}"
     },
     "seo": {
       "orgTitle": "{{name}} — Prenota direttamente",

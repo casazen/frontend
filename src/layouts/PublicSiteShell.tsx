@@ -168,6 +168,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
             displayName={isOrgMode ? (org?.displayName ?? 'CasaZen') : 'CasaZen'}
             contactEmail={org?.contactEmail}
             tagline={org?.tagline}
+            operator={org?.operator}
             showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
             showSeoHubLink={!isOrgMode}
             orgSlug={isOrgMode && org ? (org.slug ?? orgSlug) : undefined}
