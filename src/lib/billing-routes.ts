@@ -12,6 +12,13 @@ export function isBillingContext(value: string | null | undefined): value is Bil
   return BILLING_CONTEXTS.some((context) => context === value);
 }
 
+/**
+ * Plan and billing of the org in the account area (AM-08a): one page where the rental contexts have two. It is not among the return
+ * pages of Stripe (`BILLING_RETURN_PATHS`): the backend refuses a `returnPath` it does not list, so Stripe still returns to a plan
+ * page of a rental context, which hands the person over to this one.
+ */
+export const ACCOUNT_BILLING_PATH = '/app/account/billing';
+
 /** Plans and Stripe checkout of the org in the shell of `context`. */
 export function planPagePath(context: BillingContextKey): string {
   return `/app/${context}/settings/plan`;

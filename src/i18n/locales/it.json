@@ -3851,9 +3851,7 @@
         "Draft": "Bozze",
         "emptyDescription": "Prova a guardare tutti i servizi.",
         "emptyTitle": "Nessun servizio con questo stato",
-        "label": "Filtra per stato",
-        "Paused": "In pausa",
-        "showAll": "Mostra tutti"
+        "Paused": "In pausa"
       },
       "form": {
         "booking": {
@@ -3942,9 +3940,10 @@
         }
       },
       "list": {
+        "count_one": "{{count}} servizio",
+        "count_other": "{{count}} servizi",
         "limitReached": "Hai raggiunto il limite di {{max}} servizi: per aggiungerne un altro, eliminane uno.",
         "loadError": "Impossibile caricare i servizi",
-        "loading": "Carico i servizi…",
         "missing": "Da completare: {{fields}}."
       },
       "notice": {
@@ -4011,11 +4010,6 @@
         "PerJob": "a intervento",
         "PerSet": "a set",
         "PerSquareMeter": "al m²"
-      },
-      "view": {
-        "cards": "Schede",
-        "label": "Come vedere i servizi",
-        "table": "Tabella"
       },
       "wizard": {
         "changed": "Questa bozza è stata modificata altrove. Se continui, quello che vedi qui prende il posto della versione salvata.",
@@ -8198,6 +8192,62 @@
       "Owner": "Titolare",
       "PropertyManager": "Property manager"
     }
+  },
+  "accountBilling": {
+    "compare": {
+      "current": "Il tuo piano",
+      "note": "Prezzi IVA esclusa. Con un abbonamento attivo il cambio si conferma sul portale di Stripe.",
+      "overLimit_one": "Hai {{count}} immobile e il piano ne include {{allowance}}: resta, ma non potrai aggiungerne finché non rientri.",
+      "overLimit_other": "Hai {{count}} immobili e il piano ne include {{allowance}}: restano tutti, ma non potrai aggiungerne finché non rientri.",
+      "price": "{{price}} al mese + IVA",
+      "priceTbd": "Prezzo in definizione",
+      "properties_one": "Fino a {{count}} immobile",
+      "properties_other": "Fino a {{count}} immobili",
+      "propertiesUnlimited": "Immobili illimitati",
+      "title": "Confronta i piani"
+    },
+    "data": {
+      "eInvoice": "Fatturazione elettronica",
+      "empty": "Da completare",
+      "fiscalCode": "Codice fiscale",
+      "pec": "PEC",
+      "sdi": "Codice SDI",
+      "title": "Dati di fatturazione"
+    },
+    "description": "Piano {{plan}}: utilizzo e pagamento di CasaZen.",
+    "descriptionGeneric": "Piano, utilizzo e pagamento di CasaZen.",
+    "loading": "Caricamento di fatturazione e piano",
+    "payment": {
+      "noSubscription": "Inserirai la carta sulla pagina sicura di Stripe quando scegli un piano a pagamento.",
+      "open": "Apri il portale di pagamento sicuro",
+      "text": "La carta si gestisce su Stripe, mai in CasaZen: qui non la vediamo e non la salviamo.",
+      "title": "Metodo di pagamento"
+    },
+    "plan": {
+      "change": "Cambia piano",
+      "choose": "Scegli un piano",
+      "kicker": "Il tuo piano",
+      "nextCharge": "Prossimo addebito",
+      "noCharge": "Nessuno",
+      "notice": {
+        "openAccess": "Accesso aperto: per ora non addebitiamo nulla e tutte le funzioni sono sbloccate. Il piano che scegli oggi vale quando riprenderà la fatturazione: ti avvisiamo prima che riparta.",
+        "openAccessPricesPending": "Accesso aperto: per ora non addebitiamo nulla e tutte le funzioni sono sbloccate. I prezzi dei piani sono in definizione: ti avvisiamo prima che riparta la fatturazione.",
+        "pricesPending": "I prezzi dei piani sono in definizione: per ora non si possono acquistare."
+      },
+      "people": "Persone",
+      "peopleHelp": "Contano gli utenti attivi più gli inviti in attesa, anche il Contabile. Chi è disattivato non occupa posti.",
+      "peopleHelpTitle": "Posti del piano",
+      "properties": "Immobili",
+      "title": "Piano {{plan}}",
+      "unlimited": "{{used}} (senza limite)",
+      "usage": "{{used}} di {{max}}",
+      "view": "Vedi i piani"
+    },
+    "states": {
+      "now": "Ora: {{status}}",
+      "title": "Cosa significano gli stati dell'abbonamento"
+    },
+    "title": "Fatturazione e piano"
   },
   "areas": {
     "account": {
