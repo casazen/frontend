@@ -391,6 +391,59 @@ test.describe('Aligned cards', () => {
     });
   });
 
+  test.describe('Hub of the guides (public SEO pages)', () => {
+    test('the icon and the title of two cards of a row start at the same height when one title takes more lines', async ({ page }) => {
+      await page.route('**/api/public/content', async (route) => {
+        if (route.request().method() !== 'GET') {
+          await route.fallback();
+          return;
+        }
+        const guide = (slug: string, comuneName: string, title: string) => ({
+          pageType: 'ComplianceGuide',
+          title,
+          comuneName,
+          regionSlug: 'lombardia',
+          comuneSlug: slug,
+          path: `/p/affitti-brevi/lombardia/${slug}`,
+        });
+        const pages = [
+          guide('como', 'Como', 'Affitti brevi a Como: CIN, Alloggiati Web e imposta di soggiorno, la guida completa per gli host'),
+          guide('lecco', 'Lecco', 'Affitti brevi a Lecco'),
+        ];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ canonicalUrl: null, pages }) });
+      });
+      await page.setViewportSize({ width: 800, height: 900 });
+      await page.goto('/p/affitti-brevi');
+
+      const cards = page.getByTestId('seo-hub-guides').locator('li');
+      await expect(cards).toHaveCount(2);
+      expect(await linesOf(cards.nth(0).locator('a'))).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(cards.nth(1).locator('a'))).toBe(1);
+
+      await expectAligned([0, 1].map((index) => cards.nth(index).locator('span[aria-hidden]')), 'icon');
+      await expectAligned([0, 1].map((index) => cards.nth(index).locator('a')), 'title');
+    });
+  });
+
+  test.describe('Invite QR codes of the admin', () => {
+    test('the code, the address and the buttons of the two cards start at the same height', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(demoUrl('/app/admin/invite-qr', 'admin'));
+
+      const cards = [page.getByTestId('qr-supplier'), page.getByTestId('qr-host')];
+      await expect(cards[1].getByTestId('qr-host-image')).toBeVisible();
+      await expectAligned(cards.map((card) => card.locator('h3')), 'title');
+      await expectAligned(cards.map((card) => card.locator('img')), 'code');
+      await expectAligned(cards.map((card) => card.locator('p[data-testid$="-url"]')), 'address');
+      // The address of the host is on two lines (it carries the campaign, a long one here), the one of the supplier on one.
+      await page.getByTestId('qr-campaign-input').fill('campagna-di-autunno-per-i-nuovi-host-del-lago');
+      await expect(cards[1].getByTestId('qr-host-url')).toContainText('campagna-di-autunno');
+      expect(await linesOf(cards[1].getByTestId('qr-host-url'))).toBeGreaterThan(await linesOf(cards[0].getByTestId('qr-supplier-url')));
+      await expectAligned(cards.map((card) => card.getByRole('button').first()), 'buttons');
+      await expectAligned(cards, 'card', 'bottom');
+    });
+  });
+
   test.describe('OTA channels (behind the otaPartnerApi flag)', () => {
     test('the rows and the button of the cards line up whichever optional rows a channel has', async ({ page }) => {
       await page.route('**/api/public/features', async (route) => {
