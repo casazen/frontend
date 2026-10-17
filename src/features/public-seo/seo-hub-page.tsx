@@ -88,7 +88,9 @@ function HubSection({ heading, pages, testId, icon: Icon }: HubSectionProps) {
         {pages.map((page) => (
           <li
             key={page.path}
-            className="public-site-card relative flex items-center gap-3 p-4 transition-shadow focus-within:ring-2 focus-within:ring-[var(--cz-public-primary-text)] hover:shadow-[var(--cz-public-shadow-widget)] motion-reduce:transition-none"
+            // `items-start`: the icon and the title start at the top of the card, so that a title on two lines in one card does not
+            // put the text of its neighbour, centered in a taller card, at another height.
+            className="public-site-card relative flex items-start gap-3 p-4 transition-shadow focus-within:ring-2 focus-within:ring-[var(--cz-public-primary-text)] hover:shadow-[var(--cz-public-shadow-widget)] motion-reduce:transition-none"
           >
             <span
               aria-hidden="true"

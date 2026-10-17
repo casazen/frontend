@@ -103,13 +103,39 @@ describe('StatStrip and StatTile (UI-16)', () => {
     }
   });
 
-  it('StatStrip_ThreeFourOrTwoTiles_FillTheRowFromALaptopAndStackOnAPhone', () => {
+  it('StatStrip_ThreeFourOrTwoTiles_FillTheRowFromATabletOrALaptopAndStackOnAPhone', () => {
     const { unmount } = renderStrip(THREE);
-    expect(screen.getByRole('list')).toHaveClass('grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3');
+    // Three tiles: three across from a tablet, not two and one alone on the next line.
+    expect(screen.getByRole('list')).toHaveClass('grid-cols-1', 'sm:grid-cols-3');
+    expect(screen.getByRole('list')).not.toHaveClass('sm:grid-cols-2');
     unmount();
 
     renderStrip([...THREE, <StatTile key="four" label="Quarto" value={4} />]);
     expect(screen.getByRole('list')).toHaveClass('grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-4');
+  });
+
+  it('StatStrip_Tiles_AreSubgridsOfTheStripFromATablet', () => {
+    renderStrip(THREE);
+
+    // Three rows for each tile (name, number, delta): the item of the list is a subgrid of the strip, and the tile in it of the item.
+    for (const item of screen.getAllByRole('listitem')) {
+      expect(item).toHaveClass('sm:row-span-3', 'sm:grid', 'sm:grid-rows-subgrid', 'sm:*:row-span-3', 'sm:*:grid', 'sm:*:grid-rows-subgrid');
+    }
+    expect(screen.getByRole('list')).not.toHaveClass('lg:auto-rows-[auto_auto_auto_1fr]');
+  });
+
+  it('StatStrip_AListBesideTheTiles_TakesFourRowsFromALaptopAndTheTilesKeepTheirThree', () => {
+    renderStrip([...THREE.slice(0, 2), <div key="list" data-testid="the-list">Prossimi arrivi</div>]);
+
+    const [first, second, list] = screen.getAllByRole('listitem');
+    for (const tile of [first, second]) {
+      expect(tile).toHaveClass('lg:row-span-3', 'lg:grid', 'lg:grid-rows-subgrid');
+      expect(tile).not.toHaveClass('sm:grid-rows-subgrid');
+    }
+    // The fourth row is the one that takes the room the list asks for; in two columns the strip is as it was.
+    expect(list).toHaveClass('lg:row-span-4');
+    expect(list).not.toHaveClass('sm:row-span-3');
+    expect(screen.getByRole('list')).toHaveClass('lg:auto-rows-[auto_auto_auto_1fr]');
   });
 
   it('StatStrip_AtMostFourTiles_DoesNotWarn', () => {
@@ -153,7 +179,7 @@ describe('StatStrip and StatTile (UI-16)', () => {
     );
 
     expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Uno1', 'Due2', 'Tre2']);
-    expect(screen.getByRole('list')).toHaveClass('lg:grid-cols-3');
+    expect(screen.getByRole('list')).toHaveClass('sm:grid-cols-3');
   });
 
   it('StatStrip_ATileThatGoes_DoesNotMakeTheOnesAfterItStartAgain', () => {

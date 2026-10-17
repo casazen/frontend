@@ -16,6 +16,7 @@ import { useMarketplaceSuppliers } from '@/queries/use-service-requests';
 import type { SupplierPicker, SupplierPickerSort } from '@/types/service-request';
 import { MARKETPLACE_SUPPLIER_DRAWER_KIND } from '../marketplace-supplier-drawer';
 import { MARKETPLACE_CATEGORY_PARAM } from '../lib/marketplace-property';
+import { supplierCardRows } from '../lib/supplier-labels';
 import { SupplierCard } from './supplier-card';
 
 const SORTS: readonly SupplierPickerSort[] = ['name', 'price', 'response'];
@@ -29,7 +30,7 @@ const SEARCH_DELAY_MS = 300;
  * where «Richiedi fornitore» starts the request. The page puts other sections of the marketplace under this one.
  */
 export function SuppliersSection({ propertyId }: { propertyId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const drawer = useDetailDrawer();
   const [search, setSearch] = useState('');
@@ -57,6 +58,7 @@ export function SuppliersSection({ propertyId }: { propertyId: string }) {
     );
 
   const items = (query.data?.items ?? []).filter((supplier) => !verifiedOnly || supplier.verified === true);
+  const rows = supplierCardRows(items, t, i18n.language);
   const narrowedByWords = search.trim() !== '' || verifiedOnly;
 
   const open = (supplier: SupplierPicker, opener: HTMLElement) => {
@@ -149,13 +151,13 @@ export function SuppliersSection({ propertyId }: { propertyId: string }) {
             </p>
           )
         ) : (
-          <ul className="grid gap-3 md:grid-cols-2" data-testid="marketplace-supplier-grid">
+          // The cards are the rows of one grid (`AlignedCard`): the name, the categories, the facts and the description of the cards
+          // of a line start at the same height.
+          <div className="grid gap-3 md:grid-cols-2" data-testid="marketplace-supplier-grid">
             {items.map((supplier) => (
-              <li key={supplier.orgId} className="min-w-0">
-                <SupplierCard supplier={supplier} onOpen={open} />
-              </li>
+              <SupplierCard key={supplier.orgId} supplier={supplier} rows={rows} onOpen={open} />
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </PlainSection>

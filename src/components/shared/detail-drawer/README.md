@@ -93,7 +93,8 @@ changes): `defineList({ …, detail: { drawerKind: 'booking' } })`. The row is o
 ## The other two parts
 
 **`Timeline`** (`components/shared/timeline/timeline.tsx`): what happened, in order. `events: { id, at, title, description?, actor?,
-tone?, icon?, href? }[]` (`at` is an ISO instant), `order` (`desc`, the latest first, by default), `limit` (5 by default, also the
+tone?, icon?, href? }[]` (`at` is an ISO instant, or missing when the time was not kept: the event has no `<time>`), `order` (`desc`, the
+latest first, by default; `asc`; `given`, as they come, for a list that is in order already and has events without a time), `limit` (5 by default, also the
 step of "Mostra altri"; `Infinity` shows all), `label`, `emptyText`. An ordered list; each event has a `<time>` with the date and
 hour in Europe/Rome and, up to a week, how long ago ("2 ore fa", refreshed every minute). The tone (`success`, `warning`, `danger`,
 `info`) is the color of the status badges, an icon and a word for a screen reader: never the color alone. `href` makes the title a

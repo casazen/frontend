@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
@@ -202,7 +203,7 @@ function ActivationWizard({ activation, profile }: { activation: ActivationStatu
 
   const current = screens[index];
   return (
-    <div className="mx-auto max-w-lg space-y-6" data-testid="supplier-activation-page">
+    <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-activation-page">
       <PageHeader title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
       <StepNav activation={activation} screens={screens} current={index} onGoToScreen={goToScreen} />
       <p className="text-sm text-muted-foreground" data-testid="supplier-activation-step-of">
@@ -255,7 +256,7 @@ export function SupplierActivationPage() {
   if (activation.status === 'Suspended') {
     // A suspended supplier cannot activate itself: only an admin reactivates it (SU-12).
     return (
-      <div className="mx-auto max-w-lg space-y-4" data-testid="supplier-activation-suspended">
+      <div className={cn(FOCUS_COLUMN, 'space-y-4')} data-testid="supplier-activation-suspended">
         <PageHeader title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />
       </div>
     );

@@ -69,27 +69,37 @@ vi.mock('@/components/shared/breadcrumb', () => ({ Breadcrumb: () => null }));
 const WAIT = { timeout: 5000 };
 const BOOKING_ID = 'b0c1d2e3-0000-4000-8000-000000000001';
 
-const booking = (overrides: Partial<Booking> = {}): Booking => ({
-  id: BOOKING_ID,
-  propertyId: 'property-1',
-  userId: 'auth0|host',
-  checkInDate: '2027-10-01T00:00:00Z',
-  checkOutDate: '2027-10-05T00:00:00Z',
-  numberOfGuests: 2,
-  numberOfAdults: 2,
-  numberOfChildren: 0,
-  basePrice: 450,
-  cleaningFee: 50,
-  touristTax: 12,
-  totalPrice: 462,
-  currency: 'EUR',
-  status: 'Confirmed',
-  source: 'Manual',
-  guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '+393331234567', country: 'IT' },
-  createdAt: '2026-09-24T08:00:00Z',
-  updatedAt: '2026-09-24T08:00:00Z',
-  ...overrides,
-});
+/** `canEdit` as the API answers it (SR-05a): a booking can be changed only when it is the host's own, not cancelled and not started. */
+const editabilityOf = ({ status, source }: Pick<Booking, 'status' | 'source'>): NonNullable<Booking['canEdit']> => {
+  if (status === 'Cancelled') return { allowed: false, reason: 'Cancelled' };
+  if (status === 'CheckedIn' || status === 'CheckedOut') return { allowed: false, reason: 'Started' };
+  return source === 'Manual' ? { allowed: true, reason: null } : { allowed: false, reason: 'SourceLocked' };
+};
+
+const booking = (overrides: Partial<Booking> = {}): Booking => {
+  const base: Booking = {
+    id: BOOKING_ID,
+    propertyId: 'property-1',
+    userId: 'auth0|host',
+    checkInDate: '2027-10-01T00:00:00Z',
+    checkOutDate: '2027-10-05T00:00:00Z',
+    numberOfGuests: 2,
+    numberOfAdults: 2,
+    numberOfChildren: 0,
+    basePrice: 450,
+    cleaningFee: 50,
+    touristTax: 12,
+    totalPrice: 462,
+    currency: 'EUR',
+    status: 'Confirmed',
+    source: 'Manual',
+    guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '+393331234567', country: 'IT' },
+    createdAt: '2026-09-24T08:00:00Z',
+    updatedAt: '2026-09-24T08:00:00Z',
+    ...overrides,
+  };
+  return { ...base, canEdit: overrides.canEdit ?? editabilityOf(base) };
+};
 
 function axiosError(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
@@ -203,13 +213,15 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersCancelAndEditButNotConfirm', async () => {
+  it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersCancelButNotEditNorConfirmAndSaysWhy', async () => {
+    // SR-05c: the API refuses to change the dates of a booking from the booking site (`canEdit`, SR-D5): the page offers no "Modifica".
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));
 
     renderPage();
 
     expect(await screen.findByTestId('open-cancel-booking', undefined, WAIT)).toBeInTheDocument();
-    expect(screen.getByTestId('edit-booking')).toBeInTheDocument();
+    expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
+    expect(screen.getByTestId('booking-edit-locked')).toHaveAttribute('data-reason', 'SourceLocked');
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
   });
 

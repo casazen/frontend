@@ -510,6 +510,7 @@
     "fiscal": "Regime fiscale",
     "payments": "Incassi",
     "revenue": "Ricavi",
+    "reports": "Report",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
@@ -1878,15 +1879,22 @@
       "notFound": "Prenotazione non trovata",
       "notFoundDescription": "Potrebbe essere stata cancellata o il link non è corretto.",
       "editBooking": "Modifica prenotazione",
+      "editLocked": {
+        "SourceLocked": "Le date e gli ospiti non si modificano: prezzo e pagamento sono già stabiliti dal sito o dal canale da cui arriva la prenotazione. Per cambiarla, annullala e creane una nuova.",
+        "Started": "Il soggiorno è già iniziato: le date e gli ospiti non si modificano."
+      },
       "tabs": {
         "details": "Soggiorno",
         "guest": "Documenti",
+        "history": "Cronologia",
         "payment": "Pagamento"
       },
       "tabsLabel": "Sezioni della prenotazione",
       "created": "Creata il",
       "lastUpdated": "Ultimo aggiornamento",
       "guestInformationTitle": "Informazioni ospite",
+      "paidAmount": "Importo incassato",
+      "paymentState": "Stato del pagamento",
       "paymentSummaryTitle": "Riepilogo pagamento",
       "total": "Totale",
       "alloggiatiWeb": "Alloggiati Web",
@@ -2117,6 +2125,52 @@
       "markVerified": "Segna come verificato",
       "resolved": "Soggiorno verificato",
       "failed": "Impossibile aggiornare il soggiorno. Riprova."
+    },
+    "timeline": {
+      "alloggiatiDeadline": "{{status}} · entro {{date}}",
+      "cancelNote": "Motivo: {{note}}",
+      "cancelReason": {
+        "CheckoutHoldExpired": "Il pagamento non è arrivato in tempo: le date sono di nuovo libere.",
+        "DatesUnavailableAtPayment": "Le date non erano più libere quando l'ospite ha pagato.",
+        "DeferredPaymentNotCompleted": "L'addebito alla scadenza non è andato a buon fine.",
+        "OnSiteEmailNotConfirmed": "L'ospite non ha confermato l'email in tempo.",
+        "OnSiteRequestDeclined": "Hai rifiutato la richiesta.",
+        "OnSiteRequestExpired": "La richiesta è scaduta senza risposta."
+      },
+      "expiresOn": "Scade il {{date}}",
+      "kind": {
+        "Alloggiati": "Alloggiati Web",
+        "ApprovalPending": "Aspetta la tua risposta",
+        "Arrived": "Arrivo registrato",
+        "Cancelled": "Prenotazione annullata",
+        "CheckedOut": "Partenza registrata",
+        "CheckInLinkSent": "Link del check-in inviato",
+        "Confirmed": "Prenotazione confermata",
+        "Created": "Prenotazione creata",
+        "GuestDocumentsReceived": "Documenti dell'ospite ricevuti",
+        "GuestEmailPending": "Aspetta la conferma dell'email dell'ospite",
+        "HostConfirmationPending": "Aspetta la tua conferma",
+        "PaymentPending": "Aspetta il pagamento dell'ospite",
+        "PaymentReceived": "Pagamento ricevuto",
+        "Refund": "Rimborso",
+        "RequestReceived": "Richiesta ricevuta"
+      },
+      "label": "Cronologia della prenotazione",
+      "linkState": {
+        "Completed": "Check-in online completato",
+        "Expired": "Il link è scaduto",
+        "InProgress": "L'ospite sta compilando i dati",
+        "Sent": "In attesa dell'ospite"
+      },
+      "loadError": "Impossibile caricare la cronologia.",
+      "refund": {
+        "Failed": "Rimborso non riuscito",
+        "Pending": "Rimborso in corso",
+        "RequiresAction": "Rimborso da completare",
+        "Succeeded": "Rimborso effettuato"
+      },
+      "source": "Origine: {{source}}",
+      "title": "Cronologia"
     }
   },
   "ota": {
@@ -7732,6 +7786,105 @@
     "questuraMarkedDone": "Comunicazione alla Questura segnata come inviata",
     "questuraMarkDoneFailed": "Impossibile salvare la comunicazione alla Questura"
   },
+  "reports": {
+    "chips": {
+      "all": "Tutti",
+      "financial": "Finanziari",
+      "fiscal": "Fiscali",
+      "operational": "Operativi"
+    },
+    "columns": {
+      "format": "Formato",
+      "name": "Report",
+      "period": "Periodo suggerito",
+      "type": "Tipo"
+    },
+    "count_one": "{{count}} report",
+    "count_other": "{{count}} report",
+    "description": "Scarica i report degli affitti brevi e apri quelli che hanno già la loro pagina. Ognuno dice su quale base sono i suoi numeri.",
+    "dialog": {
+      "csvOnly": "Il file è un CSV: si apre con Excel.",
+      "customFrom": "Dal giorno",
+      "customTo": "Al giorno",
+      "description": "Scegli i giorni e il formato del file.",
+      "format": "Formato del file",
+      "period": "Periodo",
+      "range": "Dal {{from}} al {{to}}",
+      "title": "Scarica: {{name}}"
+    },
+    "download": "Scarica",
+    "downloadFailed": "Non è stato possibile scaricare il report. Riprova.",
+    "downloaded": "Report scaricato: {{name}}",
+    "emptyDescription": "I report arrivano da soli: appena hai prenotazioni li trovi qui.",
+    "emptyTitle": "Nessun report",
+    "error": {
+      "fiscalSameYear": "I report fiscali coprono un solo anno: scegli due date dello stesso anno.",
+      "fiscalTooLong": "Il report dell'imposta di soggiorno copre al massimo un anno.",
+      "fiscalYear": "I report fiscali partono dal {{year}}: scegli un periodo da quell'anno in poi.",
+      "invalidDates": "Controlla le date: servono un giorno di inizio e uno di fine, con l'inizio non dopo la fine.",
+      "tooLong": "Il periodo è troppo lungo: un report copre al massimo 24 mesi."
+    },
+    "format": {
+      "csv": "CSV",
+      "pdf": "PDF"
+    },
+    "items": {
+      "alloggiati": {
+        "description": "L'elenco delle comunicazioni degli ospiti e il loro stato, nella pagina Alloggiati.",
+        "name": "Alloggiati Web"
+      },
+      "annual": {
+        "description": "Gli incassi su cui si calcola la cedolare e il regime scelto per ogni immobile.",
+        "name": "Cedolare secca e regime fiscale"
+      },
+      "channels": {
+        "description": "Da dove arrivano le prenotazioni: sito, Airbnb, Booking.com, inserite a mano. Ricavo per competenza.",
+        "name": "Prenotazioni per canale"
+      },
+      "occupancy": {
+        "description": "Quante notti sono occupate e quante restano libere, immobile per immobile.",
+        "name": "Occupazione per immobile"
+      },
+      "payments": {
+        "description": "Incassi e rimborsi del mese scorso, nella pagina Pagamenti, dove puoi scaricarli.",
+        "name": "Estratto pagamenti"
+      },
+      "revenue": {
+        "description": "Quanto rende ogni immobile, per competenza: le notti dei soggiorni confermati, come nella Home.",
+        "name": "Ricavi per immobile"
+      },
+      "touristTax": {
+        "description": "Notti e importo registrato, comune per comune e mese per mese.",
+        "name": "Imposta di soggiorno"
+      },
+      "withholding": {
+        "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
+        "name": "Ritenute dei portali"
+      }
+    },
+    "noResultsDescription": "Prova a togliere un filtro o a cercare con un'altra parola.",
+    "noResultsTitle": "Nessun report con questi filtri",
+    "open": "Apri",
+    "preset": {
+      "custom": "Date a scelta",
+      "last3Months": "Ultimi 3 mesi",
+      "lastMonth": "Mese scorso",
+      "lastYear": "Anno scorso",
+      "thisMonth": "Questo mese",
+      "thisYear": "Quest'anno"
+    },
+    "retry": "Riprova",
+    "search": {
+      "label": "Cerca tra i report",
+      "placeholder": "Cerca un report"
+    },
+    "title": "Report",
+    "type": {
+      "financial": "Finanziario",
+      "fiscal": "Fiscale",
+      "operational": "Operativo"
+    }
+  },
   "fiscal": {
     "page": {
       "title": "Regime fiscale {{year}}",
@@ -8676,6 +8829,78 @@
     }
   },
   "team": {
+    "actions": {
+      "access": {
+        "description": "Vede solo le aree e gli immobili che scegli.",
+        "done": "Accessi di {{name}} aggiornati",
+        "doneAreas": "Lavora in: {{areas}}.",
+        "doneSome_one": "Vede {{count}} immobile.",
+        "doneSome_other": "Vede {{count}} immobili.",
+        "label": "Aree e immobili",
+        "loadError": "Non riusciamo a leggere gli immobili di questa persona.",
+        "partial": "Le aree sono state salvate, ma gli immobili no: {{message}}",
+        "save": "Salva aree e immobili",
+        "title": "Aree e immobili di {{name}}"
+      },
+      "deactivate": {
+        "back": "Puoi riattivarlo quando vuoi, con gli stessi permessi.",
+        "confirm": "Disattiva l’accesso",
+        "description": "{{name}} non potrà più entrare in CasaZen. Quello che ha creato (prenotazioni, messaggi, interventi) resta.",
+        "done": "Accesso di {{name}} disattivato",
+        "doneHint": "Non può più usare CasaZen dalla prossima richiesta.",
+        "label": "Disattiva",
+        "next": "Non potrà più usare CasaZen dalla prossima richiesta.",
+        "seat": "Libera un posto nel piano: {{used}} di {{max}}.",
+        "title": "Disattivare l’accesso di {{name}}?",
+        "word": "DISATTIVA"
+      },
+      "failed": "Non è andata a buon fine. Riprova.",
+      "locked": {
+        "admin": "Solo il titolare può modificare un amministratore.",
+        "me": "Sei tu: il tuo ruolo e il tuo accesso non si cambiano da qui.",
+        "owner": "Il titolare non si può cambiare né disattivare."
+      },
+      "now": {
+        "deactivated": "Non può entrare. Riattivandolo torna con gli stessi permessi, se il piano ha un posto libero.",
+        "expired": "Il link è scaduto: reinvia l’invito per darne uno nuovo, valido altri 7 giorni.",
+        "pendingToday": "L’invito è partito oggi.",
+        "pending_one": "L’invito aspetta da {{count}} giorno: se la persona non l’ha visto, reinvialo.",
+        "pending_other": "L’invito aspetta da {{count}} giorni: se la persona non l’ha visto, reinvialo."
+      },
+      "reactivate": {
+        "done": "{{name}} può di nuovo accedere",
+        "doneHint": "Entra con la password di prima e gli stessi permessi.",
+        "label": "Riattiva"
+      },
+      "resend": {
+        "done": "Invito inviato di nuovo a {{name}}",
+        "label": "Reinvia",
+        "noEmail": "L’email non è partita",
+        "noEmailHint": "Copia il link e mandalo tu alla persona.",
+        "until": "Il nuovo link vale fino al {{date}}."
+      },
+      "revoke": {
+        "done": "Invito annullato",
+        "doneHint": "Il link smette di funzionare e il posto si libera. Hai qualche secondo per ripensarci.",
+        "label": "Annulla l’invito"
+      },
+      "role": {
+        "description": "Il nuovo ruolo vale entro un minuto. Aree e immobili restano quelli di ora.",
+        "done": "{{name}}: ruolo {{role}}",
+        "doneHint": "Il nuovo ruolo vale entro un minuto.",
+        "label": "Cambia ruolo",
+        "less": "Cosa non potrà più fare",
+        "levelNo": "non può",
+        "levelRead": "può solo guardare",
+        "levelYes": "può gestire",
+        "more": "Cosa potrà fare in più",
+        "noLess": "Niente in meno",
+        "noMore": "Niente di nuovo",
+        "save": "Salva il ruolo",
+        "title": "Cambia il ruolo di {{name}}"
+      },
+      "title": "Cosa puoi fare"
+    },
     "capabilities": {
       "billing": "Piano e fatture",
       "booking": "Prenotazioni e calendario",

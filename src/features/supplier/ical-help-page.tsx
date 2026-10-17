@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useAppShell } from '@/components/layout/app-shell-context';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,9 +24,11 @@ const PLATFORM_GUIDES: PlatformGuide[] = [
 export function IcalHelpPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // The same page is also a stand-alone address (`/help/ical`, no shell, no padding): there it stays a centered column to read.
+  const inShell = useAppShell() !== null;
 
   return (
-    <div className="max-w-3xl mx-auto" data-testid="ical-help-page">
+    <div className={inShell ? 'w-full' : 'mx-auto w-full max-w-3xl'} data-testid="ical-help-page">
       <Button
         variant="ghost"
         size="sm"
@@ -45,7 +48,7 @@ export function IcalHelpPage() {
         {t('supplier.help.icalIntro')}
       </p>
 
-      <div className="space-y-4">
+      <div className={inShell ? 'grid grid-cols-1 gap-4 xl:grid-cols-2' : 'space-y-4'}>
         {PLATFORM_GUIDES.map((guide) => {
           const Icon = guide.icon;
           return (

@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { Button } from '@/components/ui/button';
 import { ACCOUNT_BILLING_PATH } from '@/lib/billing-routes';
+import { cn } from '@/lib/utils';
 import { useCreateOrgInvitation, useOrgInvitations, useOrgMembers, useOrgRoles } from '@/queries/use-org-team';
 import type { OrgInvitationLanguage, OrgInvitationSent } from '@/types/org-team.types';
 import { ACCOUNT_PEOPLE_PATH } from '../../account/account-home-model';
@@ -154,7 +156,7 @@ export function InvitePage() {
   const [searchParams] = useSearchParams();
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6" data-testid="invite-page">
+    <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="invite-page">
       <PageHeader title={t('team.invite.title')} crumbs="auto" />
       <InviteWizard key={searchParams.get('n') ?? 'first'} />
     </div>

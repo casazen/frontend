@@ -1,4 +1,5 @@
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ProfileInfo } from '@/features/profile/components/profile-info';
 import { ApiAccessTokenCard } from '@/features/profile/components/api-access-token-card';
 import { OperatorTypeSection } from '@/features/profile/components/operator-type-section';
@@ -35,15 +36,19 @@ export function AdminProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title={t('admin.profile.title')}
         description={t('admin.profile.description')}
       />
 
-      <ProfileInfo user={profileUser} />
-      {roles.includes(ROLE_ADMIN) ? <ApiAccessTokenCard /> : null}
-      <OperatorTypeSection />
+      <div className={PAGE_COLUMNS}>
+        <ProfileInfo user={profileUser} />
+        <div className={PAGE_COLUMN}>
+          {roles.includes(ROLE_ADMIN) ? <ApiAccessTokenCard /> : null}
+          <OperatorTypeSection />
+        </div>
+      </div>
     </div>
   );
 }

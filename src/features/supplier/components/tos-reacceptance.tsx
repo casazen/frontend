@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { getProblemMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import { useAcceptSupplierTos } from '@/queries/use-supplier';
 import type { SupplierTos } from '@/types/supplier';
 import { ActivationTermsCard } from './activation-terms-card';
@@ -30,7 +32,7 @@ export function TosReacceptance({ tos }: { tos: SupplierTos }) {
   };
 
   return (
-    <div className="mx-auto max-w-lg space-y-6" data-testid="supplier-tos-reacceptance">
+    <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-tos-reacceptance">
       <PageHeader
         title={t('supplier.activation.reaccept.title')}
         description={

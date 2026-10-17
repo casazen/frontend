@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, Search, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PublicPropertyCard } from '@/features/public-site/components/PublicPropertyCard';
+import { propertyCardSections } from '@/features/public-site/lib/property-card-sections';
 import type { PublicPropertyDto } from '@/types';
 import { propertyResultPath } from '../search-params';
 
@@ -77,10 +78,19 @@ export function SearchResults({ properties, isLoading, isError, isFetching, onRe
     );
   }
 
+  // The cards line up row by row: each one has a row for every part that any of them has.
+  const sections = propertyCardSections(properties);
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid="search-results">
       {properties.map((property) => (
-        <PublicPropertyCard key={property.id} property={property} to={propertyResultPath(property, guests)} />
+        <PublicPropertyCard
+          key={property.id}
+          property={property}
+          to={propertyResultPath(property, guests)}
+          sections={sections}
+          alignFrom="md"
+        />
       ))}
     </div>
   );

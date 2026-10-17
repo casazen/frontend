@@ -141,7 +141,7 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await openBooking(page, 1280);
     const tabs = page.getByRole('tablist', { name: 'Sezioni della prenotazione' });
 
-    await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Documenti', 'Pagamento']);
+    await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Documenti', 'Pagamento', 'Cronologia']);
     await expect(page.getByTestId('booking-tab-details')).toHaveAttribute('aria-selected', 'true');
     // The other parameters of the address (here the profile of the demo) are kept, in their order.
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('href', `/app/short-rent/bookings/${DEMO_BOOKING_ID}?demoProfile=short-stay&tab=guest`);

@@ -30,6 +30,12 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
   // request or ask another supplier after a rejection (SU-09). No new request for a cancelled stay.
   const canManageSupplierRequests = hasPermission('short-rent', 'property.write');
   const canRequestSupplier = canManageSupplierRequests && booking.status !== 'Cancelled';
+  // Why the dates and guests cannot be changed (SR-05c), for who would have changed them: the page offers no "Modifica" then, and the
+  // server's `canEdit` says why. A cancelled booking says it itself.
+  const editLock =
+    hasPermission('short-rent', 'booking.write') && booking.canEdit && !booking.canEdit.allowed && booking.canEdit.reason !== 'Cancelled'
+      ? booking.canEdit.reason
+      : null;
 
   const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
   const channelText = bookingChannelText(booking, t);
@@ -75,6 +81,11 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
           <Fact label={t('booking.detailPage.created')}>{formatDateTime(booking.createdAt)}</Fact>
           <Fact label={t('booking.detailPage.lastUpdated')}>{formatDateTime(booking.updatedAt)}</Fact>
         </Facts>
+        {editLock ? (
+          <p className="max-w-prose text-sm text-foreground/70" data-testid="booking-edit-locked" data-reason={editLock}>
+            {t(`booking.detailPage.editLocked.${editLock}`)}
+          </p>
+        ) : null}
       </PlainSection>
 
       {guest ? (

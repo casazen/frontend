@@ -1,4 +1,5 @@
-import type { PaymentRefund } from './payment.types';
+import type { AlloggiatiWebStatus } from './alloggiati.types';
+import type { PaymentMethod, PaymentRefund, PaymentRefundStatus } from './payment.types';
 import type { OtaReviewReason } from './calendar.types';
 
 // ✅ Fixed: Backend uses PascalCase enum values
@@ -56,6 +57,32 @@ export interface Booking {
   channelBlock?: OtaChannelBlock | null;
   createdAt: string;
   updatedAt: string;
+  /** When the booking became confirmed (UTC); null while it is not, and for one confirmed before the time was kept (SR-05a). */
+  confirmedAt?: string | null;
+  /** When the booking was cancelled (UTC); null while it is not, and for one cancelled before the time was kept. */
+  cancelledAt?: string | null;
+  /** When the host registered the arrival (UTC); null before, and when it was registered after the check-in day. */
+  arrivedAt?: string | null;
+  /** When the host checked the stay out (UTC); null before, and for a stay checked out before the time was kept. */
+  checkedOutAt?: string | null;
+  /** Whether the host may change the dates and the guests, and if not why: the rule of `PUT /bookings/:id`, never guessed here. */
+  canEdit?: BookingEditability;
+  /** Booking detail only (`GET /bookings/:id`): how much of the total came in. Missing on the booking an action answers with. */
+  paymentState?: BookingPaymentState;
+  /** Booking detail only: the money that came in; missing for who may not read payments (the collaborator). */
+  paidAmount?: number | null;
+}
+
+/**
+ * Why the dates and guests of a booking cannot be changed: it is `Cancelled`, the stay has `Started` (arrived or over), or it comes
+ * from the booking site or a channel (`SourceLocked`: price and payment are settled there, so it is cancelled or made again, SR-D5).
+ */
+export type BookingEditLock = 'Cancelled' | 'Started' | 'SourceLocked';
+
+/** `canEdit` of a booking (SR-05a): `reason` is null when `allowed`. */
+export interface BookingEditability {
+  allowed: boolean;
+  reason: BookingEditLock | null;
 }
 
 /** The chip of the list of bookings, which is the `view` of `GET /api/bookings/search`: what the host is doing with them. */
@@ -252,4 +279,76 @@ export interface CancelBookingResult {
   status: BookingStatus;
   refunds: PaymentRefund[];
   canceledIntents: number;
+}
+
+/** What an entry of the timeline of a booking is about (SR-05a): the title is this key, the words are the client's. */
+export type BookingTimelineKind =
+  | 'Created'
+  | 'RequestReceived'
+  | 'GuestEmailPending'
+  | 'ApprovalPending'
+  | 'PaymentPending'
+  | 'HostConfirmationPending'
+  | 'PaymentReceived'
+  | 'Confirmed'
+  | 'CheckInLinkSent'
+  | 'GuestDocumentsReceived'
+  | 'Arrived'
+  | 'Alloggiati'
+  | 'CheckedOut'
+  | 'Cancelled'
+  | 'Refund';
+
+/** `Done` happened; `Current` waits for the host, the guest or the bank. */
+export type BookingTimelineState = 'Done' | 'Current';
+
+/** Why the system cancelled a booking (or the host declined the request); null in the entry when a person cancelled it. */
+export type BookingCancellationReason =
+  | 'CheckoutHoldExpired'
+  | 'DatesUnavailableAtPayment'
+  | 'OnSiteRequestDeclined'
+  | 'OnSiteRequestExpired'
+  | 'OnSiteEmailNotConfirmed'
+  | 'DeferredPaymentNotCompleted';
+
+/** Where the link of the online check-in stands. */
+export type BookingCheckInLinkState = 'Sent' | 'InProgress' | 'Expired' | 'Completed';
+
+/** What an entry says besides its kind: each field belongs to a few kinds and is null for the others. Never a name or an email. */
+export interface BookingTimelineData {
+  /** Where the booking came from (`Created`, `RequestReceived`): `Direct`, `Manual`, `Airbnb`… */
+  source: string | null;
+  /** Euros (`PaymentReceived`, `Refund`); null for who may not read payments: the entry is there without the figure. */
+  amount: number | null;
+  /** How it was paid (`PaymentReceived`). */
+  method: PaymentMethod | null;
+  /** The term of a request that waits (`GuestEmailPending`, `ApprovalPending`), UTC. */
+  expiresAt: string | null;
+  /** Why the system cancelled it (`Cancelled`). */
+  reason: BookingCancellationReason | null;
+  /** What the host wrote when cancelling (`Cancelled`): the host's own note, never sent to the guest. */
+  note: string | null;
+  /** Where the link of the online check-in stands (`CheckInLinkSent`). */
+  linkState: BookingCheckInLinkState | null;
+  /** The Alloggiati Web communication as the Alloggiati page tells it (`Alloggiati`). */
+  alloggiatiStatus: AlloggiatiWebStatus | null;
+  /** The legal term of the Alloggiati communication while it is not sent (`Alloggiati`), UTC. */
+  deadlineAt: string | null;
+  /** Where the refund stands (`Refund`). */
+  refundStatus: PaymentRefundStatus | null;
+}
+
+/** An entry of the timeline. */
+export interface BookingTimelineEvent {
+  kind: BookingTimelineKind;
+  /** When it happened (UTC); null for a step that happened before the time was kept, and for a wait with no instant of its own. */
+  at: string | null;
+  state: BookingTimelineState;
+  data: BookingTimelineData;
+}
+
+/** `GET /bookings/:id/timeline` (SR-05a): the past steps and the waits, already in order. */
+export interface BookingTimeline {
+  bookingId: string;
+  events: BookingTimelineEvent[];
 }

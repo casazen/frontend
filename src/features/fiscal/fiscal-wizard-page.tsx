@@ -5,6 +5,7 @@ import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +15,7 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { useFiscalTaxProfile, useUpdateFiscalTaxProfile } from '@/queries/use-fiscal';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { getProblemMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import type { FiscalTaxProfile } from '@/api/fiscal.api';
 import { compactIdentifier, FISCAL_CODE, PARTITA_IVA, taxProfileChanges } from '@/features/fiscal/tax-profile-changes';
 
@@ -27,7 +29,7 @@ export function FiscalWizardPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-xl space-y-6 md:space-y-8" data-testid="fiscal-wizard-page">
+      <div className={cn(FOCUS_COLUMN, 'space-y-6 md:space-y-8')} data-testid="fiscal-wizard-page">
         <PageHeader title={t('fiscal.wizard.title')} description={t('fiscal.wizard.description')} crumbs="auto" />
         {profile.isError && !profile.data ? (
           // A failed load is never shown as an empty form.

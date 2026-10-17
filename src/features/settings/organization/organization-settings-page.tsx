@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Info, ShieldAlert } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -115,9 +116,11 @@ export function OrganizationSettingsContent({
   const { t } = useTranslation();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6" data-testid="organization-settings-page">
+    <div className="space-y-6" data-testid="organization-settings-page">
       <PageHeader title={t('orgSettings.title')} description={t('orgSettings.description')} crumbs="auto" />
-      <OrganizationSettings showSiteAppearanceLink={showSiteAppearanceLink} />
+      <div className={FOCUS_COLUMN}>
+        <OrganizationSettings showSiteAppearanceLink={showSiteAppearanceLink} />
+      </div>
     </div>
   );
 }

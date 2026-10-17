@@ -35,3 +35,27 @@ export function responseLabel(supplier: SupplierPicker, t: TFunction): string | 
   if (minutes == null) return null;
   return t('marketplace.respondsWithin', { time: formatWorkDuration(Math.max(1, minutes), t) });
 }
+
+/** What a host weighs at a glance, on one line ("da 25 € all'ora · Risponde in genere entro 45 minuti"); nothing when there is neither. */
+export function supplierFacts(supplier: SupplierPicker, t: TFunction, locale: string): string | null {
+  const parts = [supplierPriceLabel(supplier, t, locale), responseLabel(supplier, t)].filter((part): part is string => part !== null);
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+/** Which optional sections the cards of one list have: every card of a grid has the same rows, so that they line up. */
+export interface SupplierCardRows {
+  /** Some supplier of the list has a price or a measured response time to say. */
+  facts: boolean;
+  /** Some supplier of the list has a description. */
+  bio: boolean;
+}
+
+export function supplierCardRows(suppliers: readonly SupplierPicker[], t: TFunction, locale: string): SupplierCardRows {
+  return {
+    facts: suppliers.some((supplier) => supplierFacts(supplier, t, locale) !== null),
+    bio: suppliers.some((supplier) => !!supplier.bio),
+  };
+}
+
+/** The rows of a card: the name, the categories, and the facts and the description when some card of the grid has them. */
+export const supplierCardRowCount = ({ facts, bio }: SupplierCardRows): 2 | 3 | 4 => (2 + (facts ? 1 : 0) + (bio ? 1 : 0)) as 2 | 3 | 4;
