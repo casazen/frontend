@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CircleAlert, SearchX } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { SearchX, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PublicSiteState } from '@/features/public-site/components/public-site-state';
 import { cn } from '@/lib/utils';
 
 /** A placeholder block, in the tone of the site's own border color (not the console's gray) and still when motion is reduced. */
@@ -56,23 +56,6 @@ export function AmenitySkeleton() {
   );
 }
 
-/** One column in the middle with an icon, a title, a sentence and the ways out: the shape of the two states below. */
-function StateBlock({ icon, title, text, alert, children }: { icon: ReactNode; title: string; text: string; alert?: boolean; children: ReactNode }) {
-  return (
-    <div
-      role={alert ? 'alert' : undefined}
-      className="mx-auto flex min-h-[55vh] max-w-md flex-col items-center justify-center gap-3 px-4 py-12 text-center"
-    >
-      <span aria-hidden className="mb-1 grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-[var(--cz-public-primary-text)]">
-        {icon}
-      </span>
-      <h1 className="public-display text-balance text-2xl font-semibold">{title}</h1>
-      <p className="text-[var(--cz-public-muted)]">{text}</p>
-      <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">{children}</div>
-    </div>
-  );
-}
-
 interface PropertyNotFoundProps {
   /** `/book/:orgSlug`: where the other homes are. */
   basePath: string;
@@ -85,22 +68,21 @@ export function PropertyNotFound({ basePath, contactEmail }: PropertyNotFoundPro
   const { t } = useTranslation();
 
   return (
-    <div data-testid="property-not-found">
-      <StateBlock
-        icon={<SearchX className="h-7 w-7" />}
-        title={t('publicProperty.notFound.title')}
-        text={t('publicProperty.notFound.text')}
-      >
-        <Button asChild className="public-site-cta border-0">
-          <Link to={basePath}>{t('publicProperty.notFound.action')}</Link>
+    <PublicSiteState
+      icon={SearchX}
+      testId="property-not-found"
+      title={t('publicProperty.notFound.title')}
+      description={t('publicProperty.notFound.text')}
+    >
+      <Button asChild>
+        <Link to={basePath}>{t('publicProperty.notFound.action')}</Link>
+      </Button>
+      {contactEmail ? (
+        <Button asChild variant="outline">
+          <a href={`mailto:${contactEmail}`}>{t('publicProperty.notFound.contact')}</a>
         </Button>
-        {contactEmail ? (
-          <Button asChild variant="outline">
-            <a href={`mailto:${contactEmail}`}>{t('publicProperty.notFound.contact')}</a>
-          </Button>
-        ) : null}
-      </StateBlock>
-    </div>
+      ) : null}
+    </PublicSiteState>
   );
 }
 
@@ -115,20 +97,19 @@ export function PropertyLoadError({ orgName, basePath, onRetry }: PropertyLoadEr
   const { t } = useTranslation();
 
   return (
-    <div data-testid="property-load-error">
-      <StateBlock
-        alert
-        icon={<CircleAlert className="h-7 w-7" />}
-        title={t('publicProperty.loadError.title')}
-        text={t('publicProperty.loadError.text')}
-      >
-        <Button type="button" className="public-site-cta border-0" onClick={onRetry}>
-          {t('shared.errorFallback.tryAgain')}
-        </Button>
-        <Button asChild variant="outline">
-          <Link to={basePath}>{t('publicBooking.backToOrg', { orgName })}</Link>
-        </Button>
-      </StateBlock>
-    </div>
+    <PublicSiteState
+      icon={TriangleAlert}
+      role="alert"
+      testId="property-load-error"
+      title={t('publicProperty.loadError.title')}
+      description={t('publicProperty.loadError.text')}
+    >
+      <Button type="button" onClick={onRetry}>
+        {t('shared.errorFallback.tryAgain')}
+      </Button>
+      <Button asChild variant="outline">
+        <Link to={basePath}>{t('publicBooking.backToOrg', { orgName })}</Link>
+      </Button>
+    </PublicSiteState>
   );
 }
