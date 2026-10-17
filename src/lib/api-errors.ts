@@ -136,6 +136,16 @@ export function isTransientRequestError(error: unknown): boolean {
   );
 }
 
+/**
+ * Seconds to wait after a 429, from the `retryAfterSeconds` of the ProblemDetails body (the `Retry-After` header is not readable
+ * from another origin: the API does not expose it). `undefined` when the answer is not a 429 or does not say.
+ */
+export function getRetryAfterSeconds(error: unknown): number | undefined {
+  if (!isAxiosError(error) || error.response?.status !== 429 || !isRecord(error.response.data)) return undefined;
+  const seconds = error.response.data.retryAfterSeconds;
+  return typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : undefined;
+}
+
 function readServerMessage(data: unknown): string | undefined {
   if (typeof data === 'string') return sentenceText(data);
   if (!isRecord(data)) return undefined;

@@ -518,6 +518,7 @@
     "ota": "OTA",
     "leases": "Leases",
     "supplierClients": "Clients",
+    "supplierSettings": "Settings",
     "users": "Users",
     "jobs": "Processes",
     "suppliers": "Suppliers",
@@ -541,7 +542,6 @@
     "supplierServices": "Services and prices",
     "supplierServicesBar": "Services",
     "supplierHelpIcal": "iCal guide",
-    "supplierPayments": "Payments",
     "group": {
       "account": "Your account",
       "activity": "Your business",
@@ -3255,6 +3255,33 @@
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
     "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
+    "settings": {
+      "answers": {
+        "title": "Answers to requests"
+      },
+      "autoAccept": {
+        "hint": "When a regular customer asks you for a service at a free time, the request is accepted at once: you do not have to answer.",
+        "label": "Accept regular customers automatically",
+        "rules": {
+          "cancel": "You can cancel the job from the request, with a reason, until you start it.",
+          "notice": "We tell you every time a request is accepted automatically.",
+          "regulars": "It applies to hosts you have already taken at least 3 jobs from (cancelled ones do not count): the first request accepted automatically is the fourth.",
+          "service": "It applies to services with a price, and only if the time chosen is free in your agenda. It does not apply to services on quote, nor to the private customers of your showcase.",
+          "title": "How it works"
+        }
+      },
+      "description": "How you answer requests and the account where you receive payments.",
+      "loadError": "Could not load the settings.",
+      "loading": "Loading the settings…",
+      "saveError": "We could not save. Try again.",
+      "saved": "Saved.",
+      "tabs": {
+        "answers": "Answers",
+        "payments": "Payments"
+      },
+      "tabsLabel": "Sections of the settings",
+      "title": "Settings"
+    },
     "status": "Status",
     "statusActive": "Active",
     "statusPending": "Pending",
@@ -3470,6 +3497,7 @@
     },
     "requests": {
       "action": {
+        "cancel": "Cancel the job",
         "complete": "Mark as done",
         "completeShort": "Complete",
         "openPage": "Open the full page",
@@ -3482,6 +3510,13 @@
         "you": "You"
       },
       "answerUrgent": "Answer the most urgent",
+      "cancel": {
+        "back": "Go back",
+        "confirm": "Cancel the job",
+        "done": "Job cancelled",
+        "reason": "Why are you cancelling it?",
+        "title": "Cancel the job"
+      },
       "chips": {
         "all": "All",
         "archive": "Archive",
@@ -3550,6 +3585,8 @@
         "label": "History of the request",
         "Pagato": "Paid",
         "PresoInCarico": "You accepted the request",
+        "PresoInCaricoAuto": "Accepted automatically",
+        "PresoInCaricoAutoNote": "It is a regular customer and you turned on automatic acceptance. You can cancel the job until it starts.",
         "Richiesto": "Request received",
         "Rifiutato": "You declined the request",
         "sub": "What has happened so far",
@@ -3637,6 +3674,12 @@
           "then": "Next: the customer sees that the job is done.",
           "title": "The job is scheduled",
           "you": "Do the job at the time given and, when you are done, mark it as completed."
+        },
+        "scheduledAuto": {
+          "client": "Sees the confirmed day and time.",
+          "then": "Next: the customer sees that the job is done.",
+          "title": "Accepted automatically: the job is scheduled",
+          "you": "The customer is one of your regulars and the time was free, so we accepted it for you. If you cannot do it, cancel the job below before you start; otherwise do it at the time given and, when you are done, mark it as completed."
         },
         "toAnswer": {
           "client": "Sent the request and is waiting for your answer.",
@@ -4356,7 +4399,6 @@
     },
     "payments": {
       "checking": "Checking with Stripe…",
-      "description": "The account where the payments for your jobs arrive.",
       "errors": {
         "dashboard": "We couldn't open the Stripe dashboard. Try again.",
         "onboarding": "We couldn't open Stripe. Try again."
@@ -4414,7 +4456,6 @@
       },
       "loadError": "Could not load the account status.",
       "loading": "Loading the account status…",
-      "title": "Payments",
       "unavailable": {
         "description": "Once they are, you will connect here the account where you receive the payments for your jobs. For now there is nothing to do.",
         "title": "Online payments are not active yet"
@@ -6823,6 +6864,13 @@
       "loadError": "The booking could not be searched. Try again in a moment.",
       "retry": "Try again",
       "searchAnother": "Find another booking",
+      "signOut": "Sign out",
+      "sharedDevice": "On a shared device, sign out when you are done.",
+      "loadingBooking": "Loading your booking…",
+      "sessionExpiredTitle": "Your session has expired",
+      "sessionExpiredDescription": "To continue, enter your email again: the booking code is already filled in.",
+      "rateLimited_one": "Too many attempts: try again in {{count}} minute.",
+      "rateLimited_other": "Too many attempts: try again in {{count}} minutes.",
       "resultTitle": "Your booking",
       "stayTitle": "Stay",
       "guestsCount_one": "{{count}} guest",
@@ -6877,6 +6925,7 @@
         "open": "Enter the guests' details from the link we send you by email.",
         "openSent": "We sent you the link to enter the guests' details on {{time}}: check your email, spam folder included.",
         "completed": "Online check-in completed: the guests' details were sent.",
+        "emailNeeded": "To receive the link, enter the email you booked with.",
         "send": "Send me the link",
         "sendAgain": "Send it again",
         "sending": "Sending…",

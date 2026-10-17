@@ -43,7 +43,8 @@ export const publicBookingApi = {
 
   /**
    * "Le mie prenotazioni" (BK-11): the booking of this site with its code and the guest's email, in the body (never in the
-   * URL). 404 `guest_booking_not_found` whatever does not match; 429 `rate_limited`.
+   * URL). 404 `guest_booking_not_found` whatever does not match; 429 `rate_limited`. The page no longer uses it: it opens a guest
+   * session once and reads the booking with its token (`guestSessionApi`, DB-06c); the endpoint stays for compatibility.
    */
   lookupGuestBooking: (payload: GuestBookingLookupPayload) =>
     ApiClient.post<GuestBookingDetails>('/public/bookings/lookup', payload, { public: true }),

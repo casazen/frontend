@@ -55,14 +55,10 @@ export function useResumeCheckoutPayment() {
   });
 }
 
-/** "Le mie prenotazioni" (BK-11): one lookup per submit of the form; errors (404 included) are shown by the page. */
-export function useGuestBookingLookup() {
-  return useMutation({
-    mutationFn: (payload: GuestBookingLookupPayload) => publicBookingApi.lookupGuestBooking(payload),
-  });
-}
-
-/** Emails the online check-in link of the booking found by {@link useGuestBookingLookup} again. */
+/**
+ * Emails the online check-in link of a booking of "Le mie prenotazioni" again (code + email in the body; the booking itself is
+ * read with the guest session, `useGuestBooking`).
+ */
 export function useSendGuestCheckInLink() {
   return useMutation({
     mutationFn: (payload: GuestBookingLookupPayload) => publicBookingApi.sendGuestCheckInLink(payload),

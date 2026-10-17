@@ -1,8 +1,12 @@
+/** The tab of the settings of the supplier (`?tab=`) that holds the payments account. */
+export const PAYMENTS_TAB = 'pagamenti';
+
 /**
- * The page of the payments account of the supplier. It is also the address the server sends the supplier back to from Stripe
- * (`?stripe_return=1`, `?stripe_refresh=1`, built by the API in SP-14): it is never renamed.
+ * Where the pages point to the payments account of the supplier: the "Pagamenti" tab of the settings. The page of the settings is also
+ * the address the server sends the supplier back to from Stripe (`?stripe_return=1`, `?stripe_refresh=1`, built by the API in SP-14, with
+ * no tab): it is never renamed, and the marks alone open this tab.
  */
-export const SUPPLIER_PAYMENTS_PATH = '/app/supplier/settings';
+export const SUPPLIER_PAYMENTS_PATH = `/app/supplier/settings?tab=${PAYMENTS_TAB}`;
 
 /** What Stripe sends the supplier back with: the form was left (`return`: sent or not) or the link expired (`refresh`). */
 export type StripeMark = 'return' | 'refresh';
