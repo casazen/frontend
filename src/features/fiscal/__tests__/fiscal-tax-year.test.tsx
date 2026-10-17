@@ -31,6 +31,9 @@ vi.mock('@/components/layout/app-shell', () => ({
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: () => null,
 }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: () => true }),
+}));
 
 function renderPage(Page: () => ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

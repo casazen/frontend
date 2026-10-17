@@ -27,6 +27,9 @@ async function openServices(page: Page, path: string, options: { services?: Mock
 /** What the screen sent to change the catalog, in order (the reads are not interesting). */
 const writes = (catalog: SupplierServicesMock) => catalog.calls.filter((call) => call.method !== 'GET').map((call) => `${call.method} ${call.path}`);
 
+/** A service in the list: its row in the table on a computer, its card on a phone (the list has both and a media query shows one). */
+const rowOf = (page: Page, id: string) => page.locator(`[data-testid="list-row-${id}"]:visible`);
+
 /**
  * The buttons, links and summaries a finger has to hit have 44 px of target in every direction. It is measured as a finger meets
  * it: at 21 px from the center of the control, up, down, left and right, the page answers with the control itself (a button
@@ -156,7 +159,7 @@ test.describe('Servizi e prezzi (SP-06)', () => {
 
       // The list says the same.
       await page.locator('a[href="/app/supplier/services"]').first().click();
-      await expect(page.getByTestId('supplier-service-e2e-1')).toContainText('In pausa');
+      await expect(rowOf(page, 'e2e-1')).toContainText('In pausa');
     });
 
     test('resumes a draft from the list where the creation was left, with what was saved', async ({ page }) => {
@@ -164,7 +167,7 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         services: [mockService({ id: 'draft-1', name: 'Ripasso pre-arrivo', status: 'Draft', priceFromCents: null, durationMinutes: null, publishable: false, missingForPublication: ['durationMinutes', 'priceFromCents'] })],
       });
 
-      const draft = page.getByTestId('supplier-service-draft-1');
+      const draft = rowOf(page, 'draft-1');
       await expect(draft).toContainText('Da completare: Durata, Prezzo.');
       await draft.getByRole('link', { name: 'Continua' }).click();
 
@@ -220,25 +223,25 @@ test.describe('Servizi e prezzi (SP-06)', () => {
 
     test('pauses from the menu of the list and takes it back with "Annulla"', async ({ page }) => {
       const catalog = await openServices(page, '/app/supplier/services', { services: [mockService(), mockService({ id: 'svc-2', slug: 'altro', name: 'Lavanderia', status: 'Paused', category: 'laundry' })] });
-      const card = page.getByTestId('supplier-service-svc-1');
-      await expect(card).toContainText('Pubblicato');
+      const row = rowOf(page, 'svc-1');
+      await expect(row).toContainText('Pubblicato');
 
-      await card.getByRole('button', { name: 'Altre azioni: Pulizia cambio ospiti' }).click();
+      await row.getByRole('button', { name: 'Altre azioni: Pulizia cambio ospiti' }).click();
       await page.getByRole('menuitem', { name: 'Metti in pausa' }).click();
-      await expect(card).toContainText('In pausa');
+      await expect(row).toContainText('In pausa');
       expect(catalog.services()[0]?.status).toBe('Paused');
 
       await page.getByRole('button', { name: 'Annulla' }).click();
-      await expect(card).toContainText('Pubblicato');
+      await expect(row).toContainText('Pubblicato');
       expect(catalog.services()[0]?.status).toBe('Active');
       // The paused one has its own way back on offer.
-      await expect(page.getByTestId('supplier-service-svc-2').getByRole('button', { name: 'Riattiva' })).toBeVisible();
+      await expect(rowOf(page, 'svc-2').getByRole('button', { name: 'Riattiva' })).toBeVisible();
     });
 
     test('duplicates a service from its menu: the copy is made once, its draft opens, and the list has it when the person leaves', async ({ page }) => {
       // The app runs under React StrictMode here, as in development: its effects run twice, and the copy must still be made once.
       const catalog = await openServices(page, '/app/supplier/services', { services: [mockService()] });
-      await page.getByTestId('supplier-service-svc-1').getByRole('button', { name: 'Altre azioni: Pulizia cambio ospiti' }).click();
+      await rowOf(page, 'svc-1').getByRole('button', { name: 'Altre azioni: Pulizia cambio ospiti' }).click();
       await page.getByRole('menuitem', { name: 'Duplica' }).click();
 
       await expect(page).toHaveURL(/\/app\/supplier\/services\/new\?bozza=e2e-1/);
@@ -246,8 +249,8 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       expect(writes(catalog)).toEqual(['POST /api/supplier/services/svc-1/duplicate']);
 
       await page.getByTestId('service-wizard-exit').click();
-      await expect(page.getByTestId('supplier-service-e2e-1')).toContainText('Bozza');
-      await expect(page.getByTestId('supplier-service-svc-1')).toBeVisible();
+      await expect(rowOf(page, 'e2e-1')).toContainText('Bozza');
+      await expect(rowOf(page, 'svc-1')).toBeVisible();
     });
 
     test('moves a photo with the keyboard and removes one after asking', async ({ page }) => {
@@ -275,7 +278,7 @@ test.describe('Servizi e prezzi (SP-06)', () => {
 
     test('has nothing axe can find in a browser (colors included): the list, a step of the creation and the page of a service', async ({ page }) => {
       await openServices(page, '/app/supplier/services', { services: [mockService({ photoUrls: [drawing('a')] }), mockService({ id: 'svc-2', slug: 'b', name: 'Lavanderia', status: 'Paused' })] });
-      await expect(page.getByTestId('supplier-service-svc-1')).toBeVisible();
+      await expect(rowOf(page, 'svc-1')).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('data-ui', 'v2');
       await expectNoAxeViolations(page, { include: '[data-testid="supplier-services-page"]' });
 
@@ -304,15 +307,10 @@ test.describe('Servizi e prezzi (SP-06)', () => {
         });
         await page.addStyleTag({ content: WIDER_LETTERS });
 
-        await expect(page.getByTestId('supplier-services-cards')).toBeVisible();
+        await expect(rowOf(page, 'svc-1')).toBeVisible();
+        await expect(page.getByRole('table', { name: 'Servizi e prezzi' })).toBeHidden();
         await expectNothingSticksOut(page, `${width} px, the list with wider letters`, 'main');
         await expectFingerTargets(page, '[data-testid="supplier-services-page"]', `${width} px, the list`);
-
-        await page.goto(demoUrl('/app/supplier/services?vista=tabella', 'supplier'), { waitUntil: 'domcontentloaded' });
-        await page.addStyleTag({ content: WIDER_LETTERS });
-        await expect(page.getByTestId('supplier-services-table')).toBeVisible();
-        await expectNothingSticksOut(page, `${width} px, the table as cards`, 'main');
-        await expectFingerTargets(page, '[data-testid="supplier-services-page"]', `${width} px, the table as cards`);
       });
 
       test(`at ${width} px the creation fits the screen in every step, with the button of the step in reach`, async ({ page }) => {

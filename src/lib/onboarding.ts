@@ -125,11 +125,13 @@ export function needsOnboarding(user: UserWithRoles, profile?: OnboardingProfile
 
 /**
  * Pages a host without properties must still reach: the creation of the property itself (the destination, so no loop),
- * and the pages that are not about the property (account settings and plan, profile, legal documents).
+ * and the pages that are not about the property (account settings and plan, profile, legal documents). The plan and billing page of
+ * the account area (AM-08a) is one of them: the plan pages of the rental areas hand a billing administrator over to it.
  */
 const FIRST_PROPERTY_EXEMPT_PATTERNS = [
   /^\/(?:app\/(?:short|long)-rent\/)?properties\/(?:create|new)(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/settings(?:\/|$)/,
+  /^\/app\/account\/billing(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/profile(?:\/|$)/,
   /^\/profile(?:\/|$)/,
   /^\/legale(?:\/|$)/,

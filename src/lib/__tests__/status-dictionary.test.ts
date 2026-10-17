@@ -44,6 +44,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   checkin: ["Inviato", "InCompilazione", "Completo", "AlloggiatiInviato", "Scaduto"],
   // The CIN status of `GET /api/properties/cin-compliance`
   cin: ["valid", "missing", "invalid"],
+  // No enum: the regime of a property for the tax year, as the interface works it out from what the host chose and confirmed (SR-FISC)
+  fiscalRegime: ["Confirmed", "ToConfirm", "NotChosen"],
   // AlloggiatiWebStatus
   alloggiati: ["DaInviare", "DaInviareManualmente", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
   // SupplierServiceListingStatus (SP-06)
@@ -76,7 +78,15 @@ describe("dictionary and enums", () => {
   it("dictionary_DerivedStates_AreTheOnesTheInterfaceWorksOut", () => {
     const derived = entries.filter(({ definition }) => definition.derived).map(({ kind, status }) => `${kind}.${status}`);
 
-    expect(derived.sort()).toEqual(["longRentProperty.Free", "longRentProperty.Rented", "property.Paused", "rent.Overdue"]);
+    expect(derived.sort()).toEqual([
+      "fiscalRegime.Confirmed",
+      "fiscalRegime.NotChosen",
+      "fiscalRegime.ToConfirm",
+      "longRentProperty.Free",
+      "longRentProperty.Rented",
+      "property.Paused",
+      "rent.Overdue",
+    ]);
   });
 
   it("dictionary_RequestKind_HasInCorsoAndAnnullatoOfSP04", () => {

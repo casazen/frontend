@@ -1,9 +1,8 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useId, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, ImageIcon, ImageOff, Loader2, Star, Trash2, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +39,7 @@ interface PropertyPhotoManagerProps {
  */
 export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: PropertyPhotoManagerProps) {
   const { t } = useTranslation();
+  const titleId = useId();
   const gallery = usePropertyPhotos(propertyId);
   const upload = useUploadPropertyPhotos(propertyId);
   const remove = useDeletePropertyPhoto(propertyId);
@@ -92,15 +92,15 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
   };
 
   return (
-    <Card data-testid="property-photo-manager">
-      <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5" />
+    <section aria-labelledby={titleId} className="min-w-0 space-y-4" data-testid="property-photo-manager">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
+            <ImageIcon aria-hidden="true" className="size-5 shrink-0" />
             {t('property.photos.title')}
-          </CardTitle>
-          <CardDescription>{t('property.photos.description')}</CardDescription>
-          <p className="text-xs text-muted-foreground">
+          </h2>
+          <p className="text-sm text-foreground/70">{t('property.photos.description')}</p>
+          <p className="text-xs text-foreground/70">
             {t('property.photos.rules', {
               max: rules.maxPhotos,
               size: toMegabytes(rules.maxFileSizeBytes),
@@ -117,9 +117,9 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
             {upload.isPending ? t('property.photos.uploading') : t('property.photos.upload')}
           </Button>
         )}
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4">
+      <div className="space-y-4">
         <input
           ref={inputRef}
           type="file"
@@ -210,7 +210,7 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
             </ul>
           </>
         )}
-      </CardContent>
+      </div>
 
       <Dialog open={photoToDelete !== null} onOpenChange={(open) => !open && closeDelete()}>
         <DialogContent>
@@ -234,7 +234,7 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </section>
   );
 }
 
