@@ -517,6 +517,7 @@
     "accountSettings": "Impostazioni",
     "ota": "OTA",
     "leases": "Contratti",
+    "supplierEarnings": "Incassi",
     "users": "Utenti",
     "jobs": "Processi",
     "suppliers": "Fornitori",
@@ -3192,6 +3193,76 @@
     "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
   },
   "supplier": {
+    "earnings": {
+      "chips": {
+        "all": "Tutti",
+        "late": "In ritardo",
+        "lateHint": "Pagamenti chiesti e non ancora arrivati",
+        "paid": "Pagati",
+        "toCollect": "Da incassare",
+        "toCollectHint": "Lavori completati che non hai ancora incassato"
+      },
+      "clientFilter": {
+        "clear": "Mostra tutti",
+        "note": "Stai vedendo solo i lavori di un cliente."
+      },
+      "clientRemoved": "Cliente rimosso",
+      "columns": {
+        "commission": "Commissione",
+        "gross": "Lordo",
+        "job": "Lavoro",
+        "net": "Netto",
+        "state": "Stato"
+      },
+      "count_one": "{{count}} lavoro",
+      "count_other": "{{count}} lavori",
+      "description": "Quanto ti spetta e quanto hai incassato, lavoro per lavoro.",
+      "empty": {
+        "description": "Quando completi un lavoro compare qui, con lordo, commissione e netto.",
+        "title": "Qui vedrai i pagamenti"
+      },
+      "export": "Scarica il riepilogo",
+      "exportError": "Non siamo riusciti a preparare il file. Riprova.",
+      "filters": {
+        "all": "Tutto il periodo",
+        "anno": "Quest’anno",
+        "mese": "Questo mese",
+        "mese-scorso": "Mese scorso",
+        "period": "Periodo"
+      },
+      "loadError": "Impossibile caricare gli incassi.",
+      "loading": "Carico gli incassi…",
+      "noCommission": "Nessuna",
+      "noResults": {
+        "description": "Cambia il periodo o scegli un altro filtro.",
+        "title": "Nessun pagamento trovato"
+      },
+      "numbers": {
+        "commission": "Commissione di CasaZen questo mese",
+        "label": "I tuoi incassi",
+        "paid": "Pagati questo mese",
+        "toCollect": "Da incassare",
+        "toCollectJobs_one": "{{count}} lavoro",
+        "toCollectJobs_other": "{{count}} lavori"
+      },
+      "rate": {
+        "free": "Fino al {{day}} CasaZen non trattiene commissione sui pagamenti online.",
+        "none": "Sui pagamenti online CasaZen non trattiene commissione.",
+        "normal": "Sui pagamenti online CasaZen trattiene il {{percent}} %."
+      },
+      "state": {
+        "in_review": "In verifica da CasaZen",
+        "late": "In ritardo",
+        "lateDays_one": "In ritardo di {{count}} giorno",
+        "lateDays_other": "In ritardo di {{count}} giorni",
+        "paid": "Pagato",
+        "partially_refunded": "Rimborsato in parte",
+        "refunded": "Rimborsato",
+        "to_collect": "Da incassare",
+        "unknown": "Vedi la richiesta"
+      },
+      "title": "Incassi"
+    },
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
     "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",

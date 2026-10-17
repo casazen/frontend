@@ -517,6 +517,7 @@
     "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
+    "supplierEarnings": "Earnings",
     "users": "Users",
     "jobs": "Processes",
     "suppliers": "Suppliers",
@@ -3192,6 +3193,76 @@
     "propertiesDescription": "Request services from a property or booking detail page."
   },
   "supplier": {
+    "earnings": {
+      "chips": {
+        "all": "All",
+        "late": "Late",
+        "lateHint": "Payments asked for that have not arrived yet",
+        "paid": "Paid",
+        "toCollect": "To collect",
+        "toCollectHint": "Completed jobs you have not been paid for yet"
+      },
+      "clientFilter": {
+        "clear": "Show all",
+        "note": "You are seeing only the jobs of one client."
+      },
+      "clientRemoved": "Client removed",
+      "columns": {
+        "commission": "Commission",
+        "gross": "Gross",
+        "job": "Job",
+        "net": "Net",
+        "state": "Status"
+      },
+      "count_one": "{{count}} job",
+      "count_other": "{{count}} jobs",
+      "description": "What you are owed and what you have been paid, job by job.",
+      "empty": {
+        "description": "When you complete a job it shows up here, with gross, commission and net.",
+        "title": "Your payments will show here"
+      },
+      "export": "Download the summary",
+      "exportError": "We could not prepare the file. Try again.",
+      "filters": {
+        "all": "Whole period",
+        "anno": "This year",
+        "mese": "This month",
+        "mese-scorso": "Last month",
+        "period": "Period"
+      },
+      "loadError": "Could not load the earnings.",
+      "loading": "Loading the earnings…",
+      "noCommission": "None",
+      "noResults": {
+        "description": "Change the period or pick another filter.",
+        "title": "No payment found"
+      },
+      "numbers": {
+        "commission": "CasaZen commission this month",
+        "label": "Your earnings",
+        "paid": "Paid this month",
+        "toCollect": "To collect",
+        "toCollectJobs_one": "{{count}} job",
+        "toCollectJobs_other": "{{count}} jobs"
+      },
+      "rate": {
+        "free": "Until {{day}} CasaZen keeps no commission on online payments.",
+        "none": "CasaZen keeps no commission on online payments.",
+        "normal": "CasaZen keeps {{percent}} % of online payments."
+      },
+      "state": {
+        "in_review": "Under review by CasaZen",
+        "late": "Late",
+        "lateDays_one": "{{count}} day late",
+        "lateDays_other": "{{count}} days late",
+        "paid": "Paid",
+        "partially_refunded": "Partly refunded",
+        "refunded": "Refunded",
+        "to_collect": "To collect",
+        "unknown": "See the request"
+      },
+      "title": "Earnings"
+    },
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
     "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
