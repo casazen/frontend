@@ -1,3 +1,5 @@
+import type { SupplierServicePriceUnit } from './supplier-services';
+
 export type ServiceRequestStatus =
   | 'Richiesto'
   | 'PresoInCarico'
@@ -199,6 +201,21 @@ export interface CreateLongRentServiceRequestDto {
   durationMinutes?: number;
 }
 
+/** A published service of a supplier in the picker of the marketplace (`GET /suppliers`, SR-09a): what the host needs to read its price. */
+export interface SupplierPickerService {
+  id: string;
+  name: string;
+  category: string;
+  durationMinutes: number | null;
+  /** The "from" price in euro cents; `null` is "on quote". */
+  priceFromCents: number | null;
+  priceUnit: SupplierServicePriceUnit;
+  requiresQuote: boolean;
+}
+
+/** The order of the marketplace list (`?sort=` of `GET /suppliers`). */
+export type SupplierPickerSort = 'name' | 'price' | 'response';
+
 export interface SupplierPicker {
   orgId: string;
   legalName: string;
@@ -208,6 +225,19 @@ export interface SupplierPicker {
   comuni: string[];
   bio?: string | null;
   photoUrls: string[];
+  // SR-09a: what a host weighs when it chooses. Optional, because an answer that predates it (and the long-rent search) lacks them.
+  /** Up to three published services, in the supplier's own order. */
+  services?: SupplierPickerService[];
+  /** The lowest "from" price among all its published services, in euro cents; `null` when none has a price. */
+  priceFromCents?: number | null;
+  /** What `priceFromCents` is for. */
+  priceFromUnit?: SupplierServicePriceUnit | null;
+  /** The typical time the supplier takes to answer, in minutes; `null` until it is measured: it is never shown without. */
+  medianResponseMinutes?: number | null;
+  /** «Verificato»: an active profile with a VAT number. Says nothing about the payments account. */
+  verified?: boolean;
+  /** The address of the public showcase (`/fornitori/{slug}`); `null` when it has none. */
+  showcaseSlug?: string | null;
 }
 
 export interface SupplierListResponse {
