@@ -339,6 +339,32 @@ test.describe('Aligned cards', () => {
 
   });
 
+  test.describe('Menu of the phone (the sheet "Altro")', () => {
+    test('the two tiles of a row are as tall as each other when a name takes two lines', async ({ page }) => {
+      // A narrow phone: "Sito di prenotazione" is on two lines, "Marketplace" next to it on one.
+      await page.setViewportSize({ width: 320, height: 800 });
+      await page.goto(demoUrl('/app/short-rent', 'short-stay'));
+      await page.locator('[data-more-trigger]').click();
+      const sheet = page.getByRole('dialog', { name: 'Altro' });
+      await expect(sheet.getByRole('link', { name: 'Marketplace' })).toBeVisible();
+
+      // One pass in the page, because the sheet slides in while the boxes are read.
+      const tiles = await sheet.locator('ul > li > a').evaluateAll((nodes) => {
+        const top = nodes[0].getBoundingClientRect().top;
+        return nodes.map((node) => {
+          const box = node.getBoundingClientRect();
+          return { row: Math.round(box.top - top), height: Math.round(box.height), name: node.textContent ?? '' };
+        });
+      });
+      expect(new Set(tiles.map((tile) => tile.height)).size, 'some tile is taller than the others').toBeGreaterThan(1);
+      const rows = new Map<number, { height: number; name: string }[]>();
+      for (const tile of tiles) rows.set(tile.row, [...(rows.get(tile.row) ?? []), tile]);
+      for (const [row, inRow] of rows) {
+        expect(new Set(inRow.map((tile) => tile.height)).size, `row at ${row}: ${inRow.map((tile) => `${tile.name} ${tile.height}`).join(', ')}`).toBe(1);
+      }
+    });
+  });
+
   test.describe('Numbers (StatStrip)', () => {
     test('the numbers of a strip start at the same height whatever the length of their names', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
