@@ -4,17 +4,31 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
+import { guestSessionApi } from '@/api/guest-session.api';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { GuestBookingsPage } from '../guest-bookings-page';
-import type { GuestBookingDetails, PublicOrgDto } from '@/types';
+import type { GuestBookingDetails, GuestSession, PublicOrgDto } from '@/types';
 
+vi.mock('@/api/guest-session.api', () => ({
+  guestSessionApi: { openSession: vi.fn(), getBooking: vi.fn() },
+}));
 vi.mock('@/api/public-booking.api', () => ({
-  publicBookingApi: { lookupGuestBooking: vi.fn(), sendGuestCheckInLink: vi.fn() },
+  publicBookingApi: { sendGuestCheckInLink: vi.fn() },
 }));
 
 const org = { slug: 'demo-casazen', displayName: 'Demo Casazen Stays' } as unknown as PublicOrgDto;
 const CODE = 'K7M4Q-9XP2H';
 const EMAIL = 'giulia@example.com';
+const STORAGE_KEY = 'casazen.guestSession.demo-casazen';
+
+function session(overrides: Partial<GuestSession> = {}): GuestSession {
+  return {
+    accessToken: 'gs1.token-of-the-session',
+    expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    bookingCode: CODE,
+    ...overrides,
+  };
+}
 
 function booking(overrides: Partial<GuestBookingDetails> = {}): GuestBookingDetails {
   return {
@@ -75,11 +89,14 @@ function fill(code: string, email: string) {
 describe('GuestBookingsPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    window.sessionStorage.clear();
+    vi.mocked(guestSessionApi.openSession).mockResolvedValue(session());
     await i18n.changeLanguage('it');
   });
 
   afterEach(() => {
     cleanup();
+    window.sessionStorage.clear();
   });
 
   it('GuestBookingsPage_LinkOfTheEmail_PrefillsTheCodeAndShowsNothingBeforeTheEmail', () => {
@@ -88,7 +105,8 @@ describe('GuestBookingsPage', () => {
     expect(screen.getByLabelText('Codice prenotazione')).toHaveValue(CODE);
     expect(screen.getByLabelText('Email usata per prenotare')).toHaveValue('');
     expect(screen.queryByTestId('guest-booking-result')).not.toBeInTheDocument();
-    expect(publicBookingApi.lookupGuestBooking).not.toHaveBeenCalled();
+    expect(guestSessionApi.openSession).not.toHaveBeenCalled();
+    expect(guestSessionApi.getBooking).not.toHaveBeenCalled();
   });
 
   it('GuestBookingsPage_InvalidCodeOrEmail_ShowsFieldErrorsWithoutCallingTheApi', async () => {
@@ -98,22 +116,28 @@ describe('GuestBookingsPage', () => {
 
     expect(await screen.findByText(/Il codice prenotazione è di 10 caratteri/)).toBeInTheDocument();
     expect(screen.getByText('Email non valido')).toBeInTheDocument();
-    expect(publicBookingApi.lookupGuestBooking).not.toHaveBeenCalled();
+    expect(guestSessionApi.openSession).not.toHaveBeenCalled();
   });
 
-  it('GuestBookingsPage_CodeAndEmail_ShowsStateStayAmountsCheckInAndHost', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking).mockResolvedValue(booking());
+  it('GuestBookingsPage_CodeAndEmail_OpensTheSessionAndShowsStateStayAmountsCheckInAndHost', async () => {
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking());
     renderPage();
 
     fill(' k7m4q 9xp2h ', ` ${EMAIL} `);
 
     const result = await screen.findByTestId('guest-booking-result');
-    // The code as the backend expects it, the site of the page, the trimmed email.
-    expect(publicBookingApi.lookupGuestBooking).toHaveBeenCalledWith({
+    // The code as the backend expects it, the site of the page, the trimmed email: once, to open the session.
+    expect(guestSessionApi.openSession).toHaveBeenCalledWith({
       orgSlug: 'demo-casazen',
       bookingCode: CODE,
       email: EMAIL,
     });
+    // The booking is read with the token of the session, not with code + email.
+    expect(guestSessionApi.getBooking).toHaveBeenCalledWith('gs1.token-of-the-session', CODE);
+    // The session is kept in the tab for this site; the email never is.
+    const stored = window.sessionStorage.getItem(STORAGE_KEY);
+    expect(stored).toContain('gs1.token-of-the-session');
+    expect(stored).not.toContain(EMAIL);
     expect(within(result).getByRole('heading', { name: 'Trastevere Suite' })).toBeInTheDocument();
     expect(within(result).getByTestId('guest-booking-status')).toHaveTextContent('Confermata');
     expect(result).toHaveTextContent(CODE);
@@ -131,10 +155,11 @@ describe('GuestBookingsPage', () => {
       'mailto:host@villarosa.example',
     );
     expect(screen.queryByTestId('guest-bookings-form')).not.toBeInTheDocument();
+    expect(screen.getByTestId('guest-bookings-sign-out')).toHaveTextContent('Esci');
   });
 
   it('GuestBookingsPage_NotFound_ShowsTheEmptyStateNotAnError', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking).mockRejectedValue(
+    vi.mocked(guestSessionApi.openSession).mockRejectedValue(
       problemError(404, { code: 'guest_booking_not_found', detail: 'x' }),
     );
     renderPage();
@@ -144,28 +169,39 @@ describe('GuestBookingsPage', () => {
     expect(await screen.findByTestId('guest-bookings-not-found')).toHaveTextContent('Nessuna prenotazione trovata');
     expect(screen.queryByTestId('guest-bookings-error')).not.toBeInTheDocument();
     expect(screen.queryByTestId('guest-booking-result')).not.toBeInTheDocument();
+    expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull();
     // The form stays, with what the guest typed, to correct it.
     expect(screen.getByLabelText('Codice prenotazione')).toHaveValue(CODE);
   });
 
-  it('GuestBookingsPage_TooManyAttempts_ShowsTheErrorNotTheEmptyState', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking).mockRejectedValue(
-      problemError(429, { code: 'rate_limited', detail: 'Troppe richieste' }),
+  it('GuestBookingsPage_TooManyAttempts_ShowsTheMinutesToWaitNotTheEmptyState', async () => {
+    vi.mocked(guestSessionApi.openSession).mockRejectedValue(
+      problemError(429, { code: 'rate_limited', detail: 'Troppe richieste', retryAfterSeconds: 600 }),
     );
     renderPage();
 
     fill(CODE, EMAIL);
 
     const error = await screen.findByTestId('guest-bookings-error');
-    expect(error).toHaveTextContent('Troppe richieste in poco tempo');
+    expect(error).toHaveTextContent('Troppi tentativi: riprova tra 10 minuti');
     expect(screen.queryByTestId('guest-bookings-not-found')).not.toBeInTheDocument();
     expect(within(error).queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+    expect(guestSessionApi.openSession).toHaveBeenCalledTimes(1);
   });
 
   it('GuestBookingsPage_NetworkError_OffersToRetryTheSameSearch', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking)
+    vi.mocked(guestSessionApi.openSession)
       .mockRejectedValueOnce(problemError(undefined, undefined, AxiosError.ERR_NETWORK))
-      .mockResolvedValueOnce(booking({ status: 'AwaitingHostApproval', expiresAt: '2026-10-02T08:30:00Z', paidAmount: 0, paymentOption: 'OnSite', checkIn: { status: 'NotApplicable', opensOn: null, linkSentAt: null } }));
+      .mockResolvedValueOnce(session());
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(
+      booking({
+        status: 'AwaitingHostApproval',
+        expiresAt: '2026-10-02T08:30:00Z',
+        paidAmount: 0,
+        paymentOption: 'OnSite',
+        checkIn: { status: 'NotApplicable', opensOn: null, linkSentAt: null },
+      }),
+    );
     renderPage();
 
     fill(CODE, EMAIL);
@@ -174,7 +210,7 @@ describe('GuestBookingsPage', () => {
     fireEvent.click(within(error).getByRole('button', { name: 'Riprova' }));
 
     const result = await screen.findByTestId('guest-booking-result');
-    expect(publicBookingApi.lookupGuestBooking).toHaveBeenCalledTimes(2);
+    expect(guestSessionApi.openSession).toHaveBeenCalledTimes(2);
     expect(within(result).getByTestId('guest-booking-status')).toHaveTextContent("In attesa dell'host");
     expect(result).toHaveTextContent('Pagamento in struttura.');
     expect(within(result).queryByTestId('guest-booking-check-in')).not.toBeInTheDocument();
@@ -182,7 +218,7 @@ describe('GuestBookingsPage', () => {
   });
 
   it('GuestBookingsPage_CheckInOpen_SendsTheLinkByEmailAndSaysSo', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking).mockResolvedValue(
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(
       booking({ checkIn: { status: 'Open', opensOn: null, linkSentAt: '2026-10-21T06:00:00Z' } }),
     );
     vi.mocked(publicBookingApi.sendGuestCheckInLink).mockResolvedValue(undefined);
@@ -202,7 +238,7 @@ describe('GuestBookingsPage', () => {
   });
 
   it('GuestBookingsPage_CheckInLinkRefused_ShowsTheReason', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking).mockResolvedValue(
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(
       booking({ checkIn: { status: 'Open', opensOn: null, linkSentAt: null } }),
     );
     vi.mocked(publicBookingApi.sendGuestCheckInLink).mockRejectedValue(
@@ -220,14 +256,19 @@ describe('GuestBookingsPage', () => {
     );
   });
 
-  it('GuestBookingsPage_SearchAnother_ClearsTheBookingFromTheScreen', async () => {
-    vi.mocked(publicBookingApi.lookupGuestBooking).mockResolvedValue(booking());
+  it('GuestBookingsPage_SearchAnother_SignsOutAndClearsTheBookingFromTheScreen', async () => {
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking());
     renderPage();
 
     fill(CODE, EMAIL);
-    fireEvent.click(await screen.findByTestId('guest-bookings-search-another'));
+    expect(await screen.findByTestId('guest-booking-result')).toBeInTheDocument();
+    expect(window.sessionStorage.getItem(STORAGE_KEY)).not.toBeNull();
+    fireEvent.click(screen.getByTestId('guest-bookings-search-another'));
 
     expect(screen.queryByTestId('guest-booking-result')).not.toBeInTheDocument();
     expect(screen.getByTestId('guest-bookings-form')).toBeInTheDocument();
+    // The session is forgotten and the form comes back without the email of the guest.
+    expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(screen.getByLabelText('Email usata per prenotare')).toHaveValue('');
   });
 });
