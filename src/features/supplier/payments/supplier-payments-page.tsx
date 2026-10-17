@@ -3,10 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { getHttpStatus } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import { useSupplierPaymentsAccount } from '@/queries/use-supplier-payments';
 import { InvoiceData } from './invoice-data';
 import { PaymentsFocus } from './payments-focus';
@@ -56,7 +58,7 @@ export function SupplierPaymentsPage() {
 
   if (isError && !data) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-3xl space-y-6" data-testid="supplier-payments-page">
+      <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-payments-page">
         {header}
         {getHttpStatus(error) === 404 ? (
           <EmptyState
@@ -79,7 +81,7 @@ export function SupplierPaymentsPage() {
 
   if (isLoading || !data) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-3xl space-y-6" data-testid="supplier-payments-page" aria-busy="true">
+      <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-payments-page" aria-busy="true">
         {header}
         {account.askingStripe ? <CheckingNote /> : <SkeletonLine lines={4} label={t('supplier.payments.loading')} />}
       </div>
@@ -87,7 +89,7 @@ export function SupplierPaymentsPage() {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-3xl space-y-8" data-testid="supplier-payments-page">
+    <div className={cn(FOCUS_COLUMN, 'space-y-8')} data-testid="supplier-payments-page">
       {header}
       {account.askingStripe ? <CheckingNote /> : null}
       <PaymentsFocus account={data} mark={mark} checking={account.askingStripe} onCheckAgain={account.askStripeAgain} />
