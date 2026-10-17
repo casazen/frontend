@@ -184,9 +184,10 @@ const BUTTON = "h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leadi
  * Going forward needs the step to be valid (the focus goes to the first problem and it is announced); going back never
  * does; the last button checks all the steps and opens the first one that is not valid.
  *
- * Put it in a block that has a width of its own: `mx-auto w-full max-w-2xl`, and not `mx-auto max-w-2xl` alone. In a flex
- * column (the content of the shell is one) a centered block takes the width of its content, and the buttons, which reach the
- * edges of the screen on a phone, would stick out of it.
+ * Put it in a block that has a width of its own: `FOCUS_COLUMN` (`@/components/layout/page-columns`: `w-full`, `max-w-4xl`, from the
+ * left edge of the title above it), and not `mx-auto max-w-2xl` alone. In a flex column (the content of the shell is one) a
+ * centered block takes the width of its content, and the buttons, which reach the edges of the screen on a phone, would stick
+ * out of it.
  *
  *     <WizardShell id="property-new" steps={steps} defaultValues={defaults} finishLabel={t("...")}
  *       onFinish={createProperty} renderDone={({ result }) => <WizardDone ... />} />

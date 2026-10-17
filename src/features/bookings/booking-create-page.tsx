@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { fetchHostBookingQuote, useCreateBooking } from '@/queries/use-bookings';
 import type { Booking } from '@/types';
@@ -134,8 +135,7 @@ export function BookingCreatePage() {
     <AppShell>
       <div className="min-w-0 space-y-6" data-testid="booking-create-page">
         <PageHeader title={t('booking.create.title')} description={t('booking.create.description')} crumbs="auto" />
-        {/* `w-full`: the shell sits in a column, and a centered block there takes the width of its content: the buttons of a phone would stick out. */}
-        <div className="mx-auto w-full max-w-2xl">
+        <div className={FOCUS_COLUMN}>
           <NewBookingWizard propertyId={propertyId} />
         </div>
       </div>

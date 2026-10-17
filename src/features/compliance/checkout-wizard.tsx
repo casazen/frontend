@@ -5,6 +5,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,7 @@ import { Breadcrumb } from '@/components/shared/breadcrumb';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { WizardSummary } from '@/components/shared/wizard/wizard-summary';
 import { getProblemMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
 import {
@@ -110,7 +112,7 @@ export function CheckoutWizardPage() {
   if (booking.status === 'CheckedOut' && !closedHere) {
     return (
       <AppShell>
-        <div className="space-y-6 max-w-xl mx-auto" data-testid="checkout-wizard-page">
+        <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="checkout-wizard-page">
           <Breadcrumb />
           <CheckoutClosed bookingId={bookingId} />
           {backToBooking}
@@ -134,8 +136,7 @@ export function CheckoutWizardPage() {
 
   return (
     <AppShell>
-      {/* `w-full`: the shell sits in a column; a centered block there takes the width of its content, and the buttons of a phone would stick out. */}
-      <div className="space-y-6 max-w-2xl mx-auto w-full" data-testid="checkout-wizard-page">
+      <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="checkout-wizard-page">
         <Breadcrumb />
         <PageHeader
           title={t('compliance.checkout.title')}
