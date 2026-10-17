@@ -47,6 +47,17 @@ export interface PlanCatalogEntry {
   description: string;
 }
 
+/**
+ * Who runs a booking site, as its footer shows it (DB-03b-a): only what the host entered, a member is null when empty, never an
+ * empty string. The VAT number is the one of the fiscal profile, present only while the host declares it has one.
+ */
+export interface PublicOperator {
+  legalName: string | null;
+  vatNumber: string | null;
+  /** The registered office ("sede legale") in one line. */
+  registeredOffice: string | null;
+}
+
 /** Anonymous branding read-model for /book/:orgSlug (US-003 #215, US-023 #297). */
 export interface PublicOrgDto {
   slug: string;
@@ -65,6 +76,8 @@ export interface PublicOrgDto {
   showPoweredBy?: boolean;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
+  /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */
+  operator?: PublicOperator | null;
 }
 
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */
@@ -102,6 +115,10 @@ export interface OrgSettings {
   contactEmail: string;
   /** Whether contactEmail is shown on the public booking site (PublicOrgDto). Off by default. */
   contactEmailPublic: boolean;
+  /** Legal name ("ragione sociale") of the operator, shown in the footer of the booking site (DB-03b-a); null while not entered, absent on an older backend. */
+  legalName?: string | null;
+  /** Registered office ("sede legale") of the operator, one line, shown in the same footer (DB-03b-a). */
+  registeredOffice?: string | null;
 }
 
 export interface UpdateOrgSettingsRequest {
@@ -109,6 +126,9 @@ export interface UpdateOrgSettingsRequest {
   slug: string;
   contactEmail: string;
   contactEmailPublic: boolean;
+  /** Operator data (DB-03b-a): left out = unchanged on the server, an empty string clears it. */
+  legalName?: string;
+  registeredOffice?: string;
 }
 
 /** GET /api/orgs/me/settings/slug-availability (A1-23). */

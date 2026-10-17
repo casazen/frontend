@@ -27,7 +27,11 @@ import {
   useUpdateOrgSettings,
 } from './use-org-settings';
 
-type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'>;
+/** What the form edits. The operator data (DB-03b-a: backend `OrgOperatorRules`) are text boxes: empty means "not entered". */
+type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'> & {
+  legalName: string;
+  registeredOffice: string;
+};
 type FieldErrors = Partial<Record<'name' | 'slug' | 'contactEmail', string>>;
 
 /** Page of the public site's branding: logo, hero, color, tagline, theme (BK-12). */
@@ -35,6 +39,10 @@ const SITE_APPEARANCE_PATH = '/app/short-rent/settings/site-appearance';
 
 /** Route prefix of an org's public booking site (a path, not text to translate). */
 const PUBLIC_PATH_PREFIX = '/book/';
+
+/** Longest legal name and registered office the backend accepts (`OrgOperatorRules`); the server checks again. */
+const LEGAL_NAME_MAX_LENGTH = 200;
+const REGISTERED_OFFICE_MAX_LENGTH = 300;
 
 /** Same shape the backend accepts ([EmailAddress]): one `@` with text on both sides; the server validates again. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
@@ -144,6 +152,8 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
     slug: '',
     contactEmail: '',
     contactEmailPublic: false,
+    legalName: '',
+    registeredOffice: '',
   });
   const [submitted, setSubmitted] = useState(false);
   // Sync the form from the server settings whenever they (re)load (adjusting state during render).
@@ -151,8 +161,8 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
   if (settingsQuery.data !== synced) {
     setSynced(settingsQuery.data);
     if (settingsQuery.data) {
-      const { name, slug, contactEmail, contactEmailPublic } = settingsQuery.data;
-      setForm({ name, slug, contactEmail, contactEmailPublic });
+      const { name, slug, contactEmail, contactEmailPublic, legalName, registeredOffice } = settingsQuery.data;
+      setForm({ name, slug, contactEmail, contactEmailPublic, legalName: legalName ?? '', registeredOffice: registeredOffice ?? '' });
       setSubmitted(false);
     }
   }
@@ -217,6 +227,8 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
       slug: typedSlug,
       contactEmail: form.contactEmail.trim(),
       contactEmailPublic: form.contactEmailPublic,
+      legalName: form.legalName.trim(),
+      registeredOffice: form.registeredOffice.trim(),
     });
   };
 
@@ -292,6 +304,35 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
           checked={form.contactEmailPublic}
           onCheckedChange={(checked) => setForm((current) => ({ ...current, contactEmailPublic: checked }))}
         />
+      </div>
+
+      {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
+      <div className="space-y-4" data-testid="org-operator-section">
+        <p id="org-operator-help" className="break-words text-sm text-foreground/70" data-testid="org-operator-help">
+          {t('orgSettings.operatorHelp')}
+        </p>
+        <Field label={t('orgSettings.legalNameLabel')}>
+          <Input
+            id="org-legal-name"
+            data-testid="org-legal-name-input"
+            aria-describedby="org-operator-help"
+            value={form.legalName}
+            maxLength={LEGAL_NAME_MAX_LENGTH}
+            autoComplete="organization"
+            onChange={(event) => setForm((current) => ({ ...current, legalName: event.target.value }))}
+          />
+        </Field>
+        <Field label={t('orgSettings.registeredOfficeLabel')} example={t('orgSettings.registeredOfficeExample')}>
+          <Input
+            id="org-registered-office"
+            data-testid="org-registered-office-input"
+            aria-describedby="org-operator-help"
+            value={form.registeredOffice}
+            maxLength={REGISTERED_OFFICE_MAX_LENGTH}
+            autoComplete="street-address"
+            onChange={(event) => setForm((current) => ({ ...current, registeredOffice: event.target.value }))}
+          />
+        </Field>
       </div>
 
       <div>
