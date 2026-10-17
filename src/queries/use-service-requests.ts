@@ -5,6 +5,7 @@ import {
   createServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
+  fetchMarketplaceSuppliers,
   fetchServiceRequests,
   fetchSuppliersByProperty,
   markLongRentServiceRequestPaid,
@@ -12,7 +13,11 @@ import {
   rejectServiceRequest,
   takeServiceRequest,
 } from '@/api/service-requests.api';
-import type { CreateLongRentServiceRequestDto, CreateServiceRequestDto } from '@/types/service-request';
+import type {
+  CreateLongRentServiceRequestDto,
+  CreateServiceRequestDto,
+  SupplierPickerSort,
+} from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
@@ -77,6 +82,28 @@ export function useSuppliersByProperty(propertyId?: string, category?: string) {
     queryKey: ['suppliers', 'property', propertyId, category],
     queryFn: () => fetchSuppliersByProperty(propertyId!, category),
     enabled: !!propertyId,
+  });
+}
+
+/**
+ * The suppliers of the marketplace for a property (SR-09a): `q` and `sort` are answered by the server, which also sends each
+ * supplier's services, "from" price, measured response time and «Verificato». While the words change the list that was there stays
+ * (for the same property only: another property's suppliers are never shown as this one's). Read again when the page is opened and
+ * the answer is older than the stale time: the suppliers of a comune change when one is activated or changes its prices.
+ */
+export function useMarketplaceSuppliers(params: {
+  propertyId?: string;
+  category?: string;
+  q?: string;
+  sort?: SupplierPickerSort;
+}) {
+  const { propertyId, category, q, sort } = params;
+  return useQuery({
+    queryKey: ['suppliers', 'marketplace', propertyId, category ?? '', q ?? '', sort ?? 'name'],
+    queryFn: () => fetchMarketplaceSuppliers({ propertyId: propertyId!, category, q, sort }),
+    enabled: !!propertyId,
+    refetchOnMount: true,
+    placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[2] === propertyId ? previous : undefined),
   });
 }
 

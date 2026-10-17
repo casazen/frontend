@@ -6,6 +6,7 @@ import type {
   ServiceRequest,
   ServiceRequestListResponse,
   SupplierListResponse,
+  SupplierPickerSort,
 } from '@/types/service-request';
 
 /**
@@ -50,6 +51,19 @@ export async function markServiceRequestPaid(id: string): Promise<ServiceRequest
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
   return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category });
+}
+
+/**
+ * The suppliers of the marketplace (SR-09a): the same endpoint, with the words to look for (`q`: the name or the category code)
+ * and the order (`sort`). Each supplier comes with its services, "from" price, measured response time and «Verificato».
+ */
+export async function fetchMarketplaceSuppliers(params: {
+  propertyId: string;
+  category?: string;
+  q?: string;
+  sort?: SupplierPickerSort;
+}): Promise<SupplierListResponse> {
+  return ApiClient.get<SupplierListResponse>('/suppliers', params);
 }
 
 // ─── Long-rent context (D2): requests for the property, `/long-rent/service-requests` ───
