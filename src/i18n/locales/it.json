@@ -1412,6 +1412,7 @@
         "title": "Il calendario {{feed}} di {{property}} non si aggiorna"
       },
       "missing": {
+        "calendarConflict": "Due soggiorni o blocchi sulle stesse notti",
         "guestData": "Mancano dati degli ospiti",
         "guestFields_one": "Mancano dati di {{count}} ospite",
         "guestFields_other": "Mancano dati di {{count}} ospiti"
@@ -1426,7 +1427,12 @@
         "tomorrowAt": "Entro domani alle {{time}}",
         "whenYouCan": "Quando puoi"
       },
-      "open": "Apri"
+      "open": "Apri",
+      "ResolveCalendarConflict": {
+        "cta": "Vedi nel calendario",
+        "since": "Dalla notte del {{date}}",
+        "title": "Notti occupate due volte: {{label}}"
+      }
     },
     "today": {
       "action": {
@@ -1506,7 +1512,10 @@
         "checkedOut": "Soggiorno concluso",
         "block": "Date bloccate da un altro canale (iCal)",
         "toReview": "Soggiorno OTA da verificare",
-        "manualBlock": "Date chiuse da te (proprietario, manutenzione)"
+        "manualBlock": "Date chiuse da te (proprietario, manutenzione)",
+        "pendingPayment": "In attesa di pagamento dell'ospite",
+        "service": "Intervento di un fornitore",
+        "conflict": "Date occupate due volte"
       },
       "block": {
         "title": "Date bloccate su {{source}}",
@@ -1573,7 +1582,22 @@
         "event": "Prenotazione",
         "noEventsInRange": "Nessuna prenotazione in questo periodo.",
         "showMore_one": "+{{count}} altra",
-        "showMore_other": "+{{count}} altre"
+        "showMore_other": "+{{count}} altre",
+        "timeline": "Timeline"
+      },
+      "timeline": {
+        "allProperties": "Tutti gli immobili",
+        "conflict": "date occupate due volte",
+        "connect": "Collega il calendario di Airbnb o Booking.com",
+        "corner": "Immobile",
+        "days": "giorni",
+        "label": "Calendario di tutti gli immobili, un giorno per colonna",
+        "nothing": "Niente in programma in questo periodo.",
+        "paused": "In pausa",
+        "range_one": "dal {{arrival}} al {{departure}}, {{count}} notte",
+        "range_other": "dal {{arrival}} al {{departure}}, {{count}} notti",
+        "shown": "Mostro {{shown}} immobili su {{total}}: scegline uno dal filtro per vedere gli altri.",
+        "zoom": "Giorni mostrati"
       }
     },
     "validation": {
@@ -9251,6 +9275,21 @@
       "respondCta": "Rispondi alla richiesta",
       "arrival": "Quando l'ospite arriva, registra l'arrivo.",
       "departure": "Alla partenza, chiudi il soggiorno."
+    },
+    "calendar": {
+      "loadError": "Impossibile mostrare il dettaglio del calendario.",
+      "missing": "Non trovo più questo elemento nel calendario: potrebbe essere stato spostato o cancellato.",
+      "openCalendar": "Apri il calendario"
+    },
+    "ical": {
+      "channels": "Canali e calendari dell'immobile"
+    },
+    "intervention": {
+      "noTime": "Ancora senza orario: il lavoro è segnato nel giorno della partenza, {{date}}.",
+      "openBooking": "Apri la prenotazione",
+      "openRequests": "Vai alle richieste dell'immobile",
+      "supplier": "Fornitore",
+      "when": "Quando"
     }
   },
   "helpTip": {

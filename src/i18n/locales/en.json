@@ -1412,6 +1412,7 @@
         "title": "The {{feed}} calendar of {{property}} is not updating"
       },
       "missing": {
+        "calendarConflict": "Two stays or blocks on the same nights",
         "guestData": "Guest data are missing",
         "guestFields_one": "Data of {{count}} guest are missing",
         "guestFields_other": "Data of {{count}} guests are missing"
@@ -1426,7 +1427,12 @@
         "tomorrowAt": "By tomorrow at {{time}}",
         "whenYouCan": "Whenever you can"
       },
-      "open": "Open"
+      "open": "Open",
+      "ResolveCalendarConflict": {
+        "cta": "See in the calendar",
+        "since": "From the night of {{date}}",
+        "title": "Nights taken twice: {{label}}"
+      }
     },
     "today": {
       "action": {
@@ -1506,7 +1512,10 @@
         "checkedOut": "Stay completed",
         "block": "Dates blocked by another channel (iCal)",
         "toReview": "OTA stay to check",
-        "manualBlock": "Dates you closed (owner, maintenance)"
+        "manualBlock": "Dates you closed (owner, maintenance)",
+        "pendingPayment": "Waiting for the guest to pay",
+        "service": "Supplier job",
+        "conflict": "Nights taken twice"
       },
       "block": {
         "title": "Dates blocked on {{source}}",
@@ -1573,7 +1582,22 @@
         "event": "Booking",
         "noEventsInRange": "No bookings in this period.",
         "showMore_one": "+{{count}} more",
-        "showMore_other": "+{{count}} more"
+        "showMore_other": "+{{count}} more",
+        "timeline": "Timeline"
+      },
+      "timeline": {
+        "allProperties": "All properties",
+        "conflict": "nights taken twice",
+        "connect": "Connect your Airbnb or Booking.com calendar",
+        "corner": "Property",
+        "days": "days",
+        "label": "Calendar of all the properties, one day per column",
+        "nothing": "Nothing scheduled in this period.",
+        "paused": "Paused",
+        "range_one": "{{arrival}} to {{departure}}, {{count}} night",
+        "range_other": "{{arrival}} to {{departure}}, {{count}} nights",
+        "shown": "Showing {{shown}} of {{total}} properties: pick one in the filter to see the others.",
+        "zoom": "Days shown"
       }
     },
     "validation": {
@@ -9251,6 +9275,21 @@
       "respondCta": "Answer the request",
       "arrival": "When the guest arrives, register the arrival.",
       "departure": "At departure, close the stay."
+    },
+    "calendar": {
+      "loadError": "This calendar item could not be shown.",
+      "missing": "This item is no longer on the calendar: it may have been moved or deleted.",
+      "openCalendar": "Open the calendar"
+    },
+    "ical": {
+      "channels": "Channels and calendars of the property"
+    },
+    "intervention": {
+      "noTime": "No time yet: the job is set on the day the guest leaves, {{date}}.",
+      "openBooking": "Open the booking",
+      "openRequests": "Go to the requests of the property",
+      "supplier": "Supplier",
+      "when": "When"
     }
   },
   "helpTip": {

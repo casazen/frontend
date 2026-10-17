@@ -54,6 +54,7 @@ interface Context {
 }
 
 const MARKETPLACE_PATH = '/app/short-rent/marketplace';
+const CALENDAR_PATH = '/app/short-rent/bookings/calendar';
 const bookingPath = (bookingId: string) => `/app/short-rent/bookings/${bookingId}`;
 const clock = (instant: string): string => {
   const wall = romeWallClock(instant);
@@ -181,14 +182,31 @@ const TODO_ACTIONS = [
   'RespondToServiceRequest',
   'ConfirmFinalAmount',
   'PayServiceRequest',
+  'ResolveCalendarConflict',
 ] as const;
 type TodoAction = (typeof TODO_ACTIONS)[number];
 
 const isTodoAction = (action: string): action is TodoAction => (TODO_ACTIONS as readonly string[]).includes(action);
 const isCockpitAction = (action: string): action is ComplianceCockpitAction => (COMPLIANCE_COCKPIT_ACTIONS as readonly string[]).includes(action);
 
+/** Days shown before the first night they share: the conflict is not at the very edge of the Timeline. */
+const CONFLICT_LEAD_DAYS = 2;
+
+/**
+ * Where a night taken twice is solved: the Timeline of the property, from just before the first night the two share (the day the
+ * item is due), so both bars are in view with their red frame.
+ */
+function calendarConflictPath(item: DashboardTodoItem): string {
+  const params = new URLSearchParams({ view: 'timeline' });
+  const first = romeDateOf(item.dueAt);
+  if (first) params.set('from', addDays(first, -CONFLICT_LEAD_DAYS));
+  if (item.propertyId) params.set('propertyId', item.propertyId);
+  return `${CALENDAR_PATH}?${params.toString()}`;
+}
+
 /** The screen where the host does what the item asks: the one of the cockpit when it has one, else the stay, else the services. */
 function todoPath(item: DashboardTodoItem, hasPermission: PermissionPredicate): string {
+  if (item.action === 'ResolveCalendarConflict') return calendarConflictPath(item);
   if (isCockpitAction(item.action)) {
     const route = complianceActionRoute({ action: item.action, propertyId: item.propertyId, bookingId: item.bookingId }, hasPermission);
     if (route) return route;
@@ -199,9 +217,24 @@ function todoPath(item: DashboardTodoItem, hasPermission: PermissionPredicate): 
 
 /** What the item still lacks, in a few words, for the codes that say something the title does not. */
 function missingText(item: DashboardTodoItem, t: TFunction): string | undefined {
-  const missing = (item.missing ?? []).find((m) => m.code === 'guest_field_missing' || m.code === 'guest_data_incomplete');
+  const missing = (item.missing ?? []).find((m) => m.code === 'guest_field_missing' || m.code === 'guest_data_incomplete' || m.code === 'calendar_conflict');
   if (!missing) return undefined;
+  if (missing.code === 'calendar_conflict') return t('dashboard.todo.missing.calendarConflict');
   return missing.code === 'guest_field_missing' ? t('dashboard.todo.missing.guestFields', { count: missing.count ?? 1 }) : t('dashboard.todo.missing.guestData');
+}
+
+/**
+ * How pressing a night taken twice is: it is due from the first night the two share (a date, not a time of day), red when that is
+ * within three days or has begun, amber otherwise.
+ */
+function conflictNote(item: DashboardTodoItem, { t, locale }: Context, now?: Date): RowNote {
+  const first = romeDateOf(item.dueAt);
+  if (!first) return { text: t('dashboard.todo.urgency.whenYouCan'), tone: 'neutral' };
+  const today = todayInRome(now);
+  return {
+    text: t('dashboard.todo.ResolveCalendarConflict.since', { date: formatStayDate(first, locale, { day: 'numeric', month: 'long' }) }),
+    tone: first <= addDays(today, 3) ? 'danger' : 'warning',
+  };
 }
 
 export interface TodoOptions {
@@ -221,26 +254,30 @@ export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIc
 
   const items = today.todo.items
     .filter((item) => isTodoAction(item.action) && inScope(item.propertyId))
-    .map((item): HomeRow => {
+    .map((item, position): HomeRow => {
       const action = item.action as TodoAction;
       const to = todoPath(item, options.hasPermission);
       const approval = action === 'RespondToRequest' && item.bookingId ? approvals.get(item.bookingId) : undefined;
       const cinMissing = action === 'ActivateProperty' && (item.missing ?? []).some((m) => m.code.startsWith('activation_cin'));
+      // A night taken twice is about a property, and its label is that property: the line under the title says what is wrong instead.
+      const conflict = action === 'ResolveCalendarConflict';
       const sub = approval
         ? `${approval.propertyName} · ${stayRange(approval.checkInDate, approval.checkOutDate, locale)} · ${t('dashboard.today.guests', { count: approval.numberOfGuests })}`
-        : [action === 'ActivateProperty' ? null : item.propertyName, missingText(item, t)].filter(Boolean).join(' · ');
+        : [action === 'ActivateProperty' || conflict ? null : item.propertyName, missingText(item, t)].filter(Boolean).join(' · ');
       const cta = t(cinMissing ? 'dashboard.todo.ActivateProperty.ctaCin' : `dashboard.todo.${action}.cta`);
       const respond = action === 'RespondToRequest' && options.canWrite && item.bookingId;
       // Whoever may not answer is taken to the booking: the button does not say "Accetta" for a link that only opens it.
       const linkLabel = action === 'RespondToRequest' ? t('dashboard.todo.open') : cta;
       return {
-        id: `${action}-${item.bookingId ?? item.serviceRequestId ?? item.propertyId ?? item.label}`,
+        // Two nights taken twice of one property can share their first stay: their place in the list tells them apart.
+        id: `${action}-${conflict ? `${position}-` : ''}${item.bookingId ?? item.serviceRequestId ?? item.propertyId ?? item.label}`,
         title: t(`dashboard.todo.${action}.title`, { label: item.label }),
         subject: item.label,
         sub: sub || undefined,
-        note: urgencyOf(item.dueAt, context, now),
+        note: conflict ? conflictNote(item, context, now) : urgencyOf(item.dueAt, context, now),
         to,
-        bookingId: item.bookingId ?? undefined,
+        // The title of a conflict goes where its button goes (the Timeline), not to the first of the two bookings.
+        bookingId: conflict ? undefined : (item.bookingId ?? undefined),
         action: respond ? { kind: 'respond', label: cta, bookingId: item.bookingId! } : { kind: 'link', label: linkLabel, to },
       };
     });

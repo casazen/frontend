@@ -1,0 +1,385 @@
+/*
+ * The Timeline of the host calendar (SR-02): a row for each property, a column for each day. Like `host-calendar.css` it has no
+ * color of its own: the box of an entry is the one of its kind (`host-calendar-event--<kind>` sets the variables, `.host-timeline-item`
+ * draws the box, both in `host-calendar.css`) and all the rest reads the semantic tokens. Bars and marks are placed with percentages
+ * of the area of the days, so the columns follow the width; on a phone the strip scrolls sideways inside its own box and the page
+ * does not.
+ */
+.host-timeline {
+  --label-w: 6.5rem;
+  --lane-h: 2.25rem;
+  --chip-h: 1.75rem;
+  --col-min: 2.5rem;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 14px);
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+}
+
+@media (min-width: 48rem) {
+  .host-timeline {
+    --label-w: 11rem;
+  }
+}
+
+.host-timeline[data-zoom='7'] {
+  --col-min: 3.5rem;
+}
+
+.host-timeline[data-zoom='30'] {
+  --col-min: 2.125rem;
+}
+
+/* A finger needs 44 px: the bars and the marks are that tall, and so are the columns (the strip scrolls). */
+@media (pointer: coarse) {
+  .host-timeline,
+  .host-timeline[data-zoom] {
+    --lane-h: 3rem;
+    --chip-h: 3rem;
+    --col-min: 2.75rem;
+  }
+}
+
+.host-timeline[aria-busy='true'] .host-timeline__grid {
+  opacity: 0.7;
+}
+
+.host-timeline__scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.host-timeline__grid {
+  min-width: calc(var(--label-w) + var(--n) * var(--col-min));
+}
+
+.host-timeline__head,
+.host-timeline__row {
+  display: grid;
+  grid-template-columns: var(--label-w) minmax(0, 1fr);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * The days: the weekday, the number and, on the first of a month, the month.
+ * ---------------------------------------------------------------------------------------------------------------- */
+.host-timeline__corner {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  height: 3.25rem;
+  padding: 0 0.75rem;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.host-timeline__days {
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+}
+
+.host-timeline__day {
+  position: relative;
+  display: flex;
+  height: 3.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-muted-foreground);
+  font-size: 0.6875rem;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.host-timeline__day b {
+  display: inline-grid;
+  min-width: 1.625rem;
+  height: 1.625rem;
+  place-items: center;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  color: var(--color-foreground);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.host-timeline__day.is-today {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+}
+
+.host-timeline__day.is-today b {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.host-timeline__month {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.25rem;
+  font-size: 0.625rem;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * A row: the property on the left (it stays while the days scroll) and its days.
+ * ---------------------------------------------------------------------------------------------------------------- */
+.host-timeline__row {
+  --row-h: calc(var(--lanes) * var(--lane-h) + var(--slots) * var(--chip-h) + 0.5rem);
+}
+
+.host-timeline__label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  min-width: 0;
+  min-height: max(3.25rem, var(--row-h));
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.0625rem;
+  padding: 0 0.75rem;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-card);
+}
+
+.host-timeline__name {
+  overflow: hidden;
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-timeline__name:hover {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+}
+
+.host-timeline__name:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.host-timeline__city {
+  overflow: hidden;
+  color: color-mix(in oklab, var(--color-foreground) 70%, transparent);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A paused property is still on the calendar, quieter. */
+.host-timeline__row[data-paused] .host-timeline__name {
+  color: color-mix(in oklab, var(--color-foreground) 70%, transparent);
+  font-weight: 500;
+}
+
+@media (pointer: coarse) {
+  .host-timeline__name {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+  }
+}
+
+.host-timeline__track {
+  position: relative;
+  /* Its own stacking context: a bar raised by focus or by a conflict never goes over the names, which stay in place while it scrolls. */
+  isolation: isolate;
+  /* At least what its lanes and marks need; the row may be taller (the name and the city), and then the track fills it. */
+  min-height: max(3.25rem, var(--row-h));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.host-timeline__cells {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+}
+
+.host-timeline__cell {
+  border-right: 1px solid var(--color-border);
+}
+
+.host-timeline__cell.is-weekend {
+  background: var(--color-surface-2);
+}
+
+.host-timeline__cell.is-past {
+  background:
+    repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in oklab, var(--color-border) 55%, transparent) 7px 8px),
+    var(--color-surface-2);
+}
+
+.host-timeline__cell.is-today {
+  background: color-mix(in oklab, var(--color-primary-soft) 75%, var(--color-card));
+  box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * Bars (stays and blocks, on lanes) and marks (interventions, under the lanes). Each is a button; the list around them takes
+ * no clicks, so the days between the bars stay where they are.
+ * ---------------------------------------------------------------------------------------------------------------- */
+.host-timeline__bars,
+.host-timeline__chips {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.host-timeline__bars > li {
+  position: absolute;
+  top: calc(var(--lane) * var(--lane-h) + 0.125rem);
+  height: calc(var(--lane-h) - 0.25rem);
+  pointer-events: auto;
+}
+
+.host-timeline__chips > li {
+  position: absolute;
+  top: calc(var(--lanes) * var(--lane-h) + var(--slot) * var(--chip-h) + 0.125rem);
+  height: calc(var(--chip-h) - 0.25rem);
+  pointer-events: auto;
+}
+
+.host-timeline-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  padding: 0 0.375rem;
+  container-type: inline-size;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.host-timeline-item:hover {
+  filter: brightness(0.97);
+}
+
+.host-timeline-item:focus-visible {
+  z-index: 5;
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* The item the address points to (`?focus=`). */
+.host-timeline-item[data-focus] {
+  z-index: 4;
+  outline: 3px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* A night taken twice: a red frame and a flag, on top of the kind of the stay. */
+.host-timeline-item[data-conflict] {
+  z-index: 2;
+  box-shadow: 0 0 0 2px var(--color-danger);
+}
+
+.host-timeline-item__flag {
+  color: var(--color-danger-foreground);
+}
+
+/* The window cuts it: it goes on beyond the edge, so no round corner and no thick bar at that side. */
+.host-timeline-item[data-clipped-start] {
+  border-left-width: 1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.host-timeline-item[data-clipped-end] {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.host-timeline-item__icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
+}
+
+.host-timeline-item__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Where it comes from (the channel): only on a bar wide enough to say it. */
+.host-timeline-item__sub {
+  display: none;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  font-weight: 500;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-timeline-item__sub svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: none;
+}
+
+@container (min-width: 7.5rem) {
+  .host-timeline-item__sub {
+    display: inline-flex;
+  }
+}
+
+/* Too narrow for words (a night on a month): the icon says what it is, the label of the button says the rest. */
+@container (max-width: 3rem) {
+  .host-timeline-item {
+    justify-content: center;
+  }
+
+  .host-timeline-item__title {
+    display: none;
+  }
+}
+
+/* An intervention: a quiet box with the icon of the work; asked but not yet taken is dashed, over is dimmed. */
+.host-timeline-chip {
+  justify-content: center;
+  padding: 0 0.25rem;
+}
+
+.host-timeline-chip[data-status='Richiesto'] {
+  border-style: dashed;
+}
+
+.host-timeline-chip[data-status='Completato'],
+.host-timeline-chip[data-status='Pagato'] {
+  opacity: 0.7;
+}
