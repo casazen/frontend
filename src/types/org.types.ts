@@ -12,10 +12,14 @@ export interface Org {
 
 export interface EntitlementLimits {
   maxProperties: number;
+  /** People the plan allows (AM-02): int max (2147483647) or -1 is "no limit". Missing from a backend that has no seats yet. */
+  maxSeats?: number;
 }
 
 export interface EntitlementUsage {
   properties: number;
+  /** People in use: active members plus pending invitations (AM-02). */
+  seats?: number;
 }
 
 /** Resolved plan entitlement for the caller's org (AC8). Backs the plan badge + create gating. */
@@ -26,6 +30,13 @@ export interface Entitlement {
   usage: EntitlementUsage;
   canAddProperty: boolean;
   canUseCustomDomain?: boolean;
+  /**
+   * "Accesso aperto" (BL-01): `planTier` is higher than the plan the org pays for, because the open access is on. Only in
+   * `GET /api/orgs/me/entitlement` (billing administrator).
+   */
+  openAccess?: boolean;
+  /** The plan has a free seat for one more person (AM-02). */
+  canInviteMember?: boolean;
 }
 
 /** Catalogue entry from GET /api/orgs/plans. maxProperties = -1 means unlimited. */

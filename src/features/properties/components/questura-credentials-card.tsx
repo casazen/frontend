@@ -1,9 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormFieldError } from '@/components/shared/form-field-error';
@@ -51,6 +50,7 @@ interface QuesturaCredentialsCardProps {
  */
 export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredentialsCardProps) {
   const { t } = useTranslation();
+  const titleId = useId();
   const status = useQuesturaCredentialsStatus(propertyId);
   const save = useSetQuesturaCredentials(propertyId);
   const remove = useRemoveQuesturaCredentials(propertyId);
@@ -76,15 +76,15 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
   };
 
   return (
-    <Card data-testid="questura-credentials-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <KeyRound className="h-5 w-5" />
+    <section aria-labelledby={titleId} className="min-w-0 space-y-3" data-testid="questura-credentials-card">
+      <div className="space-y-1">
+        <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
+          <KeyRound aria-hidden="true" className="size-5 shrink-0" />
           {t('questuraCredentials.title')}
-        </CardTitle>
-        <CardDescription>{t('questuraCredentials.description')}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h2>
+        <p className="text-sm text-foreground/70">{t('questuraCredentials.description')}</p>
+      </div>
+      <div className="space-y-4">
         {status.isLoading ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="questura-credentials-loading">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -113,7 +113,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
         <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
 
         {canEdit && status.data && (
-          <form className="space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
+          <form className="max-w-md space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
             {FIELDS.map(({ field, type, autoComplete }) => {
               const id = `questura-${field}`;
               return (
@@ -172,7 +172,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
             </div>
           </form>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

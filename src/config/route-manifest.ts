@@ -629,6 +629,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
   },
   {
+    // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
+    // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
+    // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
+    path: '/app/account/billing',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.billing',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 5,
+    icon: 'CreditCard',
+    component: async () => ({ default: (await import('@/features/account/billing/account-billing-page')).AccountBillingPage }),
+  },
+  {
     path: '/app/account/profile',
     context: 'account',
     requiredPermissions: [],
@@ -637,6 +652,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 30,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/account/account-profile-page')).AccountProfilePage }),
+  },
+  {
+    // "Impostazioni" (AM-08b): the org's name, the address of its booking site, its contact email and its Stripe account in one page, for
+    // the owner and the administrators (`org.settings.manage`; the endpoints are the ones of `OrgBillingAdmin`, which they pass too). The
+    // organization and payments pages of the rental areas stay where they are.
+    path: '/app/account/settings',
+    context: 'account',
+    requiredPermissions: ['org.settings.manage'],
+    navKey: 'nav.accountSettings',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/account/account-settings-page')).AccountSettingsPage }),
   },
   {
     path: '/app/admin',

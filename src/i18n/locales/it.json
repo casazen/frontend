@@ -513,6 +513,7 @@
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
+    "accountSettings": "Impostazioni",
     "ota": "OTA",
     "leases": "Contratti",
     "users": "Utenti",
@@ -2405,6 +2406,39 @@
       "price": "Prezzo base",
       "spaces": "Spazi"
     },
+    "next": {
+      "allInOrder": {
+        "nextArrival": "Prossimo arrivo: {{date}}",
+        "title": "Tutto in ordine"
+      },
+      "cinInvalid": {
+        "action": "Correggi il CIN",
+        "title": "Il CIN non è nel formato ufficiale"
+      },
+      "cinMissing": {
+        "action": "Inserisci il CIN",
+        "title": "Manca il codice CIN"
+      },
+      "heading": "Cosa fare ora",
+      "paused": {
+        "title": "L'immobile è in pausa"
+      },
+      "pending": {
+        "action": "Continua l'attivazione",
+        "missing": "Mancano: {{steps}}.",
+        "title": "Completa l'attivazione"
+      },
+      "photos": {
+        "body": "Gli ospiti scelgono anche guardando le immagini: la prima foto è la copertina.",
+        "title": "Aggiungi le foto"
+      },
+      "suspended": {
+        "action": "Risolvi i punti obbligatori",
+        "title": "L'immobile è sospeso"
+      },
+      "toProperties": "Torna agli immobili",
+      "whoHost": "Tocca a te"
+    },
     "table": {
       "active": "Attivo",
       "paused": "In pausa",
@@ -2425,44 +2459,36 @@
       "consequenceBlocked": "Non puoi eliminarlo se ha prenotazioni future o locazioni attive."
     },
     "detail": {
-      "loading": "Caricamento proprietà...",
-      "notFound": "Proprietà non trovata",
-      "notFoundDescription": "La proprietà che stai cercando non esiste.",
-      "loadError": "Impossibile caricare la proprietà.",
-      "retry": "Riprova",
+      "loading": "Caricamento dell'immobile…",
+      "notFound": "Immobile non trovato",
+      "notFoundDescription": "L'immobile che cerchi non esiste o non hai accesso.",
+      "loadError": "Impossibile caricare l'immobile.",
       "tabs": {
-        "info": "Info & Foto",
+        "info": "Panoramica",
         "photos": "Foto",
-        "pricing": "Suggerimenti stagionali",
+        "activity": "Prenotazioni e interventi",
         "ota": "Canali OTA",
         "ical": "Calendari iCal",
-        "documents": "Documenti",
-        "cin": "CIN & Compliance"
+        "documents": "Documenti e adempimenti"
       },
       "edit": "Modifica",
-      "bookingsLink": "Prenotazioni di questa proprietà",
       "description": "Descrizione",
       "cinTitle": "Codice CIN",
       "cinDescription": "Il Codice Identificativo Nazionale (CIN) è obbligatorio ai sensi del D.L. 145/2023 per tutte le strutture ricettive in Italia. Formato: IT + codice ISTAT del comune (6 cifre) + categoria (2 caratteri) + codice alfanumerico (fino a 8 caratteri), es. IT015146C2ABCDEFGH.",
       "editCin": "Modifica CIN",
-      "complianceSummary": "Riepilogo compliance",
-      "cinStatus": "Stato CIN",
-      "propertyActive": "Stato proprietà",
-      "documents": "Documenti",
-      "documentsCount_one": "{{count}} caricato",
-      "documentsCount_other": "{{count}} caricati",
-      "pricingTitle": "Suggerimenti stagionali",
-      "pricingDescription": "Prezzi suggeriti per notte in base al prezzo della struttura e alle tue regole su stagioni e festività. Sono proposte: non cambiano i prezzi applicati.",
       "managePricing": "Gestisci i suggerimenti",
       "viewOnPublicSite": "Vedi sul sito pubblico",
-      "publicSiteHint": "Anteprima di come gli ospiti vedono questa struttura sul sito di prenotazione diretta.",
-      "newBooking": "Nuova prenotazione"
+      "newBooking": "Nuova prenotazione",
+      "allBookings": "Vedi le prenotazioni",
+      "fallbackTitle": "Immobile",
+      "onSite": "Sul sito di prenotazione",
+      "sections": {
+        "data": "Dati dell'immobile",
+        "pricing": "Prezzi"
+      },
+      "tabsLabel": "Sezioni dell'immobile"
     },
     "info": {
-      "title": "Dettagli proprietà",
-      "bedrooms": "Camere",
-      "bathrooms": "Bagni",
-      "maxGuests": "Ospiti max",
       "timezone": "Fuso orario",
       "nightlyRate": "Tariffa notturna",
       "cleaning": "Pulizia",
@@ -2577,8 +2603,7 @@
       "on": "ON",
       "off": "OFF",
       "lastAdaptation": "Ultimo calcolo",
-      "nextRun": "Prossimo aggiornamento",
-      "manage": "Gestisci i suggerimenti"
+      "nextRun": "Prossimo aggiornamento"
     },
     "edit": {
       "loading": "Caricamento proprietà...",
@@ -2770,7 +2795,6 @@
   "pricing": {
     "dashboard": {
       "title": "Suggerimenti stagionali",
-      "description": "Prezzi suggeriti per le prossime notti, calcolati dal prezzo per notte della struttura con regole stagionali che scegli tu.",
       "loading": "Caricamento dei suggerimenti stagionali...",
       "disabledTitle": "Suggerimenti stagionali disattivati",
       "disabledDescription": "Attivali per vedere, per i prossimi 90 giorni, il prezzo suggerito per ogni notte in base alle tue regole su stagioni e festività.",
@@ -2780,11 +2804,9 @@
       "basePriceMissingDescription": "I suggerimenti partono dal prezzo per notte della struttura, che non è ancora impostato. Impostalo nella scheda della struttura.",
       "editProperty": "Modifica la struttura",
       "configLoadError": "Impossibile caricare la configurazione dei suggerimenti.",
-      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali.",
-      "retry": "Riprova"
+      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali."
     },
     "config": {
-      "title": "Suggerimenti stagionali",
       "active": "Attivi",
       "disabled": "Disattivati",
       "enableLabel": "Attiva i suggerimenti stagionali",
@@ -2809,11 +2831,21 @@
       "recalculating": "Calcolo in corso...",
       "recalculateNow": "Ricalcola ora"
     },
+    "focus": {
+      "baseChangedTitle": "I suggerimenti non sono aggiornati",
+      "enable": "Attiva i suggerimenti",
+      "kicker": "Prezzo base",
+      "noRules": "Nessuna regola attiva: ogni notte ha il prezzo base.",
+      "offPrice": "Senza suggerimenti il prezzo resta {{price}} a notte in ogni data.",
+      "price": "{{price}} a notte"
+    },
+    "summary": {
+      "down": "scende del {{percent}}%",
+      "holidays": "Festività nazionali: il prezzo {{change}}.",
+      "season": "{{season}} ({{months}}): il prezzo {{change}}.",
+      "up": "sale del {{percent}}%"
+    },
     "suggestions": {
-      "basePriceLabel": "Prezzo base:",
-      "perNight": "a notte",
-      "basePriceHint": "È il prezzo per notte della struttura: preventivi e prenotazioni usano questo prezzo.",
-      "readOnlyNotice": "I suggerimenti sono proposte: si applicano a preventivi e prenotazioni solo se confermi. Puoi modificare il prezzo a mano prima di applicare.",
       "applyNotice": "I suggerimenti restano proposte finché non li confermi. Il prezzo applicato è modificabile a mano.",
       "applyAll": "Applica tutti i suggerimenti",
       "applyOne": "Applica",
@@ -2825,8 +2857,9 @@
       "details": "Dettaglio per data",
       "date": "Data",
       "base": "Prezzo base",
+      "priceFor": "Prezzo per il {{date}}",
+      "showAll": "Mostra tutte le {{count}} notti",
       "suggested": "Suggerito",
-      "delta": "Δ",
       "rule": "Regola applicata"
     },
     "rules": {
@@ -3819,9 +3852,7 @@
         "Draft": "Bozze",
         "emptyDescription": "Prova a guardare tutti i servizi.",
         "emptyTitle": "Nessun servizio con questo stato",
-        "label": "Filtra per stato",
-        "Paused": "In pausa",
-        "showAll": "Mostra tutti"
+        "Paused": "In pausa"
       },
       "form": {
         "booking": {
@@ -3910,9 +3941,10 @@
         }
       },
       "list": {
+        "count_one": "{{count}} servizio",
+        "count_other": "{{count}} servizi",
         "limitReached": "Hai raggiunto il limite di {{max}} servizi: per aggiungerne un altro, eliminane uno.",
         "loadError": "Impossibile caricare i servizi",
-        "loading": "Carico i servizi…",
         "missing": "Da completare: {{fields}}."
       },
       "notice": {
@@ -3979,11 +4011,6 @@
         "PerJob": "a intervento",
         "PerSet": "a set",
         "PerSquareMeter": "al m²"
-      },
-      "view": {
-        "cards": "Schede",
-        "label": "Come vedere i servizi",
-        "table": "Tabella"
       },
       "wizard": {
         "changed": "Questa bozza è stata modificata altrove. Se continui, quello che vedi qui prende il posto della versione salvata.",
@@ -4236,7 +4263,7 @@
     "connectStatusDisconnected": "Non collegato",
     "connectStatusPending": "In verifica",
     "connectStatusActive": "Attivo",
-    "connectPaymentsTitle": "Pagamenti / Payouts",
+    "connectPaymentsTitle": "Incassi online",
     "connectDescription": "Collega il tuo account Stripe per ricevere i pagamenti degli ospiti direttamente sul tuo conto.",
     "yourBookingSite": "Il tuo sito di prenotazioni",
     "visitPublicSiteDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
@@ -4363,7 +4390,6 @@
       "description": "Queste impostazioni sono gestite dall'amministratore della tua organizzazione: contatta l'amministratore per modificarle."
     },
     "loadError": "Impossibile caricare le impostazioni dell'organizzazione.",
-    "formTitle": "Identità organizzazione",
     "formDescription": "Nome e indirizzo sono visibili sul tuo sito di prenotazione pubblico; l'email solo se scegli di mostrarla.",
     "nameLabel": "Nome organizzazione",
     "slugLabel": "Indirizzo pubblico",
@@ -4388,6 +4414,22 @@
     },
     "siteAppearanceHint": "Logo, colori e tema del sito pubblico si modificano in Aspetto sito.",
     "siteAppearanceLink": "Vai ad Aspetto sito"
+  },
+  "accountSettings": {
+    "billing": {
+      "action": "Apri Fatturazione e piano",
+      "body": "Partita IVA, codice destinatario (SDI) e PEC per le fatture si gestiscono in Fatturazione e piano.",
+      "title": "Dati di fatturazione"
+    },
+    "description": "I dati dell'account che valgono in tutte le aree.",
+    "focus": {
+      "kicker": "Da sistemare",
+      "organization": {
+        "action": "Compila i dati",
+        "body": "Gli ospiti vedono il nome e l'indirizzo sul tuo sito di prenotazione: per ora sono ancora quelli provvisori.",
+        "title": "Scegli il nome e l'indirizzo del tuo sito"
+      }
+    }
   },
   "siteAppearance": {
     "title": "Aspetto sito",
@@ -5007,6 +5049,20 @@
       "invalid": {
         "label": "Non valido",
         "explain": "Il codice inserito non è nel formato ufficiale: controllalo e correggilo."
+      }
+    },
+    "fiscalRegime": {
+      "Confirmed": {
+        "label": "Regime scelto",
+        "explain": "Hai scelto e confermato il regime fiscale di questo immobile per quest'anno."
+      },
+      "ToConfirm": {
+        "label": "Da confermare",
+        "explain": "CasaZen ha rilevato un regime ma non lo applica da solo: confermalo o scegline un altro."
+      },
+      "NotChosen": {
+        "label": "Da scegliere",
+        "explain": "Per quest'anno questo immobile non ha ancora un regime fiscale: scegline uno per stimare l'imposta."
       }
     },
     "alloggiati": {
@@ -7599,6 +7655,28 @@
       "title": "Nessun immobile con affitti brevi",
       "description": "Aggiungi un immobile per scegliere il regime fiscale e preparare i report.",
       "action": "Aggiungi un immobile"
+    },
+    "focus": {
+      "choose": {
+        "cta": "Scegli il regime",
+        "title": "Scegli il regime fiscale di {{name}}"
+      },
+      "confirm": {
+        "body": "Consigliato: {{regime}}. Non viene applicato da solo: confermalo o scegline un altro.",
+        "title": "Conferma il regime fiscale di {{name}}"
+      },
+      "ok": {
+        "title": "Il regime fiscale {{year}} è a posto"
+      },
+      "reports": {
+        "title": "Prepara i dati per il commercialista"
+      },
+      "vat": {
+        "title": "Un titolare supera la soglia degli affitti brevi"
+      }
+    },
+    "list": {
+      "title": "Immobili"
     }
   },
   "propertyMode": {
@@ -8120,6 +8198,62 @@
       "Owner": "Titolare",
       "PropertyManager": "Property manager"
     }
+  },
+  "accountBilling": {
+    "compare": {
+      "current": "Il tuo piano",
+      "note": "Prezzi IVA esclusa. Con un abbonamento attivo il cambio si conferma sul portale di Stripe.",
+      "overLimit_one": "Hai {{count}} immobile e il piano ne include {{allowance}}: resta, ma non potrai aggiungerne finché non rientri.",
+      "overLimit_other": "Hai {{count}} immobili e il piano ne include {{allowance}}: restano tutti, ma non potrai aggiungerne finché non rientri.",
+      "price": "{{price}} al mese + IVA",
+      "priceTbd": "Prezzo in definizione",
+      "properties_one": "Fino a {{count}} immobile",
+      "properties_other": "Fino a {{count}} immobili",
+      "propertiesUnlimited": "Immobili illimitati",
+      "title": "Confronta i piani"
+    },
+    "data": {
+      "eInvoice": "Fatturazione elettronica",
+      "empty": "Da completare",
+      "fiscalCode": "Codice fiscale",
+      "pec": "PEC",
+      "sdi": "Codice SDI",
+      "title": "Dati di fatturazione"
+    },
+    "description": "Piano {{plan}}: utilizzo e pagamento di CasaZen.",
+    "descriptionGeneric": "Piano, utilizzo e pagamento di CasaZen.",
+    "loading": "Caricamento di fatturazione e piano",
+    "payment": {
+      "noSubscription": "Inserirai la carta sulla pagina sicura di Stripe quando scegli un piano a pagamento.",
+      "open": "Apri il portale di pagamento sicuro",
+      "text": "La carta si gestisce su Stripe, mai in CasaZen: qui non la vediamo e non la salviamo.",
+      "title": "Metodo di pagamento"
+    },
+    "plan": {
+      "change": "Cambia piano",
+      "choose": "Scegli un piano",
+      "kicker": "Il tuo piano",
+      "nextCharge": "Prossimo addebito",
+      "noCharge": "Nessuno",
+      "notice": {
+        "openAccess": "Accesso aperto: per ora non addebitiamo nulla e tutte le funzioni sono sbloccate. Il piano che scegli oggi vale quando riprenderà la fatturazione: ti avvisiamo prima che riparta.",
+        "openAccessPricesPending": "Accesso aperto: per ora non addebitiamo nulla e tutte le funzioni sono sbloccate. I prezzi dei piani sono in definizione: ti avvisiamo prima che riparta la fatturazione.",
+        "pricesPending": "I prezzi dei piani sono in definizione: per ora non si possono acquistare."
+      },
+      "people": "Persone",
+      "peopleHelp": "Contano gli utenti attivi più gli inviti in attesa, anche il Contabile. Chi è disattivato non occupa posti.",
+      "peopleHelpTitle": "Posti del piano",
+      "properties": "Immobili",
+      "title": "Piano {{plan}}",
+      "unlimited": "{{used}} (senza limite)",
+      "usage": "{{used}} di {{max}}",
+      "view": "Vedi i piani"
+    },
+    "states": {
+      "now": "Ora: {{status}}",
+      "title": "Cosa significano gli stati dell'abbonamento"
+    },
+    "title": "Fatturazione e piano"
   },
   "areas": {
     "account": {

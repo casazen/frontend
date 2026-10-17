@@ -513,6 +513,7 @@
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
+    "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
     "users": "Users",
@@ -2405,6 +2406,39 @@
       "price": "Base price",
       "spaces": "Spaces"
     },
+    "next": {
+      "allInOrder": {
+        "nextArrival": "Next arrival: {{date}}",
+        "title": "All in order"
+      },
+      "cinInvalid": {
+        "action": "Fix the CIN",
+        "title": "The CIN is not in the official format"
+      },
+      "cinMissing": {
+        "action": "Enter the CIN",
+        "title": "The CIN code is missing"
+      },
+      "heading": "What to do now",
+      "paused": {
+        "title": "The property is paused"
+      },
+      "pending": {
+        "action": "Continue the activation",
+        "missing": "Still missing: {{steps}}.",
+        "title": "Complete the activation"
+      },
+      "photos": {
+        "body": "Guests also choose by looking at the pictures: the first photo is the cover.",
+        "title": "Add the photos"
+      },
+      "suspended": {
+        "action": "Fix the mandatory items",
+        "title": "The property is suspended"
+      },
+      "toProperties": "Back to the properties",
+      "whoHost": "Your turn"
+    },
     "table": {
       "active": "Active",
       "paused": "Paused",
@@ -2425,44 +2459,36 @@
       "consequenceBlocked": "It cannot be deleted while it has upcoming bookings or active leases."
     },
     "detail": {
-      "loading": "Loading property...",
+      "loading": "Loading the property…",
       "notFound": "Property not found",
-      "notFoundDescription": "The property you are looking for does not exist.",
+      "notFoundDescription": "The property you are looking for does not exist or you do not have access.",
       "loadError": "Could not load the property.",
-      "retry": "Retry",
       "tabs": {
-        "info": "Info & Photos",
+        "info": "Overview",
         "photos": "Photos",
-        "pricing": "Seasonal suggestions",
+        "activity": "Bookings and interventions",
         "ota": "OTA Channels",
         "ical": "iCal calendars",
-        "documents": "Documents",
-        "cin": "CIN & Compliance"
+        "documents": "Documents and compliance"
       },
       "edit": "Edit",
-      "bookingsLink": "Bookings for this property",
       "description": "Description",
       "cinTitle": "CIN Code",
       "cinDescription": "The National Identification Code (CIN) is mandatory under D.L. 145/2023 for all accommodation facilities in Italy. Format: IT + ISTAT municipality code (6 digits) + category (2 characters) + alphanumeric code (up to 8 characters), e.g. IT015146C2ABCDEFGH.",
       "editCin": "Edit CIN",
-      "complianceSummary": "Compliance summary",
-      "cinStatus": "CIN status",
-      "propertyActive": "Property status",
-      "documents": "Documents",
-      "documentsCount_one": "{{count}} uploaded",
-      "documentsCount_other": "{{count}} uploaded",
-      "pricingTitle": "Seasonal suggestions",
-      "pricingDescription": "Suggested nightly prices based on the property's rate and your season and holiday rules. They are proposals: they do not change the prices applied.",
       "managePricing": "Manage suggestions",
       "viewOnPublicSite": "View on public site",
-      "publicSiteHint": "Preview how guests see this property on your direct booking site.",
-      "newBooking": "New booking"
+      "newBooking": "New booking",
+      "allBookings": "See the bookings",
+      "fallbackTitle": "Property",
+      "onSite": "On the booking site",
+      "sections": {
+        "data": "Property details",
+        "pricing": "Prices"
+      },
+      "tabsLabel": "Sections of the property"
     },
     "info": {
-      "title": "Property details",
-      "bedrooms": "Bedrooms",
-      "bathrooms": "Bathrooms",
-      "maxGuests": "Max guests",
       "timezone": "Timezone",
       "nightlyRate": "Nightly rate",
       "cleaning": "Cleaning",
@@ -2577,8 +2603,7 @@
       "on": "ON",
       "off": "OFF",
       "lastAdaptation": "Last computed",
-      "nextRun": "Next update",
-      "manage": "Manage suggestions"
+      "nextRun": "Next update"
     },
     "edit": {
       "loading": "Loading property...",
@@ -2770,7 +2795,6 @@
   "pricing": {
     "dashboard": {
       "title": "Seasonal suggestions",
-      "description": "Suggested prices for the coming nights, computed from the property's nightly rate with seasonal rules you choose.",
       "loading": "Loading seasonal suggestions...",
       "disabledTitle": "Seasonal suggestions are off",
       "disabledDescription": "Turn them on to see, for the next 90 days, the suggested price of every night based on your season and holiday rules.",
@@ -2780,11 +2804,9 @@
       "basePriceMissingDescription": "Suggestions start from the property's nightly rate, which is not set yet. Set it in the property details.",
       "editProperty": "Edit property",
       "configLoadError": "Could not load the suggestions settings.",
-      "suggestionsLoadError": "Could not load the seasonal suggestions.",
-      "retry": "Retry"
+      "suggestionsLoadError": "Could not load the seasonal suggestions."
     },
     "config": {
-      "title": "Seasonal suggestions",
       "active": "On",
       "disabled": "Off",
       "enableLabel": "Turn on seasonal suggestions",
@@ -2809,11 +2831,21 @@
       "recalculating": "Computing...",
       "recalculateNow": "Recalculate now"
     },
+    "focus": {
+      "baseChangedTitle": "The suggestions are out of date",
+      "enable": "Turn on suggestions",
+      "kicker": "Base price",
+      "noRules": "No rule is on: every night has the base price.",
+      "offPrice": "Without suggestions the price stays {{price}} per night on every date.",
+      "price": "{{price}} per night"
+    },
+    "summary": {
+      "down": "goes down by {{percent}}%",
+      "holidays": "National holidays: the price {{change}}.",
+      "season": "{{season}} ({{months}}): the price {{change}}.",
+      "up": "goes up by {{percent}}%"
+    },
     "suggestions": {
-      "basePriceLabel": "Base price:",
-      "perNight": "per night",
-      "basePriceHint": "This is the property's nightly rate: quotes and bookings use this price.",
-      "readOnlyNotice": "Suggestions are proposals: they apply to quotes and bookings only after you confirm them. You can edit the price by hand before applying.",
       "applyNotice": "Suggestions stay proposals until you confirm them. The applied price can be edited by hand.",
       "applyAll": "Apply all suggestions",
       "applyOne": "Apply",
@@ -2825,8 +2857,9 @@
       "details": "Details by date",
       "date": "Date",
       "base": "Base price",
+      "priceFor": "Price for {{date}}",
+      "showAll": "Show all {{count}} nights",
       "suggested": "Suggested",
-      "delta": "Δ",
       "rule": "Rule applied"
     },
     "rules": {
@@ -3819,9 +3852,7 @@
         "Draft": "Drafts",
         "emptyDescription": "Try looking at all the services.",
         "emptyTitle": "No service in this state",
-        "label": "Filter by state",
-        "Paused": "Paused",
-        "showAll": "Show all"
+        "Paused": "Paused"
       },
       "form": {
         "booking": {
@@ -3910,9 +3941,10 @@
         }
       },
       "list": {
+        "count_one": "{{count}} service",
+        "count_other": "{{count}} services",
         "limitReached": "You reached the limit of {{max}} services: to add another one, delete one.",
         "loadError": "Could not load the services",
-        "loading": "Loading the services…",
         "missing": "To complete: {{fields}}."
       },
       "notice": {
@@ -3979,11 +4011,6 @@
         "PerJob": "per job",
         "PerSet": "per set",
         "PerSquareMeter": "per m²"
-      },
-      "view": {
-        "cards": "Cards",
-        "label": "How to see the services",
-        "table": "Table"
       },
       "wizard": {
         "changed": "This draft was changed elsewhere. If you continue, what you see here replaces the saved version.",
@@ -4236,7 +4263,7 @@
     "connectStatusDisconnected": "Not connected",
     "connectStatusPending": "Verifying",
     "connectStatusActive": "Active",
-    "connectPaymentsTitle": "Payments / Payouts",
+    "connectPaymentsTitle": "Online payments",
     "connectDescription": "Connect your Stripe account to receive guest payments directly to your bank.",
     "yourBookingSite": "Your booking site",
     "visitPublicSiteDescription": "Visit the public site to see what your guests see.",
@@ -4363,7 +4390,6 @@
       "description": "These settings are managed by your organization's administrator: contact the administrator to change them."
     },
     "loadError": "Could not load the organization settings.",
-    "formTitle": "Organization identity",
     "formDescription": "The name and address are visible on your public booking site; the email only if you choose to show it.",
     "nameLabel": "Organization name",
     "slugLabel": "Public address",
@@ -4388,6 +4414,22 @@
     },
     "siteAppearanceHint": "The public site's logo, colors and theme are edited in Site appearance.",
     "siteAppearanceLink": "Go to Site appearance"
+  },
+  "accountSettings": {
+    "billing": {
+      "action": "Open Billing and plan",
+      "body": "VAT number, recipient code (SDI) and PEC for your invoices are managed in Billing and plan.",
+      "title": "Billing details"
+    },
+    "description": "The account details that apply across all areas.",
+    "focus": {
+      "kicker": "To sort out",
+      "organization": {
+        "action": "Fill in the details",
+        "body": "Guests see the name and the address on your booking site: for now they are still the temporary ones.",
+        "title": "Choose the name and the address of your site"
+      }
+    }
   },
   "siteAppearance": {
     "title": "Site appearance",
@@ -5007,6 +5049,20 @@
       "invalid": {
         "label": "Invalid",
         "explain": "The code entered is not in the official format: check it and correct it."
+      }
+    },
+    "fiscalRegime": {
+      "Confirmed": {
+        "label": "Regime chosen",
+        "explain": "You have chosen and confirmed the fiscal regime of this property for this year."
+      },
+      "ToConfirm": {
+        "label": "To confirm",
+        "explain": "CasaZen detected a regime but does not apply it on its own: confirm it or choose another."
+      },
+      "NotChosen": {
+        "label": "To choose",
+        "explain": "This property has no fiscal regime for this year yet: choose one to estimate the tax."
       }
     },
     "alloggiati": {
@@ -7599,6 +7655,28 @@
       "title": "No short-term rental properties",
       "description": "Add a property to choose its fiscal regime and prepare the reports.",
       "action": "Add a property"
+    },
+    "focus": {
+      "choose": {
+        "cta": "Choose the regime",
+        "title": "Choose the fiscal regime of {{name}}"
+      },
+      "confirm": {
+        "body": "Recommended: {{regime}}. It is never applied on its own: confirm it or choose another.",
+        "title": "Confirm the fiscal regime of {{name}}"
+      },
+      "ok": {
+        "title": "The {{year}} fiscal regime is all set"
+      },
+      "reports": {
+        "title": "Prepare the data for your accountant"
+      },
+      "vat": {
+        "title": "A taxpayer is over the short-term rental threshold"
+      }
+    },
+    "list": {
+      "title": "Properties"
     }
   },
   "propertyMode": {
@@ -8120,6 +8198,62 @@
       "Owner": "Owner",
       "PropertyManager": "Property manager"
     }
+  },
+  "accountBilling": {
+    "compare": {
+      "current": "Your plan",
+      "note": "Prices exclude VAT. With an active subscription the change is confirmed in the Stripe portal.",
+      "overLimit_one": "You have {{count}} property and the plan includes {{allowance}}: it stays, but you will not be able to add more until you are back within the limit.",
+      "overLimit_other": "You have {{count}} properties and the plan includes {{allowance}}: they all stay, but you will not be able to add more until you are back within the limit.",
+      "price": "{{price}} a month + VAT",
+      "priceTbd": "Price being defined",
+      "properties_one": "Up to {{count}} property",
+      "properties_other": "Up to {{count}} properties",
+      "propertiesUnlimited": "Unlimited properties",
+      "title": "Compare plans"
+    },
+    "data": {
+      "eInvoice": "E-invoicing",
+      "empty": "To complete",
+      "fiscalCode": "Tax code",
+      "pec": "PEC",
+      "sdi": "SDI code",
+      "title": "Billing details"
+    },
+    "description": "{{plan}} plan: usage and payment for CasaZen.",
+    "descriptionGeneric": "Plan, usage and payment for CasaZen.",
+    "loading": "Loading billing and plan",
+    "payment": {
+      "noSubscription": "You will enter your card on the secure Stripe page when you choose a paid plan.",
+      "open": "Open the secure payment portal",
+      "text": "The card is managed on Stripe, never in CasaZen: we do not see it or store it here.",
+      "title": "Payment method"
+    },
+    "plan": {
+      "change": "Change plan",
+      "choose": "Choose a plan",
+      "kicker": "Your plan",
+      "nextCharge": "Next charge",
+      "noCharge": "None",
+      "notice": {
+        "openAccess": "Open access: for now we charge nothing and every feature is unlocked. The plan you choose today applies when billing restarts: we will let you know before it does.",
+        "openAccessPricesPending": "Open access: for now we charge nothing and every feature is unlocked. The prices of the plans are being defined: we will let you know before billing restarts.",
+        "pricesPending": "The prices of the plans are being defined: they cannot be purchased yet."
+      },
+      "people": "People",
+      "peopleHelp": "They count the active users plus the pending invitations, the accountant included. Someone who is deactivated takes no seat.",
+      "peopleHelpTitle": "Plan seats",
+      "properties": "Properties",
+      "title": "{{plan}} plan",
+      "unlimited": "{{used}} (no limit)",
+      "usage": "{{used}} of {{max}}",
+      "view": "See the plans"
+    },
+    "states": {
+      "now": "Now: {{status}}",
+      "title": "What the subscription states mean"
+    },
+    "title": "Billing and plan"
   },
   "areas": {
     "account": {

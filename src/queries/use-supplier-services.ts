@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
   createSupplierService,
@@ -77,10 +78,10 @@ export function useSupplierService(id: string | undefined) {
   });
 }
 
-/** What a screen does when it learns that a service is not there any more (a 404 on an action): forget it. */
+/** What a screen does when it learns that a service is not there any more (a 404 on an action): forget it. The same function on every render. */
 export function useForgetSupplierService() {
   const client = useQueryClient();
-  return (id: string) => dropService(client, id);
+  return useCallback((id: string) => dropService(client, id), [client]);
 }
 
 export function useCreateSupplierService() {

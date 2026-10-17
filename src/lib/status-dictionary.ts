@@ -82,6 +82,8 @@ function defineKind<Key extends string>(definitions: Record<Key, StatusDefinitio
 export type PropertyStatus = PropertyComplianceStatus | "Paused";
 /** What a property of Affitti lunghi is doing: `Rented` has a registered lease in force, `Free` has none. The interface works it out from the leases (LR-07). */
 export type LongRentPropertyStatus = "Rented" | "Free";
+/** The regime of a property for the tax year, as the interface works it out from what the host has chosen and confirmed (SR-FISC). */
+export type FiscalRegimeStatus = "Confirmed" | "ToConfirm" | "NotChosen";
 /** `OrgMemberStatus` (a member) and `OrgInvitationStatus` (an invitation) of the backend: the list of people shows both. */
 export type MemberStatus = "Active" | "Deactivated" | "Pending" | "Accepted" | "Revoked" | "Expired";
 /** Status of a rent installment: the one of the API, plus `Overdue` (not paid after its due date: the API says it with `isOverdue`). */
@@ -185,6 +187,12 @@ export const STATUS_DICTIONARY = {
     valid: { tone: "success", icon: "id-card" },
     missing: { tone: "warning", icon: "alert-triangle" },
     invalid: { tone: "danger", icon: "alert-circle" },
+  }),
+  /** The regime of a property for the tax year (SR-FISC): chosen and confirmed, detected but not yet confirmed, or not chosen. Never applied on its own. */
+  fiscalRegime: defineKind<FiscalRegimeStatus>({
+    Confirmed: { tone: "success", icon: "check-circle", derived: true },
+    ToConfirm: { tone: "warning", icon: "hourglass", derived: true },
+    NotChosen: { tone: "warning", icon: "circle-dashed", derived: true },
   }),
   /** A service of the catalog of the supplier (SP-06): a draft is seen only by its supplier, a paused one is off offer but kept. */
   serviceListing: defineKind<SupplierServiceStatus>({

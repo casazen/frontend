@@ -285,9 +285,13 @@ export function DataView<Row>({
   const shown = SHOWN_FROM[cardsUntil];
   const nameOf = (row: Row) => rowLabel?.(row) ?? t('dataView.selectRow');
   const selectableCards = selectable && cardSelectable;
-  /** A click on the row itself; whatever is interactive inside the row has its own. */
+  /**
+   * A click on the row itself; whatever is interactive inside the row has its own. A click that comes from a portal (the menu of the
+   * row, which Radix puts in the body) reaches this handler through the React tree, but it is not on the row: it is the menu's.
+   */
   const clickRow = (row: Row, event: React.MouseEvent<HTMLElement>) => {
     if (!onRowClick) return;
+    if (!event.currentTarget.contains(event.target as Node)) return;
     const inside = (event.target as HTMLElement).closest(INTERACTIVE);
     if (inside && event.currentTarget.contains(inside)) return;
     onRowClick(row, event);

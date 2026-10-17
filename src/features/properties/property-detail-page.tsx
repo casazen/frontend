@@ -1,98 +1,117 @@
-import { useState } from 'react';
-import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { longRentPropertyPath } from './long-rent/paths';
+import { useEffect, useState } from 'react';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Building2, Pause, Pencil, Plus, Power, Trash2, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Breadcrumb } from '@/components/shared/breadcrumb';
-import { LoadingScreen } from '@/components/shared/loading-screen';
-import { usePropertyDetail, usePauseProperty, useActivateProperty } from '@/queries/use-properties';
-import { useCurrentUser } from '@/queries/use-users';
-import { useUpdatePropertyCin } from '@/queries/use-cin';
+import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
+import { StatusBadge } from '@/components/shared/status/status-badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { Edit, ArrowRight, CalendarRange, ExternalLink, ImagePlus, Info, Wrench, Plus } from 'lucide-react';
-import { buildPropertyBookingPath } from '@/lib/booking-url';
-import { formatPropertyLocation } from './property-location';
-import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { PropertyCinBadge } from './components/property-cin-badge';
-import { PropertyCinDialog } from './components/property-cin-dialog';
-import { PropertyPhotoCarousel } from './components/property-photo-carousel';
-import { PropertyPhotoManager } from './components/property-photo-manager';
-import { PropertyInfoCard } from './components/property-info-card';
-import { PropertyAmenitiesGrid } from './components/property-amenities-grid';
-import { PropertyDocumentsSection } from './components/property-documents-section';
-import { PropertyOtaSummary } from './components/property-ota-summary';
+import { getHttpStatus } from '@/lib/api-errors';
+import { buildPropertyBookingPath, isPropertyPublishable } from '@/lib/booking-url';
+import { propertyStatus } from '@/lib/status-dictionary';
+import { useUpdatePropertyCin } from '@/queries/use-cin';
+import {
+  useActivateProperty,
+  useDeleteProperty,
+  usePauseProperty,
+  useProperty,
+  usePropertyDetail,
+} from '@/queries/use-properties';
+import { useCurrentUser } from '@/queries/use-users';
 import { IcalSettings } from './components/ical-settings';
-import { QuesturaCredentialsCard } from './components/questura-credentials-card';
-import { PropertyBookingsKpi } from './components/property-bookings-kpi';
-import { PropertyPricingSummaryCard } from './components/property-pricing-summary-card';
-import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
-import { useServiceRequests } from '@/queries/use-service-requests';
+import { PropertyActivityTab } from './components/property-activity-tab';
+import { PropertyCinDialog } from './components/property-cin-dialog';
+import { PropertyDocumentsTab } from './components/property-documents-tab';
+import { PropertyNextStep } from './components/property-next-step';
+import { PropertyOtaSummary } from './components/property-ota-summary';
+import { PropertyOverviewTab } from './components/property-overview-tab';
+import { PropertyPhotoManager } from './components/property-photo-manager';
+import { PRICING_SECTION_ID, propertyPanelOf, type PropertyPanel } from './lib/property-sheet';
+import { longRentPropertyPath } from './long-rent/paths';
 import { ScheduledChangeNotice } from './mode/components/scheduled-change-notice';
 import { useModeChangeMenuItems } from './mode/use-mode-entry';
+import { PROPERTIES_PATH, propertyEditPath, propertyNewBookingPath, propertyServiceRequestPath } from './properties-paths';
 
-type PropertyTab = 'info' | 'photos' | 'pricing' | 'ical' | 'documents' | 'cin';
-
-const PROPERTY_TABS: readonly PropertyTab[] = ['info', 'photos', 'pricing', 'ical', 'documents', 'cin'];
-
-function isPropertyTab(value: string | null): value is PropertyTab {
-  return value !== null && (PROPERTY_TABS as readonly string[]).includes(value);
+/** The page while the property loads: the shape of the page, no spinner in the middle of nothing. */
+function PropertyDetailSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="property-detail-loading">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-2/3 max-w-sm motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-1/2 max-w-xs motion-reduce:animate-none" />
+        </div>
+        <Skeleton className="h-36 w-full rounded-xl motion-reduce:animate-none" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-11/12 motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-2/3 motion-reduce:animate-none" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
+/**
+ * `/app/short-rent/properties/:id`: one property (SR-07d, a restyling: the same data, the same endpoints, the same permissions).
+ * The header says which property it is and where, with its state and the "⋯" menu of the other actions; under it the one
+ * highlighted block, "Cosa fare ora", and then the tabs Panoramica, Foto, Prenotazioni e interventi, Calendari and Documenti
+ * e adempimenti, each made of sections without a box. The tab is in the address (`?tab=`): the six values of the old page
+ * still open the right place (`pricing` is a section of Panoramica, `cin` one of Documenti e adempimenti).
+ */
 export function PropertyDetailPage() {
   const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [cinDialogOpen, setCinDialogOpen] = useState(false);
-  // The tab is in the URL (`?tab=ical`): the iCal widget of the dashboard opens the calendars of the property (PC-16).
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { id = '' } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const activeTab: PropertyTab = isPropertyTab(tabParam) ? tabParam : 'info';
-  const setActiveTab = (tab: PropertyTab) =>
-    setSearchParams(
-      (params) => {
-        const next = new URLSearchParams(params);
-        if (tab === 'info') next.delete('tab');
-        else next.set('tab', tab);
-        return next;
-      },
-      { replace: true },
-    );
-  const { data: property, isLoading, isError, error, refetch } = usePropertyDetail(id!);
+  const panel = propertyPanelOf(tabParam);
+  const [cinDialogOpen, setCinDialogOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  // Read again whenever the page opens: the activation, the CIN or the pause change on other pages, where these are not watched.
+  const detail = usePropertyDetail(id, { fresh: true });
+  // The record of the property, for what the detail does not carry: the compliance status (activation) and the slug of its page.
+  const record = useProperty(id, { fresh: true });
   const { org } = useCurrentUser();
   const updateCin = useUpdatePropertyCin();
   const pauseProperty = usePauseProperty();
   const activateProperty = useActivateProperty();
-  // OTA partner API in freeze (D10): the channels tab keeps only the iCal calendars while the flag is off.
+  const deleteProperty = useDeleteProperty();
+  // OTA partner API in freeze (D10): the calendars tab keeps only the iCal calendars while the flag is off.
   const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
   const { hasPermission } = useWorkspace();
-  const canCreateBooking = hasPermission('short-rent', 'booking.write');
-  // Alloggiati Web credentials are write-only; the API also checks ownership or the org-wide role (TN-3).
-  const canEditQuesturaCredentials = hasPermission('short-rent', 'property.write');
-  // Photos: upload, order, cover and deletion need the same permission (the API also checks ownership or the org-wide role).
-  const canEditPhotos = hasPermission('short-rent', 'property.write');
-  // Overview of the property's short-rent requests, each linked to its stay (D2).
-  const serviceRequests = useServiceRequests(id ? { propertyId: id, pageSize: 50 } : undefined);
   // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
-  const modeChangeItems = useModeChangeMenuItems('short-rent', id!);
+  const modeChangeItems = useModeChangeMenuItems('short-rent', id);
 
-  if (isLoading) {
-    return <LoadingScreen message={t('property.detail.loading')} className="h-auto flex-1" />;
+  const property = detail.data;
+  // `?tab=pricing` (the old tab of the seasonal suggestions) is a section of the overview: scroll to it once the page is there.
+  const scrollToPricing = tabParam === 'pricing' && property !== undefined;
+  useEffect(() => {
+    if (scrollToPricing) document.getElementById(PRICING_SECTION_ID)?.scrollIntoView?.({ block: 'start' });
+  }, [scrollToPricing]);
+
+  // The property is gone: leave at once. Its queries were removed with it, and reading them again would say "not found".
+  if (deleteProperty.isSuccess) return <Navigate to={PROPERTIES_PATH} replace />;
+
+  if (detail.isLoading || record.isLoading) {
+    return <PropertyDetailSkeleton label={t('property.detail.loading')} />;
   }
 
   // An API error is never shown as "not found" (only a 404 is, A2-36).
-  if (isError && getHttpStatus(error) !== 404) {
+  const failed = detail.isError ? detail : record.isError ? record : null;
+  if (failed && getHttpStatus(failed.error) !== 404) {
     return (
       <AppShell>
-        <div className="text-center py-12 space-y-4" role="alert" data-testid="property-load-error">
-          <p className="text-destructive">{getProblemMessage(error, t) ?? t('property.detail.loadError')}</p>
-          <Button variant="outline" onClick={() => void refetch()}>
-            {t('property.detail.retry')}
-          </Button>
+        <div className="min-w-0 space-y-6">
+          <PageHeader crumbs="auto" title={t('property.detail.fallbackTitle')} />
+          <ErrorState testId="property-load-error" title={t('property.detail.loadError')} error={failed.error} onRetry={() => void failed.refetch()} />
         </div>
       </AppShell>
     );
@@ -101,308 +120,126 @@ export function PropertyDetailPage() {
   // A long-term property lives in the long-rent section only.
   if (property?.rentalMode === 'Long') return <Navigate to={longRentPropertyPath(property.id)} replace />;
 
-  if (!property) {
+  if (!property || !record.data) {
     return (
       <AppShell>
-        <div className="text-center py-12" data-testid="property-not-found">
-          <h2 className="text-2xl font-bold mb-2">{t('property.detail.notFound')}</h2>
-          <p className="text-muted-foreground">{t('property.detail.notFoundDescription')}</p>
+        <div className="min-w-0 space-y-6" data-testid="property-not-found">
+          <PageHeader crumbs="auto" title={t('property.detail.fallbackTitle')} />
+          <EmptyState
+            icon={Building2}
+            title={t('property.detail.notFound')}
+            description={t('property.detail.notFoundDescription')}
+            action={{ label: t('property.next.toProperties'), href: PROPERTIES_PATH }}
+          />
         </div>
       </AppShell>
     );
   }
 
-  // Dedicated pause/activate actions (A2-05): reversible, hidden from public bookings only, never the generic update.
-  const togglePause = () => {
-    if (property.isPaused) {
-      activateProperty.mutate(property.id);
-    } else {
-      pauseProperty.mutate(property.id);
+  // The state is one: suspended first, then the pause the host set, then the compliance status (the same as the list and the drawer).
+  const status = propertyStatus({ complianceStatus: record.data.complianceStatus, isPaused: property.isPaused });
+  const canWrite = hasPermission('short-rent', 'property.write');
+  const canReadBookings = hasPermission('short-rent', 'booking.read');
+  const canCreateBooking = hasPermission('short-rent', 'booking.write');
+  const busy = pauseProperty.isPending || activateProperty.isPending || deleteProperty.isPending;
+  // The page of the property on the booking site, when a guest can open it: a paused or unfinished property is not published.
+  const publicPath =
+    org?.slug && isPropertyPublishable({ isActive: record.data.isActive, isPaused: property.isPaused, complianceStatus: record.data.complianceStatus ?? undefined })
+      ? buildPropertyBookingPath(org.slug, record.data)
+      : null;
+
+  // The line under the name: what it has and where.
+  const summary = [
+    t('property.table.bedroomsCount', { count: property.bedrooms }),
+    t('property.list.guestsCount', { count: property.maxGuests }),
+    property.city,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  // Pausing and activating are dedicated actions (A2-05): reversible (the pause offers "Annulla"), never the generic update.
+  const menu: PageHeaderMenuItem[] = [
+    ...(canWrite ? [{ label: t('property.list.actions.edit'), icon: Pencil, to: propertyEditPath(property.id), testId: 'property-edit' }] : []),
+    ...(canCreateBooking
+      ? [{ label: t('property.detail.newBooking'), icon: Plus, to: propertyNewBookingPath(property.id), testId: 'property-new-booking-menu' }]
+      : []),
+    ...(canReadBookings
+      ? [{ label: t('property.list.actions.requestService'), icon: Wrench, to: propertyServiceRequestPath(property.id), testId: 'property-request-service' }]
+      : []),
+    ...modeChangeItems,
+    ...(canWrite && status === 'Active'
+      ? [{ label: t('property.list.actions.pause'), icon: Pause, onClick: () => pauseProperty.mutate(property.id), disabled: busy, testId: 'property-pause-toggle' }]
+      : []),
+    ...(canWrite && status === 'Paused'
+      ? [{ label: t('property.list.actions.reactivate'), icon: Power, onClick: () => activateProperty.mutate(property.id), disabled: busy, testId: 'property-pause-toggle' }]
+      : []),
+    ...(canWrite
+      ? [
+          { separator: true as const },
+          { label: t('property.list.actions.delete'), icon: Trash2, danger: true, onClick: () => setDeleteOpen(true), disabled: busy, testId: 'property-delete' },
+        ]
+      : []),
+  ];
+
+  // The test ids are how the tests reach the tabs.
+  const tabs: TabItem<PropertyPanel>[] = [
+    { value: 'info', label: t('property.detail.tabs.info'), testId: 'property-tab-info' },
+    { value: 'photos', label: t('property.detail.tabs.photos'), testId: 'property-tab-photos' },
+    { value: 'activity', label: t('property.detail.tabs.activity'), testId: 'property-tab-activity' },
+    { value: 'ical', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical'), testId: 'property-tab-ical' },
+    { value: 'documents', label: t('property.detail.tabs.documents'), testId: 'property-tab-documents' },
+  ];
+
+  // The backend decides whether it can go (409 with upcoming bookings or active leases): the toast of the mutation says why.
+  const confirmDelete = async () => {
+    try {
+      await deleteProperty.mutateAsync(property.id);
+    } catch {
+      // Error toast already handled by the mutation
     }
   };
 
-  const tabs: { key: PropertyTab; label: string }[] = [
-    { key: 'info', label: t('property.detail.tabs.info') },
-    { key: 'photos', label: t('property.detail.tabs.photos') },
-    { key: 'pricing', label: t('property.detail.tabs.pricing') },
-    { key: 'ical', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical') },
-    { key: 'documents', label: t('property.detail.tabs.documents') },
-    { key: 'cin', label: t('property.detail.tabs.cin') },
-  ];
-
   return (
     <AppShell>
-      <div className="space-y-6">
-        <Breadcrumb />
-
+      <div className="min-w-0 space-y-6" data-testid="property-detail-page">
+        {/* The trail (Affitti brevi › Immobili › this property) and, on a phone, the link back to the list (UI-05). */}
         <PageHeader
+          crumbs="auto"
           title={property.name}
-          description={formatPropertyLocation(property)}
-          secondary={modeChangeItems}
-          action={
-            <div className="flex items-center gap-3">
-              <PropertyCinBadge
-                cinStatus={property.cinStatus}
-                cinCode={property.cinCode}
-                onEdit={() => setCinDialogOpen(true)}
-              />
-              <Badge variant={property.isPaused ? 'secondary' : 'success'} data-testid="property-pause-status-badge">
-                {property.isPaused ? t('property.table.paused') : t('property.table.active')}
-              </Badge>
-              <Button
-                variant="outline"
-                onClick={togglePause}
-                disabled={pauseProperty.isPending || activateProperty.isPending}
-                data-testid="property-pause-toggle"
-              >
-                {property.isPaused ? t('property.table.activate') : t('property.table.pause')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/app/short-rent/marketplace?propertyId=${property.id}`)}
-                data-testid="property-request-service-btn"
-              >
-                <Wrench className="mr-2 h-4 w-4" />
-                {t('serviceRequest.requestSupplier')}
-              </Button>
-              <Button onClick={() => navigate(`/app/short-rent/properties/${id}/edit`)}>
-                <Edit className="mr-2 h-4 w-4" />
-                {t('property.detail.edit')}
-              </Button>
-            </div>
-          }
+          description={summary}
+          action={<StatusBadge kind="property" status={status} size="lg" data-testid="property-status" />}
+          secondary={menu}
         />
 
         <ScheduledChangeNotice area="short-rent" propertyId={property.id} />
 
-        {property.cinIstatMismatch && (
-          <p
-            className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground"
-            role="note"
-            data-testid="property-cin-istat-mismatch"
-          >
-            <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>{t('property.cin.istatMismatch')}</span>
-          </p>
-        )}
+        <PropertyNextStep
+          property={property}
+          status={status}
+          canWrite={canWrite}
+          canReadBookings={canReadBookings}
+          onEditCin={() => setCinDialogOpen(true)}
+          onReactivate={() => activateProperty.mutate(property.id)}
+          reactivating={activateProperty.isPending}
+        />
 
-        {org?.slug ? (
-          <Card data-testid="host-public-site-link">
-            <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-              <p className="text-sm text-muted-foreground">{t('property.detail.publicSiteHint')}</p>
-              <a
-                href={buildPropertyBookingPath(org.slug, property)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-              >
-                {t('property.detail.viewOnPublicSite')}
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-4">
-          <Link
-            to={`/app/short-rent/bookings?propertyId=${property.id}`}
-            className="text-primary hover:underline text-sm inline-block"
-            data-testid="property-bookings-link"
-          >
-            {t('property.detail.bookingsLink')} &#8594;
-          </Link>
-          {canCreateBooking && (
-            <Button variant="outline" size="sm" asChild>
-              <Link
-                to={`/app/short-rent/bookings/create?propertyId=${property.id}`}
-                data-testid="property-new-booking"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t('property.detail.newBooking')}
-              </Link>
-            </Button>
+        {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
+        <Tabs label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
+          {panel === 'info' && (
+            <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
           )}
-        </div>
-
-        <div className="flex gap-1 border-b mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'info' && (
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              <PropertyPhotoCarousel photoUrls={property.photoUrls} name={property.name} />
-              {canEditPhotos && (
-                <Button variant="outline" size="sm" onClick={() => setActiveTab('photos')} data-testid="property-manage-photos">
-                  <ImagePlus className="mr-2 h-4 w-4" />
-                  {t(property.photoUrls.length > 0 ? 'property.photos.manage' : 'property.photos.add')}
-                </Button>
-              )}
-
-              {property.description && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('property.detail.description')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{property.description}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              <PropertyAmenitiesGrid amenities={property.amenities} />
-              <PropertyBookingsKpi summary={property.bookingsSummary} />
-            </div>
-
+          {panel === 'photos' && <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canWrite} />}
+          {panel === 'activity' && (
+            <PropertyActivityTab property={property} canReadBookings={canReadBookings} canCreateBooking={canCreateBooking} canWrite={canWrite} />
+          )}
+          {panel === 'ical' && (
             <div className="space-y-6">
-              <PropertyInfoCard
-                bedrooms={property.bedrooms}
-                bathrooms={property.bathrooms}
-                maxGuests={property.maxGuests}
-                nightlyRate={property.nightlyRate}
-                cleaningFee={property.cleaningFee}
-                damageDeposit={property.damageDeposit}
-                timezone={property.timezone}
-              />
-              <ServiceRequestsCard
-                query={serviceRequests}
-                emptyText={t('serviceRequest.emptyForProperty')}
-                showStay
-                canManage={hasPermission('short-rent', 'property.write')}
-                testId="property-service-requests"
-              />
+              <IcalSettings propertyId={property.id} />
+              {otaEnabled && <PropertyOtaSummary integrations={property.otaIntegrations} />}
             </div>
-          </div>
-        )}
-
-        {activeTab === 'photos' && (
-          <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canEditPhotos} />
-        )}
-
-        {activeTab === 'pricing' && (
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarRange className="h-5 w-5" />
-                    {t('property.detail.pricingTitle')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    {t('property.detail.pricingDescription')}
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/app/short-rent/properties/${id}/pricing`)}
-                  >
-                    {t('property.detail.managePricing')}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-              <PropertyBookingsKpi summary={property.bookingsSummary} />
-            </div>
-
-            <div className="space-y-6">
-              <PropertyPricingSummaryCard
-                propertyId={property.id}
-                summary={property.pricingAdapterSummary}
-              />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'ical' && (
-          <div className="space-y-6">
-            <IcalSettings propertyId={property.id} />
-            {otaEnabled && <PropertyOtaSummary integrations={property.otaIntegrations} />}
-          </div>
-        )}
-
-        {activeTab === 'documents' && (
-          <div className="space-y-6">
-            <PropertyDocumentsSection propertyId={property.id} documents={property.documents} />
-          </div>
-        )}
-
-        {activeTab === 'cin' && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('property.detail.cinTitle')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <PropertyCinBadge
-                    cinStatus={property.cinStatus}
-                    cinCode={property.cinCode}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCinDialogOpen(true)}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    {t('property.detail.editCin')}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {t('property.detail.cinDescription')}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('property.detail.complianceSummary')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">{t('property.detail.cinStatus')}</span>
-                  <Badge
-                    variant={
-                      property.cinStatus === 'Valid'
-                        ? 'success'
-                        : property.cinStatus === 'Missing'
-                          ? 'warning'
-                          : 'destructive'
-                    }
-                  >
-                    {t(`cin.status.${property.cinStatus}`)}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">{t('property.detail.propertyActive')}</span>
-                  <Badge variant={property.isPaused ? 'secondary' : 'success'}>
-                    {property.isPaused ? t('property.table.paused') : t('property.table.active')}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">{t('property.detail.documents')}</span>
-                  <span className="text-sm font-medium">
-                    {t('property.detail.documentsCount', { count: property.documents.length })}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <QuesturaCredentialsCard propertyId={property.id} canEdit={canEditQuesturaCredentials} />
-          </div>
-        )}
+          )}
+          {panel === 'documents' && <PropertyDocumentsTab property={property} canWrite={canWrite} onEditCin={() => setCinDialogOpen(true)} />}
+        </Tabs>
       </div>
 
       <PropertyCinDialog
@@ -415,6 +252,19 @@ export function PropertyDetailPage() {
         onSave={async (cinCode) => {
           await updateCin.mutateAsync({ propertyId: property.id, cinCode });
         }}
+      />
+
+      <ConfirmationDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t('property.deleteDialog.title')}
+        description={t('property.deleteDialog.description', { name: property.name })}
+        confirmLabel={t('property.deleteDialog.confirm')}
+        variant="destructive"
+        requireText={property.name}
+        consequences={[t('property.deleteDialog.consequenceHidden'), t('property.deleteDialog.consequenceBlocked')]}
+        onConfirm={confirmDelete}
+        isLoading={deleteProperty.isPending}
       />
     </AppShell>
   );

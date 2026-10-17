@@ -98,9 +98,9 @@ test.describe('Property flow on staging API (live)', () => {
       await expect(page.getByRole('heading', { name: uniqueName })).toBeVisible({ timeout: 15_000 });
     }
 
-    await expect(page.getByRole('heading', { name: /^(Dettagli proprietà|Property details)$/ })).toBeVisible({
+    await expect(page.getByRole('heading', { name: /^(Dati dell'immobile|Property details)$/ })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByRole('button', { name: /^(Documenti|Documents)$/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^(Documenti e adempimenti|Documents and compliance)$/ })).toBeVisible();
   });
 });

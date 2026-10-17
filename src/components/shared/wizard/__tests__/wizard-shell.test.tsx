@@ -29,6 +29,8 @@ const WAIT_FOR_DRAFT_MS = 450;
 
 // Explicit conditions only; a generous ceiling so that a loaded CI machine does not fail a correct test (waitFor default is 1 s).
 configure({ asyncUtilTimeout: 5_000 });
+// The vitest default of 5 s per test is not enough when the unit job runs on a loaded CI runner (5014 ms seen on the fiscal PR).
+vi.setConfig({ testTimeout: 30_000 });
 
 const field = (form: UseFormReturn<Values>, name: keyof Values, label: string) => (
   <Field label={label} error={form.formState.errors[name]}>

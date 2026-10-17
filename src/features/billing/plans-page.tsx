@@ -9,10 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { toBillingReturnPath } from '@/lib/billing-routes';
+import { ACCOUNT_BILLING_PATH, toBillingReturnPath } from '@/lib/billing-routes';
 import { getPlanTierLabel } from '@/lib/i18n-labels';
 import { needsOrgSetup } from '@/lib/onboarding';
-import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { hasAccountBillingPage, isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import {
   useBillingPlans,
@@ -59,8 +59,20 @@ export function PlansPage() {
  * long-rent route gets the long-rent shell from the context layout (PL-16). Also the return page of the checkout
  * (`?checkout=success|cancel`) and of the billing portal started from this page: the outcome shown is the subscription
  * read from the backend, never the redirect alone.
+ *
+ * AM-08a: a billing administrator who works in the account area has the plan and the billing in one page there, with the new look
+ * (`/app/account/billing`), and is handed over to it, query string included, so the return of Stripe lands there too. This page stays
+ * as it was for who has no account area (the demo, an org without memberships yet).
  */
 export function PlansPageContent() {
+  const { contexts } = useWorkspace();
+  const { search } = useLocation();
+
+  if (hasAccountBillingPage(contexts)) return <Navigate to={{ pathname: ACCOUNT_BILLING_PATH, search }} replace />;
+  return <ClassicPlansPageContent />;
+}
+
+function ClassicPlansPageContent() {
   const { t, i18n } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
@@ -86,6 +98,9 @@ export function PlansPageContent() {
   const subscription = subscriptionQuery.data;
   const status = subscription?.status ?? 'none';
   const confirmed = checkoutReturn === 'success' && !!subscription && isPaidStatus(subscription.status);
+  // An answer that is not an entitlement (an HTML page where the API is not reachable) has no usage: the summary is left out.
+  const usedProperties = entitlement?.usage?.properties;
+  const maxProperties = entitlement?.limits?.maxProperties;
 
   // The Stripe return parameter is read once, then removed: a reload does not show the outcome again.
   useEffect(() => {
@@ -253,16 +268,13 @@ export function PlansPageContent() {
             </Banner>
           )}
 
-          {entitlement && (
+          {typeof usedProperties === 'number' && typeof maxProperties === 'number' && (
             <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm" data-testid="plan-usage-summary">
               <p>
-                {t('settings.currentUsage')} <strong>{entitlement.usage.properties}</strong>{' '}
+                {t('settings.currentUsage')} <strong>{usedProperties}</strong>{' '}
                 {t('settings.planUsage', {
-                  propertyCount: entitlement.usage.properties,
-                  maxProperties:
-                    entitlement.limits.maxProperties >= 1_000_000
-                      ? t('settings.unlimited')
-                      : entitlement.limits.maxProperties,
+                  propertyCount: usedProperties,
+                  maxProperties: maxProperties >= 1_000_000 ? t('settings.unlimited') : maxProperties,
                 })}
                 .
               </p>
