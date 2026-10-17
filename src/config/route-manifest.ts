@@ -201,6 +201,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
+    // answer of the host and the report to CasaZen. In "Altro" next to the reports: the main menu holds seven entries at most.
+    path: '/app/short-rent/reviews',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.reviews',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'Star',
+    component: async () => ({ default: (await import('@/features/reviews/host-reviews-page')).HostReviewsPage }),
+  },
+  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],

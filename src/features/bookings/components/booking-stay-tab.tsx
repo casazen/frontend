@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
+import { ReviewInvitePanel } from '@/features/reviews/components/review-invite-panel';
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -110,6 +111,9 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
           </Facts>
         </PlainSection>
       ) : null}
+
+      {/* DB-12b: the host asks the guest of a stay that is over for a review; the panel draws nothing for any other booking. */}
+      <ReviewInvitePanel booking={booking} canWrite={hasPermission('short-rent', 'booking.write')} />
 
       <ServiceRequestsCard
         plain
