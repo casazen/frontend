@@ -111,6 +111,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/supplier/availability',
       '/app/supplier/services',
       '/app/supplier/showcase',
+      '/app/supplier/clients',
     ]);
     expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual([
       '/app/supplier/profile',
@@ -610,9 +611,9 @@ describe('route-manifest nav helpers', () => {
       '/app/supplier/availability',
       '/app/supplier/services',
     ]);
-    // On the phone the showcase is reached through "Altro", with the rest of the menu.
+    // On the phone the showcase and the customers are reached through "Altro", with the rest of the menu.
     const phoneMenu = getContextNav('supplier', allowAll, {}, { withoutBottom: true });
-    expect(paths(phoneMenu.sections.flatMap((section) => section.entries))).toEqual(['/app/supplier/showcase']);
+    expect(paths(phoneMenu.sections.flatMap((section) => section.entries))).toEqual(['/app/supplier/showcase', '/app/supplier/clients']);
   });
 
   // A shorter name on the bar is for an entry of the bar, and never for one with a counter (name and counter are read together).

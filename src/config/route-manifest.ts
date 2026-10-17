@@ -1039,6 +1039,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-showcase-preview-page')).SupplierShowcasePreviewPage }),
   },
   {
+    // The customers of the supplier (SP-16b): the hosts of CasaZen and the private customers of the showcase, with their jobs. The sixth of
+    // the seven entries of the menu (SP-D1); on the phone it is behind "Altro". No flag.
+    path: '/app/supplier/clients',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierClients',
+    navGroup: 'activity',
+    navPlacement: 'primary',
+    navOrder: 6,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/supplier/clients/supplier-clients-page')).SupplierClientsPage }),
+  },
+  {
     // Help page for connecting an external calendar via iCal (SU-15), moved inside the supplier shell with its own
     // sidebar entry (A4-32, #327-AC2/AC4). The public `/help/ical` route stays for the host property iCal settings
     // page, which links the same component from outside the supplier context.
