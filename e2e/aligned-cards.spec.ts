@@ -305,6 +305,40 @@ test.describe('Aligned cards', () => {
     });
   });
 
+  test.describe('Admin dashboard', () => {
+    test('the six numbers are two rows of three, and the numbers of a row start at the same height', async ({ page }) => {
+      await page.route('**/api/admin/stats', async (route) => {
+        const stats = {
+          totalProperties: 128,
+          activeProperties: 97,
+          totalBookings: 4210,
+          bookingsThisMonth: 311,
+          upcomingCheckIns: 42,
+          totalRevenue: 1284500.5,
+          cinCompliance: { valid: 80, missing: 30, invalid: 18, total: 128 },
+          otaSyncHealth: { synced: 60, failed: 4, neverSynced: 12 },
+        };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(stats) });
+      });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(demoUrl('/app/admin', 'admin'));
+
+      // The six numbers are the cards with a big number; the CIN and OTA cards under them are another grid.
+      const cards = page.locator('div.grid > div.rounded-lg').filter({ has: page.locator('.text-2xl') });
+      await expect(cards).toHaveCount(6);
+      const row = (first: number) => [first, first + 1, first + 2].map((index) => cards.nth(index));
+
+      // Three across from a laptop: a line of four and two alone left empty cells on the right.
+      await expectAligned(row(0), 'first row', 'top');
+      await expectAligned(row(3), 'second row', 'top');
+      const [firstRow, secondRow] = await Promise.all([cards.nth(0).boundingBox(), cards.nth(3).boundingBox()]);
+      expect(secondRow!.y).toBeGreaterThan(firstRow!.y + firstRow!.height - 1);
+      await expectAligned(row(0).map((card) => card.locator('.text-2xl')), 'numbers of the first row');
+      await expectAligned(row(3).map((card) => card.locator('.text-2xl')), 'numbers of the second row');
+    });
+
+  });
+
   test.describe('Numbers (StatStrip)', () => {
     test('the numbers of a strip start at the same height whatever the length of their names', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
