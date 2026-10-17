@@ -58,7 +58,7 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
         isSelected && 'ring-2 ring-primary',
       )}
     >
-      <div className="mb-3.5 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
         <Icon className="h-6 w-6" aria-hidden />
       </div>
       <CardTitle className="mb-1.5">{t(meta.titleKey)}</CardTitle>
