@@ -510,6 +510,7 @@
     "fiscal": "Fiscal regime",
     "payments": "Payments",
     "revenue": "Revenue",
+    "reports": "Reports",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
@@ -7507,6 +7508,105 @@
     "questuraDeliveryDateFailed": "Unable to save the delivery date",
     "questuraMarkedDone": "Questura communication marked as sent",
     "questuraMarkDoneFailed": "Unable to save the Questura communication"
+  },
+  "reports": {
+    "chips": {
+      "all": "All",
+      "financial": "Financial",
+      "fiscal": "Fiscal",
+      "operational": "Operational"
+    },
+    "columns": {
+      "format": "Format",
+      "name": "Report",
+      "period": "Suggested period",
+      "type": "Type"
+    },
+    "count_one": "{{count}} report",
+    "count_other": "{{count}} reports",
+    "description": "Download the short-rent reports and open the ones that already have a page. Each one says which basis its numbers are on.",
+    "dialog": {
+      "csvOnly": "The file is a CSV: it opens with Excel.",
+      "customFrom": "From",
+      "customTo": "To",
+      "description": "Choose the days and the format of the file.",
+      "format": "File format",
+      "period": "Period",
+      "range": "From {{from}} to {{to}}",
+      "title": "Download: {{name}}"
+    },
+    "download": "Download",
+    "downloadFailed": "The report could not be downloaded. Try again.",
+    "downloaded": "Report downloaded: {{name}}",
+    "emptyDescription": "Reports come by themselves: as soon as you have bookings they are here.",
+    "emptyTitle": "No reports",
+    "error": {
+      "fiscalSameYear": "Fiscal reports cover one year only: choose two dates in the same year.",
+      "fiscalTooLong": "The tourist tax report covers one year at most.",
+      "fiscalYear": "Fiscal reports start from {{year}}: choose a period from that year on.",
+      "invalidDates": "Check the dates: a first and a last day are needed, and the first cannot be after the last.",
+      "tooLong": "The period is too long: a report covers 24 months at most."
+    },
+    "format": {
+      "csv": "CSV",
+      "pdf": "PDF"
+    },
+    "items": {
+      "alloggiati": {
+        "description": "The list of the guest communications and their status, on the Alloggiati page.",
+        "name": "Alloggiati Web"
+      },
+      "annual": {
+        "description": "The income the flat tax is calculated on and the regime chosen for each property.",
+        "name": "Flat tax and tax regime"
+      },
+      "channels": {
+        "description": "Where the bookings come from: your site, Airbnb, Booking.com, entered by hand. Revenue on an accrual basis.",
+        "name": "Bookings by channel"
+      },
+      "occupancy": {
+        "description": "How many nights are occupied and how many stay free, property by property.",
+        "name": "Occupancy by property"
+      },
+      "payments": {
+        "description": "Last month's payments and refunds, on the Payments page, where you can download them.",
+        "name": "Payments statement"
+      },
+      "revenue": {
+        "description": "What each property earns, on an accrual basis: the nights of the confirmed stays, as on the Home.",
+        "name": "Revenue by property"
+      },
+      "touristTax": {
+        "description": "Nights and recorded amount, municipality by municipality and month by month.",
+        "name": "Tourist tax"
+      },
+      "withholding": {
+        "description": "The withholdings kept by Airbnb and Booking.com on your payouts.",
+        "name": "Portal withholdings"
+      }
+    },
+    "noResultsDescription": "Try removing a filter or searching with another word.",
+    "noResultsTitle": "No reports match",
+    "open": "Open",
+    "preset": {
+      "custom": "Custom dates",
+      "last3Months": "Last 3 months",
+      "lastMonth": "Last month",
+      "lastYear": "Last year",
+      "thisMonth": "This month",
+      "thisYear": "This year"
+    },
+    "retry": "Try again",
+    "search": {
+      "label": "Search the reports",
+      "placeholder": "Search a report"
+    },
+    "title": "Reports",
+    "type": {
+      "financial": "Financial",
+      "fiscal": "Fiscal",
+      "operational": "Operational"
+    }
   },
   "fiscal": {
     "page": {

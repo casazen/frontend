@@ -188,6 +188,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The reports of short rent (SR-10): revenue, occupancy and bookings by channel to download, the fiscal ones as the fiscal page
+    // has them, and the pages that already hold the rest (Alloggiati, payments). For who may read payments (aggregated money):
+    // the others find the reserved page. In "Altro" with Ricavi and Regime fiscale: the main menu holds seven entries at most.
+    path: '/app/short-rent/reports',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    navKey: 'nav.reports',
+    navPlacement: 'secondary',
+    navOrder: 25,
+    icon: 'TrendingUp',
+    component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
+  },
+  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
