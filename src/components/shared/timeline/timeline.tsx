@@ -14,8 +14,11 @@ export type TimelineTone = StatusTone;
 
 export interface TimelineEvent {
   id: string;
-  /** When it happened (or will): an instant in ISO 8601, `2026-10-16T09:30:00Z`. */
-  at: string;
+  /**
+   * When it happened (or will): an instant in ISO 8601, `2026-10-16T09:30:00Z`. Missing (or null) when the time was not kept: the
+   * event is shown without a time, and only `order="given"` keeps it where the page put it (the other orders put it last).
+   */
+  at?: string | null;
   /** What happened, already translated: one short line. */
   title: string;
   description?: string;
@@ -31,8 +34,8 @@ export interface TimelineEvent {
 
 export interface TimelineProps {
   events: readonly TimelineEvent[];
-  /** `desc`: the latest first (default). `asc`: the oldest first. */
-  order?: 'desc' | 'asc';
+  /** `desc`: the latest first (default). `asc`: the oldest first. `given`: as they come, for a page that has put them in order already. */
+  order?: 'desc' | 'asc' | 'given';
   /** How many events are shown before "Mostra altri"; also how many each press adds. Default 5; `Infinity` shows them all. */
   limit?: number;
   /** The name of the list for a screen reader. Default: "Cronologia". */
@@ -70,11 +73,12 @@ interface SortedEvent {
   time: Date | null;
 }
 
-function sortEvents(events: readonly TimelineEvent[], order: 'desc' | 'asc'): SortedEvent[] {
+function sortEvents(events: readonly TimelineEvent[], order: 'desc' | 'asc' | 'given'): SortedEvent[] {
   const dated = events.map((event) => {
-    const time = new Date(event.at);
-    return { event, time: Number.isNaN(time.getTime()) ? null : time };
+    const time = event.at ? new Date(event.at) : null;
+    return { event, time: time && !Number.isNaN(time.getTime()) ? time : null };
   });
+  if (order === 'given') return dated;
   const direction = order === 'asc' ? 1 : -1;
   // An event whose date cannot be read goes last in either order; for the others the sort is stable (equal times keep the order given).
   return dated.sort((a, b) => {
@@ -155,15 +159,17 @@ export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label,
                   )}
                 </p>
                 {event.description ? <p className="mt-0.5 break-words text-sm text-foreground/70">{event.description}</p> : null}
-                <p className="mt-0.5 break-words text-xs text-foreground/70">
-                  {time ? (
-                    <time dateTime={time.toISOString()}>
-                      {formatAbsolute(time, now, i18n.language)}
-                      {relative ? ` · ${relative}` : ''}
-                    </time>
-                  ) : null}
-                  {event.actor ? `${time ? ' · ' : ''}${t('detailDrawer.timeline.by', { actor: event.actor })}` : null}
-                </p>
+                {time || event.actor ? (
+                  <p className="mt-0.5 break-words text-xs text-foreground/70">
+                    {time ? (
+                      <time dateTime={time.toISOString()}>
+                        {formatAbsolute(time, now, i18n.language)}
+                        {relative ? ` · ${relative}` : ''}
+                      </time>
+                    ) : null}
+                    {event.actor ? `${time ? ' · ' : ''}${t('detailDrawer.timeline.by', { actor: event.actor })}` : null}
+                  </p>
+                ) : null}
               </div>
             </li>
           );
