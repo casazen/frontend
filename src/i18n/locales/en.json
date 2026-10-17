@@ -4795,6 +4795,10 @@
     "contactEmailHelp": "CasaZen notifications (bookings, requests, alerts) are sent here.",
     "contactEmailPublicLabel": "Show the contact email to guests",
     "contactEmailPublicHelp": "Not published by default. Turn this on to show it on your public booking site.",
+    "operatorHelp": "Required by law if you run a business. They appear in the footer of your booking site, with the VAT number of your tax profile if you have one. (Draft text, to be reviewed.)",
+    "legalNameLabel": "Legal name",
+    "registeredOfficeLabel": "Registered office",
+    "registeredOfficeExample": "Via Roma 1, 70121 Bari (BA)",
     "save": "Save settings",
     "saved": "Organization settings saved",
     "saveFailed": "Could not save the organization settings",
@@ -6728,7 +6732,9 @@
     "legalDocuments": "Legal documents",
     "footer": {
       "contact": "Contact",
-      "info": "Information"
+      "info": "Information",
+      "operator": "Operator",
+      "vatNumber": "VAT no. {{vat}}"
     },
     "seo": {
       "orgTitle": "{{name}} — Book direct",

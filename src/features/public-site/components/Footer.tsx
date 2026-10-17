@@ -6,6 +6,7 @@ import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { orgDocumentPath } from '@/lib/org-document-paths';
 import { cn } from '@/lib/utils';
+import type { PublicOperator } from '@/types';
 
 interface FooterProps {
   displayName?: string;
@@ -13,6 +14,11 @@ interface FooterProps {
   showPoweredBy?: boolean;
   /** The slogan of the host (`Org.Tagline`), under its name: a booking site shows it, the CasaZen pages do not. */
   tagline?: string | null;
+  /**
+   * Who runs the booking site (DB-03b-a): legal name, registered office and VAT number, each only if the host entered it. The
+   * block "Operatore" is there only when at least one is; the CasaZen pages never get it.
+   */
+  operator?: PublicOperator | null;
   /**
    * CasaZen public pages only: the SEO hub and the CasaZen legal documents for hosts (DPA, subprocessors). A host's
    * booking site (`/book/*`) is the host's brand: it keeps only the Privacy and Terms links, opened in a new tab so the
@@ -37,11 +43,17 @@ export function Footer({
   contactEmail,
   showPoweredBy = false,
   tagline,
+  operator,
   showSeoHubLink = false,
   orgSlug,
 }: FooterProps) {
   const { t } = useTranslation();
   const infoTitleId = useId();
+  // Only what the host entered (the backend sends null for the rest, never an empty string); no line, no block.
+  const operatorName = operator?.legalName?.trim() || null;
+  const operatorOffice = operator?.registeredOffice?.trim() || null;
+  const operatorVat = operator?.vatNumber?.trim() || null;
+  const hasOperator = Boolean(operatorName || operatorOffice || operatorVat);
   const year = new Date().getFullYear();
   // The pages always exist: the CasaZen ones say "in preparation" until the product owner provides the text (PL-14, D14),
   // the operator's say "not published" until the host publishes theirs (BK-14).
@@ -94,8 +106,9 @@ export function Footer({
     );
   }
 
-  // The footer of a booking site, light on the surface of the theme of the host: its name and slogan, the way to its
-  // documents, its contact if it published one, and the line of the law of the page.
+  // The footer of a booking site, light on the surface of the theme of the host: its name and slogan, who runs it (the
+  // operator, if the host entered the data), the way to its documents, its contact if it published one, and the line of the
+  // law of the page.
   return (
     <footer className="border-t bg-[var(--cz-public-surface)] text-sm" data-testid="public-site-footer">
       <div
@@ -107,6 +120,17 @@ export function Footer({
         <div className="min-w-0">
           {displayName ? <p className="public-display text-xl">{displayName}</p> : null}
           {tagline ? <p className="mt-2 max-w-sm text-[var(--cz-public-muted)]">{tagline}</p> : null}
+          {/* The transparency of the operator (DB-03b-a): who runs the site, with the registered office and the VAT number. */}
+          {hasOperator ? (
+            <div className="mt-5 max-w-sm space-y-0.5 break-words" data-testid="footer-operator">
+              <p className={TITLE_CLASS}>{t('publicSite.footer.operator')}</p>
+              {operatorName ? <p data-testid="footer-operator-name">{operatorName}</p> : null}
+              {operatorOffice ? <p data-testid="footer-operator-office">{operatorOffice}</p> : null}
+              {operatorVat ? (
+                <p data-testid="footer-operator-vat">{t('publicSite.footer.vatNumber', { vat: operatorVat })}</p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <nav aria-labelledby={infoTitleId}>
           <p id={infoTitleId} className={TITLE_CLASS}>
