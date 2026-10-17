@@ -198,6 +198,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
         'Adempimenti',
         'Ricavi',
         'Regime fiscale',
+        'Report',
         'Profilo',
         'Stripe Connect',
         'Dominio pubblico',
