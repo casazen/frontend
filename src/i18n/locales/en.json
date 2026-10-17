@@ -6898,8 +6898,7 @@
     "title": "Search"
   },
   "login": {
-    "brand": "CASAZEN",
-    "platformDescription": "Vacation Property Management Platform",
+    "redirecting": "Taking you to sign in…",
     "signInMessage": "Sign in to manage your properties, bookings, and payments",
     "signInButton": "Sign in with Auth0",
     "signIn": "Log in"
@@ -8492,7 +8491,6 @@
   },
   "longRentProperties": {
     "retry": "Retry",
-    "roomsValue": "{{bedrooms}} bedrooms · {{bathrooms}} bathrooms",
     "list": {
       "actions": {
         "createLease": "Create lease",
@@ -8545,17 +8543,35 @@
       "description": "Update the details of {{name}}"
     },
     "detail": {
-      "loading": "Loading property...",
-      "loadError": "The property could not be loaded.",
-      "edit": "Edit",
-      "newLease": "New lease",
-      "infoTitle": "Property details",
       "address": "Address",
-      "rooms": "Bedrooms and bathrooms",
-      "documentsLoading": "Loading documents...",
-      "documentsLoadError": "The property documents could not be loaded.",
+      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
-      "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below."
+      "backToList": "Back to properties",
+      "contractsLoadError": "The leases of this property could not be read.",
+      "contractsTitle": "Linked leases",
+      "description": "Description",
+      "documentsLoadError": "The property documents could not be loaded.",
+      "documentsLoading": "Loading documents...",
+      "edit": "Edit",
+      "fallbackTitle": "Property",
+      "infoTitle": "Property details",
+      "loadError": "The property could not be loaded.",
+      "loading": "Loading property...",
+      "newLease": "New lease",
+      "next": {
+        "free": {
+          "body": "The property is vacant. Create the lease with the new tenant: the APE and the cadastral data are needed.",
+          "kicker": "Next step",
+          "title": "Create the lease"
+        },
+        "preparing": {
+          "kicker": "Lease in preparation"
+        },
+        "rented": {
+          "kicker": "Lease in force"
+        }
+      },
+      "rooms": "Bedrooms and bathrooms"
     },
     "drawer": {
       "keyData": "Property details",
@@ -9118,20 +9134,20 @@
   "site": {
     "meta": {
       "home": {
-        "title": "CasaZen | Compliant short-term rental software: CIN, guests, tourist tax",
-        "description": "Run your short-term rentals by the rules: CIN checks, guest data for Alloggiati Web, online check-in, tourist tax and a direct booking site with no CasaZen commission."
+        "title": "CasaZen | Rental management for short- and long-term lets in Italy",
+        "description": "CIN, Alloggiati Web, tourist tax, iCal calendars, a direct booking site with no CasaZen commission and local suppliers: one app for short- and long-term rentals in Italy."
       },
       "features": {
-        "title": "Features | CasaZen",
-        "description": "Compliance, iCal calendar, direct booking site with Stripe payments, supplier requests and long-term rentals: every CasaZen feature for hosts and property managers."
+        "title": "Features: compliance, calendar and direct bookings | CasaZen",
+        "description": "CIN checks, guest data for Alloggiati Web, tourist tax, iCal calendar, a direct booking site with Stripe payments, supplier requests and long-term lease contracts."
       },
       "suppliers": {
         "title": "For suppliers: work with the hosts in your area | CasaZen",
-        "description": "Cleaning, maintenance, laundry and service businesses for holiday rentals: sign up on CasaZen and receive requests from hosts in the comuni where you work."
+        "description": "Cleaning, maintenance, laundry and service businesses for short-term rentals: choose your categories and comuni, receive hosts' requests and manage them from a single page."
       },
       "about": {
         "title": "About us and contacts | CasaZen",
-        "description": "CasaZen is the software for short- and long-term rental hosts and property managers in Italy. Company details and contacts."
+        "description": "CasaZen is the management app for hosts and property managers of short- and long-term rentals in Italy, built on Italian rules. How we work, company details and contacts."
       }
     },
     "nav": {
@@ -9146,7 +9162,7 @@
       "switchLanguageLabel": "Switch to Italian"
     },
     "footer": {
-      "tagline": "Software for compliant short- and long-term rentals.",
+      "tagline": "The management app for short- and long-term rentals, by the rules.",
       "productTitle": "Product",
       "resourcesTitle": "Resources",
       "legalTitle": "Legal",
@@ -9161,13 +9177,49 @@
     },
     "home": {
       "hero": {
-        "eyebrow": "For hosts and property managers",
-        "title": "Short-term rentals by the rules, without spreadsheets",
-        "subtitle": "CasaZen brings compliance (CIN, guest reporting, tourist tax), your calendar and your direct booking site together in one app.",
-        "ctaFeatures": "See the features"
+        "eyebrow": "For hosts, property managers and landlords",
+        "title1": "Rentals by the rules.",
+        "title2": "Direct bookings.",
+        "title3": "Zero CasaZen commission.",
+        "subtitle": "The management app built for Italian rules: compliance (CIN, guests, tourist tax), calendar, booking site and suppliers in one place, for short- and long-term rentals.",
+        "ctaHow": "See how it works"
+      },
+      "facts": {
+        "item1Value": "0%",
+        "item1Label": "CasaZen commission on bookings from your own site (Stripe's fees still apply)",
+        "item2Value": "6 and 24 hours",
+        "item2Label": "the Alloggiati Web deadlines, watched for you",
+        "item3Value": "15 minutes",
+        "item3Label": "about, to align the iCal calendars of the portals",
+        "item4Value": "4+4 · 3+2",
+        "item4Label": "the long-term contracts you can manage, transitional ones included"
+      },
+      "contrast": {
+        "title": "Fewer spreadsheets, fewer missed deadlines",
+        "intro": "The rules change from one comune to the next and the data ends up everywhere. CasaZen keeps it together, with dates and official sources.",
+        "beforeTitle": "How it is usually done",
+        "before1": "The CIN, guest data and deadlines in spreadsheets and scattered reminders.",
+        "before2": "Tourist tax worked out by hand, comune by comune.",
+        "before3": "Portal calendars checked one by one.",
+        "before4": "Cleaning and maintenance asked for by chat and phone calls.",
+        "afterTitle": "With CasaZen",
+        "after1": "The CIN checked, guest data collected online and the Alloggiati Web deadlines always in view.",
+        "after2": "Tourist tax calculated per night with the comune's rules, where the rate is available.",
+        "after3": "One calendar, aligned with the portals through iCal.",
+        "after4": "Requests to local suppliers, with status and history."
+      },
+      "how": {
+        "title": "How it works",
+        "intro": "From setting up the property to the first booking, one step at a time.",
+        "step1Title": "Set up your property",
+        "step1Text": "A guided flow checks the details, the CIN, the documents and the safety equipment before it goes live.",
+        "step2Title": "Receive bookings",
+        "step2Text": "They come from your direct booking site and the portal calendars stay aligned through iCal. The guest pays into your Stripe account.",
+        "step3Title": "Stay compliant",
+        "step3Text": "Guests check in online, CasaZen prepares the Alloggiati Web file and summarises the tourist tax by comune and month."
       },
       "compliance": {
-        "title": "Compliance under control",
+        "title": "Italian compliance under control",
         "intro": "The rules change from one comune to the next. CasaZen tells you what is missing and when it is due.",
         "cinTitle": "CIN",
         "cinText": "Checks the official format of the national identification code (CIN) and warns you when it is missing or invalid. Public pages show the CIN only when it is valid.",
@@ -9181,9 +9233,13 @@
         "wizardText": "A step-by-step flow checks details, CIN, documents and safety equipment before a property goes live."
       },
       "booking": {
-        "title": "Your direct booking site",
-        "text": "A site with your properties, your logo and your colours. Guests pay online with Stripe straight into your account: CasaZen takes no commission on bookings (Stripe's fees still apply). They can pay now, later or at the property.",
-        "domain": "Publish it on a CasaZen address or connect your own domain."
+        "title": "Your direct booking site, with no CasaZen commission",
+        "text": "A site with your properties, your logo and your colours. Guests pay online with Stripe straight into your account: CasaZen takes no commission on bookings (Stripe's fees still apply).",
+        "domain": "Publish it on a CasaZen address or connect your own domain.",
+        "point1": "Three visual styles, with your logo and your colour",
+        "point2": "Guests pay now, later or at the property",
+        "point3": "Your own privacy and terms pages",
+        "point4": "Search-engine-ready pages, with structured data for every property"
       },
       "operations": {
         "title": "The everyday work",
@@ -9194,17 +9250,46 @@
         "fiscalTitle": "Tax estimates",
         "fiscalText": "Summaries for the cedolare secca flat tax and your tax return: supporting estimates to check with your accountant.",
         "longRentTitle": "Long-term rentals too",
-        "longRentText": "4+4, 3+2 and transitional contracts, deadline reminders and rent paid online."
+        "longRentText": "4+4, 3+2 and transitional contracts, deadline reminders and rent paid online.",
+        "intro": "Calendar, suppliers, accounts and long-term rentals in one place."
+      },
+      "audience": {
+        "title": "Who CasaZen is for",
+        "intro": "With one property or many, the rules are the same: CasaZen follows them for you.",
+        "hostTitle": "Hosts with a few properties",
+        "hostText": "Put compliance and calendar in order once: CasaZen tells you when something is missing and when it is due.",
+        "managerTitle": "Property managers",
+        "managerText": "More properties under control: compliance, calendars and supplier requests in one place, property by property.",
+        "landlordTitle": "Long-term landlords",
+        "landlordText": "Contracts 4+4, 3+2 and transitional, rents payable online and deadline reminders, registration included.",
+        "supplierTitle": "Businesses and professionals",
+        "supplierText": "Cleaning, maintenance, laundry: receive requests from hosts in your area and manage them from a single page.",
+        "supplierCta": "For suppliers"
       },
       "guides": {
         "title": "Free guides per comune",
         "text": "For each comune we explain CIN, Alloggiati Web and the tourist tax with the official sources; for Lombardy also the CIR and the tourist flow reporting on Ross1000. Every guide is reviewed by a person before it is published.",
         "cta": "Go to the guides"
       },
-      "suppliersTeaser": {
-        "title": "Do you run a cleaning, maintenance or service business?",
-        "text": "Receive requests from hosts in your area and manage them from a single page.",
-        "cta": "See how it works"
+      "faq": {
+        "title": "Frequently asked questions",
+        "intro": "What CasaZen does and what it does not, plainly.",
+        "q1": "Is CasaZen a channel manager?",
+        "a1": "No. CasaZen aligns the calendars with Airbnb, Booking.com and the other portals through iCal, about every 15 minutes: it imports theirs and gives you one to export. There is no direct API connection, so CasaZen does not update the prices on the portals.",
+        "q2": "Does CasaZen send guest data to Alloggiati Web?",
+        "a2": "CasaZen collects the data with the official tables, watches the 6- and 24-hour deadlines and lets you download the file ready to upload to the State Police portal. The upload to the portal is up to you.",
+        "q3": "Is the tourist tax calculated for every comune?",
+        "a3": "It is calculated per night with the comune's rules (seasons, ages, maximum nights) where the rate is available in CasaZen. Where it is not, it says so instead of inventing an amount. The total the guest pays includes it, and you get reports by comune and month.",
+        "q4": "How do payments on the booking site work?",
+        "a4": "The guest pays with Stripe straight into your account: now, later or at the property. CasaZen takes no commission on bookings; Stripe's fees apply.",
+        "q5": "Can I use CasaZen with a single property?",
+        "a5": "Yes. With one property or many the process is the same: you set up the property and CasaZen tells you what is missing.",
+        "q6": "Does CasaZen handle long-term rentals too?",
+        "a6": "Yes. Contracts 4+4, 3+2 and transitional, with the flat tax (cedolare secca) or the ordinary regime, rents payable online with Stripe or marked as paid, email reminders and contract registration deadlines (RLI).",
+        "q7": "Do the tax estimates replace my accountant?",
+        "a7": "No. The summaries for the flat tax and for your tax return are supporting estimates: to file and pay, talk to your accountant.",
+        "q8": "How much does it cost and how do I join?",
+        "a8": "CasaZen is just getting started and for now you join by invitation only, with no published prices. Write to us and we will explain how it works."
       },
       "finalCta": {
         "title": "Want to try CasaZen?",
@@ -9212,8 +9297,8 @@
       }
     },
     "features": {
-      "title": "Features",
-      "intro": "Everything you need to manage short- and long-term rentals, in line with Italian rules.",
+      "title": "CasaZen features",
+      "intro": "Everything you need to manage short- and long-term rentals under Italian rules: what CasaZen does today, explained plainly.",
       "complianceTitle": "Compliance",
       "complianceItem1": "CIN format check and a warning when the comune code in it does not match the property's comune.",
       "complianceItem2": "Guided property activation: details, CIN, required documents and safety equipment.",
@@ -9240,11 +9325,22 @@
       "longRentTitle": "Long-term rentals",
       "longRentItem1": "4+4, 3+2 and transitional contracts, with cedolare secca or the ordinary regime.",
       "longRentItem2": "Rent paid online with Stripe or marked as paid, with email reminders.",
-      "longRentItem3": "Reminders of the contract registration (RLI) deadlines."
+      "longRentItem3": "Reminders of the contract registration (RLI) deadlines.",
+      "complianceIntro": "What it takes to rent by the rules, checked for you.",
+      "touristTaxIntro": "Calculated per night, included in the total, ready for the comune.",
+      "bookingIntro": "Your site, your guests, your income.",
+      "calendarIntro": "One calendar, aligned with the portals.",
+      "suppliersIntro": "Cleaning and maintenance one request away.",
+      "fiscalIntro": "Clear numbers for your tax return, with the right caution.",
+      "longRentIntro": "From the contract to the rent, without missing a deadline.",
+      "noteTitle": "Good to know",
+      "note1": "Portal calendars are synchronised through iCal: there is no direct API connection.",
+      "note2": "For Alloggiati Web CasaZen prepares the file to upload: the upload to the portal is up to you.",
+      "note3": "The tax summaries are supporting estimates and do not replace your accountant."
     },
     "suppliers": {
       "title": "Work with the hosts in your area",
-      "subtitle": "CasaZen connects businesses and professionals with short- and long-term rental hosts looking for services for their properties.",
+      "subtitle": "CasaZen connects businesses and professionals with hosts of short- and long-term rentals who look for services for their properties: cleaning, maintenance, laundry and more.",
       "howTitle": "How it works",
       "step1": "Receive your invitation and choose the categories of your services and the comuni where you work.",
       "step2": "Complete the activation in a few steps and accept the terms of service.",
@@ -9266,7 +9362,16 @@
       "categoryGardening": "Gardening",
       "categoryEvents": "Events",
       "categoryRental": "Rentals",
-      "categoryExcursions": "Excursions"
+      "categoryExcursions": "Excursions",
+      "faqTitle": "Frequently asked questions",
+      "q1": "How do I join?",
+      "a1": "You receive an invitation: from there you choose the categories of your services and the comuni where you work.",
+      "q2": "Can I choose where I work?",
+      "a2": "Yes. You name the comuni and the service categories: you receive the requests of hosts in those comuni.",
+      "q3": "How do I receive requests?",
+      "a3": "You find them on a single page, with the date and, once you accept them, the host's address and contacts. You can accept or decline them and follow them through to completion.",
+      "q4": "Can I have a page to show my clients?",
+      "a4": "Yes: a public page with your categories, the comuni where you work, a description and photos, which you can share."
     },
     "about": {
       "title": "About us",
@@ -9277,7 +9382,14 @@
       "companyTitle": "Company details",
       "nameLabel": "Company name",
       "vatIdLabel": "VAT number",
-      "addressLabel": "Registered office"
+      "addressLabel": "Registered office",
+      "principlesTitle": "How we work",
+      "principle1Title": "Rules first",
+      "principle1Text": "Features start from the Italian rules and their official sources: where a rule changes from one comune to the next, CasaZen takes it into account.",
+      "principle2Title": "Your income stays yours",
+      "principle2Text": "Direct bookings are paid with Stripe into your account: CasaZen takes no commission on bookings.",
+      "principle3Title": "Estimates, not promises",
+      "principle3Text": "Where a number is an estimate, as in the tax summaries, we say so. And where CasaZen has no rate, it does not invent one."
     },
     "invite": {
       "notice": "CasaZen is just getting started: for now access is by invitation only.",
