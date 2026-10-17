@@ -517,6 +517,7 @@
     "accountSettings": "Impostazioni",
     "ota": "OTA",
     "leases": "Contratti",
+    "supplierClients": "Clienti",
     "supplierSettings": "Impostazioni",
     "users": "Utenti",
     "jobs": "Processi",
@@ -3222,6 +3223,65 @@
     "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
   },
   "supplier": {
+    "clients": {
+      "chips": {
+        "all": "Tutti",
+        "host": "Host",
+        "new": "Nuovi",
+        "newHint": "Non hai ancora preso nessun loro lavoro",
+        "private": "Privati",
+        "regular": "Abituali",
+        "regularHint": "Almeno 3 lavori presi"
+      },
+      "columns": {
+        "client": "Cliente",
+        "jobs": "Lavori",
+        "last": "Ultimo lavoro",
+        "paid": "Pagato"
+      },
+      "count_one": "{{count}} cliente",
+      "count_other": "{{count}} clienti",
+      "description": "Chi ti ha chiesto un lavoro, con lo storico di ognuno.",
+      "detail": {
+        "contact": "Contatto",
+        "contactAfterTake": "Il contatto compare dopo che hai preso un lavoro di questo cliente.",
+        "jobs": "Lavori presi",
+        "jobsCompleted_one": "{{count}} completato",
+        "jobsCompleted_other": "{{count}} completati",
+        "last": "Ultimo lavoro",
+        "next": "Prossimo",
+        "paid": "Pagato",
+        "recent": "Ultimi lavori",
+        "recentError": "Non riusciamo a mostrare gli ultimi lavori.",
+        "recentLoading": "Carico gli ultimi lavori…",
+        "recentNone": "Nessuna richiesta aperta o presa al momento."
+      },
+      "empty": {
+        "description": "Quando un host o un cliente del tuo sito vetrina ti chiederà un lavoro, lo troverai qui con lo storico.",
+        "title": "Qui vedrai i tuoi clienti"
+      },
+      "jobs_one": "{{count}} lavoro",
+      "jobs_other": "{{count}} lavori",
+      "kind": {
+        "host": "Host",
+        "private": "Cliente privato"
+      },
+      "loadError": "Impossibile caricare i clienti.",
+      "next": "Prossimo: {{day}}",
+      "none": "—",
+      "noResults": {
+        "description": "Cambia la ricerca o scegli un altro filtro.",
+        "title": "Nessun cliente trovato"
+      },
+      "regular": "Abituale",
+      "removed": "Cliente rimosso",
+      "requests": "Le sue richieste",
+      "search": "Cerca un cliente",
+      "searchPlaceholder": "Cerca per nome",
+      "title": "Clienti",
+      "truncated": "Mostro i {{shown}} clienti con l’attività più recente su {{total}}.",
+      "unnamed": "Cliente"
+    },
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
     "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",
@@ -3499,6 +3559,10 @@
         "toAnswerHint": "Aspettano la tua risposta",
         "toCollect": "Da incassare",
         "toCollectHint": "Lavori finiti, in attesa del pagamento"
+      },
+      "clientFilter": {
+        "clear": "Mostra tutte",
+        "note": "Stai vedendo solo le richieste di un cliente."
       },
       "contact": {
         "address": "Indirizzo",

@@ -517,6 +517,7 @@
     "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
+    "supplierClients": "Clients",
     "supplierSettings": "Settings",
     "users": "Users",
     "jobs": "Processes",
@@ -3222,6 +3223,65 @@
     "propertiesDescription": "Request services from a property or booking detail page."
   },
   "supplier": {
+    "clients": {
+      "chips": {
+        "all": "All",
+        "host": "Hosts",
+        "new": "New",
+        "newHint": "You have not taken any job of theirs yet",
+        "private": "Private",
+        "regular": "Regulars",
+        "regularHint": "At least 3 jobs taken"
+      },
+      "columns": {
+        "client": "Client",
+        "jobs": "Jobs",
+        "last": "Last job",
+        "paid": "Paid"
+      },
+      "count_one": "{{count}} client",
+      "count_other": "{{count}} clients",
+      "description": "Who has asked you for a job, with the history of each one.",
+      "detail": {
+        "contact": "Contact",
+        "contactAfterTake": "The contact shows once you have taken a job of this client.",
+        "jobs": "Jobs taken",
+        "jobsCompleted_one": "{{count}} completed",
+        "jobsCompleted_other": "{{count}} completed",
+        "last": "Last job",
+        "next": "Next",
+        "paid": "Paid",
+        "recent": "Latest jobs",
+        "recentError": "We cannot show the latest jobs.",
+        "recentLoading": "Loading the latest jobs…",
+        "recentNone": "No open or taken request right now."
+      },
+      "empty": {
+        "description": "When a host or a customer of your showcase asks you for a job, you will find them here with their history.",
+        "title": "Your clients will show here"
+      },
+      "jobs_one": "{{count}} job",
+      "jobs_other": "{{count}} jobs",
+      "kind": {
+        "host": "Host",
+        "private": "Private client"
+      },
+      "loadError": "Could not load the clients.",
+      "next": "Next: {{day}}",
+      "none": "—",
+      "noResults": {
+        "description": "Change the search or pick another filter.",
+        "title": "No client found"
+      },
+      "regular": "Regular",
+      "removed": "Client removed",
+      "requests": "Their requests",
+      "search": "Search a client",
+      "searchPlaceholder": "Search by name",
+      "title": "Clients",
+      "truncated": "Showing the {{shown}} clients with the latest activity out of {{total}}.",
+      "unnamed": "Client"
+    },
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
     "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
@@ -3499,6 +3559,10 @@
         "toAnswerHint": "Waiting for your answer",
         "toCollect": "To collect",
         "toCollectHint": "Finished jobs waiting to be paid"
+      },
+      "clientFilter": {
+        "clear": "Show all",
+        "note": "You are seeing only the requests of one client."
       },
       "contact": {
         "address": "Address",
