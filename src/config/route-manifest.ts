@@ -945,18 +945,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-profile-page')).SupplierProfilePage }),
   },
   {
-    // The payments account on Stripe (SP-16c-b), in "Altro". Its address is the one the server sends the supplier back to from Stripe
-    // (`?stripe_return=1`, `?stripe_refresh=1`: `PublicSiteLinks`, SP-14), so it is never renamed. It holds the payments alone until the
-    // settings page (SP-16c) takes it as one of its tabs. No `featureFlag`: while online payments are off on the server the page
-    // says so (the account endpoints answer 404) and offers nothing.
+    // The settings of the supplier (SP-16c-c): "Risposte" (the automatic acceptance of the regular customers) and "Pagamenti" (the account
+    // on Stripe, SP-16c-b), the last of the seven entries of the menu (SP-D1). Its address is the one the server sends the supplier back to
+    // from Stripe (`?stripe_return=1`, `?stripe_refresh=1`: `PublicSiteLinks`, SP-14), so it is never renamed. No `featureFlag`: while online
+    // payments are off on the server the "Pagamenti" tab says so (the account endpoints answer 404) and offers nothing.
     path: '/app/supplier/settings',
     context: 'supplier',
     requiredPermissions: [],
-    navKey: 'nav.supplierPayments',
-    navPlacement: 'secondary',
-    navOrder: 31,
-    icon: 'Wallet',
-    component: async () => ({ default: (await import('@/features/supplier/payments/supplier-payments-page')).SupplierPaymentsPage }),
+    navKey: 'nav.supplierSettings',
+    navGroup: 'management',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/supplier/settings/supplier-settings-page')).SupplierSettingsPage }),
   },
   {
     path: '/app/supplier/inbox',

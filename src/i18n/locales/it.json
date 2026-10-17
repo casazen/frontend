@@ -518,6 +518,7 @@
     "ota": "OTA",
     "leases": "Contratti",
     "supplierEarnings": "Incassi",
+    "supplierSettings": "Impostazioni",
     "users": "Utenti",
     "jobs": "Processi",
     "suppliers": "Fornitori",
@@ -541,7 +542,6 @@
     "supplierServices": "Servizi e prezzi",
     "supplierServicesBar": "Servizi",
     "supplierHelpIcal": "Guida iCal",
-    "supplierPayments": "Pagamenti",
     "group": {
       "account": "Il tuo account",
       "activity": "La tua attività",
@@ -3266,6 +3266,33 @@
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
     "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",
+    "settings": {
+      "answers": {
+        "title": "Risposte alle richieste"
+      },
+      "autoAccept": {
+        "hint": "Quando un tuo cliente abituale ti chiede un servizio a un orario libero, la richiesta risulta subito accettata: non devi rispondere tu.",
+        "label": "Accetta in automatico i clienti abituali",
+        "rules": {
+          "cancel": "Puoi annullare il lavoro dalla richiesta, indicando un motivo, fino a quando non lo avvii.",
+          "notice": "Ti avvisiamo ogni volta che una richiesta viene accettata in automatico.",
+          "regulars": "Vale per gli host con cui hai già preso almeno 3 lavori (quelli annullati non contano): la prima richiesta accettata in automatico è la quarta.",
+          "service": "Vale per i servizi con un prezzo e solo se l’orario scelto è libero nella tua agenda. Non vale per i servizi su preventivo, né per i clienti privati del tuo sito vetrina.",
+          "title": "Come funziona"
+        }
+      },
+      "description": "Come rispondi alle richieste e il conto su cui ricevi i pagamenti.",
+      "loadError": "Impossibile caricare le impostazioni.",
+      "loading": "Carico le impostazioni…",
+      "saveError": "Non siamo riusciti a salvare. Riprova.",
+      "saved": "Salvato.",
+      "tabs": {
+        "answers": "Risposte",
+        "payments": "Pagamenti"
+      },
+      "tabsLabel": "Sezioni delle impostazioni",
+      "title": "Impostazioni"
+    },
     "status": "Stato",
     "statusActive": "Attivo",
     "statusPending": "In attesa",
@@ -3481,6 +3508,7 @@
     },
     "requests": {
       "action": {
+        "cancel": "Annulla il lavoro",
         "complete": "Segna come completato",
         "completeShort": "Completa",
         "openPage": "Apri la scheda completa",
@@ -3493,6 +3521,13 @@
         "you": "Tu"
       },
       "answerUrgent": "Rispondi alla più urgente",
+      "cancel": {
+        "back": "Indietro",
+        "confirm": "Annulla il lavoro",
+        "done": "Lavoro annullato",
+        "reason": "Perché lo annulli?",
+        "title": "Annulla il lavoro"
+      },
       "chips": {
         "all": "Tutte",
         "archive": "Archivio",
@@ -3557,6 +3592,8 @@
         "label": "Cronologia della richiesta",
         "Pagato": "Pagato",
         "PresoInCarico": "Hai accettato la richiesta",
+        "PresoInCaricoAuto": "Accettata in automatico",
+        "PresoInCaricoAutoNote": "È un cliente abituale e hai attivato l’accettazione automatica. Puoi annullare il lavoro fino all’avvio.",
         "Richiesto": "Richiesta ricevuta",
         "Rifiutato": "Hai rifiutato la richiesta",
         "sub": "Cosa è successo finora",
@@ -3644,6 +3681,12 @@
           "then": "Poi: il cliente vede che il lavoro è finito.",
           "title": "Il lavoro è in programma",
           "you": "Fai il lavoro all’orario indicato e, quando hai finito, segnalo come completato."
+        },
+        "scheduledAuto": {
+          "client": "Vede giorno e ora confermati.",
+          "then": "Poi: il cliente vede che il lavoro è finito.",
+          "title": "Accettata in automatico: il lavoro è in programma",
+          "you": "Il cliente è tra i tuoi abituali e l’orario era libero, quindi l’abbiamo accettata noi. Se non puoi farlo, annulla il lavoro qui sotto prima di iniziare; altrimenti fallo all’orario indicato e, quando hai finito, segnalo come completato."
         },
         "toAnswer": {
           "client": "Ha inviato la richiesta e aspetta la tua risposta.",
@@ -4363,7 +4406,6 @@
     },
     "payments": {
       "checking": "Controlliamo con Stripe…",
-      "description": "Il conto su cui ricevi i pagamenti dei tuoi lavori.",
       "errors": {
         "dashboard": "Non siamo riusciti ad aprire la dashboard di Stripe. Riprova.",
         "onboarding": "Non siamo riusciti ad aprire Stripe. Riprova."
@@ -4421,7 +4463,6 @@
       },
       "loadError": "Impossibile caricare lo stato del conto.",
       "loading": "Carico lo stato del conto…",
-      "title": "Pagamenti",
       "unavailable": {
         "description": "Quando lo saranno, qui potrai collegare il conto su cui ricevere i pagamenti dei tuoi lavori. Per ora non devi fare nulla.",
         "title": "I pagamenti online non sono ancora attivi"
@@ -6830,6 +6871,13 @@
       "loadError": "Impossibile cercare la prenotazione. Riprova tra qualche istante.",
       "retry": "Riprova",
       "searchAnother": "Cerca un'altra prenotazione",
+      "signOut": "Esci",
+      "sharedDevice": "Su un dispositivo condiviso, esci quando hai finito.",
+      "loadingBooking": "Carico la tua prenotazione…",
+      "sessionExpiredTitle": "La sessione è scaduta",
+      "sessionExpiredDescription": "Per continuare scrivi di nuovo la tua email: il codice prenotazione è già compilato.",
+      "rateLimited_one": "Troppi tentativi: riprova tra {{count}} minuto.",
+      "rateLimited_other": "Troppi tentativi: riprova tra {{count}} minuti.",
       "resultTitle": "La tua prenotazione",
       "stayTitle": "Soggiorno",
       "guestsCount_one": "{{count}} ospite",
@@ -6884,6 +6932,7 @@
         "open": "Inserisci i dati degli ospiti dal link che ti inviamo via email.",
         "openSent": "Ti abbiamo inviato il link per inserire i dati degli ospiti il {{time}}: controlla l'email, anche nella cartella spam.",
         "completed": "Check-in online completato: i dati degli ospiti sono stati inviati.",
+        "emailNeeded": "Per ricevere il link scrivi l'email usata per prenotare.",
         "send": "Inviami il link",
         "sendAgain": "Inviamelo di nuovo",
         "sending": "Invio in corso…",

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
+  cancelServiceRequest,
   completeServiceRequest,
   createLongRentServiceRequest,
   createServiceRequest,
@@ -170,6 +171,21 @@ export function useRejectServiceRequest() {
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
       queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.rejected'));
+    },
+    onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/** The supplier cancels a job it took (before it starts), with the reason the other party sees. */
+export function useCancelServiceRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => cancelServiceRequest(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
+      toast.success(i18n.t('supplier.requests.cancel.done'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
   });
