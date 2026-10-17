@@ -6,6 +6,8 @@ import { PlainSection } from '@/components/shared/calm';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
+import { isFeatureEnabled } from '@/config/feature-flags';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { useSupplierClient } from '@/queries/use-supplier-clients';
@@ -13,7 +15,7 @@ import type { ServiceRequestStatus } from '@/types/service-request';
 import type { SupplierClient, SupplierClientJob } from '@/types/supplier-clients';
 import { requestPath } from '../requests/request-model';
 import { formatMoney } from '../services/lib/service-money';
-import { clientDay, clientRequestsPath, hasContact } from './clients-model';
+import { clientDay, clientEarningsPath, clientRequestsPath, hasContact } from './clients-model';
 
 function Fact({ label, value, note }: { label: string; value: ReactNode; note?: ReactNode }) {
   return (
@@ -59,6 +61,8 @@ function JobRow({ job }: { job: SupplierClientJob }) {
  */
 export function ClientDetail({ client }: { client: SupplierClient }) {
   const { t, i18n } = useTranslation();
+  const { flags } = useFeatureFlags();
+  const showEarnings = isFeatureEnabled(flags, 'supplierOnlinePayments');
   const detail = useSupplierClient(client.id);
   const shown: SupplierClient = detail.data ?? client;
   const contact = shown.contact;
@@ -124,11 +128,21 @@ export function ClientDetail({ client }: { client: SupplierClient }) {
         )}
       </PlainSection>
 
-      <Button asChild variant="outline" className="min-h-11">
-        <Link to={clientRequestsPath(client.id)} data-testid="supplier-client-requests-link">
-          {t('supplier.clients.requests')}
-        </Link>
-      </Button>
+      <div className="flex flex-wrap gap-3">
+        <Button asChild variant="outline" className="min-h-11">
+          <Link to={clientRequestsPath(client.id)} data-testid="supplier-client-requests-link">
+            {t('supplier.clients.requests')}
+          </Link>
+        </Button>
+        {/* The earnings of this customer, while online payments are on (the page is behind the flag, SP-16b-2). */}
+        {showEarnings ? (
+          <Button asChild variant="outline" className="min-h-11">
+            <Link to={clientEarningsPath(client.id)} data-testid="supplier-client-earnings-link">
+              {t('supplier.clients.earnings')}
+            </Link>
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

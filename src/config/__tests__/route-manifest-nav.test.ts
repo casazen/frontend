@@ -232,6 +232,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       ['/app/admin/compliance/tax-rates', '/app/admin/cin'],
       ['/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
       ['/app/supplier/calendar', '/app/supplier/availability'],
+      ['/app/supplier/earnings', '/app/supplier/settings'],
     ]);
   });
 
