@@ -51,14 +51,18 @@ export function phaseOf(request: Pick<SupplierServiceRequest, 'phase' | 'status'
   return (request.phase ? PHASE_OF_SERVER.get(request.phase) : undefined) ?? PHASE_OF_STATUS[request.status] ?? 'unknown';
 }
 
-/** What the supplier can do about a request in a phase: the one thing (`primary`) and, quieter, another (`secondary`). */
-export type RequestAction = 'take' | 'reject' | 'complete';
+/**
+ * What the supplier can do about a request in a phase: the one thing (`primary`) and, quieter, another (`secondary`). A job that is taken
+ * and not started can be cancelled (`cancel`, with a reason): it is the way out of a job accepted automatically (SP-04d).
+ */
+export type RequestAction = 'take' | 'reject' | 'complete' | 'cancel';
 
 export function actionsOf(phase: RequestPhase): { primary?: RequestAction; secondary?: RequestAction } {
   switch (phase) {
     case 'toAnswer':
       return { primary: 'take', secondary: 'reject' };
     case 'scheduled':
+      return { primary: 'complete', secondary: 'cancel' };
     case 'inProgress':
       return { primary: 'complete' };
     default:
