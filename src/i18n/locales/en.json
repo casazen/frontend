@@ -539,6 +539,7 @@
     "supplierServices": "Services and prices",
     "supplierServicesBar": "Services",
     "supplierHelpIcal": "iCal guide",
+    "supplierPayments": "Payments",
     "group": {
       "account": "Your account",
       "activity": "Your business",
@@ -2263,6 +2264,7 @@
     "cookieConsent": {
       "ariaLabel": "Cookie Consent",
       "text": "We use essential cookies for the site to function and, only with your consent, analytics cookies. You can accept or reject non-essential cookies.",
+      "title": "Your privacy",
       "reject": "Decline",
       "accept": "Accept"
     },
@@ -4175,6 +4177,72 @@
         "bannerAction": "Go and accept"
       }
     },
+    "payments": {
+      "checking": "Checking with Stripe…",
+      "description": "The account where the payments for your jobs arrive.",
+      "errors": {
+        "dashboard": "We couldn't open the Stripe dashboard. Try again.",
+        "onboarding": "We couldn't open Stripe. Try again."
+      },
+      "focus": {
+        "active": {
+          "action": "Open the Stripe dashboard",
+          "body": "Your Stripe account is connected: charges and payouts are enabled.",
+          "returnedBody": "Stripe confirmed your account: you can now receive online payments.",
+          "returnedTitle": "Account connected",
+          "title": "You can receive online payments"
+        },
+        "expired": {
+          "body": "The link you had opened is no longer valid: it happens when the Stripe page stays open for a long time. Resume the setup and we take you to a new link.",
+          "title": "The Stripe link has expired"
+        },
+        "kicker": {
+          "default": "Payments account",
+          "refresh": "Link expired",
+          "return": "Back from Stripe"
+        },
+        "notConnected": {
+          "action": "Connect your account",
+          "body": "You do it on the website of Stripe, our payment partner: it asks for the details of your business and the account where you want to be paid. CasaZen never sees or stores your bank details.",
+          "title": "Connect your account to receive online payments"
+        },
+        "requirements": {
+          "bank": "the account where you receive payouts",
+          "business": "the details of your business",
+          "intro": "Stripe still asks for:",
+          "other": "other details Stripe asks for",
+          "person": "the details and ID document of the person who represents the business",
+          "terms": "your acceptance of Stripe's terms"
+        },
+        "toComplete": {
+          "action": "Resume the setup",
+          "body": "The setup on Stripe is not finished: you can pick it up where you left off.",
+          "title": "Something is still missing to receive payments"
+        },
+        "verifying": {
+          "action": "Check again",
+          "body": "You sent everything that was needed. As soon as Stripe finishes checking, you will see the account active here: there is nothing to redo.",
+          "title": "Stripe is checking your details"
+        }
+      },
+      "invoice": {
+        "edit": "Edit in your profile",
+        "hint": "The details of your business, as they are in your profile.",
+        "legalName": "Business name",
+        "loadError": "We can't show your business details.",
+        "loading": "Loading your business details…",
+        "notGiven": "Not provided",
+        "title": "Invoicing details",
+        "vatNumber": "VAT number"
+      },
+      "loadError": "Could not load the account status.",
+      "loading": "Loading the account status…",
+      "title": "Payments",
+      "unavailable": {
+        "description": "Once they are, you will connect here the account where you receive the payments for your jobs. For now there is nothing to do.",
+        "title": "Online payments are not active yet"
+      }
+    },
     "profileLoadError": "Could not load the supplier profile.",
     "profile": {
       "accountEmail": "Account email",
@@ -4197,6 +4265,11 @@
       "hours": {
         "end": "{{day}}: end",
         "start": "{{day}}: start"
+      },
+      "payments": {
+        "action": "Go to payments",
+        "hint": "The account where you receive the online payments for your jobs is connected from the payments page.",
+        "title": "Payments"
       },
       "phoneHint": "With the country code if not Italian, for example +39 06 1234567. Hosts only see it when you take on a job.",
       "photos": {
@@ -6190,11 +6263,130 @@
       }
     }
   },
+  "publicProperty": {
+    "amenities": {
+      "AirConditioning": "Air conditioning",
+      "BBQGrill": "BBQ grill",
+      "Balcony": "Balcony",
+      "BeachAccess": "Beach access",
+      "BikeStorage": "Bike storage",
+      "CableTV": "Cable TV",
+      "CarbonMonoxideDetector": "Carbon monoxide alarm",
+      "CoffeeMaker": "Coffee maker",
+      "Crib": "Crib",
+      "DiningTable": "Dining table",
+      "Dishwasher": "Dishwasher",
+      "Dryer": "Dryer",
+      "EVCharger": "EV charger",
+      "Elevator": "Elevator",
+      "FireExtinguisher": "Fire extinguisher",
+      "Fireplace": "Fireplace",
+      "FirstAidKit": "First aid kit",
+      "FreeParking": "Free parking",
+      "Garage": "Garage",
+      "Garden": "Garden",
+      "Gym": "Gym",
+      "Heating": "Heating",
+      "HighChair": "High chair",
+      "HotTub": "Hot tub",
+      "IronAndBoard": "Iron and ironing board",
+      "Kitchen": "Kitchen",
+      "LongTermStaysAllowed": "Long stays allowed",
+      "LuggageDropOffAllowed": "Luggage drop-off allowed",
+      "Microwave": "Microwave",
+      "Oven": "Oven",
+      "PaidParking": "Paid parking",
+      "Patio": "Patio",
+      "PetFriendly": "Pets allowed",
+      "Pool": "Pool",
+      "PrivateEntrance": "Private entrance",
+      "Refrigerator": "Refrigerator",
+      "Safe": "Safe",
+      "Sauna": "Sauna",
+      "SecurityCameras": "Security cameras",
+      "SelfCheckIn": "Self check-in",
+      "SmokeDetector": "Smoke alarm",
+      "SmokingAllowed": "Smoking allowed",
+      "StepFreeAccess": "Step-free access",
+      "Stove": "Stove",
+      "TV": "TV",
+      "Terrace": "Terrace",
+      "Washer": "Washing machine",
+      "WheelchairAccessible": "Wheelchair accessible",
+      "WiFi": "Wi-Fi",
+      "Workspace": "Dedicated workspace"
+    },
+    "amenitiesAll": "Show all {{total}} amenities",
+    "amenitiesLess": "Show less",
+    "amenityGroups": {
+      "accessibility": "Accessibility",
+      "climate": "Heating and cooling",
+      "connectivity": "Internet and entertainment",
+      "family": "Family and lifestyle",
+      "kitchen": "Kitchen and dining",
+      "laundry": "Laundry",
+      "other": "Other",
+      "outdoor": "Outdoors",
+      "parking": "Parking and getting around",
+      "safety": "Safety",
+      "wellness": "Wellness"
+    },
+    "description": {
+      "less": "Show less",
+      "more": "Read more",
+      "title": "Description"
+    },
+    "facts": {
+      "bathrooms_one": "bathroom",
+      "bathrooms_other": "bathrooms",
+      "bedrooms_one": "bedroom",
+      "bedrooms_other": "bedrooms",
+      "guests_one": "guest",
+      "guests_other": "guests",
+      "label": "The home at a glance",
+      "minNights_one": "night minimum",
+      "minNights_other": "nights minimum"
+    },
+    "gallery": {
+      "empty": "The photos of this home are not available yet.",
+      "showAll": "Show all {{total}} photos"
+    },
+    "know": {
+      "title": "Good to know"
+    },
+    "loadError": {
+      "text": "The link is fine: loading did not work. Please try again in a moment.",
+      "title": "We could not load this home"
+    },
+    "loading": "Loading the home...",
+    "notFound": {
+      "action": "See the other homes",
+      "contact": "Write to the host",
+      "text": "The link may be old or incomplete, or the home can no longer be booked online. Have a look at the other homes on this site.",
+      "title": "This home is not available"
+    },
+    "sectionBar": {
+      "label": "Sections of this page"
+    },
+    "sections": {
+      "amenities": "Amenities",
+      "description": "Description",
+      "know": "Good to know"
+    },
+    "viewer": {
+      "hint": "Use the arrow keys to move between photos and Esc to close.",
+      "next": "Next photo",
+      "position": "Photo {{index}} of {{total}}",
+      "previous": "Previous photo",
+      "title": "Photos of {{name}}"
+    }
+  },
   "publicSite": {
     "skipToContent": "Skip to content",
     "navProperties": "Properties",
     "navMyBookings": "My bookings",
     "openMenu": "Open menu",
+    "menuLabel": "Site menu",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "poweredBy": "Powered by CasaZen",
@@ -6213,6 +6405,10 @@
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
     "legalDocuments": "Legal documents",
+    "footer": {
+      "contact": "Contact",
+      "info": "Information"
+    },
     "seo": {
       "orgTitle": "{{name}} — Book direct",
       "orgDescription": "Book direct with {{name}}.",
@@ -7905,6 +8101,7 @@
       "bookingTooManyGuests": "The number of guests exceeds the capacity of the property.",
       "invalidServiceCategory": "Invalid service category: choose one from the list.",
       "supplierCommitmentConflict": "You cannot take this job: it overlaps another you already accepted. You may have more than one on the same day only when the times do not touch.",
+      "supplierPaymentsNotReady": "Your account is not ready for this yet: finish the setup on Stripe first.",
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
