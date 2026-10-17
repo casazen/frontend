@@ -11,3 +11,8 @@ function asInstant(when: string): string {
 export function dayOf(when: string, language: string): string {
   return formatRomeDateTime(asInstant(when), language, DAY);
 }
+
+/** Whole days from `when` to `now`, never negative: «in attesa da 3 giorni». */
+export function daysSince(when: string, now: Date): number {
+  return Math.max(0, Math.floor((now.getTime() - new Date(asInstant(when)).getTime()) / 86_400_000));
+}

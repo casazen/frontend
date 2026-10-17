@@ -8642,6 +8642,78 @@
     }
   },
   "team": {
+    "actions": {
+      "access": {
+        "description": "Vede solo le aree e gli immobili che scegli.",
+        "done": "Accessi di {{name}} aggiornati",
+        "doneAreas": "Lavora in: {{areas}}.",
+        "doneSome_one": "Vede {{count}} immobile.",
+        "doneSome_other": "Vede {{count}} immobili.",
+        "label": "Aree e immobili",
+        "loadError": "Non riusciamo a leggere gli immobili di questa persona.",
+        "partial": "Le aree sono state salvate, ma gli immobili no: {{message}}",
+        "save": "Salva aree e immobili",
+        "title": "Aree e immobili di {{name}}"
+      },
+      "deactivate": {
+        "back": "Puoi riattivarlo quando vuoi, con gli stessi permessi.",
+        "confirm": "Disattiva l’accesso",
+        "description": "{{name}} non potrà più entrare in CasaZen. Quello che ha creato (prenotazioni, messaggi, interventi) resta.",
+        "done": "Accesso di {{name}} disattivato",
+        "doneHint": "Non può più usare CasaZen dalla prossima richiesta.",
+        "label": "Disattiva",
+        "next": "Non potrà più usare CasaZen dalla prossima richiesta.",
+        "seat": "Libera un posto nel piano: {{used}} di {{max}}.",
+        "title": "Disattivare l’accesso di {{name}}?",
+        "word": "DISATTIVA"
+      },
+      "failed": "Non è andata a buon fine. Riprova.",
+      "locked": {
+        "admin": "Solo il titolare può modificare un amministratore.",
+        "me": "Sei tu: il tuo ruolo e il tuo accesso non si cambiano da qui.",
+        "owner": "Il titolare non si può cambiare né disattivare."
+      },
+      "now": {
+        "deactivated": "Non può entrare. Riattivandolo torna con gli stessi permessi, se il piano ha un posto libero.",
+        "expired": "Il link è scaduto: reinvia l’invito per darne uno nuovo, valido altri 7 giorni.",
+        "pendingToday": "L’invito è partito oggi.",
+        "pending_one": "L’invito aspetta da {{count}} giorno: se la persona non l’ha visto, reinvialo.",
+        "pending_other": "L’invito aspetta da {{count}} giorni: se la persona non l’ha visto, reinvialo."
+      },
+      "reactivate": {
+        "done": "{{name}} può di nuovo accedere",
+        "doneHint": "Entra con la password di prima e gli stessi permessi.",
+        "label": "Riattiva"
+      },
+      "resend": {
+        "done": "Invito inviato di nuovo a {{name}}",
+        "label": "Reinvia",
+        "noEmail": "L’email non è partita",
+        "noEmailHint": "Copia il link e mandalo tu alla persona.",
+        "until": "Il nuovo link vale fino al {{date}}."
+      },
+      "revoke": {
+        "done": "Invito annullato",
+        "doneHint": "Il link smette di funzionare e il posto si libera. Hai qualche secondo per ripensarci.",
+        "label": "Annulla l’invito"
+      },
+      "role": {
+        "description": "Il nuovo ruolo vale entro un minuto. Aree e immobili restano quelli di ora.",
+        "done": "{{name}}: ruolo {{role}}",
+        "doneHint": "Il nuovo ruolo vale entro un minuto.",
+        "label": "Cambia ruolo",
+        "less": "Cosa non potrà più fare",
+        "levelNo": "non può",
+        "levelRead": "può solo guardare",
+        "levelYes": "può gestire",
+        "more": "Cosa potrà fare in più",
+        "noLess": "Niente in meno",
+        "noMore": "Niente di nuovo",
+        "save": "Salva il ruolo",
+        "title": "Cambia il ruolo di {{name}}"
+      },
+      "title": "Cosa puoi fare"
+    },
     "capabilities": {
       "billing": "Piano e fatture",
       "booking": "Prenotazioni e calendario",

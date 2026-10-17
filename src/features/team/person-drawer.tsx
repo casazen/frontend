@@ -10,9 +10,11 @@ import { StatusExplainer } from '@/components/shared/status/status-explainer';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { useOrgMemberProperties, useOrgRoles } from '@/queries/use-org-team';
+import type { OrgRole } from '@/types/org-team.types';
 import { orgRoleLabel } from '../account/account-roles';
 import { AccessPreview } from './access-preview';
 import { usePeopleRows, type PersonRow } from './people-rows';
+import { PersonActions } from './person-actions';
 import { orgRoleDescription } from './team-labels';
 import { dayOf } from './team-dates';
 
@@ -25,7 +27,9 @@ export const PERSON_DRAWER_KIND = 'org-person';
  */
 function useRowOfTheList(key: string) {
   const { rows, isLoading, isError, error, refetch } = usePeopleRows();
-  return { row: rows?.find((candidate) => candidate.key === key), isLoading, isError, error, refetch };
+  // The one who looks is the row that is itself: the owner or an administrator, which decides what it may do to the others.
+  const callerRole = rows?.find((candidate) => candidate.isMe && candidate.kind === 'member')?.role ?? null;
+  return { row: rows?.find((candidate) => candidate.key === key), callerRole, isLoading, isError, error, refetch };
 }
 
 export function PersonDrawerTitle({ id }: DetailTitleProps) {
@@ -42,7 +46,7 @@ function PropertiesValue({ row }: { row: PersonRow }) {
 
   if (!someOfThem) return <>{t('team.drawer.allProperties')}</>;
   if (row.kind === 'invitation') {
-    return <>{row.propertyCount > 0 ? t('team.drawer.someProperties', { count: row.propertyCount }) : t('team.drawer.someOfThem')}</>;
+    return <>{row.propertyCount > 0 ? t('team.drawer.someProperties', { total: row.propertyCount }) : t('team.drawer.someOfThem')}</>;
   }
   if (own.isPending) return <SkeletonLine lines={1} />;
   if (own.isError) return <>{t('team.drawer.someOfThem')}</>;
@@ -71,7 +75,7 @@ function PreviewBody({ row }: { row: PersonRow }) {
   return <AccessPreview role={role} areas={row.areas} deactivated={row.status === 'Deactivated'} />;
 }
 
-function PersonDetails({ row }: { row: PersonRow }) {
+function PersonDetails({ row, callerRole, close }: { row: PersonRow; callerRole: OrgRole | null; close: () => void }) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -90,6 +94,8 @@ function PersonDetails({ row }: { row: PersonRow }) {
   return (
     <div className="space-y-6 pb-2" data-testid="person-drawer">
       <StatusExplainer kind="member" status={row.status} />
+
+      <PersonActions row={row} callerRole={callerRole} close={close} />
 
       <PlainSection title={t('team.drawer.data')}>
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
@@ -132,9 +138,9 @@ function PersonDetails({ row }: { row: PersonRow }) {
   );
 }
 
-export function PersonDrawerContent({ id }: DetailContentProps) {
+export function PersonDrawerContent({ id, close }: DetailContentProps) {
   const { t } = useTranslation();
-  const { row, isLoading, isError, error, refetch } = useRowOfTheList(id);
+  const { row, callerRole, isLoading, isError, error, refetch } = useRowOfTheList(id);
 
   if (isLoading) return <SkeletonLine lines={4} />;
 
@@ -151,7 +157,7 @@ export function PersonDrawerContent({ id }: DetailContentProps) {
     );
   }
 
-  return <PersonDetails row={row} />;
+  return <PersonDetails row={row} callerRole={callerRole} close={close} />;
 }
 
 // Registered when this module is loaded, which the list of the people does (it imports this file): the drawer opens from the list and
