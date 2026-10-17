@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CreditCard } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { PlanBadge } from '@/components/org/plan-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,15 +85,15 @@ function ClassicBillingSettingsContent() {
       );
     }
     return (
-      <>
+      <div className={PAGE_COLUMNS}>
         <SubscriptionCard subscription={subscriptionQuery.data} effectiveTier={planTier} />
         <BillingProfileCard subscription={subscriptionQuery.data} />
-      </>
+      </div>
     );
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title={t('billing.settings.title')} description={t('billing.settings.description')} />
       {renderContent()}
     </div>

@@ -346,7 +346,7 @@ export function SiteAppearanceContent() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6" data-testid="site-appearance-page">
+    <div className="space-y-6" data-testid="site-appearance-page">
       <PageHeader title={t('siteAppearance.title')} description={t('siteAppearance.description')} />
       {renderContent()}
     </div>

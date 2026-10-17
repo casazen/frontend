@@ -59,7 +59,7 @@ export function HostInviteForm({ scope, blocked = false }: { scope: HostInviteSc
   const disabled = create.isPending || blocked;
 
   return (
-    <Card className="mx-auto w-full max-w-2xl" data-testid="host-invite-form-card">
+    <Card data-testid="host-invite-form-card">
       <CardHeader>
         <CardTitle>{t('hostInvites.form.title')}</CardTitle>
       </CardHeader>

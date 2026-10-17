@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PAGE_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { propertiesApi } from '@/api/properties.api';
 import { useProperties } from '@/queries/use-properties';
 import { leaseFormSchema, MAX_PARTIES_PER_ROLE, type LeasePartyFormValues } from '../schemas/lease.schema';
@@ -170,207 +171,211 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('leases.form.propertyTermsTitle')}</CardTitle>
-          <CardDescription>{t('leases.form.propertyTermsDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            {propertiesFailed ? (
-              <>
-                <Label>{t('leases.form.propertyLabel')}</Label>
-                <div
-                  role="alert"
-                  data-testid="lease-properties-error"
-                  className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-                >
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span className="flex-1">
-                    {getProblemMessage(propertiesError, t) ?? t('leases.form.propertiesLoadError')}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void refetchProperties()}
-                    disabled={isFetchingProperties}
+      <div className={PAGE_COLUMNS}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('leases.form.propertyTermsTitle')}</CardTitle>
+            <CardDescription>{t('leases.form.propertyTermsDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              {propertiesFailed ? (
+                <>
+                  <Label>{t('leases.form.propertyLabel')}</Label>
+                  <div
+                    role="alert"
+                    data-testid="lease-properties-error"
+                    className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
                   >
-                    {t('leases.form.retry')}
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">
+                      {getProblemMessage(propertiesError, t) ?? t('leases.form.propertiesLoadError')}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void refetchProperties()}
+                      disabled={isFetchingProperties}
+                    >
+                      {t('leases.form.retry')}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
+                  <select
+                    id="propertyId"
+                    {...register('propertyId')}
+                    aria-busy={isLoadingProperties}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="">
+                      {isLoadingProperties ? t('leases.form.propertiesLoading') : t('leases.form.selectProperty')}
+                    </option>
+                    {properties.map((property) => (
+                      <option key={property.id} value={property.id}>
+                        {property.name} — {property.city}
+                      </option>
+                    ))}
+                  </select>
+                  {noProperties && (
+                    <div
+                      role="status"
+                      data-testid="lease-no-properties"
+                      className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+                    >
+                      <span className="flex-1">{t('leases.form.noProperties')}</span>
+                      <Button asChild variant="outline" size="sm">
+                        <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+              <FormFieldError error={errors.propertyId} />
+            </div>
+
+            {documentsFailed && (
+              <div
+                role="alert"
+                data-testid="lease-documents-error"
+                className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+              >
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span className="flex-1">
+                  {getProblemMessage(documentsError, t) ?? t('leases.form.documentsLoadError')}
+                </span>
+                <Button type="button" variant="outline" size="sm" onClick={() => void refetchDocuments()}>
+                  {t('leases.form.retry')}
+                </Button>
+              </div>
+            )}
+
+            {apeError && (
+              <div
+                role="alert"
+                className="flex flex-wrap gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+              >
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span className="flex-1">{apeError}</span>
+                {apeMissing && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to={longRentPropertyPath(selectedPropertyId)}>{t('leases.form.uploadApe')}</Link>
                   </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <Label htmlFor="propertyId">{t('leases.form.propertyLabel')}</Label>
-                <select
-                  id="propertyId"
-                  {...register('propertyId')}
-                  aria-busy={isLoadingProperties}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="">
-                    {isLoadingProperties ? t('leases.form.propertiesLoading') : t('leases.form.selectProperty')}
-                  </option>
-                  {properties.map((property) => (
-                    <option key={property.id} value={property.id}>
-                      {property.name} — {property.city}
+                )}
+              </div>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="contractType">{t('leases.form.contractTypeLabel')}</Label>
+                <select id="contractType" {...register('contractType')} className={SELECT_CLASS}>
+                  {LEASE_CONTRACT_TYPES.map((value) => (
+                    <option key={value} value={value}>
+                      {getLeaseContractTypeLabel(value, t)}
                     </option>
                   ))}
                 </select>
-                {noProperties && (
-                  <div
-                    role="status"
-                    data-testid="lease-no-properties"
-                    className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
-                  >
-                    <span className="flex-1">{t('leases.form.noProperties')}</span>
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
-                    </Button>
-                  </div>
-                )}
-              </>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="taxRegime">{t('leases.form.taxRegimeLabel')}</Label>
+                <select id="taxRegime" {...register('taxRegime')} className={SELECT_CLASS}>
+                  {LEASE_TAX_REGIMES.map((value) => (
+                    <option key={value} value={value}>
+                      {getLeaseTaxRegimeLabel(value, t)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground" data-testid="lease-term-rule">
+              {t(`leases.form.termRule.${contractType}`)}
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">{t('leases.form.startDateLabel')}</Label>
+                <Input id="startDate" type="date" {...register('startDate')} />
+                <FormFieldError error={errors.startDate} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate">{t('leases.form.endDateLabel')}</Label>
+                <Input id="endDate" type="date" {...register('endDate')} />
+                <FormFieldError error={errors.endDate} />
+              </div>
+            </div>
+
+            {isConcordato && selectedPropertyId && (
+              <CanoneConcordatoCalculator
+                propertyId={selectedPropertyId}
+                startDate={startDate}
+                endDate={endDate}
+                onRangeChange={handleRangeChange}
+                onCharacteristicsChange={setConcordatoCharacteristics}
+              />
             )}
-            <FormFieldError error={errors.propertyId} />
-          </div>
+            {isConcordato && concordatoError && (
+              <p role="alert" className="text-sm text-destructive">
+                {concordatoError}
+              </p>
+            )}
 
-          {documentsFailed && (
-            <div
-              role="alert"
-              data-testid="lease-documents-error"
-              className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-            >
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span className="flex-1">
-                {getProblemMessage(documentsError, t) ?? t('leases.form.documentsLoadError')}
-              </span>
-              <Button type="button" variant="outline" size="sm" onClick={() => void refetchDocuments()}>
-                {t('leases.form.retry')}
-              </Button>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="monthlyRent">{t('leases.form.monthlyRentLabel')}</Label>
+                <Input
+                  id="monthlyRent"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  {...register('monthlyRent', { valueAsNumber: true })}
+                />
+                <FormFieldError error={errors.monthlyRent} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="securityDeposit">{t('leases.form.securityDepositLabel')}</Label>
+                <Input
+                  id="securityDeposit"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register('securityDeposit', {
+                    setValueAs: (value: string) => (value === '' || value == null ? undefined : Number(value)),
+                  })}
+                />
+                <FormFieldError error={errors.securityDeposit} />
+              </div>
             </div>
-          )}
-
-          {apeError && (
-            <div
-              role="alert"
-              className="flex flex-wrap gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-            >
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="flex-1">{apeError}</span>
-              {apeMissing && (
-                <Button asChild variant="outline" size="sm">
-                  <Link to={longRentPropertyPath(selectedPropertyId)}>{t('leases.form.uploadApe')}</Link>
-                </Button>
-              )}
-            </div>
-          )}
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="contractType">{t('leases.form.contractTypeLabel')}</Label>
-              <select id="contractType" {...register('contractType')} className={SELECT_CLASS}>
-                {LEASE_CONTRACT_TYPES.map((value) => (
-                  <option key={value} value={value}>
-                    {getLeaseContractTypeLabel(value, t)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="taxRegime">{t('leases.form.taxRegimeLabel')}</Label>
-              <select id="taxRegime" {...register('taxRegime')} className={SELECT_CLASS}>
-                {LEASE_TAX_REGIMES.map((value) => (
-                  <option key={value} value={value}>
-                    {getLeaseTaxRegimeLabel(value, t)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground" data-testid="lease-term-rule">
-            {t(`leases.form.termRule.${contractType}`)}
-          </p>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">{t('leases.form.startDateLabel')}</Label>
-              <Input id="startDate" type="date" {...register('startDate')} />
-              <FormFieldError error={errors.startDate} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">{t('leases.form.endDateLabel')}</Label>
-              <Input id="endDate" type="date" {...register('endDate')} />
-              <FormFieldError error={errors.endDate} />
-            </div>
-          </div>
-
-          {isConcordato && selectedPropertyId && (
-            <CanoneConcordatoCalculator
-              propertyId={selectedPropertyId}
-              startDate={startDate}
-              endDate={endDate}
-              onRangeChange={handleRangeChange}
-              onCharacteristicsChange={setConcordatoCharacteristics}
-            />
-          )}
-          {isConcordato && concordatoError && (
-            <p role="alert" className="text-sm text-destructive">
-              {concordatoError}
-            </p>
-          )}
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="monthlyRent">{t('leases.form.monthlyRentLabel')}</Label>
-              <Input
-                id="monthlyRent"
-                type="number"
-                step="0.01"
-                min="0.01"
-                {...register('monthlyRent', { valueAsNumber: true })}
-              />
-              <FormFieldError error={errors.monthlyRent} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="securityDeposit">{t('leases.form.securityDepositLabel')}</Label>
-              <Input
-                id="securityDeposit"
-                type="number"
-                step="0.01"
-                min="0"
-                {...register('securityDeposit', {
-                  setValueAs: (value: string) => (value === '' || value == null ? undefined : Number(value)),
+            {isConcordato && concordatoRange && (
+              <p className="text-sm text-muted-foreground" data-testid="lease-concordato-range-hint">
+                {t(concordatoRange.indicative ? 'leases.form.concordatoIndicativeRangeHint' : 'leases.form.concordatoRangeHint', {
+                  min: concordatoRange.minMonthly.toFixed(2),
+                  max: concordatoRange.maxMonthly.toFixed(2),
                 })}
-              />
-              <FormFieldError error={errors.securityDeposit} />
-            </div>
-          </div>
-          {isConcordato && concordatoRange && (
-            <p className="text-sm text-muted-foreground" data-testid="lease-concordato-range-hint">
-              {t(concordatoRange.indicative ? 'leases.form.concordatoIndicativeRangeHint' : 'leases.form.concordatoRangeHint', {
-                min: concordatoRange.minMonthly.toFixed(2),
-                max: concordatoRange.maxMonthly.toFixed(2),
-              })}
-            </p>
-          )}
-          {rentOutsideRange && concordatoRange && (
-            <p
-              className={`text-sm ${concordatoRange.indicative ? 'text-amber-700' : 'text-destructive'}`}
-              data-testid="lease-concordato-out-of-range"
-            >
-              {t(
-                concordatoRange.indicative
-                  ? 'leases.form.concordatoRentOutsideIndicativeRange'
-                  : 'leases.form.concordatoRentOutOfRange',
-              )}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+              </p>
+            )}
+            {rentOutsideRange && concordatoRange && (
+              <p
+                className={`text-sm ${concordatoRange.indicative ? 'text-amber-700' : 'text-destructive'}`}
+                data-testid="lease-concordato-out-of-range"
+              >
+                {t(
+                  concordatoRange.indicative
+                    ? 'leases.form.concordatoRentOutsideIndicativeRange'
+                    : 'leases.form.concordatoRentOutOfRange',
+                )}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
-      <PartyListCard role="Landlord" control={control} register={register} errors={errors.landlords} t={t} />
-      <PartyListCard role="Tenant" control={control} register={register} errors={errors.tenants} t={t} />
+        <div className={PAGE_COLUMN}>
+          <PartyListCard role="Landlord" control={control} register={register} errors={errors.landlords} t={t} />
+          <PartyListCard role="Tenant" control={control} register={register} errors={errors.tenants} t={t} />
+        </div>
+      </div>
 
       <div className="flex justify-end gap-4">
         <Button

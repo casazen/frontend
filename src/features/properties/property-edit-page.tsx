@@ -43,7 +43,7 @@ export function PropertyEditPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title={t('property.edit.title')}
           description={t('property.edit.description', { name: property.name })}

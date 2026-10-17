@@ -47,7 +47,7 @@ export function LongRentPropertyEditPage() {
   if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}/edit`} replace />;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title={t('longRentProperties.edit.title')}
         description={t('longRentProperties.edit.description', { name: property.name })}

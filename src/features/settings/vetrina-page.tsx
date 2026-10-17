@@ -97,7 +97,7 @@ export function VetrinaPage() {
           </div>
         </div>
       ) : (
-        <div className="mx-auto max-w-3xl">
+        <div className="w-full">
           <PageHeader
             title={t('directBooking.title')}
             description={t('directBooking.description')}
