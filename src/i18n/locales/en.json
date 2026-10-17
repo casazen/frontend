@@ -2264,6 +2264,7 @@
     "cookieConsent": {
       "ariaLabel": "Cookie Consent",
       "text": "We use essential cookies for the site to function and, only with your consent, analytics cookies. You can accept or reject non-essential cookies.",
+      "title": "Your privacy",
       "reject": "Decline",
       "accept": "Accept"
     },
@@ -6267,6 +6268,7 @@
     "navProperties": "Properties",
     "navMyBookings": "My bookings",
     "openMenu": "Open menu",
+    "menuLabel": "Site menu",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "poweredBy": "Powered by CasaZen",
@@ -6285,6 +6287,10 @@
     "directBookingTagline": "Direct booking",
     "subprocessors": "Subprocessors",
     "legalDocuments": "Legal documents",
+    "footer": {
+      "contact": "Contact",
+      "info": "Information"
+    },
     "seo": {
       "orgTitle": "{{name}} — Book direct",
       "orgDescription": "Book direct with {{name}}.",

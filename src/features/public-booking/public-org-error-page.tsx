@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PublicSiteState } from '@/features/public-site/components/public-site-state';
 
 interface PublicOrgErrorPageProps {
   onRetry: () => void;
@@ -13,16 +15,16 @@ export function PublicOrgErrorPage({ onRetry }: PublicOrgErrorPageProps) {
   const { t } = useTranslation();
 
   return (
-    <div
+    <PublicSiteState
+      icon={TriangleAlert}
       role="alert"
-      data-testid="public-org-error"
-      className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
+      testId="public-org-error"
+      title={t('publicBooking.orgLoadError')}
+      description={t('publicBooking.orgLoadErrorDescription')}
     >
-      <h1 className="text-2xl font-semibold">{t('publicBooking.orgLoadError')}</h1>
-      <p className="max-w-md text-muted-foreground">{t('publicBooking.orgLoadErrorDescription')}</p>
-      <Button type="button" variant="outline" onClick={onRetry}>
+      <Button type="button" onClick={onRetry}>
         {t('shared.errorFallback.tryAgain')}
       </Button>
-    </div>
+    </PublicSiteState>
   );
 }

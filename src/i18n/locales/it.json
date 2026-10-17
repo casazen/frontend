@@ -2264,6 +2264,7 @@
     "cookieConsent": {
       "ariaLabel": "Consenso cookie",
       "text": "Utilizziamo cookie essenziali per il funzionamento del sito e, solo con il tuo consenso, cookie analitici. Puoi accettare o rifiutare i cookie non essenziali.",
+      "title": "La tua privacy",
       "reject": "Rifiuta",
       "accept": "Accetta"
     },
@@ -6267,6 +6268,7 @@
     "navProperties": "Strutture",
     "navMyBookings": "Le mie prenotazioni",
     "openMenu": "Apri menu",
+    "menuLabel": "Menu del sito",
     "privacy": "Privacy Policy",
     "terms": "Termini di servizio",
     "poweredBy": "Powered by CasaZen",
@@ -6285,6 +6287,10 @@
     "directBookingTagline": "Prenotazione diretta",
     "subprocessors": "Sub-responsabili",
     "legalDocuments": "Documenti legali",
+    "footer": {
+      "contact": "Contatti",
+      "info": "Informazioni"
+    },
     "seo": {
       "orgTitle": "{{name}} — Prenota direttamente",
       "orgDescription": "Prenota direttamente da {{name}}.",
