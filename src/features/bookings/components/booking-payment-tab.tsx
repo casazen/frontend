@@ -1,6 +1,10 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import { PlainSection } from '@/components/shared/calm';
+import { RecordPaymentDialog } from '@/features/payments/components/record-payment-dialog';
+import { balanceOf, canRecordPayment } from '@/features/payments/lib/record-payment';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { formatCurrency } from '@/lib/utils';
 import type { Booking } from '@/types';
 import { bookingPriceBreakdown } from '../lib/booking-price';
@@ -27,6 +31,13 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const breakdown = bookingPriceBreakdown(booking);
   const money = (value: number) => formatCurrency(value, booking.currency);
   const collected = typeof booking.paidAmount === 'number' && booking.paidAmount > 0 ? booking.paidAmount : null;
+  const { hasPermission } = useWorkspace();
+  const [recordOpen, setRecordOpen] = useState(false);
+  // What is left to collect is known to who may read the payments; "Registra incasso" (SR-06b) is for who may write them, on a
+  // booking the host collects itself that still has something to collect.
+  const balance = balanceOf(booking);
+  const canRecord =
+    Boolean(booking.paymentState) && canRecordPayment(booking) && (balance === null || balance > 0) && hasPermission('short-rent', 'payment.write');
 
   return (
     <PlainSection title={t('booking.detailPage.paymentSummaryTitle')}>
@@ -64,7 +75,21 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
                 <span data-testid="booking-paid-amount">{money(collected)}</span>
               </Amount>
             ) : null}
+            {balance !== null && balance > 0 ? (
+              <Amount label={t('booking.detailPage.balanceDue')}>
+                <span data-testid="booking-balance-due">{money(balance)}</span>
+              </Amount>
+            ) : null}
           </dl>
+        ) : null}
+
+        {canRecord ? (
+          <div className="pt-2">
+            <Button type="button" variant="outline" onClick={() => setRecordOpen(true)} data-testid="booking-record-payment">
+              {t('booking.detailPage.recordPayment')}
+            </Button>
+            <RecordPaymentDialog bookingId={booking.id} balance={balance} open={recordOpen} onOpenChange={setRecordOpen} />
+          </div>
         ) : null}
       </div>
     </PlainSection>

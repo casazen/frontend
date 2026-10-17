@@ -1920,8 +1920,10 @@
       "created": "Creata il",
       "lastUpdated": "Ultimo aggiornamento",
       "guestInformationTitle": "Informazioni ospite",
+      "balanceDue": "Resta da incassare",
       "paidAmount": "Importo incassato",
       "paymentState": "Stato del pagamento",
+      "recordPayment": "Registra incasso",
       "paymentSummaryTitle": "Riepilogo pagamento",
       "total": "Totale",
       "alloggiatiWeb": "Alloggiati Web",
@@ -6161,12 +6163,20 @@
       },
       "amount": {
         "min": "L'importo deve essere maggiore di 0"
+      },
+      "receivedOn": {
+        "required": "Indica il giorno dell'incasso"
       }
+    },
+    "record": {
+      "description": "Segna un incasso che hai ricevuto fuori da CasaZen. Non parte nessun messaggio.",
+      "title": "Registra incasso"
     },
     "list": {
       "actions": {
         "booking": "Vedi la prenotazione",
-        "details": "Apri i dettagli"
+        "details": "Apri i dettagli",
+        "record": "Registra incasso"
       },
       "chips": {
         "all": "Tutti",
@@ -6241,23 +6251,31 @@
       "lastUpdated": "Ultimo aggiornamento"
     },
     "create": {
-      "title": "Nuovo pagamento",
-      "description": "Descrizione",
-      "paymentDetails": "Dettagli pagamento",
-      "paymentDetailsDescription": "Inserisci le informazioni di pagamento",
+      "title": "Registra un incasso",
+      "description": "Segna un incasso che hai ricevuto fuori da CasaZen, in contanti o con bonifico. Non parte nessun messaggio e nessuna richiesta di pagamento.",
+      "paymentDetails": "Incasso ricevuto",
+      "paymentDetailsDescription": "Indica quanto, come e quando hai incassato.",
       "booking": "Prenotazione *",
       "selectBooking": "Seleziona una prenotazione",
       "amount": "Importo *",
       "amountPlaceholder": "100,00",
+      "balance": "Resta da incassare: {{amount}}",
       "currency": "Valuta",
       "paymentMethod": "Metodo di pagamento *",
+      "methods": {
+        "BankTransfer": "Bonifico bancario",
+        "CashOnArrival": "Contanti"
+      },
       "selectMethod": "Seleziona un metodo",
-      "descriptionPlaceholder": "Pagamento per prenotazione...",
+      "receivedOn": "Data dell'incasso *",
+      "note": "Nota",
+      "descriptionPlaceholder": "Es. saldo in contanti all'arrivo",
       "cancel": "Annulla",
-      "creating": "Creazione...",
-      "create": "Crea pagamento",
-      "noBookingsTitle": "Non ci sono prenotazioni",
-      "noBookingsDescription": "Un pagamento si registra su una prenotazione: creane una e poi torna qui."
+      "creating": "Registrazione...",
+      "create": "Registra incasso",
+      "failed": "Non è stato possibile registrare l'incasso. Riprova.",
+      "noBookingsTitle": "Non ci sono prenotazioni su cui registrare un incasso",
+      "noBookingsDescription": "Un incasso si registra su una prenotazione tua che non è annullata né arriva da un portale (il portale incassa per te): creane una e poi torna qui."
     },
     "refund": {
       "title": "Rimborsa pagamento",
@@ -7960,7 +7978,7 @@
     "bookingUpdateFailed": "Impossibile aggiornare la prenotazione",
     "guestCheckedOut": "Check-out effettuato con successo",
     "checkOutGuestFailed": "Impossibile completare il check-out",
-    "paymentCreated": "Pagamento creato con successo",
+    "paymentCreated": "Incasso registrato",
     "paymentCreateFailed": "Impossibile creare il pagamento",
     "otaIntegrationCreated": "Integrazione OTA creata con successo",
     "otaIntegrationCreateFailed": "Impossibile creare l'integrazione OTA",

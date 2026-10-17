@@ -61,7 +61,10 @@ export function PaymentsPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const viewsScope = useListViewsScope();
-  const list = usePaymentsList({ canCreateBooking: hasPermission('short-rent', 'booking.write') });
+  const list = usePaymentsList({
+    canCreateBooking: hasPermission('short-rent', 'booking.write'),
+    canRecordPayment: hasPermission('short-rent', 'payment.write'),
+  });
 
   const payments = usePayments();
   const rows = Array.isArray(payments.data) ? payments.data : NO_PAYMENTS;

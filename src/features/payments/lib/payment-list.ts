@@ -14,6 +14,14 @@ const WAITING: readonly PaymentStatus[] = ['Pending', 'Processing'];
 /** Given back to the guest, all or in part. */
 const GIVEN_BACK: readonly PaymentStatus[] = ['Refunded', 'PartiallyRefunded'];
 
+/**
+ * A row only the host can collect (SR-06b): `Pending`, and neither a Stripe intent nor a transaction id. It is the "pay at the
+ * property" row of an on-site booking, or a record the old form left `Pending` for good; recording the payment on its booking
+ * closes it (the same rule as the backend, `ManualPaymentService`).
+ */
+export const isWaitingForTheHost = (payment: PaymentListItem) =>
+  payment.status === 'Pending' && !payment.stripePaymentIntentId && !payment.transactionId;
+
 export const isCollected = (payment: PaymentListItem) => COLLECTED.includes(payment.status);
 export const isWaiting = (payment: PaymentListItem) => WAITING.includes(payment.status);
 export const isGivenBack = (payment: PaymentListItem) => GIVEN_BACK.includes(payment.status);

@@ -1920,8 +1920,10 @@
       "created": "Created on",
       "lastUpdated": "Last Updated",
       "guestInformationTitle": "Guest information",
+      "balanceDue": "Still to collect",
       "paidAmount": "Amount collected",
       "paymentState": "Payment status",
+      "recordPayment": "Record payment",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -6161,12 +6163,20 @@
       },
       "amount": {
         "min": "Amount must be greater than 0"
+      },
+      "receivedOn": {
+        "required": "Enter the day the money came in"
       }
+    },
+    "record": {
+      "description": "Note a payment you received outside CasaZen. No message is sent.",
+      "title": "Record a payment"
     },
     "list": {
       "actions": {
         "booking": "View the booking",
-        "details": "Open the details"
+        "details": "Open the details",
+        "record": "Record a payment"
       },
       "chips": {
         "all": "All",
@@ -6241,23 +6251,31 @@
       "lastUpdated": "Last Updated"
     },
     "create": {
-      "title": "Create Payment",
-      "description": "Description",
-      "paymentDetails": "Payment Details",
-      "paymentDetailsDescription": "Enter payment information",
+      "title": "Record a payment",
+      "description": "Note a payment you received outside CasaZen, in cash or by bank transfer. No message and no payment request is sent.",
+      "paymentDetails": "Payment received",
+      "paymentDetailsDescription": "Say how much, how and when you were paid.",
       "booking": "Booking *",
       "selectBooking": "Select a booking",
       "amount": "Amount *",
       "amountPlaceholder": "100.00",
+      "balance": "Still to collect: {{amount}}",
       "currency": "Currency",
       "paymentMethod": "Payment Method *",
+      "methods": {
+        "BankTransfer": "Bank transfer",
+        "CashOnArrival": "Cash"
+      },
       "selectMethod": "Select a method",
-      "descriptionPlaceholder": "Payment for booking...",
+      "receivedOn": "Date received *",
+      "note": "Note",
+      "descriptionPlaceholder": "E.g. balance in cash on arrival",
       "cancel": "Cancel",
-      "creating": "Creating...",
-      "create": "Create Payment",
-      "noBookingsTitle": "There are no bookings",
-      "noBookingsDescription": "A payment is recorded against a booking: create one, then come back here."
+      "creating": "Recording...",
+      "create": "Record payment",
+      "failed": "The payment could not be recorded. Try again.",
+      "noBookingsTitle": "There are no bookings to record a payment on",
+      "noBookingsDescription": "A payment is recorded on one of your bookings that is not cancelled and does not come from a portal (the portal collects the money for you): create one, then come back here."
     },
     "refund": {
       "title": "Refund payment",
@@ -7960,7 +7978,7 @@
     "bookingUpdateFailed": "Failed to update booking",
     "guestCheckedOut": "Check-out completed successfully",
     "checkOutGuestFailed": "Failed to complete check-out",
-    "paymentCreated": "Payment created successfully",
+    "paymentCreated": "Payment recorded",
     "paymentCreateFailed": "Failed to create payment",
     "otaIntegrationCreated": "OTA integration created successfully",
     "otaIntegrationCreateFailed": "Failed to create OTA integration",

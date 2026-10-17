@@ -31,9 +31,9 @@ export interface ApiRequestOptions {
    */
   public?: boolean;
   /**
-   * Extra request headers. Only the anonymous endpoints that carry a credential of their own use it (the guest area sends the
-   * token of its session as `Authorization: Bearer`, see `guest-session.api.ts`); the access token of a signed-in user is
-   * attached by the interceptor and is never passed here.
+   * Extra request headers. The anonymous endpoints that carry a credential of their own use it (the guest area sends the
+   * token of its session as `Authorization: Bearer`, see `guest-session.api.ts`), and the call that records a payment sends its
+   * `Idempotency-Key`; the access token of a signed-in user is attached by the interceptor and is never passed here.
    */
   headers?: Record<string, string>;
 }
