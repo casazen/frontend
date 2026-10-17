@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlignedCard, Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, Store, Phone, Mail } from 'lucide-react';
@@ -125,33 +125,34 @@ export function MarketplacePage() {
             {selectedPropertyId && !suppliersLoading && !suppliersError && (suppliers?.items?.length ?? 0) === 0 && (
               <p className="text-sm text-muted-foreground py-4">{t('marketplace.noSuppliers')}</p>
             )}
+            {/* The cards of a row line up: the name, the badges and the bio are rows (`AlignedCard`), the bio only when a card has one. */}
             <div
               className="grid gap-3 sm:grid-cols-2"
               data-testid="marketplace-supplier-grid"
             >
               {(suppliers?.items ?? []).map((supplier) => (
-                <Card
+                <AlignedCard
                   key={supplier.orgId}
-                  className={`cursor-pointer transition-colors hover:border-primary ${
+                  rows={(suppliers?.items ?? []).some((candidate) => candidate.bio) ? 3 : 2}
+                  from="sm"
+                  className={`cursor-pointer py-4 transition-colors hover:border-primary ${
                     selectedSupplier?.orgId === supplier.orgId ? 'border-primary ring-1 ring-primary' : ''
                   }`}
                   onClick={() => handleSupplierClick(supplier)}
                   data-testid={`marketplace-supplier-${supplier.orgId}`}
                 >
-                  <CardContent className="py-4 space-y-1">
-                    <div className="font-medium">{supplier.legalName}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {supplier.categories.map((cat) => (
-                        <Badge key={cat} variant="secondary" className="text-xs">
-                          {getServiceCategoryLabel(cat, t)}
-                        </Badge>
-                      ))}
-                    </div>
-                    {supplier.bio && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">{supplier.bio}</p>
-                    )}
-                  </CardContent>
-                </Card>
+                  <div className="font-medium">{supplier.legalName}</div>
+                  <div className="mt-1 flex flex-wrap content-start gap-1">
+                    {supplier.categories.map((cat) => (
+                      <Badge key={cat} variant="secondary" className="text-xs">
+                        {getServiceCategoryLabel(cat, t)}
+                      </Badge>
+                    ))}
+                  </div>
+                  {supplier.bio && (
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{supplier.bio}</p>
+                  )}
+                </AlignedCard>
               ))}
             </div>
           </div>

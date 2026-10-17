@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Copy, Download, Printer } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlignedCard, CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { hostInviteUrl, sanitizeCampaign, supplierInviteUrl } from '@/lib/invite-links';
@@ -78,50 +78,50 @@ function InviteQrCard({
     }
   };
 
+  // The two cards are subgrids of the grid, four rows: the title with its line, the code, the address and the buttons. An address on
+  // two lines, or a line under the title that wraps, moves the code and the buttons of both cards alike.
   return (
-    <Card data-testid={testId}>
-      <CardHeader>
+    <AlignedCard rows={4} data-testid={testId}>
+      <div className="mb-6 space-y-1.5">
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-center rounded-md border bg-white p-3">
+      </div>
+      <div className="mb-4 flex justify-center rounded-md border bg-white p-3">
+        {image ? (
+          <img src={image} alt={t('admin.inviteQr.qrAlt', { title })} className="h-56 w-56" data-testid={`${testId}-image`} />
+        ) : (
+          <div className="h-56 w-56 animate-pulse rounded bg-muted" aria-hidden />
+        )}
+      </div>
+      <p className="mb-4 break-all text-xs text-muted-foreground" data-testid={`${testId}-url`}>
+        {url}
+      </p>
+      <div className="flex flex-wrap content-start gap-2">
+        <Button
+          type="button"
+          disabled={!image}
+          onClick={() => image && printSheet(title, printSubtitle, image, url, t('admin.inviteQr.popupBlocked'))}
+          data-testid={`${testId}-print`}
+        >
+          <Printer className="mr-2 h-4 w-4" aria-hidden />
+          {t('admin.inviteQr.print')}
+        </Button>
+        <Button type="button" variant="outline" disabled={!image} asChild={!!image}>
           {image ? (
-            <img src={image} alt={t('admin.inviteQr.qrAlt', { title })} className="h-56 w-56" data-testid={`${testId}-image`} />
+            <a href={image} download={`${testId}.png`} data-testid={`${testId}-download`}>
+              <Download className="mr-2 h-4 w-4" aria-hidden />
+              {t('admin.inviteQr.download')}
+            </a>
           ) : (
-            <div className="h-56 w-56 animate-pulse rounded bg-muted" aria-hidden />
+            <span>{t('admin.inviteQr.download')}</span>
           )}
-        </div>
-        <p className="break-all text-xs text-muted-foreground" data-testid={`${testId}-url`}>
-          {url}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            disabled={!image}
-            onClick={() => image && printSheet(title, printSubtitle, image, url, t('admin.inviteQr.popupBlocked'))}
-            data-testid={`${testId}-print`}
-          >
-            <Printer className="mr-2 h-4 w-4" aria-hidden />
-            {t('admin.inviteQr.print')}
-          </Button>
-          <Button type="button" variant="outline" disabled={!image} asChild={!!image}>
-            {image ? (
-              <a href={image} download={`${testId}.png`} data-testid={`${testId}-download`}>
-                <Download className="mr-2 h-4 w-4" aria-hidden />
-                {t('admin.inviteQr.download')}
-              </a>
-            ) : (
-              <span>{t('admin.inviteQr.download')}</span>
-            )}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => void copy()} data-testid={`${testId}-copy`}>
-            <Copy className="mr-2 h-4 w-4" aria-hidden />
-            {t('admin.inviteQr.copy')}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </Button>
+        <Button type="button" variant="outline" onClick={() => void copy()} data-testid={`${testId}-copy`}>
+          <Copy className="mr-2 h-4 w-4" aria-hidden />
+          {t('admin.inviteQr.copy')}
+        </Button>
+      </div>
+    </AlignedCard>
   );
 }
 
