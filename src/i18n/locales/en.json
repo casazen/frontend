@@ -8095,7 +8095,33 @@
       "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
       "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one.",
       "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
-      "hostEmailTaken": "This email already has a CasaZen account: no need to invite it."
+      "hostEmailTaken": "This email already has a CasaZen account: no need to invite it.",
+      "consentsIncomplete": "To come in you have to accept all the required documents.",
+      "invitationDailyLimitReached": "You have already sent many invitations in the last 24 hours. Try again tomorrow.",
+      "invitationEmailMismatch": "This invitation is for another address: sign in with the one it was sent to.",
+      "invitationEmailNotVerified": "Your address is not verified yet: confirm the email and try again.",
+      "invitationExpired": "This invitation has expired: ask whoever invited you to send you a new one.",
+      "invitationInvalid": "This link does not work: open the latest invitation email or ask for a new one.",
+      "invitationPlatformAdmin": "This account belongs to the CasaZen staff and does not join a customer’s organization.",
+      "invitationResendTooSoon": "You have just sent this invitation again: you can do it again in an hour.",
+      "invitationRevoked": "This invitation was cancelled.",
+      "invitationUsed": "This invitation has already been used.",
+      "invitationUserHasOrganization": "You already have an organization with data: the invitation cannot be accepted with this account.",
+      "memberInactive": "Your access to this organization was deactivated by the owner.",
+      "orgInvitationAlreadyPending": "An invitation for this email is already waiting: send it again from the list of people.",
+      "orgInvitationNotFound": "This invitation no longer exists: reload the list.",
+      "orgInvitationNotPending": "The invitation has already been accepted, cancelled or has expired.",
+      "orgLastOwner": "The owner cannot be changed or deactivated.",
+      "orgMemberAlreadyMember": "This person is already in the team.",
+      "orgMemberAreaRequired": "Choose at least one area they can work in.",
+      "orgMemberNotFound": "This person is no longer in the team: reload the list.",
+      "orgMemberOtherOrg": "This account already belongs to another organization.",
+      "orgMemberPropertyUnknown": "One of the chosen properties no longer exists: reload the list and try again.",
+      "orgMemberScopeNotSupported": "Only the Collaborator can be limited to some properties.",
+      "orgOwnerNotAssignable": "The owner role is not given: there is only one owner.",
+      "orgOwnerRequired": "Only the owner can appoint or change an administrator.",
+      "orgSeatLimitReached": "You have used all the seats of the plan: deactivate someone who no longer works with you or move to a plan with more seats.",
+      "staleDocuments": "The legal documents have been updated: reload the page and accept them again."
     }
   },
   "appShell": {
@@ -8309,6 +8335,105 @@
       "someProperties": "Only some properties ({{total}})"
     },
     "invitationsUnavailable": "We could not read the invitations: the list shows only the people who are already in the team.",
+    "invite": {
+      "cta": "Invite",
+      "done": {
+        "account": "The invited person chooses their own password: you never see it. On entering they accept the Terms, the Privacy notice and the DPA again.",
+        "another": "Invite another person",
+        "copyLink": "Copy the link",
+        "description": "{{email}} gets the email in a few seconds.",
+        "emailFailedText": "The invitation exists, but we could not send the email. Copy the link and send it to the person yourself: the link of an email that may already have gone out stops working.",
+        "emailFailedTitle": "The email did not go out",
+        "expires": "The invitation lasts 7 days, until {{date}}. After 3 days we send a reminder.",
+        "expiresGeneric": "The invitation lasts 7 days. After 3 days we send a reminder.",
+        "seat": "The invitation takes a seat of the plan until it is accepted or expires.",
+        "seeInvited": "See the invitations",
+        "title": "Invitation sent to {{name}}",
+        "titleCreated": "Invitation created for {{name}}",
+        "titleGeneric": "Invitation sent"
+      },
+      "errors": {
+        "areaRequired": "Choose at least one area they can work in.",
+        "emailInTeam": "This person is already in the team.",
+        "emailInvalid": "The email does not look right: check the at sign and the domain.",
+        "emailPending": "An invitation for this email is already waiting: send it again from the list of people.",
+        "emailRequired": "The email is needed: that is where the invitation goes.",
+        "emailTooLong": "The email is too long (255 characters at most).",
+        "nameInvalid": "The name cannot contain the symbols < > @ / \\",
+        "nameRequired": "Write the first and last name: everybody in the team will see it.",
+        "nameTooLong": "The name is too long (200 characters at most).",
+        "roleNotAllowed": "You cannot give this role: only the owner appoints an administrator. Choose another one.",
+        "roleRequired": "Choose a role to continue.",
+        "sendFailed": "We could not send the invitation. Try again."
+      },
+      "finish": "Send the invitation",
+      "loading": "Getting the invitation ready…",
+      "review": {
+        "allProperties": "Every property of the chosen areas, the ones you add later too",
+        "choosePropertiesCta": "Choose the properties",
+        "language": "Language of the email",
+        "noProperties": "No property chosen",
+        "noPropertiesText": "With “Only some” the person sees only the properties that are ticked. You can give them more later, from their page.",
+        "noPropertiesTitle": "You have not chosen any property",
+        "person": "Person",
+        "receivesAccount": "They choose a password and, on entering, accept the Terms, the Privacy notice and the DPA again.",
+        "receivesEmail": "An email from CasaZen, in {{language}}, with the link to accept the invitation.",
+        "receivesTitle": "What they will receive",
+        "receivesValidity": "The link lasts 7 days. After 3 days we send a reminder.",
+        "role": "Role",
+        "where": "Areas and properties"
+      },
+      "role": {
+        "legend": "Role",
+        "loadError": "We cannot read the roles you can give."
+      },
+      "seats": {
+        "left_one": "{{count}} seat free out of {{max}}. An invitation takes a seat until it expires or is accepted.",
+        "left_other": "{{count}} seats free out of {{max}}. An invitation takes a seat until it expires or is accepted.",
+        "noneText": "Deactivate someone who no longer works with you or move to a plan with more seats. If you send the invitation anyway, the system refuses it.",
+        "noneTitle": "You have used all the seats of the plan",
+        "plan": "See the plan",
+        "unlimited": "Your plan has no limit on seats."
+      },
+      "steps": {
+        "review": {
+          "label": "Summary",
+          "purpose": "Here is what they will see and what they will be able to do. The invitation only goes out when you confirm.",
+          "title": "Check and send the invitation"
+        },
+        "role": {
+          "label": "Role",
+          "purpose": "The role decides what they can do. You can change it whenever you want.",
+          "title": "What role will they have?"
+        },
+        "where": {
+          "label": "Areas and properties",
+          "purpose": "They will only see the areas and properties you choose here.",
+          "title": "Where will they work?"
+        },
+        "who": {
+          "label": "Who",
+          "purpose": "A name and an email are enough. The invited person chooses the password.",
+          "title": "Who do you want to invite?"
+        }
+      },
+      "title": "Invite a person",
+      "who": {
+        "email": "Email",
+        "emailHint": "That is where the link to get in goes.",
+        "language": "Language of the email",
+        "languageEn": "English",
+        "languageHint": "It is the language of the invitation and of the reminder.",
+        "languageIt": "Italian",
+        "name": "First and last name",
+        "nameExample": "Marta Esposito"
+      }
+    },
+    "link": {
+      "copied": "Link copied",
+      "copiedHint": "Send it to the person: the previous link no longer works.",
+      "failed": "We could not prepare the link. Try again."
+    },
     "list": {
       "allProperties": "All properties",
       "chips": {
@@ -8345,6 +8470,24 @@
       "you": "you"
     },
     "loadError": "We could not load the people.",
+    "picker": {
+      "areasLegend": "Which areas?",
+      "chosenCount_one": "{{count}} property chosen",
+      "chosenCount_other": "{{count}} properties chosen",
+      "fullAccessText": "They see every area and every property. To limit them, choose another role.",
+      "fullAccessTitle": "An administrator sees everything",
+      "longRentHint": "Contracts, tenants and rents.",
+      "noAreaChosen": "Choose at least one area first.",
+      "noProperties": "There are no properties in the chosen areas yet: you can give them later, from their page.",
+      "propertiesError": "We cannot read the properties.",
+      "propertiesLegend": "Which properties?",
+      "scopeAll": "All the properties",
+      "scopeAllHint": "The ones you add later too.",
+      "scopeLegend": "Which properties do they see?",
+      "scopeSome": "Only some",
+      "scopeSomeHint": "They see only the ones you choose below.",
+      "shortRentHint": "Bookings, guests and calendar."
+    },
     "preview": {
       "can": "Can manage",
       "cannot": "Cannot",
@@ -8366,6 +8509,88 @@
       "PropertyManager": "Properties, bookings, leases, income and suppliers. No plan and no invoices."
     },
     "title": "People"
+  },
+  "invitation": {
+    "accept": "Accept and enter",
+    "acceptTitle": "Accept the invitation of {{org}}",
+    "details": {
+      "areas": "Areas",
+      "email": "Invitation for",
+      "expires": "Valid until",
+      "role": "Role"
+    },
+    "entry": {
+      "haveAccount": "I already have an account: sign in",
+      "login": "Sign in",
+      "setPassword": "Set your password",
+      "setPasswordHint": "The invitation email has the link to choose your password. Then sign in with that address.",
+      "signup": "Create your account"
+    },
+    "errorGeneric": "We cannot check the invitation. Try again in a moment.",
+    "errorTitle": "We cannot check the invitation",
+    "failure": {
+      "alreadyMember": {
+        "text": "You have already accepted this invitation.",
+        "title": "You are already in the team"
+      },
+      "consents": {
+        "reload": "Reload the page",
+        "text": "To come in you have to accept all the documents. If they were updated, reload the page and accept them again."
+      },
+      "emailMismatch": {
+        "action": "Sign out and sign in with the invited address",
+        "text": "You are signed in with another address. Sign in with the one the invitation was sent to ({{email}}).",
+        "title": "This invitation is for another address"
+      },
+      "emailNotVerified": {
+        "text": "Your address is not verified yet. Open the confirmation message the sign-in service sent you, then come back here and try again.",
+        "title": "Confirm your email"
+      },
+      "hasOrganization": {
+        "support": "Write to support",
+        "text": "We cannot merge the two organizations: the invitation cannot be accepted with this account. Use another address or ask support for help.",
+        "title": "You already have an organization with data"
+      },
+      "other": "The invitation could not be accepted. Try again.",
+      "platformAdmin": {
+        "text": "This account belongs to the CasaZen staff and cannot join a customer’s organization. Use another account.",
+        "title": "Staff account"
+      },
+      "retry": "We could not complete the operation. Try again."
+    },
+    "joinDescription": "Here is what you will be able to do. Sign in to accept.",
+    "joinTitle": "{{org}} has invited you to CasaZen",
+    "joined": "Welcome to {{org}}",
+    "leftEmptyOrg": "You left the empty organization you had.",
+    "loading": "Checking the invitation…",
+    "pageTitle": "Invitation to CasaZen",
+    "retry": "Try again",
+    "signedInAs": "You are signed in as {{email}}.",
+    "unavailable": {
+      "description": "This feature is not available yet. Ask whoever invited you.",
+      "title": "Invitation not available"
+    },
+    "unusable": {
+      "expired": {
+        "description": "An invitation lasts 7 days. Ask whoever invited you to send you a new one.",
+        "title": "The invitation has expired"
+      },
+      "goToApp": "Go to CasaZen",
+      "invalid": {
+        "description": "It may have expired, been used, been cancelled or been replaced by a newer one. Open the latest invitation email or ask whoever invited you to send a new one.",
+        "title": "This link does not work"
+      },
+      "revoked": {
+        "description": "Whoever invited you withdrew it. If you think it is a mistake, write to them.",
+        "title": "The invitation was cancelled"
+      },
+      "used": {
+        "description": "If you have already accepted, sign in to CasaZen with your account.",
+        "title": "You have already used this invitation"
+      }
+    },
+    "useAnother": "Use another account",
+    "useSameEmail": "Sign in with the address the invitation was sent to."
   },
   "pageHeader": {
     "moreActions": "More actions",
