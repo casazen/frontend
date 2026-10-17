@@ -17,8 +17,8 @@ vi.mock('@/components/layout/app-shell', () => ({
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
-vi.mock('@/components/shared/loading-screen', () => ({
-  LoadingScreen: ({ message }: { message: string }) => createElement('div', { 'data-testid': 'loading' }, message),
+vi.mock('@/queries/use-properties', () => ({
+  useProperty: () => ({ data: { id: 'prop-test', name: 'Casa Test' } }),
 }));
 vi.mock('recharts', () => ({
   LineChart: ({ children }: { children?: React.ReactNode }) => createElement('div', { 'data-testid': 'line-chart' }, children),
@@ -125,7 +125,7 @@ describe('PricingDashboardPage', () => {
 
     renderPage();
 
-    expect(screen.getByTestId('loading')).toBeInTheDocument();
+    expect(screen.getByTestId('pricing-loading')).toBeInTheDocument();
   });
 
   it('PricingDashboardPage_Rendered_UsesSeasonalSuggestionsNamesWithoutAiOrConfidence', () => {
@@ -223,7 +223,7 @@ describe('PricingDashboardPage', () => {
     renderPage();
 
     expect(screen.getByText('Nessun suggerimento calcolato')).toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole('button', { name: 'Ricalcola ora' })[1]);
+    fireEvent.click(screen.getByRole('button', { name: 'Ricalcola ora' }));
     expect(recalculateMutate).toHaveBeenCalled();
   });
 

@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
+import { showLoginEntryPoints } from '@/config/login-entry';
+import { supportConfig } from '@/config/support.config';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
+import { inviteHref } from '@/site/site-links';
 import { sitePageById, type SitePageId } from '@/site/site-pages';
 
 /** The pages of the public site of CasaZen that the header leads to (`src/site/site-pages.ts`). */
@@ -17,7 +20,8 @@ const NAV_LINK = 'text-[var(--cz-public-muted)] hover:text-[var(--cz-public-text
 /**
  * Header of CasaZen's own public pages (search, guides, legal documents, supplier showcase): the logo, the pages of the
  * public site, the search and the way in to the app, the same as the header of the public site (`SiteLayout`). An org's
- * booking site has its own (`PublicSiteShell`): the host's name or logo, never CasaZen's.
+ * booking site has its own (`PublicSiteShell`): the host's name or logo, never CasaZen's. The way in ("Accedi") is not
+ * offered on the production site (`src/config/login-entry.ts`): the app is reached there by its address only.
  *
  * The pages of the public site (`/`, `/funzionalita`, ...) are static files that the routing middleware serves, and
  * `/login` needs Auth0, which the public pages do not load: they are plain links (a router link would stay in the app,
@@ -25,6 +29,8 @@ const NAV_LINK = 'text-[var(--cz-public-muted)] hover:text-[var(--cz-public-text
  */
 export function BrandHeader() {
   const { t } = useTranslation();
+  // The invitation request (only with a contact address), the same as the header of the public site.
+  const inviteLink = inviteHref(supportConfig.email, t('site.invite.subject'));
 
   return (
     <header
@@ -56,12 +62,22 @@ export function BrandHeader() {
             <Search className="h-4 w-4" aria-hidden="true" />
             {t('publicSite.explore')}
           </Link>
-          <a
-            href="/login"
-            className="rounded-full bg-[var(--cz-brand-ink)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--cz-brand-ink-hover)]"
-          >
-            {t('site.nav.login')}
-          </a>
+          {inviteLink ? (
+            <a
+              href={inviteLink}
+              className="rounded-full bg-[var(--cz-public-primary)] px-4 py-2 font-semibold text-[var(--cz-public-on-primary)] transition-opacity hover:opacity-90"
+            >
+              {t('site.invite.cta')}
+            </a>
+          ) : null}
+          {showLoginEntryPoints(import.meta.env.VITE_PUBLIC_SITE_URL) ? (
+            <a
+              href="/login"
+              className="rounded-full bg-[var(--cz-brand-ink)] px-4 py-2 font-semibold text-white transition-colors hover:bg-[var(--cz-brand-ink-hover)]"
+            >
+              {t('site.nav.login')}
+            </a>
+          ) : null}
         </div>
       </div>
     </header>

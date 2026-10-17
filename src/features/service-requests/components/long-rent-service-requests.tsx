@@ -16,6 +16,7 @@ export function LongRentServiceRequests({ propertyId }: { propertyId: string }) 
 
   return (
     <ServiceRequestsCard
+      plain
       query={requests}
       context="long-rent"
       canManage={canRequest}
