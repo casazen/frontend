@@ -19,6 +19,7 @@ import { useBooking } from '@/queries/use-bookings';
 import { BookingNextStep } from './components/booking-next-step';
 import { BookingPaymentTab } from './components/booking-payment-tab';
 import { BookingStayTab } from './components/booking-stay-tab';
+import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
@@ -53,9 +54,9 @@ function BookingDetailSkeleton({ label }: { label: string }) {
 
 /**
  * `/app/short-rent/bookings/:id`: one booking (SR-05). The header says whose stay it is, where and when, with its status and the
- * "⋯" menu of the other actions; under it the one highlighted block, "Cosa succede ora", and then the tabs Soggiorno, Documenti
- * and Pagamento, each made of sections without a box. The tab is in the address (`?tab=`); `alloggiati`, the old fourth tab, opens
- * Documenti at its Alloggiati Web section.
+ * "⋯" menu of the other actions; under it the one highlighted block, "Cosa succede ora", and then the tabs Soggiorno, Documenti,
+ * Pagamento and Cronologia (SR-05c), each made of sections without a box. The tab is in the address (`?tab=`); `alloggiati`, the
+ * old fourth tab, opens Documenti at its Alloggiati Web section.
  */
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -118,7 +119,9 @@ export function BookingDetailPage() {
   const canDecline = canWrite && booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
   // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves.
   const canCancel = canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
-  const canEdit = canWrite && booking.status !== 'Cancelled';
+  // "Modifica" only where the API takes it (SR-05c): the server says so with `canEdit`, the page keeps no rule of its own. A booking
+  // from the booking site or a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
+  const canEdit = canWrite && booking.canEdit?.allowed === true;
   // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
   const canCheckIn = canWrite && canRegisterArrival(booking);
 
@@ -153,6 +156,7 @@ export function BookingDetailPage() {
     { value: 'details', label: t('booking.detailPage.tabs.details'), testId: 'booking-tab-details' },
     { value: 'guest', label: t('booking.detailPage.tabs.guest'), testId: 'booking-tab-guest' },
     { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
+    { value: 'history', label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' },
   ];
 
   return (
@@ -195,6 +199,12 @@ export function BookingDetailPage() {
           )}
 
           {activeTab === 'payment' && <BookingPaymentTab booking={booking} />}
+
+          {activeTab === 'history' && (
+            <div className="max-w-xl">
+              <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />
+            </div>
+          )}
         </Tabs>
       </div>
 

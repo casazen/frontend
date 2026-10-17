@@ -1879,15 +1879,22 @@
       "notFound": "Booking not found",
       "notFoundDescription": "It may have been deleted, or the link is not correct.",
       "editBooking": "Edit Booking",
+      "editLocked": {
+        "SourceLocked": "Dates and guests cannot be changed: the price and the payment were settled on the booking site or the channel the booking comes from. To change it, cancel it and make a new one.",
+        "Started": "The stay has already started: dates and guests cannot be changed."
+      },
       "tabs": {
         "details": "Stay",
         "guest": "Documents",
+        "history": "History",
         "payment": "Payment"
       },
       "tabsLabel": "Booking sections",
       "created": "Created on",
       "lastUpdated": "Last Updated",
       "guestInformationTitle": "Guest information",
+      "paidAmount": "Amount collected",
+      "paymentState": "Payment status",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -2118,6 +2125,52 @@
       "markVerified": "Mark as verified",
       "resolved": "Stay verified",
       "failed": "Could not update the stay. Try again."
+    },
+    "timeline": {
+      "alloggiatiDeadline": "{{status}} · by {{date}}",
+      "cancelNote": "Reason: {{note}}",
+      "cancelReason": {
+        "CheckoutHoldExpired": "The payment did not arrive in time: the dates are free again.",
+        "DatesUnavailableAtPayment": "The dates were no longer free when the guest paid.",
+        "DeferredPaymentNotCompleted": "The charge on the due date did not go through.",
+        "OnSiteEmailNotConfirmed": "The guest did not confirm the email in time.",
+        "OnSiteRequestDeclined": "You declined the request.",
+        "OnSiteRequestExpired": "The request expired without an answer."
+      },
+      "expiresOn": "Expires on {{date}}",
+      "kind": {
+        "Alloggiati": "Alloggiati Web",
+        "ApprovalPending": "Waiting for your answer",
+        "Arrived": "Arrival registered",
+        "Cancelled": "Booking cancelled",
+        "CheckedOut": "Departure registered",
+        "CheckInLinkSent": "Check-in link sent",
+        "Confirmed": "Booking confirmed",
+        "Created": "Booking created",
+        "GuestDocumentsReceived": "Guest documents received",
+        "GuestEmailPending": "Waiting for the guest to confirm the email",
+        "HostConfirmationPending": "Waiting for your confirmation",
+        "PaymentPending": "Waiting for the guest's payment",
+        "PaymentReceived": "Payment received",
+        "Refund": "Refund",
+        "RequestReceived": "Request received"
+      },
+      "label": "Booking history",
+      "linkState": {
+        "Completed": "Online check-in completed",
+        "Expired": "The link has expired",
+        "InProgress": "The guest is filling in the data",
+        "Sent": "Waiting for the guest"
+      },
+      "loadError": "The history could not be loaded.",
+      "refund": {
+        "Failed": "Refund failed",
+        "Pending": "Refund in progress",
+        "RequiresAction": "Refund to complete",
+        "Succeeded": "Refund made"
+      },
+      "source": "Source: {{source}}",
+      "title": "History"
     }
   },
   "ota": {

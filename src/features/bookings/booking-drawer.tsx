@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { TFunction } from 'i18next';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ import { formatStayDate } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
 import { useRefreshDashboard } from '@/queries/use-dashboard';
 import type { Booking } from '@/types';
+import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CheckInDialog } from './components/check-in-dialog';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
@@ -35,9 +36,10 @@ function nextStep(booking: Booking, canWrite: boolean, t: TFunction): { text: st
 }
 
 /**
- * The booking in the drawer (UI-15): who, where, when, how it stands and, in a block of its own, what to do now. The rest
- * (payments, documents, the guest's data) is on the page of the booking, one press away ("Apri la scheda completa").
- * No money here: whoever may not read payments sees the same drawer as the others.
+ * The booking in the drawer (UI-15): who, where, when, how it stands and, in a block of its own, what to do now; at the end its
+ * history (SR-05c). The rest (payments, documents, the guest's data) is on the page of the booking, one press away ("Apri la
+ * scheda completa"). Money only in the history, and the server leaves the figures out for whoever may not read payments: that
+ * person sees the same drawer as the others, without the amounts.
  */
 export function BookingDrawerContent({ id }: DetailContentProps) {
   const { t, i18n } = useTranslation();
@@ -45,6 +47,7 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id);
   const refresh = useRefreshDashboard();
   const [arrivalOpen, setArrivalOpen] = useState(false);
+  const timelineTitleId = useId();
 
   if (isLoading) return <SkeletonLine lines={5} />;
   if (isError || !booking) return <ErrorState title={t('detailDrawer.booking.loadError')} error={error} onRetry={() => void refetch()} />;
@@ -112,6 +115,14 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
           </a>
         ) : null}
       </div>
+
+      {/* What happened to the booking and what it waits for (SR-05c), the same list as the tab Cronologia of the page. */}
+      <section aria-labelledby={timelineTitleId} className="space-y-3" data-testid="booking-drawer-timeline">
+        <h3 id={timelineTitleId} className="text-sm font-semibold">
+          {t('booking.timeline.title')}
+        </h3>
+        <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />
+      </section>
 
       <CheckInDialog
         booking={arrivalOpen ? booking : null}

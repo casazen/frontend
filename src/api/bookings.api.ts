@@ -7,6 +7,7 @@ import type {
   BookingFilterParams,
   BookingListItem,
   BookingListParams,
+  BookingTimeline,
   CancelBookingDto,
   CancelBookingResult,
   CreateBookingDto,
@@ -48,6 +49,9 @@ export const bookingsApi = {
   counts: (params: BookingFilterParams) => ApiClient.get<BookingCounts>('/bookings/counts', params),
 
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
+
+  /** What happened to a booking and what it waits for, in order (SR-05a); the amounts only for who may read payments. */
+  getTimeline: (id: string) => ApiClient.get<BookingTimeline>(`/bookings/${id}/timeline`),
 
   create: (data: CreateBookingDto) =>
     ApiClient.post<Booking>('/bookings', data),
