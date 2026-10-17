@@ -55,7 +55,8 @@ export function RequestNow({ request, actions }: { request: SupplierServiceReque
   const { t, i18n } = useTranslation();
   const phase = phaseOf(request);
   const plan = actionsOf(phase);
-  const base = `supplier.requests.now.${phase}`;
+  // A job the server accepted by itself (SP-04d) says so, and says how to get out of it.
+  const base = phase === 'scheduled' && request.autoAccepted ? 'supplier.requests.now.scheduledAuto' : `supplier.requests.now.${phase}`;
   const online = phase === 'completed' && request.paymentMode === 'Online';
   const toConfirm = phase === 'completed' && Boolean(request.payment?.needsAmountConfirmation || request.price?.needsCustomerConfirmation);
   const reason = reasonText(phase === 'rejected' ? request.rejectionReason : request.cancellationReason, t);
@@ -69,6 +70,8 @@ export function RequestNow({ request, actions }: { request: SupplierServiceReque
         return { label: t('supplier.requests.action.reject'), onClick: () => actions.askReject(id), disabled: actions.suspended || actions.busy, testId: 'supplier-request-reject' };
       case 'complete':
         return { label: t('supplier.requests.action.complete'), onClick: () => actions.complete(id), loading: actions.completingId === id, disabled: actions.suspended || (actions.busy && actions.completingId !== id), testId: 'supplier-request-complete' };
+      case 'cancel':
+        return { label: t('supplier.requests.action.cancel'), onClick: () => actions.askCancel(id), disabled: actions.suspended || actions.busy, testId: 'supplier-request-cancel' };
     }
   };
 
@@ -341,8 +344,11 @@ const HISTORY_KEYS: Record<ServiceRequestStatus, string> = {
 function historyEvents(history: readonly ServiceRequestHistoryEntry[], t: (key: string, options?: Record<string, unknown>) => string): TimelineEvent[] {
   return history.map((entry, index) => {
     const byClient = entry.actor === 'Host' || entry.actor === 'Customer';
-    const key =
-      entry.status === 'Annullato' && entry.actor === 'Supplier'
+    // The step the server wrote by itself: the supplier turned on the automatic acceptance of its regular hosts (SP-04d).
+    const automatic = entry.status === 'PresoInCarico' && entry.actor === 'System';
+    const key = automatic
+      ? 'supplier.requests.history.PresoInCaricoAuto'
+      : entry.status === 'Annullato' && entry.actor === 'Supplier'
         ? 'supplier.requests.history.AnnullatoBySupplier'
         : entry.status === 'Annullato' && entry.actor === 'System'
           ? 'supplier.requests.history.AnnullatoBySystem'
@@ -352,7 +358,7 @@ function historyEvents(history: readonly ServiceRequestHistoryEntry[], t: (key: 
       at: entry.at,
       // A status this version does not know (the server is newer) is shown as it came, never as a key.
       title: key ? t(key) : entry.status,
-      description: reasonText(entry.reason, t) ?? undefined,
+      description: automatic ? t('supplier.requests.history.PresoInCaricoAutoNote') : (reasonText(entry.reason, t) ?? undefined),
       actor: byClient ? t('supplier.requests.actor.client') : entry.actor === 'System' ? t('supplier.requests.actor.system') : (entry.actorName ?? t('supplier.requests.actor.you')),
       tone: HISTORY_TONES[entry.status] ?? 'neutral',
     };

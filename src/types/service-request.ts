@@ -143,6 +143,11 @@ export interface SupplierServiceRequest {
   /** `Online` (paid inside CasaZen) or `Manual` (paid outside, the host marks it). */
   paymentMode?: string;
   /**
+   * The server accepted it by itself (SP-04d): the supplier turned on the automatic acceptance of its regular hosts. It was born taken
+   * (`PresoInCarico`, the step in the history has the actor `System`) and the supplier can still cancel it, with a reason, until it starts.
+   */
+  autoAccepted?: boolean;
+  /**
    * Where the request is for the console, worked out once by the server (SP-04e): `to_answer`, `proposal_pending`, `scheduled`,
    * `in_progress`, `completed`, `paid`, `rejected`, `cancelled`. An open set: a value this version does not know is read from `status`.
    */
