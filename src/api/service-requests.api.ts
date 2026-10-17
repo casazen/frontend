@@ -44,6 +44,12 @@ export async function rejectServiceRequest(id: string, reason: string): Promise<
   return data;
 }
 
+/** The supplier cancels a job it took, before it starts: the reason is required (500 characters at most) and the other party sees it. */
+export async function cancelServiceRequest(id: string, reason: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/cancel`, { reason });
+  return data;
+}
+
 export async function markServiceRequestPaid(id: string): Promise<ServiceRequest> {
   const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/mark-paid`);
   return data;
