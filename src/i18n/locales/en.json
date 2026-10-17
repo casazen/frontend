@@ -1927,8 +1927,10 @@
       "created": "Created on",
       "lastUpdated": "Last Updated",
       "guestInformationTitle": "Guest information",
+      "balanceDue": "Still to collect",
       "paidAmount": "Amount collected",
       "paymentState": "Payment status",
+      "recordPayment": "Record payment",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -3396,15 +3398,74 @@
     "supplierDefault": "Supplier",
     "agenda": {
       "close": "Close this day",
+      "conflicts": {
+        "block": {
+          "fix": "Move the job to another time.",
+          "title": "It falls in an hour you blocked"
+        },
+        "buffer": {
+          "fix": "You can keep it as it is, or space the two jobs out.",
+          "title": "The break between the two jobs is too short"
+        },
+        "danger": "To fix",
+        "dayFull": {
+          "fix": "You can keep it as it is, or move it to another day.",
+          "title": "It goes over the most jobs in a day"
+        },
+        "dayOff": {
+          "fix": "You can keep it as it is, or move it to a day you work.",
+          "title": "It is on one of your rest days"
+        },
+        "external": {
+          "fix": "Move the job, or free that hour in your calendar.",
+          "title": "It overlaps something in your calendar"
+        },
+        "hint": "Check these jobs in the next 30 days: their time does not fit your hours or your commitments.",
+        "listLabel": "Jobs with a time to sort out",
+        "open": "Open the request",
+        "openAria": "Open the request of {{when}}",
+        "outsideHours": {
+          "fix": "You can keep it as it is, or move it inside your hours.",
+          "title": "It is outside your hours"
+        },
+        "overlap": {
+          "fix": "Move one of the two jobs.",
+          "title": "It overlaps another of your jobs"
+        },
+        "showAll": "Show all ({{total}})",
+        "suggested": "First free time: {{when}}",
+        "timeOff": {
+          "fix": "Move the job to another day.",
+          "title": "It falls in your time off"
+        },
+        "title_one": "You have {{count}} job with a time to sort out",
+        "title_other": "You have {{count}} jobs with a time to sort out",
+        "truncated": "The {{limit}} nearest jobs are checked.",
+        "unknown": {
+          "fix": "Open the request and check the time.",
+          "title": "Something is off with this time"
+        },
+        "warning": "To review"
+      },
       "dayEmpty": "Nothing on the agenda for this day.",
       "description": "Your jobs and commitments, day by day. Customers only book when you are free.",
       "emptyRange": "No jobs or commitments in this period. When you accept a request it shows up here.",
       "emptyRangeCta": "Go to requests",
       "eventsCount_one": "{{count}} entry",
       "eventsCount_other": "{{count}} entries",
+      "fromShowcase": "from your showcase",
       "hours": {
+        "addBand": "Add a band",
+        "bandEnd": "{{day}}, band {{n}}: end",
+        "bandStart": "{{day}}, band {{n}}: start",
         "edit": "Edit your hours",
         "empty": "You have not chosen your working hours yet.",
+        "maxBands": "At most {{max}} bands a day",
+        "problem": {
+          "order": "{{day}}: in every band the start must be before the end.",
+          "overlap": "{{day}}: two bands cannot overlap."
+        },
+        "removeBand": "Remove band {{n}} of {{day}}",
         "title": "Your working hours"
       },
       "legend": {
@@ -3447,12 +3508,12 @@
     "eventFromCalendar": "from calendar",
     "eventRequest": "job",
     "eventTimeOff": "time off",
-    "hoursDescription": "Bands on the Rome clock. Without hours there are no service slots.",
+    "hoursDescription": "Up to 3 bands a day, on the Rome clock: a lunch break takes two. Without hours there are no service slots.",
     "hoursEnd": "End",
     "hoursInvalid": "Check the hours: the start must be before the end.",
     "hoursLoadError": "Could not load working hours.",
     "hoursLoading": "Loading hours...",
-    "hoursNotSetHint": "Set them from your profile: working days will use those bands and calendar events.",
+    "hoursNotSetHint": "Choose the days and bands you work: working days will use those bands and calendar events.",
     "hoursNotSetTitle": "Working hours not set",
     "hoursRestDay": "Day off",
     "hoursSave": "Save hours",
@@ -3923,6 +3984,13 @@
     "syncCompleted": "Synced",
     "syncNow": "Sync now",
     "icalSaveError": "Could not save the calendar URL",
+    "icalDisconnect": "Disconnect",
+    "icalDisconnected": "Calendar disconnected",
+    "icalDisconnectDescription": "The calendar will no longer close your days and hours. Your blocks and the days you closed by hand stay, and you can connect it again whenever you like.",
+    "icalDisconnectError": "Could not disconnect the calendar",
+    "icalDisconnectEvents": "The events marked “Available” that were waiting for your answer are removed.",
+    "icalDisconnectReopens": "The days and hours the calendar had closed open again for customers.",
+    "icalDisconnectTitle": "Disconnect the calendar?",
     "freeEventsBannerTitle_one": "{{count}} event on your calendar is marked Available",
     "freeEventsBannerTitle_other": "{{count}} events on your calendar are marked Available",
     "freeEventsBannerHint": "Until you confirm, those days show as busy. Choose for each event: your choice covers every date of a recurring event.",
@@ -6195,12 +6263,20 @@
       },
       "amount": {
         "min": "Amount must be greater than 0"
+      },
+      "receivedOn": {
+        "required": "Enter the day the money came in"
       }
+    },
+    "record": {
+      "description": "Note a payment you received outside CasaZen. No message is sent.",
+      "title": "Record a payment"
     },
     "list": {
       "actions": {
         "booking": "View the booking",
-        "details": "Open the details"
+        "details": "Open the details",
+        "record": "Record a payment"
       },
       "chips": {
         "all": "All",
@@ -6275,23 +6351,31 @@
       "lastUpdated": "Last Updated"
     },
     "create": {
-      "title": "Create Payment",
-      "description": "Description",
-      "paymentDetails": "Payment Details",
-      "paymentDetailsDescription": "Enter payment information",
+      "title": "Record a payment",
+      "description": "Note a payment you received outside CasaZen, in cash or by bank transfer. No message and no payment request is sent.",
+      "paymentDetails": "Payment received",
+      "paymentDetailsDescription": "Say how much, how and when you were paid.",
       "booking": "Booking *",
       "selectBooking": "Select a booking",
       "amount": "Amount *",
       "amountPlaceholder": "100.00",
+      "balance": "Still to collect: {{amount}}",
       "currency": "Currency",
       "paymentMethod": "Payment Method *",
+      "methods": {
+        "BankTransfer": "Bank transfer",
+        "CashOnArrival": "Cash"
+      },
       "selectMethod": "Select a method",
-      "descriptionPlaceholder": "Payment for booking...",
+      "receivedOn": "Date received *",
+      "note": "Note",
+      "descriptionPlaceholder": "E.g. balance in cash on arrival",
       "cancel": "Cancel",
-      "creating": "Creating...",
-      "create": "Create Payment",
-      "noBookingsTitle": "There are no bookings",
-      "noBookingsDescription": "A payment is recorded against a booking: create one, then come back here."
+      "creating": "Recording...",
+      "create": "Record payment",
+      "failed": "The payment could not be recorded. Try again.",
+      "noBookingsTitle": "There are no bookings to record a payment on",
+      "noBookingsDescription": "A payment is recorded on one of your bookings that is not cancelled and does not come from a portal (the portal collects the money for you): create one, then come back here."
     },
     "refund": {
       "title": "Refund payment",
@@ -8018,7 +8102,7 @@
     "bookingUpdateFailed": "Failed to update booking",
     "guestCheckedOut": "Check-out completed successfully",
     "checkOutGuestFailed": "Failed to complete check-out",
-    "paymentCreated": "Payment created successfully",
+    "paymentCreated": "Payment recorded",
     "paymentCreateFailed": "Failed to create payment",
     "otaIntegrationCreated": "OTA integration created successfully",
     "otaIntegrationCreateFailed": "Failed to create OTA integration",

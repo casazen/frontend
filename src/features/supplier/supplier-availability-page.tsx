@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -16,15 +16,18 @@ import {
   useCalendarSyncStatus,
   usePendingFreeEvents,
   useSupplierAgendaCalendar,
+  useSupplierConflicts,
   useSupplierHours,
   useUpdateSupplierAvailability,
 } from '@/queries/use-supplier';
+import { AgendaConflicts } from './components/agenda-conflicts';
 import { AgendaDayView } from './components/agenda-day-view';
 import { AgendaMonthView } from './components/agenda-month-view';
 import { AgendaToolbar } from './components/agenda-toolbar';
 import { AgendaWeekView } from './components/agenda-week-view';
 import { FreeEventsBanner } from './components/free-events-banner';
-import { HOURS_EDIT_PATH, WeeklyHoursSection } from './components/weekly-hours-section';
+import { WeeklyHoursSection } from './components/weekly-hours-section';
+import { conflictSeverities } from './lib/agenda-conflicts';
 import { agendaParams, agendaRange, eachDay, readAgendaView, type AgendaView } from './lib/agenda-range';
 import { pendingFreeEventDates } from './lib/free-events';
 import { buildWorkingDays } from './lib/supplier-agenda';
@@ -45,8 +48,11 @@ export function SupplierAvailabilityPage() {
   const requestedDate = params.get('data') ?? '';
   const date = isStayDate(requestedDate) ? requestedDate : today;
   const { from, to } = agendaRange(view, date);
+  // The hours are changed in this page (SP-07b): the block that asks for them and the section of the hours open the same editor.
+  const [editingHours, setEditingHours] = useState(false);
 
   const agendaQuery = useSupplierAgendaCalendar(from, to);
+  const conflictsQuery = useSupplierConflicts();
   const hoursQuery = useSupplierHours();
   const freeEventsQuery = usePendingFreeEvents();
   const syncQuery = useCalendarSyncStatus();
@@ -55,6 +61,10 @@ export function SupplierAvailabilityPage() {
   const agenda = agendaQuery.data;
   const freeEvents = freeEventsQuery.data?.items;
   const pendingDates = useMemo(() => pendingFreeEventDates(freeEvents ?? []), [freeEvents]);
+  // A failed check shows nothing: the agenda is still right, and the check is read again the next time the page opens.
+  const conflictsData = conflictsQuery.data;
+  const conflicts = conflictsData && Array.isArray(conflictsData.items) ? conflictsData.items : undefined;
+  const conflictMarks = useMemo(() => conflictSeverities(conflicts), [conflicts]);
   const days = useMemo(
     () =>
       agenda
@@ -65,9 +75,10 @@ export function SupplierAvailabilityPage() {
             timeOff: agenda.timeOff,
             blocks: agenda.blocks,
             requests: agenda.requests,
+            conflicts: conflictMarks,
           })
         : [],
-    [agenda, from, to],
+    [agenda, conflictMarks, from, to],
   );
   const hoursMissing = hoursQuery.data !== undefined && !hoursQuery.data.days.some((day) => day.bands.length > 0);
   const entries = days.reduce((total, day) => total + day.events.length, 0);
@@ -84,7 +95,8 @@ export function SupplierAvailabilityPage() {
     }
   };
 
-  // The one thing the page asks for: the answers on the calendar events marked "Disponibile"; if there are none, the hours.
+  // The one thing the page asks for: the answers on the calendar events marked "Disponibile"; if there are none, the hours; if they
+  // are set, the jobs whose time does not fit them (without hours every job would be one).
   const notice = freeEventsQuery.isError ? (
     <Alert
       variant="warning"
@@ -112,8 +124,10 @@ export function SupplierAvailabilityPage() {
       data-testid="supplier-hours-empty"
       title={t('supplier.hoursNotSetTitle')}
       body={t('supplier.hoursNotSetHint')}
-      primary={{ label: t('supplier.hoursSetCta'), href: HOURS_EDIT_PATH }}
+      primary={{ label: t('supplier.hoursSetCta'), onClick: () => setEditingHours(true) }}
     />
+  ) : conflictsData && conflicts && conflicts.length > 0 ? (
+    <AgendaConflicts items={conflicts} truncated={conflictsData.truncated === true} limit={conflictsData.limit} />
   ) : null;
 
   return (
@@ -174,7 +188,7 @@ export function SupplierAvailabilityPage() {
         )}
       </div>
 
-      <WeeklyHoursSection />
+      <WeeklyHoursSection editing={editingHours} onEditingChange={setEditingHours} />
     </div>
   );
 }

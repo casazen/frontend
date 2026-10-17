@@ -61,36 +61,37 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
   it('PaymentCreatePage_Bookings_ShowsEveryFieldWithItsLabelAndTheOldIds', () => {
     renderPage();
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Nuovo pagamento' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Registra un incasso' })).toBeInTheDocument();
     const booking = screen.getByLabelText('Prenotazione *');
     expect(booking.tagName).toBe('SELECT');
     expect(booking).toHaveAttribute('id', 'bookingId');
     expect(screen.getByLabelText('Importo *')).toHaveAttribute('id', 'amount');
     expect(screen.getByLabelText('Importo *')).toHaveAttribute('type', 'number');
-    expect(screen.getByLabelText('Valuta')).toHaveValue('EUR');
-    expect(screen.getByLabelText('Valuta')).toHaveAttribute('id', 'currency');
+    expect(screen.getByLabelText("Data dell'incasso *")).toHaveAttribute('type', 'date');
+    expect(screen.getByLabelText("Data dell'incasso *")).toHaveAttribute('id', 'receivedOn');
     expect(screen.getByLabelText('Metodo di pagamento *').tagName).toBe('SELECT');
     expect(screen.getByLabelText('Metodo di pagamento *')).toHaveAttribute('id', 'method');
-    expect(screen.getByLabelText('Descrizione')).toHaveAttribute('id', 'description');
+    expect(screen.getByLabelText('Nota')).toHaveAttribute('id', 'description');
     expect(screen.getByText('(facoltativo)')).toBeInTheDocument();
   });
 
-  it('PaymentCreatePage_BookingSelect_ListsEveryBookingOfTheHost', () => {
+  it('PaymentCreatePage_BookingSelect_ListsTheBookingsTheHostCollectsItself', () => {
     renderPage();
 
+    // The Airbnb booking is not offered: the portal collects the money (SR-06b).
     const options = within(screen.getByLabelText('Prenotazione *')).getAllByRole('option');
-    expect(options.map((o) => o.textContent)).toEqual([
-      'Seleziona una prenotazione',
-      'Giulia Bianchi - b1000000',
-      'Marco Rossi - b2000000',
+    expect(options.map((o) => o.textContent)).toEqual(['Seleziona una prenotazione', 'Giulia Bianchi - b1000000']);
+    expect(within(screen.getByLabelText('Metodo di pagamento *')).getAllByRole('option').map((o) => o.textContent)).toEqual([
+      'Seleziona un metodo',
+      'Contanti',
+      'Bonifico bancario',
     ]);
-    expect(within(screen.getByLabelText('Metodo di pagamento *')).getAllByRole('option')).toHaveLength(6);
   });
 
   it('PaymentCreatePage_EmptySubmit_ShowsTheErrorsOnTheFieldsAndSendsNothing', async () => {
     renderPage();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Crea pagamento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Registra incasso' }));
 
     await waitFor(() => expect(screen.getAllByRole('alert').length).toBeGreaterThanOrEqual(2));
     const booking = screen.getByLabelText('Prenotazione *');
@@ -99,20 +100,27 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
     expect(screen.getByLabelText('Importo *')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByLabelText('Importo *')).toHaveAccessibleDescription(/L'importo deve essere maggiore di 0|Campo obbligatorio/);
     expect(screen.getByLabelText('Metodo di pagamento *')).toHaveAttribute('aria-invalid', 'true');
-    expect(screen.getByLabelText('Valuta')).not.toHaveAttribute('aria-invalid');
+    expect(screen.getByLabelText("Data dell'incasso *")).not.toHaveAttribute('aria-invalid');
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('PaymentCreatePage_ValidSubmit_CreatesThePaymentAndGoesBackToTheList', async () => {
+  it('PaymentCreatePage_ValidSubmit_RecordsThePaymentWithItsKeyAndGoesBackToTheList', async () => {
     renderPage();
     fillValidForm();
-    fireEvent.change(screen.getByLabelText('Descrizione'), { target: { value: 'Caparra' } });
+    fireEvent.change(screen.getByLabelText('Nota'), { target: { value: 'Caparra' } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Crea pagamento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Registra incasso' }));
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
     expect(mutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({ bookingId: GIULIA.id, amount: 120.5, currency: 'EUR', method: 'BankTransfer', description: 'Caparra' }),
+      expect.objectContaining({
+        bookingId: GIULIA.id,
+        amount: 120.5,
+        method: 'BankTransfer',
+        description: 'Caparra',
+        receivedOn: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        idempotencyKey: expect.any(String),
+      }),
     );
     expect(await screen.findByText('Elenco dei pagamenti')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -132,7 +140,7 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
     renderPage();
     fillValidForm();
 
-    const button = screen.getByRole('button', { name: 'Creazione...' });
+    const button = screen.getByRole('button', { name: 'Registrazione...' });
     expect(button).toHaveAttribute('aria-busy', 'true');
     expect(button.querySelector('svg')).toHaveClass('animate-spin');
     fireEvent.click(button);
@@ -141,19 +149,6 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('PaymentCreatePage_OtaBooking_ShowsTheWithholdingHintAsAnInfoNotice', () => {
-    renderPage();
-    expect(screen.queryByTestId('fiscal-ota-withholding-hint')).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText('Prenotazione *'), { target: { value: AIRBNB.id } });
-
-    const hint = screen.getByTestId('fiscal-ota-withholding-hint');
-    expect(hint).toHaveAttribute('role', 'status');
-    expect(hint).toHaveTextContent(i18n.getFixedT('it')('fiscal.page.description'));
-
-    fireEvent.change(screen.getByLabelText('Prenotazione *'), { target: { value: GIULIA.id } });
-    expect(screen.queryByTestId('fiscal-ota-withholding-hint')).not.toBeInTheDocument();
-  });
 });
 
 describe('PaymentCreatePage: the states of the list of bookings', () => {
@@ -163,7 +158,7 @@ describe('PaymentCreatePage: the states of the list of bookings', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Caricamento prenotazioni...');
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Crea pagamento' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Registra incasso' })).not.toBeInTheDocument();
   });
 
   it('PaymentCreatePage_LoadFailed_ShowsTheErrorWithRetryAndSupportNotAnEmptyForm', () => {
@@ -192,7 +187,7 @@ describe('PaymentCreatePage: the states of the list of bookings', () => {
     mockBookings({ data: bookingPage() });
     renderPage();
 
-    expect(screen.getByRole('heading', { level: 3, name: 'Non ci sono prenotazioni' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Non ci sono prenotazioni su cui registrare un incasso' })).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'Nuova prenotazione' });
     expect(link).toHaveAttribute('href', '/app/short-rent/bookings/create');
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
@@ -206,6 +201,6 @@ describe('PaymentCreatePage: the states of the list of bookings', () => {
     mockBookings({ data: bookingPage() });
     renderPage();
 
-    expect(screen.getByRole('heading', { level: 3, name: 'There are no bookings' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'There are no bookings to record a payment on' })).toBeInTheDocument();
   });
 });
