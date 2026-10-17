@@ -8642,6 +8642,78 @@
     }
   },
   "team": {
+    "actions": {
+      "access": {
+        "description": "They only see the areas and properties you choose.",
+        "done": "Access of {{name}} updated",
+        "doneAreas": "Works in: {{areas}}.",
+        "doneSome_one": "Sees {{count}} property.",
+        "doneSome_other": "Sees {{count}} properties.",
+        "label": "Areas and properties",
+        "loadError": "We cannot read the properties of this person.",
+        "partial": "The areas were saved, but the properties were not: {{message}}",
+        "save": "Save areas and properties",
+        "title": "Areas and properties of {{name}}"
+      },
+      "deactivate": {
+        "back": "You can switch it back on whenever you want, with the same permissions.",
+        "confirm": "Deactivate the access",
+        "description": "{{name}} will no longer be able to enter CasaZen. What they created (bookings, messages, interventions) stays.",
+        "done": "Access of {{name}} deactivated",
+        "doneHint": "They can no longer use CasaZen from their next request.",
+        "label": "Deactivate",
+        "next": "They will no longer be able to use CasaZen from their next request.",
+        "seat": "It frees a seat of the plan: {{used}} of {{max}}.",
+        "title": "Deactivate the access of {{name}}?",
+        "word": "DEACTIVATE"
+      },
+      "failed": "It did not work. Try again.",
+      "locked": {
+        "admin": "Only the owner can change an administrator.",
+        "me": "It is you: your role and your access cannot be changed from here.",
+        "owner": "The owner cannot be changed or deactivated."
+      },
+      "now": {
+        "deactivated": "They cannot enter. Switching the access back on gives them the same permissions, if the plan has a free seat.",
+        "expired": "The link has expired: send the invitation again to give a new one, valid for another 7 days.",
+        "pendingToday": "The invitation went out today.",
+        "pending_one": "The invitation has been waiting for {{count}} day: if the person has not seen it, send it again.",
+        "pending_other": "The invitation has been waiting for {{count}} days: if the person has not seen it, send it again."
+      },
+      "reactivate": {
+        "done": "{{name}} can access again",
+        "doneHint": "They come in with their old password and the same permissions.",
+        "label": "Reactivate"
+      },
+      "resend": {
+        "done": "Invitation sent again to {{name}}",
+        "label": "Send again",
+        "noEmail": "The email did not go out",
+        "noEmailHint": "Copy the link and send it to the person yourself.",
+        "until": "The new link lasts until {{date}}."
+      },
+      "revoke": {
+        "done": "Invitation cancelled",
+        "doneHint": "The link stops working and the seat is free again. You have a few seconds to change your mind.",
+        "label": "Cancel the invitation"
+      },
+      "role": {
+        "description": "The new role takes effect within a minute. Areas and properties stay as they are.",
+        "done": "{{name}}: role {{role}}",
+        "doneHint": "The new role takes effect within a minute.",
+        "label": "Change role",
+        "less": "What they will no longer be able to do",
+        "levelNo": "cannot",
+        "levelRead": "can only look",
+        "levelYes": "can manage",
+        "more": "What they will be able to do in addition",
+        "noLess": "Nothing less",
+        "noMore": "Nothing new",
+        "save": "Save the role",
+        "title": "Change the role of {{name}}"
+      },
+      "title": "What you can do"
+    },
     "capabilities": {
       "billing": "Plan and invoices",
       "booking": "Bookings and calendar",
