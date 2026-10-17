@@ -19,6 +19,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Allow: /',
       'Disallow: /app/',
       'Disallow: /checkin/',
+      'Disallow: /invite/',
       'Disallow: /login',
       'Disallow: /book/*/my-bookings',
       'Disallow: /book/*/booking/',
