@@ -44,7 +44,8 @@ test.describe('Calendar property guard (#282)', () => {
       }
     });
 
-    await page.goto(demoUrl('/app/short-rent/bookings/calendar', 'short-stay'), {
+    // The month of one property is the view that reads this endpoint: the Timeline (the default on a wide screen) reads `GET /api/calendar`.
+    await page.goto(demoUrl('/app/short-rent/bookings/calendar?view=month', 'short-stay'), {
       waitUntil: 'networkidle',
     });
 
