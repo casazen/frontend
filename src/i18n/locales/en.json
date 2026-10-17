@@ -8070,6 +8070,7 @@
     "codes": {
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
+      "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
       "noOrgContext": "Your account is not linked to any organization.",
@@ -8471,6 +8472,149 @@
       "title": "What the subscription states mean"
     },
     "title": "Billing and plan"
+  },
+  "accountProperties": {
+    "add": {
+      "button": "Add a property",
+      "dialogDescription": "Creation opens in the section you choose: each section has its own form.",
+      "dialogTitle": "How will you let it?",
+      "long": {
+        "text": "Leases, rents and deadlines. You need the energy certificate (APE) and the cadastral data.",
+        "title": "Long-term rental"
+      },
+      "short": {
+        "text": "Bookings, calendar and nightly prices. You need the CIN.",
+        "title": "Short-term rental"
+      }
+    },
+    "blocked": {
+      "bookings": {
+        "action": "See the bookings",
+        "text": "It has current or upcoming bookings: move or cancel them first."
+      },
+      "close": "Close",
+      "later": "Once nothing is in progress any more you will be able to delete it.",
+      "leases": {
+        "action": "Open the lease",
+        "actionProperty": "Open the property",
+        "text": "There is an active or running lease: it has to end first, in Long-term rentals."
+      },
+      "title": "You cannot delete {{name}} yet"
+    },
+    "delete": {
+      "confirm": "Delete the property",
+      "consequenceKept": "Documents and tax data stay archived, as the law requires them to be kept.",
+      "consequenceSlot": "It frees a place in your plan.",
+      "description": "It no longer shows in the lists, the calendar and on the site. It cannot be restored from here.",
+      "title": "Delete {{name}}?",
+      "word": "DELETE"
+    },
+    "description": "All the properties of {{org}}, short-term and long-term.",
+    "descriptionNoOrg": "All the properties of the account, short-term and long-term.",
+    "drawer": {
+      "address": "Address",
+      "assign": "Assign the person in charge",
+      "complete": "Complete the activation",
+      "data": "Details",
+      "loadError": "We could not load this property.",
+      "loading": "Reading who has access",
+      "missing": "Missing",
+      "moreActions": "More actions",
+      "notFound": "Property not found",
+      "notFoundDescription": "It may have been deleted: go back to the list and pick another one.",
+      "open": "Open the property page",
+      "retry": "Try again",
+      "who": "Who has access",
+      "whoIncomplete": "We could not read the access of some collaborators: the list may be incomplete.",
+      "whoUnavailable": "We could not read the people of the account."
+    },
+    "list": {
+      "actions": {
+        "assign": "Assign the person in charge",
+        "complete": "Complete",
+        "delete": "Delete the property",
+        "page": "Open the property page",
+        "toLong": "Switch to long-term rental",
+        "toShort": "Switch to short-term rental",
+        "who": "Who has access"
+      },
+      "bulk": {
+        "assign": "Assign the person in charge"
+      },
+      "chips": {
+        "all": "All",
+        "long": "Long-term rental",
+        "short": "Short-term rental",
+        "todo": "To complete",
+        "todoHint": "They cannot receive bookings yet"
+      },
+      "columns": {
+        "mode": "How it is let",
+        "people": "Access",
+        "property": "Property",
+        "responsible": "In charge",
+        "state": "State"
+      },
+      "count_one": "{{count}} property",
+      "count_other": "{{count}} properties",
+      "emptyDescription": "Add the first property: then choose whether to let it for short stays or with a long-term lease.",
+      "emptyTitle": "No properties in the account",
+      "filters": {
+        "allResponsibles": "Everybody in charge",
+        "allStates": "All states",
+        "responsible": "In charge",
+        "state": "State"
+      },
+      "missing": "Missing: {{items}}",
+      "nobody": "Nobody",
+      "noResults": {
+        "description": "Try removing a filter or searching by name or city.",
+        "title": "No properties with these filters"
+      },
+      "people_one": "{{count}} user",
+      "people_other": "{{count}} users",
+      "search": "Search properties",
+      "searchPlaceholder": "Search by name, city or person in charge",
+      "title": "Properties of the account",
+      "unknown": "Not available",
+      "whoLabel_one": "{{count}} user can access {{name}}: open the list",
+      "whoLabel_other": "{{count}} users can access {{name}}: open the list"
+    },
+    "loadError": "Failed to load properties",
+    "missing": {
+      "cin": "CIN",
+      "photos": "photos",
+      "price": "price"
+    },
+    "mode": {
+      "long": "Long-term rental",
+      "short": "Short-term rental"
+    },
+    "responsible": {
+      "accessUnavailable": "We could not read the access of some collaborators: they may be missing from the list.",
+      "assign": "Assign",
+      "cancel": "Cancel",
+      "choose": "Choose a person",
+      "close": "Close",
+      "description": "The person in charge is told, together with the administrators, when something happens on the property: bookings, interventions and deadlines. With nobody in charge, whoever created it is told.",
+      "done_one": "Person in charge updated for one property",
+      "done_other": "Person in charge updated for {{count}} properties",
+      "failedDescription": "See the reasons below: the properties that are not listed were updated.",
+      "failedGeneric": "The person in charge could not be changed.",
+      "failedTitle_one": "It did not work for one property",
+      "failedTitle_other": "It did not work for {{count}} properties",
+      "hint_one": "Only people who can already access this property are listed.",
+      "hint_other": "Only people who can already access all these properties are listed.",
+      "label": "Who is in charge?",
+      "loading": "Reading who has access",
+      "manageAccess": "Not the right person here? Manage access",
+      "nobody": "Nobody",
+      "retry": "Try again",
+      "titleMany": "Person in charge of {{count}} properties",
+      "titleOne": "Person in charge of {{name}}"
+    },
+    "retry": "Try again",
+    "unavailable": "Some columns cannot be read right now (the person in charge, access or the state of long-term properties): they show a dash."
   },
   "areas": {
     "account": {

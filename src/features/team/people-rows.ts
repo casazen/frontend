@@ -32,20 +32,24 @@ export interface PersonRow {
   propertyCount: number;
 }
 
+/** How the team names a member: first and last name, or the e-mail of one who has given none. */
+export function memberName(member: Pick<OrgMember, 'firstName' | 'lastName' | 'email'>): string {
+  return [member.firstName, member.lastName].filter(Boolean).join(' ') || member.email;
+}
+
 /**
  * The people of the org in one list: the members as the team has them (owner first), then the invitations that wait for an answer
  * or ran out. An accepted or withdrawn invitation is not a person to show: the member is in the first part, or nobody is.
  */
 export function personRows(members: readonly OrgMember[], invitations: readonly OrgInvitation[], myEmail: string | undefined): PersonRow[] {
   const me = myEmail?.trim().toLowerCase();
-  const nameOfMember = (member: OrgMember) => [member.firstName, member.lastName].filter(Boolean).join(' ') || member.email;
-  const nameOf = new Map(members.map((member) => [member.userId, nameOfMember(member)]));
+  const nameOf = new Map(members.map((member) => [member.userId, memberName(member)]));
 
   const joined = members.map<PersonRow>((member) => ({
     key: `m-${member.id}`,
     kind: 'member',
     id: member.id,
-    name: nameOfMember(member),
+    name: memberName(member),
     email: member.email,
     role: member.role,
     areas: member.areas,
