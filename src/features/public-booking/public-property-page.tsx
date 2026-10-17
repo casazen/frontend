@@ -6,6 +6,7 @@ import { isAxiosError } from 'axios';
 import { CalendarX2, MapPin, ScrollText } from 'lucide-react';
 import { useOrgPublicProperty, usePropertyAvailability } from '@/queries/use-public-org';
 import { PublicCinLabel } from '@/features/properties/components/public-cin-label';
+import { ReviewsSection } from '@/features/reviews/components/reviews-section';
 import { PublicBreadcrumb } from '@/features/public-site/components/PublicBreadcrumb';
 import { PropertyGallery } from '@/features/public-site/components/PropertyGallery';
 import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
@@ -86,6 +87,8 @@ export function PublicPropertyPage() {
     description ? { id: 'descrizione', label: t('publicProperty.sections.description') } : null,
     amenities.length > 0 ? { id: 'servizi', label: t('publicProperty.sections.amenities') } : null,
     hasKnowBefore ? { id: 'da-sapere', label: t('publicProperty.sections.know') } : null,
+    // DB-12b: only a property with reviews has this section (and so its stop in the bar): no stars and no «0 recensioni» before the first.
+    property.ratingSummary ? { id: 'recensioni', label: t('publicProperty.sections.reviews') } : null,
   ].filter((section): section is PropertySection => section !== null);
 
   return (
@@ -143,6 +146,10 @@ export function PublicPropertyPage() {
                 ) : null}
               </div>
             </section>
+          ) : null}
+
+          {property.ratingSummary ? (
+            <ReviewsSection orgSlug={orgSlug ?? org.slug} propertyId={property.id} summary={property.ratingSummary} />
           ) : null}
         </div>
 

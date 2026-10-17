@@ -42,6 +42,7 @@ import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
+import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
@@ -242,6 +243,8 @@ export const appRoutes: RouteObject[] = [
       { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
       // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
+      // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
+      { path: 'booking/:bookingId/review', element: <ReviewLinkPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)

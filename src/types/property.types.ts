@@ -1,3 +1,5 @@
+import type { RatingSummary } from './review.types';
+
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
 export type RentalMode = 'Short' | 'Long';
 
@@ -207,6 +209,8 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   currency: string;
   /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
+  /** Count and average of the public reviews (DB-12a). Absent while the property has none: no stars, no «0 recensioni». */
+  ratingSummary?: RatingSummary;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
