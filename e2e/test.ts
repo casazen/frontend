@@ -141,6 +141,15 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     });
   });
 
+  // The history of a booking (SR-05c) is asked by the drawer and by the tab Cronologia of the booking page: none, unless a spec answers otherwise.
+  await page.route('**/api/bookings/*/timeline', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ bookingId: '', events: [] }) });
+  });
+
   await page.route('**/api/payments**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
