@@ -173,6 +173,34 @@
   font-weight: 600;
 }
 
+/*
+ * The neutral button of the site (the two cookie choices, "Le mie prenotazioni" in the header): it has the same weight
+ * whichever it is placed on, and a line that shows on every theme. The app's border color is a hairline that the
+ * `border-*` utilities do not reach (the rule `* { border-color }` of globals.css is outside every layer), so the line
+ * is set here. Text and line are the text color of the theme, so the AA pair of the theme holds.
+ */
+.public-site-outline {
+  background: var(--cz-public-surface);
+  color: var(--cz-public-text);
+  border: 1px solid color-mix(in srgb, var(--cz-public-text) 55%, transparent);
+  border-radius: var(--cz-public-radius);
+  font-weight: 600;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.public-site-outline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--cz-public-text) 6%, var(--cz-public-surface));
+  border-color: var(--cz-public-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site-outline {
+    transition: none;
+  }
+}
+
 .public-site-card {
   background: var(--cz-public-surface);
   border: 1px solid var(--cz-public-border);

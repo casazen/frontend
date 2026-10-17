@@ -906,6 +906,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-profile-page')).SupplierProfilePage }),
   },
   {
+    // The payments account on Stripe (SP-16c-b), in "Altro". Its address is the one the server sends the supplier back to from Stripe
+    // (`?stripe_return=1`, `?stripe_refresh=1`: `PublicSiteLinks`, SP-14), so it is never renamed. It holds the payments alone until the
+    // settings page (SP-16c) takes it as one of its tabs. No `featureFlag`: while online payments are off on the server the page
+    // says so (the account endpoints answer 404) and offers nothing.
+    path: '/app/supplier/settings',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierPayments',
+    navPlacement: 'secondary',
+    navOrder: 31,
+    icon: 'Wallet',
+    component: async () => ({ default: (await import('@/features/supplier/payments/supplier-payments-page')).SupplierPaymentsPage }),
+  },
+  {
     path: '/app/supplier/inbox',
     context: 'supplier',
     requiredPermissions: [],
@@ -994,7 +1008,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     navKey: 'nav.supplierHelpIcal',
     navPlacement: 'secondary',
-    navOrder: 31,
+    navOrder: 32,
     icon: 'HelpCircle',
     component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
   },
