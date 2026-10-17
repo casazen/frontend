@@ -7,6 +7,7 @@ import type {
   SupplierAgendaCalendar,
   SupplierAgendaHoursDay,
   SupplierChecklist,
+  SupplierConflictsResponse,
   SupplierDashboard,
   SupplierHoursResponse,
   SupplierInboxCounts,
@@ -126,6 +127,11 @@ export async function saveSupplierHours(days: SupplierAgendaHoursDay[]): Promise
 /** Agenda for a date range: hours, closed days, calendar engagements and requests (SP-03/SP-05). */
 export async function fetchSupplierAgendaCalendar(from: string, to: string): Promise<SupplierAgendaCalendar> {
   return ApiClient.get<SupplierAgendaCalendar>('/supplier/calendar', { from, to });
+}
+
+/** The jobs of the next 30 days with something wrong, each with how and a time to propose instead (SP-03b). */
+export async function fetchSupplierConflicts(): Promise<SupplierConflictsResponse> {
+  return ApiClient.get<SupplierConflictsResponse>('/supplier/calendar/conflicts');
 }
 
 export async function inviteSupplier(payload: {
@@ -293,6 +299,11 @@ export async function fetchCalendarSyncStatus(): Promise<CalendarSyncStatus> {
 /** Saves the iCal URL and queues its first sync: 202 with `lastSyncStatus: 'Syncing'` (SU-15). */
 export async function setIcalFeed(icalFeedUrl: string): Promise<CalendarSyncStatus> {
   return ApiClient.put<CalendarSyncStatus>('/supplier/calendar/ical', { icalFeedUrl });
+}
+
+/** Unlinks the iCal calendar (SP-03b): 204, also when none was linked. Blocks and days closed by hand stay. */
+export async function disconnectIcalFeed(): Promise<void> {
+  await ApiClient.delete('/supplier/calendar/ical');
 }
 
 /** "Sync now": 202 with `lastSyncStatus: 'Syncing'` (nothing more is queued if a sync is already queued). */

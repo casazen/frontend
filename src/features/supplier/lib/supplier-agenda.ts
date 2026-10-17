@@ -5,6 +5,7 @@ import type {
   SupplierAgendaHoursDay,
   SupplierAgendaRequest,
   SupplierAgendaTimeOff,
+  SupplierConflictSeverity,
   SupplierHoursBand,
 } from '@/types/supplier';
 
@@ -64,6 +65,14 @@ export interface DayEvent {
   /** A request: where to open it and how it stands (the status of the API). */
   requestId?: string;
   status?: string;
+  /** A request: the service of the catalog it is for (none: the category is its name), who asks and where (SP-03b). */
+  serviceName?: string | null;
+  clientLabel?: string | null;
+  comune?: string | null;
+  /** A request booked from the public page of the supplier. */
+  fromShowcase?: boolean;
+  /** A request with something wrong in its time (the conflicts of the next 30 days): how serious the worst is. */
+  conflict?: SupplierConflictSeverity;
   /** Time off: why (`Vacation`, `Holiday`, `Illness`, `Other`). */
   reason?: string;
 }
@@ -155,6 +164,8 @@ export function buildWorkingDays(input: {
   timeOff: SupplierAgendaTimeOff[];
   blocks: SupplierAgendaBlock[];
   requests: SupplierAgendaRequest[];
+  /** How serious the worst conflict of a request is, by request id (the next 30 days). */
+  conflicts?: ReadonlyMap<string, SupplierConflictSeverity>;
   /** Fallback when the calendar API is not loaded yet: the day grid from GET /availability. */
   availability?: Record<string, boolean>;
 }): WorkingDayView[] {
@@ -193,26 +204,28 @@ export function buildWorkingDays(input: {
   }
 
   for (const request of input.requests) {
+    // What the supplier reads of a job besides its hours: the service, who asks and where, and whether its time is in trouble.
+    const about = {
+      kind: 'request' as const,
+      label: request.category,
+      requestId: request.id,
+      status: request.status,
+      serviceName: request.serviceName,
+      clientLabel: request.clientLabel,
+      comune: request.comune,
+      fromShowcase: request.source === 'showcase',
+      conflict: input.conflicts?.get(request.id),
+    };
     if (request.startUtc && request.endUtc) {
       for (const day of datesTouched(request.startUtc, request.endUtc)) {
         push(day, {
+          ...about,
           id: `req-${request.id}-${day}`,
-          kind: 'request',
-          label: request.category,
           timeRange: timeRangeOnDay(day, request.startUtc, request.endUtc),
-          requestId: request.id,
-          status: request.status,
         });
       }
     } else {
-      push(request.date, {
-        id: `req-${request.id}`,
-        kind: 'request',
-        label: request.category,
-        timeRange: null,
-        requestId: request.id,
-        status: request.status,
-      });
+      push(request.date, { ...about, id: `req-${request.id}`, timeRange: null });
     }
   }
 
