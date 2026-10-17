@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BedDouble, Home, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { AlignedCard } from '@/components/ui/card';
 import { useFeaturedProperties } from '@/queries/use-public-seo';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -21,9 +21,12 @@ function PropertyCard({ property }: { property: FeaturedProperty }) {
   const { t, i18n } = useTranslation();
   const bookingPath = buildPropertyBookingPath(property.orgSlug, property);
 
+  // The item of the list and its card are subgrids of the list, five rows: the photo, the name, what it has, the price and the button.
+  // A name on three lines pushes down the facts, the price and the button of all the cards of the row, not only of its own. The
+  // card has no padding (the photo runs edge to edge): the parts carry theirs, and the space between them is their top margin.
   return (
-    <li data-testid="featured-property">
-      <Card className="h-full overflow-hidden">
+    <li data-testid="featured-property" className="row-span-5 grid grid-rows-subgrid gap-y-0">
+      <AlignedCard rows={5} className="overflow-hidden p-0">
         {property.photoUrl ? (
           <img
             src={property.photoUrl}
@@ -37,26 +40,26 @@ function PropertyCard({ property }: { property: FeaturedProperty }) {
             <Home className="h-8 w-8" />
           </div>
         )}
-        <CardContent className="space-y-2 p-4">
-          <h3 className="font-semibold">{property.name}</h3>
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <BedDouble className="h-4 w-4" aria-hidden />
-              {property.bedrooms === 0 ? t('publicSeo.featured.studio') : t('publicSeo.featured.bedrooms', { count: property.bedrooms })}
-            </span>
-            <span className="flex items-center gap-1">
-              <Users className="h-4 w-4" aria-hidden />
-              {t('publicSeo.featured.guests', { count: property.maxGuests })}
-            </span>
-          </p>
-          <p className="text-sm">{t('publicSeo.featured.fromPerNight', { price: formatPrice(property.nightlyRate, i18n.language) })}</p>
+        <h3 className="px-4 pt-4 font-semibold">{property.name}</h3>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <BedDouble className="h-4 w-4" aria-hidden />
+            {property.bedrooms === 0 ? t('publicSeo.featured.studio') : t('publicSeo.featured.bedrooms', { count: property.bedrooms })}
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="h-4 w-4" aria-hidden />
+            {t('publicSeo.featured.guests', { count: property.maxGuests })}
+          </span>
+        </p>
+        <p className="mt-2 px-4 text-sm">{t('publicSeo.featured.fromPerNight', { price: formatPrice(property.nightlyRate, i18n.language) })}</p>
+        <div className="mt-2 px-4 pb-4">
           <Button asChild size="sm" className="w-full">
             <Link to={bookingPath} data-testid="featured-property-link">
               {t('publicSeo.featured.viewAndBook')}
             </Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </AlignedCard>
     </li>
   );
 }

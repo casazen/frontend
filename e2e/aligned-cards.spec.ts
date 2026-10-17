@@ -244,6 +244,67 @@ test.describe('Aligned cards', () => {
     });
   });
 
+  test.describe('Featured properties of a guide (public SEO pages)', () => {
+    test('the facts, the price and the button of the cards of a row line up whatever the length of the names', async ({ page }) => {
+      await page.route('**/api/public/content/affitti-brevi/**', async (route) => {
+        const guide = {
+          id: 'seo-1',
+          pageType: 'ComplianceGuide',
+          title: 'Affitti brevi a Como',
+          metaDescription: 'Guida',
+          bodyHtml: '<p>Le regole degli affitti brevi a Como.</p>',
+          comuneName: 'Como',
+          comuneCode: '013075',
+          regionCode: '03',
+          regionSlug: 'lombardia',
+          comuneSlug: 'como',
+          canonicalUrl: null,
+          lastRefreshedAt: null,
+          aiGenerated: false,
+          contentLanguage: 'it',
+          cta: null,
+          touristTaxRates: [],
+        };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(guide) });
+      });
+      await page.route('**/api/public/seo/*/featured-properties', async (route) => {
+        const property = (n: number, name: string, bedrooms: number) => ({
+          id: `00000000-0000-4000-8000-00000000010${n}`,
+          slug: `p-${n}`,
+          orgSlug: 'demo-casazen',
+          name,
+          city: 'Como',
+          bedrooms,
+          bathrooms: 1,
+          maxGuests: 4,
+          nightlyRate: 120 + n * 10,
+          photoUrl: null,
+        });
+        const properties = [
+          property(1, 'Attico panoramico con terrazza privata sul lago di Como e sulle montagne', 2),
+          property(2, 'Loft Duomo', 0),
+          property(3, 'Casa vacanze con giardino', 3),
+        ];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ comuneSlug: 'como', comuneName: 'Como', properties }) });
+      });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto('/p/affitti-brevi/lombardia/como');
+
+      const cards = page.getByTestId('featured-property');
+      await expect(cards).toHaveCount(3);
+      const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
+      // The first name is on three lines, the others on one: the facts, the price and the button of those used to sit higher.
+      expect(await linesOf(each('h3')[0])).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(each('h3')[1])).toBe(1);
+
+      await expectAligned(each('h3'), 'name');
+      await expectAligned(each('h3 + p'), 'facts');
+      await expectAligned(each('h3 + p + p'), 'price');
+      await expectAligned(each('[data-testid=featured-property-link]'), 'button');
+      await expectAligned([0, 1, 2].map((index) => cards.nth(index)), 'card', 'bottom');
+    });
+  });
+
   test.describe('Numbers (StatStrip)', () => {
     test('the numbers of a strip start at the same height whatever the length of their names', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
