@@ -3423,8 +3423,17 @@
       "eventsCount_other": "{{count}} impegni",
       "fromShowcase": "dalla tua vetrina",
       "hours": {
+        "addBand": "Aggiungi una fascia",
+        "bandEnd": "{{day}}, fascia {{n}}: fine",
+        "bandStart": "{{day}}, fascia {{n}}: inizio",
         "edit": "Modifica gli orari",
         "empty": "Non hai ancora scelto gli orari in cui lavori.",
+        "maxBands": "Al massimo {{max}} fasce al giorno",
+        "problem": {
+          "order": "{{day}}: in ogni fascia l'inizio deve venire prima della fine.",
+          "overlap": "{{day}}: due fasce non possono sovrapporsi."
+        },
+        "removeBand": "Togli la fascia {{n}} di {{day}}",
         "title": "I tuoi orari"
       },
       "legend": {
@@ -3467,12 +3476,12 @@
     "eventFromCalendar": "dal calendario",
     "eventRequest": "incarico",
     "eventTimeOff": "ferie",
-    "hoursDescription": "Fasce in ora di Roma. Senza orari non risultano slot di servizio.",
+    "hoursDescription": "Fino a 3 fasce al giorno, in ora di Roma: per una pausa pranzo ne servono due. Senza orari non risultano slot di servizio.",
     "hoursEnd": "Fine",
     "hoursInvalid": "Controlla gli orari: l'inizio deve precedere la fine.",
     "hoursLoadError": "Impossibile caricare gli orari di lavoro.",
     "hoursLoading": "Caricamento orari...",
-    "hoursNotSetHint": "Impostali dal profilo: le giornate lavorative useranno quelle fasce e gli eventi del calendario.",
+    "hoursNotSetHint": "Scegli i giorni e le fasce in cui lavori: le giornate lavorative useranno quelle fasce e gli eventi del calendario.",
     "hoursNotSetTitle": "Orari di lavoro non impostati",
     "hoursRestDay": "Riposo",
     "hoursSave": "Salva orari",
