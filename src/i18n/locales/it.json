@@ -1435,6 +1435,12 @@
         "cta": "Vedi nel calendario",
         "since": "Dalla notte del {{date}}",
         "title": "Notti occupate due volte: {{label}}"
+      },
+      "RespondToGuest": {
+        "title": "Rispondi a {{label}}",
+        "cta": "Rispondi",
+        "waiting": "In attesa di risposta dal {{when}}",
+        "guestFallback": "un ospite"
       }
     },
     "today": {
@@ -1914,7 +1920,8 @@
         "details": "Soggiorno",
         "guest": "Documenti",
         "history": "Cronologia",
-        "payment": "Pagamento"
+        "payment": "Pagamento",
+        "messages": "Messaggi"
       },
       "tabsLabel": "Sezioni della prenotazione",
       "created": "Creata il",
@@ -2200,6 +2207,29 @@
       },
       "source": "Origine: {{source}}",
       "title": "Cronologia"
+    },
+    "messages": {
+      "title": "Messaggi",
+      "logLabel": "Messaggi con {{name}}",
+      "empty": "Nessun messaggio. Se scrivi tu per primo, {{name}} riceve un'e-mail (senza il testo) e legge il messaggio nell'area della sua prenotazione.",
+      "you": "Tu",
+      "guestFallback": "L'ospite",
+      "composerLabel": "Scrivi a {{name}}",
+      "placeholder": "Scrivi un messaggio…",
+      "warning": "{{name}} riceve un'e-mail che lo avvisa, senza il testo: lo legge nell'area della sua prenotazione. Non scrivere qui dati di pagamento.",
+      "closedTitle": "Questa conversazione è chiusa.",
+      "closedDescription": "Sono passati sette giorni dal check-out: puoi rileggere i messaggi, ma non scriverne di nuovi.",
+      "unavailable": "Questa prenotazione non ha messaggi: la conversazione esiste solo per le prenotazioni fatte dal sito e non annullate.",
+      "readOnly": "Non hai il permesso di rispondere agli ospiti.",
+      "loading": "Caricamento dei messaggi…",
+      "loadError": "Impossibile caricare i messaggi. Riprova tra qualche istante.",
+      "retry": "Riprova",
+      "offline": "Sei offline: potrai inviare il messaggio quando torni online. Quello che hai scritto resta qui.",
+      "rateLimited_one": "Troppi messaggi: riprova tra {{count}} minuto.",
+      "rateLimited_other": "Troppi messaggi: riprova tra {{count}} minuti.",
+      "sendError": "Messaggio non inviato. Controlla la connessione e riprova.",
+      "unread_one": "{{count}} messaggio da leggere",
+      "unread_other": "{{count}} messaggi da leggere"
     }
   },
   "ota": {
@@ -7099,6 +7129,28 @@
       "hostContactNoName": "Per qualsiasi domanda contatta l'host:",
       "hostContactDirectly": "Per qualsiasi domanda contatta direttamente l'host della struttura."
     },
+    "guestMessages": {
+      "title": "Messaggi",
+      "intro": "Scrivi all'host per qualsiasi cosa riguardi il soggiorno. Ti avvisiamo per e-mail quando risponde.",
+      "logLabel": "Messaggi con l'host",
+      "empty": "Scrivi qui se ti serve qualcosa per il soggiorno.",
+      "loading": "Caricamento dei messaggi…",
+      "loadError": "Impossibile caricare i messaggi. Riprova tra qualche istante.",
+      "retry": "Riprova",
+      "you": "Tu",
+      "hostFallback": "L'host",
+      "composerLabel": "Scrivi un messaggio all'host",
+      "placeholder": "Scrivi un messaggio…",
+      "warning": "Non scrivere qui numeri di carta, IBAN o documenti.",
+      "closedTitle": "Questa conversazione è chiusa.",
+      "closedDescription": "Puoi rileggere i messaggi, ma non scriverne di nuovi.",
+      "writeToHost": "Scrivi a {{host}}",
+      "offline": "Sei offline: potrai inviare il messaggio quando torni online. Quello che hai scritto resta qui.",
+      "rateLimited_one": "Troppi messaggi: riprova tra {{count}} minuto.",
+      "rateLimited_other": "Troppi messaggi: riprova tra {{count}} minuti.",
+      "sendError": "Messaggio non inviato. Controlla la connessione e riprova.",
+      "redacted": "Abbiamo nascosto un numero di carta o un IBAN dal tuo messaggio: non inviarli qui."
+    },
     "availability": {
       "title": "Disponibilità",
       "previousMonth": "Mese precedente",
@@ -8858,7 +8910,10 @@
       "orgOwnerNotAssignable": "Il ruolo di titolare non si assegna: il titolare è uno solo.",
       "orgOwnerRequired": "Solo il titolare può nominare o modificare un amministratore.",
       "orgSeatLimitReached": "Hai usato tutti i posti del piano: disattiva chi non lavora più con te o passa a un piano con più posti.",
-      "staleDocuments": "I documenti legali sono stati aggiornati: ricarica la pagina e accettali di nuovo."
+      "staleDocuments": "I documenti legali sono stati aggiornati: ricarica la pagina e accettali di nuovo.",
+      "threadClosed": "Questa conversazione è chiusa: non si possono più scrivere messaggi.",
+      "guestMessageTextInvalid": "Scrivi un messaggio: non può essere vuoto né più lungo di 2000 caratteri.",
+      "idempotencyKeyInvalid": "Il messaggio non è stato inviato correttamente. Riprova."
     }
   },
   "appShell": {
@@ -9757,6 +9812,14 @@
       "saveItem": "Salva questa vista…",
       "saveTitle": "Salva questa vista"
     }
+  },
+  "messageThread": {
+    "send": "Invia",
+    "sending": "Invio…",
+    "failed": "Non inviato",
+    "retry": "Riprova",
+    "enterHint": "Invio per inviare, Maiusc+Invio per andare a capo.",
+    "counter": "{{count}}/{{max}}"
   },
   "qty": {
     "decrease": "Diminuisci {{label}}",

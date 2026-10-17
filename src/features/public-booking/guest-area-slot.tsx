@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import type { GuestBookingDetails, GuestSession } from '@/types';
+import { GuestMessagesSection } from './guest-messages-section';
 
 /** What a section of the guest area works with: the session (its token goes in `guestSessionHeaders`) and the booking it reads. */
 interface GuestAreaContext {
@@ -14,11 +15,13 @@ interface GuestAreaSection {
 }
 
 /**
- * The sections of the guest area that come after the booking on "Le mie prenotazioni" (DB-06c). It is empty today. The messages with
- * the host (DB-14b) hook in here: one entry, `{ id: 'messages', render: ({ session, booking }) => … }`, shown only when the backend
- * answers the booking with the block of that feature. Reviews and the other features of the area follow the same way.
+ * The sections of the guest area that come after the booking on "Le mie prenotazioni" (DB-06c). The messages with the host (DB-14b)
+ * are the first: they show only for a confirmed booking that has a thread. Reviews and the other features of the area follow the
+ * same way, one entry each.
  */
-const guestAreaSections: readonly GuestAreaSection[] = [];
+const guestAreaSections: readonly GuestAreaSection[] = [
+  { id: 'messages', render: ({ session, booking }) => <GuestMessagesSection session={session} booking={booking} /> },
+];
 
 /** Renders the sections of the guest area under the booking; with none registered it renders nothing. */
 export function GuestAreaSlot({ session, booking }: GuestAreaContext) {

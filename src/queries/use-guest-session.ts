@@ -5,7 +5,7 @@ import { guestSessionApi } from '@/api/guest-session.api';
 import { clearGuestSession, readGuestSession, writeGuestSession } from '@/lib/guest-session';
 import type { GuestBookingLookupPayload, GuestSession } from '@/types';
 
-const GUEST_BOOKING_QUERY = 'guest-booking';
+export const GUEST_BOOKING_QUERY = 'guest-booking';
 
 /** True for the 401 of the guest area: the token is missing, altered or expired, and the guest has to prove the booking again. */
 export function isGuestSessionRefused(error: unknown): boolean {

@@ -3,8 +3,9 @@ import type { PermissionPredicate } from '@/config/route-manifest';
 import { translateErrorCode } from '@/lib/api-errors';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
-import { addDays, formatStayDate, romeDateOf, romeWallClock, todayInRome } from '@/lib/stay-dates';
+import { addDays, formatRomeDateTime, formatStayDate, romeDateOf, romeWallClock, todayInRome } from '@/lib/stay-dates';
 import { COMPLIANCE_COCKPIT_ACTIONS, type ComplianceCockpitAction } from '@/types/compliance.types';
+import type { HostThreadSummary } from '@/types/guest-message.types';
 import type {
   DashboardIcalFeed,
   DashboardToday,
@@ -241,10 +242,38 @@ export interface TodoOptions {
   propertyId: string;
   canWrite: boolean;
   hasPermission: PermissionPredicate;
+  /** The open threads that wait for the host's answer (`GET api/messages?needsReply=true`, SR-12); none when the host cannot read them. */
+  threads?: readonly HostThreadSummary[];
 }
 
 /**
- * The rows of "Da fare": what the server says, in its order (most pressing first), then the calendars that do not update.
+ * «Rispondi a {ospite}»: a guest wrote and the host has not answered (SR-12). The title and the button go to the booking on its tab
+ * Messaggi; the line under the title is the property and the start of what the guest wrote, which only the host reads.
+ */
+function messageRow(thread: HostThreadSummary, { t, locale }: Context): HomeRow {
+  const to = `${bookingPath(thread.bookingId)}?tab=messages`;
+  const preview = thread.lastGuestMessagePreview?.trim();
+  const guest = thread.guestName.trim() || t('dashboard.todo.RespondToGuest.guestFallback');
+  return {
+    id: `message-${thread.bookingId}`,
+    title: t('dashboard.todo.RespondToGuest.title', { label: guest }),
+    subject: guest,
+    sub: [thread.propertyName, preview ? `«${preview}»` : null].filter(Boolean).join(' · '),
+    note: {
+      text: t('dashboard.todo.RespondToGuest.waiting', {
+        when: formatRomeDateTime(thread.lastMessageAt, locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+      }),
+      tone: 'warning',
+    },
+    to,
+    bookingId: thread.bookingId,
+    action: { kind: 'link', label: t('dashboard.todo.RespondToGuest.cta'), to },
+  };
+}
+
+/**
+ * The rows of "Da fare": what the server says, in its order (most pressing first), then the guests who wrote and wait for an answer
+ * (SR-12), then the calendars that do not update.
  * An action this version of the app does not know has no text to show: it is left out, never shown as a bare key.
  */
 export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIcalFeed[], options: TodoOptions, context: Context, now?: Date): HomeRow[] {
@@ -282,6 +311,8 @@ export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIc
       };
     });
 
+  const messages = (options.threads ?? []).filter((thread) => inScope(thread.propertyId)).map((thread) => messageRow(thread, context));
+
   const failing = feeds
     .filter((feed) => feed.lastImportStatus === 'Failure' || feed.lastImportStatus === 'PartialFailure')
     .filter((feed) => inScope(feed.propertyId))
@@ -297,5 +328,5 @@ export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIc
       }),
     );
 
-  return [...items, ...failing];
+  return [...items, ...messages, ...failing];
 }

@@ -12,6 +12,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
+import { useHostThreads } from '@/queries/use-booking-messages';
 import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '@/queries/use-dashboard';
 import { useProperties } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
@@ -58,6 +59,9 @@ export function DashboardPage() {
   const overview = useDashboardOverview(overviewQueryFor(period, propertyId));
   const feeds = useDashboardIcalFeeds(hasPermission('short-rent', 'property.read'));
   const feedList = useMemo(() => (Array.isArray(feeds.data) ? feeds.data : []), [feeds.data]);
+  // The guests who wrote and wait for an answer (SR-12): a row of "Da fare" each. Without the permission to read bookings, no request.
+  const threads = useHostThreads({ needsReply: true, pageSize: 20 }, hasPermission('short-rent', 'booking.read'));
+  const threadList = useMemo(() => threads.data?.items ?? [], [threads.data]);
 
   const setQuery = useCallback(
     (changes: Record<string, string | null>) => {
@@ -81,8 +85,8 @@ export function DashboardPage() {
     [today.data, propertyId, canWrite, t, locale],
   );
   const todoRows = useMemo(
-    () => (today.data ? buildTodoRows(today.data, feedList, { propertyId, canWrite, hasPermission }, { t, locale }) : []),
-    [today.data, feedList, propertyId, canWrite, hasPermission, t, locale],
+    () => (today.data ? buildTodoRows(today.data, feedList, { propertyId, canWrite, hasPermission, threads: threadList }, { t, locale }) : []),
+    [today.data, feedList, threadList, propertyId, canWrite, hasPermission, t, locale],
   );
 
   const firstName = user?.firstName?.trim();
