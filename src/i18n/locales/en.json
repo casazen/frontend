@@ -6134,6 +6134,124 @@
       }
     }
   },
+  "publicProperty": {
+    "amenities": {
+      "AirConditioning": "Air conditioning",
+      "BBQGrill": "BBQ grill",
+      "Balcony": "Balcony",
+      "BeachAccess": "Beach access",
+      "BikeStorage": "Bike storage",
+      "CableTV": "Cable TV",
+      "CarbonMonoxideDetector": "Carbon monoxide alarm",
+      "CoffeeMaker": "Coffee maker",
+      "Crib": "Crib",
+      "DiningTable": "Dining table",
+      "Dishwasher": "Dishwasher",
+      "Dryer": "Dryer",
+      "EVCharger": "EV charger",
+      "Elevator": "Elevator",
+      "FireExtinguisher": "Fire extinguisher",
+      "Fireplace": "Fireplace",
+      "FirstAidKit": "First aid kit",
+      "FreeParking": "Free parking",
+      "Garage": "Garage",
+      "Garden": "Garden",
+      "Gym": "Gym",
+      "Heating": "Heating",
+      "HighChair": "High chair",
+      "HotTub": "Hot tub",
+      "IronAndBoard": "Iron and ironing board",
+      "Kitchen": "Kitchen",
+      "LongTermStaysAllowed": "Long stays allowed",
+      "LuggageDropOffAllowed": "Luggage drop-off allowed",
+      "Microwave": "Microwave",
+      "Oven": "Oven",
+      "PaidParking": "Paid parking",
+      "Patio": "Patio",
+      "PetFriendly": "Pets allowed",
+      "Pool": "Pool",
+      "PrivateEntrance": "Private entrance",
+      "Refrigerator": "Refrigerator",
+      "Safe": "Safe",
+      "Sauna": "Sauna",
+      "SecurityCameras": "Security cameras",
+      "SelfCheckIn": "Self check-in",
+      "SmokeDetector": "Smoke alarm",
+      "SmokingAllowed": "Smoking allowed",
+      "StepFreeAccess": "Step-free access",
+      "Stove": "Stove",
+      "TV": "TV",
+      "Terrace": "Terrace",
+      "Washer": "Washing machine",
+      "WheelchairAccessible": "Wheelchair accessible",
+      "WiFi": "Wi-Fi",
+      "Workspace": "Dedicated workspace"
+    },
+    "amenitiesAll": "Show all {{total}} amenities",
+    "amenitiesLess": "Show less",
+    "amenityGroups": {
+      "accessibility": "Accessibility",
+      "climate": "Heating and cooling",
+      "connectivity": "Internet and entertainment",
+      "family": "Family and lifestyle",
+      "kitchen": "Kitchen and dining",
+      "laundry": "Laundry",
+      "other": "Other",
+      "outdoor": "Outdoors",
+      "parking": "Parking and getting around",
+      "safety": "Safety",
+      "wellness": "Wellness"
+    },
+    "description": {
+      "less": "Show less",
+      "more": "Read more",
+      "title": "Description"
+    },
+    "facts": {
+      "bathrooms_one": "bathroom",
+      "bathrooms_other": "bathrooms",
+      "bedrooms_one": "bedroom",
+      "bedrooms_other": "bedrooms",
+      "guests_one": "guest",
+      "guests_other": "guests",
+      "label": "The home at a glance",
+      "minNights_one": "night minimum",
+      "minNights_other": "nights minimum"
+    },
+    "gallery": {
+      "empty": "The photos of this home are not available yet.",
+      "showAll": "Show all {{total}} photos"
+    },
+    "know": {
+      "title": "Good to know"
+    },
+    "loadError": {
+      "text": "The link is fine: loading did not work. Please try again in a moment.",
+      "title": "We could not load this home"
+    },
+    "loading": "Loading the home...",
+    "notFound": {
+      "action": "See the other homes",
+      "contact": "Write to the host",
+      "text": "The link may be old or incomplete, or the home can no longer be booked online. Have a look at the other homes on this site.",
+      "title": "This home is not available"
+    },
+    "sectionBar": {
+      "label": "Sections of this page"
+    },
+    "sections": {
+      "amenities": "Amenities",
+      "description": "Description",
+      "know": "Good to know"
+    },
+    "viewer": {
+      "hint": "Use the arrow keys to move between photos and Esc to close.",
+      "next": "Next photo",
+      "position": "Photo {{index}} of {{total}}",
+      "previous": "Previous photo",
+      "title": "Photos of {{name}}"
+    }
+  },
   "publicSite": {
     "skipToContent": "Skip to content",
     "navProperties": "Properties",
