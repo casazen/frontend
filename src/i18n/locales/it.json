@@ -7874,6 +7874,7 @@
     "codes": {
       "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
+      "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
       "noOrgContext": "Il tuo account non è associato ad alcuna organizzazione.",
@@ -8248,6 +8249,149 @@
       "title": "Cosa significano gli stati dell'abbonamento"
     },
     "title": "Fatturazione e piano"
+  },
+  "accountProperties": {
+    "add": {
+      "button": "Aggiungi un immobile",
+      "dialogDescription": "Si apre la creazione nella sezione scelta: ogni sezione ha il suo modulo.",
+      "dialogTitle": "Come lo affitterai?",
+      "long": {
+        "text": "Contratti, canoni e scadenze. Servono l'APE e i dati catastali.",
+        "title": "Affitto lungo"
+      },
+      "short": {
+        "text": "Prenotazioni, calendario e prezzi per notte. Serve il CIN.",
+        "title": "Affitto breve"
+      }
+    },
+    "blocked": {
+      "bookings": {
+        "action": "Vedi le prenotazioni",
+        "text": "Ha prenotazioni in corso o future: spostale o annullale prima."
+      },
+      "close": "Chiudi",
+      "later": "Quando non c'è più nulla in corso potrai eliminarlo.",
+      "leases": {
+        "action": "Apri il contratto",
+        "actionProperty": "Apri l'immobile",
+        "text": "C'è un contratto attivo o in corso: va concluso prima, in Affitti lunghi."
+      },
+      "title": "Non puoi ancora eliminare {{name}}"
+    },
+    "delete": {
+      "confirm": "Elimina l'immobile",
+      "consequenceKept": "Documenti e dati fiscali restano archiviati per obbligo di conservazione.",
+      "consequenceSlot": "Libera un posto nel piano.",
+      "description": "Non compare più negli elenchi, nel calendario e sul sito. Non si può ripristinare da qui.",
+      "title": "Eliminare {{name}}?",
+      "word": "ELIMINA"
+    },
+    "description": "Tutti gli immobili di {{org}}, in affitto breve e lungo.",
+    "descriptionNoOrg": "Tutti gli immobili dell'account, in affitto breve e lungo.",
+    "drawer": {
+      "address": "Indirizzo",
+      "assign": "Assegna il responsabile",
+      "complete": "Completa l'attivazione",
+      "data": "Dati",
+      "loadError": "Non riusciamo a caricare l'immobile.",
+      "loading": "Sto leggendo chi può accedere",
+      "missing": "Manca",
+      "moreActions": "Altre azioni",
+      "notFound": "Immobile non trovato",
+      "notFoundDescription": "Potrebbe essere stato eliminato: torna all'elenco e scegline un altro.",
+      "open": "Apri la scheda",
+      "retry": "Riprova",
+      "who": "Chi può accedere",
+      "whoIncomplete": "Non riusciamo a leggere gli accessi di alcuni collaboratori: l'elenco potrebbe essere incompleto.",
+      "whoUnavailable": "Non riusciamo a leggere le persone dell'account."
+    },
+    "list": {
+      "actions": {
+        "assign": "Assegna il responsabile",
+        "complete": "Completa",
+        "delete": "Elimina l'immobile",
+        "page": "Apri la scheda",
+        "toLong": "Passa ad affitto lungo",
+        "toShort": "Passa ad affitto breve",
+        "who": "Chi può accedere"
+      },
+      "bulk": {
+        "assign": "Assegna il responsabile"
+      },
+      "chips": {
+        "all": "Tutti",
+        "long": "Affitto lungo",
+        "short": "Affitto breve",
+        "todo": "Da completare",
+        "todoHint": "Non possono ancora ricevere prenotazioni"
+      },
+      "columns": {
+        "mode": "Modalità",
+        "people": "Accesso",
+        "property": "Immobile",
+        "responsible": "Responsabile",
+        "state": "Stato"
+      },
+      "count_one": "{{count}} immobile",
+      "count_other": "{{count}} immobili",
+      "emptyDescription": "Aggiungi il primo immobile: poi scegli se affittarlo per brevi periodi o con un contratto lungo.",
+      "emptyTitle": "Nessun immobile nell'account",
+      "filters": {
+        "allResponsibles": "Tutti i responsabili",
+        "allStates": "Tutti gli stati",
+        "responsible": "Responsabile",
+        "state": "Stato"
+      },
+      "missing": "Manca: {{items}}",
+      "nobody": "Nessuno",
+      "noResults": {
+        "description": "Prova a togliere un filtro o a cercare con il nome o la città.",
+        "title": "Nessun immobile con questi filtri"
+      },
+      "people_one": "{{count}} utente",
+      "people_other": "{{count}} utenti",
+      "search": "Cerca immobili",
+      "searchPlaceholder": "Cerca per nome, città o responsabile",
+      "title": "Immobili dell'account",
+      "unknown": "Non disponibile",
+      "whoLabel_one": "{{count}} utente può accedere a {{name}}: apri l'elenco",
+      "whoLabel_other": "{{count}} utenti possono accedere a {{name}}: apri l'elenco"
+    },
+    "loadError": "Impossibile caricare gli immobili",
+    "missing": {
+      "cin": "CIN",
+      "photos": "foto",
+      "price": "prezzo"
+    },
+    "mode": {
+      "long": "Affitto lungo",
+      "short": "Affitto breve"
+    },
+    "responsible": {
+      "accessUnavailable": "Non riusciamo a leggere gli accessi di alcuni collaboratori: potrebbero mancare dall'elenco.",
+      "assign": "Assegna",
+      "cancel": "Annulla",
+      "choose": "Scegli una persona",
+      "close": "Chiudi",
+      "description": "Il responsabile è avvisato, insieme agli amministratori, quando succede qualcosa sull'immobile: prenotazioni, interventi e scadenze. Senza responsabile viene avvisato chi l'ha creato.",
+      "done_one": "Responsabile aggiornato per un immobile",
+      "done_other": "Responsabile aggiornato per {{count}} immobili",
+      "failedDescription": "Controlla i motivi qui sotto: gli immobili che non sono elencati sono stati aggiornati.",
+      "failedGeneric": "Non è stato possibile cambiare il responsabile.",
+      "failedTitle_one": "Non è riuscito per un immobile",
+      "failedTitle_other": "Non è riuscito per {{count}} immobili",
+      "hint_one": "Compare solo chi può già accedere a questo immobile.",
+      "hint_other": "Compare solo chi può già accedere a tutti questi immobili.",
+      "label": "Chi è il responsabile?",
+      "loading": "Sto leggendo chi può accedere",
+      "manageAccess": "Non c'è la persona giusta? Gestisci gli accessi",
+      "nobody": "Nessuno",
+      "retry": "Riprova",
+      "titleMany": "Responsabile di {{count}} immobili",
+      "titleOne": "Responsabile di {{name}}"
+    },
+    "retry": "Riprova",
+    "unavailable": "Alcune colonne non si leggono ora (responsabile, accesso o stato degli affitti lunghi): le trovi con un trattino."
   },
   "areas": {
     "account": {
