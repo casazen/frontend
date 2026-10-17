@@ -82,6 +82,8 @@ export interface SupplierInboxParams {
   when?: SupplierInboxWhen;
   from?: string;
   to?: string;
+  /** Only the requests of one customer (a host or a private customer of the showcase): the `id` of `GET /supplier/clients` (SP-16b). */
+  clientId?: string;
   page?: number;
   pageSize?: number;
 }
