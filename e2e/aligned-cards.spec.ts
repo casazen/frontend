@@ -342,6 +342,56 @@ test.describe('Aligned cards', () => {
 
   });
 
+  test.describe('OTA channels (behind the otaPartnerApi flag)', () => {
+    test('the rows and the button of the cards line up whichever optional rows a channel has', async ({ page }) => {
+      await page.route('**/api/public/features', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ otaPartnerApi: true }) });
+      });
+      await page.route(/\/api\/ota(\?.*)?$/, async (route) => {
+        if (route.request().method() !== 'GET') {
+          await route.fallback();
+          return;
+        }
+        const integration = (platform: string, extra: Record<string, unknown>) => ({
+          id: `ota-${platform}`,
+          platform,
+          propertyId: 'p1',
+          credentials: {},
+          isActive: true,
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+          ...extra,
+        });
+        // One has a sync status, one has a status and an error, one is not connected and has neither.
+        const channels = [
+          integration('AIRBNB', { lastSyncStatus: 'COMPLETED', lastSyncAt: new Date(Date.now() - 12 * 60_000).toISOString() }),
+          integration('BOOKING_COM', {
+            lastSyncStatus: 'FAILED',
+            lastSyncAt: new Date(Date.now() - 300 * 60_000).toISOString(),
+            syncError: 'Il portale ha risposto 401: le credenziali non sono più valide, aggiornale e riprova.',
+          }),
+          integration('EXPEDIA', { isActive: false }),
+        ];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(channels) });
+      });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(demoUrl('/app/short-rent/ota', 'short-stay'));
+
+      const cards = page.locator('div.grid > div.rounded-lg.border').filter({ has: page.getByRole('button') });
+      await expect(cards).toHaveCount(3);
+      const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
+      await expectAligned(each('h3'), 'name');
+      await expectAligned(each('button'), 'button');
+      await expectAligned(each('button'), 'button', 'bottom');
+      // "Ultima sync" is under the sync status in the cards that have one, and at the same height in the one that has not.
+      await expectAligned(
+        [0, 1, 2].map((index) => cards.nth(index).getByText('Ultima sync', { exact: true })),
+        'last sync',
+      );
+      await expectAligned([0, 1, 2].map((index) => cards.nth(index)), 'card', 'bottom');
+    });
+  });
+
   test.describe('Marketplace: the suppliers of a property', () => {
     const PROPERTY_ID = 'prop-marketplace-aligned';
 
