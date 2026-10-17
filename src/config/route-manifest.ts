@@ -629,6 +629,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
   },
   {
+    // "Invita un utente" (AM-04c): the four steps that bring a person in, opened from «Invita» on the page of the people. It is in no menu.
+    path: '/app/account/people/invite',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navParent: '/app/account/people',
+    component: async () => ({ default: (await import('@/features/team/invite/invite-page')).InvitePage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
     // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
