@@ -568,7 +568,8 @@
       "supplierRequests_one": "{{count}} request to accept",
       "supplierRequests_other": "{{count}} requests to accept"
     },
-    "inviteQr": "Invite QR codes"
+    "inviteQr": "Invite QR codes",
+    "reviews": "Reviews"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -6483,7 +6484,8 @@
     "sections": {
       "amenities": "Amenities",
       "description": "Description",
-      "know": "Good to know"
+      "know": "Good to know",
+      "reviews": "Reviews"
     },
     "viewer": {
       "hint": "Use the arrow keys to move between photos and Esc to close.",
@@ -6895,6 +6897,57 @@
       "CategoryRequired": "Select the accommodation category to calculate the tax.",
       "ChildAgesRequired": "Enter the age of every minor to calculate the tax.",
       "NightlyPriceRequired": "Enter the price of one night to calculate the tax."
+    }
+  },
+  "siteReviews": {
+    "count_one": "{{count}} review",
+    "count_other": "{{count}} reviews",
+    "form": {
+      "chosen": "{{value}} of {{max}}",
+      "counter": "{{length}}/{{max}}",
+      "error": "We could not publish the review. Please try again shortly.",
+      "howItWorks": "The review is published at once on the booking site and cannot be edited; the host can reply. These are verified reviews: only from guests who stayed after booking on this site, one per stay (draft text).",
+      "ratingLegend": "How was your stay?",
+      "ratingRequired": "Choose a rating from 1 to 5 stars.",
+      "sending": "Publishing…",
+      "showName": "Show my first name (otherwise \"Guest\" appears)",
+      "starsOf_one": "{{count}} star out of {{max}}",
+      "starsOf_other": "{{count}} stars out of {{max}}",
+      "submit": "Publish the review",
+      "textLabel": "Tell us how it went",
+      "textPlaceholder": "What did you like? What could be better?",
+      "textTooLong": "The text is too long."
+    },
+    "hostReply": "Host's reply",
+    "link": {
+      "alreadyText": "Thank you: your review is already on the site.",
+      "alreadyTitle": "You have already written the review",
+      "backToSite": "Back to {{name}}",
+      "invalid": "The link is not valid or has expired. Ask the host to send you a new one.",
+      "loadError": "We cannot open the review page. Please try again shortly.",
+      "loading": "Opening the review page…",
+      "notAvailable": "This stay can no longer be reviewed.",
+      "pageTitle": "Your review",
+      "thanksText": "The review is published on the booking site.",
+      "thanksTitle": "Thank you: the review is published",
+      "title": "How was your stay?"
+    },
+    "listLabel": "Guest reviews",
+    "loadError": "We cannot load the reviews.",
+    "loadMore": "Load more reviews",
+    "loading": "Loading the reviews…",
+    "loadingMore": "Loading…",
+    "ratingOf": "{{rating}} out of 5",
+    "retry": "Try again",
+    "summaryLabel_one": "{{average}} out of 5, {{count}} verified review",
+    "summaryLabel_other": "{{average}} out of 5, {{count}} verified reviews",
+    "title": "Reviews",
+    "verified": {
+      "all": "Verified reviews",
+      "help": "A review is verified when it was written by a guest who booked on this site, without cancelling, after the stay: one per stay, published at once. The host can reply and report it to CasaZen, but cannot remove it. It does not prove the guest arrived. (Draft text, to be reviewed.)",
+      "helpLabel": "How we verify reviews",
+      "label": "Verified",
+      "title": "How we verify reviews"
     }
   },
   "activation": {
@@ -10128,6 +10181,78 @@
         "description": "This invitation has already been used. If you already have an account, sign in."
       }
     }
+  },
+  "hostReviews": {
+    "actions": {
+      "reply": "Reply",
+      "report": "Report"
+    },
+    "cancel": "Cancel",
+    "description": "The reviews of guests who stayed through your site. You can reply to each one once and report to CasaZen the ones that break the rules; you cannot hide or remove them.",
+    "empty": {
+      "description": "Reviews arrive after the stays booked on your site: once a stay is over, ask the guest from the booking page.",
+      "title": "No reviews yet"
+    },
+    "invite": {
+      "action": "Ask for a review",
+      "blocked": {
+        "no_guest_address": "The guest has no email address: we cannot ask for the review.",
+        "window_closed": "The 14 days to write the review are over."
+      },
+      "confirm": "Send the email",
+      "confirmDescription": "We send the guest one email with the link to write the review of the stay.",
+      "confirmTitle": "Ask the guest for a review?",
+      "description": "Ask the guest to tell how the stay went: we send one email with the link to write the review.",
+      "once": "The email is sent only once per booking and cannot be recalled.",
+      "public": "The review will be public on the booking site, with the guest's first name if they agree.",
+      "reviewed": "The guest left a review.",
+      "seeReviews": "See the reviews",
+      "sent": "Review requested on {{date}}.",
+      "title": "Review"
+    },
+    "listLabel": "Reviews received",
+    "loadError": "We cannot load the reviews.",
+    "loading": "Loading the reviews…",
+    "noText": "The guest did not write a text.",
+    "reply": {
+      "description": "Your reply will appear under {{author}}'s review on the site.",
+      "label": "Your reply",
+      "once": "You can reply only once and cannot edit the reply later.",
+      "sending": "Sending…",
+      "submit": "Send the reply",
+      "title": "Reply to the review"
+    },
+    "report": {
+      "description": "CasaZen reads the review and decides whether to keep or remove it. Until it decides the review stays visible on the site: you cannot hide it. A review can be reported only once.",
+      "noteLabel": "Add a note for CasaZen",
+      "reasonLabel": "Why are you reporting it?",
+      "reasonPlaceholder": "Choose a reason",
+      "reasons": {
+        "NotAGuest": "The author did not stay here",
+        "NotAboutTheStay": "It is not about the stay",
+        "Offensive": "Offensive or threatening",
+        "Other": "Another reason",
+        "PersonalData": "It contains personal data",
+        "Spam": "Advertising or spam"
+      },
+      "sending": "Sending…",
+      "submit": "Report to CasaZen",
+      "title": "Report the review"
+    },
+    "status": {
+      "removed": "Removed by CasaZen",
+      "reported": "Reported: it stays visible until CasaZen decides"
+    },
+    "title": "Reviews",
+    "toast": {
+      "inviteFailed": "We could not ask for the review.",
+      "inviteSent": "Email sent to the guest.",
+      "replied": "Reply published.",
+      "replyFailed": "We could not publish the reply.",
+      "reported": "Report sent to CasaZen.",
+      "reportFailed": "We could not send the report."
+    },
+    "yourReply": "Your reply"
   },
   "site": {
     "meta": {
