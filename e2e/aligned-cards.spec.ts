@@ -3,6 +3,9 @@ import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { pinE2eLocale } from './helpers/locale';
 import { mockBillingSubscription, mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
+import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { mockServiceCategoriesApi } from './helpers/service-categories-mock';
+import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import type { PublicPropertyDto } from '../src/types';
 
 /**
@@ -337,6 +340,60 @@ test.describe('Aligned cards', () => {
       await expectAligned(row(3).map((card) => card.locator('.text-2xl')), 'numbers of the second row');
     });
 
+  });
+
+  test.describe('Marketplace: the suppliers of a property', () => {
+    const PROPERTY_ID = 'prop-marketplace-aligned';
+
+    async function mockMarketplace(page: Page): Promise<void> {
+      await mockPropertiesApi(page, [buildCreatedProperty({ id: PROPERTY_ID, name: 'Casa Marketplace', city: 'H501' })]);
+      await mockCurrentUserWithOrg(page);
+      await mockEntitlement(page);
+      await mockServiceCategoriesApi(page);
+      await page.route('**/api/suppliers**', async (route) => {
+        const url = new URL(route.request().url());
+        if (!url.pathname.startsWith('/api/') || route.request().method() !== 'GET') {
+          await route.fallback();
+          return;
+        }
+        const supplier = (n: number, legalName: string, categories: string[], bio?: string) => ({
+          orgId: `sup-org-${n}`,
+          legalName,
+          phone: '+39 06 111111',
+          email: `info${n}@fornitore.test`,
+          categories,
+          comuni: ['H501'],
+          bio,
+          photoUrls: [],
+        });
+        const items =
+          url.searchParams.get('propertyId') === PROPERTY_ID
+            ? [
+                supplier(1, 'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como S.r.l.', ['cleaning', 'maintenance', 'plumbing', 'laundry'], 'Pulizie professionali, manutenzione ordinaria e straordinaria.'),
+                supplier(2, 'Pulizie Express Srl', ['cleaning']),
+              ]
+            : [];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items, totalCount: items.length, page: 1, pageSize: items.length }) });
+      });
+    }
+
+    test('the badges of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
+      await mockMarketplace(page);
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(demoUrl(`/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`, 'short-stay'));
+
+      const cards = page.getByTestId('marketplace-supplier-grid').locator('> div');
+      await expect(cards).toHaveCount(2);
+      // The first name is on three lines, the second on one; only the first supplier has a bio.
+      expect(await linesOf(cards.nth(0).locator('.font-medium').first())).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(cards.nth(1).locator('.font-medium').first())).toBe(1);
+
+      await expectAligned([0, 1].map((index) => cards.nth(index).locator('.flex-wrap')), 'badges');
+      await expectAligned([0, 1].map((index) => cards.nth(index)), 'card', 'bottom');
+      // The badge of the second one keeps its own size (a flex line that grows with its row would stretch it).
+      const [tall, short] = await Promise.all([cards.nth(0).locator('.flex-wrap > *').first().boundingBox(), cards.nth(1).locator('.flex-wrap > *').first().boundingBox()]);
+      expect(Math.abs(short!.height - tall!.height)).toBeLessThanOrEqual(1);
+    });
   });
 
   test.describe('Menu of the phone (the sheet "Altro")', () => {
