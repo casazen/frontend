@@ -31,6 +31,8 @@ export const SUPPLIER_SITEMAP_PATH = '/sitemap-supplier.xml';
 export const DISALLOWED_PATHS = [
   '/app/',
   '/checkin/',
+  // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
+  '/invite/',
   '/login',
   '/book/*/my-bookings',
   '/book/*/booking/',

@@ -1,16 +1,18 @@
 import { useTranslation } from 'react-i18next';
+import { UserPlus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { Button } from '@/components/ui/button';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { usePeopleList } from './people-list';
 import { usePeopleRows } from './people-rows';
+import { ACCOUNT_INVITE_PATH } from './team-paths';
 
 /**
  * Persone, in the Amministrazione (AM-04b): the people who work with the owner, in the unified list. One row for each member and for
  * each invitation that waits for an answer, with its role, the areas and the state; the name opens the drawer that says what the
- * person can see. Everything is read from the endpoints that are there (`GET /orgs/me/members`, `/invitations`, `/roles`); the
- * page changes nothing: inviting, changing a role or the areas, and switching an access off come with their own tasks.
+ * person can see. Everything is read from the endpoints that are there (`GET /orgs/me/members`, `/invitations`, `/roles`). The one
+ * main action of the page is «Invita» (AM-04c): the wizard that brings a new person in.
  */
 export function PeoplePage() {
   const { t } = useTranslation();
@@ -20,7 +22,12 @@ export function PeoplePage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="people-page">
-      <PageHeader title={t('team.title')} description={t('team.description')} crumbs="auto" />
+      <PageHeader
+        title={t('team.title')}
+        description={t('team.description')}
+        crumbs="auto"
+        primary={{ label: t('team.invite.cta'), icon: UserPlus, to: ACCOUNT_INVITE_PATH, testId: 'people-invite' }}
+      />
 
       {/* The members are there without their invitations: it is said, never guessed (nobody is "not invited" because a list failed). */}
       {invitationsFailed && !isError ? (
