@@ -38,7 +38,7 @@ export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
       data-testid={`marketplace-supplier-${supplier.orgId}`}
       className="min-w-0 cursor-pointer py-4 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+      <div className="flex items-start justify-between gap-x-3">
         <span className="min-w-0 break-words font-medium">{supplier.legalName}</span>
         {supplier.verified ? <VerifiedBadge /> : null}
       </div>

@@ -510,7 +510,10 @@ test.describe('Aligned cards', () => {
     const PROPERTY_ID = 'prop-marketplace-aligned';
 
     async function mockMarketplace(page: Page): Promise<void> {
-      await mockPropertiesApi(page, [buildCreatedProperty({ id: PROPERTY_ID, name: 'Casa Marketplace', city: 'H501' })]);
+      // The suppliers are searched by the comune chosen from the official list (SR-09a): a property without one is asked to add it.
+      await mockPropertiesApi(page, [
+        buildCreatedProperty({ id: PROPERTY_ID, name: 'Casa Marketplace', city: 'H501', comuneIstatCode: '058091' }),
+      ]);
       await mockCurrentUserWithOrg(page);
       await mockEntitlement(page);
       await mockServiceCategoriesApi(page);
