@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
 import { HostInviteForm } from '@/features/invites/host-invite-form';
 import { HostInvitesList } from '@/features/invites/host-invites-list';
 import { AdminSupplierInviteForm } from './admin-supplier-invite-page';
@@ -44,16 +45,17 @@ export function AdminInvitesPage() {
         ))}
       </div>
 
+      {/* The form on the left, the invites on the right (under each other on a narrow screen). */}
       {type === 'supplier' ? (
-        <>
+        <div className={PAGE_COLUMNS_WIDE}>
           <AdminSupplierInviteForm />
           <SupplierInvitesList />
-        </>
+        </div>
       ) : (
-        <>
+        <div className={PAGE_COLUMNS_WIDE}>
           <HostInviteForm scope="admin" />
           <HostInvitesList scope="admin" />
-        </>
+        </div>
       )}
     </div>
   );

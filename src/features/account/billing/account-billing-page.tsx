@@ -2,6 +2,7 @@ import { useRef, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_MAIN_ASIDE } from '@/components/layout/page-columns';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
@@ -80,55 +81,60 @@ function AccountBillingBody() {
           onRefresh={() => void subscriptionQuery.refetch()}
         />
 
-        <PlanFocus
-          subscription={subscription}
-          tier={tier}
-          usage={usage}
-          openAccess={openAccess}
-          pricesPending={pricesPending}
-          onOpenPlans={openPlans}
-          portal={portal}
-        />
+        {/* The plan and how it is paid on the left, the things that open on request on the right (under each other on a narrow screen). */}
+        <div className={PAGE_MAIN_ASIDE}>
+          <div className="min-w-0 space-y-8">
+            <PlanFocus
+              subscription={subscription}
+              tier={tier}
+              usage={usage}
+              openAccess={openAccess}
+              pricesPending={pricesPending}
+              onOpenPlans={openPlans}
+              portal={portal}
+            />
 
-        <PlainSection title={t('accountBilling.payment.title')} data-testid="account-billing-payment">
-          <div className="space-y-3">
-            <p className="break-words text-sm">{t('accountBilling.payment.text')}</p>
-            {subscription.status !== 'none' ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight"
-                onClick={portal.open}
-                loading={portal.pending}
-                data-testid="billing-portal-button"
-              >
-                {t('accountBilling.payment.open')}
-              </Button>
-            ) : (
-              <p className="break-words text-sm text-foreground/70">{t('accountBilling.payment.noSubscription')}</p>
-            )}
+            <PlainSection title={t('accountBilling.payment.title')} data-testid="account-billing-payment">
+              <div className="space-y-3">
+                <p className="break-words text-sm">{t('accountBilling.payment.text')}</p>
+                {subscription.status !== 'none' ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight"
+                    onClick={portal.open}
+                    loading={portal.pending}
+                    data-testid="billing-portal-button"
+                  >
+                    {t('accountBilling.payment.open')}
+                  </Button>
+                ) : (
+                  <p className="break-words text-sm text-foreground/70">{t('accountBilling.payment.noSubscription')}</p>
+                )}
+              </div>
+            </PlainSection>
           </div>
-        </PlainSection>
 
-        <div className="border-b border-border">
-          <PlanCompare
-            detailsRef={compareRef}
-            plansQuery={plansQuery}
-            subscription={subscription}
-            tier={tier}
-            usage={usage}
-            portal={portal}
-            onAlreadySubscribed={() => void subscriptionQuery.refetch()}
-          />
-          <BillingDataSection subscription={subscription} />
-          <SubscriptionStates status={subscription.status} />
+          <div className="min-w-0 border-b border-border">
+            <PlanCompare
+              detailsRef={compareRef}
+              plansQuery={plansQuery}
+              subscription={subscription}
+              tier={tier}
+              usage={usage}
+              portal={portal}
+              onAlreadySubscribed={() => void subscriptionQuery.refetch()}
+            />
+            <BillingDataSection subscription={subscription} />
+            <SubscriptionStates status={subscription.status} />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6" data-testid="account-billing-page">
+    <div className="space-y-6" data-testid="account-billing-page">
       <PageHeader
         title={t('accountBilling.title')}
         description={tier ? t('accountBilling.description', { plan: getPlanTierLabel(tier, t) }) : t('accountBilling.descriptionGeneric')}
@@ -153,7 +159,7 @@ export function AccountBillingPage() {
 
   if (!isOrgBillingAdmin(contexts)) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6" data-testid="account-billing-page">
+      <div className="space-y-6" data-testid="account-billing-page">
         <PageHeader title={t('accountBilling.title')} description={t('accountBilling.descriptionGeneric')} crumbs="auto" />
         <BillingAdminRequired />
       </div>

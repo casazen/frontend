@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ExternalLink, Info, Loader2, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
@@ -105,15 +106,17 @@ export function SiteDocumentsContent() {
             <p className="text-muted-foreground">{t('siteDocuments.responsibility.body')}</p>
           </div>
         </div>
-        {documentsQuery.data.map((state) => (
-          <SiteDocumentCard key={state.kind} state={state} orgSlug={org?.slug ?? null} />
-        ))}
+        <div className={PAGE_COLUMNS}>
+          {documentsQuery.data.map((state) => (
+            <SiteDocumentCard key={state.kind} state={state} orgSlug={org?.slug ?? null} />
+          ))}
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6" data-testid="site-documents-page">
+    <div className="space-y-6" data-testid="site-documents-page">
       <PageHeader title={t('siteDocuments.title')} description={t('siteDocuments.description')} />
       {renderContent()}
     </div>

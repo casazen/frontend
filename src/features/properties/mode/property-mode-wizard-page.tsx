@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WIZARD_DONE_STEP } from '@/components/shared/wizard/wizard-shell';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import type { PageCrumb } from '@/lib/page-crumbs';
 import { addDays, todayInRome } from '@/lib/stay-dates';
 import { usePropertyModePreview, usePropertyModeState } from '@/queries/use-property-mode';
@@ -136,7 +138,7 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
     const failed = !property.data && property.isError ? property : !state.data && state.isError ? state : null;
     if (!failed) return <LoadingScreen message={t('propertyMode.loading')} className="h-auto flex-1" />;
     return (
-      <div className="mx-auto w-full max-w-2xl space-y-6">
+      <div className={cn(FOCUS_COLUMN, 'space-y-6')}>
         <PageHeader title={t('propertyMode.page.title')} />
         <ModeLoadError
           error={failed.error}
@@ -168,7 +170,7 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
   const backTo = exitPathFor(area, id, entry);
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6" data-testid="property-mode-page">
+    <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="property-mode-page">
       <PageHeader title={t('propertyMode.page.title')} description={property.data.name} crumbs={crumbs} />
       {waiting && !doneStep && !scheduledHere ? (
         <ScheduledChangePanel
