@@ -6906,9 +6906,8 @@
     "title": "Cerca"
   },
   "login": {
-    "brand": "CASAZEN",
-    "platformDescription": "Piattaforma gestione affitti brevi",
-    "signInMessage": "Accedi per gestire proprieta, prenotazioni e pagamenti",
+    "redirecting": "Ti stiamo portando all'accesso…",
+    "signInMessage": "Accedi per gestire proprietà, prenotazioni e pagamenti",
     "signInButton": "Accedi con Auth0",
     "signIn": "Accedi"
   },
@@ -8500,7 +8499,6 @@
   },
   "longRentProperties": {
     "retry": "Riprova",
-    "roomsValue": "{{bedrooms}} camere · {{bathrooms}} bagni",
     "list": {
       "actions": {
         "createLease": "Crea contratto",
@@ -8553,17 +8551,35 @@
       "description": "Aggiorna i dati di {{name}}"
     },
     "detail": {
-      "loading": "Caricamento immobile...",
-      "loadError": "Impossibile caricare l'immobile.",
-      "edit": "Modifica",
-      "newLease": "Nuovo contratto",
-      "infoTitle": "Dati dell'immobile",
       "address": "Indirizzo",
-      "rooms": "Camere e bagni",
-      "documentsLoading": "Caricamento documenti...",
-      "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
+      "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
-      "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto."
+      "backToList": "Torna agli immobili",
+      "contractsLoadError": "Non riesco a leggere i contratti di questo immobile.",
+      "contractsTitle": "Contratti collegati",
+      "description": "Descrizione",
+      "documentsLoadError": "Impossibile caricare i documenti dell'immobile.",
+      "documentsLoading": "Caricamento documenti...",
+      "edit": "Modifica",
+      "fallbackTitle": "Immobile",
+      "infoTitle": "Dati dell'immobile",
+      "loadError": "Impossibile caricare l'immobile.",
+      "loading": "Caricamento immobile...",
+      "newLease": "Nuovo contratto",
+      "next": {
+        "free": {
+          "body": "L'immobile è libero. Crea il contratto con il nuovo inquilino: servono l'APE e i dati catastali.",
+          "kicker": "Prossimo passo",
+          "title": "Crea il contratto"
+        },
+        "preparing": {
+          "kicker": "Contratto in preparazione"
+        },
+        "rented": {
+          "kicker": "Contratto in corso"
+        }
+      },
+      "rooms": "Camere e bagni"
     },
     "drawer": {
       "keyData": "Dati dell'immobile",
@@ -9126,20 +9142,20 @@
   "site": {
     "meta": {
       "home": {
-        "title": "CasaZen | Software per affitti brevi in regola: CIN, ospiti, tassa di soggiorno",
-        "description": "Gestisci gli affitti brevi in regola: controllo del CIN, dati degli ospiti per Alloggiati Web, check-in online, imposta di soggiorno e sito di prenotazione diretta senza commissioni CasaZen."
+        "title": "CasaZen | Gestionale per affitti brevi e lunghi in regola",
+        "description": "CIN, Alloggiati Web, imposta di soggiorno, calendari iCal, sito di prenotazione diretta senza commissioni CasaZen e fornitori della zona: un'app per affitti brevi e lunghi."
       },
       "features": {
-        "title": "Funzionalità | CasaZen",
-        "description": "Adempimenti, calendario con iCal, sito di prenotazione diretta con pagamenti Stripe, richieste ai fornitori e affitti lunghi: tutte le funzionalità di CasaZen per host e property manager."
+        "title": "Funzionalità: adempimenti, calendario e prenotazioni dirette | CasaZen",
+        "description": "Controllo del CIN, dati degli ospiti per Alloggiati Web, imposta di soggiorno, calendario iCal, sito di prenotazione diretta con Stripe, richieste ai fornitori e contratti di affitto lungo."
       },
       "suppliers": {
         "title": "Per i fornitori: lavora con gli host della tua zona | CasaZen",
-        "description": "Imprese di pulizie, manutenzione, lavanderia e servizi per affitti brevi: registrati su CasaZen e ricevi le richieste degli host dei comuni in cui lavori."
+        "description": "Imprese di pulizie, manutenzione, lavanderia e servizi per affitti brevi: scegli categorie e comuni, ricevi le richieste degli host e gestiscile da un'unica pagina."
       },
       "about": {
         "title": "Chi siamo e contatti | CasaZen",
-        "description": "CasaZen è il software per host e property manager di affitti brevi e lunghi in Italia. Dati societari e contatti."
+        "description": "CasaZen è il gestionale per host e property manager di affitti brevi e lunghi in Italia, costruito sulle regole italiane. Come lavoriamo, dati societari e contatti."
       }
     },
     "nav": {
@@ -9154,7 +9170,7 @@
       "switchLanguageLabel": "Passa all'inglese"
     },
     "footer": {
-      "tagline": "Il software per gli affitti brevi e lunghi in regola.",
+      "tagline": "Il gestionale per gli affitti brevi e lunghi in regola.",
       "productTitle": "Prodotto",
       "resourcesTitle": "Risorse",
       "legalTitle": "Note legali",
@@ -9169,13 +9185,49 @@
     },
     "home": {
       "hero": {
-        "eyebrow": "Per host e property manager",
-        "title": "Affitti brevi in regola, senza fogli di calcolo",
-        "subtitle": "CasaZen riunisce in un'unica app gli adempimenti (CIN, comunicazione degli ospiti, imposta di soggiorno), il calendario e il tuo sito di prenotazione diretta.",
-        "ctaFeatures": "Scopri le funzionalità"
+        "eyebrow": "Per host, property manager e proprietari",
+        "title1": "Affitti in regola.",
+        "title2": "Prenotazioni dirette.",
+        "title3": "Zero commissioni CasaZen.",
+        "subtitle": "Il gestionale pensato per le regole italiane: adempimenti (CIN, ospiti, imposta di soggiorno), calendario, sito di prenotazione e fornitori in un'unica app, per affitti brevi e lunghi.",
+        "ctaHow": "Scopri come funziona"
+      },
+      "facts": {
+        "item1Value": "0%",
+        "item1Label": "di commissioni CasaZen sulle prenotazioni del tuo sito (restano quelle di Stripe)",
+        "item2Value": "6 e 24 ore",
+        "item2Label": "le scadenze di Alloggiati Web, tenute d'occhio per te",
+        "item3Value": "15 minuti",
+        "item3Label": "circa, per allineare i calendari iCal dei portali",
+        "item4Value": "4+4 · 3+2",
+        "item4Label": "i contratti di affitto lungo, transitori compresi"
+      },
+      "contrast": {
+        "title": "Meno fogli di calcolo, meno scadenze dimenticate",
+        "intro": "Gli adempimenti cambiano da comune a comune e i dati finiscono ovunque. CasaZen li tiene insieme, con le date e le fonti ufficiali.",
+        "beforeTitle": "Come si fa di solito",
+        "before1": "Il CIN, i dati degli ospiti e le scadenze su fogli di calcolo e promemoria sparsi.",
+        "before2": "L'imposta di soggiorno calcolata a mano, comune per comune.",
+        "before3": "I calendari dei portali da controllare uno per uno.",
+        "before4": "Pulizie e manutenzione chieste con chat e telefonate.",
+        "afterTitle": "Con CasaZen",
+        "after1": "Il CIN controllato, i dati degli ospiti raccolti online e le scadenze di Alloggiati Web sempre in vista.",
+        "after2": "L'imposta calcolata per notte con le regole del comune, dove la tariffa è disponibile.",
+        "after3": "Un calendario solo, allineato ai portali tramite iCal.",
+        "after4": "Le richieste ai fornitori della zona, con stato e storico."
+      },
+      "how": {
+        "title": "Come funziona",
+        "intro": "Dall'attivazione dell'alloggio alla prima prenotazione, un passo alla volta.",
+        "step1Title": "Attiva il tuo alloggio",
+        "step1Text": "Una procedura guidata controlla dati, CIN, documenti e dotazioni di sicurezza prima di pubblicarlo.",
+        "step2Title": "Ricevi prenotazioni",
+        "step2Text": "Arrivano dal tuo sito di prenotazione diretta e i calendari dei portali restano allineati via iCal. L'ospite paga sul tuo conto Stripe.",
+        "step3Title": "Resta in regola",
+        "step3Text": "Gli ospiti fanno il check-in online, CasaZen prepara il file per Alloggiati Web e riepiloga l'imposta di soggiorno per comune e mese."
       },
       "compliance": {
-        "title": "Adempimenti sotto controllo",
+        "title": "Adempimenti italiani sotto controllo",
         "intro": "Le regole cambiano da comune a comune. CasaZen ti dice cosa manca e quando scade.",
         "cinTitle": "CIN",
         "cinText": "Controllo del formato ufficiale del Codice Identificativo Nazionale e avvisi quando manca o non è valido. Sulle pagine pubbliche il CIN compare solo quando è valido.",
@@ -9189,9 +9241,13 @@
         "wizardText": "Una procedura passo passo controlla dati, CIN, documenti e dotazioni di sicurezza prima di pubblicare un alloggio."
       },
       "booking": {
-        "title": "Il tuo sito di prenotazione diretta",
-        "text": "Un sito con i tuoi alloggi, il tuo logo e i tuoi colori. L'ospite paga online con Stripe direttamente sul tuo conto: CasaZen non trattiene commissioni sulle prenotazioni (restano quelle di Stripe). Può pagare subito, più tardi o in struttura.",
-        "domain": "Puoi pubblicarlo su un indirizzo CasaZen oppure collegare il tuo dominio."
+        "title": "Il tuo sito di prenotazione diretta, senza commissioni CasaZen",
+        "text": "Un sito con i tuoi alloggi, il tuo logo e i tuoi colori. L'ospite paga online con Stripe direttamente sul tuo conto: CasaZen non trattiene commissioni sulle prenotazioni (restano quelle di Stripe).",
+        "domain": "Puoi pubblicarlo su un indirizzo CasaZen oppure collegare il tuo dominio.",
+        "point1": "Tre stili grafici, con il tuo logo e il tuo colore",
+        "point2": "L'ospite paga subito, più tardi o in struttura",
+        "point3": "Le tue pagine di privacy e termini",
+        "point4": "Pagine pronte per i motori di ricerca, con i dati strutturati di ogni alloggio"
       },
       "operations": {
         "title": "Il lavoro di tutti i giorni",
@@ -9202,17 +9258,46 @@
         "fiscalTitle": "Stime fiscali",
         "fiscalText": "Riepiloghi per la cedolare secca e per la dichiarazione dei redditi: stime di supporto, da verificare con il tuo commercialista.",
         "longRentTitle": "Anche affitti lunghi",
-        "longRentText": "Contratti 4+4, 3+2 e transitori, promemoria delle scadenze e canoni pagabili online."
+        "longRentText": "Contratti 4+4, 3+2 e transitori, promemoria delle scadenze e canoni pagabili online.",
+        "intro": "Calendario, fornitori, conti e affitti lunghi nello stesso posto."
+      },
+      "audience": {
+        "title": "Per chi è CasaZen",
+        "intro": "Con un alloggio o con molti, le regole sono le stesse: CasaZen le segue per te.",
+        "hostTitle": "Host con pochi alloggi",
+        "hostText": "Metti in ordine adempimenti e calendario una volta sola: CasaZen ti avvisa quando manca qualcosa e quando scade.",
+        "managerTitle": "Property manager",
+        "managerText": "Più alloggi sotto controllo: adempimenti, calendari e richieste ai fornitori nello stesso posto, alloggio per alloggio.",
+        "landlordTitle": "Proprietari di affitti lunghi",
+        "landlordText": "Contratti 4+4, 3+2 e transitori, canoni pagabili online e promemoria delle scadenze, anche della registrazione.",
+        "supplierTitle": "Imprese e professionisti",
+        "supplierText": "Pulizie, manutenzione, lavanderia: ricevi le richieste degli host della tua zona e gestiscile da un'unica pagina.",
+        "supplierCta": "Per i fornitori"
       },
       "guides": {
         "title": "Guide gratuite per comune",
         "text": "Per ogni comune spieghiamo CIN, Alloggiati Web e imposta di soggiorno con le fonti ufficiali; per la Lombardia anche il CIR e la comunicazione dei flussi turistici su Ross1000. Ogni guida è rivista da una persona prima della pubblicazione.",
         "cta": "Vai alle guide"
       },
-      "suppliersTeaser": {
-        "title": "Hai un'impresa di pulizie, manutenzione o servizi?",
-        "text": "Ricevi le richieste degli host della tua zona e gestiscile da un'unica pagina.",
-        "cta": "Scopri come funziona"
+      "faq": {
+        "title": "Domande frequenti",
+        "intro": "Cosa fa CasaZen e cosa no, senza giri di parole.",
+        "q1": "CasaZen è un channel manager?",
+        "a1": "No. CasaZen allinea i calendari con Airbnb, Booking.com e gli altri portali tramite iCal, circa ogni 15 minuti: importa i loro calendari e te ne dà uno da esportare. Non c'è una connessione diretta tramite API, quindi i prezzi sui portali non vengono aggiornati da CasaZen.",
+        "q2": "CasaZen invia i dati degli ospiti ad Alloggiati Web?",
+        "a2": "CasaZen raccoglie i dati con le tabelle ufficiali, tiene d'occhio le scadenze di 6 e 24 ore e ti fa scaricare il file pronto da caricare sul portale della Polizia di Stato. Il caricamento sul portale resta a te.",
+        "q3": "L'imposta di soggiorno viene calcolata per ogni comune?",
+        "a3": "La calcola per notte con le regole del comune (stagioni, età, notti massime) dove la tariffa è disponibile in CasaZen. Dove non lo è, lo dice invece di inventare un importo. Il totale pagato dall'ospite la include e hai i report per comune e mese.",
+        "q4": "Come funzionano i pagamenti del sito di prenotazione?",
+        "a4": "L'ospite paga con Stripe direttamente sul tuo conto: subito, più tardi o in struttura. CasaZen non trattiene commissioni sulle prenotazioni, restano quelle di Stripe.",
+        "q5": "Posso usare CasaZen con un solo alloggio?",
+        "a5": "Sì. Con un alloggio o con molti la procedura è la stessa: attivi l'alloggio e CasaZen ti dice cosa manca.",
+        "q6": "CasaZen gestisce anche gli affitti lunghi?",
+        "a6": "Sì. Contratti 4+4, 3+2 e transitori, con cedolare secca o regime ordinario, canoni pagabili online con Stripe o segnati come pagati, promemoria via email e scadenze di registrazione del contratto (RLI).",
+        "q7": "Le stime fiscali sostituiscono il commercialista?",
+        "a7": "No. I riepiloghi per la cedolare secca e per la dichiarazione dei redditi sono stime di supporto: per dichiarare e versare, parlane con il tuo commercialista.",
+        "q8": "Quanto costa e come si entra?",
+        "a8": "CasaZen è in fase di avvio e per ora si entra solo su invito, senza prezzi pubblicati. Scrivici e ti spieghiamo come funziona."
       },
       "finalCta": {
         "title": "Vuoi provare CasaZen?",
@@ -9220,8 +9305,8 @@
       }
     },
     "features": {
-      "title": "Funzionalità",
-      "intro": "Tutto quello che serve per gestire alloggi in affitto breve e lungo, nel rispetto delle regole italiane.",
+      "title": "Funzionalità di CasaZen",
+      "intro": "Tutto quello che serve per gestire alloggi in affitto breve e lungo, nel rispetto delle regole italiane: ciò che CasaZen fa oggi, spiegato senza giri di parole.",
       "complianceTitle": "Conformità",
       "complianceItem1": "Controllo del formato del CIN e avviso se il codice del comune non corrisponde a quello dell'alloggio.",
       "complianceItem2": "Attivazione guidata dell'alloggio: dati, CIN, documenti richiesti e dotazioni di sicurezza.",
@@ -9248,11 +9333,22 @@
       "longRentTitle": "Affitti lunghi",
       "longRentItem1": "Contratti 4+4, 3+2 e transitori, con cedolare secca o regime ordinario.",
       "longRentItem2": "Canoni pagabili online con Stripe o segnati come pagati, con promemoria via email.",
-      "longRentItem3": "Promemoria delle scadenze di registrazione del contratto (RLI)."
+      "longRentItem3": "Promemoria delle scadenze di registrazione del contratto (RLI).",
+      "complianceIntro": "Cosa serve per affittare in regola, controllato al posto tuo.",
+      "touristTaxIntro": "Calcolata per notte, inclusa nel totale, pronta per il comune.",
+      "bookingIntro": "Il tuo sito, i tuoi ospiti, i tuoi incassi.",
+      "calendarIntro": "Un calendario solo, allineato ai portali.",
+      "suppliersIntro": "Pulizie e manutenzione a portata di richiesta.",
+      "fiscalIntro": "Numeri chiari per la dichiarazione, con le dovute cautele.",
+      "longRentIntro": "Dal contratto al canone, senza perdere le scadenze.",
+      "noteTitle": "Buono a sapersi",
+      "note1": "I calendari dei portali si sincronizzano tramite iCal: non c'è una connessione diretta tramite API.",
+      "note2": "Per Alloggiati Web CasaZen prepara il file da caricare: il caricamento sul portale resta a te.",
+      "note3": "I riepiloghi fiscali sono stime di supporto e non sostituiscono il commercialista."
     },
     "suppliers": {
       "title": "Lavora con gli host della tua zona",
-      "subtitle": "CasaZen mette in contatto imprese e professionisti con gli host di affitti brevi e lunghi che cercano servizi per i propri alloggi.",
+      "subtitle": "CasaZen mette in contatto imprese e professionisti con gli host di affitti brevi e lunghi che cercano servizi per i propri alloggi: pulizie, manutenzione, lavanderia e altro.",
       "howTitle": "Come funziona",
       "step1": "Ricevi il tuo invito e scegli le categorie dei tuoi servizi e i comuni in cui lavori.",
       "step2": "Completa l'attivazione in pochi passaggi e accetta i termini del servizio.",
@@ -9274,7 +9370,16 @@
       "categoryGardening": "Giardinaggio",
       "categoryEvents": "Eventi",
       "categoryRental": "Noleggio",
-      "categoryExcursions": "Escursioni"
+      "categoryExcursions": "Escursioni",
+      "faqTitle": "Domande frequenti",
+      "q1": "Come si entra?",
+      "a1": "Ricevi un invito: da lì scegli le categorie dei tuoi servizi e i comuni in cui lavori.",
+      "q2": "Posso scegliere dove lavorare?",
+      "a2": "Sì. Indichi i comuni e le categorie di servizi: ricevi le richieste degli host di quei comuni.",
+      "q3": "Come ricevo le richieste?",
+      "a3": "Le trovi in un'unica pagina, con la data e, dopo che le hai accettate, l'indirizzo e i contatti dell'host. Puoi accettarle o rifiutarle e seguirle fino al completamento.",
+      "q4": "Posso avere una pagina da mostrare ai clienti?",
+      "a4": "Sì: una pagina pubblica con le tue categorie, i comuni in cui lavori, la descrizione e le foto, che puoi condividere."
     },
     "about": {
       "title": "Chi siamo",
@@ -9285,7 +9390,14 @@
       "companyTitle": "Dati societari",
       "nameLabel": "Ragione sociale",
       "vatIdLabel": "Partita IVA",
-      "addressLabel": "Sede legale"
+      "addressLabel": "Sede legale",
+      "principlesTitle": "Come lavoriamo",
+      "principle1Title": "Prima le regole",
+      "principle1Text": "Le funzioni partono dalle regole italiane e dalle loro fonti ufficiali: dove una regola cambia da comune a comune, CasaZen ne tiene conto.",
+      "principle2Title": "I tuoi incassi restano tuoi",
+      "principle2Text": "Le prenotazioni dirette si pagano con Stripe sul tuo conto: CasaZen non trattiene commissioni sulle prenotazioni.",
+      "principle3Title": "Stime, non promesse",
+      "principle3Text": "Dove un numero è una stima, come nei riepiloghi fiscali, lo scriviamo. E dove CasaZen non ha una tariffa, non ne inventa una."
     },
     "invite": {
       "notice": "CasaZen è in fase di avvio: per ora l'accesso è solo su invito.",
