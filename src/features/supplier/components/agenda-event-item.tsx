@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Ban, CalendarClock, CheckCircle2, DoorOpen, Lock, Moon, Plane, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Ban, CalendarClock, CheckCircle2, DoorOpen, Lock, Moon, Plane, Wrench, type LucideIcon } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { cn } from '@/lib/utils';
 import type { ServiceRequestStatus } from '@/types/service-request';
+import type { SupplierConflictSeverity } from '@/types/supplier';
 import { requestPath } from '../requests/request-model';
 import { DAY_STATE_LABEL_KEYS, type DayEvent, type DayEventKind, type DayState } from '../lib/supplier-agenda';
 
@@ -20,14 +21,43 @@ const KINDS: Record<DayEventKind, { icon: LucideIcon; labelKey: string; tone: st
 
 const TIME_OFF_REASONS = ['Vacation', 'Holiday', 'Illness', 'Other'];
 
-/** What an entry is called: the service of a request, the name it was given, or else the name of its kind. */
+/** What an entry is called: the service of a request (else its category), the name it was given, or else the name of its kind. */
 function eventTitle(event: DayEvent, t: TFunction): string {
-  if (event.kind === 'request') return getServiceCategoryLabel(event.label, t);
+  if (event.kind === 'request') return event.serviceName?.trim() || getServiceCategoryLabel(event.label, t);
   if (event.label) return event.label;
   if (event.kind === 'timeOff' && event.reason && TIME_OFF_REASONS.includes(event.reason)) {
     return t(`supplier.agenda.reasons.${event.reason}`);
   }
   return t(KINDS[event.kind].labelKey);
+}
+
+/** The line under the title: the kind of entry and, for a job, who asks and where ("Nome C." until the job is taken). */
+function eventSubtitle(event: DayEvent, t: TFunction): string {
+  const kind = t(KINDS[event.kind].labelKey);
+  if (event.kind !== 'request') return kind;
+  return [kind, event.clientLabel?.trim(), event.comune?.trim(), event.fromShowcase ? t('supplier.agenda.fromShowcase') : null]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+/** A job whose time is in trouble (the conflicts of the next 30 days): by icon and by words, never by color alone. */
+function ConflictPill({ severity }: { severity: SupplierConflictSeverity }) {
+  const { t } = useTranslation();
+  const danger = severity === 'danger';
+  const Icon = danger ? AlertCircle : AlertTriangle;
+  return (
+    <span
+      data-testid="availability-event-conflict"
+      data-severity={severity}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset',
+        danger ? 'bg-danger-soft text-danger-foreground ring-danger-border' : 'bg-warning-soft text-warning-foreground ring-warning-border',
+      )}
+    >
+      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+      {t(danger ? 'supplier.agenda.conflicts.danger' : 'supplier.agenda.conflicts.warning')}
+    </span>
+  );
 }
 
 interface AgendaEventItemProps {
@@ -55,7 +85,7 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
         </span>
         <span className="min-w-0">
           <span className="block break-words font-medium first-letter:uppercase">{eventTitle(event, t)}</span>
-          <span className="block break-words text-sm text-foreground/70 first-letter:uppercase">{t(meta.labelKey)}</span>
+          <span className="block break-words text-sm text-foreground/70 first-letter:uppercase">{eventSubtitle(event, t)}</span>
         </span>
       </>
     ) : (
@@ -63,7 +93,7 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
         <span className="block break-words text-sm font-medium first-letter:uppercase">{eventTitle(event, t)}</span>
         <span className="mt-0.5 flex items-center gap-1 text-xs text-foreground/70">
           <Icon aria-hidden="true" className="size-3.5 shrink-0" />
-          <span className="min-w-0 break-words first-letter:uppercase">{t(meta.labelKey)}</span>
+          <span className="min-w-0 break-words first-letter:uppercase">{eventSubtitle(event, t)}</span>
         </span>
       </span>
     );
@@ -81,6 +111,13 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
     event.kind === 'request' && event.status ? (
       <StatusBadge kind="request" status={event.status as ServiceRequestStatus} perspective="supplier" />
     ) : null;
+  const flags =
+    status || event.conflict ? (
+      <div className="flex flex-wrap items-center gap-2">
+        {event.conflict ? <ConflictPill severity={event.conflict} /> : null}
+        {status}
+      </div>
+    ) : null;
   const timeClass = 'font-semibold tabular-nums text-foreground/70 first-letter:uppercase';
 
   if (layout === 'row') {
@@ -91,7 +128,7 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
       >
         <p className={cn('pt-2 text-sm', timeClass)}>{time}</p>
         {content}
-        {status ? <div className="col-start-2 sm:col-start-3">{status}</div> : null}
+        {flags ? <div className="col-start-2 sm:col-start-3">{flags}</div> : null}
       </li>
     );
   }
@@ -99,7 +136,7 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
     <li data-testid={`availability-event-${event.kind}`} className="space-y-0.5 py-2">
       <p className={cn('text-xs', timeClass)}>{time}</p>
       {content}
-      {status}
+      {flags}
     </li>
   );
 }

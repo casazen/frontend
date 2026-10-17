@@ -7,12 +7,14 @@ import {
   fetchAdminSuppliers,
   fetchSupplierAudit,
   decideFreeEvent,
+  disconnectIcalFeed,
   fetchCalendarSyncStatus,
   fetchPendingFreeEvents,
   fetchSupplierActivation,
   fetchSupplierShowcasePreview,
   fetchSupplierAgendaCalendar,
   fetchSupplierChecklist,
+  fetchSupplierConflicts,
   fetchSupplierDashboard,
   fetchSupplierHours,
   fetchSupplierInbox,
@@ -208,6 +210,19 @@ export function useSupplierAgendaCalendar(from: string, to: string) {
   });
 }
 
+/**
+ * The jobs of the next 30 days with something wrong (SP-03b). Under `['supplier', 'agenda']`: whatever reloads the agenda (hours saved, a
+ * day closed, an answer to a calendar event) reloads this too. Fetched again when the page opens: a request taken or moved on another
+ * page changes it.
+ */
+export function useSupplierConflicts() {
+  return useQuery({
+    queryKey: ['supplier', 'agenda', 'conflicts'],
+    queryFn: fetchSupplierConflicts,
+    refetchOnMount: 'always',
+  });
+}
+
 export function useSupplierHours() {
   return useQuery({
     queryKey: ['supplier', 'hours'],
@@ -395,6 +410,36 @@ export function useSetIcalFeed() {
     onSuccess: (status) => {
       queryClient.setQueryData(CALENDAR_SYNC_KEY, status);
       void queryClient.invalidateQueries({ queryKey: ['supplier'], predicate: (query) => query.queryKey[1] !== 'calendar-sync' });
+    },
+  });
+}
+
+/**
+ * Unlinks the iCal feed (SP-03b): the status reads "not linked" at once, and what the feed had closed or asked is read again (the
+ * days and hours open again, the events marked "Disponibile" and their answers are gone). The supplier's own blocks stay.
+ */
+export function useDisconnectIcalFeed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: disconnectIcalFeed,
+    onSuccess: () => {
+      queryClient.setQueryData<CalendarSyncStatus>(CALENDAR_SYNC_KEY, (previous) =>
+        previous
+          ? {
+              ...previous,
+              calendarSyncType: 'None',
+              icalFeedUrl: null,
+              calendarLastSyncAt: null,
+              lastSyncStatus: 'None',
+              calendarSyncErrorCode: null,
+              calendarSyncError: null,
+              pendingFreeEventsCount: 0,
+            }
+          : previous,
+      );
+      for (const key of ['calendar-sync', 'free-events', 'agenda', 'availability', 'dashboard']) {
+        void queryClient.invalidateQueries({ queryKey: ['supplier', key] });
+      }
     },
   });
 }

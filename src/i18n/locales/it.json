@@ -3366,12 +3366,62 @@
     "supplierDefault": "Fornitore",
     "agenda": {
       "close": "Chiudi questo giorno",
+      "conflicts": {
+        "block": {
+          "fix": "Sposta il lavoro a un altro orario.",
+          "title": "Cade in un'ora che hai bloccato"
+        },
+        "buffer": {
+          "fix": "Puoi tenerlo così, oppure distanziare i due lavori.",
+          "title": "La pausa tra i due lavori è troppo corta"
+        },
+        "danger": "Da risolvere",
+        "dayFull": {
+          "fix": "Puoi tenerlo così, oppure spostarlo a un altro giorno.",
+          "title": "Supera il massimo di lavori in un giorno"
+        },
+        "dayOff": {
+          "fix": "Puoi tenerlo così, oppure spostarlo in un giorno in cui lavori.",
+          "title": "È in un tuo giorno di riposo"
+        },
+        "external": {
+          "fix": "Sposta il lavoro, oppure libera quell'ora nel tuo calendario.",
+          "title": "Si sovrappone a un impegno del tuo calendario"
+        },
+        "hint": "Controlla questi lavori dei prossimi 30 giorni: l'orario non rispetta i tuoi orari o i tuoi impegni.",
+        "listLabel": "Lavori con un orario da sistemare",
+        "open": "Apri la richiesta",
+        "openAria": "Apri la richiesta di {{when}}",
+        "outsideHours": {
+          "fix": "Puoi tenerlo così, oppure spostarlo dentro i tuoi orari.",
+          "title": "È fuori dai tuoi orari"
+        },
+        "overlap": {
+          "fix": "Sposta uno dei due lavori.",
+          "title": "Si sovrappone a un altro tuo lavoro"
+        },
+        "showAll": "Mostra tutti ({{total}})",
+        "suggested": "Primo orario libero: {{when}}",
+        "timeOff": {
+          "fix": "Sposta il lavoro a un altro giorno.",
+          "title": "Cade nelle tue ferie"
+        },
+        "title_one": "Hai {{count}} lavoro con un orario da sistemare",
+        "title_other": "Hai {{count}} lavori con un orario da sistemare",
+        "truncated": "Sono controllati i {{limit}} lavori più vicini.",
+        "unknown": {
+          "fix": "Apri la richiesta e controlla l'orario.",
+          "title": "Qualcosa non torna con questo orario"
+        },
+        "warning": "Da valutare"
+      },
       "dayEmpty": "Niente in agenda per questo giorno.",
       "description": "I tuoi lavori e i tuoi impegni, giorno per giorno. I clienti prenotano solo quando sei libero.",
       "emptyRange": "Nessun lavoro né impegno in questo periodo. Quando accetti una richiesta compare qui.",
       "emptyRangeCta": "Vai alle richieste",
       "eventsCount_one": "{{count}} impegno",
       "eventsCount_other": "{{count}} impegni",
+      "fromShowcase": "dalla tua vetrina",
       "hours": {
         "addBand": "Aggiungi una fascia",
         "bandEnd": "{{day}}, fascia {{n}}: fine",
@@ -3902,6 +3952,13 @@
     "syncCompleted": "Sincronizzato",
     "syncNow": "Sincronizza ora",
     "icalSaveError": "Impossibile salvare l'URL del calendario",
+    "icalDisconnect": "Scollega",
+    "icalDisconnected": "Calendario scollegato",
+    "icalDisconnectDescription": "Il calendario non chiuderà più i tuoi giorni e le tue ore. I tuoi blocchi e i giorni chiusi a mano restano, e potrai collegarlo di nuovo quando vuoi.",
+    "icalDisconnectError": "Impossibile scollegare il calendario",
+    "icalDisconnectEvents": "Gli eventi segnati «Disponibile» che aspettavano una tua risposta vengono tolti.",
+    "icalDisconnectReopens": "I giorni e le ore che il calendario aveva chiuso si riaprono ai clienti.",
+    "icalDisconnectTitle": "Scollegare il calendario?",
     "freeEventsBannerTitle_one": "Hai {{count}} evento del tuo calendario segnato Disponibile",
     "freeEventsBannerTitle_other": "Hai {{count}} eventi del tuo calendario segnati Disponibile",
     "freeEventsBannerHint": "Finché non confermi, quei giorni risultano occupati. Scegli per ogni evento: la scelta vale per tutte le date di un evento ricorrente.",

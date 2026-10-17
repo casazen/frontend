@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { PlainSection } from '@/components/shared/calm';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { HelpTip } from '@/components/ui/help-tip';
@@ -11,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useCalendarSyncStatus, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/use-supplier';
+import { useCalendarSyncStatus, useDisconnectIcalFeed, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/use-supplier';
 import { getProblemMessage } from '@/lib/api-errors';
 import { Loader2, RefreshCw } from 'lucide-react';
 
@@ -24,8 +25,10 @@ export function SupplierCalendarSyncPage() {
   const { data: syncStatus, isLoading, isError, refetch } = useCalendarSyncStatus();
   const setIcalFeedMutation = useSetIcalFeed();
   const syncNowMutation = useSyncSupplierCalendarNow();
+  const disconnectMutation = useDisconnectIcalFeed();
 
   const [showIcalDialog, setShowIcalDialog] = useState(false);
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const [icalUrl, setIcalUrl] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -86,6 +89,16 @@ export function SupplierCalendarSyncPage() {
     }
   };
 
+  // Unlinking asks first (the days the calendar closed open again for the customers). A failure is said here; the dialog closes after.
+  const handleDisconnect = async () => {
+    try {
+      await disconnectMutation.mutateAsync();
+      toast.success(t('supplier.icalDisconnected'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('supplier.icalDisconnectError'));
+    }
+  };
+
   const handleSyncNow = async () => {
     try {
       await syncNowMutation.mutateAsync();
@@ -110,6 +123,9 @@ export function SupplierCalendarSyncPage() {
               </Button>
               <Button size="sm" variant="outline" onClick={openIcalDialog}>
                 {t('supplier.edit')}
+              </Button>
+              <Button size="sm" variant="outline" data-testid="ical-disconnect" onClick={() => setConfirmingDisconnect(true)}>
+                {t('supplier.icalDisconnect')}
               </Button>
             </>
           }
@@ -201,6 +217,17 @@ export function SupplierCalendarSyncPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={confirmingDisconnect}
+        onOpenChange={setConfirmingDisconnect}
+        title={t('supplier.icalDisconnectTitle')}
+        description={t('supplier.icalDisconnectDescription')}
+        confirmLabel={t('supplier.icalDisconnect')}
+        consequences={[t('supplier.icalDisconnectReopens'), t('supplier.icalDisconnectEvents')]}
+        isLoading={disconnectMutation.isPending}
+        onConfirm={handleDisconnect}
+      />
     </div>
   );
 }

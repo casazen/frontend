@@ -3366,12 +3366,62 @@
     "supplierDefault": "Supplier",
     "agenda": {
       "close": "Close this day",
+      "conflicts": {
+        "block": {
+          "fix": "Move the job to another time.",
+          "title": "It falls in an hour you blocked"
+        },
+        "buffer": {
+          "fix": "You can keep it as it is, or space the two jobs out.",
+          "title": "The break between the two jobs is too short"
+        },
+        "danger": "To fix",
+        "dayFull": {
+          "fix": "You can keep it as it is, or move it to another day.",
+          "title": "It goes over the most jobs in a day"
+        },
+        "dayOff": {
+          "fix": "You can keep it as it is, or move it to a day you work.",
+          "title": "It is on one of your rest days"
+        },
+        "external": {
+          "fix": "Move the job, or free that hour in your calendar.",
+          "title": "It overlaps something in your calendar"
+        },
+        "hint": "Check these jobs in the next 30 days: their time does not fit your hours or your commitments.",
+        "listLabel": "Jobs with a time to sort out",
+        "open": "Open the request",
+        "openAria": "Open the request of {{when}}",
+        "outsideHours": {
+          "fix": "You can keep it as it is, or move it inside your hours.",
+          "title": "It is outside your hours"
+        },
+        "overlap": {
+          "fix": "Move one of the two jobs.",
+          "title": "It overlaps another of your jobs"
+        },
+        "showAll": "Show all ({{total}})",
+        "suggested": "First free time: {{when}}",
+        "timeOff": {
+          "fix": "Move the job to another day.",
+          "title": "It falls in your time off"
+        },
+        "title_one": "You have {{count}} job with a time to sort out",
+        "title_other": "You have {{count}} jobs with a time to sort out",
+        "truncated": "The {{limit}} nearest jobs are checked.",
+        "unknown": {
+          "fix": "Open the request and check the time.",
+          "title": "Something is off with this time"
+        },
+        "warning": "To review"
+      },
       "dayEmpty": "Nothing on the agenda for this day.",
       "description": "Your jobs and commitments, day by day. Customers only book when you are free.",
       "emptyRange": "No jobs or commitments in this period. When you accept a request it shows up here.",
       "emptyRangeCta": "Go to requests",
       "eventsCount_one": "{{count}} entry",
       "eventsCount_other": "{{count}} entries",
+      "fromShowcase": "from your showcase",
       "hours": {
         "addBand": "Add a band",
         "bandEnd": "{{day}}, band {{n}}: end",
@@ -3902,6 +3952,13 @@
     "syncCompleted": "Synced",
     "syncNow": "Sync now",
     "icalSaveError": "Could not save the calendar URL",
+    "icalDisconnect": "Disconnect",
+    "icalDisconnected": "Calendar disconnected",
+    "icalDisconnectDescription": "The calendar will no longer close your days and hours. Your blocks and the days you closed by hand stay, and you can connect it again whenever you like.",
+    "icalDisconnectError": "Could not disconnect the calendar",
+    "icalDisconnectEvents": "The events marked “Available” that were waiting for your answer are removed.",
+    "icalDisconnectReopens": "The days and hours the calendar had closed open again for customers.",
+    "icalDisconnectTitle": "Disconnect the calendar?",
     "freeEventsBannerTitle_one": "{{count}} event on your calendar is marked Available",
     "freeEventsBannerTitle_other": "{{count}} events on your calendar are marked Available",
     "freeEventsBannerHint": "Until you confirm, those days show as busy. Choose for each event: your choice covers every date of a recurring event.",
