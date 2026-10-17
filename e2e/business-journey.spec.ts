@@ -250,10 +250,10 @@ test.describe('Business Golden Path', () => {
       currency: 'EUR',
       refundedAmount: 0,
       refundedAmountCents: 0,
-      status: 'Pending',
+      status: 'Completed',
       method: 'BankTransfer',
       description: '',
-      processedAt: null,
+      processedAt: '2026-07-01T10:00:00Z',
       createdAt: '2026-07-01T10:00:00Z',
     };
     let postedBody: Record<string, unknown> | null = null;
@@ -280,13 +280,13 @@ test.describe('Business Golden Path', () => {
     await page.locator('#bookingId').selectOption(BOOKING_ID);
     await page.locator('#amount').fill('930');
     await page.locator('#method').selectOption('BankTransfer');
-    await page.getByRole('button', { name: 'Crea pagamento' }).click();
+    await page.getByRole('button', { name: 'Registra incasso' }).click();
 
     await expect.poll(() => postedBody).toMatchObject({ bookingId: BOOKING_ID, amount: 930, method: 'BankTransfer' });
 
-    // Back on the list, the payment is there, still to collect.
+    // Back on the list, the payment is there, already collected (SR-06b: a recorded payment is born collected).
     await expect(page).toHaveURL(/\/app\/short-rent\/payments$/);
     const row = page.getByRole('row', { name: /Bonifico bancario/ });
-    await expect(row).toContainText('Da incassare');
+    await expect(row).toContainText('Incassato');
   });
 });

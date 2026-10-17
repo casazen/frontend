@@ -60,21 +60,33 @@ export interface PaymentListItem {
   status: PaymentStatus;
   method: PaymentMethod;
   description: string;
+  /** Empty for a payment nobody has a Stripe id for: with no `stripePaymentIntentId` it is a row only the host can collect (SR-06b). */
+  transactionId?: string;
+  /** The Stripe PaymentIntent; null for a payment that never went through Stripe. */
+  stripePaymentIntentId?: string | null;
   processedAt: string | null;
   createdAt: string;
 }
 
+/** `POST /payments` (SR-06b): a payment the host received outside CasaZen, cash or bank transfer, to record on a booking. */
 export interface CreatePaymentDto {
   bookingId: string;
   amount: number;
   currency?: string;
   method: PaymentMethod;
   description?: string;
+  /** The day the money came in (`YYYY-MM-DD`, Europe/Rome); today when missing. */
+  receivedOn?: string;
   applyOtaWithholding?: boolean;
   manualWithholdingTax?: number;
   otaWithholdingTax?: number;
   withholdingTaxApplied?: boolean;
   netAmountAfterWithholding?: number;
+}
+
+/** What the host's record is sent with: the key that makes it happen once, however many times it is sent (header `Idempotency-Key`). */
+export interface RecordPaymentInput extends CreatePaymentDto {
+  idempotencyKey: string;
 }
 
 export interface UpdatePaymentDto extends Partial<CreatePaymentDto> {

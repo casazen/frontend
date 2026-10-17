@@ -1,13 +1,12 @@
 import { z } from 'zod';
 
+/** A payment the host received outside CasaZen (SR-06b): cash or a bank transfer, on the day it came in. */
 export const paymentFormSchema = z.object({
   bookingId: z.string().min(1, 'payment.validation.bookingId.required'),
   amount: z.number().min(0.01, 'payment.validation.amount.min'),
-  currency: z.string(),
-  method: z.enum(['CreditCard', 'BankTransfer', 'PayPal', 'ApplePay', 'GooglePay']),
+  method: z.enum(['CashOnArrival', 'BankTransfer']),
+  receivedOn: z.string().min(1, 'payment.validation.receivedOn.required'),
   description: z.string().optional(),
-  applyOtaWithholding: z.boolean().optional(),
-  manualWithholdingTax: z.number().optional(),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CalendarDays, CreditCard, Eye, Undo2, Wallet } from 'lucide-react';
+import { Banknote, CalendarDays, CreditCard, Eye, Undo2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListMenuEntry, ListOption } from '@/components/shared/list-view/list-types';
@@ -9,11 +9,25 @@ import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { cn, formatCurrency } from '@/lib/utils';
 import type { PaymentListItem } from '@/types';
-import { dayInRange, isCollected, isGivenBack, isWaiting, monthRange, paymentPath, previousMonthRange, settledDay, settledTime } from './lib/payment-list';
+import {
+  dayInRange,
+  isCollected,
+  isGivenBack,
+  isWaiting,
+  isWaitingForTheHost,
+  monthRange,
+  PAYMENTS_PATH,
+  paymentPath,
+  previousMonthRange,
+  settledDay,
+  settledTime,
+} from './lib/payment-list';
 
 interface PaymentsListOptions {
   /** Who may enter a booking is offered to start one when there is no payment yet. */
   canCreateBooking: boolean;
+  /** Who may write payments can record the money received on a row that waits for the host (SR-06b). */
+  canRecordPayment?: boolean;
 }
 
 /**
@@ -28,7 +42,7 @@ interface PaymentsListOptions {
  * What the list does not have, it does not make up: the payments to the suppliers, the balances still to be collected and the
  * refunds as lines of their own need data the API does not give yet.
  */
-export function usePaymentsList({ canCreateBooking }: PaymentsListOptions) {
+export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: PaymentsListOptions) {
   const { t, i18n } = useTranslation();
 
   return useMemo(() => {
@@ -166,6 +180,10 @@ export function usePaymentsList({ canCreateBooking }: PaymentsListOptions) {
       menu: (payment) => {
         const entries: ListMenuEntry[] = [{ id: 'details', label: t('payment.list.actions.details'), icon: Eye, href: paymentPath(payment) }];
         if (payment.bookingId) entries.push({ id: 'booking', label: t('payment.list.actions.booking'), icon: CalendarDays, href: `${BOOKINGS_PATH}/${payment.bookingId}` });
+        // The money of a row that waits for the host came in outside CasaZen: recording it closes the row (SR-06b).
+        if (canRecordPayment && payment.bookingId && isWaitingForTheHost(payment)) {
+          entries.push({ id: 'record', label: t('payment.list.actions.record'), icon: Banknote, href: `${PAYMENTS_PATH}/create?bookingId=${payment.bookingId}` });
+        }
         return entries;
       },
 
@@ -201,5 +219,5 @@ export function usePaymentsList({ canCreateBooking }: PaymentsListOptions) {
       noResults: { title: t('payment.list.noResultsTitle'), description: t('payment.list.noResultsDescription') },
       countLabel: (count) => t('payment.list.count', { count }),
     });
-  }, [t, i18n, canCreateBooking]);
+  }, [t, i18n, canCreateBooking, canRecordPayment]);
 }

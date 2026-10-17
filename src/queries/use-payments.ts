@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi } from '@/api/payments.api';
-import type { CreatePaymentDto, PaymentRefund, RefundPaymentDto, RevenueParams } from '@/types';
+import type { PaymentRefund, RecordPaymentInput, RefundPaymentDto, RevenueParams } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { getProblemMessage } from '@/lib/api-errors';
 
 export const PAYMENTS_KEY = 'payments';
 
@@ -32,17 +31,21 @@ export function useRevenue(params?: RevenueParams) {
   });
 }
 
+/**
+ * Records a payment the host received outside CasaZen (SR-06b). The form shows the server's reason when it refuses (more than is
+ * left to collect, a booking from a portal...), so there is no toast for the failure; the booking it was recorded on is read
+ * again (what came in, what is left).
+ */
 export function useCreatePayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePaymentDto) => paymentsApi.create(data),
+    mutationFn: (data: RecordPaymentInput) => paymentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
+      // The key of `use-bookings.ts` (which imports this file, so it cannot be imported here): what came in changed.
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
       toast.success(i18n.t('toast.paymentCreated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.paymentCreateFailed'));
     },
   });
 }
