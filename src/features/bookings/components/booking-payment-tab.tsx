@@ -18,12 +18,15 @@ function Amount({ label, labelTestId, children }: { label: string; labelTestId?:
 
 /**
  * The tab Pagamento: the price as the booking recorded it: lodging (per night: base price without cleaning, divided by the nights;
- * tourist tax and cleaning excluded, A2-30), cleaning fee, tourist tax, total.
+ * tourist tax and cleaning excluded, A2-30), cleaning fee, tourist tax, total; and under it what came in (SR-05c): the state of the
+ * payment and, for who may read payments, the amount collected. The detail of the booking carries both; the booking an action
+ * answers with does not (the page reads the detail again at once), and whoever may not read payments gets the state without the amount.
  */
 export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const { t } = useTranslation();
   const breakdown = bookingPriceBreakdown(booking);
   const money = (value: number) => formatCurrency(value, booking.currency);
+  const collected = typeof booking.paidAmount === 'number' && booking.paidAmount > 0 ? booking.paidAmount : null;
 
   return (
     <PlainSection title={t('booking.detailPage.paymentSummaryTitle')}>
@@ -48,6 +51,21 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
             {money(booking.totalPrice)}
           </dd>
         </dl>
+
+        {booking.paymentState ? (
+          <dl className="space-y-2 pt-3">
+            <Amount label={t('booking.detailPage.paymentState')}>
+              <span data-testid="booking-payment-state" data-state={booking.paymentState}>
+                {t(`booking.list.payment.${booking.paymentState}`)}
+              </span>
+            </Amount>
+            {collected !== null ? (
+              <Amount label={t('booking.detailPage.paidAmount')}>
+                <span data-testid="booking-paid-amount">{money(collected)}</span>
+              </Amount>
+            ) : null}
+          </dl>
+        ) : null}
       </div>
     </PlainSection>
   );

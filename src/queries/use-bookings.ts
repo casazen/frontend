@@ -71,6 +71,20 @@ export function useBooking(id: string) {
 }
 
 /**
+ * The history of a booking (SR-05c): the sheet and the drawer show it. Almost every action on the booking (and on its check-in
+ * link, its payments, its Alloggiati communication) adds an entry, and the client does not read an unobserved query again by
+ * default (`refetchOnMount: false`), so it reads again whenever the history is opened.
+ */
+export function useBookingTimeline(id: string) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, id, 'timeline'],
+    queryFn: () => bookingsApi.getTimeline(id),
+    enabled: !!id,
+    refetchOnMount: 'always',
+  });
+}
+
+/**
  * "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). Also the counter of "Prenotazioni"
  * in the menu (UI-04a), which shares the cache with the requests panel and reads it only when `enabled`.
  */

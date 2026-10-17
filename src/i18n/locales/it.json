@@ -1879,15 +1879,22 @@
       "notFound": "Prenotazione non trovata",
       "notFoundDescription": "Potrebbe essere stata cancellata o il link non è corretto.",
       "editBooking": "Modifica prenotazione",
+      "editLocked": {
+        "SourceLocked": "Le date e gli ospiti non si modificano: prezzo e pagamento sono già stabiliti dal sito o dal canale da cui arriva la prenotazione. Per cambiarla, annullala e creane una nuova.",
+        "Started": "Il soggiorno è già iniziato: le date e gli ospiti non si modificano."
+      },
       "tabs": {
         "details": "Soggiorno",
         "guest": "Documenti",
+        "history": "Cronologia",
         "payment": "Pagamento"
       },
       "tabsLabel": "Sezioni della prenotazione",
       "created": "Creata il",
       "lastUpdated": "Ultimo aggiornamento",
       "guestInformationTitle": "Informazioni ospite",
+      "paidAmount": "Importo incassato",
+      "paymentState": "Stato del pagamento",
       "paymentSummaryTitle": "Riepilogo pagamento",
       "total": "Totale",
       "alloggiatiWeb": "Alloggiati Web",
@@ -2118,6 +2125,52 @@
       "markVerified": "Segna come verificato",
       "resolved": "Soggiorno verificato",
       "failed": "Impossibile aggiornare il soggiorno. Riprova."
+    },
+    "timeline": {
+      "alloggiatiDeadline": "{{status}} · entro {{date}}",
+      "cancelNote": "Motivo: {{note}}",
+      "cancelReason": {
+        "CheckoutHoldExpired": "Il pagamento non è arrivato in tempo: le date sono di nuovo libere.",
+        "DatesUnavailableAtPayment": "Le date non erano più libere quando l'ospite ha pagato.",
+        "DeferredPaymentNotCompleted": "L'addebito alla scadenza non è andato a buon fine.",
+        "OnSiteEmailNotConfirmed": "L'ospite non ha confermato l'email in tempo.",
+        "OnSiteRequestDeclined": "Hai rifiutato la richiesta.",
+        "OnSiteRequestExpired": "La richiesta è scaduta senza risposta."
+      },
+      "expiresOn": "Scade il {{date}}",
+      "kind": {
+        "Alloggiati": "Alloggiati Web",
+        "ApprovalPending": "Aspetta la tua risposta",
+        "Arrived": "Arrivo registrato",
+        "Cancelled": "Prenotazione annullata",
+        "CheckedOut": "Partenza registrata",
+        "CheckInLinkSent": "Link del check-in inviato",
+        "Confirmed": "Prenotazione confermata",
+        "Created": "Prenotazione creata",
+        "GuestDocumentsReceived": "Documenti dell'ospite ricevuti",
+        "GuestEmailPending": "Aspetta la conferma dell'email dell'ospite",
+        "HostConfirmationPending": "Aspetta la tua conferma",
+        "PaymentPending": "Aspetta il pagamento dell'ospite",
+        "PaymentReceived": "Pagamento ricevuto",
+        "Refund": "Rimborso",
+        "RequestReceived": "Richiesta ricevuta"
+      },
+      "label": "Cronologia della prenotazione",
+      "linkState": {
+        "Completed": "Check-in online completato",
+        "Expired": "Il link è scaduto",
+        "InProgress": "L'ospite sta compilando i dati",
+        "Sent": "In attesa dell'ospite"
+      },
+      "loadError": "Impossibile caricare la cronologia.",
+      "refund": {
+        "Failed": "Rimborso non riuscito",
+        "Pending": "Rimborso in corso",
+        "RequiresAction": "Rimborso da completare",
+        "Succeeded": "Rimborso effettuato"
+      },
+      "source": "Origine: {{source}}",
+      "title": "Cronologia"
     }
   },
   "ota": {
