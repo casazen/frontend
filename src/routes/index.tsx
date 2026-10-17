@@ -13,6 +13,8 @@ import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { HostInvitePage } from '@/pages/host-invite-page';
+import { InviteAcceptPage } from '@/pages/invite-accept-page';
+import { ORG_INVITE_ACCEPT_PATH } from '@/lib/org-invitation';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { AreaProvider } from '@/contexts/area-provider';
@@ -174,6 +176,13 @@ export const appRoutes: RouteObject[] = [
         // the protected route and the onboarding guard, which would send a new account to the onboarding first.
         path: '/invito-host/:token',
         element: <HostInvitePage />,
+      },
+      {
+        // Link of the email that invites a person to work in an org (AM-04c): the same place as the one above, for the same reason (it
+        // leads to the sign-in or the sign-up, and a new account must not be sent to the onboarding before it has accepted). The secret
+        // of the link is in `?token=`; the page takes it out of the address at once.
+        path: ORG_INVITE_ACCEPT_PATH,
+        element: <InviteAcceptPage />,
       },
       {
         // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
