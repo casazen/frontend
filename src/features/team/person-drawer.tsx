@@ -9,24 +9,15 @@ import { ErrorState } from '@/components/shared/error-state';
 import { StatusExplainer } from '@/components/shared/status/status-explainer';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
-import { formatRomeDateTime } from '@/lib/stay-dates';
 import { useOrgMemberProperties, useOrgRoles } from '@/queries/use-org-team';
 import { orgRoleLabel } from '../account/account-roles';
 import { AccessPreview } from './access-preview';
 import { usePeopleRows, type PersonRow } from './people-rows';
 import { orgRoleDescription } from './team-labels';
+import { dayOf } from './team-dates';
 
 /** What the address calls the drawer of a person of the page: `?detail=org-person:<key of the row>`. */
 export const PERSON_DRAWER_KIND = 'org-person';
-
-const DAY = { day: 'numeric', month: 'long', year: 'numeric' } as const;
-
-/** The backend sends UTC instants; one without a zone mark would be read as local time. */
-function asInstant(when: string): string {
-  return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(when) ? when : `${when}Z`;
-}
-
-const dayOf = (when: string, language: string) => formatRomeDateTime(asInstant(when), language, DAY);
 
 /**
  * The person of the drawer, read from the list of the people: the same queries as the page, so there is no second request, and what

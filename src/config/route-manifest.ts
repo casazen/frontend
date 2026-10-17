@@ -629,6 +629,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
   },
   {
+    // "Invita un utente" (AM-04c): the four steps that bring a person in, opened from «Invita» on the page of the people. It is in no menu:
+    // «Persone» stays the highlighted entry and the trail goes through it, both by the start of the address.
+    path: '/app/account/people/invite',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    component: async () => ({ default: (await import('@/features/team/invite/invite-page')).InvitePage }),
+  },
+  {
+    // "Immobili" (AM-13): every property of the account, short-term and long-term, with who looks after it and who can open it. For the
+    // owner and the administrators (`org.members.manage`, like the people): the pages of a property stay in the section of its mode.
+    path: '/app/account/properties',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.properties',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 3,
+    navBottom: 3,
+    icon: 'Home',
+    component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
     // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.

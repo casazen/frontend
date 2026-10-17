@@ -62,6 +62,11 @@ export interface Property {
   cadastralCategory?: string | null;
   cadastralIncome?: number | null;
   ownerId: string;
+  /**
+   * The member in charge of the property (AM-03): the account id of an `OrgMember` (`userId`), told with the administrators when
+   * something happens on it. `null` while nobody is named (the creator is told). Changed with `PUT /properties/:id/responsible`.
+   */
+  responsibleUserId?: string | null;
   orgId?: string;
   createdAt: string;
   updatedAt: string;
