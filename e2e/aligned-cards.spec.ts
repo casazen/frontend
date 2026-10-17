@@ -2,6 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { pinE2eLocale } from './helpers/locale';
+import { mockBillingSubscription, mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
 import type { PublicPropertyDto } from '../src/types';
 
 /**
@@ -193,6 +194,53 @@ test.describe('Aligned cards', () => {
         [...document.querySelectorAll('[data-testid=public-property-card] > div:empty')].filter((row) => getComputedStyle(row).display !== 'none').length,
       );
       expect(rowsShown).toBe(0);
+    });
+  });
+
+  test.describe('Plans page (billing)', () => {
+    test('the buttons of the plans end at the bottom of their cards, also the one that cannot be pressed and has a hint', async ({ page }) => {
+      await mockCurrentUserWithOrg(page, { name: 'Acme Stays', planTier: 'Starter' });
+      await mockEntitlement(page, { planTier: 'Starter', maxProperties: 3, properties: 1 });
+      await mockBillingSubscription(page, { status: 'none' });
+      // The Pro plan cannot be bought: its button is disabled and a line says why. The lists have different lengths.
+      await page.route('**/api/billing/plans', async (route) => {
+        const plan = (tier: string, unitAllowance: number, features: string[], purchasable: boolean) => ({
+          tier,
+          displayName: tier,
+          priceMonthly: null,
+          currency: 'EUR',
+          unitAllowance,
+          features,
+          purchasable,
+        });
+        const plans = [
+          plan('Starter', 3, ['Sito di prenotazione', 'Calendario iCal'], true),
+          plan('Pro', 50, ['Tutto Starter', 'Fornitori', 'Stime fiscali', 'Assistenza', 'Dominio personalizzato'], false),
+          plan('Scale', -1, ['Tutto Pro'], true),
+        ];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(plans) });
+      });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(demoUrl('/app/short-rent/settings/plan', 'short-stay'));
+
+      const cards = ['Starter', 'Pro', 'Scale'].map((tier) => page.getByTestId(`plan-card-${tier}`));
+      await expect(cards[1].getByText('Questo piano non è acquistabile al momento.')).toBeVisible();
+
+      await expectAligned(
+        cards.map((card) => card.getByRole('button')),
+        'button',
+        'bottom',
+      );
+      await expectAligned(
+        cards.map((card) => card.getByRole('button')),
+        'button',
+      );
+      // The hint is above the button of its plan, not under it.
+      const [hint, button] = await Promise.all([
+        cards[1].getByText('Questo piano non è acquistabile al momento.').boundingBox(),
+        cards[1].getByRole('button').boundingBox(),
+      ]);
+      expect(hint!.y + hint!.height).toBeLessThanOrEqual(button!.y);
     });
   });
 
