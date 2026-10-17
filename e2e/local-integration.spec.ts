@@ -91,8 +91,8 @@ test.describe('Property flow on local API', () => {
     await page.getByRole('link', { name: uniqueName }).click();
 
     await expect(page.getByRole('heading', { name: uniqueName })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByRole('heading', { name: 'Dettagli proprietà' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Documenti' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: "Dati dell'immobile" })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Documenti e adempimenti' })).toBeVisible();
   });
 
   test('property list UI renders correctly', async ({ page }) => {

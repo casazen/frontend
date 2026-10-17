@@ -213,10 +213,8 @@ describe('OrganizationSettingsPage', () => {
     fireEvent.change(screen.getByTestId('org-contact-email-input'), { target: { value: 'not-an-email' } });
     fireEvent.click(screen.getByTestId('save-org-settings'));
 
-    expect(screen.getByTestId('org-name-error')).toHaveTextContent(i18n.t('orgSettings.errors.nameRequired'));
-    expect(screen.getByTestId('org-contact-email-error')).toHaveTextContent(
-      i18n.t('orgSettings.errors.contactEmailInvalid'),
-    );
+    expect(screen.getByText(i18n.t('orgSettings.errors.nameRequired'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('orgSettings.errors.contactEmailInvalid'))).toBeInTheDocument();
     expect(OrgsApi.updateSettings).not.toHaveBeenCalled();
   });
 

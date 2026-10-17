@@ -6,12 +6,15 @@ import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { sitePageById, type SitePageId } from '../site-pages';
 import type { SiteLegal } from '../site-config';
+import { inviteHref } from '../site-links';
 
 interface SiteLayoutProps {
   current: SitePageId;
   legal: SiteLegal;
   /** Year of the copyright line, fixed by the build so the static HTML and the browser render the same text. */
   year: number;
+  /** The "Accedi" link of the header: not on the production site (`src/config/login-entry.ts`). */
+  showLogin: boolean;
   children: ReactNode;
 }
 
@@ -24,8 +27,11 @@ const NAV: { id: SitePageId; key: string }[] = [
 const FOOTER_LINK = 'text-ink-200 hover:text-white hover:underline underline-offset-4';
 
 /** Header, main area and footer of every page of the public site (SEO-VETRINA). Plain links: no client-side router. */
-export function SiteLayout({ current, legal, year, children }: SiteLayoutProps) {
+export function SiteLayout({ current, legal, year, showLogin, children }: SiteLayoutProps) {
   const { t, i18n } = useTranslation();
+  // The invitation request in the header (only with a contact address): on the production site, where there is no "Accedi",
+  // it is the one action the header offers.
+  const inviteLink = inviteHref(legal.email, t('site.invite.subject'));
 
   const switchLanguage = () => {
     const next = i18n.language === 'en' ? 'it' : 'en';
@@ -75,9 +81,16 @@ export function SiteLayout({ current, legal, year, children }: SiteLayoutProps) 
             >
               {t('site.nav.switchLanguage')}
             </button>
-            <a href="/login" className="rounded-full bg-ink-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-ink-600">
-              {t('site.nav.login')}
-            </a>
+            {inviteLink ? (
+              <a href={inviteLink} className="rounded-full bg-terra-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-terra-800">
+                {t('site.invite.cta')}
+              </a>
+            ) : null}
+            {showLogin ? (
+              <a href="/login" className="rounded-full bg-ink-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-ink-600">
+                {t('site.nav.login')}
+              </a>
+            ) : null}
           </div>
         </div>
       </header>

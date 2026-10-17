@@ -20,6 +20,9 @@ vi.mock('@/components/layout/app-shell', () => ({
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: () => true }),
+}));
 
 const SHORT_RENTAL = ['CedolareSecca21', 'CedolareSecca26', 'IrpefOrdinaria'] as const;
 
