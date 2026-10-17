@@ -164,6 +164,16 @@ export interface SupplierAgendaRequest {
   endUtc?: string | null;
   status: string;
   category: string;
+  /** The service of the catalog the request is for, as it was when asked; null or missing: only the category (SP-03b). */
+  serviceName?: string | null;
+  /** Who asks, as the supplier may know it: "Nome C." until the request is taken, the full name after (SP-03b, D9). */
+  clientLabel?: string | null;
+  /** The comune of the work, as written; never the street. */
+  comune?: string | null;
+  /** `casazen` (a host asked) or `showcase` (a customer booked from the public page of the supplier). */
+  source?: string;
+  /** Where the request is in its life (`to_answer`, `scheduled`...): an open set. */
+  phase?: string;
 }
 
 /** `GET api/supplier/calendar`: hours, closed days, time off, blocks and requests for a range. */
@@ -176,6 +186,53 @@ export interface SupplierAgendaCalendar {
   timeOff: SupplierAgendaTimeOff[];
   blocks: SupplierAgendaBlock[];
   requests: SupplierAgendaRequest[];
+}
+
+/** How serious a conflict is: `danger` (the time cannot be kept as it is) or `warning` (the supplier may live with it). */
+export type SupplierConflictSeverity = 'danger' | 'warning';
+
+/**
+ * One conflict of a job (`GET api/supplier/calendar/conflicts`, SP-03b). `code` is one of `time_off`, `overlap`, `external`, `block`
+ * (danger) or `day_off`, `outside_hours`, `day_full`, `buffer` (warning); the texts are the frontend's, a code it does not know
+ * gets a neutral one. `otherRequestId` and `windowId` name the other request or window in the way, when there is one.
+ */
+export interface SupplierConflict {
+  code: string;
+  severity: string;
+  otherRequestId?: string | null;
+  windowId?: string | null;
+}
+
+/** A time to propose instead: the first free slot as long as the job. */
+export interface SupplierSuggestedSlot {
+  startUtc: string;
+  endUtc: string;
+}
+
+/** A job to come with something wrong. */
+export interface SupplierRequestConflicts {
+  requestId: string;
+  status: string;
+  /** The Europe/Rome day of the job. */
+  date: string;
+  startUtc: string;
+  endUtc: string;
+  /** The most serious first; at most one per code. */
+  conflicts: SupplierConflict[];
+  /** Only for a request still `Richiesto`, and only when a slot is free within 21 days. */
+  suggestedSlot?: SupplierSuggestedSlot | null;
+}
+
+export interface SupplierConflictsResponse {
+  from: string;
+  to: string;
+  timeZone: string;
+  /** The jobs that have at least one conflict, nearest first. */
+  items: SupplierRequestConflicts[];
+  total: number;
+  /** The range held more jobs than the check looks at: only the nearest `limit` were checked. */
+  truncated: boolean;
+  limit: number;
 }
 
 /**

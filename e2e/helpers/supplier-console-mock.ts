@@ -283,6 +283,16 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    // The jobs of the next 30 days with something wrong (SP-03b): none.
+    if (url.includes('/calendar/conflicts') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ from: '2026-10-16', to: '2026-11-15', timeZone: 'Europe/Rome', items: [], total: 0, truncated: false, limit: 200 }),
+      });
+      return;
+    }
+
     if (url.includes('/calendar/free-events') && method === 'GET') {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], pendingCount: 0 }) });
       return;
