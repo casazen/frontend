@@ -1,11 +1,13 @@
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { FocusBlock } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import { isRetryableConnectError, type ConnectUiStatus } from '@/types/connect.types';
 import { AlertCircle, CheckCircle2, Clock, ExternalLink, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -181,19 +183,21 @@ export function ConnectPaymentsPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-6">
         <PageHeader title={t('settings.connectPaymentsTitle')} description={t('settings.connectDescription')} crumbs="auto" />
 
-        <PaymentsFocus payments={payments} />
-        <PaymentsBody payments={payments} showAction={false} />
+        <div className={cn(FOCUS_COLUMN, 'space-y-6')}>
+          <PaymentsFocus payments={payments} />
+          <PaymentsBody payments={payments} showAction={false} />
 
-        <p className="text-sm text-foreground/70">
-          {t('settings.managePlanIn')}{' '}
-          <Link to="/app/short-rent/settings/plan" className="underline">
-            {t('settings.planSettings')}
-          </Link>
-          .
-        </p>
+          <p className="text-sm text-foreground/70">
+            {t('settings.managePlanIn')}{' '}
+            <Link to="/app/short-rent/settings/plan" className="underline">
+              {t('settings.planSettings')}
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     </AppShell>
   );

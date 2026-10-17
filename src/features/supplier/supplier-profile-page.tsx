@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { useSupplierActivation, useSupplierHours, useSupplierProfile } from '@/queries/use-supplier';
 import { ProfileFocus } from './profile/profile-focus';
 import { ProfileForm } from './profile/profile-form';
@@ -25,7 +27,7 @@ export function SupplierProfilePage() {
   // is already on screen leaves the page as it is: what was typed in it must not be lost.
   if (isError && !profile) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-3xl space-y-6">
+      <div className="w-full min-w-0 space-y-6">
         <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
         <ErrorState testId="supplier-profile-error" title={t('supplier.profileLoadError')} error={error} onRetry={() => void refetch()} />
       </div>
@@ -34,7 +36,7 @@ export function SupplierProfilePage() {
 
   if (isLoading || !profile) {
     return (
-      <div className="mx-auto w-full min-w-0 max-w-3xl space-y-6" data-testid="supplier-profile-loading" aria-busy="true">
+      <div className="w-full min-w-0 space-y-6" data-testid="supplier-profile-loading" aria-busy="true">
         <PageHeader title={t('supplier.profileTitle')} crumbs="auto" />
         <SkeletonLine lines={8} label={t('supplier.profileLoading')} />
       </div>
@@ -42,7 +44,7 @@ export function SupplierProfilePage() {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-3xl space-y-8" data-testid="supplier-profile-page">
+    <div className="w-full min-w-0 space-y-8" data-testid="supplier-profile-page">
       <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
       <ProfileFocus
         profile={profile}
@@ -51,9 +53,14 @@ export function SupplierProfilePage() {
         settled={!activation.isPending && !hours.isPending}
         onSetHours={focusHoursSection}
       />
-      <ProfileForm profile={profile} />
-      <ProfilePhotos profile={profile} />
-      <ProfileHours />
+      {/* The data of the business on the left, the photos and the hours on the right (under each other on a narrow screen). */}
+      <div className={cn(PAGE_COLUMNS_WIDE, 'gap-8')}>
+        <ProfileForm profile={profile} />
+        <div className="min-w-0 space-y-8">
+          <ProfilePhotos profile={profile} />
+          <ProfileHours />
+        </div>
+      </div>
     </div>
   );
 }

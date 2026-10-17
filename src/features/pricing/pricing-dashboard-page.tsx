@@ -2,10 +2,12 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PageCrumb } from '@/lib/page-crumbs';
+import { cn } from '@/lib/utils';
 import {
   usePricingAdapterConfig,
   useSavePricingAdapterConfig,
@@ -144,10 +146,13 @@ export function PricingDashboardPage() {
               onApplyAll={() => apply.mutate([])}
               onRecalculate={() => recalculate.mutate()}
             />
-            <PricingRulesSection config={config} isSaving={isSaving} onToggle={handleToggle} onSave={handleSave} />
-            {hasSuggestions && suggestions ? (
-              <PricingSuggestionsSection data={suggestions} applying={apply.isPending} onApply={(items) => apply.mutate(items)} />
-            ) : null}
+            {/* The rules on the left, the suggestions they give on the right (under each other on a narrow screen). */}
+            <div className={cn(PAGE_COLUMNS_WIDE, 'gap-8')}>
+              <PricingRulesSection config={config} isSaving={isSaving} onToggle={handleToggle} onSave={handleSave} />
+              {hasSuggestions && suggestions ? (
+                <PricingSuggestionsSection data={suggestions} applying={apply.isPending} onApply={(items) => apply.mutate(items)} />
+              ) : null}
+            </div>
           </div>
         )}
       </div>
