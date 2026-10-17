@@ -54,6 +54,8 @@ export function SupplierEarningsPage() {
         title={t('supplier.earnings.title')}
         description={t('supplier.earnings.description')}
         crumbs="auto"
+        /* The file is not the thing a phone is for: the button stays in the header, not fixed above the bottom bar. */
+        mobilePrimary="none"
         primary={{
           label: t('supplier.earnings.export'),
           icon: Download,
