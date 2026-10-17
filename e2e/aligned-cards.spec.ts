@@ -342,6 +342,55 @@ test.describe('Aligned cards', () => {
 
   });
 
+  test.describe('Plan cards of the admin dialog (change the plan of an org)', () => {
+    test('the limit and the button of the three cards line up whatever the length of the descriptions', async ({ page }) => {
+      // Three descriptions of one, two and four lines in the width of the dialog.
+      await page.route('**/api/orgs/plans', async (route) => {
+        const plan = (tier: string, maxProperties: number, description: string) => ({ tier, displayName: tier, maxProperties, description });
+        const plans = [
+          plan('Starter', 3, 'Per iniziare.'),
+          plan('Pro', 50, 'Fino a 50 proprietà per operatori in crescita che hanno bisogno di più spazio per le loro strutture e di più utenti.'),
+          plan('Scale', -1, 'Proprietà illimitate, per agenzie e property manager.'),
+        ];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(plans) });
+      });
+      await page.route(/\/api\/users(\?.*)?$/, async (route) => {
+        if (route.request().method() !== 'GET') {
+          await route.continue();
+          return;
+        }
+        const user = {
+          id: 'auth0|target-user',
+          email: 'owner@example.com',
+          firstName: 'Mario',
+          lastName: 'Rossi',
+          role: 'PropertyOwner',
+          rentalType: 'ShortTerm',
+          isActive: true,
+          createdAt: '2026-01-01T00:00:00Z',
+          orgId: 'org-target',
+          orgName: 'Target Org',
+          planTier: 'Starter',
+        };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [user], totalCount: 1, page: 1, pageSize: 20 }) });
+      });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(demoUrl('/app/admin/users', 'admin'));
+      await page.getByRole('button', { name: 'Piano' }).click();
+
+      const dialog = page.getByRole('dialog');
+      const cards = ['Starter', 'Pro', 'Scale'].map((tier) => dialog.getByTestId(`plan-card-${tier}`));
+      await expect(cards[2]).toBeVisible();
+      expect(await linesOf(cards[1].locator('p').first())).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(cards[0].locator('p').first())).toBe(1);
+
+      await expectAligned(cards.map((card) => card.locator('h3')), 'name');
+      await expectAligned(cards.map((card) => card.locator('p').nth(1)), 'limit');
+      await expectAligned(cards.map((card) => card.getByRole('button')), 'button');
+      await expectAligned(cards, 'card', 'bottom');
+    });
+  });
+
   test.describe('OTA channels (behind the otaPartnerApi flag)', () => {
     test('the rows and the button of the cards line up whichever optional rows a channel has', async ({ page }) => {
       await page.route('**/api/public/features', async (route) => {
