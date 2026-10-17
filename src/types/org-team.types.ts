@@ -43,10 +43,66 @@ export interface OrgInvitation {
   status: OrgInvitationStatus;
   /** UTC. */
   createdAt: string;
+  /** When an email of the invitation last went out because somebody asked for it (UTC): the creation or the last «reinvia». */
+  lastSentAt: string | null;
   /** When the link stops working (UTC). */
   expiresAt: string;
+  /** When the reminder of the third day went out (UTC); null until then. */
+  reminderSentAt: string | null;
   /** The account that invited (`OrgMember.userId`). */
   invitedByUserId: string;
+}
+
+/** The language of the emails of an invitation. */
+export type OrgInvitationLanguage = 'it' | 'en';
+
+/** Body of `POST /api/orgs/me/invitations`. */
+export interface CreateOrgInvitationRequest {
+  email: string;
+  name: string;
+  /** Never `Owner`; `Admin` only when the owner invites. */
+  role: OrgRole;
+  /** `short-rent` and/or `long-rent`: at least one. */
+  areas: string[];
+  propertyScope: OrgPropertyScope;
+  /** The properties of a `Selected` collaborator; only with `Selected`. */
+  propertyIds?: string[];
+  language?: OrgInvitationLanguage;
+}
+
+/** An invitation just made or sent again. `emailQueued` false: the email could not be queued, the link can be copied by hand. */
+export interface OrgInvitationSent {
+  invitation: OrgInvitation;
+  emailQueued: boolean;
+}
+
+/** `POST /api/orgs/me/invitations/{id}/link`: a fresh link to hand to the person. It carries the secret: it is never kept. */
+export interface OrgInvitationLink {
+  invitationId: string;
+  url: string;
+  expiresAt: string;
+}
+
+/** `POST /api/org-invitations/lookup` (anonymous): what the link is for, to show before accepting. Nothing about who invited. */
+export interface OrgInvitationLookup {
+  orgName: string;
+  /** The address the invitation is for: the account that accepts must have it. */
+  email: string;
+  name: string;
+  role: OrgRole;
+  areas: string[];
+  /** UTC. */
+  expiresAt: string;
+}
+
+/** `POST /api/org-invitations/accept`: the person is now a member of the org. */
+export interface AcceptOrgInvitationResult {
+  orgId: string;
+  orgName: string;
+  role: OrgRole;
+  areas: string[];
+  /** The person had an empty org of its own, made automatically, and left it for this one. */
+  leftEmptyOrg: boolean;
 }
 
 /** What a role does with one capability of the matrix: sees and changes it, only sees it, or neither. */
@@ -95,9 +151,25 @@ export interface OrgMemberProperties {
   properties: OrgMemberProperty[];
 }
 
-/** `GET /api/orgs/me/members`: the org's people, owner first. */
+/**
+ * The seats of the org: the people the plan allows and the people it has. `used` is the active people and the pending invitations
+ * together; `max` and `available` are int max when `unlimited`.
+ */
+export interface OrgSeats {
+  max: number;
+  used: number;
+  available: number;
+  activeMembers: number;
+  pendingInvitations: number;
+  unlimited: boolean;
+  /** One more person fits. */
+  canInvite: boolean;
+}
+
+/** `GET /api/orgs/me/members`: the org's people, owner first, and its seats. */
 export interface OrgMembersResponse {
   items: OrgMember[];
+  seats: OrgSeats;
 }
 
 /** What happened (`OrgActivityType`): the log holds the code and the ids, the client composes the sentence. */
