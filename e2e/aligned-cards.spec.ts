@@ -557,7 +557,7 @@ test.describe('Aligned cards', () => {
      * The dev server serves the template of a page, not the prerendered page: it is given the root element that the browser entry
      * of the site renders into (as `scripts/prerender-site.mjs` does at build time).
      */
-    async function openSitePage(page: Page, id: 'home' | 'features'): Promise<void> {
+    async function openSitePage(page: Page, id: 'home' | 'features' | 'suppliers'): Promise<void> {
       await page.route('**/__site/*', async (route) => {
         const url = new URL(route.request().url());
         const response = await route.fetch({ url: new URL('/site.html', url).toString() });
@@ -611,6 +611,35 @@ test.describe('Aligned cards', () => {
         'card',
         'bottom',
       );
+    });
+
+    test('five cards are five across from a laptop, not three and two with empty cells', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await openSitePage(page, 'home');
+
+      const cards = cardsUnder(page, 'Adempimenti italiani sotto controllo');
+      await expect(cards).toHaveCount(5);
+      const all = [0, 1, 2, 3, 4].map((index) => cards.nth(index));
+      await expectAligned(all, 'card');
+      await expectAligned(
+        all.map((card) => card.locator('h3')),
+        'title',
+      );
+      await expectAligned(
+        all.map((card) => card.locator('p')),
+        'text',
+      );
+      await expectAligned(all, 'card', 'bottom');
+    });
+
+    test('three cards are three across from a tablet', async ({ page }) => {
+      await page.setViewportSize({ width: 800, height: 900 });
+      await openSitePage(page, 'suppliers');
+
+      const cards = cardsUnder(page, 'Cosa trovi');
+      await expect(cards).toHaveCount(3);
+      await expectAligned([0, 1, 2].map((index) => cards.nth(index)), 'card');
+      await expectAligned([0, 1, 2].map((index) => cards.nth(index).locator('p')), 'text');
     });
 
     test('on a phone a card is a plain column, as before', async ({ page }) => {

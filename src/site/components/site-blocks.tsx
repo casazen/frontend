@@ -122,8 +122,14 @@ export function FeatureCard({ title, text, icon, tint = 'terra', heading: Headin
   );
 }
 
-export function CardGrid({ children }: { children: ReactNode }) {
-  return <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
+/**
+ * The grid of the cards. When the number of cards is fixed, `count` says it and the columns are the ones that divide it, so that no
+ * line is left with empty cells (three cards are three across from `md`, five are five across from `lg`, and one under the other
+ * below). Without it, the grid is two across from `sm` and three from `lg`, for a list of any length.
+ */
+export function CardGrid({ children, count }: { children: ReactNode; count?: 3 | 5 }) {
+  const columns = count === 3 ? 'md:grid-cols-3' : count === 5 ? 'lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-3';
+  return <div className={`grid gap-5 ${columns}`}>{children}</div>;
 }
 
 export function BulletList({ items }: { items: string[] }) {

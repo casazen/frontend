@@ -94,6 +94,19 @@ describe('cards that line up (the subgrid cards of the public site)', () => {
     expect(Array.from(root.firstElementChild!.children).every((card) => rowsOf(card) === 3)).toBe(true);
   });
 
+  it.each([
+    [undefined, ['sm:grid-cols-2', 'lg:grid-cols-3']],
+    [3, ['md:grid-cols-3']],
+    [5, ['lg:grid-cols-5']],
+  ] as const)('CardGrid_Count%s_HasColumnsThatDivideTheCards', (count, classes) => {
+    const root = dom(renderToString(<CardGrid count={count}>{null}</CardGrid>));
+    const grid = root.firstElementChild!;
+
+    expect(grid.getAttribute('class')!.split(' ')).toEqual(expect.arrayContaining(classes));
+    // Three cards are not two and one alone, five are not three and two: only the grid of a list of any length has such a line.
+    if (count !== undefined) expect(grid.getAttribute('class')).not.toContain('sm:grid-cols-2');
+  });
+
   it.each(SITE_PAGES.map((page) => page.id))('render_%s_theCardsOfAGridHaveTheSameRowsAndOneChildForEach', (page) => {
     const html = renderToString(
       <SiteApp page={page} i18n={createSiteI18n('it')} legal={{ name: null, vatId: null, address: null, email: 'info@example.com' }} year={2026} />,
