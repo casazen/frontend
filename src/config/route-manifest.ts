@@ -639,6 +639,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/account-profile-page')).AccountProfilePage }),
   },
   {
+    // "Impostazioni" (AM-08b): the org's name, the address of its booking site, its contact email and its Stripe account in one page, for
+    // the owner and the administrators (`org.settings.manage`; the endpoints are the ones of `OrgBillingAdmin`, which they pass too). The
+    // organization and payments pages of the rental areas stay where they are.
+    path: '/app/account/settings',
+    context: 'account',
+    requiredPermissions: ['org.settings.manage'],
+    navKey: 'nav.accountSettings',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/account/account-settings-page')).AccountSettingsPage }),
+  },
+  {
     path: '/app/admin',
     context: 'admin',
     requiredPermissions: ['admin.stats.read'],
