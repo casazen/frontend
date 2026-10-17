@@ -195,4 +195,78 @@ test.describe('Aligned cards', () => {
       expect(rowsShown).toBe(0);
     });
   });
+
+  test.describe('Public site (src/site)', () => {
+    // The site has its own stylesheet, which finds its classes by scanning src/site/ only: a class written anywhere else would
+    // not be there, and the cards would not line up. So this is checked on the page, not only on the markup.
+
+    /**
+     * The dev server serves the template of a page, not the prerendered page: it is given the root element that the browser entry
+     * of the site renders into (as `scripts/prerender-site.mjs` does at build time).
+     */
+    async function openSitePage(page: Page, id: 'home' | 'features'): Promise<void> {
+      await page.route('**/__site/*', async (route) => {
+        const url = new URL(route.request().url());
+        const response = await route.fetch({ url: new URL('/site.html', url).toString() });
+        const html = (await response.text())
+          .replace('<!--site-root-->', `<div id="root" data-site-page="${url.pathname.split('/').pop()}" data-site-year="2026"></div>`)
+          .replace('<!--site-head-->', '');
+        await route.fulfill({ status: 200, contentType: 'text/html', body: html });
+      });
+      await page.goto(`/__site/${id}`);
+    }
+
+    /** The cards of the grid under the heading `name`. */
+    function cardsUnder(page: Page, name: string): Locator {
+      return page.locator('section', { has: page.getByRole('heading', { name, exact: true }) }).locator('div.grid > div');
+    }
+
+    test('the four cards of "Per chi è CasaZen" line up whatever the length of their titles and texts', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await openSitePage(page, 'home');
+
+      const cards = cardsUnder(page, 'Per chi è CasaZen');
+      await expect(cards).toHaveCount(4);
+      const each = (selector: string) => [0, 1, 2, 3].map((index) => cards.nth(index).locator(selector).first());
+
+      // "Proprietari di affitti lunghi" is on two lines, the other titles on one.
+      expect(await linesOf(each('h3')[2])).toBe(2);
+      expect(await linesOf(each('h3')[0])).toBe(1);
+
+      await expectAligned(each('h3'), 'title');
+      await expectAligned(each('p'), 'text');
+      await expectAligned([0, 1, 2, 3].map((index) => cards.nth(index)), 'card', 'bottom');
+    });
+
+    test('the cards of the features page start their lists at the same height', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await openSitePage(page, 'features');
+
+      const cards = page.locator('div.grid > div:has(> h2)');
+      await expect(cards).toHaveCount(7);
+      // The first row: the text of the first two cards is on two lines, the one of the third on one.
+      const firstRow = [0, 1, 2].map((index) => cards.nth(index));
+      expect(await linesOf(firstRow[0].locator('p').first())).toBe(2);
+      expect(await linesOf(firstRow[2].locator('p').first())).toBe(1);
+
+      await expectAligned(
+        firstRow.map((card) => card.locator('ul')),
+        'list',
+      );
+      await expectAligned(
+        firstRow.map((card) => card),
+        'card',
+        'bottom',
+      );
+    });
+
+    test('on a phone a card is a plain column, as before', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await openSitePage(page, 'home');
+
+      const card = cardsUnder(page, 'Per chi è CasaZen').first();
+      await expect(card).toBeVisible();
+      expect(await card.evaluate((node) => getComputedStyle(node).display)).toBe('flex');
+    });
+  });
 });

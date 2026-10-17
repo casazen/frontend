@@ -198,6 +198,7 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
               tint={tint}
               title={t(`site.home.audience.${key}Title`)}
               text={t(`site.home.audience.${key}Text`)}
+              extra
             >
               {key === 'supplier' ? (
                 <a
@@ -310,6 +311,7 @@ export function FeaturesPage({ legal }: { legal: SiteLegal }) {
               icon={group.icon}
               tint={group.tint}
               heading="h2"
+              extra
             >
               <BulletList items={group.items.map((key) => t(key))} />
             </FeatureCard>
