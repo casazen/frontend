@@ -19,14 +19,15 @@ export function AdminDashboardPage() {
       />
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+        // The six numbers below, three across from a laptop (two rows of three, not four and two alone).
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
         </div>
       ) : stats ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <AdminKpiCard
               title={t('admin.dashboard.kpi.totalProperties')}
               value={stats.totalProperties}

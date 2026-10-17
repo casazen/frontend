@@ -38,9 +38,10 @@ const LINK_STYLES: Record<NavVariant, { row: string; active: string; inactive: s
   // Tiles, as the demo draws them: the icon above the name, a target far taller than the 44 px a finger needs. No border:
   // the page keeps its own border color (UI-01), a tile tells the open page by its background and a ring. The name comes
   // first in the markup and last on the screen (`flex-col-reverse`), so that a screen reader reads "Prenotazioni, 2
-  // richieste da approvare" and not the counter before the name.
+  // richieste da approvare" and not the counter before the name. `h-full`: the tile is as tall as its cell, so that the two
+  // tiles of a row have the same background when one name takes two lines.
   sheet: {
-    row: 'relative flex min-h-[4.5rem] flex-col-reverse justify-between gap-2 rounded-xl p-3 text-sm font-semibold leading-snug outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
+    row: 'relative flex h-full min-h-[4.5rem] flex-col-reverse justify-between gap-2 rounded-xl p-3 text-sm font-semibold leading-snug outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
     active: `bg-primary/10 ring-1 ring-inset ring-primary/40 ${ACCENT_TEXT}`,
     inactive: 'bg-muted/60 text-foreground hover:bg-muted',
   },

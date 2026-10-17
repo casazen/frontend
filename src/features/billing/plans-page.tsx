@@ -338,7 +338,10 @@ function BillingPlanCard({ plan, action, portalPending, onCheckout, onPortal }: 
             ))}
           </ul>
         )}
+        {/* The button is the last thing of the pinned block, so that it ends at the bottom of every card: what explains a button
+            that cannot be pressed goes above it, not under it. */}
         <div className="mt-auto space-y-2">
+          {action === 'unavailable' && <p className="text-xs text-muted-foreground">{t('billing.plans.unavailableHint')}</p>}
           {action === 'current' && (
             <Button type="button" className="w-full" variant="secondary" disabled>
               {t('plan.currentPlan')}
@@ -355,12 +358,9 @@ function BillingPlanCard({ plan, action, portalPending, onCheckout, onPortal }: 
             </Button>
           )}
           {action === 'unavailable' && (
-            <>
-              <Button type="button" className="w-full" variant="outline" disabled>
-                {t('billing.plans.unavailable')}
-              </Button>
-              <p className="text-xs text-muted-foreground">{t('billing.plans.unavailableHint')}</p>
-            </>
+            <Button type="button" className="w-full" variant="outline" disabled>
+              {t('billing.plans.unavailable')}
+            </Button>
           )}
         </div>
       </CardContent>

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlignedCard, CardDescription, CardTitle } from '@/components/ui/card';
 import type { PlanCatalogEntry, PlanTier } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -31,8 +31,10 @@ export function PlanCard({
     return t('plan.upToProperties', { count: maxProperties });
   }
 
+  // Four rows, the same in every card of the grid (`AlignedCard`): a longer description moves the limit and the button of all the cards.
   return (
-    <Card
+    <AlignedCard
+      rows={4}
       data-testid={`plan-card-${plan.tier}`}
       className={cn(
         'transition-shadow hover:shadow-md',
@@ -40,26 +42,22 @@ export function PlanCard({
         isCurrent && 'border-primary/40',
       )}
     >
-      <CardHeader>
-        <CardTitle>{plan.displayName}</CardTitle>
-        <CardDescription>{plan.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">{formatLimit(plan.maxProperties)}</p>
-        <Button
-          type="button"
-          className="w-full"
-          variant={isCurrent ? 'secondary' : 'default'}
-          disabled={isLoading || isCurrent}
-          onClick={() => onSelect(plan.tier)}
-        >
-          {isCurrent
-            ? t('plan.currentPlan')
-            : isLoading && isSelected
-              ? t('plan.saving')
-              : actionLabel ?? t('plan.choosePlan')}
-        </Button>
-      </CardContent>
-    </Card>
+      <CardTitle className="mb-1.5">{plan.displayName}</CardTitle>
+      <CardDescription className="mb-6">{plan.description}</CardDescription>
+      <p className="mb-4 text-sm text-muted-foreground">{formatLimit(plan.maxProperties)}</p>
+      <Button
+        type="button"
+        className="w-full"
+        variant={isCurrent ? 'secondary' : 'default'}
+        disabled={isLoading || isCurrent}
+        onClick={() => onSelect(plan.tier)}
+      >
+        {isCurrent
+          ? t('plan.currentPlan')
+          : isLoading && isSelected
+            ? t('plan.saving')
+            : actionLabel ?? t('plan.choosePlan')}
+      </Button>
+    </AlignedCard>
   );
 }

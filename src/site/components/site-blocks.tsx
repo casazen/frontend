@@ -19,9 +19,19 @@ const TILE: Record<Tint, string> = {
 };
 
 /** The tinted square that carries the icon of a card. Decoration: the title next to it says what it is. */
-export function IconTile({ icon: Icon, tint = 'terra', large = false }: { icon: LucideIcon; tint?: Tint; large?: boolean }) {
+export function IconTile({
+  icon: Icon,
+  tint = 'terra',
+  large = false,
+  className = '',
+}: {
+  icon: LucideIcon;
+  tint?: Tint;
+  large?: boolean;
+  className?: string;
+}) {
   return (
-    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-2xl ${large ? 'size-14' : 'size-11'} ${TILE[tint]}`}>
+    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-2xl ${large ? 'size-14' : 'size-11'} ${TILE[tint]} ${className}`}>
       <Icon className={large ? 'size-7' : 'size-5'} strokeWidth={1.9} />
     </span>
   );
@@ -81,22 +91,45 @@ interface FeatureCardProps {
   tint?: Tint;
   /** The level of the title: a card right under the `h1` of the page is an `h2`, one under a section an `h3`. */
   heading?: 'h2' | 'h3';
+  /**
+   * There is something under the text (a list, a link: the `children`). The cards of a grid line up part by part, so they all
+   * have the same rows: give `extra` to every card of a grid where one has something under its text, to those that have
+   * nothing too.
+   */
+  extra?: boolean;
   children?: ReactNode;
 }
 
-export function FeatureCard({ title, text, icon, tint = 'terra', heading: Heading = 'h3', children }: FeatureCardProps) {
+// The card is a subgrid of the grid it is in (it has to be a direct child of it) from the second column on, `sm`: a row for each
+// part, as tall as the tallest one among the cards of the row, so that a title on two lines or a longer text moves the title, the
+// text and the list of the cards of the row alike. In a single column there is nothing to line up with: a plain column.
+const FEATURE_ROW_SPANS: Record<number, string> = {
+  2: 'sm:row-span-2',
+  3: 'sm:row-span-3',
+  4: 'sm:row-span-4',
+};
+
+export function FeatureCard({ title, text, icon, tint = 'terra', heading: Heading = 'h3', extra = false, children }: FeatureCardProps) {
+  const hasExtra = extra || (children !== undefined && children !== null && children !== false);
+  const rows = 1 + (icon ? 1 : 0) + (text ? 1 : 0) + (hasExtra ? 1 : 0);
   return (
-    <div className="flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft">
-      {icon ? <IconTile icon={icon} tint={tint} /> : null}
-      <Heading className={`${icon ? 'mt-5 ' : ''}text-lg font-semibold text-ink-800`}>{title}</Heading>
+    <div className={`flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
+      {icon ? <IconTile icon={icon} tint={tint} className="mb-5" /> : null}
+      <Heading className="text-lg font-semibold text-ink-800">{title}</Heading>
       {text && <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-500">{text}</p>}
-      {children}
+      {hasExtra ? <div>{children}</div> : null}
     </div>
   );
 }
 
-export function CardGrid({ children }: { children: ReactNode }) {
-  return <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
+/**
+ * The grid of the cards. When the number of cards is fixed, `count` says it and the columns are the ones that divide it, so that no
+ * line is left with empty cells (three cards are three across from `md`, five are five across from `lg`, and one under the other
+ * below). Without it, the grid is two across from `sm` and three from `lg`, for a list of any length.
+ */
+export function CardGrid({ children, count }: { children: ReactNode; count?: 3 | 5 }) {
+  const columns = count === 3 ? 'md:grid-cols-3' : count === 5 ? 'lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-3';
+  return <div className={`grid gap-5 ${columns}`}>{children}</div>;
 }
 
 export function BulletList({ items }: { items: string[] }) {
@@ -218,16 +251,26 @@ export function Compare({ beforeTitle, before, afterTitle, after }: CompareProps
   );
 }
 
-/** Numbered cards, one per step. A step with a title has a text under it; one without is a sentence on its own. */
+/**
+ * Numbered cards, one per step. A step with a title has a text under it; one without is a sentence on its own. Like the
+ * `FeatureCard`s, the cards are subgrids of the list from the second column on (`md`): the number, the title and the text of
+ * each line up with those of its neighbours.
+ */
 export function Steps({ items }: { items: { title?: string; text: string }[] }) {
+  const titled = items.some((item) => item.title);
   return (
     <ol className="grid gap-5 md:grid-cols-3">
       {items.map((item, index) => (
-        <li key={item.text} className="rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft">
+        <li
+          key={item.text}
+          className={`flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft md:grid md:grid-rows-subgrid md:gap-y-0 ${titled ? 'md:row-span-3' : 'md:row-span-2'}`}
+        >
           <span className="grid size-10 place-items-center rounded-full bg-terra-100 font-display text-lg font-semibold text-terra-800 lining-nums">
             {index + 1}
           </span>
-          {item.title ? <h3 className="mt-4 text-lg font-semibold text-ink-800">{item.title}</h3> : null}
+          {titled ? (
+            item.title ? <h3 className="mt-4 text-lg font-semibold text-ink-800">{item.title}</h3> : <div />
+          ) : null}
           <p className={`leading-relaxed ${item.title ? 'mt-2 text-[0.95rem] text-ink-500' : 'mt-4 text-ink-600'}`}>{item.text}</p>
         </li>
       ))}

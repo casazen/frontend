@@ -36,7 +36,8 @@ export function StatTile({ label, value, tone = 'neutral', delta, href, state, c
 
   const content = (
     <>
-      <span className={cn('flex items-center gap-1.5 text-sm text-foreground/70', href !== undefined && 'group-hover/tile:underline')}>
+      {/* `self-start`: in a row of the strip as tall as the longest name, a shorter name stays at the top, as the first line of the others. */}
+      <span className={cn('flex items-center gap-1.5 self-start text-sm text-foreground/70', href !== undefined && 'group-hover/tile:underline')}>
         {ToneIcon ? <ToneIcon aria-hidden="true" className={cn('size-4 shrink-0', style.accent)} /> : null}
         <span className="min-w-0 break-words">{label}</span>
         {href !== undefined ? <ChevronRight aria-hidden="true" className="ml-auto size-4 shrink-0" /> : null}
@@ -90,13 +91,30 @@ function tilesOf(children: React.ReactNode, path = ''): Entry[] {
 export interface StatStripProps extends React.HTMLAttributes<HTMLDivElement> {
   /** The name of the group for a screen reader. Default: "In breve". */
   label?: string;
-  /** Three or four `StatTile`s, directly or in a fragment or a list. */
+  /**
+   * Three or four `StatTile`s, directly or in a fragment or a list. A child that is not a `StatTile` (a list of names, as in the
+   * Home of Affitti brevi) is taller than a number: it takes the room of the line from a laptop on, beside the tiles.
+   */
   children: React.ReactNode;
 }
 
+// The tiles of a strip are subgrids of it (written out in full, so that Tailwind finds the classes): the item of the list and the
+// tile in it take three rows, the name, the number and how it moves, so that a name on two lines or a number without a delta does
+// not move the number of that tile alone, and the numbers of a line start at the same height. The rows have no gap, and the
+// delta is the last one: a tile without it has nothing to fill. On a phone, a column or a carousel, there is nothing to line up.
+const TILE_ROWS = 'sm:row-span-3 sm:grid sm:grid-rows-subgrid sm:*:row-span-3 sm:*:grid sm:*:grid-rows-subgrid';
+// A child that is not a tile (the list of the next arrivals of the Home) is taller than a number and is not made of those rows.
+// Beside it the tiles line up from a laptop on, where the strip is one line: it takes four rows, the fourth is the one that takes
+// the room it asks for (`1fr`), and the three rows of the tiles stay as tall as their own text. In two columns the strip is left
+// as it was: the tiles are wide enough there to have their names on one line, and the `1fr` rows of two lines would all be as
+// tall as the one that needs it.
+const TILE_ROWS_BESIDE_A_LIST = 'lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:*:row-span-3 lg:*:grid lg:*:grid-rows-subgrid';
+const LIST_ROWS = 'lg:row-span-4';
+
 /**
- * Three or four numbers in one quiet row, without charts: one column on a phone, two on a tablet, all in a row from a laptop.
- * More than four is a mistake of the page, and in development it says so in the console.
+ * Three or four numbers in one quiet row, without charts: one column on a phone, two on a tablet (three, for three: no number
+ * is left alone on a line), all in a row from a laptop. The tiles line up, the names over the names and the numbers over the
+ * numbers (see `TILE_ROWS`). More than four is a mistake of the page, and in development it says so in the console.
  *
  *     <StatStrip>
  *       <StatTile label="Incassati a ottobre" value="3.600 €" delta="+6% su settembre" />
@@ -108,6 +126,7 @@ export function StatStrip({ label, children, className, ...props }: StatStripPro
   const { t } = useTranslation();
   const tiles = tilesOf(children);
   const count = tiles.length;
+  const besideAList = tiles.some(({ tile }) => tile.type !== StatTile);
 
   React.useEffect(() => {
     if (import.meta.env.DEV && count > MAX_TILES) {
@@ -122,14 +141,16 @@ export function StatStrip({ label, children, className, ...props }: StatStripPro
       <ul
         role="list"
         className={cn(
-          'grid grid-cols-1 gap-x-8 sm:grid-cols-2',
+          'grid grid-cols-1 gap-x-8',
+          // Three tiles across from a tablet, not two and one alone; two for the others.
+          count === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
           // Three or four across from a laptop: the sidebar takes its room there, and each number keeps about 170 px.
-          count === 3 && 'lg:grid-cols-3',
           count >= 4 && 'lg:grid-cols-4',
+          besideAList && 'lg:auto-rows-[auto_auto_auto_1fr]',
         )}
       >
         {tiles.map(({ key, tile }) => (
-          <li key={key} className="min-w-0">
+          <li key={key} className={cn('min-w-0', tile.type === StatTile ? (besideAList ? TILE_ROWS_BESIDE_A_LIST : TILE_ROWS) : LIST_ROWS)}>
             {tile}
           </li>
         ))}
