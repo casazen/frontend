@@ -539,6 +539,7 @@
     "supplierServices": "Servizi e prezzi",
     "supplierServicesBar": "Servizi",
     "supplierHelpIcal": "Guida iCal",
+    "supplierPayments": "Pagamenti",
     "group": {
       "account": "Il tuo account",
       "activity": "La tua attività",
@@ -4175,6 +4176,72 @@
         "bannerAction": "Vai ad accettare"
       }
     },
+    "payments": {
+      "checking": "Controlliamo con Stripe…",
+      "description": "Il conto su cui ricevi i pagamenti dei tuoi lavori.",
+      "errors": {
+        "dashboard": "Non siamo riusciti ad aprire la dashboard di Stripe. Riprova.",
+        "onboarding": "Non siamo riusciti ad aprire Stripe. Riprova."
+      },
+      "focus": {
+        "active": {
+          "action": "Apri la dashboard di Stripe",
+          "body": "Il tuo conto Stripe è collegato: incassi e versamenti sono abilitati.",
+          "returnedBody": "Stripe ha confermato il tuo conto: da ora puoi ricevere i pagamenti online.",
+          "returnedTitle": "Conto collegato",
+          "title": "Puoi ricevere pagamenti online"
+        },
+        "expired": {
+          "body": "Il link che avevi aperto non è più valido: succede se la pagina di Stripe resta aperta a lungo. Riprendi la configurazione e ti portiamo a un link nuovo.",
+          "title": "Il link di Stripe è scaduto"
+        },
+        "kicker": {
+          "default": "Conto per i pagamenti",
+          "refresh": "Link scaduto",
+          "return": "Di ritorno da Stripe"
+        },
+        "notConnected": {
+          "action": "Collega il conto",
+          "body": "Lo fai sul sito di Stripe, il nostro partner di pagamento: ti chiede i dati della tua attività e il conto su cui vuoi ricevere i pagamenti. CasaZen non vede né conserva i tuoi dati bancari.",
+          "title": "Collega il conto per ricevere i pagamenti online"
+        },
+        "requirements": {
+          "bank": "il conto su cui ricevere i versamenti",
+          "business": "i dati dell'attività",
+          "intro": "Stripe chiede ancora:",
+          "other": "altri dati richiesti da Stripe",
+          "person": "i dati e il documento di chi rappresenta l'attività",
+          "terms": "l'accettazione dei termini di Stripe"
+        },
+        "toComplete": {
+          "action": "Riprendi la configurazione",
+          "body": "La configurazione su Stripe non è finita: puoi riprenderla da dove eri rimasto.",
+          "title": "Manca ancora qualcosa per ricevere i pagamenti"
+        },
+        "verifying": {
+          "action": "Controlla di nuovo",
+          "body": "Hai inviato tutto quello che serviva. Appena Stripe ha finito di controllare, qui vedrai il conto attivo: non devi rifare nulla.",
+          "title": "Stripe sta verificando i tuoi dati"
+        }
+      },
+      "invoice": {
+        "edit": "Modifica nel profilo",
+        "hint": "I dati della tua attività, come risultano nel profilo.",
+        "legalName": "Ragione sociale",
+        "loadError": "Non riusciamo a mostrare i dati dell'attività.",
+        "loading": "Carico i dati dell'attività…",
+        "notGiven": "Non indicata",
+        "title": "Dati per la fattura",
+        "vatNumber": "Partita IVA"
+      },
+      "loadError": "Impossibile caricare lo stato del conto.",
+      "loading": "Carico lo stato del conto…",
+      "title": "Pagamenti",
+      "unavailable": {
+        "description": "Quando lo saranno, qui potrai collegare il conto su cui ricevere i pagamenti dei tuoi lavori. Per ora non devi fare nulla.",
+        "title": "I pagamenti online non sono ancora attivi"
+      }
+    },
     "profileLoadError": "Impossibile caricare il profilo fornitore.",
     "profile": {
       "accountEmail": "Email dell'account",
@@ -4197,6 +4264,11 @@
       "hours": {
         "end": "{{day}}: fine",
         "start": "{{day}}: inizio"
+      },
+      "payments": {
+        "action": "Vai ai pagamenti",
+        "hint": "Il conto su cui ricevi i pagamenti online dei tuoi lavori si collega dalla pagina dei pagamenti.",
+        "title": "Pagamenti"
       },
       "phoneHint": "Con il prefisso se non italiano, ad esempio +39 06 1234567. Gli host lo vedono solo quando prendi in carico un incarico.",
       "photos": {
@@ -7904,6 +7976,7 @@
       "bookingTooManyGuests": "Il numero di ospiti supera la capienza massima dell'immobile.",
       "invalidServiceCategory": "Categoria di servizio non valida: scegline una dall'elenco.",
       "supplierCommitmentConflict": "Non puoi prendere in carico questo incarico: si sovrappone a un altro che hai già accettato. Nello stesso giorno puoi averne più di uno solo se gli orari non si toccano.",
+      "supplierPaymentsNotReady": "Il conto non è ancora pronto per questa operazione: completa prima la configurazione su Stripe.",
       "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
       "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo.",
       "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori.",
