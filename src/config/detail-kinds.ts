@@ -12,3 +12,20 @@ registerDetail('booking', {
   Content: lazy(() => import('@/features/bookings/booking-drawer').then((module) => ({ default: module.BookingDrawerContent }))),
   pageHref: (id) => `/app/short-rent/bookings/${id}`,
 });
+
+// The other things the Timeline of the host calendar (SR-02) shows: a portal's reservation, the host's own block and an intervention
+// of a supplier. They have no page of their own; their drawer finds them in the days of the calendar on screen.
+registerDetail('ical', {
+  title: lazy(() => import('@/features/bookings/calendar-item-drawers').then((module) => ({ default: module.BlockDrawerTitle }))),
+  Content: lazy(() => import('@/features/bookings/calendar-item-drawers').then((module) => ({ default: module.IcalDrawerContent }))),
+});
+
+registerDetail('block', {
+  title: lazy(() => import('@/features/bookings/calendar-item-drawers').then((module) => ({ default: module.BlockDrawerTitle }))),
+  Content: lazy(() => import('@/features/bookings/calendar-item-drawers').then((module) => ({ default: module.BlockDrawerContent }))),
+});
+
+registerDetail('intervention', {
+  title: lazy(() => import('@/features/bookings/calendar-item-drawers').then((module) => ({ default: module.InterventionDrawerTitle }))),
+  Content: lazy(() => import('@/features/bookings/calendar-item-drawers').then((module) => ({ default: module.InterventionDrawerContent }))),
+});
