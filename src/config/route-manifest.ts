@@ -1065,6 +1065,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'HelpCircle',
     component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
   },
+  {
+    // The earnings of the supplier (SP-16b): gross, commission and net of every job. A page that hangs from the settings (SP-D1): in no
+    // menu, the page of the settings links to it. Behind `SupplierOnlinePayments`: while it is off the entry is hidden and the route
+    // goes to the home of the area.
+    path: '/app/supplier/earnings',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierEarnings',
+    navParent: '/app/supplier/settings',
+    navOrder: 1,
+    icon: 'Coins',
+    featureFlag: 'supplierOnlinePayments',
+    component: async () => ({ default: (await import('@/features/supplier/earnings/supplier-earnings-page')).SupplierEarningsPage }),
+  },
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;

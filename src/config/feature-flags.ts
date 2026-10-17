@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -26,6 +26,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * and a configured provider); otherwise the contract is signed offline (download, sign, upload with the stipula date).
    */
   eSignProvider: false,
+  /**
+   * SP-02 / D2: payment of a supplier's work inside CasaZen (backend `SupplierOnlinePayments`), off until the product owner turns it on.
+   * The page of the earnings ("Incassi", SP-16b) is behind it: its entry is in no menu and its route goes to the home of the area while
+   * it is off. The payments account (SP-16c-b) does not read it: it asks the server, whose endpoints answer 404 while the flag is off.
+   */
+  supplierOnlinePayments: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
