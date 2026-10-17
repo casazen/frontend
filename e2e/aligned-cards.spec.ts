@@ -35,6 +35,17 @@ async function linesOf(element: Locator): Promise<number> {
   });
 }
 
+/**
+ * Replaces the text of an element, to make a name as long (or as short) as a test needs. How many lines a copy takes depends on
+ * the font of the machine (the same page wraps differently on a laptop and on the CI), so a test that needs a title on one line
+ * next to a title on several does not trust the copy: it writes both.
+ */
+async function setText(element: Locator, text: string): Promise<void> {
+  await element.evaluate((node, value) => {
+    node.textContent = value;
+  }, text);
+}
+
 /** The elements start (or end) at the same height: a pixel is the rounding of a fractional line height, not a difference. */
 async function expectAligned(elements: Locator[], what: string, edge: 'top' | 'bottom' = 'top'): Promise<void> {
   expect(elements.length, `${what}: at least two cards to compare`).toBeGreaterThan(1);
@@ -60,10 +71,11 @@ test.describe('Aligned cards', () => {
         const cards = titles.locator('..');
         const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
 
-        // At 1060 px "Locazioni di lungo periodo" wraps on two lines: that is what used to push down the rest of its card.
+        // At 1060 px "Locazioni di lungo periodo" wraps on two lines or fits on one, according to the font: the title is made long
+        // on purpose, because a title on more lines than the first is what used to push down the rest of its card.
         if (width === 1060) {
-          expect(await linesOf(titles.nth(0))).toBe(1);
-          expect(await linesOf(titles.nth(1))).toBe(2);
+          await setText(titles.nth(1), 'Locazioni di lungo periodo, con contratto e canone');
+          expect(await linesOf(titles.nth(1))).toBeGreaterThan(await linesOf(titles.nth(0)));
         }
 
         await expectAligned(each('h3'), 'title');
@@ -579,12 +591,13 @@ test.describe('Aligned cards', () => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto('/dev/calm-blocks');
 
-      // "Prenotazioni in arrivo" and its chevron are on two lines: its number used to be lower than the others.
+      // "Prenotazioni in arrivo" and its chevron are on more lines than the first name: its number used to be lower than the others.
       const strip = page.getByTestId('strip-4');
       const tiles = strip.getByRole('listitem');
       await expect(tiles).toHaveCount(4);
-      expect(await linesOf(tiles.nth(1).locator('span.flex > span.min-w-0'))).toBe(2);
-      expect(await linesOf(tiles.nth(0).locator('span.flex > span.min-w-0'))).toBe(1);
+      expect(await linesOf(tiles.nth(1).locator('span.flex > span.min-w-0'))).toBeGreaterThan(
+        await linesOf(tiles.nth(0).locator('span.flex > span.min-w-0')),
+      );
 
       const each = (selector: string) => [0, 1, 2, 3].map((index) => tiles.nth(index).locator(selector).first());
       await expectAligned(each('span.flex'), 'name');
@@ -632,7 +645,7 @@ test.describe('Aligned cards', () => {
         };
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(overview) });
       });
-      // A laptop with the sidebar open: each of the four columns is about 170 px, and the third name does not fit on one line.
+      // A laptop with the sidebar open: each of the four columns is about 170 px.
       await page.setViewportSize({ width: 1040, height: 900 });
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
 
@@ -640,14 +653,24 @@ test.describe('Aligned cards', () => {
       const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
       await expect(tiles).toHaveCount(3);
       await expect(numbers.getByTestId('home-next-arrivals')).toBeVisible();
-      expect(await linesOf(tiles.nth(2).locator('span.flex > span.min-w-0'))).toBe(2);
+      // Whether "Prenotazioni in arrivo" fits on one line at 170 px depends on the font, so the third name is made long on purpose.
+      const names = [0, 1, 2].map((index) => tiles.nth(index).locator('span.flex > span.min-w-0'));
+      await setText(names[2], 'Prenotazioni in arrivo e da confermare');
+      expect(await linesOf(names[2])).toBeGreaterThan(await linesOf(names[0]));
 
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('span.flex')), 'name');
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
       // The list of arrivals is not made of those rows: it starts at the top, at the height of the names, and does not make them taller.
       await expectAligned([tiles.nth(0).locator('span.flex'), numbers.getByTestId('home-next-arrivals').locator('p').first()], 'name and list title');
-      const [name, value] = await Promise.all([tiles.nth(0).locator('span.flex').boundingBox(), tiles.nth(0).locator('.text-2xl').boundingBox()]);
-      expect(value!.y - name!.y, 'the number is right under the name (two lines), not pushed down by the list').toBeLessThan(80);
+      const [name, value, list, ...all] = await Promise.all([
+        tiles.nth(0).locator('span.flex').boundingBox(),
+        tiles.nth(0).locator('.text-2xl').boundingBox(),
+        numbers.getByTestId('home-next-arrivals').boundingBox(),
+        ...[0, 1, 2].map((index) => tiles.nth(index).locator('span.flex').boundingBox()),
+      ]);
+      const tallest = Math.max(...all.map((box) => box!.height));
+      expect(list!.height, 'the list of arrivals is taller than the longest name, or this proves nothing').toBeGreaterThan(tallest + 40);
+      expect(value!.y - name!.y, 'the number is right under the longest name, not pushed down by the list').toBeLessThanOrEqual(tallest + 8);
     });
   });
 
@@ -684,9 +707,10 @@ test.describe('Aligned cards', () => {
       await expect(cards).toHaveCount(4);
       const each = (selector: string) => [0, 1, 2, 3].map((index) => cards.nth(index).locator(selector).first());
 
-      // "Proprietari di affitti lunghi" is on two lines, the other titles on one.
-      expect(await linesOf(each('h3')[2])).toBe(2);
-      expect(await linesOf(each('h3')[0])).toBe(1);
+      // The titles are made as different as can be, whatever the font and the copy: a word on one line, a sentence on several.
+      await setText(each('h3')[0], 'Host');
+      await setText(each('h3')[2], 'Proprietari di affitti lunghi, con tanti contratti e inquilini da seguire');
+      expect(await linesOf(each('h3')[2])).toBeGreaterThan(await linesOf(each('h3')[0]));
 
       await expectAligned(each('h3'), 'title');
       await expectAligned(each('p'), 'text');
@@ -699,10 +723,12 @@ test.describe('Aligned cards', () => {
 
       const cards = page.locator('div.grid > div:has(> h2)');
       await expect(cards).toHaveCount(7);
-      // The first row: the text of the first two cards is on two lines, the one of the third on one.
+      // The first row: the text of the first card is made long and the one of the third short (on how many lines the copy wraps
+      // depends on the font), so that the lists below them can only line up if the cards are rows of the same grid.
       const firstRow = [0, 1, 2].map((index) => cards.nth(index));
-      expect(await linesOf(firstRow[0].locator('p').first())).toBe(2);
-      expect(await linesOf(firstRow[2].locator('p').first())).toBe(1);
+      await setText(firstRow[0].locator('p').first(), 'Un testo lungo, scritto apposta per occupare più righe di quello della terza scheda e di quello della seconda.');
+      await setText(firstRow[2].locator('p').first(), 'Breve.');
+      expect(await linesOf(firstRow[0].locator('p').first())).toBeGreaterThan(await linesOf(firstRow[2].locator('p').first()));
 
       await expectAligned(
         firstRow.map((card) => card.locator('ul')),
