@@ -44,6 +44,9 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
   const createPayment = useCreatePayment();
   const keyRef = useRef(newIdempotencyKey());
   const today = todayInRome();
+  // When the booking is already known (its sheet, or the link of a row that waits for the host) the usual receipt, what is left, is offered at once.
+  const startBookingId = fixedBookingId ?? initialBookingId ?? '';
+  const startBalance = options.find((option) => option.id === startBookingId)?.balance ?? null;
 
   const {
     register,
@@ -54,7 +57,7 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
     formState: { errors },
   } = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
-    defaultValues: { bookingId: fixedBookingId ?? initialBookingId ?? '', receivedOn: today },
+    defaultValues: { bookingId: startBookingId, receivedOn: today, amount: startBalance !== null && startBalance > 0 ? startBalance : undefined },
   });
 
   const selected = options.find((option) => option.id === watch('bookingId'));
