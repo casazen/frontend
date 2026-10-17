@@ -3227,6 +3227,7 @@
         "recentLoading": "Loading the latest jobs…",
         "recentNone": "No open or taken request right now."
       },
+      "earnings": "Their earnings",
       "empty": {
         "description": "When a host or a customer of your showcase asks you for a job, you will find them here with their history.",
         "title": "Your clients will show here"

@@ -8,6 +8,11 @@ export function clientRequestsPath(clientId: string): string {
   return `/app/supplier/inbox?chip=tutte&clientId=${encodeURIComponent(clientId)}`;
 }
 
+/** The earnings of one customer (the page of the earnings, behind `SupplierOnlinePayments`, filtered by `clientId`). */
+export function clientEarningsPath(clientId: string): string {
+  return `/app/supplier/earnings?clientId=${encodeURIComponent(clientId)}`;
+}
+
 /**
  * The name the supplier may see: what the API sends ("Nome C." for a private customer until a job of theirs is taken, then the full
  * name), "Cliente rimosso" for one removed by the retention of the personal data. Nothing is made up.

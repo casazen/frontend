@@ -3227,6 +3227,7 @@
         "recentLoading": "Carico gli ultimi lavori…",
         "recentNone": "Nessuna richiesta aperta o presa al momento."
       },
+      "earnings": "I suoi incassi",
       "empty": {
         "description": "Quando un host o un cliente del tuo sito vetrina ti chiederà un lavoro, lo troverai qui con lo storico.",
         "title": "Qui vedrai i tuoi clienti"
