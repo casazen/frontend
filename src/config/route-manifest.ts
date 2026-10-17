@@ -629,11 +629,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
   },
   {
-    // "Invita un utente" (AM-04c): the four steps that bring a person in, opened from «Invita» on the page of the people. It is in no menu.
+    // "Invita un utente" (AM-04c): the four steps that bring a person in, opened from «Invita» on the page of the people. It is in no menu:
+    // «Persone» stays the highlighted entry and the trail goes through it, both by the start of the address.
     path: '/app/account/people/invite',
     context: 'account',
     requiredPermissions: ['org.members.manage'],
-    navParent: '/app/account/people',
     component: async () => ({ default: (await import('@/features/team/invite/invite-page')).InvitePage }),
   },
   {
