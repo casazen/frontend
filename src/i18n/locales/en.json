@@ -6832,6 +6832,28 @@
       "hostContactNoName": "For any question contact the host:",
       "hostContactDirectly": "For any question contact the host of the property directly."
     },
+    "guestMessages": {
+      "title": "Messages",
+      "intro": "Write to the host about anything to do with your stay. We email you when they reply.",
+      "logLabel": "Messages with the host",
+      "empty": "Write here if you need anything for your stay.",
+      "loading": "Loading messages…",
+      "loadError": "Messages could not be loaded. Try again in a moment.",
+      "retry": "Try again",
+      "you": "You",
+      "hostFallback": "The host",
+      "composerLabel": "Write a message to the host",
+      "placeholder": "Write a message…",
+      "warning": "Do not write card numbers, IBANs or documents here.",
+      "closedTitle": "This conversation is closed.",
+      "closedDescription": "You can still read the messages, but not write new ones.",
+      "writeToHost": "Write to {{host}}",
+      "offline": "You are offline: you can send the message when you are back online. What you wrote stays here.",
+      "rateLimited_one": "Too many messages: try again in {{count}} minute.",
+      "rateLimited_other": "Too many messages: try again in {{count}} minutes.",
+      "sendError": "Message not sent. Check your connection and try again.",
+      "redacted": "We hid a card number or an IBAN from your message: do not send them here."
+    },
     "availability": {
       "title": "Availability",
       "previousMonth": "Previous month",
@@ -8591,7 +8613,10 @@
       "orgOwnerNotAssignable": "The owner role is not given: there is only one owner.",
       "orgOwnerRequired": "Only the owner can appoint or change an administrator.",
       "orgSeatLimitReached": "You have used all the seats of the plan: deactivate someone who no longer works with you or move to a plan with more seats.",
-      "staleDocuments": "The legal documents have been updated: reload the page and accept them again."
+      "staleDocuments": "The legal documents have been updated: reload the page and accept them again.",
+      "threadClosed": "This conversation is closed: no more messages can be written.",
+      "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
+      "idempotencyKeyInvalid": "The message was not sent correctly. Try again."
     }
   },
   "appShell": {
@@ -9490,6 +9515,14 @@
       "saveItem": "Save this view…",
       "saveTitle": "Save this view"
     }
+  },
+  "messageThread": {
+    "send": "Send",
+    "sending": "Sending…",
+    "failed": "Not sent",
+    "retry": "Try again",
+    "enterHint": "Enter to send, Shift+Enter for a new line.",
+    "counter": "{{count}}/{{max}}"
   },
   "qty": {
     "decrease": "Decrease {{label}}",

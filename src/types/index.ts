@@ -21,3 +21,4 @@ export * from './alloggiati.types';
 export * from './billing.types';
 export * from './comune.types';
 export * from './review.types';
+export * from './guest-message.types';
