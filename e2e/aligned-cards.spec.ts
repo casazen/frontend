@@ -244,6 +244,83 @@ test.describe('Aligned cards', () => {
     });
   });
 
+  test.describe('Numbers (StatStrip)', () => {
+    test('the numbers of a strip start at the same height whatever the length of their names', async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto('/dev/calm-blocks');
+
+      // "Prenotazioni in arrivo" and its chevron are on two lines: its number used to be lower than the others.
+      const strip = page.getByTestId('strip-4');
+      const tiles = strip.getByRole('listitem');
+      await expect(tiles).toHaveCount(4);
+      expect(await linesOf(tiles.nth(1).locator('span.flex > span.min-w-0'))).toBe(2);
+      expect(await linesOf(tiles.nth(0).locator('span.flex > span.min-w-0'))).toBe(1);
+
+      const each = (selector: string) => [0, 1, 2, 3].map((index) => tiles.nth(index).locator(selector).first());
+      await expectAligned(each('span.flex'), 'name');
+      await expectAligned(each('.text-2xl'), 'number');
+      // The names of one line stay at the top, as the first line of the longer one.
+      const [short, long] = await Promise.all([each('span.flex > span.min-w-0')[0].boundingBox(), each('span.flex > span.min-w-0')[1].boundingBox()]);
+      expect(Math.abs(short!.y - long!.y)).toBeLessThanOrEqual(1);
+    });
+
+    test('three numbers are three across from a tablet, not two and one alone', async ({ page }) => {
+      await page.setViewportSize({ width: 900, height: 900 });
+      await page.goto('/dev/calm-blocks');
+
+      const tiles = page.getByTestId('strip-3').getByRole('listitem');
+      await expect(tiles).toHaveCount(3);
+      await expectAligned([0, 1, 2].map((index) => tiles.nth(index)), 'tile');
+      await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
+    });
+
+    test('the Home of Affitti brevi lines its numbers up beside the list of the next arrivals', async ({ page }) => {
+      const arrival = (bookingId: string, guestName: string, day: string) => ({
+        bookingId,
+        propertyId: 'p1',
+        propertyName: 'Casa del Faro',
+        guestName,
+        numberOfGuests: 2,
+        checkInDate: `${day}T00:00:00`,
+        checkOutDate: '2026-10-30',
+        awaitingApproval: false,
+      });
+      await page.route('**/api/dashboard/overview**', async (route) => {
+        if (route.request().method() !== 'GET') {
+          await route.fallback();
+          return;
+        }
+        const overview = {
+          period: { kind: 'Month', from: '2026-10-01', to: '2026-10-31', nights: 31 },
+          today: '2026-10-17',
+          propertyCount: 3,
+          occupancy: { occupiedNights: 60, availableNights: 90, closedNights: 3, rate: 0.67, deltaPoints: -4 },
+          revenue: { amount: 12480, currency: 'EUR', stayCount: 14, deltaPercent: 9 },
+          upcoming: { count: 12, previousCount: 9, pendingApproval: 2 },
+          nextArrivals: [arrival('b1', 'Maria Rossi', '2026-10-17'), arrival('b2', 'Giovanni Bianchi', '2026-10-18'), arrival('b3', 'Elisa Verdi', '2026-10-24')],
+          series: { unit: 'week', buckets: [] },
+        };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(overview) });
+      });
+      // A laptop with the sidebar open: each of the four columns is about 170 px, and the third name does not fit on one line.
+      await page.setViewportSize({ width: 1040, height: 900 });
+      await page.goto(demoUrl('/app/short-rent', 'short-stay'));
+
+      const numbers = page.getByTestId('home-numbers');
+      const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
+      await expect(tiles).toHaveCount(3);
+      await expect(numbers.getByTestId('home-next-arrivals')).toBeVisible();
+      expect(await linesOf(tiles.nth(2).locator('span.flex > span.min-w-0'))).toBe(2);
+
+      await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('span.flex')), 'name');
+      await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
+      // The list of arrivals is not made of those rows: it starts at the top, at the height of the names, and does not make them taller.
+      await expectAligned([tiles.nth(0).locator('span.flex'), numbers.getByTestId('home-next-arrivals').locator('p').first()], 'name and list title');
+      const [name, value] = await Promise.all([tiles.nth(0).locator('span.flex').boundingBox(), tiles.nth(0).locator('.text-2xl').boundingBox()]);
+      expect(value!.y - name!.y, 'the number is right under the name (two lines), not pushed down by the list').toBeLessThan(80);
+    });
+  });
+
   test.describe('Public site (src/site)', () => {
     // The site has its own stylesheet, which finds its classes by scanning src/site/ only: a class written anywhere else would
     // not be there, and the cards would not line up. So this is checked on the page, not only on the markup.
