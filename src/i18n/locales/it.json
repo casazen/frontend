@@ -517,6 +517,8 @@
     "accountSettings": "Impostazioni",
     "ota": "OTA",
     "leases": "Contratti",
+    "supplierClients": "Clienti",
+    "supplierEarnings": "Incassi",
     "supplierSettings": "Impostazioni",
     "users": "Utenti",
     "jobs": "Processi",
@@ -3192,6 +3194,136 @@
     "propertiesDescription": "Richiedi servizi dalla scheda proprietà o dal dettaglio prenotazione."
   },
   "supplier": {
+    "clients": {
+      "chips": {
+        "all": "Tutti",
+        "host": "Host",
+        "new": "Nuovi",
+        "newHint": "Non hai ancora preso nessun loro lavoro",
+        "private": "Privati",
+        "regular": "Abituali",
+        "regularHint": "Almeno 3 lavori presi"
+      },
+      "columns": {
+        "client": "Cliente",
+        "jobs": "Lavori",
+        "last": "Ultimo lavoro",
+        "paid": "Pagato"
+      },
+      "count_one": "{{count}} cliente",
+      "count_other": "{{count}} clienti",
+      "description": "Chi ti ha chiesto un lavoro, con lo storico di ognuno.",
+      "detail": {
+        "contact": "Contatto",
+        "contactAfterTake": "Il contatto compare dopo che hai preso un lavoro di questo cliente.",
+        "jobs": "Lavori presi",
+        "jobsCompleted_one": "{{count}} completato",
+        "jobsCompleted_other": "{{count}} completati",
+        "last": "Ultimo lavoro",
+        "next": "Prossimo",
+        "paid": "Pagato",
+        "recent": "Ultimi lavori",
+        "recentError": "Non riusciamo a mostrare gli ultimi lavori.",
+        "recentLoading": "Carico gli ultimi lavori…",
+        "recentNone": "Nessuna richiesta aperta o presa al momento."
+      },
+      "earnings": "I suoi incassi",
+      "empty": {
+        "description": "Quando un host o un cliente del tuo sito vetrina ti chiederà un lavoro, lo troverai qui con lo storico.",
+        "title": "Qui vedrai i tuoi clienti"
+      },
+      "jobs_one": "{{count}} lavoro",
+      "jobs_other": "{{count}} lavori",
+      "kind": {
+        "host": "Host",
+        "private": "Cliente privato"
+      },
+      "loadError": "Impossibile caricare i clienti.",
+      "next": "Prossimo: {{day}}",
+      "none": "—",
+      "noResults": {
+        "description": "Cambia la ricerca o scegli un altro filtro.",
+        "title": "Nessun cliente trovato"
+      },
+      "regular": "Abituale",
+      "removed": "Cliente rimosso",
+      "requests": "Le sue richieste",
+      "search": "Cerca un cliente",
+      "searchPlaceholder": "Cerca per nome",
+      "title": "Clienti",
+      "truncated": "Mostro i {{shown}} clienti con l’attività più recente su {{total}}.",
+      "unnamed": "Cliente"
+    },
+    "earnings": {
+      "chips": {
+        "all": "Tutti",
+        "late": "In ritardo",
+        "lateHint": "Pagamenti chiesti e non ancora arrivati",
+        "paid": "Pagati",
+        "toCollect": "Da incassare",
+        "toCollectHint": "Lavori completati che non hai ancora incassato"
+      },
+      "clientFilter": {
+        "clear": "Mostra tutti",
+        "note": "Stai vedendo solo i lavori di un cliente."
+      },
+      "clientRemoved": "Cliente rimosso",
+      "columns": {
+        "commission": "Commissione",
+        "gross": "Lordo",
+        "job": "Lavoro",
+        "net": "Netto",
+        "state": "Stato"
+      },
+      "count_one": "{{count}} lavoro",
+      "count_other": "{{count}} lavori",
+      "description": "Quanto ti spetta e quanto hai incassato, lavoro per lavoro.",
+      "empty": {
+        "description": "Quando completi un lavoro compare qui, con lordo, commissione e netto.",
+        "title": "Qui vedrai i pagamenti"
+      },
+      "export": "Scarica il riepilogo",
+      "exportError": "Non siamo riusciti a preparare il file. Riprova.",
+      "filters": {
+        "all": "Tutto il periodo",
+        "anno": "Quest’anno",
+        "mese": "Questo mese",
+        "mese-scorso": "Mese scorso",
+        "period": "Periodo"
+      },
+      "loadError": "Impossibile caricare gli incassi.",
+      "loading": "Carico gli incassi…",
+      "noCommission": "Nessuna",
+      "noResults": {
+        "description": "Cambia il periodo o scegli un altro filtro.",
+        "title": "Nessun pagamento trovato"
+      },
+      "numbers": {
+        "commission": "Commissione di CasaZen questo mese",
+        "label": "I tuoi incassi",
+        "paid": "Pagati questo mese",
+        "toCollect": "Da incassare",
+        "toCollectJobs_one": "{{count}} lavoro",
+        "toCollectJobs_other": "{{count}} lavori"
+      },
+      "rate": {
+        "free": "Fino al {{day}} CasaZen non trattiene commissione sui pagamenti online.",
+        "none": "Sui pagamenti online CasaZen non trattiene commissione.",
+        "normal": "Sui pagamenti online CasaZen trattiene il {{percent}} %."
+      },
+      "state": {
+        "in_review": "In verifica da CasaZen",
+        "late": "In ritardo",
+        "lateDays_one": "In ritardo di {{count}} giorno",
+        "lateDays_other": "In ritardo di {{count}} giorni",
+        "paid": "Pagato",
+        "partially_refunded": "Rimborsato in parte",
+        "refunded": "Rimborsato",
+        "to_collect": "Da incassare",
+        "unknown": "Vedi la richiesta"
+      },
+      "title": "Incassi"
+    },
     "profileLoading": "Caricamento profilo...",
     "profileTitle": "Profilo fornitore",
     "profileDescription": "I dati della tua attività, come compari a host e clienti e i tuoi orari di lavoro.",
@@ -3469,6 +3601,10 @@
         "toAnswerHint": "Aspettano la tua risposta",
         "toCollect": "Da incassare",
         "toCollectHint": "Lavori finiti, in attesa del pagamento"
+      },
+      "clientFilter": {
+        "clear": "Mostra tutte",
+        "note": "Stai vedendo solo le richieste di un cliente."
       },
       "contact": {
         "address": "Indirizzo",

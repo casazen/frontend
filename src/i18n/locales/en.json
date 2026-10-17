@@ -517,6 +517,8 @@
     "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
+    "supplierClients": "Clients",
+    "supplierEarnings": "Earnings",
     "supplierSettings": "Settings",
     "users": "Users",
     "jobs": "Processes",
@@ -3192,6 +3194,136 @@
     "propertiesDescription": "Request services from a property or booking detail page."
   },
   "supplier": {
+    "clients": {
+      "chips": {
+        "all": "All",
+        "host": "Hosts",
+        "new": "New",
+        "newHint": "You have not taken any job of theirs yet",
+        "private": "Private",
+        "regular": "Regulars",
+        "regularHint": "At least 3 jobs taken"
+      },
+      "columns": {
+        "client": "Client",
+        "jobs": "Jobs",
+        "last": "Last job",
+        "paid": "Paid"
+      },
+      "count_one": "{{count}} client",
+      "count_other": "{{count}} clients",
+      "description": "Who has asked you for a job, with the history of each one.",
+      "detail": {
+        "contact": "Contact",
+        "contactAfterTake": "The contact shows once you have taken a job of this client.",
+        "jobs": "Jobs taken",
+        "jobsCompleted_one": "{{count}} completed",
+        "jobsCompleted_other": "{{count}} completed",
+        "last": "Last job",
+        "next": "Next",
+        "paid": "Paid",
+        "recent": "Latest jobs",
+        "recentError": "We cannot show the latest jobs.",
+        "recentLoading": "Loading the latest jobs…",
+        "recentNone": "No open or taken request right now."
+      },
+      "earnings": "Their earnings",
+      "empty": {
+        "description": "When a host or a customer of your showcase asks you for a job, you will find them here with their history.",
+        "title": "Your clients will show here"
+      },
+      "jobs_one": "{{count}} job",
+      "jobs_other": "{{count}} jobs",
+      "kind": {
+        "host": "Host",
+        "private": "Private client"
+      },
+      "loadError": "Could not load the clients.",
+      "next": "Next: {{day}}",
+      "none": "—",
+      "noResults": {
+        "description": "Change the search or pick another filter.",
+        "title": "No client found"
+      },
+      "regular": "Regular",
+      "removed": "Client removed",
+      "requests": "Their requests",
+      "search": "Search a client",
+      "searchPlaceholder": "Search by name",
+      "title": "Clients",
+      "truncated": "Showing the {{shown}} clients with the latest activity out of {{total}}.",
+      "unnamed": "Client"
+    },
+    "earnings": {
+      "chips": {
+        "all": "All",
+        "late": "Late",
+        "lateHint": "Payments asked for that have not arrived yet",
+        "paid": "Paid",
+        "toCollect": "To collect",
+        "toCollectHint": "Completed jobs you have not been paid for yet"
+      },
+      "clientFilter": {
+        "clear": "Show all",
+        "note": "You are seeing only the jobs of one client."
+      },
+      "clientRemoved": "Client removed",
+      "columns": {
+        "commission": "Commission",
+        "gross": "Gross",
+        "job": "Job",
+        "net": "Net",
+        "state": "Status"
+      },
+      "count_one": "{{count}} job",
+      "count_other": "{{count}} jobs",
+      "description": "What you are owed and what you have been paid, job by job.",
+      "empty": {
+        "description": "When you complete a job it shows up here, with gross, commission and net.",
+        "title": "Your payments will show here"
+      },
+      "export": "Download the summary",
+      "exportError": "We could not prepare the file. Try again.",
+      "filters": {
+        "all": "Whole period",
+        "anno": "This year",
+        "mese": "This month",
+        "mese-scorso": "Last month",
+        "period": "Period"
+      },
+      "loadError": "Could not load the earnings.",
+      "loading": "Loading the earnings…",
+      "noCommission": "None",
+      "noResults": {
+        "description": "Change the period or pick another filter.",
+        "title": "No payment found"
+      },
+      "numbers": {
+        "commission": "CasaZen commission this month",
+        "label": "Your earnings",
+        "paid": "Paid this month",
+        "toCollect": "To collect",
+        "toCollectJobs_one": "{{count}} job",
+        "toCollectJobs_other": "{{count}} jobs"
+      },
+      "rate": {
+        "free": "Until {{day}} CasaZen keeps no commission on online payments.",
+        "none": "CasaZen keeps no commission on online payments.",
+        "normal": "CasaZen keeps {{percent}} % of online payments."
+      },
+      "state": {
+        "in_review": "Under review by CasaZen",
+        "late": "Late",
+        "lateDays_one": "{{count}} day late",
+        "lateDays_other": "{{count}} days late",
+        "paid": "Paid",
+        "partially_refunded": "Partly refunded",
+        "refunded": "Refunded",
+        "to_collect": "To collect",
+        "unknown": "See the request"
+      },
+      "title": "Earnings"
+    },
     "profileLoading": "Loading profile...",
     "profileTitle": "Supplier Profile",
     "profileDescription": "Your business details, how hosts and customers see you, and your working hours.",
@@ -3469,6 +3601,10 @@
         "toAnswerHint": "Waiting for your answer",
         "toCollect": "To collect",
         "toCollectHint": "Finished jobs waiting to be paid"
+      },
+      "clientFilter": {
+        "clear": "Show all",
+        "note": "You are seeing only the requests of one client."
       },
       "contact": {
         "address": "Address",

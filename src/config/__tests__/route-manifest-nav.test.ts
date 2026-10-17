@@ -111,6 +111,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/supplier/availability',
       '/app/supplier/services',
       '/app/supplier/showcase',
+      '/app/supplier/clients',
       '/app/supplier/settings',
     ]);
     expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual([
@@ -231,6 +232,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       ['/app/admin/compliance/tax-rates', '/app/admin/cin'],
       ['/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
       ['/app/supplier/calendar', '/app/supplier/availability'],
+      ['/app/supplier/earnings', '/app/supplier/settings'],
     ]);
   });
 
@@ -609,9 +611,13 @@ describe('route-manifest nav helpers', () => {
       '/app/supplier/availability',
       '/app/supplier/services',
     ]);
-    // On the phone the showcase and the settings are reached through "Altro", with the rest of the menu.
+    // On the phone the showcase, the customers and the settings are reached through "Altro", with the rest of the menu.
     const phoneMenu = getContextNav('supplier', allowAll, {}, { withoutBottom: true });
-    expect(paths(phoneMenu.sections.flatMap((section) => section.entries))).toEqual(['/app/supplier/showcase', '/app/supplier/settings']);
+    expect(paths(phoneMenu.sections.flatMap((section) => section.entries))).toEqual([
+      '/app/supplier/showcase',
+      '/app/supplier/clients',
+      '/app/supplier/settings',
+    ]);
   });
 
   // A shorter name on the bar is for an entry of the bar, and never for one with a counter (name and counter are read together).

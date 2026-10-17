@@ -82,6 +82,7 @@ export async function fetchSupplierInbox({
   when,
   from,
   to,
+  clientId,
   page = 1,
   pageSize = 20,
 }: SupplierInboxParams): Promise<SupplierInboxResponse> {
@@ -93,6 +94,7 @@ export async function fetchSupplierInbox({
     ...(when ? { when } : {}),
     ...(from ? { from } : {}),
     ...(to ? { to } : {}),
+    ...(clientId ? { clientId } : {}),
   });
 }
 

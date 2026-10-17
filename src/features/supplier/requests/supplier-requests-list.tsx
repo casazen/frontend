@@ -20,7 +20,7 @@ const MAX_SEARCH_LENGTH = 60;
  * What the server is asked for a state of the list: a chip is a tab of the server (`tab=programmate`, with its own order) and
  * "Tutte" is every status. The search needs two letters to be asked (the server refuses one) and at most sixty are sent.
  */
-export function inboxParamsOf(state: ListState, pageSize: number): SupplierInboxParams {
+export function inboxParamsOf(state: ListState, pageSize: number, clientId?: string): SupplierInboxParams {
   const query = state.q.trim();
   const period = state.filters.period ? parseDateRange(state.filters.period) : {};
   const when = state.filters.when as SupplierInboxWhen | undefined;
@@ -30,6 +30,8 @@ export function inboxParamsOf(state: ListState, pageSize: number): SupplierInbox
     ...(when ? { when } : {}),
     ...(period.from ? { from: period.from } : {}),
     ...(period.to ? { to: period.to } : {}),
+    // Only the requests of one customer (the link "Le sue richieste" of the page of the customers).
+    ...(clientId ? { clientId } : {}),
     page: state.page,
     pageSize,
   };
