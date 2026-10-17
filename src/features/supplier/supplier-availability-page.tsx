@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ import { AgendaMonthView } from './components/agenda-month-view';
 import { AgendaToolbar } from './components/agenda-toolbar';
 import { AgendaWeekView } from './components/agenda-week-view';
 import { FreeEventsBanner } from './components/free-events-banner';
-import { HOURS_EDIT_PATH, WeeklyHoursSection } from './components/weekly-hours-section';
+import { WeeklyHoursSection } from './components/weekly-hours-section';
 import { agendaParams, agendaRange, eachDay, readAgendaView, type AgendaView } from './lib/agenda-range';
 import { pendingFreeEventDates } from './lib/free-events';
 import { buildWorkingDays } from './lib/supplier-agenda';
@@ -45,6 +45,8 @@ export function SupplierAvailabilityPage() {
   const requestedDate = params.get('data') ?? '';
   const date = isStayDate(requestedDate) ? requestedDate : today;
   const { from, to } = agendaRange(view, date);
+  // The hours are changed in this page (SP-07b): the block that asks for them and the section of the hours open the same editor.
+  const [editingHours, setEditingHours] = useState(false);
 
   const agendaQuery = useSupplierAgendaCalendar(from, to);
   const hoursQuery = useSupplierHours();
@@ -112,7 +114,7 @@ export function SupplierAvailabilityPage() {
       data-testid="supplier-hours-empty"
       title={t('supplier.hoursNotSetTitle')}
       body={t('supplier.hoursNotSetHint')}
-      primary={{ label: t('supplier.hoursSetCta'), href: HOURS_EDIT_PATH }}
+      primary={{ label: t('supplier.hoursSetCta'), onClick: () => setEditingHours(true) }}
     />
   ) : null;
 
@@ -174,7 +176,7 @@ export function SupplierAvailabilityPage() {
         )}
       </div>
 
-      <WeeklyHoursSection />
+      <WeeklyHoursSection editing={editingHours} onEditingChange={setEditingHours} />
     </div>
   );
 }
