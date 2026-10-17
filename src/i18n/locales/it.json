@@ -1433,6 +1433,12 @@
         "cta": "Vedi nel calendario",
         "since": "Dalla notte del {{date}}",
         "title": "Notti occupate due volte: {{label}}"
+      },
+      "RespondToGuest": {
+        "title": "Rispondi a {{label}}",
+        "cta": "Rispondi",
+        "waiting": "In attesa di risposta dal {{when}}",
+        "guestFallback": "un ospite"
       }
     },
     "today": {
@@ -1912,7 +1918,8 @@
         "details": "Soggiorno",
         "guest": "Documenti",
         "history": "Cronologia",
-        "payment": "Pagamento"
+        "payment": "Pagamento",
+        "messages": "Messaggi"
       },
       "tabsLabel": "Sezioni della prenotazione",
       "created": "Creata il",
@@ -2196,6 +2203,29 @@
       },
       "source": "Origine: {{source}}",
       "title": "Cronologia"
+    },
+    "messages": {
+      "title": "Messaggi",
+      "logLabel": "Messaggi con {{name}}",
+      "empty": "Nessun messaggio. Se scrivi tu per primo, {{name}} riceve un'e-mail (senza il testo) e legge il messaggio nell'area della sua prenotazione.",
+      "you": "Tu",
+      "guestFallback": "L'ospite",
+      "composerLabel": "Scrivi a {{name}}",
+      "placeholder": "Scrivi un messaggio…",
+      "warning": "{{name}} riceve un'e-mail che lo avvisa, senza il testo: lo legge nell'area della sua prenotazione. Non scrivere qui dati di pagamento.",
+      "closedTitle": "Questa conversazione è chiusa.",
+      "closedDescription": "Sono passati sette giorni dal check-out: puoi rileggere i messaggi, ma non scriverne di nuovi.",
+      "unavailable": "Questa prenotazione non ha messaggi: la conversazione esiste solo per le prenotazioni fatte dal sito e non annullate.",
+      "readOnly": "Non hai il permesso di rispondere agli ospiti.",
+      "loading": "Caricamento dei messaggi…",
+      "loadError": "Impossibile caricare i messaggi. Riprova tra qualche istante.",
+      "retry": "Riprova",
+      "offline": "Sei offline: potrai inviare il messaggio quando torni online. Quello che hai scritto resta qui.",
+      "rateLimited_one": "Troppi messaggi: riprova tra {{count}} minuto.",
+      "rateLimited_other": "Troppi messaggi: riprova tra {{count}} minuti.",
+      "sendError": "Messaggio non inviato. Controlla la connessione e riprova.",
+      "unread_one": "{{count}} messaggio da leggere",
+      "unread_other": "{{count}} messaggi da leggere"
     }
   },
   "ota": {

@@ -33,3 +33,37 @@ export interface SentGuestMessage {
   redacted: boolean;
   replayed: boolean;
 }
+
+/** `GET /api/bookings/{id}/messages` (DB-14a, SR-12): the thread as the host reads it. `Unavailable`: the booking has no thread. */
+export interface HostThread {
+  state: 'Open' | 'Closed' | 'Unavailable';
+  /** UTC instant from which the thread takes no more messages; `null` when there is no thread. */
+  closesAt: string | null;
+  /** The guest's messages the host has not read yet. */
+  unreadCount: number;
+  /** The thread is open and the last message is the guest's. */
+  needsReply: boolean;
+  messages: GuestThreadMessage[];
+}
+
+/** One row of `GET /api/messages` (DB-14a, SR-12): a thread of the host's list, with the start of the guest's last message. */
+export interface HostThreadSummary {
+  bookingId: string;
+  /** `XXXXX-XXXXX` */
+  bookingCode: string;
+  propertyId: string;
+  propertyName: string;
+  guestName: string;
+  /** `YYYY-MM-DD` */
+  checkInDate: string;
+  /** `YYYY-MM-DD` */
+  checkOutDate: string;
+  state: 'Open' | 'Closed' | 'Unavailable';
+  /** UTC instant. */
+  lastMessageAt: string;
+  lastMessageSender: GuestMessageSender | null;
+  /** The first characters of the guest's last message, for the host only. */
+  lastGuestMessagePreview: string | null;
+  unreadCount: number;
+  needsReply: boolean;
+}

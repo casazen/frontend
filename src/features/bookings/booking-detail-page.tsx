@@ -16,6 +16,8 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
+import { useBookingThread } from '@/queries/use-booking-messages';
+import { BookingMessagesSection } from './components/booking-messages-section';
 import { BookingNextStep } from './components/booking-next-step';
 import { BookingPaymentTab } from './components/booking-payment-tab';
 import { BookingStayTab } from './components/booking-stay-tab';
@@ -28,6 +30,7 @@ import { DeclineBookingDialog } from './components/decline-booking-dialog';
 import { OtaReviewNotice } from './components/ota-review-notice';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH } from './lib/booking-list-query';
+import { bookingHasMessages } from './lib/booking-messages';
 import { bookingPanelOf, type BookingPanel } from './lib/booking-tabs';
 import { canRegisterArrival } from './lib/stay-actions';
 
@@ -54,22 +57,27 @@ function BookingDetailSkeleton({ label }: { label: string }) {
 
 /**
  * `/app/short-rent/bookings/:id`: one booking (SR-05). The header says whose stay it is, where and when, with its status and the
- * "⋯" menu of the other actions; under it the one highlighted block, "Cosa succede ora", and then the tabs Soggiorno, Documenti,
- * Pagamento and Cronologia (SR-05c), each made of sections without a box. The tab is in the address (`?tab=`); `alloggiati`, the
- * old fourth tab, opens Documenti at its Alloggiati Web section.
+ * "⋯" menu of the other actions; under it the one highlighted block, "Cosa succede ora", and then the tabs Soggiorno, Messaggi (only for
+ * a booking made through the booking site, SR-12, with the number of messages not read yet), Documenti, Pagamento and Cronologia
+ * (SR-05c), each made of sections without a box. The tab is in the address (`?tab=`); `alloggiati`, the old fourth tab, opens
+ * Documenti at its Alloggiati Web section.
  */
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const activeTab: BookingPanel = bookingPanelOf(tabParam);
+  const requestedTab = bookingPanelOf(tabParam);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id!);
+  // Messages with the guest (SR-12): only a booking of the booking site has them; the same thread query feeds the tab and its number.
+  const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking);
+  const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
+  const activeTab: BookingPanel = requestedTab === 'messages' && !hasMessages ? 'details' : requestedTab;
 
   // The links of the arrival and of the cockpit ask for Alloggiati Web (`?tab=alloggiati`): Documenti opens at its section.
   const alloggiatiRef = useRef<HTMLDivElement>(null);
@@ -154,6 +162,18 @@ export function BookingDetailPage() {
   // The test ids are how the Golden Journey (L3) and the tests reach the tabs.
   const tabs: TabItem<BookingPanel>[] = [
     { value: 'details', label: t('booking.detailPage.tabs.details'), testId: 'booking-tab-details' },
+    ...(hasMessages
+      ? [
+          {
+            value: 'messages' as const,
+            label: t('booking.detailPage.tabs.messages'),
+            testId: 'booking-tab-messages',
+            count: unreadMessages,
+            countLabel: t('booking.messages.unread', { count: unreadMessages }),
+            tone: 'warning' as const,
+          },
+        ]
+      : []),
     { value: 'guest', label: t('booking.detailPage.tabs.guest'), testId: 'booking-tab-guest' },
     { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
     { value: 'history', label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' },
@@ -184,6 +204,14 @@ export function BookingDetailPage() {
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs label={t('booking.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="booking-tabs-select">
           {activeTab === 'details' && <BookingStayTab booking={booking} />}
+
+          {activeTab === 'messages' && (
+            <div className="max-w-xl">
+              <PlainSection title={t('booking.messages.title')}>
+                <BookingMessagesSection booking={booking} />
+              </PlainSection>
+            </div>
+          )}
 
           {activeTab === 'guest' && (
             <div className="space-y-8">

@@ -1433,6 +1433,12 @@
         "cta": "See in the calendar",
         "since": "From the night of {{date}}",
         "title": "Nights taken twice: {{label}}"
+      },
+      "RespondToGuest": {
+        "title": "Reply to {{label}}",
+        "cta": "Reply",
+        "waiting": "Waiting for an answer since {{when}}",
+        "guestFallback": "a guest"
       }
     },
     "today": {
@@ -1912,7 +1918,8 @@
         "details": "Stay",
         "guest": "Documents",
         "history": "History",
-        "payment": "Payment"
+        "payment": "Payment",
+        "messages": "Messages"
       },
       "tabsLabel": "Booking sections",
       "created": "Created on",
@@ -2196,6 +2203,29 @@
       },
       "source": "Source: {{source}}",
       "title": "History"
+    },
+    "messages": {
+      "title": "Messages",
+      "logLabel": "Messages with {{name}}",
+      "empty": "No messages yet. If you write first, {{name}} gets an email (without the text) and reads the message in the area of their booking.",
+      "you": "You",
+      "guestFallback": "The guest",
+      "composerLabel": "Write to {{name}}",
+      "placeholder": "Write a message…",
+      "warning": "{{name}} gets an email telling them, without the text: they read it in the area of their booking. Do not write payment details here.",
+      "closedTitle": "This conversation is closed.",
+      "closedDescription": "Seven days have passed since check-out: you can still read the messages but not write new ones.",
+      "unavailable": "This booking has no messages: the conversation exists only for bookings made through the site that are not cancelled.",
+      "readOnly": "You do not have permission to answer guests.",
+      "loading": "Loading messages…",
+      "loadError": "Messages could not be loaded. Try again in a moment.",
+      "retry": "Try again",
+      "offline": "You are offline: you can send the message when you are back online. What you wrote stays here.",
+      "rateLimited_one": "Too many messages: try again in {{count}} minute.",
+      "rateLimited_other": "Too many messages: try again in {{count}} minutes.",
+      "sendError": "Message not sent. Check your connection and try again.",
+      "unread_one": "{{count}} message to read",
+      "unread_other": "{{count}} messages to read"
     }
   },
   "ota": {

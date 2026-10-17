@@ -14,8 +14,10 @@ import { formatStayDate } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
 import { useRefreshDashboard } from '@/queries/use-dashboard';
 import type { Booking } from '@/types';
+import { BookingMessagesSection } from './components/booking-messages-section';
 import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CheckInDialog } from './components/check-in-dialog';
+import { bookingHasMessages } from './lib/booking-messages';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
@@ -48,11 +50,13 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
   const refresh = useRefreshDashboard();
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const timelineTitleId = useId();
+  const messagesTitleId = useId();
 
   if (isLoading) return <SkeletonLine lines={5} />;
   if (isError || !booking) return <ErrorState title={t('detailDrawer.booking.loadError')} error={error} onRetry={() => void refetch()} />;
 
   const locale = i18n.language;
+  const showMessages = bookingHasMessages(booking) && hasPermission('short-rent', 'booking.read');
   const step = nextStep(booking, hasPermission('short-rent', 'booking.write'), t);
   const nights = bookingNights(booking);
   const guest = booking.guest;
@@ -115,6 +119,16 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
           </a>
         ) : null}
       </div>
+
+      {/* The conversation with the guest of a booking made through the site (SR-12), the same as the tab Messaggi of the page. */}
+      {showMessages ? (
+        <section aria-labelledby={messagesTitleId} className="space-y-3" data-testid="booking-drawer-messages">
+          <h3 id={messagesTitleId} className="text-sm font-semibold">
+            {t('booking.messages.title')}
+          </h3>
+          <BookingMessagesSection booking={booking} />
+        </section>
+      ) : null}
 
       {/* What happened to the booking and what it waits for (SR-05c), the same list as the tab Cronologia of the page. */}
       <section aria-labelledby={timelineTitleId} className="space-y-3" data-testid="booking-drawer-timeline">
