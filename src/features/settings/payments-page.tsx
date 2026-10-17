@@ -1,15 +1,16 @@
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FocusBlock } from '@/components/shared/calm';
+import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
-import { CONNECT_STATUS_KEY, useConnectStatus, useStartConnectOnboarding } from '@/queries/use-connect';
-import { isRetryableConnectError, resolveConnectUiStatus } from '@/types/connect.types';
-import { useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle2, Clock, ExternalLink, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { isRetryableConnectError, type ConnectUiStatus } from '@/types/connect.types';
+import { AlertCircle, CheckCircle2, Clock, ExternalLink, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useConnectPayments, type ConnectPayments } from './use-connect-payments';
 
 interface ConnectErrorAlertProps {
   message: string;
@@ -27,156 +28,166 @@ function ConnectErrorAlert({ message, retryable, retrying, onRetry, testId }: Co
   const { t } = useTranslation();
 
   return (
-    <div
-      role="alert"
+    <Alert
+      variant="danger"
       data-testid={testId}
-      className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm"
+      action={
+        retryable ? (
+          <Button type="button" variant="outline" size="sm" loading={retrying} onClick={onRetry}>
+            {t('settings.connectRetry')}
+          </Button>
+        ) : undefined
+      }
     >
-      <p className="text-destructive">{message}</p>
-      {retryable && (
-        <Button variant="outline" size="sm" onClick={onRetry} disabled={retrying}>
-          <RefreshCw className="mr-2 h-4 w-4" aria-hidden />
-          {t('settings.connectRetry')}
-        </Button>
-      )}
+      {message}
+    </Alert>
+  );
+}
+
+/** What the status badge says, and how: an icon always goes with the color. */
+const STATUS_VIEW: Record<ConnectUiStatus, { labelKey: string; variant: 'secondary' | 'warning' | 'success'; Icon: LucideIcon }> = {
+  disconnected: { labelKey: 'settings.connectStatusDisconnected', variant: 'secondary', Icon: AlertCircle },
+  pending: { labelKey: 'settings.connectStatusPending', variant: 'warning', Icon: Clock },
+  active: { labelKey: 'settings.connectStatusActive', variant: 'success', Icon: CheckCircle2 },
+};
+
+function OnboardingError({ payments }: { payments: ConnectPayments }) {
+  const { t } = useTranslation();
+  const { startOnboarding } = payments;
+
+  return (
+    <ConnectErrorAlert
+      testId="connect-onboarding-error"
+      message={getProblemMessage(startOnboarding.error, t) ?? t('toast.connectOnboardingFailed')}
+      retryable={isRetryableConnectError(startOnboarding.error)}
+      retrying={startOnboarding.isPending}
+      onRetry={() => startOnboarding.mutate()}
+    />
+  );
+}
+
+/**
+ * The one block to look at when the account cannot take payments yet: the booking site does not take them either, and the button
+ * that connects Stripe or finishes the verification is here. Nothing while the status is not known (a failed read is never "not
+ * connected") or when the account is active. A failed attempt is told under the block, next to the button.
+ */
+export function PaymentsFocus({ payments }: { payments: ConnectPayments }) {
+  const { t } = useTranslation();
+  const { status, uiStatus, startOnboarding } = payments;
+
+  if (!status || uiStatus === 'active') return null;
+
+  return (
+    <div className="min-w-0 space-y-3">
+      <FocusBlock
+        data-testid="connect-checkout-gate-banner"
+        tone="warning"
+        kicker={t('accountSettings.focus.kicker')}
+        title={t('settings.bookingSiteNotActive')}
+        body={t('settings.bookingSiteNotActiveDescription')}
+        primary={{
+          label: uiStatus === 'disconnected' ? t('settings.connectStripe') : t('settings.completeVerification'),
+          onClick: () => startOnboarding.mutate(),
+          loading: startOnboarding.isPending,
+          testId: 'connect-stripe-cta',
+        }}
+      />
+      {startOnboarding.isError ? <OnboardingError payments={payments} /> : null}
     </div>
   );
 }
 
+interface PaymentsBodyProps {
+  payments: ConnectPayments;
+  /**
+   * The button that connects Stripe or finishes the verification. Not when {@link PaymentsFocus} is on the page: the page has one
+   * button for it, in the block that asks for it.
+   */
+  showAction: boolean;
+}
+
+/** Where the Stripe account stands: its state in a word, what it means, the account, and the way to go on when the page does not show another. */
+export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
+  const { t } = useTranslation();
+  const { status, uiStatus, isLoading, isError, error, isFetching, refetch, startOnboarding } = payments;
+  const view = STATUS_VIEW[uiStatus];
+  const hasRequirements = (status?.requirementsDue?.length ?? 0) > 0;
+  const needsAction = uiStatus !== 'active';
+
+  return (
+    <div className="min-w-0 space-y-4" data-testid="connect-payments">
+      {isLoading ? <SkeletonLine lines={2} label={t('settings.loadingPayments')} /> : null}
+
+      {isError ? (
+        <ConnectErrorAlert
+          testId="connect-status-error"
+          message={getProblemMessage(error, t) ?? t('settings.stripeStatusError')}
+          retryable={isRetryableConnectError(error)}
+          retrying={isFetching}
+          onRetry={() => void refetch()}
+        />
+      ) : null}
+
+      {status ? (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-sm text-foreground/70">{t('settings.stripeConnectionStatus')}</span>
+            <Badge variant={view.variant} className="gap-1" data-testid="connect-status-badge">
+              <view.Icon className="size-3.5 shrink-0" aria-hidden="true" />
+              {t(view.labelKey)}
+            </Badge>
+          </div>
+
+          {uiStatus === 'active' ? <p className="text-sm text-foreground/70">{t('settings.accountActiveMessage')}</p> : null}
+
+          {hasRequirements && needsAction ? (
+            <div className="space-y-0.5 text-sm" data-testid="connect-requirements-alert">
+              <p className="font-medium">{t('settings.verificationIncomplete')}</p>
+              <p className="text-foreground/70">{t('settings.verificationIncompleteDescription')}</p>
+            </div>
+          ) : null}
+
+          {status.connectedAccountId ? (
+            <p className="break-all text-xs text-foreground/70">
+              {t('settings.stripeAccount')} <code>{status.connectedAccountId}</code>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {showAction && status && needsAction ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full sm:w-auto"
+          loading={startOnboarding.isPending}
+          iconRight={<ExternalLink />}
+          onClick={() => startOnboarding.mutate()}
+          data-testid="connect-stripe-cta"
+        >
+          {uiStatus === 'disconnected' ? t('settings.connectStripe') : t('settings.completeVerification')}
+        </Button>
+      ) : null}
+
+      {showAction && startOnboarding.isError ? <OnboardingError payments={payments} /> : null}
+    </div>
+  );
+}
+
+/** Online payments of the org in the short-rent shell: connect the Stripe account that receives what the guests pay. */
 export function ConnectPaymentsPage() {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const queryClient = useQueryClient();
-  const stripeReturn = searchParams.get('stripe_return') === '1' || searchParams.get('stripe_refresh') === '1';
-
-  const { data: status, isLoading, isError, error, refetch, isFetching } = useConnectStatus(stripeReturn);
-  const startOnboarding = useStartConnectOnboarding();
-
-  useEffect(() => {
-    if (!stripeReturn)
-      return;
-
-    void queryClient.invalidateQueries({ queryKey: CONNECT_STATUS_KEY });
-    setSearchParams({}, { replace: true });
-  }, [stripeReturn, queryClient, setSearchParams]);
-
-  const uiStatus = resolveConnectUiStatus(status);
-  const hasRequirements = (status?.requirementsDue?.length ?? 0) > 0;
-
-  const STATUS_LABEL: Record<ReturnType<typeof resolveConnectUiStatus>, string> = {
-    disconnected: t('settings.connectStatusDisconnected'),
-    pending: t('settings.connectStatusPending'),
-    active: t('settings.connectStatusActive'),
-  };
-
-  const STATUS_VARIANT: Record<ReturnType<typeof resolveConnectUiStatus>, 'secondary' | 'outline' | 'default'> = {
-    disconnected: 'secondary',
-    pending: 'outline',
-    active: 'default',
-  };
+  const payments = useConnectPayments();
 
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl space-y-6">
-        <PageHeader
-          title={t('settings.connectPaymentsTitle')}
-          description={t('settings.connectDescription')}
-        />
+        <PageHeader title={t('settings.connectPaymentsTitle')} description={t('settings.connectDescription')} crumbs="auto" />
 
-        {status && !status.chargesEnabled && (
-          <div
-            role="alert"
-            data-testid="connect-checkout-gate-banner"
-            className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm space-y-1"
-          >
-            <p className="font-medium text-destructive">{t('settings.bookingSiteNotActive')}</p>
-            <p className="text-muted-foreground">
-              {t('settings.bookingSiteNotActiveDescription')}
-            </p>
-          </div>
-        )}
+        <PaymentsFocus payments={payments} />
+        <PaymentsBody payments={payments} showAction={false} />
 
-        <div className="rounded-lg border bg-card p-6 space-y-4">
-          {isLoading && <p className="text-sm text-muted-foreground">{t('settings.loadingPayments')}</p>}
-
-          {isError && (
-            <ConnectErrorAlert
-              testId="connect-status-error"
-              message={getProblemMessage(error, t) ?? t('settings.stripeStatusError')}
-              retryable={isRetryableConnectError(error)}
-              retrying={isFetching}
-              onRetry={() => void refetch()}
-            />
-          )}
-
-          {status && (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm text-muted-foreground">{t('settings.stripeConnectionStatus')}</p>
-                <div className="mt-1 flex items-center gap-2">
-                  {uiStatus === 'active' ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden />
-                  ) : uiStatus === 'pending' ? (
-                    <Clock className="h-5 w-5 text-amber-600" aria-hidden />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-muted-foreground" aria-hidden />
-                  )}
-                  <Badge variant={STATUS_VARIANT[uiStatus]} data-testid="connect-status-badge">
-                    {STATUS_LABEL[uiStatus]}
-                  </Badge>
-                </div>
-              </div>
-
-              {uiStatus !== 'active' && (
-                <Button
-                  onClick={() => startOnboarding.mutate()}
-                  disabled={startOnboarding.isPending}
-                  data-testid="connect-stripe-cta"
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  {uiStatus === 'disconnected' ? t('settings.connectStripe') : t('settings.completeVerification')}
-                </Button>
-              )}
-            </div>
-          )}
-
-          {startOnboarding.isError && (
-            <ConnectErrorAlert
-              testId="connect-onboarding-error"
-              message={getProblemMessage(startOnboarding.error, t) ?? t('toast.connectOnboardingFailed')}
-              retryable={isRetryableConnectError(startOnboarding.error)}
-              retrying={startOnboarding.isPending}
-              onRetry={() => startOnboarding.mutate()}
-            />
-          )}
-
-          {status?.connectedAccountId && (
-            <p className="text-xs text-muted-foreground">
-              {t('settings.stripeAccount')} <code>{status.connectedAccountId}</code>
-            </p>
-          )}
-
-          {hasRequirements && uiStatus !== 'active' && (
-            <div
-              role="alert"
-              data-testid="connect-requirements-alert"
-              className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm space-y-1"
-            >
-              <p className="font-medium">{t('settings.verificationIncomplete')}</p>
-              <p className="text-muted-foreground">
-                {t('settings.verificationIncompleteDescription')}
-              </p>
-            </div>
-          )}
-
-          {uiStatus === 'active' && (
-            <p className="text-sm text-muted-foreground">
-              {t('settings.accountActiveMessage')}
-            </p>
-          )}
-        </div>
-
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground/70">
           {t('settings.managePlanIn')}{' '}
           <Link to="/app/short-rent/settings/plan" className="underline">
             {t('settings.planSettings')}

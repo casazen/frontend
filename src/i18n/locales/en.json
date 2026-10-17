@@ -513,6 +513,7 @@
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
+    "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
     "users": "Users",
@@ -4243,7 +4244,7 @@
     "connectStatusDisconnected": "Not connected",
     "connectStatusPending": "Verifying",
     "connectStatusActive": "Active",
-    "connectPaymentsTitle": "Payments / Payouts",
+    "connectPaymentsTitle": "Online payments",
     "connectDescription": "Connect your Stripe account to receive guest payments directly to your bank.",
     "yourBookingSite": "Your booking site",
     "visitPublicSiteDescription": "Visit the public site to see what your guests see.",
@@ -4370,7 +4371,6 @@
       "description": "These settings are managed by your organization's administrator: contact the administrator to change them."
     },
     "loadError": "Could not load the organization settings.",
-    "formTitle": "Organization identity",
     "formDescription": "The name and address are visible on your public booking site; the email only if you choose to show it.",
     "nameLabel": "Organization name",
     "slugLabel": "Public address",
@@ -4395,6 +4395,22 @@
     },
     "siteAppearanceHint": "The public site's logo, colors and theme are edited in Site appearance.",
     "siteAppearanceLink": "Go to Site appearance"
+  },
+  "accountSettings": {
+    "billing": {
+      "action": "Open Billing and plan",
+      "body": "VAT number, recipient code (SDI) and PEC for your invoices are managed in Billing and plan.",
+      "title": "Billing details"
+    },
+    "description": "The account details that apply across all areas.",
+    "focus": {
+      "kicker": "To sort out",
+      "organization": {
+        "action": "Fill in the details",
+        "body": "Guests see the name and the address on your booking site: for now they are still the temporary ones.",
+        "title": "Choose the name and the address of your site"
+      }
+    }
   },
   "siteAppearance": {
     "title": "Site appearance",

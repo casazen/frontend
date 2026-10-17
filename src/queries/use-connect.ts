@@ -3,10 +3,12 @@ import { ConnectApi } from '@/api/connect.api';
 
 export const CONNECT_STATUS_KEY = ['connect', 'status'] as const;
 
-export function useConnectStatus(refresh = true) {
+/** `enabled` false reads nothing: a page that shows the payments only to some people asks for the status only for them. */
+export function useConnectStatus(refresh = true, enabled = true) {
   return useQuery({
     queryKey: [...CONNECT_STATUS_KEY, refresh],
     queryFn: () => ConnectApi.getStatus(refresh),
+    enabled,
   });
 }
 
