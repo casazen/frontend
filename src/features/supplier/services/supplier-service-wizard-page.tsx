@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useFormContext, type UseFormReturn } from 'react-hook-form';
 import { CalendarCheck, EyeOff, Pencil, Send } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardDone } from '@/components/shared/wizard/wizard-done';
@@ -314,7 +315,7 @@ function DraftLoader({ id, onStartNew }: { id: string; onStartNew: () => void })
   if (isError || !data) {
     const found = describeServiceError(error, t);
     return (
-      <div className="mx-auto w-full max-w-2xl" data-testid="service-wizard-draft-error">
+      <div className="w-full" data-testid="service-wizard-draft-error">
         <EmptyState
           icon={Pencil}
           title={t(`${T}.draftErrorTitle`)}
@@ -351,7 +352,7 @@ function DuplicateStarter({ sourceId }: { sourceId: string }) {
 
   if (!failed) return <LoadingScreen message={t(`${T}.duplicating`)} className="h-auto flex-1" />;
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4" data-testid="service-wizard-duplicate-error">
+    <div className="w-full space-y-4" data-testid="service-wizard-duplicate-error">
       <Alert variant="danger">{describeServiceError(failed.error, t).message}</Alert>
       <Button asChild variant="outline">
         <Link to={SERVICES_PATH}>{t(`${T}.done.back`)}</Link>
@@ -385,7 +386,7 @@ function WizardEntry() {
   if (draftId) return <DraftLoader id={draftId} onStartNew={() => setDraftId(null)} />;
   if (atLimit) {
     return (
-      <div className="mx-auto w-full max-w-2xl" data-testid="service-wizard-limit">
+      <div className="w-full" data-testid="service-wizard-limit">
         <EmptyState
           icon={Pencil}
           title={t(`${T}.limitTitle`)}
@@ -410,8 +411,7 @@ export function SupplierServiceWizardPage() {
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-service-wizard-page">
       <PageHeader title={t(`${T}.title`)} description={t(`${T}.description`)} crumbs="auto" />
-      {/* `w-full`: the shell sits in a column, and a centered block there takes the width of its content: the buttons of a phone would stick out. */}
-      <div className="mx-auto w-full max-w-2xl">{duplicateId ? <DuplicateStarter sourceId={duplicateId} /> : <WizardEntry />}</div>
+      <div className={FOCUS_COLUMN}>{duplicateId ? <DuplicateStarter sourceId={duplicateId} /> : <WizardEntry />}</div>
     </div>
   );
 }

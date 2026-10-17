@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { OperatorTypeSection } from '@/features/profile/components/operator-type-section';
 import { ProfileInfo } from '@/features/profile/components/profile-info';
@@ -32,11 +33,13 @@ export function AccountProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title={t('profile.title')} description={t('profile.description')} />
 
-      <ProfileInfo user={profileUser} />
-      {roleKey === 'org_owner' ? <OperatorTypeSection /> : null}
+      <div className={PAGE_COLUMNS}>
+        <ProfileInfo user={profileUser} />
+        {roleKey === 'org_owner' ? <OperatorTypeSection /> : null}
+      </div>
     </div>
   );
 }

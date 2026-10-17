@@ -8393,7 +8393,33 @@
       "rentPaidOnInvalid": "Indica una data di pagamento valida, non futura.",
       "rentPaymentLinkInvalid": "Il link di pagamento non è valido o è stato sostituito da uno più recente.",
       "hostInviteQuotaExceeded": "Hai raggiunto il limite di inviti di oggi. Riprova domani.",
-      "hostEmailTaken": "Questa email ha già un account su CasaZen: non serve invitarla."
+      "hostEmailTaken": "Questa email ha già un account su CasaZen: non serve invitarla.",
+      "consentsIncomplete": "Per entrare devi accettare tutti i documenti obbligatori.",
+      "invitationDailyLimitReached": "Hai già mandato tanti inviti nelle ultime 24 ore. Riprova domani.",
+      "invitationEmailMismatch": "Questo invito è per un altro indirizzo: accedi con quello a cui è arrivato.",
+      "invitationEmailNotVerified": "Il tuo indirizzo non è ancora verificato: conferma l’email e riprova.",
+      "invitationExpired": "Questo invito è scaduto: chiedi a chi ti ha invitato di mandartene uno nuovo.",
+      "invitationInvalid": "Questo link non funziona: apri l’ultima email di invito o chiedine una nuova.",
+      "invitationPlatformAdmin": "Questo account è dello staff di CasaZen e non entra in un’organizzazione cliente.",
+      "invitationResendTooSoon": "Hai appena reinviato questo invito: potrai farlo di nuovo tra un’ora.",
+      "invitationRevoked": "Questo invito è stato annullato.",
+      "invitationUsed": "Questo invito è già stato usato.",
+      "invitationUserHasOrganization": "Hai già un’organizzazione con dei dati: l’invito non si può accettare con questo account.",
+      "memberInactive": "Il tuo accesso a questa organizzazione è stato disattivato dal titolare.",
+      "orgInvitationAlreadyPending": "C’è già un invito in attesa per questa email: reinvialo dall’elenco delle persone.",
+      "orgInvitationNotFound": "Questo invito non esiste più: ricarica l’elenco.",
+      "orgInvitationNotPending": "L’invito è già stato accettato, annullato o è scaduto.",
+      "orgLastOwner": "Il titolare non si può cambiare né disattivare.",
+      "orgMemberAlreadyMember": "Questa persona fa già parte del team.",
+      "orgMemberAreaRequired": "Scegli almeno un’area in cui potrà lavorare.",
+      "orgMemberNotFound": "Questa persona non fa più parte del team: ricarica l’elenco.",
+      "orgMemberOtherOrg": "Questo account fa già parte di un’altra organizzazione.",
+      "orgMemberPropertyUnknown": "Uno degli immobili scelti non esiste più: ricarica l’elenco e riprova.",
+      "orgMemberScopeNotSupported": "Solo il Collaboratore può essere limitato ad alcuni immobili.",
+      "orgOwnerNotAssignable": "Il ruolo di titolare non si assegna: il titolare è uno solo.",
+      "orgOwnerRequired": "Solo il titolare può nominare o modificare un amministratore.",
+      "orgSeatLimitReached": "Hai usato tutti i posti del piano: disattiva chi non lavora più con te o passa a un piano con più posti.",
+      "staleDocuments": "I documenti legali sono stati aggiornati: ricarica la pagina e accettali di nuovo."
     }
   },
   "appShell": {
@@ -8716,6 +8742,78 @@
     }
   },
   "team": {
+    "actions": {
+      "access": {
+        "description": "Vede solo le aree e gli immobili che scegli.",
+        "done": "Accessi di {{name}} aggiornati",
+        "doneAreas": "Lavora in: {{areas}}.",
+        "doneSome_one": "Vede {{count}} immobile.",
+        "doneSome_other": "Vede {{count}} immobili.",
+        "label": "Aree e immobili",
+        "loadError": "Non riusciamo a leggere gli immobili di questa persona.",
+        "partial": "Le aree sono state salvate, ma gli immobili no: {{message}}",
+        "save": "Salva aree e immobili",
+        "title": "Aree e immobili di {{name}}"
+      },
+      "deactivate": {
+        "back": "Puoi riattivarlo quando vuoi, con gli stessi permessi.",
+        "confirm": "Disattiva l’accesso",
+        "description": "{{name}} non potrà più entrare in CasaZen. Quello che ha creato (prenotazioni, messaggi, interventi) resta.",
+        "done": "Accesso di {{name}} disattivato",
+        "doneHint": "Non può più usare CasaZen dalla prossima richiesta.",
+        "label": "Disattiva",
+        "next": "Non potrà più usare CasaZen dalla prossima richiesta.",
+        "seat": "Libera un posto nel piano: {{used}} di {{max}}.",
+        "title": "Disattivare l’accesso di {{name}}?",
+        "word": "DISATTIVA"
+      },
+      "failed": "Non è andata a buon fine. Riprova.",
+      "locked": {
+        "admin": "Solo il titolare può modificare un amministratore.",
+        "me": "Sei tu: il tuo ruolo e il tuo accesso non si cambiano da qui.",
+        "owner": "Il titolare non si può cambiare né disattivare."
+      },
+      "now": {
+        "deactivated": "Non può entrare. Riattivandolo torna con gli stessi permessi, se il piano ha un posto libero.",
+        "expired": "Il link è scaduto: reinvia l’invito per darne uno nuovo, valido altri 7 giorni.",
+        "pendingToday": "L’invito è partito oggi.",
+        "pending_one": "L’invito aspetta da {{count}} giorno: se la persona non l’ha visto, reinvialo.",
+        "pending_other": "L’invito aspetta da {{count}} giorni: se la persona non l’ha visto, reinvialo."
+      },
+      "reactivate": {
+        "done": "{{name}} può di nuovo accedere",
+        "doneHint": "Entra con la password di prima e gli stessi permessi.",
+        "label": "Riattiva"
+      },
+      "resend": {
+        "done": "Invito inviato di nuovo a {{name}}",
+        "label": "Reinvia",
+        "noEmail": "L’email non è partita",
+        "noEmailHint": "Copia il link e mandalo tu alla persona.",
+        "until": "Il nuovo link vale fino al {{date}}."
+      },
+      "revoke": {
+        "done": "Invito annullato",
+        "doneHint": "Il link smette di funzionare e il posto si libera. Hai qualche secondo per ripensarci.",
+        "label": "Annulla l’invito"
+      },
+      "role": {
+        "description": "Il nuovo ruolo vale entro un minuto. Aree e immobili restano quelli di ora.",
+        "done": "{{name}}: ruolo {{role}}",
+        "doneHint": "Il nuovo ruolo vale entro un minuto.",
+        "label": "Cambia ruolo",
+        "less": "Cosa non potrà più fare",
+        "levelNo": "non può",
+        "levelRead": "può solo guardare",
+        "levelYes": "può gestire",
+        "more": "Cosa potrà fare in più",
+        "noLess": "Niente in meno",
+        "noMore": "Niente di nuovo",
+        "save": "Salva il ruolo",
+        "title": "Cambia il ruolo di {{name}}"
+      },
+      "title": "Cosa puoi fare"
+    },
     "capabilities": {
       "billing": "Piano e fatture",
       "booking": "Prenotazioni e calendario",
@@ -8750,6 +8848,105 @@
       "someProperties": "Solo alcuni immobili ({{total}})"
     },
     "invitationsUnavailable": "Non riusciamo a leggere gli inviti: l'elenco mostra solo chi fa già parte del team.",
+    "invite": {
+      "cta": "Invita",
+      "done": {
+        "account": "La password la sceglie la persona invitata: tu non la vedi mai. Entrando accetta di nuovo Termini, Privacy e DPA.",
+        "another": "Invita un altro utente",
+        "copyLink": "Copia il link",
+        "description": "{{email}} riceve l’email tra pochi secondi.",
+        "emailFailedText": "L’invito c’è, ma non siamo riusciti a spedire l’email. Copia il link e mandalo tu alla persona: il link di un’eventuale email già partita smette di funzionare.",
+        "emailFailedTitle": "L’email non è partita",
+        "expires": "L’invito vale 7 giorni, fino al {{date}}. Dopo 3 giorni mandiamo noi un promemoria.",
+        "expiresGeneric": "L’invito vale 7 giorni. Dopo 3 giorni mandiamo noi un promemoria.",
+        "seat": "L’invito occupa un posto del piano finché non viene accettato o scade.",
+        "seeInvited": "Vedi gli inviti",
+        "title": "Invito inviato a {{name}}",
+        "titleCreated": "Invito creato per {{name}}",
+        "titleGeneric": "Invito inviato"
+      },
+      "errors": {
+        "areaRequired": "Scegli almeno un’area in cui potrà lavorare.",
+        "emailInTeam": "Questa persona fa già parte del team.",
+        "emailInvalid": "L’email non sembra giusta: controlla che ci siano la chiocciola e il dominio.",
+        "emailPending": "C’è già un invito in attesa per questa email: reinvialo dall’elenco delle persone.",
+        "emailRequired": "Serve l’email: è lì che arriva l’invito.",
+        "emailTooLong": "L’email è troppo lunga (al massimo 255 caratteri).",
+        "nameInvalid": "Nel nome non si possono usare i simboli < > @ / \\",
+        "nameRequired": "Scrivi nome e cognome: lo vedrete tutti nel team.",
+        "nameTooLong": "Il nome è troppo lungo (al massimo 200 caratteri).",
+        "roleNotAllowed": "Non puoi dare questo ruolo: solo il titolare nomina un amministratore. Scegline un altro.",
+        "roleRequired": "Scegli un ruolo per continuare.",
+        "sendFailed": "Non siamo riusciti a mandare l’invito. Riprova."
+      },
+      "finish": "Invia l’invito",
+      "loading": "Preparo l’invito…",
+      "review": {
+        "allProperties": "Tutti gli immobili delle aree scelte, anche quelli che aggiungerai",
+        "choosePropertiesCta": "Scegli gli immobili",
+        "language": "Lingua dell’email",
+        "noProperties": "Nessun immobile scelto",
+        "noPropertiesText": "Con «Solo alcuni» la persona vede solo gli immobili spuntati. Potrai darglieli anche dopo, dalla sua scheda.",
+        "noPropertiesTitle": "Non hai scelto nessun immobile",
+        "person": "Persona",
+        "receivesAccount": "Sceglie la password e, entrando, accetta di nuovo Termini, Privacy e DPA.",
+        "receivesEmail": "Un’email di CasaZen, in {{language}}, con il link per accettare l’invito.",
+        "receivesTitle": "Cosa riceverà",
+        "receivesValidity": "Il link vale 7 giorni. Dopo 3 giorni mandiamo un promemoria.",
+        "role": "Ruolo",
+        "where": "Aree e immobili"
+      },
+      "role": {
+        "legend": "Ruolo",
+        "loadError": "Non riusciamo a leggere i ruoli che puoi dare."
+      },
+      "seats": {
+        "left_one": "{{count}} posto libero su {{max}}. Un invito occupa un posto finché non scade o viene accettato.",
+        "left_other": "{{count}} posti liberi su {{max}}. Un invito occupa un posto finché non scade o viene accettato.",
+        "noneText": "Disattiva chi non lavora più con te o passa a un piano con più posti. Se mandi l’invito comunque, il sistema lo rifiuta.",
+        "noneTitle": "Hai usato tutti i posti del piano",
+        "plan": "Vedi il piano",
+        "unlimited": "Il tuo piano non ha un limite di posti."
+      },
+      "steps": {
+        "review": {
+          "label": "Riepilogo",
+          "purpose": "Ecco cosa vedrà e cosa potrà fare. L’invito parte solo quando confermi.",
+          "title": "Controlla e invia l’invito"
+        },
+        "role": {
+          "label": "Ruolo",
+          "purpose": "Il ruolo decide cosa può fare. Puoi cambiarlo quando vuoi.",
+          "title": "Che ruolo avrà?"
+        },
+        "where": {
+          "label": "Aree e immobili",
+          "purpose": "Vedrà solo le aree e gli immobili che scegli qui.",
+          "title": "Dove potrà lavorare?"
+        },
+        "who": {
+          "label": "Chi",
+          "purpose": "Bastano nome ed email. La password la sceglie la persona invitata.",
+          "title": "Chi vuoi invitare?"
+        }
+      },
+      "title": "Invita un utente",
+      "who": {
+        "email": "Email",
+        "emailHint": "Lì arriva il link per entrare.",
+        "language": "Lingua dell’email",
+        "languageEn": "Inglese",
+        "languageHint": "È la lingua dell’invito e del promemoria.",
+        "languageIt": "Italiano",
+        "name": "Nome e cognome",
+        "nameExample": "Marta Esposito"
+      }
+    },
+    "link": {
+      "copied": "Link copiato",
+      "copiedHint": "Mandalo alla persona: il link di prima non funziona più.",
+      "failed": "Non siamo riusciti a preparare il link. Riprova."
+    },
     "list": {
       "allProperties": "Tutti gli immobili",
       "chips": {
@@ -8786,6 +8983,24 @@
       "you": "sei tu"
     },
     "loadError": "Non riusciamo a caricare le persone.",
+    "picker": {
+      "areasLegend": "In quali aree?",
+      "chosenCount_one": "{{count}} immobile scelto",
+      "chosenCount_other": "{{count}} immobili scelti",
+      "fullAccessText": "Vede tutte le aree e tutti gli immobili. Per limitarlo scegli un altro ruolo.",
+      "fullAccessTitle": "Un amministratore vede tutto",
+      "longRentHint": "Contratti, inquilini e canoni.",
+      "noAreaChosen": "Scegli prima almeno un’area.",
+      "noProperties": "Non ci sono ancora immobili nelle aree scelte: potrai darglieli dopo, dalla sua scheda.",
+      "propertiesError": "Non riusciamo a leggere gli immobili.",
+      "propertiesLegend": "Quali immobili?",
+      "scopeAll": "Tutti gli immobili",
+      "scopeAllHint": "Anche quelli che aggiungerai.",
+      "scopeLegend": "Quali immobili vede?",
+      "scopeSome": "Solo alcuni",
+      "scopeSomeHint": "Vede solo quelli che scegli qui sotto.",
+      "shortRentHint": "Prenotazioni, ospiti e calendario."
+    },
     "preview": {
       "can": "Può gestire",
       "cannot": "Non può",
@@ -8807,6 +9022,88 @@
       "PropertyManager": "Immobili, prenotazioni, contratti, incassi e fornitori. Niente piano e fatture."
     },
     "title": "Persone"
+  },
+  "invitation": {
+    "accept": "Accetta e entra",
+    "acceptTitle": "Accetta l’invito di {{org}}",
+    "details": {
+      "areas": "Aree",
+      "email": "Invito per",
+      "expires": "Vale fino al",
+      "role": "Ruolo"
+    },
+    "entry": {
+      "haveAccount": "Ho già un account: accedi",
+      "login": "Accedi",
+      "setPassword": "Imposta la password",
+      "setPasswordHint": "Nell’email di invito trovi il link per scegliere la password. Poi accedi con quell’indirizzo.",
+      "signup": "Crea il tuo account"
+    },
+    "errorGeneric": "Non riusciamo a controllare l’invito. Riprova tra poco.",
+    "errorTitle": "Non riusciamo a controllare l’invito",
+    "failure": {
+      "alreadyMember": {
+        "text": "Hai già accettato questo invito.",
+        "title": "Fai già parte del team"
+      },
+      "consents": {
+        "reload": "Ricarica la pagina",
+        "text": "Per entrare devi accettare tutti i documenti. Se sono stati aggiornati, ricarica la pagina e accettali di nuovo."
+      },
+      "emailMismatch": {
+        "action": "Esci e accedi con l’indirizzo invitato",
+        "text": "Sei collegato con un altro indirizzo. Accedi con quello a cui è arrivato l’invito ({{email}}).",
+        "title": "Questo invito è per un altro indirizzo"
+      },
+      "emailNotVerified": {
+        "text": "Il tuo indirizzo non è ancora verificato. Apri il messaggio di conferma che ti ha mandato il servizio di accesso, poi torna qui e riprova.",
+        "title": "Conferma la tua email"
+      },
+      "hasOrganization": {
+        "support": "Scrivi al supporto",
+        "text": "Non possiamo unire le due organizzazioni: con questo account l’invito non si può accettare. Usa un altro indirizzo o chiedi aiuto al supporto.",
+        "title": "Hai già un’organizzazione con dei dati"
+      },
+      "other": "Non è stato possibile accettare l’invito. Riprova.",
+      "platformAdmin": {
+        "text": "Questo account è dello staff di CasaZen e non può entrare in un’organizzazione cliente. Usa un altro account.",
+        "title": "Account dello staff"
+      },
+      "retry": "Non siamo riusciti a completare l’operazione. Riprova."
+    },
+    "joinDescription": "Ecco cosa potrai fare. Accedi per accettare.",
+    "joinTitle": "{{org}} ti ha invitato su CasaZen",
+    "joined": "Benvenuto in {{org}}",
+    "leftEmptyOrg": "Hai lasciato l’organizzazione vuota che avevi.",
+    "loading": "Controllo l’invito…",
+    "pageTitle": "Invito a CasaZen",
+    "retry": "Riprova",
+    "signedInAs": "Sei collegato come {{email}}.",
+    "unavailable": {
+      "description": "Questa funzione non è ancora disponibile. Chiedi a chi ti ha invitato.",
+      "title": "Invito non disponibile"
+    },
+    "unusable": {
+      "expired": {
+        "description": "Un invito vale 7 giorni. Chiedi a chi ti ha invitato di mandartene uno nuovo.",
+        "title": "L’invito è scaduto"
+      },
+      "goToApp": "Vai a CasaZen",
+      "invalid": {
+        "description": "Può essere scaduto, già usato, annullato o sostituito da uno più recente. Apri l’ultima email di invito oppure chiedi a chi ti ha invitato di mandartene una nuova.",
+        "title": "Questo link non funziona"
+      },
+      "revoked": {
+        "description": "Chi ti ha invitato lo ha ritirato. Se pensi sia un errore, scrivigli.",
+        "title": "L’invito è stato annullato"
+      },
+      "used": {
+        "description": "Se hai già accettato, entra in CasaZen con il tuo account.",
+        "title": "Hai già usato questo invito"
+      }
+    },
+    "useAnother": "Usa un altro account",
+    "useSameEmail": "Accedi con l’indirizzo a cui è arrivato l’invito."
   },
   "pageHeader": {
     "moreActions": "Altre azioni",

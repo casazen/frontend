@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Calendar } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -19,6 +20,7 @@ import { useCreatePayment } from '@/queries/use-payments';
 import { useBookings } from '@/queries/use-bookings';
 import { paymentFormSchema } from './schemas/payment.schema';
 import { getPaymentMethodLabel } from '@/lib/i18n-labels';
+import { cn } from '@/lib/utils';
 import type { PaymentFormValues } from './schemas/payment.schema';
 
 const PAYMENT_METHODS = ['CreditCard', 'BankTransfer', 'PayPal', 'ApplePay', 'GooglePay'] as const;
@@ -81,7 +83,7 @@ export function PaymentCreatePage() {
     );
   } else {
     body = (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className={cn(FOCUS_COLUMN, 'space-y-6')}>
         <Card>
           <CardHeader>
             <CardTitle>{t('payment.create.paymentDetails')}</CardTitle>
@@ -151,7 +153,7 @@ export function PaymentCreatePage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title={t('payment.create.title')}
           description={t('payment.create.description')}

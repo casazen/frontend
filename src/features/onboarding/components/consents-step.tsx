@@ -14,9 +14,14 @@ interface ConsentsStepProps {
   onBack: () => void;
   onContinue: (consents: OnboardingConsentsPayload) => void;
   isLoading?: boolean;
+  /** The words of the two buttons when the step is not the one of the onboarding (the acceptance of an invitation to an org says what it does). */
+  backLabel?: string;
+  continueLabel?: string;
+  /** An invited person gives the four consents and nothing else is asked: no box for the marketing. */
+  hideMarketing?: boolean;
 }
 
-export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProps) {
+export function ConsentsStep({ onBack, onContinue, isLoading, backLabel, continueLabel, hideMarketing = false }: ConsentsStepProps) {
   const { t } = useTranslation();
   const {
     tos,
@@ -48,7 +53,7 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
-              {t('onboarding.back')}
+              {backLabel ?? t('onboarding.back')}
             </Button>
             <Button type="button" data-testid="onboarding-consents-retry" onClick={retry} disabled={isRetrying}>
               {isRetrying ? t('onboarding.loadingLegalDocs') : t('onboarding.retry')}
@@ -144,18 +149,20 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
               {t('onboarding.readSubprocessors')}
             </a>
           </div>
-          <ConsentRow
-            id="marketing"
-            checked={marketingOptIn}
-            onCheckedChange={setMarketingOptIn}
-            label={t('onboarding.marketingOptIn')}
-          />
+          {hideMarketing ? null : (
+            <ConsentRow
+              id="marketing"
+              checked={marketingOptIn}
+              onCheckedChange={setMarketingOptIn}
+              label={t('onboarding.marketingOptIn')}
+            />
+          )}
         </CardContent>
       </Card>
 
       <div className="flex flex-wrap justify-center gap-3">
         <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
-          {t('onboarding.back')}
+          {backLabel ?? t('onboarding.back')}
         </Button>
         <Button
           type="button"
@@ -163,7 +170,7 @@ export function ConsentsStep({ onBack, onContinue, isLoading }: ConsentsStepProp
           disabled={!allRequired || isLoading}
           onClick={handleContinue}
         >
-          {t('onboarding.continue')}
+          {continueLabel ?? t('onboarding.continue')}
         </Button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ProfileInfo } from './components/profile-info';
 import { OperatorTypeSection } from './components/operator-type-section';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -14,14 +15,16 @@ export function ProfileContentPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6">
       <PageHeader
         title={t('profile.title')}
         description={t('profile.description')}
       />
 
-      <ProfileInfo user={user} />
-      <OperatorTypeSection />
+      <div className={PAGE_COLUMNS}>
+        <ProfileInfo user={user} />
+        <OperatorTypeSection />
+      </div>
     </div>
   );
 }

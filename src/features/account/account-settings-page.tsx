@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { FocusBlock, PlainSection } from '@/components/shared/calm';
 import { ORG_NAME_FIELD_ID, isOrgProfileIncomplete } from '@/features/settings/organization/org-profile';
 import { OrganizationSettings } from '@/features/settings/organization/organization-settings-page';
@@ -8,6 +9,7 @@ import { PaymentsBody, PaymentsFocus } from '@/features/settings/payments-page';
 import { isPaymentsMissing, useConnectPayments } from '@/features/settings/use-connect-payments';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { cn } from '@/lib/utils';
 import { reachableEntry, type Reach } from './account-home-model';
 
 // The pages of the rental areas that this one gathers: it shows what they show, to the people who may open them, with the same endpoints.
@@ -38,7 +40,7 @@ export function AccountSettingsPage() {
   const billing = reachableEntry([BILLING_PATH], reach);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="space-y-8">
       <PageHeader title={t('nav.accountSettings')} description={t('accountSettings.description')} crumbs="auto" />
 
       {focus === 'organization' ? (
@@ -56,23 +58,28 @@ export function AccountSettingsPage() {
       ) : null}
       {focus === 'payments' ? <PaymentsFocus payments={payments} /> : null}
 
-      <PlainSection title={t('nav.organization')} data-testid="account-settings-organization">
-        <p className="text-sm text-foreground/70">{t('orgSettings.formDescription')}</p>
-        <OrganizationSettings showSiteAppearanceLink={reachableEntry([SITE_APPEARANCE_PATH], reach) !== undefined} />
-      </PlainSection>
-
-      {showPayments ? (
-        <PlainSection title={t('settings.connectPaymentsTitle')} data-testid="account-settings-payments">
-          <p className="text-sm text-foreground/70">{t('settings.connectDescription')}</p>
-          <PaymentsBody payments={payments} showAction={focus !== 'payments'} />
+      {/* What the org says about itself on the left, how it gets paid and where it pays on the right (under each other on a narrow screen). */}
+      <div className={cn(PAGE_COLUMNS, 'gap-8')}>
+        <PlainSection title={t('nav.organization')} data-testid="account-settings-organization">
+          <p className="text-sm text-foreground/70">{t('orgSettings.formDescription')}</p>
+          <OrganizationSettings showSiteAppearanceLink={reachableEntry([SITE_APPEARANCE_PATH], reach) !== undefined} />
         </PlainSection>
-      ) : null}
 
-      {billing ? (
-        <PlainSection title={t('accountSettings.billing.title')} actionLabel={t('accountSettings.billing.action')} href={billing.path}>
-          <p className="text-sm text-foreground/70">{t('accountSettings.billing.body')}</p>
-        </PlainSection>
-      ) : null}
+        <div className="min-w-0 space-y-8">
+          {showPayments ? (
+            <PlainSection title={t('settings.connectPaymentsTitle')} data-testid="account-settings-payments">
+              <p className="text-sm text-foreground/70">{t('settings.connectDescription')}</p>
+              <PaymentsBody payments={payments} showAction={focus !== 'payments'} />
+            </PlainSection>
+          ) : null}
+
+          {billing ? (
+            <PlainSection title={t('accountSettings.billing.title')} actionLabel={t('accountSettings.billing.action')} href={billing.path}>
+              <p className="text-sm text-foreground/70">{t('accountSettings.billing.body')}</p>
+            </PlainSection>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

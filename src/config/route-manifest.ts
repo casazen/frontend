@@ -642,6 +642,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
   },
   {
+    // "Invita un utente" (AM-04c): the four steps that bring a person in, opened from «Invita» on the page of the people. It is in no menu:
+    // «Persone» stays the highlighted entry and the trail goes through it, both by the start of the address.
+    path: '/app/account/people/invite',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    component: async () => ({ default: (await import('@/features/team/invite/invite-page')).InvitePage }),
+  },
+  {
     // "Immobili" (AM-13): every property of the account, short-term and long-term, with who looks after it and who can open it. For the
     // owner and the administrators (`org.members.manage`, like the people): the pages of a property stay in the section of its mode.
     path: '/app/account/properties',
