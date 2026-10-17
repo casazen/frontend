@@ -551,7 +551,12 @@ test.describe('Aligned cards', () => {
 
       const cards = page.getByTestId('marketplace-supplier-grid').locator('> div');
       await expect(cards).toHaveCount(2);
-      // The first name is on three lines, the second on one; only the first supplier has a bio.
+      // The suppliers have the whole width of the page now (SR-09a), so how many lines a name takes depends on the font even more:
+      // the first name is made long on purpose (see `setText`), the second is one line; only the first supplier has a bio.
+      await setText(
+        cards.nth(0).locator('.font-medium').first(),
+        'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como e della Brianza, con Lavanderia Industriale, Giardinaggio, Assistenza Tecnica Specializzata e Gestione Completa degli Ospiti S.r.l.',
+      );
       expect(await linesOf(cards.nth(0).locator('.font-medium').first())).toBeGreaterThanOrEqual(3);
       expect(await linesOf(cards.nth(1).locator('.font-medium').first())).toBe(1);
 
