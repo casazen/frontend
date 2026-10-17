@@ -7,6 +7,7 @@ import {
   useDecideFreeEvent,
   usePendingFreeEvents,
   useSupplierAgendaCalendar,
+  useSupplierConflicts,
   useSupplierHours,
   useUpdateSupplierAvailability,
 } from '@/queries/use-supplier';
@@ -20,6 +21,7 @@ vi.mock('@/queries/use-supplier', () => ({
   useDecideFreeEvent: vi.fn(),
   usePendingFreeEvents: vi.fn(),
   useSupplierAgendaCalendar: vi.fn(),
+  useSupplierConflicts: vi.fn(),
   useSupplierHours: vi.fn(),
   useUpdateSupplierAvailability: vi.fn(),
 }));
@@ -96,6 +98,12 @@ describe('SupplierAvailabilityPage today (QA-CLOCK-FE)', () => {
     await i18n.changeLanguage('it');
     mutateAsync.mockResolvedValue({ updated: 1 });
     mockFreeEvents();
+    // The check of the jobs to come (SP-03b) finds nothing wrong.
+    vi.mocked(useSupplierConflicts).mockReturnValue({
+      data: { from: '2026-09-24', to: '2026-10-24', timeZone: 'Europe/Rome', items: [], total: 0, truncated: false, limit: 200 },
+      isLoading: false,
+      isError: false,
+    } as unknown as ReturnType<typeof useSupplierConflicts>);
     vi.mocked(useUpdateSupplierAvailability).mockReturnValue({
       mutateAsync,
       isPending: false,
