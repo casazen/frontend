@@ -2769,7 +2769,6 @@
   "pricing": {
     "dashboard": {
       "title": "Suggerimenti stagionali",
-      "description": "Prezzi suggeriti per le prossime notti, calcolati dal prezzo per notte della struttura con regole stagionali che scegli tu.",
       "loading": "Caricamento dei suggerimenti stagionali...",
       "disabledTitle": "Suggerimenti stagionali disattivati",
       "disabledDescription": "Attivali per vedere, per i prossimi 90 giorni, il prezzo suggerito per ogni notte in base alle tue regole su stagioni e festività.",
@@ -2779,11 +2778,9 @@
       "basePriceMissingDescription": "I suggerimenti partono dal prezzo per notte della struttura, che non è ancora impostato. Impostalo nella scheda della struttura.",
       "editProperty": "Modifica la struttura",
       "configLoadError": "Impossibile caricare la configurazione dei suggerimenti.",
-      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali.",
-      "retry": "Riprova"
+      "suggestionsLoadError": "Impossibile caricare i suggerimenti stagionali."
     },
     "config": {
-      "title": "Suggerimenti stagionali",
       "active": "Attivi",
       "disabled": "Disattivati",
       "enableLabel": "Attiva i suggerimenti stagionali",
@@ -2808,11 +2805,21 @@
       "recalculating": "Calcolo in corso...",
       "recalculateNow": "Ricalcola ora"
     },
+    "focus": {
+      "baseChangedTitle": "I suggerimenti non sono aggiornati",
+      "enable": "Attiva i suggerimenti",
+      "kicker": "Prezzo base",
+      "noRules": "Nessuna regola attiva: ogni notte ha il prezzo base.",
+      "offPrice": "Senza suggerimenti il prezzo resta {{price}} a notte in ogni data.",
+      "price": "{{price}} a notte"
+    },
+    "summary": {
+      "down": "scende del {{percent}}%",
+      "holidays": "Festività nazionali: il prezzo {{change}}.",
+      "season": "{{season}} ({{months}}): il prezzo {{change}}.",
+      "up": "sale del {{percent}}%"
+    },
     "suggestions": {
-      "basePriceLabel": "Prezzo base:",
-      "perNight": "a notte",
-      "basePriceHint": "È il prezzo per notte della struttura: preventivi e prenotazioni usano questo prezzo.",
-      "readOnlyNotice": "I suggerimenti sono proposte: si applicano a preventivi e prenotazioni solo se confermi. Puoi modificare il prezzo a mano prima di applicare.",
       "applyNotice": "I suggerimenti restano proposte finché non li confermi. Il prezzo applicato è modificabile a mano.",
       "applyAll": "Applica tutti i suggerimenti",
       "applyOne": "Applica",
@@ -2824,8 +2831,9 @@
       "details": "Dettaglio per data",
       "date": "Data",
       "base": "Prezzo base",
+      "priceFor": "Prezzo per il {{date}}",
+      "showAll": "Mostra tutte le {{count}} notti",
       "suggested": "Suggerito",
-      "delta": "Δ",
       "rule": "Regola applicata"
     },
     "rules": {
@@ -5006,6 +5014,20 @@
       "invalid": {
         "label": "Non valido",
         "explain": "Il codice inserito non è nel formato ufficiale: controllalo e correggilo."
+      }
+    },
+    "fiscalRegime": {
+      "Confirmed": {
+        "label": "Regime scelto",
+        "explain": "Hai scelto e confermato il regime fiscale di questo immobile per quest'anno."
+      },
+      "ToConfirm": {
+        "label": "Da confermare",
+        "explain": "CasaZen ha rilevato un regime ma non lo applica da solo: confermalo o scegline un altro."
+      },
+      "NotChosen": {
+        "label": "Da scegliere",
+        "explain": "Per quest'anno questo immobile non ha ancora un regime fiscale: scegline uno per stimare l'imposta."
       }
     },
     "alloggiati": {
@@ -7593,6 +7615,28 @@
       "title": "Nessun immobile con affitti brevi",
       "description": "Aggiungi un immobile per scegliere il regime fiscale e preparare i report.",
       "action": "Aggiungi un immobile"
+    },
+    "focus": {
+      "choose": {
+        "cta": "Scegli il regime",
+        "title": "Scegli il regime fiscale di {{name}}"
+      },
+      "confirm": {
+        "body": "Consigliato: {{regime}}. Non viene applicato da solo: confermalo o scegline un altro.",
+        "title": "Conferma il regime fiscale di {{name}}"
+      },
+      "ok": {
+        "title": "Il regime fiscale {{year}} è a posto"
+      },
+      "reports": {
+        "title": "Prepara i dati per il commercialista"
+      },
+      "vat": {
+        "title": "Un titolare supera la soglia degli affitti brevi"
+      }
+    },
+    "list": {
+      "title": "Immobili"
     }
   },
   "propertyMode": {
