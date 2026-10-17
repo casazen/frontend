@@ -111,8 +111,11 @@ export function BasicsFields() {
   );
 }
 
-/** What a supplement is counted by: its own row of fields, with the one that removes it. */
-function SupplementRow({ index, onRemove }: { index: number; onRemove: () => void }) {
+/**
+ * What a supplement is counted by: its own row of fields, with the one that removes it. Alone on a page it is a box of its own;
+ * `flat` is for a part that already sits in a box (the page of a service): the rows are told apart by a line, not by a box in a box.
+ */
+function SupplementRow({ index, onRemove, flat }: { index: number; onRemove: () => void; flat: boolean }) {
   const { t } = useTranslation();
   const { register, control, formState } = useFormContext<ServiceFormValues>();
   const rowErrors = formState.errors.supplements?.[index];
@@ -121,7 +124,10 @@ function SupplementRow({ index, onRemove }: { index: number; onRemove: () => voi
   const position = index + 1;
 
   return (
-    <li className="min-w-0 space-y-3 rounded-lg bg-muted/50 p-3 ring-1 ring-inset ring-border" data-testid="service-supplement">
+    <li
+      className={cn('min-w-0 space-y-3', flat ? 'border-t py-4 first:border-t-0 first:pt-0 last:pb-0' : 'rounded-lg bg-muted/50 p-3 ring-1 ring-inset ring-border')}
+      data-testid="service-supplement"
+    >
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <Field label={t(`${T}.supplements.label`, { number: position })} error={rowErrors?.label}>
@@ -163,7 +169,7 @@ function SupplementRow({ index, onRemove }: { index: number; onRemove: () => voi
 }
 
 /** The supplements of the service: created, changed and removed here, up to ten. */
-function SupplementsEditor() {
+function SupplementsEditor({ flat }: { flat: boolean }) {
   const { t } = useTranslation();
   const { control, formState } = useFormContext<ServiceFormValues>();
   const { fields, append, remove } = useFieldArray({ control, name: 'supplements' });
@@ -179,9 +185,9 @@ function SupplementsEditor() {
       </div>
       <p className="break-words text-sm text-foreground/70">{t(`${T}.supplements.hint`)}</p>
       {fields.length > 0 ? (
-        <ul role="list" className="space-y-3">
+        <ul role="list" className={cn(!flat && 'space-y-3')}>
           {fields.map((field, index) => (
-            <SupplementRow key={field.id} index={index} onRemove={() => remove(index)} />
+            <SupplementRow key={field.id} index={index} onRemove={() => remove(index)} flat={flat} />
           ))}
         </ul>
       ) : null}
@@ -211,8 +217,11 @@ const PRICE_MODES = [
   { value: 'quote', icon: FileText },
 ] as const;
 
-/** Second step: how the supplier is paid, the amount, what is added to it, and whether it already includes VAT. */
-export function PriceFields() {
+/**
+ * Second step: how the supplier is paid, the amount, what is added to it, and whether it already includes VAT. `flat` is for a page
+ * that puts this part in a box of its own already (the supplements are not boxes in that box).
+ */
+export function PriceFields({ flat = false }: { flat?: boolean }) {
   const { t } = useTranslation();
   const { register, control, formState } = useFormContext<ServiceFormValues>();
   const { errors } = formState;
@@ -266,7 +275,7 @@ export function PriceFields() {
         )}
       />
 
-      <SupplementsEditor />
+      <SupplementsEditor flat={flat} />
     </div>
   );
 }
