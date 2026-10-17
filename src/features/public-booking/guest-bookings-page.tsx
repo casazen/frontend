@@ -5,23 +5,25 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CalendarCheck, Loader2, Mail, RefreshCw, SearchX } from 'lucide-react';
+import { AlertCircle, CalendarCheck, Clock, Loader2, Mail, RefreshCw, SearchX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FormFieldError } from '@/components/shared/form-field-error';
-import { useGuestBookingLookup, useSendGuestCheckInLink } from '@/queries/use-public-booking';
-import { getProblemCode, getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
+import { useSendGuestCheckInLink } from '@/queries/use-public-booking';
+import { isGuestSessionRefused, useGuestBooking, useGuestSession } from '@/queries/use-guest-session';
+import { getProblemCode, getProblemMessage, getRetryAfterSeconds, isTransientRequestError } from '@/lib/api-errors';
 import { formatBookingCode, isValidBookingCode } from '@/lib/booking-code';
 import { formatRomeDateTime, formatStayDate, nightsBetween } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { GuestBookingDetails, GuestBookingLookupPayload, GuestBookingStatus, PublicOrgDto } from '@/types';
+import { GuestAreaSlot } from './guest-area-slot';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** 404 of the lookup: nothing matches code + email on this site (the same answer whatever does not match). */
+/** 404 of the guest area: nothing matches code + email on this site (the same answer whatever does not match). */
 const NOT_FOUND_CODE = 'guest_booking_not_found';
 
 /** Nothing matches: an empty state, not an error. */
@@ -101,102 +103,149 @@ const WAITING_STATUSES: GuestBookingStatus[] = [
   'AwaitingHostApproval',
 ];
 
+/** The message of a failed call of the guest area: the minutes to wait after a 429 when the answer says, else the generic one. */
+function useFailureMessage() {
+  const { t } = useTranslation();
+  return (error: unknown): string => {
+    const seconds = getRetryAfterSeconds(error);
+    if (seconds !== undefined) {
+      return t('publicBooking.guestBookings.rateLimited', { count: Math.max(1, Math.ceil(seconds / 60)) });
+    }
+    return getProblemMessage(error, t) ?? t('publicBooking.guestBookings.loadError');
+  };
+}
+
 /**
- * "Le mie prenotazioni" of a booking site, `/book/:orgSlug/my-bookings?code=…` (BK-11, A3-10): the guest types the
+ * "Le mie prenotazioni" of a booking site, `/book/:orgSlug/my-bookings?code=…` (BK-11, A3-10, DB-06c): the guest types the
  * booking code of the confirmation email (filled in from the link of the email or of the outcome page) and the email they
- * booked with. Nothing about the booking is shown until the backend has matched both; "not found" is an empty state,
- * distinct from an error.
+ * booked with, once, and opens a **session** (DB-06a): a signed token with a short life, kept in `sessionStorage` of the tab for
+ * this site, with which the booking is read. "Esci" forgets it. The email stays in memory only. Nothing about the booking is shown
+ * until the backend has matched both; "not found" is an empty state, distinct from an error; a session that has ended asks for the
+ * email again, with the code already filled in. The features of the guest area (messages…) hook in at {@link GuestAreaSlot}.
  */
 export function GuestBookingsPage() {
   const { t } = useTranslation();
+  const failureMessage = useFailureMessage();
   const { orgSlug = '' } = useParams<{ orgSlug: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const [searchParams] = useSearchParams();
-  const lookup = useGuestBookingLookup();
+  const siteSlug = org?.slug || orgSlug;
+  const { session, openSession, closeSession } = useGuestSession(siteSlug);
+  // What the guest typed to open the session. The email is only here, in memory: the online check-in link asks for it again.
   const [credentials, setCredentials] = useState<GuestBookingLookupPayload | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LookupForm>({
-    resolver: zodResolver(lookupSchema),
-    defaultValues: { bookingCode: formatBookingCode(searchParams.get('code')) ?? '', email: '' },
-  });
+  // The link of an email names its booking: when it is not the one of the session, the form comes first.
+  const linkedCode = formatBookingCode(searchParams.get('code'));
+  const activeSession = session && (linkedCode === null || linkedCode === session.bookingCode) ? session : null;
+  const booking = useGuestBooking(siteSlug, activeSession);
 
-  const search = (payload: GuestBookingLookupPayload) => {
+  const sessionEnded = isGuestSessionRefused(booking.error);
+  const bookingNotFound = isNotFound(booking.error);
+  const showBooking = activeSession !== null && booking.data !== undefined && !sessionEnded && !bookingNotFound;
+  const showLoading = activeSession !== null && !showBooking && booking.isPending;
+  const showBookingError = activeSession !== null && !showBooking && booking.isError && !sessionEnded && !bookingNotFound;
+  const showForm = !showBooking && !showLoading && !showBookingError;
+
+  const openNotFound = isNotFound(openSession.error);
+  const notFound = openNotFound || (showForm && bookingNotFound);
+
+  const submit = (payload: GuestBookingLookupPayload) => {
     setCredentials(payload);
-    lookup.mutate(payload);
+    openSession.mutate(payload);
   };
 
-  const onSubmit = (data: LookupForm) =>
-    search({
-      orgSlug: org?.slug || orgSlug,
-      bookingCode: formatBookingCode(data.bookingCode) ?? data.bookingCode,
-      email: data.email,
-    });
-
-  const searchAnother = () => {
-    lookup.reset();
+  const signOut = () => {
     setCredentials(null);
+    closeSession();
   };
-
-  const notFound = isNotFound(lookup.error);
 
   return (
     <div className="space-y-8">
       <section className="space-y-2">
         <h2 className="text-3xl font-bold">{t('publicBooking.myBookingsTitle')}</h2>
-        {!lookup.isSuccess && <p className="text-muted-foreground">{t('publicBooking.myBookingsDescription')}</p>}
+        {!showBooking && <p className="text-muted-foreground">{t('publicBooking.myBookingsDescription')}</p>}
       </section>
 
-      {lookup.isSuccess && credentials ? (
+      {showBooking && activeSession && booking.data && (
         <div className="max-w-2xl space-y-4">
-          <GuestBookingCard booking={lookup.data} credentials={credentials} />
-          <Button variant="outline" onClick={searchAnother} data-testid="guest-bookings-search-another">
-            {t('publicBooking.guestBookings.searchAnother')}
-          </Button>
-        </div>
-      ) : (
-        <div className="max-w-md space-y-4">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate data-testid="guest-bookings-form">
-            <div className="space-y-2">
-              <Label htmlFor="guest-booking-code">{t('publicBooking.guestBookings.codeLabel')}</Label>
-              <Input
-                id="guest-booking-code"
-                placeholder={t('publicBooking.guestBookings.codePlaceholder')}
-                autoComplete="off"
-                autoCapitalize="characters"
-                spellCheck={false}
-                className="font-mono uppercase tracking-wider"
-                disabled={lookup.isPending}
-                aria-invalid={errors.bookingCode ? true : undefined}
-                aria-describedby="guest-booking-code-hint"
-                {...register('bookingCode')}
-              />
-              <p id="guest-booking-code-hint" className="text-xs text-muted-foreground">
-                {t('publicBooking.guestBookings.codeHint')}
-              </p>
-              <FormFieldError error={errors.bookingCode} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-booking-email">{t('publicBooking.guestBookings.emailLabel')}</Label>
-              <Input
-                id="guest-booking-email"
-                type="email"
-                autoComplete="email"
-                placeholder={t('publicBooking.emailPlaceholder')}
-                disabled={lookup.isPending}
-                aria-invalid={errors.email ? true : undefined}
-                {...register('email')}
-              />
-              <FormFieldError error={errors.email} />
-            </div>
-            <Button type="submit" disabled={lookup.isPending} className="w-full">
-              {lookup.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {lookup.isPending ? t('publicBooking.guestBookings.searching') : t('publicBooking.guestBookings.submit')}
+          <GuestBookingCard booking={booking.data} siteSlug={siteSlug} knownEmail={credentials?.email ?? null} />
+          <GuestAreaSlot session={activeSession} booking={booking.data} />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={signOut} data-testid="guest-bookings-search-another">
+              {t('publicBooking.guestBookings.searchAnother')}
             </Button>
-          </form>
+            <Button variant="ghost" onClick={signOut} data-testid="guest-bookings-sign-out">
+              {t('publicBooking.guestBookings.signOut')}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">{t('publicBooking.guestBookings.sharedDevice')}</p>
+        </div>
+      )}
+
+      {showLoading && (
+        <p
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+          role="status"
+          data-testid="guest-bookings-loading"
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {t('publicBooking.guestBookings.loadingBooking')}
+        </p>
+      )}
+
+      {showBookingError && (
+        <div className="max-w-md space-y-4">
+          <div
+            className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4"
+            role="alert"
+            data-testid="guest-bookings-error"
+          >
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
+            <div className="space-y-2">
+              <p className="text-sm text-destructive">{failureMessage(booking.error)}</p>
+              <div className="flex flex-wrap gap-2">
+                {isTransientRequestError(booking.error) && (
+                  <Button variant="outline" size="sm" onClick={() => void booking.refetch()}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    {t('publicBooking.guestBookings.retry')}
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  {t('publicBooking.guestBookings.signOut')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showForm && (
+        <div className="max-w-md space-y-4">
+          <GuestAccessForm
+            initialCode={linkedCode ?? session?.bookingCode ?? ''}
+            pending={openSession.isPending}
+            onSubmit={(data) =>
+              submit({
+                orgSlug: siteSlug,
+                bookingCode: formatBookingCode(data.bookingCode) ?? data.bookingCode,
+                email: data.email,
+              })
+            }
+          />
+
+          {sessionEnded && !openSession.isError && (
+            <div
+              className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4"
+              role="status"
+              data-testid="guest-bookings-session-expired"
+            >
+              <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700" />
+              <div>
+                <p className="font-medium text-amber-900">{t('publicBooking.guestBookings.sessionExpiredTitle')}</p>
+                <p className="text-sm text-amber-800">{t('publicBooking.guestBookings.sessionExpiredDescription')}</p>
+              </div>
+            </div>
+          )}
 
           {notFound && (
             <div
@@ -212,7 +261,7 @@ export function GuestBookingsPage() {
             </div>
           )}
 
-          {lookup.isError && !notFound && (
+          {openSession.isError && !openNotFound && (
             <div
               className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4"
               role="alert"
@@ -220,11 +269,9 @@ export function GuestBookingsPage() {
             >
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
               <div className="space-y-2">
-                <p className="text-sm text-destructive">
-                  {getProblemMessage(lookup.error, t) ?? t('publicBooking.guestBookings.loadError')}
-                </p>
-                {credentials && isTransientRequestError(lookup.error) && (
-                  <Button variant="outline" size="sm" onClick={() => search(credentials)}>
+                <p className="text-sm text-destructive">{failureMessage(openSession.error)}</p>
+                {credentials && isTransientRequestError(openSession.error) && (
+                  <Button variant="outline" size="sm" onClick={() => submit(credentials)}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     {t('publicBooking.guestBookings.retry')}
                   </Button>
@@ -238,12 +285,79 @@ export function GuestBookingsPage() {
   );
 }
 
+/**
+ * The form that opens the session: booking code and email. It is mounted only while it is shown, so the email is always empty when
+ * it comes back (after "Esci" or when a session has ended) and the code starts as the one of the link or of the ended session.
+ */
+function GuestAccessForm({
+  initialCode,
+  pending,
+  onSubmit,
+}: {
+  initialCode: string;
+  pending: boolean;
+  onSubmit: (data: LookupForm) => void;
+}) {
+  const { t } = useTranslation();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LookupForm>({
+    resolver: zodResolver(lookupSchema),
+    defaultValues: { bookingCode: initialCode, email: '' },
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate data-testid="guest-bookings-form">
+      <div className="space-y-2">
+        <Label htmlFor="guest-booking-code">{t('publicBooking.guestBookings.codeLabel')}</Label>
+        <Input
+          id="guest-booking-code"
+          placeholder={t('publicBooking.guestBookings.codePlaceholder')}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          className="font-mono uppercase tracking-wider"
+          disabled={pending}
+          aria-invalid={errors.bookingCode ? true : undefined}
+          aria-describedby="guest-booking-code-hint"
+          {...register('bookingCode')}
+        />
+        <p id="guest-booking-code-hint" className="text-xs text-muted-foreground">
+          {t('publicBooking.guestBookings.codeHint')}
+        </p>
+        <FormFieldError error={errors.bookingCode} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="guest-booking-email">{t('publicBooking.guestBookings.emailLabel')}</Label>
+        <Input
+          id="guest-booking-email"
+          type="email"
+          autoComplete="email"
+          placeholder={t('publicBooking.emailPlaceholder')}
+          disabled={pending}
+          aria-invalid={errors.email ? true : undefined}
+          {...register('email')}
+        />
+        <FormFieldError error={errors.email} />
+      </div>
+      <Button type="submit" disabled={pending} className="w-full">
+        {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {pending ? t('publicBooking.guestBookings.searching') : t('publicBooking.guestBookings.submit')}
+      </Button>
+    </form>
+  );
+}
+
 function GuestBookingCard({
   booking,
-  credentials,
+  siteSlug,
+  knownEmail,
 }: {
   booking: GuestBookingDetails;
-  credentials: GuestBookingLookupPayload;
+  siteSlug: string;
+  knownEmail: string | null;
 }) {
   const { t, i18n } = useTranslation();
   const nights = nightsBetween(booking.checkInDate, booking.checkOutDate);
@@ -326,7 +440,7 @@ function GuestBookingCard({
 
       {booking.checkIn.status !== 'NotApplicable' && (
         <Section title={t('publicBooking.guestBookings.checkIn.title')}>
-          <CheckInAccess booking={booking} credentials={credentials} />
+          <CheckInAccess booking={booking} siteSlug={siteSlug} knownEmail={knownEmail} />
         </Section>
       )}
 
@@ -367,18 +481,23 @@ function AmountRow({
 
 /**
  * The online check-in (CO-02): the link is never shown here, only emailed to the address of the booking, so the button
- * asks the backend to send it (again).
+ * asks the backend to send it (again). That call proves the booking with code + email, so when the session was restored
+ * from the tab (the email is never kept) the guest writes the email again.
  */
 function CheckInAccess({
   booking,
-  credentials,
+  siteSlug,
+  knownEmail,
 }: {
   booking: GuestBookingDetails;
-  credentials: GuestBookingLookupPayload;
+  siteSlug: string;
+  knownEmail: string | null;
 }) {
   const { t, i18n } = useTranslation();
   const sendLink = useSendGuestCheckInLink();
+  const [typedEmail, setTypedEmail] = useState('');
   const { status, opensOn, linkSentAt } = booking.checkIn;
+  const email = knownEmail ?? typedEmail.trim();
 
   if (status === 'Completed') {
     return (
@@ -412,19 +531,39 @@ function CheckInAccess({
           {t('publicBooking.guestBookings.checkIn.sent')}
         </p>
       ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={sendLink.isPending}
-          onClick={() => sendLink.mutate(credentials)}
+        <form
+          className="space-y-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            sendLink.mutate({ orgSlug: siteSlug, bookingCode: booking.bookingCode, email });
+          }}
         >
-          {sendLink.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {sendLink.isPending
-            ? t('publicBooking.guestBookings.checkIn.sending')
-            : linkSentAt
-              ? t('publicBooking.guestBookings.checkIn.sendAgain')
-              : t('publicBooking.guestBookings.checkIn.send')}
-        </Button>
+          {knownEmail === null && (
+            <div className="space-y-2">
+              <Label htmlFor="guest-check-in-email">{t('publicBooking.guestBookings.emailLabel')}</Label>
+              <Input
+                id="guest-check-in-email"
+                type="email"
+                autoComplete="email"
+                placeholder={t('publicBooking.emailPlaceholder')}
+                value={typedEmail}
+                onChange={(event) => setTypedEmail(event.target.value)}
+                aria-describedby="guest-check-in-email-hint"
+              />
+              <p id="guest-check-in-email-hint" className="text-xs text-muted-foreground">
+                {t('publicBooking.guestBookings.checkIn.emailNeeded')}
+              </p>
+            </div>
+          )}
+          <Button type="submit" variant="outline" size="sm" disabled={sendLink.isPending || email === ''}>
+            {sendLink.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {sendLink.isPending
+              ? t('publicBooking.guestBookings.checkIn.sending')
+              : linkSentAt
+                ? t('publicBooking.guestBookings.checkIn.sendAgain')
+                : t('publicBooking.guestBookings.checkIn.send')}
+          </Button>
+        </form>
       )}
       {sendLink.isError && (
         <p className="text-sm text-destructive" role="alert" data-testid="guest-booking-check-in-error">
