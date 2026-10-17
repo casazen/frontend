@@ -5,7 +5,6 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { AppShellContext } from '@/components/layout/app-shell-context';
-import { useUiStore } from '@/store/ui-store';
 import * as leaseQueries from '@/queries/use-leases';
 import * as propertyQueries from '@/queries/use-properties';
 import type { LeaseSummary, Property, PropertyDocumentDto } from '@/types';
@@ -161,7 +160,8 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
 
     expect(screen.getByTestId('long-rent-ape-status')).toHaveTextContent(i18n.t('longRentProperties.detail.apeMissing'));
     expect(screen.getByRole('button', { name: i18n.t('shared.documentUpload.uploadDocument') })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: i18n.t('longRentProperties.detail.newLease') })).toHaveAttribute(
+    // A free property: the highlighted block offers the lease to make.
+    expect(screen.getByRole('link', { name: i18n.t('longRentProperties.list.actions.createLease') })).toHaveAttribute(
       'href',
       '/app/long-rent/leases/new?propertyId=prop-1',
     );
@@ -225,18 +225,17 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
       expect(document.title).toBe(`Bilocale Monza · ${i18n.t('areas.longRent.name')} · CasaZen`);
     });
 
-    it('LongRentPropertyDetailPage_Header_HasOnePrimaryActionThatIsTheNewLease', () => {
+    it('LongRentPropertyDetailPage_Header_HasNoPrimaryActionTheNextStepIsInTheBlock', () => {
       renderInTheShell();
 
-      const primary = screen.getByTestId('page-header-primary');
-      expect(within(primary).getByRole('link', { name: i18n.t('longRentProperties.detail.newLease') })).toHaveAttribute(
+      // One focal point: the lease to make is the button of the highlighted block, not of the header.
+      expect(screen.queryByTestId('page-header-primary')).not.toBeInTheDocument();
+      const block = screen.getByTestId('long-rent-property-next-step');
+      expect(within(block).getByRole('link', { name: i18n.t('longRentProperties.list.actions.createLease') })).toHaveAttribute(
         'href',
         '/app/long-rent/leases/new?propertyId=prop-1',
       );
-      // On a phone it is fixed above the bottom bar (the stylesheet moves it; there is a single copy of the button).
-      expect(primary).toHaveAttribute('data-mobile-primary', 'bar');
-      expect(screen.getAllByRole('link', { name: i18n.t('longRentProperties.detail.newLease') })).toHaveLength(1);
-      expect(useUiStore.getState().mobilePrimaryVisible).toBe(true);
+      expect(screen.getAllByRole('link', { name: i18n.t('longRentProperties.list.actions.createLease') })).toHaveLength(1);
     });
 
     it('LongRentPropertyDetailPage_Header_PutsTheEditInTheMenuOfTheThreeDots', async () => {

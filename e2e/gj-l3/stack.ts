@@ -27,8 +27,8 @@ export function loadStack(): StackEnv {
 
 /** Logs in through the mock IdP's login form, the same redirect flow Auth0 Universal Login uses. */
 export async function loginAs(page: Page, stack: StackEnv, email: string): Promise<void> {
+  // `/login` has no page of its own: the address sends the browser straight to the IdP.
   await page.goto('/login');
-  await page.getByRole('button', { name: /accedi|sign in|log in|login/i }).first().click();
   await page.waitForURL(/\/authorize/, { timeout: 30_000 });
   await page.locator('input#username').fill(email);
   await page.locator('input#password').fill(stack.password);
