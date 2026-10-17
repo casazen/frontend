@@ -1,32 +1,28 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import { PlainSection } from '@/components/shared/calm';
 import { getAmenityLabel } from '@/lib/i18n-labels';
 
 interface PropertyAmenitiesGridProps {
   amenities: string[];
 }
 
+/** What the property has, as a plain section: a title and the list, without a box. Nothing when the property has nothing listed. */
 export function PropertyAmenitiesGrid({ amenities }: PropertyAmenitiesGridProps) {
   const { t } = useTranslation();
 
   if (!amenities.length) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('property.form.amenities.title')}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {amenities.map((amenity) => (
-            <div key={amenity} className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-              <span className="text-sm">{getAmenityLabel(amenity, t)}</span>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <PlainSection title={t('property.form.amenities.title')}>
+      <ul role="list" className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+        {amenities.map((amenity) => (
+          <li key={amenity} className="flex min-w-0 items-center gap-2 text-sm">
+            <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-success-foreground" />
+            <span className="min-w-0 break-words">{getAmenityLabel(amenity, t)}</span>
+          </li>
+        ))}
+      </ul>
+    </PlainSection>
   );
 }

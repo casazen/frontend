@@ -135,6 +135,7 @@ describe('the pages of a property (PM-03)', () => {
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({ data: detail, isLoading: false, isError: false } as ReturnType<typeof propertyQueries.usePropertyDetail>);
     vi.mocked(propertyQueries.usePauseProperty).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof propertyQueries.usePauseProperty>);
     vi.mocked(propertyQueries.useActivateProperty).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof propertyQueries.useActivateProperty>);
+    vi.mocked(propertyQueries.useDeleteProperty).mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isSuccess: false } as unknown as ReturnType<typeof propertyQueries.useDeleteProperty>);
     vi.mocked(propertyQueries.useProperty).mockReturnValue({
       data: { id: PROPERTY_ID, name: 'Bilocale Monza', city: 'Monza', rentalMode: 'Long', address: 'Via Italia 1', postalCode: '20900', bedrooms: 2, bathrooms: 1 } as unknown as Property,
       isLoading: false,
@@ -176,8 +177,7 @@ describe('the pages of a property (PM-03)', () => {
   it('PropertyDetailPage_OffersTheChangeInTheMenuOfTheThreeDots', async () => {
     renderShort();
 
-    // The other actions of the page stay where they were (the pause, the supplier, the edit); this one is in the menu.
-    expect(screen.getByTestId('property-pause-toggle')).toBeInTheDocument();
+    // The change is in the menu "⋯" of the page, with the other actions of the property.
     const menu = await openTheMenu();
     expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}/mode`);
   });
