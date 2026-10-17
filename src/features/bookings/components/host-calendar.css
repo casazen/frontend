@@ -72,8 +72,35 @@
   --hc-fill: repeating-linear-gradient(-45deg, var(--color-muted) 0 6px, var(--color-surface-2) 6px 12px);
 }
 
-/* The box of an entry, on the calendar and in the legend (the swatch is a small copy of an event). */
+/*
+ * The kinds that only the Timeline draws (SR-02): a stay that waits for the guest to pay (dotted edge), an intervention of a
+ * supplier (a plain box: the work is not a night) and a night taken twice (red frame).
+ */
+.host-calendar-event--PendingPayment {
+  --hc-fg: var(--color-warning-foreground);
+  --hc-bg: var(--color-warning-soft);
+  --hc-line: var(--color-warning);
+  --hc-style: dotted;
+  --hc-width: 2px;
+}
+
+.host-calendar-event--service {
+  --hc-fg: var(--color-foreground);
+  --hc-bg: var(--color-card);
+  --hc-line: var(--color-muted-foreground);
+}
+
+.host-calendar-event--conflict {
+  --hc-fg: var(--color-danger-foreground);
+  --hc-bg: var(--color-danger-soft);
+  --hc-line: var(--color-danger);
+  --hc-edge: var(--color-danger);
+  --hc-width: 2px;
+}
+
+/* The box of an entry, on the calendar, on the Timeline and in the legend (the swatch is a small copy of an event). */
 .host-calendar .rbc-event.host-calendar-event,
+.host-timeline-item,
 .host-calendar-swatch {
   background: var(--hc-fill, var(--hc-bg));
   color: var(--hc-fg);

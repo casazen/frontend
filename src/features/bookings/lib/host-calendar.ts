@@ -17,6 +17,7 @@ import {
   type CalendarItemDto,
   type OtaReviewReason,
 } from '@/types/calendar.types';
+import type { HostCalendarBlockItem, HostCalendarIcalItem } from '@/types/host-calendar.types';
 
 /**
  * Host calendar of the web console (PC-08, A2-06): the range asked to `GET /api/bookings/calendar` follows the view and
@@ -203,6 +204,46 @@ export function toHostCalendarEvents(items: readonly CalendarItemDto[]): HostCal
     }
   }
   return events;
+}
+
+/**
+ * A block of the Timeline (`GET /api/calendar`: a portal's reservation, `Ical`, or the host's own, `Block`) as the event that the
+ * block panel and its actions already know: one panel and one set of actions, whichever calendar the click came from.
+ */
+export function toHostCalendarBlockEvent(item: HostCalendarIcalItem | HostCalendarBlockItem): HostCalendarBlockEvent {
+  const base = {
+    id: item.id,
+    arrival: item.from,
+    departure: item.to,
+    nights: nightsBetween(item.from, item.to),
+    start: stayDateToLocalDate(item.from) ?? new Date(Number.NaN),
+    end: stayDateToLocalDate(item.to) ?? new Date(Number.NaN),
+    allDay: true as const,
+  };
+  if (item.type === 'Block') {
+    return {
+      ...base,
+      kind: 'block',
+      channel: null,
+      feedLabel: null,
+      summary: trimmed(item.note),
+      manual: true,
+      reason: toReason(true, item.reason),
+      stayId: null,
+      convertible: false,
+    };
+  }
+  return {
+    ...base,
+    kind: 'block',
+    channel: toChannel(item.channel),
+    feedLabel: trimmed(item.feedLabel),
+    summary: trimmed(item.note),
+    manual: false,
+    reason: null,
+    stayId: item.bookingId ?? null,
+    convertible: item.convertible === true,
+  };
 }
 
 /**
