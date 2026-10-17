@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { orgTeamApi } from '@/api/org-team.api';
+import type { OrgMemberProperties } from '@/types/org-team.types';
 
 const ORG_TEAM_KEY = 'org-team';
 
@@ -47,11 +48,52 @@ export function useOrgRoles() {
   });
 }
 
-/** The properties a member reaches, one by one. `enabled: false` for a member that reaches them all: nothing to list. */
-export function useOrgMemberProperties(memberId: string, enabled: boolean) {
+/**
+ * The properties a member reaches, one by one, and how many people reach each. `enabled: false` for a member that reaches them all:
+ * nothing to list. `fresh` reads them again when the screen opens (the list of the properties of the account, not its drawer).
+ */
+export function useOrgMemberProperties(memberId: string, enabled: boolean, { fresh = false }: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: [ORG_TEAM_KEY, 'member-properties', memberId],
     queryFn: () => orgTeamApi.getMemberProperties(memberId),
     enabled,
+    ...(fresh ? { refetchOnMount: 'always' as const } : {}),
   });
+}
+
+/** How long what a collaborator «Solo alcuni» reaches is kept: a person reads it for the names of one property, then for another. */
+const MEMBER_PROPERTIES_STALE_MS = 60_000;
+
+/** What the requests of `useOrgMembersProperties` come to: the answers by member, and whether one is still to come or failed. */
+function combineMemberProperties(results: UseQueryResult<OrgMemberProperties>[]) {
+  const byMember: Record<string, OrgMemberProperties> = {};
+  for (const result of results) {
+    if (result.data) byMember[result.data.memberId] = result.data;
+  }
+  return {
+    byMember,
+    isPending: results.some((result) => result.isPending),
+    isError: results.some((result) => result.isError),
+  };
+}
+
+/**
+ * The properties each of these members reaches: one request each (the same ones as `useOrgMemberProperties`, so they are shared),
+ * kept for a minute. For the few collaborators limited to some properties: who can open a property, who can be put in charge of it.
+ * `retry` asks again for the ones that failed.
+ */
+export function useOrgMembersProperties(memberIds: readonly string[], enabled: boolean) {
+  const queryClient = useQueryClient();
+  const answers = useQueries({
+    queries: memberIds.map((memberId) => ({
+      queryKey: [ORG_TEAM_KEY, 'member-properties', memberId],
+      queryFn: () => orgTeamApi.getMemberProperties(memberId),
+      enabled,
+      staleTime: MEMBER_PROPERTIES_STALE_MS,
+      refetchOnMount: true,
+    })),
+    combine: combineMemberProperties,
+  });
+
+  return { ...answers, retry: () => void queryClient.invalidateQueries({ queryKey: [ORG_TEAM_KEY, 'member-properties'] }) };
 }

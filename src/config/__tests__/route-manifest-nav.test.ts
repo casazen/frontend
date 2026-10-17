@@ -113,6 +113,7 @@ describe('route-manifest main menu (UI-04a)', () => {
     ]);
     expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual([
       '/app/supplier/profile',
+      '/app/supplier/settings',
       '/app/supplier/help/ical',
     ]);
 
@@ -571,7 +572,11 @@ describe('route-manifest nav helpers', () => {
     expect(entry?.context).toBe('supplier');
     expect(entry?.navKey).toBe('nav.supplierHelpIcal');
 
-    expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual(['/app/supplier/profile', '/app/supplier/help/ical']);
+    expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual([
+      '/app/supplier/profile',
+      '/app/supplier/settings',
+      '/app/supplier/help/ical',
+    ]);
     expect(paths(getContextNav('supplier', allowAll, {}, { withoutBottom: true }).more)).toContain('/app/supplier/help/ical');
   });
 
