@@ -41,7 +41,7 @@ function PropertyCard({ property }: { property: FeaturedProperty }) {
           </div>
         )}
         <h3 className="px-4 pt-4 font-semibold">{property.name}</h3>
-        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 text-sm text-muted-foreground">
+        <p className="mt-2 flex flex-wrap content-start items-center gap-x-3 gap-y-1 px-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <BedDouble className="h-4 w-4" aria-hidden />
             {property.bedrooms === 0 ? t('publicSeo.featured.studio') : t('publicSeo.featured.bedrooms', { count: property.bedrooms })}

@@ -124,7 +124,7 @@ export function PublicPropertyCard({ property, to, sections, alignFrom = 'sm' }:
       {row(
         shown.facts,
         own.facts ? (
-          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 px-4 text-sm" data-testid="public-property-card-facts">
+          <ul className="mt-3 flex flex-wrap content-start gap-x-4 gap-y-1 px-4 text-sm" data-testid="public-property-card-facts">
             {guests ? (
               <li className="flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-[var(--cz-public-primary-text)]" aria-hidden />
