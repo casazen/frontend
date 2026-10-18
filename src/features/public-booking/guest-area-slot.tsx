@@ -1,11 +1,14 @@
 import { Fragment, type ReactNode } from 'react';
 import type { GuestBookingDetails, GuestSession } from '@/types';
 import { GuestMessagesSection } from './guest-messages-section';
+import { GuestPaymentRetry } from './guest-payment-retry';
 
 /** What a section of the guest area works with: the session (its token goes in `guestSessionHeaders`) and the booking it reads. */
 interface GuestAreaContext {
   session: GuestSession;
   booking: GuestBookingDetails;
+  /** Slug of the booking site, for the sections that send the guest back to it. */
+  siteSlug: string;
 }
 
 interface GuestAreaSection {
@@ -20,15 +23,16 @@ interface GuestAreaSection {
  * same way, one entry each.
  */
 const guestAreaSections: readonly GuestAreaSection[] = [
+  { id: 'payment', render: ({ session, booking, siteSlug }) => <GuestPaymentRetry session={session} booking={booking} siteSlug={siteSlug} /> },
   { id: 'messages', render: ({ session, booking }) => <GuestMessagesSection session={session} booking={booking} /> },
 ];
 
 /** Renders the sections of the guest area under the booking; with none registered it renders nothing. */
-export function GuestAreaSlot({ session, booking }: GuestAreaContext) {
+export function GuestAreaSlot({ session, booking, siteSlug }: GuestAreaContext) {
   return (
     <>
       {guestAreaSections.map((section) => (
-        <Fragment key={section.id}>{section.render({ session, booking })}</Fragment>
+        <Fragment key={section.id}>{section.render({ session, booking, siteSlug })}</Fragment>
       ))}
     </>
   );

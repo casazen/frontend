@@ -68,3 +68,13 @@ export function useGuestBooking(siteSlug: string, session: GuestSession | null) 
     refetchOnWindowFocus: false,
   });
 }
+
+/**
+ * The client secret of the booking's own intent, to pay it again from "Le mie prenotazioni". Errors are shown by the screen; a 401 means
+ * the session ended (the booking read does the same on its next call).
+ */
+export function useResumeGuestPayment(session: GuestSession) {
+  return useMutation({
+    mutationFn: () => guestSessionApi.resumePayment(session.accessToken, session.bookingCode),
+  });
+}

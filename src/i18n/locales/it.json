@@ -7127,7 +7127,14 @@
       "hostTitle": "Contatti",
       "hostContact": "Per qualsiasi domanda contatta {{name}}:",
       "hostContactNoName": "Per qualsiasi domanda contatta l'host:",
-      "hostContactDirectly": "Per qualsiasi domanda contatta direttamente l'host della struttura."
+      "hostContactDirectly": "Per qualsiasi domanda contatta direttamente l'host della struttura.",
+      "payment": {
+        "title": "Pagamento",
+        "description": "Il pagamento non è stato completato. Puoi riprovare con la stessa carta o con un altro metodo di pagamento: le date restano riservate fino alla scadenza indicata.",
+        "retry": "Riprova il pagamento",
+        "complete": "Completa il pagamento",
+        "resumeError": "Non è stato possibile riprendere il pagamento. Riprova tra qualche minuto."
+      }
     },
     "guestMessages": {
       "title": "Messaggi",

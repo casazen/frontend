@@ -169,7 +169,7 @@ export function GuestBookingsPage() {
       {showBooking && activeSession && booking.data && (
         <div className="max-w-2xl space-y-4">
           <GuestBookingCard booking={booking.data} siteSlug={siteSlug} knownEmail={credentials?.email ?? null} />
-          <GuestAreaSlot session={activeSession} booking={booking.data} />
+          <GuestAreaSlot session={activeSession} booking={booking.data} siteSlug={siteSlug} />
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" onClick={signOut} data-testid="guest-bookings-search-another">
               {t('publicBooking.guestBookings.searchAnother')}

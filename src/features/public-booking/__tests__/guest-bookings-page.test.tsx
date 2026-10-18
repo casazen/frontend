@@ -10,7 +10,12 @@ import { GuestBookingsPage } from '../guest-bookings-page';
 import type { GuestBookingDetails, GuestSession, PublicOrgDto } from '@/types';
 
 vi.mock('@/api/guest-session.api', () => ({
-  guestSessionApi: { openSession: vi.fn(), getBooking: vi.fn() },
+  guestSessionApi: { openSession: vi.fn(), getBooking: vi.fn(), resumePayment: vi.fn() },
+}));
+vi.mock('../components/stripe-intent-payment', () => ({
+  StripeIntentPayment: ({ clientSecret, mode, returnUrl }: { clientSecret: string; mode: string; returnUrl: string }) => (
+    <div data-testid="stripe-intent-payment" data-secret={clientSecret} data-mode={mode} data-return={returnUrl} />
+  ),
 }));
 vi.mock('@/api/public-booking.api', () => ({
   publicBookingApi: { sendGuestCheckInLink: vi.fn() },
@@ -270,5 +275,50 @@ describe('GuestBookingsPage', () => {
     // The session is forgotten and the form comes back without the email of the guest.
     expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull();
     expect(screen.getByLabelText('Email usata per prenotare')).toHaveValue('');
+  });
+
+  it('GuestBookingsPage_PaymentFailed_OffersToRetryWithTheSameHold', async () => {
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(
+      booking({ status: 'PaymentFailed', paidAmount: 0, expiresAt: '2026-10-18T14:05:00Z' }),
+    );
+    vi.mocked(guestSessionApi.resumePayment).mockResolvedValue({
+      bookingId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      paymentOption: 'Immediate',
+      clientSecret: 'pi_secret',
+      setupIntentClientSecret: null,
+      connectedAccountPublishableContext: { publishableKey: 'pk_test', stripeAccountId: 'acct_1' },
+      expiresAt: '2026-10-18T14:05:00Z',
+    });
+    renderPage();
+
+    fill(CODE, EMAIL);
+    fireEvent.click(await screen.findByTestId('guest-payment-retry-button'));
+
+    const payment = await screen.findByTestId('stripe-intent-payment');
+    expect(payment).toHaveAttribute('data-secret', 'pi_secret');
+    expect(payment).toHaveAttribute('data-mode', 'payment');
+    expect(payment.getAttribute('data-return')).toContain(`/book/demo-casazen/my-bookings?code=${CODE}`);
+    expect(guestSessionApi.resumePayment).toHaveBeenCalledWith('gs1.token-of-the-session', CODE);
+  });
+
+  it('GuestBookingsPage_AwaitingPaymentResumeRefused_ShowsTheReasonAndReadsTheBookingAgain', async () => {
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking({ status: 'AwaitingPayment', paidAmount: 0 }));
+    vi.mocked(guestSessionApi.resumePayment).mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    fill(CODE, EMAIL);
+    fireEvent.click(await screen.findByTestId('guest-payment-retry-button'));
+
+    expect(await screen.findByTestId('guest-payment-retry-resume-error')).toBeInTheDocument();
+    await waitFor(() => expect(guestSessionApi.getBooking).toHaveBeenCalledTimes(2));
+  });
+
+  it('GuestBookingsPage_ConfirmedBooking_HasNoPaymentActions', async () => {
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking());
+    renderPage();
+
+    fill(CODE, EMAIL);
+    expect(await screen.findByTestId('guest-booking-result')).toBeInTheDocument();
+    expect(screen.queryByTestId('guest-payment-retry')).not.toBeInTheDocument();
   });
 });

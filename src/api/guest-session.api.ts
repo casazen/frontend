@@ -1,5 +1,5 @@
 import { ApiClient } from './client';
-import type { GuestBookingDetails, GuestBookingLookupPayload, GuestSession } from '@/types';
+import type { CheckoutPaymentSession, GuestBookingDetails, GuestBookingLookupPayload, GuestSession } from '@/types';
 
 /**
  * The header a guest-area call carries (DB-06a): the token of the guest session. The calls of the guest area are anonymous for the
@@ -28,4 +28,16 @@ export const guestSessionApi = {
       public: true,
       headers: guestSessionHeaders(accessToken),
     }),
+
+  /**
+   * Pays the booking of the session again (a declined card, a page closed before paying): the client secret of the booking's own
+   * intent, so nothing is booked twice. 401 as above; 409 `checkout_hold_expired` once the dates were released, 409
+   * `checkout_payment_not_resumable` when there is nothing left to pay.
+   */
+  resumePayment: (accessToken: string, bookingCode: string) =>
+    ApiClient.post<CheckoutPaymentSession>(
+      `/public/guest/bookings/${encodeURIComponent(bookingCode)}/payment-session`,
+      undefined,
+      { public: true, headers: guestSessionHeaders(accessToken) },
+    ),
 };

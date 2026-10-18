@@ -7127,7 +7127,14 @@
       "hostTitle": "Contacts",
       "hostContact": "For any question contact {{name}}:",
       "hostContactNoName": "For any question contact the host:",
-      "hostContactDirectly": "For any question contact the host of the property directly."
+      "hostContactDirectly": "For any question contact the host of the property directly.",
+      "payment": {
+        "title": "Payment",
+        "description": "The payment was not completed. You can try again with the same card or another payment method: the dates stay held until the deadline shown.",
+        "retry": "Try the payment again",
+        "complete": "Complete the payment",
+        "resumeError": "The payment could not be resumed. Try again in a few minutes."
+      }
     },
     "guestMessages": {
       "title": "Messages",
