@@ -5,6 +5,7 @@ import type {
   UpdatePropertyDto,
   PropertySearchParams,
   PropertyDocumentType,
+  RentalMode,
   PropertyCadastralData,
   ApeIdentification,
 } from '@/types';
@@ -12,15 +13,25 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
+import { propertyDeleteBlock } from '@/lib/property-delete-block';
+import { toastUndo } from '@/lib/toast-undo';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
 const PROPERTIES_KEY = 'properties';
 
-export function useProperties(params?: Record<string, string | number | boolean | undefined>) {
+/**
+ * `fresh`: read again from the server every time the list is shown, even when it is cached (the page of the list: a property
+ * is created, edited or paused on other pages, where this list is not watched, so a refresh there would not reach it).
+ */
+export function useProperties(
+  params?: Record<string, string | number | boolean | undefined>,
+  options: { fresh?: boolean } = {},
+) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, params],
     queryFn: () => propertiesApi.getAll(params),
+    ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
   });
 }
 
@@ -62,11 +73,12 @@ export function usePropertyDetail(id: string, options: { fresh?: boolean } = {})
   });
 }
 
-export function useCreateProperty() {
+/** The section that creates the property decides its mode: it is always sent, never inferred from guests and rate. */
+export function useCreateProperty(rentalMode: RentalMode) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePropertyDto) => propertiesApi.create(data),
+    mutationFn: (data: CreatePropertyDto) => propertiesApi.create({ ...data, rentalMode }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
       // Usage changed → plan badge / create gating must refetch (#202, AC8).
@@ -117,7 +129,14 @@ export function usePauseProperty() {
     mutationFn: (id: string) => propertiesApi.pause(id),
     onSuccess: (_, id) => {
       invalidatePropertyCaches(queryClient, id);
-      toast.success(i18n.t('toast.propertyPaused'));
+      // UI-07 (toastUndo): pausing has a true inverse, `activate` (idempotent, nothing else changes), so the toast offers it.
+      toastUndo(i18n.t('toast.propertyPaused'), {
+        undo: async () => {
+          await propertiesApi.activate(id);
+          invalidatePropertyCaches(queryClient, id);
+          toast.success(i18n.t('toast.propertyActivated'));
+        },
+      });
     },
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyPauseFailed'));
@@ -137,6 +156,46 @@ export function useActivateProperty() {
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyActivateFailed'));
     },
+  });
+}
+
+/**
+ * Soft delete (`DELETE /properties/{id}`). The backend refuses with 409 `property_has_upcoming_bookings` or
+ * `property_has_active_leases`: `getProblemMessage` turns those codes into their own text (`apiErrors.codes`).
+ * `explainBlocked`: for a page that tells those two refusals itself, with the way out (the account list): no toast for them.
+ */
+export function useDeleteProperty({ explainBlocked = false }: { explainBlocked?: boolean } = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => propertiesApi.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({ queryKey: [PROPERTIES_KEY, id] });
+      queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
+      // Usage of the plan, dashboard counters, calendar/bookings and compliance (CIN) lists all count properties.
+      queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['compliance'] });
+      toast.success(i18n.t('toast.propertyDeleted'));
+    },
+    onError: (error) => {
+      if (explainBlocked && propertyDeleteBlock(error)) return;
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyDeleteFailed'));
+    },
+  });
+}
+
+/**
+ * Puts a member in charge of a property, or nobody (AM-03). No toast: the dialog that asks for it says how each property went. The
+ * lists that show the person in charge are read again afterwards, also after a refusal (the page was showing an old state).
+ */
+export function useSetPropertyResponsible() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, userId }: { id: string; userId: string | null }) => propertiesApi.setResponsible(id, userId),
+    onSettled: (_data, _error, { id }) => invalidatePropertyCaches(queryClient, id),
   });
 }
 

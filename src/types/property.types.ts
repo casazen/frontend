@@ -1,3 +1,8 @@
+import type { RatingSummary } from './review.types';
+
+/** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
+export type RentalMode = 'Short' | 'Long';
+
 /**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
  * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
@@ -21,6 +26,8 @@ export interface Property {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
+  /** `Short` = short-rent section, `Long` = long-rent section. Set at creation, changed only by the scheduled mode change. */
+  rentalMode?: RentalMode;
   cleaningFee: number;
   damageDeposit: number;
   amenities: string[];
@@ -39,6 +46,10 @@ export interface Property {
   /** IANA time zone, e.g. `Europe/Rome`. */
   timezone: string;
   cancellationPolicyId: string | null;
+  cancellationFullRefundHours?: number | null;
+  cancellationPartialRefundHours?: number | null;
+  cancellationPartialRefundPercent?: number | null;
+  cancellationRefundType?: 'Percent' | 'NonRefundable';
   isActive: boolean;
   /** Host-set pause (A2-05): hidden from public search/bookings until reactivated with `POST /properties/:id/activate`. */
   isPaused: boolean;
@@ -53,6 +64,11 @@ export interface Property {
   cadastralCategory?: string | null;
   cadastralIncome?: number | null;
   ownerId: string;
+  /**
+   * The member in charge of the property (AM-03): the account id of an `OrgMember` (`userId`), told with the administrators when
+   * something happens on it. `null` while nobody is named (the creator is told). Changed with `PUT /properties/:id/responsible`.
+   */
+  responsibleUserId?: string | null;
   orgId?: string;
   createdAt: string;
   updatedAt: string;
@@ -92,6 +108,8 @@ export interface CreatePropertyDto {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
+  /** Sent on creation only (an update must carry the stored mode: 422 `property_rental_mode_change_not_allowed`). */
+  rentalMode?: RentalMode;
   cleaningFee?: number;
   damageDeposit?: number;
   amenities?: string[];
@@ -99,6 +117,10 @@ export interface CreatePropertyDto {
   cinCode?: string | null;
   timezone?: string;
   cancellationPolicyId?: string | null;
+  cancellationFullRefundHours?: number | null;
+  cancellationPartialRefundHours?: number | null;
+  cancellationPartialRefundPercent?: number | null;
+  cancellationRefundType?: 'Percent' | 'NonRefundable';
   slug?: string | null;
 }
 
@@ -187,6 +209,8 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto {
   currency: string;
   /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
+  /** Count and average of the public reviews (DB-12a). Absent while the property has none: no stars, no «0 recensioni». */
+  ratingSummary?: RatingSummary;
 }
 
 export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
@@ -231,6 +255,8 @@ export interface PricingAdapterSummaryDto {
 export interface PropertyDetailDto {
   id: string;
   ownerId: string;
+  /** Section the property belongs to (PM-01). */
+  rentalMode?: RentalMode;
   name: string;
   description: string;
   address: string;

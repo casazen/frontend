@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, configure, render, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
@@ -106,7 +106,12 @@ function renderApp(entry: string) {
   return router;
 }
 
-describe('plan and billing pages from the long-rent shell (PL-16)', () => {
+// The pages are lazy routes: the first render of each one loads its modules, which takes seconds on a loaded machine (the 1 s
+// default of `findBy*` gave up first). Explicit conditions only, no fixed waits: a wait ends as soon as the element is there, so
+// the ceiling costs nothing when the machine is idle (QA-INFRA-01). The test timeout has to be above it.
+configure({ asyncUtilTimeout: 15_000 });
+
+describe('plan and billing pages from the long-rent shell (PL-16)', { timeout: 30_000 }, () => {
   beforeEach(() => {
     // The window scrolls in the shell (UI-03): `ScrollRestoration` scrolls it, jsdom has no scrolling to offer.
     window.scrollTo = vi.fn();

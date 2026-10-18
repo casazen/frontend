@@ -153,6 +153,53 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    // The home of the console (SP-04, SP-04e): the days, the counts, the three numbers and the checklist. An active supplier with nothing
+    // to answer and nothing to count; one that is not active has not begun.
+    if (/\/supplier\/today(\?|$)/.test(url)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ date: '2026-10-16', days: 7, dateTo: '2026-10-22', jobs: [], jobsTotal: 0, newRequests: [], newRequestsTotal: 0 }),
+      });
+      return;
+    }
+
+    if (url.includes('/inbox/counts')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ toAnswer: 0, awaitingCustomer: 0, scheduled: 0, toCollect: 0, archive: 0, paymentsLate: 0 }),
+      });
+      return;
+    }
+
+    if (url.includes('/dashboard/overview')) {
+      const figures = { from: '2026-10-01', to: '2026-10-16', received: 0, accepted: 0, rejected: 0, acceptanceRate: null, averageResponseMinutes: null, completedJobs: 0, paidNetCents: 0 };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ period: 'current-month', onlinePayments: false, current: figures, previous: figures }),
+      });
+      return;
+    }
+
+    if (url.includes('/supplier/checklist')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          profileCompletionPercent: active ? 100 : 40,
+          profileComplete: active,
+          activeServices: active ? 1 : 0,
+          hoursConfigured: active,
+          showcasePublished: active,
+          firstRequestAnswered: active,
+          paymentsActive: null,
+        }),
+      });
+      return;
+    }
+
     if (url.includes('/inbox')) {
       await route.fulfill({
         status: 200,
@@ -162,8 +209,38 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    if (url.includes('/availability/hours')) {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((weekday) => ({
+        weekday,
+        bands: weekday === 'Saturday' || weekday === 'Sunday' ? [] : [{ startMinute: 540, endMinute: 1080 }],
+      }));
+      if (method === 'PUT') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ days, configuredAt: new Date().toISOString() }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ days, configuredAt: '2026-10-01T10:00:00Z' }),
+      });
+      return;
+    }
+
     if (url.includes('/availability') && method === 'PUT') {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ updated: 1 }) });
+      return;
+    }
+
+    if (url.includes('/availability') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ dates: [] }),
+      });
       return;
     }
 
@@ -206,6 +283,21 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
+    // The jobs of the next 30 days with something wrong (SP-03b): none.
+    if (url.includes('/calendar/conflicts') && method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ from: '2026-10-16', to: '2026-11-15', timeZone: 'Europe/Rome', items: [], total: 0, truncated: false, limit: 200 }),
+      });
+      return;
+    }
+
+    if (url.includes('/calendar/free-events') && method === 'GET') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], pendingCount: 0 }) });
+      return;
+    }
+
     if (url.includes('/calendar/status')) {
       await route.fulfill({
         status: 200,
@@ -215,6 +307,29 @@ export async function mockSupplierConsoleApi(
           icalFeedUrl: null,
           calendarLastSyncAt: null,
           calendarSyncError: null,
+        }),
+      });
+      return;
+    }
+
+    // Agenda for Disponibilità (SP-03): hours, closed days, blocks and requests.
+    if (/\/calendar(\?|$)/.test(url) && method === 'GET') {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((weekday) => ({
+        weekday,
+        bands: weekday === 'Saturday' || weekday === 'Sunday' ? [] : [{ startMinute: 540, endMinute: 1080 }],
+      }));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          from: '2026-10-12',
+          to: '2026-10-25',
+          timeZone: 'Europe/Rome',
+          workingHours: days,
+          closedDays: [],
+          timeOff: [],
+          blocks: [],
+          requests: [],
         }),
       });
       return;

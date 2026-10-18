@@ -13,7 +13,7 @@ import { fetchServiceCategories } from '@/api/service-categories.api';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { toast } from 'sonner';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
-import { addDays, todayInRome } from '@/lib/stay-dates';
+import { addDays, romeWallTimeToUtc, todayInRome } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 import { BookingDetailPage } from '../booking-detail-page';
 
@@ -40,36 +40,66 @@ vi.mock('@/hooks/use-workspace', () => ({
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
+interface HeaderAction {
+  label: string;
+  to?: string;
+  onClick?: () => void;
+  testId?: string;
+}
+// The real header keeps `secondary` in the menu "⋯" (a closed menu has no items in the page): here they are plain buttons and links.
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title, action }: { title: string; action?: React.ReactNode }) =>
-    createElement('div', null, createElement('h1', null, title), action),
+  PageHeader: ({ title, action, secondary }: { title: string; action?: React.ReactNode; secondary?: (HeaderAction | { separator: true })[] }) =>
+    createElement(
+      'div',
+      null,
+      createElement('h1', null, title),
+      action,
+      ...(secondary ?? []).flatMap((item, index) => {
+        if ('separator' in item) return [];
+        return [
+          item.to
+            ? createElement('a', { key: index, href: item.to, 'data-testid': item.testId }, item.label)
+            : createElement('button', { key: index, type: 'button', onClick: item.onClick, 'data-testid': item.testId }, item.label),
+        ];
+      }),
+    ),
 }));
 vi.mock('@/components/shared/breadcrumb', () => ({ Breadcrumb: () => null }));
 
 const WAIT = { timeout: 5000 };
 const BOOKING_ID = 'b0c1d2e3-0000-4000-8000-000000000001';
 
-const booking = (overrides: Partial<Booking> = {}): Booking => ({
-  id: BOOKING_ID,
-  propertyId: 'property-1',
-  userId: 'auth0|host',
-  checkInDate: '2027-10-01T00:00:00Z',
-  checkOutDate: '2027-10-05T00:00:00Z',
-  numberOfGuests: 2,
-  numberOfAdults: 2,
-  numberOfChildren: 0,
-  basePrice: 450,
-  cleaningFee: 50,
-  touristTax: 12,
-  totalPrice: 462,
-  currency: 'EUR',
-  status: 'Confirmed',
-  source: 'Manual',
-  guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '+393331234567', country: 'IT' },
-  createdAt: '2026-09-24T08:00:00Z',
-  updatedAt: '2026-09-24T08:00:00Z',
-  ...overrides,
-});
+/** `canEdit` as the API answers it (SR-05a): a booking can be changed only when it is the host's own, not cancelled and not started. */
+const editabilityOf = ({ status, source }: Pick<Booking, 'status' | 'source'>): NonNullable<Booking['canEdit']> => {
+  if (status === 'Cancelled') return { allowed: false, reason: 'Cancelled' };
+  if (status === 'CheckedIn' || status === 'CheckedOut') return { allowed: false, reason: 'Started' };
+  return source === 'Manual' ? { allowed: true, reason: null } : { allowed: false, reason: 'SourceLocked' };
+};
+
+const booking = (overrides: Partial<Booking> = {}): Booking => {
+  const base: Booking = {
+    id: BOOKING_ID,
+    propertyId: 'property-1',
+    userId: 'auth0|host',
+    checkInDate: '2027-10-01T00:00:00Z',
+    checkOutDate: '2027-10-05T00:00:00Z',
+    numberOfGuests: 2,
+    numberOfAdults: 2,
+    numberOfChildren: 0,
+    basePrice: 450,
+    cleaningFee: 50,
+    touristTax: 12,
+    totalPrice: 462,
+    currency: 'EUR',
+    status: 'Confirmed',
+    source: 'Manual',
+    guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '+393331234567', country: 'IT' },
+    createdAt: '2026-09-24T08:00:00Z',
+    updatedAt: '2026-09-24T08:00:00Z',
+    ...overrides,
+  };
+  return { ...base, canEdit: overrides.canEdit ?? editabilityOf(base) };
+};
 
 function axiosError(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
@@ -105,14 +135,15 @@ beforeEach(async () => {
 });
 
 describe('BookingDetailPage', { timeout: 20000 }, () => {
-  it.each(['it', 'en'])('BookingDetailPage_Title_IsTranslatedNotBookingHash (%s)', async (lng) => {
+  it.each(['it', 'en'])('BookingDetailPage_Title_IsTheGuestAndTheCodeIsTheOneTheGuestKnows (%s)', async (lng) => {
     await i18n.changeLanguage(lng);
-    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ bookingCode: 'ABCDE-12345' }));
 
     renderPage();
 
-    const expected = i18n.t('booking.detailPage.title', { code: BOOKING_ID.slice(0, 8) });
-    expect(await screen.findByRole('heading', { name: expected }, WAIT)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Mario Rossi' }, WAIT)).toBeInTheDocument();
+    expect(screen.getByText('ABCDE-12345')).toBeInTheDocument();
+    expect(screen.queryByText(BOOKING_ID.slice(0, 8))).not.toBeInTheDocument();
     expect(screen.queryByText(/Booking #/)).not.toBeInTheDocument();
   });
 
@@ -182,13 +213,15 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersCancelAndEditButNotConfirm', async () => {
+  it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersCancelButNotEditNorConfirmAndSaysWhy', async () => {
+    // SR-05c: the API refuses to change the dates of a booking from the booking site (`canEdit`, SR-D5): the page offers no "Modifica".
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));
 
     renderPage();
 
     expect(await screen.findByTestId('open-cancel-booking', undefined, WAIT)).toBeInTheDocument();
-    expect(screen.getByTestId('edit-booking')).toBeInTheDocument();
+    expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
+    expect(screen.getByTestId('booking-edit-locked')).toHaveAttribute('data-reason', 'SourceLocked');
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
   });
 
@@ -307,15 +340,33 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByTestId('open-register-arrival')).not.toBeInTheDocument();
   });
 
-  it('BookingDetailPage_TabInTheUrl_OpensTheAlloggiatiTab', async () => {
+  it('BookingDetailPage_AlloggiatiTabInTheUrl_OpensTheDocumentsTab', async () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
 
     renderPage(`/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
 
     expect(await screen.findByTestId('alloggiati-panel-stub', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(screen.getByTestId('booking-tab-details'));
     expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-panel-stub')).not.toBeInTheDocument();
+  });
+
+  // UI-07 (Tabs): the tabs are links with the tab in the address, so that the other parameters stay and the address can be shared.
+  it('BookingDetailPage_Tabs_AreLinksThatKeepTheRestOfTheAddressAndTheTestIds', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    renderPage(`/app/short-rent/bookings/${BOOKING_ID}?from=calendar`);
+
+    expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: i18n.t('booking.detailPage.tabsLabel') })).toBeInTheDocument();
+    expect(screen.getByTestId('booking-tab-details')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?from=calendar`);
+    expect(screen.getByTestId('booking-tab-guest')).toHaveAttribute(
+      'href',
+      `/app/short-rent/bookings/${BOOKING_ID}?from=calendar&tab=guest`,
+    );
+    // The fourth tab of the old page is gone: its links (`?tab=alloggiati`) open Documenti.
+    expect(screen.queryByTestId('booking-tab-alloggiati')).not.toBeInTheDocument();
   });
 
   it('BookingDetailPage_PaymentTab_PricePerNightIsLodgingOnlyWithoutTaxAndCleaning', async () => {
@@ -323,7 +374,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('booking.detailPage.tabs.payment') }, WAIT));
+    fireEvent.click(await screen.findByRole('tab', { name: i18n.t('booking.detailPage.tabs.payment') }, WAIT));
 
     // (450 base - 50 cleaning) / 4 nights = 100 per night; the total 462 includes cleaning and 12 of tourist tax.
     expect(screen.getByTestId('booking-price-per-night')).toHaveTextContent(
@@ -421,6 +472,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     fireEvent.change(await within(dialog).findByTestId('service-request-supplier', undefined, WAIT), {
       target: { value: 'sup-1' },
     });
+    fireEvent.change(within(dialog).getByTestId('service-request-start-time'), { target: { value: '10:00' } });
+    fireEvent.change(within(dialog).getByTestId('service-request-duration'), { target: { value: '120' } });
     await waitFor(() => expect(within(dialog).getByTestId('submit-service-request')).toBeEnabled());
     fireEvent.click(within(dialog).getByTestId('submit-service-request'));
 
@@ -430,6 +483,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
       bookingId: BOOKING_ID,
       supplierOrgId: 'sup-1',
       category: 'cleaning',
+      scheduledStartUtc: romeWallTimeToUtc('2027-10-05', '10:00'),
+      durationMinutes: 120,
     });
   });
 

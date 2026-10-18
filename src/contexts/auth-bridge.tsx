@@ -11,6 +11,7 @@ import { authConfig } from '@/config/auth.config';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { setApiAuthHandlers } from '@/lib/axios';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
+import { clearAllWizardDrafts } from '@/lib/wizard-draft';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -166,6 +167,8 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   }, [getAccessToken, refreshAccessToken, login]);
 
   const logout = useCallback(() => {
+    // What was typed in a guided flow (a draft in this tab) does not outlive the session.
+    clearAllWizardDrafts();
     auth0Logout({
       logoutParams: { returnTo: window.location.origin },
     });
@@ -178,6 +181,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   }, [loginWithRedirect]);
 
   const logoutToLogin = useCallback(() => {
+    clearAllWizardDrafts();
     auth0Logout({
       logoutParams: { returnTo: window.location.origin },
     });

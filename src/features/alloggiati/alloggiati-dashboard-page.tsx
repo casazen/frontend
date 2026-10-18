@@ -1,126 +1,136 @@
-import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+import { Info } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LoadingScreen } from '@/components/shared/loading-screen';
+import { FocusBlock, PlainSection } from '@/components/shared/calm';
+import { ErrorState } from '@/components/shared/error-state';
+import { StatusBadge } from '@/components/shared/status/status-badge';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { ComplianceRow } from '@/features/compliance/components/compliance-row';
+import { NoteLine } from '@/features/dashboard/components/note-line';
+import { urgencyOf, type RowNote } from '@/features/dashboard/lib/home-model';
 import { useAlloggiatiSummary } from '@/queries/use-alloggiati';
-import { AlloggiatiStatusBadge } from './components/alloggiati-status-badge';
+import type { AlloggiatiSummaryDto } from '@/types/alloggiati.types';
 import { MarkSentManuallyButton } from './components/resend-button';
-import { formatRecordDate, formatRomeDateTime, isAlloggiatiSent } from './alloggiati-status.utils';
-import { AlertTriangle } from 'lucide-react';
+import { formatRecordDate, isAlloggiatiSent } from './alloggiati-status.utils';
 
+const bookingPath = (row: AlloggiatiSummaryDto) => `/app/short-rent/bookings/${row.bookingId}?tab=alloggiati`;
+
+/** What comes first: a communication that failed, then one to send, then the ones that wait for the arrival day, and last the sent ones. */
+function rank(row: AlloggiatiSummaryDto): number {
+  if (row.status === 'Errore' || row.status === 'Rifiutato') return 0;
+  if (row.status === 'DaInviareManualmente') return 1;
+  return isAlloggiatiSent(row.status) ? 3 : 2;
+}
+
+function deadlineTime(row: AlloggiatiSummaryDto): number {
+  const time = new Date(row.deadlineAt).getTime();
+  return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
+}
+
+/** Most pressing first: by kind, then what is past its deadline, then the nearest deadline. */
+function byUrgency(a: AlloggiatiSummaryDto, b: AlloggiatiSummaryDto): number {
+  return rank(a) - rank(b) || Number(b.isOverdue) - Number(a.isOverdue) || deadlineTime(a) - deadlineTime(b);
+}
+
+/** Until when, from the deadline the backend works out (24 hours from arrival, 6 if the stay is short): it is never worked out here. */
+function deadlineNote(row: AlloggiatiSummaryDto, context: { t: TFunction; locale: string }): RowNote {
+  const note = urgencyOf(row.deadlineAt, context);
+  return row.isShortStay ? { ...note, text: `${note.text} (${context.t('alloggiati.shortStayTerm')})` } : note;
+}
+
+/**
+ * The communications to the Questura: the one that needs the host first, with the button that takes to its data, then one row
+ * per stay with its state, its deadline and the button that declares it sent. CasaZen sends nothing: the host sends on the
+ * portal and says so here.
+ */
 export function AlloggiatiDashboardPage() {
   const { t, i18n } = useTranslation();
-  const { data: rows, isLoading, isError, refetch } = useAlloggiatiSummary();
+  const { data, isLoading, isError, error, refetch } = useAlloggiatiSummary();
+  const rows = useMemo(() => (Array.isArray(data) ? [...data].sort(byUrgency) : []), [data]);
+  const context = { t, locale: i18n.language };
 
-  if (isLoading) {
-    return <LoadingScreen message={t('alloggiati.loading')} className="h-auto flex-1" />;
-  }
-
-  const items = rows ?? [];
+  const actionable = rows.filter((row) => rank(row) <= 1);
+  const focus = actionable[0];
+  const failed = focus ? rank(focus) === 0 : false;
 
   return (
     <AppShell>
-      <div className="space-y-6" data-testid="alloggiati-dashboard">
-        <PageHeader
-          title={t('alloggiati.title')}
-          description={t('alloggiati.description')}
-        />
+      <div className="space-y-6 md:space-y-8" data-testid="alloggiati-dashboard">
+        <PageHeader title={t('alloggiati.title')} description={t('alloggiati.description')} crumbs="auto" />
 
-        <p className="text-sm text-muted-foreground" data-testid="alloggiati-manual-banner">
-          {t('alloggiati.manualBanner')}
-        </p>
-
-        {isError ? (
-          <Card>
-            <CardContent className="space-y-3 py-12 text-center" data-testid="alloggiati-dashboard-error">
-              <p className="text-destructive">{t('alloggiati.summaryError')}</p>
-              <Button variant="outline" size="sm" onClick={() => refetch()}>
-                {t('alloggiati.guestSummary.retry')}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : items.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              {t('alloggiati.noPendingReport')}
-            </CardContent>
-          </Card>
+        {isError && !data ? (
+          <ErrorState title={t('alloggiati.summaryError')} error={error} onRetry={() => void refetch()} testId="alloggiati-dashboard-error" />
+        ) : isLoading ? (
+          <>
+            <SkeletonCard lines={3} label={t('alloggiati.loading')} />
+            <SkeletonLine lines={4} />
+          </>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('alloggiati.bookings')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-3 pr-4 font-medium">{t('alloggiati.guest')}</th>
-                      <th className="pb-3 pr-4 font-medium">{t('alloggiati.property')}</th>
-                      <th className="pb-3 pr-4 font-medium">{t('alloggiati.checkIn')}</th>
-                      <th className="pb-3 pr-4 font-medium">{t('alloggiati.status')}</th>
-                      <th className="pb-3 pr-4 font-medium">{t('alloggiati.deadline')}</th>
-                      <th className="pb-3 font-medium" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((row) => (
-                      <tr
-                        key={row.bookingId}
-                        className="border-b last:border-0"
-                        data-testid={`alloggiati-row-${row.bookingId}`}
-                      >
-                        <td className="py-3 pr-4 font-medium">{row.guestName}</td>
-                        <td className="py-3 pr-4">{row.propertyName}</td>
-                        <td className="py-3 pr-4">{formatRecordDate(row.checkInDate)}</td>
-                        <td className="py-3 pr-4">
-                          <AlloggiatiStatusBadge status={row.status} isOverdue={row.isOverdue} />
-                          {!row.dataComplete && (
-                            <span className="ml-2 text-xs text-muted-foreground">{t('alloggiati.incompleteData')}</span>
-                          )}
-                        </td>
-                        <td className="py-3 pr-4">
-                          {isAlloggiatiSent(row.status) ? (
-                            <span className="text-muted-foreground">-</span>
-                          ) : row.isOverdue ? (
-                            <span className="inline-flex items-center gap-1 text-destructive">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              {t('alloggiati.overdue')}
-                            </span>
-                          ) : (
-                            <span>
-                              {formatRomeDateTime(row.deadlineAt, i18n.language)}
-                              {row.isShortStay && (
-                                <span className="ml-1 text-xs text-muted-foreground">({t('alloggiati.shortStayTerm')})</span>
-                              )}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <MarkSentManuallyButton
-                              bookingId={row.bookingId}
-                              status={row.status}
-                              checkInDate={row.checkInDate}
-                            />
-                            <Link
-                              to={`/app/short-rent/bookings/${row.bookingId}`}
-                              className="text-primary hover:underline"
-                            >
-                              {t('alloggiati.details')}
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <>
+            {focus ? (
+              <FocusBlock
+                tone={failed || focus.isOverdue ? 'danger' : 'warning'}
+                kicker={t('compliance.cockpit.kicker')}
+                title={t(failed ? 'alloggiati.focus.fix' : 'alloggiati.focus.send', { name: focus.guestName })}
+                body={[focus.propertyName, `${t('alloggiati.checkIn')} ${formatRecordDate(focus.checkInDate)}`, focus.dataComplete ? null : t('alloggiati.incompleteData')]
+                  .filter(Boolean)
+                  .join(' · ')}
+                when={focus.isOverdue ? t('alloggiati.overdue') : deadlineNote(focus, context).text}
+                then={actionable.length > 1 ? t('alloggiati.focus.then', { count: actionable.length - 1 }) : undefined}
+                primary={{
+                  label: t(failed ? 'dashboard.todo.ResolveAlloggiatiFailure.cta' : 'dashboard.todo.SendAlloggiati.cta'),
+                  href: bookingPath(focus),
+                  ariaLabel: `${t(failed ? 'dashboard.todo.ResolveAlloggiatiFailure.cta' : 'dashboard.todo.SendAlloggiati.cta')}: ${focus.guestName}`,
+                  testId: 'alloggiati-focus-cta',
+                }}
+                data-testid="alloggiati-focus"
+              />
+            ) : (
+              <FocusBlock
+                tone="success"
+                title={t('alloggiati.focus.ok.title')}
+                body={t(rows.some((row) => rank(row) === 2) ? 'alloggiati.waitingArrivalNotice' : 'alloggiati.noPendingReport')}
+                primary={{ label: t('alloggiati.focus.ok.cta'), href: '/app/short-rent/bookings', testId: 'alloggiati-focus-cta' }}
+                data-testid="alloggiati-focus"
+              />
+            )}
+
+            {rows.length > 0 ? (
+              <PlainSection title={t('alloggiati.list.title')} count={rows.length}>
+                <ul role="list" className="divide-y divide-border border-y border-border">
+                  {rows.map((row) => (
+                    <ComplianceRow
+                      key={row.bookingId}
+                      testId={`alloggiati-row-${row.bookingId}`}
+                      title={row.guestName}
+                      to={bookingPath(row)}
+                      sub={`${row.propertyName} · ${t('alloggiati.checkIn')} ${formatRecordDate(row.checkInDate)}`}
+                      detail={row.dataComplete ? undefined : t('alloggiati.incompleteData')}
+                      badge={<StatusBadge kind="alloggiati" status={row.status} data-testid="alloggiati-status-badge" />}
+                      note={
+                        isAlloggiatiSent(row.status) ? undefined : row.isOverdue ? (
+                          <span data-testid="alloggiati-overdue-badge">
+                            <NoteLine note={{ text: t('alloggiati.overdue'), tone: 'danger' }} />
+                          </span>
+                        ) : (
+                          <NoteLine note={deadlineNote(row, context)} />
+                        )
+                      }
+                      action={<MarkSentManuallyButton bookingId={row.bookingId} status={row.status} checkInDate={row.checkInDate} />}
+                    />
+                  ))}
+                </ul>
+              </PlainSection>
+            ) : null}
+
+            <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="alloggiati-manual-banner">
+              <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+              <span className="min-w-0 break-words">{t('alloggiati.manualBanner')}</span>
+            </p>
+          </>
         )}
       </div>
     </AppShell>

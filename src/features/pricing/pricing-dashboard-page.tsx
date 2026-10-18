@@ -1,34 +1,46 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { EmptyState } from '@/components/shared/empty-state';
-import { LoadingScreen } from '@/components/shared/loading-screen';
-import { Button } from '@/components/ui/button';
+import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
+import { ErrorState } from '@/components/shared/error-state';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CalendarRange } from 'lucide-react';
-import { getProblemMessage } from '@/lib/api-errors';
+import type { PageCrumb } from '@/lib/page-crumbs';
+import { cn } from '@/lib/utils';
 import {
   usePricingAdapterConfig,
   useSavePricingAdapterConfig,
   useDisablePricingAdapter,
   useRecalculateSuggestions,
+  useApplySeasonalSuggestions,
   useSeasonalSuggestions,
 } from '@/queries/use-pricing-adapter';
+import { useProperty } from '@/queries/use-properties';
 import type { PricingAdapterConfig, SavePricingAdapterConfigRequest } from '@/types';
-import { PricingConfigCard } from './components/pricing-config-card';
+import { PricingFocus } from './components/pricing-focus';
+import { PricingRulesSection } from './components/pricing-rules-section';
 import { PricingSuggestionsSection } from './components/pricing-suggestions-section';
 
-function LoadError({ message, onRetry, testId }: { message: string; onRetry: () => void; testId: string }) {
-  const { t } = useTranslation();
+const PROPERTIES_PATH = '/app/short-rent/properties';
+
+/** The page while the rules load: the shape of the page, no spinner in the middle of nothing. */
+function PricingSkeleton({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center" data-testid={testId}>
-      <p role="alert" className="text-sm text-destructive">
-        {message}
-      </p>
-      <Button variant="outline" size="sm" onClick={onRetry}>
-        {t('pricing.dashboard.retry')}
-      </Button>
+    <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="pricing-loading">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-2/3 max-w-sm motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-1/2 max-w-xs motion-reduce:animate-none" />
+        </div>
+        <Skeleton className="h-44 w-full rounded-xl motion-reduce:animate-none" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-11/12 motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-2/3 motion-reduce:animate-none" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -47,18 +59,25 @@ function rulesOf(config: PricingAdapterConfig): SavePricingAdapterConfigRequest 
   };
 }
 
-/** "Suggerimenti stagionali" (D4): rules on the real nightly rate, read-only proposals. */
+/**
+ * `/app/short-rent/properties/:id/pricing`: the seasonal suggestions of a property (D4, SR-PRIC). The header says whose prices
+ * they are; under it the one highlighted block (the base price and the rule that is on, in words, with the button that moves
+ * things on), then the rules and, once there are suggestions, the price of each coming night. Prices and minimum stay for a
+ * single date are not here: they need a model of prices by date that does not exist yet.
+ */
 export function PricingDashboardPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { id: propertyId } = useParams<{ id: string }>();
 
   const configQuery = usePricingAdapterConfig(propertyId!);
   const suggestionsQuery = useSeasonalSuggestions(propertyId!);
+  // The name is a courtesy of the header: the page does not wait for it and does not fail without it.
+  const property = useProperty(propertyId!);
 
   const saveConfig = useSavePricingAdapterConfig(propertyId!);
   const disableConfig = useDisablePricingAdapter(propertyId!);
   const recalculate = useRecalculateSuggestions(propertyId!);
+  const apply = useApplySeasonalSuggestions(propertyId!);
 
   const config = configQuery.data;
   const isSaving = saveConfig.isPending || disableConfig.isPending;
@@ -77,87 +96,63 @@ export function PricingDashboardPage() {
   }
 
   if (configQuery.isLoading) {
-    return <LoadingScreen message={t('pricing.dashboard.loading')} className="h-auto flex-1" />;
+    return <PricingSkeleton label={t('pricing.dashboard.loading')} />;
   }
 
-  function suggestionsContent() {
-    if (!config?.isEnabled) {
-      return (
-        <EmptyState
-          icon={CalendarRange}
-          title={t('pricing.dashboard.disabledTitle')}
-          description={t('pricing.dashboard.disabledDescription')}
-        />
-      );
-    }
-    if (suggestionsQuery.isLoading) {
-      return (
-        <div className="space-y-4" data-testid="suggestions-loading">
-          <Skeleton className="h-32 w-full rounded-lg" />
-          <Skeleton className="h-72 w-full rounded-lg" />
-        </div>
-      );
-    }
-    if (suggestionsQuery.isError || !suggestionsQuery.data) {
-      return (
-        <LoadError
-          testId="suggestions-error"
-          message={getProblemMessage(suggestionsQuery.error, t) ?? t('pricing.dashboard.suggestionsLoadError')}
-          onRetry={() => void suggestionsQuery.refetch()}
-        />
-      );
-    }
-    const data = suggestionsQuery.data;
-    if (data.currentBasePrice <= 0) {
-      return (
-        <EmptyState
-          icon={CalendarRange}
-          title={t('pricing.dashboard.basePriceMissingTitle')}
-          description={t('pricing.dashboard.basePriceMissingDescription')}
-          action={{
-            label: t('pricing.dashboard.editProperty'),
-            onClick: () => navigate(`/app/short-rent/properties/${propertyId}/edit`),
-          }}
-        />
-      );
-    }
-    if (data.items.length === 0) {
-      return (
-        <EmptyState
-          icon={CalendarRange}
-          title={t('pricing.dashboard.noSuggestions')}
-          description={t('pricing.dashboard.noSuggestionsDescription')}
-          action={{ label: t('pricing.config.recalculateNow'), onClick: () => recalculate.mutate() }}
-        />
-      );
-    }
-    return <PricingSuggestionsSection data={data} />;
-  }
+  const title = t('pricing.dashboard.title');
+  const propertyName = property.data?.name;
+  const crumbs: PageCrumb[] = [
+    { label: t('nav.properties'), to: PROPERTIES_PATH },
+    ...(propertyName ? [{ label: propertyName, to: `${PROPERTIES_PATH}/${propertyId}` }] : []),
+    { label: title },
+  ];
+
+  const suggestions = suggestionsQuery.data;
+  const hasSuggestions = Boolean(config?.isEnabled && suggestions && suggestions.currentBasePrice > 0 && suggestions.items.length > 0);
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <PageHeader title={t('pricing.dashboard.title')} description={t('pricing.dashboard.description')} />
+      <div className="min-w-0 space-y-6">
+        <PageHeader
+          crumbs={crumbs}
+          title={title}
+          description={propertyName}
+          action={
+            config ? (
+              <Badge variant={config.isEnabled ? 'success' : 'secondary'} className="px-3 py-1 text-sm">
+                {config.isEnabled ? t('pricing.config.active') : t('pricing.config.disabled')}
+              </Badge>
+            ) : undefined
+          }
+        />
 
         {configQuery.isError || !config ? (
-          <LoadError
+          <ErrorState
             testId="config-error"
-            message={getProblemMessage(configQuery.error, t) ?? t('pricing.dashboard.configLoadError')}
+            title={t('pricing.dashboard.configLoadError')}
+            error={configQuery.error}
             onRetry={() => void configQuery.refetch()}
           />
         ) : (
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-1">
-              <PricingConfigCard
-                config={config}
-                isSaving={isSaving}
-                isRecalculating={recalculate.isPending}
-                onToggle={handleToggle}
-                onSave={handleSave}
-                onRecalculate={() => recalculate.mutate()}
-              />
+          <div className="min-w-0 space-y-8">
+            <PricingFocus
+              propertyId={propertyId!}
+              config={config}
+              suggestions={suggestionsQuery}
+              isSaving={isSaving}
+              isApplying={apply.isPending}
+              isRecalculating={recalculate.isPending}
+              onEnable={() => handleToggle(true)}
+              onApplyAll={() => apply.mutate([])}
+              onRecalculate={() => recalculate.mutate()}
+            />
+            {/* The rules on the left, the suggestions they give on the right (under each other on a narrow screen). */}
+            <div className={cn(PAGE_COLUMNS_WIDE, 'gap-8')}>
+              <PricingRulesSection config={config} isSaving={isSaving} onToggle={handleToggle} onSave={handleSave} />
+              {hasSuggestions && suggestions ? (
+                <PricingSuggestionsSection data={suggestions} applying={apply.isPending} onApply={(items) => apply.mutate(items)} />
+              ) : null}
             </div>
-            <div className="lg:col-span-2">{suggestionsContent()}</div>
           </div>
         )}
       </div>

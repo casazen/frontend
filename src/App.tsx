@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { AppToaster } from '@/components/shared/app-toaster';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
@@ -20,6 +20,7 @@ import { recordLandingTouch } from '@/lib/signup-attribution';
 import { parsePendingSupplierClaim, savePendingSupplierClaim } from '@/lib/supplier-claim';
 import { InsecureOriginPage } from '@/pages/insecure-origin-page';
 import { getRouter } from '@/routes';
+import { UiVersionSync } from '@/routes/ui-version-sync';
 import { I18nLocaleSync } from '@/i18n/i18n-locale-sync';
 import { getHostSite } from '@/lib/host-site';
 
@@ -56,9 +57,10 @@ function AppShell() {
     <QueryClientProvider client={queryClient}>
       <I18nLocaleSync />
       <FeatureFlagsProvider>
+        <UiVersionSync router={router} />
         <RouterProvider router={router} />
       </FeatureFlagsProvider>
-      <Toaster position="top-right" richColors />
+      <AppToaster />
     </QueryClientProvider>
   );
 }

@@ -1,7 +1,9 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { bookingsApi } from '@/api/bookings.api';
+import { asBookingPage, bookingsApi } from '@/api/bookings.api';
 import type {
   Booking,
+  BookingFilterParams,
+  BookingListParams,
   CancelBookingDto,
   CreateBookingDto,
   UpdateBookingDto,
@@ -21,7 +23,7 @@ const BOOKINGS_KEY = 'bookings';
 export function useBookings(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, params],
-    queryFn: () => bookingsApi.getAll(params),
+    queryFn: async () => asBookingPage(await bookingsApi.getAll({ pageSize: 10, ...params })),
   });
 }
 
@@ -29,8 +31,34 @@ export function useBookings(params?: Record<string, unknown>) {
 export function usePropertyBookings(propertyId?: string) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, { propertyId }],
-    queryFn: () => bookingsApi.getAll({ propertyId }),
+    queryFn: async () => asBookingPage(await bookingsApi.getAll({ propertyId, page: 1, pageSize: 100 })).items,
     enabled: !!propertyId,
+  });
+}
+
+/**
+ * One page of the list of bookings (SR-04): the server narrows it by chip, filters and text, orders it and pages it. The rows
+ * of the last view stay on the screen until the next ones arrive. Other screens change the bookings (made, accepted, cancelled
+ * there), so the list reads again when it is opened: the client does not, by default (`refetchOnMount: false`).
+ */
+export function useBookingList(params: BookingListParams, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, 'list', params],
+    queryFn: () => bookingsApi.search(params),
+    placeholderData: keepPreviousData,
+    refetchOnMount: true,
+    enabled: options.enabled ?? true,
+  });
+}
+
+/** How many bookings are in each chip of the list, for the filters in force (the number on "Da confermare"). */
+export function useBookingCounts(params: BookingFilterParams, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, 'counts', params],
+    queryFn: () => bookingsApi.counts(params),
+    placeholderData: keepPreviousData,
+    refetchOnMount: true,
+    enabled: options.enabled ?? true,
   });
 }
 
@@ -42,12 +70,30 @@ export function useBooking(id: string) {
   });
 }
 
-/** "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). */
-export function useBookingApprovalRequests() {
+/**
+ * The history of a booking (SR-05c): the sheet and the drawer show it. Almost every action on the booking (and on its check-in
+ * link, its payments, its Alloggiati communication) adds an entry, and the client does not read an unobserved query again by
+ * default (`refetchOnMount: false`), so it reads again whenever the history is opened.
+ */
+export function useBookingTimeline(id: string) {
+  return useQuery({
+    queryKey: [BOOKINGS_KEY, id, 'timeline'],
+    queryFn: () => bookingsApi.getTimeline(id),
+    enabled: !!id,
+    refetchOnMount: 'always',
+  });
+}
+
+/**
+ * "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). Also the counter of "Prenotazioni"
+ * in the menu (UI-04a), which shares the cache with the requests panel and reads it only when `enabled`.
+ */
+export function useBookingApprovalRequests(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, 'approval-requests'],
     queryFn: () => bookingsApi.getApprovalRequests(),
     retry: retryTransientErrors(1),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -102,6 +148,10 @@ export function useBookingCalendar(params?: {
   });
 }
 
+/**
+ * Creates a booking entered by hand. No error toast: the wizard of the new booking shows the error above its buttons
+ * (e.g. 409 on overlapping dates).
+ */
 export function useCreateBooking() {
   const queryClient = useQueryClient();
 
@@ -110,9 +160,6 @@ export function useCreateBooking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       toast.success(i18n.t('toast.bookingCreated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.bookingCreateFailed'));
     },
   });
 }
@@ -156,18 +203,32 @@ export function useConfirmBooking() {
   });
 }
 
+const hostBookingQuoteKey = (payload: HostBookingQuotePayload | null) => [BOOKINGS_KEY, 'quote', payload] as const;
+
 /**
  * Price of the stay in the host form, tourist tax included (BK-03): it also says whether the ages of the minors
  * matter (`touristTax.ageRulesApply`).
  */
 export function useHostBookingQuote(payload: HostBookingQuotePayload | null) {
   return useQuery({
-    queryKey: [BOOKINGS_KEY, 'quote', payload],
+    queryKey: hostBookingQuoteKey(payload),
     queryFn: () => bookingsApi.quote(payload!),
     enabled: payload !== null,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     retry: false,
+  });
+}
+
+/**
+ * The same quote, asked once from an event handler (the wizard of the new booking checks it before it moves on): it uses
+ * and fills the cache of `useHostBookingQuote`. A refusal of the API (too many guests, dates out of range) is thrown.
+ */
+export function fetchHostBookingQuote(queryClient: QueryClient, payload: HostBookingQuotePayload) {
+  return queryClient.fetchQuery({
+    queryKey: hostBookingQuoteKey(payload),
+    queryFn: () => bookingsApi.quote(payload),
+    staleTime: 30_000,
   });
 }
 

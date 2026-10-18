@@ -44,14 +44,6 @@ vi.mock('@/lib/countries', async (importOriginal) => ({
 // Explicit conditions only (no fixed waits); a generous ceiling so that a loaded machine does not fail a correct test.
 configure({ asyncUtilTimeout: 5_000 });
 
-// The Radix checkbox of the consent measures itself with ResizeObserver, missing in jsdom.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const org: PublicOrgDto = {
   slug: 'demo-casazen',
   displayName: 'Demo Casazen Stays',

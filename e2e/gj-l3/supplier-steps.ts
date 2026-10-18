@@ -37,17 +37,17 @@ export async function registerAndActivateSupplier(
   await page.locator('#legalName').fill(legalName);
   await page.locator('#phone').fill('+390612345678');
   await page.getByRole('button', { name: 'Completa la registrazione' }).click();
-  await page.getByRole('button', { name: /Completa il profilo/ }).click();
+  // Already linked to the signed-in account: the wizard opens by itself, no confirmation page to click.
 
-  // SU-05: five steps saved by the server; the wizard opens at the first incomplete one. Registration and the invite
-  // already completed the identity (business name, phone) and the services (the invite's category and comune).
+  // SU-05: the server tracks five steps, the supplier sees three screens (the business details were asked at registration):
+  // the wizard opens at the first incomplete one. The invite already completed the services (its category and comune).
   await expect(page.locator('#bio')).toBeVisible({ timeout: 20_000 });
-  await page.getByTestId('supplier-activation-nav-identity').click();
-  await expect(page.locator('#legal-name')).toHaveValue(legalName);
+  await expect(page.getByTestId('supplier-activation-nav-identity')).toHaveCount(0);
+  await expect(page.getByTestId('supplier-activation-step-of')).toContainText('2 di 3');
   await page.getByTestId('supplier-activation-nav-services').click();
   await expect(page.getByTestId('service-category-cleaning')).toHaveAttribute('aria-pressed', 'true', { timeout: 20_000 });
   await expect(page.getByTestId('supplier-comuni-chosen')).toContainText('Roma');
-  // Step 4: professional description; step 5: terms of the version in force, then activate.
+  // Presentation (description), then the terms of the version in force and the activation.
   await page.getByTestId('supplier-activation-nav-profile').click();
   await page.locator('#bio').fill(`Pulizie professionali di appartamenti turistici a Roma (${legalName}).`);
   await page.getByRole('button', { name: 'Salva e continua' }).click();

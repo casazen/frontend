@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, Clock, ListChecks, Loader2, Lock } from 'lucide-react';
+import { NextStepCard } from '@/components/shared/calm';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { activationStepDetail } from '@/lib/activation-labels';
-import { activationStepCtaKey, activationStepRoute } from '@/lib/activation-routes';
+import { nextActionableStep, normalizeSteps } from '@/lib/activation-steps';
+import { activationStepCtaKey, activationStepLinkState, activationStepRoute } from '@/lib/activation-routes';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useOnboardingStatus } from '@/queries/use-onboarding-status';
-import type { ActivationStep, ActivationStepKey, ActivationStepState } from '@/types/onboarding.types';
+import type { ActivationStep, ActivationStepState } from '@/types/onboarding.types';
 
 const STATE_BADGE: Record<ActivationStepState, BadgeProps['variant']> = {
   done: 'success',
@@ -18,23 +20,6 @@ const STATE_BADGE: Record<ActivationStepState, BadgeProps['variant']> = {
   todo: 'outline',
   blocked: 'secondary',
 };
-
-const KNOWN_STEP_KEYS: ReadonlySet<ActivationStepKey> = new Set([
-  'account',
-  'organization',
-  'property',
-  'cin',
-  'payments',
-  'sitePublished',
-  'firstBooking',
-]);
-
-function normalizeSteps(value: unknown): ActivationStep[] {
-  const steps = (value as { steps?: unknown } | null | undefined)?.steps;
-  if (!Array.isArray(steps)) return [];
-  // A step this version of the app does not know has no text to show: it is left out, never shown as a bare key.
-  return steps.filter((step): step is ActivationStep => !!step && KNOWN_STEP_KEYS.has((step as ActivationStep).key));
-}
 
 function StateIcon({ state }: { state: ActivationStepState }) {
   switch (state) {
@@ -49,6 +34,29 @@ function StateIcon({ state }: { state: ActivationStepState }) {
   }
 }
 
+function NextStep({ step, index, total }: { step: ActivationStep; index: number; total: number }) {
+  const { t, i18n } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const route = activationStepRoute(step, hasPermission);
+
+  return (
+    <NextStepCard
+      kicker={t('activation.next.kicker')}
+      title={t(`activation.steps.${step.key}.title`)}
+      // The card sits inside the checklist, which has its own heading: the step is not a heading of the page.
+      titleAs="p"
+      detail={activationStepDetail(step, t, (key) => i18n.exists(key))}
+      position={t('activation.next.position', { current: index, total })}
+      cta={
+        route
+          ? { label: t(activationStepCtaKey(step)), href: route, state: activationStepLinkState(step), testId: 'activation-next-step-cta' }
+          : undefined
+      }
+      data-testid="activation-next-step"
+    />
+  );
+}
+
 function StepRow({ step }: { step: ActivationStep }) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -57,7 +65,8 @@ function StepRow({ step }: { step: ActivationStep }) {
 
   return (
     <li
-      className="flex flex-wrap items-start justify-between gap-3 rounded-md border px-3 py-3"
+      // Stacked on a phone (the text keeps the full width), side by side from `sm`.
+      className="flex flex-col gap-3 rounded-md border px-3 py-3 sm:flex-row sm:items-start sm:justify-between"
       data-testid={`activation-step-${step.key}`}
       data-state={step.state}
     >
@@ -70,13 +79,13 @@ function StepRow({ step }: { step: ActivationStep }) {
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 pl-8 sm:pl-0">
         <Badge variant={STATE_BADGE[step.state]} data-testid={`activation-step-${step.key}-state`}>
           {t(`activation.state.${step.state}`)}
         </Badge>
         {route && (
           <Button variant="outline" size="sm" asChild>
-            <Link to={route} aria-label={`${t(activationStepCtaKey(step))}: ${title}`} data-testid={`activation-step-${step.key}-cta`}>
+            <Link to={route} state={activationStepLinkState(step)} aria-label={`${t(activationStepCtaKey(step))}: ${title}`} data-testid={`activation-step-${step.key}-cta`}>
               {t(activationStepCtaKey(step))}
             </Link>
           </Button>
@@ -133,6 +142,8 @@ export function ActivationChecklist() {
 
   const done = steps.filter((step) => step.state === 'done').length;
   const percent = Math.round((done / steps.length) * 100);
+  const next = nextActionableStep(steps);
+  const nextIndex = next ? steps.findIndex((step) => step.key === next.key) + 1 : 0;
 
   return (
     <Card data-testid="activation-checklist" aria-busy={status.isFetching || undefined}>
@@ -142,7 +153,7 @@ export function ActivationChecklist() {
           {t('activation.title')}
         </CardTitle>
         <CardDescription data-testid="activation-checklist-progress">
-          {t('activation.progress', { count: done, total: steps.length })}
+          {t('activation.next.intro')} {t('activation.progress', { count: done, total: steps.length })}
         </CardDescription>
         <div
           role="progressbar"
@@ -155,7 +166,8 @@ export function ActivationChecklist() {
           <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percent}%` }} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {next ? <NextStep step={next} index={nextIndex} total={steps.length} /> : null}
         <ol className="space-y-2">
           {steps.map((step) => (
             <StepRow key={step.key} step={step} />

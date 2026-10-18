@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,81 +15,87 @@ interface PropertyDocumentsSectionProps {
   documents: PropertyDocumentDto[];
   /** Type preselected in the upload dialog (the long-term property page asks for the APE first). */
   defaultUploadType?: PropertyDocumentType;
+  /** A part of a page without a box around it (a title and its content), for a page made of plain sections; default: a card. */
+  plain?: boolean;
 }
 
-export function PropertyDocumentsSection({ propertyId, documents, defaultUploadType }: PropertyDocumentsSectionProps) {
+export function PropertyDocumentsSection({ propertyId, documents, defaultUploadType, plain = false }: PropertyDocumentsSectionProps) {
   const { t } = useTranslation();
+  const titleId = useId();
   const deleteMutation = useDeletePropertyDocument();
   // Private bucket: download through the authenticated API (token), saved from the blob.
   const downloadMutation = useDownloadPropertyDocument();
 
+  const upload = <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />;
+  const content =
+    documents.length === 0 ? (
+      <p className="text-sm text-muted-foreground">{t('property.documents.empty')}</p>
+    ) : (
+      <ul className="space-y-2">
+        {documents.map((doc) => {
+          const downloading = downloadMutation.isPending && downloadMutation.variables?.docId === doc.id;
+          return (
+            <li key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{doc.fileName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
+                    {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
+                  </p>
+                  {doc.documentType === 'Ape' && <ApeIdentificationForm propertyId={propertyId} document={doc} />}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={downloading}
+                  aria-busy={downloading}
+                  onClick={() => downloadMutation.mutate({ propertyId, docId: doc.id, fileName: doc.fileName })}
+                >
+                  {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  <span className="sr-only">{downloading ? t('property.documents.downloading') : t('property.documents.download')}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={deleteMutation.isPending}
+                  onClick={() => deleteMutation.mutate({ propertyId, docId: doc.id })}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <span className="sr-only">{t('property.documents.delete')}</span>
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+
+  if (plain) {
+    return (
+      <section aria-labelledby={titleId} className="min-w-0 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <h2 id={titleId} className="min-w-0 break-words text-lg font-semibold">
+            {t('property.documents.title')}
+          </h2>
+          {upload}
+        </div>
+        {content}
+      </section>
+    );
+  }
+
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      {/* Wraps: with a font wider than the one tested the title and the upload button do not fit a phone in one line (UI-05). */}
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
         <CardTitle>{t('property.documents.title')}</CardTitle>
-        <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />
+        {upload}
       </CardHeader>
-      <CardContent>
-        {documents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('property.documents.empty')}</p>
-        ) : (
-          <ul className="space-y-2">
-            {documents.map((doc) => {
-              const downloading =
-                downloadMutation.isPending && downloadMutation.variables?.docId === doc.id;
-              return (
-                <li
-                  key={doc.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{doc.fileName}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
-                        {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
-                      </p>
-                      {doc.documentType === 'Ape' && <ApeIdentificationForm propertyId={propertyId} document={doc} />}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={downloading}
-                      aria-busy={downloading}
-                      onClick={() =>
-                        downloadMutation.mutate({ propertyId, docId: doc.id, fileName: doc.fileName })
-                      }
-                    >
-                      {downloading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Download className="h-4 w-4" />
-                      )}
-                      <span className="sr-only">
-                        {downloading
-                          ? t('property.documents.downloading')
-                          : t('property.documents.download')}
-                      </span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={deleteMutation.isPending}
-                      onClick={() => deleteMutation.mutate({ propertyId, docId: doc.id })}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                      <span className="sr-only">{t('property.documents.delete')}</span>
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </CardContent>
+      <CardContent>{content}</CardContent>
     </Card>
   );
 }

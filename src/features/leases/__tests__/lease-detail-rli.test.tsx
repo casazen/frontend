@@ -20,14 +20,6 @@ vi.mock('../components/attestation-guidance-panel', () => ({ AttestationGuidance
 vi.mock('../components/imu-notification-export-button', () => ({ ImuNotificationExportButton: () => null }));
 vi.mock('../components/lease-signing-panel', () => ({ LeaseSigningPanel: () => null }));
 
-// Radix Checkbox measures itself with ResizeObserver, which jsdom does not provide.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 
@@ -65,8 +57,9 @@ function mockApi(lease: () => LeaseDetail, rliChecklist: RliChecklist = checklis
   });
 }
 
-function renderPage() {
-  return renderAt('/app/long-rent/leases/lease-1', '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
+// A lease that is signed and not registered opens on the tab of the registration (`scadenze`); its dates are in `dati`.
+function renderPage(search = '') {
+  return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
 
 async function registrationPanel() {
@@ -103,8 +96,8 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(within(steps).getByRole('link')).toHaveAttribute('href', RLI_OFFICIAL_INFO_URL);
     expect(panel.getByRole('button', { name: 'Inserisci estremi di registrazione' })).toBeInTheDocument();
     expect(panel.queryByRole('button', { name: /provider/i })).not.toBeInTheDocument();
-    // Nothing says "sent" or "registered" for a lease that is only signed.
-    expect(screen.getByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
+    // Nothing says "sent" or "registered" for a lease that is only signed (the checklist loads with its own request).
+    expect(await screen.findByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
     expect(screen.queryByText(/inviat[oa] con successo/i)).not.toBeInTheDocument();
   });
 
@@ -114,10 +107,11 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
       signedLease({ stipulaDate: '2026-08-01T00:00:00Z', registrationDeadline: '2026-08-31T00:00:00Z' }),
     );
 
-    renderPage();
+    renderPage('?tab=dati');
 
     expect(await screen.findByTestId('lease-stipula-date')).toHaveTextContent(formatDate('2026-08-01T00:00:00Z'));
     expect(screen.getByTestId('lease-registration-deadline')).toHaveTextContent(formatDate('2026-08-31T00:00:00Z'));
+    fireEvent.click(screen.getByRole('tab', { name: 'Scadenze' }));
     const panel = await registrationPanel();
     expect(panel.getByTestId('rli-registration-deadline')).toHaveTextContent(
       `Scadenza per la registrazione: ${formatDate('2026-08-31T00:00:00Z')}`,
@@ -130,10 +124,11 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
       checklist({ registrationDeadline: null, daysRemaining: null }),
     );
 
-    renderPage();
+    renderPage('?tab=dati');
 
     expect(await screen.findByTestId('lease-registration-deadline')).toHaveTextContent('Da determinare');
     expect(screen.getByTestId('lease-stipula-date')).toHaveTextContent('Non ancora disponibile');
+    fireEvent.click(screen.getByRole('tab', { name: 'Scadenze' }));
     const panel = await registrationPanel();
     expect(panel.getByTestId('rli-registration-deadline')).toHaveTextContent(
       'Scadenza per la registrazione: da determinare',
@@ -265,7 +260,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(panel.getByRole('status')).toHaveTextContent('il contratto NON è ancora registrato');
     expect(panel.queryByRole('button', { name: 'Inserisci estremi di registrazione' })).not.toBeInTheDocument();
     expect(panel.queryByRole('button', { name: /Scarica ricevuta/ })).not.toBeInTheDocument();
-    expect(screen.getByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
+    expect(await screen.findByTestId('rli-checklist-item-rli_registered')).toHaveAttribute('data-state', 'todo');
   });
 
   it('render_Registered_ShowsDeclaredDetailsAndReceiptDownload', async () => {
@@ -278,7 +273,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
       checklist({ items: [{ key: 'rli_registered', label: 'x', done: true }] }),
     );
 
-    renderPage();
+    renderPage('?tab=scadenze');
 
     const panel = await registrationPanel();
     expect(panel.getByTestId('rli-registration-state')).toHaveTextContent('Registrato');

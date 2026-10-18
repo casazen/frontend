@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,6 +25,10 @@ vi.mock('@/services/supplier-api', async (importOriginal) => ({
 vi.mock('@/api/service-requests.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/service-requests.api')>()),
   ...requestsApi,
+}));
+vi.mock('@/components/layout/page-header', () => ({
+  PageHeader: ({ title, description }: { title: string; description?: string }) =>
+    createElement('div', null, createElement('h1', null, title), description ? createElement('p', null, description) : null),
 }));
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
@@ -107,7 +112,7 @@ function renderPage() {
   );
 }
 
-describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
+describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     supplierApi.fetchSupplierInboxItem.mockResolvedValue(NEW_REQUEST);
@@ -120,22 +125,20 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
 
     await screen.findByTestId('supplier-request-detail');
     expect(supplierApi.fetchSupplierInboxItem).toHaveBeenCalledWith(ID);
-    expect(screen.getByTestId('supplier-request-title')).toHaveTextContent('Pulizie · Villa Rosa');
-    expect(screen.getByTestId('supplier-request-city')).toHaveTextContent('Roma');
-    expect(screen.getByTestId('supplier-request-postal-code')).toHaveTextContent('00184');
-    expect(screen.getByTestId('supplier-request-scheduled-for')).toHaveTextContent('lunedì 12 ottobre 2026');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Pulizie');
+    expect(screen.getByTestId('supplier-request-where')).toHaveTextContent('Roma (00184)');
+    expect(screen.getByTestId('supplier-request-where')).toHaveTextContent('Indirizzo dopo che accetti');
+    expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('lunedì 12 ottobre 2026');
+    expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('Urgenza: Alta');
     expect(screen.getByTestId('supplier-request-stay')).toHaveTextContent('Dal 9 ottobre 2026 al 12 ottobre 2026');
-    expect(screen.getByTestId('supplier-request-address-hidden')).toHaveTextContent(
-      "L'indirizzo completo è visibile dopo la presa in carico.",
-    );
+    expect(screen.getByTestId('supplier-request-notes')).toHaveTextContent('Cambio biancheria per 4 persone');
     expect(screen.getByTestId('supplier-request-contact-hidden')).toHaveTextContent(
-      "Nome e recapiti dell'host sono visibili dopo la presa in carico.",
+      'Indirizzo e contatti del cliente compaiono dopo che accetti.',
     );
     expect(screen.queryByTestId('supplier-request-address')).not.toBeInTheDocument();
     expect(screen.queryByTestId('supplier-request-host-phone')).not.toBeInTheDocument();
-    expect(screen.getByTestId('supplier-request-notes')).toHaveTextContent('Cambio biancheria per 4 persone');
-    expect(screen.getByTestId('supplier-request-urgency')).toHaveTextContent('Urgenza: Alta');
-    // Actions of a new request: take or reject, not complete.
+    // What to do now: take or reject, not complete.
+    expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Rispondi alla richiesta');
     expect(screen.getByTestId('supplier-request-take')).toBeEnabled();
     expect(screen.getByTestId('supplier-request-reject')).toBeEnabled();
     expect(screen.queryByTestId('supplier-request-complete')).not.toBeInTheDocument();
@@ -158,22 +161,21 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
   describe('in a browser outside Italy', () => {
     withBrowserTimeZone('America/New_York');
 
-    it('SupplierRequestDetailPage_History_ShowsEachTransitionWithRomeDateAndActor', async () => {
+    it('SupplierRequestDetailPage_History_ShowsEachStepWithRomeDateAndActor', async () => {
       supplierApi.fetchSupplierInboxItem.mockResolvedValue(TAKEN_REQUEST);
       renderPage();
 
-      await screen.findByTestId('supplier-request-history');
-      const requested = screen.getByTestId('supplier-request-history-0');
-      expect(requested).toHaveTextContent('Richiesto');
-      expect(requested).toHaveTextContent('20 settembre 2026');
+      const history = await screen.findByTestId('supplier-request-history');
+      const [taken, requested] = within(history).getAllByRole('listitem');
+      expect(requested).toHaveTextContent('Richiesta ricevuta');
+      expect(requested).toHaveTextContent('20 set');
       expect(requested).toHaveTextContent('10:00');
-      expect(requested).toHaveTextContent('Host');
-      const taken = screen.getByTestId('supplier-request-history-1');
-      expect(taken).toHaveTextContent('Preso in carico');
+      expect(requested).toHaveTextContent('Il cliente');
+      expect(taken).toHaveTextContent('Hai accettato la richiesta');
       // 23:30 UTC of 24 September: 01:30 of 25 September in Rome, whatever the browser's time zone.
-      expect(taken).toHaveTextContent('25 settembre 2026');
+      expect(taken).toHaveTextContent('25 set');
       expect(taken).toHaveTextContent('01:30');
-      expect(taken).toHaveTextContent('Mario Rossi (Il tuo team)');
+      expect(taken).toHaveTextContent('Mario Rossi');
     });
   });
 
@@ -186,7 +188,7 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
 
     await waitFor(() => expect(requestsApi.takeServiceRequest).toHaveBeenCalledWith(ID));
     expect(await screen.findByTestId('supplier-request-host-name')).toHaveTextContent('Villa Rosa Affitti');
-    expect(screen.getByTestId('supplier-request-status')).toHaveTextContent('Preso in carico');
+    expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Il lavoro è in programma');
   });
 
   it('SupplierRequestDetailPage_TakeConflict_ReloadsTheRequest', async () => {
@@ -200,8 +202,9 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
 
     fireEvent.click(await screen.findByTestId('supplier-request-take'));
 
-    expect(await screen.findByTestId('supplier-request-closed')).toHaveTextContent('Hai rifiutato questa richiesta.');
-    expect(screen.getByTestId('supplier-request-rejection-reason')).toHaveTextContent('Già occupato');
+    await waitFor(() => expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Hai rifiutato la richiesta'));
+    expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Motivo: Già occupato');
+    expect(screen.queryByTestId('supplier-request-take')).not.toBeInTheDocument();
     expect(supplierApi.fetchSupplierInboxItem).toHaveBeenCalledTimes(2);
   });
 
@@ -236,7 +239,7 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     renderPage();
 
     const error = await screen.findByTestId('supplier-request-error');
-    expect(error).toHaveTextContent("Impossibile caricare l'incarico.");
+    expect(error).toHaveTextContent('Impossibile caricare la richiesta.');
     expect(screen.queryByTestId('supplier-request-detail')).not.toBeInTheDocument();
 
     fireEvent.click(within(error).getByRole('button', { name: 'Riprova' }));
@@ -250,10 +253,9 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     );
     renderPage();
 
-    expect(await screen.findByTestId('supplier-request-not-found')).toHaveTextContent(
-      'Incarico non trovato: non esiste o non è stato inviato a te.',
-    );
-    expect(screen.getByTestId('supplier-request-back')).toHaveAttribute('href', '/app/supplier/inbox');
+    const notFound = await screen.findByTestId('supplier-request-not-found');
+    expect(notFound).toHaveTextContent('Non troviamo questa richiesta');
+    expect(within(notFound).getByRole('link', { name: 'Vai alle richieste' })).toHaveAttribute('href', '/app/supplier/inbox');
   });
 
   it('SupplierRequestDetailPage_LongRentRequest_ShowsNoDateAndNoStay', async () => {
@@ -266,8 +268,8 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     renderPage();
 
     await screen.findByTestId('supplier-request-detail');
-    expect(screen.getByTestId('supplier-request-no-date')).toHaveTextContent('Nessuna data: da concordare con l\'host.');
-    expect(screen.getByTestId('supplier-request-long-rent')).toBeInTheDocument();
+    expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('Da concordare');
+    expect(screen.getByTestId('supplier-request-job')).toHaveTextContent('Affitto lungo');
     expect(screen.queryByTestId('supplier-request-stay')).not.toBeInTheDocument();
   });
 
@@ -276,12 +278,11 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     renderPage();
 
     await screen.findByTestId('supplier-request-detail');
-    expect(screen.getByTestId('supplier-request-scheduled-for')).toHaveTextContent('Monday, October 12, 2026');
-    expect(screen.getByTestId('supplier-request-contact-hidden')).toHaveTextContent(
-      "The host's name and contact details are shown once you accept the request.",
-    );
-    expect(screen.getByTestId('supplier-request-back')).toHaveTextContent('Back to assignments');
+    expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('Monday, October 12, 2026');
+    expect(screen.getByTestId('supplier-request-contact-hidden')).toHaveTextContent(/appear once you accept/);
+    expect(screen.getByTestId('supplier-request-take')).toHaveTextContent('Accept');
   });
+
   // ─── SU-12: a suspended supplier performs no action ───
 
   it('SupplierRequestDetailPage_SuspendedSupplierNewRequest_DisablesTakeAndRejectAndExplainsWhy', async () => {
@@ -291,9 +292,7 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     await screen.findByTestId('supplier-request-detail');
     await waitFor(() => expect(screen.getByTestId('supplier-request-take')).toBeDisabled());
     expect(screen.getByTestId('supplier-request-reject')).toBeDisabled();
-    expect(screen.getByTestId('supplier-request-actions-suspended')).toHaveTextContent(
-      "Azioni non disponibili: l'account fornitore è sospeso.",
-    );
+    expect(screen.getByTestId('supplier-request-actions-suspended')).toHaveTextContent(/Azioni non disponibili/);
     fireEvent.click(screen.getByTestId('supplier-request-take'));
     expect(requestsApi.takeServiceRequest).not.toHaveBeenCalled();
   });
@@ -313,7 +312,7 @@ describe('SupplierRequestDetailPage (SU-08, A4-14)', () => {
     supplierApi.fetchSupplierInboxItem.mockResolvedValue({ ...TAKEN_REQUEST, status: 'Completato' });
     renderPage();
 
-    await screen.findByTestId('supplier-request-closed');
+    await screen.findByTestId('supplier-request-detail');
     expect(screen.queryByTestId('supplier-request-actions-suspended')).not.toBeInTheDocument();
   });
 

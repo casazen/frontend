@@ -33,7 +33,7 @@ test.describe('Golden Journey web (#301)', () => {
 
     // Step 3: host onboarding → consents → plan → short-rent
     await page.goto(demoUrl('/onboarding', 'onboarding'));
-    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
     await page.getByRole('button', { name: 'Scegli' }).first().click();
 
     const consents = page.getByTestId('onboarding-consents-step');
@@ -47,8 +47,6 @@ test.describe('Golden Journey web (#301)', () => {
     await expect(consentsContinue).toBeEnabled({ timeout: 10_000 });
     await consentsContinue.click();
 
-    await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-    await page.getByTestId('onboarding-plan-confirm').click();
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
 
     // Step 4: guest public booking — branded shell
@@ -98,7 +96,7 @@ test.describe('Golden Journey web (#301)', () => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), {
       waitUntil: 'domcontentloaded',
     });
-    await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('sr-home')).toBeVisible({ timeout: 15_000 });
 
     expect(api500).toEqual([]);
   });

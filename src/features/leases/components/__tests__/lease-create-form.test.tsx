@@ -139,14 +139,6 @@ function forbidden(): AxiosError {
   return error;
 }
 
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 function renderForm(onSubmit = vi.fn(), defaultPropertyId?: string) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },

@@ -1,4 +1,4 @@
-import type { FiscalReportPeriod, FiscalTaxNote } from '@/api/fiscal.api';
+import type { FiscalExportFormat, FiscalReportKind, FiscalReportPeriod, FiscalTaxNote } from '@/api/fiscal.api';
 import { todayInRome } from '@/lib/stay-dates';
 
 /** First tax year of the fiscal area (the backend refuses earlier years). */
@@ -30,6 +30,17 @@ const QUARTER_BOUNDS: Record<Exclude<FiscalPeriodPreset, 'year'>, [string, strin
 export function periodOf(year: number, preset: FiscalPeriodPreset): FiscalReportPeriod {
   const [from, to] = preset === 'year' ? ['01-01', '12-31'] : QUARTER_BOUNDS[preset];
   return { from: `${year}-${from}`, to: `${year}-${to}` };
+}
+
+const REPORT_FILE_NAMES: Record<FiscalReportKind, string> = {
+  annual: 'casazen-redditi',
+  withholding: 'casazen-ritenute',
+  touristTax: 'casazen-tassa-soggiorno',
+};
+
+/** Name of the downloaded file of a fiscal report: the report and its days (`casazen-redditi-2026-01-01-2026-12-31.csv`). */
+export function fiscalReportFileName(kind: FiscalReportKind, period: FiscalReportPeriod, format: FiscalExportFormat): string {
+  return `${REPORT_FILE_NAMES[kind]}-${period.from}-${period.to}.${format}`;
 }
 
 /** Euro amount in the UI locale. */

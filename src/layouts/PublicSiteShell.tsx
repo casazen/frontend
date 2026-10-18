@@ -1,36 +1,22 @@
-import { useEffect, useState, type CSSProperties } from 'react';
-import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
+import { useEffect, type CSSProperties, type ReactNode } from 'react';
+import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { Loader2, Menu } from 'lucide-react';
 import { usePublicOrg } from '@/queries/use-public-org';
 import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
 import { Footer } from '@/features/public-site/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { BrandHeader } from '@/features/public-site/components/brand-header';
+import { SiteHeader } from '@/features/public-site/components/site-header';
 import { publicSiteColorVars } from '@/lib/public-site-colors';
 import { normalizeHexColor, resolvePublicSiteTheme } from '@/lib/public-site-themes';
 import '@/styles/public-tokens.css';
+import '@/styles/public-brand.css';
 
 interface PublicSiteShellProps {
   mode?: 'org' | 'default';
-}
-
-function scrollToBookingWidget() {
-  const widget = document.getElementById('booking-widget');
-  if (widget) {
-    widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-  const mobileCta = document.querySelector<HTMLButtonElement>('[data-testid="mobile-booking-trigger"]');
-  if (mobileCta) {
-    mobileCta.click();
-    return;
-  }
-  document.getElementById('property-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /** The same `/book/:orgSlug/...` path with the org's current slug (segments after the slug are kept as they are). */
@@ -39,6 +25,43 @@ function canonicalOrgPath(pathname: string, slug: string): string {
   return `/book/${encodeURIComponent(slug)}${rest ? `/${rest}` : ''}`;
 }
 
+/** What the booking site is showing: its page, or the state that takes the place of it. */
+type SiteState = 'ready' | 'loading' | 'error' | 'not-found';
+
+/** Shown while the org is read: the shapes of the landing page (cover, title, cards), so the page does not jump. */
+function SiteSkeleton() {
+  const { t } = useTranslation();
+  const block = 'animate-pulse bg-black/5 motion-reduce:animate-none';
+
+  return (
+    <div role="status" aria-busy="true" data-testid="public-site-loading" className="space-y-8">
+      <span className="sr-only">{t('publicSite.loading')}</span>
+      <div aria-hidden className="-mx-3 overflow-hidden sm:mx-0 sm:rounded-[var(--cz-public-radius)]">
+        <div className={`${block} aspect-[16/9] max-h-[420px] min-h-[220px] w-full`} />
+      </div>
+      <div aria-hidden className="space-y-6">
+        <div className={`${block} h-7 w-48 rounded bg-black/10`} />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((key) => (
+            <div key={key} className="public-site-card overflow-hidden">
+              <div className={`${block} aspect-[4/3]`} />
+              <div className="space-y-3 p-4">
+                <div className={`${block} h-5 w-2/3 rounded bg-black/10`} />
+                <div className={`${block} h-4 w-1/3 rounded`} />
+                <div className={`${block} h-4 w-full rounded`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** The skip link: out of sight until the keyboard reaches it, then a clear button on the theme of the page. */
+const SKIP_LINK_CLASS =
+  'sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-[var(--cz-public-radius)] focus:bg-[var(--cz-public-surface)] focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-[var(--cz-public-text)] focus:shadow-[var(--cz-public-shadow-widget)]';
+
 export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const { t } = useTranslation();
   const { orgSlug } = useParams<{ orgSlug: string }>();
@@ -46,14 +69,17 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const isOrgMode = mode === 'org' && !!orgSlug;
   const { data: org, isLoading, isError, error, refetch } = usePublicOrg(isOrgMode ? orgSlug : undefined);
   useOrgSeoMeta(org, location.pathname);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const themeId = resolvePublicSiteTheme(org?.publicThemeId);
   // Only a valid hex color reaches CSS (BK-12); null keeps the theme's own color. The text color on it and the
   // readable variant of it are derived so that any host color meets AA (BK-13).
   const colorVars = publicSiteColorVars(normalizeHexColor(org?.primaryColor ?? org?.themeColor), themeId);
   const colorStyle = colorVars as CSSProperties | null;
-  const showBookingCta = isOrgMode && (location.pathname.includes('/property/') || location.pathname === `/book/${orgSlug}` || location.pathname === `/book/${orgSlug}/`);
+  // The call to action of the header is where there is something to check: the landing and the page of a property (not
+  // its checkout, where the dates are already chosen).
+  const isLanding = location.pathname === `/book/${orgSlug}` || location.pathname === `/book/${orgSlug}/`;
+  const isPropertyPage = location.pathname.includes('/property/') && !/\/checkout\/?$/.test(location.pathname);
+  const showBookingCta = isOrgMode && (isLanding || isPropertyPage);
 
   // Also on <html> for the content rendered in portals (dialogs), outside .public-site-root.
   const colorVarsKey = colorVars ? JSON.stringify(colorVars) : '';
@@ -66,103 +92,90 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
     };
   }, [colorVarsKey]);
 
+  useEffect(() => {
+    if (!isOrgMode) return;
+    // The header of the booking site is sticky: an anchor, a focused element or the booking widget that the call to action
+    // scrolls to must not land under it (as the shell of the app does, `--header-height`).
+    const root = document.documentElement;
+    const previous = root.style.scrollPaddingTop;
+    root.style.scrollPaddingTop = 'var(--header-height)';
+    return () => {
+      root.style.scrollPaddingTop = previous;
+    };
+  }, [isOrgMode]);
+
+  let state: SiteState = 'ready';
   if (isOrgMode) {
     if (isLoading) {
-      return (
-        <div role="status" className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
-          <span className="sr-only">{t('publicSite.loading')}</span>
-        </div>
-      );
-    }
-    // Only a 404 means "no such site": any other failure (500, network) is an error with a retry, not a missing org.
-    if (isError && !(isAxiosError(error) && error.response?.status === 404)) {
-      return <PublicOrgErrorPage onRetry={() => void refetch()} />;
-    }
-    if (isError || !org) return <PublicOrgNotFoundPage />;
-    // A previous slug of the org (PL-04): the backend still resolves it, the address bar moves to the current one.
-    if (org.slug && org.slug !== orgSlug) {
+      state = 'loading';
+    } else if (isError && !(isAxiosError(error) && error.response?.status === 404)) {
+      // Only a 404 means "no such site": any other failure (500, network) is an error with a retry, not a missing org.
+      state = 'error';
+    } else if (isError || !org) {
+      state = 'not-found';
+    } else if (org.slug && org.slug !== orgSlug) {
+      // A previous slug of the org (PL-04): the backend still resolves it, the address bar moves to the current one.
       return <Navigate to={canonicalOrgPath(location.pathname, org.slug) + location.search + location.hash} replace />;
     }
   }
 
-  const displayName = org?.displayName ?? 'CasaZen';
   const basePath = `/book/${orgSlug}`;
+
+  // The states are inside the frame of the site, in the theme of the host (the default theme when there is no host to read
+  // it from: the site does not exist, or could not be read).
+  let content: ReactNode;
+  if (state === 'loading') content = <SiteSkeleton />;
+  else if (state === 'error') content = <PublicOrgErrorPage onRetry={() => void refetch()} />;
+  else if (state === 'not-found') content = <PublicOrgNotFoundPage />;
+  else content = isOrgMode ? <Outlet context={{ org }} /> : <Outlet />;
 
   return (
     <div
       className="public-site-root flex min-h-screen flex-col"
       data-theme={themeId}
+      // CasaZen's own pages (search, guides, legal, supplier showcase) have the brand's look; an org's booking site keeps
+      // the theme and color its host chose (public-brand.css).
+      data-brand={isOrgMode ? undefined : 'casazen'}
       // On the root itself: the [data-theme] tokens are declared on this element and would override a value
       // inherited from <html> (A3-17). Color, text on it and readable variant (BK-13).
       style={colorStyle ?? undefined}
       data-testid="public-site-shell"
     >
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">
+      <a href="#main-content" className={SKIP_LINK_CLASS}>
         {t('publicSite.skipToContent')}
       </a>
 
-      <header className="border-b border-[var(--cz-public-border)] bg-[var(--cz-public-surface)]">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-2 px-3 py-3 md:gap-4 md:px-4 md:py-4">
-          <Link to={isOrgMode ? basePath : '/search'} className="flex min-w-0 flex-1 items-center">
-            {org?.logoUrl ? (
-              <img src={org.logoUrl} alt={displayName} className="h-9 w-auto max-w-[160px] object-contain md:h-10 md:max-w-[200px]" />
-            ) : (
-              <span className="public-display truncate text-base font-semibold md:text-lg">{displayName}</span>
-            )}
-          </Link>
+      {isOrgMode ? (
+        <SiteHeader
+          org={org}
+          loading={state === 'loading'}
+          basePath={basePath}
+          showBookingCta={showBookingCta}
+          themeId={themeId}
+          colorStyle={colorStyle ?? undefined}
+        />
+      ) : (
+        <BrandHeader />
+      )}
 
-          {isOrgMode ? (
-            <div className="flex shrink-0 items-center gap-1 md:gap-2">
-              {showBookingCta ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  className="public-site-cta hidden border-0 md:inline-flex"
-                  onClick={scrollToBookingWidget}
-                  data-testid="header-booking-cta"
-                >
-                  {t('publicSite.mobileBookingCta')}
-                </Button>
-              ) : null}
-              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                <SheetTrigger className="rounded-md p-2 hover:bg-black/5" aria-label={t('publicSite.openMenu')}>
-                  <Menu className="h-6 w-6" />
-                </SheetTrigger>
-                <SheetContent side="right" className="public-site-root w-72" data-theme={themeId} style={colorStyle ?? undefined}>
-                  <nav className="mt-8 flex flex-col gap-2 text-base" onClick={() => setMenuOpen(false)}>
-                    <Link
-                      to={`${basePath}/my-bookings`}
-                      className="block py-2 hover:text-[var(--cz-public-primary-text)]"
-                      data-testid="public-nav-my-bookings"
-                    >
-                      {t('publicSite.navMyBookings')}
-                    </Link>
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            </div>
-          ) : (
-            <Link to="/search" className="text-sm underline hover:text-[var(--cz-public-primary-text)]">
-              {t('publicSite.explore')}
-            </Link>
-          )}
-        </div>
-      </header>
-
-      <main id="main-content" className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 md:px-4 md:py-8 md:pb-8">
-        {isOrgMode ? <Outlet context={{ org }} /> : <Outlet />}
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] flex-1 px-3 py-6 pb-24 outline-none md:px-4 md:py-8 md:pb-8">
+        {content}
       </main>
 
-      <Footer
-        displayName={isOrgMode ? org?.displayName : 'CasaZen'}
-        contactEmail={org?.contactEmail}
-        showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
-        showSeoHubLink={!isOrgMode}
-        orgSlug={isOrgMode ? (org?.slug ?? orgSlug) : undefined}
-      />
-
-      {isOrgMode ? <CookieConsentBanner /> : null}
+      {state === 'loading' ? null : (
+        <>
+          <Footer
+            displayName={isOrgMode ? (org?.displayName ?? 'CasaZen') : 'CasaZen'}
+            contactEmail={org?.contactEmail}
+            tagline={org?.tagline}
+            operator={org?.operator}
+            showPoweredBy={org?.showPoweredBy ?? !isOrgMode}
+            showSeoHubLink={!isOrgMode}
+            orgSlug={isOrgMode && org ? (org.slug ?? orgSlug) : undefined}
+          />
+          <CookieConsentBanner />
+        </>
+      )}
     </div>
   );
 }

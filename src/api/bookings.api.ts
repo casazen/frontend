@@ -3,6 +3,11 @@ import type {
   Booking,
   BookingApprovalRequest,
   BookingCancellationQuote,
+  BookingCounts,
+  BookingFilterParams,
+  BookingListItem,
+  BookingListParams,
+  BookingTimeline,
   CancelBookingDto,
   CancelBookingResult,
   CreateBookingDto,
@@ -16,15 +21,37 @@ import type {
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInLinkResponse, CheckInSessionStatusDto } from '@/types/public-checkin.types';
+import type { PagedResult } from '@/types/users.types';
+
+/** Backend `PagedResultDto` or a legacy array from older mocks. */
+export function asBookingPage(data: PagedResult<Booking> | Booking[] | undefined): PagedResult<Booking> {
+  if (!data) return { items: [], totalCount: 0, page: 1, pageSize: 10 };
+  if (Array.isArray(data)) return { items: data, totalCount: data.length, page: 1, pageSize: data.length || 10 };
+  return {
+    items: data.items ?? [],
+    totalCount: data.totalCount ?? 0,
+    page: data.page ?? 1,
+    pageSize: data.pageSize ?? 10,
+  };
+}
 
 export const bookingsApi = {
   getAll: (params?: Record<string, unknown>) =>
-    ApiClient.get<Booking[]>('/bookings', params),
+    ApiClient.get<PagedResult<Booking> | Booking[]>('/bookings', params),
 
   getByGuestId: (guestId: string) =>
-    ApiClient.get<Booking[]>('/bookings', { guestId }),
+    ApiClient.get<PagedResult<Booking> | Booking[]>('/bookings', { guestId }),
+
+  /** One page of the list of bookings: the server narrows it by chip, filters and text, orders it and pages it (SR-03b). */
+  search: (params: BookingListParams) => ApiClient.get<PagedResult<BookingListItem>>('/bookings/search', params),
+
+  /** How many bookings are in each chip of the list, for the same filters (SR-03b). */
+  counts: (params: BookingFilterParams) => ApiClient.get<BookingCounts>('/bookings/counts', params),
 
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
+
+  /** What happened to a booking and what it waits for, in order (SR-05a); the amounts only for who may read payments. */
+  getTimeline: (id: string) => ApiClient.get<BookingTimeline>(`/bookings/${id}/timeline`),
 
   create: (data: CreateBookingDto) =>
     ApiClient.post<Booking>('/bookings', data),

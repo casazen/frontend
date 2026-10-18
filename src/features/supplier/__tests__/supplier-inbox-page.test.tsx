@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -5,54 +6,66 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { SupplierServiceRequest } from '@/types/service-request';
-import type { SupplierInboxParams, SupplierInboxResponse } from '@/types/supplier';
+import type { SupplierInboxCounts, SupplierInboxParams, SupplierInboxResponse } from '@/types/supplier';
 import { SupplierInboxPage } from '../supplier-inbox-page';
 
-const api = vi.hoisted(() => ({ fetchSupplierInbox: vi.fn(), fetchSupplierProfile: vi.fn() }));
+const api = vi.hoisted(() => ({ fetchSupplierInbox: vi.fn(), fetchSupplierInboxCounts: vi.fn(), fetchSupplierProfile: vi.fn() }));
+const requestsApi = vi.hoisted(() => ({ takeServiceRequest: vi.fn(), completeServiceRequest: vi.fn(), rejectServiceRequest: vi.fn() }));
 
 vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/supplier-api')>()),
   ...api,
+}));
+vi.mock('@/api/service-requests.api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/service-requests.api')>()),
+  ...requestsApi,
+}));
+vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => ({ userId: 'tester', context: 'supplier' }) }));
+vi.mock('@/components/layout/page-header', () => ({
+  PageHeader: ({ title, primary }: { title: string; primary?: { label: string; to?: string; testId?: string } }) =>
+    createElement('div', null, createElement('h1', null, title), primary?.to ? createElement('a', { href: primary.to, 'data-testid': primary.testId }, primary.label) : null),
 }));
 
 const OPEN_ITEM: SupplierServiceRequest = {
   id: 'r-open',
   rentalContext: 'ShortRent',
   status: 'Richiesto',
+  phase: 'to_answer',
   category: 'cleaning',
   urgency: 'Normal',
   notes: null,
   createdAt: '2026-09-20T08:00:00Z',
   updatedAt: '2026-09-20T08:00:00Z',
-  propertyId: 'p-1',
-  propertyName: 'Villa Rosa',
+  propertyId: null,
+  propertyName: null,
   city: 'Roma',
   postalCode: '00184',
   address: null,
   scheduledFor: '2026-10-12',
-  stay: { bookingId: 'b-1', checkIn: '2026-10-09', checkOut: '2026-10-12' },
+  scheduledStart: '2026-10-12T08:00:00Z',
+  scheduledEnd: '2026-10-12T10:00:00Z',
+  stay: null,
   contactDisclosed: false,
   hostContact: null,
+  clientName: 'Zen Stays',
+  price: { amountCents: 5000 },
 };
 
-const REJECTED_ITEM: SupplierServiceRequest = {
-  ...OPEN_ITEM,
-  id: 'r-rejected',
-  status: 'Rifiutato',
-  rejectionReason: 'Non disponibile',
-  updatedAt: '2026-09-21T10:00:00Z',
-};
+const TAKEN_ITEM: SupplierServiceRequest = { ...OPEN_ITEM, id: 'r-taken', status: 'PresoInCarico', phase: 'scheduled', contactDisclosed: true };
+const REJECTED_ITEM: SupplierServiceRequest = { ...OPEN_ITEM, id: 'r-rejected', status: 'Rifiutato', phase: 'rejected', rejectionReason: 'Non disponibile' };
 
-function page(items: SupplierServiceRequest[], total = items.length, pageNumber = 1): SupplierInboxResponse {
-  return { items, total, page: pageNumber, pageSize: 20 };
+const COUNTS: SupplierInboxCounts = { toAnswer: 1, awaitingCustomer: 0, scheduled: 1, toCollect: 0, archive: 1, paymentsLate: 0 };
+
+function page(items: SupplierServiceRequest[], total = items.length): SupplierInboxResponse {
+  return { items, total, page: 1, pageSize: 20 };
 }
 
-function renderPage() {
+function renderPage(initial = '/app/supplier/inbox') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={[initial]}>
           <SupplierInboxPage />
         </MemoryRouter>
       </QueryClientProvider>
@@ -60,127 +73,113 @@ function renderPage() {
   );
 }
 
-function lastParams(): SupplierInboxParams {
-  return api.fetchSupplierInbox.mock.calls.at(-1)?.[0] as SupplierInboxParams;
-}
+/** The table of the list, once it is there: the page has the table and the cards of a phone, and a media query shows one. */
+const findTable = () => screen.findByRole('table', { name: 'Richieste' });
+/** What the list asked the server last (the page also asks, for its one action, for the first request to answer). */
+const lastParams = () =>
+  api.fetchSupplierInbox.mock.calls.map(([params]) => params as SupplierInboxParams).filter((params) => params.pageSize === 20).at(-1);
 
-describe('SupplierInboxPage (SU-08, A4-14)', () => {
+describe('SupplierInboxPage (SU-08, SP-08c)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) =>
-      params.status === 'open' ? page([OPEN_ITEM]) : page([REJECTED_ITEM]),
-    );
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) => {
+      if (params.tab === 'programmate') return page([TAKEN_ITEM]);
+      if (params.tab === 'archivio') return page([REJECTED_ITEM]);
+      return page([OPEN_ITEM]);
+    });
+    api.fetchSupplierInboxCounts.mockResolvedValue(COUNTS);
     api.fetchSupplierProfile.mockResolvedValue({ status: 'Active' });
+    requestsApi.takeServiceRequest.mockResolvedValue({});
     await i18n.changeLanguage('it');
   });
 
-  it('SupplierInboxPage_OpenTab_ShowsComuneDayQuickActionsAndDetailLink', async () => {
+  it('SupplierInboxPage_Default_AsksTheTabToAnswerAndShowsTheRequestWithItsQuickAction', async () => {
     renderPage();
 
-    const card = await screen.findByTestId('inbox-item-r-open');
-    expect(lastParams()).toEqual({ status: 'open', page: 1, pageSize: 20 });
-    expect(within(card).getByTestId('inbox-city-r-open')).toHaveTextContent('Roma (00184)');
-    expect(within(card).getByTestId('inbox-day-r-open')).toHaveTextContent('Giorno: 12 ottobre 2026');
-    expect(within(card).getByTestId('take-r-open')).toBeInTheDocument();
-    expect(within(card).getByTestId('open-r-open')).toHaveAttribute('href', '/app/supplier/inbox/r-open');
+    const table = within(await findTable());
+    // The name of the job is what opens the row in the drawer of the shell.
+    expect(await table.findByRole('button', { name: 'Pulizie' })).toBeInTheDocument();
+    expect(lastParams()).toEqual({ tab: 'da-rispondere', page: 1, pageSize: 20 });
+    expect(table.getByText('Roma (00184)')).toBeInTheDocument();
+    expect(table.getByText('Zen Stays')).toBeInTheDocument();
+    expect(table.getByText('50 €')).toBeInTheDocument();
+    expect(table.getByTestId('take-r-open')).toBeEnabled();
+    // The number of what waits for an answer is on its chip, from the server; and the page offers the most urgent one.
+    expect(screen.getByTestId('list-chip-da-rispondere')).toHaveTextContent('1');
+    await waitFor(() => expect(screen.getByTestId('supplier-inbox-urgent')).toHaveAttribute('href', '/app/supplier/inbox/r-open'));
   });
 
-  it('SupplierInboxPage_HistoryTab_FiltersByStatusAndPeriodOnTheServer', async () => {
-    renderPage();
-    await screen.findByTestId('inbox-item-r-open');
+  it('SupplierInboxPage_ChipsSearchAndFilters_AreAskedOfTheServer', async () => {
+    const { unmount } = renderPage('/app/supplier/inbox?chip=tutte');
+    await findTable();
+    await waitFor(() => expect(lastParams()).toEqual({ status: 'all', page: 1, pageSize: 20 }));
+    unmount();
 
-    fireEvent.click(screen.getByTestId('supplier-inbox-tab-history'));
-    const card = await screen.findByTestId('inbox-item-r-rejected');
-    expect(lastParams()).toEqual({ status: 'history', from: undefined, to: undefined, page: 1, pageSize: 20 });
-    expect(card).toHaveTextContent('Rifiutato il 21 settembre 2026');
-    expect(within(card).queryByTestId('take-r-rejected')).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByTestId('supplier-inbox-status'), { target: { value: 'Rifiutato' } });
-    fireEvent.change(screen.getByTestId('supplier-inbox-from'), { target: { value: '2026-09-01' } });
-    fireEvent.change(screen.getByTestId('supplier-inbox-to'), { target: { value: '2026-09-30' } });
-
-    await waitFor(() =>
-      expect(lastParams()).toEqual({ status: 'Rifiutato', from: '2026-09-01', to: '2026-09-30', page: 1, pageSize: 20 }),
-    );
+    renderPage('/app/supplier/inbox?chip=archivio&q=pulizia&f_when=oggi&f_period=2026-09-01..2026-09-30');
+    const table = within(await findTable());
+    expect(await table.findByRole('button', { name: 'Pulizie' })).toBeInTheDocument();
+    expect(lastParams()).toEqual({ tab: 'archivio', q: 'pulizia', when: 'oggi', from: '2026-09-01', to: '2026-09-30', page: 1, pageSize: 20 });
+    // A closed request has no quick action: the row opens its drawer.
+    expect(table.queryByTestId('take-r-rejected')).not.toBeInTheDocument();
+    expect(table.queryByTestId('complete-r-rejected')).not.toBeInTheDocument();
   });
 
-  it('SupplierInboxPage_HistoryPagination_AsksTheServerForTheNextPage', async () => {
-    api.fetchSupplierInbox.mockImplementation(async (params: SupplierInboxParams) =>
-      page([REJECTED_ITEM], 45, params.page ?? 1),
-    );
-    renderPage();
-    await screen.findByTestId('inbox-item-r-rejected');
-    fireEvent.click(screen.getByTestId('supplier-inbox-tab-history'));
-
-    expect(await screen.findByTestId('supplier-inbox-page-info')).toHaveTextContent('Pagina 1 di 3 · 45 incarichi');
-    fireEvent.click(screen.getByTestId('supplier-inbox-next'));
-
-    await waitFor(() => expect(lastParams()).toMatchObject({ status: 'history', page: 2 }));
-    expect(await screen.findByText(/Pagina 2 di 3/)).toBeInTheDocument();
+  it('SupplierInboxPage_OneLetterSearch_IsNotSentBecauseTheServerRefusesIt', async () => {
+    renderPage('/app/supplier/inbox?q=p');
+    await findTable();
+    await waitFor(() => expect(api.fetchSupplierInbox).toHaveBeenCalled());
+    expect(lastParams()).toEqual({ tab: 'da-rispondere', page: 1, pageSize: 20 });
   });
 
-  it('SupplierInboxPage_PeriodStartAfterEnd_ShowsErrorAndDoesNotQuery', async () => {
+  it('SupplierInboxPage_Chip_ChangesTheTabAndTheQuickActionToComplete', async () => {
     renderPage();
-    await screen.findByTestId('inbox-item-r-open');
-    fireEvent.click(screen.getByTestId('supplier-inbox-tab-history'));
-    await screen.findByTestId('inbox-item-r-rejected');
-    const calls = api.fetchSupplierInbox.mock.calls.length;
+    await within(await findTable()).findByTestId('take-r-open');
 
-    fireEvent.change(screen.getByTestId('supplier-inbox-from'), { target: { value: '2026-09-30' } });
-    fireEvent.change(screen.getByTestId('supplier-inbox-to'), { target: { value: '2026-09-01' } });
+    fireEvent.click(screen.getByTestId('list-chip-programmate'));
 
-    expect(await screen.findByTestId('supplier-inbox-period-invalid')).toHaveTextContent(
-      'La data di inizio non può essere successiva alla data di fine.',
-    );
-    // Only the "from" change was asked: the invalid period is never sent.
-    expect(api.fetchSupplierInbox.mock.calls.length).toBeLessThanOrEqual(calls + 1);
-    expect(api.fetchSupplierInbox.mock.calls.some(([p]) => (p as SupplierInboxParams).to === '2026-09-01')).toBe(false);
+    const table = within(await findTable());
+    expect(await table.findByTestId('complete-r-taken')).toBeEnabled();
+    expect(lastParams()).toEqual({ tab: 'programmate', page: 1, pageSize: 20 });
+  });
+
+  it('SupplierInboxPage_Take_CallsTheApi', async () => {
+    renderPage();
+
+    fireEvent.click(await within(await findTable()).findByTestId('take-r-open'));
+
+    await waitFor(() => expect(requestsApi.takeServiceRequest).toHaveBeenCalledWith('r-open'));
   });
 
   it('SupplierInboxPage_ApiError_ShowsErrorWithRetryNotAnEmptyList', async () => {
-    api.fetchSupplierInbox.mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(page([OPEN_ITEM]));
+    api.fetchSupplierInbox.mockRejectedValueOnce(new Error('boom')).mockResolvedValue(page([OPEN_ITEM]));
     renderPage();
 
-    const error = await screen.findByTestId('supplier-inbox-error');
-    expect(error).toHaveTextContent('Impossibile caricare gli incarichi.');
-    expect(screen.queryByTestId('supplier-inbox-empty')).not.toBeInTheDocument();
+    const error = await screen.findByTestId('error-state');
+    expect(error).toHaveTextContent('Impossibile caricare le richieste.');
 
     fireEvent.click(within(error).getByRole('button', { name: 'Riprova' }));
 
-    expect(await screen.findByTestId('inbox-item-r-open')).toBeInTheDocument();
+    expect(await within(await findTable()).findByRole('button', { name: 'Pulizie' })).toBeInTheDocument();
   });
 
-  it('SupplierInboxPage_NoRequest_ShowsEmptyStateOfTheTab', async () => {
+  it('SupplierInboxPage_NoRequestAtAll_ShowsWhatTheRequestsAreForAndHowToGetThem', async () => {
+    api.fetchSupplierInboxCounts.mockResolvedValue({ ...COUNTS, toAnswer: 0, scheduled: 0, archive: 0 });
     api.fetchSupplierInbox.mockResolvedValue(page([]));
     renderPage();
 
-    expect(await screen.findByTestId('supplier-inbox-empty')).toHaveTextContent('Nessun incarico aperto.');
-    fireEvent.click(screen.getByTestId('supplier-inbox-tab-history'));
-    await waitFor(() =>
-      expect(screen.getByTestId('supplier-inbox-empty')).toHaveTextContent('Nessun incarico nello storico per questi filtri.'),
-    );
+    const empty = await screen.findByTestId('supplier-inbox-empty');
+    expect(empty).toHaveTextContent('Qui arrivano le richieste');
+    expect(within(empty).getByRole('link', { name: 'Imposta la disponibilità' })).toHaveAttribute('href', '/app/supplier/availability');
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
-  it('SupplierInboxPage_SuspendedSupplier_DisablesTheQuickActionsOfEveryOpenRequest', async () => {
+
+  it('SupplierInboxPage_SuspendedSupplier_DisablesTheQuickActions', async () => {
     api.fetchSupplierProfile.mockResolvedValue({ status: 'Suspended' });
-    api.fetchSupplierInbox.mockResolvedValue(
-      page([OPEN_ITEM, { ...OPEN_ITEM, id: 'r-taken', status: 'PresoInCarico' }]),
-    );
     renderPage();
 
-    const card = await screen.findByTestId('inbox-item-r-open');
-    await waitFor(() => expect(within(card).getByTestId('take-r-open')).toBeDisabled());
-    expect(within(card).getByTestId('reject-r-open')).toBeDisabled();
-    expect(within(screen.getByTestId('inbox-item-r-taken')).getByTestId('complete-r-taken')).toBeDisabled();
-    // The request stays readable: its detail link still works.
-    expect(within(card).getByTestId('open-r-open')).toHaveAttribute('href', '/app/supplier/inbox/r-open');
-  });
-
-  it('SupplierInboxPage_ActiveSupplier_KeepsTheQuickActionsEnabled', async () => {
-    renderPage();
-
-    const card = await screen.findByTestId('inbox-item-r-open');
-    await waitFor(() => expect(api.fetchSupplierProfile).toHaveBeenCalled());
-    expect(within(card).getByTestId('take-r-open')).toBeEnabled();
-    expect(within(card).getByTestId('reject-r-open')).toBeEnabled();
+    const take = await within(await findTable()).findByTestId('take-r-open');
+    await waitFor(() => expect(take).toBeDisabled());
   });
 });

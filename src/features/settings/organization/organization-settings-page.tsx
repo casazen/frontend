@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Info, ShieldAlert } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonLine } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { needsOrgSetup } from '@/lib/onboarding';
@@ -16,6 +18,7 @@ import { translateErrorCode } from '@/lib/api-errors';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useCurrentUser } from '@/queries/use-users';
 import type { OrgSettings } from '@/types';
+import { ORG_NAME_FIELD_ID } from './org-profile';
 import {
   SLUG_CHECK_DEBOUNCE_MS,
   useDebouncedValue,
@@ -24,7 +27,11 @@ import {
   useUpdateOrgSettings,
 } from './use-org-settings';
 
-type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'>;
+/** What the form edits. The operator data (DB-03b-a: backend `OrgOperatorRules`) are text boxes: empty means "not entered". */
+type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'> & {
+  legalName: string;
+  registeredOffice: string;
+};
 type FieldErrors = Partial<Record<'name' | 'slug' | 'contactEmail', string>>;
 
 /** Page of the public site's branding: logo, hero, color, tagline, theme (BK-12). */
@@ -32,6 +39,10 @@ const SITE_APPEARANCE_PATH = '/app/short-rent/settings/site-appearance';
 
 /** Route prefix of an org's public booking site (a path, not text to translate). */
 const PUBLIC_PATH_PREFIX = '/book/';
+
+/** Longest legal name and registered office the backend accepts (`OrgOperatorRules`); the server checks again. */
+const LEGAL_NAME_MAX_LENGTH = 200;
+const REGISTERED_OFFICE_MAX_LENGTH = 300;
 
 /** Same shape the backend accepts ([EmailAddress]): one `@` with text on both sides; the server validates again. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
@@ -44,6 +55,51 @@ function validate(form: OrgSettingsForm): FieldErrors {
   if (!form.contactEmail.trim()) errors.contactEmail = 'orgSettings.errors.contactEmailRequired';
   else if (!EMAIL_PATTERN.test(form.contactEmail.trim())) errors.contactEmail = 'orgSettings.errors.contactEmailInvalid';
   return errors;
+}
+
+interface SlugStatusProps {
+  /** The typed address is not the saved one: only then it is worth checking. */
+  slugChanged: boolean;
+  typedSlug: string;
+  /** The typed address once it stopped changing: the one the check is about. */
+  debouncedSlug: string;
+  availability: ReturnType<typeof useOrgSlugAvailability>;
+}
+
+/** Whether the address being typed is free: checking, free, taken (and why), or not checked (the save checks again). */
+function SlugStatus({ slugChanged, typedSlug, debouncedSlug, availability }: SlugStatusProps) {
+  const { t } = useTranslation();
+
+  if (!slugChanged || !typedSlug) return null;
+
+  if (debouncedSlug !== typedSlug || availability.isPending) {
+    return (
+      <p className="text-sm text-foreground/70" data-testid="org-slug-checking">
+        {t('orgSettings.slugChecking')}
+      </p>
+    );
+  }
+  if (availability.isError) {
+    return (
+      <p className="text-sm text-foreground/70" data-testid="org-slug-check-failed">
+        {t('orgSettings.slugCheckFailed')}
+      </p>
+    );
+  }
+  const result = availability.data;
+  if (!result) return null;
+  if (result.available) {
+    return (
+      <p className="break-words text-sm text-[color:var(--color-success-foreground,#166534)]" data-testid="org-slug-available">
+        {t('orgSettings.slugAvailable', { path: `${PUBLIC_PATH_PREFIX}${result.slug}` })}
+      </p>
+    );
+  }
+  return (
+    <p className="break-words text-sm text-[color:var(--color-danger-foreground,#b4232a)]" role="alert" data-testid="org-slug-unavailable">
+      {translateErrorCode(result.code, t) ?? t('orgSettings.slugUnavailable')}
+    </p>
+  );
 }
 
 /** Org identity settings (US-004 extension, A1-22, A1-23) in the short-rent shell. */
@@ -66,6 +122,25 @@ export function OrganizationSettingsContent({
   showSiteAppearanceLink?: boolean;
 }) {
   const { t } = useTranslation();
+
+  return (
+    <div className="space-y-6" data-testid="organization-settings-page">
+      <PageHeader title={t('orgSettings.title')} description={t('orgSettings.description')} crumbs="auto" />
+      <div className={FOCUS_COLUMN}>
+        <OrganizationSettings showSiteAppearanceLink={showSiteAppearanceLink} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * What the org says about itself: its name, the address of its booking site and the email that receives the messages of CasaZen, with
+ * the choice of showing the email on the site. One form, one save (`PUT /api/orgs/me/settings`, the same fields and rules as ever,
+ * for the org billing administrator alone). It tells loading, a failed read and a person who may not use it; the page that holds it
+ * gives it a title.
+ */
+export function OrganizationSettings({ showSiteAppearanceLink = false }: { showSiteAppearanceLink?: boolean }) {
+  const { t } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
   const { user } = useCurrentUser();
@@ -77,6 +152,8 @@ export function OrganizationSettingsContent({
     slug: '',
     contactEmail: '',
     contactEmailPublic: false,
+    legalName: '',
+    registeredOffice: '',
   });
   const [submitted, setSubmitted] = useState(false);
   // Sync the form from the server settings whenever they (re)load (adjusting state during render).
@@ -84,8 +161,8 @@ export function OrganizationSettingsContent({
   if (settingsQuery.data !== synced) {
     setSynced(settingsQuery.data);
     if (settingsQuery.data) {
-      const { name, slug, contactEmail, contactEmailPublic } = settingsQuery.data;
-      setForm({ name, slug, contactEmail, contactEmailPublic });
+      const { name, slug, contactEmail, contactEmailPublic, legalName, registeredOffice } = settingsQuery.data;
+      setForm({ name, slug, contactEmail, contactEmailPublic, legalName: legalName ?? '', registeredOffice: registeredOffice ?? '' });
       setSubmitted(false);
     }
   }
@@ -103,7 +180,46 @@ export function OrganizationSettingsContent({
     return <Navigate to="/onboarding" replace />;
   }
 
-  const handleSave = () => {
+  if (!isAdmin) {
+    return (
+      <Alert
+        variant="info"
+        role="alert"
+        icon={ShieldAlert}
+        title={t('orgSettings.adminRequired.title')}
+        data-testid="org-settings-admin-required"
+      >
+        {t('orgSettings.adminRequired.description')}
+      </Alert>
+    );
+  }
+
+  if (settingsQuery.isPending) {
+    return (
+      <div data-testid="org-settings-loading">
+        <SkeletonLine lines={4} lineClassName="h-10" />
+      </div>
+    );
+  }
+
+  if (settingsQuery.isError) {
+    return (
+      <Alert
+        variant="danger"
+        data-testid="org-settings-error"
+        action={
+          <Button type="button" variant="outline" size="sm" onClick={() => void settingsQuery.refetch()}>
+            {t('shared.errorFallback.tryAgain')}
+          </Button>
+        }
+      >
+        {t('orgSettings.loadError')}
+      </Alert>
+    );
+  }
+
+  const handleSave = (event: FormEvent) => {
+    event.preventDefault();
     setSubmitted(true);
     if (Object.keys(validate(form)).length > 0) return;
     updateSettings.mutate({
@@ -111,198 +227,129 @@ export function OrganizationSettingsContent({
       slug: typedSlug,
       contactEmail: form.contactEmail.trim(),
       contactEmailPublic: form.contactEmailPublic,
+      legalName: form.legalName.trim(),
+      registeredOffice: form.registeredOffice.trim(),
     });
   };
 
-  const renderSlugStatus = () => {
-    if (!slugChanged || !typedSlug) return null;
-    if (debouncedSlug !== typedSlug || availabilityQuery.isPending) {
-      return (
-        <p className="text-sm text-muted-foreground" data-testid="org-slug-checking">
-          {t('orgSettings.slugChecking')}
-        </p>
-      );
-    }
-    if (availabilityQuery.isError) {
-      return (
-        <p className="text-sm text-muted-foreground" data-testid="org-slug-check-failed">
-          {t('orgSettings.slugCheckFailed')}
-        </p>
-      );
-    }
-    const availability = availabilityQuery.data;
-    if (!availability) return null;
-    if (availability.available) {
-      return (
-        <p className="text-sm text-emerald-700" data-testid="org-slug-available">
-          {t('orgSettings.slugAvailable', { path: `${PUBLIC_PATH_PREFIX}${availability.slug}` })}
-        </p>
-      );
-    }
-    return (
-      <p className="text-sm text-destructive" role="alert" data-testid="org-slug-unavailable">
-        {translateErrorCode(availability.code, t) ?? t('orgSettings.slugUnavailable')}
-      </p>
-    );
-  };
+  return (
+    <form onSubmit={handleSave} noValidate className="min-w-0 space-y-5" data-testid="org-settings-form">
+      <Field label={t('orgSettings.nameLabel')} error={fieldErrors.name}>
+        <Input
+          id={ORG_NAME_FIELD_ID}
+          data-testid="org-name-input"
+          value={form.name}
+          maxLength={200}
+          autoComplete="organization"
+          onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+        />
+      </Field>
 
-  const renderContent = () => {
-    if (!isAdmin) {
-      return (
-        <div
-          role="alert"
-          data-testid="org-settings-admin-required"
-          className="flex items-start gap-3 rounded-lg border bg-muted/40 p-6 text-sm"
-        >
-          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
-          <div className="space-y-1">
-            <p className="font-medium">{t('orgSettings.adminRequired.title')}</p>
-            <p className="text-muted-foreground">{t('orgSettings.adminRequired.description')}</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (settingsQuery.isPending) {
-      return (
-        <div className="space-y-4" data-testid="org-settings-loading">
-          <Skeleton className="h-56 w-full" />
-        </div>
-      );
-    }
-
-    if (settingsQuery.isError) {
-      return (
-        <div
-          role="alert"
-          data-testid="org-settings-error"
-          className="space-y-3 rounded-md border border-destructive/40 p-4 text-sm"
-        >
-          <p className="text-destructive">{t('orgSettings.loadError')}</p>
-          <Button type="button" variant="outline" size="sm" onClick={() => void settingsQuery.refetch()}>
-            {t('shared.errorFallback.tryAgain')}
-          </Button>
-        </div>
-      );
-    }
-
-    return (
-      <Card data-testid="org-settings-form">
-        <CardHeader>
-          <CardTitle>{t('orgSettings.formTitle')}</CardTitle>
-          <CardDescription>{t('orgSettings.formDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="org-name">{t('orgSettings.nameLabel')}</Label>
-            <Input
-              id="org-name"
-              data-testid="org-name-input"
-              value={form.name}
-              maxLength={200}
-              aria-invalid={fieldErrors.name ? true : undefined}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            />
-            {fieldErrors.name ? (
-              <p className="text-sm text-destructive" data-testid="org-name-error">
-                {t(fieldErrors.name)}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="org-slug">{t('orgSettings.slugLabel')}</Label>
+      <div className="space-y-1.5">
+        <Field id="org-slug" label={t('orgSettings.slugLabel')} hint={t('orgSettings.slugHelp')} error={fieldErrors.slug}>
+          {(control) => (
             <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground" aria-hidden>
+              <span className="shrink-0 text-sm text-foreground/70" aria-hidden="true">
                 {PUBLIC_PATH_PREFIX}
               </span>
               <Input
-                id="org-slug"
+                {...control}
                 data-testid="org-slug-input"
                 value={form.slug}
                 maxLength={100}
-                aria-invalid={fieldErrors.slug || slugUnavailable ? true : undefined}
-                onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-invalid={control['aria-invalid'] ?? (slugUnavailable ? true : undefined)}
+                className="min-w-0 flex-1"
+                onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))}
               />
             </div>
-            <p className="text-sm text-muted-foreground">{t('orgSettings.slugHelp')}</p>
-            {fieldErrors.slug ? (
-              <p className="text-sm text-destructive" data-testid="org-slug-error">
-                {t(fieldErrors.slug)}
-              </p>
-            ) : (
-              renderSlugStatus()
-            )}
-            {slugChanged && typedSlug ? (
-              <div
-                className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm"
-                data-testid="org-slug-change-notice"
-              >
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                <p>{t('orgSettings.slugChangeNotice', { previous: `${PUBLIC_PATH_PREFIX}${savedSlug}` })}</p>
-              </div>
-            ) : null}
-          </div>
+          )}
+        </Field>
+        {fieldErrors.slug ? null : (
+          <SlugStatus slugChanged={slugChanged} typedSlug={typedSlug} debouncedSlug={debouncedSlug} availability={availabilityQuery} />
+        )}
+        {slugChanged && typedSlug ? (
+          <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="org-slug-change-notice">
+            <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 break-words">{t('orgSettings.slugChangeNotice', { previous: `${PUBLIC_PATH_PREFIX}${savedSlug}` })}</span>
+          </p>
+        ) : null}
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="org-contact-email">{t('orgSettings.contactEmailLabel')}</Label>
-            <Input
-              id="org-contact-email"
-              data-testid="org-contact-email-input"
-              type="email"
-              value={form.contactEmail}
-              maxLength={255}
-              aria-invalid={fieldErrors.contactEmail ? true : undefined}
-              onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))}
-            />
-            <p className="text-sm text-muted-foreground">{t('orgSettings.contactEmailHelp')}</p>
-            {fieldErrors.contactEmail ? (
-              <p className="text-sm text-destructive" data-testid="org-contact-email-error">
-                {t(fieldErrors.contactEmail)}
-              </p>
-            ) : null}
-          </div>
+      <Field label={t('orgSettings.contactEmailLabel')} hint={t('orgSettings.contactEmailHelp')} error={fieldErrors.contactEmail}>
+        <Input
+          id="org-contact-email"
+          data-testid="org-contact-email-input"
+          type="email"
+          autoComplete="email"
+          value={form.contactEmail}
+          maxLength={255}
+          onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))}
+        />
+      </Field>
 
-          <div className="flex items-start justify-between gap-4 rounded-md border p-4">
-            <div className="space-y-1">
-              <Label htmlFor="org-contact-email-public">{t('orgSettings.contactEmailPublicLabel')}</Label>
-              <p className="text-sm text-muted-foreground">{t('orgSettings.contactEmailPublicHelp')}</p>
-            </div>
-            <Switch
-              id="org-contact-email-public"
-              data-testid="org-contact-email-public-switch"
-              checked={form.contactEmailPublic}
-              onCheckedChange={(checked) => setForm((f) => ({ ...f, contactEmailPublic: checked }))}
-            />
-          </div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 space-y-1">
+          <Label htmlFor="org-contact-email-public">{t('orgSettings.contactEmailPublicLabel')}</Label>
+          <p id="org-contact-email-public-help" className="break-words text-sm text-foreground/70">
+            {t('orgSettings.contactEmailPublicHelp')}
+          </p>
+        </div>
+        <Switch
+          id="org-contact-email-public"
+          aria-describedby="org-contact-email-public-help"
+          data-testid="org-contact-email-public-switch"
+          checked={form.contactEmailPublic}
+          onCheckedChange={(checked) => setForm((current) => ({ ...current, contactEmailPublic: checked }))}
+        />
+      </div>
 
-          <Button
-            type="button"
-            onClick={handleSave}
-            disabled={updateSettings.isPending || slugUnavailable}
-            data-testid="save-org-settings"
-          >
-            {t('orgSettings.save')}
-          </Button>
+      {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
+      <div className="space-y-4" data-testid="org-operator-section">
+        <p id="org-operator-help" className="break-words text-sm text-foreground/70" data-testid="org-operator-help">
+          {t('orgSettings.operatorHelp')}
+        </p>
+        <Field label={t('orgSettings.legalNameLabel')}>
+          <Input
+            id="org-legal-name"
+            data-testid="org-legal-name-input"
+            aria-describedby="org-operator-help"
+            value={form.legalName}
+            maxLength={LEGAL_NAME_MAX_LENGTH}
+            autoComplete="organization"
+            onChange={(event) => setForm((current) => ({ ...current, legalName: event.target.value }))}
+          />
+        </Field>
+        <Field label={t('orgSettings.registeredOfficeLabel')} example={t('orgSettings.registeredOfficeExample')}>
+          <Input
+            id="org-registered-office"
+            data-testid="org-registered-office-input"
+            aria-describedby="org-operator-help"
+            value={form.registeredOffice}
+            maxLength={REGISTERED_OFFICE_MAX_LENGTH}
+            autoComplete="street-address"
+            onChange={(event) => setForm((current) => ({ ...current, registeredOffice: event.target.value }))}
+          />
+        </Field>
+      </div>
 
-          {/* The public site's branding has its own page in the short-rent shell (BK-12). */}
-          {showSiteAppearanceLink ? (
-            <p className="border-t pt-4 text-sm text-muted-foreground" data-testid="org-settings-site-appearance-hint">
-              {t('orgSettings.siteAppearanceHint')}{' '}
-              <Link to={SITE_APPEARANCE_PATH} className="underline">
-                {t('orgSettings.siteAppearanceLink')}
-              </Link>
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
-    );
-  };
+      <div>
+        <Button type="submit" loading={updateSettings.isPending} disabled={slugUnavailable} className="w-full sm:w-auto" data-testid="save-org-settings">
+          {t('orgSettings.save')}
+        </Button>
+      </div>
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-6" data-testid="organization-settings-page">
-      <PageHeader title={t('orgSettings.title')} description={t('orgSettings.description')} />
-      {renderContent()}
-    </div>
+      {/* The public site's branding has its own page in the short-rent shell (BK-12). */}
+      {showSiteAppearanceLink ? (
+        <p className="text-sm text-foreground/70" data-testid="org-settings-site-appearance-hint">
+          {t('orgSettings.siteAppearanceHint')}{' '}
+          <Link to={SITE_APPEARANCE_PATH} className="underline">
+            {t('orgSettings.siteAppearanceLink')}
+          </Link>
+        </p>
+      ) : null}
+    </form>
   );
 }

@@ -1,0 +1,101 @@
+/*
+ * Motion of the sheet that comes up from the bottom (UI-04b, `components/ui/sheet.tsx`), and of the dialog of a phone,
+ * which is one too (UI-07, `components/ui/dialog.tsx`).
+ *
+ * The other sides get their motion from the animation utilities (`animate-in`, `slide-in-from-*`, tw-animate-css since
+ * UI-07). The sheet from the bottom is still written here, and UI-07 kept it on purpose: it slides up when it opens and
+ * down when it closes *from where a drag of the handle let it go* (`--sheet-drag`), which a utility class cannot say (it
+ * would start from the resting place and jump). Its dark background fades. Without motion (prefers-reduced-motion) it just
+ * appears and disappears.
+ */
+@keyframes sheet-bottom-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-bottom-out {
+  from {
+    transform: translateY(var(--sheet-drag, 0px));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-sheet-side='bottom'][data-state='open'] {
+    animation: sheet-bottom-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-side='bottom'][data-state='closed'] {
+    animation: sheet-bottom-out 200ms ease-in forwards;
+  }
+
+  [data-sheet-overlay='bottom'][data-state='open'] {
+    animation: sheet-overlay-in 200ms ease-out;
+  }
+
+  [data-sheet-overlay='bottom'][data-state='closed'] {
+    animation: sheet-overlay-out 200ms ease-in forwards;
+  }
+}
+
+/*
+ * The dialog of a phone: under `sm` (40rem, where `Dialog` stops being centered) it comes up as the sheet does. From `sm`
+ * on it keeps the zoom and fade of its own classes, so these rules must not reach it.
+ */
+@media (width < 40rem) and (prefers-reduced-motion: no-preference) {
+  [data-dialog-sheet][data-state='open'] {
+    animation: sheet-bottom-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-dialog-sheet][data-state='closed'] {
+    animation: sheet-bottom-out 200ms ease-in forwards;
+  }
+}
+
+/*
+ * The detail drawer of the shell (UI-15, `components/shared/detail-drawer`): one element that is a sheet from the bottom under
+ * `md` (48rem, where the shell stops being a phone) and a panel at the right from `md` on. Under `md` it moves as the sheet
+ * does; from `md` on the utilities of its own classes (`md:slide-in-from-right`) move it, so these rules must not reach it.
+ */
+@media (width < 48rem) and (prefers-reduced-motion: no-preference) {
+  [data-detail-sheet][data-state='open'] {
+    animation: sheet-bottom-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-detail-sheet][data-state='closed'] {
+    animation: sheet-bottom-out 200ms ease-in forwards;
+  }
+}
+
+/* A drag lets go of the sheet at once: no easing back, no sliding, when the user asks for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  [data-sheet-side='bottom'],
+  [data-dialog-sheet],
+  [data-detail-sheet] {
+    transition: none !important;
+  }
+}

@@ -2,10 +2,11 @@ import { test, expect } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 import { pinE2eLocale, resetE2eStorage } from './helpers/locale';
+import { moreOfTheBar } from './helpers/profile-menu';
 
 test.describe('Supplier layout standardization', () => {
   test.describe('Activation flow (#292)', () => {
-    test('full activation: completes the 5-step wizard, lands on dashboard', async ({ page }) => {
+    test('full activation: completes the three screens, lands on dashboard', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page);
 
@@ -14,7 +15,7 @@ test.describe('Supplier layout standardization', () => {
       await expect(page.getByRole('heading', { name: /Attivazione profilo fornitore|Supplier profile activation/i })).toBeVisible();
 
       // The server opens the first incomplete step: services. It saves category codes, never labels (SU-03, A4-05).
-      await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/2/);
+      await expect(page.getByTestId('supplier-activation-step-of')).toContainText(/1 di 3|1 of 3/);
       await page.getByTestId('service-category-cleaning').click();
       // The comuni are picked from the official ISTAT list and saved as ISTAT codes (SU-04).
       await page.locator('#comuni').fill('Roma');
@@ -26,14 +27,11 @@ test.describe('Supplier layout standardization', () => {
       expect(saved.categories).toEqual(['cleaning']);
       expect(saved.comuneIstatCodes).toEqual(['058091']);
 
-      // Step 3 (photos, optional): skip.
-      await page.getByRole('button', { name: /Salta|Skip/i }).click();
-
-      // Step 4: description.
+      // Presentation: description (the photos on the same screen are optional).
       await page.locator('#bio').fill('Pulizie professionali a Roma');
       await page.getByRole('button', { name: /Salva e continua|Save and continue/i }).click();
 
-      // Step 5: Terms + activate.
+      // Terms + activate.
       await expect(page.getByTestId('supplier-activation-summary')).toBeVisible();
       await page.locator('#tos').click();
       await page.getByRole('button', { name: /Attiva profilo|Activate profile/i }).click();
@@ -83,19 +81,37 @@ test.describe('Supplier layout standardization', () => {
       const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
       await expect(sidebar).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Dashboard/i })).toBeVisible();
-      await expect(sidebar.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
+      // SP-06 (SP-D1): the menu of the supplier is Home, Richieste, Agenda e disponibilità, Servizi e prezzi, Il mio sito vetrina
+      // (then Clienti and Impostazioni, which come with their own tasks), in this order.
+      await expect(sidebar.getByRole('link', { name: /Servizi e prezzi|Services and prices/i })).toBeVisible();
+      await expect(sidebar.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
+      const labels = await sidebar.locator('a[href^="/app/supplier/"]').evaluateAll((links) =>
+        links.map((link) => link.getAttribute('href')),
+      );
+      expect(labels.slice(0, 5)).toEqual([
+        '/app/supplier/dashboard',
+        '/app/supplier/inbox',
+        '/app/supplier/availability',
+        '/app/supplier/services',
+        '/app/supplier/showcase',
+      ]);
+      // UI-04a: the iCal calendar hangs from the availability (no entry of its own); the profile is in "Altro".
+      await expect(sidebar.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
+      await expect(sidebar.getByRole('link', { name: /Profilo|Profile/i })).toHaveCount(0);
+      await sidebar.getByRole('button', { name: /Altro|More/i }).click();
       await expect(sidebar.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
     });
 
-    test('sidebar shows Fornitore subtitle', async ({ page }) => {
+    test('sidebar is headed by the supplier area', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
+      // A single area has nothing to choose: the heading of the sidebar, not a switcher (UI-04a).
       const sidebar = page.getByRole('complementary', { name: 'Main navigation' });
-      await expect(sidebar.getByText(/Fornitore|Supplier/i)).toBeVisible();
+      await expect(sidebar.getByTestId('area-header')).toContainText(/Portale fornitori|Supplier portal/i);
     });
 
     test('inbox link has aria-current when on inbox page', async ({ page }) => {
@@ -136,44 +152,76 @@ test.describe('Supplier layout standardization', () => {
       const bottomNav = page.getByRole('navigation', { name: 'Navigazione mobile' });
       await expect(bottomNav).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Dashboard/i })).toBeVisible();
-      await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
+      // SP-06 (SP-D11): the fourth place of the bar is "Servizi e prezzi"; the showcase stays in the menu, behind "Altro".
+      await expect(bottomNav.getByRole('link', { name: /Servizi e prezzi|Services and prices/i })).toBeVisible();
+      await expect(bottomNav.getByRole('link', { name: /Vetrina|Showcase/i })).toHaveCount(0);
+      const places = await bottomNav.getByRole('link').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+      expect(places).toEqual([
+        '/app/supplier/dashboard',
+        '/app/supplier/inbox',
+        '/app/supplier/availability',
+        '/app/supplier/services',
+      ]);
+      // The iCal calendar hangs from the availability: it is not a destination of the bar (UI-04a).
+      await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
     });
 
-    test('drawer opens from hamburger and shows secondary items', async ({ page }) => {
+    test('the services tab of the bottom bar says "Servizi", which fits its column even on the narrowest phones', async ({ page }) => {
+      await setDemoProfile(page, 'supplier');
+      await mockSupplierConsoleApi(page, { active: true });
+
+      for (const width of [320, 360, 390]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
+        const tab = page.getByRole('navigation', { name: 'Navigazione mobile' }).getByRole('link', { name: 'Servizi e prezzi' });
+        // "Servizi e prezzi" alone (74 px) is wider than a column of 360 px (72 px) and would end in an ellipsis: the bar says "Servizi".
+        // Only this tab is checked: the width of the other names depends on the fonts of the machine (they have their own test, UI-04b).
+        const name = tab.locator('span.truncate');
+        await expect(name).toHaveText('Servizi');
+        const cut = await name.evaluate((span) => span.scrollWidth > span.clientWidth);
+        expect(cut, `${width} px: the name of the services tab is cut`).toBe(false);
+      }
+    });
+
+    test('the sheet opens from "Altro" of the bottom bar and shows secondary items', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await expect(drawer).toBeVisible();
-      await expect(drawer.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
+      await moreOfTheBar(page).click();
+      const sheet = page.getByRole('dialog');
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
+      // The showcase, which is no longer on the bar (SP-06), is here.
+      await expect(sheet.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
     });
 
-    test('drawer closes on navigation', async ({ page }) => {
+    test('the sheet closes on navigation', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await page.getByRole('button', { name: /Apri menu di navigazione/i }).click();
-      const drawer = page.getByRole('dialog');
-      await drawer.getByRole('link', { name: /Profilo|Profile/i }).click();
+      await moreOfTheBar(page).click();
+      const sheet = page.getByRole('dialog');
+      await sheet.getByRole('link', { name: /Profilo|Profile/i }).click();
       await expect(page).toHaveURL(/\/app\/supplier\/profile/);
-      await expect(drawer).not.toBeVisible();
+      await expect(sheet).not.toBeVisible();
     });
   });
 
-  test.describe('WorkspaceSwitcher', () => {
+  test.describe('Area switcher', () => {
     test.use({ viewport: { width: 1280, height: 720 } });
 
-    test('supplier-only user does not see workspace switcher', async ({ page }) => {
+    test('supplier-only user does not see the area switcher', async ({ page }) => {
       await setDemoProfile(page, 'supplier');
       await mockSupplierConsoleApi(page, { active: true });
       await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByRole('tablist', { name: 'Workspace context' })).toHaveCount(0);
+      await expect(page.getByTestId('area-header')).toBeVisible();
+      await expect(page.getByTestId('area-switcher')).toHaveCount(0);
+      await expect(page.getByRole('tablist')).toHaveCount(0);
     });
   });
 });

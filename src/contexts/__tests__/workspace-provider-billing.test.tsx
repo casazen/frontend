@@ -5,6 +5,7 @@ import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
 import { useAuth } from '@/hooks/use-auth';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import { WorkspaceProvider } from '../workspace-provider';
 
 vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
@@ -14,8 +15,13 @@ type AuthResult = ReturnType<typeof useAuth>;
 
 const getAccessToken = vi.fn();
 
-function context(contextKey: ContextBootstrapDto['contextKey'], permissions: string[] = []): ContextBootstrapDto {
-  return { contextKey, displayName: contextKey, roleKey: contextKey, permissions, defaultRoute: `/app/${contextKey}` };
+/** A context of the user, held as the owner unless `roleKey` says it is held as a member of the org. */
+function context(
+  contextKey: ContextBootstrapDto['contextKey'],
+  permissions: string[] = [],
+  roleKey?: string,
+): ContextBootstrapDto {
+  return contextOf(contextKey, roleKey, permissions);
 }
 
 function Probe() {
@@ -72,5 +78,17 @@ describe('WorkspaceProvider org billing administrator', () => {
 
     expect(await screen.findByTestId('long-rent')).toHaveTextContent('false');
     expect(screen.getByTestId('short-rent')).toHaveTextContent('false');
+  });
+
+  // AM-00 (S1): a collaborator of the org has the rental context with real permissions, but not the owner's role key:
+  // the backend refuses it plan and billing, so the menu must not offer them.
+  it.each(MEMBER_ROLE_KEYS)('hasPermission_MemberWithRoleKey_%s_IsNotOrgBillingAdmin', async (roleKey) => {
+    renderWith([
+      context('short-rent', ['property.read', 'property.write', 'payment.read'], roleKey),
+      context('long-rent', ['property.read', 'lease.read'], roleKey),
+    ]);
+
+    expect(await screen.findByTestId('short-rent')).toHaveTextContent('false');
+    expect(screen.getByTestId('long-rent')).toHaveTextContent('false');
   });
 });

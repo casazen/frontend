@@ -76,16 +76,26 @@ env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://localhost:$API_PO
   "Email__ApiUrl=http://localhost:$MAIL_PORT" \
   "SSL_CERT_FILE=$STACK_DIR/trust-bundle.pem" \
   "RateLimiting__PublicBookingCreate__PermitLimit=1000" "RateLimiting__PublicBookingLookup__PermitLimit=1000" \
+  "RateLimiting__PublicRegistration__PermitLimit=1000" \
   ${STRIPE_ARGS[@]+"${STRIPE_ARGS[@]}"} \
   nohup $BACKEND_CMD > "$STACK_DIR/backend.log" 2>&1 &
 echo $! > "$STACK_DIR/backend.pid"
 wait_for "http://localhost:$API_PORT/api/health/live" "backend" 240
 
-# 5. Frontend (Vite dev server, real Auth0 SDK pointed at the mock IdP: no demo mode).
-( cd "$FE_DIR" && env VITE_HTTPS=0 VITE_API_BASE_URL="http://localhost:$API_PORT/api" \
-    VITE_AUTH0_DOMAIN="localhost:$IDP_PORT" VITE_AUTH0_CLIENT_ID=e2e-spa-client VITE_AUTH0_AUDIENCE=https://casazen-api \
-    nohup npx vite --host localhost --port "$FE_PORT" --strictPort > "$STACK_DIR/vite.log" 2>&1 &
-  echo $! > "$STACK_DIR/vite.pid" )
+# 5. Frontend (real Auth0 SDK pointed at the mock IdP: no demo mode). Vite dev server by default; E2E_FE_BUILD=1 serves the
+#    production build instead (what Vercel serves: no StrictMode double effects, minified code), the faithful target for the
+#    onboarding suite.
+FE_ENV=(VITE_HTTPS=0 VITE_API_BASE_URL="http://localhost:$API_PORT/api"
+  VITE_AUTH0_DOMAIN="localhost:$IDP_PORT" VITE_AUTH0_CLIENT_ID=e2e-spa-client VITE_AUTH0_AUDIENCE=https://casazen-api)
+if [ "${E2E_FE_BUILD:-0}" = "1" ]; then
+  ( cd "$FE_DIR" && env "${FE_ENV[@]}" npx vite build --outDir "$STACK_DIR/dist" > "$STACK_DIR/vite-build.log" 2>&1 )
+  ( cd "$FE_DIR" && nohup npx vite preview --outDir "$STACK_DIR/dist" --host localhost --port "$FE_PORT" --strictPort \
+      > "$STACK_DIR/vite.log" 2>&1 &
+    echo $! > "$STACK_DIR/vite.pid" )
+else
+  ( cd "$FE_DIR" && env "${FE_ENV[@]}" nohup npx vite --host localhost --port "$FE_PORT" --strictPort > "$STACK_DIR/vite.log" 2>&1 &
+    echo $! > "$STACK_DIR/vite.pid" )
+fi
 wait_for "http://localhost:$FE_PORT/" "frontend" 120
 
 cat > "$STACK_DIR/env.json" <<JSON

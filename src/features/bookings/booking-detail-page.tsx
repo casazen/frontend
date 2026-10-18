@@ -1,75 +1,102 @@
-import { useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Building2, Pencil, XCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Breadcrumb } from '@/components/shared/breadcrumb';
-import { LoadingScreen } from '@/components/shared/loading-screen';
-import { useTranslation } from 'react-i18next';
-import { useBooking } from '@/queries/use-bookings';
-import { formatDate, formatCurrency } from '@/lib/utils';
-import { formatStayDate } from '@/lib/stay-dates';
-import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
-import { bookingNights, bookingPriceBreakdown, stayDateOf } from './lib/booking-price';
-import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
-import { CheckCircle2, DoorOpen, Edit, Calendar, Users, Mail, Phone, MapPin, XCircle } from 'lucide-react';
-import { useWorkspace } from '@/hooks/use-workspace';
-import { CancelBookingDialog } from './components/cancel-booking-dialog';
-import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
-import { CheckInDialog } from './components/check-in-dialog';
-import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
-import { isBookingTab, type BookingTab } from './lib/booking-tabs';
+import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
+import { PlainSection } from '@/components/shared/calm';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
+import { StatusBadge } from '@/components/shared/status/status-badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { AlloggiatiBookingPanel } from '@/features/alloggiati/components/alloggiati-booking-panel';
-import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
-import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
-import { useServiceRequests } from '@/queries/use-service-requests';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { getHttpStatus } from '@/lib/api-errors';
+import { formatStayDate, todayInRome } from '@/lib/stay-dates';
+import { useBooking } from '@/queries/use-bookings';
+import { useBookingThread } from '@/queries/use-booking-messages';
+import { BookingMessagesSection } from './components/booking-messages-section';
+import { BookingNextStep } from './components/booking-next-step';
+import { BookingPaymentTab } from './components/booking-payment-tab';
+import { BookingStayTab } from './components/booking-stay-tab';
+import { BookingTimelineSection } from './components/booking-timeline-section';
+import { CancelBookingDialog } from './components/cancel-booking-dialog';
+import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
+import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
+import { DeclineBookingDialog } from './components/decline-booking-dialog';
 import { OtaReviewNotice } from './components/ota-review-notice';
-import { bookingChannelText } from './lib/ota-stay';
-import type { Booking } from '@/types';
+import { bookingNights, stayDateOf } from './lib/booking-price';
+import { BOOKINGS_PATH } from './lib/booking-list-query';
+import { bookingHasMessages } from './lib/booking-messages';
+import { bookingPanelOf, type BookingPanel } from './lib/booking-tabs';
+import { canRegisterArrival } from './lib/stay-actions';
 
+/** The page while the booking loads: the shape of the page, no spinner in the middle of nothing. */
+function BookingDetailSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="booking-detail-loading">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-2/3 max-w-sm motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-1/2 max-w-xs motion-reduce:animate-none" />
+        </div>
+        <Skeleton className="h-36 w-full rounded-xl motion-reduce:animate-none" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-11/12 motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-2/3 motion-reduce:animate-none" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * `/app/short-rent/bookings/:id`: one booking (SR-05). The header says whose stay it is, where and when, with its status and the
+ * "⋯" menu of the other actions; under it the one highlighted block, "Cosa succede ora", and then the tabs Soggiorno, Messaggi (only for
+ * a booking made through the booking site, SR-12, with the number of messages not read yet), Documenti, Pagamento and Cronologia
+ * (SR-05c), each made of sections without a box. The tab is in the address (`?tab=`); `alloggiati`, the old fourth tab, opens
+ * Documenti at its Alloggiati Web section.
+ */
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  // The tab is in the URL (`?tab=alloggiati`): the "complete the guest data" links of the arrival open it (CO-08).
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const activeTab: BookingTab = isBookingTab(tabParam) ? tabParam : 'details';
-  const setActiveTab = (tab: BookingTab) =>
-    setSearchParams(
-      (params) => {
-        const next = new URLSearchParams(params);
-        if (tab === 'details') next.delete('tab');
-        else next.set('tab', tab);
-        return next;
-      },
-      { replace: true },
-    );
+  const requestedTab = bookingPanelOf(tabParam);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [declineOpen, setDeclineOpen] = useState(false);
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id!);
-  // The stay's own requests (D2), with the same query as the app's booking screen.
-  const serviceRequests = useServiceRequests(id ? { bookingId: id, pageSize: 50 } : undefined);
-  const { t, i18n } = useTranslation();
+  // Messages with the guest (SR-12): only a booking of the booking site has them; the same thread query feeds the tab and its number.
+  const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking);
+  const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
+  const activeTab: BookingPanel = requestedTab === 'messages' && !hasMessages ? 'details' : requestedTab;
+
+  // The links of the arrival and of the cockpit ask for Alloggiati Web (`?tab=alloggiati`): Documenti opens at its section.
+  const alloggiatiRef = useRef<HTMLDivElement>(null);
+  const scrollToAlloggiati = tabParam === 'alloggiati' && booking !== undefined;
+  useEffect(() => {
+    if (scrollToAlloggiati) alloggiatiRef.current?.scrollIntoView?.({ block: 'start' });
+  }, [scrollToAlloggiati]);
 
   if (isLoading) {
-    return <LoadingScreen message={t('booking.detailPage.loading')} className="h-auto flex-1" />;
+    return <BookingDetailSkeleton label={t('booking.detailPage.loading')} />;
   }
 
   // An API error is never shown as "not found" (only a 404 is).
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <AppShell>
-        <div className="text-center py-12 space-y-4" role="alert" data-testid="booking-load-error">
-          <p className="text-destructive">{getProblemMessage(error, t) ?? t('booking.detailPage.loadError')}</p>
-          <Button variant="outline" onClick={() => void refetch()}>
-            {t('booking.detailPage.retry')}
-          </Button>
+        <div className="min-w-0 space-y-6">
+          <PageHeader crumbs="auto" title={t('booking.detailPage.fallbackTitle')} />
+          <ErrorState testId="booking-load-error" title={t('booking.detailPage.loadError')} error={error} onRetry={() => void refetch()} />
         </div>
       </AppShell>
     );
@@ -78,343 +105,143 @@ export function BookingDetailPage() {
   if (!booking) {
     return (
       <AppShell>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">{t('booking.detailPage.notFound')}</h2>
-          <p className="text-muted-foreground">{t('booking.detailPage.notFoundDescription')}</p>
+        <div className="min-w-0 space-y-6">
+          <PageHeader crumbs="auto" title={t('booking.detailPage.fallbackTitle')} />
+          <EmptyState
+            icon={Building2}
+            title={t('booking.detailPage.notFound')}
+            description={t('booking.detailPage.notFoundDescription')}
+            action={{ label: t('booking.next.toBookings'), href: BOOKINGS_PATH }}
+          />
         </div>
       </AppShell>
     );
   }
 
   const canWrite = hasPermission('short-rent', 'booking.write');
-  const statusLabel = getBookingStatusLabel(booking.status, t);
   // One confirmation for every pending booking the host can confirm (PC-07 with BK-06): the ones entered by hand and
   // left Pending by the old code, and the "pay at the property" requests waiting for the host's answer.
   const pendingManual = booking.status === 'Pending' && booking.source === 'Manual';
-  const canConfirm =
-    canWrite && (pendingManual || (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval'));
+  const canConfirm = canWrite && (pendingManual || (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval'));
+  // The host can also decline the request that waits for the answer (BK-06, the same dialog as the list).
+  const canDecline = canWrite && booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
   // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves.
-  const canCancel =
-    canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
-  const canEdit = canWrite && booking.status !== 'Cancelled';
-  // A short-rent supplier request is for this stay (D2); the API needs property.write in short-rent, also to pay a
-  // completed request or ask another supplier after a rejection (SU-09). No new request for a cancelled stay.
-  const canManageSupplierRequests = hasPermission('short-rent', 'property.write');
-  const canRequestSupplier = canManageSupplierRequests && booking.status !== 'Cancelled';
+  const canCancel = canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
+  // "Modifica" only where the API takes it (SR-05c): the server says so with `canEdit`, the page keeps no rule of its own. A booking
+  // from the booking site or a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
+  const canEdit = canWrite && booking.canEdit?.allowed === true;
   // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
   const canCheckIn = canWrite && canRegisterArrival(booking);
-  // The check-out wizard accepts a stay with the arrival registered, or a confirmed one from its departure day, whose
-  // arrival it registers with "registra arrivo e procedi": the link is not offered when the wizard would refuse it.
-  const canCheckOut = canWrite && canOpenCheckOut(booking);
-  const statusVariant = BOOKING_STATUS_VARIANTS[booking.status] || BOOKING_STATUS_VARIANTS.Pending;
-  const nights = bookingNights(booking);
-  // OTA stay created from an iCal block (CO-21): its feed next to the source.
-  const channelText = bookingChannelText(booking, t);
-  const stayDate = (value: string) => formatStayDate(stayDateOf(value), i18n.language);
 
-  const tabs: { key: BookingTab; label: string }[] = [
-    { key: 'details', label: t('booking.detailPage.tabs.details') },
-    { key: 'guest', label: t('booking.detailPage.tabs.guest') },
-    { key: 'payment', label: t('booking.detailPage.tabs.payment') },
-    { key: 'alloggiati', label: t('booking.detailPage.tabs.alloggiati') },
+  const language = i18n.language;
+  const thisYear = todayInRome().slice(0, 4);
+  const day = (value: string) => {
+    const stay = stayDateOf(value);
+    return formatStayDate(stay, language, stay.startsWith(thisYear) ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const nights = bookingNights(booking);
+  const guestName = `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback');
+  // The line under the name: where, when, for how long, how many.
+  const summary = [
+    booking.propertyName,
+    `${day(booking.checkInDate)} → ${day(booking.checkOutDate)}`,
+    nights > 0 ? t('booking.list.nights', { count: nights }) : '',
+    t('booking.list.guestCount', { count: booking.numberOfGuests }),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const menu: PageHeaderMenuItem[] = [
+    ...(canEdit ? [{ label: t('booking.detailPage.editBooking'), icon: Pencil, to: `${BOOKINGS_PATH}/${booking.id}/edit`, testId: 'edit-booking' }] : []),
+    { label: t('booking.detailPage.openProperty'), icon: Building2, to: `/app/short-rent/properties/${booking.propertyId}`, testId: 'booking-open-property' },
+    ...(canCancel
+      ? [{ separator: true as const }, { label: t('booking.cancel.action'), icon: XCircle, danger: true, onClick: () => setCancelOpen(true), testId: 'open-cancel-booking' }]
+      : []),
+  ];
+
+  // The test ids are how the Golden Journey (L3) and the tests reach the tabs.
+  const tabs: TabItem<BookingPanel>[] = [
+    { value: 'details', label: t('booking.detailPage.tabs.details'), testId: 'booking-tab-details' },
+    ...(hasMessages
+      ? [
+          {
+            value: 'messages' as const,
+            label: t('booking.detailPage.tabs.messages'),
+            testId: 'booking-tab-messages',
+            count: unreadMessages,
+            countLabel: t('booking.messages.unread', { count: unreadMessages }),
+            tone: 'warning' as const,
+          },
+        ]
+      : []),
+    { value: 'guest', label: t('booking.detailPage.tabs.guest'), testId: 'booking-tab-guest' },
+    { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
+    { value: 'history', label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' },
   ];
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <Breadcrumb />
-
+      <div className="min-w-0 space-y-6">
+        {/* The trail (Affitti brevi › Prenotazioni › this booking) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
-          title={t('booking.detailPage.title', { code: booking.id.slice(0, 8) })}
-          description={`${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}
-          action={
-            <div className="flex flex-wrap gap-2">
-              {canCheckIn && (
-                <Button onClick={() => setArrivalOpen(true)} data-testid="open-register-arrival">
-                  <DoorOpen className="mr-2 h-4 w-4" />
-                  {t('booking.arrival.action')}
-                </Button>
-              )}
-              {canConfirm && (
-                <Button onClick={() => setConfirmOpen(true)} data-testid="open-confirm-booking">
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  {t('booking.confirm.action')}
-                </Button>
-              )}
-              {canCancel && (
-                <Button variant="outline" onClick={() => setCancelOpen(true)} data-testid="open-cancel-booking">
-                  <XCircle className="mr-2 h-4 w-4" />
-                  {t('booking.cancel.action')}
-                </Button>
-              )}
-              {canCheckOut && (
-                <Button variant="outline" asChild>
-                  <Link to={`/app/short-rent/bookings/${booking.id}/checkout`} data-testid="open-checkout-wizard">
-                    {t('booking.card.checkOutAction')}
-                  </Link>
-                </Button>
-              )}
-              {canEdit && (
-                <Button onClick={() => navigate(`/app/short-rent/bookings/${booking.id}/edit`)} data-testid="edit-booking">
-                  <Edit className="mr-2 h-4 w-4" />
-                  {t('booking.detailPage.editBooking')}
-                </Button>
-              )}
-            </div>
-          }
+          crumbs="auto"
+          title={guestName}
+          description={summary}
+          action={<StatusBadge kind="booking" status={booking.status} size="lg" data-testid="booking-detail-status" />}
+          secondary={menu}
         />
-
-        <Link
-          to={`/app/short-rent/properties/${booking.propertyId}`}
-          className="text-primary hover:underline text-sm inline-block"
-        >
-          {t('booking.detailPage.viewProperty')} &#8594;
-        </Link>
 
         <OtaReviewNotice booking={booking} canWrite={canWrite} />
 
-        <div className="flex gap-1 border-b mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              data-testid={`booking-tab-${tab.key}`}
-              aria-pressed={activeTab === tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <BookingNextStep
+          booking={booking}
+          canWrite={canWrite}
+          onConfirm={() => setConfirmOpen(true)}
+          onDecline={() => setDeclineOpen(true)}
+          onArrival={() => setArrivalOpen(true)}
+        />
 
-        {activeTab === 'details' && (
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="md:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{t('booking.detailPage.bookingDetailsTitle')}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      {booking.source && (
-                        <Badge
-                          variant="outline"
-                          title={t('booking.detailPage.source')}
-                          data-testid="booking-detail-source"
-                        >
-                          {getBookingSourceLabel(booking.source, t)}
-                        </Badge>
-                      )}
-                      {channelText && (
-                        <span className="text-xs text-muted-foreground" data-testid="booking-detail-channel">
-                          {channelText}
-                        </span>
-                      )}
-                      <Badge variant={statusVariant} className="text-base px-3 py-1" data-testid="booking-detail-status">
-                        {statusLabel}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {canConfirm && pendingManual && (
-                    <p className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" data-testid="booking-pending-manual">
-                      {t('booking.confirm.pendingNotice')}
-                    </p>
-                  )}
+        {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
+        <Tabs label={t('booking.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="booking-tabs-select">
+          {activeTab === 'details' && <BookingStayTab booking={booking} />}
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Calendar className="h-4 w-4" />
-                        {t('booking.detail.checkIn')}
-                      </div>
-                      <div className="font-medium">{stayDate(booking.checkInDate)}</div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Calendar className="h-4 w-4" />
-                        {t('booking.detail.checkOut')}
-                      </div>
-                      <div className="font-medium">{stayDate(booking.checkOutDate)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <span>{booking.numberOfGuests} {t('booking.detail.guest', { count: booking.numberOfGuests })}</span>
-                      {(booking.numberOfChildren ?? 0) > 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          {t('booking.detailPage.childrenCount', { count: booking.numberOfChildren })}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-muted-foreground">
-                      {nights} {t('booking.detail.night', { count: nights })}
-                    </div>
-                  </div>
-
-                  {booking.specialRequests && (
-                    <div className="pt-3 border-t">
-                      <div className="text-sm text-muted-foreground mb-1">{t('booking.detailPage.specialRequests')}</div>
-                      <p className="text-sm">{booking.specialRequests}</p>
-                    </div>
-                  )}
-
-                  {booking.status === 'Cancelled' && booking.cancellationNote && (
-                    <div className="pt-3 border-t" data-testid="booking-cancellation-note">
-                      <div className="text-sm text-muted-foreground mb-1">{t('booking.detailPage.cancellationNote')}</div>
-                      <p className="text-sm">{booking.cancellationNote}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+          {activeTab === 'messages' && (
+            <div className="max-w-xl">
+              <PlainSection title={t('booking.messages.title')}>
+                <BookingMessagesSection booking={booking} />
+              </PlainSection>
             </div>
+          )}
 
-            <div className="space-y-6">
-              <ServiceRequestsCard
-                query={serviceRequests}
-                emptyText={t('serviceRequest.emptyForStay')}
-                canManage={canManageSupplierRequests}
-                testId="booking-service-requests"
-                action={
-                  canRequestSupplier ? (
-                    <ServiceRequestForm propertyId={booking.propertyId} bookingId={booking.id} />
-                  ) : undefined
-                }
-              />
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('booking.detailPage.timeline')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">{t('booking.detailPage.created')}</div>
-                    <div>{formatDate(booking.createdAt, 'dd/MM/yyyy HH:mm')}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">{t('booking.detailPage.lastUpdated')}</div>
-                    <div>{formatDate(booking.updatedAt, 'dd/MM/yyyy HH:mm')}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'guest' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('booking.detailPage.guestInformationTitle')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="pb-3 border-b">
-                <div className="text-sm text-muted-foreground mb-2">{t('checkin.sessionLabel')}</div>
+          {activeTab === 'guest' && (
+            <div className="space-y-8">
+              <PlainSection title={t('booking.detailPage.checkInOnline')}>
                 <CheckInLinkPanel bookingId={booking.id} canWrite={canWrite} />
+              </PlainSection>
+              <div ref={alloggiatiRef} className="scroll-mt-6">
+                <PlainSection title={t('booking.detailPage.alloggiatiWeb')}>
+                  <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
+                </PlainSection>
               </div>
-              <div>
-                <div className="text-sm text-muted-foreground">{t('booking.detailPage.guestName')}</div>
-                <div className="font-medium">
-                  {booking.guest.firstName} {booking.guest.lastName}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <a href={`mailto:${booking.guest.email}`} className="text-sm hover:underline">
-                  {booking.guest.email}
-                </a>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <a href={`tel:${booking.guest.phone}`} className="text-sm hover:underline">
-                  {booking.guest.phone}
-                </a>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{booking.guest.country}</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {activeTab === 'payment' && <PaymentSummary booking={booking} />}
-
-        {activeTab === 'alloggiati' && (
-          <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
-        )}
-      </div>
-      {(canCancel || cancelOpen) && (
-        <CancelBookingDialog bookingId={booking.id} open={cancelOpen} onOpenChange={setCancelOpen} />
-      )}
-      {(canConfirm || confirmOpen) && (
-        <ConfirmBookingDialog bookingId={booking.id} open={confirmOpen} onOpenChange={setConfirmOpen} />
-      )}
-      {(canCheckIn || arrivalOpen) && (
-        <CheckInDialog booking={booking} open={arrivalOpen} onOpenChange={setArrivalOpen} />
-      )}
-    </AppShell>
-  );
-}
-
-/**
- * Price as recorded: lodging (per night: base price without cleaning, divided by the nights; tourist tax and cleaning
- * excluded, A2-30), cleaning fee, tourist tax, total.
- */
-function PaymentSummary({ booking }: { booking: Booking }) {
-  const { t } = useTranslation();
-  const breakdown = bookingPriceBreakdown(booking);
-  const money = (value: number) => formatCurrency(value, booking.currency);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('booking.detailPage.paymentSummaryTitle')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {breakdown ? (
-          <dl className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground" data-testid="booking-price-per-night">
-                {t('booking.detailPage.lodgingPerNight', { count: breakdown.nights, perNight: money(breakdown.perNight) })}
-              </dt>
-              <dd>{money(breakdown.lodging)}</dd>
             </div>
-            {breakdown.cleaningFee > 0 && (
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">{t('booking.detailPage.cleaningFee')}</dt>
-                <dd>{money(breakdown.cleaningFee)}</dd>
-              </div>
-            )}
-            {breakdown.touristTax > 0 && (
-              <div className="flex items-center justify-between">
-                <dt className="text-muted-foreground">{t('booking.detailPage.touristTax')}</dt>
-                <dd>{money(breakdown.touristTax)}</dd>
-              </div>
-            )}
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground" data-testid="booking-price-no-breakdown">
-            {t('booking.detailPage.noPriceBreakdown')}
-          </p>
-        )}
+          )}
 
-        <div className="border-t pt-3">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{t('booking.detailPage.total')}</span>
-            <span className="text-2xl font-bold" data-testid="booking-price-total">
-              {money(booking.totalPrice)}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          {activeTab === 'payment' && <BookingPaymentTab booking={booking} />}
+
+          {activeTab === 'history' && (
+            <div className="max-w-xl">
+              <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />
+            </div>
+          )}
+        </Tabs>
+      </div>
+
+      {(canCancel || cancelOpen) && <CancelBookingDialog bookingId={booking.id} open={cancelOpen} onOpenChange={setCancelOpen} />}
+      {(canConfirm || confirmOpen) && <ConfirmBookingDialog bookingId={booking.id} open={confirmOpen} onOpenChange={setConfirmOpen} />}
+      {(canDecline || declineOpen) && (
+        <DeclineBookingDialog booking={declineOpen ? booking : null} open={declineOpen} onOpenChange={setDeclineOpen} />
+      )}
+      {(canCheckIn || arrivalOpen) && <CheckInDialog booking={booking} open={arrivalOpen} onOpenChange={setArrivalOpen} />}
+    </AppShell>
   );
 }

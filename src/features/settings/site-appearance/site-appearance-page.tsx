@@ -346,7 +346,7 @@ export function SiteAppearanceContent() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6" data-testid="site-appearance-page">
+    <div className="space-y-6" data-testid="site-appearance-page">
       <PageHeader title={t('siteAppearance.title')} description={t('siteAppearance.description')} />
       {renderContent()}
     </div>
@@ -487,8 +487,8 @@ function SitePreview({ branding, themeId, colorStyle, tagline }: SitePreviewProp
   const publicPath = `${PUBLIC_PATH_PREFIX}${encodeURIComponent(branding.slug)}`;
 
   return (
-    // `top-20`: the window scrolls in the shell (UI-03), so it sticks below the sticky header (4rem) and a 1rem gap.
-    <Card className="lg:sticky lg:top-20" data-testid="site-appearance-preview">
+    // The window scrolls in the shell (UI-03), so the preview sticks below the sticky header (`--header-height`) and a 1rem gap.
+    <Card className="lg:sticky lg:top-[calc(var(--header-height)+1rem)]" data-testid="site-appearance-preview">
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2 space-y-0">
         <div className="space-y-1.5">
           <CardTitle>{t('siteAppearance.preview.title')}</CardTitle>

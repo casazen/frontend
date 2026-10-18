@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useEmptyWorkspaceRecovery } from '@/hooks/use-empty-workspace-recovery';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { Navigate } from 'react-router-dom';
 
 export function ContextPickerPage() {
@@ -24,7 +25,10 @@ export function ContextPickerPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4">
+    // A screen of the signed-in app without a shell, where a user with several areas lands after the login: like the
+    // header of the shells it carries the id that the e2e logins wait for (UI-00).
+    <div data-testid="app-ready" className="flex min-h-screen flex-col items-center justify-center gap-6 bg-muted/20 px-4">
+      <CasaZenLogo size={44} />
       <Card className="w-full max-w-xl">
         <CardHeader>
           <CardTitle>{t('shared.contextPicker.title')}</CardTitle>

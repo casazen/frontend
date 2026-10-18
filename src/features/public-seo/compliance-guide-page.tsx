@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { useComplianceGuide } from '@/queries/use-public-seo';
 import { useSeoMeta } from '@/lib/seo-meta';
+import { BrandEyebrow, BrandHero } from '@/features/public-site/components/brand-hero';
 import { SeoDisclaimerFooter } from './components/seo-disclaimer-footer';
 import { SeoContentLanguageNote } from './components/seo-content-language-note';
 import { SeoCtaBlock } from './components/seo-cta-block';
@@ -39,23 +40,28 @@ export function ComplianceGuidePage() {
 
   if (isError || !page) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-12" data-testid="compliance-guide-not-found">
+      <div className="mx-auto max-w-3xl py-8" data-testid="compliance-guide-not-found">
         <h1 className="text-2xl font-bold">{t('publicSeo.notFound')}</h1>
         <p className="mt-2 text-muted-foreground">
           {t('publicSeo.guideNotAvailable')}
         </p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8" data-testid="compliance-guide-page">
-      <header className="mb-6">
-        <p className="text-sm text-muted-foreground">
-          {page.comuneName} · {page.regionCode}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold">{page.title}</h1>
-      </header>
+    // Inside the `<main>` of the public shell: a second one would be a second landmark.
+    <div className="mx-auto max-w-3xl" data-testid="compliance-guide-page">
+      <div className="mb-6">
+        <BrandHero
+          eyebrow={
+            <BrandEyebrow icon={<MapPin className="h-4 w-4" aria-hidden="true" />}>
+              {page.comuneName} · {page.regionCode}
+            </BrandEyebrow>
+          }
+          title={page.title}
+        />
+      </div>
 
       <SeoContentLanguageNote contentLanguage={page.contentLanguage} />
 
@@ -74,8 +80,8 @@ export function ComplianceGuidePage() {
 
       <FeaturedProperties comuneSlug={page.comuneSlug} comuneName={page.comuneName} />
 
-      <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />
+      {page.cta && <SeoCtaBlock cta={page.cta} comuneName={page.comuneName} comuneSlug={page.comuneSlug} />}
       <SeoDisclaimerFooter lastRefreshedAt={page.lastRefreshedAt} aiGenerated={page.aiGenerated} />
-    </main>
+    </div>
   );
 }

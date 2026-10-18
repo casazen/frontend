@@ -2,22 +2,28 @@ import { ApiClient } from './client';
 import { buildRevenueAnalytics } from '@/lib/revenue-analytics';
 import type {
   Payment,
+  PaymentListItem,
   PaymentRefund,
   PaymentRefundsResponse,
-  CreatePaymentDto,
+  RecordPaymentInput,
   RefundPaymentDto,
   RevenueParams,
   RevenueAnalytics,
 } from '@/types';
 
 export const paymentsApi = {
+  /** All the payments of the host, newest first (SR-03). `propertyId`, `bookingId`, `from` and `to` narrow them. */
   getAll: (params?: Record<string, unknown>) =>
-    ApiClient.get<Payment[]>('/payments', params),
+    ApiClient.get<PaymentListItem[]>('/payments', params),
 
   getById: (id: string) => ApiClient.get<Payment>(`/payments/${id}`),
 
-  create: (data: CreatePaymentDto) =>
-    ApiClient.post<Payment>('/payments', data),
+  /**
+   * Records a payment received outside CasaZen (SR-06b). The key travels as `Idempotency-Key`, not in the body: the same key again
+   * answers with the payment already written and writes nothing.
+   */
+  create: ({ idempotencyKey, ...body }: RecordPaymentInput) =>
+    ApiClient.post<Payment>('/payments', body, { headers: { 'Idempotency-Key': idempotencyKey } }),
 
   /**
    * Refund on Stripe (BK-02). The answer is the refund as Stripe left it: only `Succeeded` means

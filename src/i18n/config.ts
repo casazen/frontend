@@ -4,23 +4,9 @@ import { z } from 'zod';
 import { i18nZodErrorMap, setZodErrorMapI18n } from './zod-error-map';
 import it from './locales/it.json';
 import en from './locales/en.json';
+import { readStoredLocale } from './locale-storage';
 
-export const LOCALE_STORAGE_KEY = 'casazen.locale';
-
-export type AppLocale = 'it' | 'en';
-
-export function readStoredLocale(): AppLocale {
-  if (typeof window === 'undefined') {
-    return 'it';
-  }
-
-  const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-  if (stored === 'it' || stored === 'en') {
-    return stored;
-  }
-
-  return 'it';
-}
+export { LOCALE_STORAGE_KEY, type AppLocale } from './locale-storage';
 
 void i18n.use(initReactI18next).init({
   resources: {

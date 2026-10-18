@@ -100,15 +100,6 @@ export function formatBillingDate(instant: string, locale: string): string {
   }).format(date);
 }
 
-/** Monthly price with the currency of the API; empty when the currency is not valid. */
-export function formatPlanPrice(amount: number, currency: string, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
-  } catch {
-    return '';
-  }
-}
-
 /** Problem `code` of a failed API call. */
 export function getErrorCode(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;

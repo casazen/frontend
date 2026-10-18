@@ -30,6 +30,8 @@ export interface FiscalPropertyRow {
   name: string;
   recommendedRegime: StrFiscalRegime | null;
   assignedRegime: StrFiscalRegime | null;
+  /** False until the host confirms or assigns a regime; auto-detection never applies silently. */
+  regimeConfirmed: boolean;
   isPrimaryForCedolare: boolean;
   /** Short-term stays in the tax year: the apartment counts toward its taxpayer's threshold. */
   shortStayInTaxYear: boolean;

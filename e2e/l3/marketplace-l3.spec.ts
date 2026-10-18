@@ -6,6 +6,11 @@ const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 
 
 type Auth = Record<string, string>;
 
+interface Stay {
+  id: string;
+  status: string;
+}
+
 interface Candidate {
   propertyId: string;
   stayId: string;
@@ -23,7 +28,9 @@ async function findCandidate(request: APIRequestContext, auth: Auth): Promise<Ca
   for (const property of (await properties.json()) as { id: string }[]) {
     const bookings = await request.get(`${API}/bookings?propertyId=${property.id}`, { headers: auth });
     if (bookings.status() !== 200) continue;
-    const stay = ((await bookings.json()) as { id: string; status: string }[]).find((b) => b.status !== 'Cancelled');
+    // GET /bookings is paged ({ items, totalCount, ... }) since backend #468; accept the old bare array too.
+    const body = (await bookings.json()) as Stay[] | { items: Stay[] };
+    const stay = (Array.isArray(body) ? body : body.items).find((b) => b.status !== 'Cancelled');
     if (!stay) continue;
 
     const suppliers = await request.get(`${API}/suppliers?propertyId=${property.id}&category=cleaning`, { headers: auth });
@@ -60,9 +67,11 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     const [property] = (await properties.json()) as { id: string }[];
     test.skip(!property, 'The E2E user has no property: seed one on the environment.');
 
+    // An empty supplier id is 400 validation_error (NotEmptyGuid) before the stay rule. A non-empty id with no
+    // bookingId is otherwise well formed, so the missing stay reaches 422 service_request_booking_required.
     const refused = await request.post(`${API}/service-requests`, {
       headers: auth,
-      data: { propertyId: property.id, supplierOrgId: '00000000-0000-0000-0000-000000000000', category: 'cleaning' },
+      data: { propertyId: property.id, supplierOrgId: '11111111-1111-1111-1111-111111111111', category: 'cleaning' },
     });
 
     expect(refused.status()).toBe(422);
@@ -86,6 +95,8 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     await page.getByTestId('marketplace-request-service-btn').click();
     await expect(page.getByTestId('submit-service-request')).toBeDisabled();
     await page.getByTestId('service-request-stay').selectOption(stayId);
+    await page.getByTestId('service-request-start-time').fill('10:00');
+    await page.getByTestId('service-request-duration').selectOption('120');
 
     const created = page.waitForResponse(
       (r) => r.request().method() === 'POST' && new URL(r.url()).pathname.endsWith('/api/service-requests'),

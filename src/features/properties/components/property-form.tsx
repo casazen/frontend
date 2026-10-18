@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors, type Resolver, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CONTAINER_COLUMNS, PAGE_COLUMN } from '@/components/layout/page-columns';
 import {
   propertyFormSchema,
   longRentPropertyFormSchema,
@@ -30,6 +31,11 @@ const selectClassName =
 
 /** Number inputs: an empty field is NaN, reported by the schema with the field's own message. */
 const asNumber = { valueAsNumber: true } as const;
+
+/** Optional override: blank means the catalog policy window, not zero. */
+const optionalNumber = {
+  setValueAs: (value: unknown) => (value === '' || value == null ? null : Number(value)),
+} as const;
 
 /** IANA time zones of the browser, Europe/Rome first; the current value is always an option. */
 function timeZoneOptions(current: string | undefined): string[] {
@@ -82,7 +88,7 @@ export function PropertyForm({
     setValue,
     setError,
   } = useForm<PropertyFormValues>({
-    resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema),
+    resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema) as Resolver<PropertyFormValues>,
     defaultValues: propertyFormDefaults(property, variant),
   });
 
@@ -122,240 +128,254 @@ export function PropertyForm({
 
   // noValidate: the schema validates with translated messages; min/step only drive the number spinners.
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-6" noValidate>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('property.form.basicInfo.title')}</CardTitle>
-          <CardDescription>{t('property.form.basicInfo.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t('property.form.name')}</Label>
-            <Input id="name" {...register('name')} placeholder={t('property.form.placeholder.name')} />
-            <FormFieldError error={errors.name} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">{t('property.form.description')}</Label>
-            <Textarea id="description" {...register('description')} placeholder={t('property.form.placeholder.description')} rows={4} />
-            <FormFieldError error={errors.description} />
-          </div>
-          {shortStay && (
-            <>
+    // The columns follow the width of the form, not the one of the screen: the form is also a step of the activation wizard, in a card.
+    <form onSubmit={handleSubmit(submit)} className="@container space-y-6" noValidate>
+      <div className={CONTAINER_COLUMNS}>
+        <div className={PAGE_COLUMN}>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('property.form.basicInfo.title')}</CardTitle>
+              <CardDescription>{t('property.form.basicInfo.description')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="slug">{t('property.slug.label')}</Label>
-                <Input
-                  id="slug"
-                  data-testid="property-slug-input"
-                  {...register('slug')}
-                  placeholder={t('property.slug.placeholder')}
-                />
-                <FormFieldError error={errors.slug} />
-                <p className="text-xs text-muted-foreground">{t('property.slug.hint')}</p>
+                <Label htmlFor="name">{t('property.form.name')}</Label>
+                <Input id="name" {...register('name')} placeholder={t('property.form.placeholder.name')} />
+                <FormFieldError error={errors.name} />
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {shortStay && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('property.form.cin.title')}</CardTitle>
-            <CardDescription>{t('property.form.cin.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Label htmlFor="cinCode">{t('property.form.cin.label')}</Label>
-            <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder={t('property.form.cin.placeholder')} />
-            <FormFieldError error={errors.cinCode} />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('property.form.location.title')}</CardTitle>
-          <CardDescription>{t('property.form.location.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="address">{t('property.form.address')}</Label>
-            <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
-            <FormFieldError error={errors.address} />
-          </div>
-          <div className="space-y-2" data-testid="property-comune-field">
-            <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
-            <ComunePicker
-              id="comune"
-              istatCode={comuneIstatCode}
-              fallbackName={property?.city}
-              disabled={disabled}
-              describedBy="comune-hint"
-              onChange={(comune) => {
-                // The comune chosen from the official list gives the city (its name) and, through the API, the region.
-                setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldDirty: true, shouldValidate: true });
-                if (comune) setValue('city', comune.name, { shouldDirty: true, shouldValidate: true });
-              }}
-            />
-            <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
-            {!comuneIstatCode && property?.city && (
-              <p className="text-xs text-amber-800" data-testid="property-comune-legacy">
-                {t('property.form.comune.legacyCity', { city: property.city })}
-              </p>
-            )}
-            <FormFieldError error={errors.comuneIstatCode} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="unit">{t('property.form.unit')}</Label>
-            <Input
-              id="unit"
-              data-testid="property-unit-input"
-              maxLength={30}
-              {...register('unit')}
-              placeholder={t('property.form.placeholder.unit')}
-              aria-describedby="unit-hint"
-            />
-            <p id="unit-hint" className="text-xs text-muted-foreground">{t('property.form.unitHint')}</p>
-            <FormFieldError error={errors.unit} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">{t('property.form.city')}</Label>
-              <Input
-                id="city"
-                {...register('city')}
-                readOnly={!!comuneIstatCode}
-                aria-describedby={comuneIstatCode ? 'city-from-comune' : undefined}
-                placeholder={t('property.form.placeholder.city')}
-              />
-              {comuneIstatCode && (
-                <p id="city-from-comune" className="text-xs text-muted-foreground">{t('property.form.comune.cityFromComune')}</p>
+              <div className="space-y-2">
+                <Label htmlFor="description">{t('property.form.description')}</Label>
+                <Textarea id="description" {...register('description')} placeholder={t('property.form.placeholder.description')} rows={4} />
+                <FormFieldError error={errors.description} />
+              </div>
+              {shortStay && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">{t('property.slug.label')}</Label>
+                    <Input
+                      id="slug"
+                      data-testid="property-slug-input"
+                      {...register('slug')}
+                      placeholder={t('property.slug.placeholder')}
+                    />
+                    <FormFieldError error={errors.slug} />
+                    <p className="text-xs text-muted-foreground">{t('property.slug.hint')}</p>
+                  </div>
+                </>
               )}
-              <FormFieldError error={errors.city} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
-              <Input id="postalCode" {...register('postalCode')} placeholder={t('property.form.placeholder.postalCode')} />
-              <FormFieldError error={errors.postalCode} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">{t('property.form.latitude')}</Label>
-              <Input id="latitude" type="number" step="any" {...register('latitude', { setValueAs: (value) => {
-                if (value === '' || value === null || value === undefined) return undefined;
-                const parsed = Number(value);
-                return Number.isNaN(parsed) ? undefined : parsed;
-              }})} placeholder={t('property.form.placeholder.latitude')} />
-              <FormFieldError error={errors.latitude} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">{t('property.form.longitude')}</Label>
-              <Input id="longitude" type="number" step="any" {...register('longitude', { setValueAs: (value) => {
-                if (value === '' || value === null || value === undefined) return undefined;
-                const parsed = Number(value);
-                return Number.isNaN(parsed) ? undefined : parsed;
-              }})} placeholder={t('property.form.placeholder.longitude')} />
-              <FormFieldError error={errors.longitude} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('property.form.details.title')}</CardTitle>
-          <CardDescription>{t(shortStay ? 'property.form.details.description' : 'property.form.details.longRentDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className={`grid gap-4 ${shortStay ? 'grid-cols-3' : 'grid-cols-2'}`}>
-            <div className="space-y-2">
-              <Label htmlFor="bedrooms">{t('property.form.bedrooms')}</Label>
-              <Input id="bedrooms" type="number" min={0} max={100} step={1} {...register('bedrooms', asNumber)} placeholder={t('property.form.placeholder.bedrooms')} aria-describedby="bedrooms-hint" />
-              <p id="bedrooms-hint" className="text-xs text-muted-foreground">{t('property.form.bedroomsHint')}</p>
-              <FormFieldError error={errors.bedrooms} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bathrooms">{t('property.form.bathrooms')}</Label>
-              <Input id="bathrooms" type="number" min={1} max={50} step={1} {...register('bathrooms', asNumber)} placeholder={t('property.form.placeholder.bathrooms')} />
-              <FormFieldError error={errors.bathrooms} />
-            </div>
-            {shortStay && (
-              <div className="space-y-2">
-                <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
-                <Input id="maxGuests" type="number" {...register('maxGuests', asNumber)} placeholder={t('property.form.placeholder.maxGuests')} />
-                <FormFieldError error={errors.maxGuests} />
-              </div>
-            )}
-          </div>
           {shortStay && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
-                <Input id="nightlyRate" type="number" min={0} step="0.01" {...register('nightlyRate', asNumber)} placeholder={t('property.form.placeholder.nightlyRate')} />
-                <FormFieldError error={errors.nightlyRate} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cleaningFee">{t('property.form.cleaningFee')}</Label>
-                <Input id="cleaningFee" type="number" min={0} step="0.01" {...register('cleaningFee', asNumber)} />
-                <FormFieldError error={errors.cleaningFee} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="damageDeposit">{t('property.form.damageDeposit')}</Label>
-                <Input id="damageDeposit" type="number" min={0} step="0.01" {...register('damageDeposit', asNumber)} />
-                <FormFieldError error={errors.damageDeposit} />
-              </div>
-              <p className="col-span-3 text-xs text-muted-foreground">{t('property.form.amountsInEuro')}</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('property.form.cin.title')}</CardTitle>
+                <CardDescription>{t('property.form.cin.description')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label htmlFor="cinCode">{t('property.form.cin.label')}</Label>
+                <Input id="cinCode" data-testid="property-cin-input" {...register('cinCode')} placeholder={t('property.form.cin.placeholder')} />
+                <FormFieldError error={errors.cinCode} />
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
 
-      {shortStay && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('property.form.stayRules.title')}</CardTitle>
-            <CardDescription>{t('property.form.stayRules.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="houseRules">{t('property.form.houseRules')}</Label>
-              <Textarea id="houseRules" {...register('houseRules')} placeholder={t('property.form.placeholder.houseRules')} rows={4} />
-              <FormFieldError error={errors.houseRules} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('property.form.location.title')}</CardTitle>
+              <CardDescription>{t('property.form.location.description')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="timezone">{t('property.form.timezone')}</Label>
-                <select id="timezone" className={selectClassName} {...register('timezone')}>
-                  {timezoneOptionElements}
-                </select>
-                <FormFieldError error={errors.timezone} />
+                <Label htmlFor="address">{t('property.form.address')}</Label>
+                <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
+                <FormFieldError error={errors.address} />
               </div>
-              <CancellationPolicyField
-                value={watch('cancellationPolicyId') ?? ''}
-                onChange={(value) => setValue('cancellationPolicyId', value, { shouldDirty: true })}
-                error={errors.cancellationPolicyId}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              <div className="space-y-2" data-testid="property-comune-field">
+                <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
+                <ComunePicker
+                  id="comune"
+                  istatCode={comuneIstatCode}
+                  fallbackName={property?.city}
+                  disabled={disabled}
+                  describedBy="comune-hint"
+                  onChange={(comune) => {
+                    // The comune chosen from the official list gives the city (its name) and, through the API, the region.
+                    setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldDirty: true, shouldValidate: true });
+                    if (comune) setValue('city', comune.name, { shouldDirty: true, shouldValidate: true });
+                  }}
+                />
+                <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
+                {!comuneIstatCode && property?.city && (
+                  <p className="text-xs text-amber-800" data-testid="property-comune-legacy">
+                    {t('property.form.comune.legacyCity', { city: property.city })}
+                  </p>
+                )}
+                <FormFieldError error={errors.comuneIstatCode} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unit">{t('property.form.unit')}</Label>
+                <Input
+                  id="unit"
+                  data-testid="property-unit-input"
+                  maxLength={30}
+                  {...register('unit')}
+                  placeholder={t('property.form.placeholder.unit')}
+                  aria-describedby="unit-hint"
+                />
+                <p id="unit-hint" className="text-xs text-muted-foreground">{t('property.form.unitHint')}</p>
+                <FormFieldError error={errors.unit} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">{t('property.form.city')}</Label>
+                  <Input
+                    id="city"
+                    {...register('city')}
+                    readOnly={!!comuneIstatCode}
+                    aria-describedby={comuneIstatCode ? 'city-from-comune' : undefined}
+                    placeholder={t('property.form.placeholder.city')}
+                  />
+                  {comuneIstatCode && (
+                    <p id="city-from-comune" className="text-xs text-muted-foreground">{t('property.form.comune.cityFromComune')}</p>
+                  )}
+                  <FormFieldError error={errors.city} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
+                  <Input id="postalCode" {...register('postalCode')} placeholder={t('property.form.placeholder.postalCode')} />
+                  <FormFieldError error={errors.postalCode} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="latitude">{t('property.form.latitude')}</Label>
+                  <Input id="latitude" type="number" step="any" {...register('latitude', { setValueAs: (value) => {
+                    if (value === '' || value === null || value === undefined) return undefined;
+                    const parsed = Number(value);
+                    return Number.isNaN(parsed) ? undefined : parsed;
+                  }})} placeholder={t('property.form.placeholder.latitude')} />
+                  <FormFieldError error={errors.latitude} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="longitude">{t('property.form.longitude')}</Label>
+                  <Input id="longitude" type="number" step="any" {...register('longitude', { setValueAs: (value) => {
+                    if (value === '' || value === null || value === undefined) return undefined;
+                    const parsed = Number(value);
+                    return Number.isNaN(parsed) ? undefined : parsed;
+                  }})} placeholder={t('property.form.placeholder.longitude')} />
+                  <FormFieldError error={errors.longitude} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('property.form.amenities.title')}</CardTitle>
-          <CardDescription>{t('property.form.amenities.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {COMMON_AMENITIES.map((amenity) => (
-              <div key={amenity} className="flex items-center space-x-2">
-                <Checkbox id={`amenity-${amenity}`} checked={selectedAmenities.includes(amenity)} onCheckedChange={() => toggleAmenity(amenity)} />
-                <Label htmlFor={`amenity-${amenity}`} className="cursor-pointer text-sm">{getAmenityLabel(amenity, t)}</Label>
+        <div className={PAGE_COLUMN}>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('property.form.details.title')}</CardTitle>
+              <CardDescription>{t(shortStay ? 'property.form.details.description' : 'property.form.details.longRentDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className={`grid gap-4 ${shortStay ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                <div className="space-y-2">
+                  <Label htmlFor="bedrooms">{t('property.form.bedrooms')}</Label>
+                  <Input id="bedrooms" type="number" min={0} max={100} step={1} {...register('bedrooms', asNumber)} placeholder={t('property.form.placeholder.bedrooms')} aria-describedby="bedrooms-hint" />
+                  <p id="bedrooms-hint" className="text-xs text-muted-foreground">{t('property.form.bedroomsHint')}</p>
+                  <FormFieldError error={errors.bedrooms} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bathrooms">{t('property.form.bathrooms')}</Label>
+                  <Input id="bathrooms" type="number" min={1} max={50} step={1} {...register('bathrooms', asNumber)} placeholder={t('property.form.placeholder.bathrooms')} />
+                  <FormFieldError error={errors.bathrooms} />
+                </div>
+                {shortStay && (
+                  <div className="space-y-2">
+                    <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
+                    <Input id="maxGuests" type="number" {...register('maxGuests', asNumber)} placeholder={t('property.form.placeholder.maxGuests')} />
+                    <FormFieldError error={errors.maxGuests} />
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              {shortStay && (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
+                    <Input id="nightlyRate" type="number" min={0} step="0.01" {...register('nightlyRate', asNumber)} placeholder={t('property.form.placeholder.nightlyRate')} />
+                    <FormFieldError error={errors.nightlyRate} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cleaningFee">{t('property.form.cleaningFee')}</Label>
+                    <Input id="cleaningFee" type="number" min={0} step="0.01" {...register('cleaningFee', asNumber)} />
+                    <FormFieldError error={errors.cleaningFee} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="damageDeposit">{t('property.form.damageDeposit')}</Label>
+                    <Input id="damageDeposit" type="number" min={0} step="0.01" {...register('damageDeposit', asNumber)} />
+                    <FormFieldError error={errors.damageDeposit} />
+                  </div>
+                  <p className="col-span-3 text-xs text-muted-foreground">{t('property.form.amountsInEuro')}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {shortStay && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('property.form.stayRules.title')}</CardTitle>
+                <CardDescription>{t('property.form.stayRules.description')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="houseRules">{t('property.form.houseRules')}</Label>
+                  <Textarea id="houseRules" {...register('houseRules')} placeholder={t('property.form.placeholder.houseRules')} rows={4} />
+                  <FormFieldError error={errors.houseRules} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">{t('property.form.timezone')}</Label>
+                    <select id="timezone" className={selectClassName} {...register('timezone')}>
+                      {timezoneOptionElements}
+                    </select>
+                    <FormFieldError error={errors.timezone} />
+                  </div>
+                  <CancellationPolicyField
+                    value={watch('cancellationPolicyId') ?? ''}
+                    onChange={(value) => setValue('cancellationPolicyId', value, { shouldDirty: true })}
+                    error={errors.cancellationPolicyId}
+                  />
+                </div>
+                <CancellationOverrides
+                  register={register}
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('property.form.amenities.title')}</CardTitle>
+              <CardDescription>{t('property.form.amenities.description')}</CardDescription>
+            </CardHeader>
+            {/* The columns follow the width of the card (it is half a page on a wide screen), not the one of the screen. */}
+            <CardContent className="@container">
+              <div className="grid grid-cols-2 gap-4 @xl:grid-cols-3 @3xl:grid-cols-4">
+                {COMMON_AMENITIES.map((amenity) => (
+                  <div key={amenity} className="flex items-center space-x-2">
+                    <Checkbox id={`amenity-${amenity}`} checked={selectedAmenities.includes(amenity)} onCheckedChange={() => toggleAmenity(amenity)} />
+                    <Label htmlFor={`amenity-${amenity}`} className="cursor-pointer text-sm">{getAmenityLabel(amenity, t)}</Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>{t('property.form.cancel')}</Button>
@@ -415,6 +435,78 @@ function CancellationPolicyField({ value, onChange, error }: CancellationPolicyF
       )}
       {selected?.description && <p className="text-xs text-muted-foreground">{selected.description}</p>}
       <FormFieldError error={error} />
+    </div>
+  );
+}
+
+interface CancellationOverridesProps {
+  register: UseFormRegister<PropertyFormValues>;
+  watch: UseFormWatch<PropertyFormValues>;
+  setValue: UseFormSetValue<PropertyFormValues>;
+  errors: FieldErrors<PropertyFormValues>;
+}
+
+/**
+ * Host customisation of catalog refund windows and type. Stays of 28 nights or more keep the catalog policy.
+ */
+function CancellationOverrides({ register, watch, setValue, errors }: CancellationOverridesProps) {
+  const { t } = useTranslation();
+  const refundType = watch('cancellationRefundType') ?? 'Percent';
+
+  return (
+    <div className="space-y-3" data-testid="cancellation-overrides">
+      <p className="text-sm font-medium">{t('property.form.cancellationPolicy.customize')}</p>
+      <p className="text-xs text-muted-foreground">{t('property.form.cancellationPolicy.longStayHint')}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="space-y-2">
+          <Label htmlFor="cancellationFullRefundHours">{t('property.form.cancellationPolicy.fullRefundHours')}</Label>
+          <Input
+            id="cancellationFullRefundHours"
+            type="number"
+            min={0}
+            step={1}
+            {...register('cancellationFullRefundHours', optionalNumber)}
+          />
+          <FormFieldError error={errors.cancellationFullRefundHours} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cancellationPartialRefundHours">{t('property.form.cancellationPolicy.partialRefundHours')}</Label>
+          <Input
+            id="cancellationPartialRefundHours"
+            type="number"
+            min={0}
+            step={1}
+            {...register('cancellationPartialRefundHours', optionalNumber)}
+          />
+          <FormFieldError error={errors.cancellationPartialRefundHours} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cancellationPartialRefundPercent">{t('property.form.cancellationPolicy.partialPercent')}</Label>
+          <Input
+            id="cancellationPartialRefundPercent"
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            {...register('cancellationPartialRefundPercent', optionalNumber)}
+          />
+          <FormFieldError error={errors.cancellationPartialRefundPercent} />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="cancellationRefundType">{t('property.form.cancellationPolicy.refundType')}</Label>
+        <select
+          id="cancellationRefundType"
+          className={selectClassName}
+          value={refundType}
+          onChange={(event) =>
+            setValue('cancellationRefundType', event.target.value as 'Percent' | 'NonRefundable', { shouldDirty: true })
+          }
+        >
+          <option value="Percent">{t('property.form.cancellationPolicy.percent')}</option>
+          <option value="NonRefundable">{t('property.form.cancellationPolicy.nonRefundable')}</option>
+        </select>
+      </div>
     </div>
   );
 }

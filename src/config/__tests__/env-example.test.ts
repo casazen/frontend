@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -9,6 +9,11 @@ import { describe, expect, it } from 'vitest';
  */
 const ROOT = process.cwd();
 
+// Reading the whole source tree takes seconds on a loaded machine. The tests share ONE pass over it (QA-INFRA-01): the second
+// test used to repeat it for every variable of `.env.example` and the file timed out under load. The per-test limit is a
+// guard for the pass itself, not for repeated ones.
+const SCAN_TIMEOUT_MS = 30_000;
+
 // A variable name not glued to a longer identifier (`FINAL_INVITE_CODES` contains `VITE_CODES`).
 const VARIABLE = /(?<![A-Za-z0-9_])VITE_[A-Z0-9_]+/g;
 
@@ -17,10 +22,11 @@ function isTestFile(path: string): boolean {
 }
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const path = join(dir, entry);
-    if (statSync(path).isDirectory()) return sourceFiles(path);
-    return /\.(ts|tsx)$/.test(entry) && !isTestFile(path) ? [path] : [];
+  // `withFileTypes` tells files from directories without a `stat` for each entry.
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return sourceFiles(path);
+    return /\.(ts|tsx)$/.test(entry.name) && !isTestFile(path) ? [path] : [];
   });
 }
 
@@ -38,14 +44,19 @@ function variablesUsedByTheCode(): Set<string> {
 describe('.env.example (DEPLOY-CFG)', () => {
   const example = variablesIn(readFileSync(join(ROOT, '.env.example'), 'utf8'));
 
-  it('envExample_EveryVariableTheCodeReads_IsListed', () => {
-    const missing = [...variablesUsedByTheCode()].filter((name) => !example.has(name)).sort();
+  // The one pass over the tree, made on first use and shared by the tests that need it.
+  let usedByTheCode: Set<string> | undefined;
+  const variablesRead = () => (usedByTheCode ??= variablesUsedByTheCode());
+
+  it('envExample_EveryVariableTheCodeReads_IsListed', { timeout: SCAN_TIMEOUT_MS }, () => {
+    const missing = [...variablesRead()].filter((name) => !example.has(name)).sort();
 
     expect(missing, `Add to .env.example and to the checklist (backend docs/runbooks/deploy-checklist.md § 4): ${missing.join(', ')}`).toEqual([]);
   });
 
-  it('envExample_EveryListedVariable_IsReadByTheCode', () => {
-    const stale = [...example].filter((name) => !variablesUsedByTheCode().has(name)).sort();
+  it('envExample_EveryListedVariable_IsReadByTheCode', { timeout: SCAN_TIMEOUT_MS }, () => {
+    const read = variablesRead();
+    const stale = [...example].filter((name) => !read.has(name)).sort();
 
     expect(stale, `No code reads these: delete them from .env.example: ${stale.join(', ')}`).toEqual([]);
   });

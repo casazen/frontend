@@ -42,7 +42,11 @@ export interface SeoPagePublic {
   aiGenerated: boolean;
   /** Language of `title`, `metaDescription` and `bodyHtml` (`it`): the regulations are Italian. */
   contentLanguage: string;
-  cta: SeoCta;
+  /**
+   * Call to action to sign up. `null` while CasaZen is on private invitation (backend flag `SeoSignupCta` off, SEO-INVITE):
+   * the page then shows no sign-up button.
+   */
+  cta: SeoCta | null;
   /** Rates in force today; empty when CasaZen has no rate for the comune (A8-12). */
   touristTaxRates: PublicTouristTaxRateSummary[];
 }
@@ -97,6 +101,7 @@ export interface PublicTouristTaxCalculateResponse {
  */
 export type SeoContentStatus =
   | 'Generated'
+  | 'Manual'
   | 'AiProviderNotConfigured'
   | 'EmptyOutput'
   | 'InvalidOutput'
@@ -214,6 +219,36 @@ export interface ApproveSeoRevisionRequest {
 
 export interface WithdrawSeoPageRequest {
   note?: string;
+}
+
+export type AiProviderName = 'Stub' | 'DeepSeek' | 'OpenAI' | 'Anthropic' | 'OpenAiCompatible';
+
+/** `GET /api/admin/seo/ai`. The key itself is never returned. */
+export interface AiAdminSettings {
+  provider: AiProviderName;
+  externalActive: boolean;
+  apiKeyConfigured: boolean;
+  apiKeyHint: string | null;
+  model: string;
+  baseUrl: string;
+  /** `environment` until an admin saves a row, then `admin`. */
+  source: 'environment' | 'admin';
+  hasStoredKey: boolean;
+}
+
+export interface UpdateAiSettingsRequest {
+  provider: AiProviderName;
+  apiKey?: string;
+  clearApiKey?: boolean;
+  model?: string;
+  baseUrl?: string;
+}
+
+/** A draft the admin wrote. Plain text is turned into HTML by the API. It stays unpublished until the review. */
+export interface SaveSeoDraftRequest {
+  bodyHtml: string;
+  title?: string;
+  metaDescription?: string;
 }
 
 export interface SeoPagesQuery {

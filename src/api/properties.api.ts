@@ -35,6 +35,13 @@ export const propertiesApi = {
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
   /**
+   * Puts a member in charge of the property (AM-03), or nobody with `null` (the creator is told again). 422
+   * `property_responsible_invalid` when the person is not an active member of the org who reaches the property. Answers 204.
+   */
+  setResponsible: (id: string, userId: string | null) =>
+    ApiClient.put<void>(`/properties/${id}/responsible`, { userId }),
+
+  /**
    * Dedicated pause/activate actions (A2-05): reversible, temporary — hidden from public search and new guest
    * bookings, but the property stays fully visible to its host and keeps its plan slot. Never fails on unrelated
    * fields (unlike a generic `update`).

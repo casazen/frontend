@@ -96,3 +96,19 @@ export function useRecalculateSuggestions(propertyId: string) {
     },
   });
 }
+
+export function useApplySeasonalSuggestions(propertyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (items: { date: string; price?: number | null }[] = []) =>
+      pricingAdapterApi.apply(propertyId, items),
+    onSuccess: () => {
+      invalidatePricing(queryClient, propertyId);
+      toast.success(i18n.t('toast.pricingApplied'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.pricingApplyFailed'));
+    },
+  });
+}

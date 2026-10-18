@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCurrentUser } from '@/queries/use-users';
 import { useProperties } from '@/queries/use-properties';
@@ -15,7 +16,7 @@ import { SitePublicationBanner } from '@/features/onboarding/components/site-pub
 export function VetrinaPage() {
   const { t } = useTranslation();
   const { org } = useCurrentUser();
-  const { data: properties = [], isLoading: propertiesLoading } = useProperties();
+  const { data: properties = [], isLoading: propertiesLoading } = useProperties({ mode: 'short' });
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [orgUrlCollapsed, setOrgUrlCollapsed] = useState(false);
 
@@ -36,11 +37,12 @@ export function VetrinaPage() {
   return (
     <AppShell>
       {orgBookingPath ? (
-        <div className="-m-4 flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-4rem-var(--bottom-nav-height))] md:-m-6">
+        <div className="-m-4 flex h-[calc(100svh-var(--header-height))] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-var(--header-height)-var(--bottom-nav-height))] md:-m-6">
           <div className="shrink-0 border-b bg-background px-4 py-4 md:px-6">
             <PageHeader
               title={t('directBooking.title')}
               description={t('directBooking.description')}
+              action={<NavChildLinks parentPath="/app/short-rent/vetrina" />}
             />
             <div className="mt-3 empty:hidden">
               <SitePublicationBanner />
@@ -95,10 +97,11 @@ export function VetrinaPage() {
           </div>
         </div>
       ) : (
-        <div className="mx-auto max-w-3xl">
+        <div className="w-full">
           <PageHeader
             title={t('directBooking.title')}
             description={t('directBooking.description')}
+            action={<NavChildLinks parentPath="/app/short-rent/vetrina" />}
           />
           <Card className="mt-6">
             <CardContent className="py-12 text-center">

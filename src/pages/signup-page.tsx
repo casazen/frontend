@@ -27,6 +27,8 @@ export function SignupPage() {
   const signupCounted = useRef(false);
 
   useEffect(() => {
+    // A supplier's link is not a host signup: nothing to attribute to an org.
+    if (new URLSearchParams(search).get('role') === 'supplier') return;
     const attribution = captureSignupAttribution({ pathname, search, origin: window.location.origin });
     // The signup that came from the SEO page of a comune is counted for it (SE-04, AC3): once per visit of this page.
     if (attribution.comune && !signupCounted.current) {
@@ -38,13 +40,18 @@ export function SignupPage() {
   useEffect(() => {
     if (isLoading || started.current) return;
     started.current = true;
+    // A supplier's link (`?role=supplier`) goes to the supplier registration, never through the host onboarding.
+    if (new URLSearchParams(search).get('role') === 'supplier') {
+      navigate('/register', { replace: true });
+      return;
+    }
     if (isAuthenticated) {
       // Existing session: not a new signup (the onboarding guard forgets the attribution).
       navigate('/', { replace: true });
       return;
     }
     login({ authorizationParams: SIGNUP_SCREEN });
-  }, [isLoading, isAuthenticated, login, navigate]);
+  }, [isLoading, isAuthenticated, login, navigate, search]);
 
   return (
     <div

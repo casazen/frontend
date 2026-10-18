@@ -4,12 +4,16 @@ import {
   getHomeRouteForRentalType,
   getHomeRouteForUser,
   getPlanPageForRentalType,
+  getProfilePageForRentalType,
+  getFirstPropertyRoute,
   getPostOnboardingRoute,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
+  lacksCurrentConsents,
   needsConsentRenewal,
+  needsFirstProperty,
   needsOnboarding,
   needsOrgSetup,
   canEditOnboarding,
@@ -78,6 +82,18 @@ describe('onboarding helpers', () => {
     expect(needsConsentRenewal(null)).toBe(false);
   });
 
+  it('lacksCurrentConsents_WithOrgAndCompletedOnboarding_IgnoresTheRentalType', () => {
+    // No rental type yet: not a renewal of the same type, but a plain update still cannot record the consents.
+    const noType = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: null };
+    expect(lacksCurrentConsents({ ...noType, consentsAccepted: false })).toBe(true);
+    expect(needsConsentRenewal({ ...noType, consentsAccepted: false })).toBe(false);
+    expect(lacksCurrentConsents({ ...noType, consentsAccepted: true })).toBe(false);
+    expect(lacksCurrentConsents(noType)).toBe(false);
+    expect(lacksCurrentConsents({ ...noType, orgId: null, consentsAccepted: false })).toBe(false);
+    expect(lacksCurrentConsents({ ...noType, onboardingCompletedAt: null, consentsAccepted: false })).toBe(false);
+    expect(lacksCurrentConsents(null)).toBe(false);
+  });
+
   it('isExemptFromHostOnboarding_OnlyAdminsAndSupplierOnlyUsers', () => {
     expect(isExemptFromHostOnboarding(['Admin'])).toBe(true);
     expect(isExemptFromHostOnboarding(['Supplier'])).toBe(true);
@@ -117,6 +133,20 @@ describe('onboarding helpers', () => {
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rentals-elsewhere')).toBe('/app/short-rent');
     expect(getPostOnboardingRoute('ShortTerm', '/app/admin')).toBe('/app/short-rent');
     expect(getPostOnboardingRoute('LongTerm', null)).toBe('/app/long-rent/leases');
+  });
+
+  it('getPostOnboardingRoute_FirstRunOpensTheFirstPropertyUnlessAGuardSentTheUserToADeepPage', () => {
+    expect(getPostOnboardingRoute('ShortTerm', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
+    expect(getPostOnboardingRoute('LongTerm', null, { firstRun: true })).toBe('/app/long-rent/properties/new?first=1');
+    // `Both` starts with short rent; the long-term area is one click away.
+    expect(getPostOnboardingRoute('Both', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
+    // The bare home of an area is "nowhere in particular": a new host starts with its first property.
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent', { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
+    // A deep link the guard remembered is kept.
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent/bookings/42', { firstRun: true })).toBe('/app/short-rent/bookings/42');
+    // Not the first run (a renewal of the consents): the home or the origin, never a creation form.
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent', { firstRun: false })).toBe('/app/short-rent');
+    expect(getFirstPropertyRoute('LongTerm')).toBe('/app/long-rent/properties/new?first=1');
   });
 
   it('isProfileLoadFailure_TransientErrorsYes_NotFoundNo (A1-19)', () => {
@@ -179,6 +209,12 @@ describe('operator type edit and stale consents (PL-06)', () => {
     expect(getPlanPageForRentalType('LongTerm')).toBe('/app/long-rent/settings/plan');
   });
 
+  it('getProfilePageForRentalType_EachRentalType_ReturnsTheProfileOfItsContext', () => {
+    expect(getProfilePageForRentalType('ShortTerm')).toBe('/app/short-rent/profile');
+    expect(getProfilePageForRentalType('Both')).toBe('/app/short-rent/profile');
+    expect(getProfilePageForRentalType('LongTerm')).toBe('/app/long-rent/profile');
+  });
+
   it('getStaleConsentDocuments_BadRequestWithStaleDocuments_ReturnsTheDocuments', () => {
     const error = errorWith(400, { error: 'Documenti aggiornati.', staleDocuments: ['tos', 'subprocessors'] });
 
@@ -192,5 +228,57 @@ describe('operator type edit and stale consents (PL-06)', () => {
     expect(getStaleConsentDocuments(errorWith(422, { staleDocuments: ['tos'] }))).toBeNull();
     expect(getStaleConsentDocuments(errorWith(400, null))).toBeNull();
     expect(getStaleConsentDocuments(new Error('network'))).toBeNull();
+  });
+});
+
+describe('first property pending', () => {
+  const onboarded = {
+    orgId: 'org-1',
+    onboardingCompletedAt: '2026-06-16T12:00:00Z',
+    rentalType: 'ShortTerm' as const,
+    onboardingRequired: false,
+    consentsAccepted: true,
+  };
+  const host = { roles: ['PropertyOwner'] };
+  const home = '/app/short-rent';
+
+  it('needsFirstProperty_OnboardedHostWithoutProperties_ReturnsTrue', () => {
+    expect(needsFirstProperty(host, { ...onboarded, hasProperties: false }, undefined, home)).toBe(true);
+  });
+
+  it('needsFirstProperty_HasPropertiesOrFieldMissing_ReturnsFalse', () => {
+    expect(needsFirstProperty(host, { ...onboarded, hasProperties: true }, undefined, home)).toBe(false);
+    expect(needsFirstProperty(host, { ...onboarded, hasProperties: null }, undefined, home)).toBe(false);
+    expect(needsFirstProperty(host, onboarded, undefined, home)).toBe(false);
+  });
+
+  it('needsFirstProperty_AdminSupplierOrLinkedSupplier_ReturnsFalse', () => {
+    const profile = { ...onboarded, hasProperties: false };
+    expect(needsFirstProperty({ roles: ['Admin'] }, profile, undefined, home)).toBe(false);
+    expect(needsFirstProperty({ roles: ['Supplier'] }, profile, undefined, home)).toBe(false);
+    expect(needsFirstProperty(host, { ...profile, supplierOrgId: 'sup-1' }, undefined, home)).toBe(false);
+  });
+
+  it('needsFirstProperty_OnboardingStillRequiredOrNoOrgOrNoRentalType_ReturnsFalse', () => {
+    const profile = { ...onboarded, hasProperties: false };
+    // The wizard comes first (consents stay a hard requirement).
+    expect(needsFirstProperty(host, { ...profile, onboardingRequired: true }, undefined, home)).toBe(false);
+    expect(needsFirstProperty(host, { ...profile, orgId: null }, undefined, home)).toBe(false);
+    expect(needsFirstProperty(host, { ...profile, rentalType: null }, undefined, home)).toBe(false);
+  });
+
+  it('needsFirstProperty_CreationAndAccountPages_ReturnsFalseToAvoidLoops', () => {
+    const profile = { ...onboarded, hasProperties: false };
+    for (const path of [
+      '/app/short-rent/properties/create',
+      '/app/long-rent/properties/new',
+      '/properties/create',
+      '/app/short-rent/settings/billing',
+      '/app/short-rent/profile',
+      '/onboarding',
+    ]) {
+      expect(needsFirstProperty(host, profile, undefined, path)).toBe(false);
+    }
+    expect(needsFirstProperty(host, profile, undefined, '/app/short-rent/properties')).toBe(true);
   });
 });

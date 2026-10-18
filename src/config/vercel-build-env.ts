@@ -9,6 +9,8 @@
  * keeps the previous deployment and the log names the variable. Local and CI builds (no `VERCEL_ENV`) are not affected.
  */
 
+import { isWithoutVatIdChosen, normalizeVatId } from '../site/site-gate';
+
 /** Value of `VERCEL_ENV` for which the variables below are required. */
 const VERCEL_RELEASE_ENVIRONMENTS = ['preview', 'production'] as const;
 
@@ -70,6 +72,32 @@ export function findVercelBuildEnvProblems({ vercelEnv, demoBuild, env }: Vercel
 
   if (!readValue(env.VITE_AUTH0_CLIENT_ID)) {
     problems.push('VITE_AUTH0_CLIENT_ID: missing (SPA client id of the Auth0 tenant of this Vercel environment)');
+  }
+
+  // Preview and Production can share one tenant: the API identifier is then the only thing that tells the backends apart,
+  // and the code default (src/config/env.config.ts) is the production one. A silent default is not acceptable here.
+  if (!readValue(env.VITE_AUTH0_AUDIENCE)) {
+    problems.push('VITE_AUTH0_AUDIENCE: missing (API identifier of this Vercel environment; it must equal Auth0__Audience of the matching Railway environment)');
+  }
+
+  // SEO-VETRINA: the company data is optional (the company does not exist yet): without it, production does not serve the
+  // public site (src/site/site-gate.ts). What is set must be valid, or the site would stay off silently; and an explicit
+  // choice to publish without a partita IVA must identify the holder (name and contact e-mail), or the build stops.
+  const vatId = readValue(env.VITE_LEGAL_VAT_ID);
+  if (vatId && normalizeVatId(vatId) === null) {
+    problems.push('VITE_LEGAL_VAT_ID: must be an Italian partita IVA (11 digits, optionally with the IT prefix)');
+  }
+  const withoutVatId = readValue(env.VITE_PUBLIC_SITE_WITHOUT_VAT_ID);
+  if (withoutVatId && !['true', 'false'].includes(withoutVatId.toLowerCase())) {
+    problems.push('VITE_PUBLIC_SITE_WITHOUT_VAT_ID: must be true or false');
+  }
+  if (vercelEnv === 'production' && isWithoutVatIdChosen(withoutVatId) && !vatId) {
+    if (!readValue(env.VITE_LEGAL_NAME)) {
+      problems.push('VITE_LEGAL_NAME: missing (the holder of the site, required to publish it without a partita IVA)');
+    }
+    if (!readValue(env.VITE_SUPPORT_EMAIL)) {
+      problems.push('VITE_SUPPORT_EMAIL: missing (the contact of the holder, required to publish the site without a partita IVA)');
+    }
   }
 
   return problems;

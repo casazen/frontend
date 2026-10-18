@@ -136,7 +136,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await step('Guest confirms the email, the host accepts the request in the console', async () => {
         const mail = await waitForMail(request, stack, guest.email, /Conferma la tua richiesta/i);
         await guestConfirmsEmail(guestPage, linkIn(mail, '/book/'));
-        await host.goto('/app/short-rent/bookings?view=requests');
+        await host.goto('/app/short-rent/bookings?chip=toConfirm');
         await expect(host.getByText(`${guest.firstName} ${guest.lastName}`).first()).toBeVisible({ timeout: 30_000 });
         await host.getByRole('button', { name: 'Accetta' }).click();
       });
@@ -189,6 +189,8 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await host.getByTestId('request-supplier-btn').click();
       await host.locator('#sr-supplier').selectOption({ label: supplierName });
       await host.locator('#sr-notes').fill(`Pulizia di fine soggiorno ${run}`);
+      await host.getByTestId('service-request-start-time').fill('10:00');
+      await host.getByTestId('service-request-duration').selectOption('120');
       await host.getByTestId('submit-service-request').click();
       await expect(host.getByText('In attesa che il fornitore accetti o rifiuti.')).toBeVisible({ timeout: 20_000 });
       const requests = await hostApi.get<ServiceRequest[] | { items: ServiceRequest[] }>(
@@ -203,14 +205,17 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     await step('F1: supplier (phone) takes the request in charge from the inbox', async () => {
       await supplier.goto('/app/supplier/inbox');
       await expect(supplier.getByTestId('supplier-inbox-page')).toBeVisible({ timeout: 20_000 });
-      await supplier.getByTestId(`take-${ids.serviceRequestId}`).click();
-      await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`)).toBeVisible({ timeout: 15_000 });
+      // The list is a table and, on a phone, cards: both are in the page, so the button is the one that can be seen.
+      await supplier.getByTestId(`take-${ids.serviceRequestId}`).locator('visible=true').click();
+      // Taken, the request leaves "Da rispondere" and is in "Programmate", where it is completed.
+      await supplier.getByTestId('list-chip-programmate').click();
+      await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`).locator('visible=true')).toBeVisible({ timeout: 15_000 });
       expect((await supplierApi.get<ServiceRequest>(`/service-requests/${ids.serviceRequestId}`)).status).toBe('PresoInCarico');
     });
 
     await step('F2: supplier completes; the host console shows Completato within 30 s', async () => {
       await host.goto(`/app/short-rent/bookings/${ids.bookingId}`); // the host's session was already open on this stay
-      await supplier.getByTestId(`complete-${ids.serviceRequestId}`).click();
+      await supplier.getByTestId(`complete-${ids.serviceRequestId}`).locator('visible=true').click();
       await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`)).toHaveCount(0, { timeout: 15_000 });
       await expect(async () => {
         await host.reload();
@@ -252,7 +257,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
         .toBe('CheckedOut');
 
       await host.goto('/app/short-rent');
-      await expect(host.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 20_000 });
+      await expect(host.getByTestId('sr-home')).toBeVisible({ timeout: 20_000 });
       const summary = await hostApi.get<{
         checkoutsDue?: { items?: { id?: string }[] };
         turnoversPending?: { items?: { id?: string }[] };

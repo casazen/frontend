@@ -1,21 +1,19 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { ArrowRight, Link2, Loader2, Upload } from 'lucide-react';
+import { ArrowRight, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
 import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
-import { IcalHelpTooltip } from '@/features/supplier/components/ical-help-tooltip';
 import { getProblemMessage } from '@/lib/api-errors';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import { useServiceCategories } from '@/queries/use-service-categories';
-import { useSetIcalFeed, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
+import { useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
 import type { SupplierProfile } from '@/types/supplier';
 
 export const MAX_SUPPLIER_PHOTOS = 10;
@@ -167,8 +165,8 @@ export function ServicesStep({ profile, onSaved }: StepProps) {
   );
 }
 
-/** Step 3 (optional): showcase photos. The upload endpoint stores them on the profile at once. */
-export function ShowcaseStep({ profile, onSaved }: StepProps) {
+/** Photos of the showcase (optional): the upload endpoint stores them on the profile at once. */
+function PhotosSection({ profile }: { profile: SupplierProfile }) {
   const { t } = useTranslation();
   const uploadPhotos = useUploadSupplierPhotos();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -191,61 +189,49 @@ export function ShowcaseStep({ profile, onSaved }: StepProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('supplier.activation.showcase.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">{t('supplier.activation.showcase.description')}</p>
-          {photos.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-              {photos.map((url) => (
-                <div key={url} className="aspect-square overflow-hidden rounded-lg border">
-                  <img src={url} alt="" className="h-full w-full object-cover" />
-                </div>
-              ))}
+    <div className="space-y-3" data-testid="supplier-photos-section">
+      <div>
+        <Label>{t('supplier.activation.showcase.title')}</Label>
+        <p className="text-xs text-muted-foreground">{t('supplier.activation.showcase.description')}</p>
+      </div>
+      {photos.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {photos.map((url) => (
+            <div key={url} className="aspect-square overflow-hidden rounded-lg border">
+              <img src={url} alt="" className="h-full w-full object-cover" />
             </div>
-          )}
-          <div className="flex items-center gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              className="hidden"
-              onChange={(event) => void handleFiles(event)}
-              data-testid="supplier-showcase-file-input"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={uploadPhotos.isPending || photos.length >= MAX_SUPPLIER_PHOTOS}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {uploadPhotos.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="mr-2 h-4 w-4" />
-              )}
-              {t('supplier.activation.showcase.add')}
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              {t('supplier.activation.showcase.count', { current: photos.length, max: MAX_SUPPLIER_PHOTOS })}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-      <Button onClick={onSaved} disabled={uploadPhotos.isPending} className="w-full">
-        {photos.length > 0 ? t('supplier.activation.next') : t('supplier.activation.skip')}{' '}
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="hidden"
+          onChange={(event) => void handleFiles(event)}
+          data-testid="supplier-showcase-file-input"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          disabled={uploadPhotos.isPending || photos.length >= MAX_SUPPLIER_PHOTOS}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploadPhotos.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+          {t('supplier.activation.showcase.add')}
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          {t('supplier.activation.showcase.count', { current: photos.length, max: MAX_SUPPLIER_PHOTOS })}
+        </span>
+      </div>
     </div>
   );
 }
 
-/** Step 4: the professional description hosts read. */
-export function ProfileStep({ profile, onSaved }: StepProps) {
+/** Step 3: how the supplier presents itself to the hosts: the description (required) and the photos (optional). */
+export function PresentationStep({ profile, onSaved }: StepProps) {
   const { t } = useTranslation();
   const updateProfile = useUpdateSupplierProfile();
   const [bio, setBio] = useState(profile.bio ?? '');
@@ -266,105 +252,25 @@ export function ProfileStep({ profile, onSaved }: StepProps) {
         <CardHeader>
           <CardTitle>{t('supplier.activation.profile.title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <Label htmlFor="bio">{t('supplier.activation.profile.label')}</Label>
-          <Textarea
-            id="bio"
-            value={bio}
-            maxLength={MAX_BIO_LENGTH}
-            rows={6}
-            onChange={(e) => setBio(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">{t('supplier.activation.profile.hint')}</p>
-          <p className="text-right text-xs text-muted-foreground">
-            {t('supplier.activation.profile.counter', { count: bio.length, max: MAX_BIO_LENGTH })}
-          </p>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="bio">{t('supplier.activation.profile.label')}</Label>
+            <Textarea
+              id="bio"
+              value={bio}
+              maxLength={MAX_BIO_LENGTH}
+              rows={5}
+              onChange={(e) => setBio(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t('supplier.activation.profile.hint')}</p>
+            <p className="text-right text-xs text-muted-foreground">
+              {t('supplier.activation.profile.counter', { count: bio.length, max: MAX_BIO_LENGTH })}
+            </p>
+          </div>
+          <PhotosSection profile={profile} />
         </CardContent>
       </Card>
       <NextButton saving={updateProfile.isPending} label={t('supplier.activation.next')} />
     </form>
-  );
-}
-
-/** Optional availability: a calendar feed (the other options of the old wizard were "coming soon" buttons). */
-export function CalendarFeedCard() {
-  const { t } = useTranslation();
-  const setIcalFeed = useSetIcalFeed();
-  const [open, setOpen] = useState(false);
-  const [icalUrl, setIcalUrl] = useState('');
-
-  const handleSave = async () => {
-    if (!icalUrl.trim()) return;
-    try {
-      await setIcalFeed.mutateAsync(icalUrl.trim());
-      // The first sync runs in a background job (SU-15): "started", never "synced".
-      toast.success(t('supplier.syncSuccess'));
-      setOpen(false);
-    } catch (error) {
-      toast.error(getProblemMessage(error, t) ?? t('supplier.icalSaveError'));
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('supplier.activation.terms.calendarTitle')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">{t('supplier.activation.terms.calendarHint')}</p>
-        <div className="flex items-start gap-3 rounded-md border p-3">
-          <Link2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{t('supplier.icalFeed')}</p>
-            <p className="text-xs text-muted-foreground">{t('supplier.icalFeedHint')}</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="mt-2"
-              onClick={() => {
-                setIcalUrl('');
-                setOpen(true);
-              }}
-            >
-              {t('supplier.pasteIcalUrl')}
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('supplier.icalFeedUrlTitle')}</DialogTitle>
-            <DialogDescription>{t('supplier.icalFeedUrlDescription')}</DialogDescription>
-          </DialogHeader>
-          <div className="mt-2 space-y-4">
-            <div className="flex items-center gap-1.5">
-              <Label htmlFor="ical-url" className="text-sm font-medium">
-                {t('supplier.icalFeedUrlLabel')}
-              </Label>
-              <IcalHelpTooltip />
-            </div>
-            <Input
-              id="ical-url"
-              value={icalUrl}
-              onChange={(e) => setIcalUrl(e.target.value)}
-              placeholder="https://calendar.google.com/calendar/ical/..."
-              autoFocus
-            />
-          </div>
-          <div className="mt-4 flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={setIcalFeed.isPending}>
-              {t('shared.cancel')}
-            </Button>
-            <Button onClick={() => void handleSave()} disabled={setIcalFeed.isPending || !icalUrl.trim()}>
-              {setIcalFeed.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('supplier.saveAndSync')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </Card>
   );
 }

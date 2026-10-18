@@ -140,6 +140,66 @@ export function formatRomeDateTime(
   return new Intl.DateTimeFormat(locale, { ...options, timeZone: STAY_TIME_ZONE }).format(date);
 }
 
+const ROME_WALL_PARTS = new Intl.DateTimeFormat('en-US', {
+  timeZone: STAY_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+function romeWallParts(instant: Date): { year: number; month: number; day: number; hour: number; minute: number } {
+  const parts = ROME_WALL_PARTS.formatToParts(instant);
+  const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((p) => p.type === type)?.value);
+  return { year: part('year'), month: part('month'), day: part('day'), hour: part('hour'), minute: part('minute') };
+}
+
+/**
+ * UTC instant (ISO) of a Europe/Rome wall clock `HH:mm` on a stay date. Empty when the date or the time is not valid,
+ * or when that wall time does not exist (the hour skipped when summer time starts).
+ */
+export function romeWallTimeToUtc(date: string, time: string): string {
+  if (!isStayDate(date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return '';
+  const [year, month, day] = date.split('-').map(Number);
+  const [hour, minute] = time.split(':').map(Number);
+  let utc = Date.UTC(year, month - 1, day, hour, minute);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const shown = romeWallParts(new Date(utc));
+    const shownAsUtc = Date.UTC(shown.year, shown.month - 1, shown.day, shown.hour, shown.minute);
+    const wanted = Date.UTC(year, month - 1, day, hour, minute);
+    if (shownAsUtc === wanted) break;
+    utc += wanted - shownAsUtc;
+  }
+  const check = romeWallParts(new Date(utc));
+  if (check.year !== year || check.month !== month || check.day !== day || check.hour !== hour || check.minute !== minute) {
+    return '';
+  }
+  return new Date(utc).toISOString();
+}
+
+/**
+ * Europe/Rome wall clock of a UTC instant: the calendar date and the hour and minute on that clock.
+ * Null when the instant is missing or not a date. An hour reported as 24 (midnight written on the day that is ending)
+ * is the next day's 00:00.
+ */
+export function romeWallClock(instant: string | Date): { date: string; hour: number; minute: number } | null {
+  const date = typeof instant === 'string' ? new Date(instant) : instant;
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = romeWallParts(date);
+  if (![parts.year, parts.month, parts.day, parts.hour, parts.minute].every(Number.isFinite)) return null;
+  if (parts.hour === 24) {
+    const next = addDays(formatDateParts(parts.year, parts.month, parts.day), 1);
+    return isStayDate(next) ? { date: next, hour: 0, minute: parts.minute } : null;
+  }
+  return {
+    date: formatDateParts(parts.year, parts.month, parts.day),
+    hour: parts.hour,
+    minute: parts.minute,
+  };
+}
+
 /** Europe/Rome calendar date (`YYYY-MM-DD`) of a UTC instant (ISO string), or an empty string when invalid. */
 export function romeDateOf(instant: string | null | undefined): string {
   if (!instant) return '';

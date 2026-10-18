@@ -41,7 +41,7 @@ const mockSuggestions: SeasonalSuggestionsResponse = {
   currentBasePrice: 180,
   computedAt: '2026-05-11T02:00:00Z',
   nextRunOn: '2026-05-12',
-  items: [{ date: '2026-06-01', basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null }],
+  items: [{ date: '2026-06-01', basePrice: 180, suggestedPrice: 234, multiplier: 1.3, rule: 'HighSeason', holiday: null, appliedPrice: null, appliedAt: null }],
 };
 
 beforeEach(() => {

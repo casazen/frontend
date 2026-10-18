@@ -1,154 +1,100 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '@/i18n/config';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CreditCard, Clock, RotateCcw, Loader2 } from 'lucide-react';
+import { StatStrip, StatTile } from '@/components/shared/calm';
+import { ListView } from '@/components/shared/list-view/list-view';
+import { BookingsSectionTabs } from '@/features/bookings/components/bookings-section-tabs';
+import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
+import { useListViewsScope } from '@/hooks/use-list-views-scope';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { usePayments } from '@/queries/use-payments';
-import { getPaymentStatusLabel } from '@/lib/i18n-labels';
+import { formatStayDate, startOfMonth, todayInRome } from '@/lib/stay-dates';
+import { formatCurrency } from '@/lib/utils';
+import type { PaymentListItem } from '@/types';
+import { usePaymentsList } from './payments-list';
+import { PAYMENTS_PATH, monthRange, summarizeMonth, type PaymentsMonth } from './lib/payment-list';
 
-const PAY_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  Completed: 'default',
-  Pending: 'secondary',
-  Processing: 'secondary',
-  Failed: 'destructive',
-  Refunded: 'outline',
-  PartiallyRefunded: 'outline',
-  Canceled: 'outline',
-};
+const NO_PAYMENTS: readonly PaymentListItem[] = [];
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
+/**
+ * The numbers of the month, quiet and in one row: what came in (net of what went back), what is still to come and what went
+ * back. Each one leads to the payments it is made of.
+ */
+function PaymentsSummary({ month, today }: { month: PaymentsMonth; today: string }) {
+  const { t, i18n } = useTranslation();
+  const monthName = formatStayDate(startOfMonth(today), i18n.language, { month: 'long' });
+  const euros = (cents: number) => formatCurrency(cents / 100);
+  const range = monthRange(today);
+
+  return (
+    <StatStrip label={t('payment.list.summary.label')} data-testid="payments-summary">
+      <StatTile
+        label={t('payment.list.summary.collected', { month: monthName })}
+        value={euros(month.collectedCents)}
+        href={`${PAYMENTS_PATH}?chip=collected&f_date=${range}`}
+        data-testid="payments-summary-collected"
+      />
+      <StatTile
+        label={t('payment.list.summary.waiting')}
+        value={euros(month.waitingCents)}
+        href={`${PAYMENTS_PATH}?chip=toCollect`}
+        data-testid="payments-summary-waiting"
+      />
+      <StatTile
+        label={t('payment.list.summary.refunded', { month: monthName })}
+        value={euros(month.refundedCents)}
+        href={`${PAYMENTS_PATH}?chip=refunded&f_date=${range}`}
+        data-testid="payments-summary-refunded"
+      />
+    </StatStrip>
+  );
 }
 
-function formatMethod(method: string, t: (key: string) => string): string {
-  return t(`payment.method.${method}`);
-}
-
+/**
+ * The payments of the host (SR-04c): the three numbers of the month and the unified list in `client` mode. The API gives every
+ * payment at once, so the search, the quick filters (to collect, collected, refunded), the filters (property, method, dates), the
+ * order and the views all work on the rows in the page, and all of it is in the address (`?chip=toCollect&f_method=BankTransfer`).
+ * The page is for who may read the payments (`payment.read`); the others find the reserved page of the shell.
+ */
 export function PaymentsPage() {
   const { t } = useTranslation();
-  const { data: payments, isLoading, isError } = usePayments();
+  const { hasPermission } = useWorkspace();
+  const viewsScope = useListViewsScope();
+  const list = usePaymentsList({
+    canCreateBooking: hasPermission('short-rent', 'booking.write'),
+    canRecordPayment: hasPermission('short-rent', 'payment.write'),
+  });
 
-  const completed = (payments ?? []).filter((p) => p.status === 'Completed');
-  const pending = (payments ?? []).filter((p) => p.status === 'Pending' || p.status === 'Processing');
-  const refunded = (payments ?? []).filter((p) => p.status === 'Refunded' || p.status === 'PartiallyRefunded');
-
-  const totalRevenue = completed.reduce((s, p) => s + p.amount, 0);
-  const totalPending = pending.reduce((s, p) => s + p.amount, 0);
-  const totalRefunded = refunded.reduce((s, p) => s + (p.refundedAmount ?? p.amount), 0);
+  const payments = usePayments();
+  const rows = Array.isArray(payments.data) ? payments.data : NO_PAYMENTS;
+  const today = todayInRome();
+  const month = useMemo(() => summarizeMonth(rows, today), [rows, today]);
 
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader title={t('payment.list.title')} description={t('payment.list.description')} />
+        <PageHeader
+          title={t('payment.list.title')}
+          description={t('payment.list.description')}
+          crumbs={[{ label: t('booking.sections.bookings'), to: BOOKINGS_PATH }, { label: t('payment.list.title') }]}
+        />
 
-        {/* KPI Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t('payment.list.kpi.totalRevenue')}</CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <CreditCard className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">€{totalRevenue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('payment.list.kpi.completedPayments')}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t('payment.list.kpi.pending')}</CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-500/10">
-                <Clock className="h-4 w-4 text-yellow-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">€{totalPending.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('payment.list.kpi.awaitingSettlement')}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{t('payment.list.kpi.refunded')}</CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                <RotateCcw className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">€{totalRefunded.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('payment.list.kpi.totalRefunded')}</p>
-            </CardContent>
-          </Card>
-        </div>
+        <BookingsSectionTabs />
 
-        {/* Transactions Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('payment.list.transactions')}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-muted-foreground">{t('payment.list.loading')}</span>
-              </div>
-            )}
+        {rows.length > 0 && !payments.isError ? <PaymentsSummary month={month} today={today} /> : null}
 
-            {isError && (
-              <div className="py-8 text-center text-destructive px-4">
-                {t('payment.list.loadError')}
-              </div>
-            )}
-
-            {!isLoading && !isError && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/40">
-                      {[
-                        t('payment.list.columns.paymentId'),
-                        t('payment.list.columns.bookingId'),
-                        t('payment.list.columns.amount'),
-                        t('payment.list.columns.method'),
-                        t('payment.list.columns.date'),
-                        t('payment.list.columns.status'),
-                      ].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(payments ?? []).map((p) => (
-                      <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="px-4 py-3 font-mono text-xs">{p.id.slice(0, 8)}...</td>
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{p.bookingId.slice(0, 8)}...</td>
-                        <td className="px-4 py-3 font-medium">
-                          {p.currency ?? 'EUR'} {p.amount.toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatMethod(p.method, t)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatDate(p.createdAt)}</td>
-                        <td className="px-4 py-3">
-                          <Badge variant={PAY_STATUS_VARIANT[p.status] ?? 'secondary'} className="capitalize">
-                            {getPaymentStatusLabel(p.status, t)}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                    {(payments ?? []).length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                          {t('payment.list.noResults')}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ListView
+          list={list}
+          rows={rows}
+          isLoading={payments.isLoading}
+          isError={payments.isError && !payments.isLoading}
+          error={payments.error}
+          errorTitle={t('payment.list.loadError')}
+          onRetry={() => void payments.refetch()}
+          viewsScope={viewsScope}
+          testId="payments-list"
+        />
       </div>
     </AppShell>
   );

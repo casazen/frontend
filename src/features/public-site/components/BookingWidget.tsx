@@ -181,7 +181,8 @@ export function BookingWidget(props: BookingWidgetProps) {
 
   return (
     <>
-      <div id="booking-widget" className="hidden md:block md:sticky md:top-6">
+      {/* Sticks below the sticky header of the site (`--header-height`) and a gap, not under it. */}
+      <div id="booking-widget" className="hidden md:block md:sticky md:top-[calc(var(--header-height)+1.5rem)]">
         <WidgetForm {...props} />
       </div>
 

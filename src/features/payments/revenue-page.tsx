@@ -27,7 +27,7 @@ function defaultEndDate(): string {
 export function RevenuePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: properties } = useProperties();
+  const { data: properties } = useProperties({ mode: 'short' });
   const [propertyId, setPropertyId] = useState('');
   const [startDate, setStartDate] = useState(defaultStartDate);
   const [endDate, setEndDate] = useState(defaultEndDate);

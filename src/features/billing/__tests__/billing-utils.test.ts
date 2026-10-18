@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { contextOf } from '@/test/org-contexts';
 import {
   isLiveSubscription,
   isVatIdShapeValid,
@@ -52,11 +53,11 @@ describe('billing-utils', () => {
   });
 
   it('isOrgBillingAdmin_OwnerOfEitherRentalContextOrPlatformAdmin_IsBillingAdmin', () => {
-    expect(isOrgBillingAdmin([{ contextKey: 'short-rent' }])).toBe(true);
+    expect(isOrgBillingAdmin([contextOf('short-rent')])).toBe(true);
     // PL-16 (A1-36): a landlord with only long-term leases manages the plan of its org.
-    expect(isOrgBillingAdmin([{ contextKey: 'long-rent' }])).toBe(true);
-    expect(isOrgBillingAdmin([{ contextKey: 'admin' }])).toBe(true);
-    expect(isOrgBillingAdmin([{ contextKey: 'supplier' }])).toBe(false);
+    expect(isOrgBillingAdmin([contextOf('long-rent')])).toBe(true);
+    expect(isOrgBillingAdmin([contextOf('admin')])).toBe(true);
+    expect(isOrgBillingAdmin([contextOf('supplier')])).toBe(false);
     expect(isOrgBillingAdmin([])).toBe(false);
   });
 });

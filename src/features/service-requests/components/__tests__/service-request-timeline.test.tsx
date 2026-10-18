@@ -5,6 +5,7 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { romeWallTimeToUtc } from '@/lib/stay-dates';
 import type { ServiceRequest, ServiceRequestHistoryEntry } from '@/types/service-request';
 import { ServiceRequestTimeline } from '../service-request-timeline';
 
@@ -29,7 +30,10 @@ vi.mock('@/api/service-requests.api', () => ({
   fetchSuppliersByProperty: api.fetchSuppliersByProperty,
   fetchLongRentSuppliers: api.fetchLongRentSuppliers,
 }));
-vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getAll: api.getBookings } }));
+vi.mock('@/api/bookings.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/bookings.api')>();
+  return { ...actual, bookingsApi: { ...actual.bookingsApi, getAll: api.getBookings } };
+});
 
 const STEP = {
   requested: { status: 'Richiesto', at: '2026-09-20T08:00:00Z', actor: 'Host' },
@@ -285,6 +289,16 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
   // ─── Ask another supplier after a rejection ───
 
   it('ServiceRequestTimeline_RequestAnotherSupplier_OpensTheFormForTheSameStayWithoutTheSupplierThatRejected', async () => {
+    api.getBookings.mockResolvedValue([
+      {
+        id: 'b-1',
+        propertyId: 'prop-1',
+        checkInDate: '2026-10-01T00:00:00Z',
+        checkOutDate: '2026-10-05T00:00:00Z',
+        status: 'Confirmed',
+        guest: { firstName: 'Mario', lastName: 'Rossi', email: '', phone: '', country: 'IT' },
+      },
+    ]);
     renderTimeline({ requests: [REJECTED] });
 
     fireEvent.click(screen.getByTestId('request-other-supplier-sr-rejected'));
@@ -301,6 +315,9 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(within(dialog).getByLabelText('Note')).toHaveValue('Chiavi in portineria');
 
     fireEvent.change(supplier, { target: { value: 'sup-2' } });
+    await within(dialog).findByTestId('service-request-job-day');
+    fireEvent.change(within(dialog).getByTestId('service-request-start-time'), { target: { value: '10:00' } });
+    fireEvent.change(within(dialog).getByTestId('service-request-duration'), { target: { value: '120' } });
     fireEvent.click(within(dialog).getByTestId('submit-service-request'));
 
     await waitFor(() =>
@@ -311,6 +328,8 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
         category: 'cleaning',
         urgency: 'Normal',
         notes: 'Chiavi in portineria',
+        scheduledStartUtc: romeWallTimeToUtc('2026-10-05', '10:00'),
+        durationMinutes: 120,
       }),
     );
     await waitFor(() => expect(screen.queryByTestId('service-request-dialog')).not.toBeInTheDocument());
@@ -353,6 +372,9 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(api.fetchLongRentSuppliers).toHaveBeenCalledWith('prop-1', 'cleaning');
     expect(api.fetchSuppliersByProperty).not.toHaveBeenCalled();
     fireEvent.change(supplier, { target: { value: 'sup-2' } });
+    fireEvent.change(screen.getByTestId('service-request-job-date'), { target: { value: '2026-10-05' } });
+    fireEvent.change(screen.getByTestId('service-request-start-time'), { target: { value: '10:00' } });
+    fireEvent.change(screen.getByTestId('service-request-duration'), { target: { value: '120' } });
     fireEvent.click(screen.getByTestId('submit-service-request'));
 
     await waitFor(() =>
@@ -362,6 +384,8 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
         category: 'cleaning',
         urgency: 'Normal',
         notes: 'Chiavi in portineria',
+        scheduledStartUtc: romeWallTimeToUtc('2026-10-05', '10:00'),
+        durationMinutes: 120,
       }),
     );
     expect(api.createServiceRequest).not.toHaveBeenCalled();

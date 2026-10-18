@@ -6,6 +6,7 @@ import type {
   ServiceRequest,
   ServiceRequestListResponse,
   SupplierListResponse,
+  SupplierPickerSort,
 } from '@/types/service-request';
 
 /**
@@ -43,6 +44,12 @@ export async function rejectServiceRequest(id: string, reason: string): Promise<
   return data;
 }
 
+/** The supplier cancels a job it took, before it starts: the reason is required (500 characters at most) and the other party sees it. */
+export async function cancelServiceRequest(id: string, reason: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/cancel`, { reason });
+  return data;
+}
+
 export async function markServiceRequestPaid(id: string): Promise<ServiceRequest> {
   const { data } = await axios.post<ServiceRequest>(`/service-requests/${id}/mark-paid`);
   return data;
@@ -50,6 +57,19 @@ export async function markServiceRequestPaid(id: string): Promise<ServiceRequest
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
   return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category });
+}
+
+/**
+ * The suppliers of the marketplace (SR-09a): the same endpoint, with the words to look for (`q`: the name or the category code)
+ * and the order (`sort`). Each supplier comes with its services, "from" price, measured response time and «Verificato».
+ */
+export async function fetchMarketplaceSuppliers(params: {
+  propertyId: string;
+  category?: string;
+  q?: string;
+  sort?: SupplierPickerSort;
+}): Promise<SupplierListResponse> {
+  return ApiClient.get<SupplierListResponse>('/suppliers', params);
 }
 
 // ─── Long-rent context (D2): requests for the property, `/long-rent/service-requests` ───

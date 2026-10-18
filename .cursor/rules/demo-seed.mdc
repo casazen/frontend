@@ -1,0 +1,8 @@
+---
+description: Keep the demo showcase in sync with every new product feature
+alwaysApply: true
+---
+
+# Demo seed
+
+A feature that adds a screen or a flow a host, a guest, a supplier or a staff user can see also updates the backend demo showcase (`casazen/backend`, `DemoShowcaseCatalog`) in the same change, with invented but format-valid data marked as test. The standing requirement is `backend/Sessions/specs/_TEMPLATE.md`, section “Demo seed”.

@@ -1,47 +1,64 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card } from '@/components/ui/card';
+import { PlainSection } from '@/components/shared/calm';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useCalendarSyncStatus, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/use-supplier';
+import { useCalendarSyncStatus, useDisconnectIcalFeed, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/use-supplier';
 import { getProblemMessage } from '@/lib/api-errors';
-import { Calendar, Link2, Smartphone, CheckCircle2, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
-import { IcalHelpTooltip } from './components/ical-help-tooltip';
+import { Loader2, RefreshCw } from 'lucide-react';
 
+/**
+ * The iCal calendar of the supplier (SU-15), a page that hangs from the agenda: what the calendar says the supplier is busy with
+ * closes those hours for the customers. One feed, one link (Google, Outlook, Apple and the channels all give an iCal link).
+ */
 export function SupplierCalendarSyncPage() {
   const { t } = useTranslation();
   const { data: syncStatus, isLoading, isError, refetch } = useCalendarSyncStatus();
   const setIcalFeedMutation = useSetIcalFeed();
   const syncNowMutation = useSyncSupplierCalendarNow();
+  const disconnectMutation = useDisconnectIcalFeed();
 
   const [showIcalDialog, setShowIcalDialog] = useState(false);
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const [icalUrl, setIcalUrl] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const header = (
+    <PageHeader title={t('supplier.calendarSyncTitle')} description={t('supplier.calendarSyncDescription')} crumbs="auto" />
+  );
+
   if (isLoading) {
     return (
-      <div>
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="mt-4 h-64" />
+      <div className="min-w-0 space-y-6">
+        {header}
+        <Skeleton className="h-40" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div>
-        <PageHeader title={t('supplier.calendarSyncTitle')} description={t('supplier.calendarSyncDescription')} />
-        <Card className="border-red-300 bg-red-50 p-4">
-          <p className="text-sm text-red-700">{t('supplier.calendarStatusLoadError')}</p>
-          <Button size="sm" variant="outline" className="mt-3" onClick={() => void refetch()}>
-            {t('supplier.retry')}
-          </Button>
-        </Card>
+      <div className="min-w-0 space-y-6">
+        {header}
+        <Alert
+          variant="danger"
+          action={
+            <Button size="sm" variant="outline" onClick={() => void refetch()}>
+              {t('supplier.retry')}
+            </Button>
+          }
+        >
+          {t('supplier.calendarStatusLoadError')}
+        </Alert>
       </div>
     );
   }
@@ -51,6 +68,11 @@ export function SupplierCalendarSyncPage() {
   const syncing = syncStatus?.lastSyncStatus === 'Syncing';
   const synced = syncStatus?.lastSyncStatus === 'Success';
   const hasError = !syncing && !!syncStatus?.calendarSyncError;
+
+  const openIcalDialog = () => {
+    setIcalUrl(syncStatus?.icalFeedUrl ?? '');
+    setShowIcalDialog(true);
+  };
 
   const handleSaveIcal = async () => {
     if (!icalUrl.trim()) return;
@@ -67,6 +89,16 @@ export function SupplierCalendarSyncPage() {
     }
   };
 
+  // Unlinking asks first (the days the calendar closed open again for the customers). A failure is said here; the dialog closes after.
+  const handleDisconnect = async () => {
+    try {
+      await disconnectMutation.mutateAsync();
+      toast.success(t('supplier.icalDisconnected'));
+    } catch (error) {
+      toast.error(getProblemMessage(error, t) ?? t('supplier.icalDisconnectError'));
+    }
+  };
+
   const handleSyncNow = async () => {
     try {
       await syncNowMutation.mutateAsync();
@@ -77,95 +109,71 @@ export function SupplierCalendarSyncPage() {
   };
 
   return (
-    <div>
-      <PageHeader
-        title={t('supplier.calendarSyncTitle')}
-        description={t('supplier.calendarSyncDescription')}
-      />
+    <div className="min-w-0 space-y-6">
+      {header}
 
-      {/* iCal connected status */}
-      {hasIcal && (
-        <Card className="mb-4 border-green-300 bg-green-50 p-4">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600 shrink-0" />
-            <div className="flex-1">
-              <p className="font-medium text-green-900">{t('supplier.icalConnected')}</p>
-              <p className="text-sm text-green-700 break-all">{syncStatus?.icalFeedUrl}</p>
-              {syncing && (
-                <p className="mt-1 flex items-center gap-1 text-xs text-green-700" role="status">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  {t('supplier.syncInProgress')}
-                </p>
-              )}
-              {synced && (
-                <p className="mt-1 text-xs text-green-700">{t('supplier.syncCompleted')}</p>
-              )}
-              {!syncing && syncStatus?.calendarLastSyncAt && (
-                <p className="mt-1 text-xs text-green-600">
-                  {t('supplier.lastSync')}: {new Date(syncStatus.calendarLastSyncAt).toLocaleString()}
-                </p>
-              )}
-            </div>
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-              <Button size="sm" variant="outline" className="border-green-400 text-green-900"
-                      disabled={syncing || syncNowMutation.isPending}
-                      onClick={() => void handleSyncNow()}>
-                <RefreshCw className={`mr-1 h-3 w-3 ${syncing || syncNowMutation.isPending ? 'animate-spin' : ''}`} />
+      {hasIcal ? (
+        <Alert
+          variant="success"
+          action={
+            <>
+              <Button size="sm" variant="outline" disabled={syncing || syncNowMutation.isPending} onClick={() => void handleSyncNow()}>
+                <RefreshCw className={`mr-1 h-3 w-3 ${syncing || syncNowMutation.isPending ? 'animate-spin motion-reduce:animate-none' : ''}`} />
                 {t('supplier.syncNow')}
               </Button>
-              <Button size="sm" variant="outline" className="border-green-400 text-green-900"
-                      onClick={() => { setIcalUrl(syncStatus?.icalFeedUrl ?? ''); setShowIcalDialog(true); }}>
+              <Button size="sm" variant="outline" onClick={openIcalDialog}>
                 {t('supplier.edit')}
               </Button>
-            </div>
-          </div>
-        </Card>
+              <Button size="sm" variant="outline" data-testid="ical-disconnect" onClick={() => setConfirmingDisconnect(true)}>
+                {t('supplier.icalDisconnect')}
+              </Button>
+            </>
+          }
+        >
+          <p className="font-medium">{t('supplier.icalConnected')}</p>
+          <p className="break-all">{syncStatus?.icalFeedUrl}</p>
+          {syncing && (
+            <p className="mt-1 flex items-center gap-1 text-xs" role="status">
+              <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              {t('supplier.syncInProgress')}
+            </p>
+          )}
+          {synced && <p className="mt-1 text-xs">{t('supplier.syncCompleted')}</p>}
+          {!syncing && syncStatus?.calendarLastSyncAt && (
+            <p className="mt-1 text-xs">
+              {t('supplier.lastSync')}: {new Date(syncStatus.calendarLastSyncAt).toLocaleString()}
+            </p>
+          )}
+        </Alert>
+      ) : (
+        <PlainSection title={t('supplier.icalFeed')}>
+          <p className="text-foreground/70">{t('supplier.icalFeedHint')}</p>
+          <Button className="mt-2" onClick={openIcalDialog}>
+            {t('supplier.pasteIcalUrl')}
+          </Button>
+        </PlainSection>
+      )}
+
+      {(syncStatus?.pendingFreeEventsCount ?? 0) > 0 && (
+        <Alert
+          variant="warning"
+          data-testid="calendar-free-events-note"
+          action={
+            <Button asChild size="sm" variant="outline">
+              <Link to="/app/supplier/availability">{t('supplier.freeEventsSyncNoteCta')}</Link>
+            </Button>
+          }
+        >
+          {t('supplier.freeEventsSyncNote', { count: syncStatus?.pendingFreeEventsCount })}
+        </Alert>
       )}
 
       {hasError && (
-        <Card className="mb-4 border-red-300 bg-red-50 p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 text-red-600 shrink-0" />
-            <div>
-              <p className="font-medium text-red-900">{t('supplier.syncError')}</p>
-              <p className="text-sm text-red-700">{syncStatus?.calendarSyncError}</p>
-            </div>
-          </div>
-        </Card>
+        <Alert variant="danger">
+          <p className="font-medium">{t('supplier.syncError')}</p>
+          <p>{syncStatus?.calendarSyncError}</p>
+        </Alert>
       )}
-
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Google Calendar — coming soon */}
-        <Card className="flex flex-col items-center p-6 text-center">
-          <Calendar className="mb-3 h-8 w-8 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">{t('supplier.googleCalendar')}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{t('supplier.googleCalendarHint')}</p>
-          <Button className="mt-4 w-full" variant="outline" disabled>
-            {t('supplier.comingSoon')}
-          </Button>
-        </Card>
-
-        {/* iCal Feed */}
-        <Card className="flex flex-col items-center p-6 text-center">
-          <Link2 className={`mb-3 h-8 w-8 ${hasIcal ? 'text-green-600' : 'text-primary'}`} />
-          <h3 className="text-sm font-semibold">{t('supplier.icalFeed')}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{t('supplier.icalFeedHint')}</p>
-          <Button className="mt-4 w-full" variant={hasIcal ? 'outline' : 'default'}
-                  onClick={() => { setIcalUrl(syncStatus?.icalFeedUrl ?? ''); setShowIcalDialog(true); }}>
-            {hasIcal ? t('supplier.editIcalUrl') : t('supplier.pasteIcalUrl')}
-          </Button>
-        </Card>
-
-        {/* WhatsApp — coming soon */}
-        <Card className="flex flex-col items-center p-6 text-center">
-          <Smartphone className="mb-3 h-8 w-8 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">{t('supplier.whatsappOption')}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{t('supplier.whatsappHint')}</p>
-          <Button className="mt-4 w-full" variant="outline" disabled>
-            {t('supplier.comingSoon')}
-          </Button>
-        </Card>
-      </div>
 
       {/* iCal Dialog */}
       <Dialog open={showIcalDialog} onOpenChange={setShowIcalDialog}>
@@ -179,7 +187,14 @@ export function SupplierCalendarSyncPage() {
             <div>
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="ical-url">{t('supplier.icalFeedUrlLabel')}</Label>
-                <IcalHelpTooltip />
+                {/* UI-07 pilot of HelpTip: a bubble beside the label, a sheet from the bottom on a phone. The help page is the one inside the supplier console (SU-16). */}
+                <HelpTip
+                  label={t('supplier.help.icalTooltipLabel')}
+                  learnMoreHref="/app/supplier/help/ical"
+                  learnMoreLabel={t('supplier.help.icalTooltipCta')}
+                >
+                  {t('supplier.help.icalTooltipText')}
+                </HelpTip>
               </div>
               <Input
                 id="ical-url"
@@ -202,6 +217,17 @@ export function SupplierCalendarSyncPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog
+        open={confirmingDisconnect}
+        onOpenChange={setConfirmingDisconnect}
+        title={t('supplier.icalDisconnectTitle')}
+        description={t('supplier.icalDisconnectDescription')}
+        confirmLabel={t('supplier.icalDisconnect')}
+        consequences={[t('supplier.icalDisconnectReopens'), t('supplier.icalDisconnectEvents')]}
+        isLoading={disconnectMutation.isPending}
+        onConfirm={handleDisconnect}
+      />
     </div>
   );
 }

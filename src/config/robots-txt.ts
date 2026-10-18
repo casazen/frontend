@@ -4,7 +4,7 @@
  *
  * - Vercel production (`VERCEL_ENV=production`): indexing allowed (except the private pages of `DISALLOWED_PATHS`) and
  *   the sitemaps declared on the public domain `VITE_PUBLIC_SITE_URL` (the same domain as the backend
- *   `App__PublicSiteBaseUrl`): the guides and the index of the booking sites. No default domain (decision D3):
+ *   `App__PublicSiteBaseUrl`): the guides, the index of the booking sites, the supplier showcases and the public site (SEO-VETRINA). No default domain (decision D3):
  *   a missing or invalid value fails the build, so Vercel keeps the previous deployment.
  * - Everywhere else (Vercel preview and the `develop` test deployment, local and CI builds): `Disallow: /`, so a test
  *   environment is never indexed.
@@ -12,11 +12,16 @@
  * Runbook: backend `docs/runbooks/seo-domain.md`.
  */
 
+import { SITE_ASSET_DIR, SITE_SITEMAP_PATH } from '../site/site-pages';
+
 /** Path of the sitemap on the web app domain (served by the Vercel function `api/sitemap.ts`). */
 export const SITEMAP_PATH = '/sitemap.xml';
 
 /** Sitemap index of the org booking sites (BK-15): one sitemap per org with a published property. */
 export const BOOKING_SITEMAP_PATH = '/sitemap-book.xml';
+
+/** Sitemap of the supplier showcases (`/fornitori/{slug}`): one entry per active supplier. */
+export const SUPPLIER_SITEMAP_PATH = '/sitemap-supplier.xml';
 
 /**
  * Pages that are never worth indexing (BK-15): the host console, the guest check-in links, the login and the guest's own
@@ -26,19 +31,22 @@ export const BOOKING_SITEMAP_PATH = '/sitemap-book.xml';
 export const DISALLOWED_PATHS = [
   '/app/',
   '/checkin/',
+  // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
+  '/invite/',
   '/login',
   '/book/*/my-bookings',
   '/book/*/booking/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
-  // Supplier showcases (SU-13): `noindex` in v0, the product owner decides when they become indexable.
-  '/fornitori/',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',
   '/booking/',
   '/requests/',
   '/property/*/checkout',
+  // The files of the public site (SEO-VETRINA): served at their public paths (`/`, `/funzionalita`, ...) by the Routing
+  // Middleware, never linked under this folder, which would only duplicate them.
+  `/${SITE_ASSET_DIR}/`,
 ] as const;
 
 export interface RobotsTxtInput {
@@ -46,6 +54,8 @@ export interface RobotsTxtInput {
   vercelEnv: string | undefined;
   /** Value of `VITE_PUBLIC_SITE_URL` seen by Vite (process environment or `.env` files). */
   publicSiteUrl: string | undefined;
+  /** Whether the public site is served (`isPublicSiteEnabled` of `src/site/site-gate.ts`): only then its sitemap is declared. */
+  publicSiteEnabled: boolean;
 }
 
 /** Origin of the public site (`https://host[:port]`), or an error message when the value cannot be one. */
@@ -75,7 +85,7 @@ export function parsePublicSiteUrl(value: string | undefined): { origin: string 
 }
 
 /** Content of `robots.txt` for a build; throws on a production build without a valid public URL. */
-export function buildRobotsTxt({ vercelEnv, publicSiteUrl }: RobotsTxtInput): string {
+export function buildRobotsTxt({ vercelEnv, publicSiteUrl, publicSiteEnabled }: RobotsTxtInput): string {
   if (vercelEnv !== 'production') {
     return ['# Not a production deployment: nothing here may be indexed.', 'User-agent: *', 'Disallow: /', ''].join(
       '\n',
@@ -96,6 +106,8 @@ export function buildRobotsTxt({ vercelEnv, publicSiteUrl }: RobotsTxtInput): st
     '',
     `Sitemap: ${parsed.origin}${SITEMAP_PATH}`,
     `Sitemap: ${parsed.origin}${BOOKING_SITEMAP_PATH}`,
+    `Sitemap: ${parsed.origin}${SUPPLIER_SITEMAP_PATH}`,
+    ...(publicSiteEnabled ? [`Sitemap: ${parsed.origin}${SITE_SITEMAP_PATH}`] : []),
     '',
   ].join('\n');
 }

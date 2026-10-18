@@ -10,22 +10,30 @@ export const SEO_PAGE_TYPE_KEY: Record<SeoPageType, string> = {
   SupplierMicrosite: 'admin.seo.pageType.supplierMicrosite',
 };
 
-/** Label keys of the "content not generated" states; `Generated` depends on whether it is published. */
-const NOT_GENERATED_KEY: Record<Exclude<SeoContentStatus, 'Generated'>, string> = {
+/** Label keys of the "content not generated" states. */
+const NOT_GENERATED_KEY: Record<Exclude<SeoContentStatus, 'Generated' | 'Manual'>, string> = {
   AiProviderNotConfigured: 'admin.seo.contentStatus.aiProviderNotConfigured',
   EmptyOutput: 'admin.seo.contentStatus.emptyOutput',
   InvalidOutput: 'admin.seo.contentStatus.invalidOutput',
   Placeholder: 'admin.seo.contentStatus.placeholder',
 };
 
-/** Only a generated text can be approved (SE-01): the other states are explicit "content not generated". */
+/** A generated answer or a text the admin wrote can be approved. The other states are "content not generated". */
 export function isPublishableContent(status: SeoContentStatus): boolean {
+  return status === 'Generated' || status === 'Manual';
+}
+
+/** Only a model answer carries the AI Act notice. A text the admin wrote does not. */
+export function isAiWrittenContent(status: SeoContentStatus): boolean {
   return status === 'Generated';
 }
 
 export function contentStatusKey(status: SeoContentStatus, published: boolean): string {
   if (status === 'Generated') {
     return published ? 'admin.seo.contentStatus.generatedPublished' : 'admin.seo.contentStatus.generated';
+  }
+  if (status === 'Manual') {
+    return published ? 'admin.seo.contentStatus.manualPublished' : 'admin.seo.contentStatus.manual';
   }
   return NOT_GENERATED_KEY[status];
 }

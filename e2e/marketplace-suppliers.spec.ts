@@ -22,10 +22,12 @@ const sampleStay = {
   guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '', country: 'IT' },
 };
 
+// The suppliers are searched by the comune chosen from the official list: a property without one is asked to add it (SR-09a).
 const sampleProperty = buildCreatedProperty({
   id: PROPERTY_ID,
   name: 'Casa Marketplace',
   city: 'H501',
+  comuneIstatCode: '058091',
 });
 
 const sampleSuppliers = {
@@ -107,6 +109,8 @@ async function mockMarketplaceApis(page: Page) {
       expect(body.category).toBe('cleaning');
       // D2: the request is for the stay chosen in the dialog.
       expect(body.bookingId).toBe(STAY_ID);
+      expect(body.durationMinutes).toBe(120);
+      expect(body.scheduledStartUtc).toEqual(expect.any(String));
       expect(body.chargeToGuest).toBeUndefined();
 
       await route.fulfill({
@@ -144,15 +148,18 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('marketplace-supplier-grid')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`)).toBeVisible();
 
+    // The supplier opens in the drawer (UI-15), which is named by the supplier.
     await page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`).click();
     await expect(page.getByTestId('marketplace-supplier-detail')).toBeVisible();
-    await expect(page.getByTestId('marketplace-supplier-detail').getByText('Pulizie Express Srl')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('Pulizie Express Srl')).toBeVisible();
 
     await page.getByTestId('marketplace-request-service-btn').click();
     await expect(page.getByTestId('service-request-dialog')).toBeVisible();
     // Without a stay the request cannot be sent (D2).
     await expect(page.getByTestId('submit-service-request')).toBeDisabled();
     await page.getByTestId('service-request-stay').selectOption(STAY_ID);
+    await page.getByTestId('service-request-start-time').fill('10:00');
+    await page.getByTestId('service-request-duration').selectOption('120');
     await expect(page.getByTestId('submit-service-request')).toBeEnabled();
 
     const createResp = page.waitForResponse(

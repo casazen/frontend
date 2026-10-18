@@ -5,6 +5,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 import { assertDemoBuildAllowed } from './src/config/demo-build-guard'
 import { buildRobotsTxt } from './src/config/robots-txt'
+import { isPublicSiteEnabled } from './src/site/site-gate'
 import { assertVercelBuildEnv } from './src/config/vercel-build-env'
 
 /** SE-02 (A8-02): `dist/robots.txt`, allowing indexing only on the Vercel production environment. */
@@ -22,7 +23,7 @@ function robotsTxt(content: string): Plugin {
 // Opt-in HTTPS for phone/LAN Auth0 (Web Crypto). Default HTTP so Playwright E2E can probe http://localhost:5173.
 const useHttpsDev = process.env.VITE_HTTPS === '1';
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ command, mode, isSsrBuild }) => {
   const viteEnv = loadEnv(mode, process.cwd(), 'VITE_');
   // A9-38: demo mode (no login) only on the dev server or in `npm run build:demo`, never in a normal build.
   const demoMode = assertDemoBuildAllowed({
@@ -40,9 +41,23 @@ export default defineConfig(({ command, mode }) => {
 
   // SE-02: computed before the build starts, so a production build without VITE_PUBLIC_SITE_URL fails right away.
   const plugins: PluginOption[] = useHttpsDev ? [react(), basicSsl()] : [react()];
-  if (command === 'build') {
+  // The SSR build only bundles the public site's renderer for the prerender (SEO-VETRINA): robots.txt belongs to dist/.
+  if (command === 'build' && !isSsrBuild) {
     plugins.push(
-      robotsTxt(buildRobotsTxt({ vercelEnv: process.env.VERCEL_ENV, publicSiteUrl: viteEnv.VITE_PUBLIC_SITE_URL })),
+      robotsTxt(
+        buildRobotsTxt({
+          vercelEnv: process.env.VERCEL_ENV,
+          publicSiteUrl: viteEnv.VITE_PUBLIC_SITE_URL,
+          // SEO-VETRINA: production serves the public site only with the company data (src/site/site-gate.ts).
+          publicSiteEnabled: isPublicSiteEnabled({
+            vercelEnv: process.env.VERCEL_ENV,
+            legalName: viteEnv.VITE_LEGAL_NAME,
+            legalVatId: viteEnv.VITE_LEGAL_VAT_ID,
+            contactEmail: viteEnv.VITE_SUPPORT_EMAIL,
+            withoutVatId: viteEnv.VITE_PUBLIC_SITE_WITHOUT_VAT_ID,
+          }),
+        }),
+      ),
     );
   }
 
@@ -58,12 +73,25 @@ export default defineConfig(({ command, mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    // Two pages: the single-page app and the template of the public site, prerendered after the build by
+    // scripts/prerender-site.mjs (SEO-VETRINA). The SSR build takes its entry from the command line.
+    build: isSsrBuild
+      ? {}
+      : {
+          rollupOptions: {
+            input: {
+              // Key `index`: the app's entry chunk keeps its name (`/assets/index-*.js`, read by the deploy smoke tests).
+              index: path.resolve(__dirname, 'index.html'),
+              site: path.resolve(__dirname, 'site.html'),
+            },
+          },
+        },
     test: {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./src/test/setup.ts'],
       // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`
-      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
+      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', '**/.worktrees/**'],
     },
   }
 })

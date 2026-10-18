@@ -12,10 +12,14 @@ export interface Org {
 
 export interface EntitlementLimits {
   maxProperties: number;
+  /** People the plan allows (AM-02): int max (2147483647) or -1 is "no limit". Missing from a backend that has no seats yet. */
+  maxSeats?: number;
 }
 
 export interface EntitlementUsage {
   properties: number;
+  /** People in use: active members plus pending invitations (AM-02). */
+  seats?: number;
 }
 
 /** Resolved plan entitlement for the caller's org (AC8). Backs the plan badge + create gating. */
@@ -26,6 +30,13 @@ export interface Entitlement {
   usage: EntitlementUsage;
   canAddProperty: boolean;
   canUseCustomDomain?: boolean;
+  /**
+   * "Accesso aperto" (BL-01): `planTier` is higher than the plan the org pays for, because the open access is on. Only in
+   * `GET /api/orgs/me/entitlement` (billing administrator).
+   */
+  openAccess?: boolean;
+  /** The plan has a free seat for one more person (AM-02). */
+  canInviteMember?: boolean;
 }
 
 /** Catalogue entry from GET /api/orgs/plans. maxProperties = -1 means unlimited. */
@@ -34,6 +45,17 @@ export interface PlanCatalogEntry {
   displayName: string;
   maxProperties: number;
   description: string;
+}
+
+/**
+ * Who runs a booking site, as its footer shows it (DB-03b-a): only what the host entered, a member is null when empty, never an
+ * empty string. The VAT number is the one of the fiscal profile, present only while the host declares it has one.
+ */
+export interface PublicOperator {
+  legalName: string | null;
+  vatNumber: string | null;
+  /** The registered office ("sede legale") in one line. */
+  registeredOffice: string | null;
 }
 
 /** Anonymous branding read-model for /book/:orgSlug (US-003 #215, US-023 #297). */
@@ -54,6 +76,8 @@ export interface PublicOrgDto {
   showPoweredBy?: boolean;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
+  /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */
+  operator?: PublicOperator | null;
 }
 
 /** Image of the public-site branding with its own upload/remove endpoints (BK-12). */
@@ -91,6 +115,10 @@ export interface OrgSettings {
   contactEmail: string;
   /** Whether contactEmail is shown on the public booking site (PublicOrgDto). Off by default. */
   contactEmailPublic: boolean;
+  /** Legal name ("ragione sociale") of the operator, shown in the footer of the booking site (DB-03b-a); null while not entered, absent on an older backend. */
+  legalName?: string | null;
+  /** Registered office ("sede legale") of the operator, one line, shown in the same footer (DB-03b-a). */
+  registeredOffice?: string | null;
 }
 
 export interface UpdateOrgSettingsRequest {
@@ -98,6 +126,9 @@ export interface UpdateOrgSettingsRequest {
   slug: string;
   contactEmail: string;
   contactEmailPublic: boolean;
+  /** Operator data (DB-03b-a): left out = unchanged on the server, an empty string clears it. */
+  legalName?: string;
+  registeredOffice?: string;
 }
 
 /** GET /api/orgs/me/settings/slug-availability (A1-23). */

@@ -16,6 +16,7 @@ import {
 import { COMMON_AMENITIES } from '@/features/properties/schemas/property.schema';
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
+import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -201,11 +202,21 @@ describe('keys used in code', () => {
   it('enumLabels_ValuesShownToUsers_HaveKeysInBothLocales', () => {
     const expected = [
       ...COMMON_AMENITIES.map((a) => `amenity.${a}`),
+      // The explained states (UI-11): every state of the dictionary, typed against the enums, has its name and its sentence in both
+      // languages, and its list of what is needed when it has a way forward (status.<kind>.<key>.*).
+      ...Object.entries(STATUS_DICTIONARY).flatMap(([kind, states]) =>
+        Object.entries(states as Record<string, StatusDefinition>).flatMap(([status, definition]) => [
+          `status.${kind}.${status}.label`,
+          `status.${kind}.${status}.explain`,
+          ...(definition.need ? [`status.${kind}.${status}.need`] : []),
+          ...(definition.supplier ? [`status.${kind}.${status}.supplier.explain`] : []),
+        ]),
+      ),
       ...['Admin', 'PropertyOwner', 'LongTermLandlord', 'Supplier', 'PropertyManager', 'Guest', 'Staff', 'None'].map(
         (r) => `roles.${r}`,
       ),
       ...['Starter', 'Pro', 'Scale'].map((p) => `plan.tier.${p}`),
-      ...['Richiesto', 'PresoInCarico', 'InCorso', 'Completato', 'Pagato', 'Rifiutato'].map((s) => `serviceRequest.status.${s}`),
+      ...['Richiesto', 'PresoInCarico', 'InCorso', 'Completato', 'Pagato', 'Rifiutato', 'Annullato'].map((s) => `serviceRequest.status.${s}`),
       // Codes of GET /api/service-categories (backend ServiceCategories.All, SU-03).
       ...['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in', 'gardening', 'events', 'rental', 'excursions'].map(
         (c) => `serviceRequest.categories.${c}`,

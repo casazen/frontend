@@ -6,16 +6,17 @@ import { mockCinComplianceApi } from './helpers/cin-mock';
 async function installDefaultDemoApiMocks(page: import('@playwright/test').Page): Promise<void> {
   const emptyServiceRequests = { items: [], total: 0, page: 1, pageSize: 50 };
   const emptySuppliers = { items: [], totalCount: 0, page: 1, pageSize: 50 };
-  const emptyDashboard = {
+  const emptyList = { count: 0, items: [] };
+  const emptyToday = { today: '2026-06-16', arrivals: emptyList, departures: emptyList, approvals: emptyList, todo: emptyList, services: emptyList };
+  const emptyOverview = {
     period: { kind: 'Month', from: '2026-06-01', to: '2026-06-30', nights: 30 },
     today: '2026-06-16',
-    propertyCount: 0,
-    occupancy: { occupiedNights: 0, availableNights: 0, closedNights: 0, rate: null },
-    revenue: { amount: 0, currency: 'EUR', stayCount: 0 },
-    arrivalsToday: { count: 0, items: [] },
-    departuresToday: { count: 0, items: [] },
-    upcomingCheckIns: { count: 0, items: [] },
-    recentBookings: [],
+    propertyCount: 1,
+    occupancy: { occupiedNights: 0, availableNights: 30, closedNights: 0, rate: 0, deltaPoints: null },
+    revenue: { amount: 0, currency: 'EUR', stayCount: 0, deltaPercent: null },
+    upcoming: { count: 0, previousCount: 0, pendingApproval: 0 },
+    nextArrivals: [],
+    series: { unit: 'week', buckets: [] },
   };
   const emptyComplianceSummary = {
     propertiesPending: { count: 0, items: [] },
@@ -41,12 +42,20 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     },
   });
 
-  await page.route('**/api/dashboard/kpis**', async (route) => {
+  await page.route('**/api/dashboard/today**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
     }
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyDashboard) });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyToday) });
+  });
+
+  await page.route('**/api/dashboard/overview**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyOverview) });
   });
 
   await page.route('**/api/dashboard/ical-feeds**', async (route) => {
@@ -98,7 +107,7 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
 
-  await page.route('**/api/bookings', async (route) => {
+  await page.route('**/api/bookings**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -109,6 +118,36 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
       return;
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+
+  // The list of bookings (SR-04) asks for a page and for the counters of its chips: none, unless a spec answers otherwise.
+  await page.route('**/api/bookings/search**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], totalCount: 0, page: 1, pageSize: 20 }) });
+  });
+
+  await page.route('**/api/bookings/counts**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ all: 0, toConfirm: 0, upcoming: 0, inProgress: 0, completed: 0, cancelled: 0 }),
+    });
+  });
+
+  // The history of a booking (SR-05c) is asked by the drawer and by the tab Cronologia of the booking page: none, unless a spec answers otherwise.
+  await page.route('**/api/bookings/*/timeline', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ bookingId: '', events: [] }) });
   });
 
   await page.route('**/api/payments**', async (route) => {

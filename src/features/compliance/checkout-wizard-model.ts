@@ -1,5 +1,8 @@
+import { z, type ZodType } from 'zod';
+import type { FieldValues } from 'react-hook-form';
 import {
   CHECKOUT_WIZARD_STEPS,
+  TOURIST_TAX_COLLECTIONS,
   type CheckoutCleaningChoice,
   type CheckoutWizardCompleteCommand,
   type CheckoutWizardProgressCommand,
@@ -12,11 +15,11 @@ import {
 export const DEFAULT_CLEANING_CATEGORY = 'cleaning';
 
 /**
- * What the host answered in the check-out wizard (CO-17, A5-24), edited in the page and saved as progress on the
- * server when moving between steps: a reload, or the app, opens the wizard on the same step with the same answers.
+ * What the host answered in the check-out wizard (CO-17, A5-24). The wizard (`WizardShell`) holds them as the values of
+ * its form and saves them as progress on the server when the host lands on another step: a reload, or the app, opens the
+ * wizard on the same step with the same answers. The step is not one of them: it lives in the address (`?step=`).
  */
-export interface CheckoutDraft {
-  step: CheckoutWizardStepId;
+export interface CheckoutAnswers {
   departureConfirmed: boolean;
   cleaningChoice: CheckoutCleaningChoice | null;
   supplierOrgId: string | null;
@@ -27,21 +30,21 @@ export interface CheckoutDraft {
   propertyNotes: string;
 }
 
-export function isCheckoutStepId(value: string | null | undefined): value is CheckoutWizardStepId {
+function isCheckoutStepId(value: string | null | undefined): value is CheckoutWizardStepId {
   return (CHECKOUT_WIZARD_STEPS as readonly string[]).includes(value ?? '');
 }
 
-export function stepIndex(step: CheckoutWizardStepId): number {
-  return CHECKOUT_WIZARD_STEPS.indexOf(step);
+/** The step the server says the wizard is on, or the first when it says something this app does not know. */
+export function stepFromState(state: CheckoutWizardState): CheckoutWizardStepId {
+  return isCheckoutStepId(state.currentStep) ? state.currentStep : CHECKOUT_WIZARD_STEPS[0];
 }
 
 /**
- * The draft of the wizard as the server saved it. The tax of a booking paid online on the booking site is proposed as
+ * The answers as the server saved them. The tax of a booking paid online on the booking site is proposed as
  * "collected online" (the host still confirms it by moving on); nothing else is assumed.
  */
-export function draftFromState(state: CheckoutWizardState): CheckoutDraft {
+export function answersFromState(state: CheckoutWizardState): CheckoutAnswers {
   return {
-    step: isCheckoutStepId(state.currentStep) ? state.currentStep : 'stay-summary',
     departureConfirmed: state.stay.departureConfirmed,
     cleaningChoice: state.cleaning.choice,
     supplierOrgId: state.cleaning.supplierOrgId,
@@ -54,54 +57,55 @@ export function draftFromState(state: CheckoutWizardState): CheckoutDraft {
   };
 }
 
-/** True when the host answered what the step asks: only then the next steps open. */
-export function isStepAnswered(draft: CheckoutDraft, step: CheckoutWizardStepId): boolean {
-  switch (step) {
-    case 'stay-summary':
-      return draft.departureConfirmed;
-    case 'alloggiati':
-      // Informational: a communication still to send is shown, never blocking the check-out.
-      return true;
-    case 'cleaning':
-      return (
-        draft.cleaningChoice === 'Skip' ||
-        (draft.cleaningChoice === 'Request' && !!draft.supplierOrgId && !!draft.serviceCategory)
-      );
-    case 'tourist-tax':
-      return draft.touristTaxCollection !== null;
-    case 'property-ready':
-      return draft.propertyReady !== null;
-  }
-}
-
-/** A step can be opened when every step before it is answered (going back is always possible). */
-export function canOpenStep(draft: CheckoutDraft, step: CheckoutWizardStepId): boolean {
-  return CHECKOUT_WIZARD_STEPS.slice(0, stepIndex(step)).every((previous) => isStepAnswered(draft, previous));
-}
-
-/** Every step answered: the stay can be closed. */
-export function canComplete(draft: CheckoutDraft): boolean {
-  return CHECKOUT_WIZARD_STEPS.every((step) => isStepAnswered(draft, step));
-}
+/**
+ * What each step asks before the next ones open (messages are i18n keys, as in every form). The Alloggiati step is
+ * informational: a communication still to send is shown, never blocking the check-out, so it has no rules.
+ */
+export const checkoutStepSchemas: Partial<Record<CheckoutWizardStepId, ZodType<unknown, FieldValues>>> = {
+  'stay-summary': z.object({
+    departureConfirmed: z.boolean().refine((confirmed) => confirmed, 'compliance.checkout.errors.confirmDeparture'),
+  }),
+  cleaning: z
+    .object({
+      cleaningChoice: z.enum(['Request', 'Skip'], 'compliance.checkout.errors.cleaningChoice'),
+      supplierOrgId: z.string().nullable(),
+      serviceCategory: z.string(),
+    })
+    .superRefine((cleaning, context) => {
+      if (cleaning.cleaningChoice !== 'Request') return;
+      if (!cleaning.supplierOrgId) {
+        context.addIssue({ code: 'custom', path: ['supplierOrgId'], message: 'compliance.checkout.errors.cleaningSupplier' });
+      }
+      if (!cleaning.serviceCategory) {
+        context.addIssue({ code: 'custom', path: ['serviceCategory'], message: 'compliance.checkout.errors.cleaningCategory' });
+      }
+    }),
+  'tourist-tax': z.object({
+    touristTaxCollection: z.enum(TOURIST_TAX_COLLECTIONS, 'compliance.checkout.errors.taxCollection'),
+  }),
+  'property-ready': z.object({
+    propertyReady: z.boolean('compliance.checkout.errors.propertyReady'),
+  }),
+};
 
 function textOrNull(value: string): string | null {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
 }
 
-/** Body of `PUT checkout-wizard/progress` for the draft, on `step`. */
-export function progressCommand(draft: CheckoutDraft, step: CheckoutWizardStepId): CheckoutWizardProgressCommand {
-  const request = draft.cleaningChoice === 'Request';
+/** Body of `PUT checkout-wizard/progress` for the answers, on `step`. */
+export function progressCommand(answers: CheckoutAnswers, step: CheckoutWizardStepId): CheckoutWizardProgressCommand {
+  const request = answers.cleaningChoice === 'Request';
   return {
     currentStep: step,
-    departureConfirmed: draft.departureConfirmed,
-    cleaningChoice: draft.cleaningChoice,
-    supplierOrgId: request ? draft.supplierOrgId : null,
-    serviceCategory: request ? textOrNull(draft.serviceCategory) : null,
-    serviceNotes: request ? textOrNull(draft.serviceNotes) : null,
-    touristTaxCollection: draft.touristTaxCollection,
-    propertyReady: draft.propertyReady,
-    propertyNotes: textOrNull(draft.propertyNotes),
+    departureConfirmed: answers.departureConfirmed,
+    cleaningChoice: answers.cleaningChoice,
+    supplierOrgId: request ? answers.supplierOrgId : null,
+    serviceCategory: request ? textOrNull(answers.serviceCategory) : null,
+    serviceNotes: request ? textOrNull(answers.serviceNotes) : null,
+    touristTaxCollection: answers.touristTaxCollection,
+    propertyReady: answers.propertyReady,
+    propertyNotes: textOrNull(answers.propertyNotes),
   };
 }
 
@@ -109,16 +113,16 @@ export function progressCommand(draft: CheckoutDraft, step: CheckoutWizardStepId
  * Body of `POST checkout-wizard/complete`: the cleaning request of step 3 (or "skip"), the tax collection of step 4 and
  * the readiness of step 5 exactly as answered. A property "not ready yet" stays a turnover in the cockpit.
  */
-export function completeCommand(draft: CheckoutDraft): CheckoutWizardCompleteCommand {
-  const request = draft.cleaningChoice === 'Request';
+export function completeCommand(answers: CheckoutAnswers): CheckoutWizardCompleteCommand {
+  const request = answers.cleaningChoice === 'Request';
   return {
-    confirmDeparture: draft.departureConfirmed,
-    cleaningChoice: draft.cleaningChoice,
-    supplierOrgId: request ? draft.supplierOrgId : null,
-    serviceCategory: request ? textOrNull(draft.serviceCategory) : null,
-    serviceNotes: request ? textOrNull(draft.serviceNotes) : null,
-    touristTaxCollection: draft.touristTaxCollection,
-    propertyReady: draft.propertyReady === true,
-    propertyNotes: textOrNull(draft.propertyNotes),
+    confirmDeparture: answers.departureConfirmed,
+    cleaningChoice: answers.cleaningChoice,
+    supplierOrgId: request ? answers.supplierOrgId : null,
+    serviceCategory: request ? textOrNull(answers.serviceCategory) : null,
+    serviceNotes: request ? textOrNull(answers.serviceNotes) : null,
+    touristTaxCollection: answers.touristTaxCollection,
+    propertyReady: answers.propertyReady === true,
+    propertyNotes: textOrNull(answers.propertyNotes),
   };
 }

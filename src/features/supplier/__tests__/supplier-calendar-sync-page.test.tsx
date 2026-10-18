@@ -117,6 +117,21 @@ describe('SupplierCalendarSyncPage (SU-15)', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
+  // UI-07: the "?" beside the label of the dialog is a HelpTip now; its link still opens the help page inside the console (SU-16).
+  it('helpTip_InTheIcalDialog_SaysWhereToFindTheLinkAndLeadsToTheHelpPageOfTheConsole', async () => {
+    vi.mocked(fetchCalendarSyncStatus).mockResolvedValue(notLinked);
+
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('supplier.pasteIcalUrl') }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('supplier.help.icalTooltipLabel') }));
+
+    expect(screen.getByText(i18n.t('supplier.help.icalTooltipText'))).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: i18n.t('supplier.help.icalTooltipCta') })).toHaveAttribute(
+      'href',
+      '/app/supplier/help/ical',
+    );
+  });
+
   it('syncNow_Click_QueuesAndShowsInProgress', async () => {
     vi.mocked(fetchCalendarSyncStatus).mockResolvedValue(synced);
     vi.mocked(syncSupplierCalendarNow).mockResolvedValue(syncing);
@@ -167,5 +182,27 @@ describe('supplierSyncRefetchInterval (SU-15)', () => {
     expect(supplierSyncRefetchInterval(query, start)).toBe(3_000);
     expect(supplierSyncRefetchInterval(query, start + 59_000)).toBe(3_000);
     expect(supplierSyncRefetchInterval(query, start + 61_000)).toBe(15_000);
+  });
+
+  it('render_PendingFreeEvents_ShowsTheNoteWithLinkToAvailability', async () => {
+    vi.mocked(fetchCalendarSyncStatus).mockResolvedValue({ ...synced, pendingFreeEventsCount: 2 });
+
+    renderPage();
+
+    const note = await screen.findByTestId('calendar-free-events-note');
+    expect(note).toHaveTextContent('2 eventi del calendario segnati Disponibile');
+    expect(screen.getByRole('link', { name: i18n.t('supplier.freeEventsSyncNoteCta') })).toHaveAttribute(
+      'href',
+      '/app/supplier/availability',
+    );
+  });
+
+  it('render_NoPendingFreeEvents_ShowsNoNote', async () => {
+    vi.mocked(fetchCalendarSyncStatus).mockResolvedValue({ ...synced, pendingFreeEventsCount: 0 });
+
+    renderPage();
+
+    await screen.findByText('Sincronizzato');
+    expect(screen.queryByTestId('calendar-free-events-note')).not.toBeInTheDocument();
   });
 });

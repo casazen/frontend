@@ -30,6 +30,8 @@ vi.mock('@/config/support.config', async (importOriginal) => {
 vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ user: { name: 'Demo User', email: 'demo@casazen.com' }, logout: vi.fn() }),
 }));
+// The counters of the menu have their own tests: the route tree does not need a query client.
+vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 vi.mock('@/queries/use-users', () => ({
   useCurrentUser: () => ({
     org: { id: 'org-1', name: 'Acme Stays', slug: 'acme-stays', planTier: 'Pro' },
@@ -146,7 +148,32 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.getAllByRole('complementary', { name: i18n.t('shell.mainNavigation') })).toHaveLength(1);
     expect(screen.getAllByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: i18n.t('shell.openMenu') })).toHaveLength(1);
+    // The menu button of the header is gone (UI-05): on a phone the menu is "Altro" of the bottom bar, and only the bar has it.
+    expect(screen.queryByRole('button', { name: 'Apri menu di navigazione' })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).getAllByRole('button', { name: i18n.t('nav.more') }),
+    ).toHaveLength(1);
+  });
+
+  it('AppShellRoute_EveryPage_PutsItsOwnTitleAndTheNameOfItsAreaOnTheTab', async () => {
+    document.title = 'CasaZen';
+    const router = renderApp('/app/short-rent');
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Cruscotto' })).toBeInTheDocument();
+    expect(document.title).toBe('Cruscotto · Affitti brevi · CasaZen');
+
+    // The shell stays and the page changes: so does the title, and the area when the user goes to another one.
+    await act(async () => {
+      await router.navigate('/app/short-rent/bookings');
+    });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeInTheDocument();
+    expect(document.title).toBe('Prenotazioni · Affitti brevi · CasaZen');
+
+    await act(async () => {
+      await router.navigate('/app/long-rent/leases');
+    });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Contratti lungo termine' })).toBeInTheDocument();
+    expect(document.title).toBe('Contratti lungo termine · Affitti lunghi · CasaZen');
   });
 
   it('AppShellRoute_WorkspaceNotReady_ShowsTheLoadingScreenNotAnEmptyShell', async () => {
@@ -166,14 +193,14 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.queryByTestId('app-shell')).not.toBeInTheDocument();
   });
 
-  it('AppShellRoute_EveryArea_RendersASingleShellWithItsOwnSubtitle', async () => {
+  it('AppShellRoute_EveryArea_RendersASingleShellWithItsOwnName', async () => {
     renderApp('/app/long-rent/leases');
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Contratti lungo termine' })).toBeInTheDocument();
     const shells = screen.getAllByTestId('app-shell');
     expect(shells).toHaveLength(1);
     expect(shells[0]).toHaveAttribute('data-context', 'long-rent');
-    expect(within(screen.getByRole('complementary')).getByText(i18n.t('shell.longRentSubtitle'))).toBeInTheDocument();
+    expect(within(screen.getByRole('complementary')).getByText(i18n.t('areas.longRent.name'))).toBeInTheDocument();
   });
 
   it('AppShellRoute_NavigatingBetweenPages_KeepsTheHeaderAndTheSidebarMounted', async () => {
@@ -204,7 +231,7 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.getByRole('banner')).toBe(header);
     expect(screen.getAllByTestId('app-shell')).toHaveLength(1);
     expect(screen.getByTestId('app-shell')).toHaveAttribute('data-context', 'long-rent');
-    expect(within(screen.getByRole('complementary')).getByText(i18n.t('shell.longRentSubtitle'))).toBeInTheDocument();
+    expect(within(screen.getByRole('complementary')).getByText(i18n.t('areas.longRent.name'))).toBeInTheDocument();
   });
 
   it('AppShellRoute_FirstPage_LeavesTheFocusWhereTheBrowserPutIt', async () => {

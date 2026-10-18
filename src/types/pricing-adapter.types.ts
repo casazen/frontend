@@ -57,6 +57,8 @@ export interface SeasonalSuggestion {
   multiplier: number;
   rule: SeasonalPriceRule;
   holiday: ItalianHoliday | null;
+  appliedPrice: number | null;
+  appliedAt: string | null;
 }
 
 export interface SeasonalSuggestionsResponse {

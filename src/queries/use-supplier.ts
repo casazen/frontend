@@ -1,28 +1,37 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  claimSupplierProfile,
   acceptSupplierTos,
   completeSupplierActivation,
   saveSupplierActivationStep,
   fetchAdminInvites,
   fetchAdminSuppliers,
   fetchSupplierAudit,
+  decideFreeEvent,
+  disconnectIcalFeed,
   fetchCalendarSyncStatus,
+  fetchPendingFreeEvents,
   fetchSupplierActivation,
   fetchSupplierShowcasePreview,
-  fetchSupplierAvailability,
+  fetchSupplierAgendaCalendar,
+  fetchSupplierChecklist,
+  fetchSupplierConflicts,
   fetchSupplierDashboard,
+  fetchSupplierHours,
   fetchSupplierInbox,
+  fetchSupplierInboxCounts,
   fetchSupplierInboxItem,
   fetchSupplierKpis,
+  fetchSupplierOverview,
   fetchSupplierProfile,
   fetchSupplierRegistrationOptions,
+  fetchSupplierToday,
   inviteSupplier,
   lookupSupplierInvite,
   reactivateSupplier,
   registerSupplier,
   resendSupplierInvite,
   revokeSupplierInvite,
+  saveSupplierHours,
   setIcalFeed,
   suspendSupplier,
   syncSupplierCalendarNow,
@@ -34,8 +43,11 @@ import type { SupplierRegisterPayload } from '@/services/supplier-api';
 import type { AdminInvitesParams, AdminSuppliersParams } from '@/types/admin-suppliers';
 import type {
   CalendarSyncStatus,
+  FreeEventDecision,
+  SupplierAgendaHoursDay,
   SupplierInboxParams,
   SupplierKpiPeriod,
+  SupplierOverviewPeriod,
   UpdateAvailabilityEntry,
 } from '@/types/supplier';
 
@@ -80,24 +92,70 @@ export function useSupplierProfile() {
   });
 }
 
-/** A page of the supplier inbox (SU-08): open requests or history, filtered and paginated by the server. */
+/**
+ * A page of the supplier inbox (SU-08): the requests of a tab or of a status, filtered and paginated by the server. The rows of the
+ * last search stay, a little dimmed, until those of the next one arrive. It is read again when the page opens: a take, a refusal or a
+ * completion made on another page (the request's own) changed it, and the shared client does not read again on mount.
+ */
 export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' }, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'list', params],
     queryFn: () => fetchSupplierInbox(params),
     enabled: options?.enabled ?? true,
+    placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
+  });
+}
+
+/** The numbers on the chips of the list of requests (SP-04e). Under `['supplier', 'inbox']`: every action of the supplier reloads them. */
+export function useSupplierInboxCounts() {
+  return useQuery({
+    queryKey: ['supplier', 'inbox', 'counts'],
+    queryFn: fetchSupplierInboxCounts,
+    refetchOnMount: 'always',
+  });
+}
+
+/**
+ * What the home shows of today and the next `days` days (SP-04e): the new requests to answer and the jobs. Under `['supplier', 'inbox']`:
+ * every action of the supplier reloads it, and it is read again when the page opens (the shared client does not read again on mount).
+ */
+export function useSupplierToday(days: number) {
+  return useQuery({
+    queryKey: ['supplier', 'inbox', 'today', days],
+    queryFn: () => fetchSupplierToday(days),
+    refetchOnMount: 'always',
+  });
+}
+
+/** The three numbers of the home for a period and the one before it (SP-04e). Under `['supplier', 'dashboard']`: a take or a refusal reloads it. */
+export function useSupplierOverview(period: SupplierOverviewPeriod) {
+  return useQuery({
+    queryKey: ['supplier', 'dashboard', 'overview', period],
+    queryFn: () => fetchSupplierOverview(period),
+    refetchOnMount: 'always',
+  });
+}
+
+/** The steps of the activation checklist (SP-04): what the supplier did, and so the next step. Read again when the home opens. */
+export function useSupplierChecklist() {
+  return useQuery({
+    queryKey: ['supplier', 'checklist'],
+    queryFn: fetchSupplierChecklist,
+    refetchOnMount: 'always',
   });
 }
 
 /**
  * One request of the supplier inbox with its history (SU-08). Under `['supplier', 'inbox']`, so take, complete and
- * reject reload it.
+ * reject reload it; and read again when the page or the drawer opens, so that what was done from the list shows.
  */
 export function useSupplierInboxItem(id: string | undefined) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'item', id],
     queryFn: () => fetchSupplierInboxItem(id!),
     enabled: !!id,
+    refetchOnMount: 'always',
   });
 }
 
@@ -140,10 +198,47 @@ export function useUpdateSupplierProfile() {
   });
 }
 
-export function useSupplierAvailability(from: string, to: string) {
+/**
+ * What the agenda shows from `from` to `to` (at most 62 days): the weekly hours, the closed days, the time off, the blocks and
+ * calendar events, and the requests. Fetched again every time the page opens: a request taken on another page puts a job in it.
+ */
+export function useSupplierAgendaCalendar(from: string, to: string) {
   return useQuery({
-    queryKey: ['supplier', 'availability', from, to],
-    queryFn: () => fetchSupplierAvailability(from, to),
+    queryKey: ['supplier', 'agenda', from, to],
+    queryFn: () => fetchSupplierAgendaCalendar(from, to),
+    refetchOnMount: 'always',
+  });
+}
+
+/**
+ * The jobs of the next 30 days with something wrong (SP-03b). Under `['supplier', 'agenda']`: whatever reloads the agenda (hours saved, a
+ * day closed, an answer to a calendar event) reloads this too. Fetched again when the page opens: a request taken or moved on another
+ * page changes it.
+ */
+export function useSupplierConflicts() {
+  return useQuery({
+    queryKey: ['supplier', 'agenda', 'conflicts'],
+    queryFn: fetchSupplierConflicts,
+    refetchOnMount: 'always',
+  });
+}
+
+export function useSupplierHours() {
+  return useQuery({
+    queryKey: ['supplier', 'hours'],
+    queryFn: fetchSupplierHours,
+  });
+}
+
+export function useSaveSupplierHours() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (days: SupplierAgendaHoursDay[]) => saveSupplierHours(days),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'hours'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'agenda'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+    },
   });
 }
 
@@ -152,7 +247,8 @@ export function useUpdateSupplierAvailability() {
   return useMutation({
     mutationFn: (dates: UpdateAvailabilityEntry[]) => updateSupplierAvailability(dates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+      void queryClient.invalidateQueries({ queryKey: ['supplier', 'agenda'] });
     },
   });
 }
@@ -265,17 +361,6 @@ export function useRegisterSupplier() {
   });
 }
 
-/** Links the signed-in account to its supplier profile (SU-02); the profile (`/me`) then has `supplierOrgId`. */
-export function useClaimSupplier() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (claimToken?: string) => claimSupplierProfile(claimToken),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['me'] });
-    },
-  });
-}
-
 export function useSupplierDashboard() {
   return useQuery({
     queryKey: ['supplier', 'dashboard'],
@@ -283,11 +368,15 @@ export function useSupplierDashboard() {
   });
 }
 
-/** Service-request KPIs of the supplier for `period` (SU-11). */
-export function useSupplierKpis(period: SupplierKpiPeriod) {
+/**
+ * Service-request KPIs of the supplier for `period` (SU-11). The counter of "Richieste" in the menu (UI-04a) reads the
+ * current month through the same cache entry as the dashboard, and only when `enabled`.
+ */
+export function useSupplierKpis(period: SupplierKpiPeriod, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['supplier', 'dashboard', 'kpis', period],
     queryFn: () => fetchSupplierKpis(period),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -304,6 +393,7 @@ export function useCalendarSyncStatus() {
       const next = await fetchCalendarSyncStatus();
       if (previous?.lastSyncStatus === 'Syncing' && next.lastSyncStatus !== 'Syncing') {
         void queryClient.invalidateQueries({ queryKey: ['supplier', 'availability'] });
+        void queryClient.invalidateQueries({ queryKey: ['supplier', 'agenda'] });
         void queryClient.invalidateQueries({ queryKey: ['supplier', 'dashboard'] });
       }
       return next;
@@ -324,6 +414,36 @@ export function useSetIcalFeed() {
   });
 }
 
+/**
+ * Unlinks the iCal feed (SP-03b): the status reads "not linked" at once, and what the feed had closed or asked is read again (the
+ * days and hours open again, the events marked "Disponibile" and their answers are gone). The supplier's own blocks stay.
+ */
+export function useDisconnectIcalFeed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: disconnectIcalFeed,
+    onSuccess: () => {
+      queryClient.setQueryData<CalendarSyncStatus>(CALENDAR_SYNC_KEY, (previous) =>
+        previous
+          ? {
+              ...previous,
+              calendarSyncType: 'None',
+              icalFeedUrl: null,
+              calendarLastSyncAt: null,
+              lastSyncStatus: 'None',
+              calendarSyncErrorCode: null,
+              calendarSyncError: null,
+              pendingFreeEventsCount: 0,
+            }
+          : previous,
+      );
+      for (const key of ['calendar-sync', 'free-events', 'agenda', 'availability', 'dashboard']) {
+        void queryClient.invalidateQueries({ queryKey: ['supplier', key] });
+      }
+    },
+  });
+}
+
 /** "Sync now" of the supplier's iCal feed (SU-15): the answer (`Syncing`) replaces the status and starts the polling. */
 export function useSyncSupplierCalendarNow() {
   const queryClient = useQueryClient();
@@ -331,6 +451,36 @@ export function useSyncSupplierCalendarNow() {
     mutationFn: syncSupplierCalendarNow,
     onSuccess: (status) => {
       queryClient.setQueryData(CALENDAR_SYNC_KEY, status);
+    },
+  });
+}
+
+/** Calendar events marked "Disponibile" waiting for the supplier's answer (only the owner reads them). */
+export function usePendingFreeEvents() {
+  return useQuery({
+    queryKey: ['supplier', 'free-events'],
+    queryFn: fetchPendingFreeEvents,
+  });
+}
+
+/**
+ * The supplier's answer for a free event. "Available" frees the days again and the backend queues a sync: the status is
+ * marked `Syncing` at once (the polling of `useCalendarSyncStatus` takes over and refreshes agenda, availability and
+ * dashboard when it ends). Either way the list, the agenda, the availability and the dashboard are reloaded.
+ */
+export function useDecideFreeEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, decision }: { id: string; decision: FreeEventDecision }) => decideFreeEvent(id, decision),
+    onSuccess: (_data, { decision }) => {
+      if (decision === 'Available') {
+        queryClient.setQueryData<CalendarSyncStatus>(CALENDAR_SYNC_KEY, (previous) =>
+          previous ? { ...previous, lastSyncStatus: 'Syncing' } : previous,
+        );
+      }
+      for (const key of ['free-events', 'agenda', 'availability', 'dashboard', 'calendar-sync']) {
+        void queryClient.invalidateQueries({ queryKey: ['supplier', key] });
+      }
     },
   });
 }

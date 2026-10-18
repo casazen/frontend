@@ -159,6 +159,21 @@ export function useDeactivateUser() {
   });
 }
 
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => UsersApi.deleteRegisteredUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      toast.success(i18n.t('toast.userRemoved'));
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.userRemoveFailed'));
+    },
+  });
+}
+
 export function useReactivateUser() {
   const queryClient = useQueryClient();
 

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import type { Comune } from '@/types/comune.types';
-import { AdminSupplierInvitePage } from '../admin-supplier-invite-page';
+import { AdminSupplierInviteForm } from '../admin-supplier-invite-page';
 
 const api = vi.hoisted(() => ({ getStatus: vi.fn(), search: vi.fn(), getByIstatCode: vi.fn() }));
 const invite = vi.hoisted(() => ({ mutateAsync: vi.fn() }));
@@ -40,7 +40,7 @@ function renderPage() {
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
-        <AdminSupplierInvitePage />
+        <AdminSupplierInviteForm />
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -54,7 +54,7 @@ beforeEach(async () => {
   invite.mutateAsync.mockResolvedValue({ expiresAt: '2026-10-15T00:00:00Z' });
 });
 
-describe('AdminSupplierInvitePage', () => {
+describe('AdminSupplierInviteForm', () => {
   it('invites the supplier for the comune picked from the official list, by its ISTAT code', async () => {
     renderPage();
     fireEvent.change(screen.getByTestId('invite-email-input'), { target: { value: 'idraulico@example.com' } });

@@ -14,6 +14,7 @@ const regimeMock = {
       name: 'Casa Test',
       recommendedRegime: 'CedolareSecca21',
       assignedRegime: 'CedolareSecca21',
+      regimeConfirmed: true,
       isPrimaryForCedolare: true,
       shortStayInTaxYear: true,
       taxpayerIndex: 0,

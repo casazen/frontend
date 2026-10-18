@@ -12,15 +12,35 @@ const api = vi.hoisted(() => ({ getStatus: vi.fn(), search: vi.fn(), getByIstatC
 const supplier = vi.hoisted(() => ({
   profile: undefined as unknown,
   query: undefined as unknown,
+  activation: undefined as unknown,
   updateProfile: vi.fn(),
   uploadPhotos: vi.fn(),
+}));
+const hoursPayload = vi.hoisted(() => ({
+  days: [
+    { weekday: 'Monday', bands: [{ startMinute: 540, endMinute: 1080 }] },
+    { weekday: 'Tuesday', bands: [] },
+    { weekday: 'Wednesday', bands: [] },
+    { weekday: 'Thursday', bands: [] },
+    { weekday: 'Friday', bands: [] },
+    { weekday: 'Saturday', bands: [] },
+    { weekday: 'Sunday', bands: [] },
+  ],
+  configuredAt: '2026-10-01T10:00:00Z',
 }));
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
 vi.mock('@/queries/use-supplier', () => ({
   useSupplierProfile: () => supplier.query ?? { data: supplier.profile, isLoading: false },
+  useSupplierActivation: () => ({ data: supplier.activation, isPending: false }),
   useUpdateSupplierProfile: () => ({ mutateAsync: supplier.updateProfile, isPending: false }),
   useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false }),
+  useSupplierHours: () => ({
+    data: hoursPayload,
+    isLoading: false,
+    isError: false,
+  }),
+  useSaveSupplierHours: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 vi.mock('@/queries/use-service-categories', () => ({ useServiceCategories: () => ({ data: undefined }) }));
 vi.mock('@/features/service-requests/components/service-category-picker', () => ({
@@ -82,25 +102,24 @@ beforeEach(async () => {
   api.search.mockResolvedValue({ datasetAvailable: true, items: [] });
   supplier.profile = profile();
   supplier.query = undefined;
+  supplier.activation = undefined;
   supplier.updateProfile.mockResolvedValue({});
 });
 
 describe('SupplierProfilePage comuni', () => {
-  it('shows the chosen comuni by name, province and region, and what was written as text apart', () => {
+  it('shows the chosen comuni by name, province and region, and what was written as text apart', async () => {
     renderPage();
 
-    const comuni = screen.getByTestId('supplier-profile-comuni');
-    expect(comuni).toHaveTextContent('Como (CO)');
-    expect(comuni).toHaveTextContent('Roma');
+    expect(await screen.findByTestId('supplier-comune-chip-013075')).toHaveTextContent('Como (CO)');
+    expect(await screen.findByTestId('supplier-comune-legacy-Roma')).toBeInTheDocument();
   });
 
   it('saves the ISTAT codes of the chosen comuni and the text left, once the list is available', async () => {
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Modifica profilo/ }));
     expect(await screen.findByTestId('supplier-comune-chip-013075')).toBeInTheDocument();
     // Roma was written as text and is not covered by a code: the supplier can drop it.
     fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi Roma' }));
-    fireEvent.click(screen.getByRole('button', { name: /Salva profilo/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Salva i dati/ }));
 
     await waitFor(() => expect(supplier.updateProfile).toHaveBeenCalledTimes(1));
     expect(supplier.updateProfile.mock.calls[0][0]).toMatchObject({ comuni: [], comuneIstatCodes: ['013075'] });
@@ -109,10 +128,9 @@ describe('SupplierProfilePage comuni', () => {
   it('while the list is not imported leaves the stored ISTAT codes alone: they are not sent', async () => {
     api.getStatus.mockResolvedValue({ datasetAvailable: false });
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Modifica profilo/ }));
     await screen.findByTestId('comune-picker-unavailable');
     fireEvent.change(screen.getByTestId('supplier-comuni-text'), { target: { value: 'Roma, Milano' } });
-    fireEvent.click(screen.getByRole('button', { name: /Salva profilo/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Salva i dati/ }));
 
     await waitFor(() => expect(supplier.updateProfile).toHaveBeenCalledTimes(1));
     const payload = supplier.updateProfile.mock.calls[0][0] as Record<string, unknown>;

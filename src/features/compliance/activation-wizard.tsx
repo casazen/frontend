@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -455,7 +457,7 @@ function ActivationWizardContent({
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto" data-testid="property-activation-wizard">
+      <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="property-activation-wizard">
         <Breadcrumb />
         <PageHeader
           title={t('compliance.activation.title', { name: property.name })}

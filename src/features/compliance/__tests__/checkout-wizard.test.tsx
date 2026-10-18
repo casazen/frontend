@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -19,11 +19,15 @@ import {
 import { fetchServiceRequests, fetchSuppliersByProperty } from '@/api/service-requests.api';
 import { fetchServiceCategories } from '@/api/service-categories.api';
 import { NOON_UTC, freezeClock } from '@/test/clock';
+import { readWizardDraft, writeWizardDraft } from '@/lib/wizard-draft';
 import type { Booking } from '@/types';
 import type { CheckoutWizardState } from '@/types/compliance.types';
 import { CheckoutWizardPage } from '../checkout-wizard';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+vi.mock('@/queries/use-users', () => ({
+  useCurrentUser: () => ({ user: { id: 'user-1' }, org: { id: 'org-1' } }),
+}));
 vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getById: vi.fn() } }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
 vi.mock('@/api/compliance.api', () => ({
@@ -118,12 +122,12 @@ function axiosError(status: number, data: unknown): AxiosError {
   });
 }
 
-function renderPage() {
+function renderPage(search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
-        createElement(MemoryRouter, { initialEntries: [`/app/short-rent/bookings/${BOOKING_ID}/checkout`] },
+        createElement(MemoryRouter, { initialEntries: [`/app/short-rent/bookings/${BOOKING_ID}/checkout${search}`] },
           createElement(Routes, null,
             createElement(Route, { path: '/app/short-rent/bookings/:id/checkout', element: createElement(CheckoutWizardPage) }),
             createElement(Route, {
@@ -142,6 +146,7 @@ async function onStep(step: string) {
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  sessionStorage.clear();
   freezeClock(NOON_UTC);
   await i18n.changeLanguage('it');
   vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
@@ -185,10 +190,15 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
 
     renderPage();
 
-    // 1. Stay summary: nothing moves on until the host confirms the departure.
+    // 1. Stay summary: nothing moves on until the host confirms the departure, and the page says what is missing.
     await onStep('stay-summary');
     expect(screen.getByTestId('checkout-stay-property')).toHaveTextContent('Villa Aurora');
-    expect(screen.getByTestId('checkout-step-next')).toBeDisabled();
+    expect(screen.getByTestId('checkout-step-next')).toBeEnabled();
+    next();
+    expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
+      i18n.t('compliance.checkout.errors.confirmDeparture'),
+    );
+    await onStep('stay-summary');
     fireEvent.click(screen.getByTestId('checkout-confirm-departure'));
     next();
 
@@ -205,7 +215,12 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     await onStep('cleaning');
     expect(await screen.findByTestId('checkout-cleaning-existing-empty', undefined, WAIT)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('checkout-cleaning-request'));
-    expect(screen.getByTestId('checkout-step-next')).toBeDisabled();
+    // A request needs its supplier: the step does not close without one.
+    next();
+    expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
+      i18n.t('compliance.checkout.errors.cleaningSupplier'),
+    );
+    await onStep('cleaning');
     fireEvent.change(await screen.findByTestId('checkout-cleaning-supplier', undefined, WAIT), {
       target: { value: SUPPLIER_ID },
     });
@@ -223,7 +238,16 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
 
     // 5. Property ready, with notes, then the stay is closed.
     await onStep('property-ready');
-    expect(screen.getByTestId('checkout-complete-button')).toBeDisabled();
+    // The last button checks the step too, and what the host answered before is in the summary, each answer with its link.
+    fireEvent.click(screen.getByTestId('checkout-complete-button'));
+    expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
+      i18n.t('compliance.checkout.errors.propertyReady'),
+    );
+    expect(completeCheckoutWizard).not.toHaveBeenCalled();
+    const summary = screen.getByTestId('checkout-summary');
+    expect(within(summary).getByText(i18n.t('compliance.checkout.summary.cleaningRequest'))).toBeInTheDocument();
+    expect(within(summary).getByText(i18n.t('compliance.checkout.touristTax.collection.CollectedAtProperty'))).toBeInTheDocument();
+    expect(within(summary).getAllByRole('link', { name: /^Modifica / })).toHaveLength(3);
     fireEvent.click(screen.getByTestId('checkout-property-ready-yes'));
     fireEvent.change(screen.getByTestId('checkout-property-notes'), { target: { value: 'Tutto in ordine' } });
     fireEvent.click(screen.getByTestId('checkout-complete-button'));
@@ -246,7 +270,17 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     expect(vi.mocked(startCheckoutWizard).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(completeCheckoutWizard).mock.invocationCallOrder[0],
     );
-    expect(await screen.findByTestId('booking-detail-stub', undefined, WAIT)).toBeInTheDocument();
+    // The stay is closed: the wizard says what happens now, with two ways on, and nothing is left in the draft.
+    expect(
+      await screen.findByRole('heading', { level: 2, name: i18n.t('compliance.checkout.done.title') }, WAIT),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: i18n.t('wizard.done.whatNext') })).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('compliance.checkout.done.cleaningRequested'))).toBeInTheDocument();
+    expect(screen.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}`);
+    expect(screen.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/short-rent/compliance');
+    expect(screen.queryByTestId('booking-detail-stub')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', 'fatto');
+    expect(sessionStorage.length).toBe(0);
   });
 
   it('CheckoutWizardPage_MovingBetweenSteps_SavesTheProgressOnTheServer', async () => {
@@ -289,13 +323,15 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     renderPage();
 
     await onStep('tourist-tax');
-    const progress = screen.getByTestId('checkout-wizard-progress');
-    expect(within(progress).getByTestId('checkout-step-stay-summary')).toHaveAttribute('data-status', 'complete');
-    expect(within(progress).getByTestId('checkout-step-cleaning')).toHaveAttribute('data-status', 'complete');
-    expect(within(progress).getByTestId('checkout-step-tourist-tax')).toHaveAttribute('aria-current', 'step');
-    expect(within(progress).getByTestId('checkout-step-property-ready')).toBeDisabled();
+    // The steps behind the one on screen can be opened again; the ones ahead cannot (the answers they depend on are not given yet).
+    const progress = screen.getByRole('list', { name: i18n.t('ui.stepper.label') });
+    expect(within(progress).getByRole('button', { name: /Soggiorno/ })).toBeInTheDocument();
+    expect(within(progress).getByRole('button', { name: /Pulizie/ })).toBeInTheDocument();
+    expect(within(progress).queryByRole('button', { name: /Imposta/ })).not.toBeInTheDocument();
+    expect(within(progress).queryByRole('button', { name: /Proprietà/ })).not.toBeInTheDocument();
+    expect(within(progress).getByText(/Imposta/).closest('[aria-current]')).toHaveAttribute('aria-current', 'step');
 
-    fireEvent.click(within(progress).getByTestId('checkout-step-cleaning'));
+    fireEvent.click(within(progress).getByRole('button', { name: /Pulizie/ }));
     await onStep('cleaning');
     expect(screen.getByTestId('checkout-cleaning-skip')).toBeChecked();
   });
@@ -341,6 +377,10 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
         }),
       ),
     );
+    // Not ready and no cleaning asked: what is still up to the host is said, never a promise that was not made.
+    expect(await screen.findByText(i18n.t('compliance.checkout.done.propertyNotReady'), undefined, WAIT)).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('compliance.checkout.done.alloggiatiToSend'))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('compliance.checkout.done.cleaningRequested'))).not.toBeInTheDocument();
   });
 
   it('CheckoutWizardPage_NoTaxAmountRecorded_SaysSoInsteadOfInventingOne', async () => {
@@ -359,7 +399,12 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     await onStep('tourist-tax');
     expect(screen.getByTestId('checkout-tourist-tax-unknown')).toBeInTheDocument();
     expect(screen.queryByTestId('checkout-tourist-tax-amount')).not.toBeInTheDocument();
-    expect(screen.getByTestId('checkout-step-next')).toBeDisabled();
+    // The host has to say how it was collected, whatever the amount: the step does not close without it.
+    next();
+    expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
+      i18n.t('compliance.checkout.errors.taxCollection'),
+    );
+    await onStep('tourist-tax');
   });
 
   it('CheckoutWizardPage_CompleteRejected_ShowsTheTranslatedApiError', async () => {
@@ -385,7 +430,10 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     expect(await screen.findByTestId('checkout-complete-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('apiErrors.codes.checkoutWizardNotStarted'),
     );
-    expect(screen.queryByTestId('booking-detail-stub')).not.toBeInTheDocument();
+    // Still on the last step, with its answers, and able to try again: no confirmation of something that did not happen.
+    await onStep('property-ready');
+    expect(screen.queryByRole('heading', { name: i18n.t('compliance.checkout.done.title') })).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkout-complete-button')).toBeEnabled();
   });
 
   it('CheckoutWizardPage_ProgressNotSaved_ShowsTheErrorAndKeepsTheAnswers', async () => {
@@ -494,5 +542,158 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     expect(await screen.findByTestId('checkout-closed-error', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('checkout-closed-summary')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkout-confirm-property-ready')).not.toBeInTheDocument();
+  });
+});
+
+describe('CheckoutWizardPage as a WizardShell', { timeout: 30000 }, () => {
+  const settleDraft = () => act(async () => void (await new Promise((resolve) => setTimeout(resolve, 450))));
+
+  it('CheckoutWizardPage_AddressWithAStep_OpensThatStepWhateverTheServerSays', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    renderPage('?step=tourist-tax');
+
+    await onStep('tourist-tax');
+    expect(screen.getByTestId('checkout-tourist-tax-amount')).toBeInTheDocument();
+  });
+
+  it('CheckoutWizardPage_Reload_GivesBackTheNotesAndOffersToResumeFromTheStepReached', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    // The host goes on to the last step and types a note...
+    const first = renderPage();
+    await onStep('stay-summary');
+    fireEvent.click(screen.getByTestId('checkout-confirm-departure'));
+    next();
+    await onStep('alloggiati');
+    next();
+    await onStep('cleaning');
+    fireEvent.click(screen.getByTestId('checkout-cleaning-skip'));
+    next();
+    await onStep('tourist-tax');
+    fireEvent.click(screen.getByTestId('checkout-tourist-tax-CollectedAtProperty'));
+    next();
+    await onStep('property-ready');
+    fireEvent.change(screen.getByTestId('checkout-property-notes'), { target: { value: 'Chiavi nella cassetta' } });
+    await settleDraft();
+    first.unmount();
+
+    // ...and reloads the page: the server opens the first step (it answers with its own start), the draft remembers the rest.
+    renderPage();
+    await onStep('stay-summary');
+    const banner = await screen.findByTestId('wizard-draft-banner', undefined, WAIT);
+    expect(banner).toHaveTextContent('Eri arrivato al passo 5 di 5');
+    expect(screen.getByTestId('checkout-confirm-departure')).toBeChecked();
+
+    fireEvent.click(screen.getByTestId('wizard-draft-resume'));
+
+    await onStep('property-ready');
+    expect(screen.getByTestId('checkout-property-notes')).toHaveValue('Chiavi nella cassetta');
+  });
+
+  it('CheckoutWizardPage_ServerAheadOfTheDraft_IgnoresTheOlderDraftAndKeepsTheAnswersOfTheServer', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    // The host answered the first steps on the web a while ago (draft at the second step) and went on in the app (server at the fourth).
+    const owner = { userId: 'user-1', orgId: 'org-1' };
+    writeWizardDraft(
+      `checkout-${BOOKING_ID}`,
+      owner,
+      { step: 'alloggiati', values: { departureConfirmed: false, cleaningChoice: null, touristTaxCollection: null, propertyNotes: 'vecchia nota' } },
+    );
+    vi.mocked(startCheckoutWizard).mockResolvedValue(
+      wizardState({
+        currentStep: 'tourist-tax',
+        stay: { ...wizardState().stay, departureConfirmed: true },
+        cleaning: { choice: 'Skip', supplierOrgId: null, category: null, notes: null, requestId: null },
+        propertyReady: { ready: true, readyAt: null, notes: 'nota di oggi' },
+      }),
+    );
+
+    renderPage();
+
+    await onStep('tourist-tax');
+    expect(screen.queryByTestId('wizard-draft-banner')).not.toBeInTheDocument();
+    // The old draft is gone, not waiting to come back.
+    expect(readWizardDraft(`checkout-${BOOKING_ID}`, owner)).toBeNull();
+    fireEvent.click(screen.getByTestId('checkout-tourist-tax-CollectedAtProperty'));
+    next();
+    await onStep('property-ready');
+    // The notes and the answers are the server's, not the old draft's.
+    expect(screen.getByTestId('checkout-property-notes')).toHaveValue('nota di oggi');
+    expect(screen.getByTestId('checkout-property-ready-yes')).toBeChecked();
+  });
+
+  it('CheckoutWizardPage_StartOver_DropsTheDraftAndGoesBackToTheAnswersOfTheServer', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    const first = renderPage();
+    await onStep('stay-summary');
+    fireEvent.click(screen.getByTestId('checkout-confirm-departure'));
+    next();
+    await onStep('alloggiati');
+    await settleDraft();
+    first.unmount();
+
+    renderPage();
+    await onStep('stay-summary');
+    fireEvent.click(await screen.findByTestId('wizard-draft-restart', undefined, WAIT));
+
+    await waitFor(() => expect(screen.queryByTestId('wizard-draft-banner')).not.toBeInTheDocument());
+    expect(screen.getByTestId('checkout-confirm-departure')).not.toBeChecked();
+    expect(sessionStorage.length).toBe(0);
+  });
+
+  it('CheckoutWizardPage_StayClosedHere_KeepsTheConfirmationWhenTheBookingBecomesCheckedOut', async () => {
+    vi.mocked(bookingsApi.getById)
+      .mockResolvedValueOnce(booking())
+      .mockResolvedValue(booking({ status: 'CheckedOut' }));
+    vi.mocked(startCheckoutWizard).mockResolvedValue(
+      wizardState({
+        currentStep: 'property-ready',
+        stay: { ...wizardState().stay, departureConfirmed: true },
+        cleaning: { choice: 'Skip', supplierOrgId: null, category: null, notes: null, requestId: null },
+        touristTax: { recordedAmount: 12, currency: 'EUR', collectedWithOnlinePayment: false, collection: 'NotDue' },
+        propertyReady: { ready: true, readyAt: null, notes: null },
+      }),
+    );
+    vi.mocked(completeCheckoutWizard).mockResolvedValue({
+      propertyReady: true,
+      bookingStatus: 'CheckedOut',
+      serviceRequestId: null,
+      wizard: wizardState({ bookingStatus: 'CheckedOut' }),
+    });
+
+    renderPage();
+    await onStep('property-ready');
+    fireEvent.click(screen.getByTestId('checkout-complete-button'));
+
+    await screen.findByRole('heading', { level: 2, name: i18n.t('compliance.checkout.done.title') }, WAIT);
+    // The booking is checked out now (the page read it again), and the confirmation is still there, not the "already done" card.
+    await waitFor(() => expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(1), WAIT);
+    expect(screen.queryByTestId('checkout-already-done')).not.toBeInTheDocument();
+    expect(screen.getByText(i18n.t('compliance.checkout.done.propertyReady'))).toBeInTheDocument();
+    // One way back to the booking, the one of the confirmation: the page does not repeat it.
+    expect(screen.getAllByRole('link', { name: i18n.t('compliance.checkout.backToBooking') })).toHaveLength(1);
+  });
+
+  it('CheckoutWizardPage_ConfirmationAddressWithoutClosingAStay_StartsOverInsteadOfConfirmingNothing', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    renderPage('?step=fatto');
+
+    await onStep('stay-summary');
+    expect(screen.queryByRole('heading', { name: i18n.t('compliance.checkout.done.title') })).not.toBeInTheDocument();
+  });
+
+  it('CheckoutWizardPage_Steps_AreNamedByTheirTitleAndPurposeAndNextNamesTheStepAfter', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+
+    renderPage();
+
+    await onStep('stay-summary');
+    expect(screen.getByRole('heading', { level: 2, name: i18n.t('compliance.checkout.steps.stay-summary.title') })).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('compliance.checkout.steps.stay-summary.hint'))).toBeInTheDocument();
+    expect(screen.getByTestId('checkout-step-next')).toHaveTextContent(
+      `Continua: ${i18n.t('compliance.checkout.steps.alloggiati.label')}`,
+    );
   });
 });

@@ -5,19 +5,20 @@ import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
 import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
-import type { OnboardingResponse, PlanTier, RentalType } from '@/types';
+import type { OnboardingResponse, RentalType } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ROLES_CLAIM } from '@/lib/auth-roles';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import {
   canEditOnboarding,
   getHomeRouteForUser,
-  getPlanPageForRentalType,
   getPostOnboardingRoute,
+  getProfilePageForRentalType,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
   isLinkedSupplier,
   isProfileLoadFailure,
+  lacksCurrentConsents,
   needsConsentRenewal,
   needsOrgSetup,
   SUPPLIER_HOME_ROUTE,
@@ -31,22 +32,23 @@ import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-
 import { RentalTypeCard } from './components/rental-type-card';
 import { ConsentsStep } from './components/consents-step';
 import { RolesPendingPanel } from './components/roles-pending-panel';
-import { SupplierOptionCard } from './components/supplier-option-card';
-import { PlanSelectionGrid } from '@/components/org/plan-selection-grid';
+import { SupplierEntryLink } from './components/supplier-entry-link';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 
 const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 
+const WIZARD_STEPS: WizardStep[] = ['role', 'consents'];
+
 /** 422 code of `PUT /users/onboarding` from a user without org and without consents (backend A1-01). */
 const CONSENTS_REQUIRED_CODE = 'consents_required';
 
-type WizardStep = 'role' | 'consents' | 'plan';
+/** Two screens at most: the rental type, then the legal consents. The plan is never asked here: the org starts on Starter. */
+type WizardStep = 'role' | 'consents';
 
 interface PendingRoles {
   rentalType: RentalType;
-  planTier: PlanTier | undefined;
   target: string;
 }
 
@@ -56,7 +58,10 @@ export function OnboardingPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const isEditMode = searchParams.get('mode') === 'edit';
-  const from = (location.state as { from?: string } | null)?.from ?? null;
+  const locationState = location.state as { from?: string; completeStep?: boolean } | null;
+  const from = locationState?.from ?? null;
+  // The activation checklist sent the user here to finish a step it still shows as "todo": stay, never bounce to the home.
+  const completingChecklistStep = locationState?.completeStep === true;
   const { refreshAccessToken, forceReauth } = useAuth();
   const {
     data: profile,
@@ -69,7 +74,6 @@ export function OnboardingPage() {
   const reloadLegalDocuments = useReloadLegalDocuments();
   const [step, setStep] = useState<WizardStep>('role');
   const [selectedType, setSelectedType] = useState<RentalType | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('Starter');
   const [consents, setConsents] = useState<OnboardingConsentsPayload | null>(null);
   // Remounts the consents step (checkboxes cleared) when the accepted versions turned out to be outdated (A1-39).
   const [consentsAttempt, setConsentsAttempt] = useState(0);
@@ -85,20 +89,16 @@ export function OnboardingPage() {
   // Linked in the database (invite, registration, claim) even when the Supplier role is not in the token yet.
   const linkedSupplier = isLinkedSupplier(profile);
   const homeRoute = getHomeRouteForUser({ [ROLES_CLAIM]: roles }, profile);
-  const isOrgBackfill = hasRoles && !hasOrg;
   // PL-02: the backend withholds the host features until the onboarding and the current consents.
   const hostAccessWithheld = profile?.onboardingRequired === true;
   // A completed onboarding whose legal documents changed: only the consents step, then the same rental type.
   const renewsConsents = needsConsentRenewal(profile) && !isEditMode;
   // A1-01: PUT (no consents) only when the backend already has a completed onboarding with an org and current consents.
   // Any other case, with JWT roles or not, goes through the consents step and the POST.
-  const isUpdate = canEditOnboarding(profile) && !consentsForced && !needsConsentRenewal(profile);
+  const isUpdate = canEditOnboarding(profile) && !consentsForced && !lacksCurrentConsents(profile);
   const needsConsentsStep = !isUpdate;
   // Admins and supplier-only users do not need a host org: they may leave the wizard.
   const canSkip = !isEditMode && isExemptFromHostOnboarding(roles) && (!hasOrg || hostAccessWithheld);
-  // A1-15: the operator type edit never offers a plan (the backend keeps the plan of an existing org): the plan is
-  // managed on the plan page, opened once the change is saved.
-  const planForSubmit = isEditMode ? undefined : selectedPlan;
 
   useEffect(() => {
     if (profileLoading || !profile || pendingRoles || isLeaving) return;
@@ -112,6 +112,7 @@ export function OnboardingPage() {
     // are withheld by the backend (PL-02) stays here: its home would answer onboarding_required again.
     if (
       !isEditMode &&
+      !completingChecklistStep &&
       hasOrg &&
       (hasRoles || linkedSupplier) &&
       (!hostAccessWithheld || homeRoute === SUPPLIER_HOME_ROUTE)
@@ -140,6 +141,7 @@ export function OnboardingPage() {
     homeRoute,
     hostAccessWithheld,
     isEditMode,
+    completingChecklistStep,
     pendingRoles,
     isLeaving,
     renewsConsents,
@@ -158,7 +160,6 @@ export function OnboardingPage() {
 
   const finishOnboarding = async (
     rentalType: RentalType,
-    planTier: PlanTier | undefined,
     acceptedConsents: OnboardingConsentsPayload | null = consents,
   ) => {
     setSelectedType(rentalType);
@@ -167,7 +168,7 @@ export function OnboardingPage() {
     if (isDemoMode) {
       applyDemoOnboardingProfile(rentalType);
       setIsLeaving(true);
-      window.location.assign(getPostOnboardingRoute(rentalType, from));
+      window.location.assign(getPostOnboardingRoute(rentalType, from, { firstRun: true }));
       return;
     }
 
@@ -181,7 +182,6 @@ export function OnboardingPage() {
     try {
       result = await completeOnboarding.mutateAsync({
         rentalType,
-        planTier,
         isUpdate,
         consents: needsConsentsStep ? acceptedConsents ?? undefined : undefined,
       });
@@ -215,10 +215,12 @@ export function OnboardingPage() {
       await syncSignupAttribution();
     }
 
-    const target = isEditMode ? getPlanPageForRentalType(rentalType) : getPostOnboardingRoute(rentalType, from);
+    const target = isEditMode
+      ? getProfilePageForRentalType(rentalType)
+      : getPostOnboardingRoute(rentalType, from, { firstRun: result.orgProvisioned === true });
     if (result.rolesSynced === false) {
       if (pendingRoles) toast.error(t('onboarding.rolesPending.stillPending'));
-      setPendingRoles({ rentalType, planTier, target });
+      setPendingRoles({ rentalType, target });
       return;
     }
 
@@ -243,7 +245,11 @@ export function OnboardingPage() {
     setSelectedType(rentalType);
     // In edit mode the choice is confirmed with the save button of the role step.
     if (isEditMode) return;
-    setStep(needsConsentsStep ? 'consents' : 'plan');
+    if (needsConsentsStep) {
+      setStep('consents');
+      return;
+    }
+    void finishOnboarding(rentalType);
   };
 
   const handleEditSave = () => {
@@ -252,12 +258,7 @@ export function OnboardingPage() {
       setStep('consents');
       return;
     }
-    void finishOnboarding(selectedType, undefined);
-  };
-
-  const handlePlanConfirm = () => {
-    if (!selectedType) return;
-    void finishOnboarding(selectedType, selectedPlan);
+    void finishOnboarding(selectedType);
   };
 
   if (profileLoading || isLeaving) {
@@ -277,7 +278,7 @@ export function OnboardingPage() {
         <RolesPendingPanel
           isRetrying={completeOnboarding.isPending}
           isRenewing={isRenewing}
-          onRetry={() => void finishOnboarding(pendingRoles.rentalType, pendingRoles.planTier)}
+          onRetry={() => void finishOnboarding(pendingRoles.rentalType)}
           onRenewSession={() => void renewSessionAndContinue(pendingRoles.target)}
         />
       </div>
@@ -289,30 +290,56 @@ export function OnboardingPage() {
       ? isEditMode
         ? t('onboarding.editOperatorType')
         : t('onboarding.howToUse')
-      : step === 'consents'
-        ? renewsConsents
-          ? t('onboarding.consentsRenewalTitle')
-          : t('onboarding.acceptLegalDocs')
-        : t('onboarding.choosePlan');
+      : renewsConsents
+        ? t('onboarding.consentsRenewalTitle')
+        : t('onboarding.acceptLegalDocs');
 
   const subheading =
     step === 'role'
       ? isEditMode
         ? t('onboarding.editRoleDescription')
         : t('onboarding.roleDescription')
-      : step === 'consents'
-        ? renewsConsents
-          ? t('onboarding.consentsRenewalDescription')
-          : t('onboarding.consentsDescription')
-        : isOrgBackfill
-          ? t('onboarding.planOrgDescription')
-          : t('onboarding.planDefaultDescription');
+      : renewsConsents
+        ? t('onboarding.consentsRenewalDescription')
+        : t('onboarding.consentsDescription');
+
+  const showStepper = !isEditMode && !renewsConsents;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
       <div className="mx-auto max-w-5xl space-y-10 text-center">
         <div className="space-y-3">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">{t('onboarding.casaZen')}</p>
+          {showStepper ? (
+            <>
+              <p className="text-sm text-muted-foreground" data-testid="onboarding-step-of">
+                {t('onboarding.stepOf', {
+                  current: WIZARD_STEPS.indexOf(step) + 1,
+                  total: WIZARD_STEPS.length,
+                })}
+              </p>
+              <ol
+                className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm"
+                aria-label={t('onboarding.stepsLabel')}
+                data-testid="onboarding-steps"
+              >
+                {WIZARD_STEPS.map((wizardStep, index) => {
+                  const current = wizardStep === step;
+                  const done = WIZARD_STEPS.indexOf(step) > index;
+                  return (
+                    <li
+                      key={wizardStep}
+                      aria-current={current ? 'step' : undefined}
+                      className={current ? 'font-semibold text-foreground' : done ? 'text-primary' : 'text-muted-foreground'}
+                    >
+                      <span className="mr-1">{index + 1}.</span>
+                      {t(`onboarding.steps.${wizardStep}`)}
+                    </li>
+                  );
+                })}
+              </ol>
+            </>
+          ) : null}
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
           <p className="text-muted-foreground">{subheading}</p>
         </div>
@@ -361,7 +388,7 @@ export function OnboardingPage() {
         ) : null}
 
         {step === 'role' && !isEditMode && !linkedSupplier ? (
-          <SupplierOptionCard
+          <SupplierEntryLink
             onRegister={() => navigate('/register')}
             onClaim={() => navigate(SUPPLIER_CLAIM_PATH)}
           />
@@ -386,49 +413,10 @@ export function OnboardingPage() {
             onBack={() => setStep('role')}
             onContinue={(payload) => {
               setConsents(payload);
-              if ((renewsConsents || isEditMode) && selectedType) {
-                // Renewal: same rental type and plan, only the new document versions are recorded (PL-02).
-                // Edit: no plan step (A1-15), the type chosen on the role step is saved.
-                void finishOnboarding(selectedType, planForSubmit, payload);
-                return;
-              }
-              setStep('plan');
+              if (selectedType) void finishOnboarding(selectedType, payload);
             }}
             isLoading={completeOnboarding.isPending}
           />
-        ) : null}
-
-        {step === 'plan' ? (
-          <div className="space-y-6">
-            <PlanSelectionGrid
-              selectedTier={selectedPlan}
-              onSelect={setSelectedPlan}
-              isLoading={completeOnboarding.isPending}
-              actionLabel={t('onboarding.select')}
-            />
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={completeOnboarding.isPending}
-                onClick={() => setStep(needsConsentsStep ? 'consents' : 'role')}
-              >
-                {t('onboarding.back')}
-              </Button>
-              <Button
-                type="button"
-                data-testid="onboarding-plan-confirm"
-                disabled={completeOnboarding.isPending || !selectedType}
-                onClick={handlePlanConfirm}
-              >
-                {completeOnboarding.isPending
-                  ? t('onboarding.configuring')
-                  : isEditMode
-                    ? t('onboarding.saveChanges')
-                    : t('onboarding.completeRegistration')}
-              </Button>
-            </div>
-          </div>
         ) : null}
 
         {failedType && !completeOnboarding.isPending ? (
@@ -436,7 +424,7 @@ export function OnboardingPage() {
             type="button"
             data-testid="onboarding-retry"
             className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            onClick={() => void finishOnboarding(failedType, planForSubmit)}
+            onClick={() => void finishOnboarding(failedType)}
           >
             {t('onboarding.retry')}
           </button>

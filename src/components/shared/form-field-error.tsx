@@ -14,6 +14,10 @@ interface FormFieldErrorProps {
 /**
  * Shows the validation error of a form field, translating the i18n key used as Zod message.
  * Renders nothing when there is no error.
+ *
+ * New forms: `Field` (`@/components/ui/field`) does the same translation and also gives the error an icon and wires the
+ * `id`, `aria-describedby` and `aria-invalid` of the control. This component keeps its markup (no icon, no `role="alert"`)
+ * for the forms that already use it.
  */
 export function FormFieldError({ error, message, id, className }: FormFieldErrorProps) {
   const { t, i18n } = useTranslation();

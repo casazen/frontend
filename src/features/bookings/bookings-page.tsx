@@ -1,83 +1,74 @@
-import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { CalendarDays, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import i18n from '@/i18n/config';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Loader2, Plus, X } from 'lucide-react';
-import { useBookings } from '@/queries/use-bookings';
-import { useProperty } from '@/queries/use-properties';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ListView } from '@/components/shared/list-view/list-view';
+import { useListState } from '@/components/shared/list-view/use-list-state';
+import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { getProblemMessage } from '@/lib/api-errors';
-import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
-import { BookingRequestsPanel } from '@/features/bookings/components/booking-requests-panel';
-import { CheckInDialog } from '@/features/bookings/components/check-in-dialog';
-import { canRegisterArrival } from '@/features/bookings/lib/stay-actions';
-import { bookingChannelText, needsOtaReview } from '@/features/bookings/lib/ota-stay';
-import type { Booking } from '@/types';
+import { useApproveBookingRequest, useBookingCounts, useBookingList } from '@/queries/use-bookings';
+import { useSendCheckInLink } from '@/queries/use-checkin';
+import { useProperties } from '@/queries/use-properties';
+import type { BookingListItem, Property } from '@/types';
+import { useBookingsList, type BookingRowHandlers } from './bookings-list';
+import { BookingsSectionTabs } from './components/bookings-section-tabs';
+import { CancelBookingDialog } from './components/cancel-booking-dialog';
+import { CheckInDialog } from './components/check-in-dialog';
+import { DeclineBookingDialog } from './components/decline-booking-dialog';
+import { BOOKINGS_PAGE_SIZE, BOOKINGS_PATH, bookingFilterParams, bookingListParams, currentBookingsSearch } from './lib/booking-list-query';
 
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  Confirmed: 'default',
-  Pending: 'secondary',
-  CheckedIn: 'outline',
-  CheckedOut: 'outline',
-  Cancelled: 'destructive',
-};
+const NO_PROPERTIES: readonly Property[] = [];
 
-const TABS = ['all', 'Confirmed', 'Pending', 'CheckedIn', 'CheckedOut', 'Cancelled'];
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function getNights(checkIn: string, checkOut: string): number {
-  const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
-  return Math.round(diff / (1000 * 60 * 60 * 24));
-}
-
-const BOOKINGS_PATH = '/app/short-rent/bookings';
-
-export function BookingsPage() {
+/**
+ * The bookings of the host (SR-04): the unified list in `server` mode, with the chips, the filters, the views, the order and the
+ * actions of a row (accept, register the arrival or the departure, send the check-in link, decline, cancel). The server does the
+ * searching, filtering, ordering and paging, so the state and the search reach every booking and not only the ten of a page. All
+ * of it is in the address (`?chip=toConfirm&q=rossi&f_channel=Airbnb&page=2`): Back, a refresh and the way back from a booking
+ * give the list as it was left.
+ */
+function BookingsListPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { hasPermission } = useWorkspace();
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('all');
-  const [search, setSearch] = useState('');
-  // "Registra arrivo" from the list (CO-08): the same dialog as the booking detail.
-  const [arrivalBooking, setArrivalBooking] = useState<Booking | null>(null);
   const canWrite = hasPermission('short-rent', 'booking.write');
+  const viewsScope = useListViewsScope();
 
-  // "Bookings of this property" (A2-30): the backend filters by property, so the list and its counts are the
-  // property's only.
-  const propertyId = searchParams.get('propertyId') ?? '';
-  const { data: bookings, isLoading, isError, error } = useBookings(propertyId ? { propertyId } : undefined);
-  const { data: filterProperty } = useProperty(propertyId);
-  const createPath = propertyId
-    ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(propertyId)}`
+  const properties = useProperties({ mode: 'short' });
+  const { mutate: acceptBooking } = useApproveBookingRequest();
+  const { mutate: sendCheckInLink } = useSendCheckInLink();
+  const [arriving, setArriving] = useState<BookingListItem | null>(null);
+  const [declining, setDeclining] = useState<BookingListItem | null>(null);
+  const [cancelling, setCancelling] = useState<BookingListItem | null>(null);
+
+  const handlers = useMemo<BookingRowHandlers>(
+    () => ({
+      accept: (booking) => acceptBooking(booking.id),
+      arrival: setArriving,
+      decline: setDeclining,
+      cancel: setCancelling,
+      sendLink: (booking) => sendCheckInLink(booking.id),
+    }),
+    [acceptBooking, sendCheckInLink],
+  );
+
+  const list = useBookingsList({ canWrite, properties: Array.isArray(properties.data) ? properties.data : NO_PROPERTIES, handlers });
+  const { state } = useListState(list);
+  // The property of an old address (`?propertyId=`) is a choice of the filter: the first request waits until the filter knows it.
+  const ready = !properties.isLoading;
+  const rows = useBookingList(bookingListParams(state), { enabled: ready });
+  const counts = useBookingCounts(bookingFilterParams(state), { enabled: ready });
+
+  // The list cannot tell "no booking at all" from "none in this chip" (it starts from "In arrivo", not from its first chip), and
+  // its toolbar goes away with it: the page says it from the counters, which count every chip.
+  const narrowed = state.q.trim() !== '' || Object.keys(state.filters).length > 0;
+  const nothingAtAll = !narrowed && counts.data?.all === 0 && !counts.isPlaceholderData;
+  const { icon: emptyIcon, ...empty } = list.empty;
+  // A list narrowed to a property offers a booking for that property (the form takes `?propertyId=`).
+  const createPath = state.filters.property
+    ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(state.filters.property)}`
     : `${BOOKINGS_PATH}/create`;
-
-  const filtered = (bookings ?? []).filter((b) => {
-    const matchesTab = activeTab === 'all' || b.status === activeTab;
-    const matchesSearch =
-      search === '' ||
-      `${b.guest.firstName} ${b.guest.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-      b.id.toLowerCase().includes(search.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
-
-  const getTabLabel = (tab: string): string => {
-    if (tab === 'all') return t('booking.list.all');
-    return getBookingStatusLabel(tab, t);
-  };
-
-  const openBooking = (booking: Booking) => {
-    navigate(`/app/short-rent/bookings/${booking.id}`);
-  };
 
   return (
     <AppShell>
@@ -85,197 +76,68 @@ export function BookingsPage() {
         <PageHeader
           title={t('booking.list.title')}
           description={t('booking.list.description')}
-          action={
-            canWrite ? (
-              <Button asChild data-testid="new-booking">
-                <Link to={createPath}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('booking.list.newBooking')}
-                </Link>
-              </Button>
-            ) : undefined
-          }
+          primary={canWrite ? { label: t('booking.list.newBooking'), icon: Plus, to: createPath, testId: 'new-booking' } : undefined}
+          mobilePrimary="fab"
         />
 
-        {propertyId && (
-          <div
-            className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-4 py-2 text-sm"
-            data-testid="bookings-property-filter"
-          >
-            <span>
-              {filterProperty?.name
-                ? t('booking.list.filteredByProperty', { name: filterProperty.name })
-                : t('booking.list.filteredByAProperty')}
-            </span>
-            <Link to={BOOKINGS_PATH} className="inline-flex items-center gap-1 text-primary hover:underline">
-              <X className="h-3 w-3" />
-              {t('booking.list.showAll')}
-            </Link>
+        <BookingsSectionTabs />
+
+        {nothingAtAll ? (
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm" data-testid="bookings-empty">
+            <EmptyState icon={emptyIcon ?? CalendarDays} {...empty} />
           </div>
+        ) : (
+          <ListView
+            list={list}
+            mode="server"
+            rows={rows.data?.items ?? []}
+            totalCount={rows.data?.totalCount}
+            pageSize={BOOKINGS_PAGE_SIZE}
+            chipCounts={{ toConfirm: counts.data?.toConfirm }}
+            isLoading={!ready || rows.isLoading}
+            isRefreshing={rows.isPlaceholderData}
+            isError={rows.isError && !rows.isLoading}
+            error={rows.error}
+            errorTitle={t('booking.list.loadError')}
+            onRetry={() => void rows.refetch()}
+            viewsScope={viewsScope}
+            testId="bookings-list"
+          />
         )}
-
-        <BookingRequestsPanel />
-
-        <Card>
-          <CardContent className="pt-4 space-y-4">
-            <div className="flex flex-wrap gap-1 border-b pb-3">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
-                    activeTab === tab
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  {getTabLabel(tab)}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('booking.list.searchPlaceholder')}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-muted-foreground">{t('booking.list.loading')}</span>
-              </div>
-            )}
-
-            {isError && (
-              <div role="alert" className="py-8 text-center text-destructive" data-testid="bookings-load-error">
-                {getProblemMessage(error, t) ?? t('booking.list.loadError')}
-              </div>
-            )}
-
-            {!isLoading && !isError && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/40">
-                      {[
-                        t('booking.list.columns.id'),
-                        t('booking.list.columns.guest'),
-                        t('booking.list.columns.checkIn'),
-                        t('booking.list.columns.checkOut'),
-                        t('booking.list.columns.nights'),
-                        t('booking.list.columns.guests'),
-                        t('booking.list.columns.total'),
-                        t('booking.list.columns.status'),
-                        t('booking.list.columns.source'),
-                        '',
-                      ].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((b) => (
-                      <tr
-                        key={b.id}
-                        className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => openBooking(b)}
-                      >
-                        <td className="px-4 py-3 font-mono text-xs">{b.id.slice(0, 8)}...</td>
-                        <td className="px-4 py-3 font-medium">{b.guest.firstName} {b.guest.lastName}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkInDate)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{formatDate(b.checkOutDate)}</td>
-                        <td className="px-4 py-3 text-center">{getNights(b.checkInDate, b.checkOutDate)}</td>
-                        <td className="px-4 py-3 text-center">{b.numberOfGuests}</td>
-                        <td className="px-4 py-3 font-medium">
-                          {b.currency ?? 'EUR'} {b.totalPrice.toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1">
-                            <Badge variant={STATUS_VARIANT[b.status] ?? 'secondary'} className="capitalize">
-                              {getBookingStatusLabel(b.status, t)}
-                            </Badge>
-                            {b.onSiteRequestState && (
-                              <Badge
-                                variant={b.onSiteRequestState === 'AwaitingHostApproval' ? 'default' : 'outline'}
-                                data-testid="booking-request-badge"
-                              >
-                                {t(`booking.requests.state.${b.onSiteRequestState}`)}
-                              </Badge>
-                            )}
-                            {needsOtaReview(b) && (
-                              <Badge variant="destructive" data-testid="booking-ota-review-badge">
-                                {t('booking.otaReview.badge')}
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3" data-testid="booking-source">
-                          {b.source ? (
-                            <Badge variant={b.source === 'Manual' ? 'outline' : 'secondary'}>
-                              {getBookingSourceLabel(b.source, t)}
-                            </Badge>
-                          ) : null}
-                          {bookingChannelText(b, t) && (
-                            <div className="mt-1 text-xs text-muted-foreground" data-testid="booking-channel">
-                              {bookingChannelText(b, t)}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            {canWrite && canRegisterArrival(b) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                data-testid="booking-row-register-arrival"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setArrivalBooking(b);
-                                }}
-                              >
-                                {t('booking.arrival.action')}
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openBooking(b);
-                              }}
-                            >
-                              {t('booking.list.view')}
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {filtered.length === 0 && (
-                      <tr>
-                        <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
-                          {t('booking.list.noResults')}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
       <CheckInDialog
-        booking={arrivalBooking}
-        open={arrivalBooking !== null}
+        booking={arriving}
+        open={arriving !== null}
         onOpenChange={(open) => {
-          if (!open) setArrivalBooking(null);
+          if (!open) setArriving(null);
+        }}
+      />
+      <DeclineBookingDialog
+        booking={declining}
+        open={declining !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeclining(null);
+        }}
+      />
+      <CancelBookingDialog
+        bookingId={cancelling?.id ?? ''}
+        open={cancelling !== null}
+        onOpenChange={(open) => {
+          if (!open) setCancelling(null);
         }}
       />
     </AppShell>
   );
+}
+
+/**
+ * `/app/short-rent/bookings`. An address of the list as it was before (`?status=Confirmed`, `?propertyId=…`, which the page of a
+ * property still links to) becomes the address of this one (`?chip=upcoming`, `?f_property=…`) and the list opens on it.
+ */
+export function BookingsPage() {
+  const [address] = useSearchParams();
+  const current = currentBookingsSearch(address);
+  if (current) return <Navigate to={{ search: `?${current}` }} replace />;
+  return <BookingsListPage />;
 }

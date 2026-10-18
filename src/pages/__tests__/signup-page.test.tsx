@@ -41,6 +41,7 @@ function renderSignup(entry = SIGNUP_URL) {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/" element={<p data-testid="workspace-root">root</p>} />
           <Route path="/login" element={<p data-testid="login-page">login</p>} />
+          <Route path="/register" element={<p data-testid="supplier-register">register</p>} />
         </Routes>
       </MemoryRouter>
     </AuthAppProviders>,
@@ -159,5 +160,14 @@ describe('SignupPage (SE-03, A8-03)', () => {
 
     expect(await screen.findByTestId('workspace-root')).toBeInTheDocument();
     expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
+  });
+
+  it('roleSupplier_GoesToTheSupplierRegistrationWithoutAuth0OrAttribution', async () => {
+    renderSignup('/signup?role=supplier&utm_source=qr');
+
+    expect(await screen.findByTestId('supplier-register')).toBeInTheDocument();
+    expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
+    // A supplier is not a host signup: nothing is stored to be attributed to an org.
+    expect(pendingAttribution()).toBeNull();
   });
 });

@@ -32,7 +32,9 @@ test.describe('Production deploy smoke (Vercel FE + Railway prod API)', () => {
   });
 
   test('prod bundle targets production API (not test)', async ({ page }) => {
-    await page.goto(PROD_FE_URL, { waitUntil: 'domcontentloaded' });
+    // `/search` is always the single-page app and a public page: the root is the public site's home page (SEO-VETRINA),
+    // another bundle, and `/login` leaves for Auth0 as soon as the app starts.
+    await page.goto(`${PROD_FE_URL}/search`, { waitUntil: 'domcontentloaded' });
     const html = await page.content();
     const scriptMatch = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
     expect(scriptMatch, 'main JS bundle must be referenced').toBeTruthy();

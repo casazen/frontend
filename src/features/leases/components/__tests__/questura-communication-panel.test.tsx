@@ -16,14 +16,6 @@ import type { QuesturaCommunicationStatus, RliChecklist } from '@/types';
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// Radix Checkbox measures itself with ResizeObserver, which jsdom does not provide.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 const put = vi.mocked(axios.put);

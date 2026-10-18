@@ -7,6 +7,9 @@ import { LeasesPage } from '../leases-page';
 import { buildSummary, HTML_FALLBACK, httpError, renderAt } from './lease-test-utils';
 
 // The real leasesApi and ApiClient run: only the HTTP layer is replaced.
+// The first-steps guide has its own tests and reads other endpoints.
+vi.mock('@/features/onboarding/components/long-rent-guide', () => ({ LongRentGuide: () => null }));
+vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => ({ userId: 'auth0|tester', context: 'long-rent' }) }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 const get = vi.mocked(axios.get);
@@ -15,16 +18,20 @@ function renderPage() {
   return renderAt('/app/long-rent/leases', '/app/long-rent/leases', createElement(LeasesPage));
 }
 
+/** The table of the page, once it is there (the cards of a phone are in the page too: a media query shows one of the two). */
+const findTable = (name = 'Contratti') => screen.findByRole('table', { name });
+
 describe('LeasesPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     await i18n.changeLanguage('it');
   });
 
-  it('render_RealisticLeases_ShowsCardsWithTranslatedStatusRentAndPartyCount', async () => {
+  it('render_RealisticLeases_ShowsTenantPropertyStatusRentAndWhatIsLate', async () => {
     get.mockResolvedValue({
       data: [
-        buildSummary(),
+        buildSummary({ tenantFirstName: 'Giulia', tenantLastName: 'Verdi', overdueRentCount: 1, overdueRentAmount: 950, overdueDays: 6 }),
         buildSummary({
           id: 'lease-2',
           property: null,
@@ -33,24 +40,25 @@ describe('LeasesPage', () => {
           fiscalRegime: 'CanoneConcordato',
           contractType: 'Concordato',
           taxRegime: null,
-          partyCount: 3,
         }),
       ],
     });
 
     renderPage();
 
-    const cards = await screen.findAllByTestId('lease-card');
-    expect(cards).toHaveLength(2);
-    expect(within(cards[0]).getByText('Casa Trastevere')).toBeInTheDocument();
+    const table = within(await findTable());
+    expect(table.getByRole('rowheader', { name: /Giulia Verdi/ })).toBeInTheDocument();
+    expect(table.getByText(/Casa Trastevere/)).toBeInTheDocument();
     // Every real status has a label: never the raw key "leases.statusLabel.SentToProvider" (A7-15).
-    expect(within(cards[0]).getByText('Inviato al provider')).toBeInTheDocument();
-    expect(within(cards[0]).getByText(/950,00\s€\/mese/)).toBeInTheDocument();
-    expect(within(cards[0]).getByText('2')).toBeInTheDocument();
-    expect(within(cards[1]).getByText('abcdef12')).toBeInTheDocument();
-    expect(within(cards[1]).getByText('Firmato parzialmente')).toBeInTheDocument();
-    expect(within(cards[1]).getByText('3')).toBeInTheDocument();
+    expect(table.getByText('Inviato al provider')).toBeInTheDocument();
+    expect(table.getAllByText(/950,00\s€\/mese/)).toHaveLength(2);
+    expect(table.getByText(/In ritardo da 6 giorni/)).toBeInTheDocument();
+    // A lease with no tenant yet and no property that can be read says so, never an id.
+    expect(table.getByText('Conduttore da indicare')).toBeInTheDocument();
+    expect(table.getByText('Immobile non disponibile')).toBeInTheDocument();
+    expect(table.getByText('Firmato parzialmente')).toBeInTheDocument();
     expect(screen.queryByText(/leases\.statusLabel/)).not.toBeInTheDocument();
+    // The plain list asks for no view and no search: it is the same request the guide makes.
     expect(get).toHaveBeenCalledWith('/leases', expect.objectContaining({ params: undefined }));
   });
 
@@ -60,9 +68,9 @@ describe('LeasesPage', () => {
 
     renderPage();
 
-    const card = await screen.findByTestId('lease-card');
-    expect(within(card).getByText('Registration pending')).toBeInTheDocument();
-    expect(within(card).getByText(/\/mo$/)).toBeInTheDocument();
+    const table = within(await findTable('Leases'));
+    expect(table.getByText('Registration pending')).toBeInTheDocument();
+    expect(table.getByText(/\/mo$/)).toBeInTheDocument();
   });
 
   it('render_NoLeases_ShowsEmptyStateWithCreateAction', async () => {
@@ -71,8 +79,21 @@ describe('LeasesPage', () => {
     renderPage();
 
     expect(await screen.findByText('Nessun contratto')).toBeInTheDocument();
-    expect(screen.queryByTestId('leases-load-error')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Nuovo contratto' }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Nuovo contratto' })).toHaveAttribute('href', '/app/long-rent/leases/new');
+    const guide = screen.getByTestId('long-rent-start-guide');
+    expect(within(guide).getByRole('link', { name: 'Aggiungi l\'immobile' })).toHaveAttribute(
+      'href',
+      '/app/long-rent/properties/new',
+    );
+    expect(within(guide).getByRole('link', { name: 'Vai agli immobili' })).toHaveAttribute(
+      'href',
+      '/app/long-rent/properties',
+    );
+    expect(within(guide).getByRole('link', { name: 'Crea il contratto' })).toHaveAttribute(
+      'href',
+      '/app/long-rent/leases/new',
+    );
   });
 
   it('render_HtmlFallbackBody_ShowsLoadErrorInsteadOfCrashing', async () => {
@@ -82,10 +103,10 @@ describe('LeasesPage', () => {
 
     renderPage();
 
-    const alert = await screen.findByTestId('leases-load-error');
+    const alert = await screen.findByRole('alert');
     expect(within(alert).getByText('Impossibile caricare i contratti. Riprova.')).toBeInTheDocument();
     expect(screen.queryByText('Nessun contratto')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('lease-card')).not.toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
   it('render_ServerError_ShowsErrorNotEmptyState_AndRetryLoadsTheList', async () => {
@@ -94,14 +115,14 @@ describe('LeasesPage', () => {
 
     renderPage();
 
-    const alert = await screen.findByTestId('leases-load-error');
+    const alert = await screen.findByRole('alert');
     expect(within(alert).getByText('Impossibile caricare i contratti. Riprova.')).toBeInTheDocument();
     expect(screen.queryByText(/NullReferenceException/)).not.toBeInTheDocument();
     expect(screen.queryByText('Nessun contratto')).not.toBeInTheDocument();
 
     fireEvent.click(within(alert).getByRole('button', { name: 'Riprova' }));
 
-    expect(await screen.findByTestId('lease-card')).toBeInTheDocument();
+    expect(await findTable()).toBeInTheDocument();
     expect(get).toHaveBeenCalledTimes(2);
   });
 
@@ -110,7 +131,7 @@ describe('LeasesPage', () => {
 
     renderPage();
 
-    const alert = await screen.findByTestId('leases-load-error');
+    const alert = await screen.findByRole('alert');
     expect(within(alert).getByText(i18n.t('apiErrors.network'))).toBeInTheDocument();
     expect(screen.queryByText('Nessun contratto')).not.toBeInTheDocument();
   });
@@ -120,7 +141,7 @@ describe('LeasesPage', () => {
 
     renderPage();
 
-    const alert = await screen.findByTestId('leases-load-error');
+    const alert = await screen.findByRole('alert');
     expect(within(alert).getByText(i18n.t('apiErrors.forbidden'))).toBeInTheDocument();
   });
 });

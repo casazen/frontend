@@ -1,360 +1,197 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { CircleDashed, IdCard, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingScreen } from '@/components/shared/loading-screen';
 import { EmptyState } from '@/components/shared/empty-state';
-import { GdprTab } from './components/gdpr-tab';
-import { GuestDocumentNumberRow } from './components/guest-document-number-row';
+import { ErrorState } from '@/components/shared/error-state';
+import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { guestsApi } from '@/api/guests.api';
-import { bookingsApi } from '@/api/bookings.api';
-import { formatDate, formatCurrency } from '@/lib/utils';
-import { getBookingStatusLabel } from '@/lib/i18n-labels';
-import { toast } from 'sonner';
-import { ArrowLeft, RefreshCw, User, MapPin, FileText, Shield, Calendar, Loader2, Download } from 'lucide-react';
-import { getProblemMessage } from '@/lib/api-errors';
-import { saveBlobAs } from '@/lib/file-download';
+import { asBookingPage, bookingsApi } from '@/api/bookings.api';
+import { getHttpStatus } from '@/lib/api-errors';
+import { todayInRome } from '@/lib/stay-dates';
+import { cn } from '@/lib/utils';
+import type { Guest } from '@/types';
+import { GdprTab } from './components/gdpr-tab';
+import { GuestDataTab } from './components/guest-data-tab';
+import { GuestDocumentsTab } from './components/guest-documents-tab';
+import { GuestStayFocus } from './components/guest-stay-focus';
+import { GuestStaysTab } from './components/guest-stays-tab';
+import { focusStayOf } from './lib/guest-stays';
 
-const BOOKING_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  Confirmed: 'default',
-  Pending: 'secondary',
-  CheckedIn: 'default',
-  CheckedOut: 'outline',
-  Cancelled: 'destructive',
-};
+const GUESTS_PATH = '/app/short-rent/guests';
 
-type TabKey = 'anagrafica' | 'prenotazioni' | 'documenti' | 'gdpr';
+/** Values of `?tab=` on the guest's page; an unknown one opens the first. */
+const PANELS = ['details', 'stays', 'documents', 'privacy'] as const;
+type GuestPanel = (typeof PANELS)[number];
+const panelOf = (value: string | null): GuestPanel => PANELS.find((panel) => panel === value) ?? 'details';
 
-const TABS: { key: TabKey; labelI18nKey: string; icon: React.ReactNode }[] = [
-  { key: 'anagrafica', labelI18nKey: 'guests.anagrafica', icon: <User className="h-4 w-4" /> },
-  { key: 'prenotazioni', labelI18nKey: 'guests.bookings', icon: <FileText className="h-4 w-4" /> },
-  { key: 'documenti', labelI18nKey: 'guests.documents', icon: <FileText className="h-4 w-4" /> },
-  { key: 'gdpr', labelI18nKey: 'guests.gdpr', icon: <Shield className="h-4 w-4" /> },
-];
+/** The page while the guest loads: the shape of the page, no spinner in the middle of nothing. */
+function GuestDetailSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="guest-detail-loading">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-2/3 max-w-sm motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-1/2 max-w-xs motion-reduce:animate-none" />
+        </div>
+        <Skeleton className="h-36 w-full rounded-xl motion-reduce:animate-none" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-11/12 motion-reduce:animate-none" />
+          <Skeleton className="h-4 w-2/3 motion-reduce:animate-none" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
+/**
+ * Whether the guest's document is on file, from what the guest record already says (a document number or a scan). It says
+ * nothing about it being checked: there is no such state in the data, and none is made up.
+ */
+function GuestDocumentStatus({ onFile }: { onFile: boolean }) {
+  const { t } = useTranslation();
+  const Icon = onFile ? IdCard : CircleDashed;
+
+  return (
+    <span
+      data-testid="guest-document-status"
+      data-on-file={onFile}
+      className={cn(
+        'inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset',
+        STATUS_TONE_CLASSES[onFile ? 'success' : 'neutral'],
+      )}
+    >
+      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      <span className="min-w-0 break-words">{t(onFile ? 'guests.detailPage.documentOnFile' : 'guests.detailPage.documentMissing')}</span>
+    </span>
+  );
+}
+
+const hasDocumentOnFile = (guest: Guest) => Boolean(guest.documentNumberMasked) || guest.hasDocumentScan;
+
+/**
+ * `/app/short-rent/guests/:id`: one guest (SR-04b, a restyling: same data, same endpoints, same privacy). The header says who
+ * the guest is, how to reach them and whether a document is on file; under it the one highlighted block, the stay that matters
+ * now with the way to its booking, and then the tabs Dati dell'ospite, Soggiorni, Documenti and Privacy, each made of sections
+ * without a box. The tab is in the address (`?tab=`).
+ */
 export function GuestDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<TabKey>('anagrafica');
+  const [searchParams] = useSearchParams();
+  const activeTab = panelOf(searchParams.get('tab'));
 
   const {
     data: guest,
     isLoading,
     isError,
+    error,
     refetch,
-    isRefetching,
   } = useQuery({
     queryKey: ['guests', id],
     queryFn: () => guestsApi.getById(id!),
     enabled: !!id,
   });
 
-  const {
-    data: guestBookings,
-    isLoading: bookingsLoading,
-  } = useQuery({
+  // The bookings of the guest change on other screens (arrival, cancellation): read them again when the page is opened.
+  const staysQuery = useQuery({
     queryKey: ['bookings', { guestId: id }],
     queryFn: () => bookingsApi.getByGuestId(id!),
     enabled: !!id,
+    refetchOnMount: true,
   });
 
-  const bookings = guestBookings ?? [];
-
   if (isLoading) {
-    return <LoadingScreen message={t('shared.loading.defaultMessage')} className="h-auto flex-1" />;
+    return <GuestDetailSkeleton label={t('guests.detailPage.loading')} />;
   }
 
-  if (isError || !guest) {
+  // An API error is never shown as "not found" (only a 404 is).
+  if (isError && getHttpStatus(error) !== 404) {
     return (
       <AppShell>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">{t('guests.notFound')}</h2>
-          <p className="text-muted-foreground mb-4">
-            {t('guests.notFoundDescription')}
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <Button variant="outline" onClick={() => refetch()} disabled={isRefetching}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-              {t('guests.retry')}
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/app/short-rent/guests')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('guests.backToGuests')}
-            </Button>
-          </div>
+        <div className="min-w-0 space-y-6">
+          <PageHeader crumbs="auto" title={t('guests.detailPage.fallbackTitle')} />
+          <ErrorState testId="guest-load-error" title={t('guests.detailPage.loadError')} error={error} onRetry={() => void refetch()} />
         </div>
       </AppShell>
     );
   }
 
+  if (!guest) {
+    return (
+      <AppShell>
+        <div className="min-w-0 space-y-6">
+          <PageHeader crumbs="auto" title={t('guests.detailPage.fallbackTitle')} />
+          <EmptyState
+            icon={Users}
+            title={t('guests.notFound')}
+            description={t('guests.notFoundDescription')}
+            action={{ label: t('guests.backToGuests'), href: GUESTS_PATH }}
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const stays = asBookingPage(staysQuery.data).items;
+  const focus = focusStayOf(stays, todayInRome());
+  const fullName = `${guest.firstName} ${guest.lastName}`.trim() || t('guests.detailPage.fallbackTitle');
+  // The line under the name: how to reach the guest (both are on the Dati dell'ospite tab too).
+  const contacts = [guest.email, guest.phoneNumber].filter(Boolean).join(' · ');
+
+  // The test ids are how the end-to-end tests and the tests reach the tabs.
+  const tabs: TabItem<GuestPanel>[] = [
+    { value: 'details', label: t('guests.detailPage.tabs.details'), testId: 'guest-tab-details' },
+    { value: 'stays', label: t('guests.detailPage.tabs.stays'), testId: 'guest-tab-stays' },
+    { value: 'documents', label: t('guests.detailPage.tabs.documents'), testId: 'guest-tab-documents' },
+    { value: 'privacy', label: t('guests.detailPage.tabs.privacy'), testId: 'guest-tab-privacy' },
+  ];
+
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
+        {/* The trail (Affitti brevi › Ospiti › this guest) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
-          title={t('guests.detail')}
-          description={`${guest.firstName} ${guest.lastName}`}
-          action={
-            <Button variant="outline" onClick={() => navigate('/app/short-rent/guests')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('guests.title')}
-            </Button>
-          }
+          crumbs="auto"
+          title={fullName}
+          description={contacts || undefined}
+          action={<GuestDocumentStatus onFile={hasDocumentOnFile(guest)} />}
         />
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-1 border-b pb-px">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-md transition-colors border-b-2 -mb-px ${
-                activeTab === tab.key
-                  ? 'border-primary text-primary bg-background'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50'
-              }`}
-            >
-              {tab.icon}
-              {t(tab.labelI18nKey)}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'anagrafica' && (
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  {t('guests.anagrafica')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.name')}</span>
-                  <span className="font-medium">{guest.firstName} {guest.lastName}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.email')}</span>
-                  <span className="font-medium">{guest.email}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.phone')}</span>
-                  <span className="font-medium">{guest.phoneNumber || '—'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.gender')}</span>
-                  <span className="font-medium">{guest.gender ?? '—'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.dateOfBirth')}</span>
-                  <span className="font-medium">
-                    {guest.dateOfBirth ? formatDate(guest.dateOfBirth) : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.placeOfBirth')}</span>
-                  <span className="font-medium">{guest.placeOfBirth || '—'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.nationality')}</span>
-                  <span className="font-medium">{guest.nationality || '—'}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  {t('guests.addressSection')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.address')}</span>
-                  <span className="font-medium">{guest.address || '—'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.city')}</span>
-                  <span className="font-medium">{guest.city || '—'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.postalCode')}</span>
-                  <span className="font-medium">{guest.postalCode || '—'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('guests.country')}</span>
-                  <span className="font-medium">{guest.country || '—'}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {guest.notes && (
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">{t('guests.notes')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm">{guest.notes}</p>
-                </CardContent>
-              </Card>
-            )}
+        {staysQuery.isLoading ? (
+          <div role="status" aria-busy="true" data-testid="guest-stay-focus-loading">
+            <span className="sr-only">{t('shared.loading.srOnly')}</span>
+            <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
           </div>
-        )}
+        ) : focus ? (
+          <GuestStayFocus stay={focus} />
+        ) : null}
 
-        {activeTab === 'prenotazioni' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('guests.bookings')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {bookingsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  <span className="ml-2 text-sm text-muted-foreground">{t('shared.loading.defaultMessage')}</span>
-                </div>
-              ) : bookings.length === 0 ? (
-                <EmptyState
-                  icon={Calendar}
-                  title={t('guests.noBookings')}
-                  description={t('guests.noBookingsDescription')}
-                />
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/40">
-                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.detail.propertyId')}</th>
-                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.list.columns.checkIn')}</th>
-                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.list.columns.checkOut')}</th>
-                        <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t('booking.list.columns.total')}</th>
-                        <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t('booking.list.columns.status')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookings.map((booking) => (
-                        <tr
-                          key={booking.id}
-                          className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                          onClick={() => navigate(`/app/short-rent/bookings/${booking.id}`)}
-                        >
-                          <td className="px-4 py-3 font-medium">{booking.propertyName ?? '—'}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{formatDate(booking.checkInDate)}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{formatDate(booking.checkOutDate)}</td>
-                          <td className="px-4 py-3 text-right font-medium">{formatCurrency(booking.totalPrice, booking.currency)}</td>
-                          <td className="px-4 py-3">
-                            <Badge variant={BOOKING_STATUS_VARIANT[booking.status] ?? 'secondary'}>
-                              {getBookingStatusLabel(booking.status, t)}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
+        <Tabs label={t('guests.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="guest-tabs-select">
+          {activeTab === 'details' && <GuestDataTab guest={guest} />}
 
-        {activeTab === 'documenti' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {t('guests.documents')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {guest.documentNumberMasked ? (
-                <>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('guests.documentType')}</span>
-                    <span className="font-medium">{guest.documentType ?? '—'}</span>
-                  </div>
-                  <GuestDocumentNumberRow guestId={guest.id} masked={guest.documentNumberMasked} />
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('guests.documentIssueDate')}</span>
-                    <span className="font-medium">
-                      {guest.documentIssueDate ? formatDate(guest.documentIssueDate) : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('guests.documentExpiryDate')}</span>
-                    <span className="font-medium">
-                      {guest.documentExpiryDate ? formatDate(guest.documentExpiryDate) : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('guests.documentIssuingCountry')}</span>
-                    <span className="font-medium">{guest.documentIssuingCountry || '—'}</span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center py-6 text-center text-muted-foreground">
-                  <FileText className="h-10 w-10 mb-2" />
-                  <p className="text-sm">{t('guests.noDocument')}</p>
-                </div>
-              )}
-              {guest.hasDocumentScan && <DocumentScanDownload guestId={guest.id} />}
-            </CardContent>
-          </Card>
-        )}
+          {activeTab === 'stays' && (
+            <GuestStaysTab
+              stays={stays}
+              isLoading={staysQuery.isLoading}
+              isError={staysQuery.isError && staysQuery.data === undefined}
+              error={staysQuery.error}
+              onRetry={() => void staysQuery.refetch()}
+            />
+          )}
 
-        {activeTab === 'gdpr' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                {t('guests.gdpr')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GdprTab guest={guest} />
-            </CardContent>
-          </Card>
-        )}
+          {activeTab === 'documents' && <GuestDocumentsTab guest={guest} />}
+
+          {activeTab === 'privacy' && <GdprTab guest={guest} />}
+        </Tabs>
       </div>
     </AppShell>
-  );
-}
-
-const SCAN_EXTENSIONS: Record<string, string> = {
-  'application/pdf': '.pdf',
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-};
-
-/** Download of the identity document scan uploaded by the guest (private storage, authenticated and audited). */
-function DocumentScanDownload({ guestId }: { guestId: string }) {
-  const { t } = useTranslation();
-  const download = useMutation({
-    mutationFn: () => guestsApi.downloadDocumentScan(guestId),
-    onSuccess: (blob) => saveBlobAs(blob, `${t('guests.documentScanFileName')}${SCAN_EXTENSIONS[blob.type] ?? ''}`),
-    onError: (error) => {
-      toast.error(getProblemMessage(error, t) ?? t('guests.documentScanDownloadFailed'));
-    },
-  });
-
-  return (
-    <div className="flex justify-end pt-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => download.mutate()}
-        disabled={download.isPending}
-        data-testid="guest-document-scan-download"
-      >
-        {download.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-        {t('guests.downloadDocumentScan')}
-      </Button>
-    </div>
   );
 }

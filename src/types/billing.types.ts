@@ -38,6 +38,12 @@ export interface BillingSubscription {
   seats: number;
   billingCountry: string | null;
   vatId: string | null;
+  /** SDI recipient code of the Italian e-invoice (PL-13). */
+  sdiRecipientCode?: string | null;
+  /** PEC address of the Italian e-invoice (PL-13). */
+  pecEmail?: string | null;
+  /** Codice fiscale of the billed person or company (PL-13). */
+  fiscalCode?: string | null;
 }
 
 /** `POST /api/billing/checkout-session`. */

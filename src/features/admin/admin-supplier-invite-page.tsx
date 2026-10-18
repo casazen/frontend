@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,8 @@ import { ComunePicker } from '@/components/shared/comune-picker';
 
 const ISTAT_CODE = /^[0-9]{6}$/;
 
-export function AdminSupplierInvitePage() {
+/** Form of a supplier invite (email, comune, categories, message), inside the invites section of the admin. */
+export function AdminSupplierInviteForm() {
   const { t } = useTranslation();
   const invite = useInviteSupplier();
   const [email, setEmail] = useState('');
@@ -58,10 +58,6 @@ export function AdminSupplierInvitePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('admin.supplierInvite.title')}
-        description={t('admin.supplierInvite.description')}
-      />
       <Card>
         <CardHeader>
           <CardTitle>{t('admin.supplierInvite.newInvite')}</CardTitle>

@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FeatureFlagsProvider } from '../feature-flags-provider';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { parseFeatureFlags } from '@/config/feature-flags';
+import { DEFAULT_FEATURE_FLAGS, parseFeatureFlags } from '@/config/feature-flags';
 import { featuresApi } from '@/api/features.api';
 
 vi.mock('@/api/features.api', () => ({
@@ -57,7 +57,10 @@ describe('FeatureFlagsProvider', () => {
 
 describe('parseFeatureFlags', () => {
   it('turns on only the known flags set to true', () => {
-    const allOff = { otaPartnerApi: false, aiSupplierDiscovery: false, rliProvider: false, eSignProvider: false };
+    // Every known flag, off: derived from the defaults so that adding a flag does not touch this test.
+    const allOff = Object.fromEntries(Object.keys(DEFAULT_FEATURE_FLAGS).map((key) => [key, false])) as typeof DEFAULT_FEATURE_FLAGS;
+    // Every flag ships off (fail closed): a default of `true` would turn a feature on for everybody before the backend says so.
+    expect(DEFAULT_FEATURE_FLAGS).toEqual(allOff);
     expect(parseFeatureFlags({ otaPartnerApi: true, somethingElse: true })).toEqual({ ...allOff, otaPartnerApi: true });
     expect(parseFeatureFlags({ eSignProvider: true })).toEqual({ ...allOff, eSignProvider: true });
     expect(parseFeatureFlags({ aiSupplierDiscovery: true })).toEqual({ ...allOff, aiSupplierDiscovery: true });

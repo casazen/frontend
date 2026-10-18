@@ -26,21 +26,16 @@ test.describe('Plan management (#202 extension)', () => {
     await mockPlansCatalog(page);
   });
 
-  for (const tier of PLAN_TIERS) {
-    test(`onboarding wizard allows selecting ${tier} plan`, async ({ page }) => {
-      await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
+  // The backend starts every org on Starter (a paid plan comes from Stripe), so the wizard never asks for a plan.
+  test('onboarding wizard does not ask for a plan and opens the first property', async ({ page }) => {
+    await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
 
-      await page.getByRole('button', { name: 'Scegli' }).first().click();
-      await completeOnboardingConsents(page);
+    await page.getByRole('button', { name: 'Scegli' }).first().click();
+    await completeOnboardingConsents(page);
 
-      await expect(page.getByTestId('plan-selection-grid')).toBeVisible();
-
-      await page.getByTestId(`plan-card-${tier}`).getByRole('button', { name: 'Seleziona' }).click();
-      await page.getByTestId('onboarding-plan-confirm').click();
-
-      await expect(page).not.toHaveURL(/\/onboarding/);
-    });
-  }
+    await expect(page.getByTestId('plan-selection-grid')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/app\/short-rent\/properties\/create\?first=1/);
+  });
 
   // PL-12: a paid plan is bought through Stripe Checkout, never switched for free (FD-18).
   for (const tier of PLAN_TIERS) {

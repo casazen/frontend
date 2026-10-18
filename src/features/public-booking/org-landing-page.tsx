@@ -5,6 +5,7 @@ import { Home, Loader2, TriangleAlert } from 'lucide-react';
 import { useOrgProperties } from '@/queries/use-public-org';
 import { Hero } from '@/features/public-site/components/Hero';
 import { PublicPropertyCard } from '@/features/public-site/components/PublicPropertyCard';
+import { propertyCardSections } from '@/features/public-site/lib/property-card-sections';
 import { Button } from '@/components/ui/button';
 import type { PublicOrgDto } from '@/types';
 import { displayableMediaUrls } from '@/lib/media-url';
@@ -46,6 +47,8 @@ export function OrgLandingPage() {
 
   const heroImage = org.heroImageUrl ?? displayableMediaUrls(properties[0]?.photoUrls)[0] ?? null;
   const hasProperties = properties.length > 0;
+  // The cards line up row by row: each one has a row for every part that any of them has.
+  const cardSections = propertyCardSections(properties);
 
   return (
     <div className="space-y-[var(--cz-public-section-y)]">
@@ -126,6 +129,7 @@ export function OrgLandingPage() {
                 key={property.id}
                 property={property}
                 to={{ pathname: buildPropertyBookingPath(orgSlug ?? '', property), search }}
+                sections={cardSections}
               />
             ))}
           </div>

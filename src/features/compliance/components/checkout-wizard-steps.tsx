@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, Circle, ExternalLink, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -18,63 +18,16 @@ import { useServiceRequests, useSuppliersByProperty } from '@/queries/use-servic
 import { ServiceCategorySelect } from '@/features/service-requests/components/service-category-picker';
 import { guestDataCompletionPath } from '@/features/bookings/lib/stay-actions';
 import {
-  CHECKOUT_WIZARD_STEPS,
   TOURIST_TAX_COLLECTIONS,
   type CheckoutWizardState,
-  type CheckoutWizardStepId,
   type TouristTaxCollection,
 } from '@/types/compliance.types';
-import { canOpenStep, isStepAnswered, type CheckoutDraft } from '../checkout-wizard-model';
+import type { CheckoutAnswers } from '../checkout-wizard-model';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-type DraftChange = (change: Partial<CheckoutDraft>) => void;
-
-/** Progress of the 5 steps: each one can be opened once the steps before it are answered (CO-17). */
-export function CheckoutStepper({
-  draft,
-  onSelect,
-}: {
-  draft: CheckoutDraft;
-  onSelect: (step: CheckoutWizardStepId) => void;
-}) {
-  const { t } = useTranslation();
-  const answered = CHECKOUT_WIZARD_STEPS.filter((step) => isStepAnswered(draft, step)).length;
-
-  return (
-    <nav aria-label={t('compliance.checkout.progress', { done: answered, total: CHECKOUT_WIZARD_STEPS.length })}>
-      <ol className="flex flex-wrap gap-2" data-testid="checkout-wizard-progress">
-        {CHECKOUT_WIZARD_STEPS.map((step, index) => {
-          const current = step === draft.step;
-          const done = isStepAnswered(draft, step);
-          return (
-            <li key={step}>
-              <button
-                type="button"
-                data-testid={`checkout-step-${step}`}
-                data-status={done ? 'complete' : 'pending'}
-                aria-current={current ? 'step' : undefined}
-                disabled={!canOpenStep(draft, step)}
-                onClick={() => onSelect(step)}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 ${
-                  current ? 'border-primary bg-primary/5' : 'border-border'
-                }`}
-              >
-                {done ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600" aria-hidden />
-                ) : (
-                  <Circle className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-                )}
-                <span>{`${index + 1}. ${t(`compliance.checkout.steps.${step}.title`)}`}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
-  );
-}
+type DraftChange = (change: Partial<CheckoutAnswers>) => void;
 
 function SummaryRow({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
@@ -94,7 +47,7 @@ export function StaySummaryStep({
   onChange,
 }: {
   state: CheckoutWizardState;
-  draft: CheckoutDraft;
+  draft: CheckoutAnswers;
   onChange: DraftChange;
 }) {
   const { t, i18n } = useTranslation();
@@ -199,7 +152,7 @@ export function CleaningStep({
   onChange,
 }: {
   state: CheckoutWizardState;
-  draft: CheckoutDraft;
+  draft: CheckoutAnswers;
   onChange: DraftChange;
 }) {
   const { t } = useTranslation();
@@ -333,7 +286,7 @@ export function TouristTaxStep({
   onChange,
 }: {
   state: CheckoutWizardState;
-  draft: CheckoutDraft;
+  draft: CheckoutAnswers;
   onChange: DraftChange;
 }) {
   const { t } = useTranslation();
@@ -383,7 +336,7 @@ export function TouristTaxStep({
 }
 
 /** Step 5: the property is ready for the next guest, or not yet (it stays in the cockpit), with notes. */
-export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutDraft; onChange: DraftChange }) {
+export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutAnswers; onChange: DraftChange }) {
   const { t } = useTranslation();
 
   return (

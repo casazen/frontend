@@ -4,7 +4,7 @@
  * The web app is a single-page app: `index.html` is empty (title, description, canonical, Open Graph and JSON-LD would
  * only exist after JavaScript and API calls), so search engines and link previews (WhatsApp, Facebook, LinkedIn, ...)
  * saw nothing of a booking site or a guide. `vercel.json` sends the requests of known crawlers (`user-agent` rewrites)
- * for `/book/:orgSlug`, `/book/:orgSlug/property/:property`, `/p/affitti-brevi`, `/p/affitti-brevi/:region/:comune` and
+ * for `/book/:orgSlug`, `/book/:orgSlug/property/:property`, `/fornitori/:slug`, `/p/affitti-brevi`, `/p/affitti-brevi/:region/:comune` and
  * `/p/tassa-soggiorno/:comune` here. People never reach this function: they keep getting the single-page app, so a
  * failure here can only affect crawlers, which retry later.
  *
@@ -26,7 +26,7 @@
  */
 
 /** What a crawler page is (the `kind` of the rewrite in `vercel.json`) and the parameters it needs. */
-export type SeoKind = 'org' | 'property' | 'guide' | 'tourist-tax' | 'hub' | 'host';
+export type SeoKind = 'org' | 'property' | 'guide' | 'tourist-tax' | 'hub' | 'host' | 'supplier';
 
 export interface SeoRoute {
   kind: SeoKind;
@@ -47,7 +47,7 @@ const SLUG = /^[A-Za-z0-9-]{1,100}$/;
 const HOST_PAGE_PATH = /^\/(?:property\/[A-Za-z0-9._~%-]{1,150})?$/;
 
 /** A same-host canonical path the backend may redirect to (never a URL on another host). */
-const SAFE_REDIRECT_PATH = /^\/(?:(?:book|p)(?:\/[A-Za-z0-9._~%-]+)*|property\/[A-Za-z0-9._~%-]+)?$/;
+const SAFE_REDIRECT_PATH = /^\/(?:(?:book|p|fornitori)(?:\/[A-Za-z0-9._~%-]+)*|property\/[A-Za-z0-9._~%-]+)?$/;
 
 /** Only a path of the public pages, without dot segments (also percent-encoded: browsers resolve `%2e%2e` too). */
 function isSafeRedirectPath(location: string): boolean {
@@ -83,6 +83,10 @@ export function seoRoute(searchParams: URLSearchParams): SeoRoute | null {
     case 'tourist-tax': {
       const comune = slug(searchParams.get('comune'));
       return comune ? { kind, path: `tourist-tax/${comune}`, needsHost: false } : null;
+    }
+    case 'supplier': {
+      const supplier = slug(searchParams.get('slug'));
+      return supplier ? { kind, path: `suppliers/${supplier}`, needsHost: false } : null;
     }
     case 'hub':
       return { kind, path: 'hub', needsHost: false };
@@ -207,7 +211,8 @@ export async function GET(request: Request): Promise<Response> {
   if (route.kind === 'host') {
     // Only a plain host name is ever compared, sent upstream or used to build a URL.
     if (!host || !PLAIN_HOST.test(host)) return notFound();
-    // `/` and `/property/…` of the app's own host are not an org's pages: the single-page app, as before.
+    // `/` and `/property/…` of the app's own host are not an org's pages: the single-page app, as before. (`/` there is
+    // normally answered earlier by `middleware.ts` with the public site's home page, SEO-VETRINA.)
     if (isAppHost(host, process.env.VITE_PUBLIC_SITE_URL)) return singlePageApp(request.headers, host);
   }
 

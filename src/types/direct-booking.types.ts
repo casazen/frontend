@@ -127,6 +127,18 @@ export interface GuestBookingLookupPayload {
   email: string;
 }
 
+/**
+ * A guest session with no account (DB-06a, `POST /api/public/guest/session`): the signed token the guest area expects as
+ * `Authorization: Bearer`, until when it works (UTC instant; there is no refresh) and the booking the guest proved.
+ * The same shape is what the page keeps in `sessionStorage`. The guest's email is never part of it.
+ */
+export interface GuestSession {
+  accessToken: string;
+  expiresAt: string;
+  /** `XXXXX-XXXXX` */
+  bookingCode: string;
+}
+
 /** State of a booking for its guest: the checkout outcome states plus the stay in progress / over. */
 export type GuestBookingStatus =
   | CheckoutOutcomeState
@@ -137,8 +149,9 @@ export type GuestBookingStatus =
 export type GuestCheckInAccessStatus = 'NotApplicable' | 'NotYetOpen' | 'Open' | 'Completed';
 
 /**
- * One booking as its guest sees it (`POST /api/public/bookings/lookup`, BK-11). No personal data: amounts in `currency`
- * as recorded on the booking; the host contact is the one of the booking site.
+ * One booking as its guest sees it (`GET /api/public/guest/bookings/{code}` with the guest session, DB-06a; the body of
+ * `POST /api/public/bookings/lookup` is the same, BK-11). No personal data: amounts in `currency` as recorded on the
+ * booking; the host contact is the one of the booking site.
  */
 export interface GuestBookingDetails {
   /** `XXXXX-XXXXX` */

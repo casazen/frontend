@@ -105,7 +105,7 @@ describe('SupplierActivationPage: wizard persisted by the server (SU-05, A4-09)'
     renderPage();
 
     expect(await screen.findByLabelText('Descrizione')).toBeInTheDocument();
-    expect(screen.getByTestId('supplier-activation-step-of')).toHaveTextContent('Passo 4 di 5');
+    expect(screen.getByTestId('supplier-activation-step-of')).toHaveTextContent('Passo 2 di 3');
   });
 
   it('saves the step on the server when the supplier moves to another one', async () => {
@@ -113,11 +113,26 @@ describe('SupplierActivationPage: wizard persisted by the server (SU-05, A4-09)'
 
     fireEvent.click(await screen.findByTestId('supplier-activation-nav-profile'));
 
-    await waitFor(() => expect(api.saveSupplierActivationStep.mock.calls[0]?.[0]).toBe(4));
+    await waitFor(() => expect(api.saveSupplierActivationStep.mock.calls[0]?.[0]).toBe(3));
     expect(await screen.findByLabelText('Descrizione')).toBeInTheDocument();
   });
 
-  it('saves the description and moves on to step 5, remembering it', async () => {
+  it('shows three screens when registration already collected the business details, four when it did not', async () => {
+    const { unmount } = renderPage();
+    await screen.findByTestId('supplier-activation-nav-services');
+    expect(screen.queryByTestId('supplier-activation-nav-identity')).not.toBeInTheDocument();
+    expect(screen.getByTestId('supplier-activation-step-of')).toHaveTextContent('Passo 1 di 3');
+    unmount();
+
+    api.fetchSupplierActivation.mockResolvedValue(
+      activation({ currentStep: 1, steps: steps({ identity: { status: 'pending', blocker: 'phone_missing' } }) }),
+    );
+    renderPage();
+    expect(await screen.findByTestId('supplier-activation-nav-identity')).toBeInTheDocument();
+    expect(screen.getByTestId('supplier-activation-step-of')).toHaveTextContent('Passo 1 di 4');
+  });
+
+  it('saves the description and moves on to the last screen, remembering step 5', async () => {
     api.fetchSupplierActivation.mockResolvedValue(activation({ currentStep: 4 }));
     renderPage();
 

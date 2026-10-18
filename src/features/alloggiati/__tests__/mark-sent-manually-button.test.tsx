@@ -11,14 +11,6 @@ vi.mock('@/api/alloggiati.api', () => ({
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// Radix Checkbox measures itself with ResizeObserver, which jsdom does not provide.
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 function renderButton(status: AlloggiatiWebStatus, reportedAt: string | null = null) {

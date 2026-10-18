@@ -15,7 +15,9 @@ export type PaymentMethod =
   | 'BankTransfer'
   | 'PayPal'
   | 'ApplePay'
-  | 'GooglePay';
+  | 'GooglePay'
+  /** The guest pays at the property (a booking on request): the backend has had it since BK-01. */
+  | 'CashOnArrival';
 
 export interface Payment {
   id: string;
@@ -35,17 +37,56 @@ export interface Payment {
   updatedAt: string;
 }
 
+/**
+ * A payment as `GET /payments` lists it (SR-03, `PaymentListItemDto`): the guest, the property and the code of its booking,
+ * the amounts in euros and in cents (exact), the status and the method by name. The days are UTC instants: `processedAt` is
+ * when the money came in (null until then), `createdAt` when the payment was recorded.
+ */
+export interface PaymentListItem {
+  id: string;
+  bookingId: string;
+  /** The code the guest knows, `XXXXX-XXXXX`. */
+  bookingCode: string;
+  propertyId: string;
+  propertyName: string;
+  /** First and last name of the guest of the booking; empty when the booking has no name. */
+  guestName: string;
+  amount: number;
+  amountCents: number;
+  /** What was given back so far. */
+  refundedAmount: number;
+  refundedAmountCents: number;
+  currency: string;
+  status: PaymentStatus;
+  method: PaymentMethod;
+  description: string;
+  /** Empty for a payment nobody has a Stripe id for: with no `stripePaymentIntentId` it is a row only the host can collect (SR-06b). */
+  transactionId?: string;
+  /** The Stripe PaymentIntent; null for a payment that never went through Stripe. */
+  stripePaymentIntentId?: string | null;
+  processedAt: string | null;
+  createdAt: string;
+}
+
+/** `POST /payments` (SR-06b): a payment the host received outside CasaZen, cash or bank transfer, to record on a booking. */
 export interface CreatePaymentDto {
   bookingId: string;
   amount: number;
   currency?: string;
   method: PaymentMethod;
   description?: string;
+  /** The day the money came in (`YYYY-MM-DD`, Europe/Rome); today when missing. */
+  receivedOn?: string;
   applyOtaWithholding?: boolean;
   manualWithholdingTax?: number;
   otaWithholdingTax?: number;
   withholdingTaxApplied?: boolean;
   netAmountAfterWithholding?: number;
+}
+
+/** What the host's record is sent with: the key that makes it happen once, however many times it is sent (header `Idempotency-Key`). */
+export interface RecordPaymentInput extends CreatePaymentDto {
+  idempotencyKey: string;
 }
 
 export interface UpdatePaymentDto extends Partial<CreatePaymentDto> {

@@ -1,42 +1,30 @@
 import { useEffect, useMemo, useRef } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { Wrench } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import '@/config/detail-kinds';
 import type { AppContextKey } from '@/config/route-manifest';
+import { useCurrentUser } from '@/queries/use-users';
+import { useUiStore } from '@/store/ui-store';
+import { cn } from '@/lib/utils';
+import { CommandPaletteProvider } from '@/components/shared/command-palette/command-palette-provider';
+import { CommandPaletteTrigger } from '@/components/shared/command-palette/command-palette-trigger';
 import { DemoBanner } from '@/components/shared/demo-banner';
+import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
 import { ContextSidebar } from './context-sidebar';
 import { Header } from './header';
-import { MobileNavDrawer } from './mobile-nav-drawer';
+import { MoreSheet } from './more-sheet';
 import { RouteFocus } from './route-focus';
 import { SkipLink } from './skip-link';
 
 /** `id` of the content region: target of the skip link and of the focus at every change of page. */
 const MAIN_CONTENT_ID = 'main-content';
 
-/** Height of the sticky header (`h-16`): what the window keeps free at the top when it scrolls something into view. */
-const HEADER_HEIGHT = '4rem';
-
-interface ShellContextPresentation {
-  subtitleKey: string;
-  icon?: LucideIcon;
-  iconClassName?: string;
-  footerLabelKey?: string;
-}
-
-/** What differs between the areas in the chrome of the shell; the menus themselves come from the route manifest. */
-const SHELL_CONTEXTS: Record<AppContextKey, ShellContextPresentation> = {
-  'short-rent': { subtitleKey: 'shell.shortRentSubtitle' },
-  'long-rent': { subtitleKey: 'shell.longRentSubtitle' },
-  admin: {
-    subtitleKey: 'shell.adminSubtitle',
-    iconClassName: 'bg-destructive text-destructive-foreground',
-    footerLabelKey: 'shell.adminFooter',
-  },
-  supplier: { subtitleKey: 'shell.supplierSubtitle', icon: Wrench },
-};
+/**
+ * What the window keeps free at the top when it scrolls something into view: the height of the sticky header, which
+ * `globals.css` says once (`--header-height`) and the header takes as its own (UI-05).
+ */
+const HEADER_HEIGHT = 'var(--header-height)';
 
 interface AppShellLayoutProps {
   contextKey: AppContextKey;
@@ -53,10 +41,12 @@ interface AppShellLayoutProps {
  * height under the header sizes itself (see `vetrina-page.tsx`).
  */
 export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
-  const { t } = useTranslation();
   const mainRef = useRef<HTMLElement>(null);
+  const { org, user } = useCurrentUser();
+  const organizationName = org?.name ?? null;
   const shell = useMemo(() => ({ contextKey }), [contextKey]);
-  const presentation = SHELL_CONTEXTS[contextKey];
+  // A page that fixes its primary action above the bottom bar of the phone (`PageHeader`, UI-05) needs room under its content.
+  const mobilePrimaryVisible = useUiStore((state) => state.mobilePrimaryVisible);
 
   useEffect(() => {
     // The window scrolls and the header is sticky: an anchor (`#panel`) or an element that takes the focus must not land
@@ -71,32 +61,36 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
 
   return (
     <AppShellContext.Provider value={shell}>
-      <SkipLink targetId={MAIN_CONTENT_ID} />
-      <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
-        <ContextSidebar
-          contextKey={contextKey}
-          subtitle={t(presentation.subtitleKey)}
-          icon={presentation.icon}
-          iconClassName={presentation.iconClassName}
-          footerLabel={presentation.footerLabelKey ? t(presentation.footerLabelKey) : undefined}
-        />
-        <MobileNavDrawer contextKey={contextKey} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <DemoBanner />
-          <Header />
-          <main
-            id={MAIN_CONTENT_ID}
-            ref={mainRef}
-            tabIndex={-1}
-            className="flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6"
-          >
-            {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
-            {children}
-          </main>
-          <BottomNav contextKey={contextKey} />
+      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
+      <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
+        <SkipLink targetId={MAIN_CONTENT_ID} />
+        <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
+          <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
+          <MoreSheet contextKey={contextKey} organizationName={organizationName} />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <DemoBanner />
+            {/* The notifications bell (UI-12) and the help (UI-08) are handed to the header here too, each only when its function exists. */}
+            <Header search={<CommandPaletteTrigger />} />
+            <main
+              id={MAIN_CONTENT_ID}
+              ref={mainRef}
+              tabIndex={-1}
+              className={cn(
+                'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
+                mobilePrimaryVisible &&
+                  'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
+              )}
+            >
+              {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
+              {children}
+            </main>
+            <BottomNav contextKey={contextKey} />
+          </div>
         </div>
-      </div>
-      <RouteFocus mainRef={mainRef} />
+        <RouteFocus mainRef={mainRef} />
+        {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
+        <DetailDrawerHost />
+      </CommandPaletteProvider>
     </AppShellContext.Provider>
   );
 }

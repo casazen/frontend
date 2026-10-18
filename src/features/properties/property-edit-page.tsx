@@ -1,4 +1,5 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { longRentPropertyEditPath } from './long-rent/paths';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -26,6 +27,9 @@ export function PropertyEditPage() {
     return <LoadingScreen message={t('property.edit.loading')} className="h-auto flex-1" />;
   }
 
+  // A long-term property is edited in the long-rent section only.
+  if (property?.rentalMode === 'Long') return <Navigate to={longRentPropertyEditPath(property.id)} replace />;
+
   if (!property) {
     return (
       <AppShell>
@@ -39,7 +43,7 @@ export function PropertyEditPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title={t('property.edit.title')}
           description={t('property.edit.description', { name: property.name })}

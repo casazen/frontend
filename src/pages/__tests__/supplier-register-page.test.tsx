@@ -60,6 +60,17 @@ function problemError(status: number, data: object): AxiosError {
   });
 }
 
+// The real picker searches the official ISTAT list through the API (covered by its own tests): a plain input stands in.
+vi.mock('@/components/shared/comune-picker', () => ({
+  ComunePicker: ({ id, istatCode, onChange }: { id: string; istatCode: string | null; onChange: (c: { istatCode: string; name: string } | null) => void }) => (
+    <input
+      id={id}
+      value={istatCode ?? ''}
+      onChange={(event) => onChange(event.target.value ? { istatCode: event.target.value, name: event.target.value } : null)}
+    />
+  ),
+}));
+
 function renderPage(path: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -100,7 +111,7 @@ describe('SupplierRegisterPage', () => {
   });
 
   describe('self-serve', () => {
-    it('anonymous_EditableEmailAndPilotComune_RegistersAnonymouslyThenOffersSignupToTheClaim', async () => {
+    it('anonymous_EditableEmailAndAnyListedComune_RegistersAnonymouslyThenOffersSignupToTheClaim', async () => {
       const claimToken = 'c'.repeat(64);
       const claimExpiresAt = '2999-01-01T00:00:00Z';
       vi.mocked(registerSupplier).mockResolvedValue({
@@ -146,13 +157,14 @@ describe('SupplierRegisterPage', () => {
       });
     });
 
-    it('comuneSelect_OffersOnlyThePilotComuni', async () => {
+    it('selfServeWithNoPilotConfigured_StillOffersTheComunePicker', async () => {
       mockAuth({ authenticated: false });
+      vi.mocked(fetchSupplierRegistrationOptions).mockResolvedValue({ selfServeEnabled: true, pilotComuni: [] });
       renderPage('/register');
 
-      const select = await screen.findByLabelText(t('supplier.register.comune'));
-      const options = Array.from((select as HTMLSelectElement).options).map((o) => o.value);
-      expect(options).toEqual(['', 'H501', 'F205']);
+      // Any comune of the official list: the picker, never a closed list of pilots.
+      const comune = await screen.findByLabelText(t('supplier.register.comune'));
+      expect(comune.tagName).toBe('INPUT');
     });
 
     it('missingFields_ShowsValidationMessageWithoutCallingTheApi', async () => {
@@ -210,14 +222,12 @@ describe('SupplierRegisterPage', () => {
       fill(t('supplier.register.phone'), '+39 06 1');
       fireEvent.click(screen.getByRole('button', { name: t('supplier.register.complete') }));
 
-      await screen.findByText(t('supplier.register.successSignedIn'));
+      // Already linked: nothing to confirm, the wizard opens by itself.
+      await screen.findByText('activation wizard');
       expect(registerSupplier).toHaveBeenCalledWith(
         { email: 'host@example.com', comuneCode: 'H501', legalName: 'Host Servizi', phone: '+39 06 1' },
         { authenticated: true },
       );
-
-      fireEvent.click(screen.getByRole('button', { name: t('supplier.register.completeProfile') }));
-      await screen.findByText('activation wizard');
       expect(refreshAccessToken).toHaveBeenCalled();
     });
 
@@ -292,7 +302,7 @@ describe('SupplierRegisterPage', () => {
       fill(t('supplier.register.phone'), '+39 06 123');
       fireEvent.click(screen.getByRole('button', { name: t('supplier.register.complete') }));
 
-      await screen.findByText(t('supplier.register.successSignedIn'));
+      await screen.findByText('activation wizard');
       expect(registerSupplier).toHaveBeenCalledWith(
         {
           email: 'pulizie@example.com',

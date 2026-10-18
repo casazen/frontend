@@ -1,193 +1,166 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, ChevronRight, ClipboardList, Home, LogOut, Send, Sparkles, Users } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { FocusBlock, PlainSection, type CalmTone } from '@/components/shared/calm';
+import { ErrorState } from '@/components/shared/error-state';
+import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
-import { LoadingScreen } from '@/components/shared/loading-screen';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { ComplianceRow, ROW_BUTTON } from '@/features/compliance/components/compliance-row';
+import { buildCockpit, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
 import { useComplianceSummary } from '@/features/compliance/use-compliance';
-import { complianceActionRoute } from '@/lib/compliance-routes';
+import { NoteLine } from '@/features/dashboard/components/note-line';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { ALLOGGIATI_ATTENTION_CLASS } from '@/features/alloggiati/alloggiati-status.utils';
-import type { ComplianceSummarySection } from '@/types/compliance.types';
+import { useDashboardToday } from '@/queries/use-dashboard';
+import { useProperties } from '@/queries/use-properties';
 
-const EMPTY_SECTION: ComplianceSummarySection = { count: 0, items: [] };
+/** How many rows a list of the cockpit shows before "Vedi tutte". */
+const VISIBLE = 5;
 
-function normalizeSection(section: ComplianceSummarySection | null | undefined): ComplianceSummarySection {
-  return {
-    count: typeof section?.count === 'number' ? section.count : 0,
-    items: Array.isArray(section?.items) ? section.items : [],
-  };
+function Badge({ badge }: { badge: CockpitBadge }) {
+  return badge.kind === 'property' ? <StatusBadge kind="property" status={badge.status} /> : <StatusBadge kind="alloggiati" status={badge.status} />;
 }
 
-interface SummaryRowProps {
-  icon: React.ReactNode;
-  title: string;
-  section: ComplianceSummarySection;
-  testId: string;
-  /** `attention` (orange): the host must act, nothing is wrong yet. Default: red. */
-  tone?: 'destructive' | 'attention';
+/** Red for what failed or is past its deadline, amber for the rest: the words of the block say the same. */
+function toneOf(row: CockpitRow): CalmTone {
+  return row.note?.tone === 'danger' || (row.badge?.kind === 'alloggiati' && row.badge.status === 'Errore') ? 'danger' : 'warning';
 }
 
-function SummaryRow({ icon, title, section, testId, tone = 'destructive' }: SummaryRowProps) {
+function CockpitRowItem({ row }: { row: CockpitRow }) {
   const { t } = useTranslation();
-  const { hasPermission } = useWorkspace();
-  const hasItems = section.count > 0;
-
   return (
-    <div className="space-y-2" data-testid={testId}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          {icon}
-          <span>{title}</span>
-        </div>
-        <Badge
-          variant={hasItems ? (tone === 'attention' ? 'warning' : 'destructive') : 'outline'}
-          className={hasItems && tone === 'attention' ? ALLOGGIATI_ATTENTION_CLASS : undefined}
-          data-testid={`${testId}-count`}
-        >
-          {section.count}
-        </Badge>
-      </div>
-      {section.count > 0 && (
-        <ul className="space-y-1">
-          {section.items.map((item) => {
-            // Built from the action and its target (CO-04): null when the user can open no page for it.
-            const route = complianceActionRoute(item, hasPermission);
-            return (
-              <li key={`${item.action}-${item.id}`}>
-                {route ? (
-                  <Link
-                    to={route}
-                    className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted/60 transition-colors"
-                    data-testid={`${testId}-link`}
-                  >
-                    <span className="truncate">{item.label}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  </Link>
-                ) : (
-                  <span className="block truncate px-2 py-1.5 text-sm" data-testid={`${testId}-item`}>
-                    {item.label}
-                  </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {section.count > section.items.length && (
-        <p className="text-xs text-muted-foreground px-2" data-testid={`${testId}-more`}>
-          {t('compliance.summary.moreItems', { count: section.count - section.items.length })}
-        </p>
-      )}
-      {section.count === 0 && (
-        <p className="text-xs text-muted-foreground px-2">{t('compliance.summary.none')}</p>
-      )}
-    </div>
+    <ComplianceRow
+      icon={row.icon}
+      title={row.title}
+      to={row.quiet ? (row.to ?? undefined) : undefined}
+      sub={row.sub}
+      detail={row.detail}
+      badge={row.badge ? <Badge badge={row.badge} /> : undefined}
+      note={row.note ? <NoteLine note={row.note} /> : undefined}
+      titleTestId={row.to || row.quiet ? undefined : `compliance-summary-${row.testKey}-item`}
+      testId="compliance-summary-row"
+      action={
+        row.to && !row.quiet ? (
+          <Button asChild variant="outline" size="sm" className={ROW_BUTTON}>
+            <Link to={row.to} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
+              {row.cta}
+            </Link>
+          </Button>
+        ) : undefined
+      }
+    />
   );
 }
 
-export function ComplianceSummaryWidget() {
-  const { t } = useTranslation();
-  const { data, isLoading, isError } = useComplianceSummary();
-
-  if (isLoading) {
-    return (
-      <Card data-testid="compliance-summary-widget">
-        <CardContent className="py-8">
-          <LoadingScreen message={t('compliance.summary.loading')} className="h-auto flex-1" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isError || !data) {
-    return (
-      <Card data-testid="compliance-summary-widget">
-        <CardContent className="py-6 text-sm text-muted-foreground">
-          {t('compliance.summary.error')}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const propertiesPending = normalizeSection(data.propertiesPending);
-  const guestCheckInsIncomplete = normalizeSection(data.guestCheckInsIncomplete);
-  const checkoutsDue = normalizeSection(data.checkoutsDue);
-  const alloggiatiFailures = normalizeSection(data.alloggiatiFailures);
-  const alloggiatiManualRequired = normalizeSection(data.alloggiatiManualRequired);
-  const turnoversPending = normalizeSection(data.turnoversPending ?? EMPTY_SECTION);
-
-  const total =
-    propertiesPending.count +
-    guestCheckInsIncomplete.count +
-    checkoutsDue.count +
-    alloggiatiFailures.count +
-    alloggiatiManualRequired.count +
-    turnoversPending.count;
-
+/** The rows of a section, one under the other with a line between them. */
+function RowList({ rows }: { rows: readonly CockpitRow[] }) {
   return (
-    <Card data-testid="compliance-summary-widget">
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div>
-          <CardTitle className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5" />
-            {t('compliance.summary.title')}
-          </CardTitle>
-          <CardDescription>{t('compliance.summary.description')}</CardDescription>
-        </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/app/short-rent/compliance">{t('compliance.summary.viewAll')}</Link>
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {total === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('compliance.summary.allClear')}</p>
+    <ul role="list" className="divide-y divide-border border-y border-border">
+      {rows.map((row) => (
+        <CockpitRowItem key={row.id} row={row} />
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * What the host still has to do for the law, on the page `/compliance` (the Home no longer carries it): the one thing that
+ * lacks first, with the button that takes to the right place, then the stays to look after and the state of every property,
+ * each with what it lacks. Everything comes from `GET api/compliance/summary`; the property and the deadline of a stay come
+ * from the Home's "Da fare", and the state and the city of a property from the list of properties: when those are late or
+ * fail the rows do without them.
+ */
+export function ComplianceSummaryWidget() {
+  const { t, i18n } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const summary = useComplianceSummary();
+  const today = useDashboardToday();
+  // Read again at every visit: the page is where one comes back to see whether what was fixed is fixed.
+  const properties = useProperties({ mode: 'short' }, { fresh: true });
+  const [showAllStays, setShowAllStays] = useState(false);
+  const [showAllProperties, setShowAllProperties] = useState(false);
+
+  const propertyList = Array.isArray(properties.data) ? properties.data : undefined;
+  const todo = today.data?.todo?.items;
+  const locale = i18n.language;
+  const model = useMemo(
+    () => (summary.data ? buildCockpit(summary.data, { todo, properties: propertyList }, { t, locale, hasPermission, exists: (key) => i18n.exists(key) }) : null),
+    [summary.data, todo, propertyList, t, locale, hasPermission, i18n],
+  );
+
+  if (!model) {
+    return (
+      <div data-testid="compliance-summary-widget" className="space-y-6">
+        {summary.isError ? (
+          <ErrorState title={t('compliance.summary.error')} error={summary.error} onRetry={() => void summary.refetch()} testId="compliance-summary-error" />
         ) : (
           <>
-            <SummaryRow
-              icon={<Home className="h-4 w-4 text-muted-foreground" />}
-              title={t('compliance.summary.propertiesPending')}
-              section={propertiesPending}
-              testId="compliance-summary-properties"
-            />
-            <SummaryRow
-              icon={<Users className="h-4 w-4 text-muted-foreground" />}
-              title={t('compliance.summary.guestCheckIns')}
-              section={guestCheckInsIncomplete}
-              testId="compliance-summary-checkins"
-            />
-            <SummaryRow
-              icon={<LogOut className="h-4 w-4 text-muted-foreground" />}
-              title={t('compliance.summary.checkoutsDue')}
-              section={checkoutsDue}
-              testId="compliance-summary-checkouts"
-            />
-            {turnoversPending.count > 0 && (
-              <SummaryRow
-                icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
-                title={t('compliance.summary.turnoversPending')}
-                section={turnoversPending}
-                testId="compliance-summary-turnovers"
-                tone="attention"
-              />
-            )}
-            <SummaryRow
-              icon={<Send className="h-4 w-4 text-muted-foreground" />}
-              title={t('compliance.summary.alloggiatiManualRequired')}
-              section={alloggiatiManualRequired}
-              testId="compliance-summary-alloggiati-manual"
-              tone="attention"
-            />
-            <SummaryRow
-              icon={<AlertCircle className="h-4 w-4 text-muted-foreground" />}
-              title={t('compliance.summary.alloggiatiFailures')}
-              section={alloggiatiFailures}
-              testId="compliance-summary-alloggiati"
-            />
+            <SkeletonCard lines={3} label={t('compliance.summary.loading')} />
+            <SkeletonLine lines={4} />
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    );
+  }
+
+  const { stays, focus } = model;
+  const propertyRows = [...model.properties, ...model.activeProperties];
+  const total = model.stayTotal + model.propertyTotal;
+  // The properties that need something are always there; the ones in order are listed up to the same number of rows.
+  const propertyLimit = Math.max(VISIBLE, model.properties.length);
+  const shownStays = showAllStays ? stays : stays.slice(0, VISIBLE);
+  const shownProperties = showAllProperties ? propertyRows : propertyRows.slice(0, propertyLimit);
+  const more = (expanded: boolean, rows: number, limit: number, toggle: () => void) =>
+    rows > limit ? { actionLabel: expanded ? t('compliance.cockpit.showLess') : t('compliance.cockpit.seeAll', { count: rows }), onAction: toggle } : {};
+
+  return (
+    <div data-testid="compliance-summary-widget" className="space-y-6 md:space-y-8">
+      {focus?.to ? (
+        <FocusBlock
+          tone={toneOf(focus)}
+          kicker={t('compliance.cockpit.kicker')}
+          title={focus.title}
+          body={[focus.sub, focus.detail].filter(Boolean).join(' · ') || undefined}
+          when={focus.note?.text}
+          then={total > 1 ? t('compliance.cockpit.then', { count: total - 1 }) : undefined}
+          primary={{ label: focus.cta, href: focus.to, ariaLabel: `${focus.cta}: ${focus.subject}`, testId: 'compliance-summary-focus-cta' }}
+          data-testid="compliance-summary-focus"
+        />
+      ) : total === 0 ? (
+        <FocusBlock
+          tone="success"
+          title={t('compliance.cockpit.allClear.title')}
+          body={t('compliance.cockpit.allClear.body')}
+          primary={{ label: t('compliance.cockpit.allClear.cta'), href: '/app/short-rent/properties', testId: 'compliance-summary-all-clear-cta' }}
+          data-testid="compliance-summary-all-clear"
+        />
+      ) : null}
+
+      {stays.length > 0 ? (
+        <PlainSection
+          title={t('compliance.cockpit.stays.title')}
+          count={model.stayTotal}
+          data-testid="compliance-summary-stays"
+          {...more(showAllStays, stays.length, VISIBLE, () => setShowAllStays((value) => !value))}
+        >
+          <RowList rows={shownStays} />
+          {model.hidden > 0 ? (
+            <p className="text-sm text-foreground/70" data-testid="compliance-summary-more">
+              {t('compliance.summary.moreItems', { count: model.hidden })}
+            </p>
+          ) : null}
+        </PlainSection>
+      ) : null}
+
+      {propertyRows.length > 0 ? (
+        <PlainSection
+          title={t('compliance.cockpit.properties.title')}
+          data-testid="compliance-summary-properties-section"
+          {...more(showAllProperties, propertyRows.length, propertyLimit, () => setShowAllProperties((value) => !value))}
+        >
+          <RowList rows={shownProperties} />
+        </PlainSection>
+      ) : null}
+    </div>
   );
 }

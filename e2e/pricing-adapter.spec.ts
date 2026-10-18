@@ -116,7 +116,7 @@ test.describe('Seasonal suggestions (D4, PC-15)', () => {
     // The fixture starts on 2026-05-30: 1 June is high season, 2 June is the Republic Day holiday.
     await expect(rows.nth(2)).toContainText('High season ×1.30');
     await expect(rows.nth(3)).toContainText('Holiday: Republic Day ×1.50');
-    await expect(page.getByTestId('read-only-notice')).toBeVisible();
+    await expect(page.getByTestId('apply-notice')).toBeVisible();
   });
 
   test('disabling hides the recalculation and shows the disabled state', async ({ page }) => {

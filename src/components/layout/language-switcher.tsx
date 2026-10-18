@@ -1,45 +1,41 @@
 import { useTranslation } from 'react-i18next';
-import i18n from '@/i18n/config';
-import type { AppLocale } from '@/i18n/config';
-import { persistLocale } from '@/lib/i18n-labels';
+import { useAppLocale } from '@/hooks/use-app-locale';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
+// Each button is at least 44 px tall and wide (WCAG 2.5.8): it used to be 28 px, too small for a finger. The switch lives in
+// the sheet "Altro" of the phone (UI-05), where nothing is dense.
+const BUTTON_CLASS = 'min-h-11 min-w-11 px-3 text-xs font-semibold';
+
+/** The switch between Italian and English: two toggle buttons, the one of the current language pressed. */
 export function LanguageSwitcher() {
-  const { t, i18n: i18nInstance } = useTranslation();
-  const current: AppLocale = i18nInstance.language.startsWith('en') ? 'en' : 'it';
-
-  const setLocale = (locale: AppLocale) => {
-    if (locale === current) return;
-    persistLocale(locale);
-    void i18n.changeLanguage(locale);
-  };
+  const { t } = useTranslation();
+  const { locale, setLocale } = useAppLocale();
 
   return (
     <div
       data-testid="language-switcher"
-      className="flex items-center gap-0.5 rounded-md border bg-muted/40 p-0.5"
+      className="flex items-center gap-0.5 rounded-lg border bg-muted/40 p-0.5"
       role="group"
       aria-label={t('language.label')}
     >
       <Button
         type="button"
-        variant={current === 'it' ? 'default' : 'ghost'}
+        variant={locale === 'it' ? 'default' : 'ghost'}
         size="sm"
-        className={cn('h-7 min-w-9 px-2 text-xs font-semibold')}
+        className={BUTTON_CLASS}
         aria-label={t('language.switchToItalian')}
-        aria-pressed={current === 'it'}
+        aria-pressed={locale === 'it'}
         onClick={() => setLocale('it')}
       >
         {t('language.italian')}
       </Button>
       <Button
         type="button"
-        variant={current === 'en' ? 'default' : 'ghost'}
+        variant={locale === 'en' ? 'default' : 'ghost'}
         size="sm"
-        className={cn('h-7 min-w-9 px-2 text-xs font-semibold')}
+        className={BUTTON_CLASS}
         aria-label={t('language.switchToEnglish')}
-        aria-pressed={current === 'en'}
+        aria-pressed={locale === 'en'}
         onClick={() => setLocale('en')}
       >
         {t('language.english')}
