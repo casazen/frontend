@@ -55,6 +55,7 @@ import { DpaPage, PrivacyPage, TermsPage } from '@/features/legal/legal-document
 import { SubprocessorsPage } from '@/features/legal/subprocessors-page';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
+import { ProductGuidePage } from '@/features/help/product-guide-page';
 import { devRoutes } from './dev-routes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
@@ -83,6 +84,14 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   if (!entries.some((entry) => entry.path === prefix)) {
     children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
   }
+  children.push({
+    path: 'help',
+    element: (
+      <ContextRouteGuard contextKey={contextKey}>
+        <ProductGuidePage />
+      </ContextRouteGuard>
+    ),
+  });
   return children;
 }
 

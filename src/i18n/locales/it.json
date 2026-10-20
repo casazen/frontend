@@ -10857,5 +10857,126 @@
       "cta": "Richiedi un invito",
       "subject": "Richiesta di invito a CasaZen"
     }
+  },
+  "productGuide": {
+    "title": "Guida CasaZen",
+    "description": "I passaggi per lavorare con immobili, prenotazioni, ospiti e collaboratori.",
+    "open": "Guida",
+    "search": "Cerca nella guida",
+    "empty": "Nessun argomento trovato. Prova con un’altra parola.",
+    "contents": "Argomenti della guida",
+    "availability": "Le funzioni visibili dipendono dalla tua area, dai permessi e dalla configurazione dell’organizzazione.",
+    "sections": {
+      "start": {
+        "title": "Primi passi e aree di lavoro",
+        "keywords": "accesso organizzazione agenzia pilota",
+        "steps": [
+          "Accedi con il tuo account e completa i dati e i consensi richiesti. Se sei stato invitato in un’organizzazione, apri il link dell’invito con l’account destinatario.",
+          "Scegli l’area di lavoro: Affitti brevi, Affitti lunghi, Amministrazione o Fornitori. Le aree e le azioni disponibili dipendono dal tuo ruolo e dagli immobili assegnati.",
+          "Prima di iniziare, verifica l’organizzazione indicata in alto. Da computer usa il menu laterale; da telefono usa la barra in basso e Altro. La ricerca globale aiuta a trovare le pagine accessibili.",
+          "Per avviare il lavoro operativo: prepara gli immobili, verifica disponibilità e tariffe, inserisci le prenotazioni, completa i dati degli ospiti e controlla gli adempimenti in scadenza."
+        ]
+      },
+      "properties": {
+        "title": "Immobili e pubblicazione",
+        "keywords": "annunci cin documenti attivazione foto",
+        "steps": [
+          "In Affitti brevi apri Immobili e crea o seleziona un immobile. Compila indirizzo, capienza, servizi, foto e informazioni richieste. Scegli il tipo di locazione coerente con l’utilizzo dell’immobile.",
+          "Segui il percorso di attivazione: controlla CIN, documenti, requisiti di sicurezza e dati fiscali richiesti dalla schermata. Le informazioni mancanti possono impedire la pubblicazione.",
+          "Prima di pubblicare verifica prezzi, disponibilità e dati del sito. La presenza di un annuncio nella tua area di lavoro non significa che sia già visibile agli ospiti.",
+          "Per cambiare tra affitto breve e lungo usa l’azione dedicata dell’immobile e leggi l’anteprima: prenotazioni, contratti o bozze possono richiedere interventi prima del passaggio."
+        ]
+      },
+      "bookings": {
+        "title": "Prenotazioni e calendario",
+        "keywords": "arrivi partenze check in checkout blocchi",
+        "steps": [
+          "Apri Prenotazioni per consultare l’elenco o il calendario. Controlla immobile, date, numero di persone, stato e importi prima di creare o modificare un soggiorno.",
+          "Usa i blocchi manuali del calendario per chiudere periodi non disponibili. Un blocco di calendario non contiene necessariamente una prenotazione completa o i dati degli ospiti.",
+          "Nel dettaglio della prenotazione verifica i dati prima di registrare l’arrivo. Il link di check-in permette all’ospite di compilare le informazioni richieste; la compilazione non equivale all’invio ad Alloggiati.",
+          "Alla partenza apri il percorso di check-out e verifica le informazioni mostrate. Controlla separatamente lo stato del soggiorno e quello dei pagamenti."
+        ]
+      },
+      "ical": {
+        "title": "Calendari esterni e iCal",
+        "keywords": "airbnb booking ota sincronizzazione",
+        "steps": [
+          "Collega il calendario esterno all’immobile usando il suo link iCal di esportazione. Per più portali aggiungi un collegamento per ciascun calendario.",
+          "Controlla l’esito dell’ultima sincronizzazione e usa la sincronizzazione manuale quando necessario. La sincronizzazione è periodica: una variazione non è necessariamente visibile subito su entrambi i portali.",
+          "iCal trasferisce occupazioni del calendario: non garantisce il trasferimento di prezzi, pagamenti, messaggi o anagrafiche complete. Verifica i dati del soggiorno e completa quelli mancanti.",
+          "Rimuovere un collegamento elimina i blocchi importati da quel calendario e può liberare le date. Verifica la disponibilità dopo la rimozione e tratta il link di esportazione come un dato riservato."
+        ]
+      },
+      "guests": {
+        "title": "Ospiti, check-in e privacy",
+        "keywords": "documenti gdpr esportazione anonimizzazione",
+        "steps": [
+          "Apri Ospiti o il dettaglio della prenotazione per controllare i dati dei partecipanti. Per i soggiorni importati dai portali può essere necessario completare manualmente i dati mancanti.",
+          "Invia il link di check-in solo al destinatario corretto. Evita di inserire documenti, dati di carte o altri dati sensibili nei messaggi liberi.",
+          "Le azioni di esportazione o anonimizzazione dei dati si trovano nella scheda ospite quando autorizzate. Leggi la conferma prima di procedere: l’anonimizzazione modifica i dati personali e non è un semplice archivio.",
+          "Se un ospite non compare, verifica organizzazione, immobile e permessi. Non usare un secondo account per aggirare le limitazioni di accesso."
+        ]
+      },
+      "compliance": {
+        "title": "Alloggiati e adempimenti",
+        "keywords": "questura tassa soggiorno ross1000 istat ricevuta",
+        "steps": [
+          "Controlla per ogni soggiorno i dati richiesti e le scadenze nella sezione Alloggiati. La completezza del check-in non costituisce prova di trasmissione.",
+          "Nel flusso attuale CasaZen prepara i dati e il file disponibile per l’invio manuale: accedi al portale Alloggiati Web, effettua l’invio e conserva la ricevuta del portale.",
+          "Dopo l’invio effettivo usa Segna come inviato manualmente e indica la data corretta. Questo stato registra la tua dichiarazione; non certifica che CasaZen abbia trasmesso o acquisito una ricevuta.",
+          "Controlla separatamente imposta di soggiorno, esenzioni e flussi turistici regionali. Verifica sul portale competente aliquote e obblighi applicabili: un calcolo o un file esportato non costituisce una dichiarazione già presentata."
+        ]
+      },
+      "payments": {
+        "title": "Pagamenti e comunicazioni agli ospiti",
+        "keywords": "stripe rimborsi incassi messaggi",
+        "steps": [
+          "Apri Pagamenti o il dettaglio della prenotazione per controllare importi e stato. Distingui un pagamento in attesa da uno riuscito e verifica l’esito di un eventuale rimborso.",
+          "Le modalità disponibili dipendono dalla configurazione dell’organizzazione e del sito di prenotazione. Non considerare un pagamento ricevuto solo perché esiste una prenotazione o è stata inviata una richiesta.",
+          "Per le prenotazioni dirette compatibili, apri la conversazione dal dettaglio e invia il messaggio all’ospite. La conversazione resta scrivibile fino al settimo giorno dopo il check-out; dopo diventa di sola lettura.",
+          "La conversazione non è una chat in tempo reale e non invia risposte automatiche. Non inviare dati di carte, IBAN o documenti nel testo."
+        ]
+      },
+      "team": {
+        "title": "Organizzazione, persone e permessi",
+        "keywords": "agenzia amministrazione inviti piano fatturazione",
+        "steps": [
+          "Nell’area Amministrazione consulta le persone dell’organizzazione e, se autorizzato, invita nuovi collaboratori. Assegna il ruolo e l’ambito sugli immobili necessari al loro lavoro.",
+          "Un invito in attesa deve essere accettato dal destinatario prima che l’accesso sia operativo. Controlla lo stato dell’invito e l’indirizzo utilizzato.",
+          "Piano e fatturazione sono gestiti dagli utenti autorizzati. Se manca un’azione o ricevi un accesso negato, chiedi all’amministratore di verificare ruolo, immobili assegnati e piano.",
+          "Per il pilota concorda con il responsabile quali immobili e collaboratori abilitare. La guida descrive le funzioni disponibili; gli accordi economici con i proprietari vanno verificati separatamente."
+        ]
+      },
+      "leases": {
+        "title": "Affitti lunghi e contratti",
+        "keywords": "locatori conduttori ape rli canoni firma",
+        "steps": [
+          "Nell’area Affitti lunghi seleziona l’immobile e avvia il contratto guidato. Compila locatori, conduttori, condizioni economiche e documenti richiesti, inclusa l’APE quando prevista.",
+          "Puoi riprendere una bozza salvata e controllare cosa manca prima della conferma. Se due schede modificano la stessa bozza, ricarica i dati prima di ripetere l’operazione.",
+          "Controlla il contratto prima di scaricarlo per la firma. Il download non dimostra che il documento sia firmato o registrato.",
+          "Consulta nella scheda gli stati e le ricevute disponibili per la registrazione RLI e i canoni. Non considerare conclusa una registrazione solo perché il file è stato generato; verifica l’effettivo esito sul canale utilizzato."
+        ]
+      },
+      "suppliers": {
+        "title": "Fornitori e richieste di servizio",
+        "keywords": "pulizie manutenzione disponibilità preventivo",
+        "steps": [
+          "Chi gestisce gli immobili può cercare servizi nel marketplace e inviare una richiesta con informazioni e date corrette. Controlla lo stato della richiesta prima di considerare il servizio confermato.",
+          "Nell’area Fornitori completa il profilo e l’attivazione, configura servizi e disponibilità e consulta la posta in arrivo per gestire le richieste ricevute.",
+          "Aggiorna il calendario e verifica i conflitti prima di accettare un incarico. La guida iCal dell’area Fornitori spiega dove recuperare i link dai calendari esterni.",
+          "Un profilo sospeso o un’attivazione incompleta può limitare le operazioni: leggi l’avviso mostrato e contatta il referente indicato nell’app."
+        ]
+      },
+      "troubleshooting": {
+        "title": "Problemi frequenti e assistenza",
+        "keywords": "errore login accesso negato supporto",
+        "steps": [
+          "Se non riesci ad accedere, verifica di usare l’account invitato e completa l’eventuale verifica dell’indirizzo email. Se la sessione è scaduta, accedi di nuovo.",
+          "Se mancano dati o voci del menu, controlla prima organizzazione e area. Le funzioni dipendono anche da permessi, configurazione e stato di attivazione.",
+          "Se una sincronizzazione o un pagamento rimane in errore, controlla lo stato e il messaggio mostrati prima di ripetere l’operazione. Evita invii ripetuti mentre l’esito è ancora incerto.",
+          "Per chiedere assistenza usa il contatto disponibile nel menu dell’app o il referente della tua organizzazione. Indica pagina, ora e passaggi del problema, senza allegare password, token, documenti degli ospiti o dati di pagamento."
+        ]
+      }
+    }
   }
 }

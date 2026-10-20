@@ -1,51 +1,51 @@
-# CASAZEN Frontend
+# CasaZen — Webapp
 
-Modern React application for vacation property management, built with React 19, TypeScript, and Tailwind CSS v4.
+Webapp per gestire immobili, prenotazioni, ospiti, adempimenti, affitti lunghi e richieste ai fornitori. Il lavoro in organizzazione usa aree, ruoli e assegnazioni sugli immobili; le funzioni visibili dipendono anche dalla configurazione del backend.
 
-## Features
+## Documentazione
 
-- 🏠 **Properties Management** - Complete CRUD for vacation properties with amenities
-- 📅 **Bookings** - Booking management with interactive calendar view
-- 💳 **Payments** - Payment processing with Stripe, refunds, and revenue analytics
-- 🔄 **OTA Integration** - Sync with 6 major platforms (Airbnb, Booking.com, Expedia, VRBO, TripAdvisor, Agoda)
-- 🔍 **Search** - Public property search with advanced filters
-- 👤 **Profile** - User profile management
-- 📊 **Dashboard** - Analytics overview with charts
+- **Utenti:** dopo il login, aprire **Guida** (icona libro nell’intestazione di ogni area). La guida include ricerca, indice e istruzioni in italiano e inglese.
+- [Indice documentazione](docs/README.md)
+- [Sviluppo locale e configurazione](docs/technical/development.md)
+- [Architettura e convenzioni](docs/technical/architecture.md)
+- [Test e rilascio](docs/technical/testing.md)
+- [Manutenzione della guida prodotto](docs/product/README.md)
+- [API e runbook condivisi](https://github.com/casazen/backend/blob/develop/docs/index.md)
 
-## Tech Stack
+## Avvio rapido
 
-- React 19.2 + TypeScript 5.9 + Vite 8
-- Tailwind CSS v4 + Radix UI
-- Zustand + TanStack Query v6
-- React Hook Form + Zod
-- Auth0 for authentication
-- React Big Calendar + Recharts
-
-## Getting Started
+Richiede Node.js 22 e npm (come in CI). Dal repository:
 
 ```bash
-npm install
+npm ci
+```
+
+Creare `.env.local` con i valori dell’ambiente di sviluppo:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_AUTH0_DOMAIN=your-tenant.auth0.com
+VITE_AUTH0_CLIENT_ID=your-spa-client-id
+VITE_AUTH0_AUDIENCE=https://casazen-api
+```
+
+```bash
 npm run dev
 ```
 
-Create `.env.local`:
-```
-VITE_AUTH0_DOMAIN=your-domain.auth0.com
-VITE_AUTH0_CLIENT_ID=your-client-id
-VITE_AUTH0_AUDIENCE=https://casazen-api
-VITE_API_BASE_URL=http://localhost:3000/api
-```
+L’app parte su `http://localhost:5173`. Il backend è un repository separato. Per esplorare l’interfaccia con dati dimostrativi: `npm run dev:demo` ([limiti e configurazione](docs/technical/demo-mode.md)).
 
-## Build
+## Verifica
 
 ```bash
+npm run lint
+npm run typecheck
+npm test
 npm run build
 ```
 
-### Staging E2E prerequisites
+Per i test browser e gli ambienti reali seguire [la guida test](docs/technical/testing.md). Una suite demo verde non verifica le credenziali o lo staging reale.
 
-The live staging job requires repository variables `E2E_STAGING_API_URL` (including `/api`), `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID`, `VITE_AUTH0_AUDIENCE`, and secrets `E2E_AUTH0_EMAIL`, `E2E_AUTH0_PASSWORD`. The dedicated account must have LongTermLandlord access. The workflow verifies configuration and `/api/health/ready` before browser authentication; there is no fallback to a historical deployment URL in CI.
+## Stack
 
-The login setup supports both first-time role onboarding and consent-only reacceptance after a legal document update. It accepts only mandatory host documents, leaving marketing untouched. Reports include HTML, screenshots on failure and retry traces. Treat artifacts as private test-account data.
-
-Local preflight checks: `npx vitest run scripts/check-staging.test.mjs`. Live validation requires the configured test account and a reachable staging backend; a green demo suite is not proof of staging success.
+React 19, TypeScript 5.9, Vite 8, React Router 7, TanStack Query 5, Zustand 5, Tailwind CSS 4, Radix UI, Auth0, Vitest e Playwright. Versioni e comandi effettivi sono in [package.json](package.json).
