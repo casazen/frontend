@@ -190,7 +190,9 @@ export default defineConfig({
         timeout: 180_000,
         env: {
           VITE_HTTPS: '0',
-          VITE_API_BASE_URL:
+          // The staging API allows deployed origins; proxy local UI calls to the same real backend.
+          VITE_API_BASE_URL: '/api',
+          E2E_API_PROXY_TARGET:
             process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
           VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
           VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),
