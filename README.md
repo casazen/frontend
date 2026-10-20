@@ -48,4 +48,4 @@ The live staging job requires repository variables `E2E_STAGING_API_URL` (includ
 
 The login setup supports both first-time role onboarding and consent-only reacceptance after a legal document update. It accepts only mandatory host documents, leaving marketing untouched. Reports include HTML, screenshots on failure and retry traces. Treat artifacts as private test-account data.
 
-Local preflight checks: `node --test scripts/check-staging.test.mjs`. Live validation requires the configured test account and a reachable staging backend; a green demo suite is not proof of staging success.
+Local preflight checks: `npx vitest run scripts/check-staging.test.mjs`. Live validation requires the configured test account and a reachable staging backend; a green demo suite is not proof of staging success.

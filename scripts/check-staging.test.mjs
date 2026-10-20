@@ -1,4 +1,5 @@
-import { test } from 'node:test';
+// @vitest-environment node
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { checkStaging, stagingHealthUrl } from './check-staging.mjs';
 const env = { E2E_STAGING_API_URL: 'https://api.example.test/api/', VITE_AUTH0_DOMAIN: 'example.test', VITE_AUTH0_CLIENT_ID: 'client', VITE_AUTH0_AUDIENCE: 'audience', E2E_AUTH0_EMAIL: 'test@example.test', E2E_AUTH0_PASSWORD: 'never-print-this' };
