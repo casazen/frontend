@@ -11,6 +11,7 @@ import { resetE2eStorage } from './helpers/locale';
 const PDF = Buffer.from('%PDF-1.4\n% e2e\n%%EOF\n', 'ascii');
 
 test.describe('Lease flow (long-term landlord)', () => {
+  test.setTimeout(90_000);
   test.beforeEach(async ({ page }) => {
     await resetE2eStorage(page, 'it');
   });
@@ -104,6 +105,12 @@ test.describe('Lease flow (long-term landlord)', () => {
       { registrationCode: '24091234567890123-000001', registrationDate: '2026-09-18', hasReceipt: true },
     ]);
     await expect(page.getByTestId('rli-registration-panel')).toContainText('24091234567890123-000001');
+    const receiptPromise = page.waitForEvent('download');
+    await page.getByTestId('rli-registration-panel').getByRole('button', { name: /Scarica ricevuta/ }).click();
+    const receipt = await receiptPromise;
+    expect(receipt.suggestedFilename()).toBe(`ricevuta-rli-${FLOW_LEASE_ID}.pdf`);
+    expect(calls.receiptDownloads).toBe(1);
+
 
     // Rent: the schedule is generated from the lease (48 monthly installments), all to collect.
     await page.getByTestId('lease-tab-pagamenti').click();
@@ -125,6 +132,26 @@ test.describe('Lease flow (long-term landlord)', () => {
     expect(calls.markPaid).toEqual([{ installmentId: 'inst-01', paidOn: '2026-09-05' }]);
     await expect(rent.getByTestId('rent-installment').first().getByTestId('rent-installment-status')).toHaveText('Pagata');
     await expect(rent.getByTestId('rent-installment').nth(1).getByTestId('rent-installment-status')).toHaveText('Da incassare');
+  });
+
+  test('missing APE explains the blocker and no draft is submitted', async ({ page }) => {
+    const calls = await mockLeaseFlowApi(page);
+    await page.route(`**/api/properties/${FLOW_PROPERTY.id}/documents`, (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+    );
+    await page.goto(demoUrl('/leases/new', 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
+    await expect(page.getByText(/Un documento APE .* deve essere caricato/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Crea bozza contratto' })).toBeDisabled();
+    expect(calls.created).toEqual([]);
+  });
+
+  test('a short-stay-only host cannot open the lease creation form', async ({ page }) => {
+    await mockLeaseFlowApi(page);
+    await page.goto(demoUrl('/app/long-rent/leases/new', 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('app-ready')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Crea bozza contratto' })).toHaveCount(0);
+    await expect(page).not.toHaveURL(/\/long-rent\/leases\/new/);
   });
 
   test('an API error on the lease detail is a load error with retry, not "not found"', async ({ page }) => {
