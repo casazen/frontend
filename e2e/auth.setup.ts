@@ -31,23 +31,20 @@ async function completeOnboardingIfNeeded(
   await page.waitForLoadState('domcontentloaded');
 
   const wizard = page.getByRole('heading', { name: /Da dove vuoi iniziare/i });
-  if (!(await wizard.isVisible({ timeout: 10_000 }).catch(() => false))) {
-    return;
-  }
-
-  const bothCard = page.locator('div').filter({ hasText: /^Entrambi/ }).getByRole('button', { name: 'Scegli' });
-  if (await bothCard.isVisible({ timeout: 2_000 }).catch(() => false)) {
-    await bothCard.click();
-  } else {
-    await page.getByRole('button', { name: 'Scegli' }).first().click();
+  if (await wizard.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    const bothCard = page.locator('div').filter({ hasText: /^Entrambi/ }).getByRole('button', { name: 'Scegli' });
+    if (await bothCard.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await bothCard.click();
+    } else {
+      await page.getByRole('button', { name: 'Scegli' }).first().click();
+    }
   }
 
   const consents = page.getByTestId('onboarding-consents-step');
   if (await consents.isVisible({ timeout: 10_000 }).catch(() => false)) {
-    const checkboxes = consents.getByRole('checkbox');
-    const count = await checkboxes.count();
-    for (let i = 0; i < Math.min(count, 4); i++) {
-      await checkboxes.nth(i).check();
+    // Only mandatory host documents, never the optional marketing consent.
+    for (const id of ['tos', 'privacy', 'dpa', 'subprocessors']) {
+      await consents.locator(`#${id}`).check();
     }
     await page.getByTestId('onboarding-consents-continue').click();
   }

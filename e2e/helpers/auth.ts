@@ -261,6 +261,7 @@ export async function waitForAppReady(page: Page): Promise<void> {
   await page
     .getByTestId('app-ready')
     .or(page.getByRole('heading', { name: /Da dove vuoi iniziare/i }))
+    .or(page.getByTestId('onboarding-consents-step'))
     .first()
     .waitFor({ state: 'visible', timeout: 90_000 });
 }
