@@ -10857,5 +10857,126 @@
       "cta": "Ask for an invitation",
       "subject": "Invitation request for CasaZen"
     }
+  },
+  "productGuide": {
+    "title": "CasaZen guide",
+    "description": "How to work with properties, bookings, guests and collaborators.",
+    "open": "Guide",
+    "search": "Search the guide",
+    "empty": "No topics found. Try another word.",
+    "contents": "Guide topics",
+    "availability": "Visible features depend on your work area, permissions and organisation configuration.",
+    "sections": {
+      "start": {
+        "title": "Getting started and work areas",
+        "keywords": "login organisation agency pilot",
+        "steps": [
+          "Sign in and complete the required profile and consent steps. If invited to an organisation, open the invitation with the intended recipient account.",
+          "Choose Short-term rentals, Long-term rentals, Administration or Suppliers. Available areas and actions depend on your role and assigned properties.",
+          "Check the organisation shown in the header. Use the sidebar on desktop or the bottom bar and More on mobile. Global search helps you find accessible pages.",
+          "To start operations: prepare properties, check availability and rates, enter bookings, complete guest details and review upcoming reporting tasks."
+        ]
+      },
+      "properties": {
+        "title": "Properties and publishing",
+        "keywords": "listings cin documents activation photos",
+        "steps": [
+          "In Short-term rentals, open Properties and create or select a property. Complete its address, capacity, amenities, photos and required details. Choose the appropriate rental mode.",
+          "Follow activation steps and check the CIN, documents, safety requirements and tax details requested on screen. Missing information may prevent publishing.",
+          "Check prices, availability and site information before publishing. A property in your workspace is not necessarily visible to guests yet.",
+          "To switch between short-term and long-term rental, use the property’s dedicated action and review the preview. Bookings, leases or drafts may need attention first."
+        ]
+      },
+      "bookings": {
+        "title": "Bookings and calendar",
+        "keywords": "arrivals departures check in checkout blocks",
+        "steps": [
+          "Open Bookings to use the list or calendar. Check the property, dates, party size, status and amounts before creating or editing a stay.",
+          "Use manual calendar blocks to close unavailable dates. A calendar block does not necessarily include a full booking or guest details.",
+          "Check booking details before recording arrival. The check-in link lets guests complete required information; completing it does not submit an Alloggiati report.",
+          "At departure, open the check-out flow and review the information shown. Check stay status and payment status separately."
+        ]
+      },
+      "ical": {
+        "title": "External calendars and iCal",
+        "keywords": "airbnb booking ota sync",
+        "steps": [
+          "Connect an external calendar to the property using its iCal export link. Add a separate connection for each calendar.",
+          "Check the last sync result and use manual sync when needed. Synchronisation is periodic: changes may not appear immediately on both platforms.",
+          "iCal exchanges calendar occupancy; it does not guarantee prices, payments, messages or complete guest details. Review each stay and fill in missing information.",
+          "Removing a connection deletes its imported blocks and may reopen dates. Check availability afterwards and keep export links private."
+        ]
+      },
+      "guests": {
+        "title": "Guests, check-in and privacy",
+        "keywords": "documents gdpr export anonymise",
+        "steps": [
+          "Open Guests or a booking to review each participant’s details. Stays imported from external platforms may need additional guest information.",
+          "Share check-in links only with the intended recipient. Do not put identity documents, card information or other sensitive data in free-text messages.",
+          "Authorised export and anonymisation actions are available on the guest record. Read the confirmation carefully: anonymisation changes personal information and is not simply archiving.",
+          "If a guest is missing, check your organisation, property scope and permissions. Do not use another account to bypass access restrictions."
+        ]
+      },
+      "compliance": {
+        "title": "Alloggiati and reporting",
+        "keywords": "police tourist tax ross1000 istat receipt",
+        "steps": [
+          "Check required guest details and deadlines in Alloggiati for each stay. A complete check-in is not evidence of submission.",
+          "In the current workflow CasaZen prepares the information and available file for manual submission. Sign in to Alloggiati Web, submit the report and keep the portal’s receipt.",
+          "After actually submitting, use Mark as manually submitted and enter the correct date. This records your declaration; it does not certify that CasaZen transmitted the report or received a receipt.",
+          "Check tourist tax, exemptions and regional tourism reporting separately. Confirm applicable rates and obligations with the relevant authority: a calculation or exported file is not an already-filed declaration."
+        ]
+      },
+      "payments": {
+        "title": "Payments and guest messages",
+        "keywords": "stripe refunds revenue conversation",
+        "steps": [
+          "Open Payments or the booking to check amounts and status. Distinguish pending from successful payments and verify any refund outcome.",
+          "Available methods depend on your organisation and booking site configuration. A booking or payment request alone does not prove payment was received.",
+          "For supported direct bookings, open the conversation from the booking to message the guest. It remains writable through the seventh day after check-out, then becomes read-only.",
+          "The conversation is not a real-time chat and does not send automatic replies. Do not send card information, bank account numbers or identity documents in message text."
+        ]
+      },
+      "team": {
+        "title": "Organisation, people and permissions",
+        "keywords": "agency administration invitations plan billing",
+        "steps": [
+          "In Administration, review organisation members and invite collaborators if authorised. Assign the role and property scope needed for their work.",
+          "The recipient must accept a pending invitation before access becomes available. Check the invitation status and email address.",
+          "Authorised users manage the plan and billing. If an action is missing or access is denied, ask an administrator to check your role, assigned properties and plan.",
+          "For the pilot, agree which properties and collaborators to enable with your organisation manager. This guide covers available features; owner settlement arrangements must be checked separately."
+        ]
+      },
+      "leases": {
+        "title": "Long-term rentals and leases",
+        "keywords": "landlords tenants energy certificate rli rent signature",
+        "steps": [
+          "In Long-term rentals, select a property and start the guided lease flow. Complete landlords, tenants, financial terms and required documents, including the energy certificate where applicable.",
+          "Resume a saved draft and review missing information before confirmation. If two tabs edit the same draft, reload the latest data before retrying.",
+          "Review the lease before downloading it for signature. Downloading is not proof that it has been signed or registered.",
+          "Check registration statuses, available receipts and rent payments in the lease record. Generating a file does not complete registration; verify the actual outcome through the channel used."
+        ]
+      },
+      "suppliers": {
+        "title": "Suppliers and service requests",
+        "keywords": "cleaning maintenance availability quote",
+        "steps": [
+          "Property operators can find services in the marketplace and send requests with the correct dates and details. Check request status before treating a service as confirmed.",
+          "In Suppliers, complete your profile and activation, set up services and availability and use the inbox to manage incoming requests.",
+          "Update your calendar and check conflicts before accepting work. The Suppliers iCal guide explains where to find external calendar links.",
+          "A suspended profile or incomplete activation may limit operations. Read the on-screen notice and contact the representative shown in the app."
+        ]
+      },
+      "troubleshooting": {
+        "title": "Troubleshooting and support",
+        "keywords": "error login denied help",
+        "steps": [
+          "If you cannot sign in, check that you are using the invited account and complete email verification if requested. Sign in again if your session has expired.",
+          "If data or menu entries are missing, first check your organisation and work area. Features also depend on permissions, configuration and activation status.",
+          "If sync or a payment reports an error, check its status and message before retrying. Avoid repeated submissions while the outcome is uncertain.",
+          "Use the support contact available in the app menu or your organisation’s representative. Include the page, time and steps involved, without passwords, tokens, guest identity documents or payment data."
+        ]
+      }
+    }
   }
 }
