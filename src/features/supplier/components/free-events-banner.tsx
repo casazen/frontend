@@ -6,7 +6,7 @@ import i18n from '@/i18n/config';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { getProblemMessage } from '@/lib/api-errors';
-import { useDecideFreeEvent } from '@/queries/use-supplier';
+import { useDecideFreeEvent } from '@/queries/supplier/use-calendar';
 import type { FreeEventDecision, PendingFreeEvent } from '@/types/supplier';
 import { describeFreeEventWhen } from '../lib/free-events';
 

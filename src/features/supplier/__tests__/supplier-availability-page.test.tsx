@@ -2,28 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
-import {
-  useCalendarSyncStatus,
-  useDecideFreeEvent,
-  usePendingFreeEvents,
-  useSupplierAgendaCalendar,
-  useSupplierConflicts,
-  useSupplierHours,
-  useUpdateSupplierAvailability,
-} from '@/queries/use-supplier';
+import { useCalendarSyncStatus, useDecideFreeEvent, usePendingFreeEvents, useSupplierAgendaCalendar, useSupplierConflicts, useSupplierHours, useUpdateSupplierAvailability } from '@/queries/supplier/use-calendar';
 import { LATE_EVENING_UTC, NOON_UTC, freezeClock, withBrowserTimeZone } from '@/test/clock';
 import type { SupplierAgendaCalendar } from '@/types/supplier';
 import { SupplierAvailabilityPage } from '../supplier-availability-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-vi.mock('@/queries/use-supplier', () => ({
+vi.mock('@/queries/supplier/use-calendar', () => ({
   useCalendarSyncStatus: vi.fn(),
   useDecideFreeEvent: vi.fn(),
   usePendingFreeEvents: vi.fn(),
   useSupplierAgendaCalendar: vi.fn(),
   useSupplierConflicts: vi.fn(),
   useSupplierHours: vi.fn(),
-  useUpdateSupplierAvailability: vi.fn(),
+  useUpdateSupplierAvailability: vi.fn()
 }));
 
 const mutateAsync = vi.fn();

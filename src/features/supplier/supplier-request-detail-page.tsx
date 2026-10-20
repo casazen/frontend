@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusPipeline } from '@/components/shared/status/status-pipeline';
 import { SkeletonLine } from '@/components/ui/skeleton';
-import { useSupplierInboxItem } from '@/queries/use-supplier';
+import { useSupplierInboxItem } from '@/queries/supplier/use-inbox';
 import { INBOX_PATH, requestTitle } from './requests/request-model';
 import { RequestDetails, RequestFacts, RequestNow } from './requests/request-parts';
 import { useRequestActions } from './requests/use-request-actions';

@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
-import { useSaveSupplierHours, useSupplierHours } from '@/queries/use-supplier';
+import { useSaveSupplierHours, useSupplierHours } from '@/queries/supplier/use-calendar';
 import { WEEKDAYS, emptyWeekHours, type WeekdayName } from '../lib/supplier-agenda';
 import {
   MAX_BANDS_PER_DAY,

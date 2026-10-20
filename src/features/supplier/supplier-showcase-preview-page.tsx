@@ -8,7 +8,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useSupplierShowcasePreview } from '@/queries/use-supplier';
+import { useSupplierShowcasePreview } from '@/queries/supplier/use-profile';
 import type { SupplierShowcasePreview } from '@/types/supplier';
 import { SupplierShowcaseView } from './components/supplier-showcase-view';
 

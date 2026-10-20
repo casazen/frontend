@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useCalendarSyncStatus, useDisconnectIcalFeed, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/use-supplier';
+import { useCalendarSyncStatus, useDisconnectIcalFeed, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/supplier/use-calendar';
 import { getProblemMessage } from '@/lib/api-errors';
 import { Loader2, RefreshCw } from 'lucide-react';
 

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
-import { useSupplierProfile } from '@/queries/use-supplier';
+import { useSupplierProfile } from '@/queries/supplier/use-profile';
 
 const PROFILE_PATH = '/app/supplier/profile';
 

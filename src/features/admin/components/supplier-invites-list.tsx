@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { getProblemMessage } from '@/lib/api-errors';
-import { useAdminInvites, useResendSupplierInvite, useRevokeSupplierInvite } from '@/queries/use-supplier';
+import { useAdminInvites, useResendSupplierInvite, useRevokeSupplierInvite } from '@/queries/supplier/use-admin';
 import { ADMIN_INVITE_STATES, type AdminInvite, type AdminInviteState } from '@/types/admin-suppliers';
 import { AdminInvitesTable } from './admin-invites-table';
 import { ConfirmAdminActionDialog } from './confirm-admin-action-dialog';

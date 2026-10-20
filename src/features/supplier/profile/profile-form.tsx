@@ -14,7 +14,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import { useServiceCategories } from '@/queries/use-service-categories';
-import { useUpdateSupplierProfile } from '@/queries/use-supplier';
+import { useUpdateSupplierProfile } from '@/queries/supplier/use-profile';
 import type { AdminSupplierStatus } from '@/types/admin-suppliers';
 import type { SupplierProfile } from '@/types/supplier';
 import { SupplierComuniField, type SupplierComuniValue } from '../components/supplier-comuni-field';

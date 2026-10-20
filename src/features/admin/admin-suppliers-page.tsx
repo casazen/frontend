@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getSupplierStatusLabel } from '@/lib/i18n-labels';
-import { useAdminSuppliers, useReactivateSupplier, useSuspendSupplier } from '@/queries/use-supplier';
+import { useAdminSuppliers, useReactivateSupplier, useSuspendSupplier } from '@/queries/supplier/use-admin';
 import { ADMIN_SUPPLIER_STATUSES, type AdminSupplier, type AdminSupplierStatus } from '@/types/admin-suppliers';
 import { AdminSuppliersTable } from './components/admin-suppliers-table';
 import { ConfirmAdminActionDialog } from './components/confirm-admin-action-dialog';

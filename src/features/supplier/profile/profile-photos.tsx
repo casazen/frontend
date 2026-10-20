@@ -6,7 +6,7 @@ import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { PhotoList, type PhotoListHandle, type PhotoListLabels } from '@/components/shared/photo-list';
 import { getProblemMessage } from '@/lib/api-errors';
-import { useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
+import { useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/supplier/use-profile';
 import type { SupplierProfile } from '@/types/supplier';
 import { MAX_SUPPLIER_PHOTOS } from '../components/activation-steps';
 

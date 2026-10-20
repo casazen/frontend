@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { formatRomeDateTime, romeDateOf, romeWallClock } from '@/lib/stay-dates';
-import { useSupplierChecklist, useSupplierToday } from '@/queries/use-supplier';
+import { useSupplierChecklist, useSupplierToday } from '@/queries/supplier/use-inbox';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import { INBOX_PATH, phaseOf, REQUEST_DRAWER_KIND, requestTitle, requestWhen, respondByText } from '../requests/request-model';
 import '../requests/supplier-request-drawer';

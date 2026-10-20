@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
-import { useSupplierHours } from '@/queries/use-supplier';
+import { useSupplierHours } from '@/queries/supplier/use-calendar';
 import { HOURS_SECTION_ID, focusHoursSection } from '../profile/hours-section';
 import { formatBands, weekdayOf } from '../lib/supplier-agenda';
 import { WeeklyHoursEditor } from './weekly-hours-editor';

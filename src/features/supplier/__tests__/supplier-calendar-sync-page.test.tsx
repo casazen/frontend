@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { fetchCalendarSyncStatus, setIcalFeed, syncSupplierCalendarNow } from '@/services/supplier-api';
 import type { CalendarSyncStatus } from '@/types/supplier';
-import { supplierSyncRefetchInterval } from '@/queries/use-supplier';
+import { supplierSyncRefetchInterval } from '@/queries/supplier/use-calendar';
 import { SupplierCalendarSyncPage } from '../supplier-calendar-sync-page';
 
 vi.mock('@/services/supplier-api');

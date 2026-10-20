@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import i18n from '@/i18n/config';
-import { useInviteSupplier } from '@/queries/use-supplier';
+import { useInviteSupplier } from '@/queries/supplier/use-admin';
 import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { keepKnownCategories } from '@/lib/service-categories';

@@ -3,7 +3,7 @@ import { PlainSection } from '@/components/shared/calm';
 import type { DetailContentProps, DetailTitleProps } from '@/components/shared/detail-drawer/detail-registry';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
-import { useSupplierInboxItem } from '@/queries/use-supplier';
+import { useSupplierInboxItem } from '@/queries/supplier/use-inbox';
 import { requestTitle } from './request-model';
 import { RequestFacts, RequestHistory, RequestNow, RequestStateBadge } from './request-parts';
 import { useRequestActions } from './use-request-actions';

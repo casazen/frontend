@@ -5,7 +5,7 @@ import {
   useRejectServiceRequest,
   useTakeServiceRequest,
 } from '@/queries/use-service-requests';
-import { useSupplierSuspended } from '@/queries/use-supplier';
+import { useSupplierSuspended } from '@/queries/supplier/use-profile';
 import { RejectServiceRequestDialog } from '../components/reject-service-request-dialog';
 
 export interface RequestActions {
