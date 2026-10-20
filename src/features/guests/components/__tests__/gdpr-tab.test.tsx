@@ -150,6 +150,28 @@ describe('GdprTab (CO-15)', () => {
     expect(screen.getByTestId('gdpr-export-button')).toBeEnabled();
   });
 
+  it('anonymization waits for confirmation and invalidates both the guest list and detail', async () => {
+    vi.mocked(gdprApi.anonymizeData).mockResolvedValue(undefined);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    render(createElement(QueryClientProvider, { client }, createElement(GdprTab, { guest })));
+    fireEvent.click(await screen.findByTestId('gdpr-anonymize-button'));
+    expect(gdprApi.anonymizeData).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('guests.gdprTab.anonymizeConfirm') }));
+    await waitFor(() => expect(gdprApi.anonymizeData).toHaveBeenCalledWith(GUEST_ID));
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['guests'] }));
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['gdpr', 'guests', GUEST_ID] });
+  });
+
+  it('export of a cross-org guest reports an Italian error without a success notification', async () => {
+    vi.mocked(gdprApi.exportData).mockRejectedValue(problem(404, { title: 'Not Found' }));
+    renderTab();
+    fireEvent.click(await screen.findByTestId('gdpr-export-button'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('guests.gdprTab.loadError')));
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
   it('summary_apiError_showsTheErrorAndRetryNotAnEmptyTab', async () => {
     vi.mocked(gdprApi.getSummary).mockRejectedValue(new Error('network'));
     renderTab();

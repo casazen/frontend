@@ -17,7 +17,7 @@ import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Fact, Facts } from '@/features/bookings/components/booking-facts';
 import { gdprApi } from '@/api/gdpr.api';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { parseStayDate } from '@/lib/stay-dates';
 import { Download, Trash2, ShieldOff, Loader2, MailX } from 'lucide-react';
@@ -51,11 +51,12 @@ export function GdprTab({ guest }: GdprTabProps) {
   const refresh = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: summaryKey }),
-      queryClient.invalidateQueries({ queryKey: ['guests', guest.id] }),
+      queryClient.invalidateQueries({ queryKey: ['guests'] }),
     ]);
   };
 
-  const showError = (error: unknown, fallbackKey: string) => toast.error(getProblemMessage(error, t) ?? t(fallbackKey));
+  const showError = (error: unknown, fallbackKey: string) =>
+    toast.error(getHttpStatus(error) === 404 ? t('guests.gdprTab.loadError') : getProblemMessage(error, t) ?? t(fallbackKey));
 
   const exportMutation = useMutation({
     mutationFn: () => gdprApi.exportData(guest.id),
