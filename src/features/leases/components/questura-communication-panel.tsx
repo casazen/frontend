@@ -1,3 +1,4 @@
+import { saveBlobAs } from '@/lib/file-download';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Download, ExternalLink, Loader2 } from 'lucide-react';
@@ -75,12 +76,7 @@ export function QuesturaCommunicationPanel({ leaseId, leaseEndDate }: QuesturaCo
     setIsDownloading(true);
     try {
       const blob = await leasesApi.downloadQuesturaReceipt(leaseId);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `ricevuta-questura-${leaseId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      saveBlobAs(blob, `ricevuta-questura-${leaseId}.pdf`);
     } catch (downloadError) {
       toast.error(getProblemMessage(downloadError, t) ?? t('leases.questura.receiptError'));
     } finally {

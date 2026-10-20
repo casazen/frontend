@@ -1,3 +1,4 @@
+import { saveBlobAs } from '@/lib/file-download';
 import { useState } from 'react';
 import { Clock, Download, ExternalLink, FileCheck2, Loader2, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -62,12 +63,7 @@ export function RegistrationStatusPanel({
     setIsDownloading(true);
     try {
       const blob = await leasesApi.downloadReceipt(leaseId);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `ricevuta-rli-${leaseId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      saveBlobAs(blob, `ricevuta-rli-${leaseId}.pdf`);
       toast.success(t('leases.rli.receiptOk'));
     } catch {
       toast.error(t('leases.rli.receiptError'));

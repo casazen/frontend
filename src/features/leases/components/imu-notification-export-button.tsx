@@ -1,3 +1,4 @@
+import { saveBlobAs } from '@/lib/file-download';
 import { Download, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -40,12 +41,7 @@ export function ImuNotificationExportButton({ leaseId }: Props) {
   const handleExport = async () => {
     try {
       const blob = await exportImu.mutateAsync(leaseId);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `comunicazione-imu-${leaseId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      saveBlobAs(blob, `comunicazione-imu-${leaseId}.pdf`);
       toast.success(t('leases.canoneConcordato.exportOk'));
     } catch (error) {
       toast.error((await blobProblemMessage(error, t)) ?? t('leases.canoneConcordato.exportError'));
