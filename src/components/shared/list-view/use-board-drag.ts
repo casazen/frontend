@@ -56,12 +56,16 @@ export function useBoardDrag({ enabled, boardRef, onDrop }: UseBoardDragOptions)
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<string | null>(null);
   const cleanup = useRef<(() => void) | null>(null);
+  const clickCleanup = useRef<(() => void) | null>(null);
   const drop = useRef(onDrop);
   useEffect(() => {
     drop.current = onDrop;
   });
   // Whatever is running when the board goes away (a page left in the middle of a drag) is put away.
-  const abort = useCallback(() => cleanup.current?.(), []);
+  const abort = useCallback(() => {
+    cleanup.current?.();
+    clickCleanup.current?.();
+  }, []);
   useEffect(() => abort, [abort]);
 
   const onPointerDown = useCallback(
@@ -70,7 +74,7 @@ export function useBoardDrag({ enabled, boardRef, onDrop }: UseBoardDragOptions)
       const target = event.target as HTMLElement;
       const card = target.closest<HTMLElement>('[data-board-card]');
       if (!card || target.closest(INTERACTIVE)) return;
-      cleanup.current?.();
+      abort();
 
       const box = card.getBoundingClientRect();
       const hold: Hold = {
@@ -136,12 +140,21 @@ export function useBoardDrag({ enabled, boardRef, onDrop }: UseBoardDragOptions)
       };
 
       const swallowClick = () => {
+        clickCleanup.current?.();
+        const targetWindow = window;
+        const remove = () => {
+          targetWindow.clearTimeout(timer);
+          targetWindow.removeEventListener('click', swallow, { capture: true });
+          if (clickCleanup.current === remove) clickCleanup.current = null;
+        };
         const swallow = (clickEvent: Event) => {
           clickEvent.stopPropagation();
           clickEvent.preventDefault();
+          remove();
         };
-        window.addEventListener('click', swallow, { capture: true, once: true });
-        window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 300);
+        targetWindow.addEventListener('click', swallow, { capture: true, once: true });
+        const timer = targetWindow.setTimeout(remove, 300);
+        clickCleanup.current = remove;
       };
 
       const up = (upEvent: PointerEvent) => {
@@ -163,7 +176,7 @@ export function useBoardDrag({ enabled, boardRef, onDrop }: UseBoardDragOptions)
       window.addEventListener('keydown', onKey);
       cleanup.current = stop;
     },
-    [boardRef, enabled],
+    [abort, boardRef, enabled],
   );
 
   return { dragging, over, onPointerDown };
