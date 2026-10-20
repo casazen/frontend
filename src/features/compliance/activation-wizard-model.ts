@@ -112,3 +112,8 @@ export function changedPropertyFields(stored: CreatePropertyDto, submitted: Crea
   }
   return changes as UpdatePropertyDto;
 }
+
+/** URL of an activation step, shared by progress and review links. */
+export function stepHref(stepId: string) {
+  return { search: `?step=${encodeURIComponent(stepId)}` };
+}

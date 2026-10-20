@@ -6,7 +6,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Select } from '@/components/ui/select';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { formatWorkDuration } from '@/lib/work-duration';
-import { useSupplierOverview } from '@/queries/use-supplier';
+import { useSupplierOverview } from '@/queries/supplier/use-inbox';
 import { formatMoney } from '../services/lib/service-money';
 import { numbersOf, PERIOD_PARAM, PERIODS, periodOf } from './home-model';
 

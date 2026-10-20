@@ -30,17 +30,19 @@ const hoursPayload = vi.hoisted(() => ({
 }));
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
-vi.mock('@/queries/use-supplier', () => ({
+vi.mock('@/queries/supplier/use-profile', () => ({
   useSupplierProfile: () => supplier.query ?? { data: supplier.profile, isLoading: false },
   useSupplierActivation: () => ({ data: supplier.activation, isPending: false }),
   useUpdateSupplierProfile: () => ({ mutateAsync: supplier.updateProfile, isPending: false }),
-  useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false }),
+  useUploadSupplierPhotos: () => ({ mutateAsync: supplier.uploadPhotos, isPending: false })
+}));
+vi.mock('@/queries/supplier/use-calendar', () => ({
   useSupplierHours: () => ({
     data: hoursPayload,
     isLoading: false,
     isError: false,
   }),
-  useSaveSupplierHours: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useSaveSupplierHours: () => ({ mutateAsync: vi.fn(), isPending: false })
 }));
 vi.mock('@/queries/use-service-categories', () => ({ useServiceCategories: () => ({ data: undefined }) }));
 vi.mock('@/features/service-requests/components/service-category-picker', () => ({

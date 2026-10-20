@@ -17,7 +17,7 @@ import {
   SUPPLIER_CLAIM_PATH,
   type PendingSupplierClaim,
 } from '@/lib/supplier-claim';
-import { useRegisterSupplier, useSupplierInvite, useSupplierRegistrationOptions } from '@/queries/use-supplier';
+import { useRegisterSupplier, useSupplierInvite, useSupplierRegistrationOptions } from '@/queries/supplier/use-registration';
 import type { SupplierInvitePreview } from '@/services/supplier-api';
 
 /** Where a registered supplier completes the profile (activation wizard). */

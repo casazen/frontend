@@ -5,7 +5,7 @@ import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { SkeletonList } from '@/components/ui/skeleton';
-import { useSupplierDashboard, useSupplierInboxCounts } from '@/queries/use-supplier';
+import { useSupplierDashboard, useSupplierInboxCounts } from '@/queries/supplier/use-inbox';
 import { INBOX_PATH } from '../requests/request-model';
 import { AVAILABILITY_PATH } from './home-model';
 

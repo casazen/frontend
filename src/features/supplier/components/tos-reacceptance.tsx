@@ -7,7 +7,7 @@ import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
-import { useAcceptSupplierTos } from '@/queries/use-supplier';
+import { useAcceptSupplierTos } from '@/queries/supplier/use-profile';
 import type { SupplierTos } from '@/types/supplier';
 import { ActivationTermsCard } from './activation-terms-card';
 

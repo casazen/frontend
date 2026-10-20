@@ -7,7 +7,7 @@ import { ListView } from '@/components/shared/list-view/list-view';
 import { useListState } from '@/components/shared/list-view/use-list-state';
 import { Button } from '@/components/ui/button';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
-import { useSupplierInbox, useSupplierInboxCounts } from '@/queries/use-supplier';
+import { useSupplierInbox, useSupplierInboxCounts } from '@/queries/supplier/use-inbox';
 import { requestPath } from './requests/request-model';
 import './requests/supplier-request-drawer';
 import { inboxParamsOf, useSupplierRequestsList } from './requests/supplier-requests-list';

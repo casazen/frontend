@@ -11,12 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
-import {
-  useCompleteSupplierActivation,
-  useSaveSupplierActivationStep,
-  useSupplierActivation,
-  useSupplierProfile,
-} from '@/queries/use-supplier';
+import { useCompleteSupplierActivation, useSaveSupplierActivationStep, useSupplierActivation, useSupplierProfile } from '@/queries/supplier/use-profile';
 import type { ActivationStatus, ActivationStepId, SupplierProfile } from '@/types/supplier';
 import { ActivationTermsCard } from './components/activation-terms-card';
 import { IdentityStep, PresentationStep, ServicesStep } from './components/activation-steps';

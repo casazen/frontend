@@ -24,7 +24,9 @@ vi.mock('@/queries/use-users', () => ({
     isLoading: false,
   }),
 }));
-vi.mock('@/queries/use-supplier', () => ({ useSupplierSuspended: () => supplier.suspended }));
+vi.mock('@/queries/supplier/use-profile', () => ({
+  useSupplierSuspended: () => supplier.suspended
+}));
 // The counters of the menu have their own tests: the shell does not need a query client.
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 

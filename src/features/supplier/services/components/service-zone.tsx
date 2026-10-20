@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { comuneLabel } from '@/lib/comune-label';
-import { useSupplierProfile } from '@/queries/use-supplier';
+import { useSupplierProfile } from '@/queries/supplier/use-profile';
 import type { SupplierProfile } from '@/types/supplier';
 import { ZONE_PATH } from '../lib/service-paths';
 

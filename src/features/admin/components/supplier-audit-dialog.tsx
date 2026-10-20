@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getSupplierStatusLabel } from '@/lib/i18n-labels';
 import { formatRomeDateTime } from '@/lib/stay-dates';
-import { useSupplierAudit } from '@/queries/use-supplier';
+import { useSupplierAudit } from '@/queries/supplier/use-admin';
 import type { AdminSupplier } from '@/types/admin-suppliers';
 
 const AUDIT_DATE_TIME: Intl.DateTimeFormatOptions = {

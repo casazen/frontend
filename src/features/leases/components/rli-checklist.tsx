@@ -1,3 +1,4 @@
+import { saveBlobAs } from '@/lib/file-download';
 import { Download, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -45,12 +46,7 @@ export function RliChecklist({ leaseId }: Props) {
   const handleExport = async () => {
     try {
       const blob = await exportRli.mutateAsync(leaseId);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `rli-prefill-${leaseId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      saveBlobAs(blob, `rli-prefill-${leaseId}.pdf`);
       toast.success(t('leases.rli.exportOk'));
     } catch (error) {
       toast.error(getProblemMessage(error, t) ?? t('leases.rli.exportError'));

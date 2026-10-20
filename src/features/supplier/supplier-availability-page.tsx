@@ -12,14 +12,7 @@ import { SkeletonList } from '@/components/ui/skeleton';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { getProblemMessage } from '@/lib/api-errors';
 import { isStayDate, todayInRome } from '@/lib/stay-dates';
-import {
-  useCalendarSyncStatus,
-  usePendingFreeEvents,
-  useSupplierAgendaCalendar,
-  useSupplierConflicts,
-  useSupplierHours,
-  useUpdateSupplierAvailability,
-} from '@/queries/use-supplier';
+import { useCalendarSyncStatus, usePendingFreeEvents, useSupplierAgendaCalendar, useSupplierConflicts, useSupplierHours, useUpdateSupplierAvailability } from '@/queries/supplier/use-calendar';
 import { AgendaConflicts } from './components/agenda-conflicts';
 import { AgendaDayView } from './components/agenda-day-view';
 import { AgendaMonthView } from './components/agenda-month-view';

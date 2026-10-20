@@ -10,8 +10,8 @@ const api = vi.hoisted(() => ({ getStatus: vi.fn(), search: vi.fn(), getByIstatC
 const invite = vi.hoisted(() => ({ mutateAsync: vi.fn() }));
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
-vi.mock('@/queries/use-supplier', () => ({
-  useInviteSupplier: () => ({ mutateAsync: invite.mutateAsync, isPending: false }),
+vi.mock('@/queries/supplier/use-admin', () => ({
+  useInviteSupplier: () => ({ mutateAsync: invite.mutateAsync, isPending: false })
 }));
 vi.mock('@/queries/use-service-categories', () => ({ useServiceCategories: () => ({ data: undefined }) }));
 vi.mock('@/features/service-requests/components/service-category-picker', () => ({

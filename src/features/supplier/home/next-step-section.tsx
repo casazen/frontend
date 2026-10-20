@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ChecklistCompact } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
-import { useSupplierChecklist } from '@/queries/use-supplier';
+import { useSupplierChecklist } from '@/queries/supplier/use-inbox';
 import { checklistSteps } from './home-model';
 
 /**
