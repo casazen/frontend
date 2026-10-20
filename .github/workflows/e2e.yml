@@ -40,7 +40,9 @@ jobs:
         if: failure()
         with:
           name: playwright-l2-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 7
 
   e2e-staging:
@@ -53,6 +55,10 @@ jobs:
     env:
       E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
       E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
+      E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL }}
+      VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+      VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+      VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
     steps:
       - uses: actions/checkout@v4
 
@@ -67,36 +73,34 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Check staging configuration and API readiness
+        run: node scripts/check-staging.mjs
+
       - name: API regression smoke
-        if: env.E2E_AUTH0_EMAIL != ''
         run: E2E_STAGING=1 npm run test:e2e -- --project=staging
         env:
           CI: true
           E2E_STAGING: '1'
-          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
+          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL }}
           VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
           VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
           VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
 
       - name: Golden Journey / L3 staging project
-        if: env.E2E_AUTH0_EMAIL != ''
         run: E2E_STAGING=1 npm run test:e2e -- --project=staging-gj
         env:
           CI: true
           E2E_STAGING: '1'
-          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
+          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL }}
           VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
           VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
           VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
-
-      - name: Skip notice when secrets missing
-        if: env.E2E_AUTH0_EMAIL == ''
-        run: |
-          echo "::warning::E2E_AUTH0_EMAIL secret not set — staging E2E skipped. Configure repo secrets for L3 gates."
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-staging-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 7

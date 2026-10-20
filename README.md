@@ -41,3 +41,11 @@ VITE_API_BASE_URL=http://localhost:3000/api
 ```bash
 npm run build
 ```
+
+### Staging E2E prerequisites
+
+The live staging job requires repository variables `E2E_STAGING_API_URL` (including `/api`), `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID`, `VITE_AUTH0_AUDIENCE`, and secrets `E2E_AUTH0_EMAIL`, `E2E_AUTH0_PASSWORD`. The dedicated account must have LongTermLandlord access. The workflow verifies configuration and `/api/health/ready` before browser authentication; there is no fallback to a historical deployment URL in CI.
+
+The login setup supports both first-time role onboarding and consent-only reacceptance after a legal document update. It accepts only mandatory host documents, leaving marketing untouched. Reports include HTML, screenshots on failure and retry traces. Treat artifacts as private test-account data.
+
+Local preflight checks: `npx vitest run scripts/check-staging.test.mjs`. Live validation requires the configured test account and a reachable staging backend; a green demo suite is not proof of staging success.
