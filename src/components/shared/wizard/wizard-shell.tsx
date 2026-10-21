@@ -254,7 +254,9 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   }, []);
   const form = useForm<TValues>({ defaultValues: initialValues, resolver, mode: "onTouched", shouldUnregister: false });
   const problems = collectProblems(form.formState.errors);
-  const values = useWatch({ control: form.control });
+  // compute compares snapshots: validation notifications must not look like new answers
+  // (including steps whose fields use setValue without register).
+  const values = useWatch({ control: form.control, compute: (answers) => answers });
 
   // Revalidate after React commits the changed answers, outside RHF's watch notification.
   // A summary can render before passive effects run: do not gate this on an effect-synced ref.
