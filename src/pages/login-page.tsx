@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { safeReturnTo } from '@/lib/auth-return-to';
 import { useTranslation } from 'react-i18next';
 import { LogIn } from 'lucide-react';
 import { CasaZenLogo, CasaZenMark } from '@/components/brand/casazen-mark';
@@ -42,6 +43,10 @@ function rememberStart(): void {
 export function LoginPage() {
   const { isAuthenticated, isLoading, user, login } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const candidate = safeReturnTo(params.get('returnTo'));
+  // Only application routes can be a post-login target; never external URLs or /login itself.
+  const returnTo = candidate?.startsWith('/app/') && new URL(candidate, window.location.origin).pathname.startsWith('/app/') ? candidate : null;
   const { t } = useTranslation();
   // Decided once, when the page opens.
   const [redirect] = useState(() => !startedRecently());
@@ -49,14 +54,14 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate('/app/choose-context', { replace: true });
+      navigate(returnTo ?? '/app/choose-context', { replace: true });
       return;
     }
     if (!redirect || isLoading || isAuthenticated || started.current) return;
     started.current = true;
     rememberStart();
-    login();
-  }, [redirect, isAuthenticated, isLoading, user, login, navigate]);
+    login(returnTo ? { returnTo } : undefined);
+  }, [redirect, isAuthenticated, isLoading, user, login, navigate, returnTo]);
 
   if (redirect) {
     return (
@@ -71,7 +76,7 @@ export function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#fbfaf8] px-4 text-center">
       <CasaZenLogo size={44} />
       <p className="max-w-sm text-sm text-[#4a6d71]">{t('login.signInMessage')}</p>
-      <Button onClick={() => login()} size="lg" className="bg-[#1f3a3d] text-white hover:bg-[#2b4f53]">
+      <Button onClick={() => login(returnTo ? { returnTo } : undefined)} size="lg" className="bg-[#1f3a3d] text-white hover:bg-[#2b4f53]">
         <LogIn className="mr-2 h-5 w-5" />
         {t('login.signInButton')}
       </Button>

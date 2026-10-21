@@ -1,3 +1,4 @@
+import { LeasePartnerReference } from './components/lease-partner-reference';
 import { useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -101,6 +102,8 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
           <StatusExplainer kind="lease" status={lease.status} />
         </div>
       ) : null}
+
+      <LeasePartnerReference leaseId={lease.id} />
 
       {showExtraEuBanner && <ExtraEUWarningBanner />}
 
