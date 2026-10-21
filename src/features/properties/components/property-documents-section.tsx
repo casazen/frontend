@@ -44,6 +44,7 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
                     {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
                     {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
                   </p>
+                  {doc.documentType === 'Ape' && ['jpg', 'jpeg', 'png'].includes(doc.fileType.toLowerCase().replace('.', '')) ? <p className="text-sm text-muted-foreground">{t('shared.documentUpload.apePhotoStored')}</p> : null}
                   {doc.documentType === 'Ape' && <ApeIdentificationForm propertyId={propertyId} document={doc} />}
                 </div>
               </div>

@@ -2438,6 +2438,9 @@
       "logout": "Esci"
     },
     "documentUpload": {
+      "apeFileFormats": "PDF, JPG, JPEG, PNG — massimo 10 MB",
+      "apeScanNotice": "Puoi caricare anche una foto dell’APE. La copia viene conservata; per foto e scansioni la validità dell’attestato non viene verificata automaticamente. Conserva e carica tutte le pagine del documento.",
+      "apePhotoStored": "Copia fotografica conservata — validità dell’APE da verificare.",
       "uploadDocument": "Carica documento",
       "documentType": "Tipo documento",
       "dragDropText": "Trascina un file qui o clicca per selezionare",

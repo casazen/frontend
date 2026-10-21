@@ -14,6 +14,7 @@ import type { PropertyDocumentType } from '@/types';
 import { useUploadPropertyDocument } from '@/queries/use-properties';
 
 const ACCEPTED_TYPES = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+const APE_ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png';
 
 interface DocumentUploadDialogProps {
   propertyId: string;
@@ -122,16 +123,17 @@ export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCer
             <p className="text-sm text-muted-foreground text-center">
               {t('shared.documentUpload.dragDropText')}
             </p>
-            <p className="text-xs text-muted-foreground">{t('shared.documentUpload.fileFormats')}</p>
+            <p className="text-xs text-muted-foreground">{t(documentType === 'Ape' ? 'shared.documentUpload.apeFileFormats' : 'shared.documentUpload.fileFormats')}</p>
             {file && <p className="text-sm font-medium">{file.name}</p>}
             <input
               ref={inputRef}
               type="file"
-              accept={ACCEPTED_TYPES}
+              accept={documentType === 'Ape' ? APE_ACCEPTED_TYPES : ACCEPTED_TYPES}
               className="hidden"
               onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
             />
           </div>
+          {documentType === 'Ape' ? <p className="text-sm text-muted-foreground">{t('shared.documentUpload.apeScanNotice')}</p> : null}
           <Button
             className="w-full"
             disabled={!file || uploadMutation.isPending}

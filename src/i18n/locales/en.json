@@ -2438,6 +2438,9 @@
       "logout": "Logout"
     },
     "documentUpload": {
+      "apeFileFormats": "PDF, JPG, JPEG, PNG — up to 10 MB",
+      "apeScanNotice": "You can also upload a photo of the energy certificate. The copy is stored; photos and scans do not automatically verify certificate validity. Keep and upload all pages of the document.",
+      "apePhotoStored": "Photo copy stored — certificate validity must be checked.",
       "uploadDocument": "Upload document",
       "documentType": "Document type",
       "dragDropText": "Drag a file here or click to select",
