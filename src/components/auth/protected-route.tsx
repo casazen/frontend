@@ -1,7 +1,8 @@
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { currentReturnTo } from '@/lib/auth-return-to';
 import { isDemoMode } from '@/config/demo.config';
 import { hasRole } from '@/lib/auth-roles';
 import { useEffect, useRef } from 'react';
@@ -15,6 +16,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   const { t } = useTranslation();
+  const location = useLocation();
   const { isLoading, isAuthenticated, user } = useAuth();
   const roles = useUserRoles();
   const hasShownRoleToast = useRef(false);
@@ -40,7 +42,7 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?returnTo=${encodeURIComponent(currentReturnTo(location))}`} replace />;
   }
 
   if (role && !isAuthorized) {

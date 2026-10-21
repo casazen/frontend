@@ -1,3 +1,4 @@
+import { LeasePartnerReference } from './components/lease-partner-reference';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -118,6 +119,8 @@ export function LeaseDetailPage() {
             <LeaseStatusBadge status={lease.status} className="text-sm px-3 py-1" />
           </div>
         </div>
+
+        <LeasePartnerReference leaseId={lease.id} />
 
         {showExtraEuBanner && <ExtraEUWarningBanner />}
 

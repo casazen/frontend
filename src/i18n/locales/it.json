@@ -1,4 +1,26 @@
 {
+  "cfDocuments": {
+    "title": "Carica i documenti in CasaZen",
+    "description": "Conserva i documenti del contratto sulla tua casa e ritrovali in un unico posto.",
+    "loading": "Caricamento dei documenti…",
+    "documentsError": "Non è stato possibile caricare i documenti della casa.",
+    "leaseError": "Il contratto non è disponibile o non hai accesso. Verifica di aver selezionato l’organizzazione corretta.",
+    "chooseLease": "Seleziona il contratto a cui si riferiscono i documenti ricevuti dal partner.",
+    "leaseLabel": "Contratto",
+    "noLeases": "Non hai ancora contratti salvati. Apri la tua casa e crea il contratto per ottenere il riferimento da comunicare al partner.",
+    "backToHouses": "Vai alle tue case",
+    "invalidLease": "Il riferimento del contratto nel link è mancante o non valido. Richiedi il link corretto oppure apri la tua casa.",
+    "house": "Casa associata al contratto",
+    "reference": "Riferimento contratto: {{id}}",
+    "openHouse": "Apri la casa",
+    "openLease": "Apri il contratto",
+    "instructions": "Seleziona e carica i documenti definitivi ricevuti dal partner. Saranno conservati nell’archivio della casa. Il caricamento non modifica lo stato di registrazione del contratto e non richiede un nuovo pagamento.",
+    "partnerReference": "Riferimento per il partner (leaseId)",
+    "copy": "Copia riferimento",
+    "copied": "Riferimento copiato.",
+    "copyFailed": "Seleziona il riferimento e copialo manualmente.",
+    "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti."
+},
   "admin": {
     "dashboard": {
       "title": "Dashboard Amministratore",
