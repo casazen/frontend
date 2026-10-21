@@ -39,9 +39,9 @@ const enKeys = flatten(en as LocaleTree);
 
 const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
 
-/** True when `key` resolves in the locale, directly or through its plural forms (`key_one`, `key_other`). */
+/** Keys may also name an object subtree, as in t(key, { returnObjects: true }). Leaf parity remains checked by flatten(). */
 function hasKey(keys: Map<string, unknown>, key: string): boolean {
-  return keys.has(key) || keys.has(`${key}_other`);
+  return keys.has(key) || keys.has(`${key}_other`) || [...keys.keys()].some(candidate => candidate.startsWith(`${key}.`));
 }
 
 function placeholders(value: string | string[]): string[] {
