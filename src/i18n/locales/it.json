@@ -1,4 +1,43 @@
 {
+  "cfDocuments": {
+    "title": "Carica i documenti in CasaZen",
+    "description": "Conserva e consulta i documenti allegati al tuo contratto.",
+    "loading": "Caricamento dei documenti…",
+    "documentsError": "Impossibile caricare i documenti del contratto.",
+    "leaseError": "Il contratto non è disponibile o non hai accesso. Verifica di aver selezionato l’organizzazione corretta.",
+    "backToHouses": "Vai alle tue case",
+    "invalidLease": "Il riferimento del contratto nel link è mancante o non valido. Richiedi il link corretto oppure apri la tua casa.",
+    "house": "Casa associata al contratto",
+    "reference": "Riferimento contratto: {{id}}",
+    "openHouse": "Apri la casa",
+    "openLease": "Apri il contratto",
+    "instructions": "Carica il contratto, l’attestazione e la ricevuta di registrazione ricevuti dal partner. I file saranno allegati a questo contratto e consultabili nella sua sezione Documenti. Il caricamento non modifica i dati del contratto né richiede un nuovo pagamento.",
+    "partnerReference": "Riferimento per il partner (leaseId)",
+    "copy": "Copia riferimento",
+    "copied": "Riferimento copiato.",
+    "copyFailed": "Seleziona il riferimento e copialo manualmente.",
+    "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti.",
+    "chooseLease": "Seleziona il contratto a cui allegare i documenti.",
+    "noLeases": "Non hai ancora contratti salvati. Il riferimento necessario è il leaseId del contratto, non l’ID della casa.",
+    "leaseLabel": "Contratto",
+    "documentsTitle": "Documenti del contratto",
+    "kind": "Tipo di documento",
+    "file": "Documento PDF (massimo 20 MB)",
+    "upload": "Carica documento",
+    "uploading": "Caricamento…",
+    "empty": "Non ci sono ancora documenti allegati a questo contratto.",
+    "invalidFile": "Seleziona un PDF valido fino a 20 MB.",
+    "uploadError": "Impossibile salvare il documento.",
+    "saved": "Documento salvato e allegato al contratto.",
+    "download": "Scarica",
+    "downloadError": "Impossibile scaricare il documento.",
+    "kinds": {
+      "Contract": "Contratto",
+      "Attestation": "Attestazione",
+      "Registration": "Registrazione",
+      "Other": "Altro"
+    }
+  },
   "admin": {
     "dashboard": {
       "title": "Dashboard Amministratore",
@@ -2399,6 +2438,8 @@
       "logout": "Esci"
     },
     "documentUpload": {
+      "apeFileFormats": "PDF, JPG, JPEG, PNG — massimo 10 MB",
+      "apeScanNotice": "L’OCR leggerà tutte le pagine e controllerà codice attestato, classe energetica, EPgl, indirizzo, certificatore e date. Se mancano dati leggibili ti indicheremo cosa correggere. Il controllo automatico non verifica l’autenticità nel registro regionale.",
       "uploadDocument": "Carica documento",
       "documentType": "Tipo documento",
       "dragDropText": "Trascina un file qui o clicca per selezionare",
@@ -10978,5 +11019,19 @@
         ]
       }
     }
+  },
+  "documentPages": {
+    "select": "Scegli PDF o foto delle pagine",
+    "help": "Un PDF oppure fino a 12 foto JPEG/PNG (massimo 20 MB per file, 40 MB totali). Puoi aggiungere altre foto. Verrà conservato solo il PDF unificato, scaricabile (massimo {{maxPdfMb}} MB).",
+    "invalid": "Scegli un solo documento PDF oppure fino a 12 foto JPEG/PNG. Non mescolare PDF e foto. Controlla i limiti di dimensione.",
+    "moveUp": "Sposta pagina {{page}} prima",
+    "moveDown": "Sposta pagina {{page}} dopo",
+    "rotate": "Ruota pagina {{page}}",
+    "remove": "Rimuovi pagina {{page}}",
+    "removeButton": "Rimuovi",
+    "confirm": "Ho caricato tutte le pagine e verificato ordine e orientamento.",
+    "incomplete": "Aggiungi le pagine e conferma che il documento sia completo.",
+    "tooLarge": "Il PDF finale supera il limite consentito. Riduci le dimensioni delle foto e riprova.",
+    "conversionFailed": "Non è stato possibile creare il PDF. Prova con foto JPEG/PNG leggibili."
   }
 }

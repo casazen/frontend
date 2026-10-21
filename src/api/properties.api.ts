@@ -77,7 +77,7 @@ export const propertiesApi = {
     const response = await axios.post<PropertyDocumentDto>(
       `/properties/${id}/documents`,
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120_000 }
     );
     return response.data;
   },
