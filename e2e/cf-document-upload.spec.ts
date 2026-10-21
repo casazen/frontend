@@ -34,3 +34,31 @@ test('partner email → correct house → document upload → archived document'
   await expect(page.getByText('contratto-definitivo.pdf', { exact: true })).toBeVisible();
   expect(uploaded).toBe(true);
 });
+
+test('a property without any lease can persist partner documents in its existing archive', async ({ page }) => {
+  await resetE2eStorage(page, 'it');
+  await page.route(`**/api/properties/${propertyId}`, (route) => route.fulfill({ json: {
+    id: propertyId, name: 'Casa senza contratto', city: 'Seveso', rentalMode: 'Long',
+  } }));
+  let uploaded = false;
+  await page.route(`**/api/properties/${propertyId}/documents`, async (route) => {
+    if (route.request().method() === 'POST') {
+      expect(route.request().postDataBuffer()?.toString()).toContain('attestazione.pdf');
+      uploaded = true;
+      await route.fulfill({ status: 201, json: { id: 'doc-2' } });
+    } else {
+      await route.fulfill({ json: uploaded ? [{ id: 'doc-2', fileName: 'attestazione.pdf', documentType: 'Other', fileType: 'pdf', uploadedAt: '2026-10-21T10:00:00Z' }] : [] });
+    }
+  });
+  const leaseCalls: string[] = [];
+  page.on('request', (request) => { if (request.url().includes('/api/leases')) leaseCalls.push(request.url()); });
+  await page.goto(demoUrl(`/app/long-rent/documents/upload?propertyId=${propertyId}`, 'long-term'));
+  await expect(page.getByRole('heading', { name: 'Casa senza contratto' })).toBeVisible();
+  await page.getByRole('button', { name: 'Carica documento' }).click();
+  await page.locator('input[type="file"]').setInputFiles({ name: 'attestazione.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\nprova\n%%EOF') });
+  await page.getByRole('button', { name: 'Carica', exact: true }).click();
+  await expect(page.getByText('attestazione.pdf', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('attestazione.pdf', { exact: true })).toBeVisible();
+  expect(leaseCalls).toEqual([]);
+});

@@ -6,8 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
-import { useLeases } from '@/queries/use-leases';
-import { usePropertyDocuments } from '@/queries/use-properties';
+import { useProperties, useProperty, usePropertyDocuments } from '@/queries/use-properties';
 import { PropertyDocumentsSection } from '@/features/properties/components/property-documents-section';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -21,26 +20,42 @@ function HouseDocuments({ propertyId }: { propertyId: string }) {
   return <PropertyDocumentsSection propertyId={propertyId} documents={documents.data} defaultUploadType="Other" />;
 }
 
-/** A bare email URL is useful too: choose an existing authorized lease, never guess a house. */
-function ChooseLease() {
+/** A bare link lets the user choose an authorized house without requiring a lease. */
+function ChooseProperty() {
   const { t } = useTranslation();
-  const leases = useLeases();
-  if (leases.isPending) return <LoadingScreen message={t('cfDocuments.loading')} className="h-auto" />;
-  if (leases.isError) return <ErrorState title={t('cfDocuments.leaseError')} error={leases.error} onRetry={() => void leases.refetch()} />;
+  const properties = useProperties({ mode: 'long' });
+  if (properties.isPending) return <LoadingScreen message={t('cfDocuments.loading')} className="h-auto" />;
+  if (properties.isError) return <ErrorState title={t('cfDocuments.propertyError')} error={properties.error} onRetry={() => void properties.refetch()} />;
   return (
     <div className="space-y-4">
-      <p>{t('cfDocuments.chooseLease')}</p>
+      <p>{t('cfDocuments.chooseProperty')}</p>
       <ul className="space-y-3">
-        {leases.data?.map((lease) => (
-          <li key={lease.id}>
-            <Link className="break-words underline" to={`?leaseId=${encodeURIComponent(lease.id)}`}>
-              {lease.property?.name ?? t('cfDocuments.leaseLabel')} · {lease.id}
+        {properties.data?.map((property) => (
+          <li key={property.id}>
+            <Link className="break-words underline" to={`?propertyId=${encodeURIComponent(property.id)}`}>
+              {property.name}
             </Link>
           </li>
         ))}
       </ul>
-      {leases.data?.length === 0 ? <p>{t('cfDocuments.noLeases')}</p> : null}
+      {properties.data?.length === 0 ? <p>{t('cfDocuments.noProperties')}</p> : null}
       <Link className="inline-block underline" to="/app/long-rent/properties">{t('cfDocuments.backToHouses')}</Link>
+    </div>
+  );
+}
+
+/** Direct house upload, available before the partner has prepared a lease. */
+function PropertyDocuments({ propertyId }: { propertyId: string }) {
+  const { t } = useTranslation();
+  const property = useProperty(propertyId, { fresh: true });
+  if (property.isPending) return <LoadingScreen message={t('cfDocuments.loading')} className="h-auto" />;
+  if (property.isError) return <ErrorState title={t('cfDocuments.propertyError')} error={property.error} onRetry={() => void property.refetch()} />;
+  return (
+    <div className="space-y-6">
+      <h2 className="text-lg font-semibold">{property.data.name}</h2>
+      <Alert>{t('cfDocuments.instructions')}</Alert>
+      <HouseDocuments propertyId={property.data.id} />
+      <Link className="inline-block underline" to={`/app/long-rent/properties/${property.data.id}`}>{t('cfDocuments.openHouse')}</Link>
     </div>
   );
 }
@@ -72,7 +87,11 @@ export function LeaseDocumentsUploadPage() {
   const [params] = useSearchParams();
   const ids = params.getAll('leaseId');
   const leaseId = ids[0] ?? '';
-  const invalid = ids.length > 1 || (ids.length === 1 && !UUID.test(leaseId));
+  const propertyIds = params.getAll('propertyId');
+  const propertyId = propertyIds[0] ?? '';
+  // A lease, when provided, is authoritative: never override its house from another query parameter.
+  const invalid = ids.length > 1 || (ids.length === 1 && !UUID.test(leaseId)) ||
+    (ids.length === 0 && (propertyIds.length > 1 || (propertyIds.length === 1 && !UUID.test(propertyId))));
   return (
     <div className="mx-auto max-w-3xl space-y-6" data-testid="cf-documents-page">
       <PageHeader title={t('cfDocuments.title')} description={t('cfDocuments.description')} />
@@ -80,7 +99,7 @@ export function LeaseDocumentsUploadPage() {
         <Alert variant="danger" action={<Link className="underline" to="/app/long-rent/properties">{t('cfDocuments.backToHouses')}</Link>}>
           {t('cfDocuments.invalidLease')}
         </Alert>
-      ) : leaseId ? <LeaseDocuments key={leaseId} leaseId={leaseId} /> : <ChooseLease />}
+      ) : leaseId ? <LeaseDocuments key={leaseId} leaseId={leaseId} /> : propertyId ? <PropertyDocuments key={propertyId} propertyId={propertyId} /> : <ChooseProperty />}
     </div>
   );
 }

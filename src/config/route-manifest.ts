@@ -512,7 +512,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     path: '/app/long-rent/documents/upload',
     context: 'long-rent',
-    requiredPermissions: ['lease.read', 'property.read', 'property.write'],
+    requiredPermissions: ['property.read', 'property.write'],
     component: async () => ({ default: (await import('@/features/leases/lease-documents-upload-page')).LeaseDocumentsUploadPage }),
   },
   {

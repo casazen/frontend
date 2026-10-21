@@ -5,9 +5,6 @@
     "loading": "Loading documents…",
     "documentsError": "The property documents could not be loaded.",
     "leaseError": "The lease is unavailable or you do not have access. Check that you have selected the correct organization.",
-    "chooseLease": "Select the lease for the documents received from the partner.",
-    "leaseLabel": "Lease",
-    "noLeases": "You have no saved leases yet. Open your property and create a lease to obtain the reference to share with the partner.",
     "backToHouses": "Go to your properties",
     "invalidLease": "The lease reference in this link is missing or invalid. Ask for the correct link or open your property.",
     "house": "Property linked to the lease",
@@ -19,7 +16,10 @@
     "copy": "Copy reference",
     "copied": "Reference copied.",
     "copyFailed": "Select the reference and copy it manually.",
-    "referenceHelp": "Share this identifier with the partner to link the case to the correct lease and property."
+    "referenceHelp": "Share this identifier with the partner to link the case to the correct lease and property.",
+    "chooseProperty": "Select the property where you want to keep the documents. You do not need an existing lease.",
+    "noProperties": "No properties are available yet. Create your property before uploading documents.",
+    "propertyError": "The property is unavailable or you do not have access. Check that you have selected the correct organization."
 },
   "admin": {
     "dashboard": {

@@ -5,9 +5,6 @@
     "loading": "Caricamento dei documenti…",
     "documentsError": "Non è stato possibile caricare i documenti della casa.",
     "leaseError": "Il contratto non è disponibile o non hai accesso. Verifica di aver selezionato l’organizzazione corretta.",
-    "chooseLease": "Seleziona il contratto a cui si riferiscono i documenti ricevuti dal partner.",
-    "leaseLabel": "Contratto",
-    "noLeases": "Non hai ancora contratti salvati. Apri la tua casa e crea il contratto per ottenere il riferimento da comunicare al partner.",
     "backToHouses": "Vai alle tue case",
     "invalidLease": "Il riferimento del contratto nel link è mancante o non valido. Richiedi il link corretto oppure apri la tua casa.",
     "house": "Casa associata al contratto",
@@ -19,7 +16,10 @@
     "copy": "Copia riferimento",
     "copied": "Riferimento copiato.",
     "copyFailed": "Seleziona il riferimento e copialo manualmente.",
-    "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti."
+    "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti.",
+    "chooseProperty": "Seleziona la casa su cui conservare i documenti. Non è necessario avere già un contratto.",
+    "noProperties": "Non hai ancora case disponibili. Crea prima la tua casa per conservarvi i documenti.",
+    "propertyError": "La casa non è disponibile o non hai accesso. Verifica di aver selezionato l’organizzazione corretta."
 },
   "admin": {
     "dashboard": {

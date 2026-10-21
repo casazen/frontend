@@ -19,7 +19,7 @@ describe('partner document upload', () => {
   beforeEach(async () => { vi.clearAllMocks(); await i18n.changeLanguage('it'); });
 
   it('registers the exact email landing path with read and property write permissions', () => {
-    expect(ROUTE_MANIFEST.find((route) => route.path === path)?.requiredPermissions).toEqual(['lease.read', 'property.read', 'property.write']);
+    expect(ROUTE_MANIFEST.find((route) => route.path === path)?.requiredPermissions).toEqual(['property.read', 'property.write']);
   });
 
   it.each(['?leaseId=bad', `?leaseId=${id}&leaseId=${id}`, '?leaseId='])('rejects malformed or ambiguous references without API access: %s', (query) => {
@@ -61,11 +61,36 @@ describe('partner document upload', () => {
     expect(get.mock.calls.some(([url]) => String(url).includes('untrusted-house'))).toBe(false);
   });
 
-  it('a bare link asks the user to select a saved lease rather than inventing a reference', async () => {
+  it('a bare link allows a property choice without requiring a saved lease', async () => {
     get.mockResolvedValue({ data: [] });
     renderPage();
-    expect(await screen.findByText(i18n.t('cfDocuments.noLeases'))).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('cfDocuments.noProperties'))).toBeInTheDocument();
     expect(screen.getByRole('link', { name: i18n.t('cfDocuments.backToHouses') })).toHaveAttribute('href', '/app/long-rent/properties');
     expect(post).not.toHaveBeenCalled();
   });
+  it('uploads directly to an authorized house without creating a lease', async () => {
+    const houseId = '0f65c27e-0c89-42e1-b0e9-e2e09e73ee79';
+    get.mockImplementation((url) => {
+      if (url === `/properties/${houseId}`) return Promise.resolve({ data: { id: houseId, name: 'La mia casa' } });
+      if (url === `/properties/${houseId}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    post.mockResolvedValue({ data: { id: 'document-1' } });
+    renderPage(`?propertyId=${houseId}`);
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('shared.documentUpload.uploadDocument') }));
+    fireEvent.change(document.querySelector('input[type="file"]')!, { target: { files: [new File(['%PDF-1.7'], 'attestazione.pdf', { type: 'application/pdf' })] } });
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.documentUpload.upload') }));
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    expect(post.mock.calls[0][0]).toBe(`/properties/${houseId}/documents`);
+    expect(get.mock.calls.some(([url]) => String(url).includes('/leases'))).toBe(false);
+  });
+
+  it('a forbidden house cannot expose its documents or an upload form', async () => {
+    get.mockRejectedValue(httpError(403));
+    renderPage('?propertyId=0f65c27e-0c89-42e1-b0e9-e2e09e73ee79');
+    expect(await screen.findByText(i18n.t('cfDocuments.propertyError'))).toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).endsWith('/documents'))).toBe(false);
+    expect(post).not.toHaveBeenCalled();
+  });
+
 });
