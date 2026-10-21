@@ -67,6 +67,14 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       host: true,
       port: 5173,
       strictPort: true,
+      // Only the staging E2E server supplies this target. Forward real requests, including Authorization.
+      proxy: process.env.E2E_API_PROXY_TARGET ? {
+        '/api': {
+          target: process.env.E2E_API_PROXY_TARGET.replace(/\/$/, ''),
+          changeOrigin: true,
+          rewrite: (requestPath) => requestPath.replace(/^\/api(?=\/|$)/, ''),
+        },
+      } : undefined,
     },
     resolve: {
       alias: {

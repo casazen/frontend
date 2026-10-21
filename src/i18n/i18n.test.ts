@@ -39,9 +39,9 @@ const enKeys = flatten(en as LocaleTree);
 
 const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
 
-/** Keys may also name an object subtree, as in t(key, { returnObjects: true }). Leaf parity remains checked by flatten(). */
+/** A leaf, plural base or object key used with returnObjects resolves in the locale. */
 function hasKey(keys: Map<string, unknown>, key: string): boolean {
-  return keys.has(key) || keys.has(`${key}_other`) || [...keys.keys()].some(candidate => candidate.startsWith(`${key}.`));
+  return keys.has(key) || keys.has(`${key}_other`) || [...keys.keys()].some((path) => path.startsWith(`${key}.`));
 }
 
 function placeholders(value: string | string[]): string[] {
@@ -134,6 +134,13 @@ describe('i18n helpers', () => {
 });
 
 describe('locale files', () => {
+  it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
+    const keys = flatten({ guide: { sections: { intro: 'Welcome' } } });
+    expect(hasKey(keys, 'guide.sections')).toBe(true);
+    expect(hasKey(keys, 'guide.section')).toBe(false);
+    expect(hasKey(keys, 'guide.missing')).toBe(false);
+  });
+
   it('localeFiles_ItAndEn_HaveTheSameKeys', () => {
     const missingInEn = [...itKeys.keys()].filter((k) => !enKeys.has(k));
     const missingInIt = [...enKeys.keys()].filter((k) => !itKeys.has(k));
