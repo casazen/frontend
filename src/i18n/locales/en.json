@@ -32,12 +32,12 @@
     "download": "Download",
     "downloadError": "The document could not be downloaded.",
     "kinds": {
-        "Contract": "Contract",
-        "Attestation": "Attestation",
-        "Registration": "Registration",
-        "Other": "Other"
+      "Contract": "Contract",
+      "Attestation": "Attestation",
+      "Registration": "Registration",
+      "Other": "Other"
     }
-},
+  },
   "admin": {
     "dashboard": {
       "title": "Admin Dashboard",
@@ -2439,8 +2439,7 @@
     },
     "documentUpload": {
       "apeFileFormats": "PDF, JPG, JPEG, PNG — up to 10 MB",
-      "apeScanNotice": "You can also upload a photo of the energy certificate. The copy is stored; photos and scans do not automatically verify certificate validity. Keep and upload all pages of the document.",
-      "apePhotoStored": "Photo copy stored — certificate validity must be checked.",
+      "apeScanNotice": "OCR reads every page and checks the certificate code, energy class, EPgl, address, certifier and dates. Missing readable data will be reported. Automatic checks do not verify authenticity in regional registers.",
       "uploadDocument": "Upload document",
       "documentType": "Document type",
       "dragDropText": "Drag a file here or click to select",
@@ -11020,5 +11019,19 @@
         ]
       }
     }
+  },
+  "documentPages": {
+    "select": "Choose a PDF or page photos",
+    "help": "One PDF or up to 12 JPEG/PNG photos (20 MB per file, 40 MB total). You can add more photos. Only the combined, downloadable PDF will be stored (up to {{maxPdfMb}} MB).",
+    "invalid": "Choose one PDF or up to 12 JPEG/PNG photos. Do not mix PDFs and photos. Check the size limits.",
+    "moveUp": "Move page {{page}} up",
+    "moveDown": "Move page {{page}} down",
+    "rotate": "Rotate page {{page}}",
+    "remove": "Remove page {{page}}",
+    "removeButton": "Remove",
+    "confirm": "I have added all pages and checked their order and orientation.",
+    "incomplete": "Add pages and confirm that the document is complete.",
+    "tooLarge": "The final PDF exceeds the allowed size. Reduce photo sizes and retry.",
+    "conversionFailed": "The PDF could not be created. Try readable JPEG/PNG photos."
   }
 }

@@ -32,12 +32,12 @@
     "download": "Scarica",
     "downloadError": "Impossibile scaricare il documento.",
     "kinds": {
-        "Contract": "Contratto",
-        "Attestation": "Attestazione",
-        "Registration": "Registrazione",
-        "Other": "Altro"
+      "Contract": "Contratto",
+      "Attestation": "Attestazione",
+      "Registration": "Registrazione",
+      "Other": "Altro"
     }
-},
+  },
   "admin": {
     "dashboard": {
       "title": "Dashboard Amministratore",
@@ -2439,8 +2439,7 @@
     },
     "documentUpload": {
       "apeFileFormats": "PDF, JPG, JPEG, PNG — massimo 10 MB",
-      "apeScanNotice": "Puoi caricare anche una foto dell’APE. La copia viene conservata; per foto e scansioni la validità dell’attestato non viene verificata automaticamente. Conserva e carica tutte le pagine del documento.",
-      "apePhotoStored": "Copia fotografica conservata — validità dell’APE da verificare.",
+      "apeScanNotice": "L’OCR leggerà tutte le pagine e controllerà codice attestato, classe energetica, EPgl, indirizzo, certificatore e date. Se mancano dati leggibili ti indicheremo cosa correggere. Il controllo automatico non verifica l’autenticità nel registro regionale.",
       "uploadDocument": "Carica documento",
       "documentType": "Tipo documento",
       "dragDropText": "Trascina un file qui o clicca per selezionare",
@@ -11020,5 +11019,19 @@
         ]
       }
     }
+  },
+  "documentPages": {
+    "select": "Scegli PDF o foto delle pagine",
+    "help": "Un PDF oppure fino a 12 foto JPEG/PNG (massimo 20 MB per file, 40 MB totali). Puoi aggiungere altre foto. Verrà conservato solo il PDF unificato, scaricabile (massimo {{maxPdfMb}} MB).",
+    "invalid": "Scegli un solo documento PDF oppure fino a 12 foto JPEG/PNG. Non mescolare PDF e foto. Controlla i limiti di dimensione.",
+    "moveUp": "Sposta pagina {{page}} prima",
+    "moveDown": "Sposta pagina {{page}} dopo",
+    "rotate": "Ruota pagina {{page}}",
+    "remove": "Rimuovi pagina {{page}}",
+    "removeButton": "Rimuovi",
+    "confirm": "Ho caricato tutte le pagine e verificato ordine e orientamento.",
+    "incomplete": "Aggiungi le pagine e conferma che il documento sia completo.",
+    "tooLarge": "Il PDF finale supera il limite consentito. Riduci le dimensioni delle foto e riprova.",
+    "conversionFailed": "Non è stato possibile creare il PDF. Prova con foto JPEG/PNG leggibili."
   }
 }

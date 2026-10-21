@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ErrorState } from '@/components/shared/error-state';
 import { saveBlobAs } from '@/lib/file-download';
+import { DocumentPages } from '@/components/documents/document-pages';
+import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
 import { formatDateTime } from '@/lib/utils';
 
 const KINDS: LeaseDocumentKind[] = ['Contract', 'Attestation', 'Registration', 'Other'];
@@ -17,16 +19,16 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
   const { t } = useTranslation();
   const client = useQueryClient();
   const formId = useId();
-  const input = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<LeaseDocumentKind>('Contract');
-  const [file, setFile] = useState<File | null>(null);
+  const [selection, setSelection] = useState<DocumentSelection>(EMPTY_DOCUMENT);
+  const [preparing, setPreparing] = useState(false);
   const [validation, setValidation] = useState('');
   const [saved, setSaved] = useState(false);
   const documents = useQuery({ queryKey: ['lease-documents', leaseId], queryFn: () => leaseDocumentsApi.list(leaseId) });
   const upload = useMutation({
     mutationFn: ({ file, kind }: { file: File; kind: LeaseDocumentKind }) => leaseDocumentsApi.upload(leaseId, file, kind),
     onSuccess: async () => {
-      setFile(null); setSaved(true); if (input.current) input.current.value = '';
+      setSelection(EMPTY_DOCUMENT); setSaved(true);
       await client.invalidateQueries({ queryKey: ['lease-documents', leaseId] });
     },
   });
@@ -35,12 +37,15 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       const blob = await leaseDocumentsApi.download(leaseId, id); saveBlobAs(blob, fileName);
     },
   });
-  const submit = (event: FormEvent) => {
-    event.preventDefault(); if (!file || upload.isPending) return;
-    if (file.size === 0 || file.size > 20 * 1024 * 1024 || !file.name.toLowerCase().endsWith('.pdf')) {
-      setValidation(t('cfDocuments.invalidFile')); return;
-    }
-    setValidation(''); setSaved(false); upload.mutate({ file, kind });
+  const submit = async (event: FormEvent) => {
+    event.preventDefault(); if (!documentReady(selection) || upload.isPending || preparing) return;
+    setPreparing(true); setValidation(''); setSaved(false);
+    try {
+      const file = await prepareDocument(selection, 20 * 1024 * 1024);
+      await upload.mutateAsync({ file, kind });
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('documentPages.')) setValidation(t(error.message));
+    } finally { setPreparing(false); }
   };
   return (
     <section className="space-y-4 rounded-lg border p-4" aria-labelledby={formId} data-testid="lease-documents-panel">
@@ -57,17 +62,15 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       {download.isError ? <ErrorState title={t('cfDocuments.downloadError')} error={download.error} /> : null}
       {canUpload ? <form onSubmit={submit} className="space-y-3">
         <div className="space-y-2"><Label htmlFor={`${formId}-kind`}>{t('cfDocuments.kind')}</Label>
-          <select id={`${formId}-kind`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending}>
+          <select id={`${formId}-kind`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending || preparing}>
             {KINDS.map((value) => <option key={value} value={value}>{t(`cfDocuments.kinds.${value}`)}</option>)}
           </select>
         </div>
-        <div className="space-y-2"><Label htmlFor={`${formId}-file`}>{t('cfDocuments.file')}</Label>
-          <input ref={input} id={`${formId}-file`} type="file" accept=".pdf,application/pdf" disabled={upload.isPending} onChange={(event) => { setFile(event.target.files?.[0] ?? null); setSaved(false); setValidation(''); upload.reset(); }} className="block max-w-full" />
-        </div>
+        <DocumentPages value={selection} onChange={(next) => { setSelection(next); setSaved(false); setValidation(''); upload.reset(); }} disabled={preparing || upload.isPending} />
         {validation ? <p role="alert">{validation}</p> : null}
         {upload.isError ? <ErrorState title={t('cfDocuments.uploadError')} error={upload.error} /> : null}
         {saved ? <p role="status">{t('cfDocuments.saved')}</p> : null}
-        <Button type="submit" disabled={!file || upload.isPending}>{t(upload.isPending ? 'cfDocuments.uploading' : 'cfDocuments.upload')}</Button>
+        <Button type="submit" disabled={!documentReady(selection) || preparing || upload.isPending}>{t(preparing || upload.isPending ? 'cfDocuments.uploading' : 'cfDocuments.upload')}</Button>
       </form> : <Link className="inline-block underline" to={`/app/long-rent/documents/upload?leaseId=${encodeURIComponent(leaseId)}`}>{t('cfDocuments.title')}</Link>}
     </section>
   );

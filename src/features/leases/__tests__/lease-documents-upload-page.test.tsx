@@ -41,7 +41,7 @@ describe('lease-owned partner documents', () => {
     expect(post).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText(i18n.t('cfDocuments.kind')), { target: { value: 'Attestation' } });
     const file = new File(['%PDF-1.7\nexample'], 'attestazione.pdf', { type: 'application/pdf' });
-    fireEvent.change(screen.getByLabelText(i18n.t('cfDocuments.file')), { target: { files: [file] } });
+    fireEvent.change(screen.getByLabelText(i18n.t('documentPages.select')), { target: { files: [file] } });
     fireEvent.click(screen.getByRole('button', { name: i18n.t('cfDocuments.upload') }));
     await screen.findByText('attestazione.pdf');
     expect(post).toHaveBeenCalledTimes(1);
@@ -54,11 +54,11 @@ describe('lease-owned partner documents', () => {
     post.mockRejectedValue(httpError(500)); renderPage(`?leaseId=${id}`);
     await screen.findByText(i18n.t('cfDocuments.empty'));
     const file = new File(['%PDF-1.7'], 'contratto.pdf', { type: 'application/pdf' });
-    fireEvent.change(screen.getByLabelText(i18n.t('cfDocuments.file')), { target: { files: [file] } });
+    fireEvent.change(screen.getByLabelText(i18n.t('documentPages.select')), { target: { files: [file] } });
     fireEvent.click(screen.getByRole('button', { name: i18n.t('cfDocuments.upload') }));
     await screen.findByText(i18n.t('cfDocuments.uploadError'));
     expect(screen.queryByText(i18n.t('cfDocuments.saved'))).not.toBeInTheDocument();
-    expect((screen.getByLabelText(i18n.t('cfDocuments.file')) as HTMLInputElement).files?.[0]).toBe(file);
+    expect(screen.getByText('1. contratto.pdf')).toBeInTheDocument();
   });
   it('rejects another lease document in the server list rather than exposing it', async () => {
     get.mockImplementation((url) => Promise.resolve({ data: url === `/leases/${id}` ? buildDetail({ id }) : [{ id: 'foreign', leaseId: 'other-lease', fileName: 'private.pdf' }] }));
