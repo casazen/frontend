@@ -1,4 +1,5 @@
 import { LeasePartnerReference } from './components/lease-partner-reference';
+import { LeaseDocumentsPanel } from './components/lease-documents-panel';
 import { useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -112,7 +113,7 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
         <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={opensOn}>
             {tab === 'dati' && <LeaseDataTab lease={lease} />}
-            {tab === 'documenti' && <LeaseSigningPanel lease={lease} />}
+            {tab === 'documenti' && <div className="space-y-6"><LeaseDocumentsPanel leaseId={lease.id} /><LeaseSigningPanel lease={lease} /></div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showExtraEuBanner} />}
           </Tabs>

@@ -1,9 +1,9 @@
 {
   "cfDocuments": {
     "title": "Carica i documenti in CasaZen",
-    "description": "Conserva i documenti del contratto sulla tua casa e ritrovali in un unico posto.",
+    "description": "Conserva e consulta i documenti allegati al tuo contratto.",
     "loading": "Caricamento dei documenti…",
-    "documentsError": "Non è stato possibile caricare i documenti della casa.",
+    "documentsError": "Impossibile caricare i documenti del contratto.",
     "leaseError": "Il contratto non è disponibile o non hai accesso. Verifica di aver selezionato l’organizzazione corretta.",
     "backToHouses": "Vai alle tue case",
     "invalidLease": "Il riferimento del contratto nel link è mancante o non valido. Richiedi il link corretto oppure apri la tua casa.",
@@ -11,15 +11,32 @@
     "reference": "Riferimento contratto: {{id}}",
     "openHouse": "Apri la casa",
     "openLease": "Apri il contratto",
-    "instructions": "Seleziona e carica i documenti definitivi ricevuti dal partner. Saranno conservati nell’archivio della casa. Il caricamento non modifica lo stato di registrazione del contratto e non richiede un nuovo pagamento.",
+    "instructions": "Carica il contratto, l’attestazione e la ricevuta di registrazione ricevuti dal partner. I file saranno allegati a questo contratto e consultabili nella sua sezione Documenti. Il caricamento non modifica i dati del contratto né richiede un nuovo pagamento.",
     "partnerReference": "Riferimento per il partner (leaseId)",
     "copy": "Copia riferimento",
     "copied": "Riferimento copiato.",
     "copyFailed": "Seleziona il riferimento e copialo manualmente.",
     "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti.",
-    "chooseProperty": "Seleziona la casa su cui conservare i documenti. Non è necessario avere già un contratto.",
-    "noProperties": "Non hai ancora case disponibili. Crea prima la tua casa per conservarvi i documenti.",
-    "propertyError": "La casa non è disponibile o non hai accesso. Verifica di aver selezionato l’organizzazione corretta."
+    "chooseLease": "Seleziona il contratto a cui allegare i documenti.",
+    "noLeases": "Non hai ancora contratti salvati. Il riferimento necessario è il leaseId del contratto, non l’ID della casa.",
+    "leaseLabel": "Contratto",
+    "documentsTitle": "Documenti del contratto",
+    "kind": "Tipo di documento",
+    "file": "Documento PDF (massimo 20 MB)",
+    "upload": "Carica documento",
+    "uploading": "Caricamento…",
+    "empty": "Non ci sono ancora documenti allegati a questo contratto.",
+    "invalidFile": "Seleziona un PDF valido fino a 20 MB.",
+    "uploadError": "Impossibile salvare il documento.",
+    "saved": "Documento salvato e allegato al contratto.",
+    "download": "Scarica",
+    "downloadError": "Impossibile scaricare il documento.",
+    "kinds": {
+        "Contract": "Contratto",
+        "Attestation": "Attestazione",
+        "Registration": "Registrazione",
+        "Other": "Altro"
+    }
 },
   "admin": {
     "dashboard": {
