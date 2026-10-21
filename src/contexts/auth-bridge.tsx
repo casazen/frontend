@@ -12,6 +12,7 @@ import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { setApiAuthHandlers } from '@/lib/axios';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { clearAllWizardDrafts } from '@/lib/wizard-draft';
+import { currentReturnTo } from '@/lib/auth-return-to';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -161,7 +162,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
       getAccessToken,
       refreshAccessToken,
       // 401 after a token refresh (or Auth0 `login_required`): Auth0 redirect, loop-guarded by the client.
-      onSessionExpired: () => login(),
+      onSessionExpired: () => login({ returnTo: currentReturnTo(window.location) }),
     });
     return () => setApiAuthHandlers(null);
   }, [getAccessToken, refreshAccessToken, login]);

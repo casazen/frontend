@@ -1,3 +1,4 @@
+import { LeaseDocumentsPanel } from './components/lease-documents-panel';
 import { LeasePartnerReference } from './components/lease-partner-reference';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -203,6 +204,7 @@ export function LeaseDetailPage() {
 
             {/* LT-02: offline signature by default, provider only when the API says it is available. */}
             <LeaseSigningPanel lease={lease} />
+            <LeaseDocumentsPanel leaseId={lease.id} />
 
             <CedolareDecisionPanel leaseId={lease.id} />
             <RliChecklist leaseId={lease.id} />
