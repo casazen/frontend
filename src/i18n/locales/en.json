@@ -610,7 +610,8 @@
       "supplierRequests_other": "{{count}} requests to accept"
     },
     "inviteQr": "Invite QR codes",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "channels": "Channels and calendars"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -8329,6 +8330,32 @@
       "fiscal": "Fiscal",
       "operational": "Operational"
     }
+  },
+  "channels": {
+    "checkAgain": "To check",
+    "connect": "Link",
+    "copyFailed": "Could not copy the link. Open it from the “iCal calendars” tab of the property and copy it from there.",
+    "copyLink": "Copy the CasaZen link",
+    "description": "The calendars CasaZen reads from Airbnb, Booking.com and the other portals, property by property.",
+    "emptyDescription": "When you add a property you will be able to link its Airbnb and Booking.com calendars here.",
+    "emptyTitle": "No property to link",
+    "failed": "The last sync did not work.",
+    "help": {
+      "ical": "iCal is a link every portal gives you for the calendar of a property: CasaZen reads it to know which dates are taken.",
+      "noDirect": "The direct connection with the portals is not active yet.",
+      "title": "What is iCal"
+    },
+    "intro_one": "CasaZen reads the calendars of the portals through their iCal link about every minute and gives you a link of its own to paste on the portals, so the dates stay aligned.",
+    "intro_other": "CasaZen reads the calendars of the portals through their iCal link about every {{count}} minutes and gives you a link of its own to paste on the portals, so the dates stay aligned.",
+    "loadError": "Could not load the calendars.",
+    "loading": "Loading the calendars…",
+    "neverUpdated": "Not updated yet",
+    "none": "No calendar linked: the dates do not update on their own",
+    "privacy": "Whoever has the CasaZen link sees the dates taken: paste it only on the portals that need to read them.",
+    "syncing": "Syncing…",
+    "title": "Channels and calendars",
+    "toProperties": "Go to the properties",
+    "updated": "Updated {{when}}"
   },
   "fiscal": {
     "page": {

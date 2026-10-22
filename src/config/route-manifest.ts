@@ -213,6 +213,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reviews/host-reviews-page')).HostReviewsPage }),
   },
   {
+    // The calendars of all the properties in one list (SR-10b): the channel, when each was last read, what needs a look and "Sincronizza ora";
+    // "Collega" leads to the tab Calendari of the property, where calendars are linked. In "Altro" next to the reviews: the main menu holds
+    // seven entries at most. Who may read the properties sees the state; only who may write them gets the buttons.
+    path: '/app/short-rent/channels',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.channels',
+    navPlacement: 'secondary',
+    navOrder: 27,
+    icon: 'CalendarSync',
+    component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
+  },
+  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],

@@ -610,7 +610,8 @@
       "supplierRequests_other": "{{count}} richieste da accettare"
     },
     "inviteQr": "QR di invito",
-    "reviews": "Recensioni"
+    "reviews": "Recensioni",
+    "channels": "Canali e calendari"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -8329,6 +8330,32 @@
       "fiscal": "Fiscale",
       "operational": "Operativo"
     }
+  },
+  "channels": {
+    "checkAgain": "Da ricontrollare",
+    "connect": "Collega",
+    "copyFailed": "Non sono riuscito a copiare il link. Aprilo dalla scheda «Calendari iCal» dell'immobile e copialo da lì.",
+    "copyLink": "Copia il link di CasaZen",
+    "description": "I calendari che CasaZen legge da Airbnb, Booking.com e dagli altri portali, immobile per immobile.",
+    "emptyDescription": "Quando aggiungi un immobile potrai collegare qui i calendari di Airbnb e Booking.com.",
+    "emptyTitle": "Nessun immobile da collegare",
+    "failed": "L'ultima sincronizzazione non è riuscita.",
+    "help": {
+      "ical": "iCal è un link che ogni portale ti dà per il calendario di un immobile: CasaZen lo legge per sapere quali date sono occupate.",
+      "noDirect": "Il collegamento diretto con i portali non è ancora attivo.",
+      "title": "Cos'è iCal"
+    },
+    "intro_one": "CasaZen legge i calendari dei portali con il loro link iCal circa ogni minuto e ti dà un suo link da incollare sui portali, così le date restano allineate.",
+    "intro_other": "CasaZen legge i calendari dei portali con il loro link iCal circa ogni {{count}} minuti e ti dà un suo link da incollare sui portali, così le date restano allineate.",
+    "loadError": "Impossibile caricare i calendari.",
+    "loading": "Caricamento dei calendari…",
+    "neverUpdated": "Non ancora aggiornato",
+    "none": "Nessun calendario collegato: le date non si aggiornano da sole",
+    "privacy": "Chi ha il link di CasaZen vede le date occupate: incollalo solo sui portali che devono leggerle.",
+    "syncing": "Sincronizzo…",
+    "title": "Canali e calendari",
+    "toProperties": "Vai agli immobili",
+    "updated": "Aggiornato {{when}}"
   },
   "fiscal": {
     "page": {
