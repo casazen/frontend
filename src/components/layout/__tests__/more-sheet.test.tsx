@@ -118,6 +118,7 @@ describe('MoreSheet (UI-04b)', () => {
         'Regime fiscale',
         'Report',
         'Recensioni',
+        'Canali e calendari',
         'Profilo',
         'Stripe Connect',
         'Dominio pubblico',

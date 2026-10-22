@@ -80,6 +80,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/fiscal',
       '/app/short-rent/reports',
       '/app/short-rent/reviews',
+      '/app/short-rent/channels',
       '/app/short-rent/profile',
       '/app/short-rent/settings/payments',
       '/app/short-rent/settings/domain',

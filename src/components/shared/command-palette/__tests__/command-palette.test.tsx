@@ -445,9 +445,10 @@ describe('CommandPalette (UI-06)', () => {
       ctrlK();
       await waitFor(() => expect(box()).toHaveFocus());
 
-      // The page of the calendar needs the permission, and so do the bookings of the cache.
+      // The page of the calendar needs the permission, and so do the bookings of the cache. ("Canali e calendari" (SR-10b) only needs
+      // the properties, which this role may read: it is found by the same word, the Calendario is not.)
       type('calendario');
-      expect(screen.getByTestId('command-palette-empty')).toBeInTheDocument();
+      expect(options().some((option) => /^Calendario\b/.test(option.textContent ?? ''))).toBe(false);
       type('rossi');
       expect(screen.getByTestId('command-palette-empty')).toBeInTheDocument();
     });
