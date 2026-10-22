@@ -29,7 +29,12 @@ export async function registerAndActivateSupplier(
   await page.locator('input#username').fill(email);
   await page.locator('input#password').fill(stack.password);
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL((url) => url.origin === new URL(stack.feUrl).origin);
+  // The Auth0 callback must retain the invite before onboarding guards see the authenticated user.
+  await expect(page).toHaveURL((url) =>
+    url.origin === new URL(stack.feUrl).origin
+    && url.pathname === '/register'
+    && url.searchParams.get('inviteToken') === new URL(inviteLink).searchParams.get('inviteToken'),
+  );
 
   await expect(page.locator('#legalName')).toBeVisible({ timeout: 30_000 });
   // Email and comune come from the invite and are locked.
