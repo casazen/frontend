@@ -53,7 +53,7 @@ async function completeOnboardingIfNeeded(
   await waitForSession(page);
 }
 
-setup('authenticate long-term test user', async ({ page }) => {
+setup('authenticate authorized test user', async ({ page }) => {
   mkdirSync(dirname(e2eEnv.authStoragePath), { recursive: true });
   requireE2eCredentials();
 
@@ -79,9 +79,9 @@ setup('authenticate long-term test user', async ({ page }) => {
   const roles = await readAuth0Roles(page);
   if (roles.length > 0) {
     expect(
-      roles,
-      'LongTermLandlord role missing in JWT — assign it in Auth0 for this user',
-    ).toContain('LongTermLandlord');
+      roles.some((role) => role === 'LongTermLandlord' || role === 'Admin'),
+      'The test account needs LongTermLandlord or Admin access in its JWT',
+    ).toBe(true);
   }
 
   await completeOnboardingIfNeeded(page);

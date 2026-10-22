@@ -69,7 +69,10 @@ async function uploadDocument(page: Page, type: string): Promise<void> {
   await page.getByRole('button', { name: 'Carica documento' }).click();
   await page.locator('#documentType').selectOption(type);
   await page.locator('input[type="file"]').setInputFiles({ name: `${type}.png`, mimeType: 'image/png', buffer: PNG_1X1 });
-  await page.getByRole('dialog').getByRole('button', { name: 'Carica', exact: true }).click();
+  await page.getByRole('dialog').getByRole('checkbox', { name: /Ho caricato tutte le pagine/ }).check();
+  const submit = page.getByRole('dialog').getByRole('button', { name: 'Carica', exact: true });
+  await expect(submit).toBeEnabled();
+  await submit.click();
   await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 20_000 });
 }
 
@@ -81,7 +84,7 @@ export async function activateProperty(page: Page, propertyId: string): Promise<
   await expect(page.getByTestId('activation-panel-documents')).toBeVisible({ timeout: 20_000 });
   for (const type of ['CinCertificate', 'PropertyLicense']) {
     await uploadDocument(page, type);
-    await expect(page.getByTestId('activation-documents')).toContainText(`${type}.png`);
+    await expect(page.getByTestId('activation-documents')).toContainText(`${type}.pdf`);
   }
 
   await page.goto(`${base}?step=safety`);
