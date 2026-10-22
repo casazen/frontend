@@ -56,7 +56,7 @@ test.describe('Property flow on staging API (live)', () => {
     const uniqueName = `E2E Staging ${Date.now()}`;
 
     await page.getByTestId('property-add').click();
-    await expect(page.getByRole('heading', { name: /^(Add New Property|Nuovo immobile)$/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^(Create Property|Crea proprietà)$/ })).toBeVisible();
 
     const planAlert = page.getByTestId('plan-limit-alert');
     const createButton = page.getByRole('button', { name: /^(Create Property|Crea immobile)$/ });
@@ -104,7 +104,6 @@ test.describe('Property flow on staging API (live)', () => {
         await expect(page.getByRole('button', { name: uniqueName, exact: true })).toBeVisible({ timeout: 15_000 });
         await page.getByRole('button', { name: uniqueName, exact: true }).click();
       }
-
     }
     await page.getByRole('link', { name: /^(Apri la scheda completa|Open full page)$/ }).click();
 
