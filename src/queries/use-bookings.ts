@@ -5,7 +5,8 @@ import type {
   BookingFilterParams,
   BookingListParams,
   CancelBookingDto,
-  CreateBookingDto,
+  CreateManualBookingDto,
+  StayAvailabilityParams,
   UpdateBookingDto,
   HostBookingQuotePayload,
   DeclineBookingRequestDto,
@@ -149,18 +150,44 @@ export function useBookingCalendar(params?: {
 }
 
 /**
- * Creates a booking entered by hand. No error toast: the wizard of the new booking shows the error above its buttons
- * (e.g. 409 on overlapping dates).
+ * Creates a booking entered by hand with only the name and the email of the guest (SR-06a), or completes a portal's block. No
+ * error toast: the wizard of the new booking shows the error above its buttons (e.g. 409 on overlapping dates). Every list of
+ * bookings, and every answer of the availability, is read again.
  */
-export function useCreateBooking() {
+export function useCreateManualBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateBookingDto) => bookingsApi.create(data),
+    mutationFn: (data: CreateManualBookingDto) => bookingsApi.createManual(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
       toast.success(i18n.t('toast.bookingCreated'));
     },
+  });
+}
+
+const stayAvailabilityKey = (params: StayAvailabilityParams | null) => [BOOKINGS_KEY, 'availability', params] as const;
+
+/**
+ * Whether the stay is free (SR-06a), said as soon as the property and the dates are known. It is advice for the host: when the
+ * answer cannot be had the wizard goes on without it, and the API checks again when the booking is created.
+ */
+export function useStayAvailability(params: StayAvailabilityParams | null) {
+  return useQuery({
+    queryKey: stayAvailabilityKey(params),
+    queryFn: () => bookingsApi.availability(params!),
+    enabled: params !== null,
+    staleTime: 15_000,
+    retry: false,
+  });
+}
+
+/** The same answer, asked afresh from an event handler (the wizard checks it before it leaves the stay): never the one on screen. */
+export function fetchStayAvailability(queryClient: QueryClient, params: StayAvailabilityParams) {
+  return queryClient.fetchQuery({
+    queryKey: stayAvailabilityKey(params),
+    queryFn: () => bookingsApi.availability(params),
+    staleTime: 0,
   });
 }
 

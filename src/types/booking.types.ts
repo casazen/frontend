@@ -33,6 +33,10 @@ export interface Booking {
   /** Cleaning fee included in `basePrice`: the lodging is `basePrice - cleaningFee`. */
   cleaningFee?: number;
   touristTax?: number;
+  /** The host entered a total other than the quote's when they created the booking by hand (SR-06a); `touristTax` stays the quote's. */
+  priceOverridden?: boolean;
+  /** The host's note on that price (80 characters at most); null when there is none. */
+  priceOverrideNote?: string | null;
   currency: string;
   status: BookingStatus;
   guest: BookingGuest;
@@ -207,6 +211,89 @@ export interface CreateBookingDto {
   childrenAges?: number[];
   guest: BookingGuest;
   specialRequests?: string;
+}
+
+/**
+ * POST /bookings/manual: a booking entered by hand with only what it needs (SR-06a). Prices and tourist tax are never sent
+ * (the API prices the stay); `totalPrice` is the total the host agreed when it is not the quote's.
+ */
+export interface CreateManualBookingDto {
+  propertyId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  adults: number;
+  children: number;
+  /** Age at check-in of each minor, asked when the tourist tax of the comune depends on it. */
+  childrenAges?: number[];
+  /** The first name and the email are all the host must give; the guest completes the rest with the online check-in. */
+  guest: { firstName: string; lastName?: string; email: string; phone?: string };
+  note?: string;
+  /** The total the host agreed with the guest; with `blockId`, the amount the portal shows. */
+  totalPrice?: number;
+  /** A short note on that price (80 characters at most); not used with `blockId`. */
+  priceNote?: string;
+  /** The block of a portal's calendar this booking completes (`linkableBlockId` of the availability). */
+  blockId?: string;
+}
+
+/** The answer of POST /bookings/manual: the booking and what the host should know about it. */
+export interface ManualBooking extends Booking {
+  /** The stay is shorter than the minimum stay of the property: created all the same. */
+  belowMinimum: boolean;
+  minNights: number | null;
+  /** False: the guest gives the documents and the rest of the data with the online check-in. */
+  guestDataComplete: boolean;
+}
+
+/** `state` of GET /properties/:id/availability (SR-06a). */
+export type StayAvailabilityState = 'ok' | 'belowMinimum' | 'occupied' | 'linkableBlock' | 'invalid';
+
+/** Why a stay is `invalid`. */
+export type StayAvailabilityInvalidReason = 'checkOutNotAfterCheckIn' | 'checkInInPast' | 'stayTooLong';
+
+/** A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`) or the host's own block (`block`). */
+export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block';
+
+/** Something that takes a night of the dates asked for. */
+export interface StayAvailabilityConflict {
+  id: string;
+  type: StayAvailabilityConflictType;
+  /** The guest's name (booking), the name of the calendar (portal) or the host's note (block); null when there is none. */
+  title: string | null;
+  /** Where a booking came from or whose calendar the block is; null for the host's own block. */
+  channel: BookingChannel | null;
+  /** Arrival day and departure day (`YYYY-MM-DD`). */
+  from: string;
+  to: string;
+}
+
+/** A free stay of the same number of nights as the one asked for. */
+export interface StayAvailabilityWindow {
+  from: string;
+  to: string;
+}
+
+/** What GET /properties/:id/availability says about a stay: free, taken (and the nearest free dates) or a portal's block to complete. */
+export interface StayAvailability {
+  propertyId: string;
+  from: string;
+  to: string;
+  state: StayAvailabilityState;
+  invalidReason: StayAvailabilityInvalidReason | null;
+  nights: number;
+  /** The minimum stay of the property, when it has one. */
+  minNights: number | null;
+  conflicts: StayAvailabilityConflict[];
+  nearestFreeWindow: StayAvailabilityWindow | null;
+  /** With `linkableBlock`: the block to complete with POST /bookings/manual (`blockId`). */
+  linkableBlockId: string | null;
+}
+
+/** The stay GET /properties/:id/availability is asked about. */
+export interface StayAvailabilityParams {
+  propertyId: string;
+  from: string;
+  to: string;
 }
 
 /**
