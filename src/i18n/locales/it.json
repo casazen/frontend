@@ -1683,6 +1683,12 @@
       "numberOfChildren": {
         "invalid": "Indica un numero di minori valido",
         "lessThanGuests": "Serve almeno un adulto: i minori devono essere meno degli ospiti"
+      },
+      "priceNote": {
+        "maxLength": "La nota sul prezzo può avere al massimo 80 caratteri"
+      },
+      "totalPrice": {
+        "invalid": "Scrivi un importo valido, per esempio 450 o 450,50"
       }
     },
     "list": {
@@ -1843,6 +1849,48 @@
       }
     },
     "create": {
+      "availability": {
+        "belowMinimum": {
+          "text": "Per questa casa il minimo è di {{min}} notti: questo soggiorno ne ha {{nights}}. Puoi proseguire: la prenotazione la inserisci tu.",
+          "title": "Date libere, ma sotto il soggiorno minimo"
+        },
+        "blocked": "Queste date non sono libere: scegli altre date o usa quelle libere più vicine.",
+        "checking": "Controllo se le date sono libere…",
+        "conflict": {
+          "block": "Si sovrappone al blocco «{{title}}» ({{range}}).",
+          "blockUnnamed": "Si sovrappone a un blocco del calendario ({{range}}).",
+          "booking": "Si sovrappone al soggiorno di {{name}} ({{range}}).",
+          "bookingUnnamed": "Si sovrappone a un altro soggiorno ({{range}}).",
+          "ical": "Si sovrappone alla prenotazione su {{portal}} ({{range}})."
+        },
+        "invalid": {
+          "checkInInPast": "L'arrivo è già passato: scegli un arrivo da oggi in poi.",
+          "checkOutNotAfterCheckIn": "La partenza deve essere dopo l'arrivo.",
+          "stayTooLong": "Il soggiorno è troppo lungo: al massimo 366 notti."
+        },
+        "link": {
+          "action": "Collega",
+          "linked": "Collegata alla prenotazione di {{portal}}",
+          "linkedText": "Con i dati dell'ospite completi quel soggiorno, senza crearne un altro.",
+          "text": "È il soggiorno importato dal calendario collegato: con i dati dell'ospite lo completi, senza creare una seconda prenotazione.",
+          "title": "Queste date sono già bloccate da {{portal}}"
+        },
+        "linkRequired": "Queste date sono già bloccate da {{portal}}: collega la prenotazione o scegli altre date.",
+        "occupied": {
+          "noWindow": "Non troviamo date libere vicine: prova un altro immobile o accorcia il soggiorno.",
+          "title": "Queste date non sono libere",
+          "useWindow": "Usa {{range}}",
+          "window_one": "Le date libere più vicine per {{count}} notte: {{range}}.",
+          "window_other": "Le date libere più vicine per {{count}} notti: {{range}}."
+        },
+        "ok_one": "Date libere · {{count}} notte",
+        "ok_other": "Date libere · {{count}} notti",
+        "portals": {
+          "Airbnb": "Airbnb",
+          "BookingCom": "Booking.com",
+          "Other": "un altro portale"
+        }
+      },
       "description": "Per una prenotazione presa per telefono o di persona: tre passi brevi, la bozza si salva da sola.",
       "done": {
         "calendar": "Le notti dal {{from}} al {{to}} risultano subito occupate sul calendario e sul sito di prenotazione.",
@@ -1851,23 +1899,37 @@
         "guestFallback": "l'ospite",
         "open": "Apri la prenotazione",
         "payment": "Nessun pagamento è stato registrato: se l'ospite paga a mano, lo segni tu da Pagamenti.",
+        "paymentPortal": "Il pagamento lo incassa {{portal}}: non registrarlo anche qui.",
         "title": "Prenotazione di {{name}} inserita",
         "toList": "Tutte le prenotazioni"
       },
       "finish": "Crea la prenotazione",
       "guest": {
-        "checkinNote": "I documenti e i dati di tutti gli ospiti li compila l'ospite col check-in online.",
-        "country": "Paese",
-        "countryExample": "Italia",
+        "checkinNote": "I documenti, il paese e i dati di tutti gli ospiti li compila l'ospite col check-in online.",
         "email": "Email",
         "emailExample": "maria.rossi@esempio.com",
         "emailHint": "A questo indirizzo arriva il link per il check-in online.",
-        "firstName": "Nome",
-        "lastName": "Cognome",
+        "name": "Nome e cognome",
+        "nameExample": "Maria Rossi",
         "notes": "Note",
         "notesHint": "Per esempio l'orario di arrivo o una richiesta particolare.",
         "phone": "Telefono",
         "phoneExample": "+39 333 123 4567"
+      },
+      "portal": {
+        "amount": "Importo",
+        "amountHint": "La cifra che ti versa {{portal}}: controlla che coincida. Puoi lasciarlo vuoto.",
+        "text": "Non registrare l'incasso anche qui: lo conteremmo due volte nei tuoi ricavi. Ti serve solo per avere l'ospite nel calendario e nel check-in online.",
+        "title": "{{portal}} incassa per te"
+      },
+      "price": {
+        "discount": "Stai applicando uno sconto di {{amount}} rispetto al prezzo calcolato.",
+        "note": "Nota sul prezzo",
+        "noteExample": "Concordato al telefono, sconto per amici",
+        "reset": "Torna al prezzo calcolato",
+        "surcharge": "Stai chiedendo {{amount}} in più rispetto al prezzo calcolato.",
+        "total": "Totale della prenotazione",
+        "totalHint": "Cambialo solo se hai concordato un prezzo diverso con l'ospite. La tassa di soggiorno resta quella calcolata e fa parte del totale."
       },
       "stay": {
         "adults": "Adulti",
@@ -1889,7 +1951,7 @@
       "steps": {
         "guest": {
           "label": "Ospite",
-          "purpose": "Ci servono i dati di contatto di chi ha prenotato.",
+          "purpose": "Bastano il nome e l'email di chi ha prenotato.",
           "title": "Chi viene a soggiornare?"
         },
         "stay": {

@@ -6,18 +6,23 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
-import { fetchHostBookingQuote, useCreateBooking } from '@/queries/use-bookings';
-import type { Booking } from '@/types';
+import { fetchHostBookingQuote, fetchStayAvailability, useCreateManualBooking } from '@/queries/use-bookings';
+import type { ManualBooking } from '@/types';
 import { NewBookingDone } from './components/new-booking-done';
 import { GuestStep, StayStep, SummaryStep } from './components/new-booking-steps';
 import {
   NEW_BOOKING_DRAFT_EXCLUDE,
   NEW_BOOKING_DRAFT_ID,
+  NEW_BOOKING_DRAFT_VERSION,
   NEW_BOOKING_STEP,
+  activeLink,
   emptyNewBooking,
   guestStepSchema,
+  portalName,
   stayStepSchema,
-  toCreateBookingDto,
+  summaryStepSchema,
+  toAvailabilityParams,
+  toManualBookingDto,
   toQuotePayload,
   type NewBookingValues,
 } from './lib/new-booking-model';
@@ -26,14 +31,15 @@ const BOOKINGS_PATH = '/app/short-rent/bookings';
 
 /**
  * The three steps (stay, guest, summary and price) on the wizard kit. The booking is created Confirmed with the source
- * "Manual" (PC-01): the API prices it and answers 409 when the dates overlap another booking or a calendar block, and the
- * message stays above the buttons until the next try.
+ * "Manual" (PC-01) with only the name and the email of the guest (SR-06a), or completes the reservation a portal sent as a block
+ * of its calendar: the API prices it and answers 409 when the dates overlap another booking or a calendar block, and the message
+ * stays above the buttons until the next try.
  */
 function NewBookingWizard({ propertyId }: { propertyId?: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const createBooking = useCreateBooking();
+  const createBooking = useCreateManualBooking();
   const [defaults] = useState(() => emptyNewBooking(propertyId));
   // A step that is left with something the API needs and no field can show: the wizard says it above the buttons.
   const [problem, setProblem] = useState<string | null>(null);
@@ -41,7 +47,9 @@ function NewBookingWizard({ propertyId }: { propertyId?: string }) {
 
   /**
    * Before the stay is accepted: the quote of the API says now what it would refuse at the end (guests over the capacity of
-   * the property, a stay that is too long) and whether the tourist tax of the comune needs the age of each minor.
+   * the property, a stay that is too long) and whether the tourist tax of the comune needs the age of each minor; and the
+   * availability, asked afresh, says whether the dates are free. The availability is advice: when it cannot be had the wizard goes
+   * on, and the API checks again when the booking is created.
    */
   const checkStay = async (values: NewBookingValues) => {
     setProblem(null);
@@ -58,11 +66,23 @@ function NewBookingWizard({ propertyId }: { propertyId?: string }) {
       setProblem(t('booking.form.childrenAgesMissing'));
       throw new Error('The age of each minor is needed for the tourist tax');
     }
+
+    const params = toAvailabilityParams(values);
+    const availability = params ? await fetchStayAvailability(queryClient, params).catch(() => null) : null;
+    if (availability?.state === 'occupied' || availability?.state === 'invalid') {
+      setProblem(t('booking.create.availability.blocked'));
+      throw new Error('The dates are not free');
+    }
+    // Dates that are a portal's reservation are completed, not booked twice: the host links it (or chooses other dates).
+    if (availability?.state === 'linkableBlock' && activeLink(values)?.blockId !== availability.linkableBlockId) {
+      setProblem(t('booking.create.availability.linkRequired', { portal: portalName(availability.conflicts[0]?.channel, t) }));
+      throw new Error('The dates are a reservation of a portal: link it first');
+    }
   };
 
-  const create = async (values: NewBookingValues): Promise<Booking> => {
+  const create = async (values: NewBookingValues): Promise<ManualBooking> => {
     setProblem(null);
-    return createBooking.mutateAsync(toCreateBookingDto(values));
+    return createBooking.mutateAsync(toManualBookingDto(values));
   };
 
   const steps: WizardStep<NewBookingValues>[] = [
@@ -88,12 +108,13 @@ function NewBookingWizard({ propertyId }: { propertyId?: string }) {
       label: t('booking.create.steps.summary.label'),
       title: t('booking.create.steps.summary.title'),
       purpose: t('booking.create.steps.summary.purpose'),
+      schema: summaryStepSchema,
       render: () => <SummaryStep />,
     },
   ];
 
   return (
-    <WizardShell<NewBookingValues, Booking>
+    <WizardShell<NewBookingValues, ManualBooking>
       id={NEW_BOOKING_DRAFT_ID}
       steps={steps}
       defaultValues={defaults}
@@ -103,6 +124,7 @@ function NewBookingWizard({ propertyId }: { propertyId?: string }) {
       // A property in the address is the one the host came from: a draft for another property gives way to it.
       draft={{
         exclude: NEW_BOOKING_DRAFT_EXCLUDE,
+        version: NEW_BOOKING_DRAFT_VERSION,
         accept: (saved) => !propertyId || saved.values.propertyId === propertyId,
       }}
       onExit={() => navigate(propertyId ? `/app/short-rent/properties/${encodeURIComponent(propertyId)}` : BOOKINGS_PATH)}

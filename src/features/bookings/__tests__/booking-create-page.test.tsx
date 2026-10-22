@@ -10,7 +10,7 @@ import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { propertiesApi } from '@/api/properties.api';
 import { NOON_UTC, freezeClock } from '@/test/clock';
-import type { Booking, Property } from '@/types';
+import type { ManualBooking, Property, StayAvailability } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import { BookingCreatePage } from '../booking-create-page';
 
@@ -19,7 +19,7 @@ vi.mock('@/queries/use-users', () => ({
   useCurrentUser: () => ({ user: { id: 'user-1' }, org: { id: 'org-1' } }),
 }));
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { create: vi.fn(), quote: vi.fn() },
+  bookingsApi: { createManual: vi.fn(), quote: vi.fn(), availability: vi.fn() },
 }));
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { getAll: vi.fn() },
@@ -45,6 +45,20 @@ function conflict(data: unknown): AxiosError {
     config,
   });
 }
+
+/** The dates are free (SR-06a): the answer of the availability the wizard asks for as soon as the dates are known. */
+const freeStay: StayAvailability = {
+  propertyId: property.id,
+  from: '2027-10-01',
+  to: '2027-10-05',
+  state: 'ok',
+  invalidReason: null,
+  nights: 4,
+  minNights: null,
+  conflicts: [],
+  nearestFreeWindow: null,
+  linkableBlockId: null,
+};
 
 /** Quote of the backend (BK-03): Firenze-like rates exempt minors by age when `ageRules` is true. */
 function hostQuote(ageRules: boolean, status: DirectBookingQuote['touristTax']['status'] = 'Calculated'): DirectBookingQuote {
@@ -95,14 +109,11 @@ async function fillStay() {
   fireEvent.change(label('booking.create.stay.checkOut'), { target: { value: '2027-10-05' } });
 }
 
-/** Step 2: the contact of the guest. */
+/** Step 2: the name and the email of the guest are all that is asked (SR-06a). */
 async function fillGuest() {
-  const firstName = await screen.findByLabelText(i18n.t('booking.create.guest.firstName'), undefined, WAIT);
-  fireEvent.change(firstName, { target: { value: 'Mario' } });
-  fireEvent.change(label('booking.create.guest.lastName'), { target: { value: 'Rossi' } });
+  const name = await screen.findByLabelText(i18n.t('booking.create.guest.name'), undefined, WAIT);
+  fireEvent.change(name, { target: { value: 'Mario Rossi' } });
   fireEvent.change(label('booking.create.guest.email'), { target: { value: 'mario.rossi@example.com' } });
-  fireEvent.change(label('booking.create.guest.phone'), { target: { value: '+393331234567' } });
-  fireEvent.change(label('booking.create.guest.country'), { target: { value: 'Italia' } });
 }
 
 /** Through the two first steps, to the summary with the price. */
@@ -121,6 +132,7 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property]);
   vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(false));
+  vi.mocked(bookingsApi.availability).mockResolvedValue(freeStay);
 });
 
 afterEach(() => {
@@ -129,7 +141,7 @@ afterEach(() => {
 
 describe('BookingCreatePage', { timeout: 20000 }, () => {
   it('shows the 409 on overlapping dates above the buttons and stays on the summary', async () => {
-    vi.mocked(bookingsApi.create).mockRejectedValue(
+    vi.mocked(bookingsApi.createManual).mockRejectedValue(
       conflict({ status: 409, code: 'booking_dates_unavailable', detail: "L'immobile non è disponibile." }),
     );
     renderPage();
@@ -141,19 +153,19 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('apiErrors.codes.bookingDatesUnavailable'),
     );
-    expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
+    expect(bookingsApi.createManual).toHaveBeenCalledWith(expect.objectContaining({
       propertyId: property.id,
       checkInDate: '2027-10-01',
       checkOutDate: '2027-10-05',
-      numberOfGuests: 2,
-      numberOfChildren: 0,
-      guest: expect.objectContaining({ firstName: 'Mario', lastName: 'Rossi', email: 'mario.rossi@example.com' }),
+      adults: 2,
+      children: 0,
+      guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario.rossi@example.com' },
     }));
     expect(screen.queryByTestId('wizard-done-primary')).not.toBeInTheDocument();
   });
 
   it('confirms with what happens now and a link to the booking once it is created', async () => {
-    vi.mocked(bookingsApi.create).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as Booking);
+    vi.mocked(bookingsApi.createManual).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as ManualBooking);
     renderPage();
 
     await reachSummary();
@@ -166,7 +178,7 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
 
   it('BookingCreatePage_RatesExemptMinorsByAge_AsksMinorsAndAgesAndSendsThem', async () => {
     vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(true));
-    vi.mocked(bookingsApi.create).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as Booking);
+    vi.mocked(bookingsApi.createManual).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as ManualBooking);
     renderPage();
 
     await fillStay();
@@ -176,7 +188,7 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     // The step does not move on while the age of the minor is missing.
     next();
     expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(i18n.t('booking.form.childrenAgesMissing'));
-    expect(screen.queryByLabelText(i18n.t('booking.create.guest.firstName'))).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(i18n.t('booking.create.guest.name'))).not.toBeInTheDocument();
 
     fireEvent.change(age, { target: { value: '8' } });
     next();
@@ -185,9 +197,9 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     await screen.findByTestId('booking-price-total', undefined, WAIT);
     fireEvent.click(screen.getByTestId('booking-create-button'));
 
-    await waitFor(() => expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
-      numberOfGuests: 3,
-      numberOfChildren: 1,
+    await waitFor(() => expect(bookingsApi.createManual).toHaveBeenCalledWith(expect.objectContaining({
+      adults: 2,
+      children: 1,
       childrenAges: [8],
     })), WAIT);
     expect(bookingsApi.quote).toHaveBeenCalledWith(expect.objectContaining({
@@ -206,7 +218,7 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     fireEvent.click(screen.getByTestId('wizard-exit'));
 
     expect(await screen.findByText('property-page', undefined, WAIT)).toBeInTheDocument();
-    expect(bookingsApi.create).not.toHaveBeenCalled();
+    expect(bookingsApi.createManual).not.toHaveBeenCalled();
   });
 
   it('shows the properties load error instead of an empty select', async () => {

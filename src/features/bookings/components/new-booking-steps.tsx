@@ -3,21 +3,33 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { IdCard } from 'lucide-react';
 import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Qty } from '@/components/ui/qty';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ChildrenAgesFields } from '@/features/tourist-tax/components/children-ages-fields';
+import { parseEuros } from '@/features/supplier/services/lib/service-money';
 import { getProblemMessage } from '@/lib/api-errors';
 import { addDays, formatStayDate, isStayDate, nightsBetween, todayInRome } from '@/lib/stay-dates';
 import { resizeChildrenAges } from '@/lib/tourist-tax';
 import { formatCurrency } from '@/lib/utils';
-import { useHostBookingQuote } from '@/queries/use-bookings';
+import { useHostBookingQuote, useStayAvailability } from '@/queries/use-bookings';
 import { useProperties } from '@/queries/use-properties';
 import type { Property } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
-import { NEW_BOOKING_MAX_GUESTS, NEW_BOOKING_STEP, toQuotePayload, type NewBookingValues } from '../lib/new-booking-model';
+import {
+  NEW_BOOKING_MAX_GUESTS,
+  NEW_BOOKING_STEP,
+  PRICE_NOTE_MAX_LENGTH,
+  activeLink,
+  portalName,
+  toAvailabilityParams,
+  toQuotePayload,
+  type NewBookingValues,
+} from '../lib/new-booking-model';
+import { StayAvailabilityNotice } from './stay-availability';
 
 const NO_PROPERTIES: readonly Property[] = [];
 
@@ -67,6 +79,9 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
   const ageRulesApply = payload !== null && quote.data?.touristTax.ageRulesApply === true;
   const askAges = ageRulesApply && values.minors > 0;
   const ages = resizeChildrenAges(values.childrenAges ?? [], values.minors);
+  // Whether the dates are free (SR-06a), as soon as they are known; advice only, the API checks again when the booking is created.
+  const availabilityParams = toAvailabilityParams(values);
+  const availability = useStayAvailability(availabilityParams);
 
   const today = todayInRome();
   const minCheckOut = addDays(isStayDate(values.checkInDate) ? values.checkInDate : today, 1);
@@ -130,6 +145,25 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
         </Field>
       </div>
 
+      {availabilityParams && (
+        <StayAvailabilityNotice
+          availability={availability.data}
+          isLoading={availability.isLoading}
+          link={activeLink(values)}
+          onUseWindow={(window) => {
+            setValue('checkInDate', window.from, { shouldDirty: true });
+            setValue('checkOutDate', window.to, { shouldDirty: true });
+          }}
+          onLink={({ blockId, channel }) =>
+            setValue(
+              'linkedBlock',
+              { blockId, channel, propertyId: values.propertyId, checkInDate: values.checkInDate, checkOutDate: values.checkOutDate },
+              { shouldDirty: true },
+            )
+          }
+        />
+      )}
+
       <fieldset className="min-w-0 space-y-3">
         <legend className="text-sm font-medium">{t('booking.create.stay.guestsTitle')}</legend>
         <div className="divide-y rounded-md border">
@@ -180,8 +214,9 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
 }
 
 /**
- * Step 2: how to reach the guest who booked. The API asks for every field of the contact; the documents and the data of all
- * the guests are filled in by them with the online check-in. The browser must not offer the host's own data here.
+ * Step 2: who booked, with only what is needed (SR-06a): the name as the host says it ("Maria De Luca": the first word is the
+ * first name) and the email the check-in link goes to; the phone, if the host has it. The country, the documents and the data of
+ * all the guests are given by the guest with the online check-in. The browser must not offer the host's own data here.
  */
 export function GuestStep() {
   const { t } = useTranslation();
@@ -194,14 +229,9 @@ export function GuestStep() {
 
   return (
     <div className="min-w-0 space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="guest.firstName" label={t('booking.create.guest.firstName')} error={errors.guest?.firstName}>
-          {(field) => <Input {...field} autoComplete="off" {...register('guest.firstName')} />}
-        </Field>
-        <Field id="guest.lastName" label={t('booking.create.guest.lastName')} error={errors.guest?.lastName}>
-          {(field) => <Input {...field} autoComplete="off" {...register('guest.lastName')} />}
-        </Field>
-      </div>
+      <Field id="guest.name" label={t('booking.create.guest.name')} example={t('booking.create.guest.nameExample')} error={errors.guest?.name}>
+        {(field) => <Input {...field} autoComplete="off" {...register('guest.name')} />}
+      </Field>
       <Field
         id="guest.email"
         label={t('booking.create.guest.email')}
@@ -211,14 +241,9 @@ export function GuestStep() {
       >
         {(field) => <Input {...field} type="email" inputMode="email" autoComplete="off" {...register('guest.email')} />}
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="guest.phone" label={t('booking.create.guest.phone')} example={t('booking.create.guest.phoneExample')} error={errors.guest?.phone}>
-          {(field) => <Input {...field} type="tel" inputMode="tel" autoComplete="off" {...register('guest.phone')} />}
-        </Field>
-        <Field id="guest.country" label={t('booking.create.guest.country')} example={t('booking.create.guest.countryExample')} error={errors.guest?.country}>
-          {(field) => <Input {...field} autoComplete="off" {...register('guest.country')} />}
-        </Field>
-      </div>
+      <Field id="guest.phone" label={t('booking.create.guest.phone')} example={t('booking.create.guest.phoneExample')} optional error={errors.guest?.phone}>
+        {(field) => <Input {...field} type="tel" inputMode="tel" autoComplete="off" {...register('guest.phone')} />}
+      </Field>
       <Field
         id="specialRequests"
         label={t('booking.create.guest.notes')}
@@ -301,8 +326,89 @@ function PriceBlock({ hasStay, quote, isLoading, error }: { hasStay: boolean; qu
 }
 
 /**
- * Step 3: the price the API calculated, what was answered (each block with its "Edit" back to the step) and the note on what
- * a booking entered by hand is. The button of the wizard creates it.
+ * The total the host agreed with the guest, when it is not the price above (SR-06a). Empty means the price the API calculated. The
+ * tourist tax stays the calculated one and is part of the total; the API refuses a total that does not cover it.
+ */
+function AgreedPrice({ quote }: { quote: DirectBookingQuote }) {
+  const { t } = useTranslation();
+  const {
+    register,
+    setValue,
+    control,
+    formState: { errors },
+  } = useFormContext<NewBookingValues>();
+  const typed = useWatch({ control, name: 'totalPrice' }) ?? '';
+
+  const { cents } = parseEuros(typed);
+  const difference = cents === null ? 0 : cents - Math.round(quote.totalPrice * 100);
+  const amount = formatCurrency(Math.abs(difference) / 100, quote.currency);
+
+  return (
+    <div className="min-w-0 space-y-3" data-testid="booking-agreed-price">
+      <Field
+        id="totalPrice"
+        label={t('booking.create.price.total')}
+        hint={t('booking.create.price.totalHint')}
+        optional
+        error={errors.totalPrice}
+      >
+        {(field) => (
+          <Input
+            {...field}
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder={formatCurrency(quote.totalPrice, quote.currency)}
+            {...register('totalPrice')}
+          />
+        )}
+      </Field>
+      {difference !== 0 && (
+        <div className="space-y-1" aria-live="polite" data-testid="booking-price-difference">
+          <p className="break-words text-sm">
+            {difference < 0 ? t('booking.create.price.discount', { amount }) : t('booking.create.price.surcharge', { amount })}
+          </p>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setValue('totalPrice', '', { shouldDirty: true })}>
+            {t('booking.create.price.reset')}
+          </Button>
+        </div>
+      )}
+      <Field
+        id="priceNote"
+        label={t('booking.create.price.note')}
+        example={t('booking.create.price.noteExample')}
+        optional
+        error={errors.priceNote}
+      >
+        {(field) => <Input {...field} maxLength={PRICE_NOTE_MAX_LENGTH} autoComplete="off" {...register('priceNote')} />}
+      </Field>
+    </div>
+  );
+}
+
+/** A portal's reservation that the host completes: the portal collects, so there is no price to calculate nor to agree (SR-06a). */
+function PortalPayment({ portal }: { portal: string }) {
+  const { t } = useTranslation();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<NewBookingValues>();
+
+  return (
+    <div className="min-w-0 space-y-3" data-testid="booking-portal-payment">
+      <Alert variant="info" title={t('booking.create.portal.title', { portal })}>
+        {t('booking.create.portal.text', { portal })}
+      </Alert>
+      <Field id="totalPrice" label={t('booking.create.portal.amount')} hint={t('booking.create.portal.amountHint', { portal })} optional error={errors.totalPrice}>
+        {(field) => <Input {...field} inputMode="decimal" autoComplete="off" {...register('totalPrice')} />}
+      </Field>
+    </div>
+  );
+}
+
+/**
+ * Step 3: the price the API calculated (and the total the host may agree instead), what was answered (each block with its "Edit"
+ * back to the step) and the note on what a booking entered by hand is. For a portal's reservation the portal collects: no price,
+ * only the amount it shows, if the host wants to keep it. The button of the wizard creates the booking.
  */
 export function SummaryStep() {
   const { t, i18n } = useTranslation();
@@ -312,6 +418,8 @@ export function SummaryStep() {
 
   const payload = toQuotePayload(values);
   const quote = useHostBookingQuote(payload);
+  const link = activeLink(values);
+  const portal = portalName(link?.channel, t);
 
   const nights = nightsBetween(values.checkInDate, values.checkOutDate);
   const dates =
@@ -327,8 +435,8 @@ export function SummaryStep() {
     ...(values.minors > 0 ? [t('booking.create.summary.minors', { count: values.minors })] : []),
   ].join(', ');
   const guest = values.guest;
-  const name = [guest?.firstName, guest?.lastName].map((part) => part?.trim()).filter(Boolean).join(' ');
-  const contact = [guest?.email?.trim(), guest?.phone?.trim(), guest?.country?.trim()].filter(Boolean).join(' · ');
+  const name = guest?.name?.trim() ?? '';
+  const contact = [guest?.email?.trim(), guest?.phone?.trim()].filter(Boolean).join(' · ');
   const notes = values.specialRequests?.trim();
 
   const items: WizardSummaryItem[] = [
@@ -340,18 +448,29 @@ export function SummaryStep() {
     ...(notes ? [{ id: 'notes', label: t('booking.create.summary.notes'), value: notes, stepId: NEW_BOOKING_STEP.guest }] : []),
   ];
 
+  const calculated = payload ? quote.data : undefined;
+
   return (
     <div className="min-w-0 space-y-6">
-      <PriceBlock
-        hasStay={payload !== null}
-        quote={payload ? quote.data : undefined}
-        isLoading={quote.isLoading}
-        error={payload && quote.isError ? (getProblemMessage(quote.error, t) ?? t('booking.form.price.loadError')) : null}
-      />
+      {link ? (
+        <PortalPayment portal={portal} />
+      ) : (
+        <>
+          <PriceBlock
+            hasStay={payload !== null}
+            quote={calculated}
+            isLoading={quote.isLoading}
+            error={payload && quote.isError ? (getProblemMessage(quote.error, t) ?? t('booking.form.price.loadError')) : null}
+          />
+          {calculated && <AgreedPrice quote={calculated} />}
+        </>
+      )}
       <WizardSummary items={items} />
-      <Alert variant="info" data-testid="booking-manual-notice">
-        {t('booking.form.manualNotice')}
-      </Alert>
+      {!link && (
+        <Alert variant="info" data-testid="booking-manual-notice">
+          {t('booking.form.manualNotice')}
+        </Alert>
+      )}
     </div>
   );
 }
