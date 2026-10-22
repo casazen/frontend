@@ -38,7 +38,7 @@ test('ordered and rotated photos become one PDF; reload and download preserve th
       expect(route.request().headers()['content-type']).toContain('multipart/form-data');
       const body = route.request().postDataBuffer()!;
       expect(body.toString('latin1')).not.toContain('filename="page-1.jpg"');
-      expect(body.toString('latin1')).not.toContain('filename="page-2.jpg"');
+      expect(body.toString('latin1')).not.toContain('filename="page-2.png"');
       const start = body.indexOf(Buffer.from('%PDF-'));
       const end = body.indexOf(Buffer.from('%%EOF'), start) + 5;
       stored = body.subarray(start, end);
@@ -56,10 +56,10 @@ test('ordered and rotated photos become one PDF; reload and download preserve th
   const photo = (color: string) => page.evaluate(color => {
     const canvas = document.createElement('canvas'); canvas.width = 500; canvas.height = 700;
     const ctx = canvas.getContext('2d')!; ctx.fillStyle = color; ctx.fillRect(0, 0, 500, 700);
-    return canvas.toDataURL('image/jpeg').split(',')[1];
+    return canvas.toDataURL(color === 'blue' ? 'image/png' : 'image/jpeg').split(',')[1];
   }, color);
   const one = Buffer.from(await photo('red'), 'base64'), two = Buffer.from(await photo('blue'), 'base64');
-  await page.getByLabel('Scegli PDF o foto delle pagine').setInputFiles([{ name: 'page-1.jpg', mimeType: 'image/jpeg', buffer: one }, { name: 'page-2.jpg', mimeType: 'image/jpeg', buffer: two }]);
+  await page.getByLabel('Scegli PDF o foto delle pagine').setInputFiles([{ name: 'page-1.jpg', mimeType: 'image/jpeg', buffer: one }, { name: 'page-2.png', mimeType: 'image/png', buffer: two }]);
   await expect(page.getByRole('button', { name: 'Carica documento', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Sposta pagina 2 prima', exact: true }).click();
   await page.getByRole('button', { name: 'Ruota pagina 1', exact: true }).click();

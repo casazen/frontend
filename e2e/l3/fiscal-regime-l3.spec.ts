@@ -14,10 +14,10 @@ test.describe('L3 fiscal regime 2026 (#3)', () => {
     await page.goto('/app/short-rent/fiscal');
     await expect(page.getByTestId('fiscal-dashboard-page')).toBeVisible({ timeout: 60_000 });
 
-    const apiBase =
-      process.env.E2E_LOCAL_API_URL ??
-      process.env.E2E_STAGING_API_URL ??
-      'http://localhost:5000/api';
+    // Staging UI requests use the Vite proxy to the real Railway API.
+    const apiBase = process.env.E2E_STAGING === '1'
+      ? '/api'
+      : (process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api');
 
     const status = await page.evaluate(async (base) => {
       let token: string | null = null;
