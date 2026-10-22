@@ -1682,6 +1682,12 @@
       "numberOfChildren": {
         "invalid": "Enter a valid number of minors",
         "lessThanGuests": "At least one adult is needed: minors must be fewer than the guests"
+      },
+      "priceNote": {
+        "maxLength": "The note on the price can have at most 80 characters"
+      },
+      "totalPrice": {
+        "invalid": "Enter a valid amount, for example 450 or 450.50"
       }
     },
     "list": {
@@ -1842,6 +1848,48 @@
       }
     },
     "create": {
+      "availability": {
+        "belowMinimum": {
+          "text": "The minimum for this property is {{min}} nights: this stay has {{nights}}. You can go on: you are the one entering the booking.",
+          "title": "Dates are free, but under the minimum stay"
+        },
+        "blocked": "These dates are not free: choose other dates or use the nearest free ones.",
+        "checking": "Checking whether the dates are free…",
+        "conflict": {
+          "block": "It overlaps the block \"{{title}}\" ({{range}}).",
+          "blockUnnamed": "It overlaps a block of the calendar ({{range}}).",
+          "booking": "It overlaps the stay of {{name}} ({{range}}).",
+          "bookingUnnamed": "It overlaps another stay ({{range}}).",
+          "ical": "It overlaps the reservation on {{portal}} ({{range}})."
+        },
+        "invalid": {
+          "checkInInPast": "The arrival has already passed: choose an arrival from today on.",
+          "checkOutNotAfterCheckIn": "The departure must be after the arrival.",
+          "stayTooLong": "The stay is too long: 366 nights at most."
+        },
+        "link": {
+          "action": "Link",
+          "linked": "Linked to the reservation on {{portal}}",
+          "linkedText": "With the guest's details you complete that stay, without creating another one.",
+          "text": "It is the stay imported from the linked calendar: with the guest's details you complete it, without creating a second booking.",
+          "title": "These dates are already blocked by {{portal}}"
+        },
+        "linkRequired": "These dates are already blocked by {{portal}}: link the reservation or choose other dates.",
+        "occupied": {
+          "noWindow": "We cannot find free dates nearby: try another property or shorten the stay.",
+          "title": "These dates are not free",
+          "useWindow": "Use {{range}}",
+          "window_one": "The nearest free dates for {{count}} night: {{range}}.",
+          "window_other": "The nearest free dates for {{count}} nights: {{range}}."
+        },
+        "ok_one": "Dates are free · {{count}} night",
+        "ok_other": "Dates are free · {{count}} nights",
+        "portals": {
+          "Airbnb": "Airbnb",
+          "BookingCom": "Booking.com",
+          "Other": "another portal"
+        }
+      },
       "description": "For a booking taken by phone or in person: three short steps, and the draft saves itself.",
       "done": {
         "calendar": "The nights from {{from}} to {{to}} are now taken on the calendar and on the booking site.",
@@ -1850,23 +1898,37 @@
         "guestFallback": "the guest",
         "open": "Open the booking",
         "payment": "No payment has been recorded: if the guest pays by hand, you record it under Payments.",
+        "paymentPortal": "{{portal}} collects the payment: do not record it here as well.",
         "title": "Booking for {{name}} added",
         "toList": "All bookings"
       },
       "finish": "Create the booking",
       "guest": {
-        "checkinNote": "The guest fills in the documents and the details of all the guests with the online check-in.",
-        "country": "Country",
-        "countryExample": "Italy",
+        "checkinNote": "The guest fills in the documents, the country and the details of all the guests with the online check-in.",
         "email": "Email",
         "emailExample": "mary.smith@example.com",
         "emailHint": "The link for the online check-in is sent to this address.",
-        "firstName": "First name",
-        "lastName": "Last name",
+        "name": "First and last name",
+        "nameExample": "Mary Smith",
         "notes": "Notes",
         "notesHint": "For example the arrival time or a special request.",
         "phone": "Phone",
         "phoneExample": "+39 333 123 4567"
+      },
+      "portal": {
+        "amount": "Amount",
+        "amountHint": "The sum {{portal}} pays you: check that it matches. You can leave it empty.",
+        "text": "Do not record the payment here as well: it would count twice in your revenue. You only need this to have the guest on the calendar and in the online check-in.",
+        "title": "{{portal}} collects for you"
+      },
+      "price": {
+        "discount": "You are applying a discount of {{amount}} on the calculated price.",
+        "note": "Note on the price",
+        "noteExample": "Agreed by phone, discount for friends",
+        "reset": "Back to the calculated price",
+        "surcharge": "You are asking {{amount}} more than the calculated price.",
+        "total": "Total of the booking",
+        "totalHint": "Change it only if you agreed another price with the guest. The tourist tax stays the calculated one and is part of the total."
       },
       "stay": {
         "adults": "Adults",
@@ -1888,7 +1950,7 @@
       "steps": {
         "guest": {
           "label": "Guest",
-          "purpose": "We need the contact details of the person who booked.",
+          "purpose": "The name and the email of the person who booked are enough.",
           "title": "Who is coming to stay?"
         },
         "stay": {
