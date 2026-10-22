@@ -78,7 +78,9 @@ function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unk
 
   const returnTo = safeReturnTo(appState?.returnTo);
   if (returnTo) {
-    void getRouter().navigate(returnTo, { replace: true });
+    // Auth0 publishes the authenticated user immediately after this callback. Commit the return
+    // route first so the landing route cannot send an invited user to host onboarding.
+    void getRouter().navigate(returnTo, { replace: true, flushSync: true });
     return;
   }
   window.history.replaceState({}, document.title, window.location.pathname);
