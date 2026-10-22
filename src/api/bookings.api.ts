@@ -11,6 +11,10 @@ import type {
   CancelBookingDto,
   CancelBookingResult,
   CreateBookingDto,
+  CreateManualBookingDto,
+  ManualBooking,
+  StayAvailability,
+  StayAvailabilityParams,
   UpdateBookingDto,
   ArrivalRegisteredBooking,
   HostBookingQuotePayload,
@@ -53,8 +57,19 @@ export const bookingsApi = {
   /** What happened to a booking and what it waits for, in order (SR-05a); the amounts only for who may read payments. */
   getTimeline: (id: string) => ApiClient.get<BookingTimeline>(`/bookings/${id}/timeline`),
 
+  /** The older creation of a booking by hand, which asks for the whole contact of the guest; the new booking page uses `createManual`. */
   create: (data: CreateBookingDto) =>
     ApiClient.post<Booking>('/bookings', data),
+
+  /**
+   * A booking entered by hand with only the name and the email of the guest, at the price of the quote or at the one the host
+   * agreed, or the completion of a portal's block (SR-06a).
+   */
+  createManual: (data: CreateManualBookingDto) => ApiClient.post<ManualBooking>('/bookings/manual', data),
+
+  /** Whether a stay of a property is free, what takes it if not and the nearest free dates (SR-06a). Advice: the API checks again on creation. */
+  availability: ({ propertyId, from, to }: StayAvailabilityParams) =>
+    ApiClient.get<StayAvailability>(`/properties/${encodeURIComponent(propertyId)}/availability`, { from, to }),
 
   /** Dates, guests and notes only: the backend computes the price again (PC-07). */
   update: (id: string, data: UpdateBookingDto) =>
