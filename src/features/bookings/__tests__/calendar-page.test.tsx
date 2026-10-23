@@ -16,6 +16,7 @@ vi.mock('../components/booking-calendar', () => ({
 }));
 vi.mock('@/queries/use-bookings', () => ({ useBookingCalendar: vi.fn() }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
+vi.mock('@/queries/use-booking-messages', () => ({ useUnreadMessagesByBooking: () => ({ data: undefined }) }));
 
 function renderPage() {
   render(

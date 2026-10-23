@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { MessageComposer, MessageThread, type ThreadItem } from '@/components/shared/message-thread';
 import { Button } from '@/components/ui/button';
+import { usePageVisible } from '@/hooks/use-page-visible';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage, getRetryAfterSeconds } from '@/lib/api-errors';
@@ -15,7 +16,7 @@ interface BookingMessagesSectionProps {
 
 /**
  * The conversation with the guest of a booking (SR-12), in the tab «Messaggi» of the booking and in its drawer: the same thread the
- * guest reads in its area, and a box to answer. The guest's messages are marked as read once the host has this in front of it (and may
+ * guest reads in its area, and a box to answer. The guest's messages are marked as read once the host has this in front of it (the tab visible, and the right to
  * write: marking is a write); an answer marks them too. The first message may be the host's: the guest gets an e-mail without the
  * text and reads it in the area of its booking. A closed thread (the seventh day after the check-out) can be read and not written. The
  * text of the messages is the guest's personal data: shown as plain text, never kept anywhere but in the memory of the page.
@@ -33,11 +34,13 @@ export function BookingMessagesSection({ booking }: BookingMessagesSectionProps)
   const unread = thread.data?.unreadCount ?? 0;
   const newest = thread.data?.messages.at(-1)?.id ?? null;
   const marked = useRef<string | null>(null);
+  // A thread in a tab the user is not looking at is not read: it is marked once the tab is in front again.
+  const visible = usePageVisible();
   useEffect(() => {
-    if (!canWrite || unread === 0 || newest === null || marked.current === newest) return;
+    if (!canWrite || !visible || unread === 0 || newest === null || marked.current === newest) return;
     marked.current = newest;
     markAsRead();
-  }, [canWrite, unread, newest, markAsRead]);
+  }, [canWrite, visible, unread, newest, markAsRead]);
 
   const guestName = [booking.guest.firstName, booking.guest.lastName].filter(Boolean).join(' ').trim() || t('booking.messages.guestFallback');
   const firstName = booking.guest.firstName?.trim() || guestName;

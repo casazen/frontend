@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, type LucideIcon } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
+import { UnreadMessagesBadge } from '@/components/shared/unread-messages-badge';
 import { Button } from '@/components/ui/button';
 import { useApproveBookingRequest, useDeclineBookingRequest } from '@/queries/use-bookings';
 import { useResendCheckInLink } from '@/queries/use-checkin';
@@ -146,7 +147,10 @@ export function HomeRowItem({ row, icon: Icon, noteFirst = false, className, onR
             if (row.bookingId && drawer.open('booking', row.bookingId, { opener: event.currentTarget })) event.preventDefault();
           }}
         >
-          <span className={cn('block break-words font-semibold group-hover/open:underline', done && 'text-foreground/70')}>{row.title}</span>
+          <span className={cn('block break-words font-semibold group-hover/open:underline', done && 'text-foreground/70')}>
+            {row.title}
+            {row.unread ? <UnreadMessagesBadge count={row.unread} className="ml-2 align-middle" /> : null}
+          </span>
           {row.sub ? <span className="block break-words text-sm text-foreground/70">{row.sub}</span> : null}
         </Link>
         {noteFirst ? null : note}

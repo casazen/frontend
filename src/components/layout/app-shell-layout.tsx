@@ -13,6 +13,7 @@ import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
 import { ContextSidebar } from './context-sidebar';
 import { GuideLink } from '@/features/help/guide-link';
+import { NotificationBell } from '@/features/notifications/notification-bell';
 import { Header } from './header';
 import { MoreSheet } from './more-sheet';
 import { RouteFocus } from './route-focus';
@@ -71,7 +72,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
           <div className="flex min-w-0 flex-1 flex-col">
             <DemoBanner />
             {/* The notifications bell (UI-12) and the help (UI-08) are handed to the header here too, each only when its function exists. */}
-            <Header search={<CommandPaletteTrigger />} help={<GuideLink contextKey={contextKey} />} />
+            <Header search={<CommandPaletteTrigger />} notifications={<NotificationBell />} help={<GuideLink contextKey={contextKey} />} />
             <main
               id={MAIN_CONTENT_ID}
               ref={mainRef}
