@@ -6,7 +6,8 @@ import { longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import { getLeasePartyRoleLabel, getLeaseTypeAndRegimeLabel } from '@/lib/i18n-labels';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import type { LeaseDetail } from '@/types';
-import { leasePropertyLine } from '../lib/lease-list-format';
+import { isLeasePlaceholderDate, leasePropertyLine } from '../lib/lease-list-format';
+import { isPartnerDraft } from '../lib/lease-sheet';
 import { AttestationGuidancePanel } from './attestation-guidance-panel';
 import { CanoneConcordatoCalculator } from './canone-concordato-calculator';
 import { CedolareDecisionPanel } from './cedolare-decision-panel';
@@ -32,6 +33,9 @@ function Fact({ label, children, testId }: { label: string; children: ReactNode;
 export function LeaseDataTab({ lease }: { lease: LeaseDetail }) {
   const { t } = useTranslation();
   const parties = lease.parties ?? [];
+  // A draft keeps starting values (a date in the year 3000, a rent of 0) for what was not typed yet: shown as to be set.
+  const toDefine = t('leaseSheet.toDefine');
+  const day = (date: string) => (isLeasePlaceholderDate(date) ? toDefine : formatDate(date));
 
   return (
     <div className="space-y-8">
@@ -85,7 +89,7 @@ export function LeaseDataTab({ lease }: { lease: LeaseDetail }) {
           <Fact label={t('leases.fiscalRegime')} testId="lease-type-regime">
             {getLeaseTypeAndRegimeLabel(lease, t)}
           </Fact>
-          <Fact label={t('leases.monthlyRent')}>{formatCurrency(lease.monthlyRent)}</Fact>
+          <Fact label={t('leases.monthlyRent')}>{lease.monthlyRent > 0 ? formatCurrency(lease.monthlyRent) : toDefine}</Fact>
           <Fact label={t('leases.securityDeposit')}>
             {lease.securityDeposit != null ? formatCurrency(lease.securityDeposit) : t('leases.securityDepositMissing')}
           </Fact>
@@ -94,8 +98,8 @@ export function LeaseDataTab({ lease }: { lease: LeaseDetail }) {
 
       <PlainSection title={t('leaseSheet.dates.title')}>
         <dl className="space-y-3 text-sm">
-          <Fact label={t('leaseSheet.dates.start')}>{formatDate(lease.startDate)}</Fact>
-          <Fact label={t('leaseSheet.dates.end')}>{formatDate(lease.endDate)}</Fact>
+          <Fact label={t('leaseSheet.dates.start')}>{day(lease.startDate)}</Fact>
+          <Fact label={t('leaseSheet.dates.end')}>{day(lease.endDate)}</Fact>
           <Fact label={t('leases.stipulaDate')} testId="lease-stipula-date">
             {lease.stipulaDate ? formatDate(lease.stipulaDate) : t('leases.stipulaDateMissing')}
           </Fact>
@@ -114,7 +118,8 @@ export function LeaseDataTab({ lease }: { lease: LeaseDetail }) {
         <div className="space-y-8 pt-4">
           <CedolareDecisionPanel leaseId={lease.id} />
           {/* Calculator, attestation guidance and IMU only for a canone concordato contract (A7-24, LT-13). */}
-          {lease.contractType === 'Concordato' && (
+          {/* Not for a draft made for the partner: ConcordatoFacile computes the range and issues the attestation. */}
+          {lease.contractType === 'Concordato' && !isPartnerDraft(lease) && (
             <div className="space-y-8" data-testid="lease-concordato-sections">
               {lease.concordatoAssessment ? (
                 <ConcordatoAssessmentPanel assessment={lease.concordatoAssessment} />

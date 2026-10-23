@@ -97,6 +97,9 @@ export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
         documentType: 'Ape',
         uploadedAt: '2026-08-01T10:00:00Z',
         downloadUrl: '/documents/doc-ape',
+        // LT-10: the code and the class the contract states; the form waits for them before the draft.
+        apeCode: '1610800012345/17',
+        apeEnergyClass: 'C',
       },
     ]),
   );

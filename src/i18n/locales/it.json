@@ -1078,7 +1078,7 @@
       "contactEmailLabel": "Email di contatto *",
       "creating": "Creazione...",
       "createDraft": "Crea bozza contratto",
-      "apeMissingError": "Un documento APE (certificato di prestazione energetica) deve essere caricato per questa proprietà prima di creare un contratto.",
+      "apeMissingError": "Per creare il contratto serve l’APE (attestato di prestazione energetica) della casa: caricalo qui, senza lasciare il contratto.",
       "waitingDocuments": "Attendi la verifica dei documenti della proprietà.",
       "concordatoRangeRequired": "Calcola il range del canone concordato: il canone mensile viene confrontato con il range restituito dal server.",
       "concordatoRentOutOfRange": "Il canone mensile è fuori dal range calcolato per questo immobile.",
@@ -1112,7 +1112,10 @@
       "removeLandlord": "Rimuovi il locatore {{n}}",
       "removeTenant": "Rimuovi il conduttore {{n}}",
       "partiesMax": "Puoi inserire al massimo {{max}} parti per ruolo.",
-      "fiscalCodeHint": "16 caratteri per una persona fisica, 11 cifre per una società."
+      "fiscalCodeHint": "16 caratteri per una persona fisica, 11 cifre per una società.",
+      "apeIdentificationRequired": "Scrivi codice e classe energetica dell’APE",
+      "apeIdentificationHelp": "Il contratto li riporta: copiali dall’attestato (il codice identificativo è in alto, accanto a «valido fino al»).",
+      "apeReady": "APE: codice {{code}}, classe {{energyClass}}"
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -1196,6 +1199,33 @@
         "saving": "Salvataggio...",
         "cancel": "Annulla"
       }
+    },
+    "kind": {
+      "legend": "Che contratto vuoi fare?",
+      "description": "Prima il tipo di contratto: da questo dipende come lo prepariamo.",
+      "concordato": {
+        "title": "Canone concordato (3+2)",
+        "description": "Lo prepari con ConcordatoFacile, il nostro partner: creiamo subito la bozza con il riferimento da collegare alla pratica."
+      },
+      "other": {
+        "title": "Canone libero (4+4) o transitorio",
+        "description": "Compili tu qui i dati del contratto: casa, parti, durata e canone."
+      },
+      "continue": "Continua",
+      "change": "Cambia tipo di contratto"
+    },
+    "concordato": {
+      "title": "Nuovo contratto a canone concordato",
+      "description": "Scegli la casa: salviamo subito la bozza del contratto e il suo riferimento per ConcordatoFacile.",
+      "whatHappens": "Non servono ancora parti, canone, date né APE: il contratto lo completi con ConcordatoFacile.",
+      "create": "Crea la bozza",
+      "noProperties": "Non hai ancora case in affitto lungo: aggiungi la casa per creare il contratto."
+    },
+    "partnerDraft": {
+      "title": "Bozza — in attesa del contratto del partner",
+      "description": "Questo contratto a canone concordato lo prepari con ConcordatoFacile: lì inserisci parti, canone e durata. La bozza e il suo riferimento sono già salvati qui.",
+      "proceed": "Procedi con la creazione del contratto",
+      "soon": "Il collegamento diretto con ConcordatoFacile è in arrivo. Intanto puoi comunicare al partner il riferimento del contratto qui sotto."
     }
   },
   "leaseList": {
@@ -1252,7 +1282,9 @@
       "anonymized": "Conduttore anonimizzato",
       "missing": "Conduttore da indicare"
     },
-    "term": "dal {{from}} al {{to}}"
+    "term": "dal {{from}} al {{to}}",
+    "termToDefine": "Date da definire",
+    "rentToDefine": "Canone da definire"
   },
   "leaseSheet": {
     "conditions": {
@@ -1287,7 +1319,8 @@
       "documents": "Documenti",
       "label": "Sezioni del contratto",
       "payments": "Pagamenti"
-    }
+    },
+    "toDefine": "Da definire"
   },
   "revenue": {
     "pageTitle": "Analisi ricavi",
@@ -2502,7 +2535,7 @@
     },
     "documentUpload": {
       "apeFileFormats": "PDF, JPG, JPEG, PNG — massimo 10 MB",
-      "apeScanNotice": "L’OCR leggerà tutte le pagine e controllerà codice attestato, classe energetica, EPgl, indirizzo, certificatore e date. Se mancano dati leggibili ti indicheremo cosa correggere. Il controllo automatico non verifica l’autenticità nel registro regionale.",
+      "apeScanNotice": "Leggiamo tutte le pagine per riconoscere l’attestato e i suoi dati. Se da una foto o da una fotocopia non riusciamo a leggere tutto, l’APE viene salvato lo stesso e ti chiediamo solo codice e classe energetica. Il controllo automatico non verifica l’autenticità nel registro regionale.",
       "uploadDocument": "Carica documento",
       "documentType": "Tipo documento",
       "dragDropText": "Trascina un file qui o clicca per selezionare",
@@ -2517,6 +2550,17 @@
         "safetyCompliance": "Conformita' sicurezza",
         "ape": "APE",
         "other": "Altro"
+      },
+      "uploadApe": "Carica l’APE",
+      "apeDataTitle": "Codice e classe dell’APE",
+      "apeDataDescription": "Il contratto riporta il codice identificativo e la classe energetica dell’attestato: scrivili come sono stampati.",
+      "apeLater": "Più tardi",
+      "apeCheck": {
+        "Saved": "APE salvato.",
+        "Verified": "APE salvato: abbiamo riconosciuto l’attestato e letto i suoi dati principali.",
+        "Incomplete": "APE salvato. Dalle pagine non siamo riusciti a leggere: {{fields}}. Se manca una pagina puoi caricarla di nuovo; altrimenti basta scrivere codice e classe qui sotto.",
+        "NotRecognized": "APE salvato, ma non abbiamo riconosciuto il titolo di un attestato di prestazione energetica. Se hai scelto il file sbagliato, eliminalo dai documenti della casa e carica quello giusto; altrimenti scrivi codice e classe qui sotto.",
+        "NotChecked": "APE salvato. La lettura automatica ora non è disponibile: scrivi codice e classe qui sotto."
       }
     },
     "contextPicker": {
@@ -2775,7 +2819,8 @@
       "apeCode": "Codice APE",
       "apeEnergyClass": "Classe energetica",
       "apeIdentificationSave": "Salva",
-      "apeIdentificationCancel": "Annulla"
+      "apeIdentificationCancel": "Annulla",
+      "apeIdentificationTitle": "Codice e classe energetica dell’APE"
     },
     "cin": {
       "badge": {
@@ -11121,6 +11166,16 @@
     "confirm": "Ho caricato tutte le pagine e verificato ordine e orientamento.",
     "incomplete": "Aggiungi le pagine e conferma che il documento sia completo.",
     "tooLarge": "Il PDF finale supera il limite consentito. Riduci le dimensioni delle foto e riprova.",
-    "conversionFailed": "Non è stato possibile creare il PDF. Prova con foto JPEG/PNG leggibili."
+    "conversionFailed": "Non è stato possibile creare il PDF. Prova con foto JPEG/PNG leggibili.",
+    "dropHere": "Trascina qui il PDF o le foto delle pagine",
+    "dropMore": "Trascina qui altre foto delle pagine",
+    "or": "oppure",
+    "unsupported": "«{{name}}» non è un PDF né una foto JPG o PNG: scegli un file in uno di questi formati.",
+    "emptyFile": "«{{name}}» è vuoto: sceglilo di nuovo.",
+    "fileTooLarge": "«{{name}}» supera 20 MB: riduci la foto o scegline un’altra.",
+    "totalTooLarge": "Le foto superano 40 MB in tutto: togline qualcuna o riducine le dimensioni.",
+    "mixed": "Un documento è un solo PDF oppure un gruppo di foto: rimuovi i file già scelti per cambiare.",
+    "tooManyPhotos": "Puoi aggiungere al massimo {{max}} foto per documento.",
+    "onePdf": "Scegli un solo PDF per documento."
   }
 }

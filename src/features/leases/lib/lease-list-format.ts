@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import type { LeaseSummary } from '@/types';
+import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseSummary } from '@/types';
 
 /**
  * What the list of leases and its drawer say about a row, in words (LR-02). Everything here reads what the API sends for the
@@ -28,15 +28,22 @@ export function leasePropertyLine(lease: Pick<LeaseSummary, 'property'>, t: TFun
   return [lease.property.name, lease.property.city].filter(Boolean).join(' · ');
 }
 
+/** The date the API keeps for a draft whose dates were never typed (1 January 3000): a starting value, not a date to show. */
+export function isLeasePlaceholderDate(date: string | null | undefined): boolean {
+  return !!date && date.startsWith(LEASE_DRAFT_PLACEHOLDER_DATE);
+}
+
 /** "dal 1 ott 2026 al 30 set 2030": the days as the API wrote them, never moved by the time zone of the browser. */
 export function leaseTermText(lease: LeaseSummary, t: TFunction, language: string): string {
+  if (isLeasePlaceholderDate(lease.startDate)) return t('leaseList.termToDefine');
   const from = formatStayDate(parseStayDate(lease.startDate), language, FULL_DAY);
   const to = formatStayDate(parseStayDate(lease.endDate), language, FULL_DAY);
   return from && to ? t('leaseList.term', { from, to }) : '—';
 }
 
-/** "950,00 €/mese". */
+/** "950,00 €/mese"; for a draft whose rent was never typed (0: no real rent is 0, the rules refuse it), that it is to be set. */
 export function leaseRentText(lease: Pick<LeaseSummary, 'monthlyRent'>, t: TFunction): string {
+  if (!(lease.monthlyRent > 0)) return t('leaseList.rentToDefine');
   return t('leases.monthlyRentValue', { amount: formatCurrency(lease.monthlyRent) });
 }
 
