@@ -4,7 +4,8 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUpdateApeIdentification } from '@/queries/use-properties';
+import { apeReadFoundNothing } from '@/lib/ape-documents';
+import { useApeAutoRead, useReadApeIdentification, useUpdateApeIdentification } from '@/queries/use-properties';
 import type { PropertyDocumentDto } from '@/types';
 
 interface Props {
@@ -18,19 +19,36 @@ interface Props {
   cancelLabel?: string;
   /** No cancel button: a contract cannot be created without these data, so there is nothing to go back to. */
   required?: boolean;
+  /** Code or class missing: the server reads them from the file by itself (the latest APE of a property page, the one a contract states). */
+  autoRead?: boolean;
 }
 
 /**
- * Code and energy class printed on an APE document (LT-10): the lease contract states them, and they confirm a certificate the
- * automatic reading could not read whole (a photo of a photocopy). The API checks only their shape (no pattern on the code,
- * whose format is not documented).
+ * Code and energy class printed on an APE document (LT-10): the lease contract states them. The server reads them from the file
+ * itself (and, for a code the file does not show legibly, from the public register of the region): this is where they are seen,
+ * read again (by themselves for the latest APE, `autoRead`; "Leggi dall'APE" on request) or, when no reading found them, written by
+ * hand. The API checks only their shape (no pattern on the code, whose format is not documented).
  */
-export function ApeIdentificationForm({ propertyId, document, initiallyEditing = false, onDone, cancelLabel, required = false }: Props) {
+export function ApeIdentificationForm({
+  propertyId,
+  document,
+  initiallyEditing = false,
+  onDone,
+  cancelLabel,
+  required = false,
+  autoRead = false,
+}: Props) {
   const { t } = useTranslation();
   const update = useUpdateApeIdentification();
+  const read = useReadApeIdentification();
   const fieldsId = useId();
   const hasIdentification = !!document.apeCode && !!document.apeEnergyClass;
   const [editing, setEditing] = useState(initiallyEditing);
+  const readByItself = useApeAutoRead(propertyId, document, autoRead && !editing);
+  const reading = read.isPending || readByItself.isFetching;
+  // Read here (on request or by itself) and nothing found, or found nothing in an earlier visit: what is left is to type them.
+  const readHere = read.isSuccess || readByItself.isSuccess;
+  const foundNothing = !hasIdentification && (readHere || apeReadFoundNothing(document.id));
   const [code, setCode] = useState(document.apeCode ?? '');
   const [energyClass, setEnergyClass] = useState(document.apeEnergyClass ?? '');
 
@@ -54,11 +72,24 @@ export function ApeIdentificationForm({ propertyId, document, initiallyEditing =
           <span>
             {t('property.documents.apeIdentification', { code: document.apeCode, energyClass: document.apeEnergyClass })}
           </span>
+        ) : reading ? (
+          <span role="status" className="inline-flex items-center gap-1">
+            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+            {t('property.documents.apeReading')}
+          </span>
         ) : (
-          <span className="text-amber-700">{t('property.documents.apeIdentificationMissing')}</span>
+          <span className="text-amber-700">
+            {foundNothing ? t('property.documents.apeNotReadable') : t('property.documents.apeIdentificationMissing')}
+          </span>
         )}
-        <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => setEditing(true)}>
-          {t('property.documents.apeIdentificationEdit')}
+        {/* Reading again on request: not after a reading of this visit that found nothing (the same file gives the same answer). */}
+        {hasIdentification || reading || readHere ? null : (
+          <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => read.mutate({ propertyId, docId: document.id })}>
+            {t('property.documents.apeReadFromDocument')}
+          </Button>
+        )}
+        <Button type="button" variant="link" size="sm" className="h-auto p-0" disabled={reading} onClick={() => setEditing(true)}>
+          {hasIdentification ? t('property.documents.apeIdentificationCorrect') : t('property.documents.apeIdentificationEdit')}
         </Button>
       </div>
     );

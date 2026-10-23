@@ -94,6 +94,15 @@ export const propertiesApi = {
     ApiClient.put<PropertyDocumentDto>(`/properties/${id}/documents/${docId}/ape`, data),
 
   /**
+   * Reads the code and the energy class of a stored APE again (OCR of the file and, for a code it does not show, the public register
+   * of the region): fills only what is empty. The OCR of a photographed certificate takes up to two minutes, as an upload does.
+   */
+  readApeIdentification: async (id: string, docId: string): Promise<PropertyDocumentDto> => {
+    const response = await axios.post<PropertyDocumentDto>(`/properties/${id}/documents/${docId}/ape/read`, undefined, { timeout: 120_000 });
+    return response.data;
+  },
+
+  /**
    * Documents are in the private storage bucket: the file is fetched through the authenticated
    * endpoint (bearer token, tenant/ownership check), never through a public link.
    */

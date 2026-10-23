@@ -8,10 +8,12 @@ import type {
   RentalMode,
   PropertyCadastralData,
   ApeIdentification,
+  PropertyDocumentDto,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
+import { apeReadFoundNothing, hasApeIdentification, rememberApeReadFoundNothing } from '@/lib/ape-documents';
 import { saveBlobAs } from '@/lib/file-download';
 import { propertyDeleteBlock } from '@/lib/property-delete-block';
 import { toastUndo } from '@/lib/toast-undo';
@@ -19,6 +21,8 @@ import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
 const PROPERTIES_KEY = 'properties';
+/** The reading again of one APE: outside the key of the documents, so that refreshing them never runs the OCR again. */
+const APE_READ_KEY = 'ape-read';
 
 /**
  * `fresh`: read again from the server every time the list is shown, even when it is cached (the page of the list: a property
@@ -220,7 +224,12 @@ export function useUploadPropertyDocument() {
       file: File;
       documentType: PropertyDocumentType;
     }) => propertiesApi.uploadDocument(propertyId, file, documentType),
-    onSuccess: (_, variables) => {
+    onSuccess: (document, variables) => {
+      // The upload of an APE has just read its code and class: no page asks the server to read the same file again.
+      if (variables.documentType === 'Ape' && document?.id) {
+        queryClient.setQueryData([APE_READ_KEY, document.id], document);
+        if (!hasApeIdentification(document)) rememberApeReadFoundNothing(document.id);
+      }
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
       // The required documents are a step of the activation wizard (A5-18).
@@ -297,5 +306,65 @@ export function useUpdateApeIdentification() {
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.apeIdentificationSaveFailed'));
     },
+  });
+}
+
+/**
+ * LT-10: the code and the energy class of a stored APE read again by the server (the file, and the public register of the region
+ * for a code the file does not show), on request ("Leggi dall'APE"). Silent: the place that asks shows what was found, and asks
+ * only for what was not. It succeeds once the documents shown were read again, so that they already carry what was found.
+ */
+export function useReadApeIdentification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ propertyId, docId }: { propertyId: string; docId: string }) => propertiesApi.readApeIdentification(propertyId, docId),
+    onSuccess: (document, variables) => {
+      if (!hasApeIdentification(document)) rememberApeReadFoundNothing(variables.docId);
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] }),
+        queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] }),
+      ]);
+    },
+    // Asked by a click: a reading that could not run is said (the reading by itself stays quiet and leaves the fields).
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.apeReadFailed'));
+    },
+  });
+}
+
+/**
+ * LT-10: an APE whose code and class are not there yet (uploaded before they were read automatically) is read again by the server
+ * by itself, once per document: one query shared by the property page and the lease form, never again in this browser for a
+ * document whose reading found nothing (see `apeReadFoundNothing`). `enabled`: the place shows this document for its contract
+ * (the latest APE). Resolves once the documents shown were read again, so that they already carry what was found.
+ */
+export function useApeAutoRead(propertyId: string | undefined, document: PropertyDocumentDto | undefined, enabled = true) {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: [APE_READ_KEY, document?.id],
+    queryFn: async () => {
+      const read = await propertiesApi.readApeIdentification(propertyId!, document!.id);
+      if (!hasApeIdentification(read)) rememberApeReadFoundNothing(document!.id);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, propertyId, 'documents'] }),
+        queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, propertyId, 'detail'] }),
+      ]);
+      return read;
+    },
+    enabled:
+      enabled &&
+      !!propertyId &&
+      document?.documentType === 'Ape' &&
+      !hasApeIdentification(document) &&
+      !apeReadFoundNothing(document.id),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: false,
+    // A reading that failed (timeout, server error) must not run the OCR of the server again at every focus of the window: the
+    // page tries once per visit (a new mount), and "Leggi dall'APE" tries on request.
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
