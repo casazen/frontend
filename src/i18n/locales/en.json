@@ -1113,9 +1113,10 @@
       "removeTenant": "Remove tenant {{n}}",
       "partiesMax": "You can enter at most {{max}} parties per role.",
       "fiscalCodeHint": "16 characters for a natural person, 11 digits for a company.",
-      "apeIdentificationRequired": "Type the code and energy class of the APE",
-      "apeIdentificationHelp": "The contract states them: copy them from the certificate (the identification code is at the top, next to “valido fino al”).",
-      "apeReady": "APE: code {{code}}, class {{energyClass}}"
+      "apeIdentificationRequired": "Complete the code and energy class of the APE",
+      "apeIdentificationHelp": "We could not take all of them from the document: type the missing ones as printed (the identification code is at the top, next to “valido fino al”).",
+      "apeReady": "APE: code {{code}}, class {{energyClass}}",
+      "apeReadingFromDocument": "Reading the code and the energy class from the uploaded APE…"
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -2535,7 +2536,7 @@
     },
     "documentUpload": {
       "apeFileFormats": "PDF, JPG, JPEG, PNG — up to 10 MB",
-      "apeScanNotice": "We read every page to recognise the certificate and its data. If a photo or a photocopy cannot be read whole, the APE is saved all the same and we only ask you for its code and energy class. The automatic check does not verify authenticity in the regional register.",
+      "apeScanNotice": "We read every page to recognise the certificate and take its identification code and energy class, which the contract states. If the code cannot be read (on a photocopy, for example) and the APE is from Lombardy, we look it up in the regional energy register. We only ask you for what cannot be found. The automatic check does not verify the authenticity of the certificate.",
       "uploadDocument": "Upload document",
       "documentType": "Document type",
       "dragDropText": "Drag a file here or click to select",
@@ -2560,8 +2561,13 @@
         "Verified": "APE saved: we recognised the certificate and read its main data.",
         "Incomplete": "APE saved. We could not read from the pages: {{fields}}. If a page is missing you can upload it again; otherwise just type the code and class below.",
         "NotRecognized": "APE saved, but we did not recognise the title of an energy performance certificate. If you chose the wrong file, delete it from the documents of the property and upload the right one; otherwise type the code and class below.",
-        "NotChecked": "APE saved. The automatic reading is not available right now: type the code and class below."
-      }
+        "NotChecked": "APE saved. The automatic reading is not available right now: type the code and class below.",
+        "Expired": "According to the dates read, this APE has expired: the contract needs a certificate still in force."
+      },
+      "apeReadDocument": "From the APE we read the code {{code}} and the energy class {{energyClass}}: the contract states them. Check them; correct them if needed.",
+      "apeReadRegistry": "From the APE we read the energy class {{energyClass}}. The code could not be read on the document: we found it in the energy register of Regione Lombardia (CENED), {{code}}. Check them; correct them if needed.",
+      "apeDone": "Done",
+      "apeDataReadDescription": "The contract states the identification code and the energy class of the certificate."
     },
     "contextPicker": {
       "loading": "Loading...",
@@ -2820,7 +2826,11 @@
       "apeEnergyClass": "Energy class",
       "apeIdentificationSave": "Save",
       "apeIdentificationCancel": "Cancel",
-      "apeIdentificationTitle": "Code and energy class of the APE"
+      "apeIdentificationTitle": "Code and energy class of the APE",
+      "apeReading": "Reading code and class from the APE…",
+      "apeNotReadable": "Code and class cannot be read on the document: enter them.",
+      "apeReadFromDocument": "Read from the APE",
+      "apeIdentificationCorrect": "Correct"
     },
     "cin": {
       "badge": {
@@ -8337,7 +8347,8 @@
     "questuraDeliveryDateSaved": "Delivery date saved",
     "questuraDeliveryDateFailed": "Unable to save the delivery date",
     "questuraMarkedDone": "Questura communication marked as sent",
-    "questuraMarkDoneFailed": "Unable to save the Questura communication"
+    "questuraMarkDoneFailed": "Unable to save the Questura communication",
+    "apeReadFailed": "Could not read the APE: try again later or enter code and class"
   },
   "reports": {
     "chips": {

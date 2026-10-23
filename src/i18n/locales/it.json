@@ -1113,9 +1113,10 @@
       "removeTenant": "Rimuovi il conduttore {{n}}",
       "partiesMax": "Puoi inserire al massimo {{max}} parti per ruolo.",
       "fiscalCodeHint": "16 caratteri per una persona fisica, 11 cifre per una società.",
-      "apeIdentificationRequired": "Scrivi codice e classe energetica dell’APE",
-      "apeIdentificationHelp": "Il contratto li riporta: copiali dall’attestato (il codice identificativo è in alto, accanto a «valido fino al»).",
-      "apeReady": "APE: codice {{code}}, classe {{energyClass}}"
+      "apeIdentificationRequired": "Completa codice e classe energetica dell’APE",
+      "apeIdentificationHelp": "Non siamo riusciti a ricavarli tutti dal documento: scrivi quelli mancanti come sono stampati (il codice identificativo è in alto, accanto a «valido fino al»).",
+      "apeReady": "APE: codice {{code}}, classe {{energyClass}}",
+      "apeReadingFromDocument": "Leggo codice e classe energetica dall’APE caricato…"
     },
     "partyRole": {
       "Landlord": "Locatore",
@@ -2535,7 +2536,7 @@
     },
     "documentUpload": {
       "apeFileFormats": "PDF, JPG, JPEG, PNG — massimo 10 MB",
-      "apeScanNotice": "Leggiamo tutte le pagine per riconoscere l’attestato e i suoi dati. Se da una foto o da una fotocopia non riusciamo a leggere tutto, l’APE viene salvato lo stesso e ti chiediamo solo codice e classe energetica. Il controllo automatico non verifica l’autenticità nel registro regionale.",
+      "apeScanNotice": "Leggiamo tutte le pagine per riconoscere l’attestato e ricavare codice identificativo e classe energetica, che il contratto riporta. Se il codice non si legge (ad esempio su una fotocopia) e l’APE è lombardo, lo cerchiamo nel Catasto Energetico regionale. Ti chiediamo solo ciò che non si trova. Il controllo automatico non verifica l’autenticità dell’attestato.",
       "uploadDocument": "Carica documento",
       "documentType": "Tipo documento",
       "dragDropText": "Trascina un file qui o clicca per selezionare",
@@ -2560,8 +2561,13 @@
         "Verified": "APE salvato: abbiamo riconosciuto l’attestato e letto i suoi dati principali.",
         "Incomplete": "APE salvato. Dalle pagine non siamo riusciti a leggere: {{fields}}. Se manca una pagina puoi caricarla di nuovo; altrimenti basta scrivere codice e classe qui sotto.",
         "NotRecognized": "APE salvato, ma non abbiamo riconosciuto il titolo di un attestato di prestazione energetica. Se hai scelto il file sbagliato, eliminalo dai documenti della casa e carica quello giusto; altrimenti scrivi codice e classe qui sotto.",
-        "NotChecked": "APE salvato. La lettura automatica ora non è disponibile: scrivi codice e classe qui sotto."
-      }
+        "NotChecked": "APE salvato. La lettura automatica ora non è disponibile: scrivi codice e classe qui sotto.",
+        "Expired": "Secondo le date lette questo APE è scaduto: per il contratto serve un attestato in corso di validità."
+      },
+      "apeReadDocument": "Dall’APE abbiamo letto il codice {{code}} e la classe energetica {{energyClass}}: il contratto li riporta. Controllali; se serve, correggili.",
+      "apeReadRegistry": "Dall’APE abbiamo letto la classe energetica {{energyClass}}. Il codice non si leggeva nel documento: l’abbiamo trovato nel Catasto Energetico di Regione Lombardia (CENED), {{code}}. Controllali; se serve, correggili.",
+      "apeDone": "Fatto",
+      "apeDataReadDescription": "Il contratto riporta il codice identificativo e la classe energetica dell’attestato."
     },
     "contextPicker": {
       "loading": "Caricamento...",
@@ -2820,7 +2826,11 @@
       "apeEnergyClass": "Classe energetica",
       "apeIdentificationSave": "Salva",
       "apeIdentificationCancel": "Annulla",
-      "apeIdentificationTitle": "Codice e classe energetica dell’APE"
+      "apeIdentificationTitle": "Codice e classe energetica dell’APE",
+      "apeReading": "Leggo codice e classe dall’APE…",
+      "apeNotReadable": "Codice e classe non si leggono nel documento: indicali tu.",
+      "apeReadFromDocument": "Leggi dall’APE",
+      "apeIdentificationCorrect": "Correggi"
     },
     "cin": {
       "badge": {
@@ -8337,7 +8347,8 @@
     "questuraDeliveryDateSaved": "Data di consegna salvata",
     "questuraDeliveryDateFailed": "Impossibile salvare la data di consegna",
     "questuraMarkedDone": "Comunicazione alla Questura segnata come inviata",
-    "questuraMarkDoneFailed": "Impossibile salvare la comunicazione alla Questura"
+    "questuraMarkDoneFailed": "Impossibile salvare la comunicazione alla Questura",
+    "apeReadFailed": "Impossibile leggere l’APE: riprova più tardi o indica codice e classe"
   },
   "reports": {
     "chips": {

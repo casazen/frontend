@@ -78,6 +78,15 @@ beforeEach(() => {
     mutate: vi.fn(),
     isPending: false,
   } as unknown as ReturnType<typeof propertyQueries.useDeletePropertyDocument>);
+  vi.mocked(propertyQueries.useReadApeIdentification).mockReturnValue({
+    mutate: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+  } as unknown as ReturnType<typeof propertyQueries.useReadApeIdentification>);
+  vi.mocked(propertyQueries.useApeAutoRead).mockReturnValue({
+    isFetching: false,
+    isSuccess: false,
+  } as unknown as ReturnType<typeof propertyQueries.useApeAutoRead>);
   vi.mocked(propertyQueries.useDownloadPropertyDocument).mockReturnValue({
     mutate: vi.fn(),
     isPending: false,

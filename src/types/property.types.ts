@@ -233,9 +233,11 @@ export interface PropertyDocumentDto {
   apeCheck?: ApeCheckOutcome | null;
   /** With `apeCheck` `Incomplete`: the data that were not read, in words of the language of the request. */
   apeUnreadFields?: string[] | null;
+  /** With `apeCheck`: where the code found automatically came from, the file itself or the public register of the region. */
+  apeIdentificationSource?: 'Document' | 'Registry' | null;
 }
 
-export type ApeCheckOutcome = 'Verified' | 'Incomplete' | 'NotRecognized' | 'NotChecked';
+export type ApeCheckOutcome = 'Verified' | 'Incomplete' | 'NotRecognized' | 'NotChecked' | 'Expired';
 
 export interface OtaIntegrationSummaryDto {
   id: string;

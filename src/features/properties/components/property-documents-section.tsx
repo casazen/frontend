@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import type { PropertyDocumentDto, PropertyDocumentType } from '@/types';
 import { formatDateTime } from '@/lib/utils';
 import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
+import { latestApeDocument } from '@/lib/ape-documents';
 import { Download, FileText, Loader2, Trash2 } from 'lucide-react';
 import { DocumentUploadDialog } from './document-upload-dialog';
 import { ApeIdentificationForm } from './ape-identification-form';
@@ -25,6 +26,8 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
   const deleteMutation = useDeletePropertyDocument();
   // Private bucket: download through the authenticated API (token), saved from the blob.
   const downloadMutation = useDownloadPropertyDocument();
+  // The APE a contract states: the one whose missing code and class are read by themselves (an older APE only on request).
+  const latestApe = latestApeDocument(documents);
 
   const upload = <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />;
   const content =
@@ -44,7 +47,9 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
                     {doc.documentType ? `${getPropertyDocumentTypeLabel(doc.documentType, t)} · ` : ''}
                     {doc.fileType.toUpperCase()} · {formatDateTime(doc.uploadedAt)}
                   </p>
-                  {doc.documentType === 'Ape' && <ApeIdentificationForm propertyId={propertyId} document={doc} />}
+                  {doc.documentType === 'Ape' && (
+                    <ApeIdentificationForm propertyId={propertyId} document={doc} autoRead={doc.id === latestApe?.id} />
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
