@@ -3,22 +3,34 @@ import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Alert, type AlertVariant } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Upload } from 'lucide-react';
-import type { PropertyDocumentType } from '@/types';
+import type { ApeCheckOutcome, PropertyDocumentDto, PropertyDocumentType } from '@/types';
 import { DocumentPages } from '@/components/documents/document-pages';
+import { getProblemMessage } from '@/lib/api-errors';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
 import { useUploadPropertyDocument } from '@/queries/use-properties';
+import { ApeIdentificationForm } from './ape-identification-form';
 
 interface DocumentUploadDialogProps {
   propertyId: string;
   /** Type selected when the dialog opens (default: CIN certificate). */
   defaultDocumentType?: PropertyDocumentType;
+  /** Only this type, with no type to choose (the lease form asks for the APE). */
+  onlyType?: PropertyDocumentType;
+  /**
+   * Opened from outside, with no button of its own: for a page whose button goes away once the document is on file (the lease
+   * form hides "Carica l'APE" as soon as the APE is there), the window must not go with it before its last step.
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function getDocumentTypeLabels(t: ReturnType<typeof useTranslation>['t']): { value: PropertyDocumentType; label: string }[] {
@@ -33,35 +45,86 @@ function getDocumentTypeLabels(t: ReturnType<typeof useTranslation>['t']): { val
   ];
 }
 
-export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCertificate' }: DocumentUploadDialogProps) {
+const APE_CHECK_VARIANT: Record<ApeCheckOutcome, AlertVariant> = {
+  Verified: 'success',
+  Incomplete: 'warning',
+  NotRecognized: 'warning',
+  NotChecked: 'info',
+};
+
+/** What the reading of the APE just stored found, and what to do now: always its code and class, which the contract prints. */
+function ApeSaved({ propertyId, document, onDone }: { propertyId: string; document: PropertyDocumentDto; onDone: () => void }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const outcome = document.apeCheck ?? null;
+  const fields = (document.apeUnreadFields ?? []).join(', ');
+  return (
+    <div className="space-y-4" data-testid="ape-saved">
+      <Alert variant={outcome ? APE_CHECK_VARIANT[outcome] : 'success'} data-testid={`ape-check-${outcome ?? 'none'}`}>
+        {outcome === 'Incomplete' && fields
+          ? t('shared.documentUpload.apeCheck.Incomplete', { fields })
+          : t(`shared.documentUpload.apeCheck.${outcome && outcome !== 'Incomplete' ? outcome : 'Saved'}`)}
+      </Alert>
+      <ApeIdentificationForm
+        propertyId={propertyId}
+        document={document}
+        initiallyEditing
+        onDone={onDone}
+        cancelLabel={t('shared.documentUpload.apeLater')}
+      />
+    </div>
+  );
+}
+
+export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCertificate', onlyType, open: openFromOutside, onOpenChange }: DocumentUploadDialogProps) {
+  const { t } = useTranslation();
+  const initialType = onlyType ?? defaultDocumentType;
+  const [openHere, setOpenHere] = useState(false);
+  const controlled = openFromOutside !== undefined;
+  const open = controlled ? openFromOutside : openHere;
+  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setOpenHere(next));
   const [selection, setSelection] = useState<DocumentSelection>(EMPTY_DOCUMENT);
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState('');
-  const [documentType, setDocumentType] = useState<PropertyDocumentType>(defaultDocumentType);
+  const [documentType, setDocumentType] = useState<PropertyDocumentType>(initialType);
+  // The APE just stored: the dialog stays open on its code and class.
+  const [savedApe, setSavedApe] = useState<PropertyDocumentDto | null>(null);
 
   const uploadMutation = useUploadPropertyDocument();
+  const busy = preparing || uploadMutation.isPending;
 
   const documentTypes = getDocumentTypeLabels(t);
 
   const reset = useCallback(() => {
     setSelection(EMPTY_DOCUMENT);
     setError('');
-    setDocumentType(defaultDocumentType);
+    setDocumentType(initialType);
+    setSavedApe(null);
+  }, [initialType]);
 
-  }, [defaultDocumentType]);
+  const close = () => {
+    setOpen(false);
+    reset();
+  };
 
   const handleSubmit = async () => {
     if (!documentReady(selection)) return;
     setPreparing(true); setError('');
     try {
       const file = await prepareDocument(selection, 10 * 1024 * 1024);
-      await uploadMutation.mutateAsync({ propertyId, file, documentType });
-      reset();
-      setOpen(false);
+      const document = await uploadMutation.mutateAsync({ propertyId, file, documentType });
+      if (documentType === 'Ape' && document) {
+        setSelection(EMPTY_DOCUMENT);
+        setSavedApe(document);
+      } else {
+        close();
+      }
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith('documentPages.')) setError(t(error.message));
+      // Said here too, not only in a toast: the person is looking at this window, and it keeps the pages chosen to try again.
+      setError(
+        error instanceof Error && error.message.startsWith('documentPages.')
+          ? t(error.message)
+          : getProblemMessage(error, t) ?? t('toast.documentUploadFailed'),
+      );
     } finally { setPreparing(false); }
   };
 
@@ -69,49 +132,72 @@ export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCer
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (preparing || uploadMutation.isPending) return;
-        setOpen(next);
-        if (!next && !preparing && !uploadMutation.isPending) reset();
+        if (busy) return;
+        if (next) setOpen(true);
+        else close();
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Upload className="mr-2 h-4 w-4" />
-          {t('shared.documentUpload.uploadDocument')}
-        </Button>
-      </DialogTrigger>
+      {controlled ? null : (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Upload className="mr-2 h-4 w-4" />
+            {t('shared.documentUpload.uploadDocument')}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('shared.documentUpload.uploadDocument')}</DialogTitle>
+          <DialogTitle>
+            {savedApe
+              ? t('shared.documentUpload.apeDataTitle')
+              : onlyType === 'Ape'
+                ? t('shared.documentUpload.uploadApe')
+                : t('shared.documentUpload.uploadDocument')}
+          </DialogTitle>
+          {savedApe ? (
+            <DialogDescription>{t('shared.documentUpload.apeDataDescription')}</DialogDescription>
+          ) : null}
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="documentType">{t('shared.documentUpload.documentType')}</Label>
-            <select
-              id="documentType"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={documentType}
-              disabled={preparing || uploadMutation.isPending}
-              onChange={(e) => { setDocumentType(e.target.value as PropertyDocumentType); setSelection(EMPTY_DOCUMENT); }}
+        {savedApe ? (
+          <ApeSaved propertyId={propertyId} document={savedApe} onDone={close} />
+        ) : (
+          <div className="space-y-4">
+            {onlyType ? null : (
+              <div className="space-y-2">
+                <Label htmlFor="documentType">{t('shared.documentUpload.documentType')}</Label>
+                <select
+                  id="documentType"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={documentType}
+                  disabled={busy}
+                  onChange={(e) => { setDocumentType(e.target.value as PropertyDocumentType); setSelection(EMPTY_DOCUMENT); }}
+                >
+                  {documentTypes.map((dt) => (
+                    <option key={dt.value} value={dt.value}>
+                      {dt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <DocumentPages
+              value={selection}
+              onChange={(next) => { setSelection(next); setError(''); }}
+              disabled={busy}
+              allowOffice={documentType !== 'Ape'}
+              maxPdfMb={10}
+            />
+            {error ? <p role="alert" className="text-sm text-destructive" data-testid="document-upload-error">{error}</p> : null}
+            {documentType === 'Ape' ? <p className="text-sm text-muted-foreground">{t('shared.documentUpload.apeScanNotice')}</p> : null}
+            <Button
+              className="w-full"
+              disabled={!documentReady(selection) || busy}
+              onClick={handleSubmit}
             >
-              {documentTypes.map((dt) => (
-                <option key={dt.value} value={dt.value}>
-                  {dt.label}
-                </option>
-              ))}
-            </select>
+              {busy ? t('shared.documentUpload.uploading') : t('shared.documentUpload.upload')}
+            </Button>
           </div>
-          <DocumentPages value={selection} onChange={setSelection} disabled={preparing || uploadMutation.isPending} allowOffice={documentType !== 'Ape'} maxPdfMb={10} />
-          {error ? <p role="alert">{error}</p> : null}
-          {documentType === 'Ape' ? <p className="text-sm text-muted-foreground">{t('shared.documentUpload.apeScanNotice')}</p> : null}
-          <Button
-            className="w-full"
-            disabled={!documentReady(selection) || preparing || uploadMutation.isPending}
-            onClick={handleSubmit}
-          >
-            {preparing || uploadMutation.isPending ? t('shared.documentUpload.uploading') : t('shared.documentUpload.upload')}
-          </Button>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -140,6 +140,34 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
   });
 
+  it('render_ConcordatoDraftForThePartner_WaitsForItsContractWithoutDatesOrRentOfTheDraft', async () => {
+    // A draft saved with only its property for ConcordatoFacile: the API keeps 1 January 3000 and a rent of 0 until they are typed.
+    mockLease(() =>
+      Promise.resolve({
+        data: buildDetail({
+          contractType: 'Concordato',
+          startDate: '3000-01-01T00:00:00Z',
+          endDate: '3000-01-01T00:00:00Z',
+          monthlyRent: 0,
+          registrationDeadline: null,
+          parties: [],
+          events: [{ eventType: 'Created', occurredAt: '2026-10-23T10:00:00Z' }],
+        }),
+      }),
+    );
+
+    renderPage('?tab=dati');
+
+    expect(await screen.findByTestId('lease-partner-draft')).toHaveTextContent('Bozza — in attesa del contratto del partner');
+    expect(screen.getByTestId('lease-partner-proceed')).toBeDisabled();
+    // The reference to give the partner is the id of this contract.
+    expect(screen.getByDisplayValue('lease-1')).toBeInTheDocument();
+    expect(screen.getByText(/Casa Trastevere · Roma · .* · Canone da definire/)).toBeInTheDocument();
+    expect(screen.queryByText(/3000/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0,00\s€/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
+  });
+
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail({ parties: [], events: [] }) }));
 

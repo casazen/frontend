@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
@@ -7,14 +7,17 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { propertiesApi } from '@/api/properties.api';
-import { canoneConcordatoApi, type CanoneConcordatoEligibility } from '@/api/canone-concordato.api';
-import { useProperties } from '@/queries/use-properties';
+import { useProperties, useUpdateApeIdentification, useUploadPropertyDocument } from '@/queries/use-properties';
+import type { PropertyDocumentDto } from '@/types';
 import { LeaseCreateForm } from '../lease-create-form';
 
 const PROPERTIES = [{ id: 'prop-1', name: 'Il Parco', city: 'Seveso' }];
 
 vi.mock('@/queries/use-properties', () => ({
   useProperties: vi.fn(),
+  // The APE is uploaded and identified from the form: the window and the two fields use these.
+  useUploadPropertyDocument: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useUpdateApeIdentification: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
 }));
 
 vi.mock('@/api/properties.api', () => ({
@@ -23,72 +26,20 @@ vi.mock('@/api/properties.api', () => ({
   },
 }));
 
-vi.mock('@/api/canone-concordato.api', () => ({
-  canoneConcordatoApi: {
-    getEligibility: vi.fn(),
-    getAttestationGuidance: vi.fn(),
-    // Seveso has a single zone (A7-24): the calculator auto-selects it, no free-text zone.
-    getZones: vi.fn().mockResolvedValue({
-      comune: 'Seveso',
-      available: true,
-      dataCompleteness: 'Complete',
-      zones: [{ name: 'Unica', cadastralSheets: [] }],
-    }),
-  },
-}));
-
-/** Seveso, 65 mq, sub-fascia 2, 3 years, as the API returns it (LT-10). */
-function apiRange(overrides: Partial<CanoneConcordatoEligibility> = {}): CanoneConcordatoEligibility {
-  return {
-    available: true,
-    reason: null,
-    reasonCode: null,
-    comune: 'Seveso',
-    zone: 'Unica',
-    subFascia: 2,
-    canoneMinAnnuo: 1300,
-    canoneMaxAnnuo: 5525,
-    canoneMinMensile: 108.34,
-    canoneMaxMensile: 460.41,
-    dataCompleteness: 'Complete',
-    imuAppliesTheoretical: true,
-    ataApplies: false,
-    attestationRequired: true,
-    disclaimer: 'Informativa',
-    contractYears: 3,
-    usableSqm: 65,
-    bandMinSqm: 50,
-    bandMaxSqm: 74,
-    indicative: false,
-    warnings: [],
-    sourceUrl: 'https://example.org/accordo.pdf',
-    lastVerifiedAt: '2026-09-23T00:00:00Z',
-    subFascia3QualifyingTypeDElements: 'D1,D2,D4,D6,D7,D9',
-    ...overrides,
-  };
-}
+/** The APE of the property, with the code and the class the contract states (LT-10). */
+const APE: PropertyDocumentDto = {
+  id: 'doc-1',
+  fileName: 'ape.pdf',
+  fileType: 'pdf',
+  documentType: 'Ape',
+  uploadedAt: '2026-10-01T10:00:00Z',
+  downloadUrl: '',
+  apeCode: '1610800012345/17',
+  apeEnergyClass: 'F',
+};
 
 function setField(id: string, value: string) {
   fireEvent.change(document.getElementById(id)!, { target: { value } });
-}
-
-/**
- * Property, concordato 3+2 from 1/9/2026 to 31/8/2029, valid parties, unit 65 mq with 2 A- and 3 B-elements. Async:
- * the calculator mounts only after the contract type change re-renders, and starts empty (A7-24), so the unit fields
- * are found (and filled) with `findByLabelText` rather than assumed present straight after the synchronous changes.
- */
-async function fillConcordatoLease(monthlyRent: string) {
-  fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
-  fireEvent.change(screen.getByLabelText(i18n.t('leases.form.contractTypeLabel')), { target: { value: 'Concordato' } });
-  setField('startDate', '2026-09-01');
-  setField('endDate', '2029-08-31');
-  setField('monthlyRent', monthlyRent);
-  // A7-24: the calculator starts empty (no pre-filled unit), so every test fills the unit it needs explicitly.
-  fireEvent.change(await screen.findByLabelText(i18n.t('leases.canoneConcordato.sqm')), { target: { value: '65' } });
-  fireEvent.change(screen.getByLabelText(i18n.t('leases.canoneConcordato.typeA')), { target: { value: '2' } });
-  fireEvent.change(screen.getByLabelText(i18n.t('leases.canoneConcordato.typeB')), { target: { value: '3' } });
-  fillParty('landlords.0', 'RSSMRA80A01H501U');
-  fillParty('tenants.0', 'VRDLGU85B02F205C');
 }
 
 /** A party with a valid fiscal code (LT-14): `prefix` is `landlords.N` or `tenants.N`. */
@@ -139,10 +90,11 @@ function forbidden(): AxiosError {
   return error;
 }
 
-function renderForm(onSubmit = vi.fn(), defaultPropertyId?: string) {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+function renderForm(
+  onSubmit = vi.fn(),
+  defaultPropertyId?: string,
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
@@ -156,161 +108,28 @@ function renderForm(onSubmit = vi.fn(), defaultPropertyId?: string) {
 
 beforeEach(() => {
   mockProperties({ data: PROPERTIES });
-  vi.mocked(propertiesApi.getDocuments).mockResolvedValue([
-    { id: 'doc-1', fileName: 'ape.pdf', fileType: 'pdf', documentType: 'Ape', uploadedAt: '', downloadUrl: '' },
-  ]);
+  vi.mocked(propertiesApi.getDocuments).mockResolvedValue([APE]);
 });
 
-describe('LeaseCreateForm canone concordato', () => {
+describe('LeaseCreateForm contract type and terms', () => {
   beforeEach(() => {
     void i18n.changeLanguage('it');
-    vi.mocked(canoneConcordatoApi.getEligibility).mockReset();
   });
 
-  it('shows the calculator when the concordato contract type is selected with a property', async () => {
+  it('LeaseCreateForm_ContractTypes_DoNotOfferTheConcordato', () => {
+    // A canone concordato is chosen before this form and prepared with the partner (a draft with its leaseId).
     renderForm();
 
-    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), {
-      target: { value: 'prop-1' },
-    });
-    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.contractTypeLabel')), {
-      target: { value: 'Concordato' },
-    });
-
-    expect(await screen.findByText(i18n.t('leases.canoneConcordato.title'))).toBeInTheDocument();
-    expect(screen.getByTestId('lease-term-rule')).toHaveTextContent(i18n.t('leases.form.termRule.Concordato'));
-    // No year count on the client: the API derives the term from the dates (A7-12).
-    expect(screen.queryByLabelText(/Durata \(anni\)/)).not.toBeInTheDocument();
-  });
-
-  it('LeaseCreateForm_ConcordatoRangeFromApi_SendsDatesThenSubmitsCharacteristicsWithoutYears', async () => {
-    vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(apiRange());
-    const onSubmit = vi.fn();
-    const { container } = renderForm(onSubmit);
-    await fillConcordatoLease('400');
-
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
-
-    expect(await screen.findByTestId('concordato-range')).toBeInTheDocument();
-    expect(canoneConcordatoApi.getEligibility).toHaveBeenCalledWith(
-      'prop-1',
-      expect.objectContaining({ sqm: 65, typeACount: 2, typeBCount: 3, startDate: '2026-09-01', endDate: '2029-08-31' }),
-    );
-    expect(vi.mocked(canoneConcordatoApi.getEligibility).mock.calls[0][1]).not.toHaveProperty('years');
-    expect(screen.getByTestId('lease-concordato-range-hint')).toHaveTextContent('108.34');
-    expect(screen.getByTestId('lease-concordato-range-hint')).toHaveTextContent('460.41');
-    expect(screen.queryByTestId('concordato-indicative')).not.toBeInTheDocument();
-
-    fireEvent.submit(container.querySelector('form')!);
-
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-    const dto = onSubmit.mock.calls[0][0];
-    expect(dto).toMatchObject({
-      propertyId: 'prop-1',
-      contractType: 'Concordato',
-      taxRegime: 'CedolareSecca',
-      startDate: '2026-09-01',
-      endDate: '2029-08-31',
-      monthlyRent: 400,
-      canoneConcordato: expect.objectContaining({ sqm: 65, typeAElementCount: 2, typeBElementCount: 3 }),
-    });
-    expect(dto).not.toHaveProperty('fiscalRegime');
-    expect(dto.canoneConcordato).not.toHaveProperty('contractYears');
-  });
-
-  it('LeaseCreateForm_IndicativeRangeAndRentOutside_WarnsAndStillSubmits', async () => {
-    // A7-23: with Partial agreement data the range is a guide; the lease is not blocked.
-    vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(
-      apiRange({ dataCompleteness: 'Partial', indicative: true, warnings: ['partial_data'] }),
-    );
-    const onSubmit = vi.fn();
-    const { container } = renderForm(onSubmit);
-    await fillConcordatoLease('900');
-
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
-
-    expect(await screen.findByTestId('concordato-indicative')).toHaveTextContent(
-      i18n.t('leases.canoneConcordato.indicativeTitle'),
-    );
-    expect(screen.getByTestId('lease-concordato-out-of-range')).toHaveTextContent(
-      i18n.t('leases.form.concordatoRentOutsideIndicativeRange'),
-    );
-
-    fireEvent.submit(container.querySelector('form')!);
-
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-    expect(onSubmit.mock.calls[0][0]).toMatchObject({ contractType: 'Concordato', monthlyRent: 900 });
-  });
-
-  it('LeaseCreateForm_VerifiedRangeAndRentOutside_BlocksSubmit', async () => {
-    vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(apiRange());
-    const onSubmit = vi.fn();
-    const { container } = renderForm(onSubmit);
-    await fillConcordatoLease('900');
-
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
-    await screen.findByTestId('concordato-range');
-    fireEvent.submit(container.querySelector('form')!);
-
-    // The hint under the rent and the alert of the refused submit.
-    await waitFor(() =>
-      expect(screen.getAllByText(i18n.t('leases.form.concordatoRentOutOfRange'))).toHaveLength(2),
-    );
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-
-  it('LeaseCreateForm_DatesChangedAfterCalculation_DiscardsTheRange', async () => {
-    // A7-12: a range computed for other dates (or other inputs) is never kept.
-    vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(apiRange());
-    const onSubmit = vi.fn();
-    const { container } = renderForm(onSubmit);
-    await fillConcordatoLease('400');
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
-    await screen.findByTestId('concordato-range');
-
-    setField('endDate', '2030-08-31');
-
-    await waitFor(() => expect(screen.queryByTestId('concordato-range')).not.toBeInTheDocument());
-    expect(screen.queryByTestId('lease-concordato-range-hint')).not.toBeInTheDocument();
-    fireEvent.submit(container.querySelector('form')!);
-    expect(await screen.findByText(i18n.t('leases.form.concordatoRangeRequired'))).toBeInTheDocument();
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-
-  it('LeaseCreateForm_RangeUnavailable_ShowsTheTranslatedReason', async () => {
-    vi.mocked(canoneConcordatoApi.getEligibility).mockResolvedValue(
-      apiRange({
-        available: false,
-        reason: 'zona o foglio catastale obbligatorio',
-        reasonCode: 'zone_required',
-        canoneMinAnnuo: null,
-        canoneMaxAnnuo: null,
-        canoneMinMensile: null,
-        canoneMaxMensile: null,
-      }),
-    );
-    renderForm();
-    await fillConcordatoLease('400');
-
-    fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.canoneConcordato.calculate') }));
-
-    expect(await screen.findByTestId('concordato-unavailable')).toHaveTextContent(
-      i18n.t('leases.canoneConcordato.reason.zone_required'),
-    );
+    const options = within(screen.getByLabelText(i18n.t('leases.form.contractTypeLabel'))).getAllByRole('option');
+    expect(options.map((option) => (option as HTMLOptionElement).value)).toEqual(['Libero', 'Transitorio']);
   });
 
   it('LeaseCreateForm_LiberoWithDeposit_SendsTypeRegimeAndDeposit', async () => {
     const onSubmit = vi.fn();
     const { container } = renderForm(onSubmit);
-    await fillConcordatoLease('900');
-    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.contractTypeLabel')), { target: { value: 'Libero' } });
+    await fillLiberoLease();
     fireEvent.change(screen.getByLabelText(i18n.t('leases.form.taxRegimeLabel')), { target: { value: 'Ordinario' } });
-    setField('endDate', '2030-08-31');
     setField('securityDeposit', '2700');
-    // The APE check of the property must have answered before the form can be sent.
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: i18n.t('leases.form.createDraft') })).toBeEnabled(),
-    );
 
     fireEvent.submit(container.querySelector('form')!);
 
@@ -318,7 +137,6 @@ describe('LeaseCreateForm canone concordato', () => {
     const dto = onSubmit.mock.calls[0][0];
     expect(dto).toMatchObject({ contractType: 'Libero', taxRegime: 'Ordinario', securityDeposit: 2700 });
     expect(dto).not.toHaveProperty('canoneConcordato');
-    expect(canoneConcordatoApi.getEligibility).not.toHaveBeenCalled();
   });
 });
 
@@ -397,7 +215,7 @@ describe('LeaseCreateForm properties of a long-term landlord (A7-06)', () => {
     expect(screen.getByRole('button', { name: i18n.t('leases.form.createDraft') })).toBeDisabled();
   });
 
-  it('LeaseCreateForm_PropertyWithoutApe_LinksToThePropertyPageToUploadIt', async () => {
+  it('LeaseCreateForm_PropertyWithoutApe_UploadsItHereWithoutLeavingTheForm', async () => {
     vi.mocked(propertiesApi.getDocuments).mockResolvedValue([
       { id: 'doc-2', fileName: 'planimetria.pdf', fileType: 'pdf', documentType: 'FloorPlan', uploadedAt: '', downloadUrl: '' },
     ]);
@@ -406,11 +224,80 @@ describe('LeaseCreateForm properties of a long-term landlord (A7-06)', () => {
     fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), {
       target: { value: 'prop-1' },
     });
+    setField('monthlyRent', '900');
 
     expect(await screen.findByText(i18n.t('leases.form.apeMissingError'))).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: i18n.t('leases.form.uploadApe') })).toHaveAttribute(
-      'href',
-      '/app/long-rent/properties/prop-1',
+    expect(screen.getByRole('button', { name: i18n.t('leases.form.createDraft') })).toBeDisabled();
+    // A button that opens the upload over the form, not a link to the property page (what was typed would be lost).
+    expect(screen.queryByRole('link', { name: i18n.t('leases.form.uploadApe') })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('leases.form.uploadApe') }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(i18n.t('shared.documentUpload.uploadApe'))).toBeInTheDocument();
+    expect(within(dialog).getByTestId('document-drop-zone')).toBeInTheDocument();
+    // Only the APE: no type of document to choose.
+    expect(within(dialog).queryByLabelText(i18n.t('shared.documentUpload.documentType'))).not.toBeInTheDocument();
+    // Still the same page under the window, with what was typed.
+    expect(document.getElementById('monthlyRent')).toHaveValue(900);
+  });
+
+  it('LeaseCreateForm_ApeUploaded_TheWindowStaysOpenForItsCodeAndClass', async () => {
+    // Once the APE is on file the "APE missing" box goes away: the window opened from it must not go with it.
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const stored = { ...APE, apeCode: null, apeEnergyClass: null };
+    vi.mocked(propertiesApi.getDocuments).mockResolvedValue([]);
+    vi.mocked(useUploadPropertyDocument).mockReturnValue({
+      mutateAsync: vi.fn(async () => {
+        vi.mocked(propertiesApi.getDocuments).mockResolvedValue([stored]);
+        await client.invalidateQueries({ queryKey: ['properties', 'prop-1', 'documents'] });
+        return { ...stored, apeCheck: 'Incomplete', apeUnreadFields: ['data di scadenza valida'] };
+      }),
+      isPending: false,
+    } as unknown as ReturnType<typeof useUploadPropertyDocument>);
+
+    renderForm(vi.fn(), undefined, client);
+    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
+    fireEvent.click(await screen.findByRole('button', { name: i18n.t('leases.form.uploadApe') }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText(i18n.t('documentPages.select')), {
+      target: { files: [new File(['%PDF-1.7'], 'APE.pdf', { type: 'application/pdf' })] },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.documentUpload.upload') }));
+
+    expect(await screen.findByTestId('ape-check-Incomplete')).toHaveTextContent('data di scadenza valida');
+    await waitFor(() => expect(screen.queryByTestId('lease-ape-missing')).not.toBeInTheDocument());
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('LeaseCreateForm_ApeWithoutCodeAndClass_AsksForThemAndWaitsForThem', async () => {
+    const mutateAsync = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(useUpdateApeIdentification).mockReturnValue({ mutateAsync, isPending: false } as unknown as ReturnType<typeof useUpdateApeIdentification>);
+    vi.mocked(propertiesApi.getDocuments).mockResolvedValue([{ ...APE, apeCode: null, apeEnergyClass: null }]);
+
+    renderForm();
+    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), {
+      target: { value: 'prop-1' },
+    });
+
+    expect(await screen.findByTestId('lease-ape-identification')).toHaveTextContent(i18n.t('leases.form.apeIdentificationRequired'));
+    expect(screen.getByRole('button', { name: i18n.t('leases.form.createDraft') })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(i18n.t('property.documents.apeCode')), { target: { value: '1610800012345/17' } });
+    fireEvent.change(screen.getByLabelText(i18n.t('property.documents.apeEnergyClass')), { target: { value: 'F' } });
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.documents.apeIdentificationSave') }));
+
+    await waitFor(() =>
+      expect(mutateAsync).toHaveBeenCalledWith({ propertyId: 'prop-1', docId: 'doc-1', data: { code: '1610800012345/17', energyClass: 'F' } }),
+    );
+  });
+
+  it('LeaseCreateForm_ApeWithCodeAndClass_SaysItIsReady', async () => {
+    renderForm();
+    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), {
+      target: { value: 'prop-1' },
+    });
+
+    expect(await screen.findByTestId('lease-ape-ready')).toHaveTextContent(
+      i18n.t('leases.form.apeReady', { code: '1610800012345/17', energyClass: 'F' }),
     );
   });
 

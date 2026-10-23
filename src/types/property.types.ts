@@ -226,7 +226,16 @@ export interface PropertyDocumentDto {
   /** APE documents only (LT-10): code and energy class printed on it; null until the landlord enters them. */
   apeCode?: string | null;
   apeEnergyClass?: string | null;
+  /**
+   * Only in the answer of an APE upload: what the automatic reading found. Anything but `Verified` is a certificate kept all the
+   * same, which the landlord confirms by typing its code and energy class.
+   */
+  apeCheck?: ApeCheckOutcome | null;
+  /** With `apeCheck` `Incomplete`: the data that were not read, in words of the language of the request. */
+  apeUnreadFields?: string[] | null;
 }
+
+export type ApeCheckOutcome = 'Verified' | 'Incomplete' | 'NotRecognized' | 'NotChecked';
 
 export interface OtaIntegrationSummaryDto {
   id: string;

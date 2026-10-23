@@ -6,6 +6,8 @@ import type {
   CedolareAdvisoryInput,
   CreateLeaseDto,
   LeaseDetail,
+  LeaseDraftCreated,
+  LeaseDraftSaved,
   LeaseListView,
   LeaseRegistration,
   LeaseSigningState,
@@ -50,6 +52,25 @@ export const leasesApi = {
 
   create: async (data: CreateLeaseDto): Promise<LeaseDetail> =>
     expectObjectWithId<LeaseDetail>(await ApiClient.post<unknown>('/leases', data), '/leases'),
+
+  /** LR-12: a draft with only the property (no APE, parties, dates or rent asked yet); its id is the leaseId for a partner. */
+  createDraft: async (propertyId: string): Promise<LeaseDraftCreated> => {
+    const data = await ApiClient.post<unknown>('/leases/drafts', { propertyId });
+    if (!isRecord(data) || typeof data.id !== 'string' || typeof data.version !== 'number') {
+      throw new UnexpectedApiResponseError('/leases/drafts');
+    }
+    return { id: data.id, version: data.version };
+  },
+
+  /** LR-12: the values of one step of a draft, saved on `version` (409 when another save came first: nothing is written). */
+  saveDraft: async (
+    id: string,
+    save: { version: number; step: number; values: Record<string, unknown> },
+  ): Promise<LeaseDraftSaved> => {
+    const data = await ApiClient.patch<unknown>(`/leases/${id}/draft`, save);
+    if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/draft');
+    return { version: data.version };
+  },
 
   /** LT-02: signers (persisted), provider availability and whether the final contract can be downloaded. */
   getSigningState: async (id: string): Promise<LeaseSigningState> => {
