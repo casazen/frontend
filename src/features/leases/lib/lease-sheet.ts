@@ -1,4 +1,4 @@
-import type { LeaseStatus } from '@/types';
+import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseDetail, type LeaseStatus } from '@/types';
 
 /** The tabs of the sheet of a lease, in the order they are shown. The names are those of the address (`?tab=`): they never change. */
 export const LEASE_TABS = ['dati', 'documenti', 'pagamenti', 'scadenze'] as const;
@@ -65,4 +65,13 @@ const EVENT_ACTORS: Readonly<Record<string, LeaseEventActor>> = {
 
 export function leaseEventActor(eventType: string): LeaseEventActor | undefined {
   return Object.hasOwn(EVENT_ACTORS, eventType) ? EVENT_ACTORS[eventType] : undefined;
+}
+
+/**
+ * A canone concordato draft made for the partner (ConcordatoFacile): saved with only its property, so its dates are still the
+ * starting value of the API. The contract comes from the partner: the page shows the draft waiting for it, not the signature of
+ * a contract of CasaZen.
+ */
+export function isPartnerDraft(lease: Pick<LeaseDetail, 'status' | 'contractType' | 'startDate'>): boolean {
+  return lease.status === 'Draft' && lease.contractType === 'Concordato' && lease.startDate.startsWith(LEASE_DRAFT_PLACEHOLDER_DATE);
 }

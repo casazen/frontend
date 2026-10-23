@@ -1,7 +1,9 @@
 export interface DocumentPage { id: string; file: File; rotation: number }
 export interface DocumentSelection { pages: DocumentPage[]; confirmed: boolean }
 export const EMPTY_DOCUMENT: DocumentSelection = { pages: [], confirmed: false };
-export const isDocumentPhoto = (file: File) => /\.(jpe?g|png)$/i.test(file.name);
+// The name or, for a file without an extension (dragged from another app, shared from a phone), its type.
+export const isDocumentPhoto = (file: File) => /\.(jpe?g|png)$/i.test(file.name) || /^image\/(jpeg|png)$/i.test(file.type);
+export const isDocumentPdf = (file: File) => /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
 export const documentReady = (selection: DocumentSelection) => selection.pages.length > 0 && (!selection.pages.some(page => isDocumentPhoto(page.file)) || selection.confirmed);
 
 export async function prepareDocument(selection: DocumentSelection, maxBytes: number): Promise<File> {

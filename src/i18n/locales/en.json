@@ -1078,7 +1078,7 @@
       "contactEmailLabel": "Contact email *",
       "creating": "Creating...",
       "createDraft": "Create lease draft",
-      "apeMissingError": "An APE (energy performance certificate) document must be uploaded for this property before creating a lease.",
+      "apeMissingError": "The contract needs the APE (energy performance certificate) of the property: upload it here, without leaving the contract.",
       "waitingDocuments": "Please wait while property documents are being verified.",
       "concordatoRangeRequired": "Calculate the agreed-rent range: the monthly rent is compared with the range returned by the server.",
       "concordatoRentOutOfRange": "The monthly rent is outside the range calculated for this property.",
@@ -1112,7 +1112,10 @@
       "removeLandlord": "Remove landlord {{n}}",
       "removeTenant": "Remove tenant {{n}}",
       "partiesMax": "You can enter at most {{max}} parties per role.",
-      "fiscalCodeHint": "16 characters for a natural person, 11 digits for a company."
+      "fiscalCodeHint": "16 characters for a natural person, 11 digits for a company.",
+      "apeIdentificationRequired": "Type the code and energy class of the APE",
+      "apeIdentificationHelp": "The contract states them: copy them from the certificate (the identification code is at the top, next to “valido fino al”).",
+      "apeReady": "APE: code {{code}}, class {{energyClass}}"
     },
     "partyRole": {
       "Landlord": "Landlord",
@@ -1196,6 +1199,33 @@
         "saving": "Saving...",
         "cancel": "Cancel"
       }
+    },
+    "kind": {
+      "legend": "What contract do you want to make?",
+      "description": "First the type of contract: how we prepare it depends on it.",
+      "concordato": {
+        "title": "Canone concordato (3+2)",
+        "description": "You prepare it with ConcordatoFacile, our partner: we create the draft at once, with the reference to link to the practice."
+      },
+      "other": {
+        "title": "Canone libero (4+4) or transitory",
+        "description": "You fill in the data of the contract here: property, parties, term and rent."
+      },
+      "continue": "Continue",
+      "change": "Change type of contract"
+    },
+    "concordato": {
+      "title": "New canone concordato contract",
+      "description": "Choose the property: we save the draft of the contract and its reference for ConcordatoFacile at once.",
+      "whatHappens": "No parties, rent, dates or APE are needed yet: you complete the contract with ConcordatoFacile.",
+      "create": "Create the draft",
+      "noProperties": "You have no long-term property yet: add the property to create the contract."
+    },
+    "partnerDraft": {
+      "title": "Draft — waiting for the partner’s contract",
+      "description": "You prepare this canone concordato contract with ConcordatoFacile: parties, rent and term are entered there. The draft and its reference are already saved here.",
+      "proceed": "Go on with the creation of the contract",
+      "soon": "The direct connection with ConcordatoFacile is coming soon. Meanwhile you can give the partner the reference of the contract below."
     }
   },
   "leaseList": {
@@ -1252,7 +1282,9 @@
       "anonymized": "Tenant anonymized",
       "missing": "Tenant to be added"
     },
-    "term": "from {{from}} to {{to}}"
+    "term": "from {{from}} to {{to}}",
+    "termToDefine": "Dates to be set",
+    "rentToDefine": "Rent to be set"
   },
   "leaseSheet": {
     "conditions": {
@@ -1287,7 +1319,8 @@
       "documents": "Documents",
       "label": "Sections of the lease",
       "payments": "Payments"
-    }
+    },
+    "toDefine": "To be set"
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -2502,7 +2535,7 @@
     },
     "documentUpload": {
       "apeFileFormats": "PDF, JPG, JPEG, PNG — up to 10 MB",
-      "apeScanNotice": "OCR reads every page and checks the certificate code, energy class, EPgl, address, certifier and dates. Missing readable data will be reported. Automatic checks do not verify authenticity in regional registers.",
+      "apeScanNotice": "We read every page to recognise the certificate and its data. If a photo or a photocopy cannot be read whole, the APE is saved all the same and we only ask you for its code and energy class. The automatic check does not verify authenticity in the regional register.",
       "uploadDocument": "Upload document",
       "documentType": "Document type",
       "dragDropText": "Drag a file here or click to select",
@@ -2517,6 +2550,17 @@
         "safetyCompliance": "Safety Compliance",
         "ape": "APE",
         "other": "Other"
+      },
+      "uploadApe": "Upload the APE",
+      "apeDataTitle": "APE code and class",
+      "apeDataDescription": "The contract states the identification code and the energy class of the certificate: type them as printed.",
+      "apeLater": "Later",
+      "apeCheck": {
+        "Saved": "APE saved.",
+        "Verified": "APE saved: we recognised the certificate and read its main data.",
+        "Incomplete": "APE saved. We could not read from the pages: {{fields}}. If a page is missing you can upload it again; otherwise just type the code and class below.",
+        "NotRecognized": "APE saved, but we did not recognise the title of an energy performance certificate. If you chose the wrong file, delete it from the documents of the property and upload the right one; otherwise type the code and class below.",
+        "NotChecked": "APE saved. The automatic reading is not available right now: type the code and class below."
       }
     },
     "contextPicker": {
@@ -2775,7 +2819,8 @@
       "apeCode": "APE code",
       "apeEnergyClass": "Energy class",
       "apeIdentificationSave": "Save",
-      "apeIdentificationCancel": "Cancel"
+      "apeIdentificationCancel": "Cancel",
+      "apeIdentificationTitle": "Code and energy class of the APE"
     },
     "cin": {
       "badge": {
@@ -11121,6 +11166,16 @@
     "confirm": "I have added all pages and checked their order and orientation.",
     "incomplete": "Add pages and confirm that the document is complete.",
     "tooLarge": "The final PDF exceeds the allowed size. Reduce photo sizes and retry.",
-    "conversionFailed": "The PDF could not be created. Try readable JPEG/PNG photos."
+    "conversionFailed": "The PDF could not be created. Try readable JPEG/PNG photos.",
+    "dropHere": "Drag the PDF or the photos of the pages here",
+    "dropMore": "Drag more photos of the pages here",
+    "or": "or",
+    "unsupported": "“{{name}}” is neither a PDF nor a JPG or PNG photo: choose a file in one of these formats.",
+    "emptyFile": "“{{name}}” is empty: choose it again.",
+    "fileTooLarge": "“{{name}}” is over 20 MB: make the photo smaller or choose another one.",
+    "totalTooLarge": "The photos add up to more than 40 MB: remove some or make them smaller.",
+    "mixed": "A document is one PDF or a set of photos: remove the files already chosen to change.",
+    "tooManyPhotos": "You can add at most {{max}} photos per document.",
+    "onePdf": "Choose a single PDF per document."
   }
 }

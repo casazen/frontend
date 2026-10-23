@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,17 +14,24 @@ import { useProperties } from '@/queries/use-properties';
 import { leaseFormSchema } from '../schemas/lease.schema';
 import { getLeaseContractTypeLabel, getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
 import { getProblemMessage } from '@/lib/api-errors';
-import { LONG_RENT_PROPERTY_CREATE_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
+import { hasApeIdentification, latestApeDocument } from '@/lib/ape-documents';
+import { LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
+import { DocumentUploadDialog } from '@/features/properties/components/document-upload-dialog';
+import { ApeIdentificationForm } from '@/features/properties/components/ape-identification-form';
 import type { LeaseFormValues } from '../schemas/lease.schema';
-import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type ConcordatoCharacteristics, type CreateLeaseDto } from '@/types';
-import { AlertTriangle } from 'lucide-react';
-import { CanoneConcordatoCalculator, type ConcordatoRange } from './canone-concordato-calculator';
-import { isRentInConcordatoRange } from '../lib/concordato-rent-range';
+import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type CreateLeaseDto } from '@/types';
+import { AlertTriangle, CheckCircle2, Upload } from 'lucide-react';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { PartyListCard } from './lease-party-fields';
 import { emptyParty, toPartyDto } from './lease-party-model';
 const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+
+/**
+ * The types this form fills in. A canone concordato contract is not here: it is chosen first on the page and prepared with the
+ * partner (a draft with only the property, then the partner's module).
+ */
+const FORM_CONTRACT_TYPES = LEASE_CONTRACT_TYPES.filter((type) => type !== 'Concordato');
 
 
 interface LeaseCreateFormProps {
@@ -49,9 +56,7 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
   // A failed load (e.g. 403) is an explicit error, never an empty list to pick from (A7-06).
   const noProperties = !isLoadingProperties && !propertiesFailed && propertiesData !== undefined && properties.length === 0;
   const [waitingForDocumentsAt, setWaitingForDocumentsAt] = useState<string | null>(null);
-  const [concordatoRange, setConcordatoRange] = useState<ConcordatoRange | null>(null);
-  const [concordatoCharacteristics, setConcordatoCharacteristics] = useState<ConcordatoCharacteristics | null>(null);
-  const [concordatoError, setConcordatoError] = useState<string | null>(null);
+  const [apeUploadOpen, setApeUploadOpen] = useState(false);
 
   const {
     register,
@@ -69,17 +74,10 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
     } as LeaseFormValues,
   });
 
-  const [selectedPropertyId, contractType, startDate, endDate, monthlyRent] = useWatch({
+  const [selectedPropertyId, contractType] = useWatch({
     control,
-    name: ['propertyId', 'contractType', 'startDate', 'endDate', 'monthlyRent'],
+    name: ['propertyId', 'contractType'],
   });
-  const isConcordato = contractType === 'Concordato';
-  // The range comes from the API (A7-12); with unconfirmed agreement data it is only a guide (A7-23).
-  const rentOutsideRange =
-    isConcordato &&
-    !!concordatoRange &&
-    monthlyRent > 0 &&
-    !isRentInConcordatoRange(monthlyRent, concordatoRange.minMonthly, concordatoRange.maxMonthly);
 
   const {
     data: documents,
@@ -94,25 +92,18 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
   });
 
   const documentsLoaded = !!selectedPropertyId && !isLoadingDocuments && !documentsFailed && documents !== undefined;
-  const hasApeDocument = documents?.some((doc) => doc.documentType === 'Ape') ?? false;
-  const apeMissing = documentsLoaded && !hasApeDocument;
-  const apeError = apeMissing
-    ? t('leases.form.apeMissingError')
-    : !documentsLoaded && selectedPropertyId && waitingForDocumentsAt === selectedPropertyId
-      ? t('leases.form.waitingDocuments')
-      : null;
+  // The contract states the code and the energy class of the last APE uploaded (LT-10): the draft waits for them, and they are
+  // also what confirms a certificate the automatic reading could not read whole.
+  const ape = latestApeDocument(documents);
+  const apeMissing = documentsLoaded && !ape;
+  const apeToIdentify = documentsLoaded && !!ape && !hasApeIdentification(ape);
+  const waitingForDocuments = !documentsLoaded && !!selectedPropertyId && waitingForDocumentsAt === selectedPropertyId;
 
   useEffect(() => {
     if (defaultPropertyId && propertiesData?.some((property) => property.id === defaultPropertyId)) {
       setValue('propertyId', defaultPropertyId, { shouldValidate: false });
     }
   }, [defaultPropertyId, propertiesData, setValue]);
-
-  // A new range (or none, after an input changed) supersedes the message of the last refused submit.
-  const handleRangeChange = useCallback((range: ConcordatoRange | null) => {
-    setConcordatoRange(range);
-    setConcordatoError(null);
-  }, []);
 
   const handleFormSubmit = (values: LeaseFormValues) => {
     if (documentsFailed) {
@@ -124,28 +115,11 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
       return;
     }
 
-    if (!hasApeDocument) {
+    if (!ape || !hasApeIdentification(ape)) {
       return;
     }
 
-    if (values.contractType === 'Concordato') {
-      // The API computes the range again from the same data; the form asks for it first so the landlord sees it.
-      if (!concordatoRange || !concordatoCharacteristics) {
-        setConcordatoError(t('leases.form.concordatoRangeRequired'));
-        return;
-      }
-      // Verified data: the API refuses a rent outside the range, so the form does too. Partial data: a warning only.
-      if (
-        !concordatoRange.indicative &&
-        !isRentInConcordatoRange(values.monthlyRent, concordatoRange.minMonthly, concordatoRange.maxMonthly)
-      ) {
-        setConcordatoError(t('leases.form.concordatoRentOutOfRange'));
-        return;
-      }
-    }
-
     setWaitingForDocumentsAt(null);
-    setConcordatoError(null);
     onSubmit({
       propertyId: values.propertyId,
       contractType: values.contractType,
@@ -159,9 +133,6 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
         ...values.landlords.map((party) => toPartyDto(party, 'Landlord')),
         ...values.tenants.map((party) => toPartyDto(party, 'Tenant')),
       ],
-      ...(values.contractType === 'Concordato' && concordatoCharacteristics
-        ? { canoneConcordato: concordatoCharacteristics }
-        : {}),
     });
   };
 
@@ -249,26 +220,56 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
               </div>
             )}
 
-            {apeError && (
+            {waitingForDocuments && (
+              <p role="status" className="text-sm text-muted-foreground">
+                {t('leases.form.waitingDocuments')}
+              </p>
+            )}
+
+            {/* The APE is uploaded here, in a window over the form: nothing typed is lost (it used to open the property page). */}
+            {apeMissing && (
               <div
                 role="alert"
+                data-testid="lease-ape-missing"
                 className="flex flex-wrap gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
               >
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span className="flex-1">{apeError}</span>
-                {apeMissing && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link to={longRentPropertyPath(selectedPropertyId)}>{t('leases.form.uploadApe')}</Link>
-                  </Button>
-                )}
+                <span className="flex-1">{t('leases.form.apeMissingError')}</span>
+                <Button type="button" variant="outline" size="sm" onClick={() => setApeUploadOpen(true)}>
+                  <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {t('leases.form.uploadApe')}
+                </Button>
               </div>
+            )}
+            {/* Outside the box above: once the APE is on file the box goes, the window stays for its code and class. */}
+            {selectedPropertyId ? (
+              <DocumentUploadDialog propertyId={selectedPropertyId} onlyType="Ape" open={apeUploadOpen} onOpenChange={setApeUploadOpen} />
+            ) : null}
+
+            {apeToIdentify && ape && (
+              <div
+                role="status"
+                data-testid="lease-ape-identification"
+                className="space-y-1 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+              >
+                <p className="font-medium">{t('leases.form.apeIdentificationRequired')}</p>
+                <p className="text-foreground/80">{t('leases.form.apeIdentificationHelp')}</p>
+                <ApeIdentificationForm key={ape.id} propertyId={selectedPropertyId} document={ape} initiallyEditing required />
+              </div>
+            )}
+
+            {documentsLoaded && ape && hasApeIdentification(ape) && (
+              <p className="flex items-center gap-2 text-sm text-foreground/80" data-testid="lease-ape-ready">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                {t('leases.form.apeReady', { code: ape.apeCode, energyClass: ape.apeEnergyClass })}
+              </p>
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contractType">{t('leases.form.contractTypeLabel')}</Label>
                 <select id="contractType" {...register('contractType')} className={SELECT_CLASS}>
-                  {LEASE_CONTRACT_TYPES.map((value) => (
+                  {FORM_CONTRACT_TYPES.map((value) => (
                     <option key={value} value={value}>
                       {getLeaseContractTypeLabel(value, t)}
                     </option>
@@ -303,21 +304,6 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
               </div>
             </div>
 
-            {isConcordato && selectedPropertyId && (
-              <CanoneConcordatoCalculator
-                propertyId={selectedPropertyId}
-                startDate={startDate}
-                endDate={endDate}
-                onRangeChange={handleRangeChange}
-                onCharacteristicsChange={setConcordatoCharacteristics}
-              />
-            )}
-            {isConcordato && concordatoError && (
-              <p role="alert" className="text-sm text-destructive">
-                {concordatoError}
-              </p>
-            )}
-
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="monthlyRent">{t('leases.form.monthlyRentLabel')}</Label>
@@ -344,26 +330,6 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
                 <FormFieldError error={errors.securityDeposit} />
               </div>
             </div>
-            {isConcordato && concordatoRange && (
-              <p className="text-sm text-muted-foreground" data-testid="lease-concordato-range-hint">
-                {t(concordatoRange.indicative ? 'leases.form.concordatoIndicativeRangeHint' : 'leases.form.concordatoRangeHint', {
-                  min: concordatoRange.minMonthly.toFixed(2),
-                  max: concordatoRange.maxMonthly.toFixed(2),
-                })}
-              </p>
-            )}
-            {rentOutsideRange && concordatoRange && (
-              <p
-                className={`text-sm ${concordatoRange.indicative ? 'text-amber-700' : 'text-destructive'}`}
-                data-testid="lease-concordato-out-of-range"
-              >
-                {t(
-                  concordatoRange.indicative
-                    ? 'leases.form.concordatoRentOutsideIndicativeRange'
-                    : 'leases.form.concordatoRentOutOfRange',
-                )}
-              </p>
-            )}
           </CardContent>
         </Card>
 
@@ -376,7 +342,7 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
       <div className="flex justify-end gap-4">
         <Button
           type="submit"
-          disabled={isLoading || isLoadingDocuments || documentsFailed || propertiesFailed || noProperties || !!apeError}
+          disabled={isLoading || isLoadingDocuments || documentsFailed || propertiesFailed || noProperties || apeMissing || apeToIdentify}
         >
           {isLoading ? t('leases.form.creating') : t('leases.form.createDraft')}
         </Button>

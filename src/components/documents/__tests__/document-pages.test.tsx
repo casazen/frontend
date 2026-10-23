@@ -9,8 +9,15 @@ function Editor() {
   const [value, setValue] = useState<DocumentSelection>(EMPTY_DOCUMENT);
   return <><DocumentPages value={value} onChange={setValue} /><button disabled={!documentReady(value)}>Submit</button><output data-testid="order">{value.pages.map(page => `${page.file.name}:${page.rotation}`).join(',')}</output></>;
 }
-const photo = (name: string) => new File(['jpeg'], name, { type: 'image/jpeg' });
+const photo = (name: string, type = 'image/jpeg') => new File(['jpeg'], name, { type });
 function select(files: File[]) { fireEvent.change(screen.getByLabelText(i18n.t('documentPages.select')), { target: { files } }); }
+function drop(files: File[]) {
+  const dataTransfer = { files, types: ['Files'], dropEffect: 'none' };
+  const zone = screen.getByTestId('document-drop-zone');
+  fireEvent.dragEnter(zone, { dataTransfer });
+  fireEvent.dragOver(zone, { dataTransfer });
+  fireEvent.drop(zone, { dataTransfer });
+}
 
 describe('multi-page document assembly', () => {
   beforeEach(async () => {
@@ -18,7 +25,7 @@ describe('multi-page document assembly', () => {
     URL.createObjectURL = vi.fn(() => 'blob:test'); URL.revokeObjectURL = vi.fn();
   });
   it('adds pages across selections, reorders and rotates them, and resets completeness confirmation after edits', () => {
-    render(<Editor />); select([photo('one.jpg'), photo('two.png')]); select([photo('three.jpeg')]);
+    render(<Editor />); select([photo('one.jpg'), photo('two.png', 'image/png')]); select([photo('three.jpeg')]);
     expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: i18n.t('documentPages.moveUp', { page: 3 }) }));
     fireEvent.click(screen.getByRole('button', { name: i18n.t('documentPages.rotate', { page: 1 }) }));
@@ -28,9 +35,23 @@ describe('multi-page document assembly', () => {
     expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
     expect(screen.getByTestId('order')).toHaveTextContent('one.jpg:90,two.png:0');
   });
+  it('takes the photos dropped on the box, as the five pages of an APE photographed with a phone', () => {
+    render(<Editor />);
+    drop([1, 2, 3, 4, 5].map((page) => photo(`WhatsApp Image 2026-10-23 at 11.38.3${page}.jpeg`)));
+    expect(screen.getAllByRole('listitem')).toHaveLength(5);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+  it('takes a photo without extension by its type, and says which file it cannot take and why', () => {
+    render(<Editor />);
+    select([photo('scansione', 'image/jpeg')]);
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    select([new File(['heic'], 'IMG_0001.HEIC', { type: 'image/heic' })]);
+    expect(screen.getByRole('alert')).toHaveTextContent(i18n.t('documentPages.unsupported', { name: 'IMG_0001.HEIC' }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
   it('rejects mixed PDF and images rather than silently dropping pages', () => {
     render(<Editor />); select([photo('one.jpg')]); select([new File(['pdf'], 'existing.pdf')]);
-    expect(screen.getByRole('alert')).toHaveTextContent(i18n.t('documentPages.invalid'));
+    expect(screen.getByRole('alert')).toHaveTextContent(i18n.t('documentPages.mixed'));
     expect(screen.getByTestId('order')).toHaveTextContent('one.jpg:0');
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });

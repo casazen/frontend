@@ -18,7 +18,7 @@ test.describe('Lease flow (long-term landlord)', () => {
 
   test('a fiscal code with a wrong check character is refused in the form and nothing is sent', async ({ page }) => {
     const calls = await mockLeaseFlowApi(page);
-    await page.goto(demoUrl('/leases/new', 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
     await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
 
     await fillParty(page, 'landlords', 0, { first: 'Mario', last: 'Rossi', cf: 'RSSMRA80A01H501Z', email: 'mario@example.com' });
@@ -35,7 +35,7 @@ test.describe('Lease flow (long-term landlord)', () => {
     page,
   }) => {
     const calls = await mockLeaseFlowApi(page);
-    await page.goto(demoUrl('/leases/new', 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
     await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
 
     // LT-14: more parties per role; the codes are validated (a company has 11 digits) and sent normalized.
@@ -139,10 +139,14 @@ test.describe('Lease flow (long-term landlord)', () => {
     await page.route(`**/api/properties/${FLOW_PROPERTY.id}/documents`, (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
     );
-    await page.goto(demoUrl('/leases/new', 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
     await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
-    await expect(page.getByText(/Un documento APE .* deve essere caricato/)).toBeVisible();
+    await expect(page.getByText(/Per creare il contratto serve l’APE/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Crea bozza contratto' })).toBeDisabled();
+    // The APE is uploaded in a window over the form, which stays where it is (it used to open the property page).
+    await page.getByRole('button', { name: "Carica l'APE" }).click();
+    await expect(page.getByRole('dialog').getByTestId('document-drop-zone')).toBeVisible();
+    await expect(page).toHaveURL(/\/leases\/new\?tipo=altro/);
     expect(calls.created).toEqual([]);
   });
 

@@ -220,6 +220,23 @@ export interface LeaseDetail {
   updatedAt: string;
 }
 
+/**
+ * `POST /leases/drafts` (LR-12): a draft with only its property. Its id is the leaseId a partner links its practice to; dates,
+ * rent and parties keep starting values (`LEASE_DRAFT_PLACEHOLDER_DATE`, rent 0) until they are typed.
+ */
+export interface LeaseDraftCreated {
+  id: string;
+  version: number;
+}
+
+/** `PATCH /leases/:id/draft`: the new version of the draft, the one the next save is made on. */
+export interface LeaseDraftSaved {
+  version: number;
+}
+
+/** Start and end date of a draft whose dates were never typed (`LeaseDraftDefaults.PlaceholderDate` of the API). */
+export const LEASE_DRAFT_PLACEHOLDER_DATE = '3000-01-01';
+
 export interface CreateLeasePartyDto {
   role: PartyRole;
   firstName: string;

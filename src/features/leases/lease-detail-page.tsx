@@ -25,7 +25,8 @@ import { LeaseHistory } from './components/lease-history';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
-import { defaultLeaseTab, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
+import { defaultLeaseTab, isPartnerDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
+import { PartnerDraftNotice } from './components/partner-draft-notice';
 
 const LEASES_PATH = '/app/long-rent/leases';
 
@@ -80,6 +81,8 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
   const explainId = useId();
 
   const parties = lease.parties ?? [];
+  // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen.
+  const partnerDraft = isPartnerDraft(lease);
   const showExtraEuBanner = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
 
   const tabs: TabItem<LeaseTab>[] = [
@@ -104,6 +107,8 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
         </div>
       ) : null}
 
+      {partnerDraft ? <PartnerDraftNotice /> : null}
+
       <LeasePartnerReference leaseId={lease.id} />
 
       {showExtraEuBanner && <ExtraEUWarningBanner />}
@@ -113,7 +118,7 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
         <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={opensOn}>
             {tab === 'dati' && <LeaseDataTab lease={lease} />}
-            {tab === 'documenti' && <div className="space-y-6"><LeaseDocumentsPanel leaseId={lease.id} /><LeaseSigningPanel lease={lease} /></div>}
+            {tab === 'documenti' && <div className="space-y-6"><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showExtraEuBanner} />}
           </Tabs>

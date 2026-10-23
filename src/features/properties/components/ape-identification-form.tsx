@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type SyntheticEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,25 +10,38 @@ import type { PropertyDocumentDto } from '@/types';
 interface Props {
   propertyId: string;
   document: PropertyDocumentDto;
+  /** Open on the two fields (right after an upload, or where a contract waits for them) instead of on the summary. */
+  initiallyEditing?: boolean;
+  /** After a save or a cancel: the place that opened the fields closes them (the upload dialog). */
+  onDone?: () => void;
+  /** Label of the cancel button (default "Annulla"; "Più tardi" right after an upload). */
+  cancelLabel?: string;
+  /** No cancel button: a contract cannot be created without these data, so there is nothing to go back to. */
+  required?: boolean;
 }
 
 /**
- * Code and energy class printed on an APE document (LT-10): the lease contract states them. The API checks only their
- * shape (no pattern on the code, whose format is not documented).
+ * Code and energy class printed on an APE document (LT-10): the lease contract states them, and they confirm a certificate the
+ * automatic reading could not read whole (a photo of a photocopy). The API checks only their shape (no pattern on the code,
+ * whose format is not documented).
  */
-export function ApeIdentificationForm({ propertyId, document }: Props) {
+export function ApeIdentificationForm({ propertyId, document, initiallyEditing = false, onDone, cancelLabel, required = false }: Props) {
   const { t } = useTranslation();
   const update = useUpdateApeIdentification();
+  const fieldsId = useId();
   const hasIdentification = !!document.apeCode && !!document.apeEnergyClass;
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initiallyEditing);
   const [code, setCode] = useState(document.apeCode ?? '');
   const [energyClass, setEnergyClass] = useState(document.apeEnergyClass ?? '');
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
+    // The fields can sit inside another form (the lease form): this one is sent alone.
+    event.stopPropagation();
     try {
       await update.mutateAsync({ propertyId, docId: document.id, data: { code: code.trim(), energyClass: energyClass.trim() } });
       setEditing(false);
+      onDone?.();
     } catch {
       // useUpdateApeIdentification.onError shows the server's reason.
     }
@@ -51,10 +64,22 @@ export function ApeIdentificationForm({ propertyId, document }: Props) {
     );
   }
 
-  const codeId = `ape-code-${document.id}`;
-  const classId = `ape-class-${document.id}`;
+  // From `useId`, not from the document: the same APE can have its fields twice on one screen (the lease form and the upload
+  // window over it), and a label must point at the field next to it.
+  const codeId = `${fieldsId}-code`;
+  const classId = `${fieldsId}-class`;
+  // A `div` and not a `form` when it sits inside the lease form (a form cannot hold a form): Enter and the button send it.
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="mt-2 flex flex-wrap items-end gap-2">
+    <div
+      role="group"
+      aria-labelledby={fieldsId}
+      className="mt-2 flex flex-wrap items-end gap-2"
+      data-testid={`ape-identification-fields-${document.id}`}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' && event.target instanceof HTMLInputElement) void handleSubmit(event);
+      }}
+    >
+      <span id={fieldsId} className="sr-only">{t('property.documents.apeIdentificationTitle')}</span>
       <div className="space-y-1">
         <Label htmlFor={codeId}>{t('property.documents.apeCode')}</Label>
         <Input id={codeId} required maxLength={100} value={code} onChange={(e) => setCode(e.target.value)} />
@@ -71,13 +96,24 @@ export function ApeIdentificationForm({ propertyId, document }: Props) {
           onChange={(e) => setEnergyClass(e.target.value)}
         />
       </div>
-      <Button type="submit" size="sm" disabled={update.isPending}>
+      <Button type="button" size="sm" disabled={update.isPending || !code.trim() || !energyClass.trim()} onClick={(e) => void handleSubmit(e)}>
         {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {t('property.documents.apeIdentificationSave')}
       </Button>
-      <Button type="button" size="sm" variant="outline" onClick={() => setEditing(false)} disabled={update.isPending}>
-        {t('property.documents.apeIdentificationCancel')}
-      </Button>
-    </form>
+      {required ? null : (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setEditing(false);
+            onDone?.();
+          }}
+          disabled={update.isPending}
+        >
+          {cancelLabel ?? t('property.documents.apeIdentificationCancel')}
+        </Button>
+      )}
+    </div>
   );
 }
