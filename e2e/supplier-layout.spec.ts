@@ -83,7 +83,20 @@ test.describe('Supplier layout standardization', () => {
       await expect(sidebar.getByRole('link', { name: /Dashboard/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
+      // SP-06 (SP-D1): the menu of the supplier is Home, Richieste, Agenda e disponibilità, Servizi e prezzi, Il mio sito vetrina
+      // (then Clienti and Impostazioni, which come with their own tasks), in this order.
+      await expect(sidebar.getByRole('link', { name: /Servizi e prezzi|Services and prices/i })).toBeVisible();
       await expect(sidebar.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
+      const labels = await sidebar.locator('a[href^="/app/supplier/"]').evaluateAll((links) =>
+        links.map((link) => link.getAttribute('href')),
+      );
+      expect(labels.slice(0, 5)).toEqual([
+        '/app/supplier/dashboard',
+        '/app/supplier/inbox',
+        '/app/supplier/availability',
+        '/app/supplier/services',
+        '/app/supplier/showcase',
+      ]);
       // UI-04a: the iCal calendar hangs from the availability (no entry of its own); the profile is in "Altro".
       await expect(sidebar.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
       await expect(sidebar.getByRole('link', { name: /Profilo|Profile/i })).toHaveCount(0);
@@ -141,9 +154,35 @@ test.describe('Supplier layout standardization', () => {
       await expect(bottomNav.getByRole('link', { name: /Dashboard/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Inbox|Richieste|Requests/i })).toBeVisible();
       await expect(bottomNav.getByRole('link', { name: /Disponibilità|Availability/i })).toBeVisible();
-      await expect(bottomNav.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
+      // SP-06 (SP-D11): the fourth place of the bar is "Servizi e prezzi"; the showcase stays in the menu, behind "Altro".
+      await expect(bottomNav.getByRole('link', { name: /Servizi e prezzi|Services and prices/i })).toBeVisible();
+      await expect(bottomNav.getByRole('link', { name: /Vetrina|Showcase/i })).toHaveCount(0);
+      const places = await bottomNav.getByRole('link').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+      expect(places).toEqual([
+        '/app/supplier/dashboard',
+        '/app/supplier/inbox',
+        '/app/supplier/availability',
+        '/app/supplier/services',
+      ]);
       // The iCal calendar hangs from the availability: it is not a destination of the bar (UI-04a).
       await expect(bottomNav.getByRole('link', { name: /Calendario|Calendar/i })).toHaveCount(0);
+    });
+
+    test('the services tab of the bottom bar says "Servizi", which fits its column even on the narrowest phones', async ({ page }) => {
+      await setDemoProfile(page, 'supplier');
+      await mockSupplierConsoleApi(page, { active: true });
+
+      for (const width of [320, 360, 390]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(demoUrl('/app/supplier/inbox', 'supplier'), { waitUntil: 'domcontentloaded' });
+        const tab = page.getByRole('navigation', { name: 'Navigazione mobile' }).getByRole('link', { name: 'Servizi e prezzi' });
+        // "Servizi e prezzi" alone (74 px) is wider than a column of 360 px (72 px) and would end in an ellipsis: the bar says "Servizi".
+        // Only this tab is checked: the width of the other names depends on the fonts of the machine (they have their own test, UI-04b).
+        const name = tab.locator('span.truncate');
+        await expect(name).toHaveText('Servizi');
+        const cut = await name.evaluate((span) => span.scrollWidth > span.clientWidth);
+        expect(cut, `${width} px: the name of the services tab is cut`).toBe(false);
+      }
     });
 
     test('the sheet opens from "Altro" of the bottom bar and shows secondary items', async ({ page }) => {
@@ -155,6 +194,8 @@ test.describe('Supplier layout standardization', () => {
       const sheet = page.getByRole('dialog');
       await expect(sheet).toBeVisible();
       await expect(sheet.getByRole('link', { name: /Profilo|Profile/i })).toBeVisible();
+      // The showcase, which is no longer on the bar (SP-06), is here.
+      await expect(sheet.getByRole('link', { name: /Vetrina|Showcase/i })).toBeVisible();
     });
 
     test('the sheet closes on navigation', async ({ page }) => {

@@ -58,7 +58,7 @@ export function BookingForm({ booking, initialPropertyId, onSubmit, onCancel, is
     data: propertiesData,
     isLoading: propertiesLoading,
     isError: propertiesError,
-  } = useProperties();
+  } = useProperties({ mode: 'short' });
   const properties = propertiesData ?? [];
   const noProperties = !propertiesLoading && !propertiesError && properties.length === 0;
 

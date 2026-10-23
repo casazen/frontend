@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import '@/config/detail-kinds';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useCurrentUser } from '@/queries/use-users';
 import { useUiStore } from '@/store/ui-store';
@@ -6,10 +7,12 @@ import { cn } from '@/lib/utils';
 import { CommandPaletteProvider } from '@/components/shared/command-palette/command-palette-provider';
 import { CommandPaletteTrigger } from '@/components/shared/command-palette/command-palette-trigger';
 import { DemoBanner } from '@/components/shared/demo-banner';
+import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
 import { ContextSidebar } from './context-sidebar';
+import { GuideLink } from '@/features/help/guide-link';
 import { Header } from './header';
 import { MoreSheet } from './more-sheet';
 import { RouteFocus } from './route-focus';
@@ -59,7 +62,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
 
   return (
     <AppShellContext.Provider value={shell}>
-      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once its flag exists. */}
+      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
       <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
         <SkipLink targetId={MAIN_CONTENT_ID} />
         <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
@@ -68,7 +71,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
           <div className="flex min-w-0 flex-1 flex-col">
             <DemoBanner />
             {/* The notifications bell (UI-12) and the help (UI-08) are handed to the header here too, each only when its function exists. */}
-            <Header search={<CommandPaletteTrigger />} />
+            <Header search={<CommandPaletteTrigger />} help={<GuideLink contextKey={contextKey} />} />
             <main
               id={MAIN_CONTENT_ID}
               ref={mainRef}
@@ -86,6 +89,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
           </div>
         </div>
         <RouteFocus mainRef={mainRef} />
+        {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
+        <DetailDrawerHost />
       </CommandPaletteProvider>
     </AppShellContext.Provider>
   );

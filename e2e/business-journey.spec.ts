@@ -29,11 +29,12 @@ test.describe('Business Golden Path', () => {
   test('property create → detail shows CIN + OTA + pricing sections', async ({ page }) => {
     await mockPropertiesApi(page);
     await mockCurrentUserWithOrg(page);
-    await mockEntitlement(page);
+    // The plan still has room (the default of the mock is a plan that is full): the page of creation blocks the form at the limit.
+    await mockEntitlement(page, { properties: 0 });
 
     await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
-    await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
+    await page.getByRole('link', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
     await fillPropertyForm(page, {
       name: 'Casa Business',
       description: 'Golden path test property.',
@@ -52,20 +53,21 @@ test.describe('Business Golden Path', () => {
     await page.getByRole('button', { name: 'Crea immobile', exact: true }).click();
     expect((await resp).status()).toBe(201);
 
-    // Navigate to detail
-    await expect(page.getByRole('link', { name: 'Casa Business', exact: true })).toBeVisible();
-    await page.getByRole('link', { name: 'Casa Business', exact: true }).click();
+    // Navigate to detail: the name in the list opens the drawer of the property, which leads to its page
+    await expect(page.getByRole('button', { name: 'Casa Business', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Casa Business', exact: true }).click();
+    await page.getByRole('link', { name: 'Apri la scheda completa' }).click();
 
     await expect(page.getByRole('heading', { name: 'Casa Business' })).toBeVisible();
     await expect(page.getByText(/CIN mancante|Missing CIN/i)).toBeVisible();
-    // The detail is split in tabs (info, seasonal suggestions, iCal calendars: the OTA channels are frozen, D10).
-    await expect(page.getByRole('heading', { name: 'Dettagli proprietà' })).toBeVisible();
+    // The detail is split in tabs (overview with the seasonal suggestions, iCal calendars: the OTA channels are frozen, D10).
+    await expect(page.getByRole('heading', { name: "Dati dell'immobile" })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Calendari iCal' }).click();
+    await page.getByRole('tab', { name: 'Calendari iCal' }).click();
     await expect(page.getByTestId('property-ical-settings')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Suggerimenti stagionali' }).click();
-    await expect(page.getByRole('button', { name: 'Gestisci i suggerimenti' }).first()).toBeVisible();
+    await page.getByRole('tab', { name: 'Panoramica' }).click();
+    await expect(page.getByRole('link', { name: 'Gestisci i suggerimenti' }).first()).toBeVisible();
   });
 
   test('seasonal suggestions: enable toggle → save config → verify On badge', async ({ page }) => {
@@ -111,11 +113,11 @@ test.describe('Business Golden Path', () => {
     await expect(page.getByText('On', { exact: true })).toBeVisible();
   });
 
-  test('booking create with tourist tax → verify on detail page', async ({ page }) => {
+  test('booking create with tourist tax → the summary shows the quoted tax, then the confirmation', async ({ page }) => {
     await mockPropertiesApi(page, [buildCreatedProperty({ id: PROPERTY_ID })]);
     await mockCurrentUserWithOrg(page);
 
-    await page.route('**/api/bookings', async (route) => {
+    await page.route('**/api/bookings/manual', async (route) => {
       if (route.request().method() !== 'POST') { await route.fallback(); return; }
       await route.fulfill({
         status: 201,
@@ -187,22 +189,50 @@ test.describe('Business Golden Path', () => {
       });
     });
 
+    // The dates are free (SR-06a): the wizard asks the availability as soon as it knows the dates. Registered after the generic
+    // mocks of the properties, so that it answers first.
+    await page.route('**/api/properties/*/availability*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          propertyId: PROPERTY_ID,
+          from: '2099-08-01',
+          to: '2099-08-07',
+          state: 'ok',
+          invalidReason: null,
+          nights: 6,
+          minNights: null,
+          conflicts: [],
+          nearestFreeWindow: null,
+          linkableBlockId: null,
+        }),
+      });
+    });
+
     await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
+    // Step 1, the stay: the arrival cannot be in the past, so far-future dates (the mocked API quotes the same whatever they are).
     await page.locator('#propertyId').selectOption({ index: 1 });
-    await page.getByLabel(/Check-in/i).fill('2026-08-01');
-    await page.getByLabel(/Check-out/i).fill('2026-08-07');
-    await page.getByLabel(/Guests|Ospiti/i).fill('4');
+    await page.getByLabel(/Check-in/i).fill('2099-08-01');
+    await page.getByLabel(/Check-out/i).fill('2099-08-07');
+    await page.getByTestId('booking-wizard-next').click();
+
+    // Step 2, the guest.
     await fillHostBookingGuestContact(page);
+    await page.getByTestId('booking-wizard-next').click();
+
+    // Step 3, the summary: the price is the quote of the API, tourist tax included.
+    await expect(page.getByTestId('booking-price-tax')).toContainText(/30[,.]00/, { timeout: 10_000 });
 
     const resp = page.waitForResponse(
-      (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
+      (r) => r.request().method() === 'POST' && /\/api\/bookings\/manual\/?$/.test(new URL(r.url()).pathname),
     );
-    await page.getByRole('button', { name: /Create|Crea/i }).click();
+    await page.getByTestId('booking-create-button').click();
     expect((await resp).status()).toBe(201);
 
-    // Should redirect to booking detail
-    await expect(page.getByTestId('booking-price-tax')).toContainText(/30[,.]00/, { timeout: 10_000 });
+    // The confirmation leads to the booking.
+    await expect(page.getByTestId('wizard-done-primary')).toBeVisible({ timeout: 10_000 });
   });
 
   test('payment create → recorded as pending and listed', async ({ page }) => {
@@ -228,14 +258,23 @@ test.describe('Business Golden Path', () => {
       });
     });
 
+    // A payment as the list gives it (SR-03): the guest, the property and the code of the booking, the amounts in euros and cents.
     const created = {
       id: PAYMENT_ID,
       bookingId: BOOKING_ID,
+      bookingCode: 'ABCDE-FGHIJ',
+      propertyId: PROPERTY_ID,
+      propertyName: 'Casa Business',
+      guestName: 'Mario Rossi',
       amount: 930,
+      amountCents: 93000,
       currency: 'EUR',
       refundedAmount: 0,
-      status: 'Pending',
+      refundedAmountCents: 0,
+      status: 'Completed',
       method: 'BankTransfer',
+      description: '',
+      processedAt: '2026-07-01T10:00:00Z',
       createdAt: '2026-07-01T10:00:00Z',
     };
     let postedBody: Record<string, unknown> | null = null;
@@ -262,13 +301,13 @@ test.describe('Business Golden Path', () => {
     await page.locator('#bookingId').selectOption(BOOKING_ID);
     await page.locator('#amount').fill('930');
     await page.locator('#method').selectOption('BankTransfer');
-    await page.getByRole('button', { name: 'Crea pagamento' }).click();
+    await page.getByRole('button', { name: 'Registra incasso' }).click();
 
     await expect.poll(() => postedBody).toMatchObject({ bookingId: BOOKING_ID, amount: 930, method: 'BankTransfer' });
 
-    // Back on the list, the payment is there, waiting for settlement.
+    // Back on the list, the payment is there, already collected (SR-06b: a recorded payment is born collected).
     await expect(page).toHaveURL(/\/app\/short-rent\/payments$/);
     const row = page.getByRole('row', { name: /Bonifico bancario/ });
-    await expect(row).toContainText('In attesa');
+    await expect(row).toContainText('Incassato');
   });
 });

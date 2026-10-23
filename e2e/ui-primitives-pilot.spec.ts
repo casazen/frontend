@@ -63,40 +63,28 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
     await expect(booking).toHaveAttribute('id', 'bookingId');
     await expect(page.getByLabel('Importo *')).toHaveAttribute('id', 'amount');
     await expect(page.getByLabel('Metodo di pagamento *')).toHaveAttribute('id', 'method');
-    await expect(page.getByLabel('Valuta')).toHaveValue('EUR');
-    await expect(booking.locator('option')).toHaveText(['Seleziona una prenotazione', 'Giulia Bianchi - b1000000', 'Marco Rossi - b2000000']);
+    await expect(page.getByLabel("Data dell'incasso *")).toHaveAttribute('id', 'receivedOn');
+    // A booking from a portal is not offered: the portal collects the money itself (SR-06b).
+    await expect(booking.locator('option')).toHaveText(['Seleziona una prenotazione', 'Giulia Bianchi - b1000000']);
   });
 
   test('AC-U2: an empty form says what is missing next to each field and puts the focus on the first one', async ({ page }) => {
     await mockBookings(page, bookings);
     await page.goto(CREATE_URL, { waitUntil: 'domcontentloaded' });
 
-    await page.getByRole('button', { name: 'Crea pagamento' }).click();
+    await page.getByRole('button', { name: 'Registra incasso' }).click();
 
     const booking = page.getByLabel('Prenotazione *');
     await expect(booking).toHaveAttribute('aria-invalid', 'true');
     await expect(booking).toBeFocused();
     await expect(page.getByLabel('Importo *')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByLabel('Metodo di pagamento *')).toHaveAttribute('aria-invalid', 'true');
-    await expect(page.getByLabel('Valuta')).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByLabel("Data dell'incasso *")).not.toHaveAttribute('aria-invalid', 'true');
     // Each message is tied to its field and drawn with an icon (not only red text).
     await expect(booking).toHaveAccessibleDescription("La prenotazione e' obbligatoria");
     const alert = page.getByRole('alert').filter({ hasText: "La prenotazione e' obbligatoria" });
     await expect(alert).toBeVisible();
     await expect(alert.locator('svg')).toHaveCount(1);
-  });
-
-  test('AC-U3: the withholding hint of an OTA booking is an info notice that appears and goes away', async ({ page }) => {
-    await mockBookings(page, bookings);
-    await page.goto(CREATE_URL, { waitUntil: 'domcontentloaded' });
-
-    const hint = page.getByTestId('fiscal-ota-withholding-hint');
-    await expect(hint).toHaveCount(0);
-    await page.locator('#bookingId').selectOption(OTA_BOOKING_ID);
-    await expect(hint).toBeVisible();
-    await expect(hint).toHaveAttribute('role', 'status');
-    await page.locator('#bookingId').selectOption(BOOKING_ID);
-    await expect(hint).toHaveCount(0);
   });
 
   test('AC-U4: while the payment is being saved the button is busy and a second click sends nothing', async ({ page }) => {
@@ -123,10 +111,10 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
     await page.locator('#bookingId').selectOption(BOOKING_ID);
     await page.locator('#amount').fill('120.5');
     await page.locator('#method').selectOption('BankTransfer');
-    const submit = page.getByRole('button', { name: 'Crea pagamento' });
+    const submit = page.getByRole('button', { name: 'Registra incasso' });
     await submit.click();
 
-    const busy = page.getByRole('button', { name: 'Creazione...' });
+    const busy = page.getByRole('button', { name: 'Registrazione...' });
     await expect(busy).toHaveAttribute('aria-busy', 'true');
     await busy.click({ force: true });
     await page.keyboard.press('Enter');
@@ -177,7 +165,7 @@ test.describe('Pilot of the UI primitives: new payment (UI-02)', () => {
       await page.setViewportSize({ width, height: 800 });
       await mockBookings(page, bookings);
       await page.goto(CREATE_URL, { waitUntil: 'domcontentloaded' });
-      await page.getByRole('button', { name: 'Crea pagamento' }).click();
+      await page.getByRole('button', { name: 'Registra incasso' }).click();
       await expect(page.getByLabel('Importo *')).toHaveAttribute('aria-invalid', 'true');
 
       // Not the whole page (its header is not ours): the form, its fields and its messages stay inside the screen.

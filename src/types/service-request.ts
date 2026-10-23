@@ -1,3 +1,5 @@
+import type { SupplierServicePriceUnit } from './supplier-services';
+
 export type ServiceRequestStatus =
   | 'Richiesto'
   | 'PresoInCarico'
@@ -65,12 +67,40 @@ export interface SupplierHostContact {
 }
 
 /**
- * A request in the supplier console (`GET /supplier/inbox`, SU-08, A4-14). Before the take: comune, zone (postal code),
- * date and stay dates; from the take on (`contactDisclosed`) also the street address and the host contact.
+ * The price of a request in cents of euro (SP-04): `amountCents` is the one to show (the final amount, else the quote, else the
+ * estimate; empty is "da concordare").
+ */
+export interface SupplierRequestPrice {
+  amountCents?: number | null;
+  /** The final amount is more than 20 % above the quote: the customer has to confirm it (decision D7). */
+  needsCustomerConfirmation?: boolean;
+}
+
+/**
+ * The payment of a job (SP-04e): there when the request has a payment record or is `Completato`; the commission, the net and the
+ * status are empty while there is no record. The console shows these figures as they come and promises no payout date.
+ */
+export interface SupplierRequestPayment {
+  /** `Requested`, `Processing`, `Paid`, `Failed`, `PartiallyRefunded`, `Refunded`, `NeedsReview`: an open set. */
+  status?: string | null;
+  amountCents?: number | null;
+  commissionPercent?: number | null;
+  commissionCents?: number | null;
+  netCents?: number | null;
+  paidAt?: string | null;
+  /** The payer was asked for the payment and is late. */
+  late?: boolean;
+  needsAmountConfirmation?: boolean;
+}
+
+/**
+ * A request in the supplier console (`GET /supplier/inbox`, SU-08, A4-14). Before the take: comune, zone (postal code), day and
+ * time, price and who asks (D9); from the take on (`contactDisclosed`) also the property, the notes, the street address and the
+ * contact. The fields from `source` on come with SP-04 and SP-04e and are optional here: an older answer does not have them.
  */
 export interface SupplierServiceRequest {
   id: string;
-  rentalContext: ServiceRequestRentalContext;
+  rentalContext: ServiceRequestRentalContext | 'Showcase';
   status: ServiceRequestStatus;
   category: string;
   urgency: ServiceRequestUrgency;
@@ -81,8 +111,9 @@ export interface SupplierServiceRequest {
   takenAt?: string | null;
   completedAt?: string | null;
   paidAt?: string | null;
-  propertyId: string;
-  propertyName: string;
+  propertyId?: string | null;
+  /** The property: empty until the supplier takes the request (D9), and for a request of the public showcase. */
+  propertyName?: string | null;
   city: string;
   postalCode?: string | null;
   /** Street address: null until the supplier takes the request. */
@@ -96,9 +127,36 @@ export interface SupplierServiceRequest {
   stay?: SupplierStay | null;
   contactDisclosed: boolean;
   hostContact?: SupplierHostContact | null;
+  /** `casazen` (a host's request) or `showcase` (a customer of the public showcase). */
+  source?: string;
+  /** Who asks: the host's display name, or "Nome C." for a private customer until the take (D9). */
+  clientName?: string;
+  /** The service of the catalog the request is for, when it is for one. */
+  serviceName?: string | null;
+  /** The instant the supplier has to answer by, while the request is new. */
+  respondBy?: string | null;
+  startedAt?: string | null;
+  price?: SupplierRequestPrice;
+  /** Who cancelled it (`Host`, `Supplier`, `Customer`, `System`) and why: a text, or the code `NoResponse`, `ProposalNotAnswered`, `CancelledByCustomer`. */
+  cancelledBy?: string | null;
+  cancellationReason?: string | null;
+  /** `Online` (paid inside CasaZen) or `Manual` (paid outside, the host marks it). */
+  paymentMode?: string;
+  /**
+   * The server accepted it by itself (SP-04d): the supplier turned on the automatic acceptance of its regular hosts. It was born taken
+   * (`PresoInCarico`, the step in the history has the actor `System`) and the supplier can still cancel it, with a reason, until it starts.
+   */
+  autoAccepted?: boolean;
+  /**
+   * Where the request is for the console, worked out once by the server (SP-04e): `to_answer`, `proposal_pending`, `scheduled`,
+   * `in_progress`, `completed`, `paid`, `rejected`, `cancelled`. An open set: a value this version does not know is read from `status`.
+   */
+  phase?: string;
+  payment?: SupplierRequestPayment | null;
 }
 
-export type ServiceRequestActorParty = 'Host' | 'Supplier';
+/** `Supplier` and `Host` take the steps; `Customer` (a private customer of the showcase) and `System` (nobody answered in time) end some. */
+export type ServiceRequestActorParty = 'Host' | 'Supplier' | 'Customer' | 'System';
 
 /** One transition of a service request: the status reached, when (UTC instant) and by whom. */
 export interface ServiceRequestHistoryEntry {
@@ -107,7 +165,7 @@ export interface ServiceRequestHistoryEntry {
   actor: ServiceRequestActorParty;
   /** The supplier member who took the request, when known. */
   actorName?: string | null;
-  /** Rejection reason, on the `Rifiutato` step. */
+  /** Rejection or cancellation reason, on the `Rifiutato` and `Annullato` steps: a text, or a code (see `cancellationReason`). */
   reason?: string | null;
 }
 
@@ -148,6 +206,21 @@ export interface CreateLongRentServiceRequestDto {
   durationMinutes?: number;
 }
 
+/** A published service of a supplier in the picker of the marketplace (`GET /suppliers`, SR-09a): what the host needs to read its price. */
+export interface SupplierPickerService {
+  id: string;
+  name: string;
+  category: string;
+  durationMinutes: number | null;
+  /** The "from" price in euro cents; `null` is "on quote". */
+  priceFromCents: number | null;
+  priceUnit: SupplierServicePriceUnit;
+  requiresQuote: boolean;
+}
+
+/** The order of the marketplace list (`?sort=` of `GET /suppliers`). */
+export type SupplierPickerSort = 'name' | 'price' | 'response';
+
 export interface SupplierPicker {
   orgId: string;
   legalName: string;
@@ -157,6 +230,19 @@ export interface SupplierPicker {
   comuni: string[];
   bio?: string | null;
   photoUrls: string[];
+  // SR-09a: what a host weighs when it chooses. Optional, because an answer that predates it (and the long-rent search) lacks them.
+  /** Up to three published services, in the supplier's own order. */
+  services?: SupplierPickerService[];
+  /** The lowest "from" price among all its published services, in euro cents; `null` when none has a price. */
+  priceFromCents?: number | null;
+  /** What `priceFromCents` is for. */
+  priceFromUnit?: SupplierServicePriceUnit | null;
+  /** The typical time the supplier takes to answer, in minutes; `null` until it is measured: it is never shown without. */
+  medianResponseMinutes?: number | null;
+  /** «Verificato»: an active profile with a VAT number. Says nothing about the payments account. */
+  verified?: boolean;
+  /** The address of the public showcase (`/fornitori/{slug}`); `null` when it has none. */
+  showcaseSlug?: string | null;
 }
 
 export interface SupplierListResponse {

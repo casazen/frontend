@@ -173,7 +173,7 @@ test.describe('Italian Compliance Golden Path', () => {
     test('property create accepts a real CIN written with hyphens', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'));
 
-      await page.getByRole('button', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
+      await page.getByRole('link', { name: /^(Add Property|Aggiungi immobile)$/i }).click();
 
       // Real CIN (official BDSR format) typed with separators: accepted, the backend stores it normalized
       await fillPropertyForm(page, {
@@ -205,11 +205,11 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await page.goto(demoUrl('/app/short-rent/compliance/cin', 'short-stay'));
       await expect(page.getByTestId('cin-compliance-page')).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByTestId('cin-summary-cards')).toBeVisible();
+      await expect(page.getByTestId('cin-focus')).toBeVisible();
       await expect(page.getByTestId('cin-compliance-table')).toBeVisible();
       const table = page.getByTestId('cin-compliance-table');
-      await expect(table.getByRole('row', { name: /Appartamento Centro/ })).toContainText(/Mancante/);
-      await expect(table.getByRole('row', { name: /Monolocale Mare/ })).toContainText(/Valido/);
+      await expect(table.getByRole('listitem').filter({ hasText: /Appartamento Centro/ })).toContainText(/Mancante/);
+      await expect(table.getByRole('listitem').filter({ hasText: /Monolocale Mare/ })).toContainText(/Valido/);
     });
   });
 
@@ -321,7 +321,7 @@ test.describe('Italian Compliance Golden Path', () => {
     test('booking creation shows tourist tax line item', async ({ page }) => {
       await mockPropertiesApi(page, [buildCreatedProperty()]);
       // Mock booking create response with tourist tax
-      await page.route('**/api/bookings', async (route) => {
+      await page.route('**/api/bookings/manual', async (route) => {
         if (route.request().method() !== 'POST') { await route.fallback(); return; }
         await route.fulfill({
           status: 201,
@@ -364,21 +364,47 @@ test.describe('Italian Compliance Golden Path', () => {
         });
       });
 
+      // The dates are free (SR-06a): the wizard asks the availability as soon as it knows the dates. Registered after the generic
+      // mocks of the properties, so that it answers first.
+      await page.route('**/api/properties/*/availability*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            propertyId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+            from: '2099-07-01',
+            to: '2099-07-05',
+            state: 'ok',
+            invalidReason: null,
+            nights: 4,
+            minNights: null,
+            conflicts: [],
+            nearestFreeWindow: null,
+            linkableBlockId: null,
+          }),
+        });
+      });
+
       await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
+      // Step 1, the stay: the arrival cannot be in the past, so far-future dates (the mocked API quotes the same whatever they are).
       await page.locator('#propertyId').selectOption({ index: 1 });
-      await page.getByLabel(/Check-in/i).fill('2026-07-01');
-      await page.getByLabel(/Check-out/i).fill('2026-07-05');
-      await page.getByLabel(/Guests|Ospiti/i).fill('2');
+      await page.getByLabel(/Check-in/i).fill('2099-07-01');
+      await page.getByLabel(/Check-out/i).fill('2099-07-05');
+      await page.getByTestId('booking-wizard-next').click();
+
+      // Step 2, the guest.
       await fillHostBookingGuestContact(page);
+      await page.getByTestId('booking-wizard-next').click();
+
+      // Step 3, the summary: the tourist tax is a line of the price.
+      await expect(page.getByTestId('booking-price-tax')).toContainText(/20[,.]00/);
 
       const resp = page.waitForResponse(
-        (r) => r.request().method() === 'POST' && /\/api\/bookings\/?$/.test(new URL(r.url()).pathname),
+        (r) => r.request().method() === 'POST' && /\/api\/bookings\/manual\/?$/.test(new URL(r.url()).pathname),
       );
-      await page.getByRole('button', { name: /Create|Crea/i }).click();
+      await page.getByTestId('booking-create-button').click();
       expect((await resp).status()).toBe(201);
-
-      await expect(page.getByTestId('booking-price-tax')).toContainText(/20[,.]00/);
     });
   });
 
@@ -453,7 +479,7 @@ test.describe('Italian Compliance Golden Path', () => {
 
     test('GDPR data export returns guest personal data', async ({ page }) => {
       await page.goto(demoUrl(`/app/short-rent/guests/${GUEST_ID}`, 'short-stay'));
-      await page.getByRole('button', { name: /GDPR|Privacy/i }).click();
+      await page.getByRole('tab', { name: /GDPR|Privacy/i }).click();
 
       const exportBtn = page.getByTestId('gdpr-export-button');
       await expect(exportBtn).toBeVisible({ timeout: 10_000 });
@@ -467,7 +493,7 @@ test.describe('Italian Compliance Golden Path', () => {
 
     test('GDPR anonymization masks guest data', async ({ page }) => {
       await page.goto(demoUrl(`/app/short-rent/guests/${GUEST_ID}`, 'short-stay'));
-      await page.getByRole('button', { name: /GDPR|Privacy/i }).click();
+      await page.getByRole('tab', { name: /GDPR|Privacy/i }).click();
 
       const anonBtn = page.getByTestId('gdpr-anonymize-button');
       await expect(anonBtn).toBeVisible({ timeout: 10_000 });

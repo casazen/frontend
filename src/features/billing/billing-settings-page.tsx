@@ -3,15 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { CreditCard } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { PlanBadge } from '@/components/org/plan-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { toBillingReturnPath } from '@/lib/billing-routes';
+import { ACCOUNT_BILLING_PATH, toBillingReturnPath } from '@/lib/billing-routes';
 import { getPlanTierLabel } from '@/lib/i18n-labels';
 import { needsOrgSetup } from '@/lib/onboarding';
-import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { hasAccountBillingPage, isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useBillingSubscription, useOpenBillingPortal, useUpdateBillingProfile } from '@/queries/use-billing';
 import { useCurrentUser } from '@/queries/use-users';
 import type { BillingSubscription, BillingSubscriptionStatus, PlanTier } from '@/types';
@@ -35,8 +36,20 @@ export function BillingSettingsPage() {
  * Content of the billing page, without a shell: the short-rent route wraps it in its shell ({@link BillingSettingsPage}),
  * the long-rent route gets the long-rent shell from the context layout (PL-16). Paths to the plan page are relative, so
  * the page does not depend on the context.
+ *
+ * AM-08a: a billing administrator who works in the account area has the plan and the billing in one page there, with the new look
+ * (`/app/account/billing`), and is handed over to it. This page stays as it was for who has no account area (the demo, an org
+ * without memberships yet).
  */
 export function BillingSettingsContent() {
+  const { contexts } = useWorkspace();
+  const { search } = useLocation();
+
+  if (hasAccountBillingPage(contexts)) return <Navigate to={{ pathname: ACCOUNT_BILLING_PATH, search }} replace />;
+  return <ClassicBillingSettingsContent />;
+}
+
+function ClassicBillingSettingsContent() {
   const { t } = useTranslation();
   const { contexts } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
@@ -72,15 +85,15 @@ export function BillingSettingsContent() {
       );
     }
     return (
-      <>
+      <div className={PAGE_COLUMNS}>
         <SubscriptionCard subscription={subscriptionQuery.data} effectiveTier={planTier} />
         <BillingProfileCard subscription={subscriptionQuery.data} />
-      </>
+      </div>
     );
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title={t('billing.settings.title')} description={t('billing.settings.description')} />
       {renderContent()}
     </div>

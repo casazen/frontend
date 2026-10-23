@@ -16,7 +16,7 @@ import { SitePublicationBanner } from '@/features/onboarding/components/site-pub
 export function VetrinaPage() {
   const { t } = useTranslation();
   const { org } = useCurrentUser();
-  const { data: properties = [], isLoading: propertiesLoading } = useProperties();
+  const { data: properties = [], isLoading: propertiesLoading } = useProperties({ mode: 'short' });
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [orgUrlCollapsed, setOrgUrlCollapsed] = useState(false);
 
@@ -97,7 +97,7 @@ export function VetrinaPage() {
           </div>
         </div>
       ) : (
-        <div className="mx-auto max-w-3xl">
+        <div className="w-full">
           <PageHeader
             title={t('directBooking.title')}
             description={t('directBooking.description')}

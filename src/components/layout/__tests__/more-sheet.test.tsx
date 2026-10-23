@@ -116,6 +116,9 @@ describe('MoreSheet (UI-04b)', () => {
         'Adempimenti',
         'Ricavi',
         'Regime fiscale',
+        'Report',
+        'Recensioni',
+        'Canali e calendari',
         'Profilo',
         'Stripe Connect',
         'Dominio pubblico',
@@ -184,8 +187,9 @@ describe('MoreSheet (UI-04b)', () => {
       expect(heading).toHaveTextContent('Portale fornitori');
       expect(heading).toHaveTextContent('Casa Rossi Srl');
       expect(within(sheet()).queryByTestId('area-switcher')).not.toBeInTheDocument();
-      // The supplier keeps the profile and the iCal guide in "Altro".
-      expect(tiles(sheet())).toEqual(['Profilo', 'Guida iCal']);
+      // The bar of the phone has the four places of every day, "Servizi e prezzi" the fourth (SP-06, SP-D11): the sheet holds the
+      // showcase, the customers (SP-16b) and the settings (SP-16c-c), which are not on the bar, and, in "Altro", the profile and the iCal guide.
+      expect(tiles(sheet())).toEqual(['Vetrina', 'Clienti', 'Impostazioni', 'Profilo', 'Guida iCal']);
     });
 
     it('MoreSheet_SeveralAreas_HasTheAreaSwitcher', () => {

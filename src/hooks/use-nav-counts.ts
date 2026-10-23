@@ -1,6 +1,6 @@
 import type { NavCountKey, RouteManifestEntry } from '@/config/route-manifest';
 import { useBookingApprovalRequests } from '@/queries/use-bookings';
-import { useSupplierKpis } from '@/queries/use-supplier';
+import { useSupplierKpis } from '@/queries/supplier/use-inbox';
 
 export type NavCounts = Partial<Record<NavCountKey, number>>;
 

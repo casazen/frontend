@@ -147,7 +147,7 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
       </div>
 
       <Section title={t('site.home.compliance.title')} intro={t('site.home.compliance.intro')} tone="cream">
-        <CardGrid>
+        <CardGrid count={5}>
           {COMPLIANCE.map(({ key, icon, tint }) => (
             <FeatureCard
               key={key}
@@ -198,6 +198,7 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
               tint={tint}
               title={t(`site.home.audience.${key}Title`)}
               text={t(`site.home.audience.${key}Text`)}
+              extra
             >
               {key === 'supplier' ? (
                 <a
@@ -310,6 +311,7 @@ export function FeaturesPage({ legal }: { legal: SiteLegal }) {
               icon={group.icon}
               tint={group.tint}
               heading="h2"
+              extra
             >
               <BulletList items={group.items.map((key) => t(key))} />
             </FeatureCard>
@@ -365,7 +367,7 @@ export function SuppliersPage({ legal }: { legal: SiteLegal }) {
         <Steps items={SUPPLIER_STEPS.map((step) => ({ text: t(`site.suppliers.${step}`) }))} />
       </Section>
       <Section title={t('site.suppliers.featuresTitle')} tone="salvia">
-        <CardGrid>
+        <CardGrid count={3}>
           <FeatureCard icon={Inbox} tint="terra" title={t('site.suppliers.inboxTitle')} text={t('site.suppliers.inboxText')} />
           <FeatureCard
             icon={CalendarClock}
@@ -419,7 +421,7 @@ export function AboutPage({ legal }: { legal: SiteLegal }) {
     <>
       <PageHeader title={t('site.about.title')} intro={t('site.about.intro')} />
       <Section title={t('site.about.principlesTitle')} intro={t('site.about.approach')}>
-        <CardGrid>
+        <CardGrid count={3}>
           {PRINCIPLES.map(({ icon, tint }, index) => (
             <FeatureCard
               key={index}

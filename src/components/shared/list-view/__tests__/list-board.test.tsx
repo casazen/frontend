@@ -312,6 +312,25 @@ describe('ListView, dragging a card with the mouse', () => {
     expect(clicked).toHaveBeenCalledTimes(1);
   });
 
+  it('removes the pending click blocker when the board unmounts after a drop', () => {
+    vi.useFakeTimers();
+    try {
+      const { unmount } = renderList({ initial: BOARD });
+      pointerAt(column('confirmed'));
+      press(card('s1'));
+      fireEvent.pointerMove(window, { clientX: 90, clientY: 50 });
+      fireEvent.pointerUp(window, { clientX: 90, clientY: 50 });
+      unmount();
+
+      const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+      window.dispatchEvent(click);
+      expect(click.defaultPrevented).toBe(false);
+      expect(() => vi.runOnlyPendingTimers()).not.toThrow();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('does not leave the ghost on the page if the list goes away in the middle of a drag', () => {
     const { unmount } = renderList({ initial: BOARD });
     pointerAt(column('confirmed'));

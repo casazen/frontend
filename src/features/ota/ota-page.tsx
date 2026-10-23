@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlignedCard, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, XCircle, RefreshCw, Loader2 } from 'lucide-react';
@@ -48,60 +48,75 @@ function statusVariant(status: 'connected' | 'warning' | 'disconnected'): 'defau
   return 'outline';
 }
 
-function OtaCard({ integration, t }: { integration: OtaIntegration; t: (key: string, options?: Record<string, unknown>) => string }) {
+interface OtaCardProps {
+  integration: OtaIntegration;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  /** Some integration of the list has a sync status / an error: every card keeps a row for it, empty where it has none. */
+  showSyncStatus: boolean;
+  showError: boolean;
+}
+
+function OtaCard({ integration, t, showSyncStatus, showError }: OtaCardProps) {
   const syncPlatform = useSyncOtaPlatform();
   const connectionStatus = getConnectionStatus(integration);
+  // The rows, the same in all the cards of the list (`AlignedCard`): the name, the status, the last sync status (if any card has
+  // one), the last sync, the error (if any card has one) and the button, which is always the last and at the same height.
+  const rows = (4 + Number(showSyncStatus) + Number(showError)) as 4 | 5 | 6;
 
   function handleSync() {
     syncPlatform.mutate(integration.platform);
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+    <AlignedCard rows={rows} from="md">
+      <div className="mb-3 flex items-center justify-between">
         <CardTitle className="text-base font-semibold">
           {PLATFORM_LABELS[integration.platform] ?? integration.platform}
         </CardTitle>
         <StatusIcon status={connectionStatus} />
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t('ota.page.status')}</span>
-          <Badge variant={statusVariant(connectionStatus)} className="capitalize">
-            {t(`ota.status.${connectionStatus}`)}
-          </Badge>
-        </div>
-        {integration.lastSyncStatus && (
-          <div className="flex items-center justify-between text-sm">
+      </div>
+      <div className="mb-3 flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">{t('ota.page.status')}</span>
+        <Badge variant={statusVariant(connectionStatus)} className="capitalize">
+          {t(`ota.status.${connectionStatus}`)}
+        </Badge>
+      </div>
+      {showSyncStatus &&
+        (integration.lastSyncStatus ? (
+          <div className="mb-3 flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('ota.page.lastSyncStatus')}</span>
             <span className="text-xs font-medium">{integration.lastSyncStatus}</span>
           </div>
-        )}
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t('ota.page.lastSync')}</span>
-          <span className="text-muted-foreground">{formatLastSync(integration.lastSyncAt, t)}</span>
-        </div>
-        {integration.syncError && (
-          <div className="text-xs text-destructive bg-destructive/10 rounded p-2">
+        ) : (
+          <div />
+        ))}
+      <div className="mb-3 flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">{t('ota.page.lastSync')}</span>
+        <span className="text-muted-foreground">{formatLastSync(integration.lastSyncAt, t)}</span>
+      </div>
+      {showError &&
+        (integration.syncError ? (
+          <div className="mb-3 text-xs text-destructive bg-destructive/10 rounded p-2">
             {integration.syncError}
           </div>
-        )}
-        <div className="pt-1">
-          <Button
-            variant={connectionStatus === 'disconnected' ? 'default' : 'outline'}
-            size="sm"
-            className="w-full"
-            disabled={syncPlatform.isPending}
-            onClick={connectionStatus !== 'disconnected' ? handleSync : undefined}
-          >
-            {syncPlatform.isPending ? (
-              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-            ) : null}
-            {connectionStatus === 'disconnected' ? t('ota.page.connect') : t('ota.page.syncNow')}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        ) : (
+          <div />
+        ))}
+      <div className="pt-1">
+        <Button
+          variant={connectionStatus === 'disconnected' ? 'default' : 'outline'}
+          size="sm"
+          className="w-full"
+          disabled={syncPlatform.isPending}
+          onClick={connectionStatus !== 'disconnected' ? handleSync : undefined}
+        >
+          {syncPlatform.isPending ? (
+            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+          ) : null}
+          {connectionStatus === 'disconnected' ? t('ota.page.connect') : t('ota.page.syncNow')}
+        </Button>
+      </div>
+    </AlignedCard>
   );
 }
 
@@ -155,7 +170,13 @@ export function OtaPage() {
         {!isLoading && !isError && (integrations ?? []).length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {(integrations ?? []).map((integration) => (
-              <OtaCard key={integration.id} integration={integration} t={t} />
+              <OtaCard
+                key={integration.id}
+                integration={integration}
+                t={t}
+                showSyncStatus={(integrations ?? []).some((candidate) => candidate.lastSyncStatus)}
+                showError={(integrations ?? []).some((candidate) => candidate.syncError)}
+              />
             ))}
           </div>
         )}

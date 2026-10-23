@@ -1,9 +1,10 @@
+import { saveBlobAs } from '@/lib/file-download';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Download, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { leasesApi } from '@/api/leases.api';
@@ -75,12 +76,7 @@ export function QuesturaCommunicationPanel({ leaseId, leaseEndDate }: QuesturaCo
     setIsDownloading(true);
     try {
       const blob = await leasesApi.downloadQuesturaReceipt(leaseId);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `ricevuta-questura-${leaseId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      saveBlobAs(blob, `ricevuta-questura-${leaseId}.pdf`);
     } catch (downloadError) {
       toast.error(getProblemMessage(downloadError, t) ?? t('leases.questura.receiptError'));
     } finally {
@@ -91,11 +87,8 @@ export function QuesturaCommunicationPanel({ leaseId, leaseEndDate }: QuesturaCo
   const state = questura ? getQuesturaCommunicationState(questura) : null;
 
   return (
-    <Card id={QUESTURA_PANEL_ID} data-testid="questura-panel">
-      <CardHeader>
-        <CardTitle>{t('leases.questura.title')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+    <PlainSection id={QUESTURA_PANEL_ID} title={t('leases.questura.title')} data-testid="questura-panel">
+      <div className="space-y-4 pt-2 text-sm">
         {isLoading && <p>{t('leases.questura.loading')}</p>}
         {isError && (
           <p className="text-destructive" role="alert">
@@ -128,7 +121,7 @@ export function QuesturaCommunicationPanel({ leaseId, leaseEndDate }: QuesturaCo
                 </Button>
               )}
               {editingDelivery && (
-                <div className="space-y-2 rounded-md border p-3" data-testid="questura-delivery-form">
+                <div className="space-y-2 border-s-2 border-border ps-4" data-testid="questura-delivery-form">
                   <Label htmlFor={`questura-delivery-${leaseId}`}>{t('leases.questura.deliveryDateLabel')}</Label>
                   <Input
                     id={`questura-delivery-${leaseId}`}
@@ -208,10 +201,10 @@ export function QuesturaCommunicationPanel({ leaseId, leaseEndDate }: QuesturaCo
             )}
           </>
         )}
-      </CardContent>
+      </div>
       {questura && state !== 'done' && (
         <QuesturaCommunicationDialog leaseId={leaseId} open={dialogOpen} onOpenChange={setDialogOpen} />
       )}
-    </Card>
+    </PlainSection>
   );
 }

@@ -3,6 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
+import { TabCount, type TabTone } from './tab-count';
+import { TAB_SELECT_CLASS, tabLinkClass } from './tab-styles';
 
 export interface TabItem<T extends string = string> {
   /** What goes in the address (`?tab=ical`): short, lowercase, and the same forever, because emails and links point at it. */
@@ -12,6 +14,8 @@ export interface TabItem<T extends string = string> {
   count?: number;
   /** What the number counts, for a screen reader ("2 da approvare"). Without it only the number is read. */
   countLabel?: string;
+  /** How the number weighs: `warning` for what needs an answer, `danger` for what failed (UI-15). Without it, the accent of the app. */
+  tone?: TabTone;
   icon?: LucideIcon;
   testId?: string;
 }
@@ -37,19 +41,6 @@ export interface TabsProps<T extends string> {
   selectTestId?: string;
 }
 
-const SELECT_CLASS =
-  'flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-
-function CountPill({ item }: { item: TabItem }) {
-  if (!item.count || item.count <= 0) return null;
-  return (
-    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold leading-none text-primary-foreground">
-      <span aria-hidden={item.countLabel ? 'true' : undefined}>{item.count > 99 ? '99+' : item.count}</span>
-      {item.countLabel ? <span className="sr-only">{`, ${item.countLabel}`}</span> : null}
-    </span>
-  );
-}
-
 /**
  * Tabs that are links (UI-07). Each tab is a real link to the same page with `?tab=…` (the name of the parameter is yours),
  * so the address says which tab is open: a refresh, the Back button of the browser, a link in an email or "open in a new
@@ -63,7 +54,8 @@ function CountPill({ item }: { item: TabItem }) {
  * On a phone (under `md`) the tabs would not fit and would hide the ones that overflow: they become a native menu, which
  * the system knows how to show. It changes the address in the same way.
  *
- * No Radix Tabs: the state lives in the address, not in a component, and a link is what a tab really is here.
+ * No Radix Tabs: the state lives in the address, not in a component, and a link is what a tab really is here. For sections
+ * that are pages of their own (other routes), not one page with a parameter, see `RouteTabs`.
  */
 export function Tabs<T extends string>({
   label,
@@ -129,7 +121,7 @@ export function Tabs<T extends string>({
           </label>
           <select
             id={`${baseId}-select`}
-            className={SELECT_CLASS}
+            className={TAB_SELECT_CLASS}
             value={active}
             aria-controls={children ? panelId : undefined}
             data-testid={selectTestId}
@@ -168,19 +160,11 @@ export function Tabs<T extends string>({
                   replace
                   preventScrollReset
                   data-testid={item.testId}
-                  className={cn(
-                    'relative inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-t-sm px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    "after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-transparent after:content-['']",
-                    // The name of a tab that is not open is `foreground/65`, not `muted-foreground`: that token is 4.4:1 on
-                    // white (4.0 on the track of a control), a hair under what a text needs (4.5:1).
-                    selected
-                      ? 'text-primary after:bg-primary'
-                      : 'text-foreground/65 hover:bg-muted hover:text-foreground',
-                  )}
+                  className={tabLinkClass(selected)}
                 >
                   {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
                   {item.label}
-                  <CountPill item={item} />
+                  <TabCount count={item.count} label={item.countLabel} tone={item.tone} />
                 </Link>
               );
             })}

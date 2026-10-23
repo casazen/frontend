@@ -9,8 +9,9 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 /**
  * UI-05: the new page header on its pilot page (the detail of a long-term property) and the title of the tab. The trail
- * and the menu "⋯" for a computer; a link back and the primary action fixed above the bottom bar for a phone. Demo mode (L2):
- * the API is mocked, no stack.
+ * and the menu "⋯" for a computer; a link back for a phone. Since LR-07d the page has no primary action in its header (the lease
+ * to make is the button of the highlighted block: one focal point), so the fixed action above the bottom bar is covered by the
+ * unit tests of the header. Demo mode (L2): the API is mocked, no stack.
  */
 const PROPERTY_ID = 'prop-lr-1';
 const PROPERTY_PATH = `/app/long-rent/properties/${PROPERTY_ID}`;
@@ -73,15 +74,15 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
       await expect(page).toHaveURL(/\/app\/long-rent\/properties(\?|$)/);
     });
 
-    test('one primary action next to the title, the others in the menu of the three dots', async ({ page }) => {
+    test('the lease to make is the button of the highlighted block, the other actions are in the menu of the three dots', async ({ page }) => {
       await openPilot(page);
 
-      const primary = page.getByTestId('long-rent-property-new-lease');
-      await expect(primary).toBeVisible();
-      await expect(primary).toHaveText('Nuovo contratto');
-      await expect(primary).toHaveAttribute('href', `/app/long-rent/leases/new?propertyId=${PROPERTY_ID}`);
-      // Not the fixed bar of a phone: it sits in the header, on the right of the title.
-      expect(await page.getByTestId('page-header-primary').evaluate((element) => getComputedStyle(element).position)).not.toBe('fixed');
+      // One focal point: no primary action in the header, the next step of a free property is in the block under it.
+      await expect(page.getByTestId('page-header-primary')).toHaveCount(0);
+      const next = page.getByTestId('long-rent-property-new-lease');
+      await expect(next).toBeVisible();
+      await expect(next).toHaveText('Crea contratto');
+      await expect(next).toHaveAttribute('href', `/app/long-rent/leases/new?propertyId=${PROPERTY_ID}`);
 
       await expect(page.getByTestId('long-rent-property-edit')).toHaveCount(0);
       await page.getByRole('button', { name: 'Altre azioni' }).click();
@@ -146,39 +147,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
         await expect(page).toHaveURL(/\/app\/long-rent\/properties(\?|$)/);
       });
 
-      test('the primary action is fixed above the bottom bar, as wide as the screen and a finger tall', async ({ page }) => {
-        await openPilot(page);
-
-        const primary = page.getByTestId('long-rent-property-new-lease');
-        await expect(primary).toBeVisible();
-        const wrapper = page.getByTestId('page-header-primary');
-        expect(await wrapper.evaluate((element) => getComputedStyle(element).position)).toBe('fixed');
-
-        const button = (await primary.boundingBox())!;
-        const bar = (await page.getByRole('navigation', { name: 'Navigazione mobile' }).boundingBox())!;
-        const viewport = page.viewportSize()!;
-        expect(button.height).toBeGreaterThanOrEqual(44);
-        // Over the bottom bar, not behind it; inside the screen with a margin on each side.
-        expect(button.y + button.height).toBeLessThanOrEqual(bar.y);
-        expect(button.x).toBeGreaterThanOrEqual(8);
-        expect(button.x + button.width).toBeLessThanOrEqual(viewport.width - 8);
-        expect(button.width).toBeGreaterThan(viewport.width - 48);
-
-        // It stays where it is while the page scrolls.
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-        const afterScroll = (await primary.boundingBox())!;
-        expect(Math.round(afterScroll.y)).toBe(Math.round(button.y));
-      });
-
-      test('the page makes room for the fixed action: its last line is not hidden under it', async ({ page }) => {
-        await openPilot(page);
-
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-        const primary = (await page.getByTestId('long-rent-property-new-lease').boundingBox())!;
-        const lastCard = (await page.locator('main > div').last().locator('> *').last().boundingBox())!;
-        expect(lastCard.y + lastCard.height).toBeLessThanOrEqual(primary.y + 1);
-      });
-
       test('nothing makes the page scroll sideways', async ({ page }) => {
         await openPilot(page);
 
@@ -198,7 +166,7 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
         expect(await scrollsSideways(page)).toBe(false);
       });
 
-      test('a toast comes up above the fixed action, not behind it', async ({ page }) => {
+      test('a toast comes up above the bottom bar, not behind it', async ({ page }) => {
         await openPilot(page);
         // A save that fails shows the server's reason in a toast (the form of the cadastral data).
         await page.route(`**/api/properties/${PROPERTY_ID}/cadastral`, async (route) => {
@@ -214,10 +182,8 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
 
         const toast = page.locator('[data-sonner-toast]').first();
         await expect(toast).toBeVisible();
-        const primary = (await page.getByTestId('long-rent-property-new-lease').boundingBox())!;
         const box = await settled(toast);
-        expect(box.y + box.height).toBeLessThanOrEqual(primary.y);
-        // And over the bar, which is under the action: the whole stack is clear of the bottom of the screen.
+        // Over the bar: the whole stack is clear of the bottom of the screen.
         expect(box.y + box.height).toBeLessThan(page.viewportSize()!.height - 64);
       });
 
@@ -250,8 +216,8 @@ test.describe('The title of the tab (UI-05)', () => {
 
   test('every page puts its own name on the tab, with the area it is in', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeVisible();
-    await expect(page).toHaveTitle('Cruscotto · Affitti brevi · CasaZen');
+    await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
+    await expect(page).toHaveTitle(/^Buongiorno.* · Affitti brevi · CasaZen$/);
 
     await page.getByRole('complementary', { name: 'Navigazione principale' }).getByRole('link', { name: 'Prenotazioni' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeVisible();

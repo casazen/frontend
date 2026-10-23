@@ -25,8 +25,9 @@ function mockLease(response: () => Promise<unknown>) {
   );
 }
 
-function renderPage() {
-  return renderAt('/app/long-rent/leases/lease-1', '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
+// The data of the lease are in the tab `dati`; a draft opens on the signature, which these tests stub.
+function renderPage(search = '') {
+  return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
 
 describe('LeaseDetailPage', () => {
@@ -38,7 +39,7 @@ describe('LeaseDetailPage', () => {
   it('render_Lease_ShowsMaskedPartiesTranslatedRolesAndTimeline', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail() }));
 
-    renderPage();
+    renderPage('?tab=dati');
 
     const parties = await screen.findAllByTestId('lease-party');
     expect(parties).toHaveLength(2);
@@ -48,10 +49,14 @@ describe('LeaseDetailPage', () => {
     expect(within(landlord).getByText(/\*{12}501Z/)).toBeInTheDocument();
     expect(within(landlord).getByText('m***@example.com')).toBeInTheDocument();
     expect(within(parties[1]).getByText('Conduttore')).toBeInTheDocument();
-    // Timeline with translated event types, never the raw enum value (A7-26).
-    const events = screen.getAllByTestId('lease-event');
-    expect(within(events[0]).getByText('Bozza creata')).toBeInTheDocument();
-    expect(within(events[1]).getByText('Delega RLI registrata')).toBeInTheDocument();
+    // The title is the tenant, the line under it says what the lease is about.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Giulia Verdi');
+    expect(screen.getByText(/Casa Trastevere · Roma · .* · 950,00\s€\/mese/)).toBeInTheDocument();
+    // History with translated event types, never the raw enum value (A7-26), the latest first, with who did it.
+    const events = within(screen.getByTestId('lease-timeline')).getAllByRole('listitem');
+    expect(within(events[0]).getByText('Delega RLI registrata')).toBeInTheDocument();
+    expect(within(events[1]).getByText('Bozza creata')).toBeInTheDocument();
+    expect(within(events[1]).getByText('Tu')).toBeInTheDocument();
     expect(screen.queryByText('RegistrationAuthorized')).not.toBeInTheDocument();
     expect(screen.getByText('Bozza')).toBeInTheDocument();
     expect(screen.queryByTestId('lease-load-error')).not.toBeInTheDocument();
@@ -61,7 +66,7 @@ describe('LeaseDetailPage', () => {
     await i18n.changeLanguage('en');
     mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Rejected' }) }));
 
-    renderPage();
+    renderPage('?tab=dati');
 
     expect(await screen.findByText('Landlord')).toBeInTheDocument();
     expect(screen.getByText('Draft created')).toBeInTheDocument();
@@ -111,7 +116,7 @@ describe('LeaseDetailPage', () => {
       }),
     );
 
-    renderPage();
+    renderPage('?tab=dati');
 
     const panel = await screen.findByTestId('concordato-assessment');
     expect(within(panel).getByTestId('concordato-assessment-indicative')).toHaveTextContent(
@@ -129,7 +134,7 @@ describe('LeaseDetailPage', () => {
     // A7-24: the calculator, the attestation guidance and the IMU button applied to any regime before this fix.
     mockLease(() => Promise.resolve({ data: buildDetail() })); // contractType: 'Libero' by default
 
-    renderPage();
+    renderPage('?tab=dati');
 
     await screen.findAllByTestId('lease-party');
     expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
@@ -138,10 +143,10 @@ describe('LeaseDetailPage', () => {
   it('render_LeaseWithoutParties_ShowsEmptyPartiesMessage', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail({ parties: [], events: [] }) }));
 
-    renderPage();
+    renderPage('?tab=dati');
 
     expect(await screen.findByText('Nessuna parte registrata.')).toBeInTheDocument();
-    expect(screen.queryByTestId('lease-event')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('lease-timeline')).queryAllByRole('listitem')).toHaveLength(0);
   });
 
   it('render_NotFound_ShowsNotFound', async () => {
@@ -158,7 +163,7 @@ describe('LeaseDetailPage', () => {
     let calls = 0;
     mockLease(() => (++calls === 1 ? Promise.reject(httpError(500)) : Promise.resolve({ data: buildDetail() })));
 
-    renderPage();
+    renderPage('?tab=dati');
 
     const alert = await screen.findByTestId('lease-load-error');
     expect(within(alert).getByText('Impossibile caricare il contratto. Riprova.')).toBeInTheDocument();

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ProfileInfo } from './components/profile-info';
 import { OperatorTypeSection } from './components/operator-type-section';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -35,14 +36,16 @@ export function ProfilePage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title={t('profile.title')}
           description={t('profile.description')}
         />
 
-        <ProfileInfo user={profileUser} />
-        <OperatorTypeSection />
+        <div className={PAGE_COLUMNS}>
+          <ProfileInfo user={profileUser} />
+          <OperatorTypeSection />
+        </div>
       </div>
     </AppShell>
   );

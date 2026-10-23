@@ -86,7 +86,27 @@ describe('BottomNav (UI-04b)', () => {
 
       arrange(['supplier']);
       renderBar('supplier', '/app/supplier/dashboard');
-      expect(labels()).toEqual(['Dashboard', 'Richieste', 'Disponibilità', 'Vetrina']);
+      // The fourth place of the supplier is "Servizi e prezzi" (SP-06, SP-D11), written "Servizi" on the bar; the showcase is in "Altro".
+      expect(labels()).toEqual(['Dashboard', 'Richieste', 'Disponibilità', 'Servizi']);
+    });
+
+    it('BottomNav_SupplierServices_ShowsAShortNameThatFitsAColumnAndIsStillCalledByItsFullName', async () => {
+      arrange(['supplier']);
+      renderBar('supplier', '/app/supplier/dashboard');
+
+      // "Servizi e prezzi" is wider than a column of a 360 px screen and would end in an ellipsis: the bar shows "Servizi".
+      const services = within(bar()).getByRole('link', { name: 'Servizi e prezzi' });
+      expect(services).toHaveTextContent(/^Servizi$/);
+      expect(services).toHaveAttribute('href', '/app/supplier/services');
+      // The entries that fit keep their own name, and no name is given twice.
+      expect(within(bar()).getByRole('link', { name: 'Disponibilità' })).toHaveTextContent(/^Disponibilità$/);
+      expect(within(bar()).queryByRole('link', { name: 'Servizi' })).not.toBeInTheDocument();
+
+      cleanup();
+      await i18n.changeLanguage('en');
+      renderBar('supplier', '/app/supplier/dashboard');
+      const english = screen.getByRole('navigation', { name: 'Mobile navigation' });
+      expect(within(english).getByRole('link', { name: 'Services and prices' })).toHaveTextContent(/^Services$/);
     });
 
     it('BottomNav_LongRent_ListsTheTwoDestinationsItHasAndAltro', () => {

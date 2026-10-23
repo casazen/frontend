@@ -53,6 +53,7 @@ describe('vercel.json routing', () => {
   it('rewrites_bookingSitemaps_goToTheSitemapFunctionForEveryUserAgent', () => {
     // BK-15: the index of the booking sites and the sitemap of one org (under the org's own path).
     expect(rewriteFor('/sitemap-book.xml')).toBe('/api/sitemap?name=book');
+    expect(rewriteFor('/sitemap-supplier.xml')).toBe('/api/sitemap?name=supplier');
     expect(rewriteFor('/book/villa-rossi/sitemap.xml')).toBe('/api/sitemap?org=villa-rossi');
     expect(rewriteFor('/book/villa-rossi/sitemap.xml', 'Googlebot/2.1')).toBe('/api/sitemap?org=villa-rossi');
   });
@@ -105,6 +106,7 @@ describe('vercel.json routing', () => {
     it.each([
       ['/book/villa-rossi', '/api/seo?kind=org&orgSlug=villa-rossi'],
       ['/book/villa-rossi/property/casa-mare', '/api/seo?kind=property&orgSlug=villa-rossi&propertySlugOrId=casa-mare'],
+      ['/fornitori/pulizie-roma', '/api/seo?kind=supplier&slug=pulizie-roma'],
       ['/p/affitti-brevi', '/api/seo?kind=hub'],
       ['/p/affitti-brevi/lombardia/como', '/api/seo?kind=guide&region=lombardia&comune=como'],
       ['/p/tassa-soggiorno/como', '/api/seo?kind=tourist-tax&comune=como'],
@@ -117,7 +119,7 @@ describe('vercel.json routing', () => {
       }
     });
 
-    it.each(['/', '/property/casa-mare', '/book/villa-rossi', '/book/villa-rossi/property/casa-mare', '/p/affitti-brevi', '/p/affitti-brevi/lombardia/como', '/p/tassa-soggiorno/como'])(
+    it.each(['/', '/property/casa-mare', '/book/villa-rossi', '/book/villa-rossi/property/casa-mare', '/fornitori/pulizie-roma', '/p/affitti-brevi', '/p/affitti-brevi/lombardia/como', '/p/tassa-soggiorno/como'])(
       'rewrites_%s_forPeople_keepsServingTheSinglePageApp',
       (path) => {
         // A failure of the function or of the API can only ever affect crawlers.

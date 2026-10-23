@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { BookingForm, type BookingFormSubmit } from './components/booking-form';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -74,7 +75,7 @@ export function BookingEditPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title={t('booking.edit.title')}
           description={t('booking.edit.description', { name: guestName })}
@@ -88,13 +89,15 @@ export function BookingEditPage() {
             </Link>
           </div>
         ) : (
-          <BookingForm
-            booking={booking}
-            onSubmit={handleSubmit}
-            onCancel={() => navigate(detailPath)}
-            isLoading={updateBooking.isPending}
-            submitError={submitError}
-          />
+          <div className={FOCUS_COLUMN}>
+            <BookingForm
+              booking={booking}
+              onSubmit={handleSubmit}
+              onCancel={() => navigate(detailPath)}
+              isLoading={updateBooking.isPending}
+              submitError={submitError}
+            />
+          </div>
         )}
       </div>
     </AppShell>

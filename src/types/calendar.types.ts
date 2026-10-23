@@ -71,6 +71,14 @@ export interface CalendarResponseDto {
 export const MANUAL_BLOCK_REASONS = ['Owner', 'Maintenance', 'Other'] as const;
 export type ManualBlockReason = (typeof MANUAL_BLOCK_REASONS)[number];
 
+/**
+ * The reason of the block that a scheduled change to long-term closes in the calendar (backend `CalendarBlockReason.ModeChange`,
+ * PM-02). The system writes it: the host cannot choose it among the reasons above, nor delete the block (it goes when the change
+ * is withdrawn).
+ */
+export const MODE_CHANGE_BLOCK_REASON = 'ModeChange';
+export type BlockReason = ManualBlockReason | typeof MODE_CHANGE_BLOCK_REASON;
+
 /** Longest note of a manual block (backend `CalendarBlock.ManualNoteMaxLength`). */
 export const MANUAL_BLOCK_NOTE_MAX_LENGTH = 200;
 

@@ -1,354 +1,106 @@
-import { useState } from 'react';
-import type { ReactNode } from 'react';
+import { Inbox } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { AlertTriangle, CalendarDays, ChevronRight, MapPin } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ListView } from '@/components/shared/list-view/list-view';
+import { useListState } from '@/components/shared/list-view/use-list-state';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useSupplierInbox, useSupplierSuspended } from '@/queries/use-supplier';
-import {
-  useCompleteServiceRequest,
-  useRejectServiceRequest,
-  useTakeServiceRequest,
-} from '@/queries/use-service-requests';
-import { getProblemMessage } from '@/lib/api-errors';
-import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
-import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
-import { formatJobWhen, takeBlockedBy } from '@/features/supplier/lib/job-time';
-import type { SupplierServiceRequest } from '@/types/service-request';
-import type { SupplierInboxParams, SupplierInboxStatus } from '@/types/supplier';
-import { RejectServiceRequestDialog } from './components/reject-service-request-dialog';
+import { useListViewsScope } from '@/hooks/use-list-views-scope';
+import { useSupplierInbox, useSupplierInboxCounts } from '@/queries/supplier/use-inbox';
+import { requestPath } from './requests/request-model';
+import './requests/supplier-request-drawer';
+import { inboxParamsOf, useSupplierRequestsList } from './requests/supplier-requests-list';
+import { useRequestActions } from './requests/use-request-actions';
 
 const PAGE_SIZE = 20;
-type InboxTab = 'open' | 'history';
-const HISTORY_STATUSES: SupplierInboxStatus[] = ['history', 'Completato', 'Pagato', 'Rifiutato'];
-const INBOX_TABS: { value: InboxTab; labelKey: string }[] = [
-  { value: 'open', labelKey: 'supplier.inbox.tabOpen' },
-  { value: 'history', labelKey: 'supplier.inbox.tabHistory' },
-];
-
-/** Date shown on a card: the day of the job when there is one, the activity date in the history. */
-function ActivityLine({ item, tab }: { item: SupplierServiceRequest; tab: InboxTab }) {
-  const { t, i18n } = useTranslation();
-  const format = (instant: string | null | undefined) => formatStayDate(romeDateOf(instant), i18n.language);
-  const parts: ReactNode[] = [
-    <span key="city" className="inline-flex items-center gap-1" data-testid={`inbox-city-${item.id}`}>
-      <MapPin className="h-3.5 w-3.5" />
-      {item.postalCode ? `${item.city} (${item.postalCode})` : item.city}
-    </span>,
-    <span key="day" className="inline-flex items-center gap-1" data-testid={`inbox-day-${item.id}`}>
-      <CalendarDays className="h-3.5 w-3.5" />
-      {formatJobWhen(item, i18n.language, t)}
-    </span>,
-  ];
-  if (tab === 'history') {
-    const activity =
-      item.status === 'Rifiutato'
-        ? t('supplier.inbox.rejectedOn', { date: format(item.updatedAt) })
-        : t('supplier.inbox.completedOn', { date: format(item.completedAt ?? item.createdAt) });
-    parts.push(<span key="activity">{activity}</span>);
-  } else {
-    parts.push(<span key="received">{t('supplier.inbox.receivedOn', { date: format(item.createdAt) })}</span>);
-  }
-  return <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">{parts}</div>;
-}
-
-function InboxCard({
-  item,
-  tab,
-  actions,
-}: {
-  item: SupplierServiceRequest;
-  tab: InboxTab;
-  actions?: ReactNode;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Card data-testid={`inbox-item-${item.id}`}>
-      <CardContent className="space-y-3 py-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{item.propertyName}</span>
-          <Badge variant="secondary">{getServiceCategoryLabel(item.category, t)}</Badge>
-          <Badge>{getServiceRequestStatusLabel(item.status, t)}</Badge>
-        </div>
-        <ActivityLine item={item} tab={tab} />
-        {item.notes && <p className="text-sm text-muted-foreground">{item.notes}</p>}
-        <div className="flex flex-wrap items-center gap-2">
-          {actions}
-          <Button size="sm" variant="ghost" asChild>
-            <Link to={`/app/supplier/inbox/${item.id}`} data-testid={`open-${item.id}`}>
-              {t('supplier.inbox.details')}
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function InboxList({
-  params,
-  tab,
-  enabled,
-  onPage,
-  renderActions,
-}: {
-  params: SupplierInboxParams;
-  tab: InboxTab;
-  enabled: boolean;
-  onPage: (page: number) => void;
-  renderActions?: (item: SupplierServiceRequest, blocked: boolean) => ReactNode;
-}) {
-  const { t } = useTranslation();
-  const { data, isLoading, isError, error, refetch } = useSupplierInbox(params, { enabled });
-
-  if (!enabled) return null;
-
-  if (isLoading) {
-    return (
-      <div className="space-y-3" data-testid="supplier-inbox-loading" aria-busy="true" aria-label={t('supplier.inbox.loading')}>
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-      </div>
-    );
-  }
-
-  if (isError || !data) {
-    return (
-      <Card className="border-destructive/40" role="alert" data-testid="supplier-inbox-error">
-        <CardContent className="flex flex-wrap items-center gap-3 py-4">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
-          <p className="flex-1 text-sm text-destructive">{getProblemMessage(error, t) ?? t('supplier.inbox.loadError')}</p>
-          <Button size="sm" variant="outline" onClick={() => void refetch()}>
-            {t('supplier.retry')}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (data.items.length === 0) {
-    return (
-      <Card data-testid="supplier-inbox-empty">
-        <CardContent className="py-8 text-center text-muted-foreground">
-          {tab === 'open' ? t('supplier.inbox.emptyOpen') : t('supplier.inbox.emptyHistory')}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const page = data.page || params.page || 1;
-  const pages = Math.max(1, Math.ceil(data.total / (data.pageSize || PAGE_SIZE)));
-  return (
-    <div className="space-y-4">
-      {data.items.map((item) => (
-        <InboxCard
-          key={item.id}
-          item={item}
-          tab={tab}
-          actions={renderActions?.(item, tab === 'open' && takeBlockedBy(item, data.items))}
-        />
-      ))}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm" data-testid="supplier-inbox-pagination">
-        <span className="text-muted-foreground" data-testid="supplier-inbox-page-info">
-          {t('supplier.inbox.pageInfo', { page, pages })} · {t('supplier.inbox.total', { count: data.total })}
-        </span>
-        {pages > 1 && (
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPage(page - 1)} data-testid="supplier-inbox-prev">
-              {t('supplier.inbox.previous')}
-            </Button>
-            <Button size="sm" variant="outline" disabled={page >= pages} onClick={() => onPage(page + 1)} data-testid="supplier-inbox-next">
-              {t('supplier.inbox.next')}
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Supplier inbox (SU-08, A4-14): the open requests with their quick actions, and the history (completed, paid,
- * rejected) filtered by status and Europe/Rome period, both paginated by the server. Each request opens its detail.
+ * The requests of the supplier (UI-14): one list with the quick filters the server counts (da rispondere, in attesa del cliente,
+ * programmate, da incassare, archivio), a search, the filters in a drawer and the saved views. The state is in the address; the
+ * server picks, searches and pages the rows. A row opens in the drawer of the shell, and the one thing to do about it (accept, complete)
+ * is on the row. "Rispondi alla più urgente" is the one action of the page. With `?clientId=` (from the page of the customers, SP-16b)
+ * the list holds only the requests of that customer, and says so.
  */
 export function SupplierInboxPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<InboxTab>('open');
-  const [openPage, setOpenPage] = useState(1);
-  const [historyStatus, setHistoryStatus] = useState<SupplierInboxStatus>('history');
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [historyPage, setHistoryPage] = useState(1);
-  const [rejectId, setRejectId] = useState<string | null>(null);
-  const takeMutation = useTakeServiceRequest();
-  const completeMutation = useCompleteServiceRequest();
-  const rejectMutation = useRejectServiceRequest();
-  // A suspended supplier performs no action (SU-12): the buttons stay visible but disabled, the banner says why.
-  const suspended = useSupplierSuspended();
+  const actions = useRequestActions();
+  const list = useSupplierRequestsList(actions);
+  const viewsScope = useListViewsScope();
+  const { state } = useListState(list);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedClient = searchParams.get('clientId');
+  const clientId = requestedClient && GUID.test(requestedClient) ? requestedClient : undefined;
+  const inbox = useSupplierInbox(inboxParamsOf(state, PAGE_SIZE, clientId));
+  const counts = useSupplierInboxCounts();
 
-  const periodInvalid = !!from && !!to && from > to;
+  const toAnswer = counts.data?.toAnswer ?? 0;
+  // The server puts the request to answer first on top of its tab: the first row is the most urgent.
+  const urgent = useSupplierInbox({ tab: 'da-rispondere', page: 1, pageSize: 1 }, { enabled: toAnswer > 0 });
+  const mostUrgent = toAnswer > 0 ? urgent.data?.items[0] : undefined;
 
-  const openActions = (item: SupplierServiceRequest, blocked: boolean) => {
-    if (item.status === 'Richiesto') {
-      return (
-        <>
-          <Button size="sm" onClick={() => takeMutation.mutate(item.id)} disabled={takeMutation.isPending || suspended || blocked} data-testid={`take-${item.id}`}>
-            {t('serviceRequest.take')}
-          </Button>
-          {blocked && (
-            <p className="w-full text-xs text-destructive" data-testid={`conflict-${item.id}`}>
-              {t('supplier.inbox.conflict')}
-            </p>
-          )}
-          <Button size="sm" variant="outline" onClick={() => setRejectId(item.id)} disabled={suspended} data-testid={`reject-${item.id}`}>
-            {t('serviceRequest.reject')}
-          </Button>
-        </>
-      );
-    }
-    if (item.status === 'PresoInCarico' || item.status === 'InCorso') {
-      return (
-        <Button
-          size="sm"
-          onClick={() => completeMutation.mutate({ id: item.id })}
-          disabled={completeMutation.isPending || suspended}
-          data-testid={`complete-${item.id}`}
-        >
-          {t('serviceRequest.complete')}
-        </Button>
-      );
-    }
-    return null;
-  };
-
+  // A supplier who has no request at all gets what the requests are for, and not an empty table with filters.
+  const c = counts.data;
+  const nothingYet = c !== undefined && [c.toAnswer, c.awaitingCustomer, c.scheduled, c.toCollect, c.archive].every((n) => n === 0);
+  const { icon: emptyIcon, ...empty } = list.empty;
 
   return (
-    <div className="space-y-6" data-testid="supplier-inbox-page">
-      <PageHeader title={t('supplier.inboxTitle')} description={t('supplier.inboxDescription')} />
+    <div className="min-w-0 space-y-6" data-testid="supplier-inbox-page">
+      <PageHeader
+        title={t('supplier.requests.title')}
+        description={t('supplier.requests.description')}
+        crumbs="auto"
+        primary={mostUrgent ? { label: t('supplier.requests.answerUrgent'), icon: Inbox, to: requestPath(mostUrgent.id), testId: 'supplier-inbox-urgent' } : undefined}
+      />
 
-      <div className="inline-flex rounded-lg bg-muted p-1" role="tablist" aria-label={t('supplier.inbox.tabsLabel')}>
-        {INBOX_TABS.map(({ value, labelKey }) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            aria-selected={tab === value}
-            onClick={() => setTab(value)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-              tab === value ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'
-            }`}
-            data-testid={`supplier-inbox-tab-${value}`}
-          >
-            {t(labelKey)}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'open' ? (
-        <InboxList
-          params={{ status: 'open', page: openPage, pageSize: PAGE_SIZE }}
-          tab="open"
-          enabled
-          onPage={setOpenPage}
-          renderActions={openActions}
-        />
-      ) : (
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-end gap-3" data-testid="supplier-inbox-filters">
-            <div className="space-y-1">
-              <Label htmlFor="supplier-inbox-status">{t('supplier.inbox.statusFilter')}</Label>
-              <select
-                id="supplier-inbox-status"
-                value={historyStatus}
-                onChange={(e) => {
-                  setHistoryStatus(e.target.value as SupplierInboxStatus);
-                  setHistoryPage(1);
-                }}
-                className="h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                data-testid="supplier-inbox-status"
-              >
-                {HISTORY_STATUSES.map((value) => (
-                  <option key={value} value={value}>
-                    {value === 'history' ? t('supplier.inbox.statusAllHistory') : getServiceRequestStatusLabel(value, t)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="supplier-inbox-from">{t('supplier.inbox.from')}</Label>
-              <Input
-                id="supplier-inbox-from"
-                type="date"
-                value={from}
-                onChange={(e) => {
-                  setFrom(e.target.value);
-                  setHistoryPage(1);
-                }}
-                className="h-9 w-40"
-                data-testid="supplier-inbox-from"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="supplier-inbox-to">{t('supplier.inbox.to')}</Label>
-              <Input
-                id="supplier-inbox-to"
-                type="date"
-                value={to}
-                onChange={(e) => {
-                  setTo(e.target.value);
-                  setHistoryPage(1);
-                }}
-                className="h-9 w-40"
-                data-testid="supplier-inbox-to"
-              />
-            </div>
-            {(from || to || historyStatus !== 'history') && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setHistoryStatus('history');
-                  setFrom('');
-                  setTo('');
-                  setHistoryPage(1);
-                }}
-                data-testid="supplier-inbox-clear"
-              >
-                {t('supplier.inbox.clearFilters')}
-              </Button>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground">{t('supplier.inbox.periodHint')}</p>
-          {periodInvalid && (
-            <p className="text-sm text-destructive" role="alert" data-testid="supplier-inbox-period-invalid">
-              {t('supplier.inbox.periodInvalid')}
-            </p>
-          )}
-          <InboxList
-            params={{ status: historyStatus, from: from || undefined, to: to || undefined, page: historyPage, pageSize: PAGE_SIZE }}
-            tab="history"
-            enabled={!periodInvalid}
-            onPage={setHistoryPage}
-          />
+      {nothingYet ? (
+        <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border" data-testid="supplier-inbox-empty">
+          <EmptyState icon={emptyIcon ?? Inbox} {...empty} />
         </div>
+      ) : (
+        <>
+          {clientId ? (
+            <div className="flex flex-wrap items-center gap-3 text-sm" data-testid="supplier-inbox-client-filter">
+              <span>{t('supplier.requests.clientFilter.note')}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setSearchParams(
+                    (params) => {
+                      params.delete('clientId');
+                      return params;
+                    },
+                    { replace: true },
+                  )
+                }
+              >
+                {t('supplier.requests.clientFilter.clear')}
+              </Button>
+            </div>
+          ) : null}
+          <ListView
+            list={list}
+            mode="server"
+            rows={inbox.data?.items ?? []}
+            totalCount={inbox.data?.total}
+            pageSize={PAGE_SIZE}
+            isLoading={inbox.isLoading}
+            isRefreshing={inbox.isPlaceholderData}
+            isError={inbox.isError && !inbox.isLoading}
+            error={inbox.error}
+            errorTitle={t('supplier.requests.list.loadError')}
+            onRetry={() => void inbox.refetch()}
+            chipCounts={{ 'da-rispondere': counts.data?.toAnswer }}
+            viewsScope={viewsScope}
+            testId="supplier-inbox-list"
+          />
+        </>
       )}
 
-      {rejectId && (
-        <RejectServiceRequestDialog
-          key={rejectId}
-          open
-          isPending={rejectMutation.isPending}
-          onCancel={() => setRejectId(null)}
-          onConfirm={(reason) => rejectMutation.mutate({ id: rejectId, reason }, { onSuccess: () => setRejectId(null) })}
-        />
-      )}
+      {actions.dialog}
     </div>
   );
 }

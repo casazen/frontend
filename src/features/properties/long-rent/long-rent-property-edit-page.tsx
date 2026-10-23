@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -43,8 +43,11 @@ export function LongRentPropertyEditPage() {
     );
   }
 
+  // A short-rent property is edited in the short-rent section only.
+  if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}/edit`} replace />;
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title={t('longRentProperties.edit.title')}
         description={t('longRentProperties.edit.description', { name: property.name })}

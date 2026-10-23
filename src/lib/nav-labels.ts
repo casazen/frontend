@@ -8,6 +8,15 @@ export function getNavLabel(entry: RouteManifestEntry, t: TFunction): string {
   return entry.navLabel ?? entry.path;
 }
 
+/**
+ * The name an entry has in the bottom bar of the phone: the shorter one (`navBarKey`) when the name of the menu does not fit a
+ * column, or `null` when the bar shows the name of the menu. An entry with a counter keeps its name: the name and the counter
+ * are read together.
+ */
+export function getNavBarLabel(entry: RouteManifestEntry, t: TFunction): string | null {
+  return entry.navBarKey && !entry.navCount ? t(entry.navBarKey) : null;
+}
+
 // The keys are written out (`*Key:` properties) so that the i18n test finds a missing translation.
 const NAV_GROUP_LABELS: Record<NavGroup, { labelKey: string }> = {
   everyday: { labelKey: 'nav.group.everyday' },
@@ -17,6 +26,7 @@ const NAV_GROUP_LABELS: Record<NavGroup, { labelKey: string }> = {
   work: { labelKey: 'nav.group.work' },
   activity: { labelKey: 'nav.group.activity' },
   platform: { labelKey: 'nav.group.platform' },
+  account: { labelKey: 'nav.group.account' },
 };
 
 export function getNavGroupLabel(group: NavGroup, t: TFunction): string {

@@ -1,63 +1,165 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { BookingForm, type BookingFormSubmit } from './components/booking-form';
-import { useCreateBooking } from '@/queries/use-bookings';
-import { getProblemMessage } from '@/lib/api-errors';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { fetchHostBookingQuote, fetchStayAvailability, useCreateManualBooking } from '@/queries/use-bookings';
+import type { ManualBooking } from '@/types';
+import { NewBookingDone } from './components/new-booking-done';
+import { GuestStep, StayStep, SummaryStep } from './components/new-booking-steps';
+import {
+  NEW_BOOKING_DRAFT_EXCLUDE,
+  NEW_BOOKING_DRAFT_ID,
+  NEW_BOOKING_DRAFT_VERSION,
+  NEW_BOOKING_STEP,
+  activeLink,
+  emptyNewBooking,
+  guestStepSchema,
+  portalName,
+  stayStepSchema,
+  summaryStepSchema,
+  toAvailabilityParams,
+  toManualBookingDto,
+  toQuotePayload,
+  type NewBookingValues,
+} from './lib/new-booking-model';
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
 
-export function BookingCreatePage() {
+/**
+ * The three steps (stay, guest, summary and price) on the wizard kit. The booking is created Confirmed with the source
+ * "Manual" (PC-01) with only the name and the email of the guest (SR-06a), or completes the reservation a portal sent as a block
+ * of its calendar: the API prices it and answers 409 when the dates overlap another booking or a calendar block, and the message
+ * stays above the buttons until the next try.
+ */
+function NewBookingWizard({ propertyId }: { propertyId?: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  // Opened from a property ("New booking" on the property page or on its filtered list): the property is preselected.
-  const propertyId = searchParams.get('propertyId') ?? undefined;
-  const createBooking = useCreateBooking();
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const createBooking = useCreateManualBooking();
+  const [defaults] = useState(() => emptyNewBooking(propertyId));
+  // A step that is left with something the API needs and no field can show: the wizard says it above the buttons.
+  const [problem, setProblem] = useState<string | null>(null);
+  const [agesMissing, setAgesMissing] = useState(false);
 
-  // The booking is created Confirmed with source "Manual" (PC-01); a 409 means the dates overlap another booking
-  // or a calendar block: the message stays next to the form until the next submit.
-  const handleSubmit = async (data: BookingFormSubmit) => {
-    setSubmitError(null);
-    try {
-      await createBooking.mutateAsync({
-        propertyId: data.propertyId,
-        checkInDate: data.checkInDate,
-        checkOutDate: data.checkOutDate,
-        numberOfGuests: data.numberOfGuests,
-        numberOfChildren: data.numberOfChildren,
-        ...(data.childrenAges ? { childrenAges: data.childrenAges } : {}),
-        guest: data.guest!,
-        specialRequests: data.specialRequests,
-      });
-    } catch (error) {
-      setSubmitError(getProblemMessage(error, t) ?? t('toast.bookingCreateFailed'));
-      return;
+  /**
+   * Before the stay is accepted: the quote of the API says now what it would refuse at the end (guests over the capacity of
+   * the property, a stay that is too long) and whether the tourist tax of the comune needs the age of each minor; and the
+   * availability, asked afresh, says whether the dates are free. The availability is advice: when it cannot be had the wizard goes
+   * on, and the API checks again when the booking is created.
+   */
+  const checkStay = async (values: NewBookingValues) => {
+    setProblem(null);
+    setAgesMissing(false);
+    const payload = toQuotePayload(values);
+    if (!payload) return;
+    // A refusal that has a message of its own (capacity, length of the stay) is shown as the API says it; any other failure, as this.
+    const quote = await fetchHostBookingQuote(queryClient, payload).catch((error: unknown) => {
+      setProblem(t('booking.form.price.loadError'));
+      throw error;
+    });
+    if (quote.touristTax.ageRulesApply && values.minors > 0 && !payload.childrenAges) {
+      setAgesMissing(true);
+      setProblem(t('booking.form.childrenAgesMissing'));
+      throw new Error('The age of each minor is needed for the tourist tax');
     }
-    navigate(propertyId ? `${BOOKINGS_PATH}?propertyId=${encodeURIComponent(propertyId)}` : BOOKINGS_PATH);
+
+    const params = toAvailabilityParams(values);
+    const availability = params ? await fetchStayAvailability(queryClient, params).catch(() => null) : null;
+    if (availability?.state === 'occupied' || availability?.state === 'invalid') {
+      setProblem(t('booking.create.availability.blocked'));
+      throw new Error('The dates are not free');
+    }
+    // Dates that are a portal's reservation are completed, not booked twice: the host links it (or chooses other dates).
+    if (availability?.state === 'linkableBlock' && activeLink(values)?.blockId !== availability.linkableBlockId) {
+      setProblem(t('booking.create.availability.linkRequired', { portal: portalName(availability.conflicts[0]?.channel, t) }));
+      throw new Error('The dates are a reservation of a portal: link it first');
+    }
   };
 
-  const handleCancel = () =>
-    navigate(propertyId ? `/app/short-rent/properties/${encodeURIComponent(propertyId)}` : BOOKINGS_PATH);
+  const create = async (values: NewBookingValues): Promise<ManualBooking> => {
+    setProblem(null);
+    return createBooking.mutateAsync(toManualBookingDto(values));
+  };
+
+  const steps: WizardStep<NewBookingValues>[] = [
+    {
+      id: NEW_BOOKING_STEP.stay,
+      label: t('booking.create.steps.stay.label'),
+      title: t('booking.create.steps.stay.title'),
+      purpose: t('booking.create.steps.stay.purpose'),
+      schema: stayStepSchema,
+      beforeNext: checkStay,
+      render: () => <StayStep agesMissing={agesMissing} onAgesChange={() => setAgesMissing(false)} />,
+    },
+    {
+      id: NEW_BOOKING_STEP.guest,
+      label: t('booking.create.steps.guest.label'),
+      title: t('booking.create.steps.guest.title'),
+      purpose: t('booking.create.steps.guest.purpose'),
+      schema: guestStepSchema,
+      render: () => <GuestStep />,
+    },
+    {
+      id: NEW_BOOKING_STEP.summary,
+      label: t('booking.create.steps.summary.label'),
+      title: t('booking.create.steps.summary.title'),
+      purpose: t('booking.create.steps.summary.purpose'),
+      schema: summaryStepSchema,
+      render: () => <SummaryStep />,
+    },
+  ];
+
+  return (
+    <WizardShell<NewBookingValues, ManualBooking>
+      id={NEW_BOOKING_DRAFT_ID}
+      steps={steps}
+      defaultValues={defaults}
+      finishLabel={t('booking.create.finish')}
+      finishFailedMessage={problem ?? t('toast.bookingCreateFailed')}
+      onFinish={create}
+      // A property in the address is the one the host came from: a draft for another property gives way to it.
+      draft={{
+        exclude: NEW_BOOKING_DRAFT_EXCLUDE,
+        version: NEW_BOOKING_DRAFT_VERSION,
+        accept: (saved) => !propertyId || saved.values.propertyId === propertyId,
+      }}
+      onExit={() => navigate(propertyId ? `/app/short-rent/properties/${encodeURIComponent(propertyId)}` : BOOKINGS_PATH)}
+      // The confirmation opened again (a reload) has nothing to say: the booking is in the list.
+      renderDone={({ result, values }) =>
+        result ? <NewBookingDone booking={result} values={values} /> : <Navigate to={BOOKINGS_PATH} replace />
+      }
+      testIds={{
+        root: 'booking-wizard',
+        back: 'booking-wizard-back',
+        next: 'booking-wizard-next',
+        finish: 'booking-create-button',
+        finishError: 'booking-submit-error',
+      }}
+    />
+  );
+}
+
+/**
+ * Nuova prenotazione (SR-06): a booking taken by phone or in person, in three short steps (stay, guest, summary and price) on
+ * the wizard kit. The page header has no primary action of its own: the wizard has the one main button.
+ */
+export function BookingCreatePage() {
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  // Opened from a property ("New booking" on the property page or on its filtered list): the property is chosen.
+  const propertyId = searchParams.get('propertyId') ?? undefined;
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <PageHeader
-          title={t('booking.create.title')}
-          description={t('booking.create.description')}
-        />
-
-        <BookingForm
-          initialPropertyId={propertyId}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isLoading={createBooking.isPending}
-          submitError={submitError}
-        />
+      <div className="min-w-0 space-y-6" data-testid="booking-create-page">
+        <PageHeader title={t('booking.create.title')} description={t('booking.create.description')} crumbs="auto" />
+        <div className={FOCUS_COLUMN}>
+          <NewBookingWizard propertyId={propertyId} />
+        </div>
       </div>
     </AppShell>
   );

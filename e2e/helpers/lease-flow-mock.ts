@@ -16,6 +16,7 @@ export const FLOW_PROPERTY = buildCreatedProperty({ id: 'prop-lease-e2e-01', nam
 export interface LeaseFlowCalls {
   created: CreateLeaseDto[];
   contractDownloads: number;
+  receiptDownloads: number;
   signedUploads: { stipulaDate: string | null; hasPdf: boolean }[];
   manualRegistrations: { registrationCode: string | null; registrationDate: string | null; hasReceipt: boolean }[];
   rentSchedules: unknown[];
@@ -76,6 +77,7 @@ export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
   const calls: LeaseFlowCalls = {
     created: [],
     contractDownloads: 0,
+    receiptDownloads: 0,
     signedUploads: [],
     manualRegistrations: [],
     rentSchedules: [],
@@ -184,6 +186,10 @@ export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
 
     if (sub === '' && method === 'GET') return json(route, lease);
     if (sub === '/signers' && method === 'GET') return json(route, signing());
+    if (sub === '/registration/receipt' && method === 'GET' && lease.registration?.hasReceipt) {
+      calls.receiptDownloads += 1;
+      return route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\n%ricevuta\n%%EOF\n' });
+    }
     if (sub === '/contract.pdf' && method === 'GET') {
       calls.contractDownloads += 1;
       return route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\n%contratto\n%%EOF\n' });

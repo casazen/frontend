@@ -3,8 +3,10 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
+import { registerDetail } from '@/components/shared/detail-drawer/detail-registry';
 import type { AppContextKey } from '@/config/route-manifest';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useUiStore } from '@/store/ui-store';
 import { AppShell } from '../app-shell';
 import { AppShellContext } from '../app-shell-context';
@@ -23,7 +25,9 @@ vi.mock('@/queries/use-users', () => ({
     isLoading: false,
   }),
 }));
-vi.mock('@/queries/use-supplier', () => ({ useSupplierSuspended: () => supplier.suspended }));
+vi.mock('@/queries/supplier/use-profile', () => ({
+  useSupplierSuspended: () => supplier.suspended
+}));
 // The counters of the menu have their own tests: the shell does not need a query client.
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 
@@ -148,6 +152,40 @@ describe('AppShellLayout (UI-03)', () => {
     expect(await screen.findByRole('dialog', { name: i18n.t('commandPalette.title') })).toBeInTheDocument();
   });
 
+  it('AppShellLayout_AddressWithADetailDrawer_ShowsItOnceAndTheShellStaysAsItWas', async () => {
+    const unregister = registerDetail('shell-probe', { title: 'detailDrawer.fallbackTitle', Content: () => <p>dentro il cassetto</p> });
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <h1>Prenotazioni</h1>
+      </AppShellLayout>,
+      '/app/short-rent?detail=shell-probe:42',
+    );
+
+    // The drawer of the shell (UI-15) is one dialog in a portal: it takes no room in the layout and moves nothing in it.
+    const dialog = await screen.findByRole('dialog', { name: 'Dettaglio' });
+    expect(within(dialog).getByText('dentro il cassetto')).toBeInTheDocument();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByTestId('app-shell')).not.toContainElement(dialog);
+    expect(document.querySelectorAll('header')).toHaveLength(1);
+    expect(document.querySelectorAll('main')).toHaveLength(1);
+    // The skip link is still the first thing the Tab key reaches.
+    const focusable = document.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea');
+    expect(focusable[0]).toBe(screen.getByTestId('skip-link'));
+    unregister();
+  });
+
+  it('AppShellLayout_NoDetailDrawerInTheAddress_DrawsNoDialog', () => {
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <h1>Prenotazioni</h1>
+      </AppShellLayout>,
+      '/app/short-rent?detail=nobody-registered:42',
+    );
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeInTheDocument();
+  });
+
   it.each<[AppContextKey, string]>([
     ['short-rent', 'areas.shortRent.name'],
     ['long-rent', 'areas.longRent.name'],
@@ -203,6 +241,21 @@ describe('AppShellLayout (UI-03)', () => {
     );
 
     expect(screen.queryByTestId('supplier-suspended-banner')).not.toBeInTheDocument();
+  });
+
+  // A page loader is a child of `main`. The viewport height (`h-screen`) would stick out under the header and scroll
+  // the window while the data is loading (booking detail, alloggiati, admin profile).
+  it('AppShellLayout_PageLoading_FillsTheContentRegionInsteadOfTheViewport', () => {
+    renderInRouter(
+      <AppShellLayout contextKey="short-rent">
+        <LoadingScreen message="Caricamento prenotazione" />
+      </AppShellLayout>,
+    );
+
+    const loader = screen.getByText('Caricamento prenotazione').parentElement?.parentElement;
+    expect(loader).toHaveClass('flex-1', 'h-auto');
+    expect(loader).not.toHaveClass('h-screen');
+    expect(screen.getByRole('main')).toContainElement(loader as HTMLElement);
   });
 
   // The window scrolls (not an inner region): these classes are what makes the header and the sidebar stay in place.

@@ -67,6 +67,22 @@ describe('list return (UI-05)', () => {
     expect(withListReturn(BOOKINGS)).toBe(BOOKINGS);
   });
 
+  it('rememberList_DetailDrawerOpenOnTheList_IsNotPartOfTheListAndTheOtherParametersStay', () => {
+    rememberList(BOOKINGS, '?chip=pending&detail=booking:abc-1&q=rossi');
+
+    expect(recallList(BOOKINGS)).toBe('?chip=pending&q=rossi');
+    // The way back from the page of that booking leads to the list, not to the list with the drawer open again.
+    expect(withListReturn(BOOKINGS)).toBe(`${BOOKINGS}?chip=pending&q=rossi`);
+  });
+
+  it('rememberList_ListWithNothingButTheDrawer_IsThePlainListAgain', () => {
+    rememberList(BOOKINGS, '?status=Confirmed');
+
+    rememberList(BOOKINGS, '?detail=booking:abc-1');
+
+    expect(recallList(BOOKINGS)).toBe('');
+  });
+
   it('rememberList_StorageRefusesToWrite_DoesNotBreakThePage', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('full', 'QuotaExceededError');

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { propertyIcalApi } from '@/api/property-ical.api';
 import i18n from '@/i18n/config';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import type { PropertyIcalFeed, PropertyIcalFeedCreateRequest } from '@/types/property-ical';
+import type { CalendarOverview, PropertyIcalFeed, PropertyIcalFeedCreateRequest } from '@/types/property-ical';
 
 /**
  * Light polling while a feed is syncing (its job is queued): every few seconds during the first minute, when the
@@ -24,18 +24,23 @@ const isSyncing = (feed: PropertyIcalFeed) => feed.lastImportStatus === 'Syncing
 // When each feeds query started to see a feed in `Syncing` (keyed by the query object, dropped with it).
 const syncingSince = new WeakMap<object, number>();
 
-/** Next poll of the feeds list: none when no feed is syncing, otherwise fast first and then slower. */
-export function syncingRefetchInterval(
-  query: { state: { data?: PropertyIcalFeed[] } },
-  now: number = Date.now(),
-): number | false {
-  if (!query.state.data?.some(isSyncing)) {
+/** Next poll of a query while something it lists is syncing: none when nothing is, otherwise fast first and then slower. */
+function pollWhileSyncing(query: object, syncing: boolean, now: number): number | false {
+  if (!syncing) {
     syncingSince.delete(query);
     return false;
   }
   const since = syncingSince.get(query) ?? now;
   syncingSince.set(query, since);
   return now - since < SYNCING_FAST_WINDOW_MS ? SYNCING_FAST_REFETCH_MS : SYNCING_SLOW_REFETCH_MS;
+}
+
+/** Next poll of the feeds list: none when no feed is syncing, otherwise fast first and then slower. */
+export function syncingRefetchInterval(
+  query: { state: { data?: PropertyIcalFeed[] } },
+  now: number = Date.now(),
+): number | false {
+  return pollWhileSyncing(query, query.state.data?.some(isSyncing) ?? false, now);
 }
 
 /** True when a feed that was syncing has finished (successfully or not): its blocks may have changed. */
@@ -61,6 +66,75 @@ export function usePropertyIcalFeeds(propertyId: string | undefined) {
     },
     enabled: Boolean(propertyId),
     refetchInterval: syncingRefetchInterval,
+  });
+}
+
+export const calendarOverviewKey = ['property-calendar-overview'] as const;
+
+const isOverviewSyncing = (overview: CalendarOverview | undefined) =>
+  overview?.properties.some((property) => property.feeds.some((feed) => feed.syncing)) ?? false;
+
+/** True when a feed of the overview that was syncing has finished (successfully or not): its blocks may have changed. */
+function overviewSyncEnded(previous: CalendarOverview | undefined, next: CalendarOverview): boolean {
+  const before = new Set(
+    (previous?.properties ?? []).flatMap((property) => property.feeds.filter((feed) => feed.syncing).map((feed) => feed.feedId)),
+  );
+  return next.properties.some((property) => property.feeds.some((feed) => !feed.syncing && before.has(feed.feedId)));
+}
+
+/**
+ * The calendars of every property in one read (SR-10b), for the page "Canali e calendari". It is read again at every visit (the page
+ * is where one comes to see whether a calendar answers) and polled while any feed syncs: one cycle for the whole page, never one per
+ * row. When a sync ends the booking calendars are refreshed with the new blocks, as for the feeds of one property.
+ */
+export function useCalendarOverview() {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: calendarOverviewKey,
+    queryFn: async () => {
+      const previous = queryClient.getQueryData<CalendarOverview>(calendarOverviewKey);
+      const overview = await propertyIcalApi.getCalendarOverview();
+      if (overviewSyncEnded(previous, overview)) void queryClient.invalidateQueries({ queryKey: BOOKING_CALENDAR_KEY });
+      return overview;
+    },
+    refetchOnMount: 'always',
+    refetchInterval: (query) => pollWhileSyncing(query, isOverviewSyncing(query.state.data), Date.now()),
+  });
+}
+
+function markFeedSyncing(overview: CalendarOverview, feedId: string): CalendarOverview {
+  return {
+    ...overview,
+    properties: overview.properties.map((property) => ({
+      ...property,
+      feeds: property.feeds.map((feed) =>
+        feed.feedId === feedId ? { ...feed, syncing: true, lastImportStatus: 'Syncing' as const } : feed,
+      ),
+    })),
+  };
+}
+
+/**
+ * "Sync now" of one feed from the overview: the answer puts the row in "Syncing" at once, which starts the polling of the page, and
+ * replaces the feed in the list of the property's own tab, if that was read (as the sync of that tab does). Errors: toast here (the
+ * row stays as it was).
+ */
+export function useSyncCalendarFeed() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ propertyId, feedId }: { propertyId: string; feedId: string }) => propertyIcalApi.syncFeed(propertyId, feedId),
+    onSuccess: (feed, { propertyId, feedId }) => {
+      queryClient.setQueryData<CalendarOverview>(calendarOverviewKey, (overview) => overview && markFeedSyncing(overview, feedId));
+      queryClient.setQueryData<PropertyIcalFeed[]>(propertyIcalFeedsKey(propertyId), (feeds) =>
+        feeds?.map((current) => (current.id === feed.id ? { ...current, ...feed } : current)),
+      );
+      toast.success(i18n.t('ical.syncStarted'));
+    },
+    onError: (error) => {
+      // 404 `ical_feed_not_found`: the feed was removed meanwhile (another tab, another user): show the page as it is now.
+      if (getHttpStatus(error) === 404) void queryClient.invalidateQueries({ queryKey: calendarOverviewKey });
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('ical.feedSyncFailed'));
+    },
   });
 }
 

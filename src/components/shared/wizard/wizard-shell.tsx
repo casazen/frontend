@@ -5,10 +5,10 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import {
   FormProvider,
   useForm,
+  useWatch,
   type DefaultValues,
   type FieldErrors,
   type FieldValues,
-  type Path,
   type Resolver,
   type UseFormReturn,
 } from "react-hook-form";
@@ -184,9 +184,10 @@ const BUTTON = "h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leadi
  * Going forward needs the step to be valid (the focus goes to the first problem and it is announced); going back never
  * does; the last button checks all the steps and opens the first one that is not valid.
  *
- * Put it in a block that has a width of its own: `mx-auto w-full max-w-2xl`, and not `mx-auto max-w-2xl` alone. In a flex
- * column (the content of the shell is one) a centered block takes the width of its content, and the buttons, which reach the
- * edges of the screen on a phone, would stick out of it.
+ * Put it in a block that has a width of its own: `FOCUS_COLUMN` (`@/components/layout/page-columns`: `w-full`, `max-w-4xl`, from the
+ * left edge of the title above it), and not `mx-auto max-w-2xl` alone. In a flex column (the content of the shell is one) a
+ * centered block takes the width of its content, and the buttons, which reach the edges of the screen on a phone, would stick
+ * out of it.
  *
  *     <WizardShell id="property-new" steps={steps} defaultValues={defaults} finishLabel={t("...")}
  *       onFinish={createProperty} renderDone={({ result }) => <WizardDone ... />} />
@@ -237,7 +238,6 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
 
   // The step where a "Continue" failed, and a counter that asks for the focus to go to the first problem.
   const [failedStepId, setFailedStepId] = React.useState<string | null>(null);
-  const failedStepIdRef = React.useRef<string | null>(null);
   const [focusRequest, setFocusRequest] = React.useState(0);
 
   // The rules of the step on screen. The resolver always reads the latest step, so one form serves every step.
@@ -246,7 +246,6 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   React.useEffect(() => {
     stepRef.current = step;
     stepIdRef.current = step.id;
-    failedStepIdRef.current = failedStepId;
   });
   const resolver = React.useCallback<Resolver<TValues>>(async (values, context, options) => {
     const schema = stepRef.current.schema;
@@ -255,6 +254,15 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   }, []);
   const form = useForm<TValues>({ defaultValues: initialValues, resolver, mode: "onTouched", shouldUnregister: false });
   const problems = collectProblems(form.formState.errors);
+  // compute compares snapshots: validation notifications must not look like new answers
+  // (including steps whose fields use setValue without register).
+  const values = useWatch({ control: form.control, compute: (answers) => answers });
+
+  // Revalidate after React commits the changed answers, outside RHF's watch notification.
+  // A summary can render before passive effects run: do not gate this on an effect-synced ref.
+  React.useEffect(() => {
+    if (failedStepId === step.id) void form.trigger();
+  }, [values, failedStepId, step.id, form]);
 
   const [busy, setBusy] = React.useState(false);
   const [finishError, setFinishError] = React.useState<unknown>(null);
@@ -301,21 +309,13 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     return () => setMobilePrimaryVisible(false);
   }, [isDone, setMobilePrimaryVisible]);
 
-  // Every change of an answer is queued for the draft, with the step it was made on; and once a "Continue" has failed, the
-  // field that changed is checked again, so its problem goes away as soon as the person fixes it (and not on the next blur).
+  // Every change of an answer is queued for the draft, with the step it was made on.
   const saveDraft = draft.save;
   React.useEffect(() => {
     const { unsubscribe } = form.watch((values, info) => {
       // `name` is the field that changed: the form opening, or a refresh of its state, is not something to keep.
       if (!info.name) return;
       if (draftOn) saveDraft({ step: stepIdRef.current, values: values as Record<string, unknown> });
-      if (failedStepIdRef.current === stepIdRef.current) {
-        // trigger() from inside the watch callback can skip the formState update (RHF re-entrancy); run it after this tick.
-        const field = info.name as Path<TValues>;
-        queueMicrotask(() => {
-          void form.trigger(field);
-        });
-      }
     });
     return unsubscribe;
   }, [form, draftOn, saveDraft]);

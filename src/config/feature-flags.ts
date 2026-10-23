@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'uiRedesign';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -27,12 +27,11 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   eSignProvider: false,
   /**
-   * UI-01 / D8: the redesign (design tokens, area accents, Inter), off. Read by `UiVersionSync`, which sets
-   * `html[data-ui='v2']`. The backend flag `UiRedesign` is added by task BL-01: until the API sends the key (and in every
-   * environment that does not know it) it is off. `localStorage['casazen:ui'] === 'v2'` and `VITE_UI_V2=true` turn it on
-   * without the backend, for QA and for a build (`src/lib/ui-version.ts`).
+   * SP-02 / D2: payment of a supplier's work inside CasaZen (backend `SupplierOnlinePayments`), off until the product owner turns it on.
+   * The page of the earnings ("Incassi", SP-16b) is behind it: its entry is in no menu and its route goes to the home of the area while
+   * it is off. The payments account (SP-16c-b) does not read it: it asks the server, whose endpoints answer 404 while the flag is off.
    */
-  uiRedesign: false,
+  supplierOnlinePayments: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

@@ -35,12 +35,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: process.env.CI ? 'github' : 'html',
+  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'html',
 
   use: {
     // Prefer localhost over 127.0.0.1 so Auth0 callback URLs match the tenant allowlist.
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 720 },
   },
 
@@ -189,7 +190,9 @@ export default defineConfig({
         timeout: 180_000,
         env: {
           VITE_HTTPS: '0',
-          VITE_API_BASE_URL:
+          // The staging API allows deployed origins; proxy local UI calls to the same real backend.
+          VITE_API_BASE_URL: '/api',
+          E2E_API_PROXY_TARGET:
             process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api',
           VITE_AUTH0_DOMAIN: requiredAuth0Env('VITE_AUTH0_DOMAIN'),
           VITE_AUTH0_CLIENT_ID: requiredAuth0Env('VITE_AUTH0_CLIENT_ID'),

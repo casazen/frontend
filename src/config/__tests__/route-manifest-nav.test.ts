@@ -20,6 +20,7 @@ import {
 import type { FeatureFlags } from '../feature-flags';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { NAV_ICONS } from '@/lib/nav-icons';
+import { resolveActiveNavEntry } from '@/lib/nav-active';
 import { planPagePath, billingPagePath } from '@/lib/billing-routes';
 
 const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'admin'];
@@ -77,6 +78,9 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/short-rent/compliance',
       '/app/short-rent/payments/revenue',
       '/app/short-rent/fiscal',
+      '/app/short-rent/reports',
+      '/app/short-rent/reviews',
+      '/app/short-rent/channels',
       '/app/short-rent/profile',
       '/app/short-rent/settings/payments',
       '/app/short-rent/settings/domain',
@@ -100,11 +104,16 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/long-rent/settings/invitations',
     ]);
 
+    // The menu of the supplier is built page by page up to seven entries (Home, Richieste, Agenda e disponibilità, Servizi e
+    // prezzi, Il mio sito vetrina, Clienti, Impostazioni, SP-D1): each task adds its own, the ceiling above keeps the count.
     expect(paths(getPrimaryNavEntries('supplier', allowAll))).toEqual([
       '/app/supplier/dashboard',
       '/app/supplier/inbox',
       '/app/supplier/availability',
+      '/app/supplier/services',
       '/app/supplier/showcase',
+      '/app/supplier/clients',
+      '/app/supplier/settings',
     ]);
     expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual([
       '/app/supplier/profile',
@@ -224,6 +233,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       ['/app/admin/compliance/tax-rates', '/app/admin/cin'],
       ['/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
       ['/app/supplier/calendar', '/app/supplier/availability'],
+      ['/app/supplier/earnings', '/app/supplier/settings'],
     ]);
   });
 
@@ -517,6 +527,7 @@ describe('route-manifest nav helpers', () => {
       '/app/long-rent/properties/new',
       '/app/long-rent/properties/:id',
       '/app/long-rent/properties/:id/edit',
+      '/app/long-rent/properties/:id/mode',
     ]);
     for (const entry of propertyRoutes) {
       expect(entry.context).toBe('long-rent');
@@ -565,16 +576,75 @@ describe('route-manifest nav helpers', () => {
     expect(entry?.context).toBe('supplier');
     expect(entry?.navKey).toBe('nav.supplierHelpIcal');
 
-    expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual(['/app/supplier/profile', '/app/supplier/help/ical']);
+    expect(paths(getSecondaryNavEntries('supplier', allowAll))).toEqual([
+      '/app/supplier/profile',
+      '/app/supplier/help/ical',
+    ]);
     expect(paths(getContextNav('supplier', allowAll, {}, { withoutBottom: true }).more)).toContain('/app/supplier/help/ical');
   });
 
-  // SU-13 (A4-16): the preview of the public showcase is a destination of the supplier bar.
-  it('puts the showcase preview among the main entries of the supplier console', () => {
+  // SU-13 (A4-16): the preview of the public showcase is a main entry of the supplier menu. Since SP-06 (SP-D11) it is no longer
+  // one of the four places of the phone bar: that is where the catalog of services is, and the showcase is in "Altro".
+  it('puts the showcase preview among the main entries of the supplier console, after the services', () => {
     const entry = ROUTE_MANIFEST.find((e) => e.path === '/app/supplier/showcase');
     expect(entry?.context).toBe('supplier');
     expect(entry?.navKey).toBe('nav.supplierShowcase');
     expect(entry?.navPlacement).toBe('primary');
+    expect(entry?.navOrder).toBe(5);
+    expect(entry?.navBottom).toBeUndefined();
+  });
+
+  // SP-06 (SP-D1, SP-D11): "Servizi e prezzi" is the fourth entry of the menu and the fourth place of the bar of the phone.
+  it('puts the catalog of services in the fourth place of the supplier menu and of the phone bar', () => {
+    const entry = entryOf('/app/supplier/services');
+    expect(entry.context).toBe('supplier');
+    expect(entry.navKey).toBe('nav.supplierServices');
+    expect(entry.navGroup).toBe('activity');
+    expect(entry.navPlacement).toBe('primary');
+    expect(entry.navOrder).toBe(4);
+    expect(entry.navBottom).toBe(4);
+    expect(entry.requiredPermissions).toEqual([]);
+    expect(entry.featureFlag).toBeUndefined();
+
+    expect(paths(getBottomNavEntries('supplier', allowAll))).toEqual([
+      '/app/supplier/dashboard',
+      '/app/supplier/inbox',
+      '/app/supplier/availability',
+      '/app/supplier/services',
+    ]);
+    // On the phone the showcase, the customers and the settings are reached through "Altro", with the rest of the menu.
+    const phoneMenu = getContextNav('supplier', allowAll, {}, { withoutBottom: true });
+    expect(paths(phoneMenu.sections.flatMap((section) => section.entries))).toEqual([
+      '/app/supplier/showcase',
+      '/app/supplier/clients',
+      '/app/supplier/settings',
+    ]);
+  });
+
+  // A shorter name on the bar is for an entry of the bar, and never for one with a counter (name and counter are read together).
+  it('gives a short name for the bar only to entries that are on the bar and have no counter', () => {
+    const withShortName = ROUTE_MANIFEST.filter((entry) => entry.navBarKey);
+
+    expect(withShortName.map((entry) => entry.path)).toEqual(['/app/supplier/services']);
+    for (const entry of withShortName) {
+      expect(entry.navBottom, entry.path).toBeDefined();
+      expect(entry.navCount, entry.path).toBeUndefined();
+    }
+  });
+
+  it('keeps the creation and the page of a service out of the menus: the entry of the catalog stands for them', () => {
+    for (const path of ['/app/supplier/services/new', '/app/supplier/services/:id']) {
+      const entry = entryOf(path);
+      expect(entry.context, path).toBe('supplier');
+      expect(entry.navPlacement, path).toBeUndefined();
+      expect(entry.navParent, path).toBeUndefined();
+      expect(entry.legacyPaths, path).toBeUndefined();
+    }
+    expect(paths(getVisibleNavEntries('supplier', allowAll))).not.toContain('/app/supplier/services/new');
+    const entries = getNavMatchEntries('supplier', allowAll);
+    for (const pathname of ['/app/supplier/services', '/app/supplier/services/new', '/app/supplier/services/6f1c9a52-1111-4222-8333-944455556666']) {
+      expect(resolveActiveNavEntry(pathname, entries)?.path, pathname).toBe('/app/supplier/services');
+    }
   });
 
   it('lets the iCal calendar of the supplier hang from the availability', () => {

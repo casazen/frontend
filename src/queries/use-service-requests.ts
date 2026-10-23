@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
+  cancelServiceRequest,
   completeServiceRequest,
   createLongRentServiceRequest,
   createServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
+  fetchMarketplaceSuppliers,
   fetchServiceRequests,
   fetchSuppliersByProperty,
   markLongRentServiceRequestPaid,
@@ -12,15 +14,19 @@ import {
   rejectServiceRequest,
   takeServiceRequest,
 } from '@/api/service-requests.api';
-import type { CreateLongRentServiceRequestDto, CreateServiceRequestDto } from '@/types/service-request';
+import type {
+  CreateLongRentServiceRequestDto,
+  CreateServiceRequestDto,
+  SupplierPickerSort,
+} from '@/types/service-request';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 
 const SERVICE_REQUESTS_KEY = 'service-requests';
-/** Supplier dashboard KPIs (every period): a supplier transition changes them (SU-11). */
-const SUPPLIER_KPIS_KEY = ['supplier', 'dashboard', 'kpis'];
+/** What the dashboard reads about the work (the KPIs of every period, the three numbers of the home): a supplier transition changes it (SU-11). */
+const SUPPLIER_DASHBOARD_KEY = ['supplier', 'dashboard'];
 
 /** 422 code of a supplier action refused because the supplier is suspended or not active (SU-12). */
 const SUPPLIER_NOT_ACTIVE_CODE = 'service_request_supplier_not_active';
@@ -80,6 +86,28 @@ export function useSuppliersByProperty(propertyId?: string, category?: string) {
   });
 }
 
+/**
+ * The suppliers of the marketplace for a property (SR-09a): `q` and `sort` are answered by the server, which also sends each
+ * supplier's services, "from" price, measured response time and «Verificato». While the words change the list that was there stays
+ * (for the same property only: another property's suppliers are never shown as this one's). Read again when the page is opened and
+ * the answer is older than the stale time: the suppliers of a comune change when one is activated or changes its prices.
+ */
+export function useMarketplaceSuppliers(params: {
+  propertyId?: string;
+  category?: string;
+  q?: string;
+  sort?: SupplierPickerSort;
+}) {
+  const { propertyId, category, q, sort } = params;
+  return useQuery({
+    queryKey: ['suppliers', 'marketplace', propertyId, category ?? '', q ?? '', sort ?? 'name'],
+    queryFn: () => fetchMarketplaceSuppliers({ propertyId: propertyId!, category, q, sort }),
+    enabled: !!propertyId,
+    refetchOnMount: true,
+    placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[2] === propertyId ? previous : undefined),
+  });
+}
+
 export function useCreateServiceRequest() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -113,7 +141,7 @@ export function useTakeServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.taken'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
@@ -127,7 +155,7 @@ export function useCompleteServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.completed'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
@@ -141,8 +169,23 @@ export function useRejectServiceRequest() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
       queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
-      queryClient.invalidateQueries({ queryKey: SUPPLIER_KPIS_KEY });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
       toast.success(i18n.t('serviceRequest.rejected'));
+    },
+    onError: (error) => onSupplierActionError(queryClient, error),
+  });
+}
+
+/** The supplier cancels a job it took (before it starts), with the reason the other party sees. */
+export function useCancelServiceRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => cancelServiceRequest(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: ['supplier', 'inbox'] });
+      queryClient.invalidateQueries({ queryKey: SUPPLIER_DASHBOARD_KEY });
+      toast.success(i18n.t('supplier.requests.cancel.done'));
     },
     onError: (error) => onSupplierActionError(queryClient, error),
   });

@@ -13,7 +13,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { keepKnownCategories } from '@/lib/service-categories';
 import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import { useServiceCategories } from '@/queries/use-service-categories';
-import { useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
+import { useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/supplier/use-profile';
 import type { SupplierProfile } from '@/types/supplier';
 
 export const MAX_SUPPLIER_PHOTOS = 10;

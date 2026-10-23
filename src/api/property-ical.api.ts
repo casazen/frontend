@@ -1,5 +1,6 @@
 import { ApiClient } from './client';
 import type {
+  CalendarOverview,
   PropertyIcalExportUrl,
   PropertyIcalFeed,
   PropertyIcalFeedCreateRequest,
@@ -7,6 +8,9 @@ import type {
 } from '@/types/property-ical';
 
 export const propertyIcalApi = {
+  /** The calendars of every active short-rent property of the caller in one read (SR-10b). */
+  getCalendarOverview: () => ApiClient.get<CalendarOverview>('/properties/calendar-overview'),
+
   getStatus: (propertyId: string) =>
     ApiClient.get<PropertyIcalStatus>(`/properties/${propertyId}/ical/status`),
 

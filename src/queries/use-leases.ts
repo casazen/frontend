@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { leasesApi } from '@/api/leases.api';
+import { leasesApi, type LeaseListParams } from '@/api/leases.api';
 import type {
   CedolareAdvisoryInput,
   CreateLeaseDto,
@@ -14,10 +14,23 @@ import { isRliRegistrationInProgress } from '@/lib/rli-registration-state';
 
 const LEASES_KEY = 'leases';
 
-export function useLeases(params?: { propertyId?: string; status?: string }) {
+/**
+ * The leases of the org, narrowed by the server (`view`, `q`, `propertyId`). `keepPrevious`: while another view or search
+ * loads, the rows of the last one stay on the screen (the list of leases does this). `refetchOnMount`: a list that other
+ * screens change (a lease created, registered or paid) has to ask again when it is opened (`'always'`: even if it is not stale).
+ * `enabled`: not for who may not read leases (a 403 on a read sends the person to the page of no access).
+ */
+export function useLeases(
+  params?: LeaseListParams,
+  options: { keepPrevious?: boolean; refetchOnMount?: boolean | 'always'; enabled?: boolean } = {},
+) {
+  const { keepPrevious = false, refetchOnMount, enabled } = options;
   return useQuery({
     queryKey: [LEASES_KEY, params],
     queryFn: () => leasesApi.getAll(params),
+    placeholderData: keepPrevious ? keepPreviousData : undefined,
+    refetchOnMount,
+    enabled,
   });
 }
 

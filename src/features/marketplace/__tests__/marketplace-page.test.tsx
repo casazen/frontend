@@ -4,12 +4,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import type { Property } from '@/types';
 import type { ServiceRequest } from '@/types/service-request';
 import { MarketplacePage } from '../marketplace-page';
 
 const api = vi.hoisted(() => ({
   fetchServiceRequests: vi.fn(),
   fetchSuppliersByProperty: vi.fn(),
+  fetchMarketplaceSuppliers: vi.fn(),
   markServiceRequestPaid: vi.fn(),
   fetchServiceCategories: vi.fn(),
   getProperties: vi.fn(),
@@ -23,6 +25,7 @@ vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: api.fet
 vi.mock('@/api/service-requests.api', () => ({
   fetchServiceRequests: api.fetchServiceRequests,
   fetchSuppliersByProperty: api.fetchSuppliersByProperty,
+  fetchMarketplaceSuppliers: api.fetchMarketplaceSuppliers,
   markServiceRequestPaid: api.markServiceRequestPaid,
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: api.getProperties } }));
@@ -31,6 +34,15 @@ vi.mock('@/hooks/use-workspace', () => ({
     hasPermission: (context: string, permission: string) => workspace.permissions.has(`${context}:${permission}`),
   }),
 }));
+
+// The marketplace is about one property: the requests below are the ones sent for it.
+const PROPERTY = {
+  id: 'prop-1',
+  name: 'Villa Rosa',
+  comuneIstatCode: '058091',
+  complianceStatus: 'Active',
+  isPaused: false,
+} as Property;
 
 const REJECTED: ServiceRequest = {
   id: 'sr-rejected',
@@ -84,8 +96,9 @@ describe('MarketplacePage requests (SU-09, A4-28)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     workspace.permissions = new Set(['short-rent:property.read', 'short-rent:property.write']);
-    api.getProperties.mockResolvedValue([]);
+    api.getProperties.mockResolvedValue([PROPERTY]);
     api.fetchSuppliersByProperty.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
+    api.fetchMarketplaceSuppliers.mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 0 });
     api.fetchServiceCategories.mockResolvedValue(['cleaning']);
     api.fetchServiceRequests.mockResolvedValue({ items: [REJECTED, COMPLETED], total: 2, page: 1, pageSize: 50 });
     api.markServiceRequestPaid.mockResolvedValue({ ...COMPLETED, status: 'Pagato' });

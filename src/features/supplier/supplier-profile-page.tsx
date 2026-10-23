@@ -1,466 +1,69 @@
-import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
-import { LoadingScreen } from '@/components/shared/loading-screen';
-import { useSupplierProfile, useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/use-supplier';
-import { Pencil, Check, X, Upload, Trash2, ImageIcon, Eye } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { displayableMediaUrls } from '@/lib/media-url';
-import { getServiceCategoryLabel, getSupplierStatusLabel } from '@/lib/i18n-labels';
-import { ServiceCategoryPicker } from '@/features/service-requests/components/service-category-picker';
-import { useServiceCategories } from '@/queries/use-service-categories';
-import { keepKnownCategories } from '@/lib/service-categories';
-import { getProblemMessage } from '@/lib/api-errors';
-import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
-import { SupplierWorkingHoursCard } from '@/features/supplier/components/supplier-working-hours-card';
-import { useComuneDatasetStatus } from '@/queries/use-comuni';
-import { comuneLabel } from '@/lib/comune-label';
-import type { SupplierProfile } from '@/types/supplier';
+import { SkeletonLine } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { useSupplierActivation, useSupplierProfile } from '@/queries/supplier/use-profile';
+import { useSupplierHours } from '@/queries/supplier/use-calendar';
+import { ProfileFocus } from './profile/profile-focus';
+import { ProfileForm } from './profile/profile-form';
+import { focusHoursSection } from './profile/hours-section';
+import { ProfileHours } from './profile/profile-hours';
+import { ProfilePayments } from './profile/profile-payments';
+import { ProfilePhotos } from './profile/profile-photos';
 
-/** The comuni of a profile as the form edits them: the ISTAT ones chosen from the list, and the text not covered by them. */
-function comuniValueOf(profile: SupplierProfile): SupplierComuniValue {
-  const istatCodes = profile.comuneIstatCodes ?? [];
-  return { istatCodes, legacy: (profile.comuni ?? []).filter((entry) => !istatCodes.includes(entry)) };
-}
-
-const MAX_PHOTOS = 10;
-
+/**
+ * The profile of the supplier (SU-04, restyle SP-16c): where the profile stands and the one thing left to make it fully active
+ * (the one highlighted block), then the data of the business, what it does and where, the presentation, the photos and the working
+ * hours, each part with its own save and no box around it, and at the end the way to the payments account (SP-16c-b). The same endpoints
+ * and rules as before; what has no endpoint yet (notifications, automatic acceptance, the "Verificato" checklist) is not here.
+ */
 export function SupplierProfilePage() {
   const { t } = useTranslation();
   const { data: profile, isLoading, isError, error, refetch } = useSupplierProfile();
-  const updateProfile = useUpdateSupplierProfile();
-  const uploadPhotos = useUploadSupplierPhotos();
-  const { data: categoryCodes } = useServiceCategories();
+  const activation = useSupplierActivation();
+  const hours = useSupplierHours();
 
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  // Editable fields
-  const [legalName, setLegalName] = useState('');
-  const [vatNumber, setVatNumber] = useState('');
-  const [phone, setPhone] = useState('');
-  const [categories, setCategories] = useState<string[]>([]);
-  const [comuni, setComuni] = useState<SupplierComuniValue>({ istatCodes: [], legacy: [] });
-  const comuneStatus = useComuneDatasetStatus();
-  const comuneListAvailable = comuneStatus.data?.datasetAvailable === true;
-  const [bio, setBio] = useState('');
-
-  // Photo management
-  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
-  const [newPhotoFiles, setNewPhotoFiles] = useState<File[]>([]);
-  const [newPhotoPreviews, setNewPhotoPreviews] = useState<string[]>([]);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const hydrate = () => {
-    if (!profile) return;
-    setLegalName(profile.legalName ?? '');
-    setVatNumber(profile.vatNumber ?? '');
-    setPhone(profile.phone ?? '');
-    setCategories(profile.categories ?? []);
-    setComuni(comuniValueOf(profile));
-    setBio(profile.bio ?? '');
-    setExistingPhotos(profile.photoUrls ?? []);
-    setNewPhotoFiles([]);
-    setNewPhotoPreviews([]);
-  };
-
-  // Re-hydrate the form whenever the server profile (re)loads (adjusting state during render).
-  const [hydratedProfile, setHydratedProfile] = useState<typeof profile>(undefined);
-  if (profile !== hydratedProfile) {
-    setHydratedProfile(profile);
-    hydrate();
-  }
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
-
-    const totalPhotos = existingPhotos.length + newPhotoPreviews.length + files.length;
-    if (totalPhotos > MAX_PHOTOS) {
-      toast.error(t('supplier.maxPhotosError', { max: MAX_PHOTOS }));
-      return;
-    }
-
-    setNewPhotoFiles((prev) => [...prev, ...files]);
-    const previews = files.map((f) => URL.createObjectURL(f));
-    setNewPhotoPreviews((prev) => [...prev, ...previews]);
-    // Reset input so same file can be re-selected
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeExistingPhoto = (index: number) => {
-    setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const removeNewPhoto = (index: number) => {
-    URL.revokeObjectURL(newPhotoPreviews[index]);
-    setNewPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
-    setNewPhotoFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleUploadNewPhotos = async () => {
-    if (newPhotoFiles.length === 0) return;
-    setUploadingPhotos(true);
-    try {
-      const result = await uploadPhotos.mutateAsync(newPhotoFiles);
-      setExistingPhotos(result.urls ?? []);
-      newPhotoPreviews.forEach((url) => URL.revokeObjectURL(url));
-      setNewPhotoFiles([]);
-      setNewPhotoPreviews([]);
-      toast.success(t('supplier.photosUploaded'));
-    } catch {
-      toast.error(t('supplier.photosUploadError'));
-    } finally {
-      setUploadingPhotos(false);
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    setSaving(true);
-    try {
-      await updateProfile.mutateAsync({
-        legalName: legalName.trim() || undefined,
-        vatNumber: vatNumber.trim(),
-        phone: phone.trim() || undefined,
-        categories: keepKnownCategories(categories, categoryCodes),
-        comuni: comuni.legacy,
-        // Only while the official list is imported: the API refuses ISTAT codes otherwise and leaves the stored ones as they are.
-        ...(comuneListAvailable ? { comuneIstatCodes: comuni.istatCodes } : {}),
-        bio: bio.trim(),
-        photoUrls: existingPhotos,
-      });
-      toast.success(t('supplier.progressSaved'));
-      setEditing(false);
-    } catch (error) {
-      toast.error(getProblemMessage(error, t) ?? t('supplier.progressSaveError'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // An API error is not an endless spinner (SU-06, A4-25): say it failed and offer a retry.
-  if (isError) {
+  // An API error is not an endless spinner (SU-06, A4-25): say it failed and offer a retry. A refresh that fails under a profile that
+  // is already on screen leaves the page as it is: what was typed in it must not be lost.
+  if (isError && !profile) {
     return (
-      <div className="space-y-6">
-        <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} />
-        <ErrorState
-          testId="supplier-profile-error"
-          title={t('supplier.profileLoadError')}
-          error={error}
-          onRetry={() => void refetch()}
-        />
+      <div className="w-full min-w-0 space-y-6">
+        <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
+        <ErrorState testId="supplier-profile-error" title={t('supplier.profileLoadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
   }
 
   if (isLoading || !profile) {
-    return <LoadingScreen message={t('supplier.profileLoading')} className="h-auto flex-1" />;
+    return (
+      <div className="w-full min-w-0 space-y-6" data-testid="supplier-profile-loading" aria-busy="true">
+        <PageHeader title={t('supplier.profileTitle')} crumbs="auto" />
+        <SkeletonLine lines={8} label={t('supplier.profileLoading')} />
+      </div>
+    );
   }
 
-  const hasPendingPhotos = newPhotoPreviews.length > 0;
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} />
-        {!editing && (
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link to="/app/supplier/showcase" data-testid="supplier-showcase-preview-link">
-                <Eye className="mr-1 h-4 w-4" /> {t('supplier.showcase.previewLink')}
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => { hydrate(); setEditing(true); }}>
-              <Pencil className="mr-1 h-4 w-4" /> {t('supplier.editProfile')}
-            </Button>
-          </div>
-        )}
+    <div className="w-full min-w-0 space-y-8" data-testid="supplier-profile-page">
+      <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
+      <ProfileFocus
+        profile={profile}
+        activation={activation.data}
+        hoursConfigured={hours.data ? hours.data.days.some((day) => day.bands.length > 0) : undefined}
+        settled={!activation.isPending && !hours.isPending}
+        onSetHours={focusHoursSection}
+      />
+      {/* The data of the business on the left, the photos, the hours and the payments account on the right (under each other on a narrow screen). */}
+      <div className={cn(PAGE_COLUMNS_WIDE, 'gap-8')}>
+        <ProfileForm profile={profile} />
+        <div className="min-w-0 space-y-8">
+          <ProfilePhotos profile={profile} />
+          <ProfileHours />
+          <ProfilePayments />
+        </div>
       </div>
-
-      {editing ? (
-        <div className="space-y-6">
-          {/* Info Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.companyInfo')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label>{t('supplier.companyName')}</Label>
-                  <Input value={legalName} onChange={(e) => setLegalName(e.target.value)}
-                         placeholder={t('supplier.placeholders.companyName')} className="mt-1" />
-                </div>
-                <div>
-                  <Label>{t('supplier.vatNumber')}</Label>
-                  <Input value={vatNumber} onChange={(e) => setVatNumber(e.target.value)}
-                         placeholder={t('supplier.placeholders.vatNumber')} className="mt-1" />
-                </div>
-                <div>
-                  <Label>{t('supplier.phone')}</Label>
-                  <Input value={phone} onChange={(e) => setPhone(e.target.value)}
-                         placeholder={t('supplier.placeholders.phone')} className="mt-1" />
-                </div>
-                <div>
-                  <Label>{t('supplier.status')}</Label>
-                  <Input value={getSupplierStatusLabel(profile.status, t)} disabled className="mt-1 opacity-60" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Categories & Comuni */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.categoriesAndComuni')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>{t('supplier.serviceCategories')}</Label>
-                <div className="mt-2">
-                  <ServiceCategoryPicker value={categories} onChange={setCategories} disabled={saving} />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="supplier-comuni">{t('supplier.operatingMunicipalities')}</Label>
-                <div className="mt-1">
-                  <SupplierComuniField
-                    id="supplier-comuni"
-                    value={comuni}
-                    known={profile.operatingComuni}
-                    onChange={setComuni}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Bio */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.professionalProfile')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)}
-                        className="mt-1 min-h-24 w-full rounded-md border px-3 py-2 text-sm"
-                        placeholder={t('supplier.describeServicesPlaceholder')} />
-            </CardContent>
-          </Card>
-
-          {/* Photos Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.photoGallery')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Existing photos */}
-              {existingPhotos.length > 0 && (
-                <div>
-                  <Label>{t('supplier.currentPhotos')}</Label>
-                  <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {existingPhotos.map((url, i) => (
-                      <div key={i} className="group relative aspect-square rounded-lg overflow-hidden border">
-                        <img src={url} alt="" className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white opacity-0 group-hover:opacity-100 transition"
-                          onClick={() => removeExistingPhoto(i)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* New photo previews */}
-              {hasPendingPhotos && (
-                <div>
-                  <Label>{t('supplier.newPhotos')}</Label>
-                  <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {newPhotoPreviews.map((preview, i) => (
-                      <div key={i} className="group relative aspect-square rounded-lg overflow-hidden border-2 border-primary/30">
-                        <img src={preview} alt="" className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white opacity-0 group-hover:opacity-100 transition"
-                          onClick={() => removeNewPhoto(i)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Upload area */}
-              <div className="flex items-center gap-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}
-                        disabled={existingPhotos.length + newPhotoPreviews.length >= MAX_PHOTOS}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t('supplier.addPhotos')}
-                </Button>
-                {hasPendingPhotos && (
-                  <Button type="button" variant="default" onClick={() => void handleUploadNewPhotos()}
-                          disabled={uploadingPhotos}>
-                    {uploadingPhotos ? t('shared.loading.defaultMessage') : t('supplier.uploadPhotos')}
-                  </Button>
-                )}
-                <span className="text-xs text-muted-foreground">
-                  {t('supplier.photoCount', { current: existingPhotos.length + newPhotoPreviews.length, max: MAX_PHOTOS })}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => { hydrate(); setEditing(false); }} disabled={saving || uploadingPhotos}>
-              <X className="mr-1 h-4 w-4" /> {t('shared.cancel')}
-            </Button>
-            <Button onClick={() => void handleSaveProfile()} disabled={saving || uploadingPhotos}>
-              <Check className="mr-1 h-4 w-4" /> {t('supplier.saveProfile')}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        /* View mode */
-        <div className="space-y-6">
-          {/* Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.companyInfo')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground">{t('supplier.companyName')}</span>
-                  <p className="mt-0.5">{profile.legalName || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground">{t('supplier.vatNumber')}</span>
-                  <p className="mt-0.5">{profile.vatNumber || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground">{t('supplier.phone')}</span>
-                  <p className="mt-0.5">{profile.phone || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground">{t('supplier.email')}</span>
-                  <p className="mt-0.5">{profile.email || '—'}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground">{t('supplier.status')}</span>
-                  <p className="mt-0.5">
-                    <span className={profile.status === 'Active' ? 'text-green-600 font-medium' : 'text-amber-600'}>
-                      {getSupplierStatusLabel(profile.status, t)}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Categories & Comuni */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.categoriesAndComuni')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-muted-foreground">{t('supplier.categories')}</span>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {(profile.categories ?? []).length > 0
-                    ? profile.categories!.map((c) => (
-                        <span key={c} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                          {getServiceCategoryLabel(c, t)}
-                        </span>
-                      ))
-                    : <span className="text-sm text-muted-foreground">—</span>}
-                </div>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-muted-foreground">{t('supplier.municipalities')}</span>
-                <div className="mt-1 flex flex-wrap gap-1" data-testid="supplier-profile-comuni">
-                  {(() => {
-                    const value = comuniValueOf(profile);
-                    const described = new Map((profile.operatingComuni ?? []).map((comune) => [comune.istatCode, comune]));
-                    const names = [
-                      ...value.istatCodes.map((code) => {
-                        const comune = described.get(code);
-                        return { key: code, label: comune ? comuneLabel(comune) : t('supplier.comuni.codeOnly', { code }) };
-                      }),
-                      ...value.legacy.map((entry) => ({ key: `text-${entry}`, label: entry })),
-                    ];
-                    return names.length > 0
-                      ? names.map(({ key, label }) => (
-                          <span key={key} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
-                            {label}
-                          </span>
-                        ))
-                      : <span className="text-sm text-muted-foreground">—</span>;
-                  })()}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Bio */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.bio')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {profile.bio
-                ? <p className="text-sm whitespace-pre-line">{profile.bio}</p>
-                : <p className="text-sm text-muted-foreground">{t('supplier.bioEmpty')}</p>}
-            </CardContent>
-          </Card>
-
-          {/* Photo Gallery */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('supplier.photoGallery')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {displayableMediaUrls(profile.photoUrls).length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {displayableMediaUrls(profile.photoUrls).map((url, i) => (
-                    <div key={i} className="aspect-square rounded-lg overflow-hidden border">
-                      <img src={url} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
-                  <ImageIcon className="h-8 w-8" />
-                  <p className="text-sm">{t('supplier.noPhotos')}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <SupplierWorkingHoursCard />
     </div>
   );
 }

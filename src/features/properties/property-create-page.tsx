@@ -5,6 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { toast } from 'sonner';
 import { PropertyForm } from './components/property-form';
 import { QuickPropertyForm } from './components/quick-property-form';
@@ -24,7 +25,7 @@ export function PropertyCreatePage() {
   // First property of a new host (`?first=1`, set by the onboarding): the short form, then the checklist asks the rest.
   const [searchParams] = useSearchParams();
   const quick = searchParams.get('first') === '1';
-  const createProperty = useCreateProperty();
+  const createProperty = useCreateProperty('Short');
   const queryClient = useQueryClient();
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);
@@ -56,7 +57,7 @@ export function PropertyCreatePage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title={quick ? t('property.quick.title') : t('property.create.title')}
           description={quick ? t('property.quick.description') : t('property.create.description')}
@@ -79,13 +80,15 @@ export function PropertyCreatePage() {
         )}
 
         {quick ? (
-          <QuickPropertyForm
-            variant="short-rent"
-            onSubmit={handleSubmit}
-            isLoading={createProperty.isPending}
-            disabled={blockedByPlan}
-            onFullForm={() => navigate('/app/short-rent/properties/create')}
-          />
+          <div className={FOCUS_COLUMN}>
+            <QuickPropertyForm
+              variant="short-rent"
+              onSubmit={handleSubmit}
+              isLoading={createProperty.isPending}
+              disabled={blockedByPlan}
+              onFullForm={() => navigate('/app/short-rent/properties/create')}
+            />
+          </div>
         ) : (
           <PropertyForm
             onSubmit={handleSubmit}

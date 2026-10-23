@@ -14,6 +14,7 @@ import {
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import {
   FISCAL_PERIOD_PRESETS,
+  fiscalReportFileName,
   fiscalYears,
   formatMonth,
   formatMoney,
@@ -40,12 +41,6 @@ const ESTIMATE_NOTE_KEYS: Record<FiscalTaxNote, string> = {
   impresa_not_computed: 'fiscal.reports.estimateNote.impresa',
   regime_not_assigned: 'fiscal.reports.estimateNote.noRegime',
   short_stay_threshold_exceeded: 'fiscal.reports.estimateNote.threshold',
-};
-
-const FILE_NAMES: Record<FiscalReportKind, string> = {
-  annual: 'casazen-redditi',
-  withholding: 'casazen-ritenute',
-  touristTax: 'casazen-tassa-soggiorno',
 };
 
 /** Test id prefix of the download buttons (the summary keeps the historical `fiscal-export-*`). */
@@ -77,7 +72,7 @@ export function FiscalReportsPage() {
     download.mutate(
       { kind, taxYear: year, period, format },
       {
-        onSuccess: (blob) => saveBlobAs(blob, `${FILE_NAMES[kind]}-${period.from}-${period.to}.${format}`),
+        onSuccess: (blob) => saveBlobAs(blob, fiscalReportFileName(kind, period, format)),
         onError: (err) => toast.error(getProblemMessage(err, t) ?? t('fiscal.reports.downloadFailed')),
       },
     );

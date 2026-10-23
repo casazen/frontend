@@ -61,22 +61,47 @@ export interface SupplierInboxResponse {
  */
 export type SupplierInboxStatus = 'open' | 'history' | 'all' | import('@/types/service-request').ServiceRequestStatus;
 
-/** Filters of the supplier inbox: `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request. */
+/**
+ * `tab` of `GET /supplier/inbox` (SP-04e): the console's own way to pick the requests, with its own order. `da-rispondere` still
+ * has to be answered, `in-attesa` waits for the customer, `programmate` is taken or in progress, `da-incassare` is completed and not
+ * paid, `archivio` is paid, rejected or cancelled.
+ */
+export type SupplierInboxTab = 'da-rispondere' | 'in-attesa' | 'programmate' | 'da-incassare' | 'archivio';
+
+/** `when` of `GET /supplier/inbox`: the day of the job is today, in the next 7 days or this month (Europe/Rome). */
+export type SupplierInboxWhen = 'oggi' | 'settimana' | 'mese';
+
+/**
+ * Filters of the supplier inbox: `tab` says which requests (and `status` is then ignored by the server); `q` is 2 to 60 characters;
+ * `from`/`to` are Europe/Rome days (`YYYY-MM-DD`) on the activity date of each request.
+ */
 export interface SupplierInboxParams {
-  status: SupplierInboxStatus;
+  status?: SupplierInboxStatus;
+  tab?: SupplierInboxTab;
+  q?: string;
+  when?: SupplierInboxWhen;
   from?: string;
   to?: string;
+  /** Only the requests of one customer (a host or a private customer of the showcase): the `id` of `GET /supplier/clients` (SP-16b). */
+  clientId?: string;
   page?: number;
   pageSize?: number;
+}
+
+/** `GET /supplier/inbox/counts` (SP-04e): the numbers of the tabs, computed with the same rules as the lists. */
+export interface SupplierInboxCounts {
+  toAnswer: number;
+  awaitingCustomer: number;
+  scheduled: number;
+  toCollect: number;
+  archive: number;
+  /** Payments asked for that are late and still owed. */
+  paymentsLate: number;
 }
 
 export interface UpdateAvailabilityEntry {
   date: string;
   available: boolean;
-}
-
-export interface SupplierAvailabilityResponse {
-  dates: UpdateAvailabilityEntry[];
 }
 
 /** Weekday names of `GET/PUT api/supplier/availability/hours` (Monday first). */
@@ -139,6 +164,16 @@ export interface SupplierAgendaRequest {
   endUtc?: string | null;
   status: string;
   category: string;
+  /** The service of the catalog the request is for, as it was when asked; null or missing: only the category (SP-03b). */
+  serviceName?: string | null;
+  /** Who asks, as the supplier may know it: "Nome C." until the request is taken, the full name after (SP-03b, D9). */
+  clientLabel?: string | null;
+  /** The comune of the work, as written; never the street. */
+  comune?: string | null;
+  /** `casazen` (a host asked) or `showcase` (a customer booked from the public page of the supplier). */
+  source?: string;
+  /** Where the request is in its life (`to_answer`, `scheduled`...): an open set. */
+  phase?: string;
 }
 
 /** `GET api/supplier/calendar`: hours, closed days, time off, blocks and requests for a range. */
@@ -151,6 +186,53 @@ export interface SupplierAgendaCalendar {
   timeOff: SupplierAgendaTimeOff[];
   blocks: SupplierAgendaBlock[];
   requests: SupplierAgendaRequest[];
+}
+
+/** How serious a conflict is: `danger` (the time cannot be kept as it is) or `warning` (the supplier may live with it). */
+export type SupplierConflictSeverity = 'danger' | 'warning';
+
+/**
+ * One conflict of a job (`GET api/supplier/calendar/conflicts`, SP-03b). `code` is one of `time_off`, `overlap`, `external`, `block`
+ * (danger) or `day_off`, `outside_hours`, `day_full`, `buffer` (warning); the texts are the frontend's, a code it does not know
+ * gets a neutral one. `otherRequestId` and `windowId` name the other request or window in the way, when there is one.
+ */
+export interface SupplierConflict {
+  code: string;
+  severity: string;
+  otherRequestId?: string | null;
+  windowId?: string | null;
+}
+
+/** A time to propose instead: the first free slot as long as the job. */
+export interface SupplierSuggestedSlot {
+  startUtc: string;
+  endUtc: string;
+}
+
+/** A job to come with something wrong. */
+export interface SupplierRequestConflicts {
+  requestId: string;
+  status: string;
+  /** The Europe/Rome day of the job. */
+  date: string;
+  startUtc: string;
+  endUtc: string;
+  /** The most serious first; at most one per code. */
+  conflicts: SupplierConflict[];
+  /** Only for a request still `Richiesto`, and only when a slot is free within 21 days. */
+  suggestedSlot?: SupplierSuggestedSlot | null;
+}
+
+export interface SupplierConflictsResponse {
+  from: string;
+  to: string;
+  timeZone: string;
+  /** The jobs that have at least one conflict, nearest first. */
+  items: SupplierRequestConflicts[];
+  total: number;
+  /** The range held more jobs than the check looks at: only the nearest `limit` were checked. */
+  truncated: boolean;
+  limit: number;
 }
 
 /**
@@ -218,6 +300,65 @@ export interface SupplierKpis {
   awaitingAcceptance: number;
   upcoming: number;
   totalRequests: number;
+}
+
+/**
+ * `GET /supplier/today?days=` (SP-04, SP-04e): the home of the console. `jobs` are the ones taken, in progress, completed or paid from
+ * `date` (today in Europe/Rome) to `dateTo`, the first in time first (at most 50, `jobsTotal` says how many there are); `newRequests` are
+ * the first new requests waiting for the answer, the one to answer first on top, and `newRequestsTotal` how many there are in all.
+ */
+export interface SupplierToday {
+  date: string;
+  dateTo?: string;
+  days?: number;
+  jobs: import('@/types/service-request').SupplierServiceRequest[];
+  jobsTotal?: number;
+  newRequests: import('@/types/service-request').SupplierServiceRequest[];
+  newRequestsTotal: number;
+}
+
+/** `period` of `GET /supplier/dashboard/overview` (SP-04e): Europe/Rome days, today at most. */
+export type SupplierOverviewPeriod = 'current-month' | 'last-30-days' | 'last-3-months';
+
+/** The figures of one period of the overview. One that does not exist (a rate when nobody was answered) is `null`, never 0. */
+export interface SupplierOverviewFigures {
+  from: string;
+  to: string;
+  received: number;
+  accepted: number;
+  rejected: number;
+  /** Accepted over accepted plus rejected, from 0 to 1. */
+  acceptanceRate: number | null;
+  /** Average minutes from the arrival of a request to its take. */
+  averageResponseMinutes: number | null;
+  completedJobs: number;
+  /** The net of the payments paid in the period, in cents: 0 unless `onlinePayments`. */
+  paidNetCents: number;
+}
+
+/**
+ * `GET /supplier/dashboard/overview?period=` (SP-04e): the three numbers of the home for a period and for the same number of days just
+ * before it, so that the page says "better" or "worse" without a calculation of its own. With `onlinePayments` false the money is 0 and
+ * the page talks about the jobs completed, never about "Incassi".
+ */
+export interface SupplierOverview {
+  period: SupplierOverviewPeriod;
+  onlinePayments: boolean;
+  current: SupplierOverviewFigures;
+  previous: SupplierOverviewFigures;
+}
+
+/** `GET /supplier/checklist` (SP-04): the steps of the activation, each from what the supplier really did. */
+export interface SupplierChecklist {
+  profileCompletionPercent: number;
+  profileComplete: boolean;
+  /** Published services: the step is done with at least one. */
+  activeServices: number;
+  hoursConfigured: boolean;
+  showcasePublished: boolean;
+  firstRequestAnswered: boolean;
+  /** `null` means "not available yet", not "no": the step is not counted. */
+  paymentsActive?: boolean | null;
 }
 
 /** `GET /supplier/showcase` (SU-13): the same content as the public page, from the caller's own profile. */

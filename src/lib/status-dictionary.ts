@@ -2,11 +2,14 @@ import type { AlloggiatiWebStatus } from "@/types/alloggiati.types";
 import type { AdminSupplierStatus } from "@/types/admin-suppliers";
 import type { BillingSubscriptionStatus } from "@/types/billing.types";
 import type { BookingStatus } from "@/types/booking.types";
+import type { CinStatus } from "@/types/cin.types";
 import type { PropertyComplianceStatus } from "@/types/compliance.types";
 import type { LeaseStatus } from "@/types/lease.types";
+import type { PaymentStatus } from "@/types/payment.types";
 import type { GuestCheckInSessionStatus } from "@/types/public-checkin.types";
 import type { RentInstallmentStatus } from "@/types/rent.types";
 import type { ServiceRequestStatus } from "@/types/service-request";
+import type { SupplierServiceStatus } from "@/types/supplier-services";
 
 /**
  * The states of the things a person manages, each told the same way: an icon and a word (never only a color), a sentence
@@ -51,6 +54,7 @@ export type StatusIconName =
   | "send"
   | "shield-check"
   | "signature"
+  | "undo"
   | "wrench"
   | "x-circle";
 
@@ -76,6 +80,10 @@ function defineKind<Key extends string>(definitions: Record<Key, StatusDefinitio
 
 /** Status of a property: the compliance status of the API, plus the pause that the host sets (`isPaused`). */
 export type PropertyStatus = PropertyComplianceStatus | "Paused";
+/** What a property of Affitti lunghi is doing: `Rented` has a registered lease in force, `Free` has none. The interface works it out from the leases (LR-07). */
+export type LongRentPropertyStatus = "Rented" | "Free";
+/** The regime of a property for the tax year, as the interface works it out from what the host has chosen and confirmed (SR-FISC). */
+export type FiscalRegimeStatus = "Confirmed" | "ToConfirm" | "NotChosen";
 /** `OrgMemberStatus` (a member) and `OrgInvitationStatus` (an invitation) of the backend: the list of people shows both. */
 export type MemberStatus = "Active" | "Deactivated" | "Pending" | "Accepted" | "Revoked" | "Expired";
 /** Status of a rent installment: the one of the API, plus `Overdue` (not paid after its due date: the API says it with `isOverdue`). */
@@ -94,6 +102,11 @@ export const STATUS_DICTIONARY = {
     Active: { tone: "success", icon: "check-circle" },
     Suspended: { tone: "danger", icon: "ban", next: "Active", need: true },
     Paused: { tone: "neutral", icon: "pause", next: "Active", need: true, derived: true },
+  }),
+  /** A property of Affitti lunghi: let or free. A lease still being prepared does not make it let, a registered one does. */
+  longRentProperty: defineKind<LongRentPropertyStatus>({
+    Rented: { tone: "info", icon: "key", derived: true },
+    Free: { tone: "neutral", icon: "circle-dashed", next: "Rented", need: true, derived: true },
   }),
   request: defineKind<ServiceRequestStatus>({
     Richiesto: { tone: "info", icon: "send", next: "PresoInCarico", need: true, supplier: { tone: "warning", icon: "inbox", label: true, need: true } },
@@ -139,6 +152,16 @@ export const STATUS_DICTIONARY = {
     Failed: { tone: "danger", icon: "alert-circle", next: "Paid", need: true },
     Cancelled: { tone: "neutral", icon: "ban" },
   }),
+  /** A payment of a booking (SR-04c), as the host reads it: money that came in, that is still to come, or that went back. */
+  payment: defineKind<PaymentStatus>({
+    Pending: { tone: "warning", icon: "clock" },
+    Processing: { tone: "info", icon: "hourglass" },
+    Completed: { tone: "success", icon: "check-circle" },
+    Failed: { tone: "danger", icon: "alert-circle" },
+    Refunded: { tone: "neutral", icon: "undo" },
+    PartiallyRefunded: { tone: "neutral", icon: "undo" },
+    Canceled: { tone: "neutral", icon: "ban" },
+  }),
   supplier: defineKind<AdminSupplierStatus>({
     Pending: { tone: "warning", icon: "hourglass", next: "Active", need: true },
     Active: { tone: "success", icon: "badge-check" },
@@ -158,6 +181,24 @@ export const STATUS_DICTIONARY = {
     Inviato: { tone: "success", icon: "shield-check" },
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
+  }),
+  /** The CIN of a property, as `GET /properties/cin-compliance` says it. The deadline and the penalties are the page's: they come from the backend. */
+  cin: defineKind<CinStatus>({
+    valid: { tone: "success", icon: "id-card" },
+    missing: { tone: "warning", icon: "alert-triangle" },
+    invalid: { tone: "danger", icon: "alert-circle" },
+  }),
+  /** The regime of a property for the tax year (SR-FISC): chosen and confirmed, detected but not yet confirmed, or not chosen. Never applied on its own. */
+  fiscalRegime: defineKind<FiscalRegimeStatus>({
+    Confirmed: { tone: "success", icon: "check-circle", derived: true },
+    ToConfirm: { tone: "warning", icon: "hourglass", derived: true },
+    NotChosen: { tone: "warning", icon: "circle-dashed", derived: true },
+  }),
+  /** A service of the catalog of the supplier (SP-06): a draft is seen only by its supplier, a paused one is off offer but kept. */
+  serviceListing: defineKind<SupplierServiceStatus>({
+    Draft: { tone: "neutral", icon: "pencil" },
+    Active: { tone: "success", icon: "check-circle" },
+    Paused: { tone: "warning", icon: "pause" },
   }),
 } as const;
 

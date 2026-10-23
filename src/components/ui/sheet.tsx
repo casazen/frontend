@@ -44,13 +44,14 @@ const DRAG_FLICK_SPEED = 0.5;
  * a pointer with Esc and the close button, which is why the handle is hidden from assistive technology.
  *
  * The dialog of a phone (`Dialog`, UI-07) is a sheet from the bottom too, and wears the same handle: what it moves is the
- * nearest element that says it is a sheet, `data-sheet-side` or `data-dialog-sheet`.
+ * nearest element that says it is a sheet, `data-sheet-side`, `data-dialog-sheet` or, for the detail drawer of the shell
+ * (UI-15), `data-detail-sheet`.
  */
 function SheetHandle({ onClose, className }: { onClose: () => void; className?: string }) {
   const start = React.useRef<{ y: number; time: number } | null>(null);
 
   const place = (event: React.PointerEvent<HTMLElement>, distance: number, following: boolean) => {
-    const sheet = event.currentTarget.closest<HTMLElement>('[data-sheet-side], [data-dialog-sheet]');
+    const sheet = event.currentTarget.closest<HTMLElement>('[data-sheet-side], [data-dialog-sheet], [data-detail-sheet]');
     if (!sheet) return;
     // `--sheet-drag` is where the closing animation starts from (`styles/sheet-bottom.css`).
     sheet.style.setProperty('--sheet-drag', `${distance}px`);

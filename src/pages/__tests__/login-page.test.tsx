@@ -14,9 +14,9 @@ function setAuth(overrides: Record<string, unknown> = {}) {
   return login;
 }
 
-function renderPage() {
+function renderPage(path = '/login') {
   return render(
-    <MemoryRouter initialEntries={['/login']}>
+    <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/app/choose-context" element={<div data-testid="area-picker" />} />
@@ -71,6 +71,19 @@ describe('LoginPage', () => {
     expect(login).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: i18n.t('login.signInButton') }));
     expect(login).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves the email destination and leaseId through Auth0 appState', () => {
+    const login = setAuth();
+    const returnTo = '/app/long-rent/documents/upload?leaseId=0b6f7a3e-5a2d-4c58-9e0a-6c8b0f2e1d11';
+    renderPage(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    expect(login).toHaveBeenCalledWith({ returnTo });
+  });
+
+  it.each(['https://evil.example/app/', '//evil.example/app/', '/login', '/app/../../login'])('rejects unsafe login destinations: %s', (returnTo) => {
+    const login = setAuth();
+    renderPage(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    expect(login).toHaveBeenCalledWith(undefined);
   });
 
   it('LoginPage_LastStartLongAgo_IsSentToAuth0AgainAutomatically', () => {

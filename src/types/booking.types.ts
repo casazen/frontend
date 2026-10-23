@@ -1,4 +1,5 @@
-import type { PaymentRefund } from './payment.types';
+import type { AlloggiatiWebStatus } from './alloggiati.types';
+import type { PaymentMethod, PaymentRefund, PaymentRefundStatus } from './payment.types';
 import type { OtaReviewReason } from './calendar.types';
 
 // ✅ Fixed: Backend uses PascalCase enum values
@@ -15,6 +16,8 @@ export interface BookingGuest {
 
 export interface Booking {
   id: string;
+  /** The code the guest knows (`XXXXX-XXXXX`): the API sends it on every booking, the list and the detail alike. */
+  bookingCode?: string;
   propertyId: string;
   propertyName?: string;
   userId: string;
@@ -30,6 +33,10 @@ export interface Booking {
   /** Cleaning fee included in `basePrice`: the lodging is `basePrice - cleaningFee`. */
   cleaningFee?: number;
   touristTax?: number;
+  /** The host entered a total other than the quote's when they created the booking by hand (SR-06a); `touristTax` stays the quote's. */
+  priceOverridden?: boolean;
+  /** The host's note on that price (80 characters at most); null when there is none. */
+  priceOverrideNote?: string | null;
   currency: string;
   status: BookingStatus;
   guest: BookingGuest;
@@ -54,6 +61,84 @@ export interface Booking {
   channelBlock?: OtaChannelBlock | null;
   createdAt: string;
   updatedAt: string;
+  /** When the booking became confirmed (UTC); null while it is not, and for one confirmed before the time was kept (SR-05a). */
+  confirmedAt?: string | null;
+  /** When the booking was cancelled (UTC); null while it is not, and for one cancelled before the time was kept. */
+  cancelledAt?: string | null;
+  /** When the host registered the arrival (UTC); null before, and when it was registered after the check-in day. */
+  arrivedAt?: string | null;
+  /** When the host checked the stay out (UTC); null before, and for a stay checked out before the time was kept. */
+  checkedOutAt?: string | null;
+  /** Whether the host may change the dates and the guests, and if not why: the rule of `PUT /bookings/:id`, never guessed here. */
+  canEdit?: BookingEditability;
+  /** Booking detail only (`GET /bookings/:id`): how much of the total came in. Missing on the booking an action answers with. */
+  paymentState?: BookingPaymentState;
+  /** Booking detail only: the money that came in; missing for who may not read payments (the collaborator). */
+  paidAmount?: number | null;
+}
+
+/**
+ * Why the dates and guests of a booking cannot be changed: it is `Cancelled`, the stay has `Started` (arrived or over), or it comes
+ * from the booking site or a channel (`SourceLocked`: price and payment are settled there, so it is cancelled or made again, SR-D5).
+ */
+export type BookingEditLock = 'Cancelled' | 'Started' | 'SourceLocked';
+
+/** `canEdit` of a booking (SR-05a): `reason` is null when `allowed`. */
+export interface BookingEditability {
+  allowed: boolean;
+  reason: BookingEditLock | null;
+}
+
+/** The chip of the list of bookings, which is the `view` of `GET /api/bookings/search`: what the host is doing with them. */
+export type BookingListView = 'all' | 'toConfirm' | 'upcoming' | 'inProgress' | 'completed' | 'cancelled';
+
+/** Where a booking came from, in the words of the channel filter of the list; the exact source stays in `source`. */
+export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Other';
+
+/** How much of the total of a booking has come in. */
+export type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
+
+/** A row of `GET /api/bookings/search` (SR-03b): the booking and what a list says besides it. */
+export interface BookingListItem extends Booking {
+  /** The code the guest knows (`XXXXX-XXXXX`). */
+  bookingCode: string;
+  channel: BookingChannel;
+  paymentState: BookingPaymentState;
+  /** The money that came in; missing for who may not read payments (the collaborator). */
+  paidAmount?: number | null;
+  /** Until when the host may answer a "pay at the property" request (UTC); null for any other booking. */
+  respondBy?: string | null;
+}
+
+/** `GET /api/bookings/counts`: how many bookings are in each chip, for the filters of the list. */
+export interface BookingCounts {
+  all: number;
+  toConfirm: number;
+  upcoming: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+}
+
+/** The filters of the list as the API takes them, for the rows and for the counters (several values are comma-separated). */
+export interface BookingFilterParams {
+  q?: string;
+  propertyId?: string;
+  /** `Direct,Airbnb`: names of `BookingChannel`. */
+  channel?: string;
+  /** `Sent,InProgress`: the state of the online check-in link. */
+  checkInStatus?: string;
+  /** First and last arrival day (`yyyy-MM-dd`, both included). */
+  arrivalFrom?: string;
+  arrivalTo?: string;
+}
+
+/** What `GET /api/bookings/search` takes: the filters, the chip, the order (`checkIn:asc`) and the page. */
+export interface BookingListParams extends BookingFilterParams {
+  view?: BookingListView;
+  sort?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 /** The iCal block of an OTA stay (CO-21). */
@@ -129,6 +214,89 @@ export interface CreateBookingDto {
 }
 
 /**
+ * POST /bookings/manual: a booking entered by hand with only what it needs (SR-06a). Prices and tourist tax are never sent
+ * (the API prices the stay); `totalPrice` is the total the host agreed when it is not the quote's.
+ */
+export interface CreateManualBookingDto {
+  propertyId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  adults: number;
+  children: number;
+  /** Age at check-in of each minor, asked when the tourist tax of the comune depends on it. */
+  childrenAges?: number[];
+  /** The first name and the email are all the host must give; the guest completes the rest with the online check-in. */
+  guest: { firstName: string; lastName?: string; email: string; phone?: string };
+  note?: string;
+  /** The total the host agreed with the guest; with `blockId`, the amount the portal shows. */
+  totalPrice?: number;
+  /** A short note on that price (80 characters at most); not used with `blockId`. */
+  priceNote?: string;
+  /** The block of a portal's calendar this booking completes (`linkableBlockId` of the availability). */
+  blockId?: string;
+}
+
+/** The answer of POST /bookings/manual: the booking and what the host should know about it. */
+export interface ManualBooking extends Booking {
+  /** The stay is shorter than the minimum stay of the property: created all the same. */
+  belowMinimum: boolean;
+  minNights: number | null;
+  /** False: the guest gives the documents and the rest of the data with the online check-in. */
+  guestDataComplete: boolean;
+}
+
+/** `state` of GET /properties/:id/availability (SR-06a). */
+export type StayAvailabilityState = 'ok' | 'belowMinimum' | 'occupied' | 'linkableBlock' | 'invalid';
+
+/** Why a stay is `invalid`. */
+export type StayAvailabilityInvalidReason = 'checkOutNotAfterCheckIn' | 'checkInInPast' | 'stayTooLong';
+
+/** A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`) or the host's own block (`block`). */
+export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block';
+
+/** Something that takes a night of the dates asked for. */
+export interface StayAvailabilityConflict {
+  id: string;
+  type: StayAvailabilityConflictType;
+  /** The guest's name (booking), the name of the calendar (portal) or the host's note (block); null when there is none. */
+  title: string | null;
+  /** Where a booking came from or whose calendar the block is; null for the host's own block. */
+  channel: BookingChannel | null;
+  /** Arrival day and departure day (`YYYY-MM-DD`). */
+  from: string;
+  to: string;
+}
+
+/** A free stay of the same number of nights as the one asked for. */
+export interface StayAvailabilityWindow {
+  from: string;
+  to: string;
+}
+
+/** What GET /properties/:id/availability says about a stay: free, taken (and the nearest free dates) or a portal's block to complete. */
+export interface StayAvailability {
+  propertyId: string;
+  from: string;
+  to: string;
+  state: StayAvailabilityState;
+  invalidReason: StayAvailabilityInvalidReason | null;
+  nights: number;
+  /** The minimum stay of the property, when it has one. */
+  minNights: number | null;
+  conflicts: StayAvailabilityConflict[];
+  nearestFreeWindow: StayAvailabilityWindow | null;
+  /** With `linkableBlock`: the block to complete with POST /bookings/manual (`blockId`). */
+  linkableBlockId: string | null;
+}
+
+/** The stay GET /properties/:id/availability is asked about. */
+export interface StayAvailabilityParams {
+  propertyId: string;
+  from: string;
+  to: string;
+}
+
+/**
  * PUT /bookings/:id — only what the host may change (PC-07). Status, prices and guest are never sent: the status
  * changes through its own actions and the price is computed by the backend.
  */
@@ -198,4 +366,76 @@ export interface CancelBookingResult {
   status: BookingStatus;
   refunds: PaymentRefund[];
   canceledIntents: number;
+}
+
+/** What an entry of the timeline of a booking is about (SR-05a): the title is this key, the words are the client's. */
+export type BookingTimelineKind =
+  | 'Created'
+  | 'RequestReceived'
+  | 'GuestEmailPending'
+  | 'ApprovalPending'
+  | 'PaymentPending'
+  | 'HostConfirmationPending'
+  | 'PaymentReceived'
+  | 'Confirmed'
+  | 'CheckInLinkSent'
+  | 'GuestDocumentsReceived'
+  | 'Arrived'
+  | 'Alloggiati'
+  | 'CheckedOut'
+  | 'Cancelled'
+  | 'Refund';
+
+/** `Done` happened; `Current` waits for the host, the guest or the bank. */
+export type BookingTimelineState = 'Done' | 'Current';
+
+/** Why the system cancelled a booking (or the host declined the request); null in the entry when a person cancelled it. */
+export type BookingCancellationReason =
+  | 'CheckoutHoldExpired'
+  | 'DatesUnavailableAtPayment'
+  | 'OnSiteRequestDeclined'
+  | 'OnSiteRequestExpired'
+  | 'OnSiteEmailNotConfirmed'
+  | 'DeferredPaymentNotCompleted';
+
+/** Where the link of the online check-in stands. */
+export type BookingCheckInLinkState = 'Sent' | 'InProgress' | 'Expired' | 'Completed';
+
+/** What an entry says besides its kind: each field belongs to a few kinds and is null for the others. Never a name or an email. */
+export interface BookingTimelineData {
+  /** Where the booking came from (`Created`, `RequestReceived`): `Direct`, `Manual`, `Airbnb`… */
+  source: string | null;
+  /** Euros (`PaymentReceived`, `Refund`); null for who may not read payments: the entry is there without the figure. */
+  amount: number | null;
+  /** How it was paid (`PaymentReceived`). */
+  method: PaymentMethod | null;
+  /** The term of a request that waits (`GuestEmailPending`, `ApprovalPending`), UTC. */
+  expiresAt: string | null;
+  /** Why the system cancelled it (`Cancelled`). */
+  reason: BookingCancellationReason | null;
+  /** What the host wrote when cancelling (`Cancelled`): the host's own note, never sent to the guest. */
+  note: string | null;
+  /** Where the link of the online check-in stands (`CheckInLinkSent`). */
+  linkState: BookingCheckInLinkState | null;
+  /** The Alloggiati Web communication as the Alloggiati page tells it (`Alloggiati`). */
+  alloggiatiStatus: AlloggiatiWebStatus | null;
+  /** The legal term of the Alloggiati communication while it is not sent (`Alloggiati`), UTC. */
+  deadlineAt: string | null;
+  /** Where the refund stands (`Refund`). */
+  refundStatus: PaymentRefundStatus | null;
+}
+
+/** An entry of the timeline. */
+export interface BookingTimelineEvent {
+  kind: BookingTimelineKind;
+  /** When it happened (UTC); null for a step that happened before the time was kept, and for a wait with no instant of its own. */
+  at: string | null;
+  state: BookingTimelineState;
+  data: BookingTimelineData;
+}
+
+/** `GET /bookings/:id/timeline` (SR-05a): the past steps and the waits, already in order. */
+export interface BookingTimeline {
+  bookingId: string;
+  events: BookingTimelineEvent[];
 }

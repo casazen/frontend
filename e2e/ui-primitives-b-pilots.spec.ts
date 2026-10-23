@@ -3,8 +3,6 @@ import { expect, test } from './test';
 import { DEMO_BOOKING_ID, mockAlloggiatiApi, mockBookingDetailApi } from './helpers/alloggiati-mock';
 import { demoUrl } from './helpers/demo-profile';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
-import { buildCreatedProperty } from './fixtures/properties.fixtures';
-import { mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   WIDER_LETTERS,
   expectInsideTheScreen,
@@ -128,128 +126,6 @@ test.describe('DataView in the list of guests (pilot)', () => {
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------
-// Segmented (the status filter) and toastUndo (pausing a property): the list of properties
-
-function propertiesWithPause(initial: Array<{ id: string; name: string; paused: boolean }>) {
-  const state = new Map(initial.map((entry) => [entry.id, entry.paused]));
-  return {
-    state,
-    list: () =>
-      initial.map((entry) =>
-        buildCreatedProperty({ id: entry.id, name: entry.name, city: 'Roma', ...({ isPaused: state.get(entry.id) ?? false } as object) }),
-      ),
-  };
-}
-
-async function openProperties(page: Page, width = 1280) {
-  const store = propertiesWithPause([
-    { id: 'prop-a', name: 'Casa Alfa', paused: false },
-    { id: 'prop-b', name: 'Casa Beta', paused: false },
-    { id: 'prop-c', name: 'Casa Gamma', paused: true },
-  ]);
-  const calls: string[] = [];
-  await mockPropertiesApi(page, []);
-  // Later routes are tried first: the list, and the pause and the activation, with a state that follows them.
-  await page.route('**/api/properties', async (route) => {
-    if (route.request().method() !== 'GET') {
-      await route.fallback();
-      return;
-    }
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(store.list()) });
-  });
-  await page.route(/\/api\/properties\/([^/]+)\/(pause|activate)$/, async (route) => {
-    const [, id, action] = route.request().url().match(/\/api\/properties\/([^/]+)\/(pause|activate)$/)!;
-    calls.push(`${action}:${id}`);
-    store.state.set(id, action === 'pause');
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ isPaused: action === 'pause', pausedAt: action === 'pause' ? '2026-10-09T08:00:00Z' : null }),
-    });
-  });
-  await page.setViewportSize({ width, height: 800 });
-  await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'), { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { level: 1, name: 'Immobili' })).toBeVisible();
-  await expect(page.getByTestId('property-filter-all')).toBeVisible();
-  return { calls };
-}
-
-test.describe('Segmented in the status filter of the properties (pilot)', () => {
-  test('the filter is one control: the pressed button says so, and a click shows only that status', async ({ page }) => {
-    await openProperties(page);
-    const filter = page.getByRole('group', { name: 'Filtra per stato' });
-    const rows = page.getByRole('row');
-
-    await expect(filter.getByRole('button')).toHaveText(['Tutti (3)', 'Attivi (2)', 'In pausa (1)']);
-    await expect(page.getByTestId('property-filter-all')).toHaveAttribute('aria-pressed', 'true');
-    await expect(rows).toHaveCount(4);
-
-    await page.getByTestId('property-filter-paused').click();
-    await expect(page.getByTestId('property-filter-paused')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByTestId('property-filter-all')).toHaveAttribute('aria-pressed', 'false');
-    await expect(rows).toHaveCount(2);
-    await expect(page.getByRole('link', { name: 'Casa Gamma', exact: true })).toBeVisible();
-
-    await page.getByTestId('property-filter-active').click();
-    await expect(page.getByRole('link', { name: 'Casa Alfa', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Casa Gamma', exact: true })).toHaveCount(0);
-  });
-
-  test('on a phone the filter fits the screen and each button is a finger wide', async ({ page }) => {
-    await openProperties(page, 390);
-    await page.addStyleTag({ content: WIDER_LETTERS });
-
-    const filter = page.getByRole('group', { name: 'Filtra per stato' });
-    await expectInsideTheScreen(page, filter, 'the filter');
-    for (const button of await filter.getByRole('button').all()) {
-      const box = await button.boundingBox();
-      expect(box!.height).toBeGreaterThanOrEqual(36);
-    }
-  });
-
-  test('the filter has no accessibility violation', async ({ page }) => {
-    await openProperties(page);
-
-    await expectNoAxeViolations(page, { include: '[role="group"][aria-label="Filtra per stato"]' });
-  });
-});
-
-test.describe('toastUndo when a property is paused (pilot)', () => {
-  const toast = (page: Page, text: string) => page.locator('[data-sonner-toast]', { hasText: text });
-  const rowOf = (page: Page, name: string) => page.getByRole('row', { name: new RegExp(name) });
-
-  test('pausing offers Annulla, and Annulla reactivates the property on the server', async ({ page }) => {
-    const { calls } = await openProperties(page);
-    await expect(rowOf(page, 'Casa Alfa')).toContainText('Attivo');
-
-    await rowOf(page, 'Casa Alfa').getByRole('button', { name: 'Pausa' }).click();
-
-    const paused = toast(page, 'Immobile messo in pausa');
-    await expect(paused).toBeVisible();
-    await expect(rowOf(page, 'Casa Alfa')).toContainText('In pausa');
-    expect(calls).toEqual(['pause:prop-a']);
-
-    await paused.getByRole('button', { name: 'Annulla' }).click();
-
-    await expect(toast(page, 'Immobile riattivato')).toBeVisible();
-    await expect(rowOf(page, 'Casa Alfa')).toContainText('Attivo');
-    expect(calls).toEqual(['pause:prop-a', 'activate:prop-a']);
-  });
-
-  test('the toast is there for about six seconds and then the pause stays', async ({ page }) => {
-    const { calls } = await openProperties(page);
-
-    await rowOf(page, 'Casa Beta').getByRole('button', { name: 'Pausa' }).click();
-    const paused = toast(page, 'Immobile messo in pausa');
-    await expect(paused).toBeVisible();
-
-    await expect(paused).toHaveCount(0, { timeout: 10_000 });
-    await expect(rowOf(page, 'Casa Beta')).toContainText('In pausa');
-    expect(calls).toEqual(['pause:prop-b']);
-  });
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------
 // Tabs: the booking detail
 
 async function openBooking(page: Page, width: number, search = '') {
@@ -257,7 +133,7 @@ async function openBooking(page: Page, width: number, search = '') {
   await mockBookingDetailApi(page);
   await page.setViewportSize({ width, height: 800 });
   await page.goto(demoUrl(`/app/short-rent/bookings/${DEMO_BOOKING_ID}${search}`, 'short-stay'), { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Prenotazione', { timeout: 15_000 });
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Mario Rossi', { timeout: 15_000 });
 }
 
 test.describe('Tabs in the booking detail (pilot)', () => {
@@ -265,7 +141,7 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await openBooking(page, 1280);
     const tabs = page.getByRole('tablist', { name: 'Sezioni della prenotazione' });
 
-    await expect(tabs.getByRole('tab')).toHaveText(['Dettagli', 'Ospite', 'Pagamento', 'Alloggiati']);
+    await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Documenti', 'Pagamento', 'Cronologia']);
     await expect(page.getByTestId('booking-tab-details')).toHaveAttribute('aria-selected', 'true');
     // The other parameters of the address (here the profile of the demo) are kept, in their order.
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('href', `/app/short-rent/bookings/${DEMO_BOOKING_ID}?demoProfile=short-stay&tab=guest`);
@@ -274,14 +150,14 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await page.getByTestId('booking-tab-guest').click();
     await expect(page).toHaveURL(/tab=guest/);
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Ospite');
-    await expect(page.getByText('mario.rossi@example.com').first()).toBeVisible();
+    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Documenti');
+    await expect(page.getByRole('heading', { name: 'Check-in online' })).toBeVisible();
   });
 
-  test('a link to ?tab=alloggiati opens that tab, as the links of the arrival and the cockpit do', async ({ page }) => {
+  test('a link to ?tab=alloggiati opens Documenti at its Alloggiati Web section, as the links of the arrival and the cockpit do', async ({ page }) => {
     await openBooking(page, 1280, '?tab=alloggiati');
 
-    await expect(page.getByTestId('booking-tab-alloggiati')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
   });
 
@@ -307,8 +183,8 @@ test.describe('Tabs in the booking detail (pilot)', () => {
       const menu = page.getByTestId('booking-tabs-select');
       await expectInsideTheScreen(page, menu, `${width} px, the menu of the tabs`);
 
-      await menu.selectOption('alloggiati');
-      await expect(page).toHaveURL(/tab=alloggiati/);
+      await menu.selectOption('guest');
+      await expect(page).toHaveURL(/tab=guest/);
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
       // What this checks is the menu of the tabs, not the rest of the page: the content of the tab is the page's own, and with
       // the wide letters of the runner (Linux) a button of the guest section ("Segna come inviato manualmente") is 14 px past
@@ -394,50 +270,5 @@ test.describe('HelpTip in the iCal dialog of the supplier (pilot)', () => {
     await untilStill(page);
 
     await expectNoAxeViolations(page, { include: '[role="dialog"]' });
-  });
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// Dialog: the existing dialogs
-
-test.describe('the dialogs that already existed', () => {
-  test('the form to add a property is a sheet on a phone, scrolls inside, and its close button is in view', async ({ page }) => {
-    await mockPropertiesApi(page, []);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: /^(Aggiungi immobile|Aggiungi il primo immobile)$/ }).first().click();
-
-    const dialog = page.getByRole('dialog', { name: 'Nuovo immobile' });
-    await expect(dialog).toBeVisible();
-    await untilStill(page);
-
-    const box = (await dialog.boundingBox())!;
-    expect(box.x).toBeCloseTo(0, 0);
-    expect(box.width).toBeCloseTo(390, 0);
-    expect(box.y + box.height).toBeCloseTo(844, 0);
-    expect(await dialog.evaluate((element) => element.scrollHeight > element.clientHeight), 'the long form scrolls inside the sheet').toBe(true);
-    await page.addStyleTag({ content: WIDER_LETTERS });
-    // The close button of the bar that sticks to the top is the sheet's own; the page behind is not: with the wide letters of the
-    // runner (Linux) its "Aggiungi immobile" button ends 6 px past the edge at 390 px, with or without the sheet.
-    await expectInsideTheScreen(page, dialog.getByRole('button', { name: 'Chiudi' }), '390 px, the close button of the sheet');
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).toBeHidden();
-  });
-
-  test('on a tablet and a desktop it is in the middle as it always was', async ({ page }) => {
-    await mockPropertiesApi(page, []);
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(demoUrl('/app/short-rent/properties', 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: /^(Aggiungi immobile|Aggiungi il primo immobile)$/ }).first().click();
-
-    const dialog = page.getByRole('dialog', { name: 'Nuovo immobile' });
-    await expect(dialog).toBeVisible();
-    await untilStill(page);
-
-    const box = (await dialog.boundingBox())!;
-    expect(box.x + box.width / 2).toBeCloseTo(640, 0);
-    expect(box.y + box.height / 2).toBeCloseTo(400, 0);
-    expect(box.width).toBeGreaterThan(700);
   });
 });

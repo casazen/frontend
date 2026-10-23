@@ -4,6 +4,7 @@ import { ME_QUERY_KEY } from '@/lib/onboarding-gate';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
@@ -23,7 +24,7 @@ export function LongRentPropertyCreatePage() {
   // First property of a new landlord (`?first=1`, set by the onboarding): the short form, then the guide asks the rest.
   const [searchParams] = useSearchParams();
   const quick = searchParams.get('first') === '1';
-  const createProperty = useCreateProperty();
+  const createProperty = useCreateProperty('Long');
   const queryClient = useQueryClient();
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);
@@ -52,7 +53,7 @@ export function LongRentPropertyCreatePage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title={quick ? t('property.quick.title') : t('longRentProperties.create.title')}
         description={quick ? t('property.quick.description') : t('longRentProperties.create.description')}
@@ -77,13 +78,15 @@ export function LongRentPropertyCreatePage() {
       )}
 
       {quick ? (
-        <QuickPropertyForm
-          variant="long-rent"
-          onSubmit={handleSubmit}
-          isLoading={createProperty.isPending}
-          disabled={blockedByPlan}
-          onFullForm={() => navigate('/app/long-rent/properties/new')}
-        />
+        <div className={FOCUS_COLUMN}>
+          <QuickPropertyForm
+            variant="long-rent"
+            onSubmit={handleSubmit}
+            isLoading={createProperty.isPending}
+            disabled={blockedByPlan}
+            onFullForm={() => navigate('/app/long-rent/properties/new')}
+          />
+        </div>
       ) : (
         <PropertyForm
           variant="long-rent"

@@ -4,7 +4,7 @@
  *
  * - Vercel production (`VERCEL_ENV=production`): indexing allowed (except the private pages of `DISALLOWED_PATHS`) and
  *   the sitemaps declared on the public domain `VITE_PUBLIC_SITE_URL` (the same domain as the backend
- *   `App__PublicSiteBaseUrl`): the guides, the index of the booking sites and the public site (SEO-VETRINA). No default domain (decision D3):
+ *   `App__PublicSiteBaseUrl`): the guides, the index of the booking sites, the supplier showcases and the public site (SEO-VETRINA). No default domain (decision D3):
  *   a missing or invalid value fails the build, so Vercel keeps the previous deployment.
  * - Everywhere else (Vercel preview and the `develop` test deployment, local and CI builds): `Disallow: /`, so a test
  *   environment is never indexed.
@@ -20,6 +20,9 @@ export const SITEMAP_PATH = '/sitemap.xml';
 /** Sitemap index of the org booking sites (BK-15): one sitemap per org with a published property. */
 export const BOOKING_SITEMAP_PATH = '/sitemap-book.xml';
 
+/** Sitemap of the supplier showcases (`/fornitori/{slug}`): one entry per active supplier. */
+export const SUPPLIER_SITEMAP_PATH = '/sitemap-supplier.xml';
+
 /**
  * Pages that are never worth indexing (BK-15): the host console, the guest check-in links, the login and the guest's own
  * booking pages (they carry a token or a booking code and show nothing public), on the booking site path and on an org's
@@ -28,13 +31,13 @@ export const BOOKING_SITEMAP_PATH = '/sitemap-book.xml';
 export const DISALLOWED_PATHS = [
   '/app/',
   '/checkin/',
+  // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
+  '/invite/',
   '/login',
   '/book/*/my-bookings',
   '/book/*/booking/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
-  // Supplier showcases (SU-13): `noindex` in v0, the product owner decides when they become indexable.
-  '/fornitori/',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',
@@ -103,6 +106,7 @@ export function buildRobotsTxt({ vercelEnv, publicSiteUrl, publicSiteEnabled }: 
     '',
     `Sitemap: ${parsed.origin}${SITEMAP_PATH}`,
     `Sitemap: ${parsed.origin}${BOOKING_SITEMAP_PATH}`,
+    `Sitemap: ${parsed.origin}${SUPPLIER_SITEMAP_PATH}`,
     ...(publicSiteEnabled ? [`Sitemap: ${parsed.origin}${SITE_SITEMAP_PATH}`] : []),
     '',
   ].join('\n');

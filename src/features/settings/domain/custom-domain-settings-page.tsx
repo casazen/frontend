@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -65,7 +66,7 @@ export function CustomDomainSettingsPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-3xl space-y-6" data-testid="custom-domain-settings-page">
+      <div className="space-y-6" data-testid="custom-domain-settings-page">
         <PageHeader
           title={t('domain.settings.title')}
           description={t('domain.settings.description')}
@@ -85,7 +86,7 @@ export function CustomDomainSettingsPage() {
             </CardContent>
           </Card>
         ) : (
-          <>
+          <div className={PAGE_COLUMNS}>
             <Card>
               <CardHeader>
                 <CardTitle>{t('domain.settings.modeTitle')}</CardTitle>
@@ -158,7 +159,7 @@ export function CustomDomainSettingsPage() {
             {domainConfig && (
               <Card data-testid="domain-current-config">
                 <CardHeader className="flex flex-row items-center justify-between gap-4">
-                  <div>
+                  <div className="space-y-1.5">
                     <CardTitle>{t('domain.settings.currentTitle')}</CardTitle>
                     <CardDescription>
                       {t(`domain.modes.${effectiveMode === 'CasazenPath' ? 'path' : effectiveMode === 'CasazenSubdomain' ? 'subdomain' : 'custom'}`)}
@@ -222,7 +223,7 @@ export function CustomDomainSettingsPage() {
                 </CardContent>
               </Card>
             )}
-          </>
+          </div>
         )}
       </div>
     </AppShell>

@@ -1,13 +1,18 @@
 import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 
-export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier';
+/**
+ * The areas of the app. `account` is the customer's "Amministrazione" (decision D1): its context exists only for the people of
+ * an org (owner, administrators, property managers, accountants: the backend sends it in `GET /api/me/contexts`), never from a
+ * JWT role. `admin` is the staff console of the platform.
+ */
+export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier' | 'account';
 
 /**
  * Group of the main menu (UI-04a): a labelled set of primary entries. The groups of an area follow the order of their
  * entries (`navOrder`); the labels are `nav.group.<group>`. The entries of "Altro" have no group.
  */
-export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work' | 'activity' | 'platform';
+export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work' | 'activity' | 'platform' | 'account';
 
 /**
  * Where an entry shows: `primary` in the main menu (at most {@link MAX_PRIMARY_NAV_ENTRIES} per area), `secondary` in
@@ -45,6 +50,12 @@ export interface RouteManifestEntry {
   navParent?: string;
   /** Place (1..{@link MAX_BOTTOM_NAV_ENTRIES}) of a primary entry in the bottom bar of the phone (UI-04b draws the bar). */
   navBottom?: number;
+  /**
+   * A shorter name for the bottom bar, when the name of the menu does not fit a column of it (about 67 px at 360 px, in 11 px type):
+   * the bar shows this one and the link keeps the full name for a screen reader. Not for an entry that has a counter (its name and
+   * its counter are read together).
+   */
+  navBarKey?: string;
   /** Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). */
   navCount?: NavCountKey;
   isDefault?: boolean;
@@ -119,6 +130,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/properties/:id/activation'],
   },
   {
+    // "Cambia modalità" (PM-03, D16): the wizard that programs the passage to long-term leases, from the page of the property
+    // (menu "⋯"). The same wizard has its route in long-rent; the one of the section the property is in opens it.
+    path: '/app/short-rent/properties/:id/mode',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/mode/property-mode-wizard-page')).ShortRentPropertyModePage,
+    }),
+  },
+  {
     path: '/app/short-rent/properties/:id/pricing',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
@@ -165,6 +186,44 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/fiscal/fiscal-reports-page')).FiscalReportsPage,
     }),
+  },
+  {
+    // The reports of short rent (SR-10): revenue, occupancy and bookings by channel to download, the fiscal ones as the fiscal page
+    // has them, and the pages that already hold the rest (Alloggiati, payments). For who may read payments (aggregated money):
+    // the others find the reserved page. In "Altro" with Ricavi and Regime fiscale: the main menu holds seven entries at most.
+    path: '/app/short-rent/reports',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    navKey: 'nav.reports',
+    navPlacement: 'secondary',
+    navOrder: 25,
+    icon: 'TrendingUp',
+    component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
+  },
+  {
+    // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
+    // answer of the host and the report to CasaZen. In "Altro" next to the reports: the main menu holds seven entries at most.
+    path: '/app/short-rent/reviews',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.reviews',
+    navPlacement: 'secondary',
+    navOrder: 26,
+    icon: 'Star',
+    component: async () => ({ default: (await import('@/features/reviews/host-reviews-page')).HostReviewsPage }),
+  },
+  {
+    // The calendars of all the properties in one list (SR-10b): the channel, when each was last read, what needs a look and "Sincronizza ora";
+    // "Collega" leads to the tab Calendari of the property, where calendars are linked. In "Altro" next to the reviews: the main menu holds
+    // seven entries at most. Who may read the properties sees the state; only who may write them gets the buttons.
+    path: '/app/short-rent/channels',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.channels',
+    navPlacement: 'secondary',
+    navOrder: 27,
+    icon: 'CalendarSync',
+    component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
     path: '/app/short-rent/settings/domain',
@@ -464,6 +523,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/leases/new'],
   },
   {
+    path: '/app/long-rent/documents/upload',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read', 'lease.create'],
+    component: async () => ({ default: (await import('@/features/leases/lease-documents-upload-page')).LeaseDocumentsUploadPage }),
+  },
+  {
     path: '/app/long-rent/leases/:id',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
@@ -507,6 +572,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['property.write'],
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertyEditPage,
+    }),
+  },
+  {
+    // "Cambia modalità" (PM-03, D16): the passage back to short stays; the same wizard as `/app/short-rent/properties/:id/mode`.
+    path: '/app/long-rent/properties/:id/mode',
+    context: 'long-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/properties/mode/property-mode-wizard-page')).LongRentPropertyModePage,
     }),
   },
   {
@@ -568,6 +642,96 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
     }),
+  },
+  // Amministrazione of the customer (AM-04, decision D1). The pages come with their tasks; the menu shows only the pages that exist,
+  // each with the permission the backend asks for it (`org.members.manage` for the owner and the administrators; the accountant and
+  // the property manager hold other permissions of the context, so their first page is the first one they may open).
+  {
+    path: '/app/account',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.accountHome',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 1,
+    navBottom: 1,
+    icon: 'LayoutDashboard',
+    isDefault: true,
+    component: async () => ({ default: (await import('@/features/account/account-home-page')).AccountHomePage }),
+  },
+  {
+    // The people who work with the owner (AM-04b): the pages of the team ask for `org.members.manage`, like the home.
+    path: '/app/account/people',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.people',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 2,
+    navBottom: 2,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/team/people-page')).PeoplePage }),
+  },
+  {
+    // "Invita un utente" (AM-04c): the four steps that bring a person in, opened from «Invita» on the page of the people. It is in no menu:
+    // «Persone» stays the highlighted entry and the trail goes through it, both by the start of the address.
+    path: '/app/account/people/invite',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    component: async () => ({ default: (await import('@/features/team/invite/invite-page')).InvitePage }),
+  },
+  {
+    // "Immobili" (AM-13): every property of the account, short-term and long-term, with who looks after it and who can open it. For the
+    // owner and the administrators (`org.members.manage`, like the people): the pages of a property stay in the section of its mode.
+    path: '/app/account/properties',
+    context: 'account',
+    requiredPermissions: ['org.members.manage'],
+    navKey: 'nav.properties',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 3,
+    navBottom: 3,
+    icon: 'Home',
+    component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
+  },
+  {
+    // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
+    // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
+    // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
+    path: '/app/account/billing',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.billing',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 5,
+    icon: 'CreditCard',
+    component: async () => ({ default: (await import('@/features/account/billing/account-billing-page')).AccountBillingPage }),
+  },
+  {
+    path: '/app/account/profile',
+    context: 'account',
+    requiredPermissions: [],
+    navKey: 'nav.profile',
+    navPlacement: 'secondary',
+    navOrder: 30,
+    icon: 'User',
+    component: async () => ({ default: (await import('@/features/account/account-profile-page')).AccountProfilePage }),
+  },
+  {
+    // "Impostazioni" (AM-08b): the org's name, the address of its booking site, its contact email and its Stripe account in one page, for
+    // the owner and the administrators (`org.settings.manage`; the endpoints are the ones of `OrgBillingAdmin`, which they pass too). The
+    // organization and payments pages of the rental areas stay where they are.
+    path: '/app/account/settings',
+    context: 'account',
+    requiredPermissions: ['org.settings.manage'],
+    navKey: 'nav.accountSettings',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/account/account-settings-page')).AccountSettingsPage }),
   },
   {
     path: '/app/admin',
@@ -800,6 +964,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-profile-page')).SupplierProfilePage }),
   },
   {
+    // The settings of the supplier (SP-16c-c): "Risposte" (the automatic acceptance of the regular customers) and "Pagamenti" (the account
+    // on Stripe, SP-16c-b), the last of the seven entries of the menu (SP-D1). Its address is the one the server sends the supplier back to
+    // from Stripe (`?stripe_return=1`, `?stripe_refresh=1`: `PublicSiteLinks`, SP-14), so it is never renamed. No `featureFlag`: while online
+    // payments are off on the server the "Pagamenti" tab says so (the account endpoints answer 404) and offers nothing.
+    path: '/app/supplier/settings',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierSettings',
+    navGroup: 'management',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/supplier/settings/supplier-settings-page')).SupplierSettingsPage }),
+  },
+  {
     path: '/app/supplier/inbox',
     context: 'supplier',
     requiredPermissions: [],
@@ -835,6 +1014,39 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/supplier/supplier-availability-page')).SupplierAvailabilityPage }),
   },
   {
+    // The catalog of services with prices (SP-06): the fourth place of the bar of the phone (SP-D11), the showcase goes to the menu.
+    path: '/app/supplier/services',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierServices',
+    navGroup: 'activity',
+    navPlacement: 'primary',
+    navOrder: 4,
+    navBottom: 4,
+    // "Servizi e prezzi" is 74 px in the bar and "Services and prices" 95 px: neither fits a column of 72 px (360 px screen).
+    navBarKey: 'nav.supplierServicesBar',
+    icon: 'Tag',
+    component: async () => ({ default: (await import('@/features/supplier/services/supplier-services-page')).SupplierServicesPage }),
+  },
+  {
+    // The guided creation of a service, in four steps; the draft is the service itself, saved at every step (SP-06).
+    path: '/app/supplier/services/new',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/services/supplier-service-wizard-page')).SupplierServiceWizardPage,
+    }),
+  },
+  {
+    // One service: every field, the preview that follows what is typed, "Visibile ai clienti" (SP-06).
+    path: '/app/supplier/services/:id',
+    context: 'supplier',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/supplier/services/supplier-service-detail-page')).SupplierServiceDetailPage,
+    }),
+  },
+  {
     // Preview of the public showcase and where it is published (SU-13, A4-16).
     path: '/app/supplier/showcase',
     context: 'supplier',
@@ -842,10 +1054,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.supplierShowcase',
     navGroup: 'activity',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
+    navOrder: 5,
     icon: 'Store',
     component: async () => ({ default: (await import('@/features/supplier/supplier-showcase-preview-page')).SupplierShowcasePreviewPage }),
+  },
+  {
+    // The customers of the supplier (SP-16b): the hosts of CasaZen and the private customers of the showcase, with their jobs. The sixth of
+    // the seven entries of the menu (SP-D1); on the phone it is behind "Altro". No flag.
+    path: '/app/supplier/clients',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierClients',
+    navGroup: 'activity',
+    navPlacement: 'primary',
+    navOrder: 6,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/supplier/clients/supplier-clients-page')).SupplierClientsPage }),
   },
   {
     // Help page for connecting an external calendar via iCal (SU-15), moved inside the supplier shell with its own
@@ -856,9 +1080,23 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     navKey: 'nav.supplierHelpIcal',
     navPlacement: 'secondary',
-    navOrder: 31,
+    navOrder: 32,
     icon: 'HelpCircle',
     component: async () => ({ default: (await import('@/features/supplier/ical-help-page')).IcalHelpPage }),
+  },
+  {
+    // The earnings of the supplier (SP-16b): gross, commission and net of every job. A page that hangs from the settings (SP-D1): in no
+    // menu, the page of the settings links to it. Behind `SupplierOnlinePayments`: while it is off the entry is hidden and the route
+    // goes to the home of the area.
+    path: '/app/supplier/earnings',
+    context: 'supplier',
+    requiredPermissions: [],
+    navKey: 'nav.supplierEarnings',
+    navParent: '/app/supplier/settings',
+    navOrder: 1,
+    icon: 'Coins',
+    featureFlag: 'supplierOnlinePayments',
+    component: async () => ({ default: (await import('@/features/supplier/earnings/supplier-earnings-page')).SupplierEarningsPage }),
   },
 ];
 

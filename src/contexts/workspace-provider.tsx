@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
-import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
+import { AREA_ORDER } from '@/config/areas';
+import { getDefaultRoute, getVisibleNavEntries, type AppContextKey } from '@/config/route-manifest';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
 import { isAccountInactiveError } from '@/lib/api-errors';
@@ -20,7 +21,7 @@ import {
 
 function readStoredContext(): AppContextKey | null {
   const stored = localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY);
-  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin' || stored === 'supplier') {
+  if (stored === 'short-rent' || stored === 'long-rent' || stored === 'admin' || stored === 'supplier' || stored === 'account') {
     return stored;
   }
 
@@ -32,6 +33,14 @@ function readStoredContext(): AppContextKey | null {
     return 'long-rent';
   }
   return null;
+}
+
+/**
+ * The API may list a context the app has no area for (the `account` one had none until AM-04). The list is sorted by key, so an
+ * unknown one could come first and become the active context: only the contexts of an area of the app are kept.
+ */
+function isKnownContext(context: ContextBootstrapDto): boolean {
+  return AREA_ORDER.includes(context.contextKey);
 }
 
 function resolveActiveContext(
@@ -46,14 +55,42 @@ function resolveActiveContext(
   return available[0]?.contextKey ?? null;
 }
 
+/**
+ * The backend names `/app/account` as the home of the account area for every role, but only the owner and the administrators
+ * may open that page: the accountant and the property manager hold other permissions of the context. The home of the area is
+ * the first page of its menu that the role may open (AM-04, decision AM-D26).
+ */
+function withAccountHome(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
+  return contexts.map((context) => {
+    if (context.contextKey !== 'account') return context;
+    const home = getVisibleNavEntries('account', (_, permission) => context.permissions.includes(permission))[0];
+    return home ? { ...context, defaultRoute: home.path } : context;
+  });
+}
+
+/**
+ * The contexts as the workspace keeps them: the account one with its own home, and last. The API lists them sorted by key, so
+ * `account` would come first, and the first context is where a person with no saved area starts (`resolveActiveContext`, and the
+ * guard and the legacy redirect, read `contexts[0]`): a person with another area starts there, as before, and the account area
+ * stays one click away in the area selector.
+ */
+function arrangeContexts(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
+  const withHome = withAccountHome(contexts);
+  return [
+    ...withHome.filter((context) => context.contextKey !== 'account'),
+    ...withHome.filter((context) => context.contextKey === 'account'),
+  ];
+}
+
 function applyResolvedContext(
   available: ContextBootstrapDto[],
   preferred: AppContextKey | null | undefined,
   setContexts: (contexts: ContextBootstrapDto[]) => void,
   setActiveContextState: (context: AppContextKey | null) => void,
 ) {
-  setContexts(available);
-  const resolved = resolveActiveContext(available, preferred);
+  const arranged = arrangeContexts(available);
+  setContexts(arranged);
+  const resolved = resolveActiveContext(arranged, preferred);
   setActiveContextState(resolved);
   if (resolved) {
     localStorage.setItem(ACTIVE_CONTEXT_STORAGE_KEY, resolved);
@@ -120,7 +157,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       try {
         const bootstrap = await contextsApi.getContexts();
         if (!mounted) return;
-        let loaded = bootstrap.contexts ?? [];
+        let loaded = (bootstrap.contexts ?? []).filter(isKnownContext);
         if (loaded.length === 0) {
           loaded = await resolveContextsFromAuth(authUser, getAccessToken);
         }
@@ -175,7 +212,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
     // The area in the address is the active one, supplier console included (UI-00). The old `/supplier/...` addresses
     // never get here: they are redirected to `/app/supplier/...` by routes outside this provider.
-    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin|supplier)(?:\/|$)/);
+    const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin|supplier|account)(?:\/|$)/);
     if (appMatch) {
       const fromUrl = appMatch[1] as AppContextKey;
       if (!contexts.some((c) => c.contextKey === fromUrl)) {

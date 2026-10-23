@@ -1,0 +1,300 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { cleanup, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import { toast } from 'sonner';
+import i18n from '@/i18n/config';
+import { propertyModeApi } from '@/api/property-mode.api';
+import { AppShellContext } from '@/components/layout/app-shell-context';
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import * as propertyQueries from '@/queries/use-properties';
+import type { Property, PropertyDetailDto } from '@/types';
+import type { PropertyModeChange } from '@/types/property-mode.types';
+import { PropertyDetailPage } from '../../property-detail-page';
+import { LongRentPropertyDetailPage } from '../../long-rent/long-rent-property-detail-page';
+import { ScheduledChangeNotice } from '../components/scheduled-change-notice';
+import { useModeChangeMenuItems } from '../use-mode-entry';
+import { PROPERTY_ID, axiosError, change, state } from './mode-fixtures';
+
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('@/queries/use-properties');
+vi.mock('@/api/property-mode.api', () => ({
+  propertyModeApi: { getState: vi.fn(), preview: vi.fn(), schedule: vi.fn(), cancel: vi.fn() },
+}));
+vi.mock('@/api/service-requests.api', () => ({
+  fetchServiceRequests: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 }),
+  markServiceRequestPaid: vi.fn(),
+  markLongRentServiceRequestPaid: vi.fn(),
+}));
+vi.mock('@/queries/use-cin', () => ({ useUpdatePropertyCin: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => false }) }));
+vi.mock('../../components/ical-settings', () => ({ IcalSettings: () => <div /> }));
+vi.mock('../../components/property-cadastral-card', () => ({ PropertyCadastralCard: () => <div /> }));
+vi.mock('../../components/property-documents-section', () => ({ PropertyDocumentsSection: () => <div /> }));
+vi.mock('@/features/service-requests/components/long-rent-service-requests', () => ({ LongRentServiceRequests: () => <div /> }));
+
+const WAIT = { timeout: 5000 };
+
+interface Setup {
+  /** The areas where the person may write properties. */
+  writes?: Array<'short-rent' | 'long-rent'>;
+}
+
+function providers({ writes = ['short-rent', 'long-rent'] }: Setup = {}) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const workspace = {
+    hasPermission: (area: string, permission: string) => permission === 'property.write' && (writes as string[]).includes(area),
+  } as unknown as WorkspaceContextValue;
+  return function Providers({ children, path }: { children: ReactNode; path?: string }) {
+    return (
+      <I18nextProvider i18n={i18n}>
+        <QueryClientProvider client={client}>
+          <WorkspaceContext.Provider value={workspace}>
+            <AppShellContext.Provider value={{ contextKey: 'long-rent' }}>
+              <MemoryRouter initialEntries={[path ?? '/']}>{children}</MemoryRouter>
+            </AppShellContext.Provider>
+          </WorkspaceContext.Provider>
+        </QueryClientProvider>
+      </I18nextProvider>
+    );
+  };
+}
+
+beforeEach(async () => {
+  vi.clearAllMocks();
+  await i18n.changeLanguage('it');
+  vi.mocked(propertyModeApi.getState).mockResolvedValue(state());
+});
+
+afterEach(() => cleanup());
+
+describe('useModeChangeMenuItems (PM-03)', () => {
+  it('useModeChangeMenuItems_NoPermission_GivesNoEntry', () => {
+    const entries = [
+      { setup: { writes: [] }, area: 'short-rent' as const },
+      // The permission of the other area does not open this one.
+      { setup: { writes: ['long-rent' as const] }, area: 'short-rent' as const },
+    ];
+    for (const { setup, area } of entries) {
+      const { result } = renderHook(() => useModeChangeMenuItems(area, PROPERTY_ID), { wrapper: providers(setup) });
+      expect(result.current).toEqual([]);
+    }
+  });
+
+  it('useModeChangeMenuItems_WithPermission_IsTheWizardOfTheSectionOfThePage', () => {
+    const short = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: providers() });
+    expect(short.result.current).toEqual([
+      expect.objectContaining({ label: 'Cambia modalità', to: `/app/short-rent/properties/${PROPERTY_ID}/mode`, testId: 'property-mode-change' }),
+    ]);
+    const long = renderHook(() => useModeChangeMenuItems('long-rent', PROPERTY_ID), { wrapper: providers() });
+    expect(long.result.current[0]).toMatchObject({ to: `/app/long-rent/properties/${PROPERTY_ID}/mode` });
+  });
+
+  it('useModeChangeMenuItems_OutsideTheWorkspace_GivesNoEntryInsteadOfFailing', () => {
+    const OnlyI18n = ({ children }: { children: ReactNode }) => <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
+    const { result } = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: OnlyI18n });
+    expect(result.current).toEqual([]);
+  });
+});
+
+describe('the pages of a property (PM-03)', () => {
+  const detail = {
+    id: PROPERTY_ID,
+    ownerId: 'owner',
+    name: 'Test Villa',
+    description: '',
+    address: 'Via Roma 1',
+    city: 'Roma',
+    postalCode: '00100',
+    bedrooms: 2,
+    bathrooms: 1,
+    maxGuests: 4,
+    nightlyRate: 100,
+    cleaningFee: 0,
+    damageDeposit: 0,
+    cinCode: null,
+    cinStatus: 'Missing',
+    timezone: 'Europe/Rome',
+    amenities: [],
+    photoUrls: [],
+    houseRules: '',
+    isActive: true,
+    isPaused: false,
+    pausedAt: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+    documents: [],
+    otaIntegrations: [],
+    bookingsSummary: { totalBookings: 0, upcomingBookings: 0, activeBookings: 0, nextCheckIn: null, nextCheckOut: null },
+    pricingAdapterSummary: { isEnabled: false, lastAdaptedAt: null, nextRunOn: null },
+  } as unknown as PropertyDetailDto;
+
+  beforeEach(() => {
+    vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({ data: detail, isLoading: false, isError: false } as ReturnType<typeof propertyQueries.usePropertyDetail>);
+    vi.mocked(propertyQueries.usePauseProperty).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof propertyQueries.usePauseProperty>);
+    vi.mocked(propertyQueries.useActivateProperty).mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as ReturnType<typeof propertyQueries.useActivateProperty>);
+    vi.mocked(propertyQueries.useDeleteProperty).mockReturnValue({ mutateAsync: vi.fn(), isPending: false, isSuccess: false } as unknown as ReturnType<typeof propertyQueries.useDeleteProperty>);
+    vi.mocked(propertyQueries.useProperty).mockReturnValue({
+      data: { id: PROPERTY_ID, name: 'Bilocale Monza', city: 'Monza', rentalMode: 'Long', address: 'Via Italia 1', postalCode: '20900', bedrooms: 2, bathrooms: 1 } as unknown as Property,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+      isFetching: false,
+    } as unknown as ReturnType<typeof propertyQueries.useProperty>);
+    vi.mocked(propertyQueries.usePropertyDocuments).mockReturnValue({ data: [], isLoading: false, isError: false } as unknown as ReturnType<typeof propertyQueries.usePropertyDocuments>);
+  });
+
+  function renderShort(setup?: Setup) {
+    const Providers = providers(setup);
+    return render(
+      <Providers path={`/app/short-rent/properties/${PROPERTY_ID}`}>
+        <Routes>
+          <Route path="/app/short-rent/properties/:id" element={<PropertyDetailPage />} />
+        </Routes>
+      </Providers>,
+    );
+  }
+
+  function renderLong(setup?: Setup) {
+    const Providers = providers(setup);
+    return render(
+      <Providers path={`/app/long-rent/properties/${PROPERTY_ID}`}>
+        <Routes>
+          <Route path="/app/long-rent/properties/:id" element={<LongRentPropertyDetailPage />} />
+        </Routes>
+      </Providers>,
+    );
+  }
+
+  async function openTheMenu() {
+    fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
+    return screen.findByRole('menu');
+  }
+
+  it('PropertyDetailPage_OffersTheChangeInTheMenuOfTheThreeDots', async () => {
+    renderShort();
+
+    // The change is in the menu "⋯" of the page, with the other actions of the property.
+    const menu = await openTheMenu();
+    expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}/mode`);
+  });
+
+  it('PropertyDetailPage_WithoutTheWritePermission_HasNoEntry', () => {
+    renderShort({ writes: [] });
+
+    expect(screen.queryByRole('button', { name: i18n.t('pageHeader.moreActions') })).not.toBeInTheDocument();
+  });
+
+  it('LongRentPropertyDetailPage_PutsTheChangeInTheMenuNextToTheEdit', async () => {
+    renderLong();
+
+    fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getByRole('menuitem', { name: i18n.t('longRentProperties.detail.edit') })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute(
+      'href',
+      `/app/long-rent/properties/${PROPERTY_ID}/mode`,
+    );
+  });
+
+  it('thePages_AChangeWaits_ShowTheRowOfStatusInTheirOwnSection', async () => {
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
+    renderShort();
+    expect(await screen.findByTestId('property-mode-notice', undefined, WAIT)).toHaveTextContent("Passaggio all'affitto lungo il 1 dicembre 2026");
+    cleanup();
+
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(
+      state({ rentalMode: 'Long', scheduledChange: change({ fromMode: 'Long', toMode: 'Short' }) }),
+    );
+    renderLong();
+    const notice = await screen.findByTestId('property-mode-notice', undefined, WAIT);
+    expect(notice).toHaveTextContent("Passaggio all'affitto breve il 1 dicembre 2026");
+    expect(notice).toHaveTextContent("Fino ad allora l'immobile resta in Affitti lunghi.");
+  });
+});
+
+describe('ScheduledChangeNotice (PM-03)', () => {
+  function renderNotice(setup?: Setup) {
+    const Providers = providers(setup);
+    return render(
+      <Providers>
+        <ScheduledChangeNotice area="short-rent" propertyId={PROPERTY_ID} />
+      </Providers>,
+    );
+  }
+
+  it('ScheduledChangeNotice_NoChangeWaiting_RendersNothing', async () => {
+    const { container } = renderNotice();
+
+    await waitFor(() => expect(propertyModeApi.getState).toHaveBeenCalledWith(PROPERTY_ID), WAIT);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('ScheduledChangeNotice_AChangeWaits_SaysWhatAndWhenAndWithdrawsItAfterAsking', async () => {
+    let current: PropertyModeChange | null = change();
+    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ scheduledChange: current }));
+    vi.mocked(propertyModeApi.cancel).mockImplementation(async () => {
+      current = null;
+    });
+    renderNotice();
+
+    const notice = await screen.findByTestId('property-mode-notice', undefined, WAIT);
+    expect(notice).toHaveTextContent("Passaggio all'affitto lungo il 1 dicembre 2026");
+    expect(notice).toHaveTextContent("Fino ad allora l'immobile resta in Affitti brevi.");
+
+    fireEvent.click(screen.getByTestId('property-mode-notice-cancel'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByTestId('confirmation-consequences')).toHaveTextContent("L'immobile resta in Affitti brevi.");
+    // Nothing is withdrawn by opening the question.
+    expect(propertyModeApi.cancel).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('propertyMode.cancel.action') }));
+
+    await waitFor(() => expect(propertyModeApi.cancel).toHaveBeenCalledWith(PROPERTY_ID, 'c1'), WAIT);
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('propertyMode.cancel.done'));
+    // The state is read again and the row is gone.
+    await waitFor(() => expect(screen.queryByTestId('property-mode-notice')).not.toBeInTheDocument(), WAIT);
+  });
+
+  it('ScheduledChangeNotice_KeepTheChange_WithdrawsNothing', async () => {
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
+    renderNotice();
+
+    fireEvent.click(await screen.findByTestId('property-mode-notice-cancel', undefined, WAIT));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('propertyMode.cancel.keep') }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), WAIT);
+    expect(propertyModeApi.cancel).not.toHaveBeenCalled();
+    expect(screen.getByTestId('property-mode-notice')).toBeInTheDocument();
+  });
+
+  it('ScheduledChangeNotice_WithoutTheWritePermission_ShowsTheRowButNotTheWithdrawal', async () => {
+    vi.mocked(propertyModeApi.getState).mockResolvedValue(state({ scheduledChange: change() }));
+    renderNotice({ writes: [] });
+
+    expect(await screen.findByTestId('property-mode-notice', undefined, WAIT)).toHaveTextContent('Passaggio');
+    expect(screen.queryByTestId('property-mode-notice-cancel')).not.toBeInTheDocument();
+  });
+
+  it('ScheduledChangeNotice_TheWithdrawalFails_SaysWhyAndShowsTheStateTheServerHas', async () => {
+    let current: PropertyModeChange | null = change();
+    vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ scheduledChange: current }));
+    vi.mocked(propertyModeApi.cancel).mockImplementation(async () => {
+      // Someone else did it first: the change is not waiting any more.
+      current = null;
+      throw axiosError(409, { code: 'property_mode_change_not_scheduled' });
+    });
+    renderNotice();
+
+    fireEvent.click(await screen.findByTestId('property-mode-notice-cancel', undefined, WAIT));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('propertyMode.cancel.action') }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.propertyModeChangeNotScheduled')), WAIT);
+    expect(toast.success).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByTestId('property-mode-notice')).not.toBeInTheDocument(), WAIT);
+  });
+});

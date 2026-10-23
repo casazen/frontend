@@ -13,6 +13,8 @@ import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { SupplierRegisterPage } from '@/pages/supplier-register-page';
 import { SupplierClaimPage } from '@/pages/supplier-claim-page';
 import { HostInvitePage } from '@/pages/host-invite-page';
+import { InviteAcceptPage } from '@/pages/invite-accept-page';
+import { ORG_INVITE_ACCEPT_PATH } from '@/lib/org-invitation';
 import { SearchPage } from '@/features/search/search-page';
 import { WorkspaceProvider } from '@/contexts/workspace-provider';
 import { AreaProvider } from '@/contexts/area-provider';
@@ -40,6 +42,7 @@ import { CheckoutPage } from '@/features/public-booking/checkout-page';
 import { GuestBookingsPage } from '@/features/public-booking/guest-bookings-page';
 import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-request-confirm-page';
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
+import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
@@ -52,6 +55,7 @@ import { DpaPage, PrivacyPage, TermsPage } from '@/features/legal/legal-document
 import { SubprocessorsPage } from '@/features/legal/subprocessors-page';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { IcalHelpPage } from '@/features/supplier/ical-help-page';
+import { ProductGuidePage } from '@/features/help/product-guide-page';
 import { devRoutes } from './dev-routes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
@@ -76,10 +80,18 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   });
 
   // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
-  // the area (UI-00). Short-rent and admin have the page in the manifest.
+  // the area (UI-00). Short-rent, account and admin have the page in the manifest.
   if (!entries.some((entry) => entry.path === prefix)) {
     children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
   }
+  children.push({
+    path: 'help',
+    element: (
+      <ContextRouteGuard contextKey={contextKey}>
+        <ProductGuidePage />
+      </ContextRouteGuard>
+    ),
+  });
   return children;
 }
 
@@ -119,6 +131,11 @@ const workspaceRoutes: RouteObject[] = [
         path: 'long-rent',
         element: <ContextLayout />,
         children: [...buildContextChildren('long-rent')],
+      },
+      {
+        path: 'account',
+        element: <ContextLayout />,
+        children: [...buildContextChildren('account')],
       },
       {
         path: 'admin',
@@ -169,6 +186,13 @@ export const appRoutes: RouteObject[] = [
         // the protected route and the onboarding guard, which would send a new account to the onboarding first.
         path: '/invito-host/:token',
         element: <HostInvitePage />,
+      },
+      {
+        // Link of the email that invites a person to work in an org (AM-04c): the same place as the one above, for the same reason (it
+        // leads to the sign-in or the sign-up, and a new account must not be sent to the onboarding before it has accepted). The secret
+        // of the link is in `?token=`; the page takes it out of the address at once.
+        path: ORG_INVITE_ACCEPT_PATH,
+        element: <InviteAcceptPage />,
       },
       {
         // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
@@ -228,6 +252,8 @@ export const appRoutes: RouteObject[] = [
       { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
       // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
+      // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
+      { path: 'booking/:bookingId/review', element: <ReviewLinkPage /> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)

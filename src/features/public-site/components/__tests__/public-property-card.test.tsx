@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import type { PublicPropertyDto } from '@/types';
+import type { PropertyCardSections } from '@/features/public-site/lib/property-card-sections';
 import { PublicPropertyCard } from '../PublicPropertyCard';
 
 function property(overrides: Partial<PublicPropertyDto> = {}): PublicPropertyDto {
@@ -119,5 +120,56 @@ describe('PublicPropertyCard', () => {
     const card = renderCard({ cinStatus: 'Invalid', cinCode: 'XX' });
 
     expect(within(card).queryByTestId('public-cin')).not.toBeInTheDocument();
+  });
+
+  describe('rows of the grid', () => {
+    function renderInGrid(overrides: Partial<PublicPropertyDto>, sections?: PropertyCardSections) {
+      render(
+        <I18nextProvider i18n={i18n}>
+          <MemoryRouter>
+            <PublicPropertyCard property={property(overrides)} to="/book/villa-mare/property/casa-del-faro" sections={sections} />
+          </MemoryRouter>
+        </I18nextProvider>,
+      );
+      return screen.getByTestId('public-property-card');
+    }
+
+    it('PublicPropertyCard_AllTheParts_HasOneRowForEach', () => {
+      const card = renderInGrid({});
+
+      // image, name, place, CIN, description, facts, price line
+      expect(card.children).toHaveLength(7);
+      expect(card.style.getPropertyValue('--card-rows')).toBe('7');
+    });
+
+    it('PublicPropertyCard_AloneWithoutSomeParts_HasNoEmptyRows', () => {
+      const card = renderInGrid({ description: '', cinStatus: 'Missing', cinCode: null });
+
+      expect(card.children).toHaveLength(5);
+      expect(card.style.getPropertyValue('--card-rows')).toBe('5');
+    });
+
+    it('PublicPropertyCard_GridHasPartsThisCardLacks_KeepsTheirRowsEmpty', () => {
+      const card = renderInGrid(
+        { description: '', cinStatus: 'Missing', cinCode: null },
+        { place: true, cin: true, description: true, facts: true },
+      );
+
+      // The same 7 rows as the card of a neighbour that has everything: the empty ones keep the others in their place.
+      expect(card.children).toHaveLength(7);
+      expect(card.style.getPropertyValue('--card-rows')).toBe('7');
+      expect(within(card).queryByTestId('public-cin')).not.toBeInTheDocument();
+      expect(within(card).getByTestId('public-property-card-facts')).toBeInTheDocument();
+      expect(within(card).getByTestId('public-property-card-price')).toBeInTheDocument();
+    });
+
+    it('PublicPropertyCard_GridLacksPartsThatThisCardHasNotToo_LeavesThemOut', () => {
+      const card = renderInGrid(
+        { description: '', cinStatus: 'Missing', cinCode: null },
+        { place: true, cin: false, description: false, facts: true },
+      );
+
+      expect(card.children).toHaveLength(5);
+    });
   });
 });

@@ -44,6 +44,7 @@ const PAGE_KEYWORDS: ReadonlyArray<{ navKey: string; keywordsKey: string }> = [
   { navKey: 'nav.supplierDashboard', keywordsKey: 'commandPalette.keywords.supplierDashboard' },
   { navKey: 'nav.supplierHelpIcal', keywordsKey: 'commandPalette.keywords.supplierHelpIcal' },
   { navKey: 'nav.supplierInbox', keywordsKey: 'commandPalette.keywords.supplierInbox' },
+  { navKey: 'nav.supplierServices', keywordsKey: 'commandPalette.keywords.supplierServices' },
   { navKey: 'nav.supplierShowcase', keywordsKey: 'commandPalette.keywords.supplierShowcase' },
   { navKey: 'nav.suppliers', keywordsKey: 'commandPalette.keywords.suppliers' },
   { navKey: 'nav.taxRates', keywordsKey: 'commandPalette.keywords.taxRates' },

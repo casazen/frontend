@@ -37,7 +37,7 @@ export async function completeHostOnboarding(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 30_000 });
 }
 
-/** Creates the property from the form; returns its id (read from the list link). */
+/** Creates the property from the form; returns its id (read from the answer of the creation). */
 export async function createProperty(page: Page, slug: string): Promise<string> {
   await page.goto('/app/short-rent/properties/create');
   await page.locator('#name').fill(PROPERTY.name);
@@ -52,13 +52,16 @@ export async function createProperty(page: Page, slug: string): Promise<string> 
   await page.locator('#bathrooms').fill('1');
   await page.locator('#maxGuests').fill('4');
   await page.locator('#nightlyRate').fill(String(PROPERTY.nightlyRate));
+  const created = page.waitForResponse(
+    (response) => response.request().method() === 'POST' && /\/properties\/?$/.test(new URL(response.url()).pathname),
+    { timeout: 30_000 },
+  );
   await page.getByRole('button', { name: 'Crea immobile' }).click();
+  const id = ((await (await created).json()) as { id?: string }).id ?? '';
+  expect(id, 'property id from the answer of the creation').toMatch(/^[0-9a-f-]{36}$/);
   await expect(page).toHaveURL(/\/app\/short-rent\/properties$/, { timeout: 30_000 });
-  const link = page.getByRole('link', { name: PROPERTY.name }).first();
-  await expect(link).toBeVisible({ timeout: 15_000 });
-  const href = (await link.getAttribute('href')) ?? '';
-  const id = href.split('/').pop() ?? '';
-  expect(id, 'property id from the list link').toMatch(/^[0-9a-f-]{36}$/);
+  // The list shows it: its name is the button that opens the drawer of the property.
+  await expect(page.getByRole('button', { name: PROPERTY.name }).first()).toBeVisible({ timeout: 15_000 });
   return id;
 }
 
@@ -66,7 +69,10 @@ async function uploadDocument(page: Page, type: string): Promise<void> {
   await page.getByRole('button', { name: 'Carica documento' }).click();
   await page.locator('#documentType').selectOption(type);
   await page.locator('input[type="file"]').setInputFiles({ name: `${type}.png`, mimeType: 'image/png', buffer: PNG_1X1 });
-  await page.getByRole('dialog').getByRole('button', { name: 'Carica', exact: true }).click();
+  await page.getByRole('dialog').getByRole('checkbox', { name: /Ho caricato tutte le pagine/ }).check();
+  const submit = page.getByRole('dialog').getByRole('button', { name: 'Carica', exact: true });
+  await expect(submit).toBeEnabled();
+  await submit.click();
   await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 20_000 });
 }
 
@@ -78,7 +84,7 @@ export async function activateProperty(page: Page, propertyId: string): Promise<
   await expect(page.getByTestId('activation-panel-documents')).toBeVisible({ timeout: 20_000 });
   for (const type of ['CinCertificate', 'PropertyLicense']) {
     await uploadDocument(page, type);
-    await expect(page.getByTestId('activation-documents')).toContainText(`${type}.png`);
+    await expect(page.getByTestId('activation-documents')).toContainText(`${type}.pdf`);
   }
 
   await page.goto(`${base}?step=safety`);

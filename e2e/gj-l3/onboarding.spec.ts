@@ -164,6 +164,9 @@ test.describe('Onboarding L3 (real stack)', () => {
 
       // The dashboard with the checklist: the property is done, the rest is asked one step at a time.
       await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 30_000 });
+      // The Home says the next step alone; the whole list opens from "Tutti i passi".
+      await expect(page.getByTestId('activation-next-step')).toBeVisible({ timeout: 30_000 });
+      await page.getByTestId('home-next-step-all').click();
       const checklist = page.getByTestId('activation-checklist');
       await expect(checklist).toBeVisible({ timeout: 30_000 });
       await expect(page.getByTestId('activation-step-property')).toHaveAttribute('data-state', 'done', { timeout: 20_000 });

@@ -24,6 +24,9 @@ export const SITEMAP_UPSTREAM_PATH = 'public/sitemap.xml';
 /** Backend endpoint of the index of the booking sites' sitemaps (`/sitemap-book.xml`). */
 export const BOOKING_SITEMAP_INDEX_UPSTREAM_PATH = 'public/sitemap-book.xml';
 
+/** Backend endpoint of the sitemap of the supplier showcases (`/sitemap-supplier.xml`). */
+export const SUPPLIER_SITEMAP_UPSTREAM_PATH = 'public/sitemap-supplier.xml';
+
 /** The Host the crawler used (Vercel sets `x-forwarded-host` on a rewritten request), only a plain host name; else null. */
 function requestHost(headers: Headers | undefined): string | null {
   const value = (headers?.get('x-forwarded-host') ?? headers?.get('host') ?? '').split(',')[0].trim().toLowerCase();
@@ -35,12 +38,14 @@ const ORG_SLUG = /^[A-Za-z0-9-]{1,100}$/;
 
 /**
  * Backend path of the sitemap a rewrite asks for, or null when the request names an org that cannot exist:
- * no parameter is the compliance sitemap, `name=book` the index of the booking sites, `org` one org's sitemap.
+ * no parameter is the compliance sitemap, `name=book` the index of the booking sites, `name=supplier` the supplier
+ * showcases, `org` one org's sitemap.
  */
 export function sitemapUpstreamPath(searchParams: URLSearchParams): string | null {
   const org = searchParams.get('org');
   if (org !== null) return ORG_SLUG.test(org) ? `public/orgs/${org}/sitemap.xml` : null;
   if (searchParams.get('name') === 'book') return BOOKING_SITEMAP_INDEX_UPSTREAM_PATH;
+  if (searchParams.get('name') === 'supplier') return SUPPLIER_SITEMAP_UPSTREAM_PATH;
   return SITEMAP_UPSTREAM_PATH;
 }
 

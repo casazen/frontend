@@ -1,28 +1,177 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FileText, UserRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useFiscalRegime, useAssignFiscalRegime } from '@/queries/use-fiscal';
+import { FocusBlock, PlainSection } from '@/components/shared/calm';
+import { ErrorState } from '@/components/shared/error-state';
+import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { NoteLine } from '@/features/dashboard/components/note-line';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
-import { currentFiscalYear, TAX_NOTE_KEYS } from '@/features/fiscal/fiscal-format';
+import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property-item';
+import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
+import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
-import {
-  STR_FISCAL_REGIMES,
-  type FiscalPropertyRow,
-  type FiscalRegimeSnapshot,
-  type StrFiscalRegime,
-} from '@/api/fiscal.api';
+import { useFiscalRegime, useAssignFiscalRegime } from '@/queries/use-fiscal';
+import type { FiscalRegimeSnapshot, StrFiscalRegime } from '@/api/fiscal.api';
 
-const IMPRESA_REGIMES: readonly StrFiscalRegime[] = ['RegimeOrdinario', 'RegimeForfettario'];
+const WIZARD_PATH = '/app/short-rent/fiscal/wizard';
+const REPORTS_PATH = '/app/short-rent/fiscal/reports';
+const PROPERTIES_PATH = '/app/short-rent/properties';
 
+interface FiscalFocusBlockProps {
+  snapshot: FiscalRegimeSnapshot;
+  focus: FiscalFocus;
+  /** A regime is being saved: the button of the block waits. */
+  pending: boolean;
+  onAssign: (propertyId: string, regime: StrFiscalRegime) => void;
+}
+
+/** The one highlighted block of the page: the next thing to do about the regime of the year, or that nothing is left. */
+function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlockProps) {
+  const { t } = useTranslation();
+  const reports = { label: t('fiscal.reports.link'), href: REPORTS_PATH, testId: 'fiscal-focus-cta' };
+
+  switch (focus.kind) {
+    case 'vat':
+      return (
+        <FocusBlock
+          tone="warning"
+          kicker={t('compliance.cockpit.kicker')}
+          title={t('fiscal.focus.vat.title')}
+          body={t('fiscal.alert.piva', { max: snapshot.maxShortStayApartmentsPerTaxpayer })}
+          primary={{ label: t('fiscal.alert.wizard'), href: WIZARD_PATH, testId: 'fiscal-focus-cta' }}
+          data-testid="fiscal-piva-alert"
+        />
+      );
+    case 'confirm': {
+      const label = t('fiscal.confirmRecommended');
+      return (
+        <FocusBlock
+          tone="warning"
+          kicker={t('compliance.cockpit.kicker')}
+          title={t('fiscal.focus.confirm.title', { name: focus.row.name })}
+          body={t('fiscal.focus.confirm.body', { regime: t(`fiscal.regime.${focus.regime}`) })}
+          then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
+          primary={{
+            label,
+            ariaLabel: `${label}: ${focus.row.name}`,
+            onClick: () => onAssign(focus.row.propertyId, focus.regime),
+            loading: pending,
+            testId: 'fiscal-focus-cta',
+          }}
+          data-testid="fiscal-focus"
+        />
+      );
+    }
+    case 'choose': {
+      const label = t('fiscal.focus.choose.cta');
+      return (
+        <FocusBlock
+          tone="warning"
+          kicker={t('compliance.cockpit.kicker')}
+          title={t('fiscal.focus.choose.title', { name: focus.row.name })}
+          body={t('fiscal.taxNote.regimeNotAssigned')}
+          then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
+          primary={{
+            label,
+            ariaLabel: `${label}: ${focus.row.name}`,
+            onClick: () => document.getElementById(fiscalRegimeSelectId(focus.row.propertyId))?.focus(),
+            testId: 'fiscal-focus-cta',
+          }}
+          data-testid="fiscal-focus"
+        />
+      );
+    }
+    case 'ok':
+      return (
+        <FocusBlock
+          tone="success"
+          title={t('fiscal.focus.ok.title', { year: snapshot.taxYear })}
+          body={t('fiscal.reports.description')}
+          primary={reports}
+          data-testid="fiscal-focus"
+        />
+      );
+    case 'reports':
+      return <FocusBlock title={t('fiscal.focus.reports.title')} body={t('fiscal.reports.description')} primary={reports} data-testid="fiscal-focus" />;
+  }
+}
+
+interface FiscalOverviewProps {
+  snapshot: FiscalRegimeSnapshot;
+  canWrite: boolean;
+  pending: boolean;
+  onAssign: (propertyId: string, regime: StrFiscalRegime) => void;
+}
+
+/** What the page shows once the regime of the year is loaded: the block with the next thing to do, then one row per property. */
+function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOverviewProps) {
+  const { t } = useTranslation();
+
+  if (snapshot.properties.length === 0) {
+    return (
+      <FocusBlock
+        title={t('fiscal.empty.title')}
+        body={t('fiscal.empty.description')}
+        // Whoever may not add a property goes to the list of them: the button never leads where the guard says no.
+        primary={
+          canWrite
+            ? { label: t('fiscal.empty.action'), href: `${PROPERTIES_PATH}/create`, testId: 'fiscal-empty-cta' }
+            : { label: t('compliance.cockpit.allClear.cta'), href: PROPERTIES_PATH, testId: 'fiscal-empty-cta' }
+        }
+        data-testid="fiscal-dashboard-empty"
+      />
+    );
+  }
+
+  const focus = fiscalFocus(snapshot, canWrite);
+
+  return (
+    <>
+      <FiscalFocusBlock snapshot={snapshot} focus={focus} pending={pending} onAssign={onAssign} />
+
+      <PlainSection title={t('fiscal.list.title')} data-testid="fiscal-properties-section">
+        {/* The block above already says it when the partita IVA is what is missing; otherwise it stays here as a note. */}
+        {snapshot.requiresPartitaIva && focus.kind !== 'vat' ? (
+          <p data-testid="fiscal-piva-alert">
+            <NoteLine note={{ text: t('fiscal.alert.piva', { max: snapshot.maxShortStayApartmentsPerTaxpayer }), tone: 'warning' }} />
+          </p>
+        ) : null}
+        <p data-testid="fiscal-str-count" className="text-sm text-foreground/70">
+          {t('fiscal.count', { count: snapshot.strPropertyCount, year: snapshot.taxYear })}
+        </p>
+        <ul role="list" className="divide-y divide-border border-y border-border">
+          {snapshot.properties.map((row) => (
+            <FiscalPropertyItem
+              key={row.propertyId}
+              row={row}
+              snapshot={snapshot}
+              pending={pending}
+              canWrite={canWrite}
+              onAssign={(regime) => onAssign(row.propertyId, regime)}
+            />
+          ))}
+        </ul>
+      </PlainSection>
+    </>
+  );
+}
+
+/**
+ * The fiscal regime of the year, property by property: the one thing to do first (confirm or choose a regime, or the partita
+ * IVA when a taxpayer is over the threshold), then each property with its regime and its state. Whoever may only look sees the
+ * state of each one and the reports. Everything comes from `GET fiscal/regime`; a regime is chosen with
+ * `PUT fiscal/properties/{id}/regime` and never applied on its own.
+ */
 export function FiscalDashboardPage() {
   const { t } = useTranslation();
+  const { hasPermission } = useWorkspace();
+  const canWrite = hasPermission('short-rent', 'property.write');
   const taxYear = useMemo(() => currentFiscalYear(), []);
-  const { data, isLoading, isError, error, refetch, isFetching } = useFiscalRegime(taxYear);
+  const { data, isLoading, isError, error, refetch } = useFiscalRegime(taxYear);
   const assign = useAssignFiscalRegime(taxYear);
 
   const assignRegime = (propertyId: string, regime: StrFiscalRegime) =>
@@ -36,190 +185,31 @@ export function FiscalDashboardPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6" data-testid="fiscal-dashboard-page">
-        <PageHeader title={t('fiscal.page.title', { year: taxYear })} description={t('fiscal.page.description')} />
+      <div className="space-y-6 md:space-y-8" data-testid="fiscal-dashboard-page">
+        <PageHeader
+          title={t('fiscal.page.title', { year: taxYear })}
+          description={t('fiscal.page.description')}
+          crumbs="auto"
+          secondary={[
+            ...(canWrite ? [{ label: t('fiscal.wizard.link'), icon: UserRound, to: WIZARD_PATH, testId: 'fiscal-profile-link' }] : []),
+            { label: t('fiscal.reports.link'), icon: FileText, to: REPORTS_PATH, testId: 'fiscal-reports-link' },
+          ]}
+        />
+
+        {isError && !data ? (
+          // An API error is never shown as "no properties".
+          <ErrorState title={t('fiscal.loadError')} error={error} onRetry={() => void refetch()} testId="fiscal-dashboard-error" />
+        ) : isLoading ? (
+          <div data-testid="fiscal-loading" className="space-y-6">
+            <SkeletonCard lines={3} label={t('fiscal.loading')} />
+            <SkeletonLine lines={4} />
+          </div>
+        ) : data ? (
+          <FiscalOverview snapshot={data} canWrite={canWrite} pending={assign.isPending} onAssign={assignRegime} />
+        ) : null}
+
         <FiscalDisclaimer />
-        {isLoading && <p data-testid="fiscal-loading">{t('fiscal.loading')}</p>}
-        {isError && (
-          <Card>
-            <CardContent className="space-y-3 py-8 text-center" data-testid="fiscal-dashboard-error">
-              <p className="text-destructive">{getProblemMessage(error, t) ?? t('fiscal.loadError')}</p>
-              <Button variant="outline" size="sm" disabled={isFetching} onClick={() => void refetch()}>
-                {t('fiscal.retry')}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-        {data && (
-          <>
-            {data.requiresPartitaIva && (
-              <div
-                data-testid="fiscal-piva-alert"
-                className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm"
-              >
-                {t('fiscal.alert.piva', { max: data.maxShortStayApartmentsPerTaxpayer })}{' '}
-                <Link className="underline" to="/app/short-rent/fiscal/wizard">
-                  {t('fiscal.alert.wizard')}
-                </Link>
-              </div>
-            )}
-            <p data-testid="fiscal-str-count">
-              {t('fiscal.count', { count: data.strPropertyCount, year: data.taxYear })}
-            </p>
-            {data.properties.length === 0 ? (
-              <Card>
-                <CardContent className="space-y-3 py-8 text-center" data-testid="fiscal-dashboard-empty">
-                  <p className="font-medium">{t('fiscal.empty.title')}</p>
-                  <p className="text-sm text-muted-foreground">{t('fiscal.empty.description')}</p>
-                  <Button asChild variant="outline" size="sm">
-                    <Link to="/app/short-rent/properties/create">{t('fiscal.empty.action')}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-3">
-                {data.properties.map((row) => (
-                  <FiscalPropertyCard
-                    key={row.propertyId}
-                    row={row}
-                    snapshot={data}
-                    pending={assign.isPending}
-                    onAssign={(regime) => assignRegime(row.propertyId, regime)}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link to="/app/short-rent/fiscal/reports">{t('fiscal.reports.link')}</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/app/short-rent/fiscal/wizard" data-testid="fiscal-profile-link">
-              {t('fiscal.wizard.link')}
-            </Link>
-          </Button>
-        </div>
       </div>
     </AppShell>
-  );
-}
-
-interface FiscalPropertyCardProps {
-  row: FiscalPropertyRow;
-  snapshot: FiscalRegimeSnapshot;
-  pending: boolean;
-  onAssign: (regime: StrFiscalRegime) => void;
-}
-
-function FiscalPropertyCard({ row, snapshot, pending, onAssign }: FiscalPropertyCardProps) {
-  const { t } = useTranslation();
-  const available = new Set(row.availableRegimes ?? []);
-  const taxpayer = snapshot.taxpayers?.find((tp) => tp.index === row.taxpayerIndex);
-  const regimeLabel = (regime: StrFiscalRegime | null) =>
-    regime ? t(`fiscal.regime.${regime}`) : t('fiscal.notAssigned');
-  const unavailableReason = (regime: StrFiscalRegime) =>
-    IMPRESA_REGIMES.includes(regime) ? t('fiscal.unavailable.partitaIva') : t('fiscal.unavailable.threshold');
-  const impresaBlocked = IMPRESA_REGIMES.every((r) => !available.has(r));
-  const canDesignate = available.has('CedolareSecca21') && row.assignedRegime !== 'CedolareSecca21';
-  const movesReducedRate =
-    canDesignate && taxpayer?.reducedRatePropertyId != null && taxpayer.reducedRatePropertyId !== row.propertyId;
-  const selectId = `fiscal-regime-${row.propertyId}`;
-
-  return (
-    <Card data-testid={`fiscal-property-card-${row.propertyId}`}>
-      <CardHeader>
-        <CardTitle className="text-base">{row.name}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        {taxpayer && (
-          <p className="text-muted-foreground" data-testid={`fiscal-taxpayer-${row.propertyId}`}>
-            {taxpayer.isOrgTaxProfile
-              ? t('fiscal.taxpayer.org')
-              : t('fiscal.taxpayer.code', { code: taxpayer.fiscalCodeMasked ?? '' })}
-          </p>
-        )}
-        <p data-testid={`fiscal-assigned-${row.propertyId}`}>
-          {t('fiscal.assigned')}: <span className="font-medium">{regimeLabel(row.assignedRegime)}</span>
-        </p>
-        <p>
-          {t('fiscal.recommended')}: {row.recommendedRegime ? t(`fiscal.regime.${row.recommendedRegime}`) : '—'}
-        </p>
-        {!row.regimeConfirmed && (
-          <p className="text-muted-foreground" data-testid={`fiscal-unconfirmed-${row.propertyId}`}>
-            {t('fiscal.unconfirmed')}
-          </p>
-        )}
-        {row.taxNote && TAX_NOTE_KEYS[row.taxNote] && (
-          <p data-testid={`fiscal-tax-note-${row.propertyId}`} className="text-muted-foreground">
-            {t(TAX_NOTE_KEYS[row.taxNote])}
-          </p>
-        )}
-        <div className="space-y-1">
-          <label htmlFor={selectId} className="font-medium">
-            {t('fiscal.chooseRegime')}
-          </label>
-          <select
-            id={selectId}
-            data-testid={`fiscal-regime-select-${row.propertyId}`}
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            value={row.assignedRegime ?? ''}
-            disabled={pending || available.size === 0}
-            onChange={(e) => {
-              const regime = e.target.value as StrFiscalRegime;
-              if (regime && regime !== row.assignedRegime) onAssign(regime);
-            }}
-          >
-            <option value="" disabled>
-              {t('fiscal.selectPlaceholder')}
-            </option>
-            {STR_FISCAL_REGIMES.map((regime) => (
-              <option key={regime} value={regime} disabled={!available.has(regime)}>
-                {available.has(regime)
-                  ? t(`fiscal.regime.${regime}`)
-                  : t('fiscal.unavailable.option', { regime: t(`fiscal.regime.${regime}`), reason: unavailableReason(regime) })}
-              </option>
-            ))}
-          </select>
-        </div>
-        {impresaBlocked && taxpayer?.isOrgTaxProfile && (
-          <p className="text-muted-foreground" data-testid={`fiscal-piva-required-${row.propertyId}`}>
-            {t('fiscal.unavailable.partitaIvaHint')}{' '}
-            <Link className="underline" to="/app/short-rent/fiscal/wizard">
-              {t('fiscal.wizard.link')}
-            </Link>
-          </p>
-        )}
-        {!row.regimeConfirmed && row.recommendedRegime && available.has(row.recommendedRegime) && (
-          <Button
-            size="sm"
-            data-testid={`fiscal-confirm-${row.propertyId}`}
-            disabled={pending}
-            onClick={() => onAssign(row.recommendedRegime!)}
-          >
-            {t('fiscal.confirmRecommended')}
-          </Button>
-        )}
-        {canDesignate && (
-          <div className="space-y-1">
-            <Button
-              size="sm"
-              variant="outline"
-              data-testid={`fiscal-primary-${row.propertyId}`}
-              disabled={pending}
-              onClick={() => onAssign('CedolareSecca21')}
-            >
-              {t('fiscal.primary')}
-            </Button>
-            {movesReducedRate && (
-              <p className="text-muted-foreground" data-testid={`fiscal-primary-moves-${row.propertyId}`}>
-                {t('fiscal.primaryMoves')}
-              </p>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }

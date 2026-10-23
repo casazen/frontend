@@ -5,6 +5,7 @@ import type {
   SupplierAgendaHoursDay,
   SupplierAgendaRequest,
   SupplierAgendaTimeOff,
+  SupplierConflictSeverity,
   SupplierHoursBand,
 } from '@/types/supplier';
 
@@ -54,10 +55,39 @@ export type DayEventKind = 'calendar' | 'block' | 'extra' | 'request' | 'timeOff
 export interface DayEvent {
   id: string;
   kind: DayEventKind;
+  /**
+   * What the supplier or the calendar called it; the service category (its code) for a request. Empty when it has no name:
+   * the page names the kind then.
+   */
   label: string;
   /** Rome wall clock range, or null for an all-day item. */
   timeRange: string | null;
+  /** A request: where to open it and how it stands (the status of the API). */
+  requestId?: string;
+  status?: string;
+  /** A request: the service of the catalog it is for (none: the category is its name), who asks and where (SP-03b). */
+  serviceName?: string | null;
+  clientLabel?: string | null;
+  comune?: string | null;
+  /** A request booked from the public page of the supplier. */
+  fromShowcase?: boolean;
+  /** A request with something wrong in its time (the conflicts of the next 30 days): how serious the worst is. */
+  conflict?: SupplierConflictSeverity;
+  /** Time off: why (`Vacation`, `Holiday`, `Illness`, `Other`). */
+  reason?: string;
 }
+
+/** How a day stands for the customers: bookable, a rest day of the week, closed by the supplier or by the calendar, or time off. */
+export type DayState = 'open' | 'rest' | 'closed' | 'closedByCalendar' | 'timeOff';
+
+/** The words of each state (keys of the locale files). */
+export const DAY_STATE_LABEL_KEYS: Record<DayState, string> = {
+  open: 'supplier.available',
+  rest: 'supplier.agenda.state.rest',
+  closed: 'supplier.agenda.state.closed',
+  closedByCalendar: 'supplier.agenda.state.closedByCalendar',
+  timeOff: 'supplier.notAvailable',
+};
 
 export interface WorkingDayView {
   date: string;
@@ -134,6 +164,8 @@ export function buildWorkingDays(input: {
   timeOff: SupplierAgendaTimeOff[];
   blocks: SupplierAgendaBlock[];
   requests: SupplierAgendaRequest[];
+  /** How serious the worst conflict of a request is, by request id (the next 30 days). */
+  conflicts?: ReadonlyMap<string, SupplierConflictSeverity>;
   /** Fallback when the calendar API is not loaded yet: the day grid from GET /availability. */
   availability?: Record<string, boolean>;
 }): WorkingDayView[] {
@@ -151,8 +183,9 @@ export function buildWorkingDays(input: {
       push(day, {
         id: `timeoff-${entry.id}`,
         kind: 'timeOff',
-        label: entry.label || entry.reason,
+        label: entry.label ?? '',
         timeRange: null,
+        reason: entry.reason,
       });
     }
   }
@@ -164,29 +197,35 @@ export function buildWorkingDays(input: {
       push(day, {
         id: `block-${block.id}-${day}`,
         kind,
-        label: block.label || kind,
+        label: block.label ?? '',
         timeRange: timeRangeOnDay(day, block.startUtc, block.endUtc),
       });
     }
   }
 
   for (const request of input.requests) {
+    // What the supplier reads of a job besides its hours: the service, who asks and where, and whether its time is in trouble.
+    const about = {
+      kind: 'request' as const,
+      label: request.category,
+      requestId: request.id,
+      status: request.status,
+      serviceName: request.serviceName,
+      clientLabel: request.clientLabel,
+      comune: request.comune,
+      fromShowcase: request.source === 'showcase',
+      conflict: input.conflicts?.get(request.id),
+    };
     if (request.startUtc && request.endUtc) {
       for (const day of datesTouched(request.startUtc, request.endUtc)) {
         push(day, {
+          ...about,
           id: `req-${request.id}-${day}`,
-          kind: 'request',
-          label: request.category,
           timeRange: timeRangeOnDay(day, request.startUtc, request.endUtc),
         });
       }
     } else {
-      push(request.date, {
-        id: `req-${request.id}`,
-        kind: 'request',
-        label: request.category,
-        timeRange: null,
-      });
+      push(request.date, { ...about, id: `req-${request.id}`, timeRange: null });
     }
   }
 
@@ -204,6 +243,18 @@ export function buildWorkingDays(input: {
       available,
     };
   });
+}
+
+/** The bands of a day as the supplier reads them: `09:00–13:00, 14:00–18:00`. */
+export function formatBands(bands: SupplierHoursBand[]): string {
+  return bands.map((band) => `${minutesToHm(band.startMinute)}–${minutesToHm(band.endMinute)}`).join(', ');
+}
+
+/** How a day stands. Time off comes first (it is why the day is not bookable), then a closed day, then a rest day of the week. */
+export function dayStateOf(day: Pick<WorkingDayView, 'bands' | 'closed' | 'events'>): DayState {
+  if (day.events.some((event) => event.kind === 'timeOff')) return 'timeOff';
+  if (day.closed) return day.closed.source === 'ICalFeed' ? 'closedByCalendar' : 'closed';
+  return day.bands.length === 0 ? 'rest' : 'open';
 }
 
 export function emptyWeekHours(): SupplierAgendaHoursDay[] {

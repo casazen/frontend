@@ -3,8 +3,8 @@ import { requireE2eCredentials } from './helpers/env';
 import { pinE2eLocale } from './helpers/locale';
 import { fillPropertyForm } from './helpers/properties-api-mock';
 
-const STAGING_API =
-  process.env.E2E_STAGING_API_URL ?? 'https://casazen-api-test.up.railway.app/api';
+// Exercise the real API through the same proxy used by the staging UI, without bypassing CORS.
+const STAGING_API = '/api';
 
 const PROPERTIES_PATH = '/app/short-rent/properties';
 
@@ -55,52 +55,61 @@ test.describe('Property flow on staging API (live)', () => {
   test('creates a property via UI and opens its detail page', async ({ page }) => {
     const uniqueName = `E2E Staging ${Date.now()}`;
 
-    await page.getByRole('button', { name: /^(Add (Your First )?Property|Aggiungi (il primo )?immobile)$/i }).click();
-    await expect(page.getByRole('heading', { name: /^(Add New Property|Nuovo immobile)$/ })).toBeVisible();
+    await page.getByTestId('property-add').click();
+    await expect(page.getByRole('heading', { name: /^(Create Property|Crea proprietà)$/ })).toBeVisible();
 
-    await fillPropertyForm(page, {
-      name: uniqueName,
-      description: 'Proprietà creata dal test E2E staging live.',
-      address: 'Via Milano 5',
-      comune: 'Milano',
-      postalCode: '20100',
-      bedrooms: 2,
-      bathrooms: 1,
-      maxGuests: 4,
-      nightlyRate: 99,
-    });
-
-    const createResponse = page.waitForResponse(
-      (res) => res.url().includes('/api/properties') && res.request().method() === 'POST',
-      { timeout: 30_000 },
-    );
-
-    await page.getByRole('button', { name: /^(Create Property|Crea immobile)$/ }).click();
-    const response = await createResponse;
-
-    expect(response.status(), 'Property create must not return 500').not.toBe(500);
-
-    if (response.status() === 403 || response.status() === 409) {
-      const body = (await response.json().catch(() => ({}))) as { code?: string };
-      expect(
-        body.code,
-        '403/409 on create must be plan_limit_reached, not a schema failure',
-      ).toBe('plan_limit_reached');
-      await expect(
-        page.getByText(/Hai raggiunto il limite del tuo piano|You have reached your plan limit/i),
-      ).toBeVisible();
-      await page.getByRole('button', { name: /^(Cancel|Annulla)$/ }).click();
-      await page.locator('table tbody tr').first().getByRole('link').first().click();
+    const planAlert = page.getByTestId('plan-limit-alert');
+    const createButton = page.getByRole('button', { name: /^(Create Property|Crea immobile)$/ });
+    await expect.poll(async () => await planAlert.isVisible() || await createButton.isEnabled()).toBe(true);
+    if (await planAlert.isVisible()) {
+      await expect(createButton).toBeDisabled();
+      await page.goto(PROPERTIES_PATH);
+      await page.locator('table tbody tr').first().getByRole('button').first().click();
     } else {
-      expect(response.status()).toBe(201);
-      await expect(page.getByRole('link', { name: uniqueName })).toBeVisible({ timeout: 15_000 });
-      await page.getByRole('link', { name: uniqueName }).click();
-      await expect(page.getByRole('heading', { name: uniqueName })).toBeVisible({ timeout: 15_000 });
-    }
+      await fillPropertyForm(page, {
+        name: uniqueName,
+        description: 'Proprietà creata dal test E2E staging live.',
+        address: 'Via Milano 5',
+        comune: 'Milano',
+        postalCode: '20100',
+        bedrooms: 2,
+        bathrooms: 1,
+        maxGuests: 4,
+        nightlyRate: 99,
+      });
 
-    await expect(page.getByRole('heading', { name: /^(Dettagli proprietà|Property details)$/ })).toBeVisible({
+      const createResponse = page.waitForResponse(
+        (res) => res.url().includes('/api/properties') && res.request().method() === 'POST',
+        { timeout: 30_000 },
+      );
+
+      await page.getByRole('button', { name: /^(Create Property|Crea immobile)$/ }).click();
+      const response = await createResponse;
+
+      expect(response.status(), 'Property create must not return 500').not.toBe(500);
+
+      if (response.status() === 403 || response.status() === 409) {
+        const body = (await response.json().catch(() => ({}))) as { code?: string };
+        expect(
+          body.code,
+          '403/409 on create must be plan_limit_reached, not a schema failure',
+        ).toBe('plan_limit_reached');
+        await expect(
+          page.getByText(/Hai raggiunto il limite del tuo piano|You have reached your plan limit/i),
+        ).toBeVisible();
+        await page.goto(PROPERTIES_PATH);
+        await page.locator('table tbody tr').first().getByRole('button').first().click();
+      } else {
+        expect(response.status()).toBe(201);
+        await expect(page.getByRole('button', { name: uniqueName, exact: true })).toBeVisible({ timeout: 15_000 });
+        await page.getByRole('button', { name: uniqueName, exact: true }).click();
+      }
+    }
+    await page.getByRole('link', { name: /^(Apri la scheda completa|Open full page)$/ }).click();
+
+    await expect(page.getByRole('heading', { name: /^(Dati dell'immobile|Property details)$/ })).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByRole('button', { name: /^(Documenti|Documents)$/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^(Documenti e adempimenti|Documents and compliance)$/ })).toBeVisible();
   });
 });

@@ -57,24 +57,15 @@ describe('FeatureFlagsProvider', () => {
 
 describe('parseFeatureFlags', () => {
   it('turns on only the known flags set to true', () => {
-    const allOff = { otaPartnerApi: false, aiSupplierDiscovery: false, rliProvider: false, eSignProvider: false, uiRedesign: false };
+    // Every known flag, off: derived from the defaults so that adding a flag does not touch this test.
+    const allOff = Object.fromEntries(Object.keys(DEFAULT_FEATURE_FLAGS).map((key) => [key, false])) as typeof DEFAULT_FEATURE_FLAGS;
+    // Every flag ships off (fail closed): a default of `true` would turn a feature on for everybody before the backend says so.
+    expect(DEFAULT_FEATURE_FLAGS).toEqual(allOff);
     expect(parseFeatureFlags({ otaPartnerApi: true, somethingElse: true })).toEqual({ ...allOff, otaPartnerApi: true });
     expect(parseFeatureFlags({ eSignProvider: true })).toEqual({ ...allOff, eSignProvider: true });
     expect(parseFeatureFlags({ aiSupplierDiscovery: true })).toEqual({ ...allOff, aiSupplierDiscovery: true });
     expect(parseFeatureFlags({ otaPartnerApi: 'true', aiSupplierDiscovery: 1 })).toEqual(allOff);
     expect(parseFeatureFlags(null)).toEqual(allOff);
     expect(parseFeatureFlags({})).toEqual(allOff);
-  });
-
-  it('reads the redesign flag defensively: only a real true turns it on (UI-01)', () => {
-    // The API of an environment that does not know the flag (BL-01 adds it to the backend) simply omits the key.
-    expect(parseFeatureFlags({ uiRedesign: true }).uiRedesign).toBe(true);
-    expect(parseFeatureFlags({}).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ otaPartnerApi: true }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: 'true' }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: 1 }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags({ uiRedesign: null }).uiRedesign).toBe(false);
-    expect(parseFeatureFlags('uiRedesign').uiRedesign).toBe(false);
-    expect(DEFAULT_FEATURE_FLAGS.uiRedesign).toBe(false);
   });
 });

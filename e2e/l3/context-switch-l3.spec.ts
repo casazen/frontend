@@ -13,10 +13,10 @@ test.describe('L3 context workspace switch', () => {
   });
 
   test('AC: /api/me/contexts returns 200 and UI shows workspace chrome', async ({ page }) => {
-    const apiBase =
-      process.env.E2E_LOCAL_API_URL ??
-      process.env.E2E_STAGING_API_URL ??
-      'http://localhost:5000/api';
+    // Staging UI requests use the Vite proxy to the real Railway API.
+    const apiBase = process.env.E2E_STAGING === '1'
+      ? '/api'
+      : (process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api');
 
     await page.goto('/app/short-rent');
     await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 60_000 });

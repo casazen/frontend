@@ -119,7 +119,7 @@ test.describe('Dialog (responsive)', () => {
       expect(sheet.width, 'it is as wide as the screen').toBeCloseTo(width, 0);
       expect(sheet.y + sheet.height, 'it rests on the bottom edge').toBeCloseTo(height, 0);
       expect(sheet.y, 'it leaves the page showing above it').toBeGreaterThan(40);
-      await expect(dialog).toHaveCSS('border-top-left-radius', '16px');
+      await expect(dialog).toHaveCSS('border-top-left-radius', '28px');
       await expect(dialog).toHaveCSS('border-bottom-left-radius', '0px');
 
       await expect(page.getByTestId('sheet-handle')).toBeVisible();
@@ -144,7 +144,7 @@ test.describe('Dialog (responsive)', () => {
       expect(centered.x + centered.width / 2, 'centered across').toBeCloseTo(width / 2, 0);
       expect(centered.y + centered.height / 2, 'centered down').toBeCloseTo(height / 2, 0);
       expect(centered.width, 'no wider than a dialog').toBeLessThanOrEqual(512);
-      await expect(dialog).toHaveCSS('border-top-left-radius', '8px');
+      await expect(dialog).toHaveCSS('border-top-left-radius', '14px');
       await expect(page.getByTestId('sheet-handle')).toBeHidden();
       const close = await box(dialog.getByRole('button', { name: 'Chiudi' }));
       // The icon is small and where it has always been; its target is 44 px wide and tall.

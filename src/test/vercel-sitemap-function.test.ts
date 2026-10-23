@@ -94,6 +94,7 @@ describe('api/sitemap.ts', () => {
   it.each([
     ['', 'public/sitemap.xml'],
     ['name=book', 'public/sitemap-book.xml'],
+    ['name=supplier', 'public/sitemap-supplier.xml'],
     ['org=villa-rossi', 'public/orgs/villa-rossi/sitemap.xml'],
   ])('sitemapUpstreamPath_%s_is%s', (query, expected) => {
     expect(sitemapUpstreamPath(new URLSearchParams(query))).toBe(expected);

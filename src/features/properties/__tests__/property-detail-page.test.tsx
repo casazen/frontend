@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PropertyDetailPage } from '../property-detail-page';
 import * as propertyQueries from '@/queries/use-properties';
-import type { PropertyDetailDto } from '@/types';
+import type { Property, PropertyDetailDto } from '@/types';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { fetchServiceRequests } from '@/api/service-requests.api';
@@ -13,6 +13,8 @@ import i18n from '@/i18n/config';
 import { AxiosError, AxiosHeaders } from 'axios';
 
 vi.mock('@/queries/use-properties');
+// The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
+vi.mock('../mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
 vi.mock('@/api/service-requests.api', () => ({
   fetchServiceRequests: vi.fn(),
   markServiceRequestPaid: vi.fn(),
@@ -26,22 +28,17 @@ vi.mock('@/queries/use-cin', () => ({
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/hooks/use-workspace', () => ({
-  useWorkspace: () => ({ hasPermission: (context: string, permission: string) => context === 'short-rent' && permission === 'booking.write' }),
+  useWorkspace: () => ({
+    hasPermission: (context: string, permission: string) =>
+      context === 'short-rent' && ['property.write', 'booking.read', 'booking.write'].includes(permission),
+  }),
 }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'app-shell' }, children),
 }));
-vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title, action }: { title: string; action?: React.ReactNode }) =>
-    createElement('div', null, createElement('h1', null, title), action),
-}));
 vi.mock('../components/ical-settings', () => ({
   IcalSettings: () => createElement('div', { 'data-testid': 'ical-settings' }),
-}));
-vi.mock('@/components/shared/loading-screen', () => ({
-  LoadingScreen: ({ message }: { message: string }) =>
-    createElement('div', { 'data-testid': 'loading' }, message),
 }));
 
 const PROPERTY_ID = 'prop-test-detail';
@@ -96,6 +93,9 @@ const mockDetail: PropertyDetailDto = {
   },
 };
 
+/** The record of the property (`GET /properties/:id`): what the detail does not carry, the compliance status above all. */
+const mockRecord = { id: PROPERTY_ID, name: 'Test Villa', isActive: true, isPaused: false, complianceStatus: 'Active', slug: null } as unknown as Property;
+
 function problemError(status: number): AxiosError {
   const config = { headers: new AxiosHeaders() };
   return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, {
@@ -142,6 +142,12 @@ function renderPage(otaPartnerApi = false, search = '') {
   );
 }
 
+/** Opens the menu "⋯" of the header and gives it back. */
+async function openTheMenu() {
+  fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
+  return screen.findByRole('menu');
+}
+
 describe('PropertyDetailPage', () => {
   let pauseMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
   let activateMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
@@ -153,6 +159,11 @@ describe('PropertyDetailPage', () => {
       isLoading: false,
       isError: false,
     } as ReturnType<typeof propertyQueries.usePropertyDetail>);
+    vi.mocked(propertyQueries.useProperty).mockReturnValue({
+      data: mockRecord,
+      isLoading: false,
+      isError: false,
+    } as ReturnType<typeof propertyQueries.useProperty>);
     pauseMutation = { mutate: vi.fn(), isPending: false };
     activateMutation = { mutate: vi.fn(), isPending: false };
     vi.mocked(propertyQueries.usePauseProperty).mockReturnValue(
@@ -161,6 +172,11 @@ describe('PropertyDetailPage', () => {
     vi.mocked(propertyQueries.useActivateProperty).mockReturnValue(
       activateMutation as unknown as ReturnType<typeof propertyQueries.useActivateProperty>,
     );
+    vi.mocked(propertyQueries.useDeleteProperty).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+      isSuccess: false,
+    } as unknown as ReturnType<typeof propertyQueries.useDeleteProperty>);
     vi.mocked(propertyQueries.useUploadPropertyDocument).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
@@ -178,8 +194,10 @@ describe('PropertyDetailPage', () => {
   it('AC8: renders property name and section headings', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Test Villa' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Dettagli proprietà/i })).toBeInTheDocument();
-    expect(screen.getByTestId('property-pause-status-badge')).toHaveTextContent(i18n.t('property.table.active'));
+    expect(screen.getByRole('heading', { name: i18n.t('property.detail.sections.data') })).toBeInTheDocument();
+    expect(screen.getByTestId('property-status')).toHaveTextContent(i18n.t('property.table.active'));
+    // One highlighted block, and for an active property with nothing to fix it says so.
+    expect(screen.getByTestId('property-next-step')).toHaveAttribute('data-next-step', 'allInOrder');
   });
 
   // SU-04: the mismatch between the CIN's ISTAT code and the property's comune is a note, never an error.
@@ -200,7 +218,7 @@ describe('PropertyDetailPage', () => {
     expect(note).toHaveTextContent(i18n.t('property.cin.istatMismatch'));
   });
 
-  // A2-05: the badge and the action button read `isPaused`, never `isActive` — pausing is a dedicated, reversible
+  // A2-05: the state and the action read `isPaused`, never `isActive` — pausing is a dedicated, reversible
   // action that never 404s the owner's own detail page (it used to, via the old IsActive filter).
   it('PropertyDetailPage_PausedProperty_ShowsPausedBadgeAndAnActivateAction', () => {
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
@@ -211,23 +229,25 @@ describe('PropertyDetailPage', () => {
 
     renderPage();
 
-    expect(screen.getByTestId('property-pause-status-badge')).toHaveTextContent(i18n.t('property.table.paused'));
-    fireEvent.click(screen.getByTestId('property-pause-toggle'));
+    expect(screen.getByTestId('property-status')).toHaveTextContent(i18n.t('property.table.paused'));
+    expect(screen.getByTestId('property-next-step')).toHaveAttribute('data-next-step', 'reactivate');
+    // The block puts it back on, with the dedicated endpoint.
+    fireEvent.click(screen.getByTestId('property-next-reactivate'));
     expect(activateMutation.mutate).toHaveBeenCalledWith(PROPERTY_ID);
     expect(pauseMutation.mutate).not.toHaveBeenCalled();
   });
 
-  it('PropertyDetailPage_ActiveProperty_PauseButtonCallsTheDedicatedPauseEndpoint', () => {
+  it('PropertyDetailPage_ActiveProperty_PauseButtonCallsTheDedicatedPauseEndpoint', async () => {
     renderPage();
 
-    fireEvent.click(screen.getByTestId('property-pause-toggle'));
+    fireEvent.click(within(await openTheMenu()).getByTestId('property-pause-toggle'));
 
     expect(pauseMutation.mutate).toHaveBeenCalledWith(PROPERTY_ID);
     expect(activateMutation.mutate).not.toHaveBeenCalled();
   });
 
   it('PropertyDetailPage_HostWithBookingWrite_LinksNewBookingAndBookingsOfThisProperty', () => {
-    renderPage();
+    renderPage(false, '?tab=activity');
     expect(screen.getByTestId('property-new-booking')).toHaveAttribute(
       'href',
       `/app/short-rent/bookings/create?propertyId=${PROPERTY_ID}`,
@@ -247,7 +267,7 @@ describe('PropertyDetailPage', () => {
 
   it('AC12: does not render apiKey in OTA section', () => {
     renderPage(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Canali OTA' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Canali OTA' }));
     expect(screen.getByText('Integrazioni OTA')).toBeInTheDocument();
     expect(screen.queryByText(/apikey/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/apisecret/i)).not.toBeInTheDocument();
@@ -256,16 +276,16 @@ describe('PropertyDetailPage', () => {
   // FD-20 / D10: with the OTA partner API off the tab keeps only the iCal calendars.
   it('shows only the iCal calendars, without the OTA card, when the otaPartnerApi flag is off', () => {
     renderPage(false);
-    expect(screen.queryByRole('button', { name: 'Canali OTA' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Canali OTA' })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Calendari iCal' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Calendari iCal' }));
 
     expect(screen.getByTestId('ical-settings')).toBeInTheDocument();
     expect(screen.queryByText('Integrazioni OTA')).not.toBeInTheDocument();
     expect(screen.queryByText('Booking.com')).not.toBeInTheDocument();
   });
 
-  // SU-07 (D2): the property overview lists every stay's requests, each linked to its stay.
+  // SU-07 (D2): the property's activity lists every stay's requests, each linked to its stay.
   it('PropertyDetailPage_ServiceRequests_ListedByPropertyWithTheirStay', async () => {
     const request = {
       orgId: 'org-1',
@@ -289,7 +309,7 @@ describe('PropertyDetailPage', () => {
       pageSize: 50,
     });
 
-    renderPage();
+    renderPage(false, '?tab=activity');
 
     expect(await screen.findByTestId('service-request-stay-sr-stay')).toHaveAttribute(
       'href',
@@ -302,7 +322,7 @@ describe('PropertyDetailPage', () => {
   it('PropertyDetailPage_ServiceRequestsFail_ShowsTheErrorNotAnEmptyList', async () => {
     vi.mocked(fetchServiceRequests).mockRejectedValue(new Error('network'));
 
-    renderPage();
+    renderPage(false, '?tab=activity');
 
     expect(await screen.findByTestId('service-requests-error')).toBeInTheDocument();
     expect(screen.queryByTestId('service-requests-empty')).not.toBeInTheDocument();
@@ -316,7 +336,7 @@ describe('PropertyDetailPage', () => {
 
     expect(screen.getByTestId('property-load-error')).toHaveTextContent(i18n.t('property.detail.loadError'));
     expect(screen.queryByText(i18n.t('property.detail.notFound'))).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.detail.retry') }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.errorState.retry') }));
     expect(refetch).toHaveBeenCalled();
   });
 

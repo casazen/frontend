@@ -22,11 +22,8 @@ export async function completeOnboardingFromRentalChoice(
   await completeOnboardingConsents(page);
 }
 
-/** Host booking create now requires guest contact (PC-07). */
+/** A booking entered by hand asks for the name and the email of the guest only (SR-06a). */
 export async function fillHostBookingGuestContact(page: Page): Promise<void> {
-  await page.locator('[id="guest.firstName"]').fill('Mario');
-  await page.locator('[id="guest.lastName"]').fill('Rossi');
+  await page.locator('[id="guest.name"]').fill('Mario Rossi');
   await page.locator('[id="guest.email"]').fill('mario.rossi@example.com');
-  await page.locator('[id="guest.phone"]').fill('+393331234567');
-  await page.locator('[id="guest.country"]').fill('IT');
 }

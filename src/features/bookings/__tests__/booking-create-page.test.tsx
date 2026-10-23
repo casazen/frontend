@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -9,13 +9,17 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { propertiesApi } from '@/api/properties.api';
-import type { Booking, Property } from '@/types';
+import { NOON_UTC, freezeClock } from '@/test/clock';
+import type { ManualBooking, Property, StayAvailability } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 import { BookingCreatePage } from '../booking-create-page';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('@/queries/use-users', () => ({
+  useCurrentUser: () => ({ user: { id: 'user-1' }, org: { id: 'org-1' } }),
+}));
 vi.mock('@/api/bookings.api', () => ({
-  bookingsApi: { create: vi.fn(), quote: vi.fn() },
+  bookingsApi: { createManual: vi.fn(), quote: vi.fn(), availability: vi.fn() },
 }));
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: { getAll: vi.fn() },
@@ -27,8 +31,8 @@ vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
 
-const property = { id: 'property-1', name: 'Casa Mare', city: 'Rimini' } as Property;
-// Rendering the whole form with the zod resolver can be slow on a loaded CI runner.
+const property = { id: 'property-1', name: 'Casa Mare', city: 'Rimini', maxGuests: 6 } as Property;
+// Rendering the wizard with the zod resolver can be slow on a loaded CI runner.
 const WAIT = { timeout: 5000 };
 
 function conflict(data: unknown): AxiosError {
@@ -41,6 +45,20 @@ function conflict(data: unknown): AxiosError {
     config,
   });
 }
+
+/** The dates are free (SR-06a): the answer of the availability the wizard asks for as soon as the dates are known. */
+const freeStay: StayAvailability = {
+  propertyId: property.id,
+  from: '2027-10-01',
+  to: '2027-10-05',
+  state: 'ok',
+  invalidReason: null,
+  nights: 4,
+  minNights: null,
+  conflicts: [],
+  nearestFreeWindow: null,
+  linkableBlockId: null,
+};
 
 /** Quote of the backend (BK-03): Firenze-like rates exempt minors by age when `ageRules` is true. */
 function hostQuote(ageRules: boolean, status: DirectBookingQuote['touristTax']['status'] = 'Calculated'): DirectBookingQuote {
@@ -79,97 +97,114 @@ function renderPage(url = '/app/short-rent/bookings/new') {
   );
 }
 
-async function fillAndSubmit() {
-  await fillForm();
-  fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
+const next = () => fireEvent.click(screen.getByTestId('booking-wizard-next'));
+const label = (key: string) => screen.getByLabelText(i18n.t(key));
+
+/** Step 1: the property and the dates (the guests stay at the two adults it starts with). */
+async function fillStay() {
+  const select = await screen.findByLabelText(i18n.t('booking.create.stay.property'), undefined, WAIT);
+  await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
+  fireEvent.change(select, { target: { value: property.id } });
+  fireEvent.change(label('booking.create.stay.checkIn'), { target: { value: '2027-10-01' } });
+  fireEvent.change(label('booking.create.stay.checkOut'), { target: { value: '2027-10-05' } });
 }
 
-async function fillForm() {
-  const select = await screen.findByLabelText(i18n.t('booking.form.property'), undefined, WAIT);
-  await screen.findByRole('option', { name: 'Casa Mare - Rimini' }, WAIT);
-  fireEvent.change(select, { target: { value: property.id } });
-  const fields: [string, string][] = [
-    ['booking.form.checkInDate', '2027-10-01'],
-    ['booking.form.checkOutDate', '2027-10-05'],
-    ['booking.form.numberOfGuests', '2'],
-    ['booking.form.firstName', 'Mario'],
-    ['booking.form.lastName', 'Rossi'],
-    ['booking.form.email', 'mario.rossi@example.com'],
-    ['booking.form.phone', '+393331234567'],
-    ['booking.form.country', 'Italia'],
-  ];
-  for (const [label, value] of fields)
-    fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
+/** Step 2: the name and the email of the guest are all that is asked (SR-06a). */
+async function fillGuest() {
+  const name = await screen.findByLabelText(i18n.t('booking.create.guest.name'), undefined, WAIT);
+  fireEvent.change(name, { target: { value: 'Mario Rossi' } });
+  fireEvent.change(label('booking.create.guest.email'), { target: { value: 'mario.rossi@example.com' } });
+}
+
+/** Through the two first steps, to the summary with the price. */
+async function reachSummary() {
+  await fillStay();
+  next();
+  await fillGuest();
+  next();
+  await screen.findByTestId('booking-price-total', undefined, WAIT);
 }
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  sessionStorage.clear();
+  freezeClock(NOON_UTC);
   await i18n.changeLanguage('it');
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property]);
-  vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(false, 'RateUnavailable'));
+  vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(false));
+  vi.mocked(bookingsApi.availability).mockResolvedValue(freeStay);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('BookingCreatePage', { timeout: 20000 }, () => {
-  it('tells the host that the booking is saved as confirmed with the manual source', async () => {
-    renderPage();
-
-    expect(await screen.findByTestId('booking-manual-notice', undefined, WAIT)).toHaveTextContent(i18n.t('booking.form.manualNotice'));
-  });
-
-  it('shows the 409 on overlapping dates next to the form and stays on the page', async () => {
-    vi.mocked(bookingsApi.create).mockRejectedValue(
+  it('shows the 409 on overlapping dates above the buttons and stays on the summary', async () => {
+    vi.mocked(bookingsApi.createManual).mockRejectedValue(
       conflict({ status: 409, code: 'booking_dates_unavailable', detail: "L'immobile non è disponibile." }),
     );
     renderPage();
 
-    await fillAndSubmit();
+    await reachSummary();
+    expect(screen.getByTestId('booking-manual-notice')).toHaveTextContent(i18n.t('booking.form.manualNotice'));
+    fireEvent.click(screen.getByTestId('booking-create-button'));
 
     expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('apiErrors.codes.bookingDatesUnavailable'),
     );
-    expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
+    expect(bookingsApi.createManual).toHaveBeenCalledWith(expect.objectContaining({
       propertyId: property.id,
       checkInDate: '2027-10-01',
       checkOutDate: '2027-10-05',
+      adults: 2,
+      children: 0,
+      guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario.rossi@example.com' },
     }));
-    expect(screen.queryByText('bookings-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('wizard-done-primary')).not.toBeInTheDocument();
   });
 
-  it('goes back to the list once the booking is created', async () => {
-    vi.mocked(bookingsApi.create).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as Booking);
+  it('confirms with what happens now and a link to the booking once it is created', async () => {
+    vi.mocked(bookingsApi.createManual).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as ManualBooking);
     renderPage();
 
-    await fillAndSubmit();
+    await reachSummary();
+    expect(screen.getByTestId('booking-price-total')).toHaveTextContent('474,00');
+    fireEvent.click(screen.getByTestId('booking-create-button'));
 
-    expect(await screen.findByText('bookings-list', undefined, WAIT)).toBeInTheDocument();
+    expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toHaveAttribute('href', '/app/short-rent/bookings/booking-1');
+    expect(screen.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/short-rent/bookings');
   });
 
   it('BookingCreatePage_RatesExemptMinorsByAge_AsksMinorsAndAgesAndSendsThem', async () => {
     vi.mocked(bookingsApi.quote).mockResolvedValue(hostQuote(true));
-    vi.mocked(bookingsApi.create).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as Booking);
+    vi.mocked(bookingsApi.createManual).mockResolvedValue({ id: 'booking-1', status: 'Confirmed', source: 'Manual' } as ManualBooking);
     renderPage();
 
-    await fillForm();
-    const children = await screen.findByLabelText(i18n.t('booking.form.numberOfChildren'), undefined, WAIT);
-    expect(await screen.findByTestId('booking-price-total', undefined, WAIT)).toHaveTextContent('474,00');
-    fireEvent.change(children, { target: { value: '1' } });
+    await fillStay();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('qty.increase', { label: i18n.t('booking.create.stay.minors') }) }));
     const age = await screen.findByLabelText(i18n.t('touristTaxRules.childAgeLabel', { index: 1 }), undefined, WAIT);
 
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
-    expect(await screen.findByTestId('booking-ages-missing', undefined, WAIT)).toBeInTheDocument();
-    expect(bookingsApi.create).not.toHaveBeenCalled();
+    // The step does not move on while the age of the minor is missing.
+    next();
+    expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(i18n.t('booking.form.childrenAgesMissing'));
+    expect(screen.queryByLabelText(i18n.t('booking.create.guest.name'))).not.toBeInTheDocument();
 
     fireEvent.change(age, { target: { value: '8' } });
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.create') }));
+    next();
+    await fillGuest();
+    next();
+    await screen.findByTestId('booking-price-total', undefined, WAIT);
+    fireEvent.click(screen.getByTestId('booking-create-button'));
 
-    await waitFor(() => expect(bookingsApi.create).toHaveBeenCalledWith(expect.objectContaining({
-      numberOfGuests: 2,
-      numberOfChildren: 1,
+    await waitFor(() => expect(bookingsApi.createManual).toHaveBeenCalledWith(expect.objectContaining({
+      adults: 2,
+      children: 1,
       childrenAges: [8],
     })), WAIT);
     expect(bookingsApi.quote).toHaveBeenCalledWith(expect.objectContaining({
       propertyId: property.id,
-      numberOfGuests: 2,
+      numberOfGuests: 3,
       numberOfChildren: 1,
       childrenAges: [8],
     }));
@@ -178,12 +213,12 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
   it('BookingCreatePage_OpenedFromAProperty_PreselectsItAndCancelGoesBackToIt', async () => {
     renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}`);
 
-    await screen.findByRole('option', { name: 'Casa Mare - Rimini' }, WAIT);
-    await waitFor(() => expect(screen.getByLabelText(i18n.t('booking.form.property'))).toHaveValue(property.id), WAIT);
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('booking.form.cancel') }));
+    await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
+    await waitFor(() => expect(label('booking.create.stay.property')).toHaveValue(property.id), WAIT);
+    fireEvent.click(screen.getByTestId('wizard-exit'));
 
     expect(await screen.findByText('property-page', undefined, WAIT)).toBeInTheDocument();
-    expect(bookingsApi.create).not.toHaveBeenCalled();
+    expect(bookingsApi.createManual).not.toHaveBeenCalled();
   });
 
   it('shows the properties load error instead of an empty select', async () => {
@@ -194,6 +229,6 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
       i18n.t('booking.form.propertiesLoadError'),
     );
     expect(screen.queryByTestId('booking-properties-empty')).not.toBeInTheDocument();
-    await waitFor(() => expect(screen.getByLabelText(i18n.t('booking.form.property'))).toBeDisabled(), WAIT);
+    await waitFor(() => expect(label('booking.create.stay.property')).toBeDisabled(), WAIT);
   });
 });
