@@ -50,13 +50,34 @@ const APE_CHECK_VARIANT: Record<ApeCheckOutcome, AlertVariant> = {
   Incomplete: 'warning',
   NotRecognized: 'warning',
   NotChecked: 'info',
+  Expired: 'danger',
 };
 
-/** What the reading of the APE just stored found, and what to do now: always its code and class, which the contract prints. */
+/**
+ * What the reading of the APE just stored found. Code and class read (from the file, or the code from the register of the region
+ * when the file did not show it): they are said, to check, and nothing has to be typed. Otherwise the fields, filled with what was
+ * read, for what is missing.
+ */
 function ApeSaved({ propertyId, document, onDone }: { propertyId: string; document: PropertyDocumentDto; onDone: () => void }) {
   const { t } = useTranslation();
   const outcome = document.apeCheck ?? null;
   const fields = (document.apeUnreadFields ?? []).join(', ');
+  if (document.apeCode && document.apeEnergyClass) {
+    return (
+      <div className="space-y-4" data-testid="ape-saved">
+        <Alert variant="success" data-testid="ape-identified">
+          {t(document.apeIdentificationSource === 'Registry' ? 'shared.documentUpload.apeReadRegistry' : 'shared.documentUpload.apeReadDocument', {
+            code: document.apeCode,
+            energyClass: document.apeEnergyClass,
+          })}
+        </Alert>
+        <ApeIdentificationForm propertyId={propertyId} document={document} onDone={onDone} cancelLabel={t('shared.documentUpload.apeLater')} />
+        <Button type="button" className="w-full" onClick={onDone} data-testid="ape-saved-done">
+          {t('shared.documentUpload.apeDone')}
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="space-y-4" data-testid="ape-saved">
       <Alert variant={outcome ? APE_CHECK_VARIANT[outcome] : 'success'} data-testid={`ape-check-${outcome ?? 'none'}`}>
@@ -155,7 +176,12 @@ export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCer
                 : t('shared.documentUpload.uploadDocument')}
           </DialogTitle>
           {savedApe ? (
-            <DialogDescription>{t('shared.documentUpload.apeDataDescription')}</DialogDescription>
+            <DialogDescription>
+              {/* "Type them as printed" only when something is left to type. */}
+              {savedApe.apeCode && savedApe.apeEnergyClass
+                ? t('shared.documentUpload.apeDataReadDescription')
+                : t('shared.documentUpload.apeDataDescription')}
+            </DialogDescription>
           ) : null}
         </DialogHeader>
         {savedApe ? (

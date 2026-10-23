@@ -13,6 +13,7 @@ vi.mock('@/queries/use-properties', () => ({
   useProperties: vi.fn(),
   useUploadPropertyDocument: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
   useUpdateApeIdentification: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useApeAutoRead: vi.fn(() => ({ isFetching: false, isSuccess: false })),
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getDocuments: vi.fn() } }));
 vi.mock('@/api/leases.api', () => ({ leasesApi: { create: vi.fn(), createDraft: vi.fn(), saveDraft: vi.fn() } }));

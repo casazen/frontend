@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PAGE_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { propertiesApi } from '@/api/properties.api';
-import { useProperties } from '@/queries/use-properties';
+import { useApeAutoRead, useProperties } from '@/queries/use-properties';
 import { leaseFormSchema } from '../schemas/lease.schema';
 import { getLeaseContractTypeLabel, getLeaseTaxRegimeLabel } from '@/lib/i18n-labels';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -20,7 +20,7 @@ import { DocumentUploadDialog } from '@/features/properties/components/document-
 import { ApeIdentificationForm } from '@/features/properties/components/ape-identification-form';
 import type { LeaseFormValues } from '../schemas/lease.schema';
 import { LEASE_CONTRACT_TYPES, LEASE_TAX_REGIMES, type CreateLeaseDto } from '@/types';
-import { AlertTriangle, CheckCircle2, Upload } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, Upload } from 'lucide-react';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { PartyListCard } from './lease-party-fields';
 import { emptyParty, toPartyDto } from './lease-party-model';
@@ -98,6 +98,12 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
   const apeMissing = documentsLoaded && !ape;
   const apeToIdentify = documentsLoaded && !!ape && !hasApeIdentification(ape);
   const waitingForDocuments = !documentsLoaded && !!selectedPropertyId && waitingForDocumentsAt === selectedPropertyId;
+
+  // An APE whose code and class are not there yet (uploaded before they were read automatically): the server reads it again, the
+  // file and the register of the region, once per document; the fields come only for what is still missing. An APE just uploaded
+  // was read by its upload, which puts that answer in the same cache.
+  const apeRead = useApeAutoRead(selectedPropertyId, documentsLoaded ? ape : undefined);
+  const readingApe = apeToIdentify && apeRead.isFetching;
 
   useEffect(() => {
     if (defaultPropertyId && propertiesData?.some((property) => property.id === defaultPropertyId)) {
@@ -246,7 +252,14 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
               <DocumentUploadDialog propertyId={selectedPropertyId} onlyType="Ape" open={apeUploadOpen} onOpenChange={setApeUploadOpen} />
             ) : null}
 
-            {apeToIdentify && ape && (
+            {apeToIdentify && ape && readingApe && (
+              <p role="status" data-testid="lease-ape-reading" className="flex items-center gap-2 text-sm text-foreground/80">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                {t('leases.form.apeReadingFromDocument')}
+              </p>
+            )}
+
+            {apeToIdentify && ape && !readingApe && (
               <div
                 role="status"
                 data-testid="lease-ape-identification"
@@ -254,7 +267,13 @@ export function LeaseCreateForm({ onSubmit, isLoading, defaultPropertyId }: Leas
               >
                 <p className="font-medium">{t('leases.form.apeIdentificationRequired')}</p>
                 <p className="text-foreground/80">{t('leases.form.apeIdentificationHelp')}</p>
-                <ApeIdentificationForm key={ape.id} propertyId={selectedPropertyId} document={ape} initiallyEditing required />
+                <ApeIdentificationForm
+                  key={`${ape.id}-${ape.apeCode ?? ''}-${ape.apeEnergyClass ?? ''}`}
+                  propertyId={selectedPropertyId}
+                  document={ape}
+                  initiallyEditing
+                  required
+                />
               </div>
             )}
 

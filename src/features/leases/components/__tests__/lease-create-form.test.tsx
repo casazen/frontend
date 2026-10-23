@@ -13,16 +13,21 @@ import { LeaseCreateForm } from '../lease-create-form';
 
 const PROPERTIES = [{ id: 'prop-1', name: 'Il Parco', city: 'Seveso' }];
 
-vi.mock('@/queries/use-properties', () => ({
+vi.mock('@/queries/use-properties', async (importOriginal) => ({
+  // The real reading of the APE (`useApeAutoRead`), on the mocked API below.
+  ...(await importOriginal<typeof import('@/queries/use-properties')>()),
   useProperties: vi.fn(),
   // The APE is uploaded and identified from the form: the window and the two fields use these.
   useUploadPropertyDocument: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
   useUpdateApeIdentification: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useReadApeIdentification: vi.fn(() => ({ mutate: vi.fn(), isPending: false, isSuccess: false })),
 }));
 
 vi.mock('@/api/properties.api', () => ({
   propertiesApi: {
     getDocuments: vi.fn(),
+    // The form reads again an APE whose code and class are missing (OCR of the file and register of the region).
+    readApeIdentification: vi.fn(),
   },
 }));
 
@@ -109,6 +114,10 @@ function renderForm(
 beforeEach(() => {
   mockProperties({ data: PROPERTIES });
   vi.mocked(propertiesApi.getDocuments).mockResolvedValue([APE]);
+  // By default reading an APE again finds nothing more: the document comes back as it was. A new browser for every test.
+  localStorage.clear();
+  vi.mocked(propertiesApi.readApeIdentification).mockReset();
+  vi.mocked(propertiesApi.readApeIdentification).mockResolvedValue({ ...APE, apeCode: null, apeEnergyClass: null, apeCheck: 'Incomplete' });
 });
 
 describe('LeaseCreateForm contract type and terms', () => {
@@ -280,6 +289,8 @@ describe('LeaseCreateForm properties of a long-term landlord (A7-06)', () => {
     });
 
     expect(await screen.findByTestId('lease-ape-identification')).toHaveTextContent(i18n.t('leases.form.apeIdentificationRequired'));
+    // The fields come only after the server read the file again and found nothing more.
+    expect(propertiesApi.readApeIdentification).toHaveBeenCalledWith('prop-1', 'doc-1');
     expect(screen.getByRole('button', { name: i18n.t('leases.form.createDraft') })).toBeDisabled();
     fireEvent.change(screen.getByLabelText(i18n.t('property.documents.apeCode')), { target: { value: '1610800012345/17' } });
     fireEvent.change(screen.getByLabelText(i18n.t('property.documents.apeEnergyClass')), { target: { value: 'F' } });
@@ -288,6 +299,46 @@ describe('LeaseCreateForm properties of a long-term landlord (A7-06)', () => {
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith({ propertyId: 'prop-1', docId: 'doc-1', data: { code: '1610800012345/17', energyClass: 'F' } }),
     );
+  });
+
+  it('LeaseCreateForm_ApeWithoutCodeAndClass_ReadsThemFromTheDocumentWithNothingToType', async () => {
+    // An APE uploaded before the automatic reading: the form has the server read it (the file, then the register of the region).
+    let finishReading: (document: PropertyDocumentDto) => void = () => {};
+    vi.mocked(propertiesApi.getDocuments).mockResolvedValue([{ ...APE, apeCode: null, apeEnergyClass: null }]);
+    vi.mocked(propertiesApi.readApeIdentification).mockImplementation(
+      () => new Promise<PropertyDocumentDto>((resolve) => { finishReading = resolve; }),
+    );
+
+    renderForm();
+    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
+
+    expect(await screen.findByTestId('lease-ape-reading')).toHaveTextContent(i18n.t('leases.form.apeReadingFromDocument'));
+    expect(screen.queryByLabelText(i18n.t('property.documents.apeCode'))).not.toBeInTheDocument();
+    vi.mocked(propertiesApi.getDocuments).mockResolvedValue([APE]);
+    finishReading({ ...APE, apeCheck: 'Verified', apeIdentificationSource: 'Registry' });
+
+    expect(await screen.findByTestId('lease-ape-ready')).toHaveTextContent(
+      i18n.t('leases.form.apeReady', { code: '1610800012345/17', energyClass: 'F' }),
+    );
+    expect(propertiesApi.readApeIdentification).toHaveBeenCalledTimes(1);
+    expect(propertiesApi.readApeIdentification).toHaveBeenCalledWith('prop-1', 'doc-1');
+    expect(screen.queryByTestId('lease-ape-identification')).not.toBeInTheDocument();
+  });
+
+  it('LeaseCreateForm_ApeReadingFoundNothing_OpenedAgainAsksAtOnceWithoutReadingTheFileAgain', async () => {
+    // A minute of OCR on the server each time: a file whose reading found nothing is not read again by a page opened again.
+    vi.mocked(propertiesApi.getDocuments).mockResolvedValue([{ ...APE, apeCode: null, apeEnergyClass: null }]);
+    const first = renderForm();
+    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
+    expect(await screen.findByTestId('lease-ape-identification')).toBeInTheDocument();
+    first.unmount();
+
+    renderForm();
+    fireEvent.change(screen.getByLabelText(i18n.t('leases.form.propertyLabel')), { target: { value: 'prop-1' } });
+
+    expect(await screen.findByTestId('lease-ape-identification')).toBeInTheDocument();
+    expect(screen.queryByTestId('lease-ape-reading')).not.toBeInTheDocument();
+    expect(propertiesApi.readApeIdentification).toHaveBeenCalledTimes(1);
   });
 
   it('LeaseCreateForm_ApeWithCodeAndClass_SaysItIsReady', async () => {
