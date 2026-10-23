@@ -46,6 +46,8 @@ export interface HomeRow {
   to: string;
   /** The booking the title opens in the drawer, when it has a drawer. */
   bookingId?: string;
+  /** The guest's messages the host has not read yet (a row of a thread, SR-12). */
+  unread?: number;
   action?: RowAction;
 }
 
@@ -267,6 +269,7 @@ function messageRow(thread: HostThreadSummary, { t, locale }: Context): HomeRow 
     },
     to,
     bookingId: thread.bookingId,
+    unread: thread.unreadCount,
     action: { kind: 'link', label: t('dashboard.todo.RespondToGuest.cta'), to },
   };
 }

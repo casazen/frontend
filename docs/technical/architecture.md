@@ -36,6 +36,16 @@ Il router applica `ProtectedRoute`, `OnboardingGuard` e il workspace alle pagine
 
 La guida è una route `help` esplicita in ciascuna area, all’interno degli stessi guard. Il link usa lo slot `help` dell’header. Non si aggiunge al manifest operativo e non occupa un posto nella barra mobile. Le pagine pubbliche e il sito degli host mantengono i propri alberi di route.
 
+## Notifiche in tempo reale
+
+La campanella dell'header (`src/features/notifications/`, slot `notifications` della shell) mostra le notifiche dell'utente (`GET /api/me/notifications`, `unread-count`, `read`, `read-all`). Il canale in tempo reale è l'hub SignalR `/hubs/notifications`, sull'origine dell'API (`VITE_API_BASE_URL` senza `/api`), con il token Auth0 come `accessTokenFactory`.
+
+- **Connessione:** una per scheda (client condiviso, aperto dal primo utilizzo e chiuso dall'ultimo), solo con utente Auth0 autenticato; mai in demo, nelle pagine pubbliche o per un ospite. WebSocket con i fallback della negoziazione; riconnessione con backoff 0, 2, 5, 10, 30 s (poi ogni 30 s). La libreria si carica solo quando serve (import dinamico).
+- **Evento:** `notificationsChanged { unreadCount, type, entityId }` scrive il contatore nella cache e rilegge `['notifications']`, `['host-threads']`, `['booking-messages-unread']` e, se l'entità è una prenotazione, `['booking-thread', id]`. Dopo una riconnessione si rilegge tutto (gli eventi persi non tornano).
+- **Rete di sicurezza:** il contatore si rilegge al focus della finestra e al ritorno della rete; con il socket interrotto, poll ogni 60 s.
+- **Tipi:** `notification-model.ts` collega ogni tipo (`PushTypes` del backend) a icona, frase (`notifications.types.*`, it/en) e destinazione. Un tipo sconosciuto ha la frase generica e non apre nulla. `guest-message` apre `/app/short-rent/bookings/{id}?tab=messages`; i `service-request-*` aprono la posta del fornitore (`/app/supplier/inbox/{id}`) o il marketplace dell'host.
+- **Badge per elemento:** `GET /api/messages/unread` (una sola query per pagina) alimenta il contatore dei messaggi non letti sulle prenotazioni del calendario e della Timeline (`UnreadMessagesContext`), sulle righe «Rispondi» della Home e sul titolo dei messaggi nel cassetto. Un thread si segna come letto solo con la scheda visibile.
+
 ## Convenzioni
 
 - Richieste attraverso i moduli API e il client condiviso; niente `fetch('/api/...')` nelle feature.

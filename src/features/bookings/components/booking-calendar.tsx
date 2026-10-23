@@ -26,7 +26,9 @@ import {
   type HostCalendarEvent,
   type HostCalendarView,
 } from '../lib/host-calendar';
+import { useUnreadMessagesOf } from '../lib/unread-messages-context';
 import { CalendarLegend } from './calendar-legend';
+import { UnreadMessagesBadge } from '@/components/shared/unread-messages-badge';
 
 const CALENDAR_LOCALES: Record<string, Locale> = { it, en: enGB };
 
@@ -51,11 +53,13 @@ function eventTitle(event: HostCalendarEvent, t: TFunction): string {
 function CalendarEvent({ event }: EventProps<HostCalendarEvent>) {
   const { t } = useTranslation();
   const { icon: Icon, labelKey } = calendarKindInfo(calendarKindOf(event));
+  const unread = useUnreadMessagesOf(event.kind === 'booking' ? event.id : null);
   return (
     <span className="host-calendar-event__body">
       <Icon className="host-calendar-event__icon" aria-hidden="true" />
       <span className="host-calendar-event__title">{eventTitle(event, t)}</span>
       <span className="sr-only">{t(labelKey)}</span>
+      <UnreadMessagesBadge count={unread} className="ml-auto" />
     </span>
   );
 }

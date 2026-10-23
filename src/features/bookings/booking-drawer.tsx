@@ -1,6 +1,6 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { TFunction } from 'i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone } from 'lucide-react';
 import type { DetailContentProps } from '@/components/shared/detail-drawer/detail-registry';
@@ -8,9 +8,11 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
+import { TabCount } from '@/components/ui/tab-count';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
 import { formatStayDate } from '@/lib/stay-dates';
+import { useBookingThread } from '@/queries/use-booking-messages';
 import { useBooking } from '@/queries/use-bookings';
 import { useRefreshDashboard } from '@/queries/use-dashboard';
 import type { Booking } from '@/types';
@@ -21,6 +23,10 @@ import { bookingHasMessages } from './lib/booking-messages';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 import { BOOKING_STATUS_VARIANTS } from './schemas/booking.schema';
+
+/** `?focus=messages` on a page with the drawer open: the drawer scrolls to the conversation and focuses its title. */
+const DRAWER_FOCUS_PARAM = 'focus';
+const DRAWER_FOCUS_MESSAGES = 'messages';
 
 const LINK = 'inline-flex min-h-11 min-w-0 items-center gap-2 break-all text-sm hover:underline';
 
@@ -35,6 +41,36 @@ function nextStep(booking: Booking, canWrite: boolean, t: TFunction): { text: st
     return { text: t('detailDrawer.booking.departure'), label: t('booking.card.checkOutAction'), to: `/app/short-rent/bookings/${booking.id}/checkout` };
   }
   return null;
+}
+
+/**
+ * The conversation in the drawer: its title with the guest's messages not read yet. Opened with `focus=messages` (the bell, a link
+ * that is about a message) it comes into view and takes the focus, so that the host lands on the thread and not on the top.
+ */
+function DrawerMessages({ booking, titleId }: { booking: Booking; titleId: string }) {
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const wantsFocus = searchParams.get(DRAWER_FOCUS_PARAM) === DRAWER_FOCUS_MESSAGES;
+  const unread = useBookingThread(booking.id).data?.unreadCount ?? 0;
+  const heading = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (!wantsFocus) return;
+    const element = heading.current;
+    if (!element) return;
+    element.scrollIntoView?.({ block: 'start' });
+    element.focus({ preventScroll: true });
+  }, [wantsFocus, booking.id]);
+
+  return (
+    <section aria-labelledby={titleId} className="space-y-3" data-testid="booking-drawer-messages">
+      <h3 id={titleId} ref={heading} tabIndex={-1} className="flex items-center gap-2 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        {t('booking.messages.title')}
+        <TabCount count={unread} label={t('booking.messages.unread', { count: unread })} tone="warning" />
+      </h3>
+      <BookingMessagesSection booking={booking} />
+    </section>
+  );
 }
 
 /**
@@ -121,14 +157,7 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
       </div>
 
       {/* The conversation with the guest of a booking made through the site (SR-12), the same as the tab Messaggi of the page. */}
-      {showMessages ? (
-        <section aria-labelledby={messagesTitleId} className="space-y-3" data-testid="booking-drawer-messages">
-          <h3 id={messagesTitleId} className="text-sm font-semibold">
-            {t('booking.messages.title')}
-          </h3>
-          <BookingMessagesSection booking={booking} />
-        </section>
-      ) : null}
+      {showMessages ? <DrawerMessages booking={booking} titleId={messagesTitleId} /> : null}
 
       {/* What happened to the booking and what it waits for (SR-05c), the same list as the tab Cronologia of the page. */}
       <section aria-labelledby={timelineTitleId} className="space-y-3" data-testid="booking-drawer-timeline">

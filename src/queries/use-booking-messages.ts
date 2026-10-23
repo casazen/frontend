@@ -92,12 +92,3 @@ export function useUnreadMessagesByBooking(enabled: boolean = true) {
       new Map((Array.isArray(data?.items) ? data.items : []).filter((row) => row.unreadCount > 0).map((row) => [row.bookingId, row.unreadCount])),
   });
 }
-
-/** Total of the unread guest messages (the number of the entry «Messaggi»). */
-export function totalUnread(map: ReadonlyMap<string, number> | undefined): number {
-  let total = 0;
-  map?.forEach((count) => {
-    total += count;
-  });
-  return total;
-}
