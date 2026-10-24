@@ -39,6 +39,13 @@
     }
   },
   "concordatofacile": {
+    "gift": {
+      "available": "Pratica omaggio disponibile",
+      "button": "Usa la pratica omaggio e continua",
+      "conflict": "La pratica omaggio è già stata utilizzata",
+      "consumed": "Pratica omaggio già utilizzata",
+      "error": "Impossibile utilizzare la pratica omaggio. Riprova più tardi."
+    },
     "offer": {
       "title": "ConcordatoFacile",
       "price": "119,00 EUR totali IVA compresa",

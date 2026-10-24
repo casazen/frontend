@@ -59,10 +59,9 @@ export function ConcordatoFacileOfferPage() {
     if (!id) return;
     try {
       await giftMutation.mutateAsync(id);
-      // After consuming gift, access state will be refetched automatically
-      accessQuery.refetch();
+      // Access state is invalidated automatically by the mutation
     } catch {
-      // Error is handled by the mutation
+      // Error is handled below (409 conflict vs general error)
     }
   };
 
@@ -269,12 +268,23 @@ export function ConcordatoFacileOfferPage() {
                 </Alert>
               )}
 
-              {giftMutation.isError && (
-                <Alert variant="danger" className="mt-4">
-                  <AlertCircle className="size-4" />
-                  {t('concordatofacile.offer.giftError')}
-                </Alert>
-              )}
+              {giftMutation.isError && (() => {
+                const status = getHttpStatus(giftMutation.error);
+                if (status === 409) {
+                  return (
+                    <Alert variant="danger" className="mt-4" role="alert" data-testid="gift-conflict">
+                      <AlertCircle className="size-4" />
+                      {t('concordatofacile.gift.conflict')}
+                    </Alert>
+                  );
+                }
+                return (
+                  <Alert variant="danger" className="mt-4">
+                    <AlertCircle className="size-4" />
+                    {t('concordatofacile.gift.error')}
+                  </Alert>
+                );
+              })()}
             </div>
 
             <Alert>
