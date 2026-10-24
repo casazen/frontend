@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Loader2, ShieldCheck } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,8 @@ import { useLease } from '@/queries/use-leases';
 import { useCfAccess, useCfCheckout, useCfConsumeGift } from '@/queries/use-concordatofacile';
 import { redirectToStripe } from '@/features/billing/billing-utils';
 import { getHttpStatus } from '@/lib/api-errors';
+import { useAuth } from '@/hooks/use-auth';
+import { isAdmin } from '@/lib/auth-roles';
 
 /**
  * ConcordatoFacile offer page (NF-02, ADR-005-R11-R14).
@@ -26,6 +28,7 @@ export function ConcordatoFacileOfferPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [redirecting, setRedirecting] = useState(false);
+  const { user } = useAuth();
 
   const leaseQuery = useLease(id!);
   const accessQuery = useCfAccess(id!);
@@ -33,6 +36,7 @@ export function ConcordatoFacileOfferPage() {
   const giftMutation = useCfConsumeGift();
 
   const checkoutResult = searchParams.get('checkout');
+  const userIsAdmin = isAdmin(user);
 
   // If user has access, redirect to link generation flow (AC-NF02-4 interpretation: show access granted)
   useEffect(() => {
@@ -63,6 +67,12 @@ export function ConcordatoFacileOfferPage() {
     } catch {
       // Error is handled below (409 conflict vs general error)
     }
+  };
+
+  const handleAdminAccess = () => {
+    if (!id) return;
+    // Redirect to lease detail (link generation flow handled there)
+    navigate(`/app/long-rent/leases/${id}`);
   };
 
   if (!id) {
@@ -149,6 +159,24 @@ export function ConcordatoFacileOfferPage() {
     );
   }
 
+  // Admin with access via bypass - show admin-specific confirmation (AC-NF04-1)
+  if (access.hasAccess && access.source === 'admin') {
+    return (
+      <div className="container max-w-3xl py-8">
+        <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
+        <Alert variant="info" className="mt-6">
+          <ShieldCheck className="size-4" />
+          {t('concordatofacile.offer.adminBypass')}
+        </Alert>
+        <div className="mt-4">
+          <Button onClick={handleAdminAccess}>
+            {t('concordatofacile.offer.adminAccessButton')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // User already has access - show confirmation
   if (access.hasAccess) {
     return (
@@ -160,6 +188,25 @@ export function ConcordatoFacileOfferPage() {
         </Alert>
         <div className="mt-4">
           <Button onClick={() => navigate(`/app/long-rent/leases/${id}`)}>
+            {t('concordatofacile.offer.proceed')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Edge case: admin without access (shouldn't happen per backend logic)
+  // Handle gracefully by redirecting to link generation (task requirement)
+  if (userIsAdmin && !access.hasAccess) {
+    return (
+      <div className="container max-w-3xl py-8">
+        <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
+        <Alert variant="warning" className="mt-6">
+          <AlertCircle className="size-4" />
+          {t('concordatofacile.offer.adminNoAccess')}
+        </Alert>
+        <div className="mt-4">
+          <Button onClick={handleAdminAccess}>
             {t('concordatofacile.offer.proceed')}
           </Button>
         </div>
