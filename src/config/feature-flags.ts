@@ -2,13 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey =
-  | 'otaPartnerApi'
-  | 'aiSupplierDiscovery'
-  | 'rliProvider'
-  | 'eSignProvider'
-  | 'supplierOnlinePayments'
-  | 'concordatoFacile';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments' | 'concordatoFacile';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -39,11 +33,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   supplierOnlinePayments: false,
   /**
-   * CF-FIX: the ConcordatoFacile service (backend `ConcordatoFacile`), on in the test environment and off in production until CasaZen
-   * confirms the trial run and the privacy framework to ConcordatoFacile. Off: the contract page shows no payment panel, the route
-   * `/app/long-rent/leases/:id/concordatofacile` goes back to the contract, the draft banner keeps its button off and its «coming
-   * soon» line, and the upload page opened from the partner's button (`?practice=`) falls back to choosing the contract (the
-   * backend answers 404 to the lookup).
+   * ConcordatoFacile, the partner that prepares a canone concordato contract (backend `ConcordatoFacile`): on in the test environment,
+   * off in production until CasaZen confirms the trial run and the privacy framework to ConcordatoFacile. While it is off the card
+   * «Parto da zero» of a new canone concordato is disabled («disponibile a breve») and its address shows the question again; «Ho già il
+   * contratto e i documenti» does not depend on it. It also keeps the payment panel off the contract page (CF-FIX), sends the route
+   * `/app/long-rent/leases/:id/concordatofacile` back to the contract, leaves the banner of a draft made for the partner with its button
+   * off and its «coming soon» line, and makes the upload page opened from the partner's button (`?practice=`) fall back to choosing the
+   * contract (the backend answers 404 to the lookup).
    */
   concordatoFacile: false,
 };

@@ -15,9 +15,10 @@ const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /**
- * A canone concordato contract is prepared with the partner (ConcordatoFacile): here only its property is asked, and a real draft
- * is saved at once, so the contract has its leaseId (the reference the partner links the practice to) before anything else. No
- * APE, parties, rent or dates: they come from the partner's contract.
+ * «Parto da zero» of a canone concordato: the contract is prepared with the partner (ConcordatoFacile). Here only its property is
+ * asked, and a real draft is saved at once, so the contract has its leaseId (the reference the partner links the practice to) before
+ * anything else; then the person goes straight to the page of the service (pay it, or use the practice that is a gift, and open the
+ * partner's form with our signed link). No APE, parties, rent or dates: they come from the partner's contract.
  */
 export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?: string }) {
   const { t } = useTranslation();
@@ -35,7 +36,8 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
     if (!propertyId || createDraft.isPending) return;
     try {
       const leaseId = await createDraft.mutateAsync(propertyId);
-      navigate(`/app/long-rent/leases/${leaseId}`);
+      // Replaced, not pushed: "back" from the page of the service must not land on this form again, where a click would make a second draft.
+      navigate(`/app/long-rent/leases/${leaseId}/concordatofacile`, { replace: true });
     } catch {
       // useCreateConcordatoDraft.onError says why; the property stays chosen to try again on the same draft.
     }
@@ -86,7 +88,7 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
               data-testid="concordato-no-properties"
               className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
             >
-              <span className="flex-1">{t('leases.concordato.noProperties')}</span>
+              <span className="flex-1">{t('leaseWizard.start.concordato.noProperties')}</span>
               <Button asChild variant="outline" size="sm">
                 <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
               </Button>
@@ -95,10 +97,10 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
         </div>
       )}
 
-      <p className="text-sm text-foreground/70">{t('leases.concordato.whatHappens')}</p>
+      <p className="text-sm text-foreground/70">{t('leaseWizard.start.concordato.whatHappens')}</p>
 
       <Button type="submit" disabled={!propertyId} loading={createDraft.isPending} data-testid="concordato-draft-create">
-        {createDraft.isPending ? t('leases.form.creating') : t('leases.concordato.create')}
+        {createDraft.isPending ? t('leases.form.creating') : t('leaseWizard.start.continue')}
       </Button>
     </form>
   );
