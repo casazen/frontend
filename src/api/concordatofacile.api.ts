@@ -1,5 +1,5 @@
 import { ApiClient } from '@/api/client';
-import type { CfAccessResponse, CfCheckoutResponse, CfLinkResponse } from '@/types/concordatofacile.types';
+import type { CfAccessResponse, CfCheckoutResponse, CfLinkResponse, CfStatusResponse } from '@/types/concordatofacile.types';
 
 /** ConcordatoFacile one-time payment and access (ADR-005). */
 export const ConcordatoFacileApi = {
@@ -33,4 +33,12 @@ export const ConcordatoFacileApi = {
    */
   generateLink: (leaseId: string): Promise<CfLinkResponse> =>
     ApiClient.post<CfLinkResponse>(`/leases/${leaseId}/concordatofacile/link`),
+
+  /**
+   * Get practice status for a lease (ADR-008-R11, ADR-008-R15).
+   * Returns cached practices with staleness indicator and polling schedule.
+   * Requires LeaseRead policy.
+   */
+  getStatus: (leaseId: string): Promise<CfStatusResponse> =>
+    ApiClient.get<CfStatusResponse>(`/leases/${leaseId}/concordatofacile/status`),
 };

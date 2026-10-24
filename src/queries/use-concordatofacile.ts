@@ -53,3 +53,25 @@ export function useCfGenerateLink(leaseId: string) {
     },
   });
 }
+
+/** Query key for CF status. */
+export const CF_STATUS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'status', leaseId] as const;
+
+/**
+ * Get practice status for a lease (ADR-008-R15, ADR-008-R16).
+ * Refetches on mount and polls based on nextUpdateAt.
+ */
+export function useCfStatus(leaseId: string) {
+  return useQuery({
+    queryKey: CF_STATUS_QUERY_KEY(leaseId),
+    queryFn: () => ConcordatoFacileApi.getStatus(leaseId),
+    refetchOnMount: true,
+    refetchInterval: (data) => {
+      // Compute refetch interval from nextUpdateAt (ADR-008-R16)
+      if (!data?.state?.data?.nextUpdateAt) return false;
+      const nextUpdate = new Date(data.state.data.nextUpdateAt).getTime();
+      const now = Date.now();
+      return Math.max(0, nextUpdate - now);
+    },
+  });
+}
