@@ -39,6 +39,13 @@
     }
   },
   "concordatofacile": {
+    "gift": {
+      "available": "Complimentary practice available",
+      "button": "Use complimentary practice and continue",
+      "conflict": "The complimentary practice has already been used",
+      "consumed": "Complimentary practice already used",
+      "error": "Unable to use complimentary practice. Please try again later."
+    },
     "offer": {
       "title": "ConcordatoFacile",
       "price": "119.00 EUR total VAT included",

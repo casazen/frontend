@@ -19,10 +19,10 @@ export const ConcordatoFacileApi = {
     ApiClient.post<CfCheckoutResponse>(`/leases/${leaseId}/concordatofacile/checkout`),
 
   /**
-   * Consume the org's gift for a lease (NF-03, for F04).
+   * Consume the org's gift for a lease (NF-03, ADR-006-R10).
    * Atomically assigns the gift to the lease and grants access without payment.
-   * Returns access state after consumption.
+   * Returns access state after consumption. Returns 409 if gift already consumed.
    */
   consumeGift: (leaseId: string): Promise<CfAccessResponse> =>
-    ApiClient.post<CfAccessResponse>(`/leases/${leaseId}/concordatofacile/gift`),
+    ApiClient.post<CfAccessResponse>(`/leases/${leaseId}/concordatofacile/consume-gift`),
 };
