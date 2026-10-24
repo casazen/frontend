@@ -93,7 +93,7 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
   function deleteDraft() {
     const held = holdForUndo({
       key: leaseDraftDeleteKey(lease.id),
-      message: t('leaseLifecycle.deleteDraft.held', { tenant: subject.tenant }),
+      message: t('leaseLifecycle.deleteDraft.held'),
       description: t('leaseLifecycle.deleteDraft.heldHint'),
       commit: async () => {
         await lifecycle.deleteDraft(lease.id);
