@@ -184,7 +184,7 @@ export function ConcordatoFacileOfferPage() {
             <dl className="space-y-2">
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">{t('concordatofacile.offer.property')}</dt>
-                <dd className="text-sm">{lease.property?.name || t('leaseList.property.missing')}</dd>
+                <dd className="text-sm">{lease.property?.name || t('leaseList.needs.property_missing')}</dd>
               </div>
               {lease.property?.city && (
                 <div>
