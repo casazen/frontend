@@ -6,9 +6,12 @@ import type {
   CedolareAdvisoryInput,
   CreateLeaseDto,
   LeaseDetail,
+  LeaseDraft,
   LeaseDraftCreated,
+  LeaseDraftFlow,
   LeaseDraftSaved,
   LeaseListView,
+  LeaseOrigin,
   LeaseRegistration,
   LeaseSigningState,
   LeaseSummary,
@@ -22,6 +25,19 @@ import type {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isFlow(value: unknown): value is LeaseDraftFlow {
+  return isRecord(value) && Array.isArray(value.steps);
+}
+
+/** The flow of an answer, or an empty one when the answer has none: the screen then shows no state, never a wrong one. */
+function flowOf(data: Record<string, unknown>): LeaseDraftFlow {
+  return isFlow(data.flow) ? data.flow : { steps: [] };
+}
+
+function idsOf(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
 }
 
 /** The list endpoint returns a JSON array: anything else (HTML fallback, error envelope) is a load error. */
@@ -53,13 +69,25 @@ export const leasesApi = {
   create: async (data: CreateLeaseDto): Promise<LeaseDetail> =>
     expectObjectWithId<LeaseDetail>(await ApiClient.post<unknown>('/leases', data), '/leases'),
 
-  /** LR-12: a draft with only the property (no APE, parties, dates or rent asked yet); its id is the leaseId for a partner. */
-  createDraft: async (propertyId: string): Promise<LeaseDraftCreated> => {
-    const data = await ApiClient.post<unknown>('/leases/drafts', { propertyId });
+  /**
+   * LR-12 / LR-13: a draft with only the property (no APE, parties, dates or rent asked yet); its id is the leaseId for a partner.
+   * `origin` is chosen here and never changes: `Imported` is a contract already signed elsewhere.
+   */
+  createDraft: async (propertyId: string, origin?: LeaseOrigin): Promise<LeaseDraftCreated> => {
+    const data = await ApiClient.post<unknown>('/leases/drafts', origin ? { propertyId, origin } : { propertyId });
     if (!isRecord(data) || typeof data.id !== 'string' || typeof data.version !== 'number') {
       throw new UnexpectedApiResponseError('/leases/drafts');
     }
-    return { id: data.id, version: data.version };
+    return { id: data.id, version: data.version, flow: flowOf(data) };
+  },
+
+  /** LR-12: every value of the draft, not masked, with its version and the flow (what each step still needs). */
+  getDraft: async (id: string): Promise<LeaseDraft> => {
+    const data = await ApiClient.get<unknown>(`/leases/${id}/draft`);
+    if (!isRecord(data) || typeof data.version !== 'number' || !isRecord(data.values) || !isFlow(data.flow)) {
+      throw new UnexpectedApiResponseError('/leases/:id/draft');
+    }
+    return data as unknown as LeaseDraft;
   },
 
   /** LR-12: the values of one step of a draft, saved on `version` (409 when another save came first: nothing is written). */
@@ -69,7 +97,7 @@ export const leasesApi = {
   ): Promise<LeaseDraftSaved> => {
     const data = await ApiClient.patch<unknown>(`/leases/${id}/draft`, save);
     if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/draft');
-    return { version: data.version };
+    return { version: data.version, flow: flowOf(data), landlordIds: idsOf(data.landlordIds), tenantIds: idsOf(data.tenantIds) };
   },
 
   /** LT-02: signers (persisted), provider availability and whether the final contract can be downloaded. */
