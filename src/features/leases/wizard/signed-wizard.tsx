@@ -13,7 +13,7 @@ import { AfterSignatureStep } from './after-signature-step';
 import { LeaseDone } from './lease-done';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
-import { AFTER_STEP, DONE_STEP, leaseEditPath, signedSteps, stepKey } from './wizard-model';
+import { AFTER_STEP, DONE_STEP, leaseEditPath, registeredSteps, stepKey } from './wizard-model';
 
 const LEASES_PATH = '/app/long-rent/leases';
 
@@ -53,7 +53,7 @@ export function SignedWizard({ leaseId, view }: { leaseId: string; view: 'after'
 
   const origin = data.origin ?? 'Created';
   const declareFirst = (location.state as { declareRegistration?: boolean } | null)?.declareRegistration === true;
-  const entries = signedSteps(origin).map((step) => ({
+  const entries = registeredSteps(origin).map((step) => ({
     step,
     label: t(`leaseWizard.steps.${stepKey(step, origin)}.label`),
     mark: step === AFTER_STEP ? ('current' as const) : ('done' as const),
