@@ -30,6 +30,17 @@ export const LEASE_EVENT_TYPES = [
   'StipulaDeclared',
   'QuesturaCommunicationMarkedDone',
   'PropertyDeliveryDateDeclared',
+  // LR-12: the draft reviewed, downloaded for the signature on paper, taken back; LR-13: a contract signed elsewhere brought in.
+  'ReviewConfirmed',
+  'ReviewReopened',
+  'SentForSignature',
+  'SentRevoked',
+  'Imported',
+  // LR-14: the notice of non-renewal given and taken back, the lease ended early, the lease renewed by itself.
+  'NoticeRecorded',
+  'NoticeRemoved',
+  'Terminated',
+  'TermRenewed',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
@@ -189,7 +200,23 @@ export interface LeaseSummary {
   overdueRentCount?: number;
   overdueRentAmount?: number;
   overdueDays?: number | null;
+  /** LR-01b: where the lease stands on its path, decided by the server (never worked out here from the other fields). */
+  stage?: LeaseStage;
 }
+
+/** The eight stages of the path of a lease (backend `LeaseStage`, LR-01b). `DataPending` is for the tenant's own data and is never sent yet. */
+export type LeaseStage =
+  | 'Draft'
+  | 'DataPending'
+  | 'InReview'
+  | 'SentForSignature'
+  | 'Signed'
+  | 'Active'
+  | 'Expiring'
+  | 'Concluded';
+
+/** Who gave the notice of non-renewal (backend `LeaseNoticeParty`, LR-14). */
+export type LeaseNoticeParty = 'Landlord' | 'Tenant';
 
 /** `GET /leases/:id` (and the `POST /leases` response). */
 export interface LeaseDetail {
@@ -218,6 +245,22 @@ export interface LeaseDetail {
   events: LeaseEvent[];
   createdAt: string;
   updatedAt: string;
+  /** LR-12: when the contract was downloaded for the signature on paper; null until then and once it was taken back. */
+  sentForSignatureAt?: string | null;
+  /**
+   * LR-14: the last day of the period the lease is in now. `endDate` stays the end of the first period the contract states; a lease
+   * that renews by itself or ends early has another end, and this is the one that says whether the lease is over.
+   */
+  currentTermEndDate?: string;
+  /** LR-14: the day the notice of non-renewal was given, and who gave it; both null without a notice. */
+  noticeOn?: string | null;
+  noticeFrom?: LeaseNoticeParty | null;
+  /** LR-14: the last day of a lease ended early (or recorded as concluded when it was already over); null otherwise. */
+  terminatedOn?: string | null;
+  /** LR-14: derived by the server; 0 for a type that does not renew by itself. The number is never written in the interface. */
+  renewalMonths?: number;
+  /** LR-14: `notice_possibly_late` when the notice came after the last day to give it (CasaZen records it, it does not judge it). */
+  noticeWarning?: string | null;
 }
 
 /**
