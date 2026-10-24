@@ -44,6 +44,8 @@ interface RentSchedulePanelProps {
    * («Traccia da», LR-04a) instead of from the start, so no past period is born late; without them the field is not offered.
    */
   term?: LeaseTerm;
+  /** Called when the plan has been saved: a window that holds the panel closes then. */
+  onConfigured?: () => void;
 }
 
 interface LeaseTerm {
@@ -57,7 +59,7 @@ interface LeaseTerm {
  * The plan says from which month the rents are tracked and whether the tenants are written to by the daily job (LR-04a):
  * that one is off for a new plan, and on only when the landlord turns it on.
  */
-export function RentSchedulePanel({ leaseId, leaseStatus, term }: RentSchedulePanelProps) {
+export function RentSchedulePanel({ leaseId, leaseStatus, term, onConfigured }: RentSchedulePanelProps) {
   const { t } = useTranslation();
   const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
 
@@ -83,12 +85,22 @@ export function RentSchedulePanel({ leaseId, leaseStatus, term }: RentSchedulePa
           {getProblemMessage(error, t) ?? t('rent.loadError')}
         </Alert>
       )}
-      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} term={term} />}
+      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} term={term} onConfigured={onConfigured} />}
     </PlainSection>
   );
 }
 
-function RentLedgerContent({ leaseId, ledger, term }: { leaseId: string; ledger: RentLedger; term?: LeaseTerm }) {
+function RentLedgerContent({
+  leaseId,
+  ledger,
+  term,
+  onConfigured,
+}: {
+  leaseId: string;
+  ledger: RentLedger;
+  term?: LeaseTerm;
+  onConfigured?: () => void;
+}) {
   const { t, i18n } = useTranslation();
   // The page of the payments settings is the short-rent one: who cannot open it (a landlord with only long-term leases) gets the
   // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
@@ -171,7 +183,10 @@ function RentLedgerContent({ leaseId, ledger, term }: { leaseId: string; ledger:
           leaseId={leaseId}
           ledger={ledger}
           term={term}
-          onDone={() => setEditing(false)}
+          onDone={() => {
+            setEditing(false);
+            onConfigured?.();
+          }}
           onCancel={schedule?.isActive ? () => setEditing(false) : undefined}
         />
       )}
