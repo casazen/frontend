@@ -270,46 +270,10 @@ export interface LeaseDetail {
 }
 
 /**
- * `POST /leases/drafts` (LR-12): a draft with only its property. Its id is the leaseId a partner links its practice to; dates,
- * rent and parties keep starting values (`LEASE_DRAFT_PLACEHOLDER_DATE`, rent 0) until they are typed.
+ * Start and end date of a draft whose dates were never typed (`LeaseDraftDefaults.PlaceholderDate` of the API): a draft made with
+ * only its property (`POST /leases/drafts`, see `lease-draft.types.ts`) keeps these and a rent of 0 until they are typed.
  */
-export interface LeaseDraftCreated {
-  id: string;
-  version: number;
-}
-
-/** `PATCH /leases/:id/draft`: the new version of the draft, the one the next save is made on. */
-export interface LeaseDraftSaved {
-  version: number;
-}
-
-/** Start and end date of a draft whose dates were never typed (`LeaseDraftDefaults.PlaceholderDate` of the API). */
 export const LEASE_DRAFT_PLACEHOLDER_DATE = '3000-01-01';
-
-export interface CreateLeasePartyDto {
-  role: PartyRole;
-  firstName: string;
-  lastName: string;
-  fiscalCode: string;
-  citizenship: string;
-  contactEmail: string;
-}
-
-/**
- * `POST /leases` (LT-10): contract type and tax regime, the dates (the backend derives the term), the deposit and, for a
- * canone concordato lease, the characteristics the backend computes and checks the range with.
- */
-export interface CreateLeaseDto {
-  propertyId: string;
-  contractType: LeaseContractType;
-  taxRegime: LeaseTaxRegime;
-  startDate: string;
-  endDate: string;
-  monthlyRent: number;
-  securityDeposit?: number | null;
-  parties: CreateLeasePartyDto[];
-  canoneConcordato?: ConcordatoCharacteristics;
-}
 
 /**
  * How a party signs the contract (LT-02): `Offline` on paper or with the party's own digital signature, recorded when the

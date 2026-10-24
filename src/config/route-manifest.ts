@@ -586,6 +586,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/leases')).LeaseDetailPage }),
     legacyPaths: ['/leases/:id'],
   },
+  {
+    // «Continua il contratto» (LR-06a): the wizard on a draft that exists on the server, the same from any device. It reads the rules
+    // of the area (`lease.read`) and writes the draft (`lease.create`).
+    path: '/app/long-rent/leases/:id/edit',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read', 'lease.create'],
+    component: async () => ({ default: (await import('@/features/leases')).LeaseWizardPage }),
+  },
   // Long-term landlord's properties and their APE (A7-06): the property core only, never the short-stay pages.
   {
     path: '/app/long-rent/properties',
