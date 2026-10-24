@@ -1616,6 +1616,24 @@
       "saving": "Sto salvando…"
     },
     "saveDraft": "Salva bozza",
+    "sign": {
+      "download": "Scarica da firmare",
+      "downloadAgain": "Scarica di nuovo",
+      "lines": {
+        "print": "Stampa il contratto.",
+        "sign": "Fatelo firmare a mano, su ogni pagina, da tutte le parti.",
+        "upload": "Carica qui la copia firmata."
+      },
+      "preview": "Leggi l'anteprima (non valida per la firma)",
+      "revoke": "Annulla lo scarico per modificare",
+      "revokeFailed": "Non sono riuscito ad annullare lo scarico. Riprova.",
+      "revokedToast": "Scarico annullato: puoi modificare il contratto",
+      "sentBadge": "In firma",
+      "sentText": "Il contratto è stato scaricato. Fatelo firmare a mano da tutte le parti e carica qui la copia firmata.",
+      "sentToast": "Contratto scaricato per la firma",
+      "templateInApproval": "Il modello di contratto è in approvazione: puoi leggere l'anteprima ma non ancora scaricare il contratto da firmare.",
+      "upload": "Carica la copia firmata"
+    },
     "start": {
       "origin": {
         "created": {
@@ -1672,6 +1690,12 @@
         "why": "Prima di far firmare il contratto controlliamo che sia completo e coerente."
       },
       "7": {
+        "Created": {
+          "label": "Firma",
+          "purpose": "Scarica il contratto, fallo firmare a mano e carica la copia firmata.",
+          "title": "Firma su carta",
+          "why": "La copia firmata resta in CasaZen e da lì partono le scadenze, a cominciare dalla registrazione."
+        },
         "Imported": {
           "label": "Contratto firmato",
           "purpose": "Carica il PDF firmato e indica il giorno della firma.",
@@ -9448,6 +9472,7 @@
       "leaseDraftConflict": "Il contratto è occupato o è cambiato altrove. Ricarica la pagina e riprova.",
       "leaseImportNotImportedOrigin": "Un contratto creato in CasaZen non si può inserire come già firmato: si firma dal suo modello.",
       "leaseReviewBlocked": "Mancano ancora dei dati nei passi precedenti: controllali e riprova.",
+      "leaseReviewNotConfirmed": "Prima di scaricare il contratto da firmare devi confermare la revisione.",
       "questuraDeliveryDateLocked": "La data di consegna non si può più cambiare: la comunicazione alla Questura è già stata dichiarata.",
       "propertyCoordinatesInvalid": "Le coordinate non sono valide: la latitudine deve essere tra -90 e 90 e la longitudine tra -180 e 180.",
       "serviceRequestSupplierNotActive": "Il tuo account fornitore non è attivo (è sospeso o non ancora attivato): non puoi eseguire azioni sulle richieste. Contatta il supporto CasaZen.",

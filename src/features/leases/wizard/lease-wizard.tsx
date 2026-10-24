@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
+import { toastUndo } from '@/lib/toast-undo';
 import { useForgetLeaseReads, useLeaseReview } from '@/queries/use-lease-draft';
-import type { LandlordDefaults, LeaseDraft, LeaseNeed, LongRentRules } from '@/types';
+import type { LandlordDefaults, LeaseDraft, LeaseDraftFlow, LeaseNeed, LongRentRules } from '@/types';
 import { DatesStep } from './dates-step';
 import { ImportStep } from './import-step';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
@@ -20,6 +21,7 @@ import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { PartiesStep } from './parties-step';
 import { PropertyStep } from './property-step';
 import { ReviewStep } from './review-step';
+import { SigningStep } from './signing-step';
 import { TermsStep } from './terms-step';
 import { STEP_SCHEMAS } from './wizard-schemas';
 import { needMessage } from './wizard-messages';
@@ -202,20 +204,33 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
   const next = position >= 0 && position < steps.length - 1 ? steps[position + 1] : null;
   const stopped = saver.status === 'conflict' || saver.status === 'gone';
 
+  /** What the server answers to a change made outside the saving (the review, the download for the signature): the version and the flow. */
+  const applyServerFlow = (version: number, nextFlow: LeaseDraftFlow) => {
+    adopt(version);
+    flowRef.current = nextFlow;
+    setFlow(nextFlow);
+    forgetReads();
+  };
+
+  /** The inverse of the confirmation, on the server: «Annulla» of the toast. The signature step (if the person is there) closes again. */
+  const withdrawReview = async () => {
+    const withdrawn = await leasesApi.withdrawReviewConfirmation(draft.id, getVersion());
+    applyServerFlow(withdrawn.version, withdrawn.flow);
+    void review.refetch();
+    if (stepRef.current !== REVIEW_STEP) goTo(REVIEW_STEP);
+  };
+
   const confirmReview = async () => {
     if (reviewConfirmed) {
-      navigate(sheetPath);
+      if (next !== null) goTo(next);
       return;
     }
     if (!(await flush())) return;
     try {
       const confirmation = await leasesApi.confirmReview(draft.id, getVersion());
-      adopt(confirmation.version);
-      flowRef.current = confirmation.flow;
-      setFlow(confirmation.flow);
-      forgetReads();
+      applyServerFlow(confirmation.version, confirmation.flow);
       await review.refetch();
-      toast.success(t('leaseWizard.review.confirmedToast'));
+      toastUndo(t('leaseWizard.review.confirmedToast'), { undo: withdrawReview });
     } catch (error) {
       if (!stopOn(error)) toast.error(getProblemMessage(error, t) ?? t('leaseWizard.review.confirmFailed'));
       void review.refetch();
@@ -267,10 +282,8 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
   };
 
   const nextLabel =
-    current === REVIEW_STEP
-      ? reviewConfirmed
-        ? t('leaseWizard.goToLease')
-        : t('leaseWizard.review.confirm')
+    current === REVIEW_STEP && !reviewConfirmed
+      ? t('leaseWizard.review.confirm')
       : next === null
         ? t('leaseWizard.finish')
         : t('leaseWizard.next', { step: t(`leaseWizard.steps.${stepKey(next, draft.origin)}.label`) });
@@ -301,7 +314,12 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
   } else if (current === 4) {
     body = <DatesStep rules={rules} origin={draft.origin} />;
   } else if (current === SIGN_STEP) {
-    body = <ImportStep leaseId={draft.id} contractType={form.getValues('contractType')} flush={flush} />;
+    body =
+      draft.origin === 'Imported' ? (
+        <ImportStep leaseId={draft.id} contractType={form.getValues('contractType')} flush={flush} />
+      ) : (
+        <SigningStep leaseId={draft.id} flow={flow} getVersion={getVersion} onServerFlow={applyServerFlow} stopOn={stopOn} flush={flush} />
+      );
   } else {
     body = <ReviewStep review={review} hrefOfStep={stepHref} />;
   }
@@ -373,7 +391,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
               form={FORM_ID}
               loading={busy}
               disabled={stopped || reviewBlocked}
-              iconRight={next === null && current !== REVIEW_STEP ? <Check /> : <ArrowRight />}
+              iconRight={next === null ? <Check /> : <ArrowRight />}
               className={`${WIZARD_BUTTON} grow sm:grow-0`}
               data-testid="lease-wizard-next"
             >
