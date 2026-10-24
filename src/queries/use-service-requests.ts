@@ -1,9 +1,15 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import {
+  acceptLongRentProposal,
+  cancelLongRentServiceRequest,
   cancelServiceRequest,
   completeServiceRequest,
+  confirmLongRentFinalAmount,
+  createLongRentPaymentSession,
   createLongRentServiceRequest,
   createServiceRequest,
+  fetchAllLongRentServiceRequests,
+  fetchLongRentServiceRequest,
   fetchLongRentServiceRequests,
   fetchLongRentSuppliers,
   fetchMarketplaceSuppliers,
@@ -11,12 +17,16 @@ import {
   fetchSuppliersByProperty,
   markLongRentServiceRequestPaid,
   markServiceRequestPaid,
+  rejectLongRentProposal,
   rejectServiceRequest,
+  remindLongRentServiceRequest,
   takeServiceRequest,
 } from '@/api/service-requests.api';
 import type {
   CreateLongRentServiceRequestDto,
   CreateServiceRequestDto,
+  ServiceRequest,
+  ServiceRequestHostView,
   SupplierPickerSort,
 } from '@/types/service-request';
 import { toast } from 'sonner';
@@ -66,6 +76,90 @@ export function useLongRentServiceRequests(propertyId?: string) {
   return useQuery({
     queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', propertyId ?? null],
     queryFn: () => fetchLongRentServiceRequests({ propertyId, pageSize: 50 }),
+  });
+}
+
+/** How often a request waiting for the payment to be confirmed is read again, in milliseconds. */
+const PAYMENT_POLL_MS = 4000;
+
+/**
+ * Every long-rent request in scope (LR-08b): the open ones, the closed ones or all, newest first. The list searches and sorts
+ * them itself, so it has them all. Read again when the page opens: the requests change on other screens and the query client does
+ * not read a list again on mount by itself.
+ */
+export function useAllLongRentServiceRequests(view?: ServiceRequestHostView) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', 'all', view ?? 'all'],
+    queryFn: () => fetchAllLongRentServiceRequests(view),
+    refetchOnMount: 'always',
+  });
+}
+
+/**
+ * One long-rent request (LR-08b). `poll`: read again every few seconds until it is paid, for a payment sent to Stripe that Stripe
+ * confirms to the backend a little later.
+ */
+export function useLongRentServiceRequest(id: string, options: { poll?: boolean } = {}) {
+  return useQuery({
+    queryKey: [SERVICE_REQUESTS_KEY, 'long-rent', 'detail', id],
+    queryFn: () => fetchLongRentServiceRequest(id),
+    enabled: id !== '',
+    refetchOnMount: 'always',
+    refetchInterval: (query) => (options.poll && query.state.data?.status !== 'Pagato' ? PAYMENT_POLL_MS : false),
+  });
+}
+
+/**
+ * A step the landlord takes on one request (remind, answer a proposed time, confirm the final amount, cancel). The answer is the
+ * request as it is now: the page shows it at once and the lists read it again. When the step is refused (the supplier answered
+ * meanwhile, another tab acted) the request is read again and the reason is said.
+ */
+function useLongRentHostAction<Variables>({ run, doneKey }: { run: (variables: Variables) => Promise<ServiceRequest>; doneKey: string }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: (request) => {
+      queryClient.setQueryData([SERVICE_REQUESTS_KEY, 'long-rent', 'detail', request.id], request);
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.success(i18n.t(doneKey));
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey: [SERVICE_REQUESTS_KEY] });
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('serviceRequest.actionFailed'));
+    },
+  });
+}
+
+/** The landlord cancels a long-rent request, with the reason the supplier is told. */
+export function useCancelLongRentServiceRequest() {
+  return useLongRentHostAction({
+    run: ({ id, reason }: { id: string; reason: string }) => cancelLongRentServiceRequest(id, reason),
+    doneKey: 'longRentRequests.toast.cancelled',
+  });
+}
+
+/** The landlord reminds the supplier to answer: an e-mail to the supplier, only when this is called. */
+export function useRemindLongRentServiceRequest() {
+  return useLongRentHostAction({ run: (id: string) => remindLongRentServiceRequest(id), doneKey: 'longRentRequests.toast.reminded' });
+}
+
+export function useAcceptLongRentProposal() {
+  return useLongRentHostAction({ run: (id: string) => acceptLongRentProposal(id), doneKey: 'longRentRequests.toast.proposalAccepted' });
+}
+
+export function useRejectLongRentProposal() {
+  return useLongRentHostAction({ run: (id: string) => rejectLongRentProposal(id), doneKey: 'longRentRequests.toast.proposalRejected' });
+}
+
+export function useConfirmLongRentFinalAmount() {
+  return useLongRentHostAction({ run: (id: string) => confirmLongRentFinalAmount(id), doneKey: 'longRentRequests.toast.amountConfirmed' });
+}
+
+/** The session to pay a request inside CasaZen: asked when the landlord presses «Paga» and used at once by the Payment Element. */
+export function useCreateLongRentPaymentSession() {
+  return useMutation({
+    mutationFn: (id: string) => createLongRentPaymentSession(id),
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('longRentRequests.pay.sessionError')),
   });
 }
 

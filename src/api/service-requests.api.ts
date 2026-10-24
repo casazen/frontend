@@ -3,7 +3,9 @@ import axios from '@/lib/axios';
 import type {
   CreateLongRentServiceRequestDto,
   CreateServiceRequestDto,
+  ServicePaymentSession,
   ServiceRequest,
+  ServiceRequestHostView,
   ServiceRequestListResponse,
   SupplierListResponse,
   SupplierPickerSort,
@@ -77,10 +79,69 @@ export async function fetchMarketplaceSuppliers(params: {
 export async function fetchLongRentServiceRequests(params: {
   propertyId?: string;
   status?: string;
+  /** `open` or `closed` (LR-08a); without it, every request. */
+  view?: ServiceRequestHostView;
   page?: number;
   pageSize?: number;
 }): Promise<ServiceRequestListResponse> {
   return ApiClient.get<ServiceRequestListResponse>('/long-rent/service-requests', params);
+}
+
+/** A page of the list holds at most this many requests (the API clamps `pageSize` to 100). */
+const LIST_PAGE_SIZE = 100;
+/** The list stops here, whatever the API says: a landlord with 1,000 requests would not read them in a list anyway. */
+const LIST_MAX_PAGES = 10;
+
+/** Every long-rent request of the caller's scope (newest first), page after page, for a list that searches and sorts them itself. */
+export async function fetchAllLongRentServiceRequests(view?: ServiceRequestHostView): Promise<ServiceRequest[]> {
+  const items: ServiceRequest[] = [];
+  for (let page = 1; page <= LIST_MAX_PAGES; page += 1) {
+    const answer = await fetchLongRentServiceRequests({ view, page, pageSize: LIST_PAGE_SIZE });
+    items.push(...answer.items);
+    if (answer.items.length === 0 || items.length >= answer.total) break;
+  }
+  return items;
+}
+
+/** One long-rent request (LR-08a): 404 `service_request_not_found` for one outside the caller's scope. */
+export async function fetchLongRentServiceRequest(id: string): Promise<ServiceRequest> {
+  return ApiClient.get<ServiceRequest>(`/long-rent/service-requests/${encodeURIComponent(id)}`);
+}
+
+/** The landlord cancels a request up to the work in progress; the reason is required (500 characters at most) and the supplier is told. */
+export async function cancelLongRentServiceRequest(id: string, reason: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/long-rent/service-requests/${encodeURIComponent(id)}/cancel`, { reason });
+  return data;
+}
+
+/** The landlord reminds the supplier to answer a new request (at most one reminder every few hours: the API says when it is too soon). */
+export async function remindLongRentServiceRequest(id: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/long-rent/service-requests/${encodeURIComponent(id)}/remind`);
+  return data;
+}
+
+/** The landlord accepts the time the supplier proposed: the request is taken. */
+export async function acceptLongRentProposal(id: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/long-rent/service-requests/${encodeURIComponent(id)}/proposal/accept`);
+  return data;
+}
+
+/** The landlord turns the proposed time down: the request stays new and waits for another answer. */
+export async function rejectLongRentProposal(id: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/long-rent/service-requests/${encodeURIComponent(id)}/proposal/reject`);
+  return data;
+}
+
+/** The landlord confirms a final amount that is above the quote by more than the tolerance (decision D7): only then it can be paid. */
+export async function confirmLongRentFinalAmount(id: string): Promise<ServiceRequest> {
+  const { data } = await axios.post<ServiceRequest>(`/long-rent/service-requests/${encodeURIComponent(id)}/final-amount/confirm`);
+  return data;
+}
+
+/** The PaymentIntent the landlord confirms with the Stripe Payment Element to pay a request paid inside CasaZen. */
+export async function createLongRentPaymentSession(id: string): Promise<ServicePaymentSession> {
+  const { data } = await axios.post<ServicePaymentSession>(`/long-rent/service-requests/${encodeURIComponent(id)}/payment-session`);
+  return data;
 }
 
 export async function fetchLongRentSuppliers(propertyId: string, category?: string): Promise<SupplierListResponse> {

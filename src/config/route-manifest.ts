@@ -605,6 +605,31 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
+    // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
+    // hides the buttons from who may not).
+    path: '/app/long-rent/service-requests',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.serviceRequests',
+    navGroup: 'portfolio',
+    navPlacement: 'primary',
+    navOrder: 4,
+    navBottom: 4,
+    icon: 'Wrench',
+    component: async () => ({
+      default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
+    }),
+  },
+  {
+    path: '/app/long-rent/service-requests/:id',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({
+      default: (await import('@/features/service-requests/long-rent')).LongRentRequestDetailPage,
+    }),
+  },
+  {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
     // the leases; the others find the reserved page. In "Altro": the main menu holds Contratti and Immobili.
     path: '/app/long-rent/fiscal',
