@@ -18,6 +18,7 @@ import type {
   LeaseReviewConfirmation,
   LeaseSent,
   LeaseSigningState,
+  LeaseStatus,
   LeaseSummary,
   LongRentRules,
   ManualRegistrationInput,
