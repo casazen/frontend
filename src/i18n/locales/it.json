@@ -550,6 +550,7 @@
     "payments": "Incassi",
     "revenue": "Ricavi",
     "reports": "Report",
+    "longRentFiscal": "Report fiscale",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
@@ -10063,6 +10064,49 @@
     "retry": "Riprova",
     "empty": "Nessuna categoria di servizio disponibile.",
     "unknownWillBeRemoved": "Queste categorie non sono più valide e verranno rimosse al prossimo salvataggio: {{values}}"
+  },
+  "longRentFiscal": {
+    "title": "Report fiscale",
+    "description": "Canoni dell'anno e imposte stimate per contratto, pronti per il commercialista.",
+    "yearsLabel": "Anno",
+    "download": "Scarica il riepilogo {{year}}",
+    "downloaded": "Riepilogo {{year}} scaricato.",
+    "downloadFailed": "Impossibile scaricare il riepilogo. Riprova.",
+    "loadError": "Impossibile caricare il report fiscale. Riprova.",
+    "estimate": {
+      "title": "Stima da validare con il commercialista",
+      "text": "Calcoli indicativi sui canoni di competenza: non tengono conto degli altri redditi, delle detrazioni e delle addizionali. La competenza conta mesi interi e gli incassati sono solo quelli registrati in CasaZen."
+    },
+    "stats": {
+      "label": "Riepilogo dell'anno",
+      "accrual": "Canoni {{year}} di competenza",
+      "collected": "Incassati registrati in CasaZen",
+      "cedolare_one": "Cedolare secca stimata · {{count}} contratto",
+      "cedolare_other": "Cedolare secca stimata · {{count}} contratti",
+      "cedolareNone": "Cedolare secca stimata · nessun contratto"
+    },
+    "columns": {
+      "contract": "Contratto",
+      "regime": "Regime",
+      "accrual": "Competenza",
+      "collected": "Incassati registrati",
+      "tax": "Imposta stimata"
+    },
+    "accrualDetail_one": "{{count}} mese × {{rent}} al mese",
+    "accrualDetail_other": "{{count}} mesi × {{rent}} al mese",
+    "collectedNone": "non registrati in CasaZen",
+    "collectedFrom": "registrati dal {{month}}",
+    "taxRate": "cedolare {{rate}}",
+    "notEstimated": "Non stimata",
+    "notEstimatedOrdinary": "dipende dal reddito complessivo",
+    "notEstimatedUnknown": "regime fiscale non registrato",
+    "toCheck": "da verificare: vedi «Da sapere»",
+    "notesTitle": "Da sapere",
+    "empty": {
+      "title": "Nessun contratto in vigore nel {{year}}",
+      "description": "Appena un contratto firmato è in vigore, qui trovi i canoni e le imposte stimate per il commercialista.",
+      "action": "Vai ai contratti"
+    }
   },
   "longRentProperties": {
     "retry": "Riprova",

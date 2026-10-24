@@ -584,6 +584,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
+    // the leases; the others find the reserved page. In "Altro": the main menu holds Contratti and Immobili.
+    path: '/app/long-rent/fiscal',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.longRentFiscal',
+    navPlacement: 'secondary',
+    navOrder: 20,
+    icon: 'Receipt',
+    component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
+  },
+  {
     path: '/app/long-rent/profile',
     context: 'long-rent',
     requiredPermissions: [],
