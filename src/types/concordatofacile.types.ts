@@ -21,3 +21,9 @@ export interface CfCheckoutResponse {
   /** Stripe checkout session URL to redirect to. */
   sessionUrl: string;
 }
+
+/** Response from POST /api/leases/{leaseId}/concordatofacile/link (ADR-007-R6, ADR-007-R11). */
+export interface CfLinkResponse {
+  /** HMAC-signed URL to ConcordatoFacile partner portal. Expires in 15 minutes. */
+  url: string;
+}
