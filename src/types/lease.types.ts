@@ -191,6 +191,55 @@ export interface LeaseSummary {
   overdueRentCount?: number;
   overdueRentAmount?: number;
   overdueDays?: number | null;
+  /** LR-01b: where the lease stands on its path, decided by the server (never worked out here from the other fields). */
+  stage?: LeaseStage;
+  /** LR-01b: the one step the lease is waiting for; the interface turns its code into a sentence and a button (`lease-next-step`). */
+  nextStep?: LeaseNextStep | null;
+}
+
+/** The eight stages of the path of a lease (backend `LeaseStage`, LR-01b). `DataPending` is for the tenant's own data and is never sent yet. */
+export type LeaseStage =
+  | 'Draft'
+  | 'DataPending'
+  | 'InReview'
+  | 'SentForSignature'
+  | 'Signed'
+  | 'Active'
+  | 'Expiring'
+  | 'Concluded';
+
+/** Who has to do the next step (backend `LeaseNextStepActor`); `Tenant` is for the phase 2 and is never sent yet. */
+export type LeaseNextStepActor = 'Landlord' | 'Tenant' | 'System';
+
+/** Every code of the next step the server sends today (backend `LeaseNextStepCode`, LR-01b). A code is never renamed, only added. */
+export type LeaseNextStepCode =
+  | 'ChooseProperty'
+  | 'CompleteStep'
+  | 'ImportSignedContract'
+  | 'AwaitPartnerContract'
+  | 'ConfirmReview'
+  | 'DownloadForSignature'
+  | 'UploadSignedCopy'
+  | 'RegisterLease'
+  | 'RecordKeyHandover'
+  | 'QuesturaCommunication'
+  | 'SendRentReminder'
+  | 'ActivateRentPlan'
+  | 'DecideNotice'
+  | 'OrganizeEnd'
+  | 'AllGood'
+  | 'Archive';
+
+/**
+ * The step a lease waits for. `priority` goes from 0 (the most urgent) to 10; `dueOn` is a Europe/Rome day; `params` carry what a
+ * sentence needs (counts, amounts, days and codes, never a name). `code` is typed as string because a newer backend may add values.
+ */
+export interface LeaseNextStep {
+  code: string;
+  actor: LeaseNextStepActor;
+  priority: number;
+  dueOn?: string | null;
+  params?: Record<string, unknown> | null;
 }
 
 /** `GET /leases/:id` (and the `POST /leases` response). */

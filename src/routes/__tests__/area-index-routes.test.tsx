@@ -92,11 +92,11 @@ describe('the bare address of an area opens its home (UI-00)', () => {
     vi.clearAllMocks();
   });
 
-  it('LongRentIndex_LandlordOpensTheArea_OpensTheContracts', async () => {
+  it('LongRentIndex_LandlordOpensTheArea_OpensTheOverviewAtTheBareAddress', async () => {
     const router = renderApp('/app/long-rent');
 
-    await waitFor(() => expect(address(router)).toBe('/app/long-rent/leases'));
-    expect(screen.getByTestId('page')).toHaveAttribute('data-path', '/app/long-rent/leases');
+    expect(await screen.findByTestId('page')).toHaveAttribute('data-path', '/app/long-rent');
+    expect(address(router)).toBe('/app/long-rent');
   });
 
   it('SupplierIndex_SupplierOpensTheArea_OpensTheDashboard', async () => {
@@ -113,9 +113,9 @@ describe('the bare address of an area opens its home (UI-00)', () => {
   });
 
   it('AreaIndex_AddressWithQueryAndFragment_KeepsBoth', async () => {
-    const router = renderApp('/app/long-rent?checkout=success#x');
+    const router = renderApp('/app/supplier?checkout=success#x');
 
-    await waitFor(() => expect(address(router)).toBe('/app/long-rent/leases?checkout=success#x'));
+    await waitFor(() => expect(address(router)).toBe('/app/supplier/dashboard?checkout=success#x'));
   });
 
   it('LongRentIndex_RoleWithoutLeasePermission_OpensThePageTheUserCanOpen', async () => {
@@ -152,7 +152,7 @@ describe('the bare address of an area opens its home (UI-00)', () => {
     expect(screen.queryByTestId('page')).not.toBeInTheDocument();
   });
 
-  it.each(['short-rent', 'admin'] as const)(
+  it.each(['short-rent', 'long-rent', 'admin'] as const)(
     'AreaRoot_%s_KeepsItsOwnPageAtTheBareAddress',
     async (contextKey) => {
       const router = renderApp(`/app/${contextKey}`);

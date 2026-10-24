@@ -8,7 +8,7 @@ import { planPagePath } from '@/lib/billing-routes';
 export function getHomeRouteForRentalType(rentalType: RentalType): string {
   switch (rentalType) {
     case 'LongTerm':
-      return '/app/long-rent/leases';
+      return '/app/long-rent';
     case 'Both':
     case 'ShortTerm':
     default:
@@ -46,7 +46,7 @@ export function getHomeRouteForUser(user: UserWithRoles, profile?: SupplierLinkP
   }
 
   if (roles.includes(ROLE_LONG_TERM_LANDLORD) && !roles.includes(ROLE_PROPERTY_OWNER)) {
-    return '/app/long-rent/leases';
+    return '/app/long-rent';
   }
 
   return '/app/short-rent';

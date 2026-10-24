@@ -83,7 +83,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await page.keyboard.press('ArrowDown');
       await expect(longRent).toBeFocused();
       await page.keyboard.press('Enter');
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       await expect(switcher).toHaveAttribute('aria-label', /Affitti lunghi/);
       await expect(page.getByRole('navigation', { name: 'Menu Affitti lunghi' })).toBeVisible();
     });
@@ -93,12 +93,12 @@ test.describe('Area navigation (UI-04a)', () => {
       await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });
       await page.getByTestId('area-switcher').click();
       await page.getByRole('menuitemradio', { name: /Affitti lunghi/ }).click();
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       expect(await page.evaluate(() => localStorage.getItem('casazen:active-context'))).toBe('long-rent');
 
       // A new visit at the root of the site opens the last area, not the first.
       await page.goto(demoUrl('/', 'dual'), { waitUntil: 'domcontentloaded' });
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       await expect(page.getByTestId('area-switcher')).toHaveAttribute('aria-label', /Affitti lunghi/);
     });
 

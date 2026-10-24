@@ -72,6 +72,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
           requiredPermissions={entry.requiredPermissions}
           featureFlag={entry.featureFlag}
           alternatePaths={getOrgBillingPageAlternates(entry)}
+          homeWhenDenied={entry.homeWhenDenied}
         >
           <ManifestRoute entry={entry} />
         </ContextRouteGuard>
@@ -79,8 +80,8 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
     } satisfies RouteObject;
   });
 
-  // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
-  // the area (UI-00). Short-rent, account and admin have the page in the manifest.
+  // An area with no page at its bare address (supplier) would open an empty shell: its index opens the home of the area
+  // (UI-00). Short-rent, long-rent, account and admin have the page in the manifest.
   if (!entries.some((entry) => entry.path === prefix)) {
     children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
   }

@@ -26,6 +26,8 @@ const PAGE_KEYWORDS: ReadonlyArray<{ navKey: string; keywordsKey: string }> = [
   { navKey: 'nav.inviteQr', keywordsKey: 'commandPalette.keywords.inviteQr' },
   { navKey: 'nav.jobs', keywordsKey: 'commandPalette.keywords.jobs' },
   { navKey: 'nav.leases', keywordsKey: 'commandPalette.keywords.leases' },
+  { navKey: 'nav.longRentDeadlines', keywordsKey: 'commandPalette.keywords.longRentDeadlines' },
+  { navKey: 'nav.longRentOverview', keywordsKey: 'commandPalette.keywords.longRentOverview' },
   { navKey: 'nav.ltrReferenceData', keywordsKey: 'commandPalette.keywords.ltrReferenceData' },
   { navKey: 'nav.marketing', keywordsKey: 'commandPalette.keywords.marketing' },
   { navKey: 'nav.marketplace', keywordsKey: 'commandPalette.keywords.marketplace' },
