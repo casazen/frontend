@@ -1332,6 +1332,45 @@
     "toDefine": "To be set"
   },
   "leaseWizard": {
+    "after": {
+      "finish": "Done",
+      "registration": {
+        "body": "The contract has to be registered with the Agenzia delle Entrate (the Italian Revenue Agency). Then declare it here with the receipt: the contract becomes “Registered” and the deadline goes away.",
+        "costs": {
+          "cedolare": "Estimated costs: none. With the cedolare secca (flat tax) there is no registration tax or stamp duty (estimate).",
+          "ordinary": "Estimated costs: about {{amount}} of registration tax for the first year (estimate)."
+        },
+        "download": "Download the summary of the data",
+        "kicker": "Now",
+        "mark": "Mark as registered",
+        "registered": "The contract is registered.",
+        "registeredOn": "The contract is registered: on {{date}}, number {{code}}.",
+        "title": "Register the contract",
+        "when": "By {{date}}",
+        "whenLeft_one": "By {{date}} · {{count}} day left",
+        "whenLeft_other": "By {{date}} · {{count}} days left",
+        "whenOverdue_one": "Was due on {{date}} · {{count}} day late",
+        "whenOverdue_other": "Was due on {{date}} · {{count}} days late",
+        "whenToday": "Due today, {{date}}",
+        "whenUnknown": "The deadline is still to be determined",
+        "who": "Your turn"
+      },
+      "rows": {
+        "open": "Open",
+        "questura": {
+          "title": "Keys and Questura"
+        },
+        "rent": {
+          "next": "First installment: {{amount}}, due on {{date}}.",
+          "none": "Not active yet. Turn it on when you want to track the payments.",
+          "noneRunning": "Not active yet. The contract has already started: the plan starts from the current month, with no past rents shown as late.",
+          "set": "Set up the plan",
+          "title": "Rent plan",
+          "view": "See the plan"
+        },
+        "title": "Other things to do"
+      }
+    },
     "back": "Back",
     "blocked": {
       "goToStep": "Go to «{{step}}»",
@@ -1370,6 +1409,39 @@
       "years_one": "{{count}} year",
       "years_other": "{{count}} years"
     },
+    "done": {
+      "another": "Create another contract",
+      "apeMissing": "Energy certificate (APE): still missing for the property. Upload it from the property page: it does not block the contract.",
+      "due": {
+        "inDays_one": "in {{count}} day",
+        "inDays_other": "in {{count}} days",
+        "overdue_one": "{{count}} day late",
+        "overdue_other": "{{count}} days late",
+        "today": "today"
+      },
+      "end": "The current period ends on {{date}}.",
+      "endPast": "The period ended on {{date}}: the contract counts as concluded.",
+      "notRegistered": {
+        "action": "Declare the registration",
+        "text": "If it is already registered, declare it now with the receipt: the deadline goes away and we stop sending reminders. If it is not, register it by the deadline.",
+        "title": "The contract is “Signed” but not registered yet"
+      },
+      "notice": "Last day to give notice: {{date}}. If nobody does, the contract renews by itself for another {{length}}.",
+      "questura": "You: tell the Questura by {{date}}; the time runs from the handover of the keys.",
+      "questuraDone": "Questura: communication made on {{date}}.",
+      "register": "You: register the contract (deadline {{date}}, {{when}}) and declare it on its page with the receipt. Until you do, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+      "registerNoWhen": "You: register the contract (deadline {{date}}) and declare it on its page with the receipt. Until you do, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+      "registerUnknown": "You: register the contract. The deadline is still to be determined.",
+      "registered": "Registration: done on {{date}}.",
+      "registeredNoDate": "Registration: done.",
+      "renews": "If nobody has given notice, the contract renews by itself for another {{length}}.",
+      "rentFirst": "First installment: {{amount}}, due on {{date}}. You record the payments yourself in the Payments tab.",
+      "rentNone": "Rents: the plan is not active yet. Turn it on from the Payments tab when you want to follow the payments.",
+      "title": {
+        "Created": "Contract signed",
+        "Imported": "Contract added"
+      }
+    },
     "fields": {
       "citizenship": "the citizenship",
       "contactEmail": "the email",
@@ -1381,6 +1453,39 @@
     "finish": "Save and go to the lease",
     "goToLease": "Go to the lease",
     "gone": "This lease is not a draft any more: it can no longer be edited from here.",
+    "import": {
+      "concordatoNotice": "For a contract that is already signed we do not check that the rent is inside the band of the territorial agreement.",
+      "confirm": {
+        "description": "You are about to add the contract signed on {{date}} to CasaZen.",
+        "fixed": "The file and the day of the signature cannot be corrected after it is added.",
+        "no": "The registration deadline will appear and, until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+        "signed": "The contract becomes “Signed”: from then on it can no longer be edited or deleted.",
+        "submit": "Add the contract",
+        "title": "Add the signed contract?",
+        "yes": "Right after, we ask you for the registration number and the receipt."
+      },
+      "dateHint": "The day the last party signed. It is used to work out the registration deadline.",
+      "dateInvalid": "Enter the day of the signature: it cannot be after today.",
+      "dateLabel": "Day of the signature",
+      "failed": "I could not add the contract. Try again.",
+      "fileHint": "The PDF with the signatures of all the parties.",
+      "fileInvalid": "Choose a PDF file of at most 20 MB.",
+      "fileLabel": "Signed contract (PDF, at most 20 MB)",
+      "registered": {
+        "legend": "Has it already been registered?",
+        "no": {
+          "description": "It stays “Signed” and you will see the registration deadline.",
+          "title": "No, or I don't know"
+        },
+        "required": "Answer this question.",
+        "yes": {
+          "description": "After adding it we ask for the number and the receipt.",
+          "title": "Yes, it is registered"
+        }
+      },
+      "reminderNotice": "Until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address. If the contract is already registered, choose “Yes” and declare it after adding it.",
+      "submit": "Add the contract"
+    },
     "loadError": "Could not open the lease wizard. Try again.",
     "needs": {
       "ape_missing": "The APE (energy performance certificate) of the property is missing",
@@ -1568,6 +1673,20 @@
         "purpose": "We check that it is complete and consistent; then you confirm.",
         "title": "Review of the lease",
         "why": "Before the lease goes to signature we check that it is complete and consistent."
+      },
+      "7": {
+        "Imported": {
+          "label": "Signed contract",
+          "purpose": "Upload the signed PDF and enter the day it was signed.",
+          "title": "Add the signed contract",
+          "why": "The signed contract stays in CasaZen, and the day of the signature sets the registration deadline."
+        }
+      },
+      "8": {
+        "label": "After the signature",
+        "purpose": "Registration, keys and rents.",
+        "title": "What to do after the signature",
+        "why": "The deadlines run from the signature: here you keep them in view."
       }
     },
     "terms": {
@@ -9328,6 +9447,11 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "leaseNotDraft": "This contract is no longer a draft: it may already have been added or signed.",
+      "leaseDraftConflict": "The contract is busy or was changed elsewhere. Reload the page and try again.",
+      "leaseImportNotImportedOrigin": "A contract made in CasaZen cannot be added as already signed: it is signed from its template.",
+      "leaseReviewBlocked": "Some data are still missing in the earlier steps: check them and try again.",
+      "questuraDeliveryDateLocked": "The delivery date can no longer be changed: the Questura communication has already been declared.",
       "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
       "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
       "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",

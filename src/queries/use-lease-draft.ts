@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { LeaseOrigin } from '@/types';
+import type { LeaseOrigin, OfflineSignatureInput } from '@/types';
 
 const DRAFT_KEY = 'lease-draft';
 const LEASES_KEY = 'leases';
@@ -37,6 +37,19 @@ export function useForgetLeaseReads(leaseId: string) {
     queryClient.removeQueries({ queryKey: [LEASES_KEY, leaseId] });
     void queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
   }, [queryClient, leaseId]);
+}
+
+/**
+ * Brings in a contract already signed elsewhere (`POST /leases/:id/import`, LR-13). It cannot be taken back: the lease is Signed from
+ * then on, no longer a draft, and the PDF and the day cannot be corrected. What is known of the lease is dropped, so the pages that
+ * read it next ask the server again. The step that calls it tells what went wrong (no toast): the person is looking at it.
+ */
+export function useImportSignedLease(leaseId: string) {
+  const forgetReads = useForgetLeaseReads(leaseId);
+  return useMutation({
+    mutationFn: (input: OfflineSignatureInput) => leasesApi.importSigned(leaseId, input),
+    onSuccess: () => forgetReads(),
+  });
 }
 
 /**

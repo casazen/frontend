@@ -14,6 +14,7 @@ import { formatRomeDateTime } from '@/lib/stay-dates';
 import { useForgetLeaseReads, useLeaseReview } from '@/queries/use-lease-draft';
 import type { LandlordDefaults, LeaseDraft, LeaseNeed, LongRentRules } from '@/types';
 import { DatesStep } from './dates-step';
+import { ImportStep } from './import-step';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { PartiesStep } from './parties-step';
@@ -24,8 +25,8 @@ import { STEP_SCHEMAS } from './wizard-schemas';
 import { needMessage } from './wizard-messages';
 import { useLeaseDraftSaver, type DraftSaveStatus, type SavedStep } from './use-lease-draft-saver';
 import {
-  REGISTERED_STEPS,
   REVIEW_STEP,
+  SIGN_STEP,
   blockingNeeds,
   fieldIdOfNeed,
   flowStep,
@@ -33,7 +34,9 @@ import {
   isDataStep,
   leaseEditPath,
   markOf,
+  registeredSteps,
   stepFromAddress,
+  stepKey,
   stepOfField,
   toWizardValues,
   visibleSteps,
@@ -102,7 +105,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
   const titleRef = useRef<HTMLHeadingElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const steps = visibleSteps(flow, REGISTERED_STEPS);
+  const steps = visibleSteps(flow, registeredSteps(draft.origin));
   const current = stepFromAddress(searchParams.get('step'), flow, steps);
   const stepRef = useRef(current);
   useEffect(() => {
@@ -270,12 +273,12 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
         : t('leaseWizard.review.confirm')
       : next === null
         ? t('leaseWizard.finish')
-        : t('leaseWizard.next', { step: t(`leaseWizard.steps.${next}.label`) });
+        : t('leaseWizard.next', { step: t(`leaseWizard.steps.${stepKey(next, draft.origin)}.label`) });
   const reviewBlocked = current === REVIEW_STEP && (review.isLoading || review.isError || (review.data?.counts.block ?? 0) > 0) && !reviewConfirmed;
 
   const entries = steps.map((step) => ({
     step,
-    label: t(`leaseWizard.steps.${step}.label`),
+    label: t(`leaseWizard.steps.${stepKey(step, draft.origin)}.label`),
     mark: markOf(flowStep(flow, step), step === current, step <= Math.max(maxStep, current)),
     to: stepHref(step),
   }));
@@ -297,6 +300,8 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
     body = <TermsStep rules={rules} origin={draft.origin} />;
   } else if (current === 4) {
     body = <DatesStep rules={rules} origin={draft.origin} />;
+  } else if (current === SIGN_STEP) {
+    body = <ImportStep leaseId={draft.id} contractType={form.getValues('contractType')} flush={flush} />;
   } else {
     body = <ReviewStep review={review} hrefOfStep={stepHref} />;
   }
@@ -355,22 +360,26 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
             {t('leaseWizard.back')}
           </Button>
         ) : null}
-        <Button type="button" variant="ghost" className={WIZARD_BUTTON} onClick={() => void saveDraft()} disabled={stopped} data-testid="lease-wizard-save">
-          {t('leaseWizard.saveDraft')}
-        </Button>
+        {current !== SIGN_STEP ? (
+          <Button type="button" variant="ghost" className={WIZARD_BUTTON} onClick={() => void saveDraft()} disabled={stopped} data-testid="lease-wizard-save">
+            {t('leaseWizard.saveDraft')}
+          </Button>
+        ) : null}
         <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3">
           <SaveIndicator status={saver.status} savedAt={saver.savedAt} onRetry={() => void flush()} />
-          <Button
-            type="submit"
-            form={FORM_ID}
-            loading={busy}
-            disabled={stopped || reviewBlocked}
-            iconRight={next === null && current !== REVIEW_STEP ? <Check /> : <ArrowRight />}
-            className={`${WIZARD_BUTTON} grow sm:grow-0`}
-            data-testid="lease-wizard-next"
-          >
-            {nextLabel}
-          </Button>
+          {current !== SIGN_STEP ? (
+            <Button
+              type="submit"
+              form={FORM_ID}
+              loading={busy}
+              disabled={stopped || reviewBlocked}
+              iconRight={next === null && current !== REVIEW_STEP ? <Check /> : <ArrowRight />}
+              className={`${WIZARD_BUTTON} grow sm:grow-0`}
+              data-testid="lease-wizard-next"
+            >
+              {nextLabel}
+            </Button>
+          ) : null}
         </div>
       </div>
     </>
@@ -380,9 +389,9 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
     <>
       <LeaseWizardFrame
         stepper={<LeaseWizardStepper entries={entries} current={current} />}
-        title={t(`leaseWizard.steps.${current}.title`)}
-        purpose={t(`leaseWizard.steps.${current}.purpose`)}
-        why={t(`leaseWizard.steps.${current}.why`)}
+        title={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.title`)}
+        purpose={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.purpose`)}
+        why={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.why`)}
         titleRef={titleRef}
         footer={footer}
       >
@@ -394,21 +403,28 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
             </Link>
           </Alert>
         ) : null}
-        <FormProvider {...form}>
-          <form
-            id={FORM_ID}
-            noValidate
-            aria-label={t(`leaseWizard.steps.${current}.title`)}
-            onSubmit={(event) => {
-              event.preventDefault();
-              void advance();
-            }}
-          >
-            <div key={current} ref={panelRef} className="min-w-0 space-y-6">
-              {body}
-            </div>
-          </form>
-        </FormProvider>
+        {current === SIGN_STEP ? (
+          // No form around the signature step: it has no answers to save, and its windows would otherwise sit inside a form for React.
+          <div key={current} ref={panelRef} className="min-w-0 space-y-6">
+            {body}
+          </div>
+        ) : (
+          <FormProvider {...form}>
+            <form
+              id={FORM_ID}
+              noValidate
+              aria-label={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.title`)}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void advance();
+              }}
+            >
+              <div key={current} ref={panelRef} className="min-w-0 space-y-6">
+                {body}
+              </div>
+            </form>
+          </FormProvider>
+        )}
       </LeaseWizardFrame>
 
       {/* Outside the form: a dialog sits inside it for React, and its buttons would send it. Closing it is reading the draft again. */}
