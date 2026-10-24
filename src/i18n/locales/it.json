@@ -38,6 +38,43 @@
       "Other": "Altro"
     }
   },
+  "concordatofacile": {
+    "offer": {
+      "title": "ConcordatoFacile",
+      "price": "119,00 EUR totali IVA compresa",
+      "steps": "Come funziona",
+      "stepsTitle": "Il processo in 5 passi:",
+      "step1": "Paga 119 euro o usa la pratica omaggio (abbonamenti biennali)",
+      "step2": "Compila il modulo ConcordatoFacile con i dati del contratto",
+      "step3": "Coordina via email con ConcordatoFacile per la preparazione",
+      "step4": "Ricevi l'email finale con i documenti pronti",
+      "step5": "Carica i documenti in CasaZen per consultarli",
+      "payButton": "Paga 119 euro e continua",
+      "giftButton": "Usa la pratica omaggio e continua",
+      "processing": "Caricamento in corso…",
+      "error": "Errore",
+      "success": "Pagamento completato con successo! Puoi ora accedere al servizio ConcordatoFacile.",
+      "cancelled": "Il pagamento è stato annullato. Se desideri procedere, riprova il pagamento.",
+      "hasAccess": "Hai già accesso al servizio ConcordatoFacile per questo contratto.",
+      "proceed": "Procedi con la creazione del contratto",
+      "contractDetails": "Dettagli contratto",
+      "property": "Immobile",
+      "city": "Città",
+      "serviceTitle": "Servizio ConcordatoFacile",
+      "serviceDescription": "Preparazione e registrazione del contratto a canone concordato",
+      "info": "Il pagamento è sicuro e gestito da Stripe. Riceverai conferma via email.",
+      "invalidLease": "Riferimento del contratto non valido.",
+      "leaseNotFound": "Contratto non trovato o non hai i permessi per accedervi.",
+      "backToLeases": "Torna ai contratti",
+      "backToLease": "Torna al contratto",
+      "viewLease": "Visualizza contratto",
+      "tryAgain": "Riprova",
+      "loadError": "Impossibile caricare i dati del contratto.",
+      "accessError": "Impossibile verificare l'accesso al servizio.",
+      "checkoutError": "Impossibile creare la sessione di pagamento. Riprova più tardi.",
+      "giftError": "Impossibile utilizzare la pratica omaggio. Riprova più tardi."
+    }
+  },
   "admin": {
     "dashboard": {
       "title": "Dashboard Amministratore",

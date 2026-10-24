@@ -594,6 +594,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['lease.read', 'lease.create'],
     component: async () => ({ default: (await import('@/features/leases')).LeaseWizardPage }),
   },
+  {
+    // ConcordatoFacile offer page (NF-02, ADR-005-R12): service info, pricing, and checkout for CF one-time payment.
+    path: '/app/long-rent/leases/:id/concordatofacile',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read', 'lease.create'],
+    component: async () => ({
+      default: (await import('@/pages/long-rent/leases/concordatofacile-offer-page')).ConcordatoFacileOfferPage,
+    }),
+  },
   // Long-term landlord's properties and their APE (A7-06): the property core only, never the short-stay pages.
   {
     path: '/app/long-rent/properties',

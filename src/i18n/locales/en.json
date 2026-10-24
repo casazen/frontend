@@ -38,6 +38,43 @@
       "Other": "Other"
     }
   },
+  "concordatofacile": {
+    "offer": {
+      "title": "ConcordatoFacile",
+      "price": "119.00 EUR total VAT included",
+      "steps": "How it works",
+      "stepsTitle": "The 5-step process:",
+      "step1": "Pay 119 euros or use the complimentary practice (biennial subscriptions)",
+      "step2": "Fill out the ConcordatoFacile form with contract data",
+      "step3": "Coordinate via email with ConcordatoFacile for preparation",
+      "step4": "Receive the final email with ready documents",
+      "step5": "Upload documents to CasaZen for reference",
+      "payButton": "Pay 119 euros and continue",
+      "giftButton": "Use complimentary practice and continue",
+      "processing": "Loading…",
+      "error": "Error",
+      "success": "Payment completed successfully! You can now access the ConcordatoFacile service.",
+      "cancelled": "Payment was cancelled. If you wish to proceed, please try again.",
+      "hasAccess": "You already have access to the ConcordatoFacile service for this contract.",
+      "proceed": "Proceed with contract creation",
+      "contractDetails": "Contract details",
+      "property": "Property",
+      "city": "City",
+      "serviceTitle": "ConcordatoFacile Service",
+      "serviceDescription": "Preparation and registration of regulated rent contract",
+      "info": "Payment is secure and handled by Stripe. You will receive email confirmation.",
+      "invalidLease": "Invalid contract reference.",
+      "leaseNotFound": "Contract not found or you do not have permission to access it.",
+      "backToLeases": "Back to contracts",
+      "backToLease": "Back to contract",
+      "viewLease": "View contract",
+      "tryAgain": "Try again",
+      "loadError": "Unable to load contract data.",
+      "accessError": "Unable to verify service access.",
+      "checkoutError": "Unable to create payment session. Please try again later.",
+      "giftError": "Unable to use complimentary practice. Please try again later."
+    }
+  },
   "admin": {
     "dashboard": {
       "title": "Admin Dashboard",
