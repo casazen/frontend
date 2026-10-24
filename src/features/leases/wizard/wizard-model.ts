@@ -282,7 +282,7 @@ export function markOf(step: LeaseFlowStep | undefined, current: boolean, visite
 }
 
 /** The needs that are about the property and not about what was typed: they are told, but they do not stop «Avanti». */
-const PROPERTY_FACTS = new Set(['ape_missing', 'cadastral_missing']);
+const PROPERTY_FACTS = new Set(['ape_missing', 'ape_identification_missing', 'cadastral_missing']);
 
 /** What is missing in a step and has to be done before going on from it. */
 export function blockingNeeds(step: LeaseFlowStep | undefined): LeaseNeed[] {
@@ -334,6 +334,8 @@ export function fieldIdOfNeed(need: LeaseNeed, form: WizardValues): string | nul
       return 'lw-property';
     case 'ape_missing':
       return 'lw-ape';
+    case 'ape_identification_missing':
+      return 'lw-ape-identification';
     case 'cadastral_missing':
       return 'lw-cadastral';
     case 'landlord_missing':
