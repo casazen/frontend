@@ -3,6 +3,7 @@ import type { CalmTone } from '@/components/shared/calm';
 import { formatStayDate, nightsBetween, parseStayDate } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { LeaseNextStep, LeaseNextStepActor, LeaseNextStepCode } from '@/types';
+import { REVIEW_STEP, leaseEditPath } from '../wizard/wizard-model';
 import type { LeaseTab } from './lease-sheet';
 import { monthOfDate, rentRegisterPath } from './rent-register';
 
@@ -21,8 +22,15 @@ export function leaseSheetPath(leaseId: string, tab?: LeaseTab): string {
   return tab ? `${base}?tab=${tab}` : base;
 }
 
-/** Where a step is done: a tab of the sheet of the lease (or the sheet as it opens), or the rent register for the rents that are late. */
-type StepTarget = { kind: 'sheet'; tab?: LeaseTab } | { kind: 'rents' };
+/**
+ * Where a step is done: a tab of the sheet of the lease (or the sheet as it opens), the wizard that goes on with a draft («Continua il
+ * contratto», LR-06a) at a step of the server's numbering (`fromParams`: the step the server names in `params.step`; none: where the
+ * draft opens), or the rent register for the rents that are late.
+ */
+type StepTarget =
+  | { kind: 'sheet'; tab?: LeaseTab }
+  | { kind: 'wizard'; step?: number; fromParams?: true }
+  | { kind: 'rents' };
 
 interface StepDefinition {
   titleKey: string;
@@ -38,13 +46,13 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
     titleKey: 'leaseFlow.nextStep.ChooseProperty.title',
     actionKey: 'leaseFlow.nextStep.ChooseProperty.action',
     detailKey: 'leaseFlow.nextStep.ChooseProperty.detail',
-    target: { kind: 'sheet' },
+    target: { kind: 'wizard', step: 1 },
   },
   CompleteStep: {
     titleKey: 'leaseFlow.nextStep.CompleteStep.title',
     actionKey: 'leaseFlow.nextStep.CompleteStep.action',
     detailKey: 'leaseFlow.nextStep.CompleteStep.detail',
-    target: { kind: 'sheet' },
+    target: { kind: 'wizard', fromParams: true },
   },
   ImportSignedContract: {
     titleKey: 'leaseFlow.nextStep.ImportSignedContract.title',
@@ -62,7 +70,7 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
     titleKey: 'leaseFlow.nextStep.ConfirmReview.title',
     actionKey: 'leaseFlow.nextStep.ConfirmReview.action',
     detailKey: 'leaseFlow.nextStep.ConfirmReview.detail',
-    target: { kind: 'sheet' },
+    target: { kind: 'wizard', step: REVIEW_STEP },
   },
   DownloadForSignature: {
     titleKey: 'leaseFlow.nextStep.DownloadForSignature.title',
@@ -211,11 +219,11 @@ export interface LeaseStepView {
   tone: CalmTone;
   /** The label of the button that does it. */
   action: string;
-  /** Where the button goes: the tab of the sheet where it is done, or the rent register. */
+  /** Where the button goes: the tab of the sheet or the step of the wizard where it is done, or the rent register. */
   to: string;
   /** The sheet of the lease, for a screen that has a button for the step and one for the lease (the rent register is not the sheet). */
   leaseTo: string;
-  /** The step is done away from the sheet of the lease (the rent register). */
+  /** The step is done on the rent register, away from the lease: a screen that has a button for it can offer the lease beside it. */
   leavesTheSheet: boolean;
 }
 
@@ -232,16 +240,6 @@ export function describeLeaseStep(leaseId: string, step: LeaseNextStep, { t, lan
   const values = sentenceValues(step.code, step.params);
   const leaseTo = leaseSheetPath(leaseId);
 
-  let to: string;
-  if (definition.target.kind === 'rents') {
-    // The oldest installment that is late is in its own month: that is the register to open, with the late ones first.
-    const dueDay = parseStayDate(step.dueOn);
-    const currentMonth = monthOfDate(today);
-    to = rentRegisterPath(dueDay ? monthOfDate(dueDay) : currentMonth, currentMonth, 'overdue');
-  } else {
-    to = leaseSheetPath(leaseId, definition.target.tab);
-  }
-
   return {
     title: t(definition.titleKey, values.title),
     detail: definition.detailKey && values.detail ? t(definition.detailKey, values.detail) : null,
@@ -249,8 +247,25 @@ export function describeLeaseStep(leaseId: string, step: LeaseNextStep, { t, lan
     when: dueText(step.dueOn, today, language, t),
     tone: toneOf(step.priority),
     action: t(definition.actionKey),
-    to,
+    to: targetPath(leaseId, definition.target, step, today),
     leaseTo,
     leavesTheSheet: definition.target.kind === 'rents',
   };
+}
+
+/** The address where the step is done. */
+function targetPath(leaseId: string, target: StepTarget, step: LeaseNextStep, today: string): string {
+  switch (target.kind) {
+    case 'rents': {
+      // The oldest installment that is late is in its own month: that is the register to open, with the late ones first.
+      const dueDay = parseStayDate(step.dueOn);
+      const currentMonth = monthOfDate(today);
+      return rentRegisterPath(dueDay ? monthOfDate(dueDay) : currentMonth, currentMonth, 'overdue');
+    }
+    case 'wizard':
+      // A step the wizard has no screen for opens the draft where it opens by itself.
+      return leaseEditPath(leaseId, target.fromParams ? (numberParam(step.params, 'step') ?? undefined) : target.step);
+    case 'sheet':
+      return leaseSheetPath(leaseId, target.tab);
+  }
 }
