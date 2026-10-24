@@ -44,10 +44,10 @@ export function CfStatusBadge({ status, className }: CfStatusBadgeProps) {
 
   const colors = colorClasses[status] || colorClasses.Unknown;
 
-  // Get label from i18n, or fallback to raw status for unknown
+  // Get label from i18n
   const label = status === 'Unknown'
     ? t('concordatofacile.status.unknownStatus')
-    : t(`concordatofacile.status.statusLabels.${status}`, { defaultValue: status });
+    : t(`concordatofacile.status.statusLabels.${status}`);
 
   return (
     <span
