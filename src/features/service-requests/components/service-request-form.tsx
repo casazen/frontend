@@ -25,7 +25,7 @@ import { useServiceCategories } from '@/queries/use-service-categories';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate, romeWallTimeToUtc } from '@/lib/stay-dates';
 import { formatWorkDuration } from '@/lib/work-duration';
-import type { ServiceRequestContextKey, ServiceRequestUrgency } from '@/types/service-request';
+import type { ServiceRequest, ServiceRequestContextKey, ServiceRequestUrgency } from '@/types/service-request';
 import { ServiceCategorySelect } from './service-category-picker';
 import { orderStaysForRequest, stayOptionLabel } from '../lib/stays';
 import { stayDateOf } from '@/features/bookings/lib/booking-price';
@@ -64,6 +64,8 @@ interface ServiceRequestFormProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
+  /** The request was made and the window is closed: the page that wants to show the new request takes it from here (LR-08b). */
+  onCreated?: (request: ServiceRequest) => void;
 }
 
 /**
@@ -85,6 +87,7 @@ export function ServiceRequestForm({
   open: openProp,
   onOpenChange,
   hideTrigger = false,
+  onCreated,
 }: ServiceRequestFormProps) {
   const { t, i18n } = useTranslation();
   const [openInternal, setOpenInternal] = useState(false);
@@ -150,10 +153,11 @@ export function ServiceRequestForm({
   const canSubmit =
     !!effectiveSupplier && !!selectedCategory && (!isShortRent || !!effectiveStay) && scheduleReady && !isPending;
 
-  const onCreated = {
-    onSuccess: () => {
+  const afterCreate = {
+    onSuccess: (created: ServiceRequest) => {
       setOpen(false);
       setNotes(initialNotes ?? '');
+      onCreated?.(created);
     },
   };
 
@@ -171,9 +175,9 @@ export function ServiceRequestForm({
       durationMinutes: duration,
     };
     if (isShortRent) {
-      createStayRequest.mutate({ ...common, bookingId: effectiveStay }, onCreated);
+      createStayRequest.mutate({ ...common, bookingId: effectiveStay }, afterCreate);
     } else {
-      createLongRentRequest.mutate(common, onCreated);
+      createLongRentRequest.mutate(common, afterCreate);
     }
   };
 

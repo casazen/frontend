@@ -558,6 +558,7 @@
     "ota": "OTA",
     "leases": "Leases",
     "rents": "Rents",
+    "serviceRequests": "Maintenance",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
     "supplierSettings": "Settings",
@@ -8177,6 +8178,7 @@
       "rents": "rents|rent|late|overdue|reminders|month",
       "revenue": "revenue|turnover|earnings|reports|statistics|trends",
       "seo": "content|articles|guides|search engines|publications",
+      "serviceRequests": "jobs|repairs|maintenance|plumber|electrician|breakdowns|cleaning",
       "siteAppearance": "colors|logo|theme|graphics|look|style",
       "siteDocuments": "documents|terms|privacy|conditions|house rules",
       "stripeConnect": "stripe|online payments|iban|payout|bank transfers|cards",
@@ -11206,6 +11208,234 @@
       "pending": "Still to collect",
       "pendingDelta_one": "{{count}} rent not yet due",
       "pendingDelta_other": "{{count}} rents not yet due"
+    }
+  },
+  "longRentRequests": {
+    "cancel": {
+      "back": "Go back",
+      "confirm": "Cancel the job",
+      "consequences": {
+        "final": "The job cannot be reopened: to get it back, request it again.",
+        "inProgress": "The work is already marked as started: if the supplier has already worked, settle it with them directly.",
+        "label": "What happens",
+        "told": "{{supplierStart}} is told at once, with the reason you write."
+      },
+      "description": "The supplier will no longer do this job.",
+      "reason": "Why are you cancelling it?",
+      "reasonHint": "The supplier reads the reason. {{max}} characters at most.",
+      "title": "Cancel the job?"
+    },
+    "detail": {
+      "backToList": "All jobs",
+      "cancel": "Cancel the job",
+      "detailsTitle": "Details",
+      "fallbackTitle": "Job",
+      "historyEmpty": "No step recorded.",
+      "historyTitle": "History",
+      "loadError": "Could not load the job.",
+      "loading": "Loading the job…",
+      "notes": "Notes",
+      "notFound": "Job not found",
+      "notFoundDescription": "It is not among the jobs of your properties: check the address or go back to the list.",
+      "openProperty": "Open the property",
+      "payment": "Payment",
+      "paymentMode": {
+        "Manual": "Outside CasaZen: you mark it",
+        "Online": "Online, in CasaZen"
+      },
+      "price": "Price",
+      "priceBasis": {
+        "estimated": "estimate",
+        "final": "final amount",
+        "quoted": "quote"
+      },
+      "priceTbd": "To be agreed with the supplier",
+      "property": "Property",
+      "propertyFallback": "See the property",
+      "service": "Service",
+      "showDetails": "Show details",
+      "supplier": "Supplier",
+      "supplierFallback": "Not given",
+      "supplierNotes": "Supplier's notes",
+      "type": "Type",
+      "urgency": "Urgency",
+      "when": "When"
+    },
+    "history": {
+      "actor": {
+        "Host": "you",
+        "Supplier": "a supplier",
+        "System": "CasaZen"
+      },
+      "Annullato": "Job cancelled",
+      "Completato": "Work finished",
+      "InCorso": "Work started",
+      "noReason": "The supplier did not give a reason.",
+      "Pagato": "Payment recorded",
+      "PresoInCarico": "Accepted",
+      "Richiesto": "Request sent",
+      "Rifiutato": "Request declined"
+    },
+    "list": {
+      "columns": {
+        "price": "Price",
+        "request": "Job",
+        "status": "Status",
+        "supplier": "Supplier",
+        "when": "When"
+      },
+      "count_one": "{{count}} job",
+      "count_other": "{{count}} jobs",
+      "description": "Repairs and maintenance of your let properties: you hand the work to a supplier and follow it until it is paid.",
+      "empty": {
+        "all": {
+          "description": "Plumber, electrician or cleaning: the supplier gets the request with the property and the time ready, and you follow it from here until it is paid.",
+          "title": "Hand over the maintenance"
+        },
+        "closed": {
+          "description": "Here you find the jobs that are paid, declined or cancelled.",
+          "title": "No closed jobs"
+        },
+        "open": {
+          "description": "Plumber, electrician or cleaning: request a job and follow it from here, until it is paid.",
+          "title": "No open jobs"
+        }
+      },
+      "loadError": "Could not load the jobs.",
+      "noResults": {
+        "description": "Try other words.",
+        "title": "No jobs found"
+      },
+      "noTime": "time missing",
+      "open": "Open",
+      "priceTbd": "to be agreed",
+      "request": "Request a job",
+      "search": {
+        "label": "Search the jobs",
+        "placeholder": "Search by type, property or supplier"
+      },
+      "tabs": {
+        "all": "All",
+        "closed": "Closed",
+        "label": "Filter the jobs",
+        "open": "Open"
+      }
+    },
+    "new": {
+      "addProperty": "Add a property",
+      "cancel": "Cancel",
+      "choose": "Choose the property",
+      "description": "Choose the property the job is for: then you say what is needed and choose the supplier.",
+      "loadError": "Could not load your properties.",
+      "loading": "Loading the properties…",
+      "next": "Continue",
+      "noProperty": "To request a job you need at least one property in long-term rentals.",
+      "property": "Property",
+      "title": "Which property is it for?"
+    },
+    "next": {
+      "again": "Request again",
+      "allRequests": "All jobs",
+      "cancelled": {
+        "by": {
+          "Host": "You cancelled it.",
+          "Supplier": "The supplier cancelled it.",
+          "System": "CasaZen cancelled it automatically."
+        },
+        "reason": "Reason: {{reason}}",
+        "title": "Job cancelled"
+      },
+      "confirmAmount": {
+        "action": "Confirm the amount",
+        "actionAmount": "Confirm {{amount}}",
+        "body": "{{supplierStart}} has finished and asks {{final}}: more than the quote of {{quoted}}. Confirm it to be able to pay.",
+        "bodyNoQuote": "{{supplierStart}} has finished and asks {{final}}, more than was expected. Confirm it to be able to pay.",
+        "then": "Next: the payment.",
+        "title": "Confirm the final amount"
+      },
+      "inProgress": {
+        "body": "{{supplierStart}} is working on it. When it is finished, the payment is left.",
+        "bodySince": "{{supplierStart}} started the work: {{when}}. When it is finished, the payment is left.",
+        "then": "Next: the payment.",
+        "title": "The supplier is at work"
+      },
+      "kicker": "Next step",
+      "paid": {
+        "body": "You can request it again with one tap.",
+        "title": "Job done and paid"
+      },
+      "pay": {
+        "actionManual": "Mark as paid",
+        "actionOnline": "Pay {{amount}}",
+        "actionOnlineNoAmount": "Pay",
+        "bodyManual": "When you have paid the supplier {{amount}}, mark it here. CasaZen does not make the payment: it only records that you did.",
+        "bodyManualNoAmount": "When you have paid the supplier, mark it here. CasaZen does not make the payment: it only records that you did.",
+        "bodyOnline": "The payment of {{amount}} is made here, by card, without leaving CasaZen.",
+        "bodyOnlineNoAmount": "The payment is made here, by card, without leaving CasaZen.",
+        "title": "Work done: the payment is left"
+      },
+      "proposal": {
+        "accept": "Accept the time",
+        "asked": "You asked for: {{when}}.",
+        "body": "Proposes {{when}}.",
+        "message": "Writes: “{{message}}”",
+        "reject": "Decline",
+        "then": "If you decline, the request keeps waiting for another answer.",
+        "title": "{{supplierStart}} proposes another time"
+      },
+      "rejected": {
+        "action": "Send to another supplier",
+        "body": "You can send the request to another supplier: the details stay filled in.",
+        "noReason": "The supplier did not give a reason.",
+        "reason": "Reason: {{reason}}",
+        "title": "{{supplierStart}} is not available"
+      },
+      "scheduled": {
+        "body": "{{supplierStart}} comes {{when}}.",
+        "bodyNoDay": "{{supplierStart}} has accepted the request.",
+        "then": "Next: the work. When it is finished, the payment is left.",
+        "title": "Job confirmed for {{day}}",
+        "titleNoDay": "Job confirmed"
+      },
+      "unknown": {
+        "body": "Status: {{status}}.",
+        "title": "Job"
+      },
+      "waiting": {
+        "body": "We let you know as soon as they answer.",
+        "remind": "Send a reminder",
+        "reminded": "Last reminder: {{when}}.",
+        "respondBy": "They have until {{when}} to answer.",
+        "then": "Next: the supplier confirms the time or proposes another.",
+        "title": "Waiting for {{supplier}} to answer"
+      },
+      "who": {
+        "supplier": "The supplier's turn",
+        "you": "Your turn"
+      }
+    },
+    "pay": {
+      "description": "You pay {{amount}} by card, without leaving CasaZen.",
+      "failed": "The payment did not go through. Check the card or try another one.",
+      "notice": "The payment is processed by Stripe. The job shows as paid when Stripe confirms it to CasaZen.",
+      "processing": "Payment sent: we are waiting for Stripe to confirm it. This page updates by itself.",
+      "sessionError": "Could not start the payment.",
+      "title": "Pay for the job"
+    },
+    "reason": {
+      "noResponse": "The supplier did not answer in time."
+    },
+    "retry": "Retry",
+    "supplier": {
+      "mid": "the supplier",
+      "start": "The supplier"
+    },
+    "toast": {
+      "amountConfirmed": "Amount confirmed: you can pay now",
+      "cancelled": "Job cancelled",
+      "proposalAccepted": "Time accepted: the job is confirmed",
+      "proposalRejected": "Time declined: the request keeps waiting",
+      "reminded": "Reminder sent to the supplier"
     }
   },
   "hostInvites": {

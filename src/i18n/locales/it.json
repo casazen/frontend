@@ -558,6 +558,7 @@
     "ota": "OTA",
     "leases": "Contratti",
     "rents": "Canoni",
+    "serviceRequests": "Interventi",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
     "supplierSettings": "Impostazioni",
@@ -8177,6 +8178,7 @@
       "rents": "canoni|affitto|ritardi|solleciti|morosità|mese",
       "revenue": "ricavi|fatturato|guadagni|report|statistiche|andamento",
       "seo": "contenuti|articoli|guide|motori di ricerca|pubblicazioni",
+      "serviceRequests": "interventi|riparazioni|manutenzione|idraulico|elettricista|guasti|pulizie",
       "siteAppearance": "colori|logo|tema|grafica|aspetto|stile",
       "siteDocuments": "documenti|termini|privacy|condizioni|regolamento",
       "stripeConnect": "stripe|pagamenti online|iban|payout|bonifici|carte",
@@ -11206,6 +11208,234 @@
       "pending": "Ancora da incassare",
       "pendingDelta_one": "{{count}} canone non ancora scaduto",
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
+    }
+  },
+  "longRentRequests": {
+    "cancel": {
+      "back": "Torna indietro",
+      "confirm": "Annulla intervento",
+      "consequences": {
+        "final": "L'intervento non si può riaprire: per riaverlo lo richiedi di nuovo.",
+        "inProgress": "Il lavoro risulta già iniziato: se il fornitore ha già lavorato, mettetevi d'accordo direttamente.",
+        "label": "Cosa succede",
+        "told": "{{supplierStart}} riceve subito un avviso con il motivo che scrivi."
+      },
+      "description": "Il fornitore non farà più questo intervento.",
+      "reason": "Perché lo annulli?",
+      "reasonHint": "Il fornitore legge il motivo. Al massimo {{max}} caratteri.",
+      "title": "Annullare l'intervento?"
+    },
+    "detail": {
+      "backToList": "Tutti gli interventi",
+      "cancel": "Annulla intervento",
+      "detailsTitle": "Dettagli",
+      "fallbackTitle": "Intervento",
+      "historyEmpty": "Nessun passo registrato.",
+      "historyTitle": "Cronologia",
+      "loadError": "Impossibile caricare l'intervento.",
+      "loading": "Caricamento dell'intervento…",
+      "notes": "Note",
+      "notFound": "Intervento non trovato",
+      "notFoundDescription": "Non è tra gli interventi dei tuoi immobili: controlla l'indirizzo o torna all'elenco.",
+      "openProperty": "Apri l'immobile",
+      "payment": "Pagamento",
+      "paymentMode": {
+        "Manual": "Fuori da CasaZen: lo segni tu",
+        "Online": "Online, in CasaZen"
+      },
+      "price": "Prezzo",
+      "priceBasis": {
+        "estimated": "stima",
+        "final": "importo finale",
+        "quoted": "preventivo"
+      },
+      "priceTbd": "Da definire con il fornitore",
+      "property": "Immobile",
+      "propertyFallback": "Vedi l'immobile",
+      "service": "Servizio",
+      "showDetails": "Mostra dettagli",
+      "supplier": "Fornitore",
+      "supplierFallback": "Non indicato",
+      "supplierNotes": "Note del fornitore",
+      "type": "Tipo",
+      "urgency": "Urgenza",
+      "when": "Quando"
+    },
+    "history": {
+      "actor": {
+        "Host": "te",
+        "Supplier": "un fornitore",
+        "System": "CasaZen"
+      },
+      "Annullato": "Intervento annullato",
+      "Completato": "Lavoro finito",
+      "InCorso": "Lavoro iniziato",
+      "noReason": "Il fornitore non ha indicato un motivo.",
+      "Pagato": "Pagamento registrato",
+      "PresoInCarico": "Presa in carico",
+      "Richiesto": "Richiesta inviata",
+      "Rifiutato": "Richiesta rifiutata"
+    },
+    "list": {
+      "columns": {
+        "price": "Prezzo",
+        "request": "Intervento",
+        "status": "Stato",
+        "supplier": "Fornitore",
+        "when": "Quando"
+      },
+      "count_one": "{{count}} intervento",
+      "count_other": "{{count}} interventi",
+      "description": "Riparazioni e manutenzione degli immobili affittati: affidi il lavoro a un fornitore e lo segui fino al pagamento.",
+      "empty": {
+        "all": {
+          "description": "Idraulico, elettricista o pulizie: il fornitore riceve la richiesta con l'immobile e l'orario già pronti, e tu la segui da qui fino al pagamento.",
+          "title": "Affida la manutenzione"
+        },
+        "closed": {
+          "description": "Qui trovi gli interventi pagati, rifiutati o annullati.",
+          "title": "Nessun intervento chiuso"
+        },
+        "open": {
+          "description": "Idraulico, elettricista o pulizie: chiedi un intervento e lo segui da qui, fino al pagamento.",
+          "title": "Nessun intervento aperto"
+        }
+      },
+      "loadError": "Impossibile caricare gli interventi.",
+      "noResults": {
+        "description": "Prova con altre parole.",
+        "title": "Nessun intervento trovato"
+      },
+      "noTime": "orario mancante",
+      "open": "Apri",
+      "priceTbd": "da definire",
+      "request": "Richiedi intervento",
+      "search": {
+        "label": "Cerca negli interventi",
+        "placeholder": "Cerca per tipo, immobile o fornitore"
+      },
+      "tabs": {
+        "all": "Tutti",
+        "closed": "Chiusi",
+        "label": "Filtra gli interventi",
+        "open": "Aperti"
+      }
+    },
+    "new": {
+      "addProperty": "Aggiungi un immobile",
+      "cancel": "Annulla",
+      "choose": "Scegli l'immobile",
+      "description": "Scegli l'immobile per cui serve l'intervento: poi indichi che cosa serve e scegli il fornitore.",
+      "loadError": "Impossibile caricare i tuoi immobili.",
+      "loading": "Caricamento degli immobili…",
+      "next": "Continua",
+      "noProperty": "Per chiedere un intervento serve almeno un immobile negli affitti lunghi.",
+      "property": "Immobile",
+      "title": "Per quale immobile?"
+    },
+    "next": {
+      "again": "Richiedi di nuovo",
+      "allRequests": "Tutti gli interventi",
+      "cancelled": {
+        "by": {
+          "Host": "Lo hai annullato tu.",
+          "Supplier": "Lo ha annullato il fornitore.",
+          "System": "L'ha annullato CasaZen in automatico."
+        },
+        "reason": "Motivo: {{reason}}",
+        "title": "Intervento annullato"
+      },
+      "confirmAmount": {
+        "action": "Conferma l'importo",
+        "actionAmount": "Conferma {{amount}}",
+        "body": "{{supplierStart}} ha finito e chiede {{final}}: più del preventivo di {{quoted}}. Confermalo per poter pagare.",
+        "bodyNoQuote": "{{supplierStart}} ha finito e chiede {{final}}, più di quanto era previsto. Confermalo per poter pagare.",
+        "then": "Poi: il pagamento.",
+        "title": "Conferma l'importo finale"
+      },
+      "inProgress": {
+        "body": "{{supplierStart}} sta lavorando. Quando finisce, resta il pagamento.",
+        "bodySince": "{{supplierStart}} ha iniziato il lavoro: {{when}}. Quando finisce, resta il pagamento.",
+        "then": "Poi: il pagamento.",
+        "title": "Il fornitore è al lavoro"
+      },
+      "kicker": "Prossimo passo",
+      "paid": {
+        "body": "Puoi richiederlo di nuovo con un tocco.",
+        "title": "Intervento concluso e pagato"
+      },
+      "pay": {
+        "actionManual": "Segna come pagato",
+        "actionOnline": "Paga {{amount}}",
+        "actionOnlineNoAmount": "Paga",
+        "bodyManual": "Quando hai pagato {{amount}} al fornitore, segnalo qui. CasaZen non effettua il pagamento: registra solo che l'hai fatto.",
+        "bodyManualNoAmount": "Quando hai pagato il fornitore, segnalo qui. CasaZen non effettua il pagamento: registra solo che l'hai fatto.",
+        "bodyOnline": "Il pagamento di {{amount}} si fa qui, con la carta, senza uscire da CasaZen.",
+        "bodyOnlineNoAmount": "Il pagamento si fa qui, con la carta, senza uscire da CasaZen.",
+        "title": "Lavoro fatto: resta il pagamento"
+      },
+      "proposal": {
+        "accept": "Accetta l'orario",
+        "asked": "Avevi chiesto: {{when}}.",
+        "body": "Propone {{when}}.",
+        "message": "Scrive: «{{message}}»",
+        "reject": "Rifiuta",
+        "then": "Se rifiuti, la richiesta resta in attesa di un'altra risposta.",
+        "title": "{{supplierStart}} propone un altro orario"
+      },
+      "rejected": {
+        "action": "Invia a un altro fornitore",
+        "body": "Puoi mandare la richiesta a un altro fornitore: i dati restano compilati.",
+        "noReason": "Il fornitore non ha indicato un motivo.",
+        "reason": "Motivo: {{reason}}",
+        "title": "{{supplierStart}} non è disponibile"
+      },
+      "scheduled": {
+        "body": "{{supplierStart}} interviene {{when}}.",
+        "bodyNoDay": "{{supplierStart}} ha preso in carico la richiesta.",
+        "then": "Poi: il lavoro. Quando è finito, resta il pagamento.",
+        "title": "Intervento confermato per {{day}}",
+        "titleNoDay": "Intervento confermato"
+      },
+      "unknown": {
+        "body": "Stato: {{status}}.",
+        "title": "Intervento"
+      },
+      "waiting": {
+        "body": "Ti avvisiamo appena risponde.",
+        "remind": "Sollecita",
+        "reminded": "Ultimo sollecito: {{when}}.",
+        "respondBy": "Ha tempo per rispondere fino a {{when}}.",
+        "then": "Poi: il fornitore conferma l'orario o ne propone un altro.",
+        "title": "In attesa che {{supplier}} risponda"
+      },
+      "who": {
+        "supplier": "Tocca al fornitore",
+        "you": "Tocca a te"
+      }
+    },
+    "pay": {
+      "description": "Paghi {{amount}} con la carta, senza uscire da CasaZen.",
+      "failed": "Il pagamento non è andato a buon fine. Controlla la carta o prova con un'altra.",
+      "notice": "Il pagamento è elaborato da Stripe. L'intervento risulta pagato quando Stripe lo conferma a CasaZen.",
+      "processing": "Pagamento inviato: aspettiamo la conferma di Stripe. Questa pagina si aggiorna da sola.",
+      "sessionError": "Impossibile avviare il pagamento.",
+      "title": "Paga l'intervento"
+    },
+    "reason": {
+      "noResponse": "Il fornitore non ha risposto in tempo."
+    },
+    "retry": "Riprova",
+    "supplier": {
+      "mid": "il fornitore",
+      "start": "Il fornitore"
+    },
+    "toast": {
+      "amountConfirmed": "Importo confermato: ora puoi pagare",
+      "cancelled": "Intervento annullato",
+      "proposalAccepted": "Orario accettato: l'intervento è confermato",
+      "proposalRejected": "Orario rifiutato: la richiesta resta in attesa",
+      "reminded": "Sollecito inviato al fornitore"
     }
   },
   "hostInvites": {
