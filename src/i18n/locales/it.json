@@ -558,6 +558,8 @@
     "ota": "OTA",
     "leases": "Contratti",
     "rents": "Canoni",
+    "longRentOverview": "Panoramica",
+    "longRentDeadlines": "Scadenze",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
     "supplierSettings": "Impostazioni",
@@ -7753,6 +7755,8 @@
       "hostInvites": "invita|invito|inviti|nuovo host|collega|passaparola|collega host",
       "jobs": "job|code|automazioni|processi in background|lavori programmati",
       "leases": "locazioni|affitti|inquilini|canoni|scadenze|contratto",
+      "longRentDeadlines": "date|promemoria|registrazione|disdetta|rinnovo|questura",
+      "longRentOverview": "home|oggi|inizio|riepilogo|adesso|cosa fare|panoramica",
       "ltrReferenceData": "canone concordato|zone|accordi territoriali|dati normativi",
       "marketing": "campagne|promozione|newsletter",
       "marketplace": "servizi|fornitori|pulizie|manutenzione|app",
@@ -10788,6 +10792,206 @@
       "pending": "Ancora da incassare",
       "pendingDelta_one": "{{count}} canone non ancora scaduto",
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
+    }
+  },
+  "leaseFlow": {
+    "actor": {
+      "Landlord": "Tocca a te",
+      "System": "Se ne occupa CasaZen",
+      "Tenant": "Tocca al conduttore"
+    },
+    "due": {
+      "byIn_one": "Entro il {{date}} · tra {{count}} giorno",
+      "byIn_other": "Entro il {{date}} · tra {{count}} giorni",
+      "overdue_one": "Scaduto da {{count}} giorno",
+      "overdue_other": "Scaduto da {{count}} giorni",
+      "today": "Entro oggi",
+      "tomorrow": "Entro domani"
+    },
+    "nextStep": {
+      "ActivateRentPlan": {
+        "action": "Attiva il piano",
+        "detail": "Così vedi chi ha pagato e chi è in ritardo.",
+        "title": "Attiva il piano dei canoni"
+      },
+      "AllGood": {
+        "action": "Apri il contratto",
+        "title": "È tutto in regola"
+      },
+      "Archive": {
+        "action": "Apri il contratto",
+        "title": "Il contratto è concluso"
+      },
+      "AwaitPartnerContract": {
+        "action": "Apri il contratto",
+        "detail": "Il contratto di questa bozza lo prepara il partner.",
+        "title": "Aspetta il contratto del partner"
+      },
+      "ChooseProperty": {
+        "action": "Scegli l'immobile",
+        "detail": "L'immobile della bozza non è più disponibile.",
+        "title": "Scegli l'immobile del contratto"
+      },
+      "CompleteStep": {
+        "action": "Completa la bozza",
+        "detail": "Al passo {{step}} di 5 manca ancora qualcosa.",
+        "title": "Completa la bozza del contratto"
+      },
+      "ConfirmReview": {
+        "action": "Controlla e conferma",
+        "detail": "I dati ci sono tutti: leggi l'anteprima prima di farlo firmare.",
+        "title": "Controlla il contratto e conferma"
+      },
+      "DecideNotice": {
+        "action": "Apri il contratto",
+        "detail": "Se nessuno dà la disdetta entro l'ultimo giorno, il contratto si rinnova da solo.",
+        "title": "Decidi se dare la disdetta"
+      },
+      "DownloadForSignature": {
+        "action": "Scarica il contratto",
+        "detail": "Poi carichi qui la copia firmata.",
+        "title": "Scarica il contratto e fallo firmare"
+      },
+      "ImportSignedContract": {
+        "action": "Carica il contratto",
+        "detail": "Servono il PDF firmato e il giorno della firma.",
+        "title": "Carica il contratto firmato"
+      },
+      "OrganizeEnd": {
+        "action": "Apri il contratto",
+        "detail": "Il contratto finisce e non si rinnova.",
+        "title": "Organizza la fine del contratto"
+      },
+      "QuesturaCommunication": {
+        "action": "Vai alla comunicazione",
+        "detail": "Il conduttore è extra-UE: va fatta entro 48 ore dalla consegna dell'immobile.",
+        "title": "Fai la comunicazione alla Questura"
+      },
+      "RecordKeyHandover": {
+        "action": "Segna la consegna",
+        "detail": "Da quel giorno contano le 48 ore per la comunicazione alla Questura.",
+        "title": "Segna quando hai consegnato le chiavi"
+      },
+      "RegisterLease": {
+        "action": "Registra il contratto",
+        "title": "Registra il contratto"
+      },
+      "SendRentReminder": {
+        "action": "Vai ai canoni",
+        "detail_one": "In tutto {{amount}}, il più vecchio scaduto da {{count}} giorno.",
+        "detail_other": "In tutto {{amount}}, il più vecchio scaduto da {{count}} giorni.",
+        "title_one": "Un canone è in ritardo",
+        "title_other": "{{count}} canoni sono in ritardo"
+      },
+      "UploadSignedCopy": {
+        "action": "Carica la copia firmata",
+        "detail": "Il contratto è stato scaricato per la firma: manca la copia firmata.",
+        "title": "Carica la copia firmata"
+      },
+      "unknown": {
+        "action": "Apri il contratto",
+        "title": "C'è un passo da fare su questo contratto"
+      }
+    }
+  },
+  "longRentDeadlines": {
+    "csv": {
+      "button": "Scarica CSV",
+      "columns": {
+        "amount": "Importo",
+        "date": "Data",
+        "property": "Immobile",
+        "status": "Stato",
+        "tenant": "Conduttore",
+        "type": "Scadenza"
+      },
+      "overdue": "In ritardo",
+      "upcoming": "In arrivo"
+    },
+    "description": "Registrazioni, fine contratto, disdette e canoni: le date da non perdere.",
+    "empty": {
+      "action": "Crea contratto",
+      "description": "Le scadenze si compilano da sole: registrazione, fine contratto, disdetta e canoni compaiono qui quando si avvicinano.",
+      "title": "Nessuna scadenza nei prossimi {{days}} giorni"
+    },
+    "filters": {
+      "all": "Tutte",
+      "label": "Tipo di scadenza",
+      "questura": "Questura",
+      "registrations": "Firme e registrazioni",
+      "renewals": "Rinnovi e disdette",
+      "rents": "Canoni"
+    },
+    "loadError": "Impossibile caricare le scadenze.",
+    "loading": "Caricamento delle scadenze…",
+    "more": "Mostra le successive",
+    "noneOfType": "Nessuna scadenza di questo tipo nel periodo.",
+    "overdueTitle": "Da fare subito",
+    "row": {
+      "dueIn_one": "tra {{count}} giorno",
+      "dueIn_other": "tra {{count}} giorni",
+      "overdue_one": "Scaduta da {{count}} giorno",
+      "overdue_other": "Scaduta da {{count}} giorni",
+      "today": "oggi",
+      "tomorrow": "domani"
+    },
+    "title": "Scadenze",
+    "truncated": "Ci sono più di 500 canoni da incassare: ti mostro i primi 500 per data. Gli altri compaiono man mano che si avvicinano.",
+    "type": {
+      "LeaseEnd": "Fine del contratto",
+      "Notice": "Ultimo giorno per la disdetta",
+      "Questura": "Comunicazione alla Questura",
+      "Rent": "Canone di {{amount}}",
+      "RliRegistration": "Registrazione del contratto",
+      "unknown": "Scadenza"
+    },
+    "until": "Fino al {{date}}"
+  },
+  "longRentOverview": {
+    "actions": {
+      "addProperty": "Aggiungi immobile",
+      "createLease": "Crea contratto"
+    },
+    "contracts": {
+      "all": "Tutti i contratti",
+      "title": "I tuoi contratti"
+    },
+    "description": "{{date}} · contratti, canoni e scadenze in un colpo d'occhio.",
+    "loadError": "Impossibile caricare la panoramica.",
+    "loading": "Caricamento della panoramica…",
+    "now": {
+      "kicker": "Adesso",
+      "nothing": {
+        "action": "Vedi i contratti",
+        "body": "Canoni in regola e nessun contratto che aspetta un tuo passo.",
+        "title": "Niente di urgente"
+      },
+      "openLease": "Apri il contratto"
+    },
+    "rents": {
+      "all": "Vai ai canoni",
+      "collected": "Incassati a {{month}}",
+      "collectedDelta_one": "su {{expected}} attesi · {{paid}} di {{count}} canone",
+      "collectedDelta_other": "su {{expected}} attesi · {{paid}} di {{count}} canoni",
+      "label": "I numeri del mese",
+      "noOverdue": "Nessun ritardo",
+      "nothingPending": "Niente ancora da incassare",
+      "overdue": "In ritardo",
+      "overdueDelta_one": "{{count}} canone",
+      "overdueDelta_other": "{{count}} canoni",
+      "pending": "Ancora da incassare",
+      "pendingDelta_one": "{{count}} canone non ancora scaduto",
+      "pendingDelta_other": "{{count}} canoni non ancora scaduti",
+      "title": "Canoni di {{month}}"
+    },
+    "retry": "Riprova",
+    "title": "Buongiorno, {{name}}",
+    "titleNoName": "Buongiorno",
+    "upcoming": {
+      "all": "Vedi tutte",
+      "empty": "Nessuna scadenza nei prossimi 4 mesi.",
+      "loadError": "Non riesco a caricare le scadenze.",
+      "title": "Scadenze"
     }
   },
   "hostInvites": {
