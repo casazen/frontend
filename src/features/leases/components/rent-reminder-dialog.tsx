@@ -43,7 +43,7 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
 
   function send() {
     const text = note.trim();
-    holdForUndo({
+    const started = holdForUndo({
       key: reminderKey(row.id),
       message: t('longRentRents.reminder.held', { tenant }),
       description: t('longRentRents.reminder.heldHint'),
@@ -52,6 +52,8 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
         toast.success(t('longRentRents.reminder.sent', { count: result.recipientCount }));
       },
     });
+    // The same reminder is already on its way (the row says so too): tell, never a click that seems to do nothing.
+    if (!started) toast.info(t('longRentRents.alreadyHeld'));
     onClose();
   }
 

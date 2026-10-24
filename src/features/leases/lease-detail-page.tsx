@@ -119,7 +119,7 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={opensOn}>
             {tab === 'dati' && <LeaseDataTab lease={lease} />}
             {tab === 'documenti' && <div className="space-y-6"><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
-            {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} startDate={lease.startDate} />}
+            {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showExtraEuBanner} />}
           </Tabs>
           <LeaseHistory leaseId={lease.id} events={lease.events ?? []} />

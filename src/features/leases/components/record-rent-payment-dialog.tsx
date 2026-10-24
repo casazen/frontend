@@ -114,7 +114,7 @@ export function RecordRentPaymentDialog({ row, onClose }: RecordRentPaymentDialo
     if (!target || !dateValid) return;
     const payment = target;
     const amount = formatCurrency(payment.amount, payment.currency);
-    holdForUndo({
+    const started = holdForUndo({
       key: paymentKey(payment.installmentId),
       message: t('longRentRents.pay.held', { amount, tenant: payment.tenant }),
       description: t('longRentRents.pay.heldHint'),
@@ -126,6 +126,8 @@ export function RecordRentPaymentDialog({ row, onClose }: RecordRentPaymentDialo
         toast.success(t('longRentRents.pay.done', { amount, tenant: payment.tenant }));
       },
     });
+    // The same payment is already being recorded: tell, never a click that seems to do nothing.
+    if (!started) toast.info(t('longRentRents.alreadyHeld'));
     onClose();
   }
 

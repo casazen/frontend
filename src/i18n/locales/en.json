@@ -10624,6 +10624,7 @@
       "remind": "Send reminder",
       "reminding": "Reminder on its way…"
     },
+    "alreadyHeld": "This is already on its way.",
     "cancel": "Cancel",
     "chips": {
       "all": "All",

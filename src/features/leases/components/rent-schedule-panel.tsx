@@ -40,10 +40,15 @@ interface RentSchedulePanelProps {
   /** Status of the lease: when it changes (e.g. signed) the ledger is read again. */
   leaseStatus?: string;
   /**
-   * The day the lease starts (`YYYY-MM-DD`). With it the plan of a lease that already started can be tracked from a month
-   * («Traccia da», LR-04a) instead of from the start, so no past period is born late; without it the field is not offered.
+   * The days the lease starts and ends (`YYYY-MM-DD`). With them the plan of a lease that is running can be tracked from a month
+   * («Traccia da», LR-04a) instead of from the start, so no past period is born late; without them the field is not offered.
    */
-  startDate?: string;
+  term?: LeaseTerm;
+}
+
+interface LeaseTerm {
+  startDate: string;
+  endDate: string;
 }
 
 /**
@@ -52,7 +57,7 @@ interface RentSchedulePanelProps {
  * The plan says from which month the rents are tracked and whether the tenants are written to by the daily job (LR-04a):
  * that one is off for a new plan, and on only when the landlord turns it on.
  */
-export function RentSchedulePanel({ leaseId, leaseStatus, startDate }: RentSchedulePanelProps) {
+export function RentSchedulePanel({ leaseId, leaseStatus, term }: RentSchedulePanelProps) {
   const { t } = useTranslation();
   const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
 
@@ -78,12 +83,12 @@ export function RentSchedulePanel({ leaseId, leaseStatus, startDate }: RentSched
           {getProblemMessage(error, t) ?? t('rent.loadError')}
         </Alert>
       )}
-      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} startDate={startDate} />}
+      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} term={term} />}
     </PlainSection>
   );
 }
 
-function RentLedgerContent({ leaseId, ledger, startDate }: { leaseId: string; ledger: RentLedger; startDate?: string }) {
+function RentLedgerContent({ leaseId, ledger, term }: { leaseId: string; ledger: RentLedger; term?: LeaseTerm }) {
   const { t, i18n } = useTranslation();
   // The page of the payments settings is the short-rent one: who cannot open it (a landlord with only long-term leases) gets the
   // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
@@ -165,7 +170,7 @@ function RentLedgerContent({ leaseId, ledger, startDate }: { leaseId: string; le
         <RentScheduleForm
           leaseId={leaseId}
           ledger={ledger}
-          startDate={startDate}
+          term={term}
           onDone={() => setEditing(false)}
           onCancel={schedule?.isActive ? () => setEditing(false) : undefined}
         />
@@ -188,13 +193,13 @@ function RentLedgerContent({ leaseId, ledger, startDate }: { leaseId: string; le
 interface RentScheduleFormProps {
   leaseId: string;
   ledger: RentLedger;
-  /** The day the lease starts: without it «Traccia da» is not offered. */
-  startDate?: string;
+  /** When the lease starts and ends: without it «Traccia da» is not offered. */
+  term?: LeaseTerm;
   onDone: () => void;
   onCancel?: () => void;
 }
 
-function RentScheduleForm({ leaseId, ledger, startDate, onDone, onCancel }: RentScheduleFormProps) {
+function RentScheduleForm({ leaseId, ledger, term, onDone, onCancel }: RentScheduleFormProps) {
   const { t, i18n } = useTranslation();
   const configure = useConfigureRentSchedule(leaseId);
   const [cadence, setCadence] = useState<RentCadence>(ledger.schedule?.cadence ?? 'Monthly');
@@ -204,16 +209,18 @@ function RentScheduleForm({ leaseId, ledger, startDate, onDone, onCancel }: Rent
   // «Traccia da» (LR-04a, LR-D17): a lease that already started is tracked from this month, so the months before it are not born
   // late. `trackedMonth` is what the server has ('' = from the start of the lease); the field starts there for an existing plan
   // and at this month for a new one. Only a change is sent: a missing day keeps the one the plan has.
-  const leaseStart = parseStayDate(startDate);
+  const leaseStart = parseStayDate(term?.startDate);
+  const leaseEnd = parseStayDate(term?.endDate);
   const today = todayInRome();
   const currentMonth = monthOfDate(today);
   const trackedMonth = ledger.schedule?.trackFrom ? monthOfDate(parseStayDate(ledger.schedule.trackFrom)) : '';
   const started = leaseStart !== '' && leaseStart <= today;
+  const running = started && (leaseEnd === '' || leaseEnd >= today);
   const startMonth = leaseStart === '' ? '' : monthOfDate(leaseStart);
-  const [trackFrom, setTrackFrom] = useState(
-    ledger.schedule ? trackedMonth : started && currentMonth > startMonth ? currentMonth : '',
-  );
-  const trackMonths = startMonth === '' ? [] : trackFromMonths(startMonth, currentMonth, trackFrom);
+  // A lease that is over can only be tracked up to its last month (a day after its end is refused).
+  const lastMonth = leaseEnd !== '' && monthOfDate(leaseEnd) < currentMonth ? monthOfDate(leaseEnd) : currentMonth;
+  const [trackFrom, setTrackFrom] = useState(ledger.schedule ? trackedMonth : running && currentMonth > startMonth ? currentMonth : '');
+  const trackMonths = startMonth === '' ? [] : trackFromMonths(startMonth, lastMonth, trackFrom);
   const canChooseTrackFrom = leaseStart !== '' && trackMonths.length > 0 && (started || trackedMonth !== '');
 
   // «Chiedi il pagamento online» (LR-04a, LR-D19): off for a new plan. The daily job writes to the tenants only when it is on, and

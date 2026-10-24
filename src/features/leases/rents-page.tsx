@@ -38,7 +38,7 @@ function rentsHref(month: string, currentMonth: string, chip?: string): string {
  * The three numbers of the month, from the counters of the whole month (they do not change with the quick filter or the page):
  * what came in against what was expected, what is late, and what is still to come. Each one leads to the installments it is made of.
  */
-function RentMonthNumbers({ data, currentMonth, dimmed }: { data: RentRegisterPage; currentMonth: string; dimmed: boolean }) {
+function RentMonthNumbers({ data, month, currentMonth, dimmed }: { data: RentRegisterPage; month: string; currentMonth: string; dimmed: boolean }) {
   const { t, i18n } = useTranslation();
   const { counters } = data;
   const euros = (amount: number) => formatCurrency(amount);
@@ -47,14 +47,14 @@ function RentMonthNumbers({ data, currentMonth, dimmed }: { data: RentRegisterPa
   return (
     <StatStrip label={t('longRentRents.stats.label')} className={cn('transition-opacity', dimmed && 'opacity-60')} data-testid="rents-numbers">
       <StatTile
-        label={t('longRentRents.stats.collected', { month: monthName(data.month, i18n.language, false) })}
+        label={t('longRentRents.stats.collected', { month: monthName(month, i18n.language, false) })}
         value={euros(counters.collected.amount)}
         delta={t('longRentRents.stats.collectedDelta', {
           count: counters.expected.count,
           paid: counters.collected.count,
           expected: euros(counters.expected.amount),
         })}
-        href={rentsHref(data.month, currentMonth, 'paid')}
+        href={rentsHref(month, currentMonth, 'paid')}
         data-testid="rents-numbers-collected"
       />
       <StatTile
@@ -62,7 +62,7 @@ function RentMonthNumbers({ data, currentMonth, dimmed }: { data: RentRegisterPa
         value={euros(counters.overdue.amount)}
         tone={late ? 'danger' : 'neutral'}
         delta={late ? t('longRentRents.stats.overdueDelta', { count: counters.overdue.count }) : t('longRentRents.stats.noOverdue')}
-        href={rentsHref(data.month, currentMonth, 'overdue')}
+        href={rentsHref(month, currentMonth, 'overdue')}
         data-testid="rents-numbers-overdue"
       />
       <StatTile
@@ -73,7 +73,7 @@ function RentMonthNumbers({ data, currentMonth, dimmed }: { data: RentRegisterPa
             ? t('longRentRents.stats.pendingDelta', { count: counters.pending.count })
             : t('longRentRents.stats.nothingPending')
         }
-        href={rentsHref(data.month, currentMonth, 'pending')}
+        href={rentsHref(month, currentMonth, 'pending')}
         data-testid="rents-numbers-pending"
       />
     </StatStrip>
@@ -109,6 +109,8 @@ export function RentsPage() {
   const register = useRentRegister({ month, status, page: state.page, pageSize: PAGE_SIZE });
   const data = register.data;
   const rows = data?.items ?? NO_ROWS;
+  // The numbers belong to the month the server answered for (the rows of the last month stay a moment while the next one comes).
+  const shownMonth = data && isRentMonth(data.month) ? data.month : month;
 
   // «No rent this month» is not «no contract at all»: the second one starts the person on the first contract.
   const monthIsEmpty = !!data && !register.isPlaceholderData && data.total === 0 && status === 'All';
@@ -140,7 +142,7 @@ export function RentsPage() {
       <RentMonthPicker month={month} currentMonth={currentMonth} onChange={goToMonth} />
 
       {data && !register.isError && !noContracts ? (
-        <RentMonthNumbers data={data} currentMonth={currentMonth} dimmed={register.isPlaceholderData} />
+        <RentMonthNumbers data={data} month={shownMonth} currentMonth={currentMonth} dimmed={register.isPlaceholderData} />
       ) : null}
 
       {noContracts ? (
@@ -149,7 +151,7 @@ export function RentsPage() {
             icon={Euro}
             title={t('longRentRents.empty.noContractsTitle')}
             description={t('longRentRents.empty.noContractsDescription')}
-            action={{ label: t('longRentRents.empty.noContractsAction'), href: LEASE_CREATE_PATH }}
+            action={canManage ? { label: t('longRentRents.empty.noContractsAction'), href: LEASE_CREATE_PATH } : undefined}
           />
         </div>
       ) : (

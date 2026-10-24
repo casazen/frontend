@@ -10624,6 +10624,7 @@
       "remind": "Invia sollecito",
       "reminding": "Sollecito in partenza…"
     },
+    "alreadyHeld": "Questa operazione è già in corso.",
     "cancel": "Annulla",
     "chips": {
       "all": "Tutti",
