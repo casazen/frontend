@@ -12,11 +12,22 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:
 
+# A new push to a PR cancels the run of the commit it replaces; every other run has a group of its own.
+concurrency:
+  group: e2e-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
-  e2e-l2:
-    name: E2E L2 (demo)
+  # The L2 suite split in three shards that run in parallel (one job was 13 minutes). The check
+  # "E2E L2 (demo)" is the job below that waits for the three.
+  e2e-l2-shard:
+    name: E2E L2 (demo) shard ${{ matrix.shard }}/3
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
 
@@ -28,22 +39,40 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # No --with-deps: the ubuntu-latest image already has every library Chromium needs; --with-deps only added
+      # fonts from the apt mirror, which at times took 10 minutes to download (~45 kB/s).
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
-      - name: Run L2 demo suite
-        run: npm run test:e2e
+      - name: Run L2 demo suite (shard ${{ matrix.shard }}/3)
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
         env:
           CI: true
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-l2-report
+          name: playwright-l2-report-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  e2e-l2:
+    name: E2E L2 (demo)
+    needs: e2e-l2-shard
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every shard passed
+        env:
+          RESULT: ${{ needs.e2e-l2-shard.result }}
+        run: |
+          if [ "$RESULT" != "success" ]; then
+            echo "::error::E2E L2 shards: $RESULT"
+            exit 1
+          fi
 
   e2e-staging:
     name: E2E staging smoke + GJ
@@ -71,7 +100,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Check staging configuration and API readiness
         run: node scripts/check-staging.mjs
