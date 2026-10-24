@@ -20,7 +20,7 @@ import type { LeaseDetail, LeaseSigner } from '@/types';
 type DownloadKind = 'contract' | 'preview' | 'signed';
 
 interface LeaseSigningPanelProps {
-  lease: Pick<LeaseDetail, 'id' | 'status' | 'stipulaDate' | 'hasSignedPdf'>;
+  lease: Pick<LeaseDetail, 'id' | 'status' | 'stipulaDate' | 'hasSignedPdf' | 'origin'>;
 }
 
 /** Why the final contract cannot be downloaded, as an i18n key; the BOZZA preview is always available. */
@@ -97,8 +97,17 @@ function SignerRow({ signer }: { signer: LeaseSigner }) {
  * digital signature, upload the signed PDF with the stipula date. Nothing is shown as signed before the API records it.
  * The e-signature provider is offered only when the API says it is available; its links are persisted and survive a
  * refresh. For a lease signed without a recorded stipula date, the date can be declared once.
+ *
+ * A draft that is a contract already signed elsewhere (`origin: Imported`, LR-13) is not signed from here and has no panel: «Carica
+ * contratto firmato» cannot succeed on it while the contract models are not approved (422). Its signed copy comes in at the step
+ * «Contratto firmato» of the wizard, where «Cosa devi fare ora» (or «Continua la compilazione») leads.
  */
 export function LeaseSigningPanel({ lease }: LeaseSigningPanelProps) {
+  if (lease.status === 'Draft' && lease.origin === 'Imported') return null;
+  return <SigningPanel lease={lease} />;
+}
+
+function SigningPanel({ lease }: LeaseSigningPanelProps) {
   const { t } = useTranslation();
   const signing = useLeaseSigning(lease.id);
   const initiate = useInitiateSigning();

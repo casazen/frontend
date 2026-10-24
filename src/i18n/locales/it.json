@@ -1437,6 +1437,9 @@
       },
       "more": "Mostra tutta la cronologia"
     },
+    "now": {
+      "kicker": "Cosa devi fare ora"
+    },
     "party": {
       "extraEu": "Extra-UE"
     },

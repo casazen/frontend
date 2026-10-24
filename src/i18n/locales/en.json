@@ -1437,6 +1437,9 @@
       },
       "more": "Show the whole history"
     },
+    "now": {
+      "kicker": "What to do now"
+    },
     "party": {
       "extraEu": "Non-EU"
     },
