@@ -1,20 +1,19 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { LeaseCreateForm } from './components/lease-create-form';
 import { ConcordatoDraftStart } from './components/concordato-draft-start';
-import { ContractKindChoice } from './components/contract-kind-choice';
-import { contractKindOf, type ContractKind } from './lib/contract-kind';
-import { useCreateLease } from '@/queries/use-leases';
-import type { CreateLeaseDto } from '@/types';
+import { ContractKindChoice, type StartAnswer } from './components/contract-kind-choice';
+import { contractKindOf } from './lib/contract-kind';
+import { NewLeaseStep } from './wizard/new-lease-step';
 
-/** Back to the first question, keeping the property a property page preselected. */
+/** Back to the first questions, keeping the property a property page preselected. */
 function ChangeKindLink() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const params = new URLSearchParams(searchParams);
   params.delete('tipo');
+  params.delete('origine');
   const query = params.toString();
   return (
     <Link
@@ -29,32 +28,26 @@ function ChangeKindLink() {
 }
 
 /**
- * A new contract starts with its type, because the type decides how it is made: a canone concordato is prepared with the partner
- * (a draft with its leaseId is saved at once, `?tipo=concordato`), any other type is filled in here (`?tipo=altro`). The answer
- * stays in the address, so "back" returns to the question.
+ * A new contract starts with how it comes to be and its kind, because they decide how it is made: made in CasaZen or already signed
+ * elsewhere (`?origine=importato`, chosen once: it never changes after the draft exists), and, for one made in CasaZen, a canone
+ * concordato is prepared with the partner (a draft with its leaseId is saved at once, `?tipo=concordato`), any other is filled in on
+ * the wizard (`?tipo=altro`). The answers stay in the address, so "back" returns to the questions. The wizard starts here with the
+ * property and goes on at `/leases/:id/edit`, on the draft saved on the server.
  */
 export function LeaseCreatePage() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const createLease = useCreateLease();
   // "New lease" from a property page preselects it.
   const [searchParams, setSearchParams] = useSearchParams();
   const defaultPropertyId = searchParams.get('propertyId') ?? undefined;
   const kind = contractKindOf(searchParams.get('tipo'));
+  const origin = searchParams.get('origine') === 'importato' ? 'Imported' : 'Created';
 
-  const choose = (next: ContractKind) => {
+  const choose = (answer: StartAnswer) => {
     const params = new URLSearchParams(searchParams);
-    params.set('tipo', next);
+    params.set('tipo', answer.kind);
+    if (answer.origin === 'Imported') params.set('origine', 'importato');
+    else params.delete('origine');
     setSearchParams(params);
-  };
-
-  const handleSubmit = async (data: CreateLeaseDto) => {
-    try {
-      const lease = await createLease.mutateAsync(data);
-      navigate(`/app/long-rent/leases/${lease.id}`);
-    } catch {
-      // useCreateLease.onError shows the server's reason; the form stays filled in to fix and resubmit.
-    }
   };
 
   if (kind === null) {
@@ -66,7 +59,8 @@ export function LeaseCreatePage() {
     );
   }
 
-  if (kind === 'concordato') {
+  // The partner prepares the contract of a canone concordato made in CasaZen: the part that Helix completes (ConcordatoFacile).
+  if (kind === 'concordato' && origin === 'Created') {
     return (
       <div className="space-y-6">
         <ChangeKindLink />
@@ -78,16 +72,9 @@ export function LeaseCreatePage() {
 
   return (
     <div className="space-y-6">
-        <ChangeKindLink />
-        <PageHeader
-          title={t('leases.createPageTitle')}
-          description={t('leases.createPageDescription')}
-        />
-        <LeaseCreateForm
-          onSubmit={handleSubmit}
-          isLoading={createLease.isPending}
-          defaultPropertyId={defaultPropertyId}
-        />
+      <ChangeKindLink />
+      <PageHeader title={t('leases.createPageTitle')} description={t('leases.createPageDescription')} />
+      <NewLeaseStep origin={origin} defaultPropertyId={defaultPropertyId} />
     </div>
   );
 }

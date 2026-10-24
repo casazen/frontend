@@ -1063,7 +1063,7 @@
       }
     },
     "createPageTitle": "Create lease",
-    "createPageDescription": "Define contract parties and terms — a draft will be saved for review",
+    "createPageDescription": "We guide you step by step: the draft saves itself and you can pick it up whenever you like.",
     "form": {
       "propertyTermsTitle": "Property & terms",
       "propertyTermsDescription": "Select the property and define lease terms",
@@ -1205,13 +1205,13 @@
     },
     "kind": {
       "legend": "What contract do you want to make?",
-      "description": "First the type of contract: how we prepare it depends on it.",
+      "description": "First how you want to proceed and what type of lease it is: how we prepare it depends on it.",
       "concordato": {
         "title": "Canone concordato (3+2)",
         "description": "You prepare it with ConcordatoFacile, our partner: we create the draft at once, with the reference to link to the practice."
       },
       "other": {
-        "title": "Canone libero (4+4) or transitory",
+        "title": "Canone libero (4+4)",
         "description": "You fill in the data of the contract here: property, parties, term and rent."
       },
       "continue": "Continue",
@@ -1336,17 +1336,129 @@
       "reload": "Reload the draft",
       "title": "This lease was changed in another tab"
     },
+    "continue": {
+      "action": "Continue filling it in",
+      "description": "The draft is saved on CasaZen: pick up where you were, even from another device.",
+      "title": "This lease is a draft"
+    },
+    "dates": {
+      "end": "Last day of the first period",
+      "endHint": "If you leave it out, we use the term of the type of lease.",
+      "endHintTransitory": "Required for the transitory lease: the term is from {{min}} to {{max}} months.",
+      "inThePast_one": "The start date has already passed: the {{count}}-day registration deadline runs from the start of the lease.",
+      "inThePast_other": "The start date has already passed: the {{count}}-day registration deadline runs from the start of the lease.",
+      "months_one": "{{count}} month",
+      "months_other": "{{count}} months",
+      "start": "Start date",
+      "startHint": "The day the lease starts, even if you sign it earlier.",
+      "summary": {
+        "lasts": "Lasts {{length}}: from {{from}} to {{to}}.",
+        "notice_one": "To refuse the renewal you need a reason set by law, in writing, at least {{count}} month before: by {{date}}.",
+        "notice_other": "To refuse the renewal you need a reason set by law, in writing, at least {{count}} months before: by {{date}}.",
+        "register_one": "The lease has to be registered within {{count}} day of the signature, or of the start if that comes first.",
+        "register_other": "The lease has to be registered within {{count}} days of the signature, or of the start if that comes first.",
+        "renews": "At the end it renews by itself for another {{length}} unless there is a notice.",
+        "span": "From {{from}} to {{to}}."
+      },
+      "summaryTitle": "In plain words",
+      "years_one": "{{count}} year",
+      "years_other": "{{count}} years"
+    },
+    "fields": {
+      "citizenship": "the citizenship",
+      "contactEmail": "the email",
+      "firstName": "the first name",
+      "fiscalCode": "the fiscal code",
+      "lastName": "the last name",
+      "residence": "the residence"
+    },
     "finish": "Save and go to the lease",
     "goToLease": "Go to the lease",
     "gone": "This lease is not a draft any more: it can no longer be edited from here.",
     "loadError": "Could not open the lease wizard. Try again.",
     "needs": {
       "ape_missing": "The APE (energy performance certificate) of the property is missing",
+      "ape_ok": "APE on file",
       "cadastral_missing": "The cadastral data of the property are missing",
+      "cadastral_ok": "Cadastral data on file",
+      "cedolare_not_allowed_company": "With a company as tenant the cedolare secca is not allowed: choose the ordinary regime",
+      "concordato_data_invalid": "The data of the property for the canone concordato are not valid",
+      "concordato_data_missing": "The data of the property for the canone concordato are missing",
+      "concordato_unavailable": "The territorial agreement data of the comune are missing for the canone concordato",
+      "contract_type_missing": "Choose the type of lease",
+      "deposit_invalid": "The deposit is not valid: zero or more, with at most two decimals",
+      "deposit_ok": "Deposit: {{amount}} ({{rents}} monthly rents)",
+      "deposit_too_high": "The deposit can be at most {{max}} × the monthly rent ({{amount}})",
+      "documents_not_verified": "Before the signature check an identity document of each party: CasaZen does not keep it",
+      "end_invalid": "The last day of the lease is not a valid date",
+      "end_missing": "Enter the last day of the lease",
+      "landlord_incomplete": "Landlord {{n}}: complete {{fields}}",
+      "landlord_missing": "Add the landlord (who lets the property)",
+      "landlords_ok_one": "{{count}} landlord with all the data",
+      "landlords_ok_other": "{{count}} landlords with all the data",
+      "lease_overlap_one": "There is already {{count}} other lease on this property in the same dates",
+      "lease_overlap_other": "There are already {{count}} other leases on this property in the same dates",
+      "lease_type_not_available": "This type of lease is not available yet",
+      "party_fiscal_code_duplicate": "The same fiscal code appears more than once in the lease: change the one of the later entries",
       "property_missing": "Choose the property of the lease",
+      "property_ok": "Property chosen",
+      "property_short_mode": "The property is let for short stays: it has to move to long stays to be used in a long-term lease",
+      "rent_in_band": "The rent is within the range of the agreement ({{minMonthly}} to {{maxMonthly}} a month)",
+      "rent_invalid": "The rent is not valid: it must be more than zero, with at most two decimals",
+      "rent_missing": "Enter the monthly rent",
+      "rent_ok": "Rent: {{amount}} a month",
+      "rent_out_of_band": "The rent is outside the range of the agreement: from {{minMonthly}} to {{maxMonthly}} a month",
+      "rent_outside_indicative_band": "The rent is outside the indicative range of the agreement ({{minMonthly}} to {{maxMonthly}} a month)",
+      "review_not_confirmed": "Confirm the review",
+      "start_in_past": "The start date has already passed: the registration deadline runs from the start of the lease",
+      "start_invalid": "The start date is not valid",
+      "start_missing": "Enter the start date of the lease",
+      "start_ok": "Start of the lease: {{start}}",
+      "start_ok_term": "From {{start}} to {{end}} ({{months}} months)",
+      "tax_regime_missing": "Choose the tax regime",
+      "template_data_missing": "The lease template lacks some data: check the preview",
+      "template_not_approved": "The CasaZen lease template is still a draft: you will be able to download the lease to sign when it is approved",
+      "tenant_extra_eu": "A tenant is not a citizen of the European Union: after the keys are handed over the communication to the Questura is due",
+      "tenant_incomplete": "Tenant {{n}}: complete {{fields}}",
+      "tenant_missing": "Add the tenant (who rents the property)",
+      "tenants_ok_one": "{{count}} tenant with all the data",
+      "tenants_ok_other": "{{count}} tenants with all the data",
+      "term_out_of_range": "The term is not allowed for this type of lease: {{reason}}",
       "unknown": "Something in this step still needs a look"
     },
     "next": "Continue: {{step}}",
+    "parties": {
+      "citizenship": "Citizenship",
+      "citizenshipChoose": "Choose the country",
+      "citizenshipHint": "Needed for the communication to the Questura if the tenant is not a citizen of the European Union.",
+      "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
+      "contactEmail": "Email",
+      "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "countriesEu": "European Union",
+      "countriesOther": "Other countries",
+      "firstName": "First name",
+      "fiscalCode": "Fiscal code or VAT number",
+      "fiscalCodeHint": "16 characters for a person, 11 digits for a company.",
+      "landlord": {
+        "add": "Add another landlord",
+        "description": "The owner who signs the lease. We start from your data, if we have it.",
+        "item": "Landlord {{n}}",
+        "remove": "Remove landlord {{n}}",
+        "title": "Who lets (landlord)"
+      },
+      "lastName": "Last name",
+      "max": "You can add {{max}} at most.",
+      "remove": "Remove",
+      "residence": "Residence or registered office",
+      "residenceHint": "Town and address; for a company, the registered office.",
+      "tenant": {
+        "add": "Add another tenant",
+        "description": "A person or a company. You can add more than one.",
+        "item": "Tenant {{n}}",
+        "remove": "Remove tenant {{n}}",
+        "title": "Who rents (tenant)"
+      }
+    },
     "property": {
       "addNew": "Add a new property",
       "address": "Address and details of the property",
@@ -1359,10 +1471,34 @@
       "requirementsTitle": "What the lease needs",
       "shortMode": "This property is let for short stays. You can prepare the lease, but to use it the property has to move to long stays."
     },
+    "reasons": {
+      "lease_end_before_start": "the end must be after the start",
+      "lease_term_too_long": "it is too long (at most {{maxMonths}} months)",
+      "lease_term_too_short": "it is too short (at least {{minMonths}} months)"
+    },
     "remaining": {
       "label": "Still to do:",
       "more": "and more",
       "none": "This step is complete"
+    },
+    "review": {
+      "blocked_one": "{{count}} thing has to be put right before you can confirm.",
+      "blocked_other": "{{count}} things have to be put right before you can confirm.",
+      "confirm": "Confirm the review",
+      "confirmFailed": "Could not confirm the review. Try again.",
+      "confirmed": "Review confirmed on {{date}}. If you change something in the earlier steps you will have to confirm it again.",
+      "confirmedToast": "Review confirmed",
+      "goToStep": "Go to the step",
+      "group": {
+        "Block": "To put right",
+        "Info": "Good to know",
+        "Ok_one": "All good ({{count}})",
+        "Ok_other": "All good ({{count}})",
+        "Warn": "To check"
+      },
+      "loadError": "Could not check the lease.",
+      "loading": "Checking the lease…",
+      "ready": "All good: you can confirm the review."
     },
     "save": {
       "draftSaved": "Draft saved",
@@ -1372,6 +1508,19 @@
       "saving": "Saving…"
     },
     "saveDraft": "Save draft",
+    "start": {
+      "origin": {
+        "created": {
+          "description": "We guide you step by step: you prepare the lease here and have it signed.",
+          "title": "I create the lease with CasaZen"
+        },
+        "imported": {
+          "description": "You enter it in CasaZen to keep deadlines, registration and rents under control.",
+          "title": "I already have the signed lease"
+        },
+        "legend": "How do you want to proceed?"
+      }
+    },
     "stepper": {
       "label": "Steps of the lease",
       "position": "Step {{current}} of {{total}}",
@@ -1389,9 +1538,75 @@
         "purpose": "Pick the home of the lease and check what it needs.",
         "title": "Choose the property",
         "why": "The address, the cadastral data and the APE go into the lease and its registration."
+      },
+      "2": {
+        "label": "Parties",
+        "purpose": "The landlord and the tenants, with the data the lease requires.",
+        "title": "Who signs the lease",
+        "why": "Name, fiscal code and residence go into the lease and into the registration form."
+      },
+      "3": {
+        "label": "Terms",
+        "purpose": "Type of lease, tax regime, rent and deposit.",
+        "title": "Financial terms",
+        "why": "Rent and tax regime decide how much is paid and which taxes apply: we check that the values are consistent."
+      },
+      "4": {
+        "label": "Dates",
+        "purpose": "When the lease starts and what happens at the end.",
+        "title": "Term and dates",
+        "why": "The dates decide registration, renewal and notice: we put them in your deadlines."
+      },
+      "6": {
+        "label": "Review",
+        "purpose": "We check that it is complete and consistent; then you confirm.",
+        "title": "Review of the lease",
+        "why": "Before the lease goes to signature we check that it is complete and consistent."
       }
     },
+    "terms": {
+      "deposit": "Security deposit (€)",
+      "depositMax": "At most {{max}} × the monthly rent: {{amount}}",
+      "depositTooHigh": "The deposit is over the limit: {{max}} × the monthly rent, that is {{amount}}",
+      "regime": {
+        "CedolareSecca": "A flat tax on the rent, instead of IRPEF and registration tax.",
+        "Ordinario": "The rent is part of your income and registration tax is paid.",
+        "companyNotAllowed": "A tenant is a company: with the cedolare secca the lease cannot be confirmed. Choose the ordinary regime.",
+        "help": "Not sure which to pick?",
+        "helpText": "The cedolare secca is a substitute tax on the rent; with the ordinary regime the rent is part of your income. Ask your accountant to decide.",
+        "helpTitle": "Cedolare secca",
+        "legend": "Tax regime"
+      },
+      "rent": "Monthly rent (€)"
+    },
     "title": "Create lease",
+    "type": {
+      "description": {
+        "Created": {
+          "Concordato": "You prepare it here, step by step.",
+          "Libero": "You prepare it here, step by step.",
+          "Studenti": "You prepare it here, step by step.",
+          "Transitorio": "You prepare it here, step by step."
+        },
+        "Imported": {
+          "Concordato": "A canone concordato lease already signed.",
+          "Libero": "A canone libero lease already signed.",
+          "Studenti": "A student lease already signed.",
+          "Transitorio": "A transitory lease already signed."
+        },
+        "blocked": {
+          "Concordato": "Not available yet.",
+          "Libero": "Not available yet.",
+          "Studenti": "Not available yet.",
+          "Transitorio": "Not available yet."
+        },
+        "partner": {
+          "Concordato": "It is prepared with our partner ConcordatoFacile: choose «Canone concordato» when you create a new lease."
+        }
+      },
+      "legend": "Type of lease",
+      "students": "Student lease"
+    },
     "validation": {
       "citizenship": "Choose the citizenship from the list",
       "date": "Not a valid date",

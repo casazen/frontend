@@ -1063,7 +1063,7 @@
       }
     },
     "createPageTitle": "Nuovo contratto",
-    "createPageDescription": "Definisci le parti del contratto e i termini — una bozza verrà salvata per la revisione",
+    "createPageDescription": "Ti guidiamo passo per passo: la bozza si salva da sola e puoi riprenderla quando vuoi.",
     "form": {
       "propertyTermsTitle": "Immobile e termini",
       "propertyTermsDescription": "Seleziona l'immobile e definisci i termini del contratto",
@@ -1205,13 +1205,13 @@
     },
     "kind": {
       "legend": "Che contratto vuoi fare?",
-      "description": "Prima il tipo di contratto: da questo dipende come lo prepariamo.",
+      "description": "Prima come vuoi procedere e che tipo di contratto è: da questo dipende come lo prepariamo.",
       "concordato": {
         "title": "Canone concordato (3+2)",
         "description": "Lo prepari con ConcordatoFacile, il nostro partner: creiamo subito la bozza con il riferimento da collegare alla pratica."
       },
       "other": {
-        "title": "Canone libero (4+4) o transitorio",
+        "title": "Canone libero (4+4)",
         "description": "Compili tu qui i dati del contratto: casa, parti, durata e canone."
       },
       "continue": "Continua",
@@ -1336,17 +1336,129 @@
       "reload": "Ricarica la bozza",
       "title": "Questo contratto è stato modificato in un'altra scheda"
     },
+    "continue": {
+      "action": "Continua la compilazione",
+      "description": "La bozza è salvata su CasaZen: riprendi dal punto in cui eri, anche da un altro dispositivo.",
+      "title": "Questo contratto è una bozza"
+    },
+    "dates": {
+      "end": "Ultimo giorno del primo periodo",
+      "endHint": "Se non lo scrivi, usiamo la durata del tipo di contratto.",
+      "endHintTransitory": "Obbligatorio per il transitorio: la durata va da {{min}} a {{max}} mesi.",
+      "inThePast_one": "La data di inizio è già passata: il termine di {{count}} giorno per la registrazione parte dall'inizio del contratto.",
+      "inThePast_other": "La data di inizio è già passata: il termine di {{count}} giorni per la registrazione parte dall'inizio del contratto.",
+      "months_one": "{{count}} mese",
+      "months_other": "{{count}} mesi",
+      "start": "Data di inizio",
+      "startHint": "Il giorno in cui il contratto inizia, anche se lo firmi prima.",
+      "summary": {
+        "lasts": "Dura {{length}}: dal {{from}} al {{to}}.",
+        "notice_one": "Per dire di no al rinnovo serve un motivo previsto dalla legge, scritto, almeno {{count}} mese prima: entro il {{date}}.",
+        "notice_other": "Per dire di no al rinnovo serve un motivo previsto dalla legge, scritto, almeno {{count}} mesi prima: entro il {{date}}.",
+        "register_one": "Il contratto va registrato entro {{count}} giorno dalla firma, o dall'inizio se viene prima.",
+        "register_other": "Il contratto va registrato entro {{count}} giorni dalla firma, o dall'inizio se viene prima.",
+        "renews": "Alla scadenza si rinnova da solo per altri {{length}} se non c'è una disdetta.",
+        "span": "Dal {{from}} al {{to}}."
+      },
+      "summaryTitle": "In parole semplici",
+      "years_one": "{{count}} anno",
+      "years_other": "{{count}} anni"
+    },
+    "fields": {
+      "citizenship": "la cittadinanza",
+      "contactEmail": "l'email",
+      "firstName": "il nome",
+      "fiscalCode": "il codice fiscale",
+      "lastName": "il cognome",
+      "residence": "la residenza"
+    },
     "finish": "Salva e vai al contratto",
     "goToLease": "Vai al contratto",
     "gone": "Questo contratto non è più una bozza: non si può più modificare da qui.",
     "loadError": "Impossibile aprire la procedura. Riprova.",
     "needs": {
       "ape_missing": "Manca l'APE (attestato di prestazione energetica) dell'immobile",
+      "ape_ok": "APE presente",
       "cadastral_missing": "Mancano i dati catastali dell'immobile",
+      "cadastral_ok": "Dati catastali presenti",
+      "cedolare_not_allowed_company": "Con una società come conduttore la cedolare secca non è ammessa: scegli il regime ordinario",
+      "concordato_data_invalid": "I dati dell'immobile per il canone concordato non sono validi",
+      "concordato_data_missing": "Mancano i dati dell'immobile per il canone concordato",
+      "concordato_unavailable": "Per il canone concordato mancano i dati dell'accordo territoriale del comune",
+      "contract_type_missing": "Scegli il tipo di contratto",
+      "deposit_invalid": "Il deposito non è valido: zero o più, con al massimo due decimali",
+      "deposit_ok": "Deposito: {{amount}} ({{rents}} mensilità)",
+      "deposit_too_high": "Il deposito può essere al massimo di {{max}} mensilità ({{amount}})",
+      "documents_not_verified": "Prima della firma controlla un documento d'identità di ciascuna parte: CasaZen non lo conserva",
+      "end_invalid": "L'ultimo giorno del contratto non è una data valida",
+      "end_missing": "Inserisci l'ultimo giorno del contratto",
+      "landlord_incomplete": "Locatore {{n}}: completa {{fields}}",
+      "landlord_missing": "Aggiungi chi affitta (il locatore)",
+      "landlords_ok_one": "{{count}} locatore con tutti i dati",
+      "landlords_ok_other": "{{count}} locatori con tutti i dati",
+      "lease_overlap_one": "Su questo immobile c'è già {{count}} altro contratto nelle stesse date",
+      "lease_overlap_other": "Su questo immobile ci sono già {{count}} altri contratti nelle stesse date",
+      "lease_type_not_available": "Questo tipo di contratto non è ancora disponibile",
+      "party_fiscal_code_duplicate": "Lo stesso codice fiscale compare più volte nel contratto: cambia quello delle ultime voci",
       "property_missing": "Scegli l'immobile del contratto",
+      "property_ok": "Immobile scelto",
+      "property_short_mode": "L'immobile è in affitto breve: per usarlo in un contratto lungo deve passare in affitto lungo",
+      "rent_in_band": "Il canone è nella fascia dell'accordo (da {{minMonthly}} a {{maxMonthly}} al mese)",
+      "rent_invalid": "Il canone non è valido: deve essere maggiore di zero, con al massimo due decimali",
+      "rent_missing": "Inserisci il canone mensile",
+      "rent_ok": "Canone: {{amount}} al mese",
+      "rent_out_of_band": "Il canone è fuori dalla fascia dell'accordo: da {{minMonthly}} a {{maxMonthly}} al mese",
+      "rent_outside_indicative_band": "Il canone è fuori dalla fascia indicativa dell'accordo (da {{minMonthly}} a {{maxMonthly}} al mese)",
+      "review_not_confirmed": "Conferma la revisione",
+      "start_in_past": "La data di inizio è già passata: il termine per la registrazione parte dall'inizio del contratto",
+      "start_invalid": "La data di inizio non è valida",
+      "start_missing": "Inserisci la data di inizio del contratto",
+      "start_ok": "Inizio del contratto: {{start}}",
+      "start_ok_term": "Dal {{start}} al {{end}} ({{months}} mesi)",
+      "tax_regime_missing": "Scegli il regime fiscale",
+      "template_data_missing": "Al modello di contratto mancano alcuni dati: controlla l'anteprima",
+      "template_not_approved": "Il modello di contratto di CasaZen è ancora una bozza: potrai scaricare il contratto da firmare quando sarà approvato",
+      "tenant_extra_eu": "Un conduttore non è cittadino dell'Unione europea: dopo la consegna delle chiavi va fatta la comunicazione alla Questura",
+      "tenant_incomplete": "Conduttore {{n}}: completa {{fields}}",
+      "tenant_missing": "Aggiungi chi prende in affitto (il conduttore)",
+      "tenants_ok_one": "{{count}} conduttore con tutti i dati",
+      "tenants_ok_other": "{{count}} conduttori con tutti i dati",
+      "term_out_of_range": "La durata non è ammessa per questo tipo di contratto: {{reason}}",
       "unknown": "C'è ancora qualcosa da controllare in questo passo"
     },
     "next": "Continua: {{step}}",
+    "parties": {
+      "citizenship": "Cittadinanza",
+      "citizenshipChoose": "Scegli il Paese",
+      "citizenshipHint": "Serve per la comunicazione alla Questura se il conduttore non è cittadino dell'Unione europea.",
+      "companyNotice": "Un conduttore con un codice di 11 cifre è una società: la cedolare secca non è ammessa.",
+      "contactEmail": "Email",
+      "contactEmailHintTenant": "Serve solo per mandare il link di pagamento e i solleciti.",
+      "countriesEu": "Unione europea",
+      "countriesOther": "Altri Paesi",
+      "firstName": "Nome",
+      "fiscalCode": "Codice fiscale o partita IVA",
+      "fiscalCodeHint": "16 caratteri per una persona, 11 cifre per una società.",
+      "landlord": {
+        "add": "Aggiungi un altro locatore",
+        "description": "Il proprietario che firma il contratto. Partiamo dai tuoi dati, se li abbiamo.",
+        "item": "Locatore {{n}}",
+        "remove": "Togli il locatore {{n}}",
+        "title": "Chi affitta (locatore)"
+      },
+      "lastName": "Cognome",
+      "max": "Puoi aggiungerne al massimo {{max}}.",
+      "remove": "Togli",
+      "residence": "Residenza o sede",
+      "residenceHint": "Comune e indirizzo; per una società, la sede legale.",
+      "tenant": {
+        "add": "Aggiungi un altro conduttore",
+        "description": "Una persona o una società. Puoi aggiungerne più di una.",
+        "item": "Conduttore {{n}}",
+        "remove": "Togli il conduttore {{n}}",
+        "title": "Chi prende in affitto (conduttore)"
+      }
+    },
     "property": {
       "addNew": "Aggiungi un nuovo immobile",
       "address": "Indirizzo e dati dell'immobile",
@@ -1359,10 +1471,34 @@
       "requirementsTitle": "Cosa serve per il contratto",
       "shortMode": "Questo immobile è in affitto breve. Puoi preparare il contratto, ma per usarlo l'immobile deve passare in affitto lungo."
     },
+    "reasons": {
+      "lease_end_before_start": "la fine deve essere dopo l'inizio",
+      "lease_term_too_long": "è troppo lunga (al massimo {{maxMonths}} mesi)",
+      "lease_term_too_short": "è troppo corta (almeno {{minMonths}} mesi)"
+    },
     "remaining": {
       "label": "Resta da fare:",
       "more": "e altro",
       "none": "Questo passo è completo"
+    },
+    "review": {
+      "blocked_one": "C'è {{count}} cosa da sistemare prima di confermare.",
+      "blocked_other": "Ci sono {{count}} cose da sistemare prima di confermare.",
+      "confirm": "Conferma la revisione",
+      "confirmFailed": "Non sono riuscito a confermare la revisione. Riprova.",
+      "confirmed": "Revisione confermata il {{date}}. Se cambi qualcosa nei passi precedenti dovrai confermarla di nuovo.",
+      "confirmedToast": "Revisione confermata",
+      "goToStep": "Vai al passo",
+      "group": {
+        "Block": "Da sistemare",
+        "Info": "Da sapere",
+        "Ok_one": "Tutto a posto ({{count}})",
+        "Ok_other": "Tutto a posto ({{count}})",
+        "Warn": "Da controllare"
+      },
+      "loadError": "Impossibile controllare il contratto.",
+      "loading": "Controllo il contratto…",
+      "ready": "Tutto a posto: puoi confermare la revisione."
     },
     "save": {
       "draftSaved": "Bozza salvata",
@@ -1372,6 +1508,19 @@
       "saving": "Sto salvando…"
     },
     "saveDraft": "Salva bozza",
+    "start": {
+      "origin": {
+        "created": {
+          "description": "Ti guidiamo passo per passo: prepari il contratto qui e lo fai firmare.",
+          "title": "Creo il contratto con CasaZen"
+        },
+        "imported": {
+          "description": "Lo inserisci in CasaZen per tenere sotto controllo scadenze, registrazione e canoni.",
+          "title": "Ho già il contratto firmato"
+        },
+        "legend": "Come vuoi procedere?"
+      }
+    },
     "stepper": {
       "label": "Passi del contratto",
       "position": "Passo {{current}} di {{total}}",
@@ -1389,9 +1538,75 @@
         "purpose": "Scegli la casa del contratto e controlla cosa serve.",
         "title": "Scegli l'immobile",
         "why": "Indirizzo, dati catastali e APE finiscono nel contratto e nella registrazione."
+      },
+      "2": {
+        "label": "Parti",
+        "purpose": "Locatore e conduttori, con i dati che il contratto richiede.",
+        "title": "Chi firma il contratto",
+        "why": "Nome, codice fiscale e residenza vanno nel contratto e nel modello per la registrazione."
+      },
+      "3": {
+        "label": "Condizioni",
+        "purpose": "Tipo di contratto, regime fiscale, canone e deposito.",
+        "title": "Condizioni economiche",
+        "why": "Canone e regime decidono quanto si paga e quali imposte: controlliamo noi che i valori siano coerenti."
+      },
+      "4": {
+        "label": "Date",
+        "purpose": "Quando inizia il contratto e cosa succede alla scadenza.",
+        "title": "Durata e date",
+        "why": "Le date decidono registrazione, rinnovo e disdetta: le mettiamo nello scadenzario."
+      },
+      "6": {
+        "label": "Revisione",
+        "purpose": "Controlliamo che sia completo e coerente; poi lo confermi.",
+        "title": "Revisione del contratto",
+        "why": "Prima di far firmare il contratto controlliamo che sia completo e coerente."
       }
     },
+    "terms": {
+      "deposit": "Deposito cauzionale (€)",
+      "depositMax": "Al massimo {{max}} mensilità: {{amount}}",
+      "depositTooHigh": "Il deposito supera il massimo: {{max}} mensilità, cioè {{amount}}",
+      "regime": {
+        "CedolareSecca": "Un'imposta fissa sul canone, al posto di IRPEF e imposta di registro.",
+        "Ordinario": "Il canone entra nel tuo reddito e si paga l'imposta di registro.",
+        "companyNotAllowed": "Un conduttore è una società: con la cedolare secca il contratto non si può confermare. Scegli il regime ordinario.",
+        "help": "Non sai quale scegliere?",
+        "helpText": "La cedolare secca è un'imposta sostitutiva sul canone; con il regime ordinario il canone entra nel tuo reddito. Per decidere chiedi al tuo commercialista.",
+        "helpTitle": "Cedolare secca",
+        "legend": "Regime fiscale"
+      },
+      "rent": "Canone mensile (€)"
+    },
     "title": "Crea contratto",
+    "type": {
+      "description": {
+        "Created": {
+          "Concordato": "Lo prepari qui, passo per passo.",
+          "Libero": "Lo prepari qui, passo per passo.",
+          "Studenti": "Lo prepari qui, passo per passo.",
+          "Transitorio": "Lo prepari qui, passo per passo."
+        },
+        "Imported": {
+          "Concordato": "Un contratto a canone concordato già firmato.",
+          "Libero": "Un contratto a canone libero già firmato.",
+          "Studenti": "Un contratto per studenti già firmato.",
+          "Transitorio": "Un contratto transitorio già firmato."
+        },
+        "blocked": {
+          "Concordato": "Non ancora disponibile.",
+          "Libero": "Non ancora disponibile.",
+          "Studenti": "Non ancora disponibile.",
+          "Transitorio": "Non ancora disponibile."
+        },
+        "partner": {
+          "Concordato": "Si prepara con il partner ConcordatoFacile: scegli «Canone concordato» quando crei un nuovo contratto."
+        }
+      },
+      "legend": "Tipo di contratto",
+      "students": "Contratto per studenti"
+    },
     "validation": {
       "citizenship": "Scegli la cittadinanza dall'elenco",
       "date": "Data non valida",
