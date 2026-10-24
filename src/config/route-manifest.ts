@@ -645,15 +645,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not).
+    // hides the buttons from who may not). Fifth of the main menu: the bar of the phone holds four places, and since the Panoramica
+    // (LR-05) is the first of them, Interventi is behind "Altro" on the phone.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
+    navOrder: 5,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,

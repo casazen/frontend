@@ -419,7 +419,12 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_SheetOfASingleGroup_HasNoHeadingButTheGroupHasAName', () => {
-      renderNav('/app/long-rent/leases', { variant: 'sheet', contextKey: 'long-rent' });
+      // A role that reads the leases and not the properties: the bar holds all its main entries, so the sheet has only "Altro".
+      renderNav('/app/long-rent/leases', {
+        variant: 'sheet',
+        contextKey: 'long-rent',
+        hasPermission: (_ctx, permission) => permission !== 'property.read',
+      });
 
       expect(screen.getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(screen.queryByText('Altro')).not.toBeInTheDocument();
