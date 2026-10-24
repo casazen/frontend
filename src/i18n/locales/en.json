@@ -8059,7 +8059,7 @@
       "rents": "rents|rent|late|overdue|reminders|month",
       "revenue": "revenue|turnover|earnings|reports|statistics|trends",
       "seo": "content|articles|guides|search engines|publications",
-      "serviceRequests": "jobs|repairs|maintenance|plumber|electrician|breakdowns|cleaning|suppliers|work",
+      "serviceRequests": "jobs|repairs|maintenance|plumber|electrician|breakdowns|cleaning",
       "siteAppearance": "colors|logo|theme|graphics|look|style",
       "siteDocuments": "documents|terms|privacy|conditions|house rules",
       "stripeConnect": "stripe|online payments|iban|payout|bank transfers|cards",
