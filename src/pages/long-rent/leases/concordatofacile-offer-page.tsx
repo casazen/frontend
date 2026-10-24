@@ -279,7 +279,7 @@ export function ConcordatoFacileOfferPage() {
 
             <Alert>
               <Info className="size-4" />
-              <AlertDescription>{t('concordatofacile.offer.info')}</AlertDescription>
+              {t('concordatofacile.offer.info')}
             </Alert>
           </CardContent>
         </Card>
