@@ -556,6 +556,7 @@
     "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
+    "rents": "Rents",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
     "supplierSettings": "Settings",
@@ -7759,6 +7760,7 @@
       "payments": "payments|income|money|transactions|stripe|collections",
       "profile": "account|personal details|password|user|my profile",
       "properties": "houses|apartments|listings|accommodations|villas|real estate",
+      "rents": "rents|rent|late|overdue|reminders|month",
       "revenue": "revenue|turnover|earnings|reports|statistics|trends",
       "seo": "content|articles|guides|search engines|publications",
       "siteAppearance": "colors|logo|theme|graphics|look|style",
@@ -9065,10 +9067,17 @@
       "rentInstallmentNotPayable": "The installment is already paid or can no longer be paid.",
       "rentInstallmentInFlight": "An online payment of the installment is in progress: wait for Stripe's outcome.",
       "rentOnlinePaymentsUnavailable": "To request online payments, connect a Stripe account enabled for charges.",
-      "rentNoTenantEmail": "No tenant has an email address to send the payment request to.",
+      "rentNoTenantEmail": "No tenant of this lease has an email address to write to.",
       "rentPaymentRequestNotSent": "The payment request was not sent: the email service is unavailable.",
       "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
       "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one.",
+      "rentReminderTooSoon": "You sent a reminder for this rent a short while ago: you can send another one later.",
+      "rentReminderNotSent": "The reminder was not sent: the email service is unavailable. Try again later.",
+      "rentReminderNoteInvalid": "The message to the tenant can have at most 300 characters.",
+      "rentInstallmentNotFound": "This rent no longer exists: reload the page.",
+      "rentRegisterMonthInvalid": "The month you chose is not valid.",
+      "rentRegisterStatusUnknown": "The filter you chose is not valid.",
+      "rentTrackFromInvalid": "The day to track the rents from cannot be after the end of the lease.",
       "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
       "hostEmailTaken": "This email already has a CasaZen account: no need to invite it.",
       "consentsIncomplete": "To come in you have to accept all the required documents.",
@@ -10531,6 +10540,19 @@
       "notePlaceholder": "E.g. bank transfer of 3 October",
       "submit": "Record the payment"
     },
+    "onlineRequests": {
+      "hint": "On: a few days before each due date the tenants get an email with the link to pay online. Off: we write to no one unless you send a reminder or the link yourself.",
+      "label": "Ask the tenants to pay online",
+      "needsStripe": "To turn it on, connect a Stripe account enabled for charges first.",
+      "summaryOff": "Online payment requests are off: we do not write to the tenants unless you send a reminder or the link.",
+      "summaryOn": "Online payment requests are on: the tenants get the link a few days before each due date."
+    },
+    "trackFrom": {
+      "fromStart": "From the start of the lease",
+      "hint": "For a lease that already started, the installments of past periods are not counted: no late rent is made up. Choose “From the start of the lease” only if you want to record those too.",
+      "label": "Track from",
+      "summary": "Rents tracked from {{month}}: earlier periods have no installment."
+    },
     "scheduleSaved": "Rent schedule saved",
     "scheduleDisabled": "Schedule disabled",
     "markedPaid": "Payment recorded",
@@ -10592,6 +10614,135 @@
         "hint": "We guide you through signing and registration, with flat-rate tax and deadlines.",
         "cta": "Create lease"
       }
+    }
+  },
+  "longRentRents": {
+    "actions": {
+      "openLease": "View lease",
+      "record": "Record payment",
+      "recordNew": "Record a payment",
+      "remind": "Send reminder",
+      "reminding": "Reminder on its way…"
+    },
+    "cancel": "Cancel",
+    "chips": {
+      "all": "All",
+      "overdue": "Late",
+      "overdueHint": "Rents past their due date and not paid",
+      "paid": "Paid",
+      "paidHint": "Rents collected",
+      "pending": "Coming due",
+      "pendingHint": "To collect, not yet past their due date"
+    },
+    "columns": {
+      "amount": "Amount",
+      "due": "Due date",
+      "reminder": "Last reminder",
+      "status": "Status",
+      "tenant": "Tenant"
+    },
+    "count_one": "{{count}} rent",
+    "count_other": "{{count}} rents",
+    "description": "Who has paid, who still has to and who is late, month by month.",
+    "empty": {
+      "description": "Change month with the arrows: each rent shows in the month it is due.",
+      "noContractsAction": "Create lease",
+      "noContractsDescription": "As soon as you create a lease and set up its rent, you see here who has paid, who has to pay and who is late.",
+      "noContractsTitle": "Follow the rents of every month here",
+      "title": "No rent this month"
+    },
+    "loadError": "Unable to load the rents.",
+    "month": {
+      "group": "Choose the month",
+      "label": "Month",
+      "next": "Next month",
+      "previous": "Previous month"
+    },
+    "noResults": {
+      "description": "Try removing the filter to see all the rents of the month.",
+      "title": "No rent with this status"
+    },
+    "pay": {
+      "date": "Date received",
+      "dateInvalid": "Enter a date no later than today ({{today}}).",
+      "description": "Rent of {{amount}} from {{tenant}}, period from {{from}} to {{to}}, paid outside CasaZen. You record the whole installment.",
+      "descriptionGeneral": "Choose the lease and the rent you received outside CasaZen (bank transfer, cheque, cash).",
+      "done": "Payment recorded: {{amount}} from {{tenant}}",
+      "held": "Recording the payment of {{amount}} from {{tenant}}",
+      "heldHint": "Undo if you got it wrong: in a few seconds it is recorded.",
+      "installment": "Rent",
+      "installmentOption": "Due {{due}} · {{amount}}",
+      "lease": "Lease",
+      "leasePlaceholder": "Choose the lease",
+      "loadError": "Unable to load the leases and their rents.",
+      "loading": "Loading the leases…",
+      "method": "How they paid",
+      "methodHint": "It stays written in the note of the payment.",
+      "methodNone": "I do not say",
+      "methods": {
+        "bank": "Bank transfer",
+        "cash": "Cash",
+        "cheque": "Cheque"
+      },
+      "noOpenInstallment": "This lease has no rent to collect.",
+      "noneToCollect": "No lease has a rent to collect.",
+      "overdue": "late",
+      "submit": "Record the payment",
+      "title": "Record a payment",
+      "wholeInstallment": "Amount: {{amount}}, the whole installment."
+    },
+    "reminder": {
+      "description": "{{tenant}} · {{property}}: rent of {{amount}}, due {{date}}.",
+      "held": "Reminder to {{tenant}} on its way",
+      "heldHint": "Undo if you changed your mind: the email leaves in a few seconds.",
+      "interval_one": "You can send a reminder for the same rent every {{count}} hour.",
+      "interval_other": "You can send a reminder for the same rent every {{count}} hours.",
+      "noteHint": "It shows in the email as a message from you.",
+      "noteLabel": "Message for the tenant",
+      "notePlaceholder": "E.g. Please pay by bank transfer by Friday",
+      "previewBodyDue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid.",
+      "previewBodyOverdue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid.",
+      "previewLabel": "Preview of the email",
+      "previewSubject": "Subject: Promemoria canone di locazione - {{property}}, scadenza {{date}} (the email is written in Italian)",
+      "previewWithLink": "The email has the link to pay online.",
+      "previewWithoutLink": "The email has no link: the tenant pays the way you agreed.",
+      "sent_one": "Reminder sent to {{count}} tenant",
+      "sent_other": "Reminder sent to {{count}} tenants",
+      "submit": "Send reminder",
+      "title": "Send a reminder",
+      "whoGetsIt": "The email goes to the tenants of the lease who have an email address; after it is sent we tell you how many."
+    },
+    "retry": "Retry",
+    "row": {
+      "dueIn_one": "Due in {{count}} day",
+      "dueIn_other": "Due in {{count}} days",
+      "dueToday": "Due today",
+      "failed": "Last online payment failed",
+      "lastReminder_one": "{{when}} · {{count}} time",
+      "lastReminder_other": "{{when}} · {{count}} times",
+      "on": "on {{date}}",
+      "overdue_one": "Late by {{count}} day",
+      "overdue_other": "Late by {{count}} days",
+      "overdueToday": "Past due",
+      "paidOn": "Paid on {{date}}",
+      "period": "Period {{from}} – {{to}}",
+      "processing": "Online payment in progress",
+      "today": "today",
+      "yesterday": "yesterday"
+    },
+    "stats": {
+      "collected": "Collected in {{month}}",
+      "collectedDelta_one": "of {{expected}} expected · {{paid}} of {{count}} rent",
+      "collectedDelta_other": "of {{expected}} expected · {{paid}} of {{count}} rents",
+      "label": "The numbers of the month",
+      "noOverdue": "Nothing late",
+      "nothingPending": "Nothing left to collect",
+      "overdue": "Late",
+      "overdueDelta_one": "{{count}} rent",
+      "overdueDelta_other": "{{count}} rents",
+      "pending": "Still to collect",
+      "pendingDelta_one": "{{count}} rent not yet due",
+      "pendingDelta_other": "{{count}} rents not yet due"
     }
   },
   "hostInvites": {
