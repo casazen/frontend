@@ -17,22 +17,12 @@ import type { RentRegisterPage, RentRegisterRow } from '@/types';
 import { RecordRentPaymentDialog } from './components/record-rent-payment-dialog';
 import { RentMonthPicker } from './components/rent-month-picker';
 import { RentReminderDialog } from './components/rent-reminder-dialog';
-import { isRentMonth, monthName, monthOfDate, rentStatusOfChip } from './lib/rent-register';
+import { isRentMonth, monthName, monthOfDate, rentRegisterPath, rentStatusOfChip } from './lib/rent-register';
 import { useRentsList } from './rents-list';
 
-const RENTS_PATH = '/app/long-rent/rents';
 const LEASE_CREATE_PATH = '/app/long-rent/leases/new';
 const PAGE_SIZE = 25;
 const NO_ROWS: readonly RentRegisterRow[] = [];
-
-/** The address of the register for a month and a quick filter; the month in the address is only written when it is not this one. */
-function rentsHref(month: string, currentMonth: string, chip?: string): string {
-  const params = new URLSearchParams();
-  if (month !== currentMonth) params.set('mese', month);
-  if (chip) params.set('chip', chip);
-  const query = params.toString();
-  return query ? `${RENTS_PATH}?${query}` : RENTS_PATH;
-}
 
 /**
  * The three numbers of the month, from the counters of the whole month (they do not change with the quick filter or the page):
@@ -54,7 +44,7 @@ function RentMonthNumbers({ data, month, currentMonth, dimmed }: { data: RentReg
           paid: counters.collected.count,
           expected: euros(counters.expected.amount),
         })}
-        href={rentsHref(month, currentMonth, 'paid')}
+        href={rentRegisterPath(month, currentMonth, 'paid')}
         data-testid="rents-numbers-collected"
       />
       <StatTile
@@ -62,7 +52,7 @@ function RentMonthNumbers({ data, month, currentMonth, dimmed }: { data: RentReg
         value={euros(counters.overdue.amount)}
         tone={late ? 'danger' : 'neutral'}
         delta={late ? t('longRentRents.stats.overdueDelta', { count: counters.overdue.count }) : t('longRentRents.stats.noOverdue')}
-        href={rentsHref(month, currentMonth, 'overdue')}
+        href={rentRegisterPath(month, currentMonth, 'overdue')}
         data-testid="rents-numbers-overdue"
       />
       <StatTile
@@ -73,7 +63,7 @@ function RentMonthNumbers({ data, month, currentMonth, dimmed }: { data: RentReg
             ? t('longRentRents.stats.pendingDelta', { count: counters.pending.count })
             : t('longRentRents.stats.nothingPending')
         }
-        href={rentsHref(month, currentMonth, 'pending')}
+        href={rentRegisterPath(month, currentMonth, 'pending')}
         data-testid="rents-numbers-pending"
       />
     </StatStrip>

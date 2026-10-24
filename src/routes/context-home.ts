@@ -10,7 +10,7 @@ import {
 import type { FeatureFlags } from '@/config/feature-flags';
 
 /**
- * Where the bare address of an area opens (`/app/long-rent`, `/app/supplier`): the default page of the area (contracts for
+ * Where the bare address of an area opens (`/app/long-rent`, `/app/supplier`): the default page of the area (the Panoramica for
  * long-rent, the dashboard for suppliers) when the user can open it, otherwise the first page of the area's menu that the
  * user can open. With nothing the user can open, the default page anyway: its own guard says what is missing.
  */

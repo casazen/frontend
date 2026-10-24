@@ -77,6 +77,20 @@ export function rentLeasePath(leaseId: string): string {
   return `/app/long-rent/leases/${encodeURIComponent(leaseId)}?tab=pagamenti`;
 }
 
+const RENT_REGISTER_PATH = '/app/long-rent/rents';
+
+/**
+ * The address of the register for a month and a quick filter (`chip`: `overdue`, `pending`, `paid`). The month is only written
+ * when it is not the current one: the plain address is the register of this month.
+ */
+export function rentRegisterPath(month: string, currentMonth: string, chip?: string): string {
+  const params = new URLSearchParams();
+  if (month !== currentMonth) params.set('mese', month);
+  if (chip) params.set('chip', chip);
+  const query = params.toString();
+  return query ? `${RENT_REGISTER_PATH}?${query}` : RENT_REGISTER_PATH;
+}
+
 /** What the page calls an action that waits for its six seconds (`holdForUndo`): a reminder or a payment of one installment. */
 export const reminderKey = (installmentId: string) => `reminder:${installmentId}`;
 export const paymentKey = (installmentId: string) => `payment:${installmentId}`;
