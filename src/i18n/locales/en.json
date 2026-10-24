@@ -550,6 +550,7 @@
     "payments": "Payments",
     "revenue": "Revenue",
     "reports": "Reports",
+    "longRentFiscal": "Tax report",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
@@ -10072,6 +10073,49 @@
     "retry": "Retry",
     "empty": "No service categories available.",
     "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
+  },
+  "longRentFiscal": {
+    "title": "Tax report",
+    "description": "Rent for the year and estimated taxes per lease, ready for your accountant.",
+    "yearsLabel": "Year",
+    "download": "Download the {{year}} summary",
+    "downloaded": "{{year}} summary downloaded.",
+    "downloadFailed": "The summary could not be downloaded. Please try again.",
+    "loadError": "The tax report could not be loaded. Please try again.",
+    "estimate": {
+      "title": "Estimate to be checked with your accountant",
+      "text": "Indicative figures on the rent accrued: they do not take into account other income, deductions or surcharges. Accrual counts whole months and the rent collected is only what is recorded in CasaZen."
+    },
+    "stats": {
+      "label": "Summary of the year",
+      "accrual": "Rent accrued in {{year}}",
+      "collected": "Collected, as recorded in CasaZen",
+      "cedolare_one": "Estimated cedolare secca · {{count}} lease",
+      "cedolare_other": "Estimated cedolare secca · {{count}} leases",
+      "cedolareNone": "Estimated cedolare secca · no lease"
+    },
+    "columns": {
+      "contract": "Lease",
+      "regime": "Regime",
+      "accrual": "Accrued",
+      "collected": "Collected (recorded)",
+      "tax": "Estimated tax"
+    },
+    "accrualDetail_one": "{{count}} month × {{rent}} a month",
+    "accrualDetail_other": "{{count}} months × {{rent}} a month",
+    "collectedNone": "not recorded in CasaZen",
+    "collectedFrom": "recorded since {{month}}",
+    "taxRate": "cedolare {{rate}}",
+    "notEstimated": "Not estimated",
+    "notEstimatedOrdinary": "depends on total income",
+    "notEstimatedUnknown": "tax regime not recorded",
+    "toCheck": "to be checked: see “Good to know”",
+    "notesTitle": "Good to know",
+    "empty": {
+      "title": "No lease in force in {{year}}",
+      "description": "As soon as a signed lease is in force, you find its rent and estimated taxes here, ready for your accountant.",
+      "action": "Go to the leases"
+    }
   },
   "longRentProperties": {
     "retry": "Retry",
