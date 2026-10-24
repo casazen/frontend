@@ -1708,6 +1708,7 @@
       "concordato_unavailable": "The territorial agreement data of the comune are missing for the canone concordato",
       "contract_type_missing": "Choose the type of lease",
       "deposit_invalid": "The deposit is not valid: zero or more, with at most two decimals",
+      "deposit_missing": "Enter the security deposit (0 if there is none)",
       "deposit_ok": "Deposit: {{amount}} ({{rents}} monthly rents)",
       "deposit_too_high": "The deposit can be at most {{max}} × the monthly rent ({{amount}})",
       "documents_not_verified": "Before the signature check an identity document of each party: CasaZen does not keep it",
@@ -1926,6 +1927,7 @@
     "terms": {
       "deposit": "Security deposit (€)",
       "depositMax": "At most {{max}} × the monthly rent: {{amount}}",
+      "depositNone": "If there is none, enter 0.",
       "depositTooHigh": "The deposit is over the limit: {{max}} × the monthly rent, that is {{amount}}",
       "regime": {
         "CedolareSecca": "A flat tax on the rent, instead of IRPEF and registration tax.",
