@@ -95,11 +95,13 @@ describe('route-manifest main menu (UI-04a)', () => {
 
   it('keeps the long-rent, supplier and staff menus to the pages they have', () => {
     expect(paths(getPrimaryNavEntries('long-rent', allowAll))).toEqual([
+      '/app/long-rent',
       '/app/long-rent/leases',
       '/app/long-rent/rents',
       '/app/long-rent/properties',
     ]);
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
+      '/app/long-rent/deadlines',
       '/app/long-rent/fiscal',
       '/app/long-rent/profile',
       '/app/long-rent/settings/organization',

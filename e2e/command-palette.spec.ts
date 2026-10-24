@@ -398,7 +398,7 @@ test.describe('Command palette (UI-06)', () => {
       await search(page, 'lunghi');
       await expect(group(page, 'Azioni').getByRole('option').first()).toContainText('Cambia area: Affitti lunghi');
       await page.keyboard.press('Enter');
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
 
       await page.keyboard.press('Control+K');
       await search(page, 'inglese');

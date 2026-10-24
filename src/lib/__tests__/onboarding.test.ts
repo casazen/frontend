@@ -29,7 +29,7 @@ function httpError(status: number): AxiosError {
 describe('onboarding helpers', () => {
   it('maps rental types to home routes', () => {
     expect(getHomeRouteForRentalType('ShortTerm')).toBe('/app/short-rent');
-    expect(getHomeRouteForRentalType('LongTerm')).toBe('/app/long-rent/leases');
+    expect(getHomeRouteForRentalType('LongTerm')).toBe('/app/long-rent');
     expect(getHomeRouteForRentalType('Both')).toBe('/app/short-rent');
   });
 
@@ -129,10 +129,10 @@ describe('onboarding helpers', () => {
   it('getPostOnboardingRoute_ReturnsOriginOnlyWithinTheChosenContexts', () => {
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent/properties?tab=1')).toBe('/app/short-rent/properties?tab=1');
     expect(getPostOnboardingRoute('Both', '/app/long-rent/leases/42')).toBe('/app/long-rent/leases/42');
-    expect(getPostOnboardingRoute('LongTerm', '/app/short-rent/properties')).toBe('/app/long-rent/leases');
+    expect(getPostOnboardingRoute('LongTerm', '/app/short-rent/properties')).toBe('/app/long-rent');
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rentals-elsewhere')).toBe('/app/short-rent');
     expect(getPostOnboardingRoute('ShortTerm', '/app/admin')).toBe('/app/short-rent');
-    expect(getPostOnboardingRoute('LongTerm', null)).toBe('/app/long-rent/leases');
+    expect(getPostOnboardingRoute('LongTerm', null)).toBe('/app/long-rent');
   });
 
   it('getPostOnboardingRoute_FirstRunOpensTheFirstPropertyUnlessAGuardSentTheUserToADeepPage', () => {
@@ -170,7 +170,7 @@ describe('onboarding helpers', () => {
   });
 
   it('resolves home route for user roles', () => {
-    expect(getHomeRouteForUser({ roles: ['LongTermLandlord'] })).toBe('/app/long-rent/leases');
+    expect(getHomeRouteForUser({ roles: ['LongTermLandlord'] })).toBe('/app/long-rent');
     expect(getHomeRouteForUser({ roles: ['PropertyOwner', 'LongTermLandlord'] })).toBe('/app/short-rent');
     expect(getHomeRouteForUser({ roles: ['Admin'] })).toBe('/app/admin');
     // Supplier-only users land on the activation wizard of their console (A4-02); an active supplier moves on.
