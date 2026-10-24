@@ -6,6 +6,20 @@ import type { LeaseDetail } from '@/types';
 /** Who the lease is with and where: every window of the actions says it first ("Giulia Verdi · Casa Trastevere"). */
 export type LeaseSubject = { tenant: string; property: string };
 
+/** A day before this is not a day a lease can end on: it is the value of a column that was never written (a row of an old server). */
+const FIRST_REAL_DAY = '1900-01-01';
+
+/**
+ * The last day of the period the lease is in (`currentTermEndDate`, LR-14), as the API wrote it. The end the contract states (`endDate`)
+ * stands in for it when the answer does not carry it, or carries the starting value of the column (`0001-01-01`, a row written by a
+ * server that did not know it and not repaired by the hourly job yet): better the end of the first period than a lease that ends in the
+ * year 1.
+ */
+export function leaseTermEnd(lease: Pick<LeaseDetail, 'currentTermEndDate' | 'endDate'>): string {
+  const current = lease.currentTermEndDate;
+  return current && parseStayDate(current) >= FIRST_REAL_DAY ? current : lease.endDate;
+}
+
 /** "30 settembre 2030" from a day as the API writes it (`2030-09-30`, `2030-09-30T00:00:00Z`); empty when it is not a day. */
 export function longDay(value: string | null | undefined, language: string): string {
   const day = parseStayDate(value);

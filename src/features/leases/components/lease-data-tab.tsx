@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import type { LeaseDetail } from '@/types';
 import { isLeasePlaceholderDate, leasePropertyLine } from '../lib/lease-list-format';
 import { isPartnerDraft } from '../lib/lease-sheet';
-import { leaseTermFacts } from '../lifecycle/lifecycle-format';
+import { leaseTermEnd, leaseTermFacts } from '../lifecycle/lifecycle-format';
 import { AttestationGuidancePanel } from './attestation-guidance-panel';
 import { CanoneConcordatoCalculator } from './canone-concordato-calculator';
 import { CedolareDecisionPanel } from './cedolare-decision-panel';
@@ -124,7 +124,7 @@ export function LeaseDataTab({ lease, onRequestErasure }: { lease: LeaseDetail; 
         <dl className="space-y-3 text-sm">
           <Fact label={t('leaseSheet.dates.start')}>{day(lease.startDate)}</Fact>
           <Fact label={t('leaseSheet.dates.end')} testId="lease-end-date">
-            {day(lease.currentTermEndDate ?? lease.endDate)}
+            {day(leaseTermEnd(lease))}
           </Fact>
           {termFacts.map((fact) => (
             <Fact key={fact.key} label={fact.label} testId={`lease-fact-${fact.key}`}>

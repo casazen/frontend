@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { propertyModePath } from '@/features/properties/mode/paths';
 import { addDays, parseStayDate } from '@/lib/stay-dates';
 import type { LeaseDetail } from '@/types';
-import { longDay, type LeaseSubject } from './lifecycle-format';
+import { leaseTermEnd, longDay, type LeaseSubject } from './lifecycle-format';
 
 interface SwitchToShortDialogProps {
   open: boolean;
@@ -22,7 +22,7 @@ interface SwitchToShortDialogProps {
  */
 export function SwitchToShortDialog({ open, lease, subject, onClose }: SwitchToShortDialogProps) {
   const { t, i18n } = useTranslation();
-  const firstDay = longDay(addDays(parseStayDate(lease.currentTermEndDate ?? lease.endDate), 1), i18n.language);
+  const firstDay = longDay(addDays(parseStayDate(leaseTermEnd(lease)), 1), i18n.language);
   const endIsSettled = Boolean(lease.noticeOn || lease.terminatedOn);
 
   return (

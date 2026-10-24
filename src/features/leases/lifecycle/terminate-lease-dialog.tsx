@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { isStayDate, parseStayDate } from '@/lib/stay-dates';
 import { useTerminateLease } from '@/queries/use-lease-lifecycle';
 import type { LeaseDetail } from '@/types';
-import { longDay, type LeaseSubject } from './lifecycle-format';
+import { leaseTermEnd, longDay, type LeaseSubject } from './lifecycle-format';
 
 interface TerminateLeaseDialogProps {
   open: boolean;
@@ -28,7 +28,7 @@ export function TerminateLeaseDialog({ open, lease, subject, onClose }: Terminat
   const [on, setOn] = useState('');
 
   const start = parseStayDate(lease.startDate);
-  const end = parseStayDate(lease.currentTermEndDate ?? lease.endDate);
+  const end = parseStayDate(leaseTermEnd(lease));
   const dateValid = isStayDate(on) && (start === '' || on >= start) && (end === '' || on <= end);
 
   function close() {

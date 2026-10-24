@@ -10,18 +10,13 @@ import { isStayDate, parseStayDate, todayInRome } from '@/lib/stay-dates';
 import { toastUndo } from '@/lib/toast-undo';
 import { useLeaseLifecycleActions, useRecordLeaseNotice } from '@/queries/use-lease-lifecycle';
 import type { LeaseDetail, LeaseNoticeParty } from '@/types';
-import { longDay, type LeaseSubject } from './lifecycle-format';
+import { leaseTermEnd, longDay, type LeaseSubject } from './lifecycle-format';
 
 interface RecordNoticeDialogProps {
   open: boolean;
   lease: LeaseDetail;
   subject: LeaseSubject;
   onClose: () => void;
-}
-
-/** The last day of the period the lease is in: where it ends if nobody renews it. */
-function termEnd(lease: LeaseDetail): string {
-  return lease.currentTermEndDate ?? lease.endDate;
 }
 
 function NoticeForm({ lease, subject, onClose }: Omit<RecordNoticeDialogProps, 'open'>) {
@@ -38,10 +33,10 @@ function NoticeForm({ lease, subject, onClose }: Omit<RecordNoticeDialogProps, '
 
   /** Said once the notice is recorded: where the lease ends now, that it may have come late (without a figure) and, if it can be, «Annulla». */
   function announce(detail: LeaseDetail) {
-    const message = t('leaseLifecycle.notice.recorded', { date: longDay(termEnd(detail), i18n.language) });
+    const message = t('leaseLifecycle.notice.recorded', { date: longDay(leaseTermEnd(detail), i18n.language) });
     const description = detail.noticeWarning ? t('leaseLifecycle.notice.possiblyLate') : undefined;
     // The server takes a notice back only while the period has not ended: after that «Annulla» would promise what cannot be done.
-    if (parseStayDate(termEnd(detail)) < todayInRome()) {
+    if (parseStayDate(leaseTermEnd(detail)) < todayInRome()) {
       toast.success(message, { description });
       return;
     }
@@ -111,7 +106,7 @@ function NoticeForm({ lease, subject, onClose }: Omit<RecordNoticeDialogProps, '
 
       <div className="space-y-1 text-sm text-foreground/70" data-testid="lease-notice-explanation">
         <p>{t('leaseLifecycle.notice.renews')}</p>
-        <p>{t('leaseLifecycle.notice.ends', { date: longDay(termEnd(lease), i18n.language) })}</p>
+        <p>{t('leaseLifecycle.notice.ends', { date: longDay(leaseTermEnd(lease), i18n.language) })}</p>
       </div>
 
       <DialogFooter>
