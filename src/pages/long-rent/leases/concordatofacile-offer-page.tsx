@@ -179,7 +179,7 @@ export function ConcordatoFacileOfferPage() {
   }
 
   // User already has access - show link generation button (ADR-007-R12, ADR-007-R13)
-  // TODO: Check status query for existing practices (E02) - for now, always show entry button
+  // TODO: Check status query for existing practices and handle status query failure (ADR-007-R14) when E02 adds status endpoint
   if (access.hasAccess) {
     return (
       <div className="container max-w-3xl py-8">

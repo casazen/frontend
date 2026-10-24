@@ -78,6 +78,7 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
  * ConcordatoFacile entry point panel for Concordato lease contracts (ADR-007-R12-R16).
  * Shows state-driven button: no access -> offer page, access -> link generation.
  * TODO: Show status section when practices exist (E02).
+ * TODO: Handle status query failure with ADR-007-R14 fallback when status query exists (E02).
  */
 function ConcordatoFacilePanel({ leaseId }: { leaseId: string }) {
   const { t } = useTranslation();
@@ -85,46 +86,12 @@ function ConcordatoFacilePanel({ leaseId }: { leaseId: string }) {
   const accessQuery = useCfAccess(leaseId);
   const linkMutation = useCfGenerateLink(leaseId);
 
-  // Still loading access state
-  if (accessQuery.isLoading) {
+  // Still loading or no access data available
+  if (accessQuery.isLoading || !accessQuery.data) {
     return null;
   }
 
-  // Access query failed - show fallback with warning (ADR-007-R14)
-  if (accessQuery.isError && !accessQuery.data) {
-    return (
-      <Card data-testid="cf-entry-panel">
-        <CardHeader>
-          <CardTitle>{t('concordatofacile.offer.title')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            size="lg"
-            onClick={() => linkMutation.mutate()}
-            disabled={linkMutation.isPending}
-            data-testid="cf-entry-button"
-            className="w-full"
-          >
-            {linkMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            {linkMutation.isPending ? t('concordatofacile.entry.generating') : t('concordatofacile.entry.access')}
-          </Button>
-          <Alert variant="warning" data-testid="cf-access-warning">
-            <AlertCircle className="size-4" />
-            {t('concordatofacile.entry.statusFailed')}
-          </Alert>
-          {linkMutation.isError && (
-            <Alert variant="danger">
-              <AlertCircle className="size-4" />
-              {t('concordatofacile.entry.error')}
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
   const access = accessQuery.data;
-  if (!access) return null;
 
   // No access - navigate to offer page
   if (!access.hasAccess) {
