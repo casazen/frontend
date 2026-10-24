@@ -5,7 +5,6 @@ import { AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -50,7 +49,7 @@ export function ConcordatoFacileOfferPage() {
     try {
       const result = await checkoutMutation.mutateAsync(id);
       redirectToStripe(result.sessionUrl);
-    } catch (error) {
+    } catch {
       setRedirecting(false);
       // Error is handled by the mutation
     }
@@ -62,7 +61,7 @@ export function ConcordatoFacileOfferPage() {
       await giftMutation.mutateAsync(id);
       // After consuming gift, access state will be refetched automatically
       accessQuery.refetch();
-    } catch (error) {
+    } catch {
       // Error is handled by the mutation
     }
   };
