@@ -38,6 +38,10 @@ export interface RentSchedule {
   amount: number;
   currency: string;
   isActive: boolean;
+  /** LR-04a: the day the rents are tracked from (`YYYY-MM-DD`); null = from the start of the lease. */
+  trackFrom?: string | null;
+  /** LR-04a: the daily job emails the tenants the payment links. Off for a new plan, until the landlord turns it on. */
+  onlineRequestsEnabled?: boolean;
 }
 
 export interface RentPeriod {
@@ -60,17 +64,105 @@ export interface RentLedger {
   partialFinalPeriod: RentPeriod | null;
 }
 
-/** `PUT /leases/:id/rent/schedule`: omitted values default to the lease (start day, monthly rent × months). */
+/**
+ * `PUT /leases/:id/rent/schedule`: omitted values default to the lease (start day, monthly rent × months). Until the plan has
+ * its own endpoint for the online requests the server recomputes the day and the amount that are missing, so a change of any
+ * other part sends the current ones again. `trackFrom` absent keeps the day the plan already has; a day on or before the start
+ * of the lease means «from the start». `onlineRequests` absent keeps the choice (off for a new plan).
+ */
 export interface ConfigureRentScheduleInput {
   cadence: RentCadence;
   billingDayOfMonth?: number;
   amount?: number;
+  trackFrom?: string;
+  onlineRequests?: boolean;
 }
 
 export interface MarkRentPaidInput {
   /** `YYYY-MM-DD`, not later than today in Europe/Rome. */
   paidOn: string;
   note?: string;
+}
+
+/** What the rent register can be narrowed to (`GET /long-rent/rents?status=`): the three states a landlord reads at a glance. */
+export type RentRegisterStatus = 'All' | 'Paid' | 'Pending' | 'Overdue';
+
+/** A number of installments and what they add up to. */
+export interface RentCounter {
+  count: number;
+  amount: number;
+}
+
+/** The numbers of the whole month, whatever the status filter and the page. */
+export interface RentRegisterCounters {
+  /** Everything due in the month and not cancelled: `collected` + `pending` + `overdue`. */
+  expected: RentCounter;
+  collected: RentCounter;
+  /** Still to come, or a payment in flight. */
+  pending: RentCounter;
+  /** Past its due date and not paid. */
+  overdue: RentCounter;
+}
+
+/**
+ * One installment of the register (LR-01). The tenant is the first one of the lease, by name only; the names are null once
+ * that tenant was anonymized. `canRemind`: the installment is not paid nor in flight, a tenant has an email address and the
+ * interval since the last reminder has passed.
+ */
+export interface RentRegisterRow {
+  id: string;
+  leaseId: string;
+  propertyId: string;
+  propertyName: string;
+  tenantFirstName: string | null;
+  tenantLastName: string | null;
+  tenantAnonymized: boolean;
+  periodStart: string;
+  periodEnd: string;
+  dueDate: string;
+  amount: number;
+  currency: string;
+  status: RentInstallmentStatus;
+  isOverdue: boolean;
+  daysOverdue: number | null;
+  paidVia: RentPaymentChannel | null;
+  paidOn: string | null;
+  paymentRequestedAt: string | null;
+  lastReminderAt: string | null;
+  reminderCount: number;
+  canRemind: boolean;
+}
+
+/** `GET /long-rent/rents`. `month` is `yyyy-MM`. */
+export interface RentRegisterPage {
+  month: string;
+  counters: RentRegisterCounters;
+  items: RentRegisterRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+  /** The org accepts rent online (Stripe), so a reminder carries the payment link. */
+  onlinePaymentsAvailable: boolean;
+  /** The least time between two reminders of the same installment. */
+  reminderIntervalHours: number;
+}
+
+export interface RentRegisterParams {
+  /** `yyyy-MM`; the current month in Rome when missing. */
+  month?: string;
+  status?: RentRegisterStatus;
+  page?: number;
+  pageSize?: number;
+}
+
+/** What the server answers to one reminder: who was written to is not part of it, only how many. */
+export interface RentReminderResult {
+  installmentId: string;
+  sentAt: string;
+  reminderCount: number;
+  recipientCount: number;
+  includesPaymentLink: boolean;
+  nextReminderAllowedAt: string;
 }
 
 export type PublicRentPaymentState = 'Payable' | 'Processing' | 'Paid' | 'Unavailable';

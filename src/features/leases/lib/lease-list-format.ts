@@ -12,8 +12,14 @@ import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseSummary } from '@/types';
 const FULL_DAY = { day: 'numeric', month: 'short', year: 'numeric' } as const;
 const SHORT_DAY = { day: 'numeric', month: 'short' } as const;
 
-/** The name of the first tenant, or what stands in its place: no tenant yet, or one whose data were anonymized (LT-12). */
-export function leaseTenantName(lease: LeaseSummary, t: TFunction): string {
+/**
+ * The name of the first tenant, or what stands in its place: no tenant yet, or one whose data were anonymized (LT-12). The list of
+ * leases and the rent register (LR-04b) both say the tenant this way.
+ */
+export function leaseTenantName(
+  lease: Pick<LeaseSummary, 'tenantAnonymized' | 'tenantFirstName' | 'tenantLastName'>,
+  t: TFunction,
+): string {
   if (lease.tenantAnonymized) return t('leaseList.tenant.anonymized');
   const name = [lease.tenantFirstName, lease.tenantLastName]
     .map((part) => part?.trim())

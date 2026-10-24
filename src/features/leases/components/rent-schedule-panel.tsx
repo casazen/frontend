@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
@@ -6,10 +6,14 @@ import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { WorkspaceContext } from '@/contexts/workspace-context';
 import { getProblemMessage } from '@/lib/api-errors';
-import { romeDateOf } from '@/lib/stay-dates';
+import { parseStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   useConfigureRentSchedule,
@@ -17,7 +21,8 @@ import {
   useRentLedger,
   useSendRentPaymentRequest,
 } from '@/queries/use-rent';
-import type { RentCadence, RentInstallment, RentLedger } from '@/types';
+import type { ConfigureRentScheduleInput, RentCadence, RentInstallment, RentLedger } from '@/types';
+import { monthName, monthOfDate, trackFromMonths } from '../lib/rent-register';
 import { MarkRentPaidDialog } from './mark-rent-paid-dialog';
 
 const SELECT_CLASS =
@@ -34,13 +39,25 @@ interface RentSchedulePanelProps {
   leaseId: string;
   /** Status of the lease: when it changes (e.g. signed) the ledger is read again. */
   leaseStatus?: string;
+  /**
+   * The days the lease starts and ends (`YYYY-MM-DD`). With them the plan of a lease that is running can be tracked from a month
+   * («Traccia da», LR-04a) instead of from the start, so no past period is born late; without them the field is not offered.
+   */
+  term?: LeaseTerm;
+}
+
+interface LeaseTerm {
+  startDate: string;
+  endDate: string;
 }
 
 /**
  * Recurring rent of a lease (LT-06, #269): schedule generated from the lease, installments with their real state (to
  * collect, in progress, paid online or offline, failed, cancelled), payment link to the tenant and offline payments.
+ * The plan says from which month the rents are tracked and whether the tenants are written to by the daily job (LR-04a):
+ * that one is off for a new plan, and on only when the landlord turns it on.
  */
-export function RentSchedulePanel({ leaseId, leaseStatus }: RentSchedulePanelProps) {
+export function RentSchedulePanel({ leaseId, leaseStatus, term }: RentSchedulePanelProps) {
   const { t } = useTranslation();
   const { data: ledger, isLoading, isError, error, refetch, isFetching } = useRentLedger(leaseId, leaseStatus);
 
@@ -66,13 +83,17 @@ export function RentSchedulePanel({ leaseId, leaseStatus }: RentSchedulePanelPro
           {getProblemMessage(error, t) ?? t('rent.loadError')}
         </Alert>
       )}
-      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} />}
+      {ledger && <RentLedgerContent leaseId={leaseId} ledger={ledger} term={term} />}
     </PlainSection>
   );
 }
 
-function RentLedgerContent({ leaseId, ledger }: { leaseId: string; ledger: RentLedger }) {
-  const { t } = useTranslation();
+function RentLedgerContent({ leaseId, ledger, term }: { leaseId: string; ledger: RentLedger; term?: LeaseTerm }) {
+  const { t, i18n } = useTranslation();
+  // The page of the payments settings is the short-rent one: who cannot open it (a landlord with only long-term leases) gets the
+  // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
+  const workspace = useContext(WorkspaceContext);
+  const canOpenPaymentsSettings = workspace ? workspace.hasPermission('short-rent', 'property.write') : true;
   const [editing, setEditing] = useState(false);
   const disable = useDisableRentSchedule(leaseId);
   const schedule = ledger.schedule;
@@ -91,10 +112,15 @@ function RentLedgerContent({ leaseId, ledger }: { leaseId: string; ledger: RentL
     <div className="space-y-4">
       {!ledger.onlinePaymentsAvailable && (
         <Alert variant="warning" data-testid="rent-online-unavailable">
-          {t('rent.onlineUnavailable')}{' '}
-          <Link to={PAYMENTS_SETTINGS_PATH} className="font-medium underline">
-            {t('rent.onlineUnavailableLink')}
-          </Link>
+          {t('rent.onlineUnavailable')}
+          {canOpenPaymentsSettings && (
+            <>
+              {' '}
+              <Link to={PAYMENTS_SETTINGS_PATH} className="font-medium underline">
+                {t('rent.onlineUnavailableLink')}
+              </Link>
+            </>
+          )}
         </Alert>
       )}
       {ledger.onlinePaymentsAvailable && !ledger.hasTenantEmail && (
@@ -104,22 +130,34 @@ function RentLedgerContent({ leaseId, ledger }: { leaseId: string; ledger: RentL
       )}
 
       {schedule && !showForm && (
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm" data-testid="rent-schedule-summary">
-          <p>
-            {t('rent.summary', {
-              cadence: t(`rent.cadence.${schedule.cadence}`),
-              amount: formatCurrency(schedule.amount, schedule.currency),
-              day: schedule.billingDayOfMonth,
-            })}
-          </p>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              {t('rent.edit')}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => disable.mutate()} disabled={disable.isPending}>
-              {t('rent.disable')}
-            </Button>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm" data-testid="rent-schedule-summary">
+            <p>
+              {t('rent.summary', {
+                cadence: t(`rent.cadence.${schedule.cadence}`),
+                amount: formatCurrency(schedule.amount, schedule.currency),
+                day: schedule.billingDayOfMonth,
+              })}
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+                {t('rent.edit')}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => disable.mutate()} disabled={disable.isPending}>
+                {t('rent.disable')}
+              </Button>
+            </div>
           </div>
+          {schedule.trackFrom ? (
+            <p className="text-sm text-foreground/70" data-testid="rent-track-from-summary">
+              {t('rent.trackFrom.summary', { month: monthName(monthOfDate(parseStayDate(schedule.trackFrom)), i18n.language) })}
+            </p>
+          ) : null}
+          {schedule.onlineRequestsEnabled !== undefined ? (
+            <p className="text-sm text-foreground/70" data-testid="rent-online-requests-summary">
+              {schedule.onlineRequestsEnabled ? t('rent.onlineRequests.summaryOn') : t('rent.onlineRequests.summaryOff')}
+            </p>
+          ) : null}
         </div>
       )}
       {schedule && !schedule.isActive && (
@@ -132,6 +170,7 @@ function RentLedgerContent({ leaseId, ledger }: { leaseId: string; ledger: RentL
         <RentScheduleForm
           leaseId={leaseId}
           ledger={ledger}
+          term={term}
           onDone={() => setEditing(false)}
           onCancel={schedule?.isActive ? () => setEditing(false) : undefined}
         />
@@ -154,16 +193,40 @@ function RentLedgerContent({ leaseId, ledger }: { leaseId: string; ledger: RentL
 interface RentScheduleFormProps {
   leaseId: string;
   ledger: RentLedger;
+  /** When the lease starts and ends: without it «Traccia da» is not offered. */
+  term?: LeaseTerm;
   onDone: () => void;
   onCancel?: () => void;
 }
 
-function RentScheduleForm({ leaseId, ledger, onDone, onCancel }: RentScheduleFormProps) {
-  const { t } = useTranslation();
+function RentScheduleForm({ leaseId, ledger, term, onDone, onCancel }: RentScheduleFormProps) {
+  const { t, i18n } = useTranslation();
   const configure = useConfigureRentSchedule(leaseId);
   const [cadence, setCadence] = useState<RentCadence>(ledger.schedule?.cadence ?? 'Monthly');
   const [billingDay, setBillingDay] = useState(ledger.schedule ? String(ledger.schedule.billingDayOfMonth) : '');
   const [amount, setAmount] = useState(ledger.schedule ? String(ledger.schedule.amount) : '');
+
+  // «Traccia da» (LR-04a, LR-D17): a lease that already started is tracked from this month, so the months before it are not born
+  // late. `trackedMonth` is what the server has ('' = from the start of the lease); the field starts there for an existing plan
+  // and at this month for a new one. Only a change is sent: a missing day keeps the one the plan has.
+  const leaseStart = parseStayDate(term?.startDate);
+  const leaseEnd = parseStayDate(term?.endDate);
+  const today = todayInRome();
+  const currentMonth = monthOfDate(today);
+  const trackedMonth = ledger.schedule?.trackFrom ? monthOfDate(parseStayDate(ledger.schedule.trackFrom)) : '';
+  const started = leaseStart !== '' && leaseStart <= today;
+  const running = started && (leaseEnd === '' || leaseEnd >= today);
+  const startMonth = leaseStart === '' ? '' : monthOfDate(leaseStart);
+  // A lease that is over can only be tracked up to its last month (a day after its end is refused).
+  const lastMonth = leaseEnd !== '' && monthOfDate(leaseEnd) < currentMonth ? monthOfDate(leaseEnd) : currentMonth;
+  const [trackFrom, setTrackFrom] = useState(ledger.schedule ? trackedMonth : running && currentMonth > startMonth ? currentMonth : '');
+  const trackMonths = startMonth === '' ? [] : trackFromMonths(startMonth, lastMonth, trackFrom);
+  const canChooseTrackFrom = leaseStart !== '' && trackMonths.length > 0 && (started || trackedMonth !== '');
+
+  // «Chiedi il pagamento online» (LR-04a, LR-D19): off for a new plan. The daily job writes to the tenants only when it is on, and
+  // it is on only if the landlord turned it on. It needs the Stripe account (the link is a payment); an existing choice can always be turned off.
+  const onlineBefore = ledger.schedule?.onlineRequestsEnabled === true;
+  const [onlineRequests, setOnlineRequests] = useState(onlineBefore);
 
   const defaultAmount = ledger.monthlyRent * MONTHS_PER[cadence];
   const dayNumber = Number(billingDay);
@@ -174,14 +237,16 @@ function RentScheduleForm({ leaseId, ledger, onDone, onCancel }: RentScheduleFor
 
   function submit() {
     if (!canSubmit) return;
-    configure.mutate(
-      {
-        cadence,
-        billingDayOfMonth: billingDay === '' ? undefined : dayNumber,
-        amount: amount === '' ? undefined : Math.round(amountNumber * 100) / 100,
-      },
-      { onSuccess: onDone },
-    );
+    // The day and the amount of the plan go again with every save: the server works out the ones that are missing from the lease, so
+    // a custom amount that was left out would come back as the default.
+    const input: ConfigureRentScheduleInput = {
+      cadence,
+      billingDayOfMonth: billingDay === '' ? undefined : dayNumber,
+      amount: amount === '' ? undefined : Math.round(amountNumber * 100) / 100,
+    };
+    if (canChooseTrackFrom && trackFrom !== trackedMonth) input.trackFrom = trackFrom === '' ? leaseStart : `${trackFrom}-01`;
+    if (onlineRequests !== onlineBefore) input.onlineRequests = onlineRequests;
+    configure.mutate(input, { onSuccess: onDone });
   }
 
   return (
@@ -235,6 +300,34 @@ function RentScheduleForm({ leaseId, ledger, onDone, onCancel }: RentScheduleFor
             {t('rent.amountInvalid')}
           </p>
         )}
+      </div>
+      {canChooseTrackFrom && (
+        <Field label={t('rent.trackFrom.label')} hint={t('rent.trackFrom.hint')} className="sm:col-span-3">
+          <Select value={trackFrom} onChange={(e) => setTrackFrom(e.target.value)} data-testid="rent-track-from">
+            <option value="">{t('rent.trackFrom.fromStart')}</option>
+            {trackMonths.map((month) => (
+              <option key={month} value={month}>
+                {monthName(month, i18n.language)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      )}
+      <div className="space-y-1 sm:col-span-3" data-testid="rent-online-requests">
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor={`rent-online-${leaseId}`} className="leading-snug">
+            {t('rent.onlineRequests.label')}
+          </Label>
+          <Switch
+            id={`rent-online-${leaseId}`}
+            checked={onlineRequests}
+            onCheckedChange={setOnlineRequests}
+            disabled={!ledger.onlinePaymentsAvailable && !onlineRequests}
+          />
+        </div>
+        <p className="text-sm text-foreground/70">
+          {ledger.onlinePaymentsAvailable || onlineRequests ? t('rent.onlineRequests.hint') : t('rent.onlineRequests.needsStripe')}
+        </p>
       </div>
       <div className="flex gap-2 sm:col-span-3">
         <Button onClick={submit} disabled={!canSubmit}>
