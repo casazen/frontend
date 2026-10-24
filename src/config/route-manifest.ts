@@ -516,6 +516,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/leases'],
   },
   {
+    // Canoni (LR-04b): the rent register of the month, next to the leases it comes from. Reading it asks what the leases ask.
+    path: '/app/long-rent/rents',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.rents',
+    navGroup: 'everyday',
+    navPlacement: 'primary',
+    navOrder: 2,
+    navBottom: 2,
+    icon: 'Wallet',
+    component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
+  },
+  {
     path: '/app/long-rent/leases/new',
     context: 'long-rent',
     requiredPermissions: ['lease.create'],
@@ -551,8 +564,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.properties',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 2,
-    navBottom: 2,
+    navOrder: 3,
+    navBottom: 3,
     icon: 'Home',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,

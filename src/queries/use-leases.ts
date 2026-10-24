@@ -12,7 +12,7 @@ import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { isRliRegistrationInProgress } from '@/lib/rli-registration-state';
 
-const LEASES_KEY = 'leases';
+export const LEASES_KEY = 'leases';
 
 /**
  * The leases of the org, narrowed by the server (`view`, `q`, `propertyId`). `keepPrevious`: while another view or search

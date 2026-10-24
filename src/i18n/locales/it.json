@@ -557,6 +557,7 @@
     "accountSettings": "Impostazioni",
     "ota": "OTA",
     "leases": "Contratti",
+    "rents": "Canoni",
     "supplierClients": "Clienti",
     "supplierEarnings": "Incassi",
     "supplierSettings": "Impostazioni",
@@ -8054,6 +8055,7 @@
       "payments": "pagamenti|incassi|entrate|soldi|transazioni|stripe",
       "profile": "account|dati personali|password|utente|il mio profilo",
       "properties": "case|appartamenti|strutture|alloggi|proprietà|ville",
+      "rents": "canoni|affitto|ritardi|solleciti|morosità|mese",
       "revenue": "ricavi|fatturato|guadagni|report|statistiche|andamento",
       "seo": "contenuti|articoli|guide|motori di ricerca|pubblicazioni",
       "siteAppearance": "colori|logo|tema|grafica|aspetto|stile",
@@ -9360,10 +9362,17 @@
       "rentInstallmentNotPayable": "La rata è già pagata o non può più essere pagata.",
       "rentInstallmentInFlight": "Un pagamento online della rata è in corso: attendi l'esito da Stripe.",
       "rentOnlinePaymentsUnavailable": "Per chiedere il pagamento online collega un account Stripe abilitato agli incassi.",
-      "rentNoTenantEmail": "Nessun conduttore ha un indirizzo email a cui inviare la richiesta di pagamento.",
+      "rentNoTenantEmail": "Nessun conduttore di questo contratto ha un indirizzo email a cui scrivere.",
       "rentPaymentRequestNotSent": "La richiesta di pagamento non è stata inviata: il servizio email non è disponibile.",
       "rentPaidOnInvalid": "Indica una data di pagamento valida, non futura.",
       "rentPaymentLinkInvalid": "Il link di pagamento non è valido o è stato sostituito da uno più recente.",
+      "rentReminderTooSoon": "Hai già inviato un sollecito per questo canone da poco: potrai mandarne un altro più tardi.",
+      "rentReminderNotSent": "Il sollecito non è stato inviato: il servizio email non è disponibile. Riprova più tardi.",
+      "rentReminderNoteInvalid": "Il messaggio per il conduttore può avere al massimo 300 caratteri.",
+      "rentInstallmentNotFound": "Questo canone non esiste più: ricarica la pagina.",
+      "rentRegisterMonthInvalid": "Il mese scelto non è valido.",
+      "rentRegisterStatusUnknown": "Il filtro scelto non è valido.",
+      "rentTrackFromInvalid": "Il giorno da cui tracciare i canoni non può essere dopo la fine del contratto.",
       "hostInviteQuotaExceeded": "Hai raggiunto il limite di inviti di oggi. Riprova domani.",
       "hostEmailTaken": "Questa email ha già un account su CasaZen: non serve invitarla.",
       "consentsIncomplete": "Per entrare devi accettare tutti i documenti obbligatori.",
@@ -10869,6 +10878,19 @@
       "notePlaceholder": "Es. bonifico del 3 ottobre",
       "submit": "Registra il pagamento"
     },
+    "onlineRequests": {
+      "hint": "Acceso: qualche giorno prima di ogni scadenza i conduttori ricevono un'email con il link per pagare online. Spento: non scriviamo a nessuno, a meno che tu non invii un sollecito o il link.",
+      "label": "Chiedi il pagamento online ai conduttori",
+      "needsStripe": "Per accenderlo collega prima un account Stripe abilitato agli incassi.",
+      "summaryOff": "Richieste di pagamento online spente: non scriviamo ai conduttori se non invii tu un sollecito o il link.",
+      "summaryOn": "Richieste di pagamento online accese: i conduttori ricevono il link qualche giorno prima di ogni scadenza."
+    },
+    "trackFrom": {
+      "fromStart": "Dall'inizio del contratto",
+      "hint": "Per un contratto già iniziato non conto le rate dei periodi passati: nessun ritardo inventato. Scegli «Dall'inizio del contratto» solo se vuoi registrare anche quelle.",
+      "label": "Traccia da",
+      "summary": "Canoni tracciati da {{month}}: i periodi precedenti non hanno rata."
+    },
     "scheduleSaved": "Scadenziario del canone salvato",
     "scheduleDisabled": "Scadenziario disattivato",
     "markedPaid": "Pagamento registrato",
@@ -10930,6 +10952,136 @@
         "hint": "Ti guidiamo fino a firma e registrazione, con cedolare secca e scadenze.",
         "cta": "Crea contratto"
       }
+    }
+  },
+  "longRentRents": {
+    "actions": {
+      "openLease": "Vedi contratto",
+      "record": "Registra incasso",
+      "recordNew": "Registra un incasso",
+      "remind": "Invia sollecito",
+      "reminding": "Sollecito in partenza…"
+    },
+    "alreadyHeld": "Questa operazione è già in corso.",
+    "cancel": "Annulla",
+    "chips": {
+      "all": "Tutti",
+      "overdue": "In ritardo",
+      "overdueHint": "Canoni scaduti e non pagati",
+      "paid": "Pagati",
+      "paidHint": "Canoni incassati",
+      "pending": "In scadenza",
+      "pendingHint": "Da incassare, non ancora scaduti"
+    },
+    "columns": {
+      "amount": "Importo",
+      "due": "Scadenza",
+      "reminder": "Ultimo sollecito",
+      "status": "Stato",
+      "tenant": "Inquilino"
+    },
+    "count_one": "{{count}} canone",
+    "count_other": "{{count}} canoni",
+    "description": "Chi ha pagato, chi deve ancora pagare e chi è in ritardo, mese per mese.",
+    "empty": {
+      "description": "Cambia mese con le frecce: ogni canone compare nel mese della sua scadenza.",
+      "noContractsAction": "Crea contratto",
+      "noContractsDescription": "Appena crei un contratto e ne imposti il canone, vedi qui chi ha pagato, chi deve pagare e chi è in ritardo.",
+      "noContractsTitle": "Qui segui i canoni di ogni mese",
+      "title": "Nessun canone in questo mese"
+    },
+    "loadError": "Impossibile caricare i canoni.",
+    "month": {
+      "group": "Scegli il mese",
+      "label": "Mese",
+      "next": "Mese successivo",
+      "previous": "Mese precedente"
+    },
+    "noResults": {
+      "description": "Prova a togliere il filtro per vedere tutti i canoni del mese.",
+      "title": "Nessun canone con questo stato"
+    },
+    "pay": {
+      "date": "Data dell'incasso",
+      "dateInvalid": "Indica una data non successiva a oggi ({{today}}).",
+      "description": "Canone di {{amount}} di {{tenant}}, periodo dal {{from}} al {{to}}, pagato fuori da CasaZen. Registri la rata intera.",
+      "descriptionGeneral": "Scegli il contratto e il canone che hai ricevuto fuori da CasaZen (bonifico, assegno, contanti).",
+      "done": "Incasso registrato: {{amount}} di {{tenant}}",
+      "held": "Registro l'incasso di {{amount}} di {{tenant}}",
+      "heldHint": "Annulla se hai sbagliato: tra pochi secondi è registrato.",
+      "installment": "Canone",
+      "installmentOption": "Scadenza {{due}} · {{amount}}",
+      "lease": "Contratto",
+      "leasePlaceholder": "Scegli il contratto",
+      "loadError": "Impossibile caricare i contratti e i loro canoni.",
+      "loading": "Carico i contratti…",
+      "method": "Come ti ha pagato",
+      "methodHint": "Resta scritto nella nota dell'incasso.",
+      "methodNone": "Non lo indico",
+      "methods": {
+        "bank": "Bonifico",
+        "cash": "Contanti",
+        "cheque": "Assegno"
+      },
+      "noOpenInstallment": "Questo contratto non ha canoni da incassare.",
+      "noneToCollect": "Nessun contratto ha un canone da incassare.",
+      "overdue": "in ritardo",
+      "submit": "Registra l'incasso",
+      "title": "Registra un incasso",
+      "wholeInstallment": "Importo: {{amount}}, la rata intera."
+    },
+    "reminder": {
+      "description": "{{tenant}} · {{property}}: canone di {{amount}}, scadenza {{date}}.",
+      "held": "Sollecito per {{tenant}} in partenza",
+      "heldHint": "Annulla se hai cambiato idea: l'email parte tra pochi secondi.",
+      "interval_one": "Puoi inviare un sollecito per lo stesso canone ogni {{count}} ora.",
+      "interval_other": "Puoi inviare un sollecito per lo stesso canone ogni {{count}} ore.",
+      "noteHint": "Compare nell'email come tuo messaggio.",
+      "noteLabel": "Messaggio per il conduttore",
+      "notePlaceholder": "Es. Ti chiedo il bonifico entro venerdì",
+      "previewBodyDue": "Ti ricordiamo che il canone di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, è da pagare entro il {{date}} e non risulta ancora pagato.",
+      "previewBodyOverdue": "Ti ricordiamo che il canone di {{amount}} per l'immobile {{property}}, periodo dal {{from}} al {{to}}, era in scadenza il {{date}} e non risulta ancora pagato.",
+      "previewLabel": "Anteprima dell'email",
+      "previewSubject": "Oggetto: Promemoria canone di locazione - {{property}}, scadenza {{date}}",
+      "previewWithLink": "L'email contiene il link per pagare online.",
+      "previewWithoutLink": "L'email non contiene un link: il conduttore paga con il metodo concordato con te.",
+      "sent_one": "Sollecito inviato a {{count}} conduttore",
+      "sent_other": "Sollecito inviato a {{count}} conduttori",
+      "submit": "Invia sollecito",
+      "title": "Invia un sollecito",
+      "whoGetsIt": "L'email arriva ai conduttori del contratto che hanno un indirizzo email; dopo l'invio ti diciamo a quanti."
+    },
+    "retry": "Riprova",
+    "row": {
+      "dueIn_one": "Scade tra {{count}} giorno",
+      "dueIn_other": "Scade tra {{count}} giorni",
+      "dueToday": "Scade oggi",
+      "failed": "Ultimo pagamento online non riuscito",
+      "lastReminder_one": "{{when}} · {{count}} volta",
+      "lastReminder_other": "{{when}} · {{count}} volte",
+      "on": "il {{date}}",
+      "overdue_one": "In ritardo da {{count}} giorno",
+      "overdue_other": "In ritardo da {{count}} giorni",
+      "overdueToday": "Scaduto",
+      "paidOn": "Pagato il {{date}}",
+      "period": "Periodo {{from}} – {{to}}",
+      "processing": "Pagamento online in corso",
+      "today": "oggi",
+      "yesterday": "ieri"
+    },
+    "stats": {
+      "collected": "Incassati a {{month}}",
+      "collectedDelta_one": "su {{expected}} attesi · {{paid}} di {{count}} canone",
+      "collectedDelta_other": "su {{expected}} attesi · {{paid}} di {{count}} canoni",
+      "label": "I numeri del mese",
+      "noOverdue": "Nessun ritardo",
+      "nothingPending": "Niente ancora da incassare",
+      "overdue": "In ritardo",
+      "overdueDelta_one": "{{count}} canone",
+      "overdueDelta_other": "{{count}} canoni",
+      "pending": "Ancora da incassare",
+      "pendingDelta_one": "{{count}} canone non ancora scaduto",
+      "pendingDelta_other": "{{count}} canoni non ancora scaduti"
     }
   },
   "hostInvites": {
