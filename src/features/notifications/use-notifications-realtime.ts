@@ -10,14 +10,12 @@ import {
   type RealtimeState,
 } from './realtime-client';
 
-/** Whether a notification type is about a service request (its `entityId` is not a booking). */
-export function isServiceRequestType(type: string | null): boolean {
-  return type !== null && type.startsWith('service-request');
-}
+/** Only a guest message changes a thread: every other `entityId` (booking, service request, property) is not read as a thread. */
+const THREAD_TYPE = 'guest-message';
 
 /**
  * What a change makes stale. The count is written as the server sent it (no extra request); the list, the threads of the Home and
- * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
+ * the per-booking counters are read again; the thread of the booking is read again too, for a guest message only (the entity of other types may be a service request or a property) (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread.
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
@@ -25,9 +23,9 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY], predicate: (query) => query.queryKey[1] !== UNREAD_COUNT_KEY[1] });
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
-  if (change.entityId && !isServiceRequestType(change.type)) {
+  if (change.entityId && change.type === THREAD_TYPE) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY, change.entityId] });
-  } else if (!change.entityId) {
+  } else if (!change.entityId || change.type === null) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   }
 }

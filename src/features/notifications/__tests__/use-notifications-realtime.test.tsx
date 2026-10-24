@@ -131,6 +131,18 @@ describe('applyNotificationsChange', () => {
     expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
   });
 
+  it.each(['property-compliance-suspended', 'new-booking', 'service-payment-failed'])(
+    'applyNotificationsChange_%s_NeverTreatsTheEntityAsAThread',
+    (type) => {
+      const { queryClient } = setup();
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'e-1' });
+      const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+      expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'e-1']);
+      expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
+    },
+  );
+
   it('applyNotificationsChange_NoEntity_RefreshesEveryOpenThread', () => {
     const { queryClient } = setup();
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');

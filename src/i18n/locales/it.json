@@ -11229,6 +11229,21 @@
       "serviceRequestProposalAccepted": "L'orario proposto è stato accettato.",
       "serviceRequestProposalRejected": "L'orario proposto è stato rifiutato.",
       "serviceRequestRescheduled": "Una richiesta è stata spostata a un altro orario.",
+      "bookingRequest": "Un ospite chiede di prenotare e aspetta la tua risposta.",
+      "bookingCancelledByGuest": "Un ospite ha cancellato la prenotazione.",
+      "deferredChargeFailed": "L'addebito del saldo a un ospite non è riuscito.",
+      "deferredChargeCancelled": "L'addebito del saldo a un ospite è stato annullato.",
+      "propertyModeChangeScheduled": "Il cambio di modalità di un immobile è programmato.",
+      "propertyModeChangeApplied": "Il cambio di modalità di un immobile è stato applicato.",
+      "propertyModeChangeFailed": "Il cambio di modalità di un immobile non è riuscito.",
+      "propertyComplianceSuspended": "Un immobile è stato sospeso per mancanza di requisiti.",
+      "cinDeadline": "Si avvicina la scadenza per il CIN di un immobile.",
+      "rentPaymentReceived": "Hai ricevuto il pagamento di un affitto.",
+      "servicePaymentRequested": "Un fornitore ti chiede il pagamento di un lavoro.",
+      "servicePaymentFailed": "Il pagamento di un lavoro non è riuscito.",
+      "servicePaymentReceived": "Hai ricevuto il pagamento di un lavoro.",
+      "servicePaymentRefunded": "Il pagamento di un lavoro è stato rimborsato.",
+      "servicePaymentOfflineRecorded": "Il pagamento di un lavoro è stato registrato fuori da CasaZen.",
       "generic": "Hai una nuova notifica."
     }
   }

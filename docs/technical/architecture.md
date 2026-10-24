@@ -43,7 +43,19 @@ La campanella dell'header (`src/features/notifications/`, slot `notifications` d
 - **Connessione:** una per scheda (client condiviso, aperto dal primo utilizzo e chiuso dall'ultimo), solo con utente Auth0 autenticato; mai in demo, nelle pagine pubbliche o per un ospite. WebSocket con i fallback della negoziazione; riconnessione con backoff 0, 2, 5, 10, 30 s (poi ogni 30 s). La libreria si carica solo quando serve (import dinamico).
 - **Evento:** `notificationsChanged { unreadCount, type, entityId }` scrive il contatore nella cache e rilegge `['notifications']`, `['host-threads']`, `['booking-messages-unread']` e, se l'entità è una prenotazione, `['booking-thread', id]`. Dopo una riconnessione si rilegge tutto (gli eventi persi non tornano).
 - **Rete di sicurezza:** il contatore si rilegge al focus della finestra e al ritorno della rete; con il socket interrotto, poll ogni 60 s.
-- **Tipi:** `notification-model.ts` collega ogni tipo (`PushTypes` del backend) a icona, frase (`notifications.types.*`, it/en) e destinazione. Un tipo sconosciuto ha la frase generica e non apre nulla. `guest-message` apre `/app/short-rent/bookings/{id}?tab=messages`; i `service-request-*` aprono la posta del fornitore (`/app/supplier/inbox/{id}`) o il marketplace dell'host.
+- **Tipi:** `notification-model.ts` collega ogni tipo (`PushTypes` del backend) a icona, frase (`notifications.types.*`, it/en) e destinazione; un tipo sconosciuto ha la frase generica e non apre nulla. L'`entityId` dipende dal tipo e non è mai una prenotazione per default: solo `guest-message` rilegge un thread.
+
+  | Tipi | `entityId` | Destinazione |
+  |---|---|---|
+  | `new-booking`, `booking-request`, `booking-cancelled-by-guest`, `checkout-reminder`, `ota-stay-review` | prenotazione | `/app/short-rent/bookings/{id}` (la lista non ha una vista «richieste») |
+  | `guest-message` | prenotazione | `…/bookings/{id}?tab=messages` |
+  | `guest-data-missing` | prenotazione | `…?tab=guest` |
+  | `alloggiati-*` | prenotazione | `…?tab=alloggiati` |
+  | `deferred-charge-failed`, `deferred-charge-cancelled` | prenotazione | `…?tab=payment` |
+  | `service-request-*`, `service-payment-*` | richiesta di servizio | fornitore: `/app/supplier/inbox/{id}`; host: `/app/short-rent/marketplace` («Le tue richieste») |
+  | `property-mode-change-*` | immobile | `/app/{short-rent\|long-rent}/properties/{id}` (la sezione corrente) |
+  | `property-compliance-suspended`, `cin-deadline` | immobile | `/app/short-rent/properties/{id}/activation` |
+  | `rent-payment-received` | immobile | `/app/long-rent/properties/{id}` |
 - **Badge per elemento:** `GET /api/messages/unread` (una sola query per pagina) alimenta il contatore dei messaggi non letti sulle prenotazioni del calendario e della Timeline (`UnreadMessagesContext`), sulle righe «Rispondi» della Home e sul titolo dei messaggi nel cassetto. Un thread si segna come letto solo con la scheda visibile.
 
 ## Convenzioni

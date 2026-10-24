@@ -11229,6 +11229,21 @@
       "serviceRequestProposalAccepted": "The proposed time was accepted.",
       "serviceRequestProposalRejected": "The proposed time was declined.",
       "serviceRequestRescheduled": "A request was moved to another time.",
+      "bookingRequest": "A guest asks to book and is waiting for your answer.",
+      "bookingCancelledByGuest": "A guest cancelled their booking.",
+      "deferredChargeFailed": "The balance charge to a guest failed.",
+      "deferredChargeCancelled": "The balance charge to a guest was cancelled.",
+      "propertyModeChangeScheduled": "A property's mode change is scheduled.",
+      "propertyModeChangeApplied": "A property's mode change was applied.",
+      "propertyModeChangeFailed": "A property's mode change failed.",
+      "propertyComplianceSuspended": "A property was suspended for missing requirements.",
+      "cinDeadline": "The CIN deadline of a property is approaching.",
+      "rentPaymentReceived": "You received a rent payment.",
+      "servicePaymentRequested": "A supplier asks you to pay for a job.",
+      "servicePaymentFailed": "The payment for a job failed.",
+      "servicePaymentReceived": "You received the payment for a job.",
+      "servicePaymentRefunded": "The payment for a job was refunded.",
+      "servicePaymentOfflineRecorded": "The payment for a job was recorded outside CasaZen.",
       "generic": "You have a new notification."
     }
   }

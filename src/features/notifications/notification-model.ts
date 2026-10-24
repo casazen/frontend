@@ -1,4 +1,23 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LogOut, MessageSquare, ShieldAlert, Wrench, type LucideIcon } from 'lucide-react';
+import {
+  AlertTriangle,
+  BedDouble,
+  Bell,
+  CalendarClock,
+  CalendarX2,
+  ClipboardCheck,
+  CreditCard,
+  FileCheck2,
+  Inbox,
+  Landmark,
+  LogOut,
+  MessageSquare,
+  RefreshCw,
+  ShieldAlert,
+  Undo2,
+  Wallet,
+  Wrench,
+  type LucideIcon,
+} from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
 
@@ -18,7 +37,14 @@ const bookingTab = (tab: string) => (id: string) => `${bookingRoute(id)}?tab=${t
 const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
   context === 'supplier' ? `/app/supplier/inbox/${encodeURIComponent(id)}` : '/app/short-rent/marketplace';
 
-const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
+/** A property (the entity of these types is the property, never a booking): the page of the section it is in. */
+const propertyRoute = (id: string, context: AppContextKey | null) =>
+  `/app/${context === 'long-rent' ? 'long-rent' : 'short-rent'}/properties/${encodeURIComponent(id)}`;
+/** Activation and CIN exist for short-term properties only. */
+const activationRoute = (id: string) => `/app/short-rent/properties/${encodeURIComponent(id)}/activation`;
+const leaseSideRoute = (id: string) => `/app/long-rent/properties/${encodeURIComponent(id)}`;
+
+const serviceRequest = (textKey: string, icon: LucideIcon = Wrench): NotificationKind => ({ icon, textKey, route: serviceRequestRoute });
 
 /**
  * The push types of the backend (`PushTypes`) the bell knows. A type that is not here is shown with a generic sentence and
@@ -33,6 +59,22 @@ const KINDS: Record<string, NotificationKind> = {
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },
   'checkout-reminder': { icon: LogOut, textKey: 'notifications.types.checkoutReminder', route: bookingRoute },
   'ota-stay-review': { icon: AlertTriangle, textKey: 'notifications.types.otaStayReview', route: bookingRoute },
+  // The pay-at-the-property requests are answered from the booking (the list has no view of its own for them).
+  'booking-request': { icon: Inbox, textKey: 'notifications.types.bookingRequest', route: bookingRoute },
+  'booking-cancelled-by-guest': { icon: CalendarX2, textKey: 'notifications.types.bookingCancelledByGuest', route: bookingRoute },
+  'deferred-charge-failed': { icon: CreditCard, textKey: 'notifications.types.deferredChargeFailed', route: bookingTab('payment') },
+  'deferred-charge-cancelled': { icon: CreditCard, textKey: 'notifications.types.deferredChargeCancelled', route: bookingTab('payment') },
+  'property-mode-change-scheduled': { icon: RefreshCw, textKey: 'notifications.types.propertyModeChangeScheduled', route: propertyRoute },
+  'property-mode-change-applied': { icon: RefreshCw, textKey: 'notifications.types.propertyModeChangeApplied', route: propertyRoute },
+  'property-mode-change-failed': { icon: AlertTriangle, textKey: 'notifications.types.propertyModeChangeFailed', route: propertyRoute },
+  'property-compliance-suspended': { icon: ShieldAlert, textKey: 'notifications.types.propertyComplianceSuspended', route: activationRoute },
+  'cin-deadline': { icon: FileCheck2, textKey: 'notifications.types.cinDeadline', route: activationRoute },
+  'rent-payment-received': { icon: Landmark, textKey: 'notifications.types.rentPaymentReceived', route: leaseSideRoute },
+  'service-payment-requested': serviceRequest('notifications.types.servicePaymentRequested', Wallet),
+  'service-payment-failed': serviceRequest('notifications.types.servicePaymentFailed', Wallet),
+  'service-payment-received': serviceRequest('notifications.types.servicePaymentReceived', Wallet),
+  'service-payment-refunded': serviceRequest('notifications.types.servicePaymentRefunded', Undo2),
+  'service-payment-offline-recorded': serviceRequest('notifications.types.servicePaymentOfflineRecorded', Wallet),
   'service-request-created': serviceRequest('notifications.types.serviceRequestCreated'),
   'service-request-auto-accepted': serviceRequest('notifications.types.serviceRequestAutoAccepted'),
   'service-request-taken': serviceRequest('notifications.types.serviceRequestTaken'),
