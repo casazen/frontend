@@ -280,6 +280,8 @@ export interface LeaseDetail {
   hasExtraEUTenant: boolean;
   /** How the lease came to be (LR-12): made in CasaZen or already signed elsewhere. Absent in an older answer. */
   origin?: LeaseOrigin;
+  /** True when the contract was prepared with ConcordatoFacile partner. */
+  isConcordatoFacileSource?: boolean;
   parties: LeaseParty[];
   registration?: LeaseRegistration | null;
   events: LeaseEvent[];
@@ -301,6 +303,13 @@ export interface LeaseDetail {
   renewalMonths?: number;
   /** LR-14: `notice_possibly_late` when the notice came after the last day to give it (CasaZen records it, it does not judge it). */
   noticeWarning?: string | null;
+}
+
+/** Response from POST /api/leases/drafts/concordatofacile: minimal CF draft created. */
+export interface CfDraftResponse {
+  id: string;
+  propertyId: string;
+  status: LeaseStatus;
 }
 
 /**

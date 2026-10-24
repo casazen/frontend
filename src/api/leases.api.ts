@@ -4,6 +4,7 @@ import { ApiClient } from './client';
 import type {
   CedolareAdvisory,
   CedolareAdvisoryInput,
+  CfDraftResponse,
   LandlordDefaults,
   LeaseDetail,
   LeaseDraft,
@@ -80,6 +81,18 @@ export const leasesApi = {
       throw new UnexpectedApiResponseError('/leases/drafts');
     }
     return { id: data.id, version: data.version, flow: flowOf(data) };
+  },
+
+  /**
+   * E01/F02/US01: minimal ConcordatoFacile draft with property only.
+   * POST to /api/leases/drafts/concordatofacile with { propertyId }.
+   */
+  createCfDraft: async (propertyId: string): Promise<CfDraftResponse> => {
+    const data = await ApiClient.post<unknown>('/leases/drafts/concordatofacile', { propertyId });
+    if (!isRecord(data) || typeof data.id !== 'string' || typeof data.propertyId !== 'string' || typeof data.status !== 'string') {
+      throw new UnexpectedApiResponseError('/leases/drafts/concordatofacile');
+    }
+    return { id: data.id, propertyId: data.propertyId, status: data.status as LeaseStatus };
   },
 
   /** LR-12: every value of the draft, not masked, with its version and the flow (what each step still needs). */
