@@ -29,6 +29,7 @@ import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
 import { describeLeaseStep, leaseStepTab } from './lib/lease-next-step';
 import { defaultLeaseTab, isPartnerDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
+import { useLeaseActions } from './lifecycle/use-lease-actions';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
@@ -73,6 +74,8 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
  * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, then what the page always had in
  * four tabs (Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The panels of the
  * signature, the registration, the Questura communication, the tax advisory and the rent are the ones that existed, moved here.
+ * What can be done to the lease while it lives (delete the draft, record a notice, end it early…) is in the menu «⋯» of the header
+ * and opens from the address too (`?azione=`, LR-10).
  */
 function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNextStep | null }) {
   const { t, i18n } = useTranslation();
@@ -104,13 +107,17 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
     { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
   ];
 
+  const title = leaseTitle(lease, i18n.language, t);
+  const actions = useLeaseActions(lease, { tenant: title, property: lease.property?.name ?? t('leaseList.property.unknown') });
+
   return (
     <div className="min-w-0 space-y-6" data-testid="lease-sheet">
       <PageHeader
         crumbs="auto"
-        title={leaseTitle(lease, i18n.language, t)}
+        title={title}
         description={leasePurpose(lease, t)}
         action={<StatusToggle status={lease.status} open={explainOpen} controls={explainId} onToggle={() => setExplainOpen((open) => !open)} />}
+        secondary={actions.menu}
       />
 
       {explainOpen ? (
@@ -132,7 +139,7 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
       <div className="@container min-w-0">
         <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
           <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={opensOn}>
-            {tab === 'dati' && <LeaseDataTab lease={lease} />}
+            {tab === 'dati' && <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />}
             {tab === 'documenti' && <div className="space-y-6"><LeaseDocumentsPanel leaseId={lease.id} />{partnerDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
             {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
             {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showExtraEuBanner} />}
@@ -140,6 +147,8 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
           <LeaseHistory leaseId={lease.id} events={lease.events ?? []} />
         </div>
       </div>
+
+      {actions.dialogs}
     </div>
   );
 }
