@@ -73,9 +73,6 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
  * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, then what the page always had in
  * four tabs (Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The panels of the
  * signature, the registration, the Questura communication, the tax advisory and the rent are the ones that existed, moved here.
- * Under the header, «Cosa devi fare ora» (LR-03b): the step the server says the lease waits for (`nextStep`, read from its row in the
- * list of leases), as the one colored block of the page and with the one button that does it. It takes the place of the other
- * invitations that said the same thing (the draft that offers to go on, the banner of the Questura communication).
  */
 function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNextStep | null }) {
   const { t, i18n } = useTranslation();
@@ -94,8 +91,9 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
 
   const parties = lease.parties ?? [];
   const showExtraEuBanner = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
-  // No step, no block: a lease the list has no step for is the sheet it was. A step that is there says what the draft notice and the
-  // Questura banner say, so they give way to it (one voice, not two).
+  // «Cosa devi fare ora» (LR-03b): the step the server says the lease waits for (`nextStep`, read from its row in the list of leases) is
+  // the one colored block of the page, under the header. No step, no block: a lease the list has no step for is the sheet it was. A step
+  // that is there says what the draft notice and the Questura banner say, so they give way to it (one voice, not two).
   const now = step ? describeLeaseStep(lease.id, step, { t, language: i18n.language, today: todayInRome() }) : null;
   const questuraSaid = step?.code === 'QuesturaCommunication' || step?.code === 'RecordKeyHandover';
 
