@@ -178,10 +178,12 @@ export function LeaseDetailPage() {
     );
   }
 
-  // The tab the sheet opens on can come from the step, so the sheet waits for the first answer of the list (or its failure: then it is
-  // the sheet it always was, with no error on the screen). A list already in the cache answers at once, and this is the only wait:
-  // a later reading of the list (after an action) never takes the sheet away.
-  if (!nextStep.isFetched) {
+  // The tab the sheet opens on can come from the step, so the sheet waits for the list to answer (or to fail: then it is the sheet it
+  // always was, with no error on the screen). A list that is fresh in the cache answers at once; one that is old, or that an action
+  // marked as old (a contract just made or signed in the wizard), would give the step of before, so its new answer is waited for. It is
+  // the only wait: once the list has answered, a later reading of it (after an action) never takes the sheet away.
+  const stepKnown = nextStep.isFetchedAfterMount || (nextStep.isFetched && !nextStep.isStale);
+  if (!stepKnown) {
     return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
   }
 
