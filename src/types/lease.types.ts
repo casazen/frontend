@@ -1,3 +1,5 @@
+import type { LeaseOrigin } from './lease-draft.types';
+
 /** Every value of the backend enum `Casazen.Core.Entities.Enums.LeaseStatus`, in order. */
 export const LEASE_STATUSES = [
   'Draft',
@@ -213,6 +215,8 @@ export interface LeaseDetail {
   registrationDeadline: string | null;
   hasSignedPdf: boolean;
   hasExtraEUTenant: boolean;
+  /** How the lease came to be (LR-12): made in CasaZen or already signed elsewhere. Absent in an older answer. */
+  origin?: LeaseOrigin;
   parties: LeaseParty[];
   registration?: LeaseRegistration | null;
   events: LeaseEvent[];

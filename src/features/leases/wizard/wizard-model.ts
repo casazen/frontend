@@ -225,21 +225,43 @@ export function stepOfField(name: string | undefined): DataStep | null {
 
 // ---- the flow --------------------------------------------------------------------------------------------------------------
 
-/**
- * The steps this wizard has a screen for, by the server's numbers: property, parties, conditions, dates and the review (6). The model
- * (5), the signature or the import (7) and what comes after the signature (8) come with LR-06b.
- */
-export const REGISTERED_STEPS: readonly number[] = [1, 2, 3, 4, 6];
-
 /** The review: the checks of the server and the confirmation. A contract already signed has none. */
 export const REVIEW_STEP = 6;
+
+/** The signature: the import of the signed contract («Contratto firmato») for a contract that was signed elsewhere. */
+export const SIGN_STEP = 7;
+
+/** What comes after the signature. A signed lease is not a draft any more, so this step is read from the lease and not from the draft. */
+export const AFTER_STEP = 8;
+
+/** The address (`?step=done`) of the final screen, «Cosa succede ora». */
+export const DONE_STEP = 'done';
+
+/**
+ * The steps the wizard of a draft has a screen for, by the server's numbers: property, parties, conditions and dates; then the review
+ * (6) for a contract made in CasaZen, or the import of the signed contract (7) and what comes after it (8) for one already signed. The
+ * model (5) has no screen: nothing in it is required.
+ */
+export function registeredSteps(origin: LeaseOrigin): readonly number[] {
+  return origin === 'Imported' ? [1, 2, 3, 4, SIGN_STEP, AFTER_STEP] : [1, 2, 3, 4, REVIEW_STEP];
+}
+
+/** The steps a lease that is signed went through, for the list of steps beside «Dopo la firma». */
+export function signedSteps(origin: LeaseOrigin): readonly number[] {
+  return origin === 'Imported' ? [1, 2, 3, 4, SIGN_STEP, AFTER_STEP] : [1, 2, 3, 4, REVIEW_STEP, SIGN_STEP, AFTER_STEP];
+}
+
+/** Where the words of a step are in the translations (`leaseWizard.steps.<key>`): the signature reads differently for a contract already signed. */
+export function stepKey(step: number, origin: LeaseOrigin): string {
+  return step === SIGN_STEP ? `${step}.${origin}` : String(step);
+}
 
 export function isDataStep(step: number): step is DataStep {
   return step >= 1 && step <= 4;
 }
 
-/** Where a draft is edited, at a step or at the one it opens on. */
-export function leaseEditPath(leaseId: string, step?: number): string {
+/** Where a draft is edited, at a step or at the one it opens on (`DONE_STEP` names the final screen). */
+export function leaseEditPath(leaseId: string, step?: number | typeof DONE_STEP): string {
   return `/app/long-rent/leases/${leaseId}/edit${step ? `?step=${step}` : ''}`;
 }
 
