@@ -62,13 +62,13 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
       <DialogContent data-testid="rent-reminder-dialog">
         <DialogHeader>
           <DialogTitle>{t('longRentRents.reminder.title')}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="break-words">
             {t('longRentRents.reminder.description', { tenant, property: row.propertyName, amount, date: dueDate })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <section aria-label={t('longRentRents.reminder.previewLabel')} className="space-y-2 rounded-md bg-muted p-3 text-sm" data-testid="rent-reminder-preview">
+          <section aria-label={t('longRentRents.reminder.previewLabel')} className="space-y-2 break-words rounded-md bg-muted p-3 text-sm" data-testid="rent-reminder-preview">
             <p className="font-medium">
               {t('longRentRents.reminder.previewSubject', { property: row.propertyName, date: dueDate })}
             </p>

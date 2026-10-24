@@ -139,7 +139,7 @@ export function RecordRentPaymentDialog({ row, onClose }: RecordRentPaymentDialo
       <DialogContent data-testid="record-rent-payment-dialog">
         <DialogHeader>
           <DialogTitle>{t('longRentRents.pay.title')}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="break-words">
             {target
               ? t('longRentRents.pay.description', {
                   amount: formatCurrency(target.amount, target.currency),
