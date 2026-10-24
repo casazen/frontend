@@ -48,6 +48,28 @@ export function useLease(id: string) {
 }
 
 /**
+ * The step a lease is waiting for (LR-03b): the `nextStep` of its row in the list of leases, which is the only place that has it until
+ * the detail carries it too (LR-01b-FU1). It is the plain list the app already reads (`useLeases()` with no parameter: the same
+ * request and the same cache as the guide and the list of leases), narrowed to one lease by `select`, so a lease costs no call of its
+ * own. `null` when the list has no row for it or the row has no step.
+ *
+ * The step moves under the person's hands (a signature uploaded, a registration declared, a rent paid): the list is read again every
+ * time a sheet opens (the client does not read a list again on its own) and by every action that changes a lease, which invalidates
+ * `[LEASES_KEY]`. It does not retry: a sheet without its step is the sheet it always was, and waiting for the retries of a failing
+ * list would hold the whole page back.
+ */
+export function useLeaseNextStep(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, undefined],
+    queryFn: () => leasesApi.getAll(),
+    select: (rows) => rows.find((row) => row.id === id)?.nextStep ?? null,
+    refetchOnMount: 'always',
+    retry: false,
+    enabled: !!id,
+  });
+}
+
+/**
  * The draft of a canone concordato contract, which is prepared with the partner (ConcordatoFacile): a real draft with only its
  * property (`POST /leases/drafts`, no APE, parties, dates or rent), then typed as a concordato. Resolves with its id, the
  * leaseId the partner links its practice to. A retry after a failure goes on with the draft already created (a second click
@@ -228,8 +250,9 @@ export function useDeclareQuesturaDeliveryDate() {
   return useMutation({
     mutationFn: ({ id, deliveryDate }: { id: string; deliveryDate: string | null }) =>
       leasesApi.declareQuesturaDeliveryDate(id, deliveryDate),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+    onSuccess: () => {
+      // The whole family, not only this lease: its row in the list is where the next step is read (`useLeaseNextStep`).
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.questuraDeliveryDateSaved'));
     },
     onError: (error) => {
@@ -245,8 +268,8 @@ export function useMarkQuesturaCommunicationDone() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: QuesturaCommunicationInput }) =>
       leasesApi.markQuesturaCommunicationDone(id, input),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.questuraMarkedDone'));
     },
     onError: (error) => {
