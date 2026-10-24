@@ -91,6 +91,33 @@
       "adminBypass": "Admin access active: you can access the service without payment.",
       "adminAccessButton": "Access practice",
       "adminNoAccess": "As an administrator, you can proceed directly to practice creation."
+    },
+    "status": {
+      "closeReason": "Close reason",
+      "comune": "Municipality",
+      "comuneMismatch": "The municipality associated by the partner differs from the lease property",
+      "errorMessage": "Unable to load practice status",
+      "lastCheck": "Last CasaZen check",
+      "loading": "Loading practice status…",
+      "noPractices": "No practices found for this contract",
+      "practiceId": "Practice ID",
+      "staleExplanation": "The data shown is the last known state. Try again in a few minutes.",
+      "staleWarning": "Unable to contact the ConcordatoFacile service",
+      "statusChangedAt": "Last CF status change",
+      "statusLabels": {
+        "Attested": "Attested",
+        "AwaitingUser": "Awaiting user",
+        "ClosedWithoutAttestation": "Closed without attestation",
+        "DraftSent": "Draft sent",
+        "InProgress": "In progress",
+        "Received": "Received",
+        "Registered": "Registered",
+        "SignedReceived": "Signed received",
+        "SentToAssociation": "Sent to association",
+        "Suspended": "Suspended"
+      },
+      "title": "ConcordatoFacile Practice Status",
+      "unknownStatus": "Unknown status"
     }
   },
   "admin": {

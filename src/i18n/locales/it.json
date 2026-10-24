@@ -91,6 +91,33 @@
       "adminBypass": "Accesso amministratore attivo: puoi accedere al servizio senza pagamento.",
       "adminAccessButton": "Accedi alla pratica",
       "adminNoAccess": "Come amministratore, puoi procedere direttamente alla creazione della pratica."
+    },
+    "status": {
+      "closeReason": "Motivo di chiusura",
+      "comune": "Comune",
+      "comuneMismatch": "Il comune associato dal partner differisce dalla casa del contratto",
+      "errorMessage": "Impossibile caricare lo stato delle pratiche",
+      "lastCheck": "Ultimo controllo CasaZen",
+      "loading": "Caricamento stato pratiche…",
+      "noPractices": "Nessuna pratica trovata per questo contratto",
+      "practiceId": "ID Pratica",
+      "staleExplanation": "I dati mostrati sono l'ultimo stato noto. Riprova tra qualche minuto.",
+      "staleWarning": "Non riusciamo a contattare il servizio ConcordatoFacile",
+      "statusChangedAt": "Ultimo cambio stato CF",
+      "statusLabels": {
+        "Attested": "Attestato",
+        "AwaitingUser": "In attesa dell'utente",
+        "ClosedWithoutAttestation": "Chiuso senza attestazione",
+        "DraftSent": "Bozza inviata",
+        "InProgress": "In lavorazione",
+        "Received": "Ricevuto",
+        "Registered": "Registrato",
+        "SignedReceived": "Firmato ricevuto",
+        "SentToAssociation": "Inviato all'associazione",
+        "Suspended": "Sospeso"
+      },
+      "title": "Stato pratica ConcordatoFacile",
+      "unknownStatus": "Stato sconosciuto"
     }
   },
   "admin": {

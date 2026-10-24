@@ -16,6 +16,7 @@ import { redirectToStripe } from '@/features/billing/billing-utils';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useAuth } from '@/hooks/use-auth';
 import { isAdmin } from '@/lib/auth-roles';
+import { CfStatusSection } from './components/cf-status-section';
 
 /**
  * ConcordatoFacile offer page (NF-02, ADR-005-R11-R14).
@@ -178,39 +179,41 @@ export function ConcordatoFacileOfferPage() {
     );
   }
 
-  // User already has access - show link generation button (ADR-007-R12, ADR-007-R13)
-  // TODO: Check status query for existing practices and handle status query failure (ADR-007-R14) when E02 adds status endpoint
+  // User already has access - show link generation button and status (ADR-007-R12, ADR-007-R13, ADR-008)
   if (access.hasAccess) {
     return (
       <div className="container max-w-3xl py-8">
         <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>{t('concordatofacile.entry.access')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              size="lg"
-              onClick={() => linkMutation.mutate()}
-              disabled={linkMutation.isPending}
-              data-testid="cf-entry-button"
-              className="w-full"
-            >
-              {linkMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {linkMutation.isPending ? t('concordatofacile.entry.generating') : t('concordatofacile.entry.access')}
-            </Button>
-            <Alert data-testid="cf-access-warning">
-              <Info className="size-4" />
-              {t('concordatofacile.entry.warning')}
-            </Alert>
-            {linkMutation.isError && (
-              <Alert variant="danger">
-                <AlertCircle className="size-4" />
-                {t('concordatofacile.entry.error')}
+        <div className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('concordatofacile.entry.access')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button
+                size="lg"
+                onClick={() => linkMutation.mutate()}
+                disabled={linkMutation.isPending}
+                data-testid="cf-entry-button"
+                className="w-full"
+              >
+                {linkMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {linkMutation.isPending ? t('concordatofacile.entry.generating') : t('concordatofacile.entry.access')}
+              </Button>
+              <Alert data-testid="cf-access-warning">
+                <Info className="size-4" />
+                {t('concordatofacile.entry.warning')}
               </Alert>
-            )}
-          </CardContent>
-        </Card>
+              {linkMutation.isError && (
+                <Alert variant="danger">
+                  <AlertCircle className="size-4" />
+                  {t('concordatofacile.entry.error')}
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+          <CfStatusSection leaseId={id} />
+        </div>
       </div>
     );
   }

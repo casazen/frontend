@@ -27,3 +27,47 @@ export interface CfLinkResponse {
   /** HMAC-signed URL to ConcordatoFacile partner portal. Expires in 15 minutes. */
   url: string;
 }
+
+/** CF practice status enum (ADR-008-R21). */
+export type CfPracticeStatus =
+  | 'Received'
+  | 'InProgress'
+  | 'AwaitingUser'
+  | 'DraftSent'
+  | 'SignedReceived'
+  | 'SentToAssociation'
+  | 'Attested'
+  | 'Registered'
+  | 'ClosedWithoutAttestation'
+  | 'Suspended'
+  | 'Unknown';
+
+/** Practice detail in the status response (ADR-008-R15). */
+export interface CfPracticeResponse {
+  /** CF practice identifier. */
+  practiceId: string;
+  /** Current status of the practice. */
+  status: CfPracticeStatus;
+  /** When the status last changed (ISO8601). */
+  statusChangedAt: string;
+  /** When the practice was submitted to CF (ISO8601), if available. */
+  submittedAt?: string;
+  /** Municipality associated with the practice by the partner. */
+  comune?: string;
+  /** Whether the municipality differs from the lease property municipality. */
+  comuneDiffersFromLink: boolean;
+  /** Reason for closure, if the practice is closed. */
+  closeReason?: string;
+}
+
+/** Response from GET /api/leases/{leaseId}/concordatofacile/status (ADR-008-R15). */
+export interface CfStatusResponse {
+  /** List of practices for the lease. */
+  practices: CfPracticeResponse[];
+  /** When the backend last checked the CF API (ISO8601). */
+  lastCheckedAt: string;
+  /** When the frontend should poll again (ISO8601). */
+  nextUpdateAt: string;
+  /** Whether the snapshot is stale due to CF API error. */
+  stale: boolean;
+}
