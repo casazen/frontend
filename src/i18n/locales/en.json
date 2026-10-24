@@ -59,7 +59,7 @@
       "proceed": "Proceed with contract creation",
       "contractDetails": "Contract details",
       "property": "Property",
-      "address": "Address",
+      "city": "City",
       "serviceTitle": "ConcordatoFacile Service",
       "serviceDescription": "Preparation and registration of regulated rent contract",
       "info": "Payment is secure and handled by Stripe. You will receive email confirmation.",

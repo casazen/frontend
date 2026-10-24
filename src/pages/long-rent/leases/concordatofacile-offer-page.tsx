@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -84,22 +84,27 @@ export function ConcordatoFacileOfferPage() {
     const status = getHttpStatus(leaseQuery.error);
     if (status === 404 || status === 403) {
       return (
-        <ErrorState
-          title={t('concordatofacile.offer.error')}
-          description={t('concordatofacile.offer.leaseNotFound')}
-          action={
-            <Button onClick={() => navigate('/app/long-rent/leases')}>
-              {t('concordatofacile.offer.backToLeases')}
-            </Button>
-          }
-        />
+        <div className="container max-w-3xl py-8">
+          <Alert variant="danger">
+            <AlertCircle className="size-4" />
+            <div>
+              <p className="font-semibold">{t('concordatofacile.offer.error')}</p>
+              <p className="mt-1">{t('concordatofacile.offer.leaseNotFound')}</p>
+              <div className="mt-3">
+                <Button size="sm" onClick={() => navigate('/app/long-rent/leases')}>
+                  {t('concordatofacile.offer.backToLeases')}
+                </Button>
+              </div>
+            </div>
+          </Alert>
+        </div>
       );
     }
-    return <ErrorState title={t('concordatofacile.offer.error')} description={t('concordatofacile.offer.loadError')} />;
+    return <ErrorState title={t('concordatofacile.offer.loadError')} error={leaseQuery.error} />;
   }
 
   if (accessQuery.isError) {
-    return <ErrorState title={t('concordatofacile.offer.error')} description={t('concordatofacile.offer.accessError')} />;
+    return <ErrorState title={t('concordatofacile.offer.accessError')} error={accessQuery.error} />;
   }
 
   const lease = leaseQuery.data;
@@ -113,17 +118,10 @@ export function ConcordatoFacileOfferPage() {
   if (checkoutResult === 'success') {
     return (
       <div className="container max-w-3xl py-8">
-        <PageHeader
-          title={t('concordatofacile.offer.title')}
-          breadcrumbs={[
-            { label: t('nav.leases'), to: '/app/long-rent/leases' },
-            { label: lease.property?.name || t('leaseList.property.missing') },
-            { label: t('concordatofacile.offer.title') },
-          ]}
-        />
-        <Alert className="mt-6">
+        <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
+        <Alert variant="success" className="mt-6">
           <CheckCircle2 className="size-4" />
-          <AlertDescription>{t('concordatofacile.offer.success')}</AlertDescription>
+          {t('concordatofacile.offer.success')}
         </Alert>
         <div className="mt-4">
           <Button onClick={() => navigate(`/app/long-rent/leases/${id}`)}>
@@ -138,17 +136,10 @@ export function ConcordatoFacileOfferPage() {
   if (checkoutResult === 'cancelled') {
     return (
       <div className="container max-w-3xl py-8">
-        <PageHeader
-          title={t('concordatofacile.offer.title')}
-          breadcrumbs={[
-            { label: t('nav.leases'), to: '/app/long-rent/leases' },
-            { label: lease.property?.name || t('leaseList.property.missing') },
-            { label: t('concordatofacile.offer.title') },
-          ]}
-        />
+        <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
         <Alert variant="warning" className="mt-6">
           <AlertCircle className="size-4" />
-          <AlertDescription>{t('concordatofacile.offer.cancelled')}</AlertDescription>
+          {t('concordatofacile.offer.cancelled')}
         </Alert>
         <div className="mt-4">
           <Button onClick={() => navigate(`/app/long-rent/leases/${id}/concordatofacile`)}>
@@ -163,17 +154,10 @@ export function ConcordatoFacileOfferPage() {
   if (access.hasAccess) {
     return (
       <div className="container max-w-3xl py-8">
-        <PageHeader
-          title={t('concordatofacile.offer.title')}
-          breadcrumbs={[
-            { label: t('nav.leases'), to: '/app/long-rent/leases' },
-            { label: lease.property?.name || t('leaseList.property.missing') },
-            { label: t('concordatofacile.offer.title') },
-          ]}
-        />
-        <Alert className="mt-6">
+        <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
+        <Alert variant="success" className="mt-6">
           <CheckCircle2 className="size-4" />
-          <AlertDescription>{t('concordatofacile.offer.hasAccess')}</AlertDescription>
+          {t('concordatofacile.offer.hasAccess')}
         </Alert>
         <div className="mt-4">
           <Button onClick={() => navigate(`/app/long-rent/leases/${id}`)}>
@@ -186,18 +170,9 @@ export function ConcordatoFacileOfferPage() {
 
   return (
     <div className="container max-w-3xl py-8">
-      <PageHeader
-        title={t('concordatofacile.offer.title')}
-        breadcrumbs={[
-          { label: t('nav.leases'), to: '/app/long-rent/leases' },
-          { label: lease.property?.name || t('leaseList.property.missing') },
-          { label: t('concordatofacile.offer.title') },
-        ]}
-      />
+      <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
 
-      <BackLink to={`/app/long-rent/leases/${id}`} className="mt-4">
-        {t('concordatofacile.offer.backToLease')}
-      </BackLink>
+      <BackLink to={`/app/long-rent/leases/${id}`} label={t('concordatofacile.offer.backToLease')} className="mt-4" />
 
       <div className="mt-6 space-y-6">
         {/* Property and contract details */}
@@ -211,10 +186,10 @@ export function ConcordatoFacileOfferPage() {
                 <dt className="text-sm font-medium text-muted-foreground">{t('concordatofacile.offer.property')}</dt>
                 <dd className="text-sm">{lease.property?.name || t('leaseList.property.missing')}</dd>
               </div>
-              {lease.property?.address && (
+              {lease.property?.city && (
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">{t('concordatofacile.offer.address')}</dt>
-                  <dd className="text-sm">{lease.property.address}</dd>
+                  <dt className="text-sm font-medium text-muted-foreground">{t('concordatofacile.offer.city')}</dt>
+                  <dd className="text-sm">{lease.property.city}</dd>
                 </div>
               )}
             </dl>
@@ -288,16 +263,16 @@ export function ConcordatoFacileOfferPage() {
               )}
 
               {checkoutMutation.isError && (
-                <Alert variant="destructive" className="mt-4">
+                <Alert variant="danger" className="mt-4">
                   <AlertCircle className="size-4" />
-                  <AlertDescription>{t('concordatofacile.offer.checkoutError')}</AlertDescription>
+                  {t('concordatofacile.offer.checkoutError')}
                 </Alert>
               )}
 
               {giftMutation.isError && (
-                <Alert variant="destructive" className="mt-4">
+                <Alert variant="danger" className="mt-4">
                   <AlertCircle className="size-4" />
-                  <AlertDescription>{t('concordatofacile.offer.giftError')}</AlertDescription>
+                  {t('concordatofacile.offer.giftError')}
                 </Alert>
               )}
             </div>

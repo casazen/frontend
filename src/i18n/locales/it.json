@@ -59,7 +59,7 @@
       "proceed": "Procedi con la creazione del contratto",
       "contractDetails": "Dettagli contratto",
       "property": "Immobile",
-      "address": "Indirizzo",
+      "city": "Città",
       "serviceTitle": "Servizio ConcordatoFacile",
       "serviceDescription": "Preparazione e registrazione del contratto a canone concordato",
       "info": "Il pagamento è sicuro e gestito da Stripe. Riceverai conferma via email.",
