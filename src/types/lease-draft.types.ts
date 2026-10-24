@@ -106,6 +106,13 @@ export interface LeaseReviewConfirmation {
   flow: LeaseDraftFlow;
 }
 
+/** `POST|DELETE /leases/:id/sent`: the contract downloaded for the signature on paper, or that download taken back. */
+export interface LeaseSent {
+  version: number;
+  sentForSignatureAt: string | null;
+  flow: LeaseDraftFlow;
+}
+
 /** `GET /long-rent/rules`: the figures the server applies. No figure of law is written in the interface. */
 export interface LongRentRules {
   termMonths: Record<string, number>;
