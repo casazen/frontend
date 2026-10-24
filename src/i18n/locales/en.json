@@ -1144,7 +1144,16 @@
       "DeadlineReminderSent": "Deadline reminder sent",
       "StipulaDeclared": "Signing date declared",
       "QuesturaCommunicationMarkedDone": "Questura communication declared",
-      "PropertyDeliveryDateDeclared": "Property delivery date entered"
+      "PropertyDeliveryDateDeclared": "Property delivery date entered",
+      "ReviewConfirmed": "Review confirmed",
+      "ReviewReopened": "Review reopened",
+      "SentForSignature": "Contract downloaded for signing",
+      "SentRevoked": "Download for signing cancelled",
+      "Imported": "Signed contract imported",
+      "NoticeRecorded": "Notice recorded",
+      "NoticeRemoved": "Notice withdrawn",
+      "Terminated": "Lease ended early",
+      "TermRenewed": "Renewed for another period"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
@@ -1291,6 +1300,125 @@
     "term": "from {{from}} to {{to}}",
     "termToDefine": "Dates to be set",
     "rentToDefine": "Rent to be set"
+  },
+  "leaseLifecycle": {
+    "alreadyHeld": "This is already in progress.",
+    "deleteDraft": {
+      "confirm": "Delete the draft",
+      "consequences": {
+        "data": "The people, dates and rent you entered are deleted and cannot be recovered.",
+        "undo": "After you confirm you have a few seconds to change your mind with “Undo”."
+      },
+      "description": "{{tenant}} · {{property}}. The lease is not valid yet: we delete it together with the data entered.",
+      "done": "Draft deleted",
+      "held": "Draft being deleted",
+      "heldHint": "Undo if you changed your mind: the draft is deleted in a few seconds.",
+      "title": "Delete the draft?"
+    },
+    "erasure": {
+      "action": "Ask for the data to be erased",
+      "confirm": "Ask for erasure",
+      "consequences": {
+        "anotherLease": "If a person has another lease in progress, their data stay until that lease ends.",
+        "ended": "If the lease has ended, the data of the people are anonymized right away.",
+        "final": "Anonymization cannot be undone.",
+        "notEnded": "If it has not ended yet, they are anonymized from the day after it ends."
+      },
+      "description": "{{tenant}} · {{property}}. You are recording the request to erase the data of the people of this lease.",
+      "failed": "The erasure request could not be recorded.",
+      "result": {
+        "anonymized": "The data of the people of this lease have been anonymized.",
+        "partial_one": "We anonymized the data of this lease, except for {{count}} person who has another lease in progress: we anonymize them when that lease ends.",
+        "partial_other": "We anonymized the data of this lease, except for {{count}} people who have another lease in progress: we anonymize them when those leases end.",
+        "scheduled": "The lease has not ended yet: the data of the people will be anonymized from {{date}}.",
+        "scheduledNoDate": "The lease has not ended yet: the data of the people will be anonymized from the day after it ends.",
+        "title": "Request recorded"
+      },
+      "title": "Ask for the data to be erased?"
+    },
+    "facts": {
+      "noticeFrom": {
+        "Landlord": "Sent by you on {{date}}",
+        "Tenant": "Sent by the tenant on {{date}}",
+        "unknown": "Recorded on {{date}}"
+      },
+      "noticeLabel": "Notice",
+      "renewsLabel": "Renewal",
+      "renewsValue": "Renews by itself, if nobody gives notice",
+      "terminatedLabel": "Ended on"
+    },
+    "menu": {
+      "deleteDraft": "Delete the draft",
+      "recordNotice": "Record a notice",
+      "revokeSent": "Cancel the download for signing",
+      "switchToShort": "Switch to short rent",
+      "takeNoticeBack": "Withdraw the notice",
+      "terminate": "End the lease"
+    },
+    "notice": {
+      "confirm": "Record the notice",
+      "dateHint": "From the first day of the lease up to today.",
+      "dateInvalid": "Choose a day between the start of the lease and today.",
+      "dateLabel": "Day it was sent",
+      "description": "{{tenant}} · {{property}}. CasaZen records the notice: it does not send it to anyone.",
+      "ends": "With the notice the lease ends at the end of the current period, on {{date}}.",
+      "failed": "The notice could not be recorded.",
+      "fromLandlord": "I sent it",
+      "fromLegend": "Who sent the notice?",
+      "fromTenant": "The tenant sent it",
+      "possiblyLate": "The notice may have arrived too late for this end date: ask your accountant.",
+      "recorded": "Notice recorded: the lease ends on {{date}}",
+      "removed": "Notice withdrawn: the lease renews by itself.",
+      "renews": "Without a notice the lease renews by itself.",
+      "title": "Record a notice"
+    },
+    "revokeSent": {
+      "cancel": "Leave it as it is",
+      "confirm": "Cancel the download",
+      "consequences": {
+        "invalid": "The copy to sign is no longer valid.",
+        "review": "The lease goes back to review and you can correct it."
+      },
+      "description": "{{tenant}} · {{property}}. The lease had been downloaded to be signed on paper.",
+      "done": "Download for signing cancelled",
+      "failed": "The download for signing could not be cancelled.",
+      "title": "Cancel the download for signing?",
+      "undone": "The lease is out for signing again"
+    },
+    "switchToShort": {
+      "description": "{{tenant}} · {{property}}. The switch to short rent is made on the page of the property.",
+      "firstDay": "The first possible day is the day after the end of the current period: {{date}}.",
+      "go": "Go to the change of mode",
+      "needsNotice": "Record the notice first: without it the lease renews by itself and the switch fails.",
+      "title": "Switch to short rent"
+    },
+    "takeNoticeBack": {
+      "cancel": "Leave it as it is",
+      "confirm": "Withdraw the notice",
+      "consequences": {
+        "renews": "The lease renews by itself again, unless somebody gives another notice."
+      },
+      "description": "{{tenant}} · {{property}}. The notice you recorded is taken off the lease.",
+      "failed": "The notice could not be withdrawn.",
+      "title": "Withdraw the notice?"
+    },
+    "terminate": {
+      "confirm": "End the lease",
+      "consequences": {
+        "final": "It cannot be undone.",
+        "property": "The property is free from the day after the last day of the lease.",
+        "rent": "Future rent that has not been paid is no longer requested.",
+        "revenue": "The end of the lease has to be reported to the Agenzia delle Entrate."
+      },
+      "dateHint": "From the first day of the lease to the end of the current period; it can be a day in the past.",
+      "dateInvalid": "Choose a day between the start of the lease and the end of the current period.",
+      "dateLabel": "Last day of the lease",
+      "description": "{{tenant}} · {{property}}. The lease ends on the day you choose.",
+      "done": "Lease ended: the last day is {{date}}",
+      "failed": "The lease could not be ended.",
+      "title": "End the lease",
+      "word": "TERMINATE"
+    }
   },
   "leaseSheet": {
     "conditions": {
@@ -9558,7 +9686,17 @@
       "staleDocuments": "The legal documents have been updated: reload the page and accept them again.",
       "threadClosed": "This conversation is closed: no more messages can be written.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
-      "idempotencyKeyInvalid": "The message was not sent correctly. Try again."
+      "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
+      "leaseAlreadyTerminated": "This lease has already ended.",
+      "leaseBusy": "The lease is busy with another operation. Try again in a few seconds.",
+      "leaseNoticeAlreadyRecorded": "A notice is already recorded for this lease.",
+      "leaseNoticeDateInvalid": "The day of the notice must be between the start of the lease and today.",
+      "leaseNotDeletable": "This draft cannot be deleted: it already has a signed copy or a rent plan.",
+      "leaseNotFound": "Lease not found.",
+      "leaseNotInForce": "The lease is not in force yet: every party has to sign it.",
+      "leaseTermAlreadyEnded": "The period of the lease has already ended: the notice can no longer be withdrawn.",
+      "leaseTerminationDateInvalid": "The last day must be between the start of the lease and the end of the current period.",
+      "leaseTypeHasNoRenewal": "This type of lease ends by itself on its end date: no notice is needed."
     }
   },
   "appShell": {

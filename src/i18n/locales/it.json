@@ -1144,7 +1144,16 @@
       "DeadlineReminderSent": "Promemoria di scadenza inviato",
       "StipulaDeclared": "Data di stipula dichiarata",
       "QuesturaCommunicationMarkedDone": "Comunicazione alla Questura dichiarata",
-      "PropertyDeliveryDateDeclared": "Data di consegna dell'immobile indicata"
+      "PropertyDeliveryDateDeclared": "Data di consegna dell'immobile indicata",
+      "ReviewConfirmed": "Revisione confermata",
+      "ReviewReopened": "Revisione riaperta",
+      "SentForSignature": "Contratto scaricato per la firma",
+      "SentRevoked": "Scarico per la firma annullato",
+      "Imported": "Contratto già firmato importato",
+      "NoticeRecorded": "Disdetta registrata",
+      "NoticeRemoved": "Disdetta tolta",
+      "Terminated": "Contratto terminato in anticipo",
+      "TermRenewed": "Rinnovato da solo per un altro periodo"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",
@@ -1291,6 +1300,125 @@
     "term": "dal {{from}} al {{to}}",
     "termToDefine": "Date da definire",
     "rentToDefine": "Canone da definire"
+  },
+  "leaseLifecycle": {
+    "alreadyHeld": "Questa operazione è già in corso.",
+    "deleteDraft": {
+      "confirm": "Elimina la bozza",
+      "consequences": {
+        "data": "Le persone, le date e il canone che hai inserito vengono cancellati e non si possono recuperare.",
+        "undo": "Dopo la conferma hai pochi secondi per cambiare idea con «Annulla»."
+      },
+      "description": "{{tenant}} · {{property}}. Il contratto non è ancora valido: lo eliminiamo insieme ai dati inseriti.",
+      "done": "Bozza eliminata",
+      "held": "Bozza in eliminazione",
+      "heldHint": "Annulla se hai cambiato idea: la bozza viene eliminata tra pochi secondi.",
+      "title": "Eliminare la bozza?"
+    },
+    "erasure": {
+      "action": "Chiedi la cancellazione dei dati",
+      "confirm": "Chiedi la cancellazione",
+      "consequences": {
+        "anotherLease": "Se una persona ha un altro contratto in corso, i suoi dati restano finché quel contratto non finisce.",
+        "ended": "Se il contratto è finito, i dati delle persone vengono anonimizzati subito.",
+        "final": "L'anonimizzazione non si può annullare.",
+        "notEnded": "Se non è ancora finito, vengono anonimizzati dal giorno dopo la sua fine."
+      },
+      "description": "{{tenant}} · {{property}}. Registri la richiesta di cancellazione dei dati delle persone di questo contratto.",
+      "failed": "Non è stato possibile registrare la richiesta di cancellazione.",
+      "result": {
+        "anonymized": "I dati delle persone di questo contratto sono stati anonimizzati.",
+        "partial_one": "Abbiamo anonimizzato i dati di questo contratto, tranne quelli di {{count}} persona che ha un altro contratto in corso: li anonimizziamo quando quel contratto finisce.",
+        "partial_other": "Abbiamo anonimizzato i dati di questo contratto, tranne quelli di {{count}} persone che hanno un altro contratto in corso: li anonimizziamo quando quei contratti finiscono.",
+        "scheduled": "Il contratto non è ancora finito: i dati delle persone saranno anonimizzati dal {{date}}.",
+        "scheduledNoDate": "Il contratto non è ancora finito: i dati delle persone saranno anonimizzati dal giorno dopo la sua fine.",
+        "title": "Richiesta registrata"
+      },
+      "title": "Chiedere la cancellazione dei dati?"
+    },
+    "facts": {
+      "noticeFrom": {
+        "Landlord": "Mandata da te il {{date}}",
+        "Tenant": "Mandata dal conduttore il {{date}}",
+        "unknown": "Registrata il {{date}}"
+      },
+      "noticeLabel": "Disdetta",
+      "renewsLabel": "Rinnovo",
+      "renewsValue": "Si rinnova da solo, se nessuno manda la disdetta",
+      "terminatedLabel": "Terminato il"
+    },
+    "menu": {
+      "deleteDraft": "Elimina la bozza",
+      "recordNotice": "Registra una disdetta",
+      "revokeSent": "Annulla lo scarico per la firma",
+      "switchToShort": "Passa ad affitto breve",
+      "takeNoticeBack": "Togli la disdetta",
+      "terminate": "Termina il contratto"
+    },
+    "notice": {
+      "confirm": "Registra la disdetta",
+      "dateHint": "Dal primo giorno del contratto a oggi.",
+      "dateInvalid": "Scegli un giorno tra l'inizio del contratto e oggi.",
+      "dateLabel": "Giorno in cui è stata mandata",
+      "description": "{{tenant}} · {{property}}. CasaZen registra la disdetta: non la invia a nessuno.",
+      "ends": "Con la disdetta il contratto finisce alla fine del periodo in corso, il {{date}}.",
+      "failed": "Non è stato possibile registrare la disdetta.",
+      "fromLandlord": "L'ho mandata io",
+      "fromLegend": "Chi ha mandato la disdetta?",
+      "fromTenant": "L'ha mandata il conduttore",
+      "possiblyLate": "La disdetta potrebbe essere arrivata troppo tardi per questa scadenza: chiedi al tuo commercialista.",
+      "recorded": "Disdetta registrata: il contratto finisce il {{date}}",
+      "removed": "Disdetta tolta: il contratto si rinnova da solo.",
+      "renews": "Senza una disdetta il contratto si rinnova da solo.",
+      "title": "Registra una disdetta"
+    },
+    "revokeSent": {
+      "cancel": "Lascia com'è",
+      "confirm": "Annulla lo scarico",
+      "consequences": {
+        "invalid": "La copia da firmare non vale più.",
+        "review": "Il contratto torna in revisione e puoi correggerlo."
+      },
+      "description": "{{tenant}} · {{property}}. Il contratto era stato scaricato per essere firmato su carta.",
+      "done": "Scarico per la firma annullato",
+      "failed": "Non è stato possibile annullare lo scarico per la firma.",
+      "title": "Annullare lo scarico per la firma?",
+      "undone": "Il contratto è di nuovo in firma"
+    },
+    "switchToShort": {
+      "description": "{{tenant}} · {{property}}. Il passaggio ad affitto breve si fa nella pagina dell'immobile.",
+      "firstDay": "Il primo giorno possibile è il giorno dopo la fine del periodo in corso: il {{date}}.",
+      "go": "Vai al cambio di modalità",
+      "needsNotice": "Prima registra la disdetta: senza, il contratto si rinnova da solo e il passaggio non riesce.",
+      "title": "Passa ad affitto breve"
+    },
+    "takeNoticeBack": {
+      "cancel": "Lascia com'è",
+      "confirm": "Togli la disdetta",
+      "consequences": {
+        "renews": "Il contratto torna a rinnovarsi da solo, se nessuno ne manda un'altra."
+      },
+      "description": "{{tenant}} · {{property}}. La disdetta che hai registrato viene tolta dal contratto.",
+      "failed": "Non è stato possibile togliere la disdetta.",
+      "title": "Togliere la disdetta?"
+    },
+    "terminate": {
+      "confirm": "Termina il contratto",
+      "consequences": {
+        "final": "Non si può annullare.",
+        "property": "L'immobile torna libero dal giorno dopo l'ultimo giorno del contratto.",
+        "rent": "I canoni futuri non ancora pagati non vengono più richiesti.",
+        "revenue": "La cessazione va comunicata all'Agenzia delle Entrate."
+      },
+      "dateHint": "Dal primo giorno del contratto alla fine del periodo in corso; può essere anche un giorno passato.",
+      "dateInvalid": "Scegli un giorno tra l'inizio del contratto e la fine del periodo in corso.",
+      "dateLabel": "Ultimo giorno del contratto",
+      "description": "{{tenant}} · {{property}}. Il contratto finisce il giorno che scegli.",
+      "done": "Contratto terminato: l'ultimo giorno è il {{date}}",
+      "failed": "Non è stato possibile terminare il contratto.",
+      "title": "Termina il contratto",
+      "word": "TERMINA"
+    }
   },
   "leaseSheet": {
     "conditions": {
@@ -9558,7 +9686,17 @@
       "staleDocuments": "I documenti legali sono stati aggiornati: ricarica la pagina e accettali di nuovo.",
       "threadClosed": "Questa conversazione è chiusa: non si possono più scrivere messaggi.",
       "guestMessageTextInvalid": "Scrivi un messaggio: non può essere vuoto né più lungo di 2000 caratteri.",
-      "idempotencyKeyInvalid": "Il messaggio non è stato inviato correttamente. Riprova."
+      "idempotencyKeyInvalid": "Il messaggio non è stato inviato correttamente. Riprova.",
+      "leaseAlreadyTerminated": "Questo contratto è già terminato.",
+      "leaseBusy": "Il contratto è occupato da un'altra operazione. Riprova tra qualche secondo.",
+      "leaseNoticeAlreadyRecorded": "Per questo contratto c'è già una disdetta registrata.",
+      "leaseNoticeDateInvalid": "Il giorno della disdetta deve essere tra l'inizio del contratto e oggi.",
+      "leaseNotDeletable": "Questa bozza non si può eliminare: ha già una copia firmata o un piano dei canoni.",
+      "leaseNotFound": "Contratto non trovato.",
+      "leaseNotInForce": "Il contratto non è ancora in vigore: deve essere firmato da tutte le parti.",
+      "leaseTermAlreadyEnded": "Il periodo del contratto è già finito: la disdetta non si può più togliere.",
+      "leaseTerminationDateInvalid": "L'ultimo giorno deve essere tra l'inizio del contratto e la fine del periodo in corso.",
+      "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta."
     }
   },
   "appShell": {

@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import {
@@ -30,6 +30,10 @@ interface ConfirmationDialogProps {
   requireText?: string;
   /** What will happen if the user confirms, one short sentence each, listed above the buttons. */
   consequences?: readonly string[];
+  /** What the confirmation needs to know (a date): fields between the description and the consequences, inside the form. */
+  children?: ReactNode;
+  /** Keeps the confirm button off, whatever was typed, while what `children` asks for is not valid (nor does Enter confirm). */
+  confirmDisabled?: boolean;
   /**
    * Where the focus goes when the dialog has closed. By default it goes back to what had it before; when the confirmation
    * removes that (a photo of a list), call `event.preventDefault()` and give the focus to something that is still there.
@@ -44,7 +48,7 @@ function sameWord(typed: string, asked: string): boolean {
 
 type ConfirmationFormProps = Pick<
   ConfirmationDialogProps,
-  'title' | 'description' | 'variant' | 'isLoading' | 'requireText' | 'consequences'
+  'title' | 'description' | 'variant' | 'isLoading' | 'requireText' | 'consequences' | 'children' | 'confirmDisabled'
 > & {
   confirmLabel: string;
   cancelLabel: string;
@@ -63,6 +67,8 @@ function ConfirmationForm({
   isLoading,
   requireText,
   consequences,
+  children,
+  confirmDisabled = false,
   confirmLabel,
   cancelLabel,
   onCancel,
@@ -71,7 +77,7 @@ function ConfirmationForm({
   const { t } = useTranslation();
   const inputId = useId();
   const [typed, setTyped] = useState('');
-  const mayConfirm = requireText === undefined || sameWord(typed, requireText);
+  const mayConfirm = !confirmDisabled && (requireText === undefined || sameWord(typed, requireText));
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -87,6 +93,8 @@ function ConfirmationForm({
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
+
+      {children}
 
       {consequences && consequences.length > 0 ? (
         <ul
@@ -151,6 +159,8 @@ export function ConfirmationDialog({
   isLoading = false,
   requireText,
   consequences,
+  children,
+  confirmDisabled,
   onCloseAutoFocus,
 }: ConfirmationDialogProps) {
   const { t } = useTranslation();
@@ -171,11 +181,14 @@ export function ConfirmationDialog({
           isLoading={isLoading}
           requireText={requireText}
           consequences={consequences}
+          confirmDisabled={confirmDisabled}
           confirmLabel={resolvedConfirmLabel}
           cancelLabel={resolvedCancelLabel}
           onCancel={() => onOpenChange(false)}
           onSubmit={() => void handleConfirm()}
-        />
+        >
+          {children}
+        </ConfirmationForm>
       </DialogContent>
     </Dialog>
   );
