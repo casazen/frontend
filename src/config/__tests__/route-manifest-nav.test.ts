@@ -99,6 +99,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/long-rent/properties',
     ]);
     expect(paths(getSecondaryNavEntries('long-rent', allowAll))).toEqual([
+      '/app/long-rent/fiscal',
       '/app/long-rent/profile',
       '/app/long-rent/settings/organization',
       '/app/long-rent/settings/invitations',
