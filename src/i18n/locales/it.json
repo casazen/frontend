@@ -1708,6 +1708,7 @@
       "concordato_unavailable": "Per il canone concordato mancano i dati dell'accordo territoriale del comune",
       "contract_type_missing": "Scegli il tipo di contratto",
       "deposit_invalid": "Il deposito non è valido: zero o più, con al massimo due decimali",
+      "deposit_missing": "Indica il deposito cauzionale (0 se non c'è)",
       "deposit_ok": "Deposito: {{amount}} ({{rents}} mensilità)",
       "deposit_too_high": "Il deposito può essere al massimo di {{max}} mensilità ({{amount}})",
       "documents_not_verified": "Prima della firma controlla un documento d'identità di ciascuna parte: CasaZen non lo conserva",
@@ -1926,6 +1927,7 @@
     "terms": {
       "deposit": "Deposito cauzionale (€)",
       "depositMax": "Al massimo {{max}} mensilità: {{amount}}",
+      "depositNone": "Se non c'è, scrivi 0.",
       "depositTooHigh": "Il deposito supera il massimo: {{max}} mensilità, cioè {{amount}}",
       "regime": {
         "CedolareSecca": "Un'imposta fissa sul canone, al posto di IRPEF e imposta di registro.",

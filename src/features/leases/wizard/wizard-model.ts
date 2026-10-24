@@ -359,6 +359,7 @@ export function fieldIdOfNeed(need: LeaseNeed, form: WizardValues): string | nul
     case 'rent_invalid':
     case 'rent_out_of_band':
       return 'lw-monthlyRent';
+    case 'deposit_missing':
     case 'deposit_invalid':
     case 'deposit_too_high':
       return 'lw-securityDeposit';
