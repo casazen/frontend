@@ -1,10 +1,23 @@
+import { addDays } from '@/lib/stay-dates';
 import { normalizeFiscalCode } from '@/lib/fiscal-code';
-import type { LandlordDefaults, LeaseDraftFlow, LeaseDraftParty, LeaseDraftValues, LeaseFlowStep, LeaseNeed, LeaseOrigin } from '@/types';
+import type {
+  LandlordDefaults,
+  LeaseDraftFlow,
+  LeaseDraftParty,
+  LeaseDraftValues,
+  LeaseFlowStep,
+  LeaseNeed,
+  LeaseOrigin,
+  LongRentRules,
+} from '@/types';
 
 /**
  * The model of the wizard «Crea contratto»: what the form holds, how a step goes to the server, and how what the server says is
  * missing (`flow`) becomes a place on the screen. Pure functions, no React: the screens and the saver build on them.
  */
+
+/** At most this many landlords, and as many tenants (the limit of the API: 422 `lease_parties_too_many`). */
+export const MAX_PARTIES_PER_ROLE = 10;
 
 /** The steps of the data of the contract: the ones that are saved with their values (the server's 1 to 4 here). */
 export type DataStep = 1 | 2 | 3 | 4;
@@ -213,10 +226,13 @@ export function stepOfField(name: string | undefined): DataStep | null {
 // ---- the flow --------------------------------------------------------------------------------------------------------------
 
 /**
- * The steps this wizard has a screen for, by the server's numbers: for now the property (1). The parties, the conditions, the dates and
- * the review (2 to 4 and 6) follow in LR-06a-2; the model (5), the signature or the import (7) and what comes after (8) in LR-06b.
+ * The steps this wizard has a screen for, by the server's numbers: property, parties, conditions, dates and the review (6). The model
+ * (5), the signature or the import (7) and what comes after the signature (8) come with LR-06b.
  */
-export const REGISTERED_STEPS: readonly number[] = [1];
+export const REGISTERED_STEPS: readonly number[] = [1, 2, 3, 4, 6];
+
+/** The review: the checks of the server and the confirmation. A contract already signed has none. */
+export const REVIEW_STEP = 6;
 
 export function isDataStep(step: number): step is DataStep {
   return step >= 1 && step <= 4;
@@ -225,6 +241,17 @@ export function isDataStep(step: number): step is DataStep {
 /** Where a draft is edited, at a step or at the one it opens on. */
 export function leaseEditPath(leaseId: string, step?: number): string {
   return `/app/long-rent/leases/${leaseId}/edit${step ? `?step=${step}` : ''}`;
+}
+
+/** The flow of a contract that does not exist yet: every step still to do (a contract already signed has no model and no review). */
+export function emptyFlow(origin: LeaseOrigin): LeaseDraftFlow {
+  return {
+    steps: Array.from({ length: 8 }, (_, index) => ({
+      step: index + 1,
+      state: origin === 'Imported' && (index === 4 || index === 5) ? 'NotApplicable' : 'Todo',
+      needs: [],
+    })),
+  };
 }
 
 /** How a step shows in the list of steps: the one the person is on, done, started and missing something, not started, or not open. */
@@ -328,4 +355,29 @@ export function fieldIdOfNeed(need: LeaseNeed, form: WizardValues): string | nul
     default:
       return null;
   }
+}
+
+// ---- the term, in the words of the summary ---------------------------------------------------------------------------------
+
+/** `date` moved by `months` months, the day of the month kept (or the last day of the month when it does not exist). */
+export function addMonths(date: string, months: number): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) return '';
+  const total = Number(match[1]) * 12 + (Number(match[2]) - 1) + months;
+  const year = Math.floor(total / 12);
+  const month = total % 12;
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const day = Math.min(Number(match[3]), lastDay);
+  return `${String(year).padStart(4, '0')}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** The last day of a period of `months` months that starts on `start`: «from 1 November for 48 months» ends on 31 October. */
+export function periodEnd(start: string, months: number): string {
+  const end = addMonths(start, months);
+  return end ? addDays(end, -1) : '';
+}
+
+/** The months of the first period of a type as the server states them; `null` for a type that has none of its own. */
+export function termMonthsOf(rules: LongRentRules | undefined, contractType: string): number | null {
+  return rules?.termMonths[contractType] ?? null;
 }

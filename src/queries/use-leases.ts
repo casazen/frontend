@@ -3,7 +3,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { leasesApi, type LeaseListParams } from '@/api/leases.api';
 import type {
   CedolareAdvisoryInput,
-  CreateLeaseDto,
   ManualRegistrationInput,
   OfflineSignatureInput,
   QuesturaCommunicationInput,
@@ -45,21 +44,6 @@ export function useLease(id: string) {
     queryFn: () => leasesApi.getById(id),
     enabled: !!id,
     refetchInterval: (query) => (isRliRegistrationInProgress(query.state.data?.status) ? 30_000 : false),
-  });
-}
-
-export function useCreateLease() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateLeaseDto) => leasesApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
-      toast.success(i18n.t('toast.leaseDraftCreated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.leaseCreateFailed'));
-    },
   });
 }
 
