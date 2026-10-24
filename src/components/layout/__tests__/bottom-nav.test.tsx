@@ -109,11 +109,11 @@ describe('BottomNav (UI-04b)', () => {
       expect(within(english).getByRole('link', { name: 'Services and prices' })).toHaveTextContent(/^Services$/);
     });
 
-    it('BottomNav_LongRent_ListsTheThreeDestinationsItHasAndAltro', () => {
+    it('BottomNav_LongRent_ListsTheFourDestinationsItHasAndAltro', () => {
       arrange(['long-rent']);
       renderBar('long-rent', '/app/long-rent/leases');
 
-      expect(labels()).toEqual(['Contratti', 'Canoni', 'Immobili']);
+      expect(labels()).toEqual(['Contratti', 'Canoni', 'Immobili', 'Interventi']);
       expect(more()).toBeInTheDocument();
     });
 

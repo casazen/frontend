@@ -37,6 +37,7 @@ const PAGE_KEYWORDS: ReadonlyArray<{ navKey: string; keywordsKey: string }> = [
   { navKey: 'nav.rents', keywordsKey: 'commandPalette.keywords.rents' },
   { navKey: 'nav.revenue', keywordsKey: 'commandPalette.keywords.revenue' },
   { navKey: 'nav.seo', keywordsKey: 'commandPalette.keywords.seo' },
+  { navKey: 'nav.serviceRequests', keywordsKey: 'commandPalette.keywords.serviceRequests' },
   { navKey: 'nav.siteAppearance', keywordsKey: 'commandPalette.keywords.siteAppearance' },
   { navKey: 'nav.siteDocuments', keywordsKey: 'commandPalette.keywords.siteDocuments' },
   { navKey: 'nav.stripeConnect', keywordsKey: 'commandPalette.keywords.stripeConnect' },
