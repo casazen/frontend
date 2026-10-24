@@ -1614,6 +1614,24 @@
       "saving": "Saving…"
     },
     "saveDraft": "Save draft",
+    "sign": {
+      "download": "Download to sign",
+      "downloadAgain": "Download again",
+      "lines": {
+        "print": "Print the contract.",
+        "sign": "Have every party sign it by hand, on every page.",
+        "upload": "Upload the signed copy here."
+      },
+      "preview": "Read the preview (not valid for signing)",
+      "revoke": "Cancel the download to make changes",
+      "revokeFailed": "I could not cancel the download. Try again.",
+      "revokedToast": "Download cancelled: you can change the contract",
+      "sentBadge": "Being signed",
+      "sentText": "The contract has been downloaded. Have every party sign it by hand and upload the signed copy here.",
+      "sentToast": "Contract downloaded to be signed",
+      "templateInApproval": "The contract template is being approved: you can read the preview but not yet download the contract to sign.",
+      "upload": "Upload the signed copy"
+    },
     "start": {
       "origin": {
         "created": {
@@ -1670,6 +1688,12 @@
         "why": "Before the lease goes to signature we check that it is complete and consistent."
       },
       "7": {
+        "Created": {
+          "label": "Signature",
+          "purpose": "Download the contract, have it signed by hand and upload the signed copy.",
+          "title": "Signing on paper",
+          "why": "The signed copy stays in CasaZen and the deadlines start from it, beginning with the registration."
+        },
         "Imported": {
           "label": "Signed contract",
           "purpose": "Upload the signed PDF and enter the day it was signed.",
@@ -9444,6 +9468,7 @@
       "leaseDraftConflict": "The contract is busy or was changed elsewhere. Reload the page and try again.",
       "leaseImportNotImportedOrigin": "A contract made in CasaZen cannot be added as already signed: it is signed from its template.",
       "leaseReviewBlocked": "Some data are still missing in the earlier steps: check them and try again.",
+      "leaseReviewNotConfirmed": "Before downloading the contract to sign you have to confirm the review.",
       "questuraDeliveryDateLocked": "The delivery date can no longer be changed: the Questura communication has already been declared.",
       "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
       "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
