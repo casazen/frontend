@@ -226,31 +226,6 @@ export interface LeaseDetail {
  */
 export const LEASE_DRAFT_PLACEHOLDER_DATE = '3000-01-01';
 
-export interface CreateLeasePartyDto {
-  role: PartyRole;
-  firstName: string;
-  lastName: string;
-  fiscalCode: string;
-  citizenship: string;
-  contactEmail: string;
-}
-
-/**
- * `POST /leases` (LT-10): contract type and tax regime, the dates (the backend derives the term), the deposit and, for a
- * canone concordato lease, the characteristics the backend computes and checks the range with.
- */
-export interface CreateLeaseDto {
-  propertyId: string;
-  contractType: LeaseContractType;
-  taxRegime: LeaseTaxRegime;
-  startDate: string;
-  endDate: string;
-  monthlyRent: number;
-  securityDeposit?: number | null;
-  parties: CreateLeasePartyDto[];
-  canoneConcordato?: ConcordatoCharacteristics;
-}
-
 /**
  * How a party signs the contract (LT-02): `Offline` on paper or with the party's own digital signature, recorded when the
  * landlord uploads the signed PDF; `Provider` through the e-signature provider, with a personal link.
