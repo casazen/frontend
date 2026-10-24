@@ -1,5 +1,11 @@
 import { ApiClient } from '@/api/client';
-import type { CfAccessResponse, CfCheckoutResponse, CfLinkResponse, CfStatusResponse } from '@/types/concordatofacile.types';
+import type {
+  CfAccessResponse,
+  CfCheckoutResponse,
+  CfLinkResponse,
+  CfPracticeLookupResponse,
+  CfStatusResponse,
+} from '@/types/concordatofacile.types';
 
 /** ConcordatoFacile one-time payment and access (ADR-005). */
 export const ConcordatoFacileApi = {
@@ -41,4 +47,12 @@ export const ConcordatoFacileApi = {
    */
   getStatus: (leaseId: string): Promise<CfStatusResponse> =>
     ApiClient.get<CfStatusResponse>(`/leases/${leaseId}/concordatofacile/status`),
+
+  /**
+   * Which lease of the org a practice of the partner belongs to (NF-06), for the upload page opened from the button «Carica i dati
+   * in CasaZen» of ConcordatoFacile (`?practice=P-…`). 404 `practice_not_found` for a wrong or unknown number, a lease of another
+   * org, and while the backend switch is off.
+   */
+  lookupPracticeLease: (practiceId: string): Promise<CfPracticeLookupResponse> =>
+    ApiClient.get<CfPracticeLookupResponse>(`/concordatofacile/practices/${encodeURIComponent(practiceId)}/lease`),
 };

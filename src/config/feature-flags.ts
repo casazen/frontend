@@ -2,7 +2,13 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments';
+export type FeatureFlagKey =
+  | 'otaPartnerApi'
+  | 'aiSupplierDiscovery'
+  | 'rliProvider'
+  | 'eSignProvider'
+  | 'supplierOnlinePayments'
+  | 'concordatoFacile';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -32,6 +38,14 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * it is off. The payments account (SP-16c-b) does not read it: it asks the server, whose endpoints answer 404 while the flag is off.
    */
   supplierOnlinePayments: false,
+  /**
+   * CF-FIX: the ConcordatoFacile service (backend `ConcordatoFacile`), on in the test environment and off in production until CasaZen
+   * confirms the trial run and the privacy framework to ConcordatoFacile. Off: the contract page shows no payment panel, the route
+   * `/app/long-rent/leases/:id/concordatofacile` goes back to the contract, the draft banner keeps its button off and its «coming
+   * soon» line, and the upload page opened from the partner's button (`?practice=`) falls back to choosing the contract (the
+   * backend answers 404 to the lookup).
+   */
+  concordatoFacile: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

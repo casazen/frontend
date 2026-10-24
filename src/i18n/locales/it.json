@@ -19,6 +19,13 @@
     "referenceHelp": "Comunica questo identificativo al partner per collegare la pratica al contratto e alla casa corretti.",
     "chooseLease": "Seleziona il contratto a cui allegare i documenti.",
     "noLeases": "Non hai ancora contratti salvati. Il riferimento necessario è il leaseId del contratto, non l’ID della casa.",
+    "practice": {
+      "chosen": "Pratica {{practice}}: i documenti si salvano su questo contratto.",
+      "invalid": "Collegamento non valido: il numero della pratica non è corretto.",
+      "linked": "Pratica {{practice}} collegata a questo contratto",
+      "manual": "La pratica {{practice}} non è ancora collegata a un contratto.",
+      "notFound": "Non troviamo questa pratica tra i tuoi contratti."
+    },
     "leaseLabel": "Contratto",
     "documentsTitle": "Documenti del contratto",
     "kind": "Tipo di documento",
@@ -1322,6 +1329,7 @@
       "title": "Bozza — in attesa del contratto del partner",
       "description": "Questo contratto a canone concordato lo prepari con ConcordatoFacile: lì inserisci parti, canone e durata. La bozza e il suo riferimento sono già salvati qui.",
       "proceed": "Procedi con la creazione del contratto",
+      "ready": "Paghi o usi la pratica omaggio, poi si apre il modulo di ConcordatoFacile con il riferimento di questo contratto già collegato.",
       "soon": "Il collegamento diretto con ConcordatoFacile è in arrivo. Intanto puoi comunicare al partner il riferimento del contratto qui sotto."
     }
   },
@@ -9774,6 +9782,7 @@
       "orgSeatLimitReached": "Hai usato tutti i posti del piano: disattiva chi non lavora più con te o passa a un piano con più posti.",
       "staleDocuments": "I documenti legali sono stati aggiornati: ricarica la pagina e accettali di nuovo.",
       "threadClosed": "Questa conversazione è chiusa: non si possono più scrivere messaggi.",
+      "concordatofacileAlreadyPurchased": "Per questo contratto il servizio ConcordatoFacile risulta già pagato o attivato: non serve pagare di nuovo. Se l'accesso non compare subito, riprova tra qualche istante.",
       "guestMessageTextInvalid": "Scrivi un messaggio: non può essere vuoto né più lungo di 2000 caratteri.",
       "idempotencyKeyInvalid": "Il messaggio non è stato inviato correttamente. Riprova.",
       "leaseAlreadyTerminated": "Questo contratto è già terminato.",
