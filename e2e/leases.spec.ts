@@ -119,7 +119,13 @@ test.describe('Lease flow (long-term landlord)', () => {
     await rent.getByLabel('Giorno di scadenza (1-28)').fill('5');
     await rent.getByRole('button', { name: 'Genera lo scadenziario' }).click();
     await expect(rent.getByTestId('rent-installment')).toHaveCount(48);
-    expect(calls.rentSchedules).toEqual([{ cadence: 'Monthly', billingDayOfMonth: 5 }]);
+    // LR-04a: the lease started on 1 September 2026, so from a later month the plan is tracked from the first of this month and no past
+    // period is born late; the payment requests to the tenants stay off (nothing about them is sent unless the landlord turns them on).
+    expect(calls.rentSchedules).toHaveLength(1);
+    expect(calls.rentSchedules[0]).toMatchObject({ cadence: 'Monthly', billingDayOfMonth: 5 });
+    expect(calls.rentSchedules[0]).not.toHaveProperty('onlineRequests');
+    const trackFrom = (calls.rentSchedules[0] as { trackFrom?: string }).trackFrom;
+    if (trackFrom !== undefined) expect(trackFrom).toMatch(/^\d{4}-\d{2}-01$/);
     await expect(rent.getByTestId('rent-installment-status').first()).toHaveText('Da incassare');
 
     // Offline payment of the first installment: only that one becomes paid.
