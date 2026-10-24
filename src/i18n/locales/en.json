@@ -39,6 +39,14 @@
     }
   },
   "concordatofacile": {
+    "entry": {
+      "access": "Access your practice",
+      "error": "Unable to generate link. Please try again later.",
+      "generating": "Generating link…",
+      "proceed": "Proceed with contract creation",
+      "statusFailed": "Unable to verify status: if you already submitted the form do not reopen it",
+      "warning": "The form resumes only on the same device/browser used"
+    },
     "gift": {
       "available": "Complimentary practice available",
       "button": "Use complimentary practice and continue",

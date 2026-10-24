@@ -1,5 +1,5 @@
 import { ApiClient } from '@/api/client';
-import type { CfAccessResponse, CfCheckoutResponse } from '@/types/concordatofacile.types';
+import type { CfAccessResponse, CfCheckoutResponse, CfLinkResponse } from '@/types/concordatofacile.types';
 
 /** ConcordatoFacile one-time payment and access (ADR-005). */
 export const ConcordatoFacileApi = {
@@ -25,4 +25,12 @@ export const ConcordatoFacileApi = {
    */
   consumeGift: (leaseId: string): Promise<CfAccessResponse> =>
     ApiClient.post<CfAccessResponse>(`/leases/${leaseId}/concordatofacile/consume-gift`),
+
+  /**
+   * Generate HMAC-signed link to ConcordatoFacile partner portal (ADR-007-R6, ADR-007-R10).
+   * Returns time-limited URL (expires in 15 minutes). Requires LeaseCreate policy and access check.
+   * Link opens CF form with lease data pre-populated. Records LeaseEvent.ConcordatoFacileLinkGenerated.
+   */
+  generateLink: (leaseId: string): Promise<CfLinkResponse> =>
+    ApiClient.post<CfLinkResponse>(`/leases/${leaseId}/concordatofacile/link`),
 };

@@ -40,3 +40,16 @@ export function useCfConsumeGift() {
     },
   });
 }
+
+/**
+ * Generate HMAC-signed link to ConcordatoFacile portal (ADR-007-R6, ADR-007-R12).
+ * Opens returned URL in new tab with noopener,noreferrer on success.
+ */
+export function useCfGenerateLink(leaseId: string) {
+  return useMutation({
+    mutationFn: () => ConcordatoFacileApi.generateLink(leaseId),
+    onSuccess: (data) => {
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+    },
+  });
+}

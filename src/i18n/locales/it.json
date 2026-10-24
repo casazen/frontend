@@ -39,6 +39,14 @@
     }
   },
   "concordatofacile": {
+    "entry": {
+      "access": "Accedi alla tua pratica",
+      "error": "Impossibile generare il link. Riprova più tardi.",
+      "generating": "Generazione link in corso…",
+      "proceed": "Procedi con la creazione del contratto",
+      "statusFailed": "Non riusciamo a verificare lo stato: se hai gia inviato il modulo non riaprirlo",
+      "warning": "Il modulo riprende solo sullo stesso dispositivo/browser utilizzato"
+    },
     "gift": {
       "available": "Pratica omaggio disponibile",
       "button": "Usa la pratica omaggio e continua",
