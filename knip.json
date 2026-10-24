@@ -25,6 +25,9 @@
     ],
     "src/types/**": [
       "types"
+    ],
+    "src/queries/**": [
+      "exports"
     ]
   },
   "compilers": {
