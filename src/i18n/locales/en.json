@@ -1326,6 +1326,85 @@
     },
     "toDefine": "To be set"
   },
+  "leaseWizard": {
+    "back": "Back",
+    "blocked": {
+      "goToStep": "Go to «{{step}}»",
+      "title": "Before you go on"
+    },
+    "conflict": {
+      "description": "So that nobody's work is lost, reload the draft: you will see the version saved most recently. What you wrote in this tab after the last save was not saved.",
+      "reload": "Reload the draft",
+      "title": "This lease was changed in another tab"
+    },
+    "finish": "Save and go to the lease",
+    "goToLease": "Go to the lease",
+    "gone": "This lease is not a draft any more: it can no longer be edited from here.",
+    "loadError": "Could not open the lease wizard. Try again.",
+    "needs": {
+      "ape_missing": "The APE (energy performance certificate) of the property is missing",
+      "cadastral_missing": "The cadastral data of the property are missing",
+      "property_missing": "Choose the property of the lease",
+      "unknown": "Something in this step still needs a look"
+    },
+    "next": "Continue: {{step}}",
+    "property": {
+      "addNew": "Add a new property",
+      "address": "Address and details of the property",
+      "ape": "APE (energy performance certificate)",
+      "apeMissingImported": "The APE is missing: for a lease already signed this is a notice, you can upload it later.",
+      "cadastral": "Cadastral data",
+      "cadastralAdd": "Add them on the property page",
+      "cadastralMissing": "Missing: they are needed for the lease and for the registration.",
+      "importedNotice": "The lease is already signed: we tell you if the APE or the cadastral data are missing, but they do not stop you.",
+      "requirementsTitle": "What the lease needs",
+      "shortMode": "This property is let for short stays. You can prepare the lease, but to use it the property has to move to long stays."
+    },
+    "remaining": {
+      "label": "Still to do:",
+      "more": "and more",
+      "none": "This step is complete"
+    },
+    "save": {
+      "draftSaved": "Draft saved",
+      "error": "Could not save",
+      "retry": "Try again",
+      "saved": "Saved at {{time}}",
+      "saving": "Saving…"
+    },
+    "saveDraft": "Save draft",
+    "stepper": {
+      "label": "Steps of the lease",
+      "position": "Step {{current}} of {{total}}",
+      "state": {
+        "current": "Current step",
+        "done": "Done",
+        "issue": "To complete",
+        "locked": "The earlier steps first",
+        "todo": "To do"
+      }
+    },
+    "steps": {
+      "1": {
+        "label": "Property",
+        "purpose": "Pick the home of the lease and check what it needs.",
+        "title": "Choose the property",
+        "why": "The address, the cadastral data and the APE go into the lease and its registration."
+      }
+    },
+    "title": "Create lease",
+    "validation": {
+      "citizenship": "Choose the citizenship from the list",
+      "date": "Not a valid date",
+      "deposit": "The deposit must be zero or more, with at most two decimals",
+      "email": "Not a valid email address",
+      "endAfterStart": "The end must be after the start",
+      "fiscalCode": "Not a valid fiscal code or VAT number",
+      "property": "Choose the property",
+      "rent": "The rent must be more than zero, with at most two decimals"
+    },
+    "why": "Why we ask"
+  },
   "revenue": {
     "pageTitle": "Revenue analytics",
     "pageDescription": "Track and analyze revenue performance",

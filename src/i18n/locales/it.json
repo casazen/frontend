@@ -1326,6 +1326,85 @@
     },
     "toDefine": "Da definire"
   },
+  "leaseWizard": {
+    "back": "Indietro",
+    "blocked": {
+      "goToStep": "Vai a «{{step}}»",
+      "title": "Prima di continuare"
+    },
+    "conflict": {
+      "description": "Per non perdere il lavoro di nessuno, ricarica la bozza: vedrai la versione salvata più di recente. Quello che hai scritto in questa scheda dopo l'ultimo salvataggio non è stato salvato.",
+      "reload": "Ricarica la bozza",
+      "title": "Questo contratto è stato modificato in un'altra scheda"
+    },
+    "finish": "Salva e vai al contratto",
+    "goToLease": "Vai al contratto",
+    "gone": "Questo contratto non è più una bozza: non si può più modificare da qui.",
+    "loadError": "Impossibile aprire la procedura. Riprova.",
+    "needs": {
+      "ape_missing": "Manca l'APE (attestato di prestazione energetica) dell'immobile",
+      "cadastral_missing": "Mancano i dati catastali dell'immobile",
+      "property_missing": "Scegli l'immobile del contratto",
+      "unknown": "C'è ancora qualcosa da controllare in questo passo"
+    },
+    "next": "Continua: {{step}}",
+    "property": {
+      "addNew": "Aggiungi un nuovo immobile",
+      "address": "Indirizzo e dati dell'immobile",
+      "ape": "APE (attestato di prestazione energetica)",
+      "apeMissingImported": "Manca l'APE: per un contratto già firmato è un avviso, puoi caricarlo anche dopo.",
+      "cadastral": "Dati catastali",
+      "cadastralAdd": "Aggiungili nella scheda dell'immobile",
+      "cadastralMissing": "Mancano: servono per il contratto e per la registrazione.",
+      "importedNotice": "Il contratto è già firmato: se mancano l'APE o i dati catastali te lo diciamo, ma non ti fermano.",
+      "requirementsTitle": "Cosa serve per il contratto",
+      "shortMode": "Questo immobile è in affitto breve. Puoi preparare il contratto, ma per usarlo l'immobile deve passare in affitto lungo."
+    },
+    "remaining": {
+      "label": "Resta da fare:",
+      "more": "e altro",
+      "none": "Questo passo è completo"
+    },
+    "save": {
+      "draftSaved": "Bozza salvata",
+      "error": "Non riesco a salvare",
+      "retry": "Riprova",
+      "saved": "Salvato alle {{time}}",
+      "saving": "Sto salvando…"
+    },
+    "saveDraft": "Salva bozza",
+    "stepper": {
+      "label": "Passi del contratto",
+      "position": "Passo {{current}} di {{total}}",
+      "state": {
+        "current": "Passo attuale",
+        "done": "Fatto",
+        "issue": "Da completare",
+        "locked": "Prima i passi precedenti",
+        "todo": "Da fare"
+      }
+    },
+    "steps": {
+      "1": {
+        "label": "Immobile",
+        "purpose": "Scegli la casa del contratto e controlla cosa serve.",
+        "title": "Scegli l'immobile",
+        "why": "Indirizzo, dati catastali e APE finiscono nel contratto e nella registrazione."
+      }
+    },
+    "title": "Crea contratto",
+    "validation": {
+      "citizenship": "Scegli la cittadinanza dall'elenco",
+      "date": "Data non valida",
+      "deposit": "Il deposito deve essere zero o più, con al massimo due decimali",
+      "email": "Indirizzo email non valido",
+      "endAfterStart": "La fine deve essere dopo l'inizio",
+      "fiscalCode": "Codice fiscale o partita IVA non valido",
+      "property": "Scegli l'immobile",
+      "rent": "Il canone deve essere maggiore di zero, con al massimo due decimali"
+    },
+    "why": "Perché lo chiediamo"
+  },
   "revenue": {
     "pageTitle": "Analisi ricavi",
     "pageDescription": "Monitora e analizza l'andamento dei ricavi",
