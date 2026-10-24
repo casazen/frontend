@@ -3,7 +3,7 @@ import type { CalmTone } from '@/components/shared/calm';
 import { formatStayDate, nightsBetween, parseStayDate } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { LeaseNextStep, LeaseNextStepActor, LeaseNextStepCode } from '@/types';
-import { REVIEW_STEP, leaseEditPath } from '../wizard/wizard-model';
+import { REVIEW_STEP, SIGN_STEP, leaseEditPath } from '../wizard/wizard-model';
 import type { LeaseTab } from './lease-sheet';
 import { monthOfDate, rentRegisterPath } from './rent-register';
 
@@ -58,7 +58,7 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
     titleKey: 'leaseFlow.nextStep.ImportSignedContract.title',
     actionKey: 'leaseFlow.nextStep.ImportSignedContract.action',
     detailKey: 'leaseFlow.nextStep.ImportSignedContract.detail',
-    target: { kind: 'sheet', tab: 'documenti' },
+    target: { kind: 'wizard', step: SIGN_STEP },
   },
   AwaitPartnerContract: {
     titleKey: 'leaseFlow.nextStep.AwaitPartnerContract.title',
@@ -76,13 +76,13 @@ const STEPS: Record<LeaseNextStepCode, StepDefinition> = {
     titleKey: 'leaseFlow.nextStep.DownloadForSignature.title',
     actionKey: 'leaseFlow.nextStep.DownloadForSignature.action',
     detailKey: 'leaseFlow.nextStep.DownloadForSignature.detail',
-    target: { kind: 'sheet', tab: 'documenti' },
+    target: { kind: 'wizard', step: SIGN_STEP },
   },
   UploadSignedCopy: {
     titleKey: 'leaseFlow.nextStep.UploadSignedCopy.title',
     actionKey: 'leaseFlow.nextStep.UploadSignedCopy.action',
     detailKey: 'leaseFlow.nextStep.UploadSignedCopy.detail',
-    target: { kind: 'sheet', tab: 'documenti' },
+    target: { kind: 'wizard', step: SIGN_STEP },
   },
   RegisterLease: {
     titleKey: 'leaseFlow.nextStep.RegisterLease.title',
