@@ -9694,7 +9694,6 @@
       "leaseNotDeletable": "This draft cannot be deleted: it already has a signed copy or a rent plan.",
       "leaseNotFound": "Lease not found.",
       "leaseNotInForce": "The lease is not in force yet: every party has to sign it.",
-      "leaseReviewNotConfirmed": "Confirm the review of the lease first.",
       "leaseTermAlreadyEnded": "The period of the lease has already ended: the notice can no longer be withdrawn.",
       "leaseTerminationDateInvalid": "The last day must be between the start of the lease and the end of the current period.",
       "leaseTypeHasNoRenewal": "This type of lease ends by itself on its end date: no notice is needed."

@@ -9694,7 +9694,6 @@
       "leaseNotDeletable": "Questa bozza non si può eliminare: ha già una copia firmata o un piano dei canoni.",
       "leaseNotFound": "Contratto non trovato.",
       "leaseNotInForce": "Il contratto non è ancora in vigore: deve essere firmato da tutte le parti.",
-      "leaseReviewNotConfirmed": "Prima conferma la revisione del contratto.",
       "leaseTermAlreadyEnded": "Il periodo del contratto è già finito: la disdetta non si può più togliere.",
       "leaseTerminationDateInvalid": "L'ultimo giorno deve essere tra l'inizio del contratto e la fine del periodo in corso.",
       "leaseTypeHasNoRenewal": "Questo tipo di contratto finisce da solo alla scadenza: non serve una disdetta."
