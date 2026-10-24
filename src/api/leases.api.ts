@@ -15,6 +15,7 @@ import type {
   LeaseRegistration,
   LeaseReview,
   LeaseReviewConfirmation,
+  LeaseSent,
   LeaseSigningState,
   LeaseSummary,
   LongRentRules,
@@ -114,6 +115,32 @@ export const leasesApi = {
     const data = await ApiClient.post<unknown>(`/leases/${id}/review/confirm`, { version });
     if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/review/confirm');
     return { version: data.version, reviewConfirmedAt: typeof data.reviewConfirmedAt === 'string' ? data.reviewConfirmedAt : null, flow: flowOf(data) };
+  },
+
+  /** LR-12: takes the confirmation of the review back, and with it «downloaded for the signature». */
+  withdrawReviewConfirmation: async (id: string, version: number): Promise<LeaseReviewConfirmation> => {
+    const response = await axios.delete<unknown>(`/leases/${id}/review/confirm`, { data: { version } });
+    const data = response.data;
+    if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/review/confirm');
+    return { version: data.version, reviewConfirmedAt: typeof data.reviewConfirmedAt === 'string' ? data.reviewConfirmedAt : null, flow: flowOf(data) };
+  },
+
+  /**
+   * LR-12: records that the contract was downloaded to be signed on paper. It needs the review confirmed and passes the same gate as
+   * the download: 422 `contract_template_not_approved` while the model of the contract is a draft (nothing changes then).
+   */
+  markSent: async (id: string, version: number): Promise<LeaseSent> => {
+    const data = await ApiClient.post<unknown>(`/leases/${id}/sent`, { version });
+    if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/sent');
+    return { version: data.version, sentForSignatureAt: typeof data.sentForSignatureAt === 'string' ? data.sentForSignatureAt : null, flow: flowOf(data) };
+  },
+
+  /** LR-12: takes the download for the signature back, so the contract can be changed. */
+  revokeSent: async (id: string, version: number): Promise<LeaseSent> => {
+    const response = await axios.delete<unknown>(`/leases/${id}/sent`, { data: { version } });
+    const data = response.data;
+    if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/sent');
+    return { version: data.version, sentForSignatureAt: typeof data.sentForSignatureAt === 'string' ? data.sentForSignatureAt : null, flow: flowOf(data) };
   },
 
   /** LR-12: the figures of the long-term area the server applies (terms, deposit limit, types): none is written in the interface. */

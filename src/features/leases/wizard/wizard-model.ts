@@ -238,16 +238,11 @@ export const AFTER_STEP = 8;
 export const DONE_STEP = 'done';
 
 /**
- * The steps the wizard of a draft has a screen for, by the server's numbers: property, parties, conditions and dates; then the review
- * (6) for a contract made in CasaZen, or the import of the signed contract (7) and what comes after it (8) for one already signed. The
- * model (5) has no screen: nothing in it is required.
+ * The steps this wizard has a screen for, by the server's numbers: property, parties, conditions and dates; then, for a contract made
+ * in CasaZen, the review (6) and the signature on paper (7); for one already signed, the import of the signed contract (7); and
+ * what comes after the signature (8) for both. The model (5) has no screen: nothing in it is required.
  */
 export function registeredSteps(origin: LeaseOrigin): readonly number[] {
-  return origin === 'Imported' ? [1, 2, 3, 4, SIGN_STEP, AFTER_STEP] : [1, 2, 3, 4, REVIEW_STEP];
-}
-
-/** The steps a lease that is signed went through, for the list of steps beside «Dopo la firma». */
-export function signedSteps(origin: LeaseOrigin): readonly number[] {
   return origin === 'Imported' ? [1, 2, 3, 4, SIGN_STEP, AFTER_STEP] : [1, 2, 3, 4, REVIEW_STEP, SIGN_STEP, AFTER_STEP];
 }
 
