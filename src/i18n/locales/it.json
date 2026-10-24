@@ -79,7 +79,10 @@
       "loadError": "Impossibile caricare i dati del contratto.",
       "accessError": "Impossibile verificare l'accesso al servizio.",
       "checkoutError": "Impossibile creare la sessione di pagamento. Riprova più tardi.",
-      "giftError": "Impossibile utilizzare la pratica omaggio. Riprova più tardi."
+      "giftError": "Impossibile utilizzare la pratica omaggio. Riprova più tardi.",
+      "adminBypass": "Accesso amministratore attivo: puoi accedere al servizio senza pagamento.",
+      "adminAccessButton": "Accedi alla pratica",
+      "adminNoAccess": "Come amministratore, puoi procedere direttamente alla creazione della pratica."
     }
   },
   "admin": {

@@ -79,7 +79,10 @@
       "loadError": "Unable to load contract data.",
       "accessError": "Unable to verify service access.",
       "checkoutError": "Unable to create payment session. Please try again later.",
-      "giftError": "Unable to use complimentary practice. Please try again later."
+      "giftError": "Unable to use complimentary practice. Please try again later.",
+      "adminBypass": "Admin access active: you can access the service without payment.",
+      "adminAccessButton": "Access practice",
+      "adminNoAccess": "As an administrator, you can proceed directly to practice creation."
     }
   },
   "admin": {
