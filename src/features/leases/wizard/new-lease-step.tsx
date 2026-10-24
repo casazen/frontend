@@ -8,7 +8,7 @@ import type { LeaseOrigin } from '@/types';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { PropertyStep } from './property-step';
-import { REGISTERED_STEPS, emptyFlow, leaseEditPath, visibleSteps } from './wizard-model';
+import { emptyFlow, leaseEditPath, registeredSteps, stepKey, visibleSteps } from './wizard-model';
 
 /**
  * The first step of a contract that does not exist yet (LR-06a): the property. The contract is born at the first «Avanti»: the draft
@@ -22,8 +22,12 @@ export function NewLeaseStep({ origin, defaultPropertyId }: { origin: LeaseOrigi
   const [propertyId, setPropertyId] = useState(defaultPropertyId ?? '');
   const [missing, setMissing] = useState(false);
 
-  const steps = visibleSteps(emptyFlow(origin), REGISTERED_STEPS);
-  const entries = steps.map((step) => ({ step, label: t(`leaseWizard.steps.${step}.label`), mark: step === 1 ? ('current' as const) : ('todo' as const) }));
+  const steps = visibleSteps(emptyFlow(origin), registeredSteps(origin));
+  const entries = steps.map((step) => ({
+    step,
+    label: t(`leaseWizard.steps.${stepKey(step, origin)}.label`),
+    mark: step === 1 ? ('current' as const) : ('todo' as const),
+  }));
 
   const submit = async () => {
     if (!propertyId) {

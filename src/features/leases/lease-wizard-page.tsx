@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
@@ -10,18 +10,14 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { useLandlordDefaults, useLeaseDraft, useLongRentRules } from '@/queries/use-lease-draft';
 import { LeaseWizard } from './wizard/lease-wizard';
+import { SignedWizard } from './wizard/signed-wizard';
+import { AFTER_STEP, DONE_STEP } from './wizard/wizard-model';
 
 const LEASES_PATH = '/app/long-rent/leases';
 
-/**
- * «Continua il contratto» (LR-06a), `/app/long-rent/leases/:id/edit`: the wizard on a draft that exists on the server. The draft is
- * read when the page opens (the same from any device) and the wizard opens on the first step that is not done. A lease that is not a
- * draft any more (signed, registered) has its sheet instead. The title is the same for every contract: no name of a person is in the
- * title of the tab.
- */
-export function LeaseWizardPage() {
+/** The wizard on a draft that exists on the server: the draft is read when the page opens, and the wizard opens on the first step not done. */
+function DraftWizard({ id }: { id: string }) {
   const { t } = useTranslation();
-  const { id = '' } = useParams<{ id: string }>();
   const draft = useLeaseDraft(id);
   const rules = useLongRentRules();
   // A draft with no landlord yet starts from the landlord the server suggests (not waiting for it if it cannot be read).
@@ -75,4 +71,30 @@ export function LeaseWizardPage() {
       />
     </div>
   );
+}
+
+/**
+ * «Continua il contratto» (LR-06a, LR-06b), `/app/long-rent/leases/:id/edit`: the wizard of a contract. While the lease is a draft it is
+ * read from the server and the wizard opens on the first step that is not done, the same from any device; a lease that is not a draft
+ * any more (signed, registered) has its sheet instead. The two last parts, «Dopo la firma» (`?step=8`) and the final screen
+ * (`?step=done`), belong to a lease that is signed, so they read the lease. The title is the same for every contract: no name of a
+ * person is in the title of the tab.
+ */
+export function LeaseWizardPage() {
+  const { t } = useTranslation();
+  const { id = '' } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const step = searchParams.get('step');
+
+  if (step === String(AFTER_STEP) || step === DONE_STEP) {
+    return (
+      <div className="min-w-0 space-y-6" data-testid="lease-signed-wizard-page">
+        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <PageHeader title={t('leaseWizard.title')} />
+        <SignedWizard leaseId={id} view={step === DONE_STEP ? 'done' : 'after'} />
+      </div>
+    );
+  }
+
+  return <DraftWizard id={id} />;
 }
