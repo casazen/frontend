@@ -59,6 +59,12 @@ export interface RouteManifestEntry {
   /** Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). */
   navCount?: NavCountKey;
   isDefault?: boolean;
+  /**
+   * The page at the bare address of its area (the Panoramica of Affitti lunghi, LR-05), for a role that cannot open it because it asks
+   * for a permission the role lacks: the address opens the first page of the area the role can open, as the bare address did when
+   * it only redirected (UI-00), instead of the reserved page.
+   */
+  homeWhenDenied?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
   /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
@@ -502,16 +508,34 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/profile'],
   },
   {
+    // Panoramica (LR-05): the home of the area, at its bare address. "Adesso" (the step of the landlord that cannot wait), the leases by
+    // group, the rent of the month and the next dates. Reading it asks what the leases ask; a role that cannot read them opens the
+    // first page of the area it can open instead of the reserved page (`homeWhenDenied`), as the bare address did before.
+    path: '/app/long-rent',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.longRentOverview',
+    navGroup: 'everyday',
+    navPlacement: 'primary',
+    navOrder: 1,
+    navBottom: 1,
+    icon: 'LayoutDashboard',
+    isDefault: true,
+    homeWhenDenied: true,
+    component: async () => ({
+      default: (await import('@/features/leases/overview/long-rent-overview-page')).LongRentOverviewPage,
+    }),
+  },
+  {
     path: '/app/long-rent/leases',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.leases',
     navGroup: 'everyday',
     navPlacement: 'primary',
-    navOrder: 1,
-    navBottom: 1,
+    navOrder: 2,
+    navBottom: 2,
     icon: 'FileText',
-    isDefault: true,
     component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
     legacyPaths: ['/leases'],
   },
@@ -523,10 +547,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.rents',
     navGroup: 'everyday',
     navPlacement: 'primary',
-    navOrder: 2,
-    navBottom: 2,
+    navOrder: 3,
+    navBottom: 3,
     icon: 'Wallet',
     component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
+  },
+  {
+    // Scadenze (LR-05): the agenda of the dates not to miss, month by month. In "Altro", first: the main menu holds the four places of
+    // the bar of the phone, and the overview links here. Reading it asks what the leases ask.
+    path: '/app/long-rent/deadlines',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    navKey: 'nav.longRentDeadlines',
+    navPlacement: 'secondary',
+    navOrder: 19,
+    icon: 'CalendarDays',
+    component: async () => ({
+      default: (await import('@/features/leases/deadlines/long-rent-deadlines-page')).LongRentDeadlinesPage,
+    }),
   },
   {
     path: '/app/long-rent/leases/new',
@@ -564,8 +602,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.properties',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 3,
-    navBottom: 3,
+    navOrder: 4,
+    navBottom: 4,
     icon: 'Home',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
@@ -607,15 +645,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not).
+    // hides the buttons from who may not). Fifth of the main menu: the bar of the phone holds four places, and since the Panoramica
+    // (LR-05) is the first of them, Interventi is behind "Altro" on the phone.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
+    navOrder: 5,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -631,7 +669,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
-    // the leases; the others find the reserved page. In "Altro": the main menu holds Contratti and Immobili.
+    // the leases; the others find the reserved page. In "Altro": the main menu holds the four places of the bar of the phone.
     path: '/app/long-rent/fiscal',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],

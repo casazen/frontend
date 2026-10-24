@@ -453,7 +453,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.keyboard.press('Enter');
       await expect(page.getByRole('menuitemradio', { name: /Affitti lunghi/ })).toBeVisible();
       await page.getByRole('menuitemradio', { name: /Affitti lunghi/ }).click();
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       await expect(page.getByRole('navigation', { name: 'Menu Affitti lunghi' })).toBeVisible();
     });
 

@@ -55,27 +55,32 @@ function resolveActiveContext(
   return available[0]?.contextKey ?? null;
 }
 
+/** The areas whose home the backend names wrongly for some roles (below): their home is worked out here, from the menu. */
+const AREAS_WITH_THEIR_OWN_HOME: readonly AppContextKey[] = ['account', 'long-rent'];
+
 /**
- * The backend names `/app/account` as the home of the account area for every role, but only the owner and the administrators
- * may open that page: the accountant and the property manager hold other permissions of the context. The home of the area is
- * the first page of its menu that the role may open (AM-04, decision AM-D26).
+ * The backend names one home for every role of two areas, and it is not always one the role may open. `/app/account` is open only
+ * to the owner and the administrators: the accountant and the property manager hold other permissions of the context. And
+ * `/app/long-rent/leases` is the list of leases, while the home of Affitti lunghi is the Panoramica `/app/long-rent` since LR-05
+ * (and a collaborator who holds only the properties cannot open either). The home of the area is the first page of its menu that
+ * the role may open (AM-04, decision AM-D26).
  */
-function withAccountHome(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
+function withAreaHomes(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
   return contexts.map((context) => {
-    if (context.contextKey !== 'account') return context;
-    const home = getVisibleNavEntries('account', (_, permission) => context.permissions.includes(permission))[0];
+    if (!AREAS_WITH_THEIR_OWN_HOME.includes(context.contextKey)) return context;
+    const home = getVisibleNavEntries(context.contextKey, (_, permission) => context.permissions.includes(permission))[0];
     return home ? { ...context, defaultRoute: home.path } : context;
   });
 }
 
 /**
- * The contexts as the workspace keeps them: the account one with its own home, and last. The API lists them sorted by key, so
- * `account` would come first, and the first context is where a person with no saved area starts (`resolveActiveContext`, and the
- * guard and the legacy redirect, read `contexts[0]`): a person with another area starts there, as before, and the account area
- * stays one click away in the area selector.
+ * The contexts as the workspace keeps them: the account and long-rent ones with their own home, and the account one last. The API
+ * lists them sorted by key, so `account` would come first, and the first context is where a person with no saved area starts
+ * (`resolveActiveContext`, and the guard and the legacy redirect, read `contexts[0]`): a person with another area starts there,
+ * as before, and the account area stays one click away in the area selector.
  */
 function arrangeContexts(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
-  const withHome = withAccountHome(contexts);
+  const withHome = withAreaHomes(contexts);
   return [
     ...withHome.filter((context) => context.contextKey !== 'account'),
     ...withHome.filter((context) => context.contextKey === 'account'),

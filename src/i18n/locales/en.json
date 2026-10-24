@@ -558,6 +558,8 @@
     "ota": "OTA",
     "leases": "Leases",
     "rents": "Rents",
+    "longRentOverview": "Overview",
+    "longRentDeadlines": "Deadlines",
     "serviceRequests": "Maintenance",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
@@ -8167,6 +8169,8 @@
       "hostInvites": "invite|invitation|invitations|new host|referral|add host",
       "jobs": "jobs|queues|automations|background processes|scheduled tasks",
       "leases": "rentals|contracts|tenants|rent|deadlines|lease",
+      "longRentDeadlines": "dates|reminders|registration|notice|renewal|questura",
+      "longRentOverview": "home|today|start|summary|now|what to do|overview",
       "ltrReferenceData": "agreed rent|zones|territorial agreements|regulatory data",
       "marketing": "campaigns|promotion|newsletter",
       "marketplace": "services|suppliers|cleaning|maintenance|apps",
@@ -11208,6 +11212,206 @@
       "pending": "Still to collect",
       "pendingDelta_one": "{{count}} rent not yet due",
       "pendingDelta_other": "{{count}} rents not yet due"
+    }
+  },
+  "leaseFlow": {
+    "actor": {
+      "Landlord": "Your turn",
+      "System": "CasaZen takes care of it",
+      "Tenant": "The tenant's turn"
+    },
+    "due": {
+      "byIn_one": "By {{date}} · in {{count}} day",
+      "byIn_other": "By {{date}} · in {{count}} days",
+      "overdue_one": "Overdue by {{count}} day",
+      "overdue_other": "Overdue by {{count}} days",
+      "today": "By today",
+      "tomorrow": "By tomorrow"
+    },
+    "nextStep": {
+      "ActivateRentPlan": {
+        "action": "Turn on the plan",
+        "detail": "So you can see who has paid and who is late.",
+        "title": "Turn on the rent plan"
+      },
+      "AllGood": {
+        "action": "Open the lease",
+        "title": "All in order"
+      },
+      "Archive": {
+        "action": "Open the lease",
+        "title": "The lease has ended"
+      },
+      "AwaitPartnerContract": {
+        "action": "Open the lease",
+        "detail": "The partner prepares the contract of this draft.",
+        "title": "Wait for the contract of the partner"
+      },
+      "ChooseProperty": {
+        "action": "Choose the property",
+        "detail": "The property of the draft is no longer available.",
+        "title": "Choose the property of the lease"
+      },
+      "CompleteStep": {
+        "action": "Complete the draft",
+        "detail": "Step {{step}} of 5 still has something missing.",
+        "title": "Complete the draft of the lease"
+      },
+      "ConfirmReview": {
+        "action": "Check and confirm",
+        "detail": "All the data is there: read the preview before you have it signed.",
+        "title": "Check the lease and confirm"
+      },
+      "DecideNotice": {
+        "action": "Open the lease",
+        "detail": "If nobody gives notice by the last day, the lease renews by itself.",
+        "title": "Decide whether to give notice"
+      },
+      "DownloadForSignature": {
+        "action": "Download the lease",
+        "detail": "Then you upload the signed copy here.",
+        "title": "Download the lease and have it signed"
+      },
+      "ImportSignedContract": {
+        "action": "Upload the lease",
+        "detail": "You need the signed PDF and the day it was signed.",
+        "title": "Upload the signed lease"
+      },
+      "OrganizeEnd": {
+        "action": "Open the lease",
+        "detail": "The lease ends and does not renew.",
+        "title": "Plan the end of the lease"
+      },
+      "QuesturaCommunication": {
+        "action": "Go to the communication",
+        "detail": "The tenant is non-EU: it must be made within 48 hours of the delivery of the property.",
+        "title": "Make the communication to the Questura"
+      },
+      "RecordKeyHandover": {
+        "action": "Record the handover",
+        "detail": "The 48 hours for the communication to the Questura count from that day.",
+        "title": "Record when you handed over the keys"
+      },
+      "RegisterLease": {
+        "action": "Register the lease",
+        "title": "Register the lease"
+      },
+      "SendRentReminder": {
+        "action": "Go to the rents",
+        "detail_one": "{{amount}} in all, the oldest overdue by {{count}} day.",
+        "detail_other": "{{amount}} in all, the oldest overdue by {{count}} days.",
+        "title_one": "A rent is late",
+        "title_other": "{{count}} rents are late"
+      },
+      "UploadSignedCopy": {
+        "action": "Upload the signed copy",
+        "detail": "The lease was downloaded for signing: the signed copy is missing.",
+        "title": "Upload the signed copy"
+      },
+      "unknown": {
+        "action": "Open the lease",
+        "title": "This lease has a step to take"
+      }
+    }
+  },
+  "longRentDeadlines": {
+    "csv": {
+      "button": "Download CSV",
+      "columns": {
+        "amount": "Amount",
+        "date": "Date",
+        "property": "Property",
+        "status": "Status",
+        "tenant": "Tenant",
+        "type": "Deadline"
+      },
+      "overdue": "Overdue",
+      "upcoming": "Upcoming"
+    },
+    "description": "Registrations, end of lease, notices and rents: the dates not to miss.",
+    "empty": {
+      "action": "Create lease",
+      "description": "Deadlines fill in by themselves: registration, end of lease, notice and rents show up here as they get close.",
+      "title": "No deadlines in the next {{days}} days"
+    },
+    "filters": {
+      "all": "All",
+      "label": "Kind of deadline",
+      "questura": "Questura",
+      "registrations": "Signatures and registrations",
+      "renewals": "Renewals and notices",
+      "rents": "Rents"
+    },
+    "loadError": "The deadlines could not be loaded.",
+    "loading": "Loading the deadlines…",
+    "more": "Show the following ones",
+    "noneOfType": "No deadlines of this kind in the period.",
+    "overdueTitle": "To do right away",
+    "row": {
+      "dueIn_one": "in {{count}} day",
+      "dueIn_other": "in {{count}} days",
+      "overdue_one": "Overdue by {{count}} day",
+      "overdue_other": "Overdue by {{count}} days",
+      "today": "today",
+      "tomorrow": "tomorrow"
+    },
+    "title": "Deadlines",
+    "truncated": "There are more than 500 rents to collect: the first 500 by date are shown. The others show up as they get close.",
+    "type": {
+      "LeaseEnd": "End of the lease",
+      "Notice": "Last day to give notice",
+      "Questura": "Communication to the Questura",
+      "Rent": "Rent of {{amount}}",
+      "RliRegistration": "Registration of the lease",
+      "unknown": "Deadline"
+    },
+    "until": "Until {{date}}"
+  },
+  "longRentOverview": {
+    "actions": {
+      "addProperty": "Add property",
+      "createLease": "Create lease"
+    },
+    "contracts": {
+      "all": "All leases",
+      "title": "Your leases"
+    },
+    "description": "{{date}} · leases, rents and deadlines at a glance.",
+    "loadError": "The overview could not be loaded.",
+    "loading": "Loading the overview…",
+    "now": {
+      "kicker": "Now",
+      "nothing": {
+        "action": "See the leases",
+        "body": "Rents are in order and no lease is waiting for a step from you.",
+        "title": "Nothing urgent"
+      },
+      "openLease": "Open the lease"
+    },
+    "rents": {
+      "all": "Go to the rents",
+      "collected": "Collected in {{month}}",
+      "collectedDelta_one": "of {{expected}} expected · {{paid}} of {{count}} rent",
+      "collectedDelta_other": "of {{expected}} expected · {{paid}} of {{count}} rents",
+      "label": "The numbers of the month",
+      "noOverdue": "Nothing late",
+      "nothingPending": "Nothing left to collect",
+      "overdue": "Late",
+      "overdueDelta_one": "{{count}} rent",
+      "overdueDelta_other": "{{count}} rents",
+      "pending": "Still to collect",
+      "pendingDelta_one": "{{count}} rent not yet due",
+      "pendingDelta_other": "{{count}} rents not yet due",
+      "title": "Rents of {{month}}"
+    },
+    "retry": "Retry",
+    "title": "Good morning, {{name}}",
+    "titleNoName": "Good morning",
+    "upcoming": {
+      "all": "See all",
+      "empty": "No deadlines in the next 4 months.",
+      "loadError": "The deadlines could not be loaded.",
+      "title": "Deadlines"
     }
   },
   "longRentRequests": {
