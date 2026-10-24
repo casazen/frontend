@@ -1148,7 +1148,6 @@
       }
     },
     "createPageTitle": "Create lease",
-    "createPageDescription": "We guide you step by step: the draft saves itself and you can pick it up whenever you like.",
     "form": {
       "propertyTermsTitle": "Property & terms",
       "propertyTermsDescription": "Select the property and define lease terms",
@@ -1296,27 +1295,6 @@
         "saving": "Saving...",
         "cancel": "Cancel"
       }
-    },
-    "kind": {
-      "legend": "What contract do you want to make?",
-      "description": "First how you want to proceed and what type of lease it is: how we prepare it depends on it.",
-      "concordato": {
-        "title": "Canone concordato (3+2)",
-        "description": "You prepare it with ConcordatoFacile, our partner: we create the draft at once, with the reference to link to the practice."
-      },
-      "other": {
-        "title": "Canone libero (4+4)",
-        "description": "You fill in the data of the contract here: property, parties, term and rent."
-      },
-      "continue": "Continue",
-      "change": "Change type of contract"
-    },
-    "concordato": {
-      "title": "New canone concordato contract",
-      "description": "Choose the property: we save the draft of the contract and its reference for ConcordatoFacile at once.",
-      "whatHappens": "No parties, rent, dates or APE are needed yet: you complete the contract with ConcordatoFacile.",
-      "create": "Create the draft",
-      "noProperties": "You have no long-term property yet: add the property to create the contract."
     },
     "partnerDraft": {
       "title": "Draft — waiting for the partner’s contract",
@@ -1851,14 +1829,51 @@
       "upload": "Upload the signed copy"
     },
     "start": {
-      "origin": {
-        "created": {
-          "description": "We guide you step by step: you prepare the lease here and have it signed.",
-          "title": "I create the lease with CasaZen"
+      "back": "Back",
+      "changeKind": "Change type of lease",
+      "concordato": {
+        "documents": {
+          "description": "You upload them to CasaZen to keep deadlines, registration and rents under control.",
+          "title": "I already have the lease and the documents"
         },
-        "imported": {
-          "description": "You enter it in CasaZen to keep deadlines, registration and rents under control.",
-          "title": "I already have the signed lease"
+        "legend": "Do you already have the lease and the documents?",
+        "noProperties": "You have no long-term property yet: add the property to create the lease.",
+        "whatHappens": "We save the draft of the lease and take you to the ConcordatoFacile service: you enter parties, rent and term in its form.",
+        "zero": {
+          "description": "You activate the service of ConcordatoFacile, our partner, and fill in its form: the lease is born there.",
+          "soon": "Available soon.",
+          "title": "I start from scratch"
+        }
+      },
+      "continue": "Continue",
+      "kind": {
+        "concordato": {
+          "description": "The rent follows the territorial agreement of the municipality.",
+          "title": "Agreed rent (3+2)"
+        },
+        "description": "First choose the type of lease: how we prepare it depends on it.",
+        "legend": "What lease do you want to make?",
+        "libero": {
+          "description": "You set the rent freely with the tenant.",
+          "title": "Free rent (4+4)"
+        },
+        "transitorio": {
+          "description": "For a temporary need, with a limited term.",
+          "title": "Transitional (1 to 18 months)"
+        }
+      },
+      "other": {
+        "casazen": {
+          "description": "We guide you step by step: you prepare the lease here and have it signed.",
+          "title": "I prepare it with CasaZen",
+          "unavailable": {
+            "libero": "CasaZen has no lease template for the free-rent type yet: if you already have the lease, upload it.",
+            "transitorio": "CasaZen has no lease template for the transitional type yet: if you already have the lease, upload it."
+          }
+        },
+        "documents": {
+          "description": "The lease is already signed: you enter it in CasaZen to keep deadlines, registration and rents under control.",
+          "title": "I already have the documents"
         },
         "legend": "How do you want to proceed?"
       }
@@ -1944,6 +1959,7 @@
     },
     "title": "Create lease",
     "type": {
+      "chosen": "You chose it at the start.",
       "description": {
         "Created": {
           "Concordato": "You prepare it here, step by step.",

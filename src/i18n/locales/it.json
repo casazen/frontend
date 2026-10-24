@@ -1148,7 +1148,6 @@
       }
     },
     "createPageTitle": "Nuovo contratto",
-    "createPageDescription": "Ti guidiamo passo per passo: la bozza si salva da sola e puoi riprenderla quando vuoi.",
     "form": {
       "propertyTermsTitle": "Immobile e termini",
       "propertyTermsDescription": "Seleziona l'immobile e definisci i termini del contratto",
@@ -1296,27 +1295,6 @@
         "saving": "Salvataggio...",
         "cancel": "Annulla"
       }
-    },
-    "kind": {
-      "legend": "Che contratto vuoi fare?",
-      "description": "Prima come vuoi procedere e che tipo di contratto è: da questo dipende come lo prepariamo.",
-      "concordato": {
-        "title": "Canone concordato (3+2)",
-        "description": "Lo prepari con ConcordatoFacile, il nostro partner: creiamo subito la bozza con il riferimento da collegare alla pratica."
-      },
-      "other": {
-        "title": "Canone libero (4+4)",
-        "description": "Compili tu qui i dati del contratto: casa, parti, durata e canone."
-      },
-      "continue": "Continua",
-      "change": "Cambia tipo di contratto"
-    },
-    "concordato": {
-      "title": "Nuovo contratto a canone concordato",
-      "description": "Scegli la casa: salviamo subito la bozza del contratto e il suo riferimento per ConcordatoFacile.",
-      "whatHappens": "Non servono ancora parti, canone, date né APE: il contratto lo completi con ConcordatoFacile.",
-      "create": "Crea la bozza",
-      "noProperties": "Non hai ancora case in affitto lungo: aggiungi la casa per creare il contratto."
     },
     "partnerDraft": {
       "title": "Bozza — in attesa del contratto del partner",
@@ -1851,14 +1829,51 @@
       "upload": "Carica la copia firmata"
     },
     "start": {
-      "origin": {
-        "created": {
-          "description": "Ti guidiamo passo per passo: prepari il contratto qui e lo fai firmare.",
-          "title": "Creo il contratto con CasaZen"
+      "back": "Indietro",
+      "changeKind": "Cambia tipo di contratto",
+      "concordato": {
+        "documents": {
+          "description": "Li carichi in CasaZen per tenere sotto controllo scadenze, registrazione e canoni.",
+          "title": "Ho già il contratto e i documenti"
         },
-        "imported": {
-          "description": "Lo inserisci in CasaZen per tenere sotto controllo scadenze, registrazione e canoni.",
-          "title": "Ho già il contratto firmato"
+        "legend": "Hai già il contratto e i documenti?",
+        "noProperties": "Non hai ancora case in affitto lungo: aggiungi la casa per creare il contratto.",
+        "whatHappens": "Salviamo la bozza del contratto e ti portiamo al servizio di ConcordatoFacile: parti, canone e durata li inserisci nel suo modulo.",
+        "zero": {
+          "description": "Attivi il servizio di ConcordatoFacile, il nostro partner, e compili il suo modulo: il contratto nasce lì.",
+          "soon": "Disponibile a breve.",
+          "title": "Parto da zero"
+        }
+      },
+      "continue": "Continua",
+      "kind": {
+        "concordato": {
+          "description": "Il canone segue l'accordo territoriale del comune.",
+          "title": "Canone concordato (3+2)"
+        },
+        "description": "Per prima cosa scegli il tipo di contratto: da questo dipende come lo prepariamo.",
+        "legend": "Che contratto vuoi fare?",
+        "libero": {
+          "description": "Il canone lo stabilisci liberamente con l'inquilino.",
+          "title": "Canone libero (4+4)"
+        },
+        "transitorio": {
+          "description": "Per un'esigenza temporanea, con una durata limitata.",
+          "title": "Transitorio (da 1 a 18 mesi)"
+        }
+      },
+      "other": {
+        "casazen": {
+          "description": "Ti guidiamo passo per passo: prepari il contratto qui e lo fai firmare.",
+          "title": "Lo preparo con CasaZen",
+          "unavailable": {
+            "libero": "Per il canone libero non c'è ancora il modello di contratto in CasaZen: se hai già il contratto, caricalo.",
+            "transitorio": "Per il transitorio non c'è ancora il modello di contratto in CasaZen: se hai già il contratto, caricalo."
+          }
+        },
+        "documents": {
+          "description": "Il contratto è già firmato: lo inserisci in CasaZen per tenere sotto controllo scadenze, registrazione e canoni.",
+          "title": "Ho già i documenti"
         },
         "legend": "Come vuoi procedere?"
       }
@@ -1944,6 +1959,7 @@
     },
     "title": "Crea contratto",
     "type": {
+      "chosen": "Lo hai scelto all'inizio.",
       "description": {
         "Created": {
           "Concordato": "Lo prepari qui, passo per passo.",

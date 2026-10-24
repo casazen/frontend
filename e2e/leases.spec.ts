@@ -111,13 +111,13 @@ test.describe('Lease flow (long-term landlord)', () => {
     await page.route(`**/api/properties/${FLOW_PROPERTY.id}/documents`, (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
     );
-    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=libero&come=casazen', 'long-term'), { waitUntil: 'domcontentloaded' });
     await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
     await expect(page.getByText(/Per creare il contratto serve l’APE/)).toBeVisible();
     // The APE is uploaded in a window over the page, which stays where it is (it used to open the property page).
     await page.getByRole('button', { name: "Carica l'APE" }).click();
     await expect(page.getByRole('dialog').getByTestId('document-drop-zone')).toBeVisible();
-    await expect(page).toHaveURL(/\/leases\/new\?tipo=altro/);
+    await expect(page).toHaveURL(/\/leases\/new\?tipo=libero&come=casazen/);
   });
 
   test('a short-stay-only host cannot open the lease creation page', async ({ page }) => {

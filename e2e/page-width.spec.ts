@@ -38,7 +38,7 @@ test.describe('Page width', () => {
     { name: 'the profile of Affitti lunghi', path: '/app/long-rent/profile', profile: 'long-term', heading: /Il mio profilo/ },
     { name: 'the profile of the staff console', path: '/app/admin/profile', profile: 'admin', heading: /Profilo utente/ },
     { name: 'the form of a new property', path: '/app/short-rent/properties/create', profile: 'short-stay', heading: /Crea propriet/ },
-    { name: 'the form of a new lease', path: '/app/long-rent/leases/new?tipo=altro', profile: 'long-term', heading: /Nuovo contratto/ },
+    { name: 'the form of a new lease', path: '/app/long-rent/leases/new?tipo=libero&come=casazen', profile: 'long-term', heading: /Nuovo contratto/ },
   ];
 
   for (const { name, path, profile, heading } of fullWidthPages) {
