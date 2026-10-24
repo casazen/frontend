@@ -114,6 +114,24 @@ export function useCreateConcordatoDraft() {
   });
 }
 
+/**
+ * E01/F02/US01: creates a minimal ConcordatoFacile draft.
+ * Calls POST /api/leases/drafts/concordatofacile and invalidates lease queries on success.
+ */
+export function useCreateCfDraft() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (propertyId: string) => leasesApi.createCfDraft(propertyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
+    },
+    onError: (error) => {
+      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.leaseCreateFailed'));
+    },
+  });
+}
+
 /** LT-02: the signature panel (persisted signers, provider availability, final contract availability). */
 export function useLeaseSigning(id: string) {
   return useQuery({
