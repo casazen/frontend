@@ -1698,6 +1698,7 @@
     },
     "loadError": "Could not open the lease wizard. Try again.",
     "needs": {
+      "ape_identification_missing": "Enter the code and energy class of the APE",
       "ape_missing": "The APE (energy performance certificate) of the property is missing",
       "ape_ok": "APE on file",
       "cadastral_missing": "The cadastral data of the property are missing",
@@ -1831,6 +1832,7 @@
     },
     "saveDraft": "Save draft",
     "sign": {
+      "dataMissing": "Some data the contract model needs are missing: open “Read the preview” to see which ones (they are marked DATO MANCANTE) and complete them in the earlier steps.",
       "download": "Download to sign",
       "downloadAgain": "Download again",
       "lines": {

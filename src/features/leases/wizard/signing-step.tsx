@@ -45,6 +45,8 @@ function problemCodeOf(error: unknown): string | undefined {
  * the tenant: no code, no link, no e-mail. The download can be taken back, and the screen says it (a toast right after, and a button
  * while the contract is waiting to be signed). While the model of the contract is a draft the server refuses the download
  * (`contract_template_not_approved`): the button is off and the step says so, with the preview (marked BOZZA) still there to read.
+ * When the model lacks a datum of the contract (`contract_data_missing`, which the review should have caught: a guard) the step says so
+ * too, in a fixed notice and not only in a toast, and points at the preview, where the missing data are marked.
  */
 export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, flush }: SigningStepProps) {
   const { t } = useTranslation();
@@ -52,11 +54,12 @@ export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, f
   const forgetReads = useForgetLeaseReads(leaseId);
   const signing = useLeaseSigning(leaseId);
   const [working, setWorking] = useState<Working>(null);
-  const [refused, setRefused] = useState(false);
+  const [refused, setRefused] = useState<'template' | 'data' | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
 
   const sent = flowStep(flow, SIGN_STEP)?.needs.some((need) => need.code === 'signed_copy_missing') ?? false;
-  const templateInApproval = refused || signing.data?.contractUnavailableCode === 'contract_template_not_approved';
+  const templateInApproval = refused === 'template' || signing.data?.contractUnavailableCode === 'contract_template_not_approved';
+  const dataMissing = refused === 'data' || signing.data?.contractUnavailableCode === 'contract_data_missing';
 
   /** Takes the download back on the server: the toast after the download and the button both call it. */
   const revoke = async () => {
@@ -80,8 +83,9 @@ export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, f
     } catch (error) {
       const readable = await withJsonErrorBody(error);
       if (stopOn(readable)) return;
-      if (problemCodeOf(readable) === 'contract_template_not_approved') {
-        setRefused(true);
+      const code = problemCodeOf(readable);
+      if (code === 'contract_template_not_approved' || code === 'contract_data_missing') {
+        setRefused(code === 'contract_data_missing' ? 'data' : 'template');
         return;
       }
       toast.error(getProblemMessage(readable, t) ?? t('leases.signature.downloadFailed'));
@@ -168,6 +172,10 @@ export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, f
           {templateInApproval ? (
             <Alert variant="warning" data-testid="lease-sign-template">
               {t('leaseWizard.sign.templateInApproval')}
+            </Alert>
+          ) : dataMissing ? (
+            <Alert variant="warning" data-testid="lease-sign-data-missing">
+              {t('leaseWizard.sign.dataMissing')}
             </Alert>
           ) : null}
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">

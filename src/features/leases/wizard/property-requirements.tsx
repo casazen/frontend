@@ -110,15 +110,28 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
             </div>
           ) : null}
 
+          {/* `lw-ape-identification`: where the need `ape_identification_missing` points (the reading, then the two fields to type). */}
           {apeToIdentify && ape && readingApe ? (
-            <p role="status" data-testid="lease-ape-reading" className="flex items-center gap-2 text-foreground/80">
+            <p
+              id="lw-ape-identification"
+              tabIndex={-1}
+              role="status"
+              data-testid="lease-ape-reading"
+              className="flex items-center gap-2 text-foreground/80 outline-none"
+            >
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               {t('leases.form.apeReadingFromDocument')}
             </p>
           ) : null}
 
           {apeToIdentify && ape && !readingApe ? (
-            <div role="status" data-testid="lease-ape-identification" className="space-y-1 rounded-md border border-amber-500/50 bg-amber-500/10 p-3">
+            <div
+              id="lw-ape-identification"
+              tabIndex={-1}
+              role="status"
+              data-testid="lease-ape-identification"
+              className="space-y-1 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 outline-none"
+            >
               <p className="font-medium">{t('leases.form.apeIdentificationRequired')}</p>
               <p className="text-foreground/80">{t('leases.form.apeIdentificationHelp')}</p>
               <ApeIdentificationForm

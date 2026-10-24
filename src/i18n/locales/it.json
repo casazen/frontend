@@ -1698,6 +1698,7 @@
     },
     "loadError": "Impossibile aprire la procedura. Riprova.",
     "needs": {
+      "ape_identification_missing": "Indica codice e classe energetica dell'APE",
       "ape_missing": "Manca l'APE (attestato di prestazione energetica) dell'immobile",
       "ape_ok": "APE presente",
       "cadastral_missing": "Mancano i dati catastali dell'immobile",
@@ -1831,6 +1832,7 @@
     },
     "saveDraft": "Salva bozza",
     "sign": {
+      "dataMissing": "Mancano alcuni dati richiesti dal modello di contratto: apri «Leggi l'anteprima» per vedere quali (sono segnati come DATO MANCANTE) e completali nei passi precedenti.",
       "download": "Scarica da firmare",
       "downloadAgain": "Scarica di nuovo",
       "lines": {
