@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
-import { useLeaseDraft } from '@/queries/use-lease-draft';
+import { useLandlordDefaults, useLeaseDraft, useLongRentRules } from '@/queries/use-lease-draft';
 import { LeaseWizard } from './wizard/lease-wizard';
 
 const LEASES_PATH = '/app/long-rent/leases';
@@ -23,6 +23,10 @@ export function LeaseWizardPage() {
   const { t } = useTranslation();
   const { id = '' } = useParams<{ id: string }>();
   const draft = useLeaseDraft(id);
+  const rules = useLongRentRules();
+  // A draft with no landlord yet starts from the landlord the server suggests (not waiting for it if it cannot be read).
+  const needsLandlord = draft.data !== undefined && draft.data.values.landlords.length === 0;
+  const landlord = useLandlordDefaults(needsLandlord);
 
   if (draft.isError) {
     const status = getHttpStatus(draft.error);
@@ -44,8 +48,17 @@ export function LeaseWizardPage() {
     );
   }
 
-  if (draft.isLoading || !draft.data) {
+  if (draft.isLoading || rules.isLoading || (needsLandlord && landlord.isLoading)) {
     return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
+  }
+
+  if (rules.isError || !rules.data || !draft.data) {
+    return (
+      <div className="min-w-0 space-y-4">
+        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <ErrorState testId="lease-wizard-error" title={t('leaseWizard.loadError')} error={rules.error} onRetry={() => void rules.refetch()} />
+      </div>
+    );
   }
 
   return (
@@ -53,7 +66,13 @@ export function LeaseWizardPage() {
       <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
       <PageHeader title={t('leaseWizard.title')} />
       {/* A new key for each reading of the draft: after a conflict, reading it again gives a wizard that starts from what was saved. */}
-      <LeaseWizard key={draft.dataUpdatedAt} draft={draft.data} onReload={() => void draft.refetch()} />
+      <LeaseWizard
+        key={draft.dataUpdatedAt}
+        draft={draft.data}
+        defaults={landlord.data ?? null}
+        rules={rules.data}
+        onReload={() => void draft.refetch()}
+      />
     </div>
   );
 }

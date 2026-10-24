@@ -27,6 +27,7 @@ import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
 import { defaultLeaseTab, isPartnerDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
+import { ContinueDraftNotice } from './components/continue-draft-notice';
 
 const LEASES_PATH = '/app/long-rent/leases';
 
@@ -108,6 +109,7 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
       ) : null}
 
       {partnerDraft ? <PartnerDraftNotice /> : null}
+      {lease.status === 'Draft' && !partnerDraft ? <ContinueDraftNotice leaseId={lease.id} /> : null}
 
       <LeasePartnerReference leaseId={lease.id} />
 

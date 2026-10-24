@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FormProvider, useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,20 +8,28 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { leasesApi } from '@/api/leases.api';
+import { getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
-import { useForgetLeaseReads } from '@/queries/use-lease-draft';
-import type { LeaseDraft, LeaseNeed } from '@/types';
+import { useForgetLeaseReads, useLeaseReview } from '@/queries/use-lease-draft';
+import type { LandlordDefaults, LeaseDraft, LeaseNeed, LongRentRules } from '@/types';
+import { DatesStep } from './dates-step';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
+import { PartiesStep } from './parties-step';
 import { PropertyStep } from './property-step';
+import { ReviewStep } from './review-step';
+import { TermsStep } from './terms-step';
 import { STEP_SCHEMAS } from './wizard-schemas';
 import { needMessage } from './wizard-messages';
 import { useLeaseDraftSaver, type DraftSaveStatus, type SavedStep } from './use-lease-draft-saver';
 import {
   REGISTERED_STEPS,
+  REVIEW_STEP,
   blockingNeeds,
   fieldIdOfNeed,
   flowStep,
+  isBlankRow,
   isDataStep,
   leaseEditPath,
   markOf,
@@ -62,25 +70,28 @@ function SaveIndicator({ status, savedAt, onRetry }: { status: DraftSaveStatus; 
 
 interface LeaseWizardProps {
   draft: LeaseDraft;
+  /** The landlord the server suggests, for a draft that has none yet. */
+  defaults: LandlordDefaults | null;
+  rules: LongRentRules;
   /** Reads the draft again: the person chose to see the version saved somewhere else. */
   onReload: () => void;
 }
 
 /**
- * The wizard «Crea contratto» on a draft that exists on the server (LR-06a): the steps of the contract and the saving.
+ * The wizard «Crea contratto» on a draft that exists on the server (LR-06a): the steps of the contract, the review, the saving.
  * The draft IS the contract: every change is saved as it is typed (`useLeaseDraftSaver`), the server says what each step still needs
  * (`flow`) and the steps show it; a draft opens on the first step that is not done, from any device. Nothing is kept in the browser.
  * «Avanti» goes on when the step has nothing left that was typed wrong or missing; an APE or the cadastral data of the property that
  * are missing only stop the review.
  */
-export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
+export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const imported = draft.origin === 'Imported';
   const sheetPath = `${LEASES_PATH}/${draft.id}`;
 
-  const [initial] = useState(() => toWizardValues(draft.values));
+  const [initial] = useState(() => toWizardValues(draft.values, defaults));
   const [flow, setFlow] = useState(draft.flow);
   const flowRef = useRef(draft.flow);
   const [maxStep, setMaxStep] = useState(draft.wizardMaxStep);
@@ -132,7 +143,7 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
     [form, forgetReads],
   );
   const saver = useLeaseDraftSaver({ leaseId: draft.id, version: draft.version, origin: draft.origin, getValues, onSaved });
-  const { queue, flush } = saver;
+  const { queue, flush, adopt, getVersion, stopOn } = saver;
 
   // Every change of a field is queued for its step.
   useEffect(() => {
@@ -142,6 +153,15 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
     });
     return () => subscription.unsubscribe();
   }, [form, queue]);
+
+  // The landlord the server suggests is on the screen from the start: it is saved when the step of the parties opens, so that what the
+  // screen shows and what the server says is missing agree.
+  const suggestedLandlord = useRef(draft.values.landlords.length === 0 && initial.landlords.some((row) => !isBlankRow(row)));
+  useEffect(() => {
+    if (current !== 2 || !suggestedLandlord.current) return;
+    suggestedLandlord.current = false;
+    queue(2);
+  }, [current, queue]);
 
   // Landing on another step: the focus goes to its heading, which a screen reader reads.
   const previousStep = useRef(current);
@@ -157,6 +177,9 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
     handledFocus.current = focusRequest;
     panelRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }, [focusRequest, hasErrors]);
+
+  const review = useLeaseReview(draft.id, current === REVIEW_STEP);
+  const reviewConfirmed = !!review.data?.reviewConfirmedAt;
 
   const stepHref = (step: number) => leaseEditPath(draft.id, step);
   const goTo = (step: number) => setSearchParams({ step: String(step) });
@@ -176,11 +199,35 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
   const next = position >= 0 && position < steps.length - 1 ? steps[position + 1] : null;
   const stopped = saver.status === 'conflict' || saver.status === 'gone';
 
+  const confirmReview = async () => {
+    if (reviewConfirmed) {
+      navigate(sheetPath);
+      return;
+    }
+    if (!(await flush())) return;
+    try {
+      const confirmation = await leasesApi.confirmReview(draft.id, getVersion());
+      adopt(confirmation.version);
+      flowRef.current = confirmation.flow;
+      setFlow(confirmation.flow);
+      forgetReads();
+      await review.refetch();
+      toast.success(t('leaseWizard.review.confirmedToast'));
+    } catch (error) {
+      if (!stopOn(error)) toast.error(getProblemMessage(error, t) ?? t('leaseWizard.review.confirmFailed'));
+      void review.refetch();
+    }
+  };
+
   const advance = async () => {
     if (busy || stopped) return;
     setBusy(true);
     setRaised(null);
     try {
+      if (current === REVIEW_STEP) {
+        await confirmReview();
+        return;
+      }
       if (!(await form.trigger())) {
         setFocusRequest((value) => value + 1);
         return;
@@ -216,7 +263,15 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
     if (await flush()) toast.success(t('leaseWizard.save.draftSaved'));
   };
 
-  const nextLabel = next === null ? t('leaseWizard.finish') : t('leaseWizard.next', { step: t(`leaseWizard.steps.${next}.label`) });
+  const nextLabel =
+    current === REVIEW_STEP
+      ? reviewConfirmed
+        ? t('leaseWizard.goToLease')
+        : t('leaseWizard.review.confirm')
+      : next === null
+        ? t('leaseWizard.finish')
+        : t('leaseWizard.next', { step: t(`leaseWizard.steps.${next}.label`) });
+  const reviewBlocked = current === REVIEW_STEP && (review.isLoading || review.isError || (review.data?.counts.block ?? 0) > 0) && !reviewConfirmed;
 
   const entries = steps.map((step) => ({
     step,
@@ -224,6 +279,27 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
     mark: markOf(flowStep(flow, step), step === current, step <= Math.max(maxStep, current)),
     to: stepHref(step),
   }));
+
+  let body: ReactNode;
+  if (current === 1) {
+    body = (
+      <PropertyStep
+        value={propertyId}
+        onChange={(id) => form.setValue('propertyId', id, { shouldDirty: true, shouldTouch: true, shouldValidate: true })}
+        error={form.formState.errors.propertyId?.message}
+        needs={flowStep(flow, 1)?.needs}
+        imported={imported}
+      />
+    );
+  } else if (current === 2) {
+    body = <PartiesStep />;
+  } else if (current === 3) {
+    body = <TermsStep rules={rules} origin={draft.origin} />;
+  } else if (current === 4) {
+    body = <DatesStep rules={rules} origin={draft.origin} />;
+  } else {
+    body = <ReviewStep review={review} hrefOfStep={stepHref} />;
+  }
 
   const footer = (
     <>
@@ -288,8 +364,8 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
             type="submit"
             form={FORM_ID}
             loading={busy}
-            disabled={stopped}
-            iconRight={next === null ? <Check /> : <ArrowRight />}
+            disabled={stopped || reviewBlocked}
+            iconRight={next === null && current !== REVIEW_STEP ? <Check /> : <ArrowRight />}
             className={`${WIZARD_BUTTON} grow sm:grow-0`}
             data-testid="lease-wizard-next"
           >
@@ -329,13 +405,7 @@ export function LeaseWizard({ draft, onReload }: LeaseWizardProps) {
             }}
           >
             <div key={current} ref={panelRef} className="min-w-0 space-y-6">
-              <PropertyStep
-                value={propertyId}
-                onChange={(id) => form.setValue('propertyId', id, { shouldDirty: true, shouldTouch: true, shouldValidate: true })}
-                error={form.formState.errors.propertyId?.message}
-                needs={flowStep(flow, 1)?.needs}
-                imported={imported}
-              />
+              {body}
             </div>
           </form>
         </FormProvider>

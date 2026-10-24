@@ -4,7 +4,7 @@ import { ApiClient } from './client';
 import type {
   CedolareAdvisory,
   CedolareAdvisoryInput,
-  CreateLeaseDto,
+  LandlordDefaults,
   LeaseDetail,
   LeaseDraft,
   LeaseDraftCreated,
@@ -13,8 +13,11 @@ import type {
   LeaseListView,
   LeaseOrigin,
   LeaseRegistration,
+  LeaseReview,
+  LeaseReviewConfirmation,
   LeaseSigningState,
   LeaseSummary,
+  LongRentRules,
   ManualRegistrationInput,
   OfflineSignatureInput,
   QuesturaCommunicationInput,
@@ -66,9 +69,6 @@ export const leasesApi = {
   getById: async (id: string): Promise<LeaseDetail> =>
     expectObjectWithId<LeaseDetail>(await ApiClient.get<unknown>(`/leases/${id}`), '/leases/:id'),
 
-  create: async (data: CreateLeaseDto): Promise<LeaseDetail> =>
-    expectObjectWithId<LeaseDetail>(await ApiClient.post<unknown>('/leases', data), '/leases'),
-
   /**
    * LR-12 / LR-13: a draft with only the property (no APE, parties, dates or rent asked yet); its id is the leaseId for a partner.
    * `origin` is chosen here and never changes: `Imported` is a contract already signed elsewhere.
@@ -98,6 +98,38 @@ export const leasesApi = {
     const data = await ApiClient.patch<unknown>(`/leases/${id}/draft`, save);
     if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/draft');
     return { version: data.version, flow: flowOf(data), landlordIds: idsOf(data.landlordIds), tenantIds: idsOf(data.tenantIds) };
+  },
+
+  /** LR-12: the checks of the review of a draft, worst first. */
+  getReview: async (id: string): Promise<LeaseReview> => {
+    const data = await ApiClient.get<unknown>(`/leases/${id}/review`);
+    if (!isRecord(data) || !Array.isArray(data.checks) || !isRecord(data.counts)) {
+      throw new UnexpectedApiResponseError('/leases/:id/review');
+    }
+    return data as unknown as LeaseReview;
+  },
+
+  /** LR-12: confirms the review (422 while a check blocks); a later change of the first steps withdraws it. */
+  confirmReview: async (id: string, version: number): Promise<LeaseReviewConfirmation> => {
+    const data = await ApiClient.post<unknown>(`/leases/${id}/review/confirm`, { version });
+    if (!isRecord(data) || typeof data.version !== 'number') throw new UnexpectedApiResponseError('/leases/:id/review/confirm');
+    return { version: data.version, reviewConfirmedAt: typeof data.reviewConfirmedAt === 'string' ? data.reviewConfirmedAt : null, flow: flowOf(data) };
+  },
+
+  /** LR-12: the figures of the long-term area the server applies (terms, deposit limit, types): none is written in the interface. */
+  getRules: async (): Promise<LongRentRules> => {
+    const data = await ApiClient.get<unknown>('/long-rent/rules');
+    if (!isRecord(data) || !isRecord(data.termMonths) || !Array.isArray(data.availableTypes) || !Array.isArray(data.importedTypes)) {
+      throw new UnexpectedApiResponseError('/long-rent/rules');
+    }
+    return data as unknown as LongRentRules;
+  },
+
+  /** LR-12: the landlord the wizard starts from (not masked, only for who may create a lease). */
+  getLandlordDefaults: async (): Promise<LandlordDefaults> => {
+    const data = await ApiClient.get<unknown>('/long-rent/landlord-defaults');
+    if (!isRecord(data)) throw new UnexpectedApiResponseError('/long-rent/landlord-defaults');
+    return data as unknown as LandlordDefaults;
   },
 
   /** LT-02: signers (persisted), provider availability and whether the final contract can be downloaded. */
