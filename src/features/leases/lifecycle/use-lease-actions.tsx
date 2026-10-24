@@ -1,7 +1,7 @@
 import { useContext, useRef, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRightLeft, CalendarX2, Ban, Trash2, Undo2 } from 'lucide-react';
+import { ArrowRightLeft, Ban, CalendarCheck, CalendarX2, Trash2, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -13,6 +13,7 @@ import {
   canMarkLeaseSentAgain,
   useLeaseLifecycleActions,
   useLeaseStage,
+  useRemoveLeaseNotice,
   useRequestLeaseErasure,
   useRevokeLeaseSent,
 } from '@/queries/use-lease-lifecycle';
@@ -37,10 +38,10 @@ export interface LeaseActions {
 }
 
 /**
- * The actions of the life of a lease on its sheet (LR-10): delete the draft, take back the download for the signature, record a notice,
- * end the lease early, move on to short rent, and ask for the data of its people to be erased. Each opens from the menu «⋯» or from the
- * address (`?azione=elimina-bozza`, `annulla-firma`, `disdetta`, `termina`, `passa-a-breve`, `cancellazione-dati`: a link from anywhere
- * lands on the window) and the address is cleaned when the window closes. What is offered follows the stage the server gives the lease
+ * The actions of the life of a lease on its sheet (LR-10): delete the draft, take back the download for the signature, record a notice
+ * and take it back, end the lease early, move on to short rent, and ask for the data of its people to be erased. Each opens from the
+ * menu «⋯» or from the address (`?azione=elimina-bozza`, `annulla-firma`, `disdetta`, `togli-disdetta`, `termina`, `passa-a-breve`,
+ * `cancellazione-dati`: a link from anywhere lands on the window) and the address is cleaned when the window closes. What is offered follows the stage the server gives the lease
  * (`useLeaseStage`) and the permissions of the person; the server is the last word and says no with a code that becomes a sentence.
  *
  * Which actions can be taken back, and how, is decided once here (decision LR-D32): the draft is held for the six seconds of «Annulla»
@@ -56,6 +57,7 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
   const modeEntry = useModeChangeMenuItems('long-rent', lease.propertyId);
   const lifecycle = useLeaseLifecycleActions();
   const revokeSent = useRevokeLeaseSent();
+  const removeNotice = useRemoveLeaseNotice();
   const requestErasure = useRequestLeaseErasure();
   const [erasureResult, setErasureResult] = useState<LeaseErasureResult | null>(null);
   // Once the draft is on its way to deletion the person is taken to the list: closing its window must not take them back to the sheet.
@@ -130,6 +132,17 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
     });
   }
 
+  // ---- the notice taken back later, from the menu (right after it was recorded «Annulla» does the same) ---------------------------------------
+
+  async function takeTheNoticeBack() {
+    try {
+      await removeNotice.mutateAsync(lease.id);
+    } catch {
+      return; // The hook told why and read the lease again.
+    }
+    toast.success(t('leaseLifecycle.notice.removed'));
+  }
+
   // ---- the data of the people: the answer is told in words and stays until it is closed ----------------------------------------------------
 
   async function eraseTheData() {
@@ -148,6 +161,9 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
   }
   if (available.disdetta) {
     gentle.push({ label: t('leaseLifecycle.menu.recordNotice'), icon: CalendarX2, onClick: () => go('disdetta'), testId: 'lease-action-disdetta' });
+  }
+  if (available['togli-disdetta']) {
+    gentle.push({ label: t('leaseLifecycle.menu.takeNoticeBack'), icon: CalendarCheck, onClick: () => go('togli-disdetta'), testId: 'lease-action-togli-disdetta' });
   }
   if (available['passa-a-breve']) {
     gentle.push({ label: t('leaseLifecycle.menu.switchToShort'), icon: ArrowRightLeft, onClick: () => go('passa-a-breve'), testId: 'lease-action-passa-a-breve' });
@@ -187,6 +203,17 @@ export function useLeaseActions(lease: LeaseDetail, subject: LeaseSubject): Leas
         onConfirm={takeBackTheDownload}
       />
       <RecordNoticeDialog open={open === 'disdetta'} lease={lease} subject={subject} onClose={close} />
+      <ConfirmationDialog
+        open={open === 'togli-disdetta'}
+        onOpenChange={(next) => !next && close()}
+        title={t('leaseLifecycle.takeNoticeBack.title')}
+        description={t('leaseLifecycle.takeNoticeBack.description', subject)}
+        confirmLabel={t('leaseLifecycle.takeNoticeBack.confirm')}
+        cancelLabel={t('leaseLifecycle.takeNoticeBack.cancel')}
+        consequences={[t('leaseLifecycle.takeNoticeBack.consequences.renews')]}
+        isLoading={removeNotice.isPending}
+        onConfirm={takeTheNoticeBack}
+      />
       <TerminateLeaseDialog open={open === 'termina'} lease={lease} subject={subject} onClose={close} />
       <SwitchToShortDialog open={open === 'passa-a-breve'} lease={lease} subject={subject} onClose={close} />
       <ConfirmationDialog

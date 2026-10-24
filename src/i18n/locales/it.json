@@ -1352,6 +1352,7 @@
       "recordNotice": "Registra una disdetta",
       "revokeSent": "Annulla lo scarico per la firma",
       "switchToShort": "Passa ad affitto breve",
+      "takeNoticeBack": "Togli la disdetta",
       "terminate": "Termina il contratto"
     },
     "notice": {
@@ -1390,6 +1391,16 @@
       "go": "Vai al cambio di modalità",
       "needsNotice": "Prima registra la disdetta: senza, il contratto si rinnova da solo e il passaggio non riesce.",
       "title": "Passa ad affitto breve"
+    },
+    "takeNoticeBack": {
+      "cancel": "Lascia com'è",
+      "confirm": "Togli la disdetta",
+      "consequences": {
+        "renews": "Il contratto torna a rinnovarsi da solo, se nessuno ne manda un'altra."
+      },
+      "description": "{{tenant}} · {{property}}. La disdetta che hai registrato viene tolta dal contratto.",
+      "failed": "Non è stato possibile togliere la disdetta.",
+      "title": "Togliere la disdetta?"
     },
     "terminate": {
       "confirm": "Termina il contratto",

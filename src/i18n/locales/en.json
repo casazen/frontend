@@ -1352,6 +1352,7 @@
       "recordNotice": "Record a notice",
       "revokeSent": "Cancel the download for signing",
       "switchToShort": "Switch to short rent",
+      "takeNoticeBack": "Withdraw the notice",
       "terminate": "End the lease"
     },
     "notice": {
@@ -1390,6 +1391,16 @@
       "go": "Go to the change of mode",
       "needsNotice": "Record the notice first: without it the lease renews by itself and the switch fails.",
       "title": "Switch to short rent"
+    },
+    "takeNoticeBack": {
+      "cancel": "Leave it as it is",
+      "confirm": "Withdraw the notice",
+      "consequences": {
+        "renews": "The lease renews by itself again, unless somebody gives another notice."
+      },
+      "description": "{{tenant}} · {{property}}. The notice you recorded is taken off the lease.",
+      "failed": "The notice could not be withdrawn.",
+      "title": "Withdraw the notice?"
     },
     "terminate": {
       "confirm": "End the lease",

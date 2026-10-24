@@ -11,6 +11,7 @@ export const LEASE_ACTIONS = [
   'elimina-bozza',
   'annulla-firma',
   'disdetta',
+  'togli-disdetta',
   'termina',
   'passa-a-breve',
   'cancellazione-dati',
@@ -39,7 +40,8 @@ export type LeaseActionAvailability = Readonly<Record<LeaseAction, boolean>>;
  *
  * - a draft (in progress or in review) can be deleted; once downloaded for the signature on paper it can first be taken back;
  * - a lease in force (active or in expiry) can receive a notice while it has none and its type renews by itself, and can be ended early
- *   while it is not ended already; a lease in expiry can move on to short rent;
+ *   while it is not ended already; a lease in expiry can move on to short rent, and the notice it has can be taken back (the server
+ *   allows it while the period has not ended, which is what "in expiry" with a notice means: after it the lease is concluded);
  * - a lease that has concluded has no action that destroys anything; the data of its parties can be erased at any stage.
  */
 export function availableLeaseActions(lease: LeaseDetail, { stage, canManage, canChangeMode }: LeaseActionContext): LeaseActionAvailability {
@@ -50,6 +52,7 @@ export function availableLeaseActions(lease: LeaseDetail, { stage, canManage, ca
     'elimina-bozza': canManage && isDraft && (stage === 'Draft' || stage === 'InReview'),
     'annulla-firma': canManage && isDraft && stage === 'SentForSignature' && Boolean(lease.sentForSignatureAt),
     disdetta: canManage && inForce && !lease.noticeOn && !lease.terminatedOn && lease.renewalMonths !== 0,
+    'togli-disdetta': canManage && stage === 'Expiring' && Boolean(lease.noticeOn) && !lease.terminatedOn,
     termina: canManage && inForce && !lease.terminatedOn,
     'passa-a-breve': canChangeMode && stage === 'Expiring',
     'cancellazione-dati': canManage,

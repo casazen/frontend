@@ -73,6 +73,22 @@ export function useRecordLeaseNotice() {
   });
 }
 
+/** The notice taken back from the menu (`DELETE /leases/:id/notice`): the lease renews by itself again. The answer is the lease as it is now. */
+export function useRemoveLeaseNotice() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (leaseId: string) => leaseLifecycleApi.removeNotice(leaseId),
+    onSuccess: (detail, leaseId) => {
+      queryClient.setQueryData([LEASES_KEY, leaseId], detail);
+      refreshAfterChange(queryClient, leaseId);
+    },
+    onError: (error, leaseId) => {
+      refreshAfterChange(queryClient, leaseId);
+      reportFailure(error, 'leaseLifecycle.takeNoticeBack.failed');
+    },
+  });
+}
+
 /** The early termination (`POST /leases/:id/terminate`). It cannot be taken back, and the answer is the lease as it is now. */
 export function useTerminateLease() {
   const queryClient = useQueryClient();
