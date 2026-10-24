@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { LeaseOrigin, OfflineSignatureInput } from '@/types';
+import type { LeaseContractType, LeaseOrigin, OfflineSignatureInput } from '@/types';
 
 const DRAFT_KEY = 'lease-draft';
 const LEASES_KEY = 'leases';
@@ -92,23 +92,22 @@ export function useLandlordDefaults(enabled: boolean) {
 }
 
 /**
- * Creates the draft of a new contract with its property and its origin (`POST /leases/drafts`, LR-12). A contract made in CasaZen
- * here is a libero (the concordato is prepared with the partner, see `useCreateConcordatoDraft`; the others cannot be made yet), so
- * its type is written at once; a contract already signed chooses its own in the step of the conditions. If only the second call
- * fails the draft exists all the same and that step asks for the type: a retry never makes a second contract. Resolves with the id.
+ * Creates the draft of a new contract with its property, its origin and the type chosen as the first question of «Nuovo contratto»
+ * (`POST /leases/drafts`, LR-12). The type is written at once (the same save as step ③): a contract made in CasaZen is that type from
+ * the start (step ③ shows it as chosen, the concordato is prepared with the partner, see `useCreateConcordatoDraft`), one already
+ * signed has it preselected there and can still correct it. If only the second call fails the draft exists all the same and that step
+ * asks for the type: a retry never makes a second contract. Resolves with the id.
  */
 export function useCreateLeaseDraft() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ propertyId, origin }: { propertyId: string; origin: LeaseOrigin }) => {
+    mutationFn: async ({ propertyId, origin, contractType }: { propertyId: string; origin: LeaseOrigin; contractType: LeaseContractType }) => {
       const created = await leasesApi.createDraft(propertyId, origin);
-      if (origin === 'Created') {
-        try {
-          await leasesApi.saveDraft(created.id, { version: created.version, step: 3, values: { contractType: 'Libero' } });
-        } catch {
-          // The step of the conditions asks for the type.
-        }
+      try {
+        await leasesApi.saveDraft(created.id, { version: created.version, step: 3, values: { contractType } });
+      } catch {
+        // The step of the conditions asks for the type.
       }
       return created.id;
     },

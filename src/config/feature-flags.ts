@@ -2,7 +2,7 @@
  * Backend feature flags (`Features:<Name>`), read from `GET /api/public/features` as camelCase keys.
  * Adding a flag: backend `FeatureFlags` + here (key and default), see backend `docs/runbooks/feature-flags.md`.
  */
-export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments';
+export type FeatureFlagKey = 'otaPartnerApi' | 'aiSupplierDiscovery' | 'rliProvider' | 'eSignProvider' | 'supplierOnlinePayments' | 'concordatoFacile';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -32,6 +32,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * it is off. The payments account (SP-16c-b) does not read it: it asks the server, whose endpoints answer 404 while the flag is off.
    */
   supplierOnlinePayments: false,
+  /**
+   * ConcordatoFacile, the partner that prepares a canone concordato contract: off until its integration is tested. While it is off the
+   * card «Parto da zero» of a new canone concordato is disabled («disponibile a breve») and its address shows the question again;
+   * «Ho già il contratto e i documenti» does not depend on it.
+   */
+  concordatoFacile: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

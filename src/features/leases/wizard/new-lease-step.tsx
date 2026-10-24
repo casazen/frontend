@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCreateLeaseDraft } from '@/queries/use-lease-draft';
-import type { LeaseOrigin } from '@/types';
+import type { LeaseContractType, LeaseOrigin } from '@/types';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { PropertyStep } from './property-step';
@@ -12,10 +12,18 @@ import { emptyFlow, leaseEditPath, registeredSteps, stepKey, visibleSteps } from
 
 /**
  * The first step of a contract that does not exist yet (LR-06a): the property. The contract is born at the first «Avanti»: the draft
- * is created on the server with the origin chosen at the start, and the wizard goes on from the second step on that draft
+ * is created on the server with the origin and the type chosen at the start, and the wizard goes on from the second step on that draft
  * (`/leases/:id/edit`). Until then there is nothing to save, so nothing is: leaving costs nothing.
  */
-export function NewLeaseStep({ origin, defaultPropertyId }: { origin: LeaseOrigin; defaultPropertyId?: string }) {
+export function NewLeaseStep({
+  origin,
+  contractType,
+  defaultPropertyId,
+}: {
+  origin: LeaseOrigin;
+  contractType: LeaseContractType;
+  defaultPropertyId?: string;
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const create = useCreateLeaseDraft();
@@ -36,7 +44,7 @@ export function NewLeaseStep({ origin, defaultPropertyId }: { origin: LeaseOrigi
       return;
     }
     try {
-      const leaseId = await create.mutateAsync({ propertyId, origin });
+      const leaseId = await create.mutateAsync({ propertyId, origin, contractType });
       navigate(leaseEditPath(leaseId, 2), { replace: true });
     } catch {
       // useCreateLeaseDraft.onError says why; the property stays chosen to try again.
