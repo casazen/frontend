@@ -113,7 +113,9 @@ describe('BottomNav (UI-04b)', () => {
       arrange(['long-rent']);
       renderBar('long-rent', '/app/long-rent/leases');
 
-      expect(labels()).toEqual(['Contratti', 'Canoni', 'Immobili', 'Interventi']);
+      // The Panoramica is the first place (LR-05) and the bar holds four: Interventi and the deadlines are behind "Altro". The name
+      // "Panoramica" fits a column of the bar.
+      expect(labels()).toEqual(['Panoramica', 'Contratti', 'Canoni', 'Immobili']);
       expect(more()).toBeInTheDocument();
     });
 

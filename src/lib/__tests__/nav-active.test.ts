@@ -122,6 +122,10 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/ota/create', '/app/short-rent/ota'],
     // Plan and billing are in no menu: no entry stands for them.
     ['short-rent', '/app/short-rent/settings/plan', undefined],
+    // The Panoramica is the root page of its area (LR-05): highlighted on its own page, and not on every page of the area.
+    ['long-rent', '/app/long-rent', '/app/long-rent'],
+    ['long-rent', '/app/long-rent/settings/billing', undefined],
+    ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/deadlines'],
     ['long-rent', '/app/long-rent/leases', '/app/long-rent/leases'],
     // Contratti stays highlighted on the pages of a contract (it was not, as an "exact" entry).
     ['long-rent', '/app/long-rent/leases/new', '/app/long-rent/leases'],

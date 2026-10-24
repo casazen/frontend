@@ -162,7 +162,7 @@ describe('PageHeader with the trail (UI-05)', () => {
   it('PageHeader_OnlyTheAreaAbove_TheBackLinkLeadsToTheAreaHome', () => {
     render(inShell('long-rent', <PageHeader title="Profilo" crumbs={[{ label: 'Profilo' }]} />));
 
-    expect(screen.getByRole('link', { name: 'Torna a Affitti lunghi' })).toHaveAttribute('href', '/app/long-rent/leases');
+    expect(screen.getByRole('link', { name: 'Torna a Affitti lunghi' })).toHaveAttribute('href', '/app/long-rent');
   });
 
   it('PageHeader_EmptyCrumbs_DrawNoTrailAndNoBackLink', () => {

@@ -166,6 +166,21 @@ export const leasesApi = {
     return response.data;
   },
 
+  /**
+   * LR-13: brings in a contract already signed elsewhere, from a draft made with `origin: Imported`: the PDF and the day it was signed.
+   * The lease becomes Signed (a second call is 409 `lease_not_draft`); the registration is declared afterwards. Nothing is written
+   * when the answer is an error.
+   */
+  importSigned: async (id: string, input: OfflineSignatureInput): Promise<LeaseDetail> => {
+    const formData = new FormData();
+    formData.append('stipulaDate', input.stipulaDate);
+    formData.append('signedContract', input.signedContract);
+    const response = await axios.post<LeaseDetail>(`/leases/${id}/import`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
   /** The contract signed by every party, from the private storage (authenticated download). */
   downloadSignedContract: async (id: string): Promise<Blob> => {
     const response = await axios.get(`/leases/${id}/signed-document`, { responseType: 'blob' });

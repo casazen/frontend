@@ -9,10 +9,10 @@ function grants(contextKey: AppContextKey, permissions: string[]): PermissionPre
 const NO_FLAGS = {};
 
 describe('getContextHomeRoute (UI-00)', () => {
-  it('getContextHomeRoute_LongRentLandlord_ReturnsTheContracts', () => {
+  it('getContextHomeRoute_LongRentLandlord_ReturnsTheOverview', () => {
     const hasPermission = grants('long-rent', ['property.read', 'lease.read']);
 
-    expect(getContextHomeRoute('long-rent', hasPermission, NO_FLAGS)).toBe('/app/long-rent/leases');
+    expect(getContextHomeRoute('long-rent', hasPermission, NO_FLAGS)).toBe('/app/long-rent');
   });
 
   it('getContextHomeRoute_Supplier_ReturnsTheDashboard', () => {

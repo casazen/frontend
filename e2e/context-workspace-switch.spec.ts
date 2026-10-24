@@ -33,7 +33,7 @@ test.describe('Context workspace switcher (#189)', () => {
   test('long-rent user cannot access short-rent routes', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/app/short-rent/bookings', 'long-term'), { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+    await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
   });
 
   // A7-06: the long-rent context has its own property pages (list, new, detail with the APE).
@@ -49,7 +49,7 @@ test.describe('Context workspace switcher (#189)', () => {
   test('long-rent user is still kept out of the short-rent property pages', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/app/short-rent/properties', 'long-term'), { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+    await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
   });
 
   // UI-04a: the area switcher (a button with a menu) replaces the icon tabs of the sidebar.
@@ -62,7 +62,7 @@ test.describe('Context workspace switcher (#189)', () => {
 
     await switcher.click();
     await page.getByRole('menuitemradio', { name: /Affitti lunghi|Long-term rentals/ }).click();
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+    await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
     await expect(switcher).toHaveAttribute('aria-label', /Affitti lunghi|Long-term rentals/);
 
     await switcher.click();

@@ -558,6 +558,8 @@
     "ota": "OTA",
     "leases": "Leases",
     "rents": "Rents",
+    "longRentOverview": "Overview",
+    "longRentDeadlines": "Deadlines",
     "serviceRequests": "Maintenance",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
@@ -1444,6 +1446,45 @@
     "toDefine": "To be set"
   },
   "leaseWizard": {
+    "after": {
+      "finish": "Done",
+      "registration": {
+        "body": "The contract has to be registered with the Agenzia delle Entrate (the Italian Revenue Agency). Then declare it here with the receipt: the contract becomes “Registered” and the deadline goes away.",
+        "costs": {
+          "cedolare": "Estimated costs: none. With the cedolare secca (flat tax) there is no registration tax or stamp duty (estimate).",
+          "ordinary": "Estimated costs: about {{amount}} of registration tax for the first year (estimate)."
+        },
+        "download": "Download the summary of the data",
+        "kicker": "Now",
+        "mark": "Mark as registered",
+        "registered": "The contract is registered.",
+        "registeredOn": "The contract is registered: on {{date}}, number {{code}}.",
+        "title": "Register the contract",
+        "when": "By {{date}}",
+        "whenLeft_one": "By {{date}} · {{count}} day left",
+        "whenLeft_other": "By {{date}} · {{count}} days left",
+        "whenOverdue_one": "Was due on {{date}} · {{count}} day late",
+        "whenOverdue_other": "Was due on {{date}} · {{count}} days late",
+        "whenToday": "Due today, {{date}}",
+        "whenUnknown": "The deadline is still to be determined",
+        "who": "Your turn"
+      },
+      "rows": {
+        "open": "Open",
+        "questura": {
+          "title": "Keys and Questura"
+        },
+        "rent": {
+          "next": "First installment: {{amount}}, due on {{date}}.",
+          "none": "Not active yet. Turn it on when you want to track the payments.",
+          "noneRunning": "Not active yet. The contract has already started: the plan starts from the current month, with no past rents shown as late.",
+          "set": "Set up the plan",
+          "title": "Rent plan",
+          "view": "See the plan"
+        },
+        "title": "Other things to do"
+      }
+    },
     "back": "Back",
     "blocked": {
       "goToStep": "Go to «{{step}}»",
@@ -1482,6 +1523,39 @@
       "years_one": "{{count}} year",
       "years_other": "{{count}} years"
     },
+    "done": {
+      "another": "Create another contract",
+      "apeMissing": "Energy certificate (APE): still missing for the property. Upload it from the property page: it does not block the contract.",
+      "due": {
+        "inDays_one": "in {{count}} day",
+        "inDays_other": "in {{count}} days",
+        "overdue_one": "{{count}} day late",
+        "overdue_other": "{{count}} days late",
+        "today": "today"
+      },
+      "end": "The current period ends on {{date}}.",
+      "endPast": "The period ended on {{date}}: the contract counts as concluded.",
+      "notRegistered": {
+        "action": "Declare the registration",
+        "text": "If it is already registered, declare it now with the receipt: the deadline goes away and we stop sending reminders. If it is not, register it by the deadline.",
+        "title": "The contract is “Signed” but not registered yet"
+      },
+      "notice": "Last day to give notice: {{date}}. If nobody does, the contract renews by itself for another {{length}}.",
+      "questura": "You: tell the Questura by {{date}}; the time runs from the handover of the keys.",
+      "questuraDone": "Questura: communication made on {{date}}.",
+      "register": "You: register the contract (deadline {{date}}, {{when}}) and declare it on its page with the receipt. Until you do, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+      "registerNoWhen": "You: register the contract (deadline {{date}}) and declare it on its page with the receipt. Until you do, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+      "registerUnknown": "You: register the contract. The deadline is still to be determined.",
+      "registered": "Registration: done on {{date}}.",
+      "registeredNoDate": "Registration: done.",
+      "renews": "If nobody has given notice, the contract renews by itself for another {{length}}.",
+      "rentFirst": "First installment: {{amount}}, due on {{date}}. You record the payments yourself in the Payments tab.",
+      "rentNone": "Rents: the plan is not active yet. Turn it on from the Payments tab when you want to follow the payments.",
+      "title": {
+        "Created": "Contract signed",
+        "Imported": "Contract added"
+      }
+    },
     "fields": {
       "citizenship": "the citizenship",
       "contactEmail": "the email",
@@ -1493,6 +1567,39 @@
     "finish": "Save and go to the lease",
     "goToLease": "Go to the lease",
     "gone": "This lease is not a draft any more: it can no longer be edited from here.",
+    "import": {
+      "concordatoNotice": "For a contract that is already signed we do not check that the rent is inside the band of the territorial agreement.",
+      "confirm": {
+        "description": "You are about to add the contract signed on {{date}} to CasaZen.",
+        "fixed": "The file and the day of the signature cannot be corrected after it is added.",
+        "no": "The registration deadline will appear and, until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+        "signed": "The contract becomes “Signed”: from then on it can no longer be edited or deleted.",
+        "submit": "Add the contract",
+        "title": "Add the signed contract?",
+        "yes": "Right after, we ask you for the registration number and the receipt."
+      },
+      "dateHint": "The day the last party signed. It is used to work out the registration deadline.",
+      "dateInvalid": "Enter the day of the signature: it cannot be after today.",
+      "dateLabel": "Day of the signature",
+      "failed": "I could not add the contract. Try again.",
+      "fileHint": "The PDF with the signatures of all the parties.",
+      "fileInvalid": "Choose a PDF file of at most 20 MB.",
+      "fileLabel": "Signed contract (PDF, at most 20 MB)",
+      "registered": {
+        "legend": "Has it already been registered?",
+        "no": {
+          "description": "It stays “Signed” and you will see the registration deadline.",
+          "title": "No, or I don't know"
+        },
+        "required": "Answer this question.",
+        "yes": {
+          "description": "After adding it we ask for the number and the receipt.",
+          "title": "Yes, it is registered"
+        }
+      },
+      "reminderNotice": "Until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address. If the contract is already registered, choose “Yes” and declare it after adding it.",
+      "submit": "Add the contract"
+    },
     "loadError": "Could not open the lease wizard. Try again.",
     "needs": {
       "ape_missing": "The APE (energy performance certificate) of the property is missing",
@@ -1680,6 +1787,20 @@
         "purpose": "We check that it is complete and consistent; then you confirm.",
         "title": "Review of the lease",
         "why": "Before the lease goes to signature we check that it is complete and consistent."
+      },
+      "7": {
+        "Imported": {
+          "label": "Signed contract",
+          "purpose": "Upload the signed PDF and enter the day it was signed.",
+          "title": "Add the signed contract",
+          "why": "The signed contract stays in CasaZen, and the day of the signature sets the registration deadline."
+        }
+      },
+      "8": {
+        "label": "After the signature",
+        "purpose": "Registration, keys and rents.",
+        "title": "What to do after the signature",
+        "why": "The deadlines run from the signature: here you keep them in view."
       }
     },
     "terms": {
@@ -8165,6 +8286,8 @@
       "hostInvites": "invite|invitation|invitations|new host|referral|add host",
       "jobs": "jobs|queues|automations|background processes|scheduled tasks",
       "leases": "rentals|contracts|tenants|rent|deadlines|lease",
+      "longRentDeadlines": "dates|reminders|registration|notice|renewal|questura",
+      "longRentOverview": "home|today|start|summary|now|what to do|overview",
       "ltrReferenceData": "agreed rent|zones|territorial agreements|regulatory data",
       "marketing": "campaigns|promotion|newsletter",
       "marketplace": "services|suppliers|cleaning|maintenance|apps",
@@ -9438,6 +9561,11 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "leaseNotDraft": "This contract is no longer a draft: it may already have been added or signed.",
+      "leaseDraftConflict": "The contract is busy or was changed elsewhere. Reload the page and try again.",
+      "leaseImportNotImportedOrigin": "A contract made in CasaZen cannot be added as already signed: it is signed from its template.",
+      "leaseReviewBlocked": "Some data are still missing in the earlier steps: check them and try again.",
+      "questuraDeliveryDateLocked": "The delivery date can no longer be changed: the Questura communication has already been declared.",
       "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
       "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
       "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
@@ -9528,10 +9656,8 @@
       "leaseNoticeAlreadyRecorded": "A notice is already recorded for this lease.",
       "leaseNoticeDateInvalid": "The day of the notice must be between the start of the lease and today.",
       "leaseNotDeletable": "This draft cannot be deleted: it already has a signed copy or a rent plan.",
-      "leaseNotDraft": "The lease is no longer a draft.",
       "leaseNotFound": "Lease not found.",
       "leaseNotInForce": "The lease is not in force yet: every party has to sign it.",
-      "leaseReviewBlocked": "The review of the lease still has points to fix.",
       "leaseReviewNotConfirmed": "Confirm the review of the lease first.",
       "leaseTermAlreadyEnded": "The period of the lease has already ended: the notice can no longer be withdrawn.",
       "leaseTerminationDateInvalid": "The last day must be between the start of the lease and the end of the current period.",
@@ -11214,6 +11340,206 @@
       "pending": "Still to collect",
       "pendingDelta_one": "{{count}} rent not yet due",
       "pendingDelta_other": "{{count}} rents not yet due"
+    }
+  },
+  "leaseFlow": {
+    "actor": {
+      "Landlord": "Your turn",
+      "System": "CasaZen takes care of it",
+      "Tenant": "The tenant's turn"
+    },
+    "due": {
+      "byIn_one": "By {{date}} · in {{count}} day",
+      "byIn_other": "By {{date}} · in {{count}} days",
+      "overdue_one": "Overdue by {{count}} day",
+      "overdue_other": "Overdue by {{count}} days",
+      "today": "By today",
+      "tomorrow": "By tomorrow"
+    },
+    "nextStep": {
+      "ActivateRentPlan": {
+        "action": "Turn on the plan",
+        "detail": "So you can see who has paid and who is late.",
+        "title": "Turn on the rent plan"
+      },
+      "AllGood": {
+        "action": "Open the lease",
+        "title": "All in order"
+      },
+      "Archive": {
+        "action": "Open the lease",
+        "title": "The lease has ended"
+      },
+      "AwaitPartnerContract": {
+        "action": "Open the lease",
+        "detail": "The partner prepares the contract of this draft.",
+        "title": "Wait for the contract of the partner"
+      },
+      "ChooseProperty": {
+        "action": "Choose the property",
+        "detail": "The property of the draft is no longer available.",
+        "title": "Choose the property of the lease"
+      },
+      "CompleteStep": {
+        "action": "Complete the draft",
+        "detail": "Step {{step}} of 5 still has something missing.",
+        "title": "Complete the draft of the lease"
+      },
+      "ConfirmReview": {
+        "action": "Check and confirm",
+        "detail": "All the data is there: read the preview before you have it signed.",
+        "title": "Check the lease and confirm"
+      },
+      "DecideNotice": {
+        "action": "Open the lease",
+        "detail": "If nobody gives notice by the last day, the lease renews by itself.",
+        "title": "Decide whether to give notice"
+      },
+      "DownloadForSignature": {
+        "action": "Download the lease",
+        "detail": "Then you upload the signed copy here.",
+        "title": "Download the lease and have it signed"
+      },
+      "ImportSignedContract": {
+        "action": "Upload the lease",
+        "detail": "You need the signed PDF and the day it was signed.",
+        "title": "Upload the signed lease"
+      },
+      "OrganizeEnd": {
+        "action": "Open the lease",
+        "detail": "The lease ends and does not renew.",
+        "title": "Plan the end of the lease"
+      },
+      "QuesturaCommunication": {
+        "action": "Go to the communication",
+        "detail": "The tenant is non-EU: it must be made within 48 hours of the delivery of the property.",
+        "title": "Make the communication to the Questura"
+      },
+      "RecordKeyHandover": {
+        "action": "Record the handover",
+        "detail": "The 48 hours for the communication to the Questura count from that day.",
+        "title": "Record when you handed over the keys"
+      },
+      "RegisterLease": {
+        "action": "Register the lease",
+        "title": "Register the lease"
+      },
+      "SendRentReminder": {
+        "action": "Go to the rents",
+        "detail_one": "{{amount}} in all, the oldest overdue by {{count}} day.",
+        "detail_other": "{{amount}} in all, the oldest overdue by {{count}} days.",
+        "title_one": "A rent is late",
+        "title_other": "{{count}} rents are late"
+      },
+      "UploadSignedCopy": {
+        "action": "Upload the signed copy",
+        "detail": "The lease was downloaded for signing: the signed copy is missing.",
+        "title": "Upload the signed copy"
+      },
+      "unknown": {
+        "action": "Open the lease",
+        "title": "This lease has a step to take"
+      }
+    }
+  },
+  "longRentDeadlines": {
+    "csv": {
+      "button": "Download CSV",
+      "columns": {
+        "amount": "Amount",
+        "date": "Date",
+        "property": "Property",
+        "status": "Status",
+        "tenant": "Tenant",
+        "type": "Deadline"
+      },
+      "overdue": "Overdue",
+      "upcoming": "Upcoming"
+    },
+    "description": "Registrations, end of lease, notices and rents: the dates not to miss.",
+    "empty": {
+      "action": "Create lease",
+      "description": "Deadlines fill in by themselves: registration, end of lease, notice and rents show up here as they get close.",
+      "title": "No deadlines in the next {{days}} days"
+    },
+    "filters": {
+      "all": "All",
+      "label": "Kind of deadline",
+      "questura": "Questura",
+      "registrations": "Signatures and registrations",
+      "renewals": "Renewals and notices",
+      "rents": "Rents"
+    },
+    "loadError": "The deadlines could not be loaded.",
+    "loading": "Loading the deadlines…",
+    "more": "Show the following ones",
+    "noneOfType": "No deadlines of this kind in the period.",
+    "overdueTitle": "To do right away",
+    "row": {
+      "dueIn_one": "in {{count}} day",
+      "dueIn_other": "in {{count}} days",
+      "overdue_one": "Overdue by {{count}} day",
+      "overdue_other": "Overdue by {{count}} days",
+      "today": "today",
+      "tomorrow": "tomorrow"
+    },
+    "title": "Deadlines",
+    "truncated": "There are more than 500 rents to collect: the first 500 by date are shown. The others show up as they get close.",
+    "type": {
+      "LeaseEnd": "End of the lease",
+      "Notice": "Last day to give notice",
+      "Questura": "Communication to the Questura",
+      "Rent": "Rent of {{amount}}",
+      "RliRegistration": "Registration of the lease",
+      "unknown": "Deadline"
+    },
+    "until": "Until {{date}}"
+  },
+  "longRentOverview": {
+    "actions": {
+      "addProperty": "Add property",
+      "createLease": "Create lease"
+    },
+    "contracts": {
+      "all": "All leases",
+      "title": "Your leases"
+    },
+    "description": "{{date}} · leases, rents and deadlines at a glance.",
+    "loadError": "The overview could not be loaded.",
+    "loading": "Loading the overview…",
+    "now": {
+      "kicker": "Now",
+      "nothing": {
+        "action": "See the leases",
+        "body": "Rents are in order and no lease is waiting for a step from you.",
+        "title": "Nothing urgent"
+      },
+      "openLease": "Open the lease"
+    },
+    "rents": {
+      "all": "Go to the rents",
+      "collected": "Collected in {{month}}",
+      "collectedDelta_one": "of {{expected}} expected · {{paid}} of {{count}} rent",
+      "collectedDelta_other": "of {{expected}} expected · {{paid}} of {{count}} rents",
+      "label": "The numbers of the month",
+      "noOverdue": "Nothing late",
+      "nothingPending": "Nothing left to collect",
+      "overdue": "Late",
+      "overdueDelta_one": "{{count}} rent",
+      "overdueDelta_other": "{{count}} rents",
+      "pending": "Still to collect",
+      "pendingDelta_one": "{{count}} rent not yet due",
+      "pendingDelta_other": "{{count}} rents not yet due",
+      "title": "Rents of {{month}}"
+    },
+    "retry": "Retry",
+    "title": "Good morning, {{name}}",
+    "titleNoName": "Good morning",
+    "upcoming": {
+      "all": "See all",
+      "empty": "No deadlines in the next 4 months.",
+      "loadError": "The deadlines could not be loaded.",
+      "title": "Deadlines"
     }
   },
   "longRentRequests": {

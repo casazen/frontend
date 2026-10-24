@@ -1,3 +1,5 @@
+import type { LeaseOrigin } from './lease-draft.types';
+
 /** Every value of the backend enum `Casazen.Core.Entities.Enums.LeaseStatus`, in order. */
 export const LEASE_STATUSES = [
   'Draft',
@@ -202,6 +204,8 @@ export interface LeaseSummary {
   overdueDays?: number | null;
   /** LR-01b: where the lease stands on its path, decided by the server (never worked out here from the other fields). */
   stage?: LeaseStage;
+  /** LR-01b: the one step the lease is waiting for; the interface turns its code into a sentence and a button (`lease-next-step`). */
+  nextStep?: LeaseNextStep | null;
 }
 
 /** The eight stages of the path of a lease (backend `LeaseStage`, LR-01b). `DataPending` is for the tenant's own data and is never sent yet. */
@@ -214,6 +218,40 @@ export type LeaseStage =
   | 'Active'
   | 'Expiring'
   | 'Concluded';
+
+/** Who has to do the next step (backend `LeaseNextStepActor`); `Tenant` is for the phase 2 and is never sent yet. */
+export type LeaseNextStepActor = 'Landlord' | 'Tenant' | 'System';
+
+/** Every code of the next step the server sends today (backend `LeaseNextStepCode`, LR-01b). A code is never renamed, only added. */
+export type LeaseNextStepCode =
+  | 'ChooseProperty'
+  | 'CompleteStep'
+  | 'ImportSignedContract'
+  | 'AwaitPartnerContract'
+  | 'ConfirmReview'
+  | 'DownloadForSignature'
+  | 'UploadSignedCopy'
+  | 'RegisterLease'
+  | 'RecordKeyHandover'
+  | 'QuesturaCommunication'
+  | 'SendRentReminder'
+  | 'ActivateRentPlan'
+  | 'DecideNotice'
+  | 'OrganizeEnd'
+  | 'AllGood'
+  | 'Archive';
+
+/**
+ * The step a lease waits for. `priority` goes from 0 (the most urgent) to 10; `dueOn` is a Europe/Rome day; `params` carry what a
+ * sentence needs (counts, amounts, days and codes, never a name). `code` is typed as string because a newer backend may add values.
+ */
+export interface LeaseNextStep {
+  code: string;
+  actor: LeaseNextStepActor;
+  priority: number;
+  dueOn?: string | null;
+  params?: Record<string, unknown> | null;
+}
 
 /** Who gave the notice of non-renewal (backend `LeaseNoticeParty`, LR-14). */
 export type LeaseNoticeParty = 'Landlord' | 'Tenant';
@@ -240,6 +278,8 @@ export interface LeaseDetail {
   registrationDeadline: string | null;
   hasSignedPdf: boolean;
   hasExtraEUTenant: boolean;
+  /** How the lease came to be (LR-12): made in CasaZen or already signed elsewhere. Absent in an older answer. */
+  origin?: LeaseOrigin;
   parties: LeaseParty[];
   registration?: LeaseRegistration | null;
   events: LeaseEvent[];
