@@ -13,18 +13,21 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { StatusExplainer } from '@/components/shared/status/status-explainer';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
-import { useLease } from '@/queries/use-leases';
+import { useLease, useLeaseNextStep } from '@/queries/use-leases';
 import { getHttpStatus } from '@/lib/api-errors';
 import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labels';
+import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
-import type { LeaseDetail, LeaseStatus } from '@/types';
+import type { LeaseDetail, LeaseNextStep, LeaseStatus } from '@/types';
 import { ExtraEUWarningBanner } from './components/extra-eu-warning-banner';
 import { LeaseDataTab } from './components/lease-data-tab';
 import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
 import { LeaseHistory } from './components/lease-history';
+import { LeaseNowBlock } from './components/lease-now-block';
 import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
+import { describeLeaseStep, leaseStepTab } from './lib/lease-next-step';
 import { defaultLeaseTab, isPartnerDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
@@ -70,21 +73,31 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
  * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, then what the page always had in
  * four tabs (Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The panels of the
  * signature, the registration, the Questura communication, the tax advisory and the rent are the ones that existed, moved here.
+ * Under the header, «Cosa devi fare ora» (LR-03b): the step the server says the lease waits for (`nextStep`, read from its row in the
+ * list of leases), as the one colored block of the page and with the one button that does it. It takes the place of the other
+ * invitations that said the same thing (the draft that offers to go on, the banner of the Questura communication).
  */
-function LeaseSheet({ lease }: { lease: LeaseDetail }) {
+function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNextStep | null }) {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
-  // The tab a lease opens on is decided once, from the state it had when the page opened: signing it or registering it does not
-  // move the person to another tab under their hands.
-  const [opensOn] = useState(() => defaultLeaseTab(lease.status));
+  // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen. Its
+  // notice is its one voice, so the step of the server is not laid over it.
+  const partnerDraft = isPartnerDraft(lease);
+  const step = partnerDraft ? null : nextStep;
+  // The tab a lease opens on is decided once, when the page opens: the tab where the step the server sent is done, if it has one,
+  // else where the state of the lease puts the next thing to do. Signing it or registering it does not move the person to another
+  // tab under their hands (and an address with `?tab=` is always obeyed).
+  const [opensOn] = useState(() => (step ? leaseStepTab(step) : undefined) ?? defaultLeaseTab(lease.status));
   const tab = leaseTabOf(searchParams.get('tab'), opensOn);
   const [explainOpen, setExplainOpen] = useState(false);
   const explainId = useId();
 
   const parties = lease.parties ?? [];
-  // A concordato draft made for the partner: the contract comes from ConcordatoFacile, not from the signature panel of CasaZen.
-  const partnerDraft = isPartnerDraft(lease);
   const showExtraEuBanner = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
+  // No step, no block: a lease the list has no step for is the sheet it was. A step that is there says what the draft notice and the
+  // Questura banner say, so they give way to it (one voice, not two).
+  const now = step ? describeLeaseStep(lease.id, step, { t, language: i18n.language, today: todayInRome() }) : null;
+  const questuraSaid = step?.code === 'QuesturaCommunication' || step?.code === 'RecordKeyHandover';
 
   const tabs: TabItem<LeaseTab>[] = [
     { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
@@ -108,12 +121,14 @@ function LeaseSheet({ lease }: { lease: LeaseDetail }) {
         </div>
       ) : null}
 
+      {now ? <LeaseNowBlock step={now} /> : null}
+
       {partnerDraft ? <PartnerDraftNotice /> : null}
-      {lease.status === 'Draft' && !partnerDraft ? <ContinueDraftNotice leaseId={lease.id} /> : null}
+      {lease.status === 'Draft' && !partnerDraft && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
 
       <LeasePartnerReference leaseId={lease.id} />
 
-      {showExtraEuBanner && <ExtraEUWarningBanner />}
+      {showExtraEuBanner && !questuraSaid ? <ExtraEUWarningBanner /> : null}
 
       {/* One column under 780 px of room (measured on this box, not on the screen: the menu takes part of it). */}
       <div className="@container min-w-0">
@@ -135,6 +150,8 @@ export function LeaseDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { data: lease, isLoading, isError, error, refetch } = useLease(id!);
+  // The step the lease waits for is not in its detail yet: it is read from its row in the list of leases, asked together with the lease.
+  const nextStep = useLeaseNextStep(id!);
 
   if (isLoading) {
     return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
@@ -163,5 +180,12 @@ export function LeaseDetailPage() {
     );
   }
 
-  return <LeaseSheet key={lease.id} lease={lease} />;
+  // The tab the sheet opens on can come from the step, so the sheet waits for the first answer of the list (or its failure: then it is
+  // the sheet it always was, with no error on the screen). A list already in the cache answers at once, and this is the only wait:
+  // a later reading of the list (after an action) never takes the sheet away.
+  if (!nextStep.isFetched) {
+    return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
+  }
+
+  return <LeaseSheet key={lease.id} lease={lease} nextStep={nextStep.data ?? null} />;
 }
