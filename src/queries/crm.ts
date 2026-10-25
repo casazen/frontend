@@ -14,14 +14,3 @@ export function useGuestCrmProfiles(params?: GuestCrmListParams) {
     queryFn: () => CrmApi.getGuests(params),
   });
 }
-
-/**
- * Query a single guest CRM profile by ID.
- */
-export function useGuestCrmProfile(id: string | undefined) {
-  return useQuery({
-    queryKey: [CRM_KEY, 'guest', id],
-    queryFn: () => CrmApi.getGuest(id!),
-    enabled: !!id,
-  });
-}

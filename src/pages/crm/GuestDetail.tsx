@@ -1,38 +1,43 @@
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Mail, MessageCircle, Tag } from 'lucide-react';
-import { useGuestCrmProfile } from '@/queries/crm';
+import type { GuestCrmProfile } from '@/types/crm.types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LoadingScreen } from '@/components/shared/loading-screen';
 
 /**
  * CRM guest detail page (NF-23, ADR-021): profile detail with stays, spend,
  * consent status, and tags.
+ *
+ * Note: Uses cached data from the list query since the backend does not yet
+ * implement a detail endpoint. The profile data is already fetched by the list
+ * and available in React Query's cache.
  */
 export default function GuestDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { data: profile, isLoading, isError, error } = useGuestCrmProfile(id);
+  // Access profile from React Query cache (populated by the list query)
+  const profile = queryClient
+    .getQueriesData<{ items: GuestCrmProfile[] }>({ queryKey: ['crm', 'guests'] })
+    .flatMap(([, data]) => data?.items ?? [])
+    .find((p) => p.id === id);
 
-  if (isLoading) {
-    return <LoadingScreen message={t('crm.loadingProfile')} />;
-  }
-
-  if (isError || !profile) {
+  if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>{t('crm.profileError')}</CardTitle>
             <CardDescription>
-              {error instanceof Error ? error.message : t('crm.profileErrorDescription')}
+              {t('crm.profileErrorDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" onClick={() => navigate('/app/crm/guests')}>
+            <Button variant="outline" onClick={() => navigate('/app/short-rent/crm/guests')}>
               <ArrowLeft className="mr-2 size-4" />
               {t('crm.backToList')}
             </Button>
@@ -45,7 +50,7 @@ export default function GuestDetail() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/app/crm/guests')}>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/app/short-rent/crm/guests')}>
           <ArrowLeft className="mr-2 size-4" />
           {t('crm.backToList')}
         </Button>

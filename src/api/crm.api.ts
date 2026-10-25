@@ -1,5 +1,5 @@
 import { ApiClient } from './client';
-import type { GuestCrmProfileList, GuestCrmListParams, GuestCrmProfile } from '@/types/crm.types';
+import type { GuestCrmProfileList, GuestCrmListParams } from '@/types/crm.types';
 
 /**
  * CRM API (NF-23, ADR-021): guest profiles scoped to the caller's HostScope,
@@ -12,10 +12,4 @@ export const CrmApi = {
    */
   getGuests: (params?: GuestCrmListParams) =>
     ApiClient.get<GuestCrmProfileList>('/crm/guests', params),
-
-  /**
-   * Get a single guest CRM profile by ID.
-   */
-  getGuest: (id: string) =>
-    ApiClient.get<GuestCrmProfile>(`/crm/guests/${id}`),
 };

@@ -101,7 +101,7 @@ export default function GuestList() {
                     <tr
                       key={profile.id}
                       className="hover:bg-muted/30 cursor-pointer"
-                      onClick={() => navigate(`/app/crm/guests/${profile.id}`)}
+                      onClick={() => navigate(`/app/short-rent/crm/guests/${profile.id}`)}
                     >
                       <td className="px-4 py-3 text-sm">{profile.confirmedMarketingEmail}</td>
                       <td className="px-4 py-3 text-sm">{profile.country || '-'}</td>
@@ -132,7 +132,7 @@ export default function GuestList() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/app/crm/guests/${profile.id}`);
+                            navigate(`/app/short-rent/crm/guests/${profile.id}`);
                           }}
                         >
                           {t('crm.viewDetails')}
