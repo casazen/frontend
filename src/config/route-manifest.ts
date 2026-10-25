@@ -1048,6 +1048,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Shield',
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
   },
+  {
+    path: '/app/admin/statements',
+    context: 'admin',
+    requiredPermissions: ['admin.statements.read'],
+    navKey: 'nav.statements',
+    navPlacement: 'primary',
+    navOrder: 8,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
+  },
   // ============================================================
   // Supplier console
   // ============================================================
