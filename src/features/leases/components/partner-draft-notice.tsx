@@ -73,6 +73,7 @@ function StatusView({ leaseId, practice }: { leaseId: string; practice: CfPracti
         {changed ? <span className="text-foreground/70">{t('guidedContract.lastChange', { date: changed })}</span> : null}
       </p>
       <p className="text-sm">{t('guidedContract.sent')}</p>
+      {practice.comuneDiffersFromLink ? <p className="text-sm font-medium" data-testid="lease-partner-comune">{t('guidedContract.comuneDiffers')}</p> : null}
       <div className={BUTTONS}>
         <UploadLink leaseId={leaseId} primary />
       </div>

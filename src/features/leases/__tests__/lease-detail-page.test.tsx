@@ -304,7 +304,7 @@ describe('LeaseDetailPage', () => {
   it('render_ConcordatoDraftForThePartner_FormSentAndPracticeUnderWay_ShowsOnlyItsStatusAndTheWayToTheDocuments', async () => {
     mockLeaseWithService(partnerDraft(), {
       access: () => accessOf({ ...ACTIVE, ...OPENED }),
-      status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [PRACTICE] } }),
+      status: () => Promise.resolve({ data: { ...NO_PRACTICES, practices: [{ ...PRACTICE, comuneDiffersFromLink: true }] } }),
     });
 
     renderPageWithFlags('?tab=dati', { concordatoFacile: true });
@@ -313,6 +313,8 @@ describe('LeaseDetailPage', () => {
     expect(within(status).getByTestId('cf-status-badge')).toHaveAttribute('data-status', 'InProgress');
     expect(status).toHaveTextContent(/Aggiornato il 24\/10\/2026/);
     expect(screen.getByText(i18n.t('guidedContract.sent'))).toBeInTheDocument();
+    // The municipality the person chose in the form is not the one of the house: said, as the status always did.
+    expect(screen.getByTestId('lease-partner-comune')).toHaveTextContent(i18n.t('guidedContract.comuneDiffers'));
     // A second visit to the form after the sending would make a second practice: nothing in the block opens it.
     expect(screen.queryByTestId('lease-partner-proceed')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-partner-privacy')).not.toBeInTheDocument();

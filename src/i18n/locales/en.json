@@ -107,6 +107,7 @@
   },
   "guidedContract": {
     "checkAgain": "Check again",
+    "comuneDiffers": "The municipality chosen in the form differs from the one of the property of the contract.",
     "confirmAction": "Confirm",
     "confirmOther": "Choose another contract",
     "confirmWithoutPractice": "You are uploading the documents to the contract “{{lease}}”: confirm it is the right one.",

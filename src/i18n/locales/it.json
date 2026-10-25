@@ -107,6 +107,7 @@
   },
   "guidedContract": {
     "checkAgain": "Controlla di nuovo",
+    "comuneDiffers": "Il comune scelto nel modulo è diverso da quello della casa del contratto.",
     "confirmAction": "Conferma",
     "confirmOther": "Scegli un altro contratto",
     "confirmWithoutPractice": "Stai caricando i documenti sul contratto «{{lease}}»: conferma che è quello giusto.",
