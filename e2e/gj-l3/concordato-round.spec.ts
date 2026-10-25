@@ -227,6 +227,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       const status = page.getByTestId('lease-partner-status');
       await expect(status).toBeVisible({ timeout: 30_000 });
       await expect(status).toContainText('Ricevuto');
+      await expect.soft(page.getByTestId('lease-partner-practice'), 'the sheet says the number of the practice').toContainText(practiceId, { timeout: 10_000 });
       await expect(page.getByTestId('lease-partner-proceed')).toHaveCount(0);
       await expect(page.getByTestId('lease-partner-upload')).toBeVisible();
       await expectNoSupplierName(page, 'the sheet with the status of the practice');
