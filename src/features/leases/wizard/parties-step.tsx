@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { getCountryOptions } from '@/lib/countries';
 import { classifyFiscalCode } from '@/lib/fiscal-code';
+import { ReadMark } from './reading-marks';
 import { MAX_PARTIES_PER_ROLE, newPartyRow, type PartyList, type WizardValues } from './wizard-model';
 
 /** The 27 member states of the European Union: they come first in the list, the others follow (the Questura asks for who is not one). */
@@ -43,6 +44,9 @@ function Countries() {
   );
 }
 
+/** What the contract can give for a person (NL-DOCS): the names the server gives to what it read. */
+const READ_FIELDS = ['firstName', 'lastName', 'fiscalCode', 'citizenship', 'residence'] as const;
+
 /** The landlords or the tenants: one or more (up to ten), each a person or a company with the data a contract needs. */
 function PartyGroup({ list }: { list: PartyList }) {
   const { t } = useTranslation();
@@ -67,6 +71,7 @@ function PartyGroup({ list }: { list: PartyList }) {
         return (
           <fieldset key={field.id} className="space-y-4 rounded-md border p-4" data-testid={`lease-${list}-${index}`}>
             <legend className="px-1 text-sm font-medium">{t(`leaseWizard.parties.${role}.item`, { n: index + 1 })}</legend>
+            <ReadMark step={2} partyId={field.serverId} fields={READ_FIELDS} name={`${list}.${index}`} />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t('leaseWizard.parties.firstName')}>
                 <Input id={id('firstName')} autoComplete="off" {...register(`${list}.${index}.firstName`)} />

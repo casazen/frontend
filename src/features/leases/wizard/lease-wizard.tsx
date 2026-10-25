@@ -13,13 +13,14 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { toastUndo } from '@/lib/toast-undo';
 import { useForgetLeaseReads, useLeaseReview } from '@/queries/use-lease-draft';
-import type { LandlordDefaults, LeaseDraft, LeaseDraftFlow, LeaseNeed, LongRentRules } from '@/types';
+import type { LandlordDefaults, LeaseDraft, LeaseDraftFlow, LeaseNeed, LeaseReading, LongRentRules } from '@/types';
 import { DatesStep } from './dates-step';
 import { ImportStep } from './import-step';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { PartiesStep } from './parties-step';
 import { PropertyStep } from './property-step';
+import { ReadingProvider } from './reading-marks';
 import { ReviewStep } from './review-step';
 import { SigningStep } from './signing-step';
 import { TermsStep } from './terms-step';
@@ -80,6 +81,8 @@ interface LeaseWizardProps {
   rules: LongRentRules;
   /** Reads the draft again: the person chose to see the version saved somewhere else. */
   onReload: () => void;
+  /** The reading of the contract the person uploaded (NL-DOCS): which values it wrote, and the signed PDF the import can use. */
+  reading?: LeaseReading | null;
 }
 
 /**
@@ -89,7 +92,7 @@ interface LeaseWizardProps {
  * «Avanti» goes on when the step has nothing left that was typed wrong or missing; an APE or the cadastral data of the property that
  * are missing only stop the review.
  */
-export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardProps) {
+export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }: LeaseWizardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -296,6 +299,10 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
     to: stepHref(step),
   }));
 
+  // The signed contract the person gave to be read is the one the import takes: it is not asked for again.
+  const contractDocument = reading?.documents.find((document) => document.id === reading.contractDocumentId);
+  const uploadedContract = contractDocument ? { id: contractDocument.id, name: contractDocument.fileName } : null;
+
   let body: ReactNode;
   if (current === 1) {
     body = (
@@ -316,7 +323,13 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
   } else if (current === SIGN_STEP) {
     body =
       draft.origin === 'Imported' ? (
-        <ImportStep leaseId={draft.id} contractType={form.getValues('contractType')} flush={flush} />
+        <ImportStep
+          leaseId={draft.id}
+          contractType={form.getValues('contractType')}
+          flush={flush}
+          uploaded={uploadedContract}
+          stipulaRead={reading?.stipulaDate ?? null}
+        />
       ) : (
         <SigningStep leaseId={draft.id} flow={flow} getVersion={getVersion} onServerFlow={applyServerFlow} stopOn={stopOn} flush={flush} />
       );
@@ -404,7 +417,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
   );
 
   return (
-    <>
+    <ReadingProvider reading={reading} flow={flow}>
       <LeaseWizardFrame
         stepper={<LeaseWizardStepper entries={entries} current={current} />}
         title={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.title`)}
@@ -459,6 +472,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload }: LeaseWizardPro
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </ReadingProvider>
   );
 }

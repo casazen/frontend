@@ -301,6 +301,14 @@ export function visibleSteps(flow: LeaseDraftFlow, registered: readonly number[]
   return registered.filter((step) => flowStep(flow, step)?.state !== 'NotApplicable').sort((a, b) => a - b);
 }
 
+/**
+ * Where a contract opens once it was read from its documents (NL-DOCS): the first data step with something missing (the facts of the
+ * property aside), else the import of the signed contract. The steps in between have nothing to ask and are walked through with «Avanti».
+ */
+export function firstStepWithNeeds(flow: LeaseDraftFlow, steps: readonly number[]): number {
+  return steps.find((step) => isDataStep(step) && blockingNeeds(flowStep(flow, step)).length > 0) ?? SIGN_STEP;
+}
+
 /** Where a draft opens when the address does not say: the first step that is not done, else the last one. */
 export function firstOpenStep(flow: LeaseDraftFlow, steps: readonly number[]): number {
   const open = steps.find((step) => {

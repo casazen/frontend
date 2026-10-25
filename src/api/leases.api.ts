@@ -5,6 +5,7 @@ import type {
   CedolareAdvisory,
   CedolareAdvisoryInput,
   CfDraftResponse,
+  ImportSignedInput,
   LandlordDefaults,
   LeaseDetail,
   LeaseDraft,
@@ -13,6 +14,7 @@ import type {
   LeaseDraftSaved,
   LeaseListView,
   LeaseOrigin,
+  LeaseReading,
   LeaseRegistration,
   LeaseReview,
   LeaseReviewConfirmation,
@@ -115,6 +117,18 @@ export const leasesApi = {
     return { version: data.version, flow: flowOf(data), landlordIds: idsOf(data.landlordIds), tenantIds: idsOf(data.tenantIds) };
   },
 
+  /**
+   * NL-DOCS: how far the reading of the contract the owner uploaded has got: `state`, the contract documents, what was read and what
+   * became of each value (never the value), the day of the signature and the document the import can use.
+   */
+  getDraftReading: async (id: string): Promise<LeaseReading> => {
+    const data = await ApiClient.get<unknown>(`/leases/${id}/draft/reading`);
+    if (!isRecord(data) || typeof data.state !== 'string' || !Array.isArray(data.documents) || !Array.isArray(data.fields)) {
+      throw new UnexpectedApiResponseError('/leases/:id/draft/reading');
+    }
+    return data as unknown as LeaseReading;
+  },
+
   /** LR-12: the checks of the review of a draft, worst first. */
   getReview: async (id: string): Promise<LeaseReview> => {
     const data = await ApiClient.get<unknown>(`/leases/${id}/review`);
@@ -209,13 +223,15 @@ export const leasesApi = {
 
   /**
    * LR-13: brings in a contract already signed elsewhere, from a draft made with `origin: Imported`: the PDF and the day it was signed.
+   * The PDF is the file, or (NL-DOCS) the contract document already uploaded to the draft to be read: it is not sent twice.
    * The lease becomes Signed (a second call is 409 `lease_not_draft`); the registration is declared afterwards. Nothing is written
    * when the answer is an error.
    */
-  importSigned: async (id: string, input: OfflineSignatureInput): Promise<LeaseDetail> => {
+  importSigned: async (id: string, input: ImportSignedInput): Promise<LeaseDetail> => {
     const formData = new FormData();
     formData.append('stipulaDate', input.stipulaDate);
-    formData.append('signedContract', input.signedContract);
+    if ('contractDocumentId' in input) formData.append('contractDocumentId', input.contractDocumentId);
+    else formData.append('signedContract', input.signedContract);
     const response = await axios.post<LeaseDetail>(`/leases/${id}/import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

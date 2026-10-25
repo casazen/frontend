@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { LeaseContractType, LeaseOrigin, OfflineSignatureInput } from '@/types';
+import type { ImportSignedInput, LeaseContractType, LeaseOrigin } from '@/types';
 
 const DRAFT_KEY = 'lease-draft';
 const LEASES_KEY = 'leases';
@@ -47,8 +47,28 @@ export function useForgetLeaseReads(leaseId: string) {
 export function useImportSignedLease(leaseId: string) {
   const forgetReads = useForgetLeaseReads(leaseId);
   return useMutation({
-    mutationFn: (input: OfflineSignatureInput) => leasesApi.importSigned(leaseId, input),
+    mutationFn: (input: ImportSignedInput) => leasesApi.importSigned(leaseId, input),
     onSuccess: () => forgetReads(),
+  });
+}
+
+/** How often the reading of a contract is asked how far it has got: the server reads for seconds, so nothing sooner than this. */
+const READING_POLL_MS = 3000;
+
+/**
+ * Where the reading of the contract the owner uploaded is (NL-DOCS): asked again every few seconds while it is going on and not at all
+ * once it is over. It holds field names and ids, no value of a person; not kept once the page is closed (`gcTime: 0`).
+ */
+export function useDraftReading(id: string, enabled = true) {
+  return useQuery({
+    queryKey: [DRAFT_KEY, id, 'reading'],
+    queryFn: () => leasesApi.getDraftReading(id),
+    enabled: enabled && !!id,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) => (query.state.data?.state === 'Reading' ? READING_POLL_MS : false),
   });
 }
 

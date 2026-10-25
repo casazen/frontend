@@ -1605,6 +1605,46 @@
       "years_one": "{{count}} anno",
       "years_other": "{{count}} anni"
     },
+    "documents": {
+      "areaTitle": "Il contratto firmato",
+      "continueByHand": "Continua a mano",
+      "import": {
+        "other": "Usa un altro file",
+        "uploaded": "Contratto caricato: {{name}}"
+      },
+      "manual": "Non ho il file: inserisco i dati a mano",
+      "privacy": "Il file viene letto sui nostri server e resta nel tuo spazio: nessun servizio esterno lo vede.",
+      "promise": "Leggiamo il contratto e compiliamo i dati: ti chiediamo solo ciò che manca.",
+      "purpose": "Carica il contratto firmato: lo leggiamo noi e compiliamo i dati.",
+      "read": {
+        "banner": "Abbiamo compilato i dati leggendo il contratto. Controllali e completa quello che manca.",
+        "conflict": "Il contratto riporta un valore diverso da quello inserito: controlla",
+        "derived": "Calcolato dal contratto — controlla",
+        "failed": {
+          "default": "Non siamo riusciti a leggere il documento. Inserisci i dati a mano: il contratto resta caricato e lo useremo alla fine.",
+          "file_missing": "Non troviamo più il file caricato. Inserisci i dati a mano: alla fine potrai caricare di nuovo il contratto.",
+          "no_text": "Nel documento non siamo riusciti a leggere nessun testo (una foto troppo scura o sfocata?). Inserisci i dati a mano: il contratto resta caricato.",
+          "nothing_found": "Nel documento non abbiamo trovato i dati di un contratto di locazione. Controlla di aver caricato il file giusto, oppure inserisci i dati a mano.",
+          "ocr_unavailable": "La lettura dei documenti non è disponibile in questo momento. Inserisci i dati a mano: il contratto resta caricato.",
+          "unreadable": "Il file non si apre o è troppo lungo per essere letto. Inserisci i dati a mano oppure carica un altro file."
+        },
+        "mark": "Letto dal contratto — controlla",
+        "ongoing": "Stiamo ancora leggendo il documento: appena finisce compiliamo i dati.",
+        "property": "L'indirizzo letto nel contratto sembra diverso da quello dell'immobile scelto. Controlla di aver scelto l'immobile e il contratto giusti."
+      },
+      "reading": {
+        "purpose": "Di solito ci vuole meno di un minuto.",
+        "slow": "Ci sta mettendo più del solito. Puoi continuare a mano: i dati letti arriveranno appena è pronto.",
+        "status": "Stiamo leggendo il documento…",
+        "title": "Stiamo leggendo il documento…",
+        "wait": "Puoi lasciare aperta questa pagina: appena finito ti portiamo ai dati da controllare."
+      },
+      "retry": "Riprova",
+      "submit": "Leggi il contratto",
+      "title": "Carica i documenti",
+      "uploadFailed": "Non siamo riusciti a caricare il file. Riprova, oppure continua a mano.",
+      "why": "Se il contratto è già firmato non devi riscrivere nulla: leggiamo noi nomi, canone, date e il resto, e ti chiediamo solo ciò che non riusciamo a leggere. Controlli tutto prima di inserirlo."
+    },
     "done": {
       "another": "Crea un altro contratto",
       "apeMissing": "APE: manca ancora per l'immobile. Caricala dalla sua scheda: non blocca il contratto.",

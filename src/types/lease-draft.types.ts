@@ -128,6 +128,46 @@ export interface LongRentRules {
   transitoryTermMonths: { min: number; max: number };
 }
 
+/** Where the reading of the contract the owner uploaded is (`GET /leases/:id/draft/reading`): none uploaded, being read, read, or not readable. */
+export type LeaseReadingState = 'None' | 'Reading' | 'Done' | 'Failed';
+
+/** What became of a value the contract states: written (`Read`), already there and the same (`Agrees`), another is typed (`Conflict`), refused by the rules (`Unusable`). */
+export type LeaseReadingFieldState = 'Read' | 'Agrees' | 'Conflict' | 'Unusable';
+
+/** One value of the contract: the name of the field and, for a person, the entry of the draft (`partyId`). Never the value itself. */
+export interface LeaseReadingField {
+  /** `contractType`, `taxRegime`, `monthlyRent`, `securityDeposit`, `startDate`, `endDate`, `property`, or for a person `firstName`, `lastName`, `fiscalCode`, `residence`, `citizenship`, `party`. */
+  field: string;
+  partyId: string | null;
+  role: string | null;
+  state: LeaseReadingFieldState;
+  confidence: number;
+  /** Worked out from the contract (the monthly rent from the annual one, a deposit from «N mensilità»), not written in it as such. */
+  derived: boolean;
+}
+
+/** A contract document of the draft and where its reading is; `error` is a code (`unreadable`, `ocr_unavailable`, `no_text`, `nothing_found`, `file_missing`, `error`) when it failed. */
+export interface LeaseReadingDocument {
+  id: string;
+  fileName: string;
+  status: 'NotStarted' | 'Processing' | 'Completed' | 'NeedsReview' | 'Failed' | 'Skipped';
+  error: string | null;
+}
+
+/** `GET /leases/:id/draft/reading`. */
+export interface LeaseReading {
+  state: LeaseReadingState;
+  documents: LeaseReadingDocument[];
+  fields: LeaseReadingField[];
+  /** `YYYY-MM-DD`: the day of the signature, when the contract states it. */
+  stipulaDate: string | null;
+  /** The contract document the final import can use instead of a file sent again. */
+  contractDocumentId: string | null;
+}
+
+/** `POST /leases/:id/import`: the day of the signature and the signed PDF, either the file or the contract document already uploaded to the draft. */
+export type ImportSignedInput = { stipulaDate: string } & ({ signedContract: File } | { contractDocumentId: string });
+
 /** `GET /long-rent/landlord-defaults`: the landlord the wizard starts from; every field may be null. */
 export interface LandlordDefaults {
   firstName: string | null;

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { useTranslation } from 'react-i18next';
+import { FileSearch, FileText } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,10 @@ interface ImportStepProps {
   contractType: string;
   /** Sends what is still waiting to be saved; false when something could not be saved. */
   flush: () => Promise<boolean>;
+  /** The signed contract the person gave to be read (NL-DOCS): it is imported as it is, and not asked for a second time. */
+  uploaded?: { id: string; name: string } | null;
+  /** The day of the signature the contract states, when it does (`YYYY-MM-DD`). */
+  stipulaRead?: string | null;
 }
 
 /** `lease_not_draft` is the answer to an import that already happened (another tab, a second try): the lease is Signed. */
@@ -35,20 +40,25 @@ function isNotDraft(error: unknown): boolean {
  * already registered. The import cannot be taken back, so it is not done until the person confirms what follows from it, and it is sent
  * once. The registration is declared afterwards, with the declaration that already exists (step ⑧ opens it when the answer was yes).
  */
-export function ImportStep({ leaseId, contractType, flush }: ImportStepProps) {
+export function ImportStep({ leaseId, contractType, flush, uploaded = null, stipulaRead = null }: ImportStepProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const importLease = useImportSignedLease(leaseId);
   const today = todayInRome();
   const [file, setFile] = useState<File | null>(null);
-  const [stipulaDate, setStipulaDate] = useState('');
+  const [replacing, setReplacing] = useState(false);
+  // The day read from the contract until the person types another.
+  const [typedDate, setTypedDate] = useState<string | null>(null);
+  const stipulaDate = typedDate ?? stipulaRead ?? '';
+  const dateRead = typedDate === null && stipulaRead !== null && stipulaDate !== '';
+  const kept = uploaded !== null && !replacing ? uploaded : null;
   const [registered, setRegistered] = useState<Registered | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [failure, setFailure] = useState<unknown>(null);
   const sending = useRef(false);
 
-  const fileOk = isPdfFile(file, LEASE_MAX_SIGNED_CONTRACT_BYTES);
+  const fileOk = kept !== null || isPdfFile(file, LEASE_MAX_SIGNED_CONTRACT_BYTES);
   const dateOk = isStayDate(stipulaDate) && stipulaDate <= today;
   const day = formatStayDate(stipulaDate, i18n.language);
 
@@ -65,10 +75,10 @@ export function ImportStep({ leaseId, contractType, flush }: ImportStepProps) {
   };
 
   const confirm = async () => {
-    if (sending.current || !file || registered === null) return;
+    if (sending.current || (kept === null && !file) || registered === null) return;
     sending.current = true;
     try {
-      await importLease.mutateAsync({ stipulaDate, signedContract: file });
+      await importLease.mutateAsync(kept !== null ? { stipulaDate, contractDocumentId: kept.id } : { stipulaDate, signedContract: file! });
       navigate(leaseEditPath(leaseId, AFTER_STEP), { replace: true, state: { declareRegistration: registered === 'yes' } });
     } catch (error) {
       setFailure(error);
@@ -79,19 +89,32 @@ export function ImportStep({ leaseId, contractType, flush }: ImportStepProps) {
 
   return (
     <div className="space-y-6" data-testid="lease-import-step">
-      <Field
-        label={t('leaseWizard.import.fileLabel')}
-        hint={t('leaseWizard.import.fileHint')}
-        error={submitted && !fileOk ? t('leaseWizard.import.fileInvalid') : undefined}
-      >
-        <Input
-          id="lw-signedFile"
-          type="file"
-          accept="application/pdf,.pdf"
-          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-          data-testid="lease-import-file"
-        />
-      </Field>
+      {kept !== null ? (
+        <div className="space-y-2" data-testid="lease-import-uploaded">
+          <p className="text-sm font-medium">{t('leaseWizard.import.fileLabel')}</p>
+          <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3 text-sm">
+            <FileText aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 flex-1 break-all">{t('leaseWizard.documents.import.uploaded', { name: kept.name })}</span>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setReplacing(true)} data-testid="lease-import-other">
+              {t('leaseWizard.documents.import.other')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Field
+          label={t('leaseWizard.import.fileLabel')}
+          hint={t('leaseWizard.import.fileHint')}
+          error={submitted && !fileOk ? t('leaseWizard.import.fileInvalid') : undefined}
+        >
+          <Input
+            id="lw-signedFile"
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+            data-testid="lease-import-file"
+          />
+        </Field>
+      )}
 
       <Field
         label={t('leaseWizard.import.dateLabel')}
@@ -104,10 +127,16 @@ export function ImportStep({ leaseId, contractType, flush }: ImportStepProps) {
           type="date"
           value={stipulaDate}
           max={today}
-          onChange={(event) => setStipulaDate(event.target.value)}
+          onChange={(event) => setTypedDate(event.target.value)}
           data-testid="lease-import-date"
         />
       </Field>
+      {dateRead ? (
+        <p className="-mt-4 flex items-start gap-1.5 text-xs text-muted-foreground" data-testid="lease-import-date-read">
+          <FileSearch aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+          {t('leaseWizard.documents.read.mark')}
+        </p>
+      ) : null}
 
       <div className="space-y-2">
         <ChoiceGroup legend={t('leaseWizard.import.registered.legend')} legendVisible minCardWidth={14}>
