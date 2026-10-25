@@ -11,7 +11,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { useCfSimulatorDocument, useCfSimulatorSetStatus } from '@/queries/use-cf-simulator';
 import {
   CF_SIMULATOR_CLOSE_REASONS,
-  CF_SIMULATOR_DOCUMENT_KINDS,
+  CF_SIMULATOR_PANEL_DOCUMENTS,
   CF_SIMULATOR_STATUSES,
   type CfSimulatorCloseReason,
   type CfSimulatorStatus,
@@ -134,7 +134,7 @@ export function GuidedFormSubmitted({ practice, onStatusChanged }: SubmittedView
           <div className="space-y-2">
             <h3 className="text-sm font-semibold">{t('guidedForm.documents.title')}</h3>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              {CF_SIMULATOR_DOCUMENT_KINDS.map((kind) => (
+              {CF_SIMULATOR_PANEL_DOCUMENTS.map((kind) => (
                 <Button
                   key={kind}
                   variant="outline"

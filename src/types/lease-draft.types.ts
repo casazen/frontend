@@ -156,12 +156,36 @@ export interface LeaseReadingField {
   derived: boolean;
 }
 
+/** What a run of pages of one file is (CF-DOCS-REAL): the file the guided service delivers holds the contract, its attestation and its calculation sheet. */
+export type LeaseDocumentSectionKind = 'contract' | 'attestation' | 'calculationSheet';
+
+/** A run of pages of a document that is one thing: the pages count from 1 and both ends are part of it. */
+export interface LeaseDocumentSection {
+  kind: LeaseDocumentSectionKind;
+  firstPage: number;
+  lastPage: number;
+}
+
+/**
+ * Something the reading found worth a second look (CF-DOCS-REAL): a stable code (`pages_unreadable`, `attestation_rent_differs`…), each with its
+ * sentence in the interface, and the pages it is about when it is about pages. It never blocks anything.
+ */
+export interface LeaseReadingWarning {
+  code: string;
+  pages: number[] | null;
+}
+
 /** A contract document of the draft and where its reading is; `error` is a code (`unreadable`, `ocr_unavailable`, `no_text`, `nothing_found`, `file_missing`, `error`) when it failed. */
 export interface LeaseReadingDocument {
   id: string;
   fileName: string;
   status: 'NotStarted' | 'Processing' | 'Completed' | 'NeedsReview' | 'Failed' | 'Skipped';
   error: string | null;
+  /** The sections the file is made of, once read (CF-DOCS-REAL); a file that shows no attestation and no sheet is one contract. */
+  sections?: LeaseDocumentSection[] | null;
+  containsAttestation?: boolean;
+  containsCalculationSheet?: boolean;
+  warnings?: LeaseReadingWarning[] | null;
 }
 
 /** `GET /leases/:id/draft/reading`. */

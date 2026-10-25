@@ -11,7 +11,7 @@
     "reference": "Lease reference: {{id}}",
     "openHouse": "Open property",
     "openLease": "Open lease",
-    "instructions": "Upload the contract, attestation and registration receipt you received. Files are attached to this lease and available in its Documents section. Uploading does not change lease data or require another payment.",
+    "instructions": "Upload the signed contract with its attestation (in one file, as it reached you) and, separately, the registration receipt. Files are attached to this lease and available in its Documents section. Uploading does not change lease data or require another payment.",
     "chooseLease": "Select the lease to attach documents to.",
     "noLeases": "No leases have been saved yet: create a lease to be able to attach documents.",
     "practice": {
@@ -36,13 +36,13 @@
     "import": {
       "action": "Complete and import the contract",
       "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
-      "instructions": "Upload the contract you received: we read it and fill in the data of the draft, then you check them and import the contract. The attestation and the registration receipt are uploaded the same way. Uploading needs no new payment.",
+      "instructions": "Upload the file you received, with the signed contract and the attestation: we read it, recognize its parts and fill in the data of the draft, then you check them and import the contract. The registration receipt is a file of its own, uploaded afterwards. Uploading needs no new payment.",
       "title": "The contract has arrived"
     },
     "kinds": {
-      "Contract": "Contract",
-      "Attestation": "Attestation",
-      "Registration": "Registration",
+      "Contract": "Signed contract and attestation",
+      "Attestation": "Attestation (only if it comes separately)",
+      "Registration": "Registration receipt",
       "Other": "Other"
     }
   },
@@ -737,8 +737,7 @@
     "comune": "Municipality",
     "documentError": "The document could not be downloaded. Try again.",
     "documents": {
-      "attestation": "Download the attestation",
-      "contract": "Download the sample contract",
+      "contract": "Download the contract with the attestation (one file)",
       "receipt": "Download the registration receipt",
       "title": "Sample documents"
     },
@@ -11534,6 +11533,72 @@
       "pendingDelta_other": "{{count}} rents not yet due"
     }
   },
+  "leaseDocs": {
+    "attestation": {
+      "included": "Attestation: included in the uploaded contract"
+    },
+    "benefits": {
+      "contractWithAttestation": {
+        "name": "Contract with attestation (one file)",
+        "upload": "Upload the contract with the attestation"
+      },
+      "introTwo": "Bring a copy of these two documents to your accountant and to the municipality to obtain the benefits of the canone concordato, for example the IMU reduced by 25% and, where it is provided for, the cedolare secca at 10%.",
+      "missingTwo": "You are still missing one: upload it to have both ready.",
+      "useTwo": "The attestation is inside the contract: the municipality may ask you for it to apply the reduced rate; your accountant uses it for the tax return."
+    },
+    "contains": "It holds: {{parts}}.",
+    "page": "p. {{first}}",
+    "pages": "pp. {{first}}–{{last}}",
+    "receipt": {
+      "check": "Read from the receipt — check it",
+      "notAReceipt": "This file does not look like a receipt of the Agenzia delle Entrate: type the number and the date yourself.",
+      "reading": "Reading the receipt…",
+      "rejected": "The Agenzia delle Entrate discarded the request: the contract is NOT recorded as registered. Do not declare the registration with this receipt, and check with whoever filed it.",
+      "unreadable": "We cannot read this receipt (is it a scan or a photo?): type the number and the date yourself.",
+      "warnings": {
+        "default": "Something in the receipt does not match the contract: check it.",
+        "receipt_comune_differs": "The municipality of the receipt is not the one of the house.",
+        "receipt_end_differs": "The end date in the receipt is not the contract's.",
+        "receipt_regime_differs": "The receipt and the contract do not say the same about the cedolare secca.",
+        "receipt_rent_differs": "The yearly rent of the receipt does not match the contract's.",
+        "receipt_start_differs": "The start date in the receipt is not the contract's.",
+        "receipt_stipulation_differs": "The day the contract was made in the receipt is not the contract's.",
+        "receipt_type_differs": "The type of contract in the receipt is not the contract's."
+      },
+      "warningsTitle": "To check"
+    },
+    "recognized": "In the file we recognized: {{parts}}.",
+    "section": {
+      "attestation": "attestation",
+      "calculationSheet": "calculation sheet",
+      "contract": "contract"
+    },
+    "upload": {
+      "hint": {
+        "Attestation": "Only if the attestation reached you separately: if it is in the same file as the contract, upload it as «Signed contract and attestation».",
+        "Contract": "Upload the file as you received it: if it also holds the attestation and the calculation sheet, we recognize them and do not ask for them again.",
+        "Other": "A document that is none of the others.",
+        "Registration": "The receipt of the Agenzia delle Entrate is a file of its own: we read it to fill in the declaration of the registration."
+      }
+    },
+    "warnings": {
+      "attestation_comune_differs": "The municipality of the attestation is not the one of the house.",
+      "attestation_dates_differ": "The dates of the contract and those of the attestation do not match.",
+      "attestation_not_conform": "The attestation says the rent does NOT respect the territorial agreement.",
+      "attestation_parties_differ": "The attestation names a person who is not in the contract.",
+      "attestation_rent_differs": "The rent attested is not the rent of the contract.",
+      "attestation_rent_out_of_range": "The rent of the contract is outside the values the attestation gives for this house.",
+      "attestation_sheet_differ": "The attestation and the calculation sheet do not give the same figures (rent, zone or surface).",
+      "default": "There is something to check in the file.",
+      "fiscal_code_invalid": "A fiscal code written in the contract is not valid: check the data of the people.",
+      "pages_out_of_order": "The pages of the file are not in the usual order (contract, attestation, calculation sheet): check that none is missing.",
+      "pages_unreadable": "Some pages are hard to read (pages {{pages}}): check the data with the file at hand.",
+      "sheet_not_conform": "The calculation sheet says the rent does NOT respect the territorial agreement.",
+      "sheet_rent_differs": "The rent in the calculation sheet is not the rent of the contract.",
+      "term_too_short": "A canone concordato lasts at least three years: the length in the contract is shorter.",
+      "title": "To check"
+    }
+  },
   "leaseFlow": {
     "actor": {
       "Landlord": "Your turn",
@@ -12075,7 +12140,7 @@
     },
     "documents": {
       "inHand": "the signed lease, as a PDF or as photos of its pages.",
-      "summary": "Upload the lease that is already signed: we read it and fill in the data for you. We only ask what we cannot read.",
+      "summary": "Upload the lease that is already signed, also with its attestation in the same file: we read it, recognize its parts and fill in the data for you. We only ask what we cannot read.",
       "title": "Upload the lease"
     },
     "done": {

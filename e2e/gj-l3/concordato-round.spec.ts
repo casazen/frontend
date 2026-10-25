@@ -4,7 +4,7 @@ import { accessToken, loadStack, loginAs, oracleFor, romeDay, type Oracle, type 
 import {
   acceptPrivacyAndProceed,
   becomeLongTermLandlord,
-  declareTheRegistration,
+  declareFromTheReceipt,
   downloadSample,
   expectNoSupplierName,
   grantGiftPractice,
@@ -30,9 +30,11 @@ import {
  *
  *   «Nuovo contratto» → «Canone concordato» → «Parto da zero» → the sheet → privacy → access → the form (the simulated one of the test
  *   environments) → «Invia la pratica» → back to the sheet (it shows the STATE, not the form) → the test panel moves the practice → the
- *   three sample documents → «Carica i documenti» (the contract) → it is read → «Completa e importa il contratto» → the wizard asks only
- *   what the contract does not say → the contract is imported (same lease, now Signed) → attestation and receipt uploaded → the
- *   registration declared with the receipt already uploaded.
+ *   two sample documents the service delivers (CF-DOCS-REAL: the contract with its attestation and its calculation sheet in ONE scan, and the
+ *   receipt of the Agenzia delle Entrate) → «Carica i documenti» (the one file) → it is read by OCR and its three sections are recognized →
+ *   «Completa e importa il contratto» → the wizard asks only what the contract does not say → the contract is imported (same lease, now
+ *   Signed) → the receipt uploaded as a file of its own → the registration declared with the receipt already uploaded, whose number and
+ *   day were read and proposed for the person to check.
  *
  * ACCESS WITHOUT STRIPE. The real payment needs Stripe, and the CI has no Stripe test keys (the online-payment variant of the Golden Journey
  * is skipped for the same reason), so the round gets the access in the two ways the product has that need no payment:
@@ -105,13 +107,23 @@ type DraftView = {
   };
   flow: { steps: Array<{ step: number; state: string; needs: Array<{ code: string }> }> };
 };
+type SectionView = { kind: string; firstPage: number; lastPage: number };
 type ReadingView = {
   state: string;
-  documents: Array<{ id: string; status: string; error: string | null }>;
+  documents: Array<{
+    id: string;
+    status: string;
+    error: string | null;
+    /** CF-DOCS-REAL: the sections the reading recognized in the file, the attestation among them, and what it found worth a look. */
+    sections?: SectionView[] | null;
+    containsAttestation?: boolean;
+    containsCalculationSheet?: boolean;
+    warnings?: Array<{ code: string }> | null;
+  }>;
   fields: Array<{ field: string; role: string | null; state: string; derived: boolean }>;
   contractDocumentId: string | null;
 };
-type DocumentView = { id: string; kind: string; fileName: string };
+type DocumentView = { id: string; kind: string; fileName: string; sections?: SectionView[] | null; containsAttestation?: boolean };
 
 /** The last day of a period of three years that starts on `start` (`YYYY-MM-01`): the first period of a 3+2 contract. */
 function threeYearsFrom(start: string): string {
@@ -329,8 +341,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await expect(status, 'the sheet follows the status of the practice by itself').toContainText('In lavorazione', { timeout: 30_000 });
     });
 
-    const files = { contract: '', attestation: '', receipt: '' };
-    await step('The test panel moves the practice to «Firmato ricevuto» and «Attestato»; the three sample documents are downloaded', async () => {
+    const files = { contract: '', receipt: '' };
+    await step('The test panel moves the practice to «Firmato ricevuto» and «Attestato»; the two sample documents are downloaded', async () => {
       await page.goBack();
       await expect(page.getByTestId('guided-form-panel')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the test panel of the form');
@@ -345,8 +357,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
           })
           .toBe(next);
       }
+      // One file for the contract and its attestation (a scan), and the receipt of the Agenzia as a file of its own.
       files.contract = await downloadSample(page, 'contract', samples);
-      files.attestation = await downloadSample(page, 'attestation', samples);
       files.receipt = await downloadSample(page, 'receipt', samples);
 
       // The documents of the module answer only to the control token that the sending of the practice returned (the panel sends it for the
@@ -375,7 +387,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       // The address changes before the screen does: the screen is waited for before it is read.
       await expect(page.getByTestId('lease-documents-panel')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the page that takes the documents in');
-      await uploadDocument(page, files.contract, 'Contratto');
+      await uploadDocument(page, files.contract, 'Contratto firmato e attestazione');
     });
 
     await step('The contract is read on the server; «Completa e importa il contratto» is offered', async () => {
@@ -392,6 +404,16 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       const reading = await hostApi.get<ReadingView>(`/leases/${leaseId}/draft/reading`);
       expect.soft(documents.filter((d) => d.kind === 'Contract')).toHaveLength(1);
       expect.soft(reading.contractDocumentId, 'the import can use the contract already uploaded').toBe(documents.find((d) => d.kind === 'Contract')?.id);
+
+      // CF-DOCS-REAL: the file is the one the real service delivers, a scan with the contract, its attestation and its calculation sheet. The
+      // reading told them apart (by OCR), and the three agree with each other and with the property: nothing to check.
+      const delivered = reading.documents.find((d) => d.id === reading.contractDocumentId);
+      expect.soft(delivered?.sections?.map((s) => s.kind), 'the file is told apart in its three sections').toEqual(['contract', 'attestation', 'calculationSheet']);
+      expect.soft(delivered?.containsAttestation, 'the attestation is in the file').toBe(true);
+      expect.soft(delivered?.containsCalculationSheet, 'the calculation sheet is in the file').toBe(true);
+      expect.soft(delivered?.warnings ?? [], 'the sections agree with each other and with the property').toEqual([]);
+      expect.soft(documents.find((d) => d.kind === 'Contract')?.containsAttestation, 'the list of the documents says the attestation is in the file').toBe(true);
+      await expect(page.getByTestId('lease-reading-recognized'), 'the page says what the file holds').toContainText('attestazione', { timeout: 30_000 });
 
       // The proof that the sample contract (a real PDF written by the simulator) was READ: what the draft holds now is what it says. Soft:
       // the round goes on, so that one run says everything that is wrong.
@@ -441,7 +463,7 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       expect.soft(leaseIdOf(page), 'the lease is the same as the draft').toBe(leaseId);
     });
 
-    await step('Attestation and receipt are uploaded from the module («Carica i dati in CasaZen») as documents of their own kinds', async () => {
+    await step('The receipt is uploaded from the module («Carica i dati in CasaZen») as a document of its own kind; the attestation is already in the contract', async () => {
       await page.goto('/guided-form');
       await expect(page.getByTestId('guided-form-submitted')).toBeVisible({ timeout: 30_000 });
       await page.getByTestId('guided-form-upload').click();
@@ -452,11 +474,10 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await page.getByTestId('cf-documents-confirm-button').click();
       await expect(page.getByTestId('lease-documents-panel')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the page that takes the documents in, for the practice');
-      await uploadDocument(page, files.attestation, 'Attestazione');
-      await uploadDocument(page, files.receipt, 'Registrazione');
+      await uploadDocument(page, files.receipt, 'Ricevuta di registrazione');
       await snap('documents-of-the-contract');
       const documents = await hostApi.get<DocumentView[]>(`/leases/${leaseId}/documents`);
-      expect.soft(documents.map((d) => d.kind).sort(), 'the three documents of the practice, each of its own kind').toEqual(['Attestation', 'Contract', 'Registration']);
+      expect.soft(documents.map((d) => d.kind).sort(), 'the two documents of the practice: the contract with its attestation, and the receipt').toEqual(['Contract', 'Registration']);
     });
 
     await step('The registration made by the service is declared with the receipt already uploaded; the lease is Registered', async () => {
@@ -465,16 +486,18 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
       await expect(page.getByTestId('lease-sheet')).toBeVisible({ timeout: 30_000 });
       await expectNoSupplierName(page, 'the sheet of the signed contract');
       await snap('sheet-of-the-signed-contract');
-      const code = `RLI-ESEMPIO-${practiceId.slice(-8).toUpperCase()}`;
-      const day = romeDay(0);
-      await declareTheRegistration(page, leaseId, code, day, () => snap('declaration-of-the-registration'));
+      // The number and the day are not typed: the receipt of the Agenzia was read and they are proposed, marked «Letto dalla ricevuta — controlla».
+      // The person checks them (the test reads what the window shows) and confirms: nothing is declared before.
+      const declared = await declareFromTheReceipt(page, leaseId, () => snap('declaration-of-the-registration'));
+      expect.soft(declared.code, 'the identification code the receipt of the Agenzia carries').toMatch(/^SIM\d{2}T\d{6}000AB$/);
+      expect.soft(declared.day, 'the day the receipt says the contract was registered').toBe(romeDay(0));
       await expect
         .poll(async () => (await hostApi.get<LeaseView>(`/leases/${leaseId}`)).status, { message: 'the lease is Registered', timeout: 30_000 })
         .toBe('Registered');
       const lease = await hostApi.get<LeaseView>(`/leases/${leaseId}`);
       log(`the lease after the declaration: ${JSON.stringify(lease.registration)}`);
-      expect.soft(lease.registration, 'the registration declared').toMatchObject({ status: 'Registered', channel: 'Manual', registrationCode: code, hasReceipt: true });
-      expect.soft(lease.registration?.registrationDate?.slice(0, 10), 'the day of the registration').toBe(day);
+      expect.soft(lease.registration, 'the registration declared').toMatchObject({ status: 'Registered', channel: 'Manual', registrationCode: declared.code, hasReceipt: true });
+      expect.soft(lease.registration?.registrationDate?.slice(0, 10), 'the day of the registration').toBe(declared.day);
     });
 
     await step('The history of the contract tells the round in words, with no name of the supplier', async () => {

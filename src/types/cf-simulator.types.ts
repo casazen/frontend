@@ -26,10 +26,14 @@ export const CF_SIMULATOR_CLOSE_REASONS = ['duplicate', 'withdrawn', 'not_compli
 
 export type CfSimulatorCloseReason = (typeof CF_SIMULATOR_CLOSE_REASONS)[number];
 
-/** The sample documents a practice delivers: the contract, the attestation and the receipt of the registration. */
-export const CF_SIMULATOR_DOCUMENT_KINDS = ['contract', 'attestation', 'receipt'] as const;
+/** The sample documents the simulator can send: the contract, the attestation alone (kept for the old endpoint) and the receipt of the registration. */
+export type CfSimulatorDocumentKind = 'contract' | 'attestation' | 'receipt';
 
-export type CfSimulatorDocumentKind = (typeof CF_SIMULATOR_DOCUMENT_KINDS)[number];
+/**
+ * What the test panel offers (CF-DOCS-REAL): what the real service delivers, the contract with its attestation and its calculation sheet in
+ * ONE file (a scan), and the receipt of the registration of the Agenzia delle Entrate, which comes from the Agenzia and is a file of its own.
+ */
+export const CF_SIMULATOR_PANEL_DOCUMENTS = ['contract', 'receipt'] as const satisfies readonly CfSimulatorDocumentKind[];
 
 /** The parameters of the signed link, as they arrive in the address of the module. */
 export interface CfSimulatorLinkParams {

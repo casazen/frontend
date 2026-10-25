@@ -12,6 +12,7 @@ import { DocumentPages } from '@/components/documents/document-pages';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
 import { formatDateTime } from '@/lib/utils';
 import { useRefreshDraftReading } from '@/queries/use-lease-draft';
+import { recognizedParts } from '../lib/document-sections';
 import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
 
 const KINDS: LeaseDocumentKind[] = ['Contract', 'Attestation', 'Registration', 'Other'];
@@ -60,16 +61,22 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       {documents.data?.length === 0 ? <p>{t('cfDocuments.empty')}</p> : null}
       <ul className="space-y-3">
         {documents.data?.map((document) => <li key={document.id} className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0"><p className="break-all">{document.fileName}</p><p className="text-sm text-muted-foreground">{t(`cfDocuments.kinds.${document.kind}`)} · {formatDateTime(document.uploadedAt)}</p></div>
+          <div className="min-w-0"><p className="break-all">{document.fileName}</p><p className="text-sm text-muted-foreground">{t(`cfDocuments.kinds.${document.kind}`)} · {formatDateTime(document.uploadedAt)}</p>
+            {document.kind === 'Contract' && (document.sections?.length ?? 0) > 1
+              ? <p className="text-sm text-muted-foreground" data-testid="lease-document-contains">{t('leaseDocs.contains', { parts: recognizedParts(t, document.sections ?? []) })}</p>
+              : null}
+          </div>
           <Button type="button" variant="outline" disabled={download.isPending} onClick={() => download.mutate(document)}>{t('cfDocuments.download')}</Button>
         </li>)}
       </ul>
       {download.isError ? <ErrorState title={t('cfDocuments.downloadError')} error={download.error} /> : null}
       {canUpload ? <form onSubmit={submit} className="space-y-3">
         <div className="space-y-2"><Label htmlFor={`${formId}-kind`}>{t('cfDocuments.kind')}</Label>
-          <select id={`${formId}-kind`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending || preparing}>
+          <select id={`${formId}-kind`} aria-describedby={`${formId}-kind-hint`} className="block w-full rounded-md border p-2" value={kind} onChange={(event) => setKind(event.target.value as LeaseDocumentKind)} disabled={upload.isPending || preparing}>
             {KINDS.map((value) => <option key={value} value={value}>{t(`cfDocuments.kinds.${value}`)}</option>)}
           </select>
+          {/* One file for the contract and its attestation (CF-DOCS-REAL); the receipt of the Agenzia is a file of its own. */}
+          <p id={`${formId}-kind-hint`} className="text-sm text-muted-foreground" data-testid="lease-documents-kind-hint">{t(`leaseDocs.upload.hint.${kind}`)}</p>
         </div>
         <DocumentPages value={selection} onChange={(next) => { setSelection(next); setSaved(false); setValidation(''); upload.reset(); }} disabled={preparing || upload.isPending} />
         {validation ? <p role="alert">{validation}</p> : null}
