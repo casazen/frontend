@@ -1,6 +1,6 @@
 // US-004 (#202) tenant boundary — org + plan entitlement surfaced read-only on the frontend.
 
-export type PlanTier = 'Starter' | 'Pro' | 'Scale';
+export type PlanTier = 'Starter' | 'Pro' | 'Scale' | 'Agency';
 
 /** Public projection of the caller's organization (AC9/AC11). Never carries Stripe/billing ids. */
 export interface Org {
@@ -37,6 +37,8 @@ export interface Entitlement {
   openAccess?: boolean;
   /** The plan has a free seat for one more person (AM-02). */
   canInviteMember?: boolean;
+  /** Whether the org has the Agency tier (ADR-010). */
+  isAgency?: boolean;
 }
 
 /** Catalogue entry from GET /api/orgs/plans. maxProperties = -1 means unlimited. */
