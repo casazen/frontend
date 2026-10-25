@@ -33,7 +33,7 @@ export function useUpdateVisibility() {
 
   return useMutation({
     mutationFn: ({ id, visible }: { id: string; visible: boolean }) =>
-      trustedSuppliersApi.updateVisibility(id, { visibleInMarketplace: visible }),
+      trustedSuppliersApi.updateVisibility(id, { visible }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [TRUSTED_SUPPLIERS_KEY] });
       toast.success(i18n.t('supplier.trusted.visibilitySuccess'));

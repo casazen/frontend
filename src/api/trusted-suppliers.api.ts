@@ -2,7 +2,6 @@ import { ApiClient } from './client';
 
 export interface TrustedSupplier {
   id: string;
-  orgId: string;
   supplierOrgId: string;
   assignedPropertyIds: string[];
   priority: number;
@@ -16,7 +15,7 @@ export interface InviteSupplierDto {
 }
 
 export interface UpdateVisibilityDto {
-  visibleInMarketplace: boolean;
+  visible: boolean;
 }
 
 export const trustedSuppliersApi = {
