@@ -17,10 +17,10 @@ export interface CfAccessResponse {
    * accepted: the form is not opened without it (the server answers 409 `concordatofacile_privacy_not_accepted`).
    */
   privacyAccepted?: boolean;
-  /** ISO8601 timestamp of that acceptance. */
-  privacyAcceptedAt?: string;
-  /** CF-FLOW (backend): when the signed link of the form was last made, i.e. the form was last opened; absent if it never was. */
-  linkOpenedAt?: string;
+  /** ISO8601 timestamp of that acceptance; null when there is none. */
+  privacyAcceptedAt?: string | null;
+  /** CF-FLOW (backend): when the signed link of the form was last made, i.e. the form was last opened; null (or absent) if it never was. */
+  linkOpenedAt?: string | null;
 }
 
 /** Response from POST /api/leases/{leaseId}/concordatofacile/checkout (ADR-005-R1). */

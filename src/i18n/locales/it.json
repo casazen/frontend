@@ -1247,7 +1247,8 @@
       "TermRenewed": "Rinnovato da solo per un altro periodo",
       "ConcordatoFacileAdminAccess": "Accesso amministratore al modulo guidato",
       "ConcordatoFacileGiftConsumed": "Pratica omaggio usata",
-      "ConcordatoFacileLinkGenerated": "Modulo guidato aperto"
+      "ConcordatoFacileLinkGenerated": "Modulo guidato aperto",
+      "ConcordatoFacilePrivacyAccepted": "Informativa privacy accettata"
     },
     "detailLoadError": "Impossibile caricare il contratto. Riprova.",
     "retry": "Riprova",

@@ -1247,7 +1247,8 @@
       "TermRenewed": "Renewed for another period",
       "ConcordatoFacileAdminAccess": "Administrator access to the guided form",
       "ConcordatoFacileGiftConsumed": "Complimentary practice used",
-      "ConcordatoFacileLinkGenerated": "Guided form opened"
+      "ConcordatoFacileLinkGenerated": "Guided form opened",
+      "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",

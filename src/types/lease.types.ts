@@ -48,6 +48,8 @@ export const LEASE_EVENT_TYPES = [
   'ConcordatoFacileAdminAccess',
   'ConcordatoFacileGiftConsumed',
   'ConcordatoFacileLinkGenerated',
+  // CF-BE: the privacy notice accepted for the lease before the guided form.
+  'ConcordatoFacilePrivacyAccepted',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
