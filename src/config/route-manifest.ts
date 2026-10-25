@@ -407,7 +407,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.trustedSuppliers',
     navPlacement: 'secondary',
     navOrder: 29,
-    icon: 'UserCheck',
+    icon: 'Users',
     component: async () => ({ default: (await import('@/pages/TrustedSuppliersPage')).TrustedSuppliersPage }),
   },
   {
