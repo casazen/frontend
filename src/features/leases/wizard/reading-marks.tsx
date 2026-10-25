@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import type { LeaseDraftFlow, LeaseReading, LeaseReadingField } from '@/types';
 import { WIZARD_BUTTON } from './lease-wizard-frame';
 import { markReadSeen, readSeenId, seenReads, seenStoreKey } from './reading-seen';
+import { ReadingSections } from './reading-sections';
 import { flowStep, type WizardValues } from './wizard-model';
 
 /**
@@ -139,6 +140,8 @@ export function ReadingBanner({ reading, flow, held = false }: { reading: LeaseR
           {t('leaseWizard.documents.read.banner')}
         </Alert>
       ) : null}
+      {/* What the file turned out to hold (the contract, its attestation, its calculation sheet) and what to check (CF-DOCS-REAL). */}
+      <ReadingSections reading={reading} />
     </>
   );
 }

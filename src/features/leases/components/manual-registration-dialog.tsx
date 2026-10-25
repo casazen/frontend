@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { leaseDocumentsApi } from '@/api/lease-documents.api';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
@@ -17,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { useReceiptReading } from '@/queries/use-lease-documents';
 import { useDeclareManualRegistration } from '@/queries/use-leases';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { isStayDate, todayInRome } from '@/lib/stay-dates';
@@ -32,6 +34,17 @@ interface ManualRegistrationDialogProps {
 /** Where the receipt comes from: one already among the documents of the lease, or a file sent now. */
 type ReceiptSource = 'uploaded' | 'file';
 
+/** The codes of what the receipt says that is not what the contract says; any other code says the general sentence. */
+const RECEIPT_WARNINGS: ReadonlySet<string> = new Set([
+  'receipt_comune_differs',
+  'receipt_end_differs',
+  'receipt_regime_differs',
+  'receipt_rent_differs',
+  'receipt_start_differs',
+  'receipt_stipulation_differs',
+  'receipt_type_differs',
+]);
+
 function isPdf(file: File | null): file is File {
   if (!file || file.size === 0 || file.size > RLI_MAX_RECEIPT_BYTES) return false;
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
@@ -41,15 +54,21 @@ function isPdf(file: File | null): file is File {
  * Registration of a contract (LT-01, D15; CF-END): once the contract is registered (by the landlord on the official channel of the Agenzia
  * delle Entrate, or by the guided service that prepared it) the landlord enters the registration number or protocol, its date and the receipt
  * PDF, and confirms the declaration. Only then the lease becomes Registered. The receipt is the one already uploaded among the documents of the
- * lease (kind «Registrazione», preselected when it is the only one), so it is not sent twice, or a new file. Number and date are always typed:
- * the receipt is not read. The server checks the PDF content, the date and that the document is one of this lease again.
+ * lease (kind «Registrazione», preselected when it is the only one), so it is not sent twice, or a new file. The server checks the PDF content,
+ * the date and that the document is one of this lease again.
+ *
+ * CF-DOCS-REAL: the receipt already uploaded is read (a digital PDF of the Agenzia delle Entrate) and its code and day fill the two fields,
+ * marked «Letto dalla ricevuta — controlla» until the person changes them; what does not match the contract is told, and a request the
+ * Agenzia discarded is told as an error and cannot be declared. The reading declares nothing: the person confirms with the box as before,
+ * and a receipt that cannot be read leaves the fields to be typed.
  */
 export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: ManualRegistrationDialogProps) {
   const { t } = useTranslation();
   const declare = useDeclareManualRegistration();
   const today = todayInRome();
-  const [registrationCode, setRegistrationCode] = useState('');
-  const [registrationDate, setRegistrationDate] = useState(today);
+  // What the person typed; `null` while they have not touched the field (the value is then the one read from the receipt, if any).
+  const [typedCode, setTypedCode] = useState<string | null>(null);
+  const [typedDate, setTypedDate] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [chosenSource, setChosenSource] = useState<ReceiptSource | null>(null);
@@ -68,15 +87,26 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
   // One receipt: it is the one. Several: the person chooses.
   const documentId = uploaded.some((document) => document.id === chosenDocument) ? chosenDocument : uploaded.length === 1 ? uploaded[0].id : '';
 
+  // What the receipt says, once the one in use is known: its code and day are proposed, never declared.
+  const reading = useReceiptReading(leaseId, open && source === 'uploaded' ? documentId : '');
+  const receiptState = reading.data?.state;
+  const read = receiptState === 'Read' ? reading.data?.receipt : null;
+  const rejected = read?.outcome === 'Rejected';
+  const readCode = !rejected && read ? (read.code ?? (read.number ? [read.number, read.series].filter(Boolean).join(' ') : '')) : '';
+  const readDate = !rejected && read?.registrationDate ? read.registrationDate : '';
+  const registrationCode = typedCode ?? readCode;
+  const registrationDate = typedDate ?? (readDate || today);
+  const warnings = !rejected && read ? read.warnings : [];
+
   const code = registrationCode.trim();
   const codeValid = code.length > 0 && code.length <= RLI_MAX_REGISTRATION_CODE_LENGTH;
   const dateValid = isStayDate(registrationDate) && registrationDate <= today;
-  const receiptValid = source === 'uploaded' ? documentId !== '' : isPdf(receipt);
+  const receiptValid = source === 'uploaded' ? documentId !== '' && !rejected : isPdf(receipt);
   const canSubmit = codeValid && dateValid && receiptValid && confirmed && !declare.isPending;
 
   function reset() {
-    setRegistrationCode('');
-    setRegistrationDate(today);
+    setTypedCode(null);
+    setTypedDate(null);
     setReceipt(null);
     setConfirmed(false);
     setChosenSource(null);
@@ -111,12 +141,17 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
               id={`rli-code-${leaseId}`}
               value={registrationCode}
               maxLength={RLI_MAX_REGISTRATION_CODE_LENGTH}
-              onChange={(e) => setRegistrationCode(e.target.value)}
+              onChange={(e) => setTypedCode(e.target.value)}
               aria-describedby={`rli-code-hint-${leaseId}`}
             />
             <p id={`rli-code-hint-${leaseId}`} className="text-xs text-muted-foreground">
               {t('leases.rli.manualDialog.codeHint')}
             </p>
+            {typedCode === null && readCode !== '' ? (
+              <p className="text-xs font-medium text-foreground/80" data-testid="rli-code-read">
+                {t('leaseDocs.receipt.check')}
+              </p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor={`rli-date-${leaseId}`}>{t('leases.rli.manualDialog.dateLabel')}</Label>
@@ -125,8 +160,13 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
               type="date"
               value={registrationDate}
               max={today}
-              onChange={(e) => setRegistrationDate(e.target.value)}
+              onChange={(e) => setTypedDate(e.target.value)}
             />
+            {typedDate === null && readDate !== '' ? (
+              <p className="text-xs font-medium text-foreground/80" data-testid="rli-date-read">
+                {t('leaseDocs.receipt.check')}
+              </p>
+            ) : null}
             {!dateValid && (
               <p className="text-sm text-destructive" role="alert">
                 {t('leases.rli.manualDialog.dateInvalid', { today: formatDate(today) })}
@@ -171,6 +211,32 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
                     </option>
                   ))}
                 </Select>
+                {reading.isLoading ? (
+                  <p role="status" className="text-xs text-muted-foreground" data-testid="rli-receipt-reading">
+                    {t('leaseDocs.receipt.reading')}
+                  </p>
+                ) : null}
+                {rejected ? (
+                  <Alert variant="danger" data-testid="rli-receipt-rejected">
+                    {t('leaseDocs.receipt.rejected')}
+                  </Alert>
+                ) : null}
+                {warnings.length > 0 ? (
+                  <Alert variant="warning" title={t('leaseDocs.receipt.warningsTitle')} data-testid="rli-receipt-warnings">
+                    <ul className="list-disc space-y-1 ps-5">
+                      {warnings.map((warning) => (
+                        <li key={warning} className="break-words">
+                          {t(`leaseDocs.receipt.warnings.${RECEIPT_WARNINGS.has(warning) ? warning : 'default'}`)}
+                        </li>
+                      ))}
+                    </ul>
+                  </Alert>
+                ) : null}
+                {receiptState === 'Unreadable' || receiptState === 'NotAReceipt' ? (
+                  <p className="text-xs text-muted-foreground" data-testid="rli-receipt-unread">
+                    {t(`leaseDocs.receipt.${receiptState === 'Unreadable' ? 'unreadable' : 'notAReceipt'}`)}
+                  </p>
+                ) : null}
               </div>
             ) : (
               <div className="space-y-2">

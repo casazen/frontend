@@ -57,14 +57,51 @@ function leaseDocument(id: string, kind: 'Contract' | 'Attestation' | 'Registrat
   return { id, leaseId: 'lease-1', kind, fileName, sizeBytes: 2048, uploadedAt: '2026-10-24T10:00:00Z' };
 }
 
-/** The documents are asked only when the declaration window opens: without a list the API answers 404 and the window asks for the file. */
-function mockApi(lease: () => LeaseDetail, rliChecklist: RliChecklist = checklist(), documents?: ReturnType<typeof leaseDocument>[]) {
+/**
+ * The documents are asked only when the declaration window opens: without a list the API answers 404 and the window asks for the file.
+ * `readings` are the answers of `GET /leases/:id/documents/:documentId/reading` (the values of a receipt, CF-DOCS-REAL) by address; without one the
+ * receipt cannot be read and the window asks for the number and the date, as it always did.
+ */
+function mockApi(
+  lease: () => LeaseDetail,
+  rliChecklist: RliChecklist = checklist(),
+  documents?: ReturnType<typeof leaseDocument>[],
+  readings: Record<string, unknown> = {},
+) {
   get.mockImplementation((url: string) => {
     if (url === '/leases/lease-1') return Promise.resolve({ data: lease() });
     if (url === '/leases/lease-1/rli/checklist') return Promise.resolve({ data: rliChecklist });
     if (url === '/leases/lease-1/documents' && documents) return Promise.resolve({ data: documents });
+    if (url in readings) return Promise.resolve({ data: readings[url] });
     return Promise.reject(httpError(404));
   });
+}
+
+/** What the API says of a receipt of the registration it read (CF-DOCS-REAL). */
+function receiptReading(receipt: Record<string, unknown>, state = 'Read') {
+  return {
+    documentId: 'doc-receipt',
+    kind: 'Registration',
+    state,
+    receipt: {
+      outcome: 'Registered',
+      code: 'TKM26T012345000AB',
+      number: '012345',
+      series: '3T',
+      registrationDate: '2026-09-21',
+      office: 'MILANO 1',
+      annualRent: 7140,
+      start: '2026-09-19',
+      end: '2029-09-18',
+      stipulationDate: '2026-09-19',
+      typology: 'Locazione agevolata immobile uso abitativo',
+      cedolareSecca: true,
+      comune: 'BOLLATE',
+      province: 'MI',
+      warnings: [],
+      ...receipt,
+    },
+  };
 }
 
 // These tests are about the registration, which is in the tab `scadenze`: the sheet opens on the guide (LR-GUIDE-1), so they ask for it.
@@ -282,6 +319,77 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(body.get('receiptDocumentId')).toBe('doc-receipt');
     expect(body.has('receipt')).toBe(false);
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Registrazione salvata: il contratto risulta registrato.'));
+  });
+
+  // CF-DOCS-REAL: the receipt of the Agenzia delle Entrate that was uploaded is read; the number and the day are proposed, never declared.
+  it('declareManual_ReceiptRead_FillsTheNumberAndTheDayForThePersonToCheck_AndDeclaresNothingByItself', async () => {
+    const reading = receiptReading({ warnings: ['receipt_rent_differs'] });
+    mockApi(() => signedLease({ origin: 'Imported', isConcordatoFacileSource: true }), checklist(), [leaseDocument('doc-receipt', 'Registration', 'ricevuta.pdf')], {
+      '/leases/lease-1/documents/doc-receipt/reading': reading,
+    });
+    post.mockResolvedValue({ data: registration({ registrationCode: 'TKM26T012345000AB' }) });
+
+    renderPage();
+    fireEvent.click((await registrationPanel()).getByRole('button', { name: 'Dichiara la registrazione' }));
+    const dialog = within(await screen.findByTestId('rli-manual-dialog'));
+
+    // What the receipt says is in the fields, marked as read, and what does not match the contract is told.
+    const code = await dialog.findByDisplayValue('TKM26T012345000AB');
+    expect(dialog.getByTestId('rli-code-read')).toHaveTextContent('Letto dalla ricevuta — controlla');
+    expect(dialog.getByTestId('rli-date-read')).toHaveTextContent('Letto dalla ricevuta — controlla');
+    expect(document.getElementById('rli-date-lease-1')).toHaveValue('2026-09-21');
+    expect(dialog.getByTestId('rli-receipt-warnings')).toHaveTextContent('Il canone annuo della ricevuta non coincide con quello del contratto.');
+
+    // Nothing is declared by the reading: the person confirms with the box, and only then is the declaration sent.
+    expect(post).not.toHaveBeenCalled();
+    const save = dialog.getByRole('button', { name: 'Salva registrazione' });
+    expect(save).toBeDisabled();
+    fireEvent.click(dialog.getByRole('checkbox'));
+    expect(save).toBeEnabled();
+
+    // A value the person changes is theirs: the mark goes.
+    fireEvent.change(code, { target: { value: 'TKM26T012345000AC' } });
+    expect(dialog.queryByTestId('rli-code-read')).not.toBeInTheDocument();
+    expect(dialog.getByTestId('rli-date-read')).toBeInTheDocument();
+    fireEvent.click(save);
+
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    const [, body] = post.mock.calls[0] as [string, FormData];
+    expect(body.get('registrationCode')).toBe('TKM26T012345000AC');
+    expect(body.get('registrationDate')).toBe('2026-09-21');
+    expect(body.get('receiptDocumentId')).toBe('doc-receipt');
+  });
+
+  it('declareManual_RequestTheAgenziaDiscarded_IsToldAsAnError_AndCannotBeDeclared', async () => {
+    mockApi(() => signedLease({ origin: 'Imported', isConcordatoFacileSource: true }), checklist(), [leaseDocument('doc-receipt', 'Registration', 'ricevuta.pdf')], {
+      '/leases/lease-1/documents/doc-receipt/reading': receiptReading({ outcome: 'Rejected', code: null, number: null, series: null, registrationDate: null }),
+    });
+
+    renderPage();
+    fireEvent.click((await registrationPanel()).getByRole('button', { name: 'Dichiara la registrazione' }));
+    const dialog = within(await screen.findByTestId('rli-manual-dialog'));
+
+    expect(await dialog.findByTestId('rli-receipt-rejected')).toHaveTextContent('ha scartato la richiesta: il contratto NON risulta registrato');
+    expect(dialog.queryByTestId('rli-code-read')).not.toBeInTheDocument();
+    // Even with a number typed and the box ticked the declaration is not offered: this receipt is not a registration.
+    fireEvent.change(dialog.getByLabelText('Numero o protocollo di registrazione'), { target: { value: 'PROT-1' } });
+    fireEvent.click(dialog.getByRole('checkbox'));
+    expect(dialog.getByRole('button', { name: 'Salva registrazione' })).toBeDisabled();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('declareManual_ReceiptThatCannotBeRead_LeavesTheNumberAndTheDayToBeTyped', async () => {
+    mockApi(() => signedLease({ origin: 'Imported', isConcordatoFacileSource: true }), checklist(), [leaseDocument('doc-receipt', 'Registration', 'ricevuta.pdf')], {
+      '/leases/lease-1/documents/doc-receipt/reading': { documentId: 'doc-receipt', kind: 'Registration', state: 'Unreadable', receipt: null },
+    });
+
+    renderPage();
+    fireEvent.click((await registrationPanel()).getByRole('button', { name: 'Dichiara la registrazione' }));
+    const dialog = within(await screen.findByTestId('rli-manual-dialog'));
+
+    expect(await dialog.findByTestId('rli-receipt-unread')).toHaveTextContent('Non riusciamo a leggere questa ricevuta');
+    expect(dialog.getByLabelText('Numero o protocollo di registrazione')).toHaveValue('');
+    expect(dialog.queryByTestId('rli-code-read')).not.toBeInTheDocument();
   });
 
   it('declareManual_ReceiptsUploadedButANewFileChosen_SendsTheFile', async () => {
@@ -519,6 +627,34 @@ describe('LeaseDetailPage — the follow-up of a registered canone concordato (C
     fireEvent.click(within(block).getByRole('button', { name: 'Scarica: Attestazione' }));
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'attestazione.pdf'));
     expect(get).toHaveBeenCalledWith('/leases/lease-1/documents/doc-attestation/download', { responseType: 'blob' });
+  });
+
+  // CF-DOCS-REAL: the contract file holds the attestation too (the reading recognized its pages): the documents to bring are two, not three.
+  it('render_RegisteredConcordatoWithTheContractAndTheAttestationInOneFile_OffersTwoDocuments', async () => {
+    mockSheet(registeredConcordato({ hasSignedPdf: false, registration: registration({ hasReceipt: false }) }), [
+      {
+        ...leaseDocument('doc-contract', 'Contract', 'contratto-e-attestazione.pdf'),
+        sections: [
+          { kind: 'contract', firstPage: 1, lastPage: 6 },
+          { kind: 'attestation', firstPage: 7, lastPage: 10 },
+        ],
+        containsAttestation: true,
+        containsCalculationSheet: false,
+      } as ReturnType<typeof leaseDocument>,
+      leaseDocument('doc-receipt', 'Registration', 'ricevuta.pdf'),
+    ]);
+
+    renderPage('?tab=guida');
+
+    const block = await screen.findByTestId('lease-benefits');
+    await waitFor(() => expect(within(block).getByTestId('lease-benefit-contractWithAttestation')).toHaveTextContent('Contratto con attestazione (un file)'));
+    expect(within(block).queryByTestId('lease-benefit-attestation')).not.toBeInTheDocument();
+    expect(block).toHaveTextContent('Porta una copia di questi due documenti');
+    expect(within(block).getAllByRole('button', { name: /^Scarica:/ })).toHaveLength(2);
+    expect(within(block).queryByTestId('lease-benefits-missing')).not.toBeInTheDocument();
+    fireEvent.click(within(block).getByRole('button', { name: 'Scarica: Contratto con attestazione (un file)' }));
+    await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'contratto-e-attestazione.pdf'));
+    expect(get).toHaveBeenCalledWith('/leases/lease-1/documents/doc-contract/download', { responseType: 'blob' });
   });
 
   it('render_RegisteredLibero_ShowsNoFollowUpAndAsksForNoDocuments', async () => {
