@@ -148,13 +148,14 @@ export function SelfieCapture({
 
   const getOutcomeVariant = (
     outcomeType: BiometricOutcome
-  ): 'default' | 'destructive' => {
+  ): 'success' | 'warning' | 'danger' => {
     switch (outcomeType) {
       case 'Accept':
-        return 'default';
+        return 'success';
       case 'Escalate':
+        return 'warning';
       case 'Reject':
-        return 'destructive';
+        return 'danger';
     }
   };
 
@@ -168,7 +169,7 @@ export function SelfieCapture({
       </CardHeader>
       <CardContent className="grid gap-4">
         {cameraError ? (
-          <Alert variant="destructive">
+          <Alert variant="danger">
             <p>{cameraError}</p>
           </Alert>
         ) : null}
@@ -238,7 +239,7 @@ export function SelfieCapture({
         </div>
 
         {outcome === 'Accept' ? (
-          <Alert>
+          <Alert variant="success">
             <p className="text-sm">
               {t('checkin.biometric.outcome.acceptMessage')}
             </p>
@@ -246,7 +247,7 @@ export function SelfieCapture({
         ) : null}
 
         {outcome === 'Escalate' ? (
-          <Alert>
+          <Alert variant="warning">
             <p className="text-sm">
               {t('checkin.biometric.outcome.escalateMessage')}
             </p>
@@ -254,7 +255,7 @@ export function SelfieCapture({
         ) : null}
 
         {outcome === 'Reject' ? (
-          <Alert variant="destructive">
+          <Alert variant="danger">
             <p className="text-sm">
               {t('checkin.biometric.outcome.rejectMessage')}
             </p>
@@ -262,7 +263,7 @@ export function SelfieCapture({
         ) : null}
 
         {attemptsRemaining === 0 ? (
-          <Alert>
+          <Alert variant="warning">
             <p className="text-sm">
               {t('checkin.biometric.capture.maxAttemptsReached')}
             </p>

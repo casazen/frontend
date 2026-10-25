@@ -15,7 +15,6 @@ interface BiometricConsentProps {
 export function BiometricConsent({ onConsent, onDecline, isLoading = false }: BiometricConsentProps) {
   const { t } = useTranslation();
   const consentVersion = '1.0';
-  const consentTimestamp = new Date().toISOString();
 
   const handleConsent = () => {
     onConsent();
