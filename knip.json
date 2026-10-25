@@ -31,6 +31,12 @@
     ],
     "src/queries/**": [
       "exports"
+    ],
+    "src/components/guards/**": [
+      "exports"
+    ],
+    "src/layouts/ConsoleLayout.tsx": [
+      "exports"
     ]
   },
   "compilers": {
