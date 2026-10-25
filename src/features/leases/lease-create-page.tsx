@@ -1,13 +1,15 @@
+import { useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useLongRentRules } from '@/queries/use-lease-draft';
 import { ConcordatoDraftStart } from './components/concordato-draft-start';
 import { ContractKindChoice } from './components/contract-kind-choice';
 import { ImportedStart } from './components/imported-start';
 import { StartWayChoice } from './components/start-way-choice';
-import { TYPE_OF_KIND, contractKindOf, startWayOf, type ContractKind, type StartWay } from './lib/contract-kind';
+import { TYPE_OF_KIND, contractKindOf, kindTitle, startWayOf, type ContractKind, type StartWay } from './lib/contract-kind';
 import { NewLeaseStep } from './wizard/new-lease-step';
 
 /** Back to the question before this one: it is a link to the address without the answer to this one, so "back" of the browser agrees. */
@@ -46,6 +48,29 @@ export function LeaseCreatePage() {
   const requested = kind ? startWayOf(kind, searchParams.get('come'), searchParams.get('origine')) : null;
   // Starting from zero with the partner is open only while its service is on: the address alone does not open it (it asks again).
   const way = requested === 'zero' && !flags.concordatoFacile ? null : requested;
+  // The term the transitory kind names is the server's; the page does not wait for it.
+  const rules = useLongRentRules();
+
+  // Going from one question to the next (or back) moves the focus to the title: the card that was clicked is gone from under it, and a
+  // screen reader reads where it is now. Not on the first screen of the page. The heading is the one of the shared header of the page,
+  // which is not changed for this: it is found in the box around it and made reachable by script (not by the Tab key).
+  const headerRef = useRef<HTMLDivElement>(null);
+  const screen = kind === null ? 'kind' : way === null ? 'way' : 'start';
+  const shownScreen = useRef(screen);
+  useEffect(() => {
+    if (shownScreen.current === screen) return;
+    shownScreen.current = screen;
+    const title = headerRef.current?.querySelector('h1');
+    if (!title) return;
+    title.tabIndex = -1;
+    title.classList.add('outline-none');
+    title.focus();
+  }, [screen]);
+  const header = (description: string) => (
+    <div ref={headerRef}>
+      <PageHeader title={t('leases.createPageTitle')} description={description} />
+    </div>
+  );
 
   /** The address with these answers (and the old `origine` dropped); whatever else it carries, the property of a property page, stays. */
   const addressWith = (answers: { tipo?: ContractKind; come?: StartWay }) => {
@@ -61,19 +86,19 @@ export function LeaseCreatePage() {
   if (kind === null) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t('leases.createPageTitle')} description={t('leaseWizard.start.kind.description')} />
+        {header(t('leaseWizard.start.kind.description'))}
         <ContractKindChoice onChoose={(chosen) => setSearchParams(addressWith({ tipo: chosen }))} />
       </div>
     );
   }
 
-  const header = <PageHeader title={t('leases.createPageTitle')} description={t(`leaseWizard.start.kind.${kind}.title`)} />;
+  const kindName = kindTitle(kind, rules.data, t);
 
   if (way === null) {
     return (
       <div className="space-y-6">
         <StartBackLink to={addressWith({})} label={t('leaseWizard.start.changeKind')} />
-        {header}
+        {header(kindName)}
         <StartWayChoice kind={kind} onChoose={(chosen) => setSearchParams(addressWith({ tipo: kind, come: chosen }))} />
       </div>
     );
@@ -83,7 +108,7 @@ export function LeaseCreatePage() {
   return (
     <div className="space-y-6">
       <StartBackLink to={addressWith({ tipo: kind })} label={t('leaseWizard.start.back')} />
-      {header}
+      {header(kindName)}
       {way === 'zero' ? (
         <ConcordatoDraftStart defaultPropertyId={defaultPropertyId} />
       ) : way === 'documenti' ? (

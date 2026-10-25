@@ -6,16 +6,19 @@ import { Button } from '@/components/ui/button';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { cn } from '@/lib/utils';
-import { CONTRACT_KINDS, type ContractKind } from '../lib/contract-kind';
+import { useLongRentRules } from '@/queries/use-lease-draft';
+import { CONTRACT_KINDS, kindTitle, type ContractKind } from '../lib/contract-kind';
 
 const ICONS: Record<ContractKind, LucideIcon> = { concordato: Handshake, libero: Home, transitorio: Hourglass };
 
 /**
  * The one question a new contract starts with: «Che contratto vuoi fare?», answered with a type. Everything after it depends on the
- * answer: the second screen asks how it is made (`StartWayChoice`). Nothing is chosen at first, and «Continua» waits for an answer.
+ * answer: the second screen asks how it is made (`StartWayChoice`). Nothing is chosen at first, and «Continua» waits for an answer. The
+ * term the transitory card names is the server's (`rules`); the question does not wait for it.
  */
 export function ContractKindChoice({ onChoose }: { onChoose: (kind: ContractKind) => void }) {
   const { t } = useTranslation();
+  const rules = useLongRentRules();
   const [kind, setKind] = useState<ContractKind | null>(null);
 
   return (
@@ -37,7 +40,7 @@ export function ContractKindChoice({ onChoose }: { onChoose: (kind: ContractKind
             checked={kind === option}
             onChange={() => setKind(option)}
             icon={ICONS[option]}
-            title={t(`leaseWizard.start.kind.${option}.title`)}
+            title={kindTitle(option, rules.data, t)}
             description={t(`leaseWizard.start.kind.${option}.description`)}
             data-testid={`lease-kind-${option}`}
           />

@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +10,6 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { useDraftReading, useLandlordDefaults, useLeaseDraft, useLongRentRules } from '@/queries/use-lease-draft';
 import { LeaseWizard } from './wizard/lease-wizard';
-import { ReadingBanner } from './wizard/reading-marks';
 import { SignedWizard } from './wizard/signed-wizard';
 import { AFTER_STEP, DONE_STEP } from './wizard/wizard-model';
 
@@ -25,16 +23,9 @@ function DraftWizard({ id }: { id: string }) {
   // A draft with no landlord yet starts from the landlord the server suggests (not waiting for it if it cannot be read).
   const needsLandlord = draft.data !== undefined && draft.data.values.landlords.length === 0;
   const landlord = useLandlordDefaults(needsLandlord);
-  // The contract the person uploaded to be read (NL-DOCS): asked about while it is being read, then once.
+  // The contract the person uploaded to be read (NL-DOCS): asked about while it is being read, then once. When it ends while the wizard is
+  // open the draft is NOT read again here: the wizard says so and brings the values in when the person asks (NL-DOCS-FU8).
   const reading = useDraftReading(id, draft.data?.origin === 'Imported');
-  const readingState = reading.data?.state;
-  const refetchDraft = draft.refetch;
-  const wasReading = useRef(false);
-  useEffect(() => {
-    // The reading ended while the person was in the wizard: the values it wrote are read again from the server.
-    if (wasReading.current && readingState !== undefined && readingState !== 'Reading') void refetchDraft();
-    wasReading.current = readingState === 'Reading';
-  }, [readingState, refetchDraft]);
 
   if (draft.isError) {
     const status = getHttpStatus(draft.error);
@@ -73,7 +64,6 @@ function DraftWizard({ id }: { id: string }) {
     <div className="min-w-0 space-y-6" data-testid="lease-wizard-page">
       <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
       <PageHeader title={t('leaseWizard.title')} />
-      <ReadingBanner reading={reading.data} flow={draft.data.flow} />
       {/* A new key for each reading of the draft: after a conflict, reading it again gives a wizard that starts from what was saved. */}
       <LeaseWizard
         key={draft.dataUpdatedAt}

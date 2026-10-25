@@ -1,8 +1,21 @@
-import type { LeaseContractType } from '@/types';
+import type { TFunction } from 'i18next';
+import type { LeaseContractType, LongRentRules } from '@/types';
 
 /** The type of contract that is asked first (`?tipo=`): what is asked next, and how the contract is made, depend on it. */
 export const CONTRACT_KINDS = ['concordato', 'libero', 'transitorio'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
+
+/**
+ * The name of a kind on its card and under the title of the page. The transitory one says its term, and the term is the server's
+ * (`transitoryTermMonths` of `GET /long-rent/rules`): it is not written in the interface. While the rules are not there (they load, or
+ * they could not be read) it is the bare name.
+ */
+export function kindTitle(kind: ContractKind, rules: LongRentRules | undefined, t: TFunction): string {
+  if (kind === 'transitorio' && rules) {
+    return t('leaseRound.kind.transitorio.title', { min: rules.transitoryTermMonths.min, max: rules.transitoryTermMonths.max });
+  }
+  return t(`leaseWizard.start.kind.${kind}.title`);
+}
 
 /**
  * How the contract comes to be (`?come=`): prepared in CasaZen with the wizard (`casazen`), from documents the person already has
