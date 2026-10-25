@@ -106,6 +106,25 @@ describe('LeaseCreatePage', () => {
     expect(screen.queryByLabelText(i18n.t('leases.form.monthlyRentLabel'))).not.toBeInTheDocument();
   });
 
+  it('names the transitory type with the term the server states, and moves the focus to the title when the question changes', async () => {
+    vi.mocked(leasesApi.getRules).mockResolvedValue({ ...RULES, transitoryTermMonths: { min: 2, max: 12 } });
+    renderPage();
+
+    // The term is the server's (here 2 to 12), not written in the interface; until the rules arrive the card has the bare name.
+    expect(await screen.findByText('Transitorio (da 2 a 12 mesi)')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).not.toHaveFocus();
+
+    // Next question: the card that was clicked is gone from under the person, the focus is on the title (read by a screen reader).
+    chooseKind('transitorio');
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+    expect(screen.getByText('Transitorio (da 2 a 12 mesi)')).toBeInTheDocument();
+
+    // And back to the first question: the same.
+    fireEvent.click(screen.getByTestId('lease-start-back'));
+    expect(await screen.findByTestId('lease-kind-choice')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+  });
+
   it('asks how a libero is made, then opens the wizard on its first step', async () => {
     renderPage();
 

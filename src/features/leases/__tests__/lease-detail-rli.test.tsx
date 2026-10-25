@@ -49,10 +49,17 @@ function registration(overrides: Partial<LeaseRegistration> = {}): LeaseRegistra
   return { status: 'Registered', channel: 'Manual', hasReceipt: true, ...overrides };
 }
 
-function mockApi(lease: () => LeaseDetail, rliChecklist: RliChecklist = checklist()) {
+/** A document of the lease as the API lists it (`GET /leases/:id/documents`). */
+function leaseDocument(id: string, kind: 'Contract' | 'Attestation' | 'Registration' | 'Other', fileName: string) {
+  return { id, leaseId: 'lease-1', kind, fileName, sizeBytes: 2048, uploadedAt: '2026-10-24T10:00:00Z' };
+}
+
+/** The documents are asked only when the declaration window opens: without a list the API answers 404 and the window asks for the file. */
+function mockApi(lease: () => LeaseDetail, rliChecklist: RliChecklist = checklist(), documents?: ReturnType<typeof leaseDocument>[]) {
   get.mockImplementation((url: string) => {
     if (url === '/leases/lease-1') return Promise.resolve({ data: lease() });
     if (url === '/leases/lease-1/rli/checklist') return Promise.resolve({ data: rliChecklist });
+    if (url === '/leases/lease-1/documents' && documents) return Promise.resolve({ data: documents });
     return Promise.reject(httpError(404));
   });
 }
@@ -212,6 +219,84 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     );
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.getByTestId('rli-manual-dialog')).toBeInTheDocument();
+  });
+
+  it('render_SignedLeaseOfTheService_SaysWhoRegistersAndOffersOnlyTheDeclaration_NeverTheProviderNorTheStepsOfTheAgenzia', async () => {
+    // CF-END: the service that prepared the contract registers it. A second registration (by the provider, or by hand on the site of the
+    // Agenzia) would be a double one: even with the provider path available the panel gives neither, only the declaration.
+    mockApi(() => signedLease({ origin: 'Imported', isConcordatoFacileSource: true }), checklist({ providerFilingAvailable: true }));
+
+    renderPage();
+
+    const panel = await registrationPanel();
+    expect(panel.getByTestId('rli-registration-state')).toHaveTextContent('Da registrare');
+    expect(panel.getByTestId('rli-service-note')).toHaveTextContent(
+      'La registrazione la esegue il servizio che ha preparato il contratto. Quando ricevi la ricevuta di registrazione, caricala nei Documenti e dichiara qui la registrazione.',
+    );
+    expect(panel.getByRole('button', { name: 'Dichiara la registrazione' })).toBeInTheDocument();
+    expect(panel.queryByTestId('rli-manual-steps')).not.toBeInTheDocument();
+    expect(panel.queryByRole('link')).not.toBeInTheDocument();
+    expect(panel.queryByRole('button', { name: /provider/i })).not.toBeInTheDocument();
+    expect(panel.queryByRole('button', { name: 'Inserisci estremi di registrazione' })).not.toBeInTheDocument();
+  });
+
+  it('declareManual_ReceiptAlreadyUploaded_SendsItsIdAndNotTheFileAgain', async () => {
+    // CF-END: the receipt the service sent is among the documents of the lease; the declaration uses it (no second upload). Only a
+    // document of kind Registration is offered, and with a single one it is chosen already.
+    let current = signedLease({ origin: 'Imported', isConcordatoFacileSource: true });
+    mockApi(() => current, checklist(), [
+      leaseDocument('doc-contract', 'Contract', 'contratto.pdf'),
+      leaseDocument('doc-receipt', 'Registration', 'ricevuta-registrazione.pdf'),
+    ]);
+    post.mockImplementation(async () => {
+      current = signedLease({
+        status: 'Registered',
+        registration: registration({ registrationCode: 'PROT-123', registrationDate: `${TODAY}T00:00:00Z` }),
+      });
+      return { data: current.registration };
+    });
+
+    renderPage();
+    fireEvent.click((await registrationPanel()).getByRole('button', { name: 'Dichiara la registrazione' }));
+    const dialog = within(await screen.findByTestId('rli-manual-dialog'));
+
+    const chosen = await dialog.findByTestId('rli-receipt-document');
+    expect(chosen).toHaveValue('doc-receipt');
+    expect(dialog.getAllByRole('option')).toHaveLength(1);
+    expect(dialog.getByRole('radio', { name: /Usa la ricevuta già caricata/ })).toBeChecked();
+    expect(dialog.queryByLabelText('Ricevuta di registrazione (PDF, al massimo 10 MB)')).not.toBeInTheDocument();
+
+    fireEvent.change(dialog.getByLabelText('Numero o protocollo di registrazione'), { target: { value: ' PROT-123 ' } });
+    fireEvent.click(dialog.getByRole('checkbox'));
+    fireEvent.click(dialog.getByRole('button', { name: 'Salva registrazione' }));
+
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    const [url, body] = post.mock.calls[0] as [string, FormData];
+    expect(url).toBe('/leases/lease-1/registration/manual');
+    expect(body.get('registrationCode')).toBe('PROT-123');
+    expect(body.get('registrationDate')).toBe(TODAY);
+    expect(body.get('receiptDocumentId')).toBe('doc-receipt');
+    expect(body.has('receipt')).toBe(false);
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Registrazione salvata: il contratto risulta registrato.'));
+  });
+
+  it('declareManual_ReceiptsUploadedButANewFileChosen_SendsTheFile', async () => {
+    mockApi(() => signedLease(), checklist(), [leaseDocument('doc-receipt', 'Registration', 'ricevuta-registrazione.pdf')]);
+    post.mockResolvedValue({ data: registration({ registrationCode: 'PROT-9' }) });
+
+    renderPage();
+    fireEvent.click((await registrationPanel()).getByRole('button', { name: 'Inserisci estremi di registrazione' }));
+    const dialog = within(await screen.findByTestId('rli-manual-dialog'));
+    fireEvent.click(await dialog.findByRole('radio', { name: /Carica un nuovo file/ }));
+    fireEvent.change(dialog.getByLabelText('Numero o protocollo di registrazione'), { target: { value: 'PROT-9' } });
+    fireEvent.change(dialog.getByLabelText('Ricevuta di registrazione (PDF, al massimo 10 MB)'), { target: { files: [pdf()] } });
+    fireEvent.click(dialog.getByRole('checkbox'));
+    fireEvent.click(dialog.getByRole('button', { name: 'Salva registrazione' }));
+
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    const [, body] = post.mock.calls[0] as [string, FormData];
+    expect((body.get('receipt') as File).name).toBe('ricevuta.pdf');
+    expect(body.has('receiptDocumentId')).toBe(false);
   });
 
   it('render_ProviderRegistrationFailed_ShowsReasonActionsAndNoTick', async () => {

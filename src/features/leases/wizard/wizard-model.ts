@@ -314,6 +314,24 @@ export function emptyFlow(origin: LeaseOrigin): LeaseDraftFlow {
   };
 }
 
+/** The conditions: the step where the type of the contract is saved, whoever has opened it or not. */
+const TERMS_STEP = 3;
+
+/**
+ * The furthest step the person has reached, as the draft says (`wizardMaxStep`) — except for what the server cannot tell apart: a contract
+ * starts with the type chosen in the first question, and that is saved as a save of step ③ before ③ is ever opened, which counts ③ as
+ * reached. A draft that stops at ③ with nothing of ③ typed but the type has not been there yet, so ③ is not «Da completare» before it is
+ * opened (NL-FLOW-FU1). Only the client can tell: the flow of the server is not changed.
+ */
+export function reachedStep(draft: { wizardMaxStep: number; values: LeaseDraftValues }): number {
+  const { wizardMaxStep: reached, values } = draft;
+  if (reached !== TERMS_STEP) return reached;
+  const typedBeyondTheType = [values.taxRegime, values.monthlyRent, values.securityDeposit, values.transitoryParty, values.transitoryNeed].some(
+    (value) => value !== null && value !== undefined && value !== '',
+  );
+  return typedBeyondTheType ? reached : TERMS_STEP - 1;
+}
+
 /** How a step shows in the list of steps: the one the person is on, done, started and missing something, not started, or not open. */
 export type StepMark = 'current' | 'done' | 'issue' | 'todo' | 'locked';
 

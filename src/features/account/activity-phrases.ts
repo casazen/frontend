@@ -42,6 +42,9 @@ export function activityPhrase(entry: OrgActivityEntry, { t, memberName }: Phras
       return t('account.activity.accessRequested');
     case 'PlanChanged':
       return t('account.activity.planChanged', { from: getPlanTierLabel(details.fromTier ?? '', t), to: getPlanTierLabel(details.toTier ?? '', t) });
+    case 'AdminGrantedConcordatoFacileGift':
+      // The administrator of the platform gave the org a complimentary practice of the guided contract (CF-END): no name of the supplier.
+      return t('leaseRound.activity.adminGrantedGift');
     default:
       return t('account.activity.other');
   }

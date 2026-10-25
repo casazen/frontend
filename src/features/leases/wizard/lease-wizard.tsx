@@ -20,7 +20,7 @@ import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { PartiesStep } from './parties-step';
 import { PropertyStep } from './property-step';
-import { ReadingProvider } from './reading-marks';
+import { ReadingArrivedNotice, ReadingBanner, ReadingProvider } from './reading-marks';
 import { ReviewStep } from './review-step';
 import { SigningStep } from './signing-step';
 import { TermsStep } from './terms-step';
@@ -37,6 +37,7 @@ import {
   isDataStep,
   leaseEditPath,
   markOf,
+  reachedStep,
   registeredSteps,
   stepFromAddress,
   stepKey,
@@ -102,8 +103,16 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const [initial] = useState(() => toWizardValues(draft.values, defaults));
   const [flow, setFlow] = useState(draft.flow);
   const flowRef = useRef(draft.flow);
-  const [maxStep, setMaxStep] = useState(draft.wizardMaxStep);
+  // The furthest step reached: ③ is not «Da completare» before it is opened, though the type chosen at the start is saved as a save of ③.
+  const [maxStep, setMaxStep] = useState(() => reachedStep(draft));
   const [busy, setBusy] = useState(false);
+  // The reading of the contract ended while this wizard was open (NL-DOCS-FU8): its values are on the server and not in the form. They are
+  // not brought in under the person's hands (reading the draft again lost the last keystrokes, or gave a conflict of version): the person
+  // is told, and shows them when they want. A wizard opened after the reading ended shows them from the start, as before.
+  const [sawReading, setSawReading] = useState(false);
+  if (reading?.state === 'Reading' && !sawReading) setSawReading(true);
+  const arrived = sawReading && reading?.state === 'Done' && reading.fields.some((field) => field.state === 'Read');
+  const [showing, setShowing] = useState(false);
   const [raised, setRaised] = useState<Raised | null>(null);
   const [focusRequest, setFocusRequest] = useState(0);
   const handledFocus = useRef(0);
@@ -284,6 +293,20 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     if (await flush()) toast.success(t('leaseWizard.save.draftSaved'));
   };
 
+  /**
+   * «Mostra i dati letti» (NL-DOCS-FU8): what is waiting to be saved goes first, on the version this draft has here, and only then is the
+   * draft read again (the wizard starts from it, with the values read in their fields). A version the reading moved is the conflict
+   * dialog's to settle, which also reads the draft again: nothing is replaced behind the person's back.
+   */
+  const showReading = async () => {
+    setShowing(true);
+    try {
+      if (await flush()) onReload();
+    } finally {
+      setShowing(false);
+    }
+  };
+
   const nextLabel =
     current === REVIEW_STEP && !reviewConfirmed
       ? t('leaseWizard.review.confirm')
@@ -417,7 +440,10 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   );
 
   return (
-    <ReadingProvider reading={reading} flow={flow}>
+    // The marks wait for the values: until the person asks for them, nothing in the fields says «letto dal contratto».
+    <ReadingProvider reading={arrived ? null : reading} flow={flow} leaseId={draft.id}>
+      <ReadingBanner reading={reading ?? undefined} flow={flow} held={arrived} />
+      {arrived ? <ReadingArrivedNotice onShow={() => void showReading()} busy={showing} /> : null}
       <LeaseWizardFrame
         stepper={<LeaseWizardStepper entries={entries} current={current} />}
         title={t(`leaseWizard.steps.${stepKey(current, draft.origin)}.title`)}
@@ -462,7 +488,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
       <Dialog open={saver.status === 'conflict'} onOpenChange={(open) => !open && onReload()}>
         <DialogContent onInteractOutside={(event) => event.preventDefault()} onEscapeKeyDown={(event) => event.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>{t('leaseWizard.conflict.title')}</DialogTitle>
+            <DialogTitle>{arrived ? t('leaseRound.reading.conflict') : t('leaseWizard.conflict.title')}</DialogTitle>
             <DialogDescription>{t('leaseWizard.conflict.description')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
