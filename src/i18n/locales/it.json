@@ -751,7 +751,8 @@
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
     "channels": "Canali e calendari",
-    "verifications": "Verifiche"
+    "verifications": "Verifiche",
+    "withholding": "Ritenute d'acconto"
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -13536,6 +13537,51 @@
       "serviceRequestProposalRejected": "L'orario proposto è stato rifiutato.",
       "serviceRequestRescheduled": "Una richiesta è stata spostata a un altro orario.",
       "generic": "Hai una nuova notifica."
+    }
+  },
+  "withholding": {
+    "title": "Ritenuta d'acconto",
+    "description": "Gestisci la ritenuta d'acconto sui compensi dei proprietari e genera i modelli F24.",
+    "error": "Errore durante il caricamento dei dati della ritenuta",
+    "month": "Mese",
+    "year": "Anno",
+    "dueDate": "Scadenza",
+    "downloadPdf": "PDF",
+    "downloadExcel": "Excel",
+    "summary": {
+      "title": "Riepilogo ritenute",
+      "description": "Dettaglio delle ritenute per mese, proprietario e appartamento.",
+      "total": "Totale ritenuto",
+      "byOwner": "Per proprietario",
+      "ownerTotal": "Totale: {{amount}}",
+      "property": "Immobile",
+      "grossBase": "Base imponibile",
+      "commission": "Commissione",
+      "withheld": "Ritenuto",
+      "crossYear": "Incasso anno {{cashYear}}, soggiorno anno {{stayYear}}",
+      "noData": "Nessuna ritenuta per il periodo selezionato",
+      "downloadSuccess": "Riepilogo scaricato con successo",
+      "downloadError": "Impossibile scaricare il riepilogo"
+    },
+    "f24": {
+      "title": "Modello F24",
+      "description": "Anteprima del modello F24 per {{month}} {{year}}",
+      "taxCode": "Codice tributo",
+      "reference": "Riferimento",
+      "totalAmount": "Importo totale",
+      "download": "Scarica F24",
+      "downloadSuccess": "F24 scaricato con successo",
+      "downloadError": "Impossibile scaricare l'F24",
+      "pastDue": "Scadenza superata: la scadenza era il {{date}}"
+    },
+    "payment": {
+      "title": "Riconciliazione pagamento",
+      "description": "Registra la data in cui hai effettuato il pagamento dell'F24.",
+      "date": "Data pagamento",
+      "dateRequired": "Seleziona la data del pagamento",
+      "record": "Registra pagamento",
+      "recordSuccess": "Pagamento registrato con successo",
+      "recordError": "Impossibile registrare il pagamento"
     }
   }
 }

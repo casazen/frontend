@@ -751,7 +751,8 @@
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
     "channels": "Channels and calendars",
-    "verifications": "Verifications"
+    "verifications": "Verifications",
+    "withholding": "Withholding tax"
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -13536,6 +13537,51 @@
       "serviceRequestProposalRejected": "The proposed time was declined.",
       "serviceRequestRescheduled": "A request was moved to another time.",
       "generic": "You have a new notification."
+    }
+  },
+  "withholding": {
+    "title": "Withholding Tax",
+    "description": "Manage withholding tax on owner payments and generate F24 forms.",
+    "error": "Error loading withholding data",
+    "month": "Month",
+    "year": "Year",
+    "dueDate": "Due date",
+    "downloadPdf": "PDF",
+    "downloadExcel": "Excel",
+    "summary": {
+      "title": "Withholding Summary",
+      "description": "Breakdown of withholdings by month, owner, and apartment.",
+      "total": "Total withheld",
+      "byOwner": "By owner",
+      "ownerTotal": "Total: {{amount}}",
+      "property": "Property",
+      "grossBase": "Gross base",
+      "commission": "Commission",
+      "withheld": "Withheld",
+      "crossYear": "Cash year {{cashYear}}, stay year {{stayYear}}",
+      "noData": "No withholding data for the selected period",
+      "downloadSuccess": "Summary downloaded successfully",
+      "downloadError": "Could not download summary"
+    },
+    "f24": {
+      "title": "F24 Form",
+      "description": "F24 form preview for {{month}} {{year}}",
+      "taxCode": "Tax code",
+      "reference": "Reference",
+      "totalAmount": "Total amount",
+      "download": "Download F24",
+      "downloadSuccess": "F24 downloaded successfully",
+      "downloadError": "Could not download F24",
+      "pastDue": "Past due: deadline was {{date}}"
+    },
+    "payment": {
+      "title": "Payment Reconciliation",
+      "description": "Record the date when you made the F24 payment.",
+      "date": "Payment date",
+      "dateRequired": "Select the payment date",
+      "record": "Record payment",
+      "recordSuccess": "Payment recorded successfully",
+      "recordError": "Could not record payment"
     }
   }
 }
