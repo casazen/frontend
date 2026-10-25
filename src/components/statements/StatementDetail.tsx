@@ -126,7 +126,7 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
               onClick={handleApprove}
               disabled={approveStatement.isPending}
             >
-              {t('statement.approve')}
+              {t('statement.approveButton')}
             </Button>
           )}
           {statement.status === 'Approved' && (
@@ -134,7 +134,7 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
               onClick={handlePublish}
               disabled={publishStatement.isPending}
             >
-              {t('statement.publish')}
+              {t('statement.publishButton')}
             </Button>
           )}
           <Button

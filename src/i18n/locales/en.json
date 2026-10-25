@@ -13478,9 +13478,9 @@
       "status": "Filter by status",
       "allStatuses": "All statuses"
     },
-    "generate": "Generate statement",
-    "approve": "Approve",
-    "publish": "Publish",
+    "generateButton": "Generate statement",
+    "approveButton": "Approve",
+    "publishButton": "Publish",
     "download": {
       "pdf": "Download PDF",
       "csv": "Download CSV",

@@ -13478,9 +13478,9 @@
       "status": "Filtra per stato",
       "allStatuses": "Tutti gli stati"
     },
-    "generate": "Genera rendiconto",
-    "approve": "Approva",
-    "publish": "Pubblica",
+    "generateButton": "Genera rendiconto",
+    "approveButton": "Approva",
+    "publishButton": "Pubblica",
     "download": {
       "pdf": "Scarica PDF",
       "csv": "Scarica CSV",
