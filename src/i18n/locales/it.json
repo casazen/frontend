@@ -5732,6 +5732,13 @@
       "loadError": "Non riusciamo a caricare l'indirizzo del tuo sito."
     }
   },
+  "org": {
+    "tier": {
+      "agency": "Agency",
+      "badge": "Piano",
+      "requires_agency": "Questa funzionalita richiede il piano Agency"
+    }
+  },
   "orgSettings": {
     "title": "Impostazioni organizzazione",
     "description": "Nome, indirizzo pubblico ed email di contatto della tua organizzazione.",
@@ -6525,9 +6532,10 @@
     "choosePlan": "Scegli piano",
     "managePlan": "Gestisci piano",
     "tier": {
-      "Starter": "Starter",
+      "Agency": "Agency",
       "Pro": "Pro",
-      "Scale": "Scale"
+      "Scale": "Scale",
+      "Starter": "Starter"
     },
     "upToProperties_one": "Fino a {{count}} proprietà",
     "upToProperties_other": "Fino a {{count}} proprietà"
