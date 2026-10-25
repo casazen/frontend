@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,13 +10,8 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { CanoneConcordatoEligibility } from '@/api/canone-concordato.api';
 import type { ConcordatoCharacteristics } from '@/types';
-
-/** Range returned by the backend for the current inputs; `indicative` when the agreement data are Partial (A7-23). */
-export interface ConcordatoRange {
-  minMonthly: number;
-  maxMonthly: number;
-  indicative: boolean;
-}
+import { Disclosure } from '../guide/disclosure';
+import { rentPlace } from '../guide/guide-answers';
 
 interface Props {
   propertyId: string;
@@ -25,8 +19,10 @@ interface Props {
   startDate?: string;
   /** Lease end date, inclusive. */
   endDate?: string;
-  onRangeChange?: (range: ConcordatoRange | null) => void;
-  onCharacteristicsChange?: (characteristics: ConcordatoCharacteristics) => void;
+  /** What the lease already says about the unit (the characteristics it was created with): the form starts from them. */
+  initial?: ConcordatoCharacteristics | null;
+  /** The monthly rent of the contract: with it the result is a sentence («il canone rientra nei limiti»). */
+  rent?: number;
 }
 
 const REASON_CODES = [
@@ -53,30 +49,37 @@ function toDateOnly(value: string | undefined): string {
   return value ? value.slice(0, 10) : '';
 }
 
+/** A measure the lease already knows, as the text of its field; the starting value of the field when it knows none. */
+function startingValue(value: number | undefined, fallback: string): string {
+  return value !== undefined && value > 0 ? String(value) : fallback;
+}
+
 /**
- * Canone concordato range (LT-10). The backend computes it from the unit characteristics and the lease dates; the same
- * computation runs again when the lease is created. Any change of an input or of the dates discards the range shown (A7-12).
+ * Canone concordato range (LT-10), asked in LR-GUIDE-1 as «Il canone rientra nei limiti dell'accordo?». The backend computes it from the
+ * unit characteristics and the lease dates (the same computation runs again when the lease is created); any change of an input or of the
+ * dates discards the range shown (A7-12). The form starts from what the lease already says about the unit, and the result is a sentence
+ * about the rent of the contract; the range, the reasons and the warnings are one click away.
  */
-export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onRangeChange, onCharacteristicsChange }: Props) {
+export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, initial, rent }: Props) {
   const { t } = useTranslation();
   const eligibility = useCanoneConcordatoEligibility();
   const zones = useCanoneConcordatoZones(propertyId);
-  // No pre-filled unit (A7-24): surface empty, every count at 0, until the landlord describes the unit.
-  const [sqm, setSqm] = useState('');
-  const [garageSqm, setGarageSqm] = useState('0');
-  const [balconySqm, setBalconySqm] = useState('0');
-  const [otherSqm, setOtherSqm] = useState('0');
-  const [greenSqm, setGreenSqm] = useState('0');
-  const [zone, setZone] = useState('');
-  const [foglio, setFoglio] = useState('');
-  const [typeACount, setTypeACount] = useState('0');
-  const [typeBCount, setTypeBCount] = useState('0');
-  const [typeCCount, setTypeCCount] = useState('0');
-  const [typeDCount, setTypeDCount] = useState('0');
-  const [qualifyingDCount, setQualifyingDCount] = useState('0');
-  const [furnished, setFurnished] = useState(false);
-  const [airConditioning, setAirConditioning] = useState(false);
-  const [stoveHeating, setStoveHeating] = useState(false);
+  // Without a unit described by the lease nothing is pre-filled (A7-24): surface empty, every count at 0, until the landlord describes it.
+  const [sqm, setSqm] = useState(() => startingValue(initial?.sqm, ''));
+  const [garageSqm, setGarageSqm] = useState(() => startingValue(initial?.garageSqm, '0'));
+  const [balconySqm, setBalconySqm] = useState(() => startingValue(initial?.balconySqm, '0'));
+  const [otherSqm, setOtherSqm] = useState(() => startingValue(initial?.otherAppurtenanceSqm, '0'));
+  const [greenSqm, setGreenSqm] = useState(() => startingValue(initial?.privateGreenSqm, '0'));
+  const [zone, setZone] = useState(() => initial?.zoneName ?? '');
+  const [foglio, setFoglio] = useState(() => initial?.cadastralSheet ?? '');
+  const [typeACount, setTypeACount] = useState(() => String(initial?.typeAElementCount ?? 0));
+  const [typeBCount, setTypeBCount] = useState(() => String(initial?.typeBElementCount ?? 0));
+  const [typeCCount, setTypeCCount] = useState(() => String(initial?.typeCElementCount ?? 0));
+  const [typeDCount, setTypeDCount] = useState(() => String(initial?.typeDElementCount ?? 0));
+  const [qualifyingDCount, setQualifyingDCount] = useState(() => String(initial?.qualifyingTypeDElementCount ?? 0));
+  const [furnished, setFurnished] = useState(initial?.isFurnished ?? false);
+  const [airConditioning, setAirConditioning] = useState(initial?.airConditioning ?? false);
+  const [stoveHeating, setStoveHeating] = useState(initial?.stoveHeating ?? false);
 
   const start = toDateOnly(startDate);
   const end = toDateOnly(endDate);
@@ -108,8 +111,7 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
       qualifyingDCount, stoveHeating, furnished, airConditioning, selectedZone, foglio],
   );
 
-  // A range belongs to the exact inputs and dates it was computed with (A7-12): it is shown, and reported to the form,
-  // only while they are unchanged.
+  // A range belongs to the exact inputs and dates it was computed with (A7-12): it is shown only while they are unchanged.
   const inputKey = useMemo(
     () => JSON.stringify([characteristics, start, end, propertyId]),
     [characteristics, start, end, propertyId],
@@ -117,17 +119,6 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
   const [computed, setComputed] = useState<{ key: string; data: CanoneConcordatoEligibility } | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const result = computed?.key === inputKey ? computed.data : null;
-
-  const latest = useRef({ inputKey, onRangeChange, onCharacteristicsChange });
-  useEffect(() => {
-    latest.current = { inputKey, onRangeChange, onCharacteristicsChange };
-  });
-
-  // Every change of the inputs or of the dates discards the range the form holds.
-  useEffect(() => {
-    latest.current.onRangeChange?.(null);
-    latest.current.onCharacteristicsChange?.(characteristics);
-  }, [inputKey, characteristics]);
 
   const handleCalculate = async () => {
     const key = inputKey;
@@ -159,22 +150,10 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
       // Shown below from eligibility.error; the previous band no longer applies.
       setComputed(null);
       setFailedKey(key);
-      if (latest.current.inputKey === key) latest.current.onRangeChange?.(null);
       return;
     }
     setComputed({ key, data });
     setFailedKey(null);
-    // The inputs changed while the request was running: this range is for the old ones.
-    if (latest.current.inputKey !== key) return;
-    if (data.available && data.canoneMinMensile != null && data.canoneMaxMensile != null) {
-      latest.current.onRangeChange?.({
-        minMonthly: data.canoneMinMensile,
-        maxMonthly: data.canoneMaxMensile,
-        indicative: data.indicative !== false,
-      });
-    } else {
-      latest.current.onRangeChange?.(null);
-    }
   };
 
   const reasonText = (value: CanoneConcordatoEligibility) =>
@@ -192,26 +171,21 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
   const id = (name: string) => `concordato-${name}-${propertyId}`;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('leases.canoneConcordato.title')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-4 text-sm" data-testid="canone-calculator">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field id={id('sqm')} label={t('leases.canoneConcordato.sqm')}>
+          <Input id={id('sqm')} type="number" min={1} step="0.01" value={sqm} onChange={(e) => setSqm(e.target.value)} required />
+        </Field>
+        <Field id={id('zone')} label={t('leases.canoneConcordato.zone')}>
+          <ZoneSelect id={id('zone')} zones={zones} value={selectedZone} onChange={setZone} />
+        </Field>
+        <Field id={id('foglio')} label={t('leases.canoneConcordato.foglio')}>
+          <Input id={id('foglio')} value={foglio} onChange={(e) => setFoglio(e.target.value)} />
+        </Field>
+      </div>
+
+      <Disclosure summary={t('leaseGuide.rent.more')} testId="canone-more">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id={id('sqm')} label={t('leases.canoneConcordato.sqm')}>
-            <Input id={id('sqm')} type="number" min={1} step="0.01" value={sqm} onChange={(e) => setSqm(e.target.value)} required />
-          </Field>
-          <Field id={id('zone')} label={t('leases.canoneConcordato.zone')}>
-            <ZoneSelect
-              id={id('zone')}
-              zones={zones}
-              value={selectedZone}
-              onChange={setZone}
-            />
-          </Field>
-          <Field id={id('foglio')} label={t('leases.canoneConcordato.foglio')}>
-            <Input id={id('foglio')} value={foglio} onChange={(e) => setFoglio(e.target.value)} />
-          </Field>
           <Field id={id('garage')} label={t('leases.canoneConcordato.garageSqm')}>
             <Input id={id('garage')} type="number" min={0} step="0.01" value={garageSqm} onChange={(e) => setGarageSqm(e.target.value)} />
           </Field>
@@ -258,48 +232,53 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
             checked={stoveHeating}
             onChange={setStoveHeating}
           />
-          <div className="space-y-2 sm:col-span-2">
-            {!datesReady && (
-              <p className="text-sm text-muted-foreground" data-testid="concordato-dates-required">
-                {t('leases.canoneConcordato.datesRequired')}
-              </p>
-            )}
-            {!surfaceReady && (
-              <p className="text-sm text-muted-foreground" data-testid="concordato-sqm-required">
-                {t('leases.canoneConcordato.sqmRequired')}
-              </p>
-            )}
-            <Button
-              type="button"
-              onClick={() => void handleCalculate()}
-              disabled={eligibility.isPending || !datesReady || !surfaceReady}
-            >
-              {eligibility.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('leases.canoneConcordato.calculating')}
-                </>
-              ) : (
-                t('leases.canoneConcordato.calculate')
-              )}
-            </Button>
-          </div>
         </div>
+      </Disclosure>
 
-        {eligibility.isError && failedKey === inputKey && (
-          <p className="text-sm text-destructive" role="alert">
-            {getProblemMessage(eligibility.error, t) ?? t('leases.canoneConcordato.error')}
+      <div className="space-y-2">
+        {!datesReady && (
+          <p className="text-foreground/70" data-testid="concordato-dates-required">
+            {t('leases.canoneConcordato.datesRequired')}
           </p>
         )}
-
-        {result && !result.available && (
-          <p className="rounded-md border p-3 text-sm" data-testid="concordato-unavailable">
-            {reasonText(result)}
+        {!surfaceReady && (
+          <p className="text-foreground/70" data-testid="concordato-sqm-required">
+            {t('leases.canoneConcordato.sqmRequired')}
           </p>
         )}
+        <Button
+          type="button"
+          className="min-h-11"
+          onClick={() => void handleCalculate()}
+          disabled={eligibility.isPending || !datesReady || !surfaceReady}
+        >
+          {eligibility.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t('leases.canoneConcordato.calculating')}
+            </>
+          ) : (
+            t('leases.canoneConcordato.calculate')
+          )}
+        </Button>
+      </div>
 
-        {result?.available && (
-          <div className="space-y-3 rounded-md border p-4 text-sm" data-testid="concordato-range">
+      {eligibility.isError && failedKey === inputKey && (
+        <p className="text-destructive" role="alert">
+          {getProblemMessage(eligibility.error, t) ?? t('leases.canoneConcordato.error')}
+        </p>
+      )}
+
+      {result && !result.available && (
+        <p className="rounded-md border p-3" data-testid="concordato-unavailable">
+          {reasonText(result)}
+        </p>
+      )}
+
+      {result?.available && (
+        <div className="space-y-3" data-testid="concordato-range">
+          <Answer result={result} rent={rent} />
+          <Disclosure summary={t('leaseGuide.rent.how')} testId="concordato-how">
             {result.indicative !== false && (
               <div
                 role="status"
@@ -311,12 +290,12 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
                   <p className="font-medium">{t('leases.canoneConcordato.indicativeTitle')}</p>
                   <p>{t('leases.canoneConcordato.indicativeWarning')}</p>
                   {result.lastVerifiedAt && (
-                    <p className="text-muted-foreground">
+                    <p className="text-foreground/70">
                       {t('leases.canoneConcordato.lastVerified', { date: formatDate(result.lastVerifiedAt) })}
                     </p>
                   )}
                   {result.agreementExpiresAt && (
-                    <p className="text-muted-foreground" data-testid="concordato-agreement-expiry">
+                    <p className="text-foreground/70" data-testid="concordato-agreement-expiry">
                       {t(
                         result.agreementRemainsInForceUntilReplaced
                           ? 'leases.canoneConcordato.agreementExpiryUntilReplaced'
@@ -340,15 +319,15 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
               </strong>
             </p>
             <p>
-              {t('leases.canoneConcordato.rangeMonth')}:{' '}
-              {formatCurrency(result.canoneMinMensile ?? 0)} – {formatCurrency(result.canoneMaxMensile ?? 0)}
+              {t('leases.canoneConcordato.rangeMonth')}: {formatCurrency(result.canoneMinMensile ?? 0)} –{' '}
+              {formatCurrency(result.canoneMaxMensile ?? 0)}
             </p>
             <p>
               {t('leases.canoneConcordato.subFascia')}: {result.subFascia} · {t('leases.canoneConcordato.zone')}: {result.zone}
               {band(result) && <> · {band(result)}</>}
             </p>
             {result.usableSqm != null && result.contractYears != null && (
-              <p className="text-muted-foreground">
+              <p className="text-foreground/70">
                 {t('leases.canoneConcordato.computedWith', { sqm: result.usableSqm, years: result.contractYears })}
               </p>
             )}
@@ -362,29 +341,43 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, onR
             <div className="grid gap-2 sm:grid-cols-2">
               <Benefit
                 title={t('leases.canoneConcordato.imuTitle')}
-                body={
-                  result.imuAppliesTheoretical
-                    ? t('leases.canoneConcordato.imuTheoretical')
-                    : t('leases.canoneConcordato.imuNo')
-                }
+                body={result.imuAppliesTheoretical ? t('leases.canoneConcordato.imuTheoretical') : t('leases.canoneConcordato.imuNo')}
               />
               <Benefit
                 title={t('leases.canoneConcordato.ataTitle')}
-                body={
-                  result.ataApplies
-                    ? t('leases.canoneConcordato.ataYes')
-                    : t('leases.canoneConcordato.ataPending')
-                }
+                body={result.ataApplies ? t('leases.canoneConcordato.ataYes') : t('leases.canoneConcordato.ataPending')}
               />
             </div>
-            {result.attestationRequired && (
-              <p>{t('leases.canoneConcordato.attestationRequired')}</p>
-            )}
-            <p className="text-muted-foreground">{result.disclaimer}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            {result.attestationRequired && <p>{t('leases.canoneConcordato.attestationRequired')}</p>}
+            <p className="text-foreground/70">{result.disclaimer}</p>
+          </Disclosure>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The answer to the question the tool is asked with: where the rent of the contract stands against the range, in one sentence. */
+function Answer({ result, rent }: { result: CanoneConcordatoEligibility; rent: number | undefined }) {
+  const { t } = useTranslation();
+  const min = result.canoneMinMensile;
+  const max = result.canoneMaxMensile;
+  if (min == null || max == null) return null;
+
+  const sentence =
+    rent !== undefined && rent > 0
+      ? t(`leaseGuide.rent.answer.${rentPlace(rent, min, max)}`, {
+          rent: formatCurrency(rent),
+          min: formatCurrency(min),
+          max: formatCurrency(max),
+        })
+      : t('leaseGuide.rent.answer.noRent', { min: formatCurrency(min), max: formatCurrency(max) });
+
+  return (
+    <div className="space-y-1" data-testid="concordato-answer">
+      <p className="text-base font-semibold leading-snug">{sentence}</p>
+      {result.indicative !== false && <p className="text-foreground/70">{t('leaseGuide.rent.indicative')}</p>}
+    </div>
   );
 }
 
@@ -409,10 +402,8 @@ function ZoneSelect({
   if (zones.isError) {
     return (
       <div className="space-y-1" role="alert" data-testid="concordato-zones-error">
-        <p className="text-sm text-destructive">
-          {getProblemMessage(zones.error, t) ?? t('leases.canoneConcordato.zonesError')}
-        </p>
-        <Button type="button" variant="outline" size="sm" onClick={() => void zones.refetch()}>
+        <p className="text-destructive">{getProblemMessage(zones.error, t) ?? t('leases.canoneConcordato.zonesError')}</p>
+        <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => void zones.refetch()}>
           {t('leases.canoneConcordato.retry')}
         </Button>
       </div>
@@ -442,7 +433,7 @@ function ZoneSelect({
         ))}
       </select>
       {zones.data && options.length === 0 && (
-        <p className="text-sm text-muted-foreground" data-testid="concordato-zones-empty">
+        <p className="text-foreground/70" data-testid="concordato-zones-empty">
           {t('leases.canoneConcordato.zonesEmpty')}
         </p>
       )}
@@ -482,7 +473,7 @@ function Benefit({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-md bg-muted/40 p-3">
       <p className="font-medium">{title}</p>
-      <p className="text-muted-foreground">{body}</p>
+      <p className="text-foreground/70">{body}</p>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import type { LeaseOrigin } from './lease-draft.types';
+
 /** Every value of the backend enum `Casazen.Core.Entities.Enums.LeaseStatus`, in order. */
 export const LEASE_STATUSES = [
   'Draft',
@@ -30,6 +32,24 @@ export const LEASE_EVENT_TYPES = [
   'StipulaDeclared',
   'QuesturaCommunicationMarkedDone',
   'PropertyDeliveryDateDeclared',
+  // LR-12: the draft reviewed, downloaded for the signature on paper, taken back; LR-13: a contract signed elsewhere brought in.
+  'ReviewConfirmed',
+  'ReviewReopened',
+  'SentForSignature',
+  'SentRevoked',
+  'Imported',
+  // LR-14: the notice of non-renewal given and taken back, the lease ended early, the lease renewed by itself.
+  'NoticeRecorded',
+  'NoticeRemoved',
+  'Terminated',
+  'TermRenewed',
+  // CF-FLOW: the guided form of a canone concordato opened (the signed link made), the gift practice used, a platform administrator in.
+  // They had no label, so the history showed the name of the enum.
+  'ConcordatoFacileAdminAccess',
+  'ConcordatoFacileGiftConsumed',
+  'ConcordatoFacileLinkGenerated',
+  // CF-BE: the privacy notice accepted for the lease before the guided form.
+  'ConcordatoFacilePrivacyAccepted',
 ] as const;
 
 export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
@@ -134,13 +154,15 @@ export interface LeaseRegistration {
   hasReceipt: boolean;
 }
 
-/** `POST /leases/:id/registration/manual` (multipart): what the landlord reads on the receipt, plus the PDF. */
-export interface ManualRegistrationInput {
+/**
+ * `POST /leases/:id/registration/manual` (multipart): what the landlord reads on the receipt, plus the receipt: the PDF sent now (`receipt`), or
+ * the id of the document of kind `Registration` already uploaded to the lease (`receiptDocumentId`, CF-END), one of the two.
+ */
+export type ManualRegistrationInput = {
   registrationCode: string;
   /** `YYYY-MM-DD`, not later than today in Europe/Rome. */
   registrationDate: string;
-  receipt: File;
-}
+} & ({ receipt: File } | { receiptDocumentId: string });
 
 export interface LeasePropertySummary {
   id: string;
@@ -189,7 +211,59 @@ export interface LeaseSummary {
   overdueRentCount?: number;
   overdueRentAmount?: number;
   overdueDays?: number | null;
+  /** LR-01b: where the lease stands on its path, decided by the server (never worked out here from the other fields). */
+  stage?: LeaseStage;
+  /** LR-01b: the one step the lease is waiting for; the interface turns its code into a sentence and a button (`lease-next-step`). */
+  nextStep?: LeaseNextStep | null;
 }
+
+/** The eight stages of the path of a lease (backend `LeaseStage`, LR-01b). `DataPending` is for the tenant's own data and is never sent yet. */
+export type LeaseStage =
+  | 'Draft'
+  | 'DataPending'
+  | 'InReview'
+  | 'SentForSignature'
+  | 'Signed'
+  | 'Active'
+  | 'Expiring'
+  | 'Concluded';
+
+/** Who has to do the next step (backend `LeaseNextStepActor`); `Tenant` is for the phase 2 and is never sent yet. */
+export type LeaseNextStepActor = 'Landlord' | 'Tenant' | 'System';
+
+/** Every code of the next step the server sends today (backend `LeaseNextStepCode`, LR-01b). A code is never renamed, only added. */
+export type LeaseNextStepCode =
+  | 'ChooseProperty'
+  | 'CompleteStep'
+  | 'ImportSignedContract'
+  | 'AwaitPartnerContract'
+  | 'ConfirmReview'
+  | 'DownloadForSignature'
+  | 'UploadSignedCopy'
+  | 'RegisterLease'
+  | 'RecordKeyHandover'
+  | 'QuesturaCommunication'
+  | 'SendRentReminder'
+  | 'ActivateRentPlan'
+  | 'DecideNotice'
+  | 'OrganizeEnd'
+  | 'AllGood'
+  | 'Archive';
+
+/**
+ * The step a lease waits for. `priority` goes from 0 (the most urgent) to 10; `dueOn` is a Europe/Rome day; `params` carry what a
+ * sentence needs (counts, amounts, days and codes, never a name). `code` is typed as string because a newer backend may add values.
+ */
+export interface LeaseNextStep {
+  code: string;
+  actor: LeaseNextStepActor;
+  priority: number;
+  dueOn?: string | null;
+  params?: Record<string, unknown> | null;
+}
+
+/** Who gave the notice of non-renewal (backend `LeaseNoticeParty`, LR-14). */
+export type LeaseNoticeParty = 'Landlord' | 'Tenant';
 
 /** `GET /leases/:id` (and the `POST /leases` response). */
 export interface LeaseDetail {
@@ -213,54 +287,45 @@ export interface LeaseDetail {
   registrationDeadline: string | null;
   hasSignedPdf: boolean;
   hasExtraEUTenant: boolean;
+  /** How the lease came to be (LR-12): made in CasaZen or already signed elsewhere. Absent in an older answer. */
+  origin?: LeaseOrigin;
+  /** True when the contract was prepared with ConcordatoFacile partner. */
+  isConcordatoFacileSource?: boolean;
   parties: LeaseParty[];
   registration?: LeaseRegistration | null;
   events: LeaseEvent[];
   createdAt: string;
   updatedAt: string;
+  /** LR-12: when the contract was downloaded for the signature on paper; null until then and once it was taken back. */
+  sentForSignatureAt?: string | null;
+  /**
+   * LR-14: the last day of the period the lease is in now. `endDate` stays the end of the first period the contract states; a lease
+   * that renews by itself or ends early has another end, and this is the one that says whether the lease is over.
+   */
+  currentTermEndDate?: string;
+  /** LR-14: the day the notice of non-renewal was given, and who gave it; both null without a notice. */
+  noticeOn?: string | null;
+  noticeFrom?: LeaseNoticeParty | null;
+  /** LR-14: the last day of a lease ended early (or recorded as concluded when it was already over); null otherwise. */
+  terminatedOn?: string | null;
+  /** LR-14: derived by the server; 0 for a type that does not renew by itself. The number is never written in the interface. */
+  renewalMonths?: number;
+  /** LR-14: `notice_possibly_late` when the notice came after the last day to give it (CasaZen records it, it does not judge it). */
+  noticeWarning?: string | null;
 }
 
-/**
- * `POST /leases/drafts` (LR-12): a draft with only its property. Its id is the leaseId a partner links its practice to; dates,
- * rent and parties keep starting values (`LEASE_DRAFT_PLACEHOLDER_DATE`, rent 0) until they are typed.
- */
-export interface LeaseDraftCreated {
+/** Response from POST /api/leases/drafts/concordatofacile: minimal CF draft created. */
+export interface CfDraftResponse {
   id: string;
-  version: number;
-}
-
-/** `PATCH /leases/:id/draft`: the new version of the draft, the one the next save is made on. */
-export interface LeaseDraftSaved {
-  version: number;
-}
-
-/** Start and end date of a draft whose dates were never typed (`LeaseDraftDefaults.PlaceholderDate` of the API). */
-export const LEASE_DRAFT_PLACEHOLDER_DATE = '3000-01-01';
-
-export interface CreateLeasePartyDto {
-  role: PartyRole;
-  firstName: string;
-  lastName: string;
-  fiscalCode: string;
-  citizenship: string;
-  contactEmail: string;
+  propertyId: string;
+  status: LeaseStatus;
 }
 
 /**
- * `POST /leases` (LT-10): contract type and tax regime, the dates (the backend derives the term), the deposit and, for a
- * canone concordato lease, the characteristics the backend computes and checks the range with.
+ * Start and end date of a draft whose dates were never typed (`LeaseDraftDefaults.PlaceholderDate` of the API): a draft made with
+ * only its property (`POST /leases/drafts`, see `lease-draft.types.ts`) keeps these and a rent of 0 until they are typed.
  */
-export interface CreateLeaseDto {
-  propertyId: string;
-  contractType: LeaseContractType;
-  taxRegime: LeaseTaxRegime;
-  startDate: string;
-  endDate: string;
-  monthlyRent: number;
-  securityDeposit?: number | null;
-  parties: CreateLeasePartyDto[];
-  canoneConcordato?: ConcordatoCharacteristics;
-}
+export const LEASE_DRAFT_PLACEHOLDER_DATE = '3000-01-01';
 
 /**
  * How a party signs the contract (LT-02): `Offline` on paper or with the party's own digital signature, recorded when the

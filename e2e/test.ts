@@ -212,6 +212,38 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptySuppliers) });
   });
+
+  // The area of the long-term rents opens on its overview (LR-05): no lease at all, so it shows the guide of the first steps, and
+  // an empty agenda, unless a spec answers otherwise.
+  const noRents = { count: 0, amount: 0 };
+  const emptyLongRentOverview = {
+    today: '2026-06-16',
+    leases: { active: 0, expiring: 0, inPreparation: 0, toSign: 0, toRegister: 0, ended: 0 },
+    rentMonth: '2026-06',
+    rents: { expected: noRents, collected: noRents, pending: noRents, overdue: noRents },
+    checklist: [],
+    nextDeadline: null,
+    now: null,
+  };
+  await page.route('**/api/long-rent/overview**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(emptyLongRentOverview) });
+  });
+
+  await page.route('**/api/long-rent/deadlines**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ from: '2026-06-16', to: '2026-09-14', items: [], truncated: false }),
+    });
+  });
 }
 
 async function mockLegalDocuments(page: import('@playwright/test').Page): Promise<void> {

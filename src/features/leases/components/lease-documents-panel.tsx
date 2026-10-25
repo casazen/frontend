@@ -11,6 +11,8 @@ import { saveBlobAs } from '@/lib/file-download';
 import { DocumentPages } from '@/components/documents/document-pages';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
 import { formatDateTime } from '@/lib/utils';
+import { useRefreshDraftReading } from '@/queries/use-lease-draft';
+import { LEASE_CONFIRMED_STATE, documentsUploadPath } from '../lib/upload-link';
 
 const KINDS: LeaseDocumentKind[] = ['Contract', 'Attestation', 'Registration', 'Other'];
 
@@ -25,11 +27,14 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
   const [validation, setValidation] = useState('');
   const [saved, setSaved] = useState(false);
   const documents = useQuery({ queryKey: ['lease-documents', leaseId], queryFn: () => leaseDocumentsApi.list(leaseId) });
+  // A contract uploaded to the draft ConcordatoFacile made is read at once: what the page shows of the reading is asked again.
+  const refreshReading = useRefreshDraftReading(leaseId);
   const upload = useMutation({
     mutationFn: ({ file, kind }: { file: File; kind: LeaseDocumentKind }) => leaseDocumentsApi.upload(leaseId, file, kind),
     onSuccess: async () => {
       setSelection(EMPTY_DOCUMENT); setSaved(true);
       await client.invalidateQueries({ queryKey: ['lease-documents', leaseId] });
+      void refreshReading();
     },
   });
   const download = useMutation({
@@ -71,7 +76,7 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
         {upload.isError ? <ErrorState title={t('cfDocuments.uploadError')} error={upload.error} /> : null}
         {saved ? <p role="status">{t('cfDocuments.saved')}</p> : null}
         <Button type="submit" disabled={!documentReady(selection) || preparing || upload.isPending}>{t(preparing || upload.isPending ? 'cfDocuments.uploading' : 'cfDocuments.upload')}</Button>
-      </form> : <Link className="inline-block underline" to={`/app/long-rent/documents/upload?leaseId=${encodeURIComponent(leaseId)}`}>{t('cfDocuments.title')}</Link>}
+      </form> : <Link className="inline-block underline" to={documentsUploadPath(leaseId)} state={LEASE_CONFIRMED_STATE}>{t('cfDocuments.title')}</Link>}
     </section>
   );
 }

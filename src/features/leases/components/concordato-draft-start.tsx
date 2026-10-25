@@ -9,15 +9,19 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
 import { useProperties } from '@/queries/use-properties';
-import { useCreateConcordatoDraft } from '@/queries/use-leases';
+import { MissingNote } from '../wizard/missing-note';
+import { useCreateCfDraft } from '@/queries/use-leases';
 
 const SELECT_CLASS =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /**
- * A canone concordato contract is prepared with the partner (ConcordatoFacile): here only its property is asked, and a real draft
- * is saved at once, so the contract has its leaseId (the reference the partner links the practice to) before anything else. No
- * APE, parties, rent or dates: they come from the partner's contract.
+ * «Parto da zero» of a canone concordato: the contract is prepared with the partner (ConcordatoFacile). Here only its property is
+ * asked, and a real draft is saved at once (`POST /leases/drafts/concordatofacile`: an imported draft marked as the partner's, one per
+ * property, so a second click or a second visit opens the same one), so the contract has its leaseId (the reference the partner links the
+ * practice to) before anything else; then the person lands on the sheet of the contract (CF-FLOW), the centre of everything: from its
+ * main button the privacy notice, the payment (or the gift practice) and the guided form follow. No APE, parties, rent or dates: they
+ * come from the partner's contract, which comes back to this draft to be read and imported (`CfImportPanel`).
  */
 export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?: string }) {
   const { t } = useTranslation();
@@ -29,15 +33,24 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
   // Null until the person picks one: then the property of the link "new contract" of a property page, once it is in the list.
   const [chosen, setChosen] = useState<string | null>(null);
   const propertyId = chosen ?? (defaultPropertyId && properties.some((property) => property.id === defaultPropertyId) ? defaultPropertyId : '');
-  const createDraft = useCreateConcordatoDraft();
+  const createDraft = useCreateCfDraft();
+  const [pressed, setPressed] = useState(0);
+  const focusProperty = () => document.getElementById(selectId)?.focus();
 
   const create = async () => {
-    if (!propertyId || createDraft.isPending) return;
+    if (createDraft.isPending) return;
+    // Pressable with no house chosen (LR-WIZ-1): the focus goes to the list and the line under it says what is missing.
+    if (!propertyId) {
+      setPressed((count) => count + 1);
+      focusProperty();
+      return;
+    }
     try {
-      const leaseId = await createDraft.mutateAsync(propertyId);
-      navigate(`/app/long-rent/leases/${leaseId}`);
+      const draft = await createDraft.mutateAsync(propertyId);
+      // Replaced, not pushed: "back" from the sheet of the contract must not land on this form again.
+      navigate(`/app/long-rent/leases/${draft.id}`, { replace: true });
     } catch {
-      // useCreateConcordatoDraft.onError says why; the property stays chosen to try again on the same draft.
+      // useCreateCfDraft.onError says why; the property stays chosen to try again (the server gives back the draft it made).
     }
   };
 
@@ -86,7 +99,7 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
               data-testid="concordato-no-properties"
               className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
             >
-              <span className="flex-1">{t('leases.concordato.noProperties')}</span>
+              <span className="flex-1">{t('leaseWizard.start.concordato.noProperties')}</span>
               <Button asChild variant="outline" size="sm">
                 <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
               </Button>
@@ -95,10 +108,20 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
         </div>
       )}
 
-      <p className="text-sm text-foreground/70">{t('leases.concordato.whatHappens')}</p>
+      <p className="text-sm text-foreground/70">{t('leaseWizard.start.concordato.whatHappens')}</p>
 
-      <Button type="submit" disabled={!propertyId} loading={createDraft.isPending} data-testid="concordato-draft-create">
-        {createDraft.isPending ? t('leases.form.creating') : t('leases.concordato.create')}
+      {properties.length > 0 ? (
+        <MissingNote
+          items={propertyId ? [] : [{ step: 1, need: { code: 'property_missing' } }]}
+          current={1}
+          pressed={propertyId ? 0 : pressed}
+          onGo={focusProperty}
+          hrefOfStep={() => ''}
+        />
+      ) : null}
+
+      <Button type="submit" loading={createDraft.isPending} className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight max-sm:w-full" data-testid="concordato-draft-create">
+        {createDraft.isPending ? t('leases.form.creating') : t('leaseWizardGuide.start.zero.continue')}
       </Button>
     </form>
   );

@@ -23,15 +23,18 @@ export function httpError(status?: number, data: object = {}): AxiosError {
 /** What a dev server or a SPA rewrite answers for an unmatched `/api/*` path. */
 export const HTML_FALLBACK = '<!doctype html><html lang="en"><head></head><body><div id="root"></div></body></html>';
 
-export function renderAt(path: string, routePath: string, page: ReactElement) {
+/** `state` is what the history entry carries (a link of the app can leave something there, see `LEASE_CONFIRMED_STATE`). */
+export function renderAt(path: string, routePath: string, page: ReactElement, state?: unknown) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const [pathname, ...query] = path.split('?');
+  const entry = state === undefined ? path : { pathname, search: query.length ? `?${query.join('?')}` : '', state };
   return render(
     createElement(
       QueryClientProvider,
       { client },
       createElement(
         MemoryRouter,
-        { initialEntries: [path] },
+        { initialEntries: [entry] },
         createElement(Routes, null, createElement(Route, { path: routePath, element: page })),
       ),
     ),

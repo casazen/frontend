@@ -1,9 +1,7 @@
-import { useRef } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { leasesApi, type LeaseListParams } from '@/api/leases.api';
 import type {
   CedolareAdvisoryInput,
-  CreateLeaseDto,
   ManualRegistrationInput,
   OfflineSignatureInput,
   QuesturaCommunicationInput,
@@ -11,27 +9,36 @@ import type {
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
+import { useHeldKeys } from '@/lib/hold-for-undo';
 import { isRliRegistrationInProgress } from '@/lib/rli-registration-state';
 
-const LEASES_KEY = 'leases';
+export const LEASES_KEY = 'leases';
+
+/** What a draft that waits to be deleted is held under (`holdForUndo`, LR-10): the same key keeps it out of every list meanwhile. */
+export const leaseDraftDeleteKey = (leaseId: string) => `lease-draft-delete:${leaseId}`;
 
 /**
  * The leases of the org, narrowed by the server (`view`, `q`, `propertyId`). `keepPrevious`: while another view or search
  * loads, the rows of the last one stay on the screen (the list of leases does this). `refetchOnMount`: a list that other
  * screens change (a lease created, registered or paid) has to ask again when it is opened (`'always'`: even if it is not stale).
  * `enabled`: not for who may not read leases (a 403 on a read sends the person to the page of no access).
+ *
+ * A draft that waits for the six seconds of «Annulla» before it is deleted is already out of the list (until then the server still
+ * has it, and nobody should open it); «Annulla» brings it back, as nothing was done to it.
  */
 export function useLeases(
   params?: LeaseListParams,
   options: { keepPrevious?: boolean; refetchOnMount?: boolean | 'always'; enabled?: boolean } = {},
 ) {
   const { keepPrevious = false, refetchOnMount, enabled } = options;
+  const held = useHeldKeys();
   return useQuery({
     queryKey: [LEASES_KEY, params],
     queryFn: () => leasesApi.getAll(params),
     placeholderData: keepPrevious ? keepPreviousData : undefined,
     refetchOnMount,
     enabled,
+    select: held.size === 0 ? undefined : (rows) => rows.filter((row) => !held.has(leaseDraftDeleteKey(row.id))),
   });
 }
 
@@ -48,47 +55,56 @@ export function useLease(id: string) {
   });
 }
 
-export function useCreateLease() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateLeaseDto) => leasesApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
-      toast.success(i18n.t('toast.leaseDraftCreated'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.leaseCreateFailed'));
-    },
+/**
+ * The step a lease is waiting for (LR-03b): the `nextStep` of its row in the list of leases, which is the only place that has it until
+ * the detail carries it too (LR-01b-FU1). It is the plain list the app already reads (`useLeases()` with no parameter: the same
+ * request and the same cache as the guide and the list of leases), narrowed to one lease by `select`, so a lease costs no call of its
+ * own. `null` when the list has no row for it or the row has no step.
+ *
+ * The step moves under the person's hands (a signature uploaded, a registration declared, a rent paid): the list is read again every
+ * time a sheet opens (the client does not read a list again on its own) and by every action that changes a lease, which invalidates
+ * `[LEASES_KEY]`. It does not retry: a sheet without its step is the sheet it always was, and waiting for the retries of a failing
+ * list would hold the whole page back.
+ */
+export function useLeaseNextStep(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, undefined],
+    queryFn: () => leasesApi.getAll(),
+    select: (rows) => rows.find((row) => row.id === id)?.nextStep ?? null,
+    refetchOnMount: 'always',
+    retry: false,
+    enabled: !!id,
   });
 }
 
 /**
- * The draft of a canone concordato contract, which is prepared with the partner (ConcordatoFacile): a real draft with only its
- * property (`POST /leases/drafts`, no APE, parties, dates or rent), then typed as a concordato. Resolves with its id, the
- * leaseId the partner links its practice to. A retry after a failure goes on with the draft already created (a second click
- * never makes a second contract); a new contract on the same property is a new visit of the page.
+ * Where the lease stands on its path (`stage`, LR-01b), read from the same row of the list as its next step: the same request and the
+ * same cache as `useLeaseNextStep`, so the guide knows the stage when the sheet appears and costs no call of its own. The server decides
+ * the stage; `undefined` when the list has no row for the lease or does not answer (the guide then falls back to the status).
  */
-export function useCreateConcordatoDraft() {
+export function useLeaseListStage(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, undefined],
+    queryFn: () => leasesApi.getAll(),
+    select: (rows) => rows.find((row) => row.id === id)?.stage,
+    refetchOnMount: 'always',
+    retry: false,
+    enabled: !!id,
+  });
+}
+
+/**
+ * The draft of a canone concordato contract, which is prepared with the partner (ConcordatoFacile) — «Parto da zero» (E01/F02/US01,
+ * CF-IMPORT): a real draft with only its property (`POST /leases/drafts/concordatofacile`, no APE, parties, dates or rent), an imported
+ * draft marked as the partner's, typed as a concordato by the server. Resolves with it: its `id` is the leaseId the partner links its
+ * practice to. The server makes one per property, so a retry or a second visit for the same property gets the draft already made and
+ * never a second contract; a new contract on the same property comes once this one is imported.
+ */
+export function useCreateCfDraft() {
   const queryClient = useQueryClient();
-  const created = useRef<{ id: string; version: number; propertyId: string } | null>(null);
 
   return useMutation({
-    mutationFn: async (propertyId: string) => {
-      let draft = created.current;
-      if (!draft) {
-        draft = { ...(await leasesApi.createDraft(propertyId)), propertyId };
-        created.current = draft;
-      }
-      if (draft.propertyId !== propertyId) {
-        const moved = await leasesApi.saveDraft(draft.id, { version: draft.version, step: 1, values: { propertyId } });
-        draft = { id: draft.id, version: moved.version, propertyId };
-        created.current = draft;
-      }
-      const typed = await leasesApi.saveDraft(draft.id, { version: draft.version, step: 3, values: { contractType: 'Concordato' } });
-      created.current = { ...draft, version: typed.version };
-      return draft.id;
-    },
+    mutationFn: (propertyId: string) => leasesApi.createCfDraft(propertyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.leaseDraftCreated'));
@@ -208,12 +224,15 @@ export function useDeclareManualRegistration() {
   });
 }
 
-/** Tax advisory of the lease (LT-08), recomputed with the data the landlord enters; the previous result stays shown meanwhile. */
-export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput) {
+/**
+ * Tax advisory of the lease (LT-08), recomputed with the data the landlord enters; the previous result stays shown meanwhile.
+ * `enabled: false` for a lease the comparison means nothing for yet (a draft with no rent).
+ */
+export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [LEASES_KEY, id, 'rli', 'advisory', input ?? null],
     queryFn: () => leasesApi.getRliAdvisory(id, input),
-    enabled: !!id,
+    enabled: !!id && (options.enabled ?? true),
     placeholderData: keepPreviousData,
   });
 }
@@ -244,8 +263,9 @@ export function useDeclareQuesturaDeliveryDate() {
   return useMutation({
     mutationFn: ({ id, deliveryDate }: { id: string; deliveryDate: string | null }) =>
       leasesApi.declareQuesturaDeliveryDate(id, deliveryDate),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+    onSuccess: () => {
+      // The whole family, not only this lease: its row in the list is where the next step is read (`useLeaseNextStep`).
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.questuraDeliveryDateSaved'));
     },
     onError: (error) => {
@@ -261,8 +281,8 @@ export function useMarkQuesturaCommunicationDone() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: QuesturaCommunicationInput }) =>
       leasesApi.markQuesturaCommunicationDone(id, input),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: [LEASES_KEY, id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t('toast.questuraMarkedDone'));
     },
     onError: (error) => {

@@ -4,8 +4,11 @@ import { publicRentApi, rentApi } from '@/api/rent.api';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { ConfigureRentScheduleInput, MarkRentPaidInput, RentLedger } from '@/types';
+import { LEASES_KEY } from './use-leases';
 
-const RENT_KEY = 'lease-rent';
+export const RENT_KEY = 'lease-rent';
+/** The rent register of the long-term area (LR-04b): a change to any rent invalidates it, and it is read again when its page opens. */
+export const RENT_REGISTER_KEY = 'long-rent-rents';
 const PUBLIC_RENT_KEY = 'public-rent-payment';
 
 /**
@@ -31,11 +34,16 @@ function useRentMutation<TVariables, TResult>(
     mutationFn,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [RENT_KEY, leaseId] });
+      void queryClient.invalidateQueries({ queryKey: [RENT_REGISTER_KEY] });
+      // The row of the lease in the list holds its late rents and its next step (a plan to activate, a rent to chase).
+      void queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.success(i18n.t(successKey));
     },
     onError: (error) => {
       // The ledger may have changed (paid online meanwhile, payment in flight): show the real state.
       void queryClient.invalidateQueries({ queryKey: [RENT_KEY, leaseId] });
+      void queryClient.invalidateQueries({ queryKey: [RENT_REGISTER_KEY] });
+      void queryClient.invalidateQueries({ queryKey: [LEASES_KEY] });
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('rent.actionFailed'));
     },
   });

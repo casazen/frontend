@@ -1,8 +1,15 @@
-import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseDetail, type LeaseStatus } from '@/types';
+import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseDetail } from '@/types';
 
-/** The tabs of the sheet of a lease, in the order they are shown. The names are those of the address (`?tab=`): they never change. */
-export const LEASE_TABS = ['dati', 'documenti', 'pagamenti', 'scadenze'] as const;
+/**
+ * The tabs of the sheet of a lease, in the order they are shown. The names are those of the address (`?tab=`): they never change.
+ * `guida` is the first and the one the sheet opens on (LR-GUIDE-1): what to do about the contract, with the tools to decide it; `dati`
+ * holds only the data of the contract.
+ */
+export const LEASE_TABS = ['guida', 'dati', 'documenti', 'pagamenti', 'scadenze'] as const;
 export type LeaseTab = (typeof LEASE_TABS)[number];
+
+/** The tab the sheet opens on when the address says none (or one that does not exist). */
+export const DEFAULT_LEASE_TAB: LeaseTab = 'guida';
 
 /** Addresses of the old page and of the design that lead to the tab holding what they showed. */
 const LEGACY_TABS: Readonly<Record<string, LeaseTab>> = { canoni: 'pagamenti', cronologia: 'dati', panoramica: 'dati' };
@@ -18,28 +25,6 @@ export function leaseTabOf(param: string | null, fallback: LeaseTab): LeaseTab {
   return Object.hasOwn(LEGACY_TABS, param) ? LEGACY_TABS[param] : fallback;
 }
 
-/**
- * The tab a lease opens on: where the thing to do is. Before the signature that is the signature (Documenti); signed and not
- * yet registered, the registration and its deadline (Scadenze); a registered lease opens on its data. It is only where the page
- * opens, never a statement about the lease: the server will say what comes next (stage and next step, LR-01b) and the page can
- * follow it then.
- */
-export function defaultLeaseTab(status: LeaseStatus): LeaseTab {
-  switch (status) {
-    case 'Draft':
-    case 'AwaitingSignature':
-    case 'PartiallySigned':
-      return 'documenti';
-    case 'Signed':
-    case 'RegistrationPending':
-    case 'SentToProvider':
-    case 'Rejected':
-      return 'scadenze';
-    default:
-      return 'dati';
-  }
-}
-
 export type LeaseEventActor = 'casazen' | 'you';
 
 /**
@@ -51,16 +36,24 @@ const EVENT_ACTORS: Readonly<Record<string, LeaseEventActor>> = {
   Created: 'you',
   DeadlineReminderSent: 'casazen',
   ErasureRequested: 'you',
+  Imported: 'you',
   ImuNotificationExported: 'you',
   ImuNotificationMarkedSent: 'you',
+  NoticeRecorded: 'you',
+  NoticeRemoved: 'you',
   PropertyDeliveryDateDeclared: 'you',
   QuesturaCommunicationMarkedDone: 'you',
   RegistrationAuthorized: 'you',
   RegistrationFailed: 'casazen',
   RegistrationSubmitted: 'you',
+  ReviewConfirmed: 'you',
   RliExported: 'you',
+  SentForSignature: 'you',
+  SentRevoked: 'you',
   SigningInitiated: 'you',
   StipulaDeclared: 'you',
+  TermRenewed: 'casazen',
+  Terminated: 'you',
 };
 
 export function leaseEventActor(eventType: string): LeaseEventActor | undefined {

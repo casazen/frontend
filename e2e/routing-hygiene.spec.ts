@@ -68,12 +68,12 @@ test.describe('Routing hygiene and app-ready (UI-00)', () => {
     });
   });
 
-  test.describe('areas without a page at their bare address', () => {
-    test('/app/long-rent opens the contracts', async ({ page }) => {
+  test.describe('the bare address of an area', () => {
+    test('/app/long-rent is the overview of the area, with no redirect', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await page.goto(demoUrl('/app/long-rent', 'long-term'), { waitUntil: 'domcontentloaded' });
 
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases/);
+      await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       await expect(page.locator('header[data-testid="app-ready"]')).toBeVisible();
     });
 

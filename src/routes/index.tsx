@@ -45,6 +45,8 @@ import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
+import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
+import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
 import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
 import { ComplianceGuidePage } from '@/features/public-seo/compliance-guide-page';
@@ -72,6 +74,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
           requiredPermissions={entry.requiredPermissions}
           featureFlag={entry.featureFlag}
           alternatePaths={getOrgBillingPageAlternates(entry)}
+          homeWhenDenied={entry.homeWhenDenied}
         >
           <ManifestRoute entry={entry} />
         </ContextRouteGuard>
@@ -79,8 +82,8 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
     } satisfies RouteObject;
   });
 
-  // An area with no page at its bare address (long-rent, supplier) would open an empty shell: its index opens the home of
-  // the area (UI-00). Short-rent, account and admin have the page in the manifest.
+  // An area with no page at its bare address (supplier) would open an empty shell: its index opens the home of the area
+  // (UI-00). Short-rent, long-rent, account and admin have the page in the manifest.
   if (!entries.some((entry) => entry.path === prefix)) {
     children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
   }
@@ -296,6 +299,13 @@ export const appRoutes: RouteObject[] = [
     path: '/rent/pay/:installmentId',
     element: <RentPaymentPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The module of the service that prepares the contract, simulated for the test environments (CF-SIM): the signed link of a
+    // contract opens it there. A public page like the real module (no sign-in); where the simulator is off the API answers 404 and
+    // the page says it is not available.
+    path: GUIDED_FORM_PATH,
+    element: <GuidedFormPage />,
   },
   {
     path: '/supplier',

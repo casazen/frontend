@@ -140,7 +140,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
       roleKey: 'long_term_landlord',
       // Same set as the backend bootstrap (ContextAccessBootstrap): property.* serves the property core only (A7-06).
       permissions: ['property.read', 'property.write', 'lease.read', 'lease.create', 'lease.sign', 'lease.register'],
-      defaultRoute: '/app/long-rent/leases',
+      defaultRoute: '/app/long-rent',
     });
   }
 

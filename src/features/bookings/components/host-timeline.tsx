@@ -8,6 +8,8 @@ import { formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import type { HostCalendarItem, HostCalendarItemChannel } from '@/types/host-calendar.types';
 import { calendarKindInfo } from '../lib/calendar-kinds';
+import { useUnreadMessagesOf } from '../lib/unread-messages-context';
+import { UnreadMessagesBadge } from '@/components/shared/unread-messages-badge';
 import {
   channelLabel,
   isWeekendDay,
@@ -56,9 +58,10 @@ function StayBar({ bar, propertyName, days, focused, onOpen }: BarProps) {
   const info = calendarKindInfo(kind);
   const Icon = conflict ? CalendarX2 : info.icon;
   const title = stayItemTitle(item, t);
+  const unread = useUnreadMessagesOf(item.type === 'Booking' ? item.id : null);
   const channel = item.type === 'Booking' ? channelLabel(item.channel, t) : '';
   const ChannelIcon = item.type === 'Booking' && item.channel ? CHANNEL_ICONS[item.channel] : null;
-  const label = [title, propertyName, itemRangeText(item, t, i18n.language), t(info.labelKey), channel, conflict ? t('booking.calendar.timeline.conflict') : '']
+  const label = [title, propertyName, itemRangeText(item, t, i18n.language), t(info.labelKey), channel, conflict ? t('booking.calendar.timeline.conflict') : '', unread > 0 ? t('booking.messages.unread', { count: unread }) : '']
     .filter(Boolean)
     .join(', ');
   const style = { left: `${percent(span.index, days)}%`, width: `${percent(span.length, days)}%`, '--lane': lane } as CSSProperties;
@@ -81,6 +84,7 @@ function StayBar({ bar, propertyName, days, focused, onOpen }: BarProps) {
       >
         <Icon className={cn('host-timeline-item__icon', conflict && 'host-timeline-item__flag')} aria-hidden="true" />
         <span className="host-timeline-item__title">{title}</span>
+        <UnreadMessagesBadge count={unread} />
         {channel ? (
           <span className="host-timeline-item__sub">
             {ChannelIcon ? <ChannelIcon aria-hidden="true" /> : null}

@@ -16,49 +16,18 @@ test.describe('Lease flow (long-term landlord)', () => {
     await resetE2eStorage(page, 'it');
   });
 
-  test('a fiscal code with a wrong check character is refused in the form and nothing is sent', async ({ page }) => {
-    const calls = await mockLeaseFlowApi(page);
-    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
-    await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
-
-    await fillParty(page, 'landlords', 0, { first: 'Mario', last: 'Rossi', cf: 'RSSMRA80A01H501Z', email: 'mario@example.com' });
-    await fillParty(page, 'tenants', 0, { first: 'Giulia', last: 'Verdi', cf: 'VRDGLI85B02F205A', email: 'giulia@example.com' });
-    await fillTerms(page);
-    await page.getByRole('button', { name: 'Crea bozza contratto' }).click();
-
-    await expect(page.getByTestId('lease-landlords-0').getByText(/Codice fiscale non valido/)).toBeVisible();
-    expect(calls.created).toHaveLength(0);
-    await expect(page).toHaveURL(/\/leases\/new/);
-  });
-
-  test('create with two landlords and two tenants, sign offline, declare the RLI, set up the rent and mark one paid', async ({
+  test('sign offline a draft with two landlords and two tenants, declare the RLI, set up the rent and mark one paid', async ({
     page,
   }) => {
     const calls = await mockLeaseFlowApi(page);
-    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
-    await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
+    // The draft is already on the server (the wizard of its creation is LR-06a's own): the flow starts from its sheet.
+    await page.goto(demoUrl(`/app/long-rent/leases/${FLOW_LEASE_ID}`, 'long-term'), { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('lease-continue-draft')).toBeVisible();
 
-    // LT-14: more parties per role; the codes are validated (a company has 11 digits) and sent normalized.
-    await page.getByRole('button', { name: 'Aggiungi locatore' }).click();
-    await page.getByRole('button', { name: 'Aggiungi conduttore' }).click();
-    await fillParty(page, 'landlords', 0, { first: 'Mario', last: 'Rossi', cf: 'rssmra80a01h501u', email: 'mario@example.com' });
-    await fillParty(page, 'landlords', 1, { first: 'Anna', last: 'Bianchi', cf: 'BNCNNA82A41F205W', email: 'anna@example.com' });
-    await fillParty(page, 'tenants', 0, { first: 'Giulia', last: 'Verdi', cf: 'VRDGLI85B02F205A', email: 'giulia@example.com' });
-    await fillParty(page, 'tenants', 1, { first: 'Acme', last: 'Srl', cf: '00123456782', email: 'acme@example.com' });
-    await fillTerms(page);
-    await page.getByRole('button', { name: 'Crea bozza contratto' }).click();
-
-    await expect(page).toHaveURL(new RegExp(`/leases/${FLOW_LEASE_ID}$`));
-    expect(calls.created).toHaveLength(1);
-    expect(calls.created[0].parties.map((p) => `${p.role}:${p.fiscalCode}`)).toEqual([
-      'Landlord:RSSMRA80A01H501U',
-      'Landlord:BNCNNA82A41F205W',
-      'Tenant:VRDGLI85B02F205A',
-      'Tenant:00123456782',
-    ]);
-    expect(calls.created[0]).toMatchObject({ propertyId: FLOW_PROPERTY.id, monthlyRent: 1200, contractType: 'Libero' });
-
-    // Before the signature (the draft opens on the tab of the signature): every party is to sign and the rent has nothing to schedule.
+    // The sheet opens on the guide (LR-GUIDE-1); the signature is in the tab of the documents. Before it, every party is to sign and the
+    // rent has nothing to schedule.
+    await expect(page.getByTestId('lease-guide')).toBeVisible();
+    await page.getByTestId('lease-tab-documenti').click();
     const signing = page.getByTestId('lease-signing-panel');
     await expect(signing.getByTestId('lease-signer')).toHaveCount(4);
     await expect(signing.getByTestId('lease-signer-status')).toHaveText(['Da firmare', 'Da firmare', 'Da firmare', 'Da firmare']);
@@ -119,7 +88,13 @@ test.describe('Lease flow (long-term landlord)', () => {
     await rent.getByLabel('Giorno di scadenza (1-28)').fill('5');
     await rent.getByRole('button', { name: 'Genera lo scadenziario' }).click();
     await expect(rent.getByTestId('rent-installment')).toHaveCount(48);
-    expect(calls.rentSchedules).toEqual([{ cadence: 'Monthly', billingDayOfMonth: 5 }]);
+    // LR-04a: the lease started on 1 September 2026, so from a later month the plan is tracked from the first of this month and no past
+    // period is born late; the payment requests to the tenants stay off (nothing about them is sent unless the landlord turns them on).
+    expect(calls.rentSchedules).toHaveLength(1);
+    expect(calls.rentSchedules[0]).toMatchObject({ cadence: 'Monthly', billingDayOfMonth: 5 });
+    expect(calls.rentSchedules[0]).not.toHaveProperty('onlineRequests');
+    const trackFrom = (calls.rentSchedules[0] as { trackFrom?: string }).trackFrom;
+    if (trackFrom !== undefined) expect(trackFrom).toMatch(/^\d{4}-\d{2}-01$/);
     await expect(rent.getByTestId('rent-installment-status').first()).toHaveText('Da incassare');
 
     // Offline payment of the first installment: only that one becomes paid.
@@ -134,27 +109,25 @@ test.describe('Lease flow (long-term landlord)', () => {
     await expect(rent.getByTestId('rent-installment').nth(1).getByTestId('rent-installment-status')).toHaveText('Da incassare');
   });
 
-  test('missing APE explains the blocker and no draft is submitted', async ({ page }) => {
-    const calls = await mockLeaseFlowApi(page);
+  test('missing APE is told in the first step of the wizard and uploaded in a window over it', async ({ page }) => {
+    await mockLeaseFlowApi(page);
     await page.route(`**/api/properties/${FLOW_PROPERTY.id}/documents`, (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
     );
-    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=altro', 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl('/app/long-rent/leases/new?tipo=libero&come=casazen', 'long-term'), { waitUntil: 'domcontentloaded' });
     await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
     await expect(page.getByText(/Per creare il contratto serve l’APE/)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Crea bozza contratto' })).toBeDisabled();
-    // The APE is uploaded in a window over the form, which stays where it is (it used to open the property page).
+    // The APE is uploaded in a window over the page, which stays where it is (it used to open the property page).
     await page.getByRole('button', { name: "Carica l'APE" }).click();
     await expect(page.getByRole('dialog').getByTestId('document-drop-zone')).toBeVisible();
-    await expect(page).toHaveURL(/\/leases\/new\?tipo=altro/);
-    expect(calls.created).toEqual([]);
+    await expect(page).toHaveURL(/\/leases\/new\?tipo=libero&come=casazen/);
   });
 
-  test('a short-stay-only host cannot open the lease creation form', async ({ page }) => {
+  test('a short-stay-only host cannot open the lease creation page', async ({ page }) => {
     await mockLeaseFlowApi(page);
     await page.goto(demoUrl('/app/long-rent/leases/new', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('app-ready')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Crea bozza contratto' })).toHaveCount(0);
+    await expect(page.getByTestId('lease-kind-choice')).toHaveCount(0);
     await expect(page).not.toHaveURL(/\/long-rent\/leases\/new/);
   });
 
@@ -170,23 +143,3 @@ test.describe('Lease flow (long-term landlord)', () => {
     await expect(page.getByRole('button', { name: 'Riprova' })).toBeEnabled();
   });
 });
-
-async function fillTerms(page: import('@playwright/test').Page): Promise<void> {
-  await page.getByLabel(/Data inizio/).fill('2026-09-01');
-  await page.getByLabel(/Data fine/).fill('2030-08-31');
-  await page.getByLabel(/Canone mensile/).fill('1200');
-}
-
-async function fillParty(
-  page: import('@playwright/test').Page,
-  list: 'landlords' | 'tenants',
-  index: number,
-  party: { first: string; last: string; cf: string; email: string },
-): Promise<void> {
-  const card = page.getByTestId(`lease-${list}-${index}`);
-  await card.getByLabel(/^Nome/).fill(party.first);
-  await card.getByLabel(/^Cognome/).fill(party.last);
-  await card.getByLabel(/^Codice fiscale/).fill(party.cf);
-  await card.getByLabel(/^Cittadinanza/).fill('IT');
-  await card.getByLabel(/^Email/).fill(party.email);
-}

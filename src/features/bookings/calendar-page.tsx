@@ -15,6 +15,8 @@ import { CalendarToolbar } from './components/calendar-toolbar';
 import { ManualBlockForm } from './components/manual-block-form';
 import { TimelineSection } from './components/timeline-section';
 import { useBookingCalendar } from '@/queries/use-bookings';
+import { useUnreadMessagesByBooking } from '@/queries/use-booking-messages';
+import { UnreadMessagesContext } from './lib/unread-messages-context';
 import { useProperties } from '@/queries/use-properties';
 import { CalendarDays, CalendarOff, List, Loader2, Plus } from 'lucide-react';
 import { WorkspaceContext } from '@/contexts/workspace-context';
@@ -37,6 +39,7 @@ import {
 } from './lib/host-timeline';
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
+const NO_UNREAD: ReadonlyMap<string, number> = new Map();
 
 /**
  * The calendar of the host (SR-02): the Timeline of every property, or the month, the week and the day of one. What is shown is
@@ -59,6 +62,8 @@ export function CalendarPage() {
   const canWriteBookings = workspace?.hasPermission('short-rent', 'booking.write') ?? false;
   // "Blocca date" and "Elimina blocco" need property.write (PC-09).
   const canWriteProperty = workspace?.hasPermission('short-rent', 'property.write') ?? false;
+  // The guests' messages not read yet, once for the whole calendar: the entries of a stay with some carry a counter (SR-12).
+  const unreadMessages = useUnreadMessagesByBooking(workspace?.hasPermission('short-rent', 'booking.read') ?? false);
   // The "Blocca date" form, open with the nights selected on the calendar (or from today).
   const [blockDraft, setBlockDraft] = useState<{ start?: string; end?: string } | null>(null);
   // The property the form closes dates of, when the calendar shows all of them and does not say which.
@@ -146,6 +151,7 @@ export function CalendarPage() {
   }, []);
 
   return (
+    <UnreadMessagesContext.Provider value={unreadMessages.data ?? NO_UNREAD}>
     <AppShell>
       {/* A column that fills the content region: the calendar takes the height the screen has left (`host-calendar.css`). */}
       <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -283,5 +289,6 @@ export function CalendarPage() {
         )}
       </div>
     </AppShell>
+    </UnreadMessagesContext.Provider>
   );
 }

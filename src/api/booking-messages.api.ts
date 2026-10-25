@@ -9,6 +9,11 @@ export interface HostThreadPage {
   pageSize: number;
 }
 
+/** `GET /api/messages/unread`: the guest's messages the host has not read, per booking (open threads only). */
+export interface UnreadMessagesByBooking {
+  items: Array<{ bookingId: string; unreadCount: number }>;
+}
+
 export interface HostThreadFilters {
   /** True keeps the open threads whose last message is the guest's (the «Da rispondere» of the Home). */
   needsReply?: boolean;
@@ -42,4 +47,7 @@ export const bookingMessagesApi = {
 
   /** The threads of the host's properties, the latest message first. */
   listThreads: (filters: HostThreadFilters = {}) => ApiClient.get<HostThreadPage>('/messages', filters),
+
+  /** How many unread guest messages each booking has: one call for a whole page of bookings (calendar, lists). */
+  listUnread: () => ApiClient.get<UnreadMessagesByBooking>('/messages/unread'),
 };

@@ -48,6 +48,66 @@ export interface ServiceRequest {
    * completed or rejected by the supplier. The supplier's team members are never named to the host.
    */
   history?: ServiceRequestHistoryEntry[];
+  // The fields of the request the host reads on its pages (SP-04, SP-15a). Optional: an older answer does not have them.
+  /** The service of the supplier's catalog the request is for, when it is for one. */
+  serviceName?: string | null;
+  /** Start and end of the work (UTC); both empty on an older request that has no time. */
+  scheduledStart?: string | null;
+  scheduledEnd?: string | null;
+  /** The instant the supplier has to answer by, while the request is new. */
+  respondBy?: string | null;
+  startedAt?: string | null;
+  price?: ServiceRequestPrice;
+  cancelledAt?: string | null;
+  /** Who cancelled it (`Host`, `Supplier`, `System`) and why: a text, or the code `NoResponse` of the automatic cancellation. */
+  cancelledBy?: string | null;
+  cancellationReason?: string | null;
+  /** What the supplier wrote when it completed the work. */
+  completionNotes?: string | null;
+  /** The time the supplier proposed instead of the requested one, waiting for the host's answer; empty when there is none. */
+  proposal?: ServiceRequestProposal | null;
+  /** When the host last reminded the supplier. */
+  lastRemindedAt?: string | null;
+  /** `Online` (paid inside CasaZen, with the payment session) or `Manual` (paid outside, the host marks it). */
+  paymentMode?: string;
+}
+
+/** The price of a request as the host sees it, in cents of euro (SP-04): `amountCents` is the one to show. */
+export interface ServiceRequestPrice {
+  estimatedAmountCents?: number | null;
+  quotedAmountCents?: number | null;
+  finalAmountCents?: number | null;
+  /** The final amount, else the quote, else the estimate; empty is "da concordare". */
+  amountCents?: number | null;
+  /** Which amount `amountCents` is: `final`, `quoted` or `estimated`. */
+  basis?: string | null;
+  /** The final amount is more than 20 % above the quote: the host has to confirm it before it can pay (decision D7). */
+  needsCustomerConfirmation?: boolean;
+}
+
+/** A time the supplier proposed for a new request (UTC instants). */
+export interface ServiceRequestProposal {
+  startUtc: string;
+  endUtc: string;
+  proposedAt: string;
+  message?: string | null;
+}
+
+/** The two views of the list of the host (`?view=` of `GET /long-rent/service-requests`, LR-08a): the open ones and the closed ones. */
+export type ServiceRequestHostView = 'open' | 'closed';
+
+/**
+ * What Stripe.js needs to pay a request inside CasaZen (`POST /long-rent/service-requests/{id}/payment-session`, SP-15a): the
+ * client secret is a credential, so the answer is used at once and never kept.
+ */
+export interface ServicePaymentSession {
+  paymentId: string;
+  clientSecret: string;
+  publishableKey: string;
+  /** The supplier's connected account: the payment goes to it. */
+  stripeAccountId: string;
+  amountCents: number;
+  currency: string;
 }
 
 /** The stay of a short-rent request as the supplier sees it (SU-08): dates only, never the guest. */

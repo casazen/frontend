@@ -109,11 +109,13 @@ describe('BottomNav (UI-04b)', () => {
       expect(within(english).getByRole('link', { name: 'Services and prices' })).toHaveTextContent(/^Services$/);
     });
 
-    it('BottomNav_LongRent_ListsTheTwoDestinationsItHasAndAltro', () => {
+    it('BottomNav_LongRent_ListsTheFourDestinationsItHasAndAltro', () => {
       arrange(['long-rent']);
       renderBar('long-rent', '/app/long-rent/leases');
 
-      expect(labels()).toEqual(['Contratti', 'Immobili']);
+      // The Panoramica is the first place (LR-05) and the bar holds four: Interventi and the deadlines are behind "Altro". The name
+      // "Panoramica" fits a column of the bar.
+      expect(labels()).toEqual(['Panoramica', 'Contratti', 'Canoni', 'Immobili']);
       expect(more()).toBeInTheDocument();
     });
 

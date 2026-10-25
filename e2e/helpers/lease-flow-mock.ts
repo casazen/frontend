@@ -1,6 +1,5 @@
 import type { Page, Route } from '@playwright/test';
 import type {
-  CreateLeaseDto,
   LeaseDetail,
   LeaseSigningState,
   RentInstallment,
@@ -14,7 +13,6 @@ export const FLOW_PROPERTY = buildCreatedProperty({ id: 'prop-lease-e2e-01', nam
 
 /** What the mocked API received, so a spec asserts the request the UI really sent (not only what it shows). */
 export interface LeaseFlowCalls {
-  created: CreateLeaseDto[];
   contractDownloads: number;
   receiptDownloads: number;
   signedUploads: { stipulaDate: string | null; hasPdf: boolean }[];
@@ -68,14 +66,57 @@ function buildInstallments(monthlyRent: number): RentInstallment[] {
 }
 
 /**
+ * A draft lease as the guided draft leaves it (LR-06a): two landlords and two tenants, a libero at 1.200 €, already saved on the
+ * server. The wizard that fills it in is its own spec; the flow below starts from the sheet of the lease.
+ */
+function flowDraftLease(): LeaseDetail {
+  const party = (index: number, role: 'Landlord' | 'Tenant', firstName: string, lastName: string, masked: string) => ({
+    id: `party-${index}`,
+    role,
+    firstName,
+    lastName,
+    fiscalCodeMasked: masked,
+    contactEmailMasked: 'm***@example.com',
+    isExtraEU: false,
+  });
+  return {
+    id: FLOW_LEASE_ID,
+    propertyId: FLOW_PROPERTY.id,
+    property: { id: FLOW_PROPERTY.id, name: FLOW_PROPERTY.name, city: FLOW_PROPERTY.city },
+    status: 'Draft',
+    fiscalRegime: 'CedolareSecca',
+    contractType: 'Libero',
+    taxRegime: 'CedolareSecca',
+    startDate: '2026-09-01',
+    endDate: '2030-08-31',
+    monthlyRent: 1200,
+    securityDeposit: null,
+    concordatoAssessment: null,
+    stipulaDate: null,
+    registrationDeadline: '2026-10-01',
+    hasSignedPdf: false,
+    hasExtraEUTenant: false,
+    parties: [
+      party(1, 'Landlord', 'Mario', 'Rossi', 'RSS***********1U'),
+      party(2, 'Landlord', 'Anna', 'Bianchi', 'BNC***********5W'),
+      party(3, 'Tenant', 'Giulia', 'Verdi', 'VRD***********5A'),
+      party(4, 'Tenant', 'Acme', 'Srl', '001***********82'),
+    ],
+    registration: null,
+    events: [{ eventType: 'Created', occurredAt: '2026-09-25T08:00:00Z' }],
+    createdAt: '2026-09-25T08:00:00Z',
+    updatedAt: '2026-09-25T08:00:00Z',
+  };
+}
+
+/**
  * Stateful in-memory API of the lease flow with the providers as production has them (e-signature and RLI filing off):
- * create -> contract to sign -> signed upload -> manual RLI -> rent schedule. Every step changes the state the next GET
+ * a draft lease -> contract to sign -> signed upload -> manual RLI -> rent schedule. Every step changes the state the next GET
  * returns, so a UI that shows success without calling the API fails the spec. The mock answers what the real API
  * answers (the 422 for a rent schedule of an unsigned lease, the signers and the checklist), not a canned success.
  */
 export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
   const calls: LeaseFlowCalls = {
-    created: [],
     contractDownloads: 0,
     receiptDownloads: 0,
     signedUploads: [],
@@ -83,7 +124,7 @@ export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
     rentSchedules: [],
     markPaid: [],
   };
-  let lease: LeaseDetail | null = null;
+  let lease: LeaseDetail | null = flowDraftLease();
   let schedule: RentLedger['schedule'] = null;
   let installments: RentInstallment[] = [];
 
@@ -143,43 +184,6 @@ export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
 
     if (path === '/leases' && method === 'GET') {
       return json(route, lease ? [{ ...lease, partyCount: lease.parties.length }] : []);
-    }
-
-    if (path === '/leases' && method === 'POST') {
-      const dto = request.postDataJSON() as CreateLeaseDto;
-      calls.created.push(dto);
-      lease = {
-        id: FLOW_LEASE_ID,
-        propertyId: dto.propertyId,
-        property: { id: FLOW_PROPERTY.id, name: FLOW_PROPERTY.name, city: FLOW_PROPERTY.city },
-        status: 'Draft',
-        fiscalRegime: dto.taxRegime === 'CedolareSecca' ? 'CedolareSecca' : 'RegimeOrdinario',
-        contractType: dto.contractType,
-        taxRegime: dto.taxRegime,
-        startDate: dto.startDate,
-        endDate: dto.endDate,
-        monthlyRent: dto.monthlyRent,
-        securityDeposit: dto.securityDeposit ?? null,
-        concordatoAssessment: null,
-        stipulaDate: null,
-        registrationDeadline: '2026-10-01',
-        hasSignedPdf: false,
-        hasExtraEUTenant: false,
-        parties: dto.parties.map((party, index) => ({
-          id: `party-${index + 1}`,
-          role: party.role,
-          firstName: party.firstName,
-          lastName: party.lastName,
-          fiscalCodeMasked: `${party.fiscalCode.slice(0, 3)}***********${party.fiscalCode.slice(-2)}`,
-          contactEmailMasked: 'm***@example.com',
-          isExtraEU: false,
-        })),
-        registration: null,
-        events: [{ eventType: 'Created', occurredAt: '2026-09-25T08:00:00Z' }],
-        createdAt: '2026-09-25T08:00:00Z',
-        updatedAt: '2026-09-25T08:00:00Z',
-      };
-      return json(route, lease, 201);
     }
 
     if (!lease || !path.startsWith(`/leases/${FLOW_LEASE_ID}`)) {

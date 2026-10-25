@@ -16,10 +16,10 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toHaveCount(0);
   });
 
-  test('AC2 LongTermLandlord-only sees long-term shell and lease home', async ({ page }) => {
+  test('AC2 LongTermLandlord-only sees long-term shell and the overview as home', async ({ page }) => {
     await page.goto(demoUrl('/', 'long-term'), { waitUntil: 'domcontentloaded' });
 
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases(?:\?.*)?$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/app\/long-rent(?:\?.*)?$/, { timeout: 15_000 });
     // The area name of the sidebar (UI-04a: "Affitti lunghi"; the backend still sends "Affitti lungo termine").
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
     await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
 
     await switcher.click();
     await page.getByRole('menuitemradio', { name: /Affitti lunghi/ }).click();
-    await expect(page).toHaveURL(/\/app\/long-rent\/leases/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/, { timeout: 15_000 });
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
 
     await switcher.click();

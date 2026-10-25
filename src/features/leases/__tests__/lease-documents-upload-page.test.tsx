@@ -5,13 +5,19 @@ import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { ROUTE_MANIFEST } from '@/config/route-manifest';
 import { LeaseDocumentsUploadPage } from '../lease-documents-upload-page';
-import { buildDetail, httpError, renderAt } from './lease-test-utils';
+import { LEASE_CONFIRMED_STATE } from '../lib/upload-link';
+import { buildDetail, buildSummary, httpError, renderAt } from './lease-test-utils';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() } }));
 const id = '0b6f7a3e-5a2d-4c58-9e0a-6c8b0f2e1d11';
+const practice = 'P-0123456789ABCDEF';
+const lookupUrl = `/concordatofacile/practices/${practice}/lease`;
 const path = '/app/long-rent/documents/upload';
 const get = vi.mocked(axios.get); const post = vi.mocked(axios.post);
-function renderPage(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage)); }
+// A link of the app, or a contract the person has confirmed: the documents come at once (CF-FIX-FU4).
+function renderPage(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage), LEASE_CONFIRMED_STATE); }
+// A link from outside (the button of the e-mail, an old link with only the lease): the page asks which contract before anything else.
+function renderFromOutside(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage)); }
 
 describe('lease-owned partner documents', () => {
   beforeEach(async () => { vi.clearAllMocks(); await i18n.changeLanguage('it'); });
@@ -70,5 +76,158 @@ describe('lease-owned partner documents', () => {
     get.mockResolvedValue({ data: [] }); renderPage();
     await screen.findByText(i18n.t('cfDocuments.noLeases')); expect(post).not.toHaveBeenCalled();
     await waitFor(() => expect(get).toHaveBeenCalled());
+  });
+
+  // CF-FIX: the button «Carica i dati in CasaZen» of ConcordatoFacile opens this page with `?practice=P-…`.
+  it('a practice the server links to a lease shows the documents of that lease, never the list of contracts', async () => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.resolve({ data: { leaseId: id, practiceId: practice, status: 'InProgress', manualSelectionRequired: false } });
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?practice=${practice}`);
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.linked', { practice }));
+    expect(screen.queryByText(i18n.t('cfDocuments.chooseLease'))).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => url === '/leases')).toBe(false);
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('a practice the server does not find (or while the service is off) loads no contract until the person chooses one', async () => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.reject(httpError(404, { code: 'practice_not_found' }));
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?practice=${practice}`);
+    expect(await screen.findByText(i18n.t('cfDocuments.practice.notFound'))).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('cfDocuments.chooseLease'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('cfDocuments.backToHouses'))).toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).startsWith('/leases/'))).toBe(false);
+    expect(post).not.toHaveBeenCalled();
+  });
+  it('a practice not linked yet asks for the contract and goes on with the one chosen, keeping the practice in the address', async () => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.resolve({ data: { leaseId: null, practiceId: practice, status: null, manualSelectionRequired: true } });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?practice=${practice}`);
+    expect(await screen.findByTestId('cf-documents-practice-manual')).toHaveTextContent(practice);
+    expect(get.mock.calls.some(([url]) => String(url).startsWith('/leases/'))).toBe(false);
+    fireEvent.click(await screen.findByRole('link', { name: new RegExp(id) }));
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.chosen', { practice }));
+    expect(get.mock.calls.filter(([url]) => url === lookupUrl)).toHaveLength(1);
+  });
+  it.each(['?practice=P-123', `?practice=${practice}&practice=${practice}`, '?practice='])('a practice number that is not one is an invalid link, never looked up: %s', async (query) => {
+    get.mockResolvedValue({ data: [] });
+    renderPage(query);
+    expect(await screen.findByTestId('cf-documents-practice-invalid')).toHaveTextContent(i18n.t('cfDocuments.practice.invalid'));
+    await screen.findByText(i18n.t('cfDocuments.noLeases'));
+    expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
+  });
+  it('a lease named in the link is the only one shown, whatever the practice says', async () => {
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      return Promise.reject(httpError(404));
+    });
+    renderPage(`?leaseId=${id}&practice=${practice}`);
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByTestId('cf-documents-practice')).toHaveTextContent(i18n.t('cfDocuments.practice.chosen', { practice }));
+    expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
+  });
+
+  // CF-FIX-FU4: a link from outside says which contract, the person has not: one explicit step before the upload, for the practice of the
+  // e-mail and for the old link with only the lease, with the way to another contract.
+  it.each([
+    ['a practice the server links to a lease', `?practice=${practice}`, 'confirmWithPractice'],
+    ['an old link with only the lease', `?leaseId=${id}`, 'confirmWithoutPractice'],
+  ] as const)('%s asks to confirm the contract before showing the upload', async (_label, query, key) => {
+    get.mockImplementation((url) => {
+      if (url === lookupUrl) return Promise.resolve({ data: { leaseId: id, practiceId: practice, status: 'InProgress', manualSelectionRequired: false } });
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      return Promise.reject(httpError(404));
+    });
+    renderFromOutside(query);
+
+    const confirm = await screen.findByTestId('cf-documents-confirm');
+    expect(confirm).toHaveTextContent(i18n.t(`guidedContract.${key}`, { practice, lease: 'Casa Trastevere · Roma' }));
+    // Nothing can be uploaded, and the contract is not shown, before the person has said it is the right one.
+    expect(screen.queryByLabelText(i18n.t('documentPages.select'))).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => url === `/leases/${id}/documents`)).toBe(false);
+
+    fireEvent.click(screen.getByTestId('cf-documents-confirm-button'));
+
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.getByLabelText(i18n.t('documentPages.select'))).toBeInTheDocument();
+    expect(screen.queryByTestId('cf-documents-confirm')).not.toBeInTheDocument();
+  });
+  it('«Scegli un altro contratto» lists the contracts, and the one chosen there needs no second confirmation', async () => {
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id })] });
+      return Promise.reject(httpError(404));
+    });
+    renderFromOutside(`?leaseId=${id}`);
+
+    fireEvent.click(await screen.findByTestId('cf-documents-confirm-other'));
+    fireEvent.click(await screen.findByRole('link', { name: new RegExp(id) }));
+
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+    expect(screen.queryByTestId('cf-documents-confirm')).not.toBeInTheDocument();
+  });
+
+  // CF-IMPORT: the contract ConcordatoFacile delivers goes on to «Completa e importa il contratto» only from the draft it was made for,
+  // once a contract document is there; any other contract is left alone (it does not even ask how a reading stands).
+  it.each([
+    ['the draft of the partner with the contract uploaded', { origin: 'Imported', isConcordatoFacileSource: true }, 'Done', true, true],
+    ['the draft of the partner before any contract is uploaded', { origin: 'Imported', isConcordatoFacileSource: true }, 'None', false, true],
+    ['an imported draft that is not the partner’s', { origin: 'Imported', isConcordatoFacileSource: false }, 'Done', false, false],
+    ['the contract of the partner once it is signed', { origin: 'Imported', isConcordatoFacileSource: true, status: 'Signed' }, 'Done', false, false],
+  ] as const)('offers the import of the contract only for %s', async (_label, detail, state, offered, asked) => {
+    const readingUrl = `/leases/${id}/draft/reading`;
+    const documents = state === 'None' ? [] : [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Completed', error: null }];
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id, ...detail }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === readingUrl) return Promise.resolve({ data: { state, documents, fields: [], stipulaDate: null, contractDocumentId: documents[0]?.id ?? null } });
+      return Promise.reject(httpError(404));
+    });
+
+    renderPage(`?leaseId=${id}`);
+    await screen.findByText(i18n.t('cfDocuments.empty'));
+
+    if (asked) await waitFor(() => expect(get.mock.calls.some(([url]) => url === readingUrl)).toBe(true));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(get.mock.calls.some(([url]) => url === readingUrl)).toBe(asked);
+    if (offered) {
+      expect(await screen.findByTestId('cf-import-panel')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: i18n.t('cfDocuments.import.action') })).toBeEnabled();
+    } else {
+      expect(screen.queryByTestId('cf-import-panel')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
+    }
+  });
+  it('while the contract is being read the import button waits and says so', async () => {
+    const documents = [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Processing', error: null }];
+    get.mockImplementation((url) => {
+      if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id, origin: 'Imported', isConcordatoFacileSource: true }) });
+      if (url === `/leases/${id}/documents`) return Promise.resolve({ data: [] });
+      if (url === `/leases/${id}/draft/reading`) return Promise.resolve({ data: { state: 'Reading', documents, fields: [], stipulaDate: null, contractDocumentId: 'doc-1' } });
+      return Promise.reject(httpError(404));
+    });
+
+    renderPage(`?leaseId=${id}`);
+
+    const waiting = await screen.findByRole('button', { name: i18n.t('guidedContract.reading') });
+    expect(waiting).toBeDisabled();
+    expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
   });
 });

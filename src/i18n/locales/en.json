@@ -11,14 +11,16 @@
     "reference": "Lease reference: {{id}}",
     "openHouse": "Open property",
     "openLease": "Open lease",
-    "instructions": "Upload the contract, attestation and registration receipt from your partner. Files are attached to this lease and available in its Documents section. Uploading does not change lease data or require another payment.",
-    "partnerReference": "Partner reference (leaseId)",
-    "copy": "Copy reference",
-    "copied": "Reference copied.",
-    "copyFailed": "Select the reference and copy it manually.",
-    "referenceHelp": "Share this identifier with the partner to link the case to the correct lease and property.",
+    "instructions": "Upload the contract, attestation and registration receipt you received. Files are attached to this lease and available in its Documents section. Uploading does not change lease data or require another payment.",
     "chooseLease": "Select the lease to attach documents to.",
-    "noLeases": "No leases have been saved yet. You need a leaseId, not a property ID.",
+    "noLeases": "No leases have been saved yet: create a lease to be able to attach documents.",
+    "practice": {
+      "chosen": "Practice {{practice}}: the documents are saved on this lease.",
+      "invalid": "Invalid link: the practice number is not correct.",
+      "linked": "Practice {{practice}} linked to this lease",
+      "manual": "Practice {{practice}} is not linked to a lease yet.",
+      "notFound": "We cannot find this practice among your leases."
+    },
     "leaseLabel": "Lease",
     "documentsTitle": "Lease documents",
     "kind": "Document type",
@@ -31,12 +33,102 @@
     "saved": "Document saved and attached to the lease.",
     "download": "Download",
     "downloadError": "The document could not be downloaded.",
+    "import": {
+      "action": "Complete and import the contract",
+      "description": "Check the data read from the contract and import it: the draft becomes a signed contract, with the same reference.",
+      "instructions": "Upload the contract you received: we read it and fill in the data of the draft, then you check them and import the contract. The attestation and the registration receipt are uploaded the same way. Uploading needs no new payment.",
+      "title": "The contract has arrived"
+    },
     "kinds": {
       "Contract": "Contract",
       "Attestation": "Attestation",
       "Registration": "Registration",
       "Other": "Other"
     }
+  },
+  "concordatofacile": {
+    "entry": {
+      "statusFailed": "We cannot check the status: if you have already sent the form, do not reopen it."
+    },
+    "gift": {
+      "available": "Complimentary practice available",
+      "button": "Use complimentary practice and continue",
+      "conflict": "The complimentary practice has already been used",
+      "consumed": "Complimentary practice already used",
+      "error": "Unable to use complimentary practice. Please try again later."
+    },
+    "offer": {
+      "title": "Create the contract",
+      "price": "119.00 EUR total VAT included",
+      "steps": "How it works",
+      "stepsTitle": "The 5-step process:",
+      "step1": "You pay 119 euros",
+      "step2": "You fill in the guided form with the data of the contract",
+      "step3": "The contract is prepared for you",
+      "step4": "You receive it by e-mail, ready to sign",
+      "step5": "You upload it here: we read it and fill in the data",
+      "payButton": "Pay 119 euros and continue",
+      "giftButton": "Use complimentary practice and continue",
+      "processing": "Loading…",
+      "error": "Error",
+      "cancelled": "Payment was cancelled. If you wish to proceed, please try again.",
+      "contractDetails": "Contract details",
+      "property": "Property",
+      "city": "City",
+      "serviceTitle": "Agreed-rent contract",
+      "serviceDescription": "Preparation and registration of regulated rent contract",
+      "info": "Payment is secure and handled by Stripe. You will receive email confirmation.",
+      "invalidLease": "Invalid contract reference.",
+      "leaseNotFound": "Contract not found or you do not have permission to access it.",
+      "backToLeases": "Back to contracts",
+      "backToLease": "Back to contract",
+      "viewLease": "View contract",
+      "tryAgain": "Try again",
+      "loadError": "Unable to load contract data.",
+      "accessError": "Unable to verify service access.",
+      "checkoutError": "Unable to create payment session. Please try again later.",
+      "giftError": "Unable to use complimentary practice. Please try again later."
+    },
+    "status": {
+      "statusLabels": {
+        "Attested": "Attested",
+        "AwaitingUser": "Awaiting user",
+        "ClosedWithoutAttestation": "Closed without attestation",
+        "DraftSent": "Draft sent",
+        "InProgress": "In progress",
+        "Received": "Received",
+        "Registered": "Registered",
+        "SignedReceived": "Signed received",
+        "SentToAssociation": "Sent to association",
+        "Suspended": "Suspended"
+      },
+      "unknownStatus": "Unknown status"
+    }
+  },
+  "guidedContract": {
+    "checkAgain": "Check again",
+    "comuneDiffers": "The municipality chosen in the form differs from the one of the property of the contract.",
+    "confirmAction": "Confirm",
+    "confirmOther": "Choose another contract",
+    "confirmWithoutPractice": "You are uploading the documents to the contract “{{lease}}”: confirm it is the right one.",
+    "confirmWithPractice": "You are uploading the documents of practice {{practice}} to the contract “{{lease}}”: confirm it is the right one.",
+    "formReady": "The form opens on a page of its own. If you stop halfway, it picks up again only on the same device and browser.",
+    "lastChange": "Updated {{date}}",
+    "lastCheck": "Last check: {{time}}",
+    "open": "Open the form",
+    "openError": "We cannot open the guided form. Please try again in a moment.",
+    "opening": "Taking you to the guided form…",
+    "paymentPending": "The activation takes a few moments. Check again shortly.",
+    "paymentReceived": "Payment received, activating the form…",
+    "privacyLabel": "I have read and accept the privacy notice",
+    "privacyRead": "Read the notice",
+    "reading": "Reading the contract…",
+    "resume": "Resume filling in the form",
+    "sent": "The form has been sent. When you receive the documents, upload them here: we read them and fill in the data.",
+    "statusLabel": "Status of the practice",
+    "stepPayOrGift": "You pay 119 euros or use the complimentary practice",
+    "taxesNote": "Registration tax and stamp duty, where due, are not included in the price.",
+    "uploadDocuments": "Upload the documents"
   },
   "admin": {
     "dashboard": {
@@ -550,12 +642,17 @@
     "payments": "Payments",
     "revenue": "Revenue",
     "reports": "Reports",
+    "longRentFiscal": "Tax report",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
     "organization": "Organization",
     "accountSettings": "Settings",
     "ota": "OTA",
     "leases": "Leases",
+    "rents": "Rents",
+    "longRentOverview": "Overview",
+    "longRentDeadlines": "Deadlines",
+    "serviceRequests": "Maintenance",
     "supplierClients": "Clients",
     "supplierEarnings": "Earnings",
     "supplierSettings": "Settings",
@@ -623,6 +720,50 @@
       "it": "Italiano",
       "en": "English"
     }
+  },
+  "guidedForm": {
+    "applied": "Status updated.",
+    "apply": "Apply",
+    "applyError": "The status could not be changed. Try again.",
+    "backToContract": "Back to the contract",
+    "checking": "Checking the link…",
+    "closeReason": "Reason for closing",
+    "closeReasons": {
+      "duplicate": "Duplicate of another practice",
+      "not_compliant": "Contract that cannot be attested",
+      "other": "Other reason",
+      "withdrawn": "The user withdrew"
+    },
+    "comune": "Municipality",
+    "documentError": "The document could not be downloaded. Try again.",
+    "documents": {
+      "attestation": "Download the attestation",
+      "contract": "Download the sample contract",
+      "receipt": "Download the registration receipt",
+      "title": "Sample documents"
+    },
+    "linkInvalid": "The link is not valid or has expired: you can fill in the form anyway, the practice will arrive with no reference to the contract.",
+    "linkValid": "Valid link",
+    "loadError": "The form could not be loaded.",
+    "notNamed": "Not given",
+    "panel": {
+      "description": "Here whoever is trying the round does what the service would do: moves the practice to another status and downloads the documents that would arrive by e-mail.",
+      "title": "Test panel"
+    },
+    "practiceLinked": "The practice is linked to the contract.",
+    "practiceNotLinked": "The practice arrived with no reference to the contract.",
+    "practiceNumber": "Practice number",
+    "practiceStatus": "Practice status",
+    "provincia": "Province",
+    "retry": "Try again",
+    "status": "New status",
+    "submit": "Send the practice",
+    "submitError": "The practice could not be sent. Try again.",
+    "submitted": "Practice sent",
+    "testNotice": "Test environment: this form simulates the service that prepares the contract. It sends nothing to anyone.",
+    "title": "Guided form",
+    "unavailable": "Page not available",
+    "uploadData": "Upload the data in CasaZen"
   },
   "shell": {
     "shortRentSubtitle": "Short-term rentals",
@@ -740,16 +881,8 @@
     "fiscalCodeMasked": "Tax code",
     "rli": {
       "advisory": {
-        "title": "Cedolare secca or ordinary regime: tax information",
-        "disclaimer": "Information, not tax advice: estimates computed with the parameters of the sources listed. CasaZen is not an authorized intermediary under Italian DPR 322/1998: check the choice with an accountant.",
         "annualRent": "Annual rent: {{amount}}",
         "chosen": "Chosen regime",
-        "ataLabel": "High housing pressure area (ATA)",
-        "ata": {
-          "Verified": "verified municipality",
-          "Unverified": "candidate municipality, not verified on an official source",
-          "NotListed": "municipality not in CasaZen's list"
-        },
         "cedolare": {
           "title": "Cedolare secca",
           "rate": "Rate",
@@ -796,12 +929,7 @@
           "questura_not_replaced": "With a non-EU tenant, registering the contract does not replace the written notice to the public security authority within 48 hours of handing over the property."
         },
         "inputs": {
-          "title": "Data to complete the estimate",
           "privacy": "Used only for the computation: CasaZen does not store them.",
-          "writtenPages": "Written pages of one copy of the contract",
-          "lines": "Lines of one copy (optional)",
-          "copies": "Copies to register",
-          "otherIncome": "IRPEF taxable income from other sources, in euros per year (optional)",
           "submit": "Update the estimate",
           "updating": "Computing...",
           "invalid": "Check the values: pages from 1 to 1,000, lines from 1 to 100,000, copies from 1 to 20, income from 0 to 100,000,000 €. Enter pages and copies together."
@@ -841,8 +969,6 @@
       "attestationCheckbox": "I have read and accept the filing-responsibility attestation",
       "confirmSubmit": "Authorize and submit",
       "cancel": "Cancel",
-      "extraEuTitle": "Non-EU tenant: Questura communication within 48 hours of the delivery",
-      "extraEuBody": "This lease includes a non-EU tenant: within 48 hours of the delivery of the property a written communication must be sent to the local public-security authority (art. 7 D.Lgs. 286/1998). CasaZen does not send it: once sent, record its date in the dedicated section.",
       "checklistItem": {
         "contract_signed": "Contract signed by all parties",
         "delega_captured": "RLI delega / attestation recorded",
@@ -905,7 +1031,6 @@
       "checklistGoToQuestura": "Go to the communication"
     },
     "canoneConcordato": {
-      "title": "Agreed-rent calculator",
       "sqm": "Floor area (sqm)",
       "zone": "Zone",
       "zonePlaceholder": "e.g. Unica, Centrale",
@@ -1061,7 +1186,6 @@
       }
     },
     "createPageTitle": "Create lease",
-    "createPageDescription": "Define contract parties and terms — a draft will be saved for review",
     "form": {
       "propertyTermsTitle": "Property & terms",
       "propertyTermsDescription": "Select the property and define lease terms",
@@ -1139,7 +1263,20 @@
       "DeadlineReminderSent": "Deadline reminder sent",
       "StipulaDeclared": "Signing date declared",
       "QuesturaCommunicationMarkedDone": "Questura communication declared",
-      "PropertyDeliveryDateDeclared": "Property delivery date entered"
+      "PropertyDeliveryDateDeclared": "Property delivery date entered",
+      "ReviewConfirmed": "Review confirmed",
+      "ReviewReopened": "Review reopened",
+      "SentForSignature": "Contract downloaded for signing",
+      "SentRevoked": "Download for signing cancelled",
+      "Imported": "Signed contract imported",
+      "NoticeRecorded": "Notice recorded",
+      "NoticeRemoved": "Notice withdrawn",
+      "Terminated": "Lease ended early",
+      "TermRenewed": "Renewed for another period",
+      "ConcordatoFacileAdminAccess": "Administrator access to the guided form",
+      "ConcordatoFacileGiftConsumed": "Complimentary practice used",
+      "ConcordatoFacileLinkGenerated": "Guided form opened",
+      "ConcordatoFacilePrivacyAccepted": "Privacy notice accepted"
     },
     "detailLoadError": "Unable to load the lease. Please try again.",
     "retry": "Retry",
@@ -1201,32 +1338,12 @@
         "cancel": "Cancel"
       }
     },
-    "kind": {
-      "legend": "What contract do you want to make?",
-      "description": "First the type of contract: how we prepare it depends on it.",
-      "concordato": {
-        "title": "Canone concordato (3+2)",
-        "description": "You prepare it with ConcordatoFacile, our partner: we create the draft at once, with the reference to link to the practice."
-      },
-      "other": {
-        "title": "Canone libero (4+4) or transitory",
-        "description": "You fill in the data of the contract here: property, parties, term and rent."
-      },
-      "continue": "Continue",
-      "change": "Change type of contract"
-    },
-    "concordato": {
-      "title": "New canone concordato contract",
-      "description": "Choose the property: we save the draft of the contract and its reference for ConcordatoFacile at once.",
-      "whatHappens": "No parties, rent, dates or APE are needed yet: you complete the contract with ConcordatoFacile.",
-      "create": "Create the draft",
-      "noProperties": "You have no long-term property yet: add the property to create the contract."
-    },
     "partnerDraft": {
-      "title": "Draft — waiting for the partner’s contract",
-      "description": "You prepare this canone concordato contract with ConcordatoFacile: parties, rent and term are entered there. The draft and its reference are already saved here.",
+      "title": "Creating the contract",
+      "description": "You prepare this agreed-rent contract with the guided form: you enter parties, rent and term there. The draft is already saved here.",
       "proceed": "Go on with the creation of the contract",
-      "soon": "The direct connection with ConcordatoFacile is coming soon. Meanwhile you can give the partner the reference of the contract below."
+      "ready": "You pay or use the complimentary practice, then you fill in the guided form, already linked to this contract.",
+      "soon": "The guided form is not available yet."
     }
   },
   "leaseList": {
@@ -1287,6 +1404,125 @@
     "termToDefine": "Dates to be set",
     "rentToDefine": "Rent to be set"
   },
+  "leaseLifecycle": {
+    "alreadyHeld": "This is already in progress.",
+    "deleteDraft": {
+      "confirm": "Delete the draft",
+      "consequences": {
+        "data": "The people, dates and rent you entered are deleted and cannot be recovered.",
+        "undo": "After you confirm you have a few seconds to change your mind with “Undo”."
+      },
+      "description": "{{tenant}} · {{property}}. The lease is not valid yet: we delete it together with the data entered.",
+      "done": "Draft deleted",
+      "held": "Draft being deleted",
+      "heldHint": "Undo if you changed your mind: the draft is deleted in a few seconds.",
+      "title": "Delete the draft?"
+    },
+    "erasure": {
+      "action": "Ask for the data to be erased",
+      "confirm": "Ask for erasure",
+      "consequences": {
+        "anotherLease": "If a person has another lease in progress, their data stay until that lease ends.",
+        "ended": "If the lease has ended, the data of the people are anonymized right away.",
+        "final": "Anonymization cannot be undone.",
+        "notEnded": "If it has not ended yet, they are anonymized from the day after it ends."
+      },
+      "description": "{{tenant}} · {{property}}. You are recording the request to erase the data of the people of this lease.",
+      "failed": "The erasure request could not be recorded.",
+      "result": {
+        "anonymized": "The data of the people of this lease have been anonymized.",
+        "partial_one": "We anonymized the data of this lease, except for {{count}} person who has another lease in progress: we anonymize them when that lease ends.",
+        "partial_other": "We anonymized the data of this lease, except for {{count}} people who have another lease in progress: we anonymize them when those leases end.",
+        "scheduled": "The lease has not ended yet: the data of the people will be anonymized from {{date}}.",
+        "scheduledNoDate": "The lease has not ended yet: the data of the people will be anonymized from the day after it ends.",
+        "title": "Request recorded"
+      },
+      "title": "Ask for the data to be erased?"
+    },
+    "facts": {
+      "noticeFrom": {
+        "Landlord": "Sent by you on {{date}}",
+        "Tenant": "Sent by the tenant on {{date}}",
+        "unknown": "Recorded on {{date}}"
+      },
+      "noticeLabel": "Notice",
+      "renewsLabel": "Renewal",
+      "renewsValue": "Renews by itself, if nobody gives notice",
+      "terminatedLabel": "Ended on"
+    },
+    "menu": {
+      "deleteDraft": "Delete the draft",
+      "recordNotice": "Record a notice",
+      "revokeSent": "Cancel the download for signing",
+      "switchToShort": "Switch to short rent",
+      "takeNoticeBack": "Withdraw the notice",
+      "terminate": "End the lease"
+    },
+    "notice": {
+      "confirm": "Record the notice",
+      "dateHint": "From the first day of the lease up to today.",
+      "dateInvalid": "Choose a day between the start of the lease and today.",
+      "dateLabel": "Day it was sent",
+      "description": "{{tenant}} · {{property}}. CasaZen records the notice: it does not send it to anyone.",
+      "ends": "With the notice the lease ends at the end of the current period, on {{date}}.",
+      "failed": "The notice could not be recorded.",
+      "fromLandlord": "I sent it",
+      "fromLegend": "Who sent the notice?",
+      "fromTenant": "The tenant sent it",
+      "possiblyLate": "The notice may have arrived too late for this end date: ask your accountant.",
+      "recorded": "Notice recorded: the lease ends on {{date}}",
+      "removed": "Notice withdrawn: the lease renews by itself.",
+      "renews": "Without a notice the lease renews by itself.",
+      "title": "Record a notice"
+    },
+    "revokeSent": {
+      "cancel": "Leave it as it is",
+      "confirm": "Cancel the download",
+      "consequences": {
+        "invalid": "The copy to sign is no longer valid.",
+        "review": "The lease goes back to review and you can correct it."
+      },
+      "description": "{{tenant}} · {{property}}. The lease had been downloaded to be signed on paper.",
+      "done": "Download for signing cancelled",
+      "failed": "The download for signing could not be cancelled.",
+      "title": "Cancel the download for signing?",
+      "undone": "The lease is out for signing again"
+    },
+    "switchToShort": {
+      "description": "{{tenant}} · {{property}}. The switch to short rent is made on the page of the property.",
+      "firstDay": "The first possible day is the day after the end of the current period: {{date}}.",
+      "go": "Go to the change of mode",
+      "needsNotice": "Record the notice first: without it the lease renews by itself and the switch fails.",
+      "title": "Switch to short rent"
+    },
+    "takeNoticeBack": {
+      "cancel": "Leave it as it is",
+      "confirm": "Withdraw the notice",
+      "consequences": {
+        "renews": "The lease renews by itself again, unless somebody gives another notice."
+      },
+      "description": "{{tenant}} · {{property}}. The notice you recorded is taken off the lease.",
+      "failed": "The notice could not be withdrawn.",
+      "title": "Withdraw the notice?"
+    },
+    "terminate": {
+      "confirm": "End the lease",
+      "consequences": {
+        "final": "It cannot be undone.",
+        "property": "The property is free from the day after the last day of the lease.",
+        "rent": "Future rent that has not been paid is no longer requested.",
+        "revenue": "The end of the lease has to be reported to the Agenzia delle Entrate."
+      },
+      "dateHint": "From the first day of the lease to the end of the current period; it can be a day in the past.",
+      "dateInvalid": "Choose a day between the start of the lease and the end of the current period.",
+      "dateLabel": "Last day of the lease",
+      "description": "{{tenant}} · {{property}}. The lease ends on the day you choose.",
+      "done": "Lease ended: the last day is {{date}}",
+      "failed": "The lease could not be ended.",
+      "title": "End the lease",
+      "word": "TERMINATE"
+    }
+  },
   "leaseSheet": {
     "conditions": {
       "title": "Economic terms"
@@ -1296,13 +1532,15 @@
       "start": "Start of the lease",
       "title": "Term and dates"
     },
-    "details": "Show details",
     "history": {
       "actor": {
         "casazen": "CasaZen",
         "you": "You"
       },
       "more": "Show the whole history"
+    },
+    "now": {
+      "kicker": "What to do now"
     },
     "party": {
       "extraEu": "Non-EU"
@@ -1322,6 +1560,494 @@
       "payments": "Payments"
     },
     "toDefine": "To be set"
+  },
+  "leaseWizard": {
+    "after": {
+      "registration": {
+        "body": "The contract has to be registered with the Agenzia delle Entrate (the Italian Revenue Agency). Then declare it here with the receipt: the contract becomes “Registered” and the deadline goes away.",
+        "costs": {
+          "cedolare": "Estimated costs: none. With the cedolare secca (flat tax) there is no registration tax or stamp duty (estimate).",
+          "ordinary": "Estimated costs: about {{amount}} of registration tax for the first year (estimate)."
+        },
+        "download": "Download the summary of the data",
+        "kicker": "Now",
+        "mark": "Mark as registered",
+        "registered": "The contract is registered.",
+        "registeredOn": "The contract is registered: on {{date}}, number {{code}}.",
+        "title": "Register the contract",
+        "when": "By {{date}}",
+        "whenLeft_one": "By {{date}} · {{count}} day left",
+        "whenLeft_other": "By {{date}} · {{count}} days left",
+        "whenOverdue_one": "Was due on {{date}} · {{count}} day late",
+        "whenOverdue_other": "Was due on {{date}} · {{count}} days late",
+        "whenToday": "Due today, {{date}}",
+        "whenUnknown": "The deadline is still to be determined",
+        "who": "Your turn"
+      },
+      "rows": {
+        "open": "Open",
+        "questura": {
+          "title": "Keys and Questura"
+        },
+        "rent": {
+          "next": "First installment: {{amount}}, due on {{date}}.",
+          "none": "Not active yet. Turn it on when you want to track the payments.",
+          "noneRunning": "Not active yet. The contract has already started: the plan starts from the current month, with no past rents shown as late.",
+          "set": "Set up the plan",
+          "title": "Rent plan",
+          "view": "See the plan"
+        },
+        "title": "Other things to do"
+      }
+    },
+    "back": "Back",
+    "conflict": {
+      "description": "So that nobody's work is lost, reload the draft: you will see the version saved most recently. What you wrote in this tab after the last save was not saved.",
+      "reload": "Reload the draft",
+      "title": "This lease was changed in another tab"
+    },
+    "continue": {
+      "action": "Continue filling it in",
+      "description": "The draft is saved on CasaZen: pick up where you were, even from another device.",
+      "title": "This lease is a draft"
+    },
+    "dates": {
+      "end": "Last day of the first period",
+      "endHint": "If you leave it out, we use the term of the type of lease.",
+      "endHintTransitory": "Required for the transitory lease: the term is from {{min}} to {{max}} months.",
+      "inThePast_one": "The start date has already passed: the {{count}}-day registration deadline runs from the start of the lease.",
+      "inThePast_other": "The start date has already passed: the {{count}}-day registration deadline runs from the start of the lease.",
+      "months_one": "{{count}} month",
+      "months_other": "{{count}} months",
+      "start": "Start date",
+      "summary": {
+        "lasts": "Lasts {{length}}: from {{from}} to {{to}}.",
+        "notice_one": "To refuse the renewal you need a reason set by law, in writing, at least {{count}} month before: by {{date}}.",
+        "notice_other": "To refuse the renewal you need a reason set by law, in writing, at least {{count}} months before: by {{date}}.",
+        "register_one": "The lease has to be registered within {{count}} day of the signature, or of the start if that comes first.",
+        "register_other": "The lease has to be registered within {{count}} days of the signature, or of the start if that comes first.",
+        "renews": "At the end it renews by itself for another {{length}} unless there is a notice.",
+        "span": "From {{from}} to {{to}}."
+      },
+      "summaryTitle": "In plain words",
+      "years_one": "{{count}} year",
+      "years_other": "{{count}} years"
+    },
+    "documents": {
+      "areaTitle": "The signed contract",
+      "continueByHand": "Continue by hand",
+      "import": {
+        "other": "Use another file",
+        "uploaded": "Contract uploaded: {{name}}"
+      },
+      "manual": "I don't have the file: I'll type the data",
+      "privacy": "The file is read on our servers and stays in your space: no outside service sees it.",
+      "promise": "We read the contract and fill in the data: we only ask for what is missing.",
+      "read": {
+        "banner": "We filled in the data by reading the contract. Check it and complete what is missing.",
+        "conflict": "The contract shows a different value from the one entered: check it",
+        "derived": "Worked out from the contract — check it",
+        "failed": {
+          "default": "We could not read the document. Enter the data by hand: the contract stays uploaded and we will use it at the end.",
+          "file_missing": "We can no longer find the uploaded file. Enter the data by hand: at the end you will be able to upload the contract again.",
+          "no_text": "We could not read any text in the document (a photo that is too dark or blurred?). Enter the data by hand: the contract stays uploaded.",
+          "nothing_found": "We did not find the data of a lease in the document. Check that you uploaded the right file, or enter the data by hand.",
+          "ocr_unavailable": "Reading documents is not available right now. Enter the data by hand: the contract stays uploaded.",
+          "unreadable": "The file does not open or is too long to be read. Enter the data by hand or upload another file."
+        },
+        "mark": "Read from the contract — check it",
+        "ongoing": "We are still reading the document: as soon as it is done we fill in the data.",
+        "property": "The address read in the contract looks different from the property you chose. Check that you chose the right property and the right contract."
+      },
+      "reading": {
+        "slow": "It is taking longer than usual. You can continue by hand: the data read will arrive as soon as it is ready.",
+        "status": "We are reading the document…",
+        "wait": "You can leave this page open: as soon as it is done we take you to the data to check."
+      },
+      "retry": "Try again",
+      "submit": "Read the contract",
+      "uploadFailed": "We could not upload the file. Try again, or continue by hand."
+    },
+    "done": {
+      "another": "Create another contract",
+      "apeMissing": "Energy certificate (APE): still missing for the property. Upload it from the property page: it does not block the contract.",
+      "due": {
+        "inDays_one": "in {{count}} day",
+        "inDays_other": "in {{count}} days",
+        "overdue_one": "{{count}} day late",
+        "overdue_other": "{{count}} days late",
+        "today": "today"
+      },
+      "end": "The current period ends on {{date}}.",
+      "endPast": "The period ended on {{date}}: the contract counts as concluded.",
+      "notRegistered": {
+        "action": "Declare the registration",
+        "text": "If it is already registered, declare it now with the receipt: the deadline goes away and we stop sending reminders. If it is not, register it by the deadline.",
+        "title": "The contract is “Signed” but not registered yet"
+      },
+      "notice": "Last day to give notice: {{date}}. If nobody does, the contract renews by itself for another {{length}}.",
+      "questura": "You: tell the Questura by {{date}}; the time runs from the handover of the keys.",
+      "questuraDone": "Questura: communication made on {{date}}.",
+      "register": "You: register the contract (deadline {{date}}, {{when}}) and declare it on its page with the receipt. Until you do, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+      "registerNoWhen": "You: register the contract (deadline {{date}}) and declare it on its page with the receipt. Until you do, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+      "registerUnknown": "You: register the contract. The deadline is still to be determined.",
+      "registered": "Registration: done on {{date}}.",
+      "registeredNoDate": "Registration: done.",
+      "renews": "If nobody has given notice, the contract renews by itself for another {{length}}.",
+      "rentFirst": "First installment: {{amount}}, due on {{date}}. You record the payments yourself in the Payments tab.",
+      "rentNone": "Rents: the plan is not active yet. Turn it on from the Payments tab when you want to follow the payments.",
+      "title": {
+        "Created": "Contract signed",
+        "Imported": "Contract added"
+      }
+    },
+    "fields": {
+      "citizenship": "the citizenship",
+      "contactEmail": "the email",
+      "firstName": "the first name",
+      "fiscalCode": "the fiscal code",
+      "lastName": "the last name",
+      "residence": "the residence"
+    },
+    "finish": "Save and go to the lease",
+    "goToLease": "Go to the lease",
+    "gone": "This lease is not a draft any more: it can no longer be edited from here.",
+    "import": {
+      "concordatoNotice": "For a contract that is already signed we do not check that the rent is inside the band of the territorial agreement.",
+      "confirm": {
+        "description": "You are about to add the contract signed on {{date}} to CasaZen.",
+        "fixed": "The file and the day of the signature cannot be corrected after it is added.",
+        "no": "The registration deadline will appear and, until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address.",
+        "signed": "The contract becomes “Signed”: from then on it can no longer be edited or deleted.",
+        "submit": "Add the contract",
+        "title": "Add the signed contract?",
+        "yes": "Right after, we ask you for the registration number and the receipt."
+      },
+      "dateHint": "The day the last party signed. It is used to work out the registration deadline.",
+      "dateInvalid": "Enter the day of the signature: it cannot be after today.",
+      "dateLabel": "Day of the signature",
+      "failed": "I could not add the contract. Try again.",
+      "fileHint": "The PDF with the signatures of all the parties.",
+      "fileInvalid": "Choose a PDF file of at most 20 MB.",
+      "fileLabel": "Signed contract (PDF, at most 20 MB)",
+      "registered": {
+        "legend": "Has it already been registered?",
+        "no": {
+          "description": "It stays “Signed” and you will see the registration deadline.",
+          "title": "No, or I don't know"
+        },
+        "required": "Answer this question.",
+        "yes": {
+          "description": "After adding it we ask for the number and the receipt.",
+          "title": "Yes, it is registered"
+        }
+      },
+      "reminderNotice": "Until you declare the registration, CasaZen sends an e-mail reminder to the landlords who gave an address. If the contract is already registered, choose “Yes” and declare it after adding it.",
+      "submit": "Add the contract"
+    },
+    "loadError": "Could not open the lease wizard. Try again.",
+    "needs": {
+      "ape_identification_missing": "Enter the code and energy class of the APE",
+      "ape_missing": "The APE (energy performance certificate) of the property is missing",
+      "ape_ok": "APE on file",
+      "cadastral_missing": "The cadastral data of the property are missing",
+      "cadastral_ok": "Cadastral data on file",
+      "cedolare_not_allowed_company": "With a company as tenant the cedolare secca is not allowed: choose the ordinary regime",
+      "concordato_data_invalid": "The data of the property for the canone concordato are not valid",
+      "concordato_data_missing": "The data of the property for the canone concordato are missing",
+      "concordato_unavailable": "The territorial agreement data of the comune are missing for the canone concordato",
+      "contract_type_missing": "Choose the type of lease",
+      "deposit_invalid": "The deposit is not valid: zero or more, with at most two decimals",
+      "deposit_missing": "Enter the security deposit (0 if there is none)",
+      "deposit_ok": "Deposit: {{amount}} ({{rents}} monthly rents)",
+      "deposit_too_high": "The deposit can be at most {{max}} × the monthly rent ({{amount}})",
+      "documents_not_verified": "Before the signature check an identity document of each party: CasaZen does not keep it",
+      "end_invalid": "The last day of the lease is not a valid date",
+      "end_missing": "Enter the last day of the lease",
+      "landlord_incomplete": "Landlord {{n}}: complete {{fields}}",
+      "landlord_missing": "Add the landlord (who lets the property)",
+      "landlords_ok_one": "{{count}} landlord with all the data",
+      "landlords_ok_other": "{{count}} landlords with all the data",
+      "lease_overlap_one": "There is already {{count}} other lease on this property in the same dates",
+      "lease_overlap_other": "There are already {{count}} other leases on this property in the same dates",
+      "lease_type_not_available": "This type of lease is not available yet",
+      "party_fiscal_code_duplicate": "The same fiscal code appears more than once in the lease: change the one of the later entries",
+      "property_missing": "Choose the property of the lease",
+      "property_ok": "Property chosen",
+      "property_short_mode": "The property is let for short stays: it has to move to long stays to be used in a long-term lease",
+      "rent_in_band": "The rent is within the range of the agreement ({{minMonthly}} to {{maxMonthly}} a month)",
+      "rent_invalid": "The rent is not valid: it must be more than zero, with at most two decimals",
+      "rent_missing": "Enter the monthly rent",
+      "rent_ok": "Rent: {{amount}} a month",
+      "rent_out_of_band": "The rent is outside the range of the agreement: from {{minMonthly}} to {{maxMonthly}} a month",
+      "rent_outside_indicative_band": "The rent is outside the indicative range of the agreement ({{minMonthly}} to {{maxMonthly}} a month)",
+      "review_not_confirmed": "Confirm the review",
+      "start_in_past": "The start date has already passed: the registration deadline runs from the start of the lease",
+      "start_invalid": "The start date is not valid",
+      "start_missing": "Enter the start date of the lease",
+      "start_ok": "Start of the lease: {{start}}",
+      "start_ok_term": "From {{start}} to {{end}} ({{months}} months)",
+      "tax_regime_missing": "Choose the tax regime",
+      "template_data_missing": "The lease template lacks some data: check the preview",
+      "template_not_approved": "The CasaZen lease template is still a draft: you will be able to download the lease to sign when it is approved",
+      "tenant_extra_eu": "A tenant is not a citizen of the European Union: after the keys are handed over the communication to the Questura is due",
+      "tenant_incomplete": "Tenant {{n}}: complete {{fields}}",
+      "tenant_missing": "Add the tenant (who rents the property)",
+      "tenants_ok_one": "{{count}} tenant with all the data",
+      "tenants_ok_other": "{{count}} tenants with all the data",
+      "term_out_of_range": "The term is not allowed for this type of lease: {{reason}}",
+      "transitory_documentation_missing": "Say which documents you attach to prove the need",
+      "transitory_documentation_too_long": "The documentation is too long: at most {{characters}} characters",
+      "transitory_need_missing": "Write which need justifies the transitory lease",
+      "transitory_party_missing": "Say who has the need: the landlord or the tenant",
+      "transitory_rent_band_to_check": "In municipalities with more than {{inhabitants}} inhabitants the rent of a transitory lease must fall within the bands of the territorial agreement: check it before signing. If it does not, the lease is brought back to the ordinary term of a free-rent lease",
+      "unknown": "Something in this step still needs a look"
+    },
+    "parties": {
+      "citizenship": "Citizenship",
+      "citizenshipChoose": "Choose the country",
+      "citizenshipHint": "Needed for the communication to the Questura if the tenant is not a citizen of the European Union.",
+      "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
+      "contactEmail": "Email",
+      "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "countriesEu": "European Union",
+      "countriesOther": "Other countries",
+      "firstName": "First name",
+      "fiscalCode": "Fiscal code or VAT number",
+      "fiscalCodeHint": "16 characters for a person, 11 digits for a company.",
+      "landlord": {
+        "add": "Add another landlord",
+        "description": "The owner who signs the lease. We start from your data, if we have it.",
+        "item": "Landlord {{n}}",
+        "remove": "Remove landlord {{n}}",
+        "title": "Who lets (landlord)"
+      },
+      "lastName": "Last name",
+      "max": "You can add {{max}} at most.",
+      "remove": "Remove",
+      "residence": "Residence or registered office",
+      "residenceHint": "Town and address; for a company, the registered office.",
+      "tenant": {
+        "add": "Add another tenant",
+        "description": "A person or a company. You can add more than one.",
+        "item": "Tenant {{n}}",
+        "remove": "Remove tenant {{n}}",
+        "title": "Who rents (tenant)"
+      }
+    },
+    "property": {
+      "addNew": "Add a new property",
+      "address": "Address and details of the property",
+      "ape": "APE (energy performance certificate)",
+      "apeMissingImported": "The APE is missing: for a lease already signed this is a notice, you can upload it later.",
+      "cadastral": "Cadastral data",
+      "cadastralAdd": "Add them on the property page",
+      "importedNotice": "The lease is already signed: we tell you if the APE or the cadastral data are missing, but they do not stop you.",
+      "requirementsTitle": "What the lease needs",
+      "shortMode": "This property is let for short stays. You can prepare the lease, but to use it the property has to move to long stays."
+    },
+    "reasons": {
+      "lease_end_before_start": "the end must be after the start",
+      "lease_term_too_long": "it is too long (at most {{maxMonths}} months)",
+      "lease_term_too_short": "it is too short (at least {{minMonths}} months)"
+    },
+    "review": {
+      "blocked_one": "{{count}} thing has to be put right before you can confirm.",
+      "blocked_other": "{{count}} things have to be put right before you can confirm.",
+      "confirmFailed": "Could not confirm the review. Try again.",
+      "confirmed": "Review confirmed on {{date}}. If you change something in the earlier steps you will have to confirm it again.",
+      "confirmedToast": "Review confirmed",
+      "goToStep": "Go to the step",
+      "group": {
+        "Block": "To put right",
+        "Info": "Good to know",
+        "Ok_one": "All good ({{count}})",
+        "Ok_other": "All good ({{count}})",
+        "Warn": "To check"
+      },
+      "loadError": "Could not check the lease.",
+      "loading": "Checking the lease…",
+      "ready": "All good: you can confirm the review."
+    },
+    "save": {
+      "error": "Could not save",
+      "retry": "Try again",
+      "saved": "Saved at {{time}}",
+      "saving": "Saving…"
+    },
+    "sign": {
+      "dataMissing": "Some data the contract model needs are missing: open “Read the preview” to see which ones (they are marked DATO MANCANTE) and complete them in the earlier steps.",
+      "download": "Download to sign",
+      "downloadAgain": "Download again",
+      "lines": {
+        "print": "Print the contract.",
+        "sign": "Have every party sign it by hand, on every page.",
+        "upload": "Upload the signed copy here."
+      },
+      "preview": "Read the preview (not valid for signing)",
+      "revoke": "Cancel the download to make changes",
+      "revokeFailed": "I could not cancel the download. Try again.",
+      "revokedToast": "Download cancelled: you can change the contract",
+      "sentBadge": "Being signed",
+      "sentText": "The contract has been downloaded. Have every party sign it by hand and upload the signed copy here.",
+      "sentToast": "Contract downloaded to be signed",
+      "templateInApproval": "The contract template is being approved: you can read the preview but not yet download the contract to sign.",
+      "upload": "Upload the signed copy"
+    },
+    "start": {
+      "back": "Back",
+      "changeKind": "Change type of lease",
+      "concordato": {
+        "documents": {
+          "title": "I already have the lease and the documents"
+        },
+        "legend": "Do you already have the lease and the documents?",
+        "noProperties": "You have no long-term property yet: add the property to create the lease.",
+        "whatHappens": "We save the draft of the contract and take you to a page of its own: you enter parties, rent and term in the guided form.",
+        "zero": {
+          "description": "You activate the service and fill in the guided form: the contract is born there.",
+          "soon": "Available soon.",
+          "title": "I start from scratch"
+        }
+      },
+      "kind": {
+        "concordato": {
+          "title": "Agreed rent (3+2)"
+        },
+        "description": "First choose the type of lease: how we prepare it depends on it.",
+        "legend": "What lease do you want to make?",
+        "libero": {
+          "title": "Free rent (4+4)"
+        },
+        "transitorio": {
+          "title": "Transitional"
+        }
+      },
+      "other": {
+        "casazen": {
+          "description": "We guide you step by step: you prepare the lease here and have it signed.",
+          "title": "I prepare it with CasaZen",
+          "unavailable": {
+            "libero": "CasaZen has no lease template for the free-rent type yet: if you already have the lease, upload it.",
+            "transitorio": "CasaZen has no lease template for the transitional type yet: if you already have the lease, upload it."
+          }
+        },
+        "documents": {
+          "title": "I already have the documents"
+        },
+        "legend": "How do you want to proceed?"
+      }
+    },
+    "stepper": {
+      "label": "Steps of the lease"
+    },
+    "steps": {
+      "1": {
+        "label": "Property"
+      },
+      "2": {
+        "label": "Parties"
+      },
+      "3": {
+        "label": "Terms"
+      },
+      "4": {
+        "label": "Dates"
+      },
+      "6": {
+        "label": "Review"
+      },
+      "7": {
+        "Created": {
+          "label": "Signature"
+        },
+        "Imported": {
+          "label": "Signed contract"
+        }
+      },
+      "8": {
+        "label": "After the signature"
+      }
+    },
+    "terms": {
+      "deposit": "Security deposit (€)",
+      "depositMax": "At most {{max}} × the monthly rent: {{amount}}",
+      "depositNone": "If there is none, enter 0.",
+      "depositTooHigh": "The deposit is over the limit: {{max}} × the monthly rent, that is {{amount}}",
+      "regime": {
+        "companyNotAllowed": "A tenant is a company: with the cedolare secca the lease cannot be confirmed. Choose the ordinary regime.",
+        "help": "Not sure which to pick?",
+        "helpText": "The cedolare secca is a substitute tax on the rent; with the ordinary regime the rent is part of your income. Ask your accountant to decide.",
+        "helpTitle": "Cedolare secca",
+        "legend": "Tax regime"
+      },
+      "rent": "Monthly rent (€)"
+    },
+    "title": "Create lease",
+    "transitory": {
+      "documentation": {
+        "hint_one": "The lease lasts more than {{count}} day: the need must be proved with documents attached to the lease (for example an employment letter). Write which.",
+        "hint_other": "The lease lasts more than {{count}} days: the need must be proved with documents attached to the lease (for example an employment letter). Write which.",
+        "label": "Documents you attach"
+      },
+      "endLabel": "Last day of the lease",
+      "intro": "A transitory lease can only be made for a precise, temporary need, written in the lease.",
+      "need": {
+        "hint": "Write it in a few words. It must be one of the needs listed in the territorial agreement of the municipality of the property (for example work, study or training for a limited period).",
+        "label": "Which need"
+      },
+      "party": {
+        "Landlord": {
+          "description": "Whoever rents the property out: for example they will need it back soon.",
+          "title": "The landlord"
+        },
+        "Tenant": {
+          "description": "Whoever takes the property: for example they work or study here for a while.",
+          "title": "The tenant"
+        },
+        "legend": "Who has the need"
+      },
+      "summaryEnds": "At the end of the term the lease ends by itself: it does not renew and no notice is needed.",
+      "title": "The need that justifies the lease"
+    },
+    "type": {
+      "chosen": "You chose it at the start.",
+      "description": {
+        "Created": {
+          "Concordato": "You prepare it here, step by step.",
+          "Libero": "You prepare it here, step by step.",
+          "Studenti": "You prepare it here, step by step.",
+          "Transitorio": "You prepare it here, step by step."
+        },
+        "Imported": {
+          "Concordato": "A canone concordato lease already signed.",
+          "Libero": "A canone libero lease already signed.",
+          "Studenti": "A student lease already signed.",
+          "Transitorio": "A transitory lease already signed."
+        },
+        "blocked": {
+          "Concordato": "Not available yet.",
+          "Libero": "Not available yet.",
+          "Studenti": "Not available yet.",
+          "Transitorio": "Not available yet."
+        },
+        "partner": {
+          "Concordato": "It is prepared with the guided form: choose «Canone concordato» when you create a new lease."
+        }
+      },
+      "legend": "Type of lease",
+      "students": "Student lease"
+    },
+    "validation": {
+      "citizenship": "Choose the citizenship from the list",
+      "date": "Not a valid date",
+      "deposit": "The deposit must be zero or more, with at most two decimals",
+      "email": "Not a valid email address",
+      "endAfterStart": "The end must be after the start",
+      "fiscalCode": "Not a valid fiscal code or VAT number",
+      "property": "Choose the property",
+      "rent": "The rent must be more than zero, with at most two decimals"
+    }
   },
   "revenue": {
     "pageTitle": "Revenue analytics",
@@ -7751,6 +8477,8 @@
       "hostInvites": "invite|invitation|invitations|new host|referral|add host",
       "jobs": "jobs|queues|automations|background processes|scheduled tasks",
       "leases": "rentals|contracts|tenants|rent|deadlines|lease",
+      "longRentDeadlines": "dates|reminders|registration|notice|renewal|questura",
+      "longRentOverview": "home|today|start|summary|now|what to do|overview",
       "ltrReferenceData": "agreed rent|zones|territorial agreements|regulatory data",
       "marketing": "campaigns|promotion|newsletter",
       "marketplace": "services|suppliers|cleaning|maintenance|apps",
@@ -7759,8 +8487,10 @@
       "payments": "payments|income|money|transactions|stripe|collections",
       "profile": "account|personal details|password|user|my profile",
       "properties": "houses|apartments|listings|accommodations|villas|real estate",
+      "rents": "rents|rent|late|overdue|reminders|month",
       "revenue": "revenue|turnover|earnings|reports|statistics|trends",
       "seo": "content|articles|guides|search engines|publications",
+      "serviceRequests": "jobs|repairs|maintenance|plumber|electrician|breakdowns|cleaning",
       "siteAppearance": "colors|logo|theme|graphics|look|style",
       "siteDocuments": "documents|terms|privacy|conditions|house rules",
       "stripeConnect": "stripe|online payments|iban|payout|bank transfers|cards",
@@ -9022,6 +9752,12 @@
       "leasePartiesTooMany": "Too many parties for one role: at most 10 landlords and 10 tenants.",
       "leaseLandlordRequired": "The lease needs at least one landlord.",
       "leaseTenantRequired": "The lease needs at least one tenant.",
+      "leaseNotDraft": "This contract is no longer a draft: it may already have been added or signed.",
+      "leaseDraftConflict": "The contract is busy or was changed elsewhere. Reload the page and try again.",
+      "leaseImportNotImportedOrigin": "A contract made in CasaZen cannot be added as already signed: it is signed from its template.",
+      "leaseReviewBlocked": "Some data are still missing in the earlier steps: check them and try again.",
+      "leaseReviewNotConfirmed": "Before downloading the contract to sign you have to confirm the review.",
+      "questuraDeliveryDateLocked": "The delivery date can no longer be changed: the Questura communication has already been declared.",
       "propertyCoordinatesInvalid": "The coordinates are not valid: the latitude must be between -90 and 90 and the longitude between -180 and 180.",
       "serviceRequestSupplierNotActive": "Your supplier account is not active (it is suspended or not yet activated): you cannot act on requests. Contact CasaZen support.",
       "supplierSuspended": "Your supplier account is suspended: you cannot complete the activation. Contact CasaZen support.",
@@ -9065,10 +9801,17 @@
       "rentInstallmentNotPayable": "The installment is already paid or can no longer be paid.",
       "rentInstallmentInFlight": "An online payment of the installment is in progress: wait for Stripe's outcome.",
       "rentOnlinePaymentsUnavailable": "To request online payments, connect a Stripe account enabled for charges.",
-      "rentNoTenantEmail": "No tenant has an email address to send the payment request to.",
+      "rentNoTenantEmail": "No tenant of this lease has an email address to write to.",
       "rentPaymentRequestNotSent": "The payment request was not sent: the email service is unavailable.",
       "rentPaidOnInvalid": "Enter a valid payment date, not in the future.",
       "rentPaymentLinkInvalid": "The payment link is not valid or was replaced by a newer one.",
+      "rentReminderTooSoon": "You sent a reminder for this rent a short while ago: you can send another one later.",
+      "rentReminderNotSent": "The reminder was not sent: the email service is unavailable. Try again later.",
+      "rentReminderNoteInvalid": "The message to the tenant can have at most 300 characters.",
+      "rentInstallmentNotFound": "This rent no longer exists: reload the page.",
+      "rentRegisterMonthInvalid": "The month you chose is not valid.",
+      "rentRegisterStatusUnknown": "The filter you chose is not valid.",
+      "rentTrackFromInvalid": "The day to track the rents from cannot be after the end of the lease.",
       "hostInviteQuotaExceeded": "You have reached today's invitation limit. Try again tomorrow.",
       "hostEmailTaken": "This email already has a CasaZen account: no need to invite it.",
       "consentsIncomplete": "To come in you have to accept all the required documents.",
@@ -9098,8 +9841,19 @@
       "orgSeatLimitReached": "You have used all the seats of the plan: deactivate someone who no longer works with you or move to a plan with more seats.",
       "staleDocuments": "The legal documents have been updated: reload the page and accept them again.",
       "threadClosed": "This conversation is closed: no more messages can be written.",
+      "concordatofacileAlreadyPurchased": "The guided form is already paid for or activated on this contract: there is no need to pay again. If the access does not show up right away, try again in a moment.",
       "guestMessageTextInvalid": "Write a message: it cannot be empty or longer than 2000 characters.",
-      "idempotencyKeyInvalid": "The message was not sent correctly. Try again."
+      "idempotencyKeyInvalid": "The message was not sent correctly. Try again.",
+      "leaseAlreadyTerminated": "This lease has already ended.",
+      "leaseBusy": "The lease is busy with another operation. Try again in a few seconds.",
+      "leaseNoticeAlreadyRecorded": "A notice is already recorded for this lease.",
+      "leaseNoticeDateInvalid": "The day of the notice must be between the start of the lease and today.",
+      "leaseNotDeletable": "This draft cannot be deleted: it already has a signed copy or a rent plan.",
+      "leaseNotFound": "Lease not found.",
+      "leaseNotInForce": "The lease is not in force yet: every party has to sign it.",
+      "leaseTermAlreadyEnded": "The period of the lease has already ended: the notice can no longer be withdrawn.",
+      "leaseTerminationDateInvalid": "The last day must be between the start of the lease and the end of the current period.",
+      "leaseTypeHasNoRenewal": "This type of lease ends by itself on its end date: no notice is needed."
     }
   },
   "appShell": {
@@ -10064,6 +10818,49 @@
     "empty": "No service categories available.",
     "unknownWillBeRemoved": "These categories are no longer valid and will be removed when you save: {{values}}"
   },
+  "longRentFiscal": {
+    "title": "Tax report",
+    "description": "Rent for the year and estimated taxes per lease, ready for your accountant.",
+    "yearsLabel": "Year",
+    "download": "Download the {{year}} summary",
+    "downloaded": "{{year}} summary downloaded.",
+    "downloadFailed": "The summary could not be downloaded. Please try again.",
+    "loadError": "The tax report could not be loaded. Please try again.",
+    "estimate": {
+      "title": "Estimate to be checked with your accountant",
+      "text": "Indicative figures on the rent accrued: they do not take into account other income, deductions or surcharges. Accrual counts whole months and the rent collected is only what is recorded in CasaZen."
+    },
+    "stats": {
+      "label": "Summary of the year",
+      "accrual": "Rent accrued in {{year}}",
+      "collected": "Collected, as recorded in CasaZen",
+      "cedolare_one": "Estimated cedolare secca · {{count}} lease",
+      "cedolare_other": "Estimated cedolare secca · {{count}} leases",
+      "cedolareNone": "Estimated cedolare secca · no lease"
+    },
+    "columns": {
+      "contract": "Lease",
+      "regime": "Regime",
+      "accrual": "Accrued",
+      "collected": "Collected (recorded)",
+      "tax": "Estimated tax"
+    },
+    "accrualDetail_one": "{{count}} month × {{rent}} a month",
+    "accrualDetail_other": "{{count}} months × {{rent}} a month",
+    "collectedNone": "not recorded in CasaZen",
+    "collectedFrom": "recorded since {{month}}",
+    "taxRate": "cedolare {{rate}}",
+    "notEstimated": "Not estimated",
+    "notEstimatedOrdinary": "depends on total income",
+    "notEstimatedUnknown": "tax regime not recorded",
+    "toCheck": "to be checked: see “Good to know”",
+    "notesTitle": "Good to know",
+    "empty": {
+      "title": "No lease in force in {{year}}",
+      "description": "As soon as a signed lease is in force, you find its rent and estimated taxes here, ready for your accountant.",
+      "action": "Go to the leases"
+    }
+  },
   "longRentProperties": {
     "retry": "Retry",
     "list": {
@@ -10531,6 +11328,19 @@
       "notePlaceholder": "E.g. bank transfer of 3 October",
       "submit": "Record the payment"
     },
+    "onlineRequests": {
+      "hint": "On: a few days before each due date the tenants get an email with the link to pay online. Off: we write to no one unless you send a reminder or the link yourself.",
+      "label": "Ask the tenants to pay online",
+      "needsStripe": "To turn it on, connect a Stripe account enabled for charges first.",
+      "summaryOff": "Online payment requests are off: we do not write to the tenants unless you send a reminder or the link.",
+      "summaryOn": "Online payment requests are on: the tenants get the link a few days before each due date."
+    },
+    "trackFrom": {
+      "fromStart": "From the start of the lease",
+      "hint": "For a lease that already started, the installments of past periods are not counted: no late rent is made up. Choose “From the start of the lease” only if you want to record those too.",
+      "label": "Track from",
+      "summary": "Rents tracked from {{month}}: earlier periods have no installment."
+    },
     "scheduleSaved": "Rent schedule saved",
     "scheduleDisabled": "Schedule disabled",
     "markedPaid": "Payment recorded",
@@ -10592,6 +11402,1236 @@
         "hint": "We guide you through signing and registration, with flat-rate tax and deadlines.",
         "cta": "Create lease"
       }
+    }
+  },
+  "longRentRents": {
+    "actions": {
+      "openLease": "View lease",
+      "record": "Record payment",
+      "recordNew": "Record a payment",
+      "remind": "Send reminder",
+      "reminding": "Reminder on its way…"
+    },
+    "alreadyHeld": "This is already on its way.",
+    "cancel": "Cancel",
+    "chips": {
+      "all": "All",
+      "overdue": "Late",
+      "overdueHint": "Rents past their due date and not paid",
+      "paid": "Paid",
+      "paidHint": "Rents collected",
+      "pending": "Coming due",
+      "pendingHint": "To collect, not yet past their due date"
+    },
+    "columns": {
+      "amount": "Amount",
+      "due": "Due date",
+      "reminder": "Last reminder",
+      "status": "Status",
+      "tenant": "Tenant"
+    },
+    "count_one": "{{count}} rent",
+    "count_other": "{{count}} rents",
+    "description": "Who has paid, who still has to and who is late, month by month.",
+    "empty": {
+      "description": "Change month with the arrows: each rent shows in the month it is due.",
+      "noContractsAction": "Create lease",
+      "noContractsDescription": "As soon as you create a lease and set up its rent, you see here who has paid, who has to pay and who is late.",
+      "noContractsTitle": "Follow the rents of every month here",
+      "title": "No rent this month"
+    },
+    "loadError": "Unable to load the rents.",
+    "month": {
+      "group": "Choose the month",
+      "label": "Month",
+      "next": "Next month",
+      "previous": "Previous month"
+    },
+    "noResults": {
+      "description": "Try removing the filter to see all the rents of the month.",
+      "title": "No rent with this status"
+    },
+    "pay": {
+      "date": "Date received",
+      "dateInvalid": "Enter a date no later than today ({{today}}).",
+      "description": "Rent of {{amount}} from {{tenant}}, period from {{from}} to {{to}}, paid outside CasaZen. You record the whole installment.",
+      "descriptionGeneral": "Choose the lease and the rent you received outside CasaZen (bank transfer, cheque, cash).",
+      "done": "Payment recorded: {{amount}} from {{tenant}}",
+      "held": "Recording the payment of {{amount}} from {{tenant}}",
+      "heldHint": "Undo if you got it wrong: in a few seconds it is recorded.",
+      "installment": "Rent",
+      "installmentOption": "Due {{due}} · {{amount}}",
+      "lease": "Lease",
+      "leasePlaceholder": "Choose the lease",
+      "loadError": "Unable to load the leases and their rents.",
+      "loading": "Loading the leases…",
+      "method": "How they paid",
+      "methodHint": "It stays written in the note of the payment.",
+      "methodNone": "I do not say",
+      "methods": {
+        "bank": "Bank transfer",
+        "cash": "Cash",
+        "cheque": "Cheque"
+      },
+      "noOpenInstallment": "This lease has no rent to collect.",
+      "noneToCollect": "No lease has a rent to collect.",
+      "overdue": "late",
+      "submit": "Record the payment",
+      "title": "Record a payment",
+      "wholeInstallment": "Amount: {{amount}}, the whole installment."
+    },
+    "reminder": {
+      "description": "{{tenant}} · {{property}}: rent of {{amount}}, due {{date}}.",
+      "held": "Reminder to {{tenant}} on its way",
+      "heldHint": "Undo if you changed your mind: the email leaves in a few seconds.",
+      "interval_one": "You can send a reminder for the same rent every {{count}} hour.",
+      "interval_other": "You can send a reminder for the same rent every {{count}} hours.",
+      "noteHint": "It shows in the email as a message from you.",
+      "noteLabel": "Message for the tenant",
+      "notePlaceholder": "E.g. Please pay by bank transfer by Friday",
+      "previewBodyDue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, is due by {{date}} and is not yet paid.",
+      "previewBodyOverdue": "The tenant is reminded that the rent of {{amount}} for {{property}}, period from {{from}} to {{to}}, was due on {{date}} and is not yet paid.",
+      "previewLabel": "Preview of the email",
+      "previewSubject": "Subject: Promemoria canone di locazione - {{property}}, scadenza {{date}} (the email is written in Italian)",
+      "previewWithLink": "The email has the link to pay online.",
+      "previewWithoutLink": "The email has no link: the tenant pays the way you agreed.",
+      "sent_one": "Reminder sent to {{count}} tenant",
+      "sent_other": "Reminder sent to {{count}} tenants",
+      "submit": "Send reminder",
+      "title": "Send a reminder",
+      "whoGetsIt": "The email goes to the tenants of the lease who have an email address; after it is sent we tell you how many."
+    },
+    "retry": "Retry",
+    "row": {
+      "dueIn_one": "Due in {{count}} day",
+      "dueIn_other": "Due in {{count}} days",
+      "dueToday": "Due today",
+      "failed": "Last online payment failed",
+      "lastReminder_one": "{{when}} · {{count}} time",
+      "lastReminder_other": "{{when}} · {{count}} times",
+      "on": "on {{date}}",
+      "overdue_one": "Late by {{count}} day",
+      "overdue_other": "Late by {{count}} days",
+      "overdueToday": "Past due",
+      "paidOn": "Paid on {{date}}",
+      "period": "Period {{from}} – {{to}}",
+      "processing": "Online payment in progress",
+      "today": "today",
+      "yesterday": "yesterday"
+    },
+    "stats": {
+      "collected": "Collected in {{month}}",
+      "collectedDelta_one": "of {{expected}} expected · {{paid}} of {{count}} rent",
+      "collectedDelta_other": "of {{expected}} expected · {{paid}} of {{count}} rents",
+      "label": "The numbers of the month",
+      "noOverdue": "Nothing late",
+      "nothingPending": "Nothing left to collect",
+      "overdue": "Late",
+      "overdueDelta_one": "{{count}} rent",
+      "overdueDelta_other": "{{count}} rents",
+      "pending": "Still to collect",
+      "pendingDelta_one": "{{count}} rent not yet due",
+      "pendingDelta_other": "{{count}} rents not yet due"
+    }
+  },
+  "leaseFlow": {
+    "actor": {
+      "Landlord": "Your turn",
+      "System": "CasaZen takes care of it",
+      "Tenant": "The tenant's turn"
+    },
+    "due": {
+      "byIn_one": "By {{date}} · in {{count}} day",
+      "byIn_other": "By {{date}} · in {{count}} days",
+      "overdue_one": "Overdue by {{count}} day",
+      "overdue_other": "Overdue by {{count}} days",
+      "today": "By today",
+      "tomorrow": "By tomorrow"
+    },
+    "nextStep": {
+      "ActivateRentPlan": {
+        "action": "Turn on the plan",
+        "detail": "So you can see who has paid and who is late.",
+        "title": "Turn on the rent plan"
+      },
+      "AllGood": {
+        "action": "Open the lease",
+        "title": "All in order"
+      },
+      "Archive": {
+        "action": "Open the lease",
+        "title": "The lease has ended"
+      },
+      "AwaitPartnerContract": {
+        "action": "Open the lease",
+        "detail": "The contract of this draft is prepared with the guided form.",
+        "title": "Wait for the contract"
+      },
+      "ChooseProperty": {
+        "action": "Choose the property",
+        "detail": "The property of the draft is no longer available.",
+        "title": "Choose the property of the lease"
+      },
+      "CompleteStep": {
+        "action": "Complete the draft",
+        "detail": "Step {{step}} of 5 still has something missing.",
+        "title": "Complete the draft of the lease"
+      },
+      "ConfirmReview": {
+        "action": "Check and confirm",
+        "detail": "All the data is there: read the preview before you have it signed.",
+        "title": "Check the lease and confirm"
+      },
+      "DecideNotice": {
+        "action": "Open the lease",
+        "detail": "If nobody gives notice by the last day, the lease renews by itself.",
+        "title": "Decide whether to give notice"
+      },
+      "DownloadForSignature": {
+        "action": "Download the lease",
+        "detail": "Then you upload the signed copy here.",
+        "title": "Download the lease and have it signed"
+      },
+      "ImportSignedContract": {
+        "action": "Upload the lease",
+        "detail": "You need the signed PDF and the day it was signed.",
+        "title": "Upload the signed lease"
+      },
+      "OrganizeEnd": {
+        "action": "Open the lease",
+        "detail": "The lease ends and does not renew.",
+        "title": "Plan the end of the lease"
+      },
+      "QuesturaCommunication": {
+        "action": "Go to the communication",
+        "detail": "The tenant is non-EU: it must be made within 48 hours of the delivery of the property.",
+        "title": "Make the communication to the Questura"
+      },
+      "RecordKeyHandover": {
+        "action": "Record the handover",
+        "detail": "The 48 hours for the communication to the Questura count from that day.",
+        "title": "Record when you handed over the keys"
+      },
+      "RegisterLease": {
+        "action": "Register the lease",
+        "title": "Register the lease"
+      },
+      "SendRentReminder": {
+        "action": "Go to the rents",
+        "detail_one": "{{amount}} in all, the oldest overdue by {{count}} day.",
+        "detail_other": "{{amount}} in all, the oldest overdue by {{count}} days.",
+        "title_one": "A rent is late",
+        "title_other": "{{count}} rents are late"
+      },
+      "UploadSignedCopy": {
+        "action": "Upload the signed copy",
+        "detail": "The lease was downloaded for signing: the signed copy is missing.",
+        "title": "Upload the signed copy"
+      },
+      "unknown": {
+        "action": "Open the lease",
+        "title": "This lease has a step to take"
+      }
+    }
+  },
+  "leaseGuide": {
+    "advice": {
+      "cedolareNoIstat": {
+        "action": "Read the information sheet of the Agenzia",
+        "body": "As long as the option lasts you cannot ask for the ISTAT update of the rent, even if the contract provides for it. Our contract model already says so.",
+        "title": "With the cedolare secca the rent is not updated",
+        "why": "By choosing the cedolare secca you give up updates of the rent for the whole duration of the option. In our models the waiver is written in the contract and counts as notice to the tenant. If you use another contract, or you are in doubt, ask your accountant whether a registered letter is needed as well."
+      },
+      "concordatoAta": {
+        "action": "See the comparison",
+        "body": "If it is, the cedolare secca is lower and the registration tax is worked out on a reduced base. CasaZen has not confirmed your municipality yet: ask your accountant to check.",
+        "title": "Is your municipality 'high housing tension'?",
+        "why": "High-housing-tension municipalities are the ones with a shortage of homes: the big cities and the municipalities next to them, the provincial capitals and others listed by the CIPE. Only there does the canone concordato get the reduced cedolare secca and the reduced base for the registration tax. CasaZen's list is not complete: a municipality that is not on it might be."
+      },
+      "concordatoAttestation": {
+        "action": "Who can issue it",
+        "body": "To get the benefits of a canone concordato made without the help of the associations you need the attestation, issued by the organizations of the agreement of your municipality.",
+        "title": "You need the attestation of conformity",
+        "why": "The attestation says that the contract respects the agreement of the municipality and is the condition for every benefit in contracts made without assistance: without it they can be lost. CasaZen cannot issue it: it tells you who to ask. How many organizations must sign it is decided by the agreement: in Monza e Brianza two are needed, one for the owners and one for the tenants."
+      },
+      "concordatoAttestationService": {
+        "action": "Upload the attestation",
+        "body": "The service that prepares the contract gets the attestation of conformity for you: it is needed for the benefits. When you receive it, upload it among the Documents.",
+        "title": "The attestation comes with the contract",
+        "why": "The attestation says that the contract respects the agreement of the municipality and is the condition for the benefits of the canone concordato. Keep it with the signed contract and the registration receipt: your accountant and the municipality will ask for them."
+      },
+      "concordatoCommission": {
+        "action": "See the organizations",
+        "body": "For doubts about the rent, its update or the expenses you can ask the joint commission of the organizations of the agreement to step in, before going to court. It does not suspend the duty to pay the rent.",
+        "title": "If doubts arise about the rent or the expenses",
+        "why": "The commission is provided for by the 2017 decree and by the agreement of the municipality: it is made of representatives of owners and tenants and helps to reach an understanding. Our contract model mentions it in the article on disputes. Here you find the organizations of the agreement."
+      },
+      "concordatoDuration": {
+        "action": "See the dates",
+        "body": "The contract lasts {{termMonths}} months; then, unless notice is given for a reason provided by law, it is extended by right for another {{renewalMonths}} months.",
+        "title": "3+2: what happens at the end?",
+        "why": "In the canone concordato the minimum term is {{termMonths}} months. At the first expiry, unless the parties agree otherwise, the contract is extended by right for {{renewalMonths}} months, except for the landlord's notice for one of the reasons set by law, in writing, stating the reason, at least {{noticeMonths}} months before. At the end of the extension each party can ask for a renewal on new terms or give it up."
+      },
+      "concordatoFirstExpiry": {
+        "action": "Record a notice",
+        "body": "Unless notice is given for a reason provided by law, the contract is extended by right for another {{renewalMonths}} months. Notice must be in writing, stating the reason, at least {{noticeMonths}} months before.",
+        "title": "At the first expiry the contract is extended",
+        "why": "In the canone concordato the extension is by right, except for the landlord's notice for the reasons set by law, given in writing with the reason stated and with the required notice period. CasaZen does not judge whether a notice is valid: it records it and reminds you of the dates."
+      },
+      "concordatoImu": {
+        "action": "Prepare the communication",
+        "body": "The reduced IMU does not start by itself: each municipality has its own form and address. Here you prepare the communication with the data of the contract, you send it, and you record when you did.",
+        "title": "Tell the municipality that the rent is a canone concordato",
+        "why": "Registration and the cedolare secca do not turn on the IMU discount: a communication to the municipality is needed, and the way to do it changes from one municipality to another. CasaZen prepares the document with the data of the contract and the address of the municipality, but does not send it: you send it, then you mark it as sent."
+      },
+      "concordatoRentCheck": {
+        "action": "Check the rent",
+        "body": "In a canone concordato the rent stays within bands that depend on the zone, the square metres and the features of the home. Work out the limit with the data of the home.",
+        "title": "Does the rent respect the agreement of the municipality?",
+        "why": "The bands are set by the agreement between the owners' and the tenants' associations of your municipality. CasaZen currently has the data of the agreements of some municipalities; for the others it cannot work out the limit and you have to ask a signatory association. The result is an estimate: the attestation is issued by the association."
+      },
+      "concordatoRentOutOfRange": {
+        "action": "Check the rent",
+        "body": "With the data entered, the rent is not within the band of the agreement of the municipality. If the limits are not respected, the benefits of the canone concordato may be lost.",
+        "title": "The rent is outside the limits of the agreement",
+        "why": "The rent of a canone concordato must be within the bands of the agreement of the municipality, which depend on zone, square metres, features and duration. The attestation, which is needed for the benefits, confirms precisely that the rent respects the agreement. Check the data of the home or correct the rent; if the values of the agreement are indicative, confirm them with a signatory association."
+      },
+      "depositMax": {
+        "action": "Check the deposit",
+        "body": "At most {{depositMaxRents}} months of rent. The deposit earns legal interest in favour of the tenant.",
+        "title": "How much security deposit can you ask for?",
+        "why": "The limit of {{depositMaxRents}} months applies to the security deposit of a residential lease. The legal interest belongs to the tenant: in our models you pay it every year in the 4+4 and the 3+2 and at the end of the lease in the transitory one. The tenant cannot use the deposit to pay the rent."
+      },
+      "depositOverMax": {
+        "action": "Check the data",
+        "body": "Your deposit is about {{depositMonths}} months of rent and the maximum is {{depositMaxRents}}. Talk to your accountant to fix the part above the limit.",
+        "title": "The deposit is above the maximum",
+        "why": "A deposit above {{depositMaxRents}} months cannot be asked for. CasaZen does not change the deposit of a contract that is already set up: it has to be fixed with the tenant, with the help of your accountant or of a lawyer."
+      },
+      "depositReturn": {
+        "action": "Open the Documents",
+        "body": "After checking the home, give the deposit back with the legal interest. You can keep only what you document: unpaid rent or expenses and damage beyond normal use.",
+        "title": "Give the deposit back after the handover",
+        "why": "The deposit secures the tenant's obligations and must be given back at the end, after checking the state of the property. From the sum you can deduct, listing them in writing and with documents, the amounts still owed and the damage beyond normal wear. The time limit to give it back is written in your contract."
+      },
+      "documentsToKeep": {
+        "action": "Open the Documents",
+        "body": "Keep together the signed contract, the registration receipt, the energy certificate (APE) and the delivery report; with a non-EU tenant also the Questura receipt.",
+        "title": "Which documents to keep",
+        "why": "Your accountant asks for them for the tax return, and the delivery report is what you need at the end of the lease to give the deposit back. In the Documents you find everything in one place."
+      },
+      "endCommunicate": {
+        "action": "Read the page of the Agenzia",
+        "body": "When the contract ends early, is extended or is assigned, it usually has to be communicated to the Agenzia delle Entrate. Ask your accountant how and by when.",
+        "title": "Tell the Agenzia delle Entrate that the contract has ended",
+        "why": "After registration the events of the contract (extension, assignment, termination) are communicated to the Agenzia delle Entrate, also with the cedolare secca. CasaZen does not communicate them for you and does not know the exact deadline in your case."
+      },
+      "endOrganize": {
+        "action": "Open the Documents",
+        "body": "Set the day with the tenant, compare the state with the delivery report, read the meters, collect all the keys and both sign the handover report.",
+        "title": "Plan the handover of the home",
+        "why": "At the end the tenant must give the home back empty and in the state in which they received it, apart from normal wear. The handover report signed by both, with the meter readings and the keys, protects you if there are disputes and you need it to give the deposit back."
+      },
+      "extraEu": {
+        "action": "Go to the communication",
+        "body": "When you hand over the home you must communicate it in writing to the public-security authority. The registration of the contract is not enough, and CasaZen does not send the communication for you.",
+        "title": "Non-EU tenant: tell the Questura within 48 hours of the handover",
+        "why": "It is an obligation of whoever lets a property to a citizen outside the European Union or to a stateless person, and failing to communicate is penalised. The office and the way to send it change from province to province: look at the page of the Questura of your area. After sending it, record the date here, with the receipt if you have it: the reminders stop."
+      },
+      "handover": {
+        "action": "Open the Documents",
+        "body": "Write down what the home is like, how many keys you hand over and the readings of electricity, gas and water; have everyone sign it and upload it among the Documents. The utilities are paid by the tenant.",
+        "title": "Draw up the delivery report, with photos and meter readings",
+        "why": "The report records the state of the property at the handover: at the end of the lease you need it to check for damage and to give the deposit back. In our models the utilities are the tenant's, who puts them in their own name."
+      },
+      "istatConcordato": {
+        "action": "Go to payments",
+        "body": "From the second year you can ask in writing for the rent to be adjusted, up to the maximum set by the agreement of your municipality. It applies from the request, not retroactively.",
+        "title": "You can ask for the ISTAT update of the rent",
+        "why": "In the canone concordato the ISTAT update is allowed only within the limits of the agreement of the municipality: in the Monza e Brianza one it is a share of the change in the index. In our model the update starts from the first instalment after the written request. With the cedolare secca it cannot be asked for."
+      },
+      "istatLibero": {
+        "action": "Go to payments",
+        "body": "From the second year you can ask in writing for the rent to be adjusted to the ISTAT change, by the share written in the contract. It applies from the request, not retroactively.",
+        "title": "You can ask for the ISTAT update of the rent",
+        "why": "In the 4+4 the law sets no cap on the update: the parties write the share in the contract. In our model the update starts from the first instalment after the written request and does not recover past years. If you chose the cedolare secca it cannot be asked for."
+      },
+      "lateRegistration": {
+        "action": "Go to the registration",
+        "body": "Register the contract as soon as you can: the penalty grows with every day of delay. Then ask your accountant how to put things right.",
+        "title": "The deadline to register has passed",
+        "why": "The contract must be registered with the Agenzia delle Entrate within a time limit that starts from the signing or from the start of the contract, if it comes first. A late registration carries penalties that grow with the delay. CasaZen does not work them out: they depend on your case and on the tax regime you chose."
+      },
+      "liberoDuration": {
+        "action": "See the dates",
+        "body": "The contract lasts {{termMonths}} months and then renews by itself for another {{renewalMonths}}. You can say no only for the reasons provided by law, stating the reason, with at least {{noticeMonths}} months' notice.",
+        "title": "4+4: what happens at the end?",
+        "why": "In the canone libero the first term is {{termMonths}} months. If nobody gives notice, the contract renews on the same terms. At the first expiry the landlord can refuse the renewal only for the reasons set by law: the communication must be in writing, with the reason stated or it is void, and with at least {{noticeMonths}} months' notice. Our model asks for registered mail with return receipt or PEC."
+      },
+      "liberoFirstExpiry": {
+        "action": "Record a notice",
+        "body": "If you do nothing, the contract renews by itself for another {{renewalMonths}} months. To say no you need a reason provided by law, written in the communication, with at least {{noticeMonths}} months' notice.",
+        "title": "At the first expiry you decide whether to renew",
+        "why": "The landlord can refuse the renewal at the first expiry only for the reasons set by law; the communication must be in writing and must state the reason or it is void. Registered mail or PEC is best, so you have proof of sending. CasaZen does not judge whether a notice is valid: it records it and reminds you of the dates."
+      },
+      "noticeFromTenant": {
+        "action": "Record a notice",
+        "body": "Record it here: the contract will not renew and the deadlines are updated. The tenant can give notice at the expiry or withdraw earlier for serious reasons, with the same notice period.",
+        "title": "If the tenant sends you a notice",
+        "why": "In our models the tenant can give notice at the expiry, or withdraw at any time for serious reasons, with at least {{noticeMonths}} months' notice. Until the end of the notice period the rent and charges are still due. CasaZen records the notice and does not judge whether it is valid."
+      },
+      "ordinaryAnnualRegistro": {
+        "action": "See how to pay",
+        "body": "With the ordinary regime you pay the registration tax of each year, as a rule within 30 days of the end of the previous one. Tell your accountant.",
+        "title": "Remember the registration tax every year",
+        "why": "After the first year, which is paid at registration, the tax of the following year must be paid every year, without the minimum that applies to the first. With the cedolare secca there is none. CasaZen does not send you reminders for these payments: keep them in your accountant's calendar."
+      },
+      "regimeCheckCedolare": {
+        "action": "Compare the two regimes",
+        "body": "It saves you registration tax and stamp duty, but you will not be able to update the rent with ISTAT. Try the comparison with the data of your contract.",
+        "title": "Are you sure the cedolare secca is right for your case?",
+        "why": "With the cedolare secca the rent is taxed with a substitute tax and neither registration tax nor stamp duty is paid; in exchange you give up updates of the rent. With the ordinary regime the rent is added to your other income and registration tax and stamp duty are paid. Which is better depends on your income: the comparison gives you an estimate, to be confirmed with your accountant."
+      },
+      "regimeCheckOrdinary": {
+        "action": "Compare the two regimes",
+        "body": "With the ordinary regime you pay registration tax and stamp duty and the rent is added to your other income. Compare it with the cedolare secca before registering.",
+        "title": "Is the ordinary regime really the cheapest?",
+        "why": "With the cedolare secca the rent is taxed with a substitute tax and neither registration tax nor stamp duty is paid; in exchange you give up updates of the rent. With the ordinary regime the rent is added to your other income and registration tax and stamp duty are paid. Which is better depends on your income: the comparison gives you an estimate, to be confirmed with your accountant."
+      },
+      "regimeChoose": {
+        "action": "Compare the two regimes",
+        "body": "This contract has no tax regime yet. Compare the cedolare secca and the ordinary regime with the data of the contract before registering.",
+        "title": "How do you want the rent to be taxed?",
+        "why": "With the cedolare secca the rent is taxed with a substitute tax and neither registration tax nor stamp duty is paid; in exchange you give up updates of the rent. With the ordinary regime the rent is added to your other income and registration tax and stamp duty are paid. Which is better depends on your income: the comparison gives you an estimate, to be confirmed with your accountant."
+      },
+      "regimeYearly": {
+        "action": "Compare the two regimes",
+        "body": "At the end of each year you can confirm or switch between the cedolare secca and the ordinary regime. Redo the comparison with today's data and ask your accountant how to communicate it.",
+        "title": "Every year you can review your tax choice",
+        "why": "The choice of the cedolare secca applies to the year; it is made with the registration and can be confirmed or revoked at the yearly deadlines, in the ways and within the terms set by the Agenzia delle Entrate. A change in your income or in the rent can change which is better."
+      },
+      "registerPrepare": {
+        "action": "See the deadlines",
+        "body": "The count starts from the signing by everyone or from the start of the contract, if it comes first. You register online on the website of the Agenzia delle Entrate or with the help of your accountant.",
+        "title": "After signing you have {{registrationDays}} days to register",
+        "why": "Registration is an obligation and being late costs money. The signing day you declare here sets the deadline, so write the real one. CasaZen does not register for you: you register, then you declare here the number, the date and the receipt."
+      },
+      "registrationComm": {
+        "action": "See the registration",
+        "body": "The contract provides that you tell the tenant, and the building administrator if there is one, that it is registered: send the number and the date. Ask your accountant for the exact deadline.",
+        "title": "Tell the tenant that the contract is registered",
+        "why": "In our models, after registration the landlord gives documented notice to the tenant and to the building administrator. CasaZen does not check the deadline and does not remind you of it: it is a hint, not a deadline."
+      },
+      "registrationCosts": {
+        "action": "Estimate the costs",
+        "body": "At registration you pay registration tax and stamp duty. Our contract model splits them in half with the tenant. The comparison estimates the figures.",
+        "title": "How much does it cost to register with the ordinary regime?",
+        "why": "The registration tax is worked out on the annual rent, with a minimum for the first year; the stamp duty depends on the pages, the lines and the copies to be registered. With the cedolare secca they are not paid. In our model the landlord pays the taxes and gets half back from the tenant with the first rent instalment after the request."
+      },
+      "registrationReceipt": {
+        "action": "Download the receipt",
+        "body": "It is the proof that the contract is registered: you need it for your accountant and for the following years. Download it and keep a copy with the contract.",
+        "title": "Keep the registration receipt",
+        "why": "The receipt shows the registration number and date. Your accountant asks for it for the tax return and for the obligations of the following years."
+      },
+      "secondExpiry": {
+        "action": "Record a notice",
+        "body": "Each party can ask for a renewal on new terms or give it up, by registered mail or PEC at least {{noticeMonths}} months in advance. If nobody writes, the contract renews on the same terms.",
+        "title": "At the second expiry the rules change",
+        "why": "After the first period the reasons set by law are no longer needed: each party can start the procedure to renew on new terms or not to renew. How it ends if there is no agreement is written in your contract. CasaZen records the notice and reminds you of the dates."
+      },
+      "startPassed": {
+        "action": "Check the deadlines",
+        "body": "The {{registrationDays}} days to register count from the start of the contract if it comes before the signing. Make sure you are not already late.",
+        "title": "The contract has already started: check the time to register",
+        "why": "The registration deadline is {{registrationDays}} days after the earlier of two dates: the day everyone signed or the start of the contract. If the contract started before it was signed, the count starts from the start."
+      },
+      "transitorioConfirmNeed": {
+        "action": "See the end date",
+        "body": "The contract ends by itself. If whoever has the need wants it to go on, they must confirm it to the other party before the expiry, by registered mail or PEC. Without confirmation it can become a 4+4.",
+        "title": "If the need continues, confirm it in writing",
+        "why": "The transitory contract lasts as long as the need that justifies it. If the need goes on beyond the expiry, the party concerned confirms it in writing to the other party before the contract ends; if they do not, or if the need ceases, the contract can be treated as an ordinary 4+4. Ask your accountant for the exact deadline."
+      },
+      "transitorioCosts": {
+        "action": "Estimate the costs",
+        "body": "In the official model the stamp duty is paid by the tenant and the registration tax is split in half. With the cedolare secca neither is paid.",
+        "title": "Who pays stamp duty and registration tax in a transitory contract?",
+        "why": "The transitory contract model of the 2017 decree, which CasaZen uses, says so: the stamp duty is the tenant's, and the landlord registers the contract, if registration is due, and gets half of the registration tax back from the tenant. For the figures use the comparison or ask your accountant."
+      },
+      "transitorioDuration": {
+        "action": "See the dates",
+        "body": "It lasts at most {{transitoryMax}} months, with no notice and no automatic renewal. You need a real temporary need, written in the contract.",
+        "title": "A transitory contract is short and ends by itself",
+        "why": "The transitory contract answers a temporary need of the landlord or of the tenant, for example for work, study or treatment. It ends at the expiry with no need for notice. If the rules of the model are not respected, it can be treated as an ordinary 4+4."
+      },
+      "transitorioNeed": {
+        "action": "Upload a document",
+        "body": "Since it lasts more than {{transitoryDocDays}} days, the need (for example a work or study contract) must be written in the contract and proved with attached documents.",
+        "title": "Document the need of the transitory contract",
+        "why": "For a transitory contract longer than {{transitoryDocDays}} days the 2017 decree asks for the need to be documented with attachments to the contract; below that length it is not needed. Keep the documents with the contract."
+      }
+    },
+    "data": {
+      "rentPlan": "Rent plan"
+    },
+    "forYou": {
+      "empty": "There is no advice for this contract for now. Come back when something changes.",
+      "showAll": "Show all the advice ({{total}})",
+      "showLess": "Show less advice",
+      "title": "For your contract"
+    },
+    "opensNewTab": "(opens in a new tab)",
+    "regime": {
+      "accountant": "These are estimates made with the data of your contract and the rules we know today: they are not tax advice and CasaZen is not an authorised intermediary. Confirm them with your accountant before registering.",
+      "ata": {
+        "NotListed": "If your municipality is 'high housing tension' (a municipality with a shortage of homes, where the cedolare of the canone concordato is reduced), the estimate changes: we do not find it in our list, ask your accountant.",
+        "Unverified": "Your municipality may be 'high housing tension' (a municipality with a shortage of homes, where the cedolare of the canone concordato is reduced): we have not checked it, ask your accountant.",
+        "Verified": "Your municipality is 'high housing tension' (a municipality with a shortage of homes): for the canone concordato the cedolare is reduced."
+      },
+      "cedolare": {
+        "noIstat": "For the whole duration of the option you cannot update the rent with ISTAT.",
+        "pays": "You pay {{rate}} of the rent every year: about {{tax}}.",
+        "paysReduced": "You pay {{rate}} of the rent every year (the reduced rate of the canone concordato): about {{tax}}."
+      },
+      "how": {
+        "halved": "Registration tax and stamp duty: in our contract model they are split in half with the tenant; here they are counted in full.",
+        "title": "How we worked it out",
+        "withoutBollo": "The stamp duty is not included in the comparison: give pages and copies in 'Refine the estimate' to add it."
+      },
+      "ordinary": {
+        "bolloPaid": "Stamp duty: about {{amount}} at registration.",
+        "bolloRule": "Stamp duty: {{amount}} for every {{pages}} pages of each copy. Give pages and copies in 'Refine the estimate'.",
+        "irpefOpen": "Income tax (IRPEF): to be assessed with your accountant.",
+        "irpefPaid": "Income tax (IRPEF): about {{amount}} more every year.",
+        "istat": "You can ask for the ISTAT update of the rent, if the contract provides for it.",
+        "registro": "Registration tax: about {{amount}} at registration, then every year."
+      },
+      "outcome": {
+        "cedolareCheaper": "With the data of your contract the cedolare secca saves you about {{amount}} in the first year compared with the ordinary regime.",
+        "equal": "With the data of your contract the two regimes cost about the same in the first year.",
+        "incomeNeeded": "Your taxable income is missing: write it in 'Refine the estimate' and we will redo the comparison.",
+        "ordinaryCheaper": "With the data of your contract the ordinary regime costs you about {{amount}} less in the first year than the cedolare secca.",
+        "unknown": "We cannot yet say which regime costs less."
+      },
+      "refine": {
+        "copies": "How many copies do you register?",
+        "income": "How much do you earn in a year, besides this rent? (taxable IRPEF income, in euro, optional)",
+        "lines": "How many lines does a copy have? (optional)",
+        "pages": "How many written pages does a copy of the contract have?",
+        "title": "Refine the estimate"
+      },
+      "todoCedolare": "If you choose it: you state it when you register the contract, you pay neither registration tax nor stamp duty and for the whole duration of the option you cannot update the rent. Our contract already contains the waiver of the update.",
+      "todoOrdinary": "If you do not choose it: you register the contract paying registration tax and stamp duty (usually split with the tenant), the rent goes into your IRPEF income and you can ask for the ISTAT update, if the contract provides for it."
+    },
+    "rent": {
+      "answer": {
+        "above": "The rent of {{rent}} a month is above the limit of the agreement: at most {{max}} a month.",
+        "below": "The rent of {{rent}} a month is below the minimum of the agreement: at least {{min}} a month.",
+        "noRent": "For this home and these dates the rent of the agreement goes from {{min}} to {{max}} a month.",
+        "within": "The rent of {{rent}} a month is within the limits of the agreement: from {{min}} to {{max}} a month."
+      },
+      "associations": "The calculation follows the agreement of your municipality. For the attestation and for any doubt, ask a signatory organization.",
+      "how": "How we worked it out",
+      "indicative": "These values are indicative: confirm them with a signatory organization of the agreement.",
+      "intro": "Describe the home and we work out the limit of the rent according to the agreement of the municipality.",
+      "more": "Appurtenances and features",
+      "recalc": "Recalculate with other data"
+    },
+    "source": {
+      "adeAnnualita": "Agenzia delle Entrate: payment of the following year",
+      "adeAtti": "Agenzia delle Entrate: lease deeds and contracts",
+      "adeCedolare": "Agenzia delle Entrate: the cedolare secca",
+      "adeCedolareScheda": "Agenzia delle Entrate: information sheet on the cedolare secca",
+      "adeQuantoSiPaga": "Agenzia delle Entrate: what you pay to register the contract",
+      "dm2017": "Decree of 16 January 2017 on canone concordato contracts (Gazzetta Ufficiale)",
+      "law392": "Law 392 of 1978 on leases (security deposit)",
+      "law431": "Law 431 of 1998 on residential leases",
+      "poliziaExtraUe": "Polizia di Stato: letting to non-EU citizens"
+    },
+    "sources": "Sources",
+    "tab": "Guide",
+    "tool": {
+      "attestation": {
+        "description": "These are the signatory organizations of the agreement of your municipality: CasaZen does not contact them and does not attest on their behalf.",
+        "title": "The organizations of the agreement"
+      },
+      "imu": {
+        "description": "CasaZen prepares the document with the data of the contract; you send it to the municipality and then mark it as sent.",
+        "title": "IMU communication to the municipality"
+      },
+      "regime": {
+        "description": "An estimate with the data of your contract, to decide more clearly. The choice is yours.",
+        "title": "Cedolare secca or ordinary regime?"
+      },
+      "rent": {
+        "description": "The rent of a canone concordato must stay within the bands of the agreement of the municipality.",
+        "title": "Is the rent within the limits of the agreement?"
+      }
+    },
+    "tools": {
+      "regime": {
+        "idle": "We compare the two regimes with the data of your contract.",
+        "needsRent": "The comparison needs the rent of the contract: write it in the data.",
+        "open": "Open the comparison",
+        "title": "Cedolare secca or ordinary regime?"
+      },
+      "rent": {
+        "noData": "Describe the home (surface, zone…) to find out whether the rent is within the limits.",
+        "open": "Check the rent",
+        "title": "Is the rent within the limits of the agreement?"
+      },
+      "title": "Tools"
+    },
+    "why": "Why?"
+  },
+  "leaseRound": {
+    "activity": {
+      "adminGrantedGift": "Complimentary practice assigned"
+    },
+    "attestation": {
+      "another": "Upload a new file",
+      "doneRow": "Attestation: still to be uploaded. Add it to the documents of the contract when you have it: it is needed for the benefits.",
+      "present": "Attestation: uploaded",
+      "title": "Attestation",
+      "why": "The attestation shows that the rent respects the territorial agreement: it is needed for the benefits."
+    },
+    "benefits": {
+      "disclaimer": "Rules and rates depend on the municipality and on your situation: confirm them with your accountant.",
+      "downloadOne": "Download: {{name}}",
+      "intro": "Bring a copy of these three documents to your accountant and to the municipality to obtain the benefits of the canone concordato, for example the IMU reduced by 25% and, where it is provided for, the cedolare secca at 10%.",
+      "loading": "Checking the documents…",
+      "missing_one": "You are still missing one: upload it to have all three ready.",
+      "missing_other": "You are still missing {{count}}: upload them to have all three ready.",
+      "missingLine": "{{name}}: still to be uploaded",
+      "title": "Contract registered: now claim your benefits",
+      "use": "The municipality may ask you for the attestation to apply the reduced rate; your accountant uses it for the tax return."
+    },
+    "document": {
+      "attestation": {
+        "name": "Attestation",
+        "upload": "Upload the attestation"
+      },
+      "contract": {
+        "name": "Signed contract",
+        "upload": "Upload the signed contract"
+      },
+      "receipt": {
+        "name": "Registration receipt",
+        "upload": "Upload the registration receipt"
+      }
+    },
+    "kind": {
+      "transitorio": {
+        "title": "Transitional (from {{min}} to {{max}} months)"
+      }
+    },
+    "nextStep": {
+      "RegisterImported": {
+        "action": "Declare the registration",
+        "detail": "When you have the registration receipt, upload it among the Documents and declare the registration here.",
+        "title": "Declare the registration of the contract"
+      }
+    },
+    "practice": {
+      "closed": {
+        "duplicate": "It was a duplicate of another practice.",
+        "not_compliant": "The contract cannot be attested (for example with the rent outside the band): correct the data and start again.",
+        "other": "Closed without attestation.",
+        "withdrawn": "The practice was withdrawn."
+      },
+      "number": "Practice {{id}}"
+    },
+    "reading": {
+      "arrived": "I have read the contract. What you wrote stays as it is: you see the data read when you want.",
+      "conflict": "I have read the contract: reload the draft to see the data read",
+      "show": "Show the data read"
+    },
+    "receipt": {
+      "documentLabel": "Receipt uploaded",
+      "documentPlaceholder": "Choose the receipt",
+      "file": {
+        "title": "Upload a new file"
+      },
+      "legend": "Registration receipt",
+      "uploaded": {
+        "description": "It is among the documents of the contract: no need to upload it again.",
+        "title": "Use the receipt already uploaded"
+      }
+    },
+    "service": {
+      "declare": "Declare the registration",
+      "doneText": "The service that prepared the contract registers it. When you receive the receipt, upload it among the Documents and declare the registration here: the deadline goes away and we stop sending you needless reminders.",
+      "failedHint": "The contract is NOT recorded as registered here. If the service registered it, declare the registration with the receipt.",
+      "note": "The service that prepared the contract registers it. When you receive the registration receipt, upload it among the Documents and declare the registration here.",
+      "row": "Registration: the service that prepared the contract does it (deadline: {{date}}). When you have the receipt, upload it among the Documents and declare it on the lease page.",
+      "rowUnknown": "Registration: the service that prepared the contract does it. When you have the receipt, upload it among the Documents and declare it on the lease page. The deadline is still to be determined.",
+      "title": "Declare the registration"
+    }
+  },
+  "leaseWizardGuide": {
+    "adminNotice": {
+      "action": "Go to the documents",
+      "message": "Legal documents updated: accept them to see your workspaces again"
+    },
+    "documents": {
+      "inHand": "the signed lease, as a PDF or as photos of its pages.",
+      "summary": "Upload the lease that is already signed: we read it and fill in the data for you. We only ask what we cannot read.",
+      "title": "Upload the lease"
+    },
+    "done": {
+      "lead": {
+        "Created": "The lease is signed and safe in CasaZen. Here is what happens now.",
+        "Imported": "The lease is in CasaZen, with its documents and its deadlines. Here is what happens now."
+      },
+      "open": "Open the lease sheet"
+    },
+    "fields": {
+      "deposit": {
+        "example": "1300",
+        "why": "The deposit is a sum the tenant leaves as a guarantee and that you give back at the end, if the home is in good order."
+      },
+      "fiscalCode": {
+        "example": "RSSMRA80A01H501U"
+      },
+      "property": {
+        "hint": "If the property is not in the list, add it: it takes a minute."
+      },
+      "regime": {
+        "CedolareSecca": "A flat tax on the rent, instead of income tax, registration tax and stamp duty.",
+        "Ordinario": "The rent is added to your income and registration tax is paid.",
+        "intro": "The regime is the way you pay tax on the rent."
+      },
+      "rent": {
+        "example": "650",
+        "hint": "The amount the tenant pays every month for the rent."
+      },
+      "residence": {
+        "example": "Via Roma 10, 20822 Seveso (MB)"
+      },
+      "start": {
+        "hint": "The day the lease starts, even if you sign it earlier: for example the first of the month."
+      }
+    },
+    "header": {
+      "inHand": "Have at hand:",
+      "position": "Step {{current}} of {{total}}"
+    },
+    "later": {
+      "action": "Save and continue later",
+      "saved": "Draft saved: you will find it among your leases."
+    },
+    "missing": {
+      "fix": "To fix:",
+      "goTo": "Go to the field",
+      "goToStep": "Go to “{{step}}”",
+      "label": "Missing:",
+      "more_one": "and one more thing",
+      "more_other": "and {{count}} more things",
+      "none": "All filled in: you can go on.",
+      "what": {
+        "ape_identification_missing": "the code and the energy class of the APE",
+        "ape_missing": "the APE energy certificate of the property",
+        "cadastral_missing": "the cadastral data of the property",
+        "contract_file_missing": "the signed lease (a PDF or photos of its pages)",
+        "contract_pages_unconfirmed": "the confirmation that the photos are in order",
+        "contract_type_missing": "the type of lease",
+        "deposit_missing": "the deposit (write 0 if there is none)",
+        "end_missing": "the last day of the lease",
+        "landlord_incomplete": "{{fields}} of landlord {{n}}",
+        "landlord_missing": "who lets the property (the landlord)",
+        "property_missing": "the property of the lease",
+        "rent_missing": "the monthly rent",
+        "start_missing": "the start date of the lease",
+        "tax_regime_missing": "the tax regime",
+        "tenant_incomplete": "{{fields}} of tenant {{n}}",
+        "tenant_missing": "who rents the property (the tenant)",
+        "transitory_documentation_missing": "the documents that prove the need",
+        "transitory_need_missing": "the need that justifies the transitional lease",
+        "transitory_party_missing": "who has the need: the landlord or the tenant"
+      }
+    },
+    "next": {
+      "confirm": "Confirm and go to the signature",
+      "finish": "Finish and see what happens now",
+      "to": {
+        "2": "Save and go to the parties",
+        "3": "Save and go to the terms",
+        "4": "Save and go to the dates",
+        "6": "Save and go to the check",
+        "7": {
+          "Created": "Go to the signature",
+          "Imported": "Save and go to the signed lease"
+        }
+      }
+    },
+    "property": {
+      "apeExplain": "It is the document that says how much energy the property uses, with a class from A4 to G. A qualified technician issues it.",
+      "apeIdentificationHelp": "Write the code and the energy class as they are printed on the certificate. The class is a letter from A4 (the best) to G, for example B.",
+      "cadastralExplain": "They are the sheet, the parcel and the sub-unit of the property: you find them in the cadastral survey or in the deed of purchase.",
+      "cadastralMissing": "They are missing. Add them from the property page: they are needed for the lease and for the registration."
+    },
+    "review": {
+      "edit": "Edit",
+      "editGroup": "Edit: {{group}}",
+      "groups": {
+        "dates": "Dates",
+        "house": "The property",
+        "people": "Who signs",
+        "terms": "Rent and taxes"
+      },
+      "rows": {
+        "address": "Address",
+        "deposit": "Deposit",
+        "end": "End of the first period",
+        "landlords": "Landlord",
+        "regime": "Tax on the rent",
+        "rent": "Rent per month",
+        "start": "Start",
+        "tenants": "Tenant",
+        "type": "Type of lease"
+      },
+      "story": {
+        "kind": "{{type}}, with {{regime}}.",
+        "money": "{{rent}} a month, with a deposit of {{deposit}}.",
+        "moneyNoDeposit": "{{rent}} a month, no deposit.",
+        "moneyRentOnly": "{{rent}} a month.",
+        "parties_one": "You let {{property}} to {{tenants}}.",
+        "parties_other": "You let {{property}} to {{tenants}}.",
+        "regime": {
+          "CedolareSecca": "the flat-rate tax (cedolare secca)",
+          "Ordinario": "the ordinary regime"
+        },
+        "term": "From {{from}} for {{length}}, until {{to}}.",
+        "termFrom": "From {{from}}.",
+        "termSpan": "From {{from}} to {{to}}.",
+        "thisProperty": "the property",
+        "title": "The lease in words"
+      }
+    },
+    "start": {
+      "how": {
+        "choose": "Choose one of the two ways to go on.",
+        "continue": {
+          "casazen": "Continue: choose the property",
+          "documenti": "Continue: upload the documents",
+          "none": "Continue",
+          "zero": "Continue: choose the property"
+        },
+        "documents": {
+          "concordato": "You upload the lease and the documents: we read the data and keep an eye on deadlines, registration and rents.",
+          "other": "You upload the lease that is already signed: we read it and fill in the data, we only ask what is missing."
+        }
+      },
+      "kind": {
+        "concordato": "The rent follows the amounts agreed by the municipality, with tax benefits.",
+        "libero": "You decide the rent together: ordinary term, with automatic renewal.",
+        "transitorio": "For a temporary need (work, study…), with a short term."
+      },
+      "which": {
+        "choose": "Choose a type of lease to go on.",
+        "continue": "Continue: how you prepare it",
+        "help": {
+          "concordato": "Agreed rent: the rent stays within the amounts of the municipality and there are tax benefits.",
+          "libero": "Free rent: the two of you decide the rent.",
+          "summary": "Which one to choose?",
+          "transitorio": "Transitional: for a need that lasts a while ({{min}} to {{max}} months), written in the lease.",
+          "transitorioBare": "Transitional: for a need that lasts a while, written in the lease."
+        }
+      },
+      "zero": {
+        "continue": "Save the draft and go to the lease"
+      }
+    },
+    "stepper": {
+      "all": "All steps",
+      "state": {
+        "current": "You are here",
+        "done": "Done",
+        "issue": "To complete",
+        "locked": "After the previous steps",
+        "todo": "To do"
+      }
+    },
+    "steps": {
+      "1": {
+        "inHand": "the cadastral data of the property (sheet, parcel, sub-unit) and its APE energy certificate.",
+        "summary": "Say which property the lease is about. The address, the cadastral data and the APE certificate go into the lease and its registration.",
+        "title": "Choose the property"
+      },
+      "2": {
+        "inHand": "the tax code and an identity document of everyone who signs.",
+        "summary": "Enter the details of the landlord and of the tenant: they are needed for the lease and to register it.",
+        "title": "Write who signs"
+      },
+      "3": {
+        "inHand": "the amounts you agreed (monthly rent and deposit).",
+        "summary": "Choose how the tax on the rent is paid and write the amount of the rent and of the deposit.",
+        "title": "Enter the rent and the terms"
+      },
+      "4": {
+        "inHand": "the start date of the lease (and, for a transitional one, the last day).",
+        "inHandImported": "the dates written in the lease.",
+        "summary": "Say the day the lease starts: from there we work out the term, the renewal and the deadlines.",
+        "title": "Choose the dates"
+      },
+      "6": {
+        "inHand": "nothing special, just read it through.",
+        "summary": "Read the lease in plain words: if everything is right you confirm it and go to the signature.",
+        "title": "Check and confirm"
+      },
+      "7": {
+        "Created": {
+          "inHand": "a printer, a pen and everyone who signs.",
+          "summary": "Download the lease, have everyone sign it by hand and upload the signed copy here.",
+          "title": "Print, sign and upload"
+        },
+        "Imported": {
+          "inHand": "the signed lease as a PDF and the day it was signed.",
+          "summary": "Add the PDF with the signatures and the day it was signed: the deadlines start from there.",
+          "title": "Upload the signed lease"
+        }
+      },
+      "8": {
+        "inHand": "the registration receipt, as soon as you receive it.",
+        "summary": "The signed lease has to be registered: here you find what to do, by when, and the other things to sort out.",
+        "title": "Register and tidy up"
+      },
+      "reading": {
+        "summary": "It usually takes less than a minute. When we are done we take you to the data to check.",
+        "title": "We are reading the lease…"
+      }
+    },
+    "why": {
+      "parties": "Name, tax code and residence are written in the lease and are needed to register it with the Revenue Agency. You check the identity document yourself: CasaZen does not keep it.",
+      "summary": "Why we ask"
+    }
+  },
+  "longRentDeadlines": {
+    "csv": {
+      "button": "Download CSV",
+      "columns": {
+        "amount": "Amount",
+        "date": "Date",
+        "property": "Property",
+        "status": "Status",
+        "tenant": "Tenant",
+        "type": "Deadline"
+      },
+      "overdue": "Overdue",
+      "upcoming": "Upcoming"
+    },
+    "description": "Registrations, end of lease, notices and rents: the dates not to miss.",
+    "empty": {
+      "action": "Create lease",
+      "description": "Deadlines fill in by themselves: registration, end of lease, notice and rents show up here as they get close.",
+      "title": "No deadlines in the next {{days}} days"
+    },
+    "filters": {
+      "all": "All",
+      "label": "Kind of deadline",
+      "questura": "Questura",
+      "registrations": "Signatures and registrations",
+      "renewals": "Renewals and notices",
+      "rents": "Rents"
+    },
+    "loadError": "The deadlines could not be loaded.",
+    "loading": "Loading the deadlines…",
+    "more": "Show the following ones",
+    "noneOfType": "No deadlines of this kind in the period.",
+    "overdueTitle": "To do right away",
+    "row": {
+      "dueIn_one": "in {{count}} day",
+      "dueIn_other": "in {{count}} days",
+      "overdue_one": "Overdue by {{count}} day",
+      "overdue_other": "Overdue by {{count}} days",
+      "today": "today",
+      "tomorrow": "tomorrow"
+    },
+    "title": "Deadlines",
+    "truncated": "There are more than 500 rents to collect: the first 500 by date are shown. The others show up as they get close.",
+    "type": {
+      "LeaseEnd": "End of the lease",
+      "Notice": "Last day to give notice",
+      "Questura": "Communication to the Questura",
+      "Rent": "Rent of {{amount}}",
+      "RliRegistration": "Registration of the lease",
+      "unknown": "Deadline"
+    },
+    "until": "Until {{date}}"
+  },
+  "longRentOverview": {
+    "actions": {
+      "addProperty": "Add property",
+      "createLease": "Create lease"
+    },
+    "contracts": {
+      "all": "All leases",
+      "title": "Your leases"
+    },
+    "description": "{{date}} · leases, rents and deadlines at a glance.",
+    "loadError": "The overview could not be loaded.",
+    "loading": "Loading the overview…",
+    "now": {
+      "kicker": "Now",
+      "nothing": {
+        "action": "See the leases",
+        "body": "Rents are in order and no lease is waiting for a step from you.",
+        "title": "Nothing urgent"
+      },
+      "openLease": "Open the lease"
+    },
+    "rents": {
+      "all": "Go to the rents",
+      "collected": "Collected in {{month}}",
+      "collectedDelta_one": "of {{expected}} expected · {{paid}} of {{count}} rent",
+      "collectedDelta_other": "of {{expected}} expected · {{paid}} of {{count}} rents",
+      "label": "The numbers of the month",
+      "noOverdue": "Nothing late",
+      "nothingPending": "Nothing left to collect",
+      "overdue": "Late",
+      "overdueDelta_one": "{{count}} rent",
+      "overdueDelta_other": "{{count}} rents",
+      "pending": "Still to collect",
+      "pendingDelta_one": "{{count}} rent not yet due",
+      "pendingDelta_other": "{{count}} rents not yet due",
+      "title": "Rents of {{month}}"
+    },
+    "retry": "Retry",
+    "title": "Good morning, {{name}}",
+    "titleNoName": "Good morning",
+    "upcoming": {
+      "all": "See all",
+      "empty": "No deadlines in the next 4 months.",
+      "loadError": "The deadlines could not be loaded.",
+      "title": "Deadlines"
+    }
+  },
+  "longRentRequests": {
+    "cancel": {
+      "back": "Go back",
+      "confirm": "Cancel the job",
+      "consequences": {
+        "final": "The job cannot be reopened: to get it back, request it again.",
+        "inProgress": "The work is already marked as started: if the supplier has already worked, settle it with them directly.",
+        "label": "What happens",
+        "told": "{{supplierStart}} is told at once, with the reason you write."
+      },
+      "description": "The supplier will no longer do this job.",
+      "reason": "Why are you cancelling it?",
+      "reasonHint": "The supplier reads the reason. {{max}} characters at most.",
+      "title": "Cancel the job?"
+    },
+    "detail": {
+      "backToList": "All jobs",
+      "cancel": "Cancel the job",
+      "detailsTitle": "Details",
+      "fallbackTitle": "Job",
+      "historyEmpty": "No step recorded.",
+      "historyTitle": "History",
+      "loadError": "Could not load the job.",
+      "loading": "Loading the job…",
+      "notes": "Notes",
+      "notFound": "Job not found",
+      "notFoundDescription": "It is not among the jobs of your properties: check the address or go back to the list.",
+      "openProperty": "Open the property",
+      "payment": "Payment",
+      "paymentMode": {
+        "Manual": "Outside CasaZen: you mark it",
+        "Online": "Online, in CasaZen"
+      },
+      "price": "Price",
+      "priceBasis": {
+        "estimated": "estimate",
+        "final": "final amount",
+        "quoted": "quote"
+      },
+      "priceTbd": "To be agreed with the supplier",
+      "property": "Property",
+      "propertyFallback": "See the property",
+      "service": "Service",
+      "showDetails": "Show details",
+      "supplier": "Supplier",
+      "supplierFallback": "Not given",
+      "supplierNotes": "Supplier's notes",
+      "type": "Type",
+      "urgency": "Urgency",
+      "when": "When"
+    },
+    "history": {
+      "actor": {
+        "Host": "you",
+        "Supplier": "a supplier",
+        "System": "CasaZen"
+      },
+      "Annullato": "Job cancelled",
+      "Completato": "Work finished",
+      "InCorso": "Work started",
+      "noReason": "The supplier did not give a reason.",
+      "Pagato": "Payment recorded",
+      "PresoInCarico": "Accepted",
+      "Richiesto": "Request sent",
+      "Rifiutato": "Request declined"
+    },
+    "list": {
+      "columns": {
+        "price": "Price",
+        "request": "Job",
+        "status": "Status",
+        "supplier": "Supplier",
+        "when": "When"
+      },
+      "count_one": "{{count}} job",
+      "count_other": "{{count}} jobs",
+      "description": "Repairs and maintenance of your let properties: you hand the work to a supplier and follow it until it is paid.",
+      "empty": {
+        "all": {
+          "description": "Plumber, electrician or cleaning: the supplier gets the request with the property and the time ready, and you follow it from here until it is paid.",
+          "title": "Hand over the maintenance"
+        },
+        "closed": {
+          "description": "Here you find the jobs that are paid, declined or cancelled.",
+          "title": "No closed jobs"
+        },
+        "open": {
+          "description": "Plumber, electrician or cleaning: request a job and follow it from here, until it is paid.",
+          "title": "No open jobs"
+        }
+      },
+      "loadError": "Could not load the jobs.",
+      "noResults": {
+        "description": "Try other words.",
+        "title": "No jobs found"
+      },
+      "noTime": "time missing",
+      "open": "Open",
+      "priceTbd": "to be agreed",
+      "request": "Request a job",
+      "search": {
+        "label": "Search the jobs",
+        "placeholder": "Search by type, property or supplier"
+      },
+      "tabs": {
+        "all": "All",
+        "closed": "Closed",
+        "label": "Filter the jobs",
+        "open": "Open"
+      }
+    },
+    "new": {
+      "addProperty": "Add a property",
+      "cancel": "Cancel",
+      "choose": "Choose the property",
+      "description": "Choose the property the job is for: then you say what is needed and choose the supplier.",
+      "loadError": "Could not load your properties.",
+      "loading": "Loading the properties…",
+      "next": "Continue",
+      "noProperty": "To request a job you need at least one property in long-term rentals.",
+      "property": "Property",
+      "title": "Which property is it for?"
+    },
+    "next": {
+      "again": "Request again",
+      "allRequests": "All jobs",
+      "cancelled": {
+        "by": {
+          "Host": "You cancelled it.",
+          "Supplier": "The supplier cancelled it.",
+          "System": "CasaZen cancelled it automatically."
+        },
+        "reason": "Reason: {{reason}}",
+        "title": "Job cancelled"
+      },
+      "confirmAmount": {
+        "action": "Confirm the amount",
+        "actionAmount": "Confirm {{amount}}",
+        "body": "{{supplierStart}} has finished and asks {{final}}: more than the quote of {{quoted}}. Confirm it to be able to pay.",
+        "bodyNoQuote": "{{supplierStart}} has finished and asks {{final}}, more than was expected. Confirm it to be able to pay.",
+        "then": "Next: the payment.",
+        "title": "Confirm the final amount"
+      },
+      "inProgress": {
+        "body": "{{supplierStart}} is working on it. When it is finished, the payment is left.",
+        "bodySince": "{{supplierStart}} started the work: {{when}}. When it is finished, the payment is left.",
+        "then": "Next: the payment.",
+        "title": "The supplier is at work"
+      },
+      "kicker": "Next step",
+      "paid": {
+        "body": "You can request it again with one tap.",
+        "title": "Job done and paid"
+      },
+      "pay": {
+        "actionManual": "Mark as paid",
+        "actionOnline": "Pay {{amount}}",
+        "actionOnlineNoAmount": "Pay",
+        "bodyManual": "When you have paid the supplier {{amount}}, mark it here. CasaZen does not make the payment: it only records that you did.",
+        "bodyManualNoAmount": "When you have paid the supplier, mark it here. CasaZen does not make the payment: it only records that you did.",
+        "bodyOnline": "The payment of {{amount}} is made here, by card, without leaving CasaZen.",
+        "bodyOnlineNoAmount": "The payment is made here, by card, without leaving CasaZen.",
+        "title": "Work done: the payment is left"
+      },
+      "proposal": {
+        "accept": "Accept the time",
+        "asked": "You asked for: {{when}}.",
+        "body": "Proposes {{when}}.",
+        "message": "Writes: “{{message}}”",
+        "reject": "Decline",
+        "then": "If you decline, the request keeps waiting for another answer.",
+        "title": "{{supplierStart}} proposes another time"
+      },
+      "rejected": {
+        "action": "Send to another supplier",
+        "body": "You can send the request to another supplier: the details stay filled in.",
+        "noReason": "The supplier did not give a reason.",
+        "reason": "Reason: {{reason}}",
+        "title": "{{supplierStart}} is not available"
+      },
+      "scheduled": {
+        "body": "{{supplierStart}} comes {{when}}.",
+        "bodyNoDay": "{{supplierStart}} has accepted the request.",
+        "then": "Next: the work. When it is finished, the payment is left.",
+        "title": "Job confirmed for {{day}}",
+        "titleNoDay": "Job confirmed"
+      },
+      "unknown": {
+        "body": "Status: {{status}}.",
+        "title": "Job"
+      },
+      "waiting": {
+        "body": "We let you know as soon as they answer.",
+        "remind": "Send a reminder",
+        "reminded": "Last reminder: {{when}}.",
+        "respondBy": "They have until {{when}} to answer.",
+        "then": "Next: the supplier confirms the time or proposes another.",
+        "title": "Waiting for {{supplier}} to answer"
+      },
+      "who": {
+        "supplier": "The supplier's turn",
+        "you": "Your turn"
+      }
+    },
+    "pay": {
+      "description": "You pay {{amount}} by card, without leaving CasaZen.",
+      "failed": "The payment did not go through. Check the card or try another one.",
+      "notice": "The payment is processed by Stripe. The job shows as paid when Stripe confirms it to CasaZen.",
+      "processing": "Payment sent: we are waiting for Stripe to confirm it. This page updates by itself.",
+      "sessionError": "Could not start the payment.",
+      "title": "Pay for the job"
+    },
+    "reason": {
+      "noResponse": "The supplier did not answer in time."
+    },
+    "retry": "Retry",
+    "supplier": {
+      "mid": "the supplier",
+      "start": "The supplier"
+    },
+    "toast": {
+      "amountConfirmed": "Amount confirmed: you can pay now",
+      "cancelled": "Job cancelled",
+      "proposalAccepted": "Time accepted: the job is confirmed",
+      "proposalRejected": "Time declined: the request keeps waiting",
+      "reminded": "Reminder sent to the supplier"
     }
   },
   "hostInvites": {
@@ -11188,5 +13228,48 @@
     "mixed": "A document is one PDF or a set of photos: remove the files already chosen to change.",
     "tooManyPhotos": "You can add at most {{max}} photos per document.",
     "onePdf": "Choose a single PDF per document."
+  },
+  "notifications": {
+    "bell": "Notifications",
+    "bellWithCount_one": "Notifications, {{count}} unread",
+    "bellWithCount_other": "Notifications, {{count}} unread",
+    "title": "Notifications",
+    "unreadLive_one": "{{count}} unread notification",
+    "unreadLive_other": "{{count}} unread notifications",
+    "markAllRead": "Mark all as read",
+    "markAllReadDone": "All notifications are marked as read.",
+    "markAllReadError": "We could not mark the notifications as read. Try again.",
+    "loading": "Loading notifications…",
+    "loadError": "We could not load the notifications.",
+    "retry": "Try again",
+    "empty": "No notifications. When a guest writes or something needs you, you will find it here.",
+    "loadMore": "Show more",
+    "loadingMore": "Loading…",
+    "unreadDot": "Unread",
+    "listLabel": "Notifications list",
+    "types": {
+      "newBooking": "You have a new booking.",
+      "guestMessage": "A guest sent you a message.",
+      "guestDataMissing": "A guest's data is still missing.",
+      "alloggiatiDeadline": "An Alloggiati Web submission is about to expire.",
+      "alloggiatiOverdue": "An Alloggiati Web submission is overdue.",
+      "alloggiatiFailed": "The Alloggiati Web submission failed.",
+      "checkoutReminder": "A guest leaves today: remember to register the departure.",
+      "otaStayReview": "A stay from a portal needs to be checked.",
+      "serviceRequestCreated": "You have a new service request.",
+      "serviceRequestAutoAccepted": "A new service request was accepted automatically.",
+      "serviceRequestTaken": "A supplier took your request.",
+      "serviceRequestStarted": "The supplier started the work.",
+      "serviceRequestCompleted": "The supplier completed the work.",
+      "serviceRequestRejected": "The supplier declined your request.",
+      "serviceRequestPaid": "The customer marked a job as paid.",
+      "serviceRequestCancelled": "A service request was cancelled.",
+      "serviceRequestReminder": "The customer reminds you to answer a request.",
+      "serviceRequestTimeProposed": "The supplier proposes another time.",
+      "serviceRequestProposalAccepted": "The proposed time was accepted.",
+      "serviceRequestProposalRejected": "The proposed time was declined.",
+      "serviceRequestRescheduled": "A request was moved to another time.",
+      "generic": "You have a new notification."
+    }
   }
 }
