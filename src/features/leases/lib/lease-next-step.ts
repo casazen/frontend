@@ -281,12 +281,3 @@ function targetPath(leaseId: string, target: StepTarget, step: LeaseNextStep, to
       return leaseSheetPath(leaseId, target.tab);
   }
 }
-
-/**
- * The tab of the sheet where the step is done, for the sheet that opens on it (LR-03b). `undefined` when the step has no tab of its
- * own: it is done in the wizard or on the rent register, or the sheet as it opens is all there is to it.
- */
-export function leaseStepTab(step: LeaseNextStep): LeaseTab | undefined {
-  const { target } = definitionOf(step.code);
-  return target.kind === 'sheet' ? target.tab : undefined;
-}

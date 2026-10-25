@@ -327,7 +327,8 @@ export async function importTheSignedContract(page: Page): Promise<void> {
 
 /**
  * The registration made by the service is declared on the sheet: the receipt already uploaded among the documents is the one used (not sent
- * twice), the number and the day are typed from it, the person confirms.
+ * twice), the number and the day are typed from it, the person confirms. The sheet opens on the guide (LR-GUIDE-1) and the registration is in
+ * the tab of the deadlines: the person opens it, as the button of «Cosa devi fare ora» does.
  */
 export async function declareTheRegistration(
   page: Page,
@@ -337,6 +338,7 @@ export async function declareTheRegistration(
   /** Called with the window filled in and not yet sent (a picture of it). */
   beforeSaving?: () => Promise<void>,
 ): Promise<void> {
+  await page.getByTestId('lease-tab-scadenze').click();
   const panel = page.getByTestId('rli-registration-panel');
   await expect(panel).toBeVisible({ timeout: 30_000 });
   await panel.getByRole('button', { name: 'Dichiara la registrazione' }).click();

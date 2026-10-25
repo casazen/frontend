@@ -881,16 +881,8 @@
     "fiscalCodeMasked": "Codice fiscale",
     "rli": {
       "advisory": {
-        "title": "Cedolare secca o regime ordinario: informativa fiscale",
-        "disclaimer": "Informativa, non consulenza fiscale: stime calcolate con i parametri delle fonti indicate. CasaZen non è un intermediario abilitato ai sensi del DPR 322/1998: verifica la scelta con un commercialista.",
         "annualRent": "Canone annuo: {{amount}}",
         "chosen": "Regime scelto",
-        "ataLabel": "Alta tensione abitativa (ATA)",
-        "ata": {
-          "Verified": "comune verificato",
-          "Unverified": "comune candidato, non verificato su fonte ufficiale",
-          "NotListed": "comune non presente nell'elenco di CasaZen"
-        },
         "cedolare": {
           "title": "Cedolare secca",
           "rate": "Aliquota",
@@ -937,12 +929,7 @@
           "questura_not_replaced": "Con un conduttore extra-UE la registrazione del contratto non sostituisce la comunicazione scritta all'autorità di pubblica sicurezza entro 48 ore dalla consegna dell'immobile."
         },
         "inputs": {
-          "title": "Dati per completare la stima",
           "privacy": "Servono solo per il calcolo: CasaZen non li salva.",
-          "writtenPages": "Facciate scritte di una copia del contratto",
-          "lines": "Righe di una copia (facoltativo)",
-          "copies": "Copie da registrare",
-          "otherIncome": "Reddito imponibile IRPEF degli altri redditi, in euro all'anno (facoltativo)",
           "submit": "Aggiorna la stima",
           "updating": "Calcolo in corso...",
           "invalid": "Controlla i valori: facciate da 1 a 1.000, righe da 1 a 100.000, copie da 1 a 20, reddito da 0 a 100.000.000 €. Facciate e copie vanno indicate insieme."
@@ -982,8 +969,6 @@
       "attestationCheckbox": "Ho letto e accetto l'attestazione di responsabilita del deposito",
       "confirmSubmit": "Autorizza e invia",
       "cancel": "Annulla",
-      "extraEuTitle": "Conduttore extra-UE: comunicazione alla Questura entro 48 ore dalla consegna",
-      "extraEuBody": "Il contratto include un conduttore extra-UE: entro 48 ore dalla consegna dell'immobile va inviata la comunicazione scritta all'autorità locale di pubblica sicurezza (art. 7 D.Lgs. 286/1998). CasaZen non la invia: dopo l'invio, segnala la data nella sezione dedicata.",
       "checklistItem": {
         "contract_signed": "Contratto firmato da tutte le parti",
         "delega_captured": "Delega / attestazione RLI registrata",
@@ -1046,7 +1031,6 @@
       "checklistGoToQuestura": "Vai alla comunicazione"
     },
     "canoneConcordato": {
-      "title": "Calcolo canone concordato",
       "sqm": "Superficie (mq)",
       "zone": "Zona",
       "zonePlaceholder": "es. Unica, Centrale",
@@ -1548,7 +1532,6 @@
       "start": "Inizio del contratto",
       "title": "Durata e date"
     },
-    "details": "Mostra dettagli",
     "history": {
       "actor": {
         "casazen": "CasaZen",
@@ -11712,6 +11695,356 @@
         "title": "C'è un passo da fare su questo contratto"
       }
     }
+  },
+  "leaseGuide": {
+    "advice": {
+      "cedolareNoIstat": {
+        "action": "Leggi la scheda dell'Agenzia",
+        "body": "Finché dura l'opzione non puoi chiedere l'aggiornamento ISTAT del canone, nemmeno se è previsto. Il nostro modello di contratto lo scrive già.",
+        "title": "Con la cedolare secca il canone non si aggiorna",
+        "why": "Scegliendo la cedolare secca si rinuncia agli aggiornamenti del canone per tutta la durata dell'opzione. Nei nostri modelli la rinuncia è scritta nel contratto e vale come comunicazione all'inquilino. Se usi un altro contratto, o hai dubbi, chiedi al commercialista se serve anche una lettera raccomandata."
+      },
+      "concordatoAta": {
+        "action": "Vedi il confronto",
+        "body": "Se lo è, la cedolare secca scende e l'imposta di registro si calcola su una base ridotta. CasaZen non ha ancora confermato il tuo comune: chiedi al commercialista di verificarlo.",
+        "title": "Il tuo comune è «ad alta tensione abitativa»?",
+        "why": "I comuni ad alta tensione abitativa sono quelli con carenza di abitazioni: le grandi città e i comuni confinanti, i capoluoghi di provincia e altri indicati dal CIPE. Solo lì il canone concordato ha la cedolare ridotta e la base ridotta per l'imposta di registro. L'elenco di CasaZen non è completo: un comune che non c'è potrebbe esserci."
+      },
+      "concordatoAttestation": {
+        "action": "Chi può rilasciarla",
+        "body": "Per avere le agevolazioni di un contratto concordato fatto senza l'assistenza delle associazioni serve l'attestazione, rilasciata dalle organizzazioni dell'accordo del tuo comune.",
+        "title": "Ti serve l'attestazione di rispondenza",
+        "why": "L'attestazione dice che il contratto rispetta l'accordo del comune ed è la condizione per tutte le agevolazioni nei contratti non assistiti: senza, si possono perdere. CasaZen non può rilasciarla: ti indica a chi chiederla. Quante organizzazioni devono firmarla lo decide l'accordo: a Monza e Brianza ne servono due, una dei proprietari e una degli inquilini."
+      },
+      "concordatoAttestationService": {
+        "action": "Carica l'attestazione",
+        "body": "Il servizio che prepara il contratto ottiene per te l'attestazione di rispondenza, che serve per le agevolazioni. Quando la ricevi, caricala nei Documenti.",
+        "title": "L'attestazione ti arriva con il contratto",
+        "why": "L'attestazione dice che il contratto rispetta l'accordo del comune ed è la condizione per le agevolazioni del canone concordato. Tienila insieme al contratto firmato e alla ricevuta di registrazione: servono al commercialista e al comune."
+      },
+      "concordatoCommission": {
+        "action": "Vedi le organizzazioni",
+        "body": "Per dubbi sul canone, sull'aggiornamento o sulle spese puoi chiedere l'intervento della commissione paritetica delle organizzazioni dell'accordo, prima di rivolgerti a un giudice. Non sospende l'obbligo di pagare il canone.",
+        "title": "Se nascono dubbi sul canone o sulle spese",
+        "why": "La commissione è prevista dal decreto del 2017 e dall'accordo del comune: è formata da rappresentanti dei proprietari e degli inquilini e aiuta a trovare un'intesa. Il nostro modello di contratto la richiama nell'articolo sulle controversie. Qui trovi le organizzazioni dell'accordo."
+      },
+      "concordatoDuration": {
+        "action": "Vedi le date",
+        "body": "Il contratto dura {{termMonths}} mesi; poi, se non c'è una disdetta per un motivo previsto dalla legge, si proroga di diritto per altri {{renewalMonths}} mesi.",
+        "title": "3+2: cosa succede alla scadenza?",
+        "why": "Nel canone concordato la durata minima è di {{termMonths}} mesi. Alla prima scadenza, se le parti non si accordano diversamente, il contratto è prorogato di diritto per {{renewalMonths}} mesi, salvo la disdetta del locatore per uno dei motivi di legge, scritta, con il motivo indicato, almeno {{noticeMonths}} mesi prima. Alla fine della proroga ciascuna parte può chiedere il rinnovo a nuove condizioni o rinunciarvi."
+      },
+      "concordatoFirstExpiry": {
+        "action": "Registra una disdetta",
+        "body": "Se non c'è una disdetta per un motivo previsto dalla legge, il contratto si proroga di diritto per altri {{renewalMonths}} mesi. La disdetta va scritta, con il motivo, almeno {{noticeMonths}} mesi prima.",
+        "title": "Alla prima scadenza il contratto si proroga",
+        "why": "Nel canone concordato la proroga è di diritto, salvo la disdetta del locatore per i motivi di legge, comunicata per iscritto con il motivo indicato e con il preavviso previsto. CasaZen non giudica se una disdetta è valida: la registra e ti ricorda le date."
+      },
+      "concordatoImu": {
+        "action": "Prepara la comunicazione",
+        "body": "L'IMU ridotta non parte da sola: ogni comune ha il suo modulo e il suo indirizzo. Qui prepari la comunicazione con i dati del contratto, la invii tu e segni quando l'hai fatto.",
+        "title": "Comunica al comune che l'affitto è a canone concordato",
+        "why": "La registrazione e la cedolare secca non attivano lo sconto sull'IMU: serve una comunicazione al comune, con modalità diverse da comune a comune. CasaZen prepara il documento con i dati del contratto e l'indirizzo del comune, ma non lo invia: lo mandi tu, poi lo segni come inviato."
+      },
+      "concordatoRentCheck": {
+        "action": "Controlla il canone",
+        "body": "In un contratto concordato il canone sta dentro fasce che dipendono da zona, metri quadri e dotazioni della casa. Calcola il limite con i dati della casa.",
+        "title": "Il canone rispetta l'accordo del comune?",
+        "why": "Le fasce sono fissate dall'accordo tra le associazioni dei proprietari e degli inquilini del tuo comune. CasaZen ha oggi i dati degli accordi di alcuni comuni; per gli altri non può calcolare il limite e va chiesto a un'associazione firmataria. Il risultato è una stima: l'attestazione la rilascia l'associazione."
+      },
+      "concordatoRentOutOfRange": {
+        "action": "Controlla il canone",
+        "body": "Con i dati inseriti il canone non rientra nella fascia dell'accordo del comune. Senza il rispetto dei limiti le agevolazioni del canone concordato possono saltare.",
+        "title": "Il canone è fuori dai limiti dell'accordo",
+        "why": "Il canone di un contratto concordato deve stare nelle fasce dell'accordo del comune, che dipendono da zona, metri quadri, dotazioni e durata. L'attestazione, che serve per le agevolazioni, conferma proprio che il canone rispetta l'accordo. Controlla i dati della casa o correggi il canone; se i valori dell'accordo sono indicativi, confermali con un'associazione firmataria."
+      },
+      "depositMax": {
+        "action": "Controlla il deposito",
+        "body": "Al massimo {{depositMaxRents}} mensilità di canone. Il deposito frutta interessi legali a favore dell'inquilino.",
+        "title": "Quanto deposito cauzionale puoi chiedere?",
+        "why": "Il limite di {{depositMaxRents}} mensilità vale per il deposito cauzionale di una locazione abitativa. Gli interessi legali sono dell'inquilino: nei nostri modelli li riconosci ogni anno nel 4+4 e nel 3+2, alla fine della locazione nel transitorio. L'inquilino non può usare il deposito per pagare i canoni."
+      },
+      "depositOverMax": {
+        "action": "Controlla i dati",
+        "body": "Il tuo deposito è di circa {{depositMonths}} mensilità e il massimo è {{depositMaxRents}}. Parlane con il commercialista per sistemare la parte che supera il limite.",
+        "title": "Il deposito è più alto del massimo",
+        "why": "Non si può chiedere un deposito oltre {{depositMaxRents}} mensilità. CasaZen non cambia il deposito di un contratto già impostato: va sistemato con l'inquilino, con l'aiuto del tuo commercialista o di un legale."
+      },
+      "depositReturn": {
+        "action": "Apri i Documenti",
+        "body": "Dopo aver verificato la casa restituisci il deposito con gli interessi legali. Puoi trattenere solo ciò che documenti: canoni o spese non pagati e danni oltre il normale uso.",
+        "title": "Restituisci il deposito dopo la riconsegna",
+        "why": "Il deposito garantisce gli obblighi dell'inquilino e va restituito alla fine, dopo la verifica dello stato dell'immobile. Dalla somma puoi detrarre, indicandole per iscritto e con i documenti, le somme ancora dovute e i danni che vanno oltre il normale deterioramento. Il termine per restituirlo è scritto nel tuo contratto."
+      },
+      "documentsToKeep": {
+        "action": "Apri i Documenti",
+        "body": "Tieni insieme il contratto firmato, la ricevuta di registrazione, l'APE e il verbale di consegna; con un inquilino extra-UE anche la ricevuta della Questura.",
+        "title": "Quali documenti conservare",
+        "why": "Il commercialista li chiede per la dichiarazione dei redditi e il verbale di consegna ti serve a fine contratto per restituire il deposito. Nei Documenti trovi tutto in un posto."
+      },
+      "endCommunicate": {
+        "action": "Leggi la pagina dell'Agenzia",
+        "body": "Quando il contratto finisce prima del tempo, si proroga o si cede, di norma va comunicato all'Agenzia delle Entrate. Chiedi al commercialista come e entro quando.",
+        "title": "Comunica la fine del contratto all'Agenzia delle Entrate",
+        "why": "Dopo la registrazione le vicende del contratto (proroga, cessione, risoluzione) si comunicano all'Agenzia delle Entrate, anche con la cedolare secca. CasaZen non le comunica per te e non conosce il termine esatto del tuo caso."
+      },
+      "endOrganize": {
+        "action": "Apri i Documenti",
+        "body": "Fissa il giorno con l'inquilino, confronta lo stato con il verbale di consegna, leggi i contatori, ritira tutte le chiavi e firmate il verbale di riconsegna.",
+        "title": "Prepara la riconsegna della casa",
+        "why": "Al termine l'inquilino deve restituire la casa libera e nello stato in cui l'ha ricevuta, salvo il normale uso. Il verbale di riconsegna firmato da entrambi, con le letture dei contatori e le chiavi, ti protegge se ci sono contestazioni e ti serve per restituire il deposito."
+      },
+      "extraEu": {
+        "action": "Vai alla comunicazione",
+        "body": "Quando consegni la casa devi comunicarlo per iscritto all'autorità di pubblica sicurezza. La registrazione del contratto non basta e CasaZen non invia la comunicazione per te.",
+        "title": "Inquilino extra-UE: avvisa la Questura entro 48 ore dalla consegna",
+        "why": "È un obbligo di chi cede un immobile a un cittadino non dell'Unione europea o a un apolide, e la mancata comunicazione è sanzionata. L'ufficio e il modo di invio cambiano da provincia a provincia: guarda la pagina della Questura del tuo territorio. Dopo l'invio segna qui la data, con la ricevuta se ce l'hai: i promemoria si fermano."
+      },
+      "handover": {
+        "action": "Apri i Documenti",
+        "body": "Scrivi com'è la casa, quante chiavi consegni e le letture di luce, gas e acqua; fallo firmare a tutti e caricalo nei Documenti. Le utenze sono a carico dell'inquilino.",
+        "title": "Fai il verbale di consegna, con foto e contatori",
+        "why": "Il verbale fotografa lo stato dell'immobile alla consegna: a fine contratto ti serve per verificare i danni e per restituire il deposito. Nei nostri modelli le utenze sono dell'inquilino, che le intesta a sé."
+      },
+      "istatConcordato": {
+        "action": "Vai ai pagamenti",
+        "body": "Dal secondo anno puoi chiedere per iscritto l'adeguamento del canone, nella misura massima che prevede l'accordo del tuo comune. Vale dalla richiesta, non è retroattivo.",
+        "title": "Puoi chiedere l'aggiornamento ISTAT del canone",
+        "why": "Nel canone concordato l'aggiornamento ISTAT è ammesso solo nei limiti dell'accordo del comune: in quello di Monza e Brianza è una parte della variazione dell'indice. Nel nostro modello l'aggiornamento parte dalla prima rata dopo la richiesta scritta. Con la cedolare secca non si può chiedere."
+      },
+      "istatLibero": {
+        "action": "Vai ai pagamenti",
+        "body": "Dal secondo anno puoi chiedere per iscritto l'adeguamento del canone alla variazione ISTAT, nella misura scritta nel contratto. Vale dalla richiesta, non è retroattivo.",
+        "title": "Puoi chiedere l'aggiornamento ISTAT del canone",
+        "why": "Nel 4+4 la legge non fissa un tetto all'aggiornamento: la misura la scrivono le parti nel contratto. Nel nostro modello l'aggiornamento parte dalla prima rata dopo la richiesta scritta e non recupera gli anni passati. Se hai scelto la cedolare secca non si può chiedere."
+      },
+      "lateRegistration": {
+        "action": "Vai alla registrazione",
+        "body": "Registra il contratto il prima possibile: più passano i giorni, più la sanzione cresce. Poi chiedi al commercialista come regolarizzare.",
+        "title": "La scadenza per registrare è passata",
+        "why": "Il contratto va registrato all'Agenzia delle Entrate entro un termine che parte dalla firma o dall'inizio del contratto, se viene prima. Per chi è in ritardo ci sono sanzioni che crescono con i giorni di ritardo. CasaZen non le calcola: dipendono dal tuo caso e dal regime scelto."
+      },
+      "liberoDuration": {
+        "action": "Vedi le date",
+        "body": "Il contratto dura {{termMonths}} mesi e poi si rinnova da solo per altri {{renewalMonths}}. Tu puoi dire di no solo per i motivi previsti dalla legge, scrivendo il motivo, con almeno {{noticeMonths}} mesi di preavviso.",
+        "title": "4+4: cosa succede alla scadenza?",
+        "why": "Nel canone libero la prima durata è di {{termMonths}} mesi. Se nessuno dà la disdetta, il contratto si rinnova alle stesse condizioni. Il locatore può negare il rinnovo alla prima scadenza solo per i motivi indicati dalla legge: la comunicazione va fatta per iscritto, con il motivo scritto a pena di nullità e con almeno {{noticeMonths}} mesi di preavviso. Il nostro modello chiede raccomandata con ricevuta di ritorno o PEC."
+      },
+      "liberoFirstExpiry": {
+        "action": "Registra una disdetta",
+        "body": "Se non fai niente, il contratto si rinnova da solo per altri {{renewalMonths}} mesi. Per dire di no serve un motivo previsto dalla legge, scritto nella comunicazione, con almeno {{noticeMonths}} mesi di preavviso.",
+        "title": "Alla prima scadenza decidi tu se rinnovare",
+        "why": "Il locatore può negare il rinnovo alla prima scadenza solo per i motivi indicati dalla legge; la comunicazione va fatta per iscritto, indicando il motivo a pena di nullità. Conviene la raccomandata o la PEC, così hai la prova dell'invio. CasaZen non giudica se una disdetta è valida: la registra e ti ricorda le date."
+      },
+      "noticeFromTenant": {
+        "action": "Registra una disdetta",
+        "body": "Registrala qui: il contratto non si rinnova e le scadenze si aggiornano. L'inquilino può darla alla scadenza o recedere prima per gravi motivi, con lo stesso preavviso.",
+        "title": "Se l'inquilino ti manda la disdetta",
+        "why": "Nei nostri modelli il conduttore può comunicare la disdetta alla scadenza, o recedere in qualsiasi momento per gravi motivi, con almeno {{noticeMonths}} mesi di preavviso. Fino alla fine del preavviso deve pagare canone e oneri. CasaZen registra la disdetta e non giudica se è valida."
+      },
+      "ordinaryAnnualRegistro": {
+        "action": "Vedi come si versa",
+        "body": "Con il regime ordinario paghi l'imposta di registro di ogni annualità, di norma entro 30 giorni dalla scadenza della precedente. Segnalo al tuo commercialista.",
+        "title": "Ogni anno ricorda l'imposta di registro",
+        "why": "Dopo la prima annualità, che si paga alla registrazione, ogni anno va versata l'imposta dell'annualità successiva, senza il minimo previsto per la prima. Con la cedolare secca non c'è. CasaZen non ti manda promemoria per questi versamenti: tienili nel calendario del commercialista."
+      },
+      "regimeCheckCedolare": {
+        "action": "Confronta i due regimi",
+        "body": "Ti evita registro e bollo, ma non potrai aggiornare il canone all'ISTAT. Prova il confronto con i dati del tuo contratto.",
+        "title": "Sei sicuro che la cedolare secca sia giusta per il tuo caso?",
+        "why": "Con la cedolare secca l'affitto è tassato con un'imposta sostitutiva e non si pagano imposta di registro né di bollo; in cambio si rinuncia agli aggiornamenti del canone. Con il regime ordinario l'affitto si somma agli altri redditi e si pagano registro e bollo. Quale conviene dipende dal tuo reddito: il confronto ti dà una stima, da confermare con il commercialista."
+      },
+      "regimeCheckOrdinary": {
+        "action": "Confronta i due regimi",
+        "body": "Con il regime ordinario paghi registro e bollo e l'affitto si somma ai tuoi altri redditi. Confrontalo con la cedolare secca prima di registrare.",
+        "title": "Il regime ordinario è davvero il più conveniente?",
+        "why": "Con la cedolare secca l'affitto è tassato con un'imposta sostitutiva e non si pagano imposta di registro né di bollo; in cambio si rinuncia agli aggiornamenti del canone. Con il regime ordinario l'affitto si somma agli altri redditi e si pagano registro e bollo. Quale conviene dipende dal tuo reddito: il confronto ti dà una stima, da confermare con il commercialista."
+      },
+      "regimeChoose": {
+        "action": "Confronta i due regimi",
+        "body": "Per questo contratto non risulta ancora un regime fiscale. Confronta cedolare secca e regime ordinario con i dati del contratto prima di registrare.",
+        "title": "Come vuoi tassare l'affitto?",
+        "why": "Con la cedolare secca l'affitto è tassato con un'imposta sostitutiva e non si pagano imposta di registro né di bollo; in cambio si rinuncia agli aggiornamenti del canone. Con il regime ordinario l'affitto si somma agli altri redditi e si pagano registro e bollo. Quale conviene dipende dal tuo reddito: il confronto ti dà una stima, da confermare con il commercialista."
+      },
+      "regimeYearly": {
+        "action": "Confronta i due regimi",
+        "body": "Alla scadenza di ogni annualità puoi confermare o cambiare tra cedolare secca e regime ordinario. Rifai il confronto con i dati di oggi e chiedi al commercialista come comunicarlo.",
+        "title": "Ogni anno puoi rivedere la scelta fiscale",
+        "why": "La scelta della cedolare secca vale per l'annualità; si fa con la registrazione e si può confermare o revocare alle scadenze annuali, con le modalità e i termini che indica l'Agenzia delle Entrate. Un cambio di reddito o di canone può cambiare la convenienza."
+      },
+      "registerPrepare": {
+        "action": "Vedi le scadenze",
+        "body": "Il conto parte dalla firma di tutti o dall'inizio del contratto, se viene prima. Si registra online sul sito dell'Agenzia delle Entrate o con l'aiuto del commercialista.",
+        "title": "Dopo la firma hai {{registrationDays}} giorni per registrare",
+        "why": "La registrazione è un obbligo e il ritardo costa. Il giorno della firma che dichiari qui decide la scadenza, quindi scrivi quello vero. CasaZen non registra al posto tuo: tu fai la registrazione, poi dichiari qui numero, data e ricevuta."
+      },
+      "registrationComm": {
+        "action": "Vedi la registrazione",
+        "body": "Il contratto prevede che tu comunichi la registrazione all'inquilino e, se c'è, all'amministratore del condominio: manda numero e data. Il termine esatto chiedilo al commercialista.",
+        "title": "Dai notizia della registrazione all'inquilino",
+        "why": "Nei nostri modelli, dopo la registrazione il locatore dà comunicazione documentata al conduttore e all'amministratore del condominio. CasaZen non verifica il termine e non lo ricorda: è un promemoria, non una scadenza."
+      },
+      "registrationCosts": {
+        "action": "Stima i costi",
+        "body": "Alla registrazione paghi imposta di registro e bollo. Il nostro modello di contratto li divide a metà con l'inquilino. Il confronto ne stima le cifre.",
+        "title": "Quanto costa registrare con il regime ordinario?",
+        "why": "L'imposta di registro si calcola sul canone annuo, con un minimo per la prima annualità; il bollo dipende dalle facciate, dalle righe e dalle copie da registrare. Con la cedolare secca non si pagano. Nel nostro modello il locatore versa le imposte e si fa rimborsare la metà dall'inquilino con la prima rata di canone successiva alla richiesta."
+      },
+      "registrationReceipt": {
+        "action": "Scarica la ricevuta",
+        "body": "È la prova che il contratto è registrato: ti serve per il commercialista e per gli anni successivi. Scaricala e tienine una copia con il contratto.",
+        "title": "Conserva la ricevuta di registrazione",
+        "why": "La ricevuta riporta numero e data di registrazione. Il commercialista la chiede per la dichiarazione dei redditi e per gli adempimenti degli anni successivi."
+      },
+      "secondExpiry": {
+        "action": "Registra una disdetta",
+        "body": "Ciascuna parte può chiedere il rinnovo a nuove condizioni o rinunciarvi, con raccomandata o PEC almeno {{noticeMonths}} mesi prima. Se nessuno scrive, il contratto si rinnova alle stesse condizioni.",
+        "title": "Alla seconda scadenza cambiano le regole",
+        "why": "Dopo il primo periodo non servono più i motivi di legge: ciascuna parte può attivare la procedura per rinnovare a nuove condizioni o per non rinnovare. Come si chiude se non c'è accordo è scritto nel tuo contratto. CasaZen registra la disdetta e ti ricorda le date."
+      },
+      "startPassed": {
+        "action": "Controlla le scadenze",
+        "body": "I {{registrationDays}} giorni per registrare contano dall'inizio del contratto, se viene prima della firma. Controlla di non essere già in ritardo.",
+        "title": "Il contratto è già iniziato: controlla i tempi della registrazione",
+        "why": "La scadenza della registrazione è {{registrationDays}} giorni dopo la prima di due date: il giorno in cui hanno firmato tutti oppure l'inizio del contratto. Se il contratto è iniziato prima della firma, il conto parte dall'inizio."
+      },
+      "transitorioConfirmNeed": {
+        "action": "Vedi la data di fine",
+        "body": "Il contratto finisce da solo. Se chi ha l'esigenza vuole che continui, deve confermarla all'altra parte prima della scadenza, con raccomandata o PEC. Senza conferma può diventare un 4+4.",
+        "title": "Se l'esigenza continua, confermala per iscritto",
+        "why": "Il transitorio vale finché dura l'esigenza che lo giustifica. Se questa continua oltre la scadenza, la parte interessata la conferma per iscritto all'altra parte prima della fine del contratto; se non lo fa, o se l'esigenza viene meno, il contratto può essere trattato come un normale 4+4. Il termine esatto chiedilo al commercialista."
+      },
+      "transitorioCosts": {
+        "action": "Stima i costi",
+        "body": "Nel modello ufficiale il bollo è a carico dell'inquilino e l'imposta di registro si divide a metà. Con la cedolare secca non si pagano.",
+        "title": "Chi paga bollo e registro in un transitorio?",
+        "why": "Lo dice il modello di contratto transitorio del decreto del 2017 che CasaZen usa: le spese di bollo sono dell'inquilino e il locatore registra il contratto, se la registrazione è dovuta, e si fa rimborsare dall'inquilino la metà. Per le cifre usa il confronto o chiedi al commercialista."
+      },
+      "transitorioDuration": {
+        "action": "Vedi le date",
+        "body": "Dura al massimo {{transitoryMax}} mesi, senza disdetta e senza rinnovo automatico. Serve un'esigenza temporanea vera, scritta nel contratto.",
+        "title": "Un transitorio dura poco e finisce da solo",
+        "why": "Il contratto transitorio risponde a un'esigenza temporanea di chi affitta o di chi prende in affitto, per esempio di lavoro, di studio o di cure. Cessa alla scadenza senza bisogno di disdetta. Se le regole del modello non sono rispettate, può essere trattato come un normale 4+4."
+      },
+      "transitorioNeed": {
+        "action": "Carica un documento",
+        "body": "Poiché dura più di {{transitoryDocDays}} giorni, l'esigenza (per esempio un contratto di lavoro o di studio) va scritta nel contratto e provata con documenti allegati.",
+        "title": "Documenta l'esigenza del transitorio",
+        "why": "Per un contratto transitorio più lungo di {{transitoryDocDays}} giorni il decreto del 2017 chiede che l'esigenza sia documentata con allegati al contratto; sotto quella durata non serve. Conserva i documenti insieme al contratto."
+      }
+    },
+    "data": {
+      "rentPlan": "Piano dei canoni"
+    },
+    "forYou": {
+      "empty": "Per ora non ci sono consigli per questo contratto. Torna qui quando cambia qualcosa.",
+      "showAll": "Mostra tutti i consigli ({{total}})",
+      "showLess": "Mostra meno consigli",
+      "title": "Per il tuo contratto"
+    },
+    "opensNewTab": "(si apre in una nuova scheda)",
+    "regime": {
+      "accountant": "Sono stime fatte con i dati del tuo contratto e con le regole che conosciamo oggi: non sono una consulenza fiscale e CasaZen non è un intermediario abilitato. Prima di registrare confermale con il tuo commercialista.",
+      "ata": {
+        "NotListed": "Se il tuo comune è «ad alta tensione abitativa» (un comune con carenza di abitazioni, dove la cedolare del canone concordato è ridotta), la stima cambia: non lo troviamo nel nostro elenco, chiedilo al commercialista.",
+        "Unverified": "Il tuo comune potrebbe essere «ad alta tensione abitativa» (un comune con carenza di abitazioni, dove la cedolare del canone concordato è ridotta): non l'abbiamo verificato, chiedilo al commercialista.",
+        "Verified": "Il tuo comune è «ad alta tensione abitativa» (un comune con carenza di abitazioni): per il canone concordato la cedolare è ridotta."
+      },
+      "cedolare": {
+        "noIstat": "Per tutta la durata dell'opzione non puoi aggiornare il canone all'ISTAT.",
+        "pays": "Paghi il {{rate}} dell'affitto ogni anno: circa {{tax}}.",
+        "paysReduced": "Paghi il {{rate}} dell'affitto ogni anno (aliquota ridotta del canone concordato): circa {{tax}}."
+      },
+      "how": {
+        "halved": "Registro e bollo: nel nostro modello di contratto si dividono a metà con l'inquilino; qui sono contati per intero.",
+        "title": "Come l'abbiamo calcolato",
+        "withoutBollo": "Il bollo non è incluso nel confronto: indica facciate e copie in «Affina la stima» per aggiungerlo."
+      },
+      "ordinary": {
+        "bolloPaid": "Bollo: circa {{amount}} alla registrazione.",
+        "bolloRule": "Bollo: {{amount}} ogni {{pages}} facciate di ogni copia. Indica facciate e copie in «Affina la stima».",
+        "irpefOpen": "Imposta sul reddito (IRPEF): da valutare con il commercialista.",
+        "irpefPaid": "Imposta sul reddito (IRPEF): circa {{amount}} in più all'anno.",
+        "istat": "Puoi chiedere l'aggiornamento ISTAT del canone, se il contratto lo prevede.",
+        "registro": "Imposta di registro: circa {{amount}} alla registrazione, poi ogni anno."
+      },
+      "outcome": {
+        "cedolareCheaper": "Con i dati del tuo contratto la cedolare secca ti fa risparmiare circa {{amount}} nel primo anno rispetto al regime ordinario.",
+        "equal": "Con i dati del tuo contratto i due regimi costano più o meno lo stesso nel primo anno.",
+        "incomeNeeded": "Manca il tuo reddito imponibile: scrivilo in «Affina la stima» e rifacciamo il confronto.",
+        "ordinaryCheaper": "Con i dati del tuo contratto il regime ordinario ti fa pagare circa {{amount}} in meno nel primo anno rispetto alla cedolare secca.",
+        "unknown": "Non possiamo ancora dire quale regime costa meno."
+      },
+      "refine": {
+        "copies": "Quante copie registri?",
+        "income": "Quanto guadagni in un anno, oltre a questo affitto? (reddito imponibile IRPEF, in euro, facoltativo)",
+        "lines": "Quante righe ha una copia? (facoltativo)",
+        "pages": "Quante facciate scritte ha una copia del contratto?",
+        "title": "Affina la stima"
+      },
+      "todoCedolare": "Se la scegli: la indichi quando registri il contratto, non paghi registro né bollo e per tutta la durata dell'opzione non puoi aggiornare il canone. Il nostro contratto contiene già la rinuncia all'aggiornamento.",
+      "todoOrdinary": "Se non la scegli: registri il contratto pagando registro e bollo (di solito a metà con l'inquilino), l'affitto va nel tuo reddito IRPEF e puoi chiedere l'aggiornamento ISTAT, se il contratto lo prevede."
+    },
+    "rent": {
+      "answer": {
+        "above": "Il canone di {{rent}} al mese supera il limite dell'accordo: al massimo {{max}} al mese.",
+        "below": "Il canone di {{rent}} al mese è sotto il minimo dell'accordo: almeno {{min}} al mese.",
+        "noRent": "Per questa casa e per queste date il canone dell'accordo va da {{min}} a {{max}} al mese.",
+        "within": "Il canone di {{rent}} al mese rientra nei limiti dell'accordo: da {{min}} a {{max}} al mese."
+      },
+      "associations": "Il calcolo segue l'accordo del tuo comune. Per l'attestazione e per i dubbi rivolgiti a un'organizzazione firmataria.",
+      "how": "Come l'abbiamo calcolato",
+      "indicative": "Sono valori indicativi: confermali con un'organizzazione firmataria dell'accordo.",
+      "intro": "Descrivi la casa e calcoliamo il limite del canone secondo l'accordo del comune.",
+      "more": "Pertinenze e dotazioni",
+      "recalc": "Ricalcola con altri dati"
+    },
+    "source": {
+      "adeAnnualita": "Agenzia delle Entrate: versamento dell'annualità successiva",
+      "adeAtti": "Agenzia delle Entrate: atti e contratti di locazione",
+      "adeCedolare": "Agenzia delle Entrate: la cedolare secca",
+      "adeCedolareScheda": "Agenzia delle Entrate: scheda informativa sulla cedolare secca",
+      "adeQuantoSiPaga": "Agenzia delle Entrate: quanto si paga per registrare il contratto",
+      "dm2017": "Decreto del 16 gennaio 2017 sui contratti a canone concordato (Gazzetta Ufficiale)",
+      "law392": "Legge 392 del 1978 sulle locazioni (deposito cauzionale)",
+      "law431": "Legge 431 del 1998 sulle locazioni abitative",
+      "poliziaExtraUe": "Polizia di Stato: ospitalità a cittadini extracomunitari"
+    },
+    "sources": "Fonti",
+    "tab": "Guida",
+    "tool": {
+      "attestation": {
+        "description": "Sono le organizzazioni firmatarie dell'accordo del tuo comune: CasaZen non le contatta e non attesta per loro.",
+        "title": "Le organizzazioni dell'accordo"
+      },
+      "imu": {
+        "description": "CasaZen prepara il documento con i dati del contratto; lo mandi tu al comune e poi lo segni come inviato.",
+        "title": "Comunicazione IMU al comune"
+      },
+      "regime": {
+        "description": "Una stima con i dati del tuo contratto, per decidere con più chiarezza. La scelta resta tua.",
+        "title": "Cedolare secca o regime ordinario?"
+      },
+      "rent": {
+        "description": "Il canone di un contratto concordato deve stare nelle fasce dell'accordo del comune.",
+        "title": "Il canone rientra nei limiti dell'accordo?"
+      }
+    },
+    "tools": {
+      "regime": {
+        "idle": "Mettiamo a confronto i due regimi con i dati del tuo contratto.",
+        "needsRent": "Per il confronto serve il canone del contratto: scrivilo nei dati.",
+        "open": "Apri il confronto",
+        "title": "Cedolare secca o regime ordinario?"
+      },
+      "rent": {
+        "noData": "Descrivi la casa (superficie, zona…) per sapere se il canone rientra nei limiti.",
+        "open": "Controlla il canone",
+        "title": "Il canone rientra nei limiti dell'accordo?"
+      },
+      "title": "Strumenti"
+    },
+    "why": "Perché?"
   },
   "leaseRound": {
     "activity": {
