@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { trustedSuppliersApi, type InviteSupplierDto, type UpdateVisibilityDto } from '@/api/trusted-suppliers.api';
+import { trustedSuppliersApi, type InviteSupplierDto } from '@/api/trusted-suppliers.api';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
