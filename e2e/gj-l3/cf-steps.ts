@@ -214,8 +214,11 @@ export async function movePracticeTo(page: Page, status: string, closeReason?: s
   await expect(page.getByText('Stato aggiornato.')).toBeVisible({ timeout: 15_000 });
 }
 
-/** One of the three sample documents of the panel, downloaded as a person does it (a click); returns where the file was saved. */
-export async function downloadSample(page: Page, kind: 'contract' | 'attestation' | 'receipt', folder: string): Promise<string> {
+/**
+ * One of the two sample documents of the panel (CF-DOCS-REAL: the contract with its attestation and its calculation sheet in one scan, and the
+ * receipt of the Agenzia delle Entrate), downloaded as a person does it (a click); returns where the file was saved.
+ */
+export async function downloadSample(page: Page, kind: 'contract' | 'receipt', folder: string): Promise<string> {
   const [download] = await Promise.all([
     page.waitForEvent('download', { timeout: 30_000 }),
     page.getByTestId(`guided-form-download-${kind}`).click(),
@@ -228,8 +231,15 @@ export async function downloadSample(page: Page, kind: 'contract' | 'attestation
 
 // ---- the documents -----------------------------------------------------------------------------------------------------------------
 
-/** On the page that takes the documents in: the kind, the file chosen with the field, «Carica documento», and the document is in the list. */
-export async function uploadDocument(page: Page, file: string, kindLabel: 'Contratto' | 'Attestazione' | 'Registrazione'): Promise<void> {
+/**
+ * On the page that takes the documents in: the kind, the file chosen with the field, «Carica documento», and the document is in the list. The
+ * contract and its attestation are ONE upload (the file the service delivers); the receipt of the Agenzia is another (CF-DOCS-REAL).
+ */
+export async function uploadDocument(
+  page: Page,
+  file: string,
+  kindLabel: 'Contratto firmato e attestazione' | 'Ricevuta di registrazione',
+): Promise<void> {
   const panel = page.getByTestId('lease-documents-panel');
   await expect(panel).toBeVisible({ timeout: 20_000 });
   await panel.getByLabel('Tipo di documento').selectOption({ label: kindLabel });
@@ -326,18 +336,18 @@ export async function importTheSignedContract(page: Page): Promise<void> {
 // ---- the registration ------------------------------------------------------------------------------------------------------------------
 
 /**
- * The registration made by the service is declared on the sheet: the receipt already uploaded among the documents is the one used (not sent
- * twice), the number and the day are typed from it, the person confirms. The sheet opens on the guide (LR-GUIDE-1) and the registration is in
- * the tab of the deadlines: the person opens it, as the button of «Cosa devi fare ora» does.
+ * The registration made by the service is declared on the sheet (CF-DOCS-REAL): the receipt already uploaded among the documents is the one
+ * used (not sent twice) and it is READ — the number and the day are in the fields, marked «Letto dalla ricevuta — controlla», and nothing is
+ * declared by the reading. The person checks what the window shows and confirms with the box; the test returns what it showed. The sheet
+ * opens on the guide (LR-GUIDE-1) and the registration is in the tab of the deadlines: the person opens it, as the button of «Cosa devi fare
+ * ora» does.
  */
-export async function declareTheRegistration(
+export async function declareFromTheReceipt(
   page: Page,
   leaseId: string,
-  code: string,
-  day: string,
   /** Called with the window filled in and not yet sent (a picture of it). */
   beforeSaving?: () => Promise<void>,
-): Promise<void> {
+): Promise<{ code: string; day: string }> {
   await page.getByTestId('lease-tab-scadenze').click();
   const panel = page.getByTestId('rli-registration-panel');
   await expect(panel).toBeVisible({ timeout: 30_000 });
@@ -346,12 +356,23 @@ export async function declareTheRegistration(
   const dialog = page.getByTestId('rli-manual-dialog');
   await expect(dialog).toBeVisible({ timeout: 15_000 });
   await expect(dialog.getByTestId('rli-receipt-uploaded')).toBeChecked();
-  await dialog.locator(`#rli-code-${leaseId}`).fill(code);
-  await dialog.locator(`#rli-date-${leaseId}`).fill(day);
+
+  // The reading of the receipt arrives after the window opens: the fields are proposed, with their mark.
+  const code = dialog.locator(`#rli-code-${leaseId}`);
+  await expect(dialog.getByTestId('rli-code-read'), 'the number is proposed from the receipt').toBeVisible({ timeout: 30_000 });
+  await expect(dialog.getByTestId('rli-date-read'), 'the day is proposed from the receipt').toBeVisible();
+  await expect(code).not.toHaveValue('');
+  await expect(dialog.getByTestId('rli-receipt-rejected'), 'the receipt is a registration, not a discarded request').toHaveCount(0);
+
+  // Nothing is declared yet: the button waits for the person's box.
+  const save = dialog.getByRole('button', { name: 'Salva registrazione' });
+  await expect(save).toBeDisabled();
+  const shown = { code: (await code.inputValue()).trim(), day: await dialog.locator(`#rli-date-${leaseId}`).inputValue() };
   await dialog.getByRole('checkbox', { name: /Dichiaro che il contratto è stato registrato/ }).check();
   await beforeSaving?.();
-  await dialog.getByRole('button', { name: 'Salva registrazione' }).click();
+  await save.click();
   await expect(dialog).toHaveCount(0, { timeout: 30_000 });
+  return shown;
 }
 
 // ---- the access without Stripe ------------------------------------------------------------------------------------------------------

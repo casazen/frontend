@@ -4,7 +4,7 @@ import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { useLeaseDocuments } from '@/queries/use-lease-documents';
 import { LeaseDocumentUploadDialog } from '../components/lease-document-upload-dialog';
-import { newestDocument } from '../lib/lease-benefits';
+import { contractWithAttestation, newestDocument } from '../lib/lease-benefits';
 import { WIZARD_BUTTON } from './lease-wizard-frame';
 
 /**
@@ -15,6 +15,10 @@ import { WIZARD_BUTTON } from './lease-wizard-frame';
  * without it, and what is missing is told again where the lease is shown once it is registered. Only for a canone concordato; a libero
  * or transitorio contract has no attestation and is not asked for one.
  *
+ * When the contract file that was uploaded holds the attestation too (the file the guided service delivers, CF-DOCS-REAL: the reading
+ * recognized its pages) the section says so — «Attestazione: inclusa nel contratto caricato» — and asks for nothing: no second upload, no
+ * button. A separate attestation uploaded as such still counts and is told the same way as before.
+ *
  * Unlike the receipt of the registration, which the declaration refers to, nothing here has to be chosen or kept: the attestation is a
  * document of the lease, so the file already uploaded is the one in use and «Carica un nuovo file» adds the one that replaces it.
  */
@@ -23,6 +27,7 @@ export function AttestationSection({ leaseId }: { leaseId: string }) {
   const documents = useLeaseDocuments(leaseId);
   const [uploadOpen, setUploadOpen] = useState(false);
   const attestation = documents.data ? newestDocument(documents.data, 'Attestation') : undefined;
+  const included = documents.data ? contractWithAttestation(documents.data) : undefined;
   const name = t('leaseRound.document.attestation.name');
 
   return (
@@ -36,6 +41,13 @@ export function AttestationSection({ leaseId }: { leaseId: string }) {
             </p>
           ) : documents.isError ? (
             <p className="break-words text-sm">{t('cfDocuments.documentsError')}</p>
+          ) : included ? (
+            <>
+              <p className="break-words font-medium" data-testid="lease-after-attestation-included">
+                {t('leaseDocs.attestation.included')}
+              </p>
+              <p className="break-all text-sm text-foreground/70">{included.fileName}</p>
+            </>
           ) : attestation ? (
             <>
               <p className="break-words font-medium">{t('leaseRound.attestation.present')}</p>
@@ -49,7 +61,7 @@ export function AttestationSection({ leaseId }: { leaseId: string }) {
           <Button type="button" variant="outline" className={`${WIZARD_BUTTON} sm:shrink-0`} onClick={() => void documents.refetch()}>
             {t('leases.retry')}
           </Button>
-        ) : documents.isSuccess ? (
+        ) : documents.isSuccess && !included ? (
           <Button
             type="button"
             variant="outline"

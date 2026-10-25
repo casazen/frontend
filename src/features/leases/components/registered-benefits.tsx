@@ -12,9 +12,9 @@ import { cn } from '@/lib/utils';
 import { useLeaseDocuments } from '@/queries/use-lease-documents';
 import type { LeaseDetail } from '@/types';
 import {
-  BENEFIT_DOCUMENTS,
   BENEFIT_DOCUMENT_KIND,
   BENEFIT_TEXT,
+  benefitDocuments,
   benefitSource,
   type BenefitDocument,
   type BenefitSource,
@@ -42,7 +42,8 @@ interface RegisteredBenefitsProps {
  * «Contratto registrato: ora fai valere le agevolazioni»: what follows a registered canone concordato. The person brings a copy of
  * three documents (the signed contract, the attestation and the receipt of the registration) to the accountant and to the comune to
  * obtain the benefits of the contract, and each one that exists has its «Scarica»; one that does not exist is said to be missing, with
- * the button that uploads it. The two figures are those the rules of CasaZen state for a canone concordato (the IMU reduced by 25%, the
+ * the button that uploads it. When the contract file holds the attestation too (the file the guided service delivers, CF-DOCS-REAL) they are
+ * two: «Contratto con attestazione (un file)» and the receipt. The two figures are those the rules of CasaZen state for a canone concordato (the IMU reduced by 25%, the
  * cedolare secca at 10% where it is provided for); which comuni provide for it and the conditions of each are not listed here, and the
  * last sentence sends the person to the accountant for them. Nothing here is advice: it only tells what to bring and where it is.
  */
@@ -56,7 +57,9 @@ export function RegisteredBenefits({ lease, calm = false, plain = false }: Regis
   const [uploadOpen, setUploadOpen] = useState(false);
   const [downloading, setDownloading] = useState<BenefitDocument | null>(null);
 
-  const rows = BENEFIT_DOCUMENTS.map((id) => ({ id, source: benefitSource(id, lease, documents.data) }));
+  const ids = benefitDocuments(documents.data);
+  const together = ids.length === 2;
+  const rows = ids.map((id) => ({ id, source: benefitSource(id, lease, documents.data) }));
   const missing = rows.filter((row) => row.source === null).length;
   const unreadable = documents.isError && rows.some((row) => row.source === undefined);
 
@@ -99,13 +102,13 @@ export function RegisteredBenefits({ lease, calm = false, plain = false }: Regis
           {t('leaseRound.benefits.title')}
         </Heading>
         <div className="space-y-2 break-words text-sm text-foreground/80 sm:text-base">
-          <p>{t('leaseRound.benefits.intro')}</p>
-          <p className="text-foreground/70">{t('leaseRound.benefits.use')}</p>
+          <p>{t(together ? 'leaseDocs.benefits.introTwo' : 'leaseRound.benefits.intro')}</p>
+          <p className="text-foreground/70">{t(together ? 'leaseDocs.benefits.useTwo' : 'leaseRound.benefits.use')}</p>
         </div>
 
         {missing > 0 ? (
           <p className="break-words text-sm font-medium" data-testid="lease-benefits-missing">
-            {t('leaseRound.benefits.missing', { count: missing })}
+            {together ? t('leaseDocs.benefits.missingTwo') : t('leaseRound.benefits.missing', { count: missing })}
           </p>
         ) : null}
 

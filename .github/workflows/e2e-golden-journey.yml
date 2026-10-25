@@ -113,6 +113,10 @@ jobs:
           curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg >/dev/null
           echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | sudo tee /etc/apt/sources.list.d/stripe.list
           sudo apt-get update && sudo apt-get install -y stripe
+      - name: Install local document OCR tools
+        # The contract of the round (CF-DOCS-REAL) is delivered as a scan, like the real one: the backend reads it with Tesseract (Italian and
+        # English) after turning its pages into pictures with poppler, and runs them under prlimit (util-linux). The same step as the backend CI.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-ita tesseract-ocr-eng poppler-utils
       - name: Build backend
         run: dotnet build backend/Casazen.Web -c Release
       - name: Install frontend and Chromium

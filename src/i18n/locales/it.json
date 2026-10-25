@@ -11,7 +11,7 @@
     "reference": "Riferimento contratto: {{id}}",
     "openHouse": "Apri la casa",
     "openLease": "Apri il contratto",
-    "instructions": "Carica il contratto, l’attestazione e la ricevuta di registrazione che hai ricevuto. I file saranno allegati a questo contratto e consultabili nella sua sezione Documenti. Il caricamento non modifica i dati del contratto né richiede un nuovo pagamento.",
+    "instructions": "Carica il contratto firmato con l’attestazione (anche in un unico file, come ti è arrivato) e, a parte, la ricevuta di registrazione. I file saranno allegati a questo contratto e consultabili nella sua sezione Documenti. Il caricamento non modifica i dati del contratto né richiede un nuovo pagamento.",
     "chooseLease": "Seleziona il contratto a cui allegare i documenti.",
     "noLeases": "Non hai ancora contratti salvati: crea un contratto per poter allegare i documenti.",
     "practice": {
@@ -36,13 +36,13 @@
     "import": {
       "action": "Completa e importa il contratto",
       "description": "Controlla i dati letti dal contratto e importalo: la bozza diventa un contratto firmato, con lo stesso riferimento.",
-      "instructions": "Carica il contratto che hai ricevuto: lo leggiamo e compiliamo i dati della bozza, poi li controlli e importi il contratto. L’attestazione e la ricevuta di registrazione si caricano allo stesso modo. Il caricamento non richiede un nuovo pagamento.",
+      "instructions": "Carica il file che hai ricevuto, con il contratto firmato e l’attestazione: lo leggiamo, riconosciamo le sue parti e compiliamo i dati della bozza, poi li controlli e importi il contratto. La ricevuta di registrazione è un file a parte e si carica dopo. Il caricamento non richiede un nuovo pagamento.",
       "title": "Il contratto è arrivato"
     },
     "kinds": {
-      "Contract": "Contratto",
-      "Attestation": "Attestazione",
-      "Registration": "Registrazione",
+      "Contract": "Contratto firmato e attestazione",
+      "Attestation": "Attestazione (solo se arriva a parte)",
+      "Registration": "Ricevuta di registrazione",
       "Other": "Altro"
     }
   },
@@ -737,8 +737,7 @@
     "comune": "Comune",
     "documentError": "Non è stato possibile scaricare il documento. Riprova.",
     "documents": {
-      "attestation": "Scarica l'attestazione",
-      "contract": "Scarica il contratto di esempio",
+      "contract": "Scarica il contratto con l'attestazione (un file)",
       "receipt": "Scarica la ricevuta di registrazione",
       "title": "Documenti di esempio"
     },
@@ -11534,6 +11533,72 @@
       "pendingDelta_other": "{{count}} canoni non ancora scaduti"
     }
   },
+  "leaseDocs": {
+    "attestation": {
+      "included": "Attestazione: inclusa nel contratto caricato"
+    },
+    "benefits": {
+      "contractWithAttestation": {
+        "name": "Contratto con attestazione (un file)",
+        "upload": "Carica il contratto con l'attestazione"
+      },
+      "introTwo": "Porta una copia di questi due documenti al tuo commercialista e al comune per ottenere le agevolazioni del canone concordato, per esempio l'IMU ridotta del 25% e, dove è prevista, la cedolare secca al 10%.",
+      "missingTwo": "Te ne manca ancora uno: caricalo per averli tutti e due pronti.",
+      "useTwo": "L'attestazione è dentro il contratto: il comune può chiedertela per applicare l'aliquota ridotta; il commercialista la usa per la dichiarazione dei redditi."
+    },
+    "contains": "Contiene: {{parts}}.",
+    "page": "p. {{first}}",
+    "pages": "pp. {{first}}–{{last}}",
+    "receipt": {
+      "check": "Letto dalla ricevuta — controlla",
+      "notAReceipt": "Questo file non sembra una ricevuta dell'Agenzia delle Entrate: scrivi tu il numero e la data.",
+      "reading": "Leggo la ricevuta…",
+      "rejected": "L'Agenzia delle Entrate ha scartato la richiesta: il contratto NON risulta registrato. Non dichiarare la registrazione con questa ricevuta e controlla con chi l'ha presentata.",
+      "unreadable": "Non riusciamo a leggere questa ricevuta (è una scansione o una foto?): scrivi tu il numero e la data.",
+      "warnings": {
+        "default": "C'è qualcosa nella ricevuta che non coincide con il contratto: controllalo.",
+        "receipt_comune_differs": "Il comune della ricevuta non è quello della casa.",
+        "receipt_end_differs": "La fine indicata nella ricevuta non è quella del contratto.",
+        "receipt_regime_differs": "La ricevuta e il contratto non dicono la stessa cosa sulla cedolare secca.",
+        "receipt_rent_differs": "Il canone annuo della ricevuta non coincide con quello del contratto.",
+        "receipt_start_differs": "L'inizio indicato nella ricevuta non è quello del contratto.",
+        "receipt_stipulation_differs": "La data di stipula della ricevuta non è quella del contratto.",
+        "receipt_type_differs": "Il tipo di contratto della ricevuta non è quello del contratto."
+      },
+      "warningsTitle": "Da controllare"
+    },
+    "recognized": "Nel file abbiamo riconosciuto: {{parts}}.",
+    "section": {
+      "attestation": "attestazione",
+      "calculationSheet": "scheda di calcolo",
+      "contract": "contratto"
+    },
+    "upload": {
+      "hint": {
+        "Attestation": "Serve solo se l'attestazione ti è arrivata a parte: se è nello stesso file del contratto, caricalo come «Contratto firmato e attestazione».",
+        "Contract": "Carica il file così come l'hai ricevuto: se contiene anche l'attestazione e la scheda di calcolo, le riconosciamo noi e non te le chiediamo di nuovo.",
+        "Other": "Un documento che non è nessuno degli altri.",
+        "Registration": "La ricevuta dell'Agenzia delle Entrate è un file a parte: la leggiamo per compilare la dichiarazione della registrazione."
+      }
+    },
+    "warnings": {
+      "attestation_comune_differs": "Il comune dell'attestazione non è quello della casa.",
+      "attestation_dates_differ": "Le date del contratto e quelle dell'attestazione non coincidono.",
+      "attestation_not_conform": "L'attestazione dice che il canone NON rispetta l'accordo territoriale.",
+      "attestation_parties_differ": "L'attestazione cita una persona che non è nel contratto.",
+      "attestation_rent_differs": "Il canone attestato non è quello del contratto.",
+      "attestation_rent_out_of_range": "Il canone del contratto è fuori dai valori che l'attestazione indica per questa casa.",
+      "attestation_sheet_differ": "L'attestazione e la scheda di calcolo non dicono le stesse cifre (canone, zona o superficie).",
+      "default": "C'è qualcosa da controllare nel file.",
+      "fiscal_code_invalid": "Un codice fiscale scritto nel contratto non risulta valido: controlla i dati delle persone.",
+      "pages_out_of_order": "Le pagine del file non sono nell'ordine consueto (contratto, attestazione, scheda di calcolo): controlla che non ne manchi nessuna.",
+      "pages_unreadable": "Alcune pagine non si leggono bene (pagine {{pages}}): controlla i dati con il file in mano.",
+      "sheet_not_conform": "La scheda di calcolo dice che il canone NON rispetta l'accordo territoriale.",
+      "sheet_rent_differs": "Il canone della scheda di calcolo non è quello del contratto.",
+      "term_too_short": "Un canone concordato dura almeno tre anni: la durata che risulta dal contratto è più breve.",
+      "title": "Da controllare"
+    }
+  },
   "leaseFlow": {
     "actor": {
       "Landlord": "Tocca a te",
@@ -12075,7 +12140,7 @@
     },
     "documents": {
       "inHand": "il contratto firmato, in PDF o in foto delle pagine.",
-      "summary": "Carica il contratto già firmato: lo leggiamo noi e compiliamo i dati al posto tuo. Ti chiediamo solo quello che non riusciamo a leggere.",
+      "summary": "Carica il contratto già firmato, anche con l'attestazione nello stesso file: lo leggiamo noi, riconosciamo le sue parti e compiliamo i dati al posto tuo. Ti chiediamo solo quello che non riusciamo a leggere.",
       "title": "Carica il contratto"
     },
     "done": {

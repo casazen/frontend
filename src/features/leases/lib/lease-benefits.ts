@@ -7,11 +7,19 @@ import type { LeaseDetail } from '@/types';
  * contract, the attestation and the receipt of the registration, in the order the person meets them.
  */
 export const BENEFIT_DOCUMENTS = ['contract', 'attestation', 'receipt'] as const;
-export type BenefitDocument = (typeof BENEFIT_DOCUMENTS)[number];
+
+/**
+ * When the file that holds the contract holds its attestation too (CF-DOCS-REAL: the file the guided service delivers), the documents are two:
+ * the contract with its attestation, which is one file, and the receipt of the registration.
+ */
+export const BENEFIT_DOCUMENTS_TOGETHER = ['contractWithAttestation', 'receipt'] as const;
+
+export type BenefitDocument = (typeof BENEFIT_DOCUMENTS)[number] | (typeof BENEFIT_DOCUMENTS_TOGETHER)[number];
 
 /** The kind a document is given when it is uploaded among the documents of the lease. */
 export const BENEFIT_DOCUMENT_KIND: Readonly<Record<BenefitDocument, LeaseDocumentKind>> = {
   contract: 'Contract',
+  contractWithAttestation: 'Contract',
   attestation: 'Attestation',
   receipt: 'Registration',
 };
@@ -19,6 +27,7 @@ export const BENEFIT_DOCUMENT_KIND: Readonly<Record<BenefitDocument, LeaseDocume
 /** The words of each document: its name, and the label of the button that uploads it. The keys are written out so that the i18n test finds a missing one. */
 export const BENEFIT_TEXT: Readonly<Record<BenefitDocument, { nameKey: string; uploadKey: string }>> = {
   contract: { nameKey: 'leaseRound.document.contract.name', uploadKey: 'leaseRound.document.contract.upload' },
+  contractWithAttestation: { nameKey: 'leaseDocs.benefits.contractWithAttestation.name', uploadKey: 'leaseDocs.benefits.contractWithAttestation.upload' },
   attestation: { nameKey: 'leaseRound.document.attestation.name', uploadKey: 'leaseRound.document.attestation.upload' },
   receipt: { nameKey: 'leaseRound.document.receipt.name', uploadKey: 'leaseRound.document.receipt.upload' },
 };
@@ -56,9 +65,31 @@ export function newestDocument(documents: readonly LeaseDocument[], kind: LeaseD
 }
 
 /**
- * Where the file of one of the three documents is, `null` when the lease has none, `undefined` while that is not known (the documents of
+ * The file of the lease that holds the contract AND its attestation (CF-DOCS-REAL), if there is one: the newest contract document the reading
+ * recognized an attestation in. The person is not asked for the attestation again when it is there.
+ */
+export function contractWithAttestation(documents: readonly LeaseDocument[]): LeaseDocument | undefined {
+  return newestDocument(
+    documents.filter((document) => document.kind === 'Contract' && document.containsAttestation === true),
+    'Contract',
+  );
+}
+
+/** Whether the lease has its attestation: the document of that kind, or the contract file that holds it. */
+export function hasAttestation(documents: readonly LeaseDocument[]): boolean {
+  return newestDocument(documents, 'Attestation') !== undefined || contractWithAttestation(documents) !== undefined;
+}
+
+/** The documents to bring after a registration: three, or two when the contract file holds the attestation (while the list is not known, three). */
+export function benefitDocuments(documents: readonly LeaseDocument[] | undefined): readonly BenefitDocument[] {
+  return documents && contractWithAttestation(documents) ? BENEFIT_DOCUMENTS_TOGETHER : BENEFIT_DOCUMENTS;
+}
+
+/**
+ * Where the file of one of the documents is, `null` when the lease has none, `undefined` while that is not known (the documents of
  * the lease are not read yet, and the document is one that can be among them). The signed contract and the receipt of the registration
- * are the lease's own files when it has them; any other copy is a document uploaded to the lease.
+ * are the lease's own files when it has them; any other copy is a document uploaded to the lease. The contract with its attestation is
+ * always the document that holds both: the signed copy of the lease may be another file.
  */
 export function benefitSource(
   id: BenefitDocument,
@@ -68,6 +99,6 @@ export function benefitSource(
   if (id === 'contract' && lease.hasSignedPdf) return { from: 'signed' };
   if (id === 'receipt' && lease.registration?.hasReceipt) return { from: 'receipt' };
   if (!documents) return undefined;
-  const document = newestDocument(documents, BENEFIT_DOCUMENT_KIND[id]);
+  const document = id === 'contractWithAttestation' ? contractWithAttestation(documents) : newestDocument(documents, BENEFIT_DOCUMENT_KIND[id]);
   return document ? { from: 'document', document } : null;
 }

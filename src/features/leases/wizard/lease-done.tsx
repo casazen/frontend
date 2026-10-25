@@ -18,7 +18,7 @@ import { useRliChecklist } from '@/queries/use-leases';
 import { useRentLedger } from '@/queries/use-rent';
 import type { LeaseDetail, LongRentRules, RentLedger, RliChecklist } from '@/types';
 import { leasePropertyLine } from '../lib/lease-list-format';
-import { isConcordatoLease, newestDocument, showsBenefits } from '../lib/lease-benefits';
+import { hasAttestation, isConcordatoLease, showsBenefits } from '../lib/lease-benefits';
 import { ManualRegistrationDialog } from '../components/manual-registration-dialog';
 import { RegisteredBenefits } from '../components/registered-benefits';
 import { addMonths } from './wizard-model';
@@ -165,7 +165,7 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
     ledger: ledger.data,
     rules,
     apeMissing: imported && documents.isSuccess && !latestApeDocument(documents.data),
-    attestationMissing: concordato && !benefits && leaseDocuments.isSuccess && !newestDocument(leaseDocuments.data, 'Attestation'),
+    attestationMissing: concordato && !benefits && leaseDocuments.isSuccess && !hasAttestation(leaseDocuments.data),
     t,
     language: i18n.language,
   });
