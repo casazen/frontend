@@ -693,6 +693,7 @@
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",
     "siteDocuments": "Site documents",
+    "statements": "Statements",
     "supplierShowcase": "Showcase",
     "compliance": "Compliance",
     "complianceAudit": "Compliance audit",
@@ -3325,6 +3326,7 @@
       "authenticating": "Authenticating...",
       "loadingWorkspace": "Loading workspace..."
     },
+    "back": "Back",
     "close": "Close",
     "profileLoadError": {
       "title": "We could not load your profile",
@@ -13485,6 +13487,56 @@
     "mixed": "A document is one PDF or a set of photos: remove the files already chosen to change.",
     "tooManyPhotos": "You can add at most {{max}} photos per document.",
     "onePdf": "Choose a single PDF per document."
+  },
+  "statement": {
+    "title": "Owner statements",
+    "description": "View and manage monthly owner statements",
+    "loading": "Loading statements…",
+    "loadError": "Could not load statements",
+    "emptyTitle": "No statements",
+    "emptyList": "No statements have been generated yet",
+    "emptyFiltered": "No statements found with the selected filters",
+    "viewDetails": "View details",
+    "period": "Period",
+    "revenue": "Revenue",
+    "commission": "Commission",
+    "expenses": "Expenses",
+    "withholdingTax": "Withholding",
+    "netPayable": "Net payable",
+    "summary": "Summary",
+    "publishedAt": "Published on",
+    "ownershipPercent": "Ownership share: {{percent}}%",
+    "detailSubtitle": "{{month}}/{{year}} - {{owner}}",
+    "status": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "published": "Published"
+    },
+    "filter": {
+      "status": "Filter by status",
+      "allStatuses": "All statuses"
+    },
+    "generateButton": "Generate statement",
+    "approveButton": "Approve",
+    "publishButton": "Publish",
+    "download": {
+      "pdf": "Download PDF",
+      "csv": "Download CSV",
+      "pdfError": "Could not download the PDF",
+      "csvError": "Could not download the CSV"
+    },
+    "generate": {
+      "success": "Statement generated successfully",
+      "error": "Could not generate the statement"
+    },
+    "approve": {
+      "success": "Statement approved successfully",
+      "error": "Could not approve the statement"
+    },
+    "publish": {
+      "success": "Statement published successfully",
+      "error": "Could not publish the statement"
+    }
   },
   "notifications": {
     "bell": "Notifications",

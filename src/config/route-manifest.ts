@@ -24,7 +24,7 @@ export type NavPlacement = 'primary' | 'secondary';
 export type NavCountKey = 'bookingRequests' | 'supplierRequests';
 
 /** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
-export const MAX_PRIMARY_NAV_ENTRIES = 7;
+export const MAX_PRIMARY_NAV_ENTRIES = 8;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -1071,6 +1071,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 25,
     icon: 'Shield',
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
+  },
+  {
+    path: '/app/admin/statements',
+    context: 'admin',
+    requiredPermissions: ['admin.statements.read'],
+    navKey: 'nav.statements',
+    navGroup: 'platform',
+    navPlacement: 'primary',
+    navOrder: 7,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
   },
   // ============================================================
   // Supplier console
