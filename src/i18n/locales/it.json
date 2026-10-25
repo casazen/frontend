@@ -6443,6 +6443,13 @@
         "label": "Inviato manualmente",
         "explain": "Hai dichiarato di averla inviata sul portale. CasaZen non ha una ricevuta: conserva quella del portale."
       },
+      "SentReceiptPending": {
+        "label": "Inviato, ricevuta in attesa",
+        "explain": "La comunicazione è stata inviata con successo. CasaZen sta recuperando la ricevuta del portale.",
+        "need": [
+          "Attesa del recupero automatico della ricevuta"
+        ]
+      },
       "Inviato": {
         "label": "Inviato (ricevuta)",
         "explain": "La comunicazione è stata trasmessa e ha la ricevuta del portale."
@@ -6688,14 +6695,43 @@
     "guest": "Ospite",
     "property": "Proprietà",
     "checkIn": "Check-in",
-    "status": "Stato",
+    "confirmationNumber": "Numero conferma",
+    "error": {
+      "row": "Riga",
+      "row_invalid": "Errori nelle righe"
+    },
+    "filter": {
+      "allStatuses": "Tutti gli stati",
+      "fromDate": "Data inizio",
+      "status": "Filtra per stato",
+      "toDate": "Data fine"
+    },
+    "loadError": "Impossibile caricare i report Alloggiati.",
+    "noErrors": "Nessun errore rilevato.",
+    "noReports": "Nessun report trovato.",
+    "report": "report",
+    "reports": "report",
+    "status": {
+      "da_inviare": "Da inviare",
+      "da_inviare_manualmente": "Da inviare manualmente",
+      "deadline_soon": "Scadenza tra {{hours}} ore",
+      "errore": "Errore",
+      "inviato": "Inviato (ricevuta)",
+      "inviato_manualmente": "Inviato manualmente",
+      "overdue": "Scaduto",
+      "pending": "Da inviare",
+      "rifiutato": "Rifiutato",
+      "sent": "Inviato",
+      "sent_receipt_pending": "Inviato, ricevuta in attesa"
+    },
     "statusLabel": {
       "DaInviare": "Da inviare",
       "DaInviareManualmente": "Da inviare manualmente",
       "InviatoManualmente": "Inviato manualmente",
       "Inviato": "Inviato (ricevuta)",
       "Rifiutato": "Rifiutato",
-      "Errore": "Errore"
+      "Errore": "Errore",
+      "SentReceiptPending": "Inviato, ricevuta in attesa"
     },
     "deadline": "Scadenza",
     "incompleteData": "Dati incompleti",

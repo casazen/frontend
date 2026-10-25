@@ -178,6 +178,7 @@ export const STATUS_DICTIONARY = {
     DaInviare: { tone: "neutral", icon: "clock" },
     DaInviareManualmente: { tone: "warning", icon: "alert-triangle", next: "InviatoManualmente", need: true },
     InviatoManualmente: { tone: "success", icon: "shield-check" },
+    SentReceiptPending: { tone: "info", icon: "clock", next: "Inviato", need: true },
     Inviato: { tone: "success", icon: "shield-check" },
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
