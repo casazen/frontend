@@ -123,7 +123,7 @@ function PartyGroup({ list }: { list: PartyList }) {
               </Field>
             </div>
             {fields.length > 1 ? (
-              <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} aria-label={t(`leaseWizard.parties.${role}.remove`, { n: index + 1 })}>
+              <Button type="button" variant="ghost" size="sm" className="max-sm:min-h-11" onClick={() => remove(index)} aria-label={t(`leaseWizard.parties.${role}.remove`, { n: index + 1 })}>
                 <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
                 {t('leaseWizard.parties.remove')}
               </Button>
@@ -133,7 +133,7 @@ function PartyGroup({ list }: { list: PartyList }) {
       })}
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="outline" size="sm" onClick={() => append(newPartyRow())} disabled={atMax}>
+        <Button type="button" variant="outline" size="sm" className="max-sm:min-h-11" onClick={() => append(newPartyRow())} disabled={atMax}>
           <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
           {t(`leaseWizard.parties.${role}.add`)}
         </Button>

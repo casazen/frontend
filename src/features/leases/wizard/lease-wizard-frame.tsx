@@ -46,7 +46,8 @@ export function LeaseWizardFrame({ stepper, position, title, summary, inHand, ti
   return (
     <div className="grid w-full min-w-0 gap-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start" data-testid="lease-wizard">
       {stepper}
-      <div className="min-w-0 max-w-4xl space-y-6">
+      {/* The fields of the shared form components are 40 px high; on a phone the ones of the wizard are 44, for a finger. */}
+      <div className="min-w-0 max-w-4xl space-y-6 max-sm:[&_select]:min-h-11 max-sm:[&_input:not([type=radio],[type=checkbox],[type=file])]:min-h-11">
         <header className="min-w-0 space-y-2" data-testid="lease-wizard-header">
           <h2 ref={titleRef} tabIndex={-1} className="break-words text-xl font-semibold tracking-tight outline-none" data-testid="lease-wizard-title">
             <span className="block text-sm font-medium tracking-normal text-muted-foreground" data-testid="lease-wizard-position">
