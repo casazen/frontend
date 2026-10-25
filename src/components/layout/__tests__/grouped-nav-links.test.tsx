@@ -201,6 +201,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
         'Report',
         'Recensioni',
         'Canali e calendari',
+        'Verifiche',
         'Profilo',
         'Stripe Connect',
         'Dominio pubblico',

@@ -232,6 +232,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
+    // Biometric verification queue (NF-12): operator verifications pending decision.
+    path: '/app/short-rent/verifications',
+    context: 'short-rent',
+    requiredPermissions: ['verification.decide'],
+    navKey: 'nav.verifications',
+    navPlacement: 'secondary',
+    navOrder: 28,
+    icon: 'ShieldCheck',
+    component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
+  },
+  {
     path: '/app/short-rent/settings/domain',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
