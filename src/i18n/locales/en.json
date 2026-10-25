@@ -3334,6 +3334,10 @@
     "planUpgradeCta": "Upgrade to a higher plan"
   },
   "property": {
+    "country": "Country",
+    "country.ch": "Switzerland",
+    "country.it": "Italy",
+    "currency": "Currency",
     "page": {
       "title": "Properties",
       "description": "Manage your vacation rental properties",
