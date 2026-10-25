@@ -154,7 +154,7 @@ test.describe('Area navigation (UI-04a)', () => {
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      await expect(menu.getByRole('link', { name: 'Ospiti' })).toHaveAttribute('aria-current', 'page');
+      await expect(menu.getByRole('link', { name: 'Ospiti', exact: true })).toHaveAttribute('aria-current', 'page');
     });
 
     test('a page that hangs from an entry is reached from that entry and highlights it', async ({ page }) => {
