@@ -27,7 +27,7 @@ export function OwnerStatements() {
       await downloadStatement(statementId, format);
       toast.success(t('ownerPortal.statements.downloadSuccess'));
     } catch (err) {
-      const message = getProblemMessage(err);
+      const message = getProblemMessage(err, t);
       toast.error(message || t('ownerPortal.statements.downloadError'));
     } finally {
       setDownloadingId(null);
@@ -52,7 +52,7 @@ export function OwnerStatements() {
       <div className="container mx-auto max-w-6xl p-6">
         <ErrorState
           title={t('ownerPortal.statements.error')}
-          message={t('ownerPortal.statements.errorMessage')}
+          error={error}
         />
       </div>
     );

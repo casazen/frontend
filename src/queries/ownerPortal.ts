@@ -50,7 +50,6 @@ export async function downloadStatement(statementId: string, format: 'pdf' | 'cs
     responseType: 'blob',
   });
   const extension = format === 'pdf' ? 'pdf' : 'csv';
-  const contentType = format === 'pdf' ? 'application/pdf' : 'text/csv';
   const filename = `statement-${statementId}.${extension}`;
-  saveBlobAs(response.data, filename, contentType);
+  saveBlobAs(response.data, filename);
 }

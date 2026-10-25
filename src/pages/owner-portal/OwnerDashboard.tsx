@@ -35,7 +35,7 @@ export function OwnerDashboard() {
       <div className="container mx-auto max-w-7xl p-6">
         <ErrorState
           title={t('ownerPortal.dashboard.error')}
-          message={t('ownerPortal.dashboard.errorMessage')}
+          error={error}
         />
       </div>
     );

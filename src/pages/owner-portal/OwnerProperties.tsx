@@ -14,7 +14,8 @@ import { formatStayDate } from '@/lib/stay-dates';
  * Guest data is masked per ADR-011-R3: only dates, channel, amounts visible.
  */
 export function OwnerProperties() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const navigate = useNavigate();
   const { propertyId } = useParams<{ propertyId: string }>();
   const { data: properties, isLoading, error } = useOwnerProperties();
@@ -36,7 +37,7 @@ export function OwnerProperties() {
       <div className="container mx-auto max-w-4xl p-6">
         <ErrorState
           title={t('ownerPortal.properties.error')}
-          message={t('ownerPortal.properties.errorMessage')}
+          error={error}
         />
       </div>
     );
@@ -47,7 +48,6 @@ export function OwnerProperties() {
       <div className="container mx-auto max-w-4xl p-6">
         <ErrorState
           title={t('ownerPortal.properties.notFound')}
-          message={t('ownerPortal.properties.notFoundMessage')}
         />
         <Button
           variant="outline"
@@ -133,7 +133,7 @@ export function OwnerProperties() {
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">
-                        {formatStayDate(booking.checkInDate)} - {formatStayDate(booking.checkOutDate)}
+                        {formatStayDate(booking.checkInDate, locale)} - {formatStayDate(booking.checkOutDate, locale)}
                       </span>
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
