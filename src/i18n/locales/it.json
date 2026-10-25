@@ -7523,6 +7523,37 @@
     "citizenship": "Cittadinanza *",
     "removeGuest": "Rimuovi ospite",
     "addGuest": "Aggiungi ospite",
+    "biometric": {
+      "consent": {
+        "title": "Verifica biometrica facoltativa",
+        "description": "Possiamo confrontare la tua foto con il documento per velocizzare il check-in.",
+        "purposeTitle": "A cosa serve",
+        "purpose": "La verifica biometrica confronta il tuo volto con la foto del documento. Il confronto avviene sul server e la tua foto viene cancellata immediatamente dopo.",
+        "optionalTitle": "È facoltativa",
+        "optional": "Puoi rifiutare senza conseguenze: il gestore della struttura riceverà comunque i tuoi dati e il documento. Il rifiuto viene segnalato ma non blocca il check-in.",
+        "accept": "Acconsento alla verifica",
+        "decline": "Rifiuto",
+        "version": "Versione consenso: {{version}}"
+      },
+      "capture": {
+        "title": "Scatta un selfie",
+        "instructions": "Inquadra il tuo viso, assicurati che sia ben illuminato e centrato, poi scatta la foto. La confronteremo con il documento.",
+        "cameraError": "Impossibile accedere alla fotocamera. Verifica i permessi del browser.",
+        "takePhoto": "Scatta foto",
+        "retake": "Scatta di nuovo",
+        "submit": "Invia foto",
+        "attemptsRemaining": "Tentativi rimasti: {{count}}",
+        "maxAttemptsReached": "Hai raggiunto il numero massimo di tentativi. Il check-in sarà verificato manualmente dal gestore."
+      },
+      "outcome": {
+        "accept": "Verificato",
+        "acceptMessage": "La verifica biometrica è riuscita. Il tuo check-in è stato completato.",
+        "escalate": "Da verificare",
+        "escalateMessage": "La verifica biometrica richiede una conferma manuale. Il gestore della struttura controllerà i tuoi dati.",
+        "reject": "Non verificato",
+        "rejectMessage": "La verifica biometrica non è riuscita. Riprova o il gestore della struttura verificherà manualmente."
+      }
+    },
     "documentIntro": "Documento d'identità dell'ospite singolo o del capofamiglia o capogruppo. Per familiari e membri del gruppo non serve.",
     "documentOf": "Documento di {{name}}",
     "documentIssuePlace": "Luogo di rilascio *",
