@@ -24,6 +24,12 @@ Il dettaglio dei progetti, delle dipendenze di setup e del dev server è in `pla
 
 La guida prodotto ha test di ricerca, cambio lingua, link nell’header e collocazione sotto il confine di autenticazione. Il test browser verifica navigazione dal pulsante, lettura e layout mobile.
 
+### Giro del contratto a canone concordato (stack effimero)
+
+`e2e/gj-l3/concordato-round.spec.ts` percorre dall’interfaccia tutto il giro del contratto a canone concordato: «Nuovo contratto», scheda, privacy, accesso, modulo guidato, stato della pratica, caricamento dei documenti, lettura del contratto, wizard, importazione, registrazione con la ricevuta già caricata. L’API serve solo da oracolo (in sola lettura) per le asserzioni; su ogni schermata chiave il testo visibile non deve nominare il fornitore né «partner». Gira solo in CI (job «GJ L3 (UI, ephemeral stack)») ed è nella cartella `e2e/gj-l3/` perché il progetto `gj-l3` di Playwright cerca lì.
+
+Lo stack parte con il servizio acceso e il modulo SIMULATO (`e2e/stack/up.sh`: `Features__ConcordatoFacile=true`, `ConcordatoFacile__FormMode=Simulated`, `ConcordatoFacile__BaseUrl` = il frontend dello stack, un `ConcordatoFacile__LinkSecret` di prova, `ConcordatoFacile__Simulator__StatusTtlSeconds=1`). Senza Stripe l’accesso arriva in due modi: un amministratore di piattaforma (account `gj-admin-*` del falso IdP) che ha creato anche un’organizzazione propria, oppure la pratica omaggio, assegnata con l’API admin (fixture dichiarata: non ha una schermata) e usata dalla pagina di pagamento. Non coperti: il pagamento con carta vera e il webhook di Stripe (la CI non ha le chiavi di prova di Stripe) e il modulo vero del servizio.
+
 ## CI e deploy
 
 I workflow in `.github/workflows/` definiscono i controlli effettivi. Verificare la revisione corrente della PR: lint/typecheck/unit/build, E2E L2 e Golden Journey dove previsti, oltre al deploy preview.

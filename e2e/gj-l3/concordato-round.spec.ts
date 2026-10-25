@@ -503,7 +503,8 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
 }
 
 test.describe('Guided contract of a canone concordato, the whole round (CF-L3)', () => {
-  test.describe.configure({ retries: 0 });
+  // As the other tests of the project: the retries of the CI are the ones of `playwright.config.ts` (a retry starts again from a new
+  // account, nothing is shared between the attempts).
   test.setTimeout(10 * 60_000);
 
   test('the whole round, with the access of a platform administrator', async ({ browser, request }) => {
