@@ -5,6 +5,7 @@
 #
 # Required: a reachable PostgreSQL (PGHOST/PGPORT/PGUSER/PGPASSWORD), dotnet, node, openssl.
 # Optional: E2E_BACKEND_DIR (default ../backend), E2E_API_PORT (5100), E2E_FE_PORT (5173), E2E_DB_NAME,
+#           E2E_CF_LINK_SECRET (signing secret of the simulated guided contract, a test value is the default),
 #           STRIPE_TEST_SECRET_KEY / STRIPE_TEST_PUBLISHABLE_KEY / STRIPE_TEST_WEBHOOK_SECRET /
 #           STRIPE_TEST_CONNECT_WEBHOOK_SECRET (Stripe test mode, from CI secrets, never from the repo).
 set -euo pipefail
@@ -64,6 +65,18 @@ if [ -n "${STRIPE_TEST_SECRET_KEY:-}" ]; then
     "Stripe__ConnectWebhookSecret=${STRIPE_TEST_CONNECT_WEBHOOK_SECRET:-}"
   )
 fi
+# The guided contract of a canone concordato (CF-L3): the service that prepares the contract is switched on and its form and status API
+# are the SIMULATED ones of the test environments (backend CF-SIM, docs/runbooks/concordatofacile-simulator.md): the signed link opens
+# the page /guided-form of the web app (BaseUrl = this very frontend), and the status of the practices is read from the throw-away
+# database, one second at a time so that a state changed in the test panel shows at once. The link secret is a test value of this
+# throw-away stack (32+ characters, nothing real signs with it). The mode is refused by the backend in Production, as ever.
+CF_ARGS=(
+  "Features__ConcordatoFacile=true"
+  "ConcordatoFacile__FormMode=Simulated"
+  "ConcordatoFacile__BaseUrl=http://localhost:$FE_PORT"
+  "ConcordatoFacile__LinkSecret=${E2E_CF_LINK_SECRET:-e2e-guided-contract-link-secret-0123456789}"
+  "ConcordatoFacile__Simulator__StatusTtlSeconds=1"
+)
 # CI builds the backend first (E2E_BACKEND_NO_BUILD=1); locally `dotnet run` builds when needed.
 NO_BUILD=""; [ "${E2E_BACKEND_NO_BUILD:-0}" = "1" ] && NO_BUILD="--no-build"
 BACKEND_CMD="${E2E_BACKEND_CMD:-dotnet run --project $BACKEND_DIR/Casazen.Web -c Release --no-launch-profile $NO_BUILD}"
@@ -77,6 +90,7 @@ env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://localhost:$API_PO
   "SSL_CERT_FILE=$STACK_DIR/trust-bundle.pem" \
   "RateLimiting__PublicBookingCreate__PermitLimit=1000" "RateLimiting__PublicBookingLookup__PermitLimit=1000" \
   "RateLimiting__PublicRegistration__PermitLimit=1000" \
+  ${CF_ARGS[@]+"${CF_ARGS[@]}"} \
   ${STRIPE_ARGS[@]+"${STRIPE_ARGS[@]}"} \
   nohup $BACKEND_CMD > "$STACK_DIR/backend.log" 2>&1 &
 echo $! > "$STACK_DIR/backend.pid"
