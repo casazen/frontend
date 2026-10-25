@@ -1767,8 +1767,7 @@
       "landlord_missing": "Aggiungi chi affitta (il locatore)",
       "landlords_ok_one": "{{count}} locatore con tutti i dati",
       "landlords_ok_other": "{{count}} locatori con tutti i dati",
-      "lease_overlap_one": "Su questo immobile c'è già {{count}} altro contratto nelle stesse date",
-      "lease_overlap_other": "Su questo immobile ci sono già {{count}} altri contratti nelle stesse date",
+      "lease_overlap": "Per questo immobile c'è già un contratto dal {{from}} al {{to}}. Due contratti non possono coprire gli stessi giorni: apri quello esistente o cambia le date.",
       "lease_type_not_available": "Questo tipo di contratto non è ancora disponibile",
       "party_fiscal_code_duplicate": "Lo stesso codice fiscale compare più volte nel contratto: cambia quello delle ultime voci",
       "property_missing": "Scegli l'immobile del contratto",
@@ -1833,6 +1832,9 @@
         "remove": "Togli il conduttore {{n}}",
         "title": "Chi prende in affitto (conduttore)"
       }
+    },
+    "periodConflict": {
+      "open": "Apri il contratto esistente"
     },
     "property": {
       "addNew": "Aggiungi un nuovo immobile",
