@@ -22,8 +22,21 @@ export interface LeaseFlowStep {
   needs: LeaseNeed[];
 }
 
+/**
+ * Another lease of the same property that covers some of the same days (backend LR-OVERLAP): its id and the first and last day it
+ * covers (`yyyy-MM-dd`). Never the name of a person. The same three members are in the review check `lease_overlap` and in the 409
+ * `lease_period_overlaps` of the steps that make a lease a contract.
+ */
+export interface LeasePeriodConflict {
+  conflictingLeaseId: string;
+  conflictingFrom: string;
+  conflictingTo: string;
+}
+
 export interface LeaseDraftFlow {
   steps: LeaseFlowStep[];
+  /** Set once the property and both dates are there and another lease has some of the same days: the soft warning of the wizard. */
+  periodConflict?: LeasePeriodConflict | null;
 }
 
 /** A landlord or a tenant as typed, not masked (only the one who may create the lease gets it). */

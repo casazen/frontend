@@ -5,7 +5,8 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
-import type { LeaseOrigin, LongRentRules } from '@/types';
+import type { LeaseOrigin, LeasePeriodConflict, LongRentRules } from '@/types';
+import { PeriodConflictNotice } from './period-conflict-notice';
 import { ReadMark } from './reading-marks';
 import { TRANSITORY_DOCUMENTATION_MAX_LENGTH, addMonths, makesItsNeed, periodEnd, termDays, termMonthsOf, type WizardValues } from './wizard-model';
 
@@ -17,8 +18,19 @@ import { TRANSITORY_DOCUMENTATION_MAX_LENGTH, addMonths, makesItsNeed, periodEnd
  * A transitory contract made in CasaZen (TR) is from 1 to 18 months, typed here, and does not renew; when it lasts more days than the
  * server says (`rules.transitoryDocumentationAfterDays`) the need it states at step ③ is proved with documents attached to the contract,
  * and this is where they are asked, because the term that decides it is typed here.
+ *
+ * Another lease of the same property that covers some of the same days (LR-OVERLAP, `flow.periodConflict`) is told here, with the link to
+ * it, as soon as the dates are there: two leases cannot cover the same days, and the review will not let this one through.
  */
-export function DatesStep({ rules, origin }: { rules: LongRentRules; origin: LeaseOrigin }) {
+export function DatesStep({
+  rules,
+  origin,
+  periodConflict = null,
+}: {
+  rules: LongRentRules;
+  origin: LeaseOrigin;
+  periodConflict?: LeasePeriodConflict | null;
+}) {
   const { t, i18n } = useTranslation();
   const { control, register, formState } = useFormContext<WizardValues>();
   const [startDate, endDate, contractType, documentation] = useWatch({
@@ -77,6 +89,8 @@ export function DatesStep({ rules, origin }: { rules: LongRentRules; origin: Lea
           <Textarea id="lw-transitoryDocumentation" rows={2} maxLength={TRANSITORY_DOCUMENTATION_MAX_LENGTH} {...register('transitoryDocumentation')} />
         </Field>
       ) : null}
+
+      {periodConflict ? <PeriodConflictNotice conflict={periodConflict} /> : null}
 
       {inThePast ? (
         <Alert variant="warning" data-testid="lease-start-in-past">
