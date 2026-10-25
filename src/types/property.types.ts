@@ -34,6 +34,10 @@ export interface Property {
   photoUrls: string[];
   houseRules: string;
   cinCode: string | null;
+  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
+  country: 'IT' | 'CH';
+  /** ISO 4217 currency code (ADR-001-R7). */
+  currency: 'EUR' | 'CHF';
   /**
    * ISTAT code (6 digits, text) of the comune chosen from the official list (SU-04); null until chosen: it is never
    * inferred from the free-text `city`.
@@ -122,6 +126,10 @@ export interface CreatePropertyDto {
   cancellationPartialRefundPercent?: number | null;
   cancellationRefundType?: 'Percent' | 'NonRefundable';
   slug?: string | null;
+  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
+  country?: 'IT' | 'CH';
+  /** ISO 4217 currency code (ADR-001-R7), auto-derived from country. */
+  currency?: 'EUR' | 'CHF';
 }
 
 /**
@@ -304,6 +312,10 @@ export interface PropertyDetailDto {
   otaIntegrations: OtaIntegrationSummaryDto[];
   bookingsSummary: BookingsSummaryDto;
   pricingAdapterSummary: PricingAdapterSummaryDto;
+  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
+  country: 'IT' | 'CH';
+  /** ISO 4217 currency code (ADR-001-R7). */
+  currency: 'EUR' | 'CHF';
 }
 
 /** `POST /properties/:id/pause` and `POST /properties/:id/activate` (A2-05): the pause state right after the change. */
