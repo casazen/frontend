@@ -11717,6 +11717,38 @@
     "activity": {
       "adminGrantedGift": "Complimentary practice assigned"
     },
+    "attestation": {
+      "another": "Upload a new file",
+      "doneRow": "Attestation: still to be uploaded. Add it to the documents of the contract when you have it: it is needed for the benefits.",
+      "present": "Attestation: uploaded",
+      "title": "Attestation",
+      "why": "The attestation shows that the rent respects the territorial agreement: it is needed for the benefits."
+    },
+    "benefits": {
+      "disclaimer": "Rules and rates depend on the municipality and on your situation: confirm them with your accountant.",
+      "downloadOne": "Download: {{name}}",
+      "intro": "Bring a copy of these three documents to your accountant and to the municipality to obtain the benefits of the canone concordato, for example the IMU reduced by 25% and, where it is provided for, the cedolare secca at 10%.",
+      "loading": "Checking the documents…",
+      "missing_one": "You are still missing one: upload it to have all three ready.",
+      "missing_other": "You are still missing {{count}}: upload them to have all three ready.",
+      "missingLine": "{{name}}: still to be uploaded",
+      "title": "Contract registered: now claim your benefits",
+      "use": "The municipality may ask you for the attestation to apply the reduced rate; your accountant uses it for the tax return."
+    },
+    "document": {
+      "attestation": {
+        "name": "Attestation",
+        "upload": "Upload the attestation"
+      },
+      "contract": {
+        "name": "Signed contract",
+        "upload": "Upload the signed contract"
+      },
+      "receipt": {
+        "name": "Registration receipt",
+        "upload": "Upload the registration receipt"
+      }
+    },
     "kind": {
       "transitorio": {
         "title": "Transitional (from {{min}} to {{max}} months)"

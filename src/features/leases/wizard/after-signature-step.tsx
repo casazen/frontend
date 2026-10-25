@@ -18,6 +18,8 @@ import type { CedolareAdvisory, LeaseDetail, QuesturaCommunicationStatus, RliChe
 import { ManualRegistrationDialog } from '../components/manual-registration-dialog';
 import { QuesturaCommunicationPanel } from '../components/questura-communication-panel';
 import { RentSchedulePanel } from '../components/rent-schedule-panel';
+import { isConcordatoLease } from '../lib/lease-benefits';
+import { AttestationSection } from './attestation-section';
 import { WIZARD_BUTTON } from './lease-wizard-frame';
 
 type Panel = 'questura' | 'rent' | null;
@@ -85,7 +87,8 @@ function ActivityRow({
  * Step ⑧ «Dopo la firma» (LR-06b): the registration is the one block in evidence (the deadline and the days left, what it costs as an
  * estimate, the summary of the data to register with, and the declaration with the receipt); under it one row for each other thing
  * that comes with a signed contract: the keys and the Questura (an extra-EU tenant only) and the plan of the rents. The rows open the
- * panels the lease sheet already has. Everything is read from the lease: a signed lease is not a draft any more.
+ * panels the lease sheet already has. Everything is read from the lease: a signed lease is not a draft any more. A canone concordato also
+ * has its attestation asked here (`AttestationSection`), between the registration and the rows.
  */
 export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail; declareFirst: boolean }) {
   const { t, i18n } = useTranslation();
@@ -174,6 +177,9 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
   return (
     <div className="space-y-8" data-testid="lease-after-step">
       {registrationBlock}
+
+      {/* The attestation is what the benefits of a canone concordato are claimed with: asked here, never a stop (CF-END). */}
+      {isConcordatoLease(lease) ? <AttestationSection leaseId={lease.id} /> : null}
 
       <PlainSection title={t('leaseWizard.after.rows.title')}>
         <ul role="list" className="divide-y divide-border">

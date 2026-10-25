@@ -23,6 +23,8 @@ export interface WizardDoneProps {
   /** The other thing the person is likely to want. */
   secondary: WizardDoneAction;
   className?: string;
+  /** What follows from the thing that was done and only the flow that did it can tell (a follow-up), between "What happens now" and the actions. */
+  children?: React.ReactNode;
 }
 
 /**
@@ -30,7 +32,7 @@ export interface WizardDoneProps {
  * one toward what was just created. There is no dead end: both actions are links. The focus goes to the confirmation
  * when the screen opens, so a screen reader reads it.
  */
-export function WizardDone({ title, description, whatNext, primary, secondary, className }: WizardDoneProps) {
+export function WizardDone({ title, description, whatNext, primary, secondary, className, children }: WizardDoneProps) {
   const { t } = useTranslation();
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   const titleId = React.useId();
@@ -65,6 +67,8 @@ export function WizardDone({ title, description, whatNext, primary, secondary, c
           ))}
         </ul>
       </section>
+
+      {children}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Button asChild size="lg" className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight">
