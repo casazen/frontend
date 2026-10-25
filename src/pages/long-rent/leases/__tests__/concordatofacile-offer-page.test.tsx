@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock, type MockInstance } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -195,6 +195,21 @@ describe('ConcordatoFacileOfferPage (CF-FIX, CF-FLOW): the page of payment', () 
 
     expect(await screen.findByText(i18n.t('concordatofacile.offer.cancelled'))).toBeInTheDocument();
     expect(post).not.toHaveBeenCalled();
+  });
+
+  // The plans of 24 months are not on sale: the first step never promises them, and it mentions the gift practice only where there is one.
+  it.each([
+    ['there is a gift practice', true, 'guidedContract.stepPayOrGift', 'concordatofacile.offer.step1'],
+    ['there is none', false, 'concordatofacile.offer.step1', 'guidedContract.stepPayOrGift'],
+  ] as const)('the first step of the page of payment, when %s, says what can be done and no plan of 24 months', async (_label, gift, shown, hidden) => {
+    mockService(() => ({ source: null, gift }));
+
+    renderGuided({ concordatoFacile: true });
+
+    const steps = await screen.findByTestId('cf-offer-steps');
+    expect(within(steps).getByText(i18n.t(shown))).toBeInTheDocument();
+    expect(within(steps).queryByText(i18n.t(hidden))).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/biennal|biennial/i);
   });
 
   it('a checkout refused because the contract is already paid reads the access again and sends the person to the sheet, which opens the form', async () => {

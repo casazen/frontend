@@ -249,6 +249,9 @@ function GuidedContract() {
     );
   }
 
+  // The gift practice takes the place of the payment, and is mentioned only where there is one (the plans of 24 months are not on sale).
+  const giftOffered = access.giftAvailable && !access.giftConsumed;
+
   return (
     <div className="space-y-6">
       <PageHeader title={t('concordatofacile.offer.title')} crumbs="auto" />
@@ -296,10 +299,10 @@ function GuidedContract() {
             {/* Five-step process (NF-02) */}
             <div>
               <h3 className="mb-3 text-sm font-semibold">{t('concordatofacile.offer.stepsTitle')}</h3>
-              <ol className="space-y-2 text-sm">
+              <ol className="space-y-2 text-sm" data-testid="cf-offer-steps">
                 <li className="flex gap-2">
                   <span className="font-medium">1.</span>
-                  <span>{t('concordatofacile.offer.step1')}</span>
+                  <span>{giftOffered ? t('guidedContract.stepPayOrGift') : t('concordatofacile.offer.step1')}</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="font-medium">2.</span>
@@ -322,7 +325,7 @@ function GuidedContract() {
 
             {/* Conditional buttons (NF-02) */}
             <div className="pt-4">
-              {access.giftAvailable && !access.giftConsumed ? (
+              {giftOffered ? (
                 <Button
                   size="lg"
                   onClick={handleGift}

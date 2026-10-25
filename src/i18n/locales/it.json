@@ -62,7 +62,7 @@
       "price": "119,00 EUR totali IVA compresa",
       "steps": "Come funziona",
       "stepsTitle": "Il processo in 5 passi:",
-      "step1": "Paghi 119 euro o usi la pratica omaggio (abbonamenti biennali)",
+      "step1": "Paghi 119 euro",
       "step2": "Compili il modulo guidato con i dati del contratto",
       "step3": "Il contratto viene preparato per te",
       "step4": "Lo ricevi via e-mail, pronto da firmare",
@@ -126,6 +126,7 @@
     "resume": "Riprendi la compilazione",
     "sent": "Il modulo è stato inviato. Quando ricevi i documenti, caricali qui: li leggiamo e compiliamo i dati.",
     "statusLabel": "Stato della pratica",
+    "stepPayOrGift": "Paghi 119 euro o usi la pratica omaggio",
     "taxesNote": "Registro e bollo, se dovuti, non sono compresi nel prezzo.",
     "uploadDocuments": "Carica i documenti"
   },

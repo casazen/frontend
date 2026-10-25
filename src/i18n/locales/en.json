@@ -62,7 +62,7 @@
       "price": "119.00 EUR total VAT included",
       "steps": "How it works",
       "stepsTitle": "The 5-step process:",
-      "step1": "You pay 119 euros or use the complimentary practice (biennial subscriptions)",
+      "step1": "You pay 119 euros",
       "step2": "You fill in the guided form with the data of the contract",
       "step3": "The contract is prepared for you",
       "step4": "You receive it by e-mail, ready to sign",
@@ -126,6 +126,7 @@
     "resume": "Resume filling in the form",
     "sent": "The form has been sent. When you receive the documents, upload them here: we read them and fill in the data.",
     "statusLabel": "Status of the practice",
+    "stepPayOrGift": "You pay 119 euros or use the complimentary practice",
     "taxesNote": "Registration tax and stamp duty, where due, are not included in the price.",
     "uploadDocuments": "Upload the documents"
   },
