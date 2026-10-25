@@ -27,3 +27,4 @@ export * from './review.types';
 export * from './guest-message.types';
 export * from './owner-portal.types';
 export * from './verification.types';
+export * from './withholding.types';
