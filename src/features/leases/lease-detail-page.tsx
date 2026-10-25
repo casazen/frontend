@@ -33,6 +33,8 @@ import { useLeaseActions } from './lifecycle/use-lease-actions';
 import { CfImportPanel } from './components/cf-import-panel';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
+import { RegisteredBenefits } from './components/registered-benefits';
+import { showsBenefits } from './lib/lease-benefits';
 
 const LEASES_PATH = '/app/long-rent/leases';
 
@@ -104,6 +106,11 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
   // that is there says what the draft notice and the Questura banner say, so they give way to it (one voice, not two).
   const now = step ? describeLeaseStep(lease.id, step, { t, language: i18n.language, today: todayInRome() }) : null;
   const questuraSaid = step?.code === 'QuesturaCommunication' || step?.code === 'RecordKeyHandover';
+  // «Contratto registrato: ora fai valere le agevolazioni» (CF-END): what follows the registration of a canone concordato. It is the one
+  // highlighted block when nothing else is to be done (no step, or «È tutto in regola»); when the lease waits for something else (a
+  // deadline, the rents, the notice, its end), that step keeps the block and the follow-up is a quiet section under it.
+  const benefits = showsBenefits(lease);
+  const benefitsFirst = benefits && (!step || step.code === 'AllGood');
 
   const tabs: TabItem<LeaseTab>[] = [
     { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
@@ -131,7 +138,8 @@ function LeaseSheet({ lease, nextStep }: { lease: LeaseDetail; nextStep: LeaseNe
         </div>
       ) : null}
 
-      {now ? <LeaseNowBlock step={now} /> : null}
+      {now && !benefitsFirst ? <LeaseNowBlock step={now} /> : null}
+      {benefits ? <RegisteredBenefits lease={lease} calm={!benefitsFirst} /> : null}
 
       {cfContract ? <CfImportPanel leaseId={lease.id} reading={cfContract} /> : partnerDraft ? <PartnerDraftNotice leaseId={lease.id} /> : null}
       {lease.status === 'Draft' && !partnerDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}

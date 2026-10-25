@@ -13,11 +13,14 @@ import { toDateOnly } from '@/lib/questura-communication';
 import { getRliRegistrationState } from '@/lib/rli-registration-state';
 import { formatStayDate, parseStayDate, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
+import { useLeaseDocuments } from '@/queries/use-lease-documents';
 import { useRliChecklist } from '@/queries/use-leases';
 import { useRentLedger } from '@/queries/use-rent';
 import type { LeaseDetail, LongRentRules, RentLedger, RliChecklist } from '@/types';
 import { leasePropertyLine } from '../lib/lease-list-format';
+import { isConcordatoLease, newestDocument, showsBenefits } from '../lib/lease-benefits';
 import { ManualRegistrationDialog } from '../components/manual-registration-dialog';
+import { RegisteredBenefits } from '../components/registered-benefits';
 import { addMonths } from './wizard-model';
 
 const LEASES_PATH = '/app/long-rent/leases';
@@ -33,6 +36,8 @@ interface RowsInput {
   ledger: RentLedger | undefined;
   rules: LongRentRules | undefined;
   apeMissing: boolean;
+  /** A canone concordato not registered yet whose attestation is not among its documents: told as a thing left to do (once it is registered the benefits block tells it). */
+  attestationMissing: boolean;
   t: TFunction;
   language: string;
 }
@@ -55,7 +60,7 @@ function lengthText(months: number, t: TFunction): string {
  * the end of the period and the last day for the notice. The only figures the interface works out are the last day for the notice and
  * the length of a renewal, from the months the server states (`rules`): nothing of law is written here.
  */
-function doneRows({ lease, checklist, ledger, rules, apeMissing, t, language }: RowsInput): Row[] {
+function doneRows({ lease, checklist, ledger, rules, apeMissing, attestationMissing, t, language }: RowsInput): Row[] {
   const day = (value: string | null | undefined) => formatStayDate(parseStayDate(value), language);
   const rows: Row[] = [];
   const registration = getRliRegistrationState(lease.status, lease.registration);
@@ -81,6 +86,8 @@ function doneRows({ lease, checklist, ledger, rules, apeMissing, t, language }: 
       icon: FileCheck2,
     });
   }
+
+  if (attestationMissing) rows.push({ text: t('leaseRound.attestation.doneRow'), icon: FileText });
 
   const questura = checklist?.questura;
   if (questura) {
@@ -128,7 +135,8 @@ function doneRows({ lease, checklist, ledger, rules, apeMissing, t, language }: 
 /**
  * The last screen of «Crea contratto» (LR-06b): «Cosa succede ora». One screen for every contract, whose rows follow what is true of
  * it (registered or not, a tenant that needs the Questura, a rent plan or none, a contract that is already over). A contract brought
- * in and not registered says so, with the button to declare the registration, so a registration that failed is never lost.
+ * in and not registered says so, with the button to declare the registration, so a registration that failed is never lost. A registered
+ * canone concordato has, between the rows and the buttons, the follow-up of its registration (`RegisteredBenefits`, CF-END).
  */
 export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRentRules | undefined }) {
   const { t, i18n } = useTranslation();
@@ -141,6 +149,11 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
     queryFn: () => propertiesApi.getDocuments(lease.propertyId),
     enabled: imported,
   });
+  // A canone concordato asks for its attestation: not registered yet, a missing one is a row of what is left to do; registered, the
+  // follow-up block below tells it (and reads the documents itself).
+  const concordato = isConcordatoLease(lease);
+  const benefits = showsBenefits(lease);
+  const leaseDocuments = useLeaseDocuments(lease.id, concordato && !benefits);
   const [declareOpen, setDeclareOpen] = useState(false);
 
   if (checklist.isLoading || ledger.isLoading) return <LoadingScreen message={t('leases.detailLoading')} className="h-auto flex-1" />;
@@ -152,6 +165,7 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
     ledger: ledger.data,
     rules,
     apeMissing: imported && documents.isSuccess && !latestApeDocument(documents.data),
+    attestationMissing: concordato && !benefits && leaseDocuments.isSuccess && !newestDocument(leaseDocuments.data, 'Attestation'),
     t,
     language: i18n.language,
   });
@@ -180,7 +194,9 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
         whatNext={rows}
         primary={{ label: t('leaseWizard.goToLease'), to: `${LEASES_PATH}/${lease.id}` }}
         secondary={{ label: t('leaseWizard.done.another'), to: `${LEASES_PATH}/new` }}
-      />
+      >
+        {benefits ? <RegisteredBenefits lease={lease} /> : null}
+      </WizardDone>
 
       <ManualRegistrationDialog leaseId={lease.id} open={declareOpen} onOpenChange={setDeclareOpen} />
     </div>

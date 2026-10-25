@@ -4,16 +4,19 @@ import { createElement } from 'react';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
+import { saveBlobAs } from '@/lib/file-download';
 import { formatDate } from '@/lib/utils';
 import { RLI_OFFICIAL_INFO_URL } from '@/lib/rli-registration-state';
 import { LeaseDetailPage } from '../lease-detail-page';
-import { buildDetail, httpError, renderAt } from './lease-test-utils';
-import type { LeaseDetail, LeaseRegistration, RliChecklist } from '@/types';
+import { buildDetail, buildSummary, httpError, renderAt } from './lease-test-utils';
+import type { LeaseDetail, LeaseNextStep, LeaseRegistration, RliChecklist } from '@/types';
 
 // LT-01 (A7-01): the RLI part of the lease page with the real registration panel, checklist, manual dialog and delega
 // dialog. Only the unrelated panels are stubbed.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+// A download is a file the browser saves: the test only asks which one and under what name.
+vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
 vi.mock('../components/cedolare-decision-panel', () => ({ CedolareDecisionPanel: () => null }));
 vi.mock('../components/canone-concordato-calculator', () => ({ CanoneConcordatoCalculator: () => null }));
 vi.mock('../components/attestation-guidance-panel', () => ({ AttestationGuidancePanel: () => null }));
@@ -437,5 +440,123 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(panel.getByTestId('rli-registration-state')).toHaveTextContent('To register');
     expect(panel.getByRole('button', { name: 'Enter registration details' })).toBeInTheDocument();
     expect(panel.getByText('How to register the contract')).toBeInTheDocument();
+  });
+});
+
+// CF-END: «Contratto registrato: ora fai valere le agevolazioni», what follows the registration of a canone concordato.
+describe('LeaseDetailPage — the follow-up of a registered canone concordato (CF-END)', () => {
+  const FOLLOW_UP = 'Contratto registrato: ora fai valere le agevolazioni';
+
+  beforeEach(async () => {
+    await i18n.changeLanguage('it');
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    cleanup();
+  });
+
+  /** A canone concordato registered, whose signed contract and receipt are the lease's own files. */
+  function registeredConcordato(overrides: Partial<LeaseDetail> = {}): LeaseDetail {
+    return signedLease({
+      status: 'Registered',
+      contractType: 'Concordato',
+      fiscalRegime: 'CanoneConcordato',
+      registration: registration({ registrationCode: 'PROT-9', registrationDate: '2026-10-05T00:00:00Z' }),
+      ...overrides,
+    });
+  }
+
+  /** The lease, its documents and the step its row in the list says it waits for (none, by default); a download answers with a file. */
+  function mockSheet(lease: LeaseDetail, documents: ReturnType<typeof leaseDocument>[], nextStep?: LeaseNextStep) {
+    get.mockImplementation((url: string) => {
+      if (url === '/leases/lease-1') return Promise.resolve({ data: lease });
+      if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id: 'lease-1', nextStep })] });
+      if (url === '/leases/lease-1/documents') return Promise.resolve({ data: documents });
+      if (/^\/leases\/lease-1\/documents\/[\w-]+\/download$/.test(url)) return Promise.resolve({ data: new Blob(['%PDF-1.4']) });
+      return Promise.reject(httpError(404));
+    });
+  }
+
+  it('render_RegisteredConcordatoWithoutAttestation_SaysItIsMissingAndOffersTheUpload', async () => {
+    // The signed contract and the receipt are the lease's own files; the attestation is not among its documents.
+    mockSheet(registeredConcordato(), []);
+
+    renderPage('?tab=dati');
+
+    const block = await screen.findByTestId('lease-benefits');
+    expect(block).toHaveAttribute('data-variant', 'focus');
+    expect(within(block).getByRole('heading', { level: 2 })).toHaveTextContent(FOLLOW_UP);
+    const attestation = within(block).getByTestId('lease-benefit-attestation');
+    await waitFor(() => expect(attestation).toHaveTextContent('Attestazione: ancora da caricare'));
+    expect(within(block).getByTestId('lease-benefits-missing')).toHaveTextContent('Te ne manca ancora uno');
+    // What exists is there to download, what is missing is there to upload.
+    expect(within(block).getAllByRole('button', { name: /^Scarica:/ })).toHaveLength(2);
+    fireEvent.click(within(attestation).getByRole('button', { name: "Carica l'attestazione" }));
+    expect(await screen.findByTestId('lease-document-upload-dialog')).toHaveTextContent("Carica l'attestazione");
+    // The two figures of the rules, the sentence that sends the person to the accountant, and no name of the supplier.
+    expect(block).toHaveTextContent('25%');
+    expect(block).toHaveTextContent('10%');
+    expect(block).toHaveTextContent('Le regole e le aliquote dipendono dal comune e dalla tua situazione: confermale con il tuo commercialista.');
+    expect(block.textContent).not.toMatch(/partner|concordato\s*facile/i);
+  });
+
+  it('render_RegisteredConcordatoWithTheThreeDocuments_OffersThreeDownloads', async () => {
+    // None of them is a file of the lease itself: the three are documents uploaded to it.
+    mockSheet(registeredConcordato({ hasSignedPdf: false, registration: registration({ hasReceipt: false }) }), [
+      leaseDocument('doc-contract', 'Contract', 'contratto.pdf'),
+      leaseDocument('doc-attestation', 'Attestation', 'attestazione.pdf'),
+      leaseDocument('doc-receipt', 'Registration', 'ricevuta.pdf'),
+    ]);
+
+    renderPage('?tab=dati');
+
+    const block = await screen.findByTestId('lease-benefits');
+    expect(await within(block).findAllByRole('button', { name: /^Scarica:/ })).toHaveLength(3);
+    expect(within(block).queryByTestId('lease-benefits-missing')).not.toBeInTheDocument();
+    expect(within(block).queryByRole('button', { name: /^Carica/ })).not.toBeInTheDocument();
+    fireEvent.click(within(block).getByRole('button', { name: 'Scarica: Attestazione' }));
+    await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'attestazione.pdf'));
+    expect(get).toHaveBeenCalledWith('/leases/lease-1/documents/doc-attestation/download', { responseType: 'blob' });
+  });
+
+  it('render_RegisteredLibero_ShowsNoFollowUpAndAsksForNoDocuments', async () => {
+    mockSheet(signedLease({ status: 'Registered', registration: registration() }), []);
+
+    renderPage('?tab=dati');
+
+    await screen.findAllByTestId('lease-party');
+    expect(screen.queryByTestId('lease-benefits')).not.toBeInTheDocument();
+    expect(get.mock.calls.some(([url]) => String(url).endsWith('/documents'))).toBe(false);
+  });
+
+  it('render_RegisteredConcordatoWithAStepToDo_KeepsTheStepAsTheBlockAndTheFollowUpIsQuietUnderIt', async () => {
+    mockSheet(registeredConcordato(), [leaseDocument('doc-attestation', 'Attestation', 'attestazione.pdf')], {
+      code: 'ActivateRentPlan',
+      actor: 'Landlord',
+      priority: 4,
+      dueOn: null,
+      params: {},
+    });
+
+    renderPage('?tab=dati');
+
+    expect(await screen.findByTestId('lease-now')).toHaveTextContent('Attiva il piano dei canoni');
+    expect(screen.getByTestId('lease-benefits')).toHaveAttribute('data-variant', 'calm');
+  });
+
+  it('render_RegisteredConcordatoAllInOrder_TheFollowUpTakesThePlaceOfTheQuietLine', async () => {
+    mockSheet(registeredConcordato(), [leaseDocument('doc-attestation', 'Attestation', 'attestazione.pdf')], {
+      code: 'AllGood',
+      actor: 'System',
+      priority: 9,
+      dueOn: null,
+      params: {},
+    });
+
+    renderPage('?tab=dati');
+
+    expect(await screen.findByTestId('lease-benefits')).toHaveAttribute('data-variant', 'focus');
+    expect(screen.queryByTestId('lease-now-quiet')).not.toBeInTheDocument();
   });
 });

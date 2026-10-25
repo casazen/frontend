@@ -11717,6 +11717,38 @@
     "activity": {
       "adminGrantedGift": "Pratica omaggio assegnata"
     },
+    "attestation": {
+      "another": "Carica un nuovo file",
+      "doneRow": "Attestazione: ancora da caricare. Caricala tra i Documenti del contratto quando ce l'hai: serve per le agevolazioni.",
+      "present": "Attestazione: caricata",
+      "title": "Attestazione",
+      "why": "L'attestazione dimostra che il canone rispetta l'accordo territoriale: serve per le agevolazioni."
+    },
+    "benefits": {
+      "disclaimer": "Le regole e le aliquote dipendono dal comune e dalla tua situazione: confermale con il tuo commercialista.",
+      "downloadOne": "Scarica: {{name}}",
+      "intro": "Porta una copia di questi tre documenti al tuo commercialista e al comune per ottenere le agevolazioni del canone concordato, per esempio l'IMU ridotta del 25% e, dove è prevista, la cedolare secca al 10%.",
+      "loading": "Controllo i documenti…",
+      "missing_one": "Te ne manca ancora uno: caricalo per averli tutti e tre pronti.",
+      "missing_other": "Te ne mancano ancora {{count}}: caricali per averli tutti e tre pronti.",
+      "missingLine": "{{name}}: ancora da caricare",
+      "title": "Contratto registrato: ora fai valere le agevolazioni",
+      "use": "Il comune può chiederti l'attestazione per applicare l'aliquota ridotta; il commercialista la usa per la dichiarazione dei redditi."
+    },
+    "document": {
+      "attestation": {
+        "name": "Attestazione",
+        "upload": "Carica l'attestazione"
+      },
+      "contract": {
+        "name": "Contratto firmato",
+        "upload": "Carica il contratto firmato"
+      },
+      "receipt": {
+        "name": "Ricevuta di registrazione",
+        "upload": "Carica la ricevuta di registrazione"
+      }
+    },
     "kind": {
       "transitorio": {
         "title": "Transitorio (da {{min}} a {{max}} mesi)"
