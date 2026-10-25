@@ -191,7 +191,8 @@ export type OrgActivityType =
   | 'PropertyModeChangeCancelled'
   | 'PropertyModeChanged'
   | 'TrustedSupplierAdded'
-  | 'TrustedSupplierRemoved';
+  | 'TrustedSupplierRemoved'
+  | 'AdminGrantedConcordatoFacileGift';
 
 /** What the id of a line points to (`OrgActivitySubjectType`). */
 export type OrgActivitySubjectType = 'Member' | 'Invitation' | 'Org' | 'Property' | 'Supplier';
