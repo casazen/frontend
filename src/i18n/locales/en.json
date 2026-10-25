@@ -1513,12 +1513,15 @@
         "rent": "Future rent that has not been paid is no longer requested.",
         "revenue": "The end of the lease has to be reported to the Agenzia delle Entrate."
       },
-      "dateHint": "From the first day of the lease to the end of the current period; it can be a day in the past.",
-      "dateInvalid": "Choose a day between the start of the lease and the end of the current period.",
+      "dateHint": "From {{from}} to {{to}}; it can be a day in the past.",
+      "dateInvalid": "Choose a day from {{from}} to {{to}}: after the start of the lease and no later than the end of the current period.",
       "dateLabel": "Last day of the lease",
       "description": "{{tenant}} · {{property}}. The lease ends on the day you choose.",
       "done": "Lease ended: the last day is {{date}}",
+      "facts": "A tenant who withdraws for serious reasons must give {{notice}} months of notice, and ending a registered lease must be reported to the Agenzia delle Entrate within {{days}} days, with a fixed tax that is not due if every landlord chose the flat-rate tax (cedolare secca).",
       "failed": "The lease could not be ended.",
+      "noDay": "This lease has no day it can end on: its period is a single day.",
+      "notStarted": "It has not started yet: to cancel it you need a consensual termination, to be reported to the Agenzia delle Entrate within {{days}} days.",
       "title": "End the lease",
       "word": "TERMINATE"
     }
@@ -9905,7 +9908,6 @@
       "leaseNotFound": "Lease not found.",
       "leaseNotInForce": "The lease is not in force yet: every party has to sign it.",
       "leaseTermAlreadyEnded": "The period of the lease has already ended: the notice can no longer be withdrawn.",
-      "leaseTerminationDateInvalid": "The last day must be between the start of the lease and the end of the current period.",
       "leaseTypeHasNoRenewal": "This type of lease ends by itself on its end date: no notice is needed."
     }
   },

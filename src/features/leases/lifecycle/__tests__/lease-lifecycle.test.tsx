@@ -5,6 +5,7 @@ import axios from '@/lib/axios';
 import { toastUndo } from '@/lib/toast-undo';
 import type { LeaseDetail, LeaseStage } from '@/types';
 import { buildDetail, buildSummary, httpError, renderAt } from '../../__tests__/lease-test-utils';
+import { availableLeaseActions } from '../lifecycle-actions';
 import { useLeaseActions } from '../use-lease-actions';
 
 // LR-10: the three things on the sheet of a lease that cannot be taken back, each with the rule that keeps a mistake from costing data:
@@ -24,13 +25,27 @@ function Harness({ lease }: { lease: LeaseDetail }) {
   return <>{actions.dialogs}</>;
 }
 
+/** The figures the server applies (`GET /long-rent/rules`): the facts of the window «Termina il contratto» are told with them. */
+const RULES = {
+  termMonths: { Libero: 48, Concordato: 36 },
+  renewalMonths: { Libero: 48, Concordato: 24 },
+  noticeMonths: 6,
+  registrationDays: 30,
+  depositMaxRents: 3,
+  availableTypes: ['Libero', 'Concordato', 'Transitorio'],
+  importedTypes: ['Libero', 'Concordato', 'Transitorio'],
+  transitoryTermMonths: { min: 1, max: 18 },
+  transitoryDocumentationAfterDays: 30,
+  transitoryBandFromInhabitants: 10_000,
+};
+
 /** The sheet's windows, opened as a link opens them (`?azione=`); the list of the leases of the property tells the stage. */
 function renderAction(lease: LeaseDetail, action: string, stage?: LeaseStage) {
-  get.mockImplementation((url: string) =>
-    url === '/leases'
-      ? Promise.resolve({ data: [buildSummary({ id: lease.id, propertyId: lease.propertyId, stage })] })
-      : Promise.reject(httpError(404)),
-  );
+  get.mockImplementation((url: string) => {
+    if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id: lease.id, propertyId: lease.propertyId, stage })] });
+    if (url === '/long-rent/rules') return Promise.resolve({ data: RULES });
+    return Promise.reject(httpError(404));
+  });
   return renderAt(`/app/long-rent/leases/${lease.id}?azione=${action}`, '/app/long-rent/leases/:id', <Harness lease={lease} />);
 }
 
@@ -100,6 +115,36 @@ describe('the actions of the life of a lease (LR-10)', () => {
     expect(post).toHaveBeenCalledWith('/leases/lease-t/terminate', { on: '2026-10-20' }, undefined);
     // It cannot be taken back, so no toast offers «Annulla».
     expect(toastUndo).not.toHaveBeenCalled();
+  });
+
+  it('terminate_ThePickerStartsTheDayAfterTheLeaseBegan_TheDayItBeganOnIsRefused_AndTheFactsAreOneSentence', async () => {
+    renderAction(buildDetail({ id: 'lease-m', status: 'Registered' }), 'termina', 'Active'); // began on 1 October 2026, ends on 30 September 2030
+
+    const dialog = await screen.findByRole('dialog');
+    const date = within(dialog).getByTestId('lease-terminate-date');
+    expect(date).toHaveAttribute('min', '2026-10-02');
+    expect(date).toHaveAttribute('max', '2030-09-30');
+    // The months of notice and the days to report it are the server's figures, in one sentence.
+    expect(await within(dialog).findByTestId('lease-terminate-facts')).toHaveTextContent(
+      /6 mesi di preavviso.*entro 30 giorni.*cedolare secca/,
+    );
+
+    // The day it began is not an ending: the word is typed and the button still waits; nothing goes to the server.
+    fireEvent.change(date, { target: { value: '2026-10-01' } });
+    fireEvent.change(within(dialog).getByTestId('confirmation-input'), { target: { value: 'termina' } });
+    expect(within(dialog).getByRole('button', { name: 'Termina il contratto' })).toBeDisabled();
+    expect(within(dialog).getByText(/Scegli un giorno dal 2 ottobre 2026 al 30 settembre 2030/)).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('terminate_ALeaseThatHasNotBegun_HasNoSuchAction_AndOneThatHasDoes', () => {
+    const notBegun = buildDetail({ id: 'lease-n', status: 'Registered', startDate: '2026-11-01T00:00:00Z' });
+    const running = buildDetail({ id: 'lease-r', status: 'Registered', startDate: '2026-10-01T00:00:00Z' });
+    const context = { stage: 'Active' as const, canManage: true, canChangeMode: false, today: '2026-10-25' };
+
+    expect(availableLeaseActions(notBegun, context).termina).toBe(false);
+    expect(availableLeaseActions(running, context).termina).toBe(true);
+    expect(availableLeaseActions(notBegun, { ...context, today: '2026-11-01' }).termina).toBe(true); // its first day has come
   });
 
   it('erasure_OnlyAfterTheConfirmation_AndTheAnswerIsToldInWords', async () => {
