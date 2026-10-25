@@ -31,6 +31,11 @@ interface RegisteredBenefitsProps {
    * quiet section under it: a sheet shows one highlighted block, never two.
    */
   calm?: boolean;
+  /**
+   * The block is one row among the advice of the guide of the lease (LR-GUIDE-1): no box, no side line, its title an `h3` under the
+   * section «Per il tuo contratto». It is the same block with the same words, the one place that tells what to claim after a registration.
+   */
+  plain?: boolean;
 }
 
 /**
@@ -41,9 +46,10 @@ interface RegisteredBenefitsProps {
  * cedolare secca at 10% where it is provided for); which comuni provide for it and the conditions of each are not listed here, and the
  * last sentence sends the person to the accountant for them. Nothing here is advice: it only tells what to bring and where it is.
  */
-export function RegisteredBenefits({ lease, calm = false }: RegisteredBenefitsProps) {
+export function RegisteredBenefits({ lease, calm = false, plain = false }: RegisteredBenefitsProps) {
   const { t } = useTranslation();
   const titleId = useId();
+  const Heading = plain ? 'h3' : 'h2';
   const documents = useLeaseDocuments(lease.id);
   // The window is for the document whose button opened it; it keeps that one while it closes.
   const [uploadFor, setUploadFor] = useState<BenefitDocument>('attestation');
@@ -72,22 +78,26 @@ export function RegisteredBenefits({ lease, calm = false }: RegisteredBenefitsPr
     <section
       aria-labelledby={titleId}
       data-testid="lease-benefits"
-      data-variant={calm ? 'calm' : 'focus'}
+      data-variant={plain ? 'plain' : calm ? 'calm' : 'focus'}
       className={cn(
         'min-w-0',
-        calm ? 'border-s-2 border-border ps-4' : 'flex flex-col gap-3 rounded-xl bg-success-soft p-4 ring-1 ring-inset ring-success-border sm:flex-row sm:gap-4 sm:p-6',
+        plain
+          ? ''
+          : calm
+            ? 'border-s-2 border-border ps-4'
+            : 'flex flex-col gap-3 rounded-xl bg-success-soft p-4 ring-1 ring-inset ring-success-border sm:flex-row sm:gap-4 sm:p-6',
       )}
     >
-      {calm ? null : (
+      {calm || plain ? null : (
         <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-success-foreground sm:size-12">
           <CheckCircle2 className="size-5 sm:size-6" />
         </span>
       )}
 
       <div className="min-w-0 flex-1 space-y-3">
-        <h2 id={titleId} className={cn('break-words font-semibold leading-snug', calm ? 'text-base' : 'text-lg sm:text-xl')}>
+        <Heading id={titleId} className={cn('break-words font-semibold leading-snug', calm || plain ? 'text-base' : 'text-lg sm:text-xl')}>
           {t('leaseRound.benefits.title')}
-        </h2>
+        </Heading>
         <div className="space-y-2 break-words text-sm text-foreground/80 sm:text-base">
           <p>{t('leaseRound.benefits.intro')}</p>
           <p className="text-foreground/70">{t('leaseRound.benefits.use')}</p>

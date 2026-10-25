@@ -1,12 +1,14 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
-import { PlainSection } from '@/components/shared/calm';
-import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Disclosure } from '../guide/disclosure';
+import { regimeOutcome } from '../guide/guide-answers';
+import { formatWholeEuro, splitSource } from '../guide/guide-format';
+import { IRPEF_REASONS, describeRegimeOutcome } from '../guide/regime-text';
 import { useRliAdvisory } from '@/queries/use-leases';
 import { formatCurrency } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -14,6 +16,9 @@ import type { CedolareAdvisory, CedolareAdvisoryInput } from '@/types';
 
 interface Props {
   leaseId: string;
+  /** What the landlord answered in «Affina la stima»; the guide holds it, so that its summary line and this window say the same. */
+  input: CedolareAdvisoryInput | undefined;
+  onInputChange: (input: CedolareAdvisoryInput | undefined) => void;
 }
 
 /** Note codes this frontend can explain; an unknown code is skipped rather than shown raw. */
@@ -26,13 +31,6 @@ const NOTE_CODES = [
   'short_term_annualized',
   'tax_regime_unknown',
   'questura_not_replaced',
-];
-
-const IRPEF_REASONS = [
-  'not_configured',
-  'brackets_outdated',
-  'income_over_limit',
-  'concordato_ata_relief_not_verified',
 ];
 
 /** Same bounds as the backend request (`CedolareAdvisoryRequest`). */
@@ -65,74 +63,148 @@ function parseField(value: string, [min, max]: readonly [number, number], intege
 }
 
 /**
- * Tax advisory of the lease (LT-08): cedolare secca against the ordinary regime. The backend computes every figure from
- * configured parameters; the stamp duty and the IRPEF comparison need data CasaZen does not hold, entered here and sent
- * only for the computation (POST body, never stored).
+ * Cedolare secca or ordinary regime, for the lease (LT-08, explained in LR-GUIDE-1). The backend computes every figure from configured
+ * parameters (the calculation is the same); the stamp duty and the IRPEF comparison need data CasaZen does not hold, asked in «Affina
+ * la stima», sent only for the computation (POST body, never stored).
+ *
+ * The window opens with one sentence, the verdict: which regime costs less in the first year and by how much, or that it cannot be said
+ * yet and what is missing. Then what to do in each case, the two options in a few lines, and behind a click the questions that refine
+ * the estimate, how it was worked out and where the rules are read.
  */
-export function CedolareDecisionPanel({ leaseId }: Props) {
+export function CedolareDecisionPanel({ leaseId, input, onInputChange }: Props) {
   const { t } = useTranslation();
-  const [input, setInput] = useState<CedolareAdvisoryInput | undefined>(undefined);
   const { data, isLoading, isError, error, isFetching } = useRliAdvisory(leaseId, input);
 
   return (
-    <PlainSection title={t('leases.rli.advisory.title')} className="space-y-4 text-sm">
-      <Alert variant="info">{t('leases.rli.advisory.disclaimer')}</Alert>
-      {isLoading && <p>{t('leases.rli.advisoryLoading')}</p>}
+    <div className="space-y-6 text-sm" data-testid="advisory-panel">
+      {isLoading && <p role="status">{t('leases.rli.advisoryLoading')}</p>}
       {isError && (
         <p className="text-destructive" role="alert">
           {getProblemMessage(error, t) ?? t('leases.rli.advisoryError')}
         </p>
       )}
-      {data && <AdvisoryBody data={data} />}
+      {data && <Verdict data={data} />}
+      {data && <Options data={data} />}
       {!isLoading && (
-        <AdvisoryInputs pending={isFetching} onSubmit={setInput} />
+        <Disclosure summary={t('leaseGuide.regime.refine.title')} testId="advisory-refine">
+          <RefineEstimate pending={isFetching} onSubmit={onInputChange} />
+        </Disclosure>
       )}
-    </PlainSection>
+      {data && (
+        <Disclosure summary={t('leaseGuide.regime.how.title')} testId="advisory-how">
+          <Breakdown data={data} />
+        </Disclosure>
+      )}
+      {data && <Sources data={data} />}
+      <p className="text-foreground/70">{t('leaseGuide.regime.accountant')}</p>
+    </div>
   );
 }
 
-function AdvisoryBody({ data }: { data: CedolareAdvisory }) {
+/** The sentence the window opens with, and what to do whichever regime is chosen. */
+function Verdict({ data }: { data: CedolareAdvisory }) {
+  const { t } = useTranslation();
+  const outcome = regimeOutcome(data);
+  const { sentence, detail } = describeRegimeOutcome(outcome, t);
+
+  return (
+    <div className="space-y-3" data-testid="advisory-verdict" data-outcome={outcome.kind}>
+      <div className="space-y-1">
+        <p className="text-base font-semibold leading-snug">{sentence}</p>
+        {detail ? <p className="text-foreground/70">{detail}</p> : null}
+      </div>
+      <div className="space-y-1">
+        <p>{t('leaseGuide.regime.todoCedolare')}</p>
+        <p>{t('leaseGuide.regime.todoOrdinary')}</p>
+      </div>
+    </div>
+  );
+}
+
+/** The two regimes side by side: a few lines each, in plain words. */
+function Options({ data }: { data: CedolareAdvisory }) {
   const { t } = useTranslation();
   const { cedolare, ordinary } = data;
+  const { registro, bollo, irpef } = ordinary;
+
+  const bolloLine =
+    bollo.status === 'Computed' && bollo.amountEur !== null
+      ? t('leaseGuide.regime.ordinary.bolloPaid', { amount: formatWholeEuro(bollo.amountEur) })
+      : t('leaseGuide.regime.ordinary.bolloRule', { amount: formatCurrency(bollo.eurPerUnit), pages: bollo.pagesPerUnit });
+  const irpefLine =
+    irpef.status === 'Computed' && irpef.additionalGrossIrpefEur !== null
+      ? t('leaseGuide.regime.ordinary.irpefPaid', { amount: formatWholeEuro(irpef.additionalGrossIrpefEur) })
+      : t('leaseGuide.regime.ordinary.irpefOpen');
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <Option title={t('leases.rli.advisory.cedolare.title')} chosen={data.taxRegime === 'CedolareSecca'} testId="advisory-cedolare">
+        <p>
+          {t(cedolare.rateBasis === 'ConcordatoAta' ? 'leaseGuide.regime.cedolare.paysReduced' : 'leaseGuide.regime.cedolare.pays', {
+            rate: formatPercent(cedolare.rate),
+            tax: formatWholeEuro(cedolare.annualTaxEur),
+          })}
+        </p>
+        <p>{t('leases.rli.advisory.cedolare.noRegistroBollo')}</p>
+        <p>{t('leaseGuide.regime.cedolare.noIstat')}</p>
+        {data.contractType === 'Concordato' && <p data-testid="advisory-ata">{t(`leaseGuide.regime.ata.${data.ata}`)}</p>}
+      </Option>
+
+      <Option title={t('leases.rli.advisory.ordinary.title')} chosen={data.taxRegime === 'Ordinario'} testId="advisory-ordinary">
+        <p>{t('leaseGuide.regime.ordinary.registro', { amount: formatWholeEuro(registro.firstYearEur) })}</p>
+        <p>{bolloLine}</p>
+        <p>{irpefLine}</p>
+        {data.contractType !== 'Transitorio' && <p>{t('leaseGuide.regime.ordinary.istat')}</p>}
+      </Option>
+    </div>
+  );
+}
+
+function Option({ title, chosen, testId, children }: { title: string; chosen: boolean; testId: string; children: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <section className="space-y-2 border-s-2 border-border ps-4" data-testid={testId}>
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="font-semibold">{title}</h3>
+        {chosen && <Badge variant="secondary">{t('leases.rli.advisory.chosen')}</Badge>}
+      </div>
+      <div className="space-y-1.5 break-words">{children}</div>
+    </section>
+  );
+}
+
+/** How the figures were worked out, with the rules behind them and what the estimate leaves out. */
+function Breakdown({ data }: { data: CedolareAdvisory }) {
+  const { t } = useTranslation();
+  const { cedolare, ordinary } = data;
+  const outcome = regimeOutcome(data);
   const notes = data.notes.filter((code) => NOTE_CODES.includes(code));
-  const sources = Array.from(
-    new Set([cedolare.source, ordinary.registro.source, ordinary.bollo.source, ordinary.irpef.source].filter(Boolean)),
-  ) as string[];
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <p>{t('leases.rli.advisory.annualRent', { amount: formatCurrency(data.annualRent) })}</p>
-        {data.contractType === 'Concordato' && (
-          <p data-testid="advisory-ata">
-            {t('leases.rli.advisory.ataLabel')}: {t(`leases.rli.advisory.ata.${data.ata}`)}
-          </p>
-        )}
-      </div>
+      <p>{t('leases.rli.advisory.annualRent', { amount: formatCurrency(data.annualRent) })}</p>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Option
-          title={t('leases.rli.advisory.cedolare.title')}
-          chosen={data.taxRegime === 'CedolareSecca'}
-          testId="advisory-cedolare"
-        >
+        <div className="space-y-3 border-s-2 border-border ps-4">
+          <h4 className="font-semibold">{t('leases.rli.advisory.cedolare.title')}</h4>
           <Figure label={t('leases.rli.advisory.cedolare.rate')} value={formatPercent(cedolare.rate)}>
             {t(`leases.rli.advisory.cedolare.rateBasis.${cedolare.rateBasis}`)}
           </Figure>
           <Figure label={t('leases.rli.advisory.cedolare.tax')} value={formatCurrency(cedolare.annualTaxEur)} />
-          <p className="text-muted-foreground">{t('leases.rli.advisory.cedolare.noRegistroBollo')}</p>
-        </Option>
+        </div>
 
-        <Option
-          title={t('leases.rli.advisory.ordinary.title')}
-          chosen={data.taxRegime === 'Ordinario'}
-          testId="advisory-ordinary"
-        >
+        <div className="space-y-3 border-s-2 border-border ps-4">
+          <h4 className="font-semibold">{t('leases.rli.advisory.ordinary.title')}</h4>
           <Registro registro={ordinary.registro} />
           <Bollo bollo={ordinary.bollo} />
           <Irpef irpef={ordinary.irpef} />
-        </Option>
+        </div>
       </div>
+
+      <p className="text-foreground/70">{t('leaseGuide.regime.how.halved')}</p>
+      {(outcome.kind === 'cedolareCheaper' || outcome.kind === 'ordinaryCheaper') && outcome.withoutBollo ? (
+        <p className="text-foreground/70">{t('leaseGuide.regime.how.withoutBollo')}</p>
+      ) : null}
 
       {notes.length > 0 && (
         <div className="space-y-1">
@@ -144,50 +216,48 @@ function AdvisoryBody({ data }: { data: CedolareAdvisory }) {
           </ul>
         </div>
       )}
-
-      {sources.length > 0 && (
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <p className="font-medium">{t('leases.rli.advisory.sources')}</p>
-          <ul className="list-disc space-y-1 break-words pl-5">
-            {sources.map((source) => (
-              <li key={source}>{source}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }
 
-function Option({
-  title,
-  chosen,
-  testId,
-  children,
-}: {
-  title: string;
-  chosen: boolean;
-  testId: string;
-  children: ReactNode;
-}) {
+/** Where the rules are read: the pages the server cites for its figures, as links. */
+function Sources({ data }: { data: CedolareAdvisory }) {
   const { t } = useTranslation();
+  const { cedolare, ordinary } = data;
+  const sources = Array.from(
+    new Set([cedolare.source, ordinary.registro.source, ordinary.bollo.source, ordinary.irpef.source].filter(Boolean)),
+  ) as string[];
+  if (sources.length === 0) return null;
+
   return (
-    <section className="space-y-3 border-s-2 border-border ps-4" data-testid={testId}>
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="font-semibold">{title}</h3>
-        {chosen && <Badge variant="secondary">{t('leases.rli.advisory.chosen')}</Badge>}
-      </div>
-      {children}
-    </section>
+    <Disclosure summary={t('leases.rli.advisory.sources')} testId="advisory-sources">
+      <ul className="list-disc space-y-2 break-words pl-5 text-foreground/70">
+        {sources.map((source) => {
+          const { label, url, note } = splitSource(source);
+          return (
+            <li key={source}>
+              {url ? (
+                <a className="text-primary-text underline underline-offset-2" href={url} target="_blank" rel="noopener noreferrer">
+                  {label}
+                </a>
+              ) : (
+                label
+              )}
+              {note ? <span className="block text-xs">{note}</span> : null}
+            </li>
+          );
+        })}
+      </ul>
+    </Disclosure>
   );
 }
 
 function Figure({ label, value, children }: { label: string; value?: string; children?: ReactNode }) {
   return (
     <div className="space-y-0.5">
-      <p className="text-muted-foreground">{label}</p>
+      <p className="text-foreground/70">{label}</p>
       {value && <p className="font-medium">{value}</p>}
-      {children && <p className="text-xs text-muted-foreground">{children}</p>}
+      {children && <p className="text-xs text-foreground/70">{children}</p>}
     </div>
   );
 }
@@ -211,14 +281,14 @@ function Registro({ registro }: { registro: CedolareAdvisory['ordinary']['regist
         {formula}
       </Figure>
       {registro.minimumApplied && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-foreground/70">
           {t('leases.rli.advisory.ordinary.registroMinimum', {
             minimum: formatCurrency(registro.firstYearMinimumEur),
             computed: formatCurrency(registro.computedEur),
           })}
         </p>
       )}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-foreground/70">
         {t('leases.rli.advisory.ordinary.registroNextYears', { rate: formatPercent(registro.rate) })}
       </p>
     </div>
@@ -251,7 +321,7 @@ function Bollo({ bollo }: { bollo: CedolareAdvisory['ordinary']['bollo'] }) {
           copies: bollo.copies,
         })}
       </Figure>
-      <p className="text-xs text-muted-foreground">{rule}</p>
+      <p className="text-xs text-foreground/70">{rule}</p>
       {!bollo.linesConsidered && (
         <p className="text-xs text-amber-800">
           {t('leases.rli.advisory.ordinary.bolloPagesOnly', {
@@ -289,9 +359,9 @@ function Irpef({ irpef }: { irpef: CedolareAdvisory['ordinary']['irpef'] }) {
 
   return (
     <div className="space-y-1" data-testid="advisory-irpef">
-      <p className="text-muted-foreground">{t('leases.rli.advisory.ordinary.irpef')}</p>
+      <p className="text-foreground/70">{t('leases.rli.advisory.ordinary.irpef')}</p>
       <p className="font-medium">{t('leases.rli.advisory.ordinary.irpefToAssess')}</p>
-      {reason && <p className="text-xs text-muted-foreground">{reason}</p>}
+      {reason && <p className="text-xs text-foreground/70">{reason}</p>}
       {irpef.status === 'InputRequired' && (
         <p className="text-xs">{t('leases.rli.advisory.ordinary.irpefInputHint')}</p>
       )}
@@ -299,7 +369,8 @@ function Irpef({ irpef }: { irpef: CedolareAdvisory['ordinary']['irpef'] }) {
   );
 }
 
-function AdvisoryInputs({
+/** The questions that refine the estimate, all optional: what CasaZen cannot know about the contract and about the landlord. */
+function RefineEstimate({
   pending,
   onSubmit,
 }: {
@@ -340,22 +411,19 @@ function AdvisoryInputs({
   };
 
   return (
-    <form className="space-y-3 border-t border-border pt-4" onSubmit={submit} noValidate>
-      <div className="space-y-0.5">
-        <p className="font-medium">{t('leases.rli.advisory.inputs.title')}</p>
-        <p className="text-xs text-muted-foreground">{t('leases.rli.advisory.inputs.privacy')}</p>
-      </div>
+    <form className="space-y-3" onSubmit={submit} noValidate>
+      <p className="text-foreground/70">{t('leases.rli.advisory.inputs.privacy')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field id="advisory-pages" label={t('leases.rli.advisory.inputs.writtenPages')}>
+        <Field id="advisory-pages" label={t('leaseGuide.regime.refine.pages')}>
           <Input id="advisory-pages" inputMode="numeric" value={writtenPages} onChange={(e) => setWrittenPages(e.target.value)} />
         </Field>
-        <Field id="advisory-lines" label={t('leases.rli.advisory.inputs.lines')}>
+        <Field id="advisory-lines" label={t('leaseGuide.regime.refine.lines')}>
           <Input id="advisory-lines" inputMode="numeric" value={lines} onChange={(e) => setLines(e.target.value)} />
         </Field>
-        <Field id="advisory-copies" label={t('leases.rli.advisory.inputs.copies')}>
+        <Field id="advisory-copies" label={t('leaseGuide.regime.refine.copies')}>
           <Input id="advisory-copies" inputMode="numeric" value={copies} onChange={(e) => setCopies(e.target.value)} />
         </Field>
-        <Field id="advisory-income" label={t('leases.rli.advisory.inputs.otherIncome')}>
+        <Field id="advisory-income" label={t('leaseGuide.regime.refine.income')}>
           <Input
             id="advisory-income"
             inputMode="decimal"
@@ -370,7 +438,7 @@ function AdvisoryInputs({
           {t('leases.rli.advisory.inputs.invalid')}
         </p>
       )}
-      <Button type="submit" size="sm" disabled={pending}>
+      <Button type="submit" size="sm" className="min-h-11" disabled={pending}>
         {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {pending ? t('leases.rli.advisory.inputs.updating') : t('leases.rli.advisory.inputs.submit')}
       </Button>

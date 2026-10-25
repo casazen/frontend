@@ -24,7 +24,10 @@ test.describe('Lease flow (long-term landlord)', () => {
     await page.goto(demoUrl(`/app/long-rent/leases/${FLOW_LEASE_ID}`, 'long-term'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('lease-continue-draft')).toBeVisible();
 
-    // Before the signature (the draft opens on the tab of the signature): every party is to sign and the rent has nothing to schedule.
+    // The sheet opens on the guide (LR-GUIDE-1); the signature is in the tab of the documents. Before it, every party is to sign and the
+    // rent has nothing to schedule.
+    await expect(page.getByTestId('lease-guide')).toBeVisible();
+    await page.getByTestId('lease-tab-documenti').click();
     const signing = page.getByTestId('lease-signing-panel');
     await expect(signing.getByTestId('lease-signer')).toHaveCount(4);
     await expect(signing.getByTestId('lease-signer-status')).toHaveText(['Da firmare', 'Da firmare', 'Da firmare', 'Da firmare']);

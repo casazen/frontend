@@ -33,7 +33,7 @@ function mockLease(response: () => Promise<unknown>) {
   );
 }
 
-// The data of the lease are in the tab `dati`; a draft opens on the signature, which these tests stub.
+// The data of the lease are in the tab `dati`; the sheet opens on the guide (LR-GUIDE-1), whose tools and advice have their own tests.
 function renderPage(search = '') {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
@@ -147,50 +147,55 @@ describe('LeaseDetailPage', () => {
     expect(screen.getByText('Rejected')).toBeInTheDocument();
   });
 
-  it('render_ConcordatoLeaseWithIndicativeRange_ShowsTheServerRangeWithWarning', async () => {
-    // LT-10 (A7-12, A7-23): the range the API computed at creation, indicative with Partial data, rent outside it.
-    mockLease(() =>
-      Promise.resolve({
-        data: buildDetail({
-          fiscalRegime: 'CanoneConcordato',
-          contractType: 'Concordato',
-          taxRegime: 'Ordinario',
-          monthlyRent: 900,
-          securityDeposit: 2700,
-          concordatoAssessment: {
-            sqm: 65,
-            garageSqm: 0,
-            balconySqm: 0,
-            otherAppurtenanceSqm: 0,
-            privateGreenSqm: 0,
-            typeAElementCount: 2,
-            typeBElementCount: 3,
-            typeCElementCount: 0,
-            typeDElementCount: 0,
-            qualifyingTypeDElementCount: 0,
-            stoveHeating: false,
-            isFurnished: false,
-            airConditioning: false,
-            zoneName: null,
-            cadastralSheet: null,
-            contractYears: 3,
-            usableSqm: 65,
-            zone: 'Unica',
-            subFascia: 2,
-            canoneMinAnnuo: 1300,
-            canoneMaxAnnuo: 5525,
-            canoneMinMensile: 108.34,
-            canoneMaxMensile: 460.41,
-            dataCompleteness: 'Partial',
-            indicative: true,
-            rentWithinRange: false,
-            calculatedAt: '2026-09-24T10:00:00Z',
-          },
-        }),
-      }),
-    );
+  /** A canone concordato lease whose range the server computed at its creation: indicative with Partial data, the rent outside it. */
+  const concordatoOutOfRange = () =>
+    buildDetail({
+      fiscalRegime: 'CanoneConcordato',
+      contractType: 'Concordato',
+      taxRegime: 'Ordinario',
+      monthlyRent: 900,
+      securityDeposit: 2700,
+      concordatoAssessment: {
+        sqm: 65,
+        garageSqm: 0,
+        balconySqm: 0,
+        otherAppurtenanceSqm: 0,
+        privateGreenSqm: 0,
+        typeAElementCount: 2,
+        typeBElementCount: 3,
+        typeCElementCount: 0,
+        typeDElementCount: 0,
+        qualifyingTypeDElementCount: 0,
+        stoveHeating: false,
+        isFurnished: false,
+        airConditioning: false,
+        zoneName: null,
+        cadastralSheet: null,
+        contractYears: 3,
+        usableSqm: 65,
+        zone: 'Unica',
+        subFascia: 2,
+        canoneMinAnnuo: 1300,
+        canoneMaxAnnuo: 5525,
+        canoneMinMensile: 108.34,
+        canoneMaxMensile: 460.41,
+        dataCompleteness: 'Partial',
+        indicative: true,
+        rentWithinRange: false,
+        calculatedAt: '2026-09-24T10:00:00Z',
+      },
+    });
 
-    renderPage('?tab=dati');
+  it('render_ConcordatoLeaseWithIndicativeRange_TheGuideAnswersInOneSentenceAndTheWindowShowsTheServerRangeWithWarning', async () => {
+    // LT-10 (A7-12, A7-23): the range the API computed at creation, indicative with Partial data, rent outside it.
+    mockLease(() => Promise.resolve({ data: concordatoOutOfRange() }));
+
+    renderPage('?tab=guida');
+
+    // The tool says its answer without being opened (LR-GUIDE-1): the rent is above the limit of the agreement.
+    expect(await screen.findByTestId('guide-tool-rent-summary')).toHaveTextContent(/supera il limite dell'accordo/);
+    expect(screen.getByTestId('guide-tool-rent-summary')).toHaveTextContent(/460,41/);
+    fireEvent.click(screen.getByTestId('guide-tool-rent-open'));
 
     const panel = await screen.findByTestId('concordato-assessment');
     expect(within(panel).getByTestId('concordato-assessment-indicative')).toHaveTextContent(
@@ -198,20 +203,42 @@ describe('LeaseDetailPage', () => {
     );
     expect(within(panel).getByTestId('concordato-assessment-outside')).toBeInTheDocument();
     expect(within(panel).getByText(/460,41/)).toBeInTheDocument();
-    expect(screen.getByTestId('lease-type-regime')).toHaveTextContent('Canone concordato (3+2) · Regime ordinario');
-    expect(screen.getByText(/2\.?700,00/)).toBeInTheDocument();
-    // A7-24: calculator/guide/IMU only for a canone concordato contract.
-    expect(screen.getByTestId('lease-concordato-sections')).toBeInTheDocument();
   });
 
-  it('render_LiberoLease_HidesConcordatoCalculatorAndImuSections', async () => {
-    // A7-24: the calculator, the attestation guidance and the IMU button applied to any regime before this fix.
-    mockLease(() => Promise.resolve({ data: buildDetail() })); // contractType: 'Libero' by default
+  it('render_ConcordatoLease_TheDataTabHasTheDataOfTheContractAndNothingFiscal', async () => {
+    mockLease(() => Promise.resolve({ data: concordatoOutOfRange() }));
 
     renderPage('?tab=dati');
 
-    await screen.findAllByTestId('lease-party');
-    expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('lease-type-regime')).toHaveTextContent('Canone concordato (3+2) · Regime ordinario');
+    expect(screen.getByText(/2\.?700,00/)).toBeInTheDocument();
+    // The comparison of the regimes, the range of the agreement, the guidance and the IMU communication are tools of the guide now.
+    expect(screen.queryByTestId('concordato-assessment')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('advisory-panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('guide-tool-dialog')).not.toBeInTheDocument();
+  });
+
+  it('render_LiberoLease_TheGuideOffersTheRegimeToolAndNotTheRangeOfTheAgreement', async () => {
+    // A7-24: the range of the agreement is for a canone concordato contract only.
+    mockLease(() => Promise.resolve({ data: buildDetail() })); // contractType: 'Libero' by default
+
+    renderPage('?tab=guida');
+
+    expect(await screen.findByTestId('guide-tool-regime')).toBeInTheDocument();
+    expect(screen.queryByTestId('guide-tool-rent')).not.toBeInTheDocument();
+  });
+
+  it('render_TheSheetOpensOnTheGuide_AndTheOldNamesOfTheTabsStillLead', async () => {
+    mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Registered' }) }));
+
+    const { unmount } = renderPage();
+    expect(await screen.findByTestId('lease-guide')).toBeInTheDocument();
+    expect(screen.getByTestId('lease-tab-guida')).toHaveAttribute('aria-selected', 'true');
+    unmount();
+
+    // An address of the old page (`?tab=cronologia`) leads to the tab that holds what it showed.
+    renderPage('?tab=cronologia');
+    expect(await screen.findAllByTestId('lease-party')).toHaveLength(2);
   });
 
   it('render_ConcordatoDraftForThePartner_WaitsForItsContractWithoutDatesOrRentOfTheDraft', async () => {
@@ -244,7 +271,6 @@ describe('LeaseDetailPage', () => {
     expect(screen.getByText(/Casa Trastevere · Roma · .* · Canone da definire/)).toBeInTheDocument();
     expect(screen.queryByText(/3000/)).not.toBeInTheDocument();
     expect(screen.queryByText(/0,00\s€/)).not.toBeInTheDocument();
-    expect(screen.queryByTestId('lease-concordato-sections')).not.toBeInTheDocument();
   });
 
   // CF-FIX: the switch of the service. CF-FLOW: the sheet of the draft is the centre — the privacy notice, the way to the payment or
