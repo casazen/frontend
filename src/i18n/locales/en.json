@@ -881,16 +881,8 @@
     "fiscalCodeMasked": "Tax code",
     "rli": {
       "advisory": {
-        "title": "Cedolare secca or ordinary regime: tax information",
-        "disclaimer": "Information, not tax advice: estimates computed with the parameters of the sources listed. CasaZen is not an authorized intermediary under Italian DPR 322/1998: check the choice with an accountant.",
         "annualRent": "Annual rent: {{amount}}",
         "chosen": "Chosen regime",
-        "ataLabel": "High housing pressure area (ATA)",
-        "ata": {
-          "Verified": "verified municipality",
-          "Unverified": "candidate municipality, not verified on an official source",
-          "NotListed": "municipality not in CasaZen's list"
-        },
         "cedolare": {
           "title": "Cedolare secca",
           "rate": "Rate",
@@ -937,12 +929,7 @@
           "questura_not_replaced": "With a non-EU tenant, registering the contract does not replace the written notice to the public security authority within 48 hours of handing over the property."
         },
         "inputs": {
-          "title": "Data to complete the estimate",
           "privacy": "Used only for the computation: CasaZen does not store them.",
-          "writtenPages": "Written pages of one copy of the contract",
-          "lines": "Lines of one copy (optional)",
-          "copies": "Copies to register",
-          "otherIncome": "IRPEF taxable income from other sources, in euros per year (optional)",
           "submit": "Update the estimate",
           "updating": "Computing...",
           "invalid": "Check the values: pages from 1 to 1,000, lines from 1 to 100,000, copies from 1 to 20, income from 0 to 100,000,000 €. Enter pages and copies together."
@@ -982,8 +969,6 @@
       "attestationCheckbox": "I have read and accept the filing-responsibility attestation",
       "confirmSubmit": "Authorize and submit",
       "cancel": "Cancel",
-      "extraEuTitle": "Non-EU tenant: Questura communication within 48 hours of the delivery",
-      "extraEuBody": "This lease includes a non-EU tenant: within 48 hours of the delivery of the property a written communication must be sent to the local public-security authority (art. 7 D.Lgs. 286/1998). CasaZen does not send it: once sent, record its date in the dedicated section.",
       "checklistItem": {
         "contract_signed": "Contract signed by all parties",
         "delega_captured": "RLI delega / attestation recorded",
@@ -1046,7 +1031,6 @@
       "checklistGoToQuestura": "Go to the communication"
     },
     "canoneConcordato": {
-      "title": "Agreed-rent calculator",
       "sqm": "Floor area (sqm)",
       "zone": "Zone",
       "zonePlaceholder": "e.g. Unica, Centrale",
@@ -1548,7 +1532,6 @@
       "start": "Start of the lease",
       "title": "Term and dates"
     },
-    "details": "Show details",
     "history": {
       "actor": {
         "casazen": "CasaZen",
@@ -11652,6 +11635,356 @@
         "title": "This lease has a step to take"
       }
     }
+  },
+  "leaseGuide": {
+    "advice": {
+      "cedolareNoIstat": {
+        "action": "Read the information sheet of the Agenzia",
+        "body": "As long as the option lasts you cannot ask for the ISTAT update of the rent, even if the contract provides for it. Our contract model already says so.",
+        "title": "With the cedolare secca the rent is not updated",
+        "why": "By choosing the cedolare secca you give up updates of the rent for the whole duration of the option. In our models the waiver is written in the contract and counts as notice to the tenant. If you use another contract, or you are in doubt, ask your accountant whether a registered letter is needed as well."
+      },
+      "concordatoAta": {
+        "action": "See the comparison",
+        "body": "If it is, the cedolare secca is lower and the registration tax is worked out on a reduced base. CasaZen has not confirmed your municipality yet: ask your accountant to check.",
+        "title": "Is your municipality 'high housing tension'?",
+        "why": "High-housing-tension municipalities are the ones with a shortage of homes: the big cities and the municipalities next to them, the provincial capitals and others listed by the CIPE. Only there does the canone concordato get the reduced cedolare secca and the reduced base for the registration tax. CasaZen's list is not complete: a municipality that is not on it might be."
+      },
+      "concordatoAttestation": {
+        "action": "Who can issue it",
+        "body": "To get the benefits of a canone concordato made without the help of the associations you need the attestation, issued by the organizations of the agreement of your municipality.",
+        "title": "You need the attestation of conformity",
+        "why": "The attestation says that the contract respects the agreement of the municipality and is the condition for every benefit in contracts made without assistance: without it they can be lost. CasaZen cannot issue it: it tells you who to ask. How many organizations must sign it is decided by the agreement: in Monza e Brianza two are needed, one for the owners and one for the tenants."
+      },
+      "concordatoAttestationService": {
+        "action": "Upload the attestation",
+        "body": "The service that prepares the contract gets the attestation of conformity for you: it is needed for the benefits. When you receive it, upload it among the Documents.",
+        "title": "The attestation comes with the contract",
+        "why": "The attestation says that the contract respects the agreement of the municipality and is the condition for the benefits of the canone concordato. Keep it with the signed contract and the registration receipt: your accountant and the municipality will ask for them."
+      },
+      "concordatoCommission": {
+        "action": "See the organizations",
+        "body": "For doubts about the rent, its update or the expenses you can ask the joint commission of the organizations of the agreement to step in, before going to court. It does not suspend the duty to pay the rent.",
+        "title": "If doubts arise about the rent or the expenses",
+        "why": "The commission is provided for by the 2017 decree and by the agreement of the municipality: it is made of representatives of owners and tenants and helps to reach an understanding. Our contract model mentions it in the article on disputes. Here you find the organizations of the agreement."
+      },
+      "concordatoDuration": {
+        "action": "See the dates",
+        "body": "The contract lasts {{termMonths}} months; then, unless notice is given for a reason provided by law, it is extended by right for another {{renewalMonths}} months.",
+        "title": "3+2: what happens at the end?",
+        "why": "In the canone concordato the minimum term is {{termMonths}} months. At the first expiry, unless the parties agree otherwise, the contract is extended by right for {{renewalMonths}} months, except for the landlord's notice for one of the reasons set by law, in writing, stating the reason, at least {{noticeMonths}} months before. At the end of the extension each party can ask for a renewal on new terms or give it up."
+      },
+      "concordatoFirstExpiry": {
+        "action": "Record a notice",
+        "body": "Unless notice is given for a reason provided by law, the contract is extended by right for another {{renewalMonths}} months. Notice must be in writing, stating the reason, at least {{noticeMonths}} months before.",
+        "title": "At the first expiry the contract is extended",
+        "why": "In the canone concordato the extension is by right, except for the landlord's notice for the reasons set by law, given in writing with the reason stated and with the required notice period. CasaZen does not judge whether a notice is valid: it records it and reminds you of the dates."
+      },
+      "concordatoImu": {
+        "action": "Prepare the communication",
+        "body": "The reduced IMU does not start by itself: each municipality has its own form and address. Here you prepare the communication with the data of the contract, you send it, and you record when you did.",
+        "title": "Tell the municipality that the rent is a canone concordato",
+        "why": "Registration and the cedolare secca do not turn on the IMU discount: a communication to the municipality is needed, and the way to do it changes from one municipality to another. CasaZen prepares the document with the data of the contract and the address of the municipality, but does not send it: you send it, then you mark it as sent."
+      },
+      "concordatoRentCheck": {
+        "action": "Check the rent",
+        "body": "In a canone concordato the rent stays within bands that depend on the zone, the square metres and the features of the home. Work out the limit with the data of the home.",
+        "title": "Does the rent respect the agreement of the municipality?",
+        "why": "The bands are set by the agreement between the owners' and the tenants' associations of your municipality. CasaZen currently has the data of the agreements of some municipalities; for the others it cannot work out the limit and you have to ask a signatory association. The result is an estimate: the attestation is issued by the association."
+      },
+      "concordatoRentOutOfRange": {
+        "action": "Check the rent",
+        "body": "With the data entered, the rent is not within the band of the agreement of the municipality. If the limits are not respected, the benefits of the canone concordato may be lost.",
+        "title": "The rent is outside the limits of the agreement",
+        "why": "The rent of a canone concordato must be within the bands of the agreement of the municipality, which depend on zone, square metres, features and duration. The attestation, which is needed for the benefits, confirms precisely that the rent respects the agreement. Check the data of the home or correct the rent; if the values of the agreement are indicative, confirm them with a signatory association."
+      },
+      "depositMax": {
+        "action": "Check the deposit",
+        "body": "At most {{depositMaxRents}} months of rent. The deposit earns legal interest in favour of the tenant.",
+        "title": "How much security deposit can you ask for?",
+        "why": "The limit of {{depositMaxRents}} months applies to the security deposit of a residential lease. The legal interest belongs to the tenant: in our models you pay it every year in the 4+4 and the 3+2 and at the end of the lease in the transitory one. The tenant cannot use the deposit to pay the rent."
+      },
+      "depositOverMax": {
+        "action": "Check the data",
+        "body": "Your deposit is about {{depositMonths}} months of rent and the maximum is {{depositMaxRents}}. Talk to your accountant to fix the part above the limit.",
+        "title": "The deposit is above the maximum",
+        "why": "A deposit above {{depositMaxRents}} months cannot be asked for. CasaZen does not change the deposit of a contract that is already set up: it has to be fixed with the tenant, with the help of your accountant or of a lawyer."
+      },
+      "depositReturn": {
+        "action": "Open the Documents",
+        "body": "After checking the home, give the deposit back with the legal interest. You can keep only what you document: unpaid rent or expenses and damage beyond normal use.",
+        "title": "Give the deposit back after the handover",
+        "why": "The deposit secures the tenant's obligations and must be given back at the end, after checking the state of the property. From the sum you can deduct, listing them in writing and with documents, the amounts still owed and the damage beyond normal wear. The time limit to give it back is written in your contract."
+      },
+      "documentsToKeep": {
+        "action": "Open the Documents",
+        "body": "Keep together the signed contract, the registration receipt, the energy certificate (APE) and the delivery report; with a non-EU tenant also the Questura receipt.",
+        "title": "Which documents to keep",
+        "why": "Your accountant asks for them for the tax return, and the delivery report is what you need at the end of the lease to give the deposit back. In the Documents you find everything in one place."
+      },
+      "endCommunicate": {
+        "action": "Read the page of the Agenzia",
+        "body": "When the contract ends early, is extended or is assigned, it usually has to be communicated to the Agenzia delle Entrate. Ask your accountant how and by when.",
+        "title": "Tell the Agenzia delle Entrate that the contract has ended",
+        "why": "After registration the events of the contract (extension, assignment, termination) are communicated to the Agenzia delle Entrate, also with the cedolare secca. CasaZen does not communicate them for you and does not know the exact deadline in your case."
+      },
+      "endOrganize": {
+        "action": "Open the Documents",
+        "body": "Set the day with the tenant, compare the state with the delivery report, read the meters, collect all the keys and both sign the handover report.",
+        "title": "Plan the handover of the home",
+        "why": "At the end the tenant must give the home back empty and in the state in which they received it, apart from normal wear. The handover report signed by both, with the meter readings and the keys, protects you if there are disputes and you need it to give the deposit back."
+      },
+      "extraEu": {
+        "action": "Go to the communication",
+        "body": "When you hand over the home you must communicate it in writing to the public-security authority. The registration of the contract is not enough, and CasaZen does not send the communication for you.",
+        "title": "Non-EU tenant: tell the Questura within 48 hours of the handover",
+        "why": "It is an obligation of whoever lets a property to a citizen outside the European Union or to a stateless person, and failing to communicate is penalised. The office and the way to send it change from province to province: look at the page of the Questura of your area. After sending it, record the date here, with the receipt if you have it: the reminders stop."
+      },
+      "handover": {
+        "action": "Open the Documents",
+        "body": "Write down what the home is like, how many keys you hand over and the readings of electricity, gas and water; have everyone sign it and upload it among the Documents. The utilities are paid by the tenant.",
+        "title": "Draw up the delivery report, with photos and meter readings",
+        "why": "The report records the state of the property at the handover: at the end of the lease you need it to check for damage and to give the deposit back. In our models the utilities are the tenant's, who puts them in their own name."
+      },
+      "istatConcordato": {
+        "action": "Go to payments",
+        "body": "From the second year you can ask in writing for the rent to be adjusted, up to the maximum set by the agreement of your municipality. It applies from the request, not retroactively.",
+        "title": "You can ask for the ISTAT update of the rent",
+        "why": "In the canone concordato the ISTAT update is allowed only within the limits of the agreement of the municipality: in the Monza e Brianza one it is a share of the change in the index. In our model the update starts from the first instalment after the written request. With the cedolare secca it cannot be asked for."
+      },
+      "istatLibero": {
+        "action": "Go to payments",
+        "body": "From the second year you can ask in writing for the rent to be adjusted to the ISTAT change, by the share written in the contract. It applies from the request, not retroactively.",
+        "title": "You can ask for the ISTAT update of the rent",
+        "why": "In the 4+4 the law sets no cap on the update: the parties write the share in the contract. In our model the update starts from the first instalment after the written request and does not recover past years. If you chose the cedolare secca it cannot be asked for."
+      },
+      "lateRegistration": {
+        "action": "Go to the registration",
+        "body": "Register the contract as soon as you can: the penalty grows with every day of delay. Then ask your accountant how to put things right.",
+        "title": "The deadline to register has passed",
+        "why": "The contract must be registered with the Agenzia delle Entrate within a time limit that starts from the signing or from the start of the contract, if it comes first. A late registration carries penalties that grow with the delay. CasaZen does not work them out: they depend on your case and on the tax regime you chose."
+      },
+      "liberoDuration": {
+        "action": "See the dates",
+        "body": "The contract lasts {{termMonths}} months and then renews by itself for another {{renewalMonths}}. You can say no only for the reasons provided by law, stating the reason, with at least {{noticeMonths}} months' notice.",
+        "title": "4+4: what happens at the end?",
+        "why": "In the canone libero the first term is {{termMonths}} months. If nobody gives notice, the contract renews on the same terms. At the first expiry the landlord can refuse the renewal only for the reasons set by law: the communication must be in writing, with the reason stated or it is void, and with at least {{noticeMonths}} months' notice. Our model asks for registered mail with return receipt or PEC."
+      },
+      "liberoFirstExpiry": {
+        "action": "Record a notice",
+        "body": "If you do nothing, the contract renews by itself for another {{renewalMonths}} months. To say no you need a reason provided by law, written in the communication, with at least {{noticeMonths}} months' notice.",
+        "title": "At the first expiry you decide whether to renew",
+        "why": "The landlord can refuse the renewal at the first expiry only for the reasons set by law; the communication must be in writing and must state the reason or it is void. Registered mail or PEC is best, so you have proof of sending. CasaZen does not judge whether a notice is valid: it records it and reminds you of the dates."
+      },
+      "noticeFromTenant": {
+        "action": "Record a notice",
+        "body": "Record it here: the contract will not renew and the deadlines are updated. The tenant can give notice at the expiry or withdraw earlier for serious reasons, with the same notice period.",
+        "title": "If the tenant sends you a notice",
+        "why": "In our models the tenant can give notice at the expiry, or withdraw at any time for serious reasons, with at least {{noticeMonths}} months' notice. Until the end of the notice period the rent and charges are still due. CasaZen records the notice and does not judge whether it is valid."
+      },
+      "ordinaryAnnualRegistro": {
+        "action": "See how to pay",
+        "body": "With the ordinary regime you pay the registration tax of each year, as a rule within 30 days of the end of the previous one. Tell your accountant.",
+        "title": "Remember the registration tax every year",
+        "why": "After the first year, which is paid at registration, the tax of the following year must be paid every year, without the minimum that applies to the first. With the cedolare secca there is none. CasaZen does not send you reminders for these payments: keep them in your accountant's calendar."
+      },
+      "regimeCheckCedolare": {
+        "action": "Compare the two regimes",
+        "body": "It saves you registration tax and stamp duty, but you will not be able to update the rent with ISTAT. Try the comparison with the data of your contract.",
+        "title": "Are you sure the cedolare secca is right for your case?",
+        "why": "With the cedolare secca the rent is taxed with a substitute tax and neither registration tax nor stamp duty is paid; in exchange you give up updates of the rent. With the ordinary regime the rent is added to your other income and registration tax and stamp duty are paid. Which is better depends on your income: the comparison gives you an estimate, to be confirmed with your accountant."
+      },
+      "regimeCheckOrdinary": {
+        "action": "Compare the two regimes",
+        "body": "With the ordinary regime you pay registration tax and stamp duty and the rent is added to your other income. Compare it with the cedolare secca before registering.",
+        "title": "Is the ordinary regime really the cheapest?",
+        "why": "With the cedolare secca the rent is taxed with a substitute tax and neither registration tax nor stamp duty is paid; in exchange you give up updates of the rent. With the ordinary regime the rent is added to your other income and registration tax and stamp duty are paid. Which is better depends on your income: the comparison gives you an estimate, to be confirmed with your accountant."
+      },
+      "regimeChoose": {
+        "action": "Compare the two regimes",
+        "body": "This contract has no tax regime yet. Compare the cedolare secca and the ordinary regime with the data of the contract before registering.",
+        "title": "How do you want the rent to be taxed?",
+        "why": "With the cedolare secca the rent is taxed with a substitute tax and neither registration tax nor stamp duty is paid; in exchange you give up updates of the rent. With the ordinary regime the rent is added to your other income and registration tax and stamp duty are paid. Which is better depends on your income: the comparison gives you an estimate, to be confirmed with your accountant."
+      },
+      "regimeYearly": {
+        "action": "Compare the two regimes",
+        "body": "At the end of each year you can confirm or switch between the cedolare secca and the ordinary regime. Redo the comparison with today's data and ask your accountant how to communicate it.",
+        "title": "Every year you can review your tax choice",
+        "why": "The choice of the cedolare secca applies to the year; it is made with the registration and can be confirmed or revoked at the yearly deadlines, in the ways and within the terms set by the Agenzia delle Entrate. A change in your income or in the rent can change which is better."
+      },
+      "registerPrepare": {
+        "action": "See the deadlines",
+        "body": "The count starts from the signing by everyone or from the start of the contract, if it comes first. You register online on the website of the Agenzia delle Entrate or with the help of your accountant.",
+        "title": "After signing you have {{registrationDays}} days to register",
+        "why": "Registration is an obligation and being late costs money. The signing day you declare here sets the deadline, so write the real one. CasaZen does not register for you: you register, then you declare here the number, the date and the receipt."
+      },
+      "registrationComm": {
+        "action": "See the registration",
+        "body": "The contract provides that you tell the tenant, and the building administrator if there is one, that it is registered: send the number and the date. Ask your accountant for the exact deadline.",
+        "title": "Tell the tenant that the contract is registered",
+        "why": "In our models, after registration the landlord gives documented notice to the tenant and to the building administrator. CasaZen does not check the deadline and does not remind you of it: it is a hint, not a deadline."
+      },
+      "registrationCosts": {
+        "action": "Estimate the costs",
+        "body": "At registration you pay registration tax and stamp duty. Our contract model splits them in half with the tenant. The comparison estimates the figures.",
+        "title": "How much does it cost to register with the ordinary regime?",
+        "why": "The registration tax is worked out on the annual rent, with a minimum for the first year; the stamp duty depends on the pages, the lines and the copies to be registered. With the cedolare secca they are not paid. In our model the landlord pays the taxes and gets half back from the tenant with the first rent instalment after the request."
+      },
+      "registrationReceipt": {
+        "action": "Download the receipt",
+        "body": "It is the proof that the contract is registered: you need it for your accountant and for the following years. Download it and keep a copy with the contract.",
+        "title": "Keep the registration receipt",
+        "why": "The receipt shows the registration number and date. Your accountant asks for it for the tax return and for the obligations of the following years."
+      },
+      "secondExpiry": {
+        "action": "Record a notice",
+        "body": "Each party can ask for a renewal on new terms or give it up, by registered mail or PEC at least {{noticeMonths}} months in advance. If nobody writes, the contract renews on the same terms.",
+        "title": "At the second expiry the rules change",
+        "why": "After the first period the reasons set by law are no longer needed: each party can start the procedure to renew on new terms or not to renew. How it ends if there is no agreement is written in your contract. CasaZen records the notice and reminds you of the dates."
+      },
+      "startPassed": {
+        "action": "Check the deadlines",
+        "body": "The {{registrationDays}} days to register count from the start of the contract if it comes before the signing. Make sure you are not already late.",
+        "title": "The contract has already started: check the time to register",
+        "why": "The registration deadline is {{registrationDays}} days after the earlier of two dates: the day everyone signed or the start of the contract. If the contract started before it was signed, the count starts from the start."
+      },
+      "transitorioConfirmNeed": {
+        "action": "See the end date",
+        "body": "The contract ends by itself. If whoever has the need wants it to go on, they must confirm it to the other party before the expiry, by registered mail or PEC. Without confirmation it can become a 4+4.",
+        "title": "If the need continues, confirm it in writing",
+        "why": "The transitory contract lasts as long as the need that justifies it. If the need goes on beyond the expiry, the party concerned confirms it in writing to the other party before the contract ends; if they do not, or if the need ceases, the contract can be treated as an ordinary 4+4. Ask your accountant for the exact deadline."
+      },
+      "transitorioCosts": {
+        "action": "Estimate the costs",
+        "body": "In the official model the stamp duty is paid by the tenant and the registration tax is split in half. With the cedolare secca neither is paid.",
+        "title": "Who pays stamp duty and registration tax in a transitory contract?",
+        "why": "The transitory contract model of the 2017 decree, which CasaZen uses, says so: the stamp duty is the tenant's, and the landlord registers the contract, if registration is due, and gets half of the registration tax back from the tenant. For the figures use the comparison or ask your accountant."
+      },
+      "transitorioDuration": {
+        "action": "See the dates",
+        "body": "It lasts at most {{transitoryMax}} months, with no notice and no automatic renewal. You need a real temporary need, written in the contract.",
+        "title": "A transitory contract is short and ends by itself",
+        "why": "The transitory contract answers a temporary need of the landlord or of the tenant, for example for work, study or treatment. It ends at the expiry with no need for notice. If the rules of the model are not respected, it can be treated as an ordinary 4+4."
+      },
+      "transitorioNeed": {
+        "action": "Upload a document",
+        "body": "Since it lasts more than {{transitoryDocDays}} days, the need (for example a work or study contract) must be written in the contract and proved with attached documents.",
+        "title": "Document the need of the transitory contract",
+        "why": "For a transitory contract longer than {{transitoryDocDays}} days the 2017 decree asks for the need to be documented with attachments to the contract; below that length it is not needed. Keep the documents with the contract."
+      }
+    },
+    "data": {
+      "rentPlan": "Rent plan"
+    },
+    "forYou": {
+      "empty": "There is no advice for this contract for now. Come back when something changes.",
+      "showAll": "Show all the advice ({{total}})",
+      "showLess": "Show less advice",
+      "title": "For your contract"
+    },
+    "opensNewTab": "(opens in a new tab)",
+    "regime": {
+      "accountant": "These are estimates made with the data of your contract and the rules we know today: they are not tax advice and CasaZen is not an authorised intermediary. Confirm them with your accountant before registering.",
+      "ata": {
+        "NotListed": "If your municipality is 'high housing tension' (a municipality with a shortage of homes, where the cedolare of the canone concordato is reduced), the estimate changes: we do not find it in our list, ask your accountant.",
+        "Unverified": "Your municipality may be 'high housing tension' (a municipality with a shortage of homes, where the cedolare of the canone concordato is reduced): we have not checked it, ask your accountant.",
+        "Verified": "Your municipality is 'high housing tension' (a municipality with a shortage of homes): for the canone concordato the cedolare is reduced."
+      },
+      "cedolare": {
+        "noIstat": "For the whole duration of the option you cannot update the rent with ISTAT.",
+        "pays": "You pay {{rate}} of the rent every year: about {{tax}}.",
+        "paysReduced": "You pay {{rate}} of the rent every year (the reduced rate of the canone concordato): about {{tax}}."
+      },
+      "how": {
+        "halved": "Registration tax and stamp duty: in our contract model they are split in half with the tenant; here they are counted in full.",
+        "title": "How we worked it out",
+        "withoutBollo": "The stamp duty is not included in the comparison: give pages and copies in 'Refine the estimate' to add it."
+      },
+      "ordinary": {
+        "bolloPaid": "Stamp duty: about {{amount}} at registration.",
+        "bolloRule": "Stamp duty: {{amount}} for every {{pages}} pages of each copy. Give pages and copies in 'Refine the estimate'.",
+        "irpefOpen": "Income tax (IRPEF): to be assessed with your accountant.",
+        "irpefPaid": "Income tax (IRPEF): about {{amount}} more every year.",
+        "istat": "You can ask for the ISTAT update of the rent, if the contract provides for it.",
+        "registro": "Registration tax: about {{amount}} at registration, then every year."
+      },
+      "outcome": {
+        "cedolareCheaper": "With the data of your contract the cedolare secca saves you about {{amount}} in the first year compared with the ordinary regime.",
+        "equal": "With the data of your contract the two regimes cost about the same in the first year.",
+        "incomeNeeded": "Your taxable income is missing: write it in 'Refine the estimate' and we will redo the comparison.",
+        "ordinaryCheaper": "With the data of your contract the ordinary regime costs you about {{amount}} less in the first year than the cedolare secca.",
+        "unknown": "We cannot yet say which regime costs less."
+      },
+      "refine": {
+        "copies": "How many copies do you register?",
+        "income": "How much do you earn in a year, besides this rent? (taxable IRPEF income, in euro, optional)",
+        "lines": "How many lines does a copy have? (optional)",
+        "pages": "How many written pages does a copy of the contract have?",
+        "title": "Refine the estimate"
+      },
+      "todoCedolare": "If you choose it: you state it when you register the contract, you pay neither registration tax nor stamp duty and for the whole duration of the option you cannot update the rent. Our contract already contains the waiver of the update.",
+      "todoOrdinary": "If you do not choose it: you register the contract paying registration tax and stamp duty (usually split with the tenant), the rent goes into your IRPEF income and you can ask for the ISTAT update, if the contract provides for it."
+    },
+    "rent": {
+      "answer": {
+        "above": "The rent of {{rent}} a month is above the limit of the agreement: at most {{max}} a month.",
+        "below": "The rent of {{rent}} a month is below the minimum of the agreement: at least {{min}} a month.",
+        "noRent": "For this home and these dates the rent of the agreement goes from {{min}} to {{max}} a month.",
+        "within": "The rent of {{rent}} a month is within the limits of the agreement: from {{min}} to {{max}} a month."
+      },
+      "associations": "The calculation follows the agreement of your municipality. For the attestation and for any doubt, ask a signatory organization.",
+      "how": "How we worked it out",
+      "indicative": "These values are indicative: confirm them with a signatory organization of the agreement.",
+      "intro": "Describe the home and we work out the limit of the rent according to the agreement of the municipality.",
+      "more": "Appurtenances and features",
+      "recalc": "Recalculate with other data"
+    },
+    "source": {
+      "adeAnnualita": "Agenzia delle Entrate: payment of the following year",
+      "adeAtti": "Agenzia delle Entrate: lease deeds and contracts",
+      "adeCedolare": "Agenzia delle Entrate: the cedolare secca",
+      "adeCedolareScheda": "Agenzia delle Entrate: information sheet on the cedolare secca",
+      "adeQuantoSiPaga": "Agenzia delle Entrate: what you pay to register the contract",
+      "dm2017": "Decree of 16 January 2017 on canone concordato contracts (Gazzetta Ufficiale)",
+      "law392": "Law 392 of 1978 on leases (security deposit)",
+      "law431": "Law 431 of 1998 on residential leases",
+      "poliziaExtraUe": "Polizia di Stato: letting to non-EU citizens"
+    },
+    "sources": "Sources",
+    "tab": "Guide",
+    "tool": {
+      "attestation": {
+        "description": "These are the signatory organizations of the agreement of your municipality: CasaZen does not contact them and does not attest on their behalf.",
+        "title": "The organizations of the agreement"
+      },
+      "imu": {
+        "description": "CasaZen prepares the document with the data of the contract; you send it to the municipality and then mark it as sent.",
+        "title": "IMU communication to the municipality"
+      },
+      "regime": {
+        "description": "An estimate with the data of your contract, to decide more clearly. The choice is yours.",
+        "title": "Cedolare secca or ordinary regime?"
+      },
+      "rent": {
+        "description": "The rent of a canone concordato must stay within the bands of the agreement of the municipality.",
+        "title": "Is the rent within the limits of the agreement?"
+      }
+    },
+    "tools": {
+      "regime": {
+        "idle": "We compare the two regimes with the data of your contract.",
+        "needsRent": "The comparison needs the rent of the contract: write it in the data.",
+        "open": "Open the comparison",
+        "title": "Cedolare secca or ordinary regime?"
+      },
+      "rent": {
+        "noData": "Describe the home (surface, zone…) to find out whether the rent is within the limits.",
+        "open": "Check the rent",
+        "title": "Is the rent within the limits of the agreement?"
+      },
+      "title": "Tools"
+    },
+    "why": "Why?"
   },
   "leaseRound": {
     "activity": {

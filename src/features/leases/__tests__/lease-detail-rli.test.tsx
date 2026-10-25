@@ -67,8 +67,9 @@ function mockApi(lease: () => LeaseDetail, rliChecklist: RliChecklist = checklis
   });
 }
 
-// A lease that is signed and not registered opens on the tab of the registration (`scadenze`); its dates are in `dati`.
-function renderPage(search = '') {
+// These tests are about the registration, which is in the tab `scadenze`: the sheet opens on the guide (LR-GUIDE-1), so they ask for it.
+// The dates of the lease are in `dati`, the follow-up of a registered canone concordato in the guide.
+function renderPage(search = '?tab=scadenze') {
   return renderAt(`/app/long-rent/leases/lease-1${search}`, '/app/long-rent/leases/:id', createElement(LeaseDetailPage));
 }
 
@@ -399,7 +400,7 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
-  it('render_ExtraEuTenantAfterReminder_QuesturaItemNotTickedWithPanelAndBanner', async () => {
+  it('render_ExtraEuTenantAfterReminder_QuesturaItemNotTickedWithPanel', async () => {
     // LT-07 (A7-08): the API keeps the item to do until the landlord declares the communication.
     const tenant = { ...buildDetail().parties[1], isExtraEU: true };
     mockApi(
@@ -427,7 +428,6 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
     expect(item).toHaveAttribute('data-state', 'todo');
     expect(within(item).getByRole('link', { name: 'Vai alla comunicazione' })).toHaveAttribute('href', '#questura-communication');
     expect(await screen.findByTestId('questura-state')).toHaveAttribute('data-state', 'overdue');
-    expect(screen.getByText('Conduttore extra-UE: comunicazione alla Questura entro 48 ore dalla consegna')).toBeInTheDocument();
   });
 
   it('render_EnglishUi_TranslatesTheRegistrationPanel', async () => {
@@ -443,7 +443,8 @@ describe('LeaseDetailPage — RLI registration (LT-01)', () => {
   });
 });
 
-// CF-END: «Contratto registrato: ora fai valere le agevolazioni», what follows the registration of a canone concordato.
+// CF-END: «Contratto registrato: ora fai valere le agevolazioni», what follows the registration of a canone concordato. Since LR-GUIDE-1 it is
+// the first piece of advice of the guide, the tab the sheet opens on.
 describe('LeaseDetailPage — the follow-up of a registered canone concordato (CF-END)', () => {
   const FOLLOW_UP = 'Contratto registrato: ora fai valere le agevolazioni';
 
@@ -482,11 +483,11 @@ describe('LeaseDetailPage — the follow-up of a registered canone concordato (C
     // The signed contract and the receipt are the lease's own files; the attestation is not among its documents.
     mockSheet(registeredConcordato(), []);
 
-    renderPage('?tab=dati');
+    renderPage('?tab=guida');
 
     const block = await screen.findByTestId('lease-benefits');
-    expect(block).toHaveAttribute('data-variant', 'focus');
-    expect(within(block).getByRole('heading', { level: 2 })).toHaveTextContent(FOLLOW_UP);
+    expect(block).toHaveAttribute('data-variant', 'plain');
+    expect(within(block).getByRole('heading', { level: 3 })).toHaveTextContent(FOLLOW_UP);
     const attestation = within(block).getByTestId('lease-benefit-attestation');
     await waitFor(() => expect(attestation).toHaveTextContent('Attestazione: ancora da caricare'));
     expect(within(block).getByTestId('lease-benefits-missing')).toHaveTextContent('Te ne manca ancora uno');
@@ -509,7 +510,7 @@ describe('LeaseDetailPage — the follow-up of a registered canone concordato (C
       leaseDocument('doc-receipt', 'Registration', 'ricevuta.pdf'),
     ]);
 
-    renderPage('?tab=dati');
+    renderPage('?tab=guida');
 
     const block = await screen.findByTestId('lease-benefits');
     expect(await within(block).findAllByRole('button', { name: /^Scarica:/ })).toHaveLength(3);
@@ -523,14 +524,14 @@ describe('LeaseDetailPage — the follow-up of a registered canone concordato (C
   it('render_RegisteredLibero_ShowsNoFollowUpAndAsksForNoDocuments', async () => {
     mockSheet(signedLease({ status: 'Registered', registration: registration() }), []);
 
-    renderPage('?tab=dati');
+    renderPage('?tab=guida');
 
-    await screen.findAllByTestId('lease-party');
+    await screen.findByTestId('lease-guide');
     expect(screen.queryByTestId('lease-benefits')).not.toBeInTheDocument();
     expect(get.mock.calls.some(([url]) => String(url).endsWith('/documents'))).toBe(false);
   });
 
-  it('render_RegisteredConcordatoWithAStepToDo_KeepsTheStepAsTheBlockAndTheFollowUpIsQuietUnderIt', async () => {
+  it('render_RegisteredConcordatoWithAStepToDo_TheStepKeepsTheBlockAboveTheTabsAndTheFollowUpIsInTheGuide', async () => {
     mockSheet(registeredConcordato(), [leaseDocument('doc-attestation', 'Attestation', 'attestazione.pdf')], {
       code: 'ActivateRentPlan',
       actor: 'Landlord',
@@ -539,13 +540,13 @@ describe('LeaseDetailPage — the follow-up of a registered canone concordato (C
       params: {},
     });
 
-    renderPage('?tab=dati');
+    renderPage('?tab=guida');
 
     expect(await screen.findByTestId('lease-now')).toHaveTextContent('Attiva il piano dei canoni');
-    expect(screen.getByTestId('lease-benefits')).toHaveAttribute('data-variant', 'calm');
+    expect(screen.getByTestId('lease-benefits')).toHaveAttribute('data-variant', 'plain');
   });
 
-  it('render_RegisteredConcordatoAllInOrder_TheFollowUpTakesThePlaceOfTheQuietLine', async () => {
+  it('render_RegisteredConcordatoAllInOrder_TheQuietLineStaysAndTheFollowUpIsTheFirstAdviceOfTheGuide', async () => {
     mockSheet(registeredConcordato(), [leaseDocument('doc-attestation', 'Attestation', 'attestazione.pdf')], {
       code: 'AllGood',
       actor: 'System',
@@ -554,9 +555,10 @@ describe('LeaseDetailPage — the follow-up of a registered canone concordato (C
       params: {},
     });
 
-    renderPage('?tab=dati');
+    renderPage('?tab=guida');
 
-    expect(await screen.findByTestId('lease-benefits')).toHaveAttribute('data-variant', 'focus');
-    expect(screen.queryByTestId('lease-now-quiet')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('lease-benefits')).toHaveAttribute('data-variant', 'plain');
+    expect(screen.getByTestId('lease-now-quiet')).toBeInTheDocument();
+    expect(within(screen.getByTestId('lease-advice-list')).getAllByTestId('lease-advice')[0]).toHaveAttribute('data-advice', 'concordatoBenefits');
   });
 });

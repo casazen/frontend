@@ -78,6 +78,22 @@ export function useLeaseNextStep(id: string) {
 }
 
 /**
+ * Where the lease stands on its path (`stage`, LR-01b), read from the same row of the list as its next step: the same request and the
+ * same cache as `useLeaseNextStep`, so the guide knows the stage when the sheet appears and costs no call of its own. The server decides
+ * the stage; `undefined` when the list has no row for the lease or does not answer (the guide then falls back to the status).
+ */
+export function useLeaseListStage(id: string) {
+  return useQuery({
+    queryKey: [LEASES_KEY, undefined],
+    queryFn: () => leasesApi.getAll(),
+    select: (rows) => rows.find((row) => row.id === id)?.stage,
+    refetchOnMount: 'always',
+    retry: false,
+    enabled: !!id,
+  });
+}
+
+/**
  * The draft of a canone concordato contract, which is prepared with the partner (ConcordatoFacile) — «Parto da zero» (E01/F02/US01,
  * CF-IMPORT): a real draft with only its property (`POST /leases/drafts/concordatofacile`, no APE, parties, dates or rent), an imported
  * draft marked as the partner's, typed as a concordato by the server. Resolves with it: its `id` is the leaseId the partner links its
@@ -208,12 +224,15 @@ export function useDeclareManualRegistration() {
   });
 }
 
-/** Tax advisory of the lease (LT-08), recomputed with the data the landlord enters; the previous result stays shown meanwhile. */
-export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput) {
+/**
+ * Tax advisory of the lease (LT-08), recomputed with the data the landlord enters; the previous result stays shown meanwhile.
+ * `enabled: false` for a lease the comparison means nothing for yet (a draft with no rent).
+ */
+export function useRliAdvisory(id: string, input?: CedolareAdvisoryInput, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [LEASES_KEY, id, 'rli', 'advisory', input ?? null],
     queryFn: () => leasesApi.getRliAdvisory(id, input),
-    enabled: !!id,
+    enabled: !!id && (options.enabled ?? true),
     placeholderData: keepPreviousData,
   });
 }
