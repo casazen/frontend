@@ -35,6 +35,15 @@ function shortDay(value: string | null | undefined): string {
 /** The statuses of a lease signed by all its parties (`LeaseRenewal.InForceStatuses` of the server): the ones a lease renews in. */
 const IN_FORCE_STATUSES: readonly string[] = ['Signed', 'RegistrationPending', 'SentToProvider', 'Registered'];
 
+/**
+ * A lease signed by every party whose first day has not come (LR-TERM): there is nothing to end early, and only a consensual resolution
+ * cancels it. `today` is the Rome calendar day (`yyyy-MM-dd`).
+ */
+export function leaseNotBegun(lease: Pick<LeaseDetail, 'status' | 'startDate'>, today: string): boolean {
+  const start = parseStayDate(lease.startDate);
+  return IN_FORCE_STATUSES.includes(lease.status) && start !== '' && start > today;
+}
+
 export interface LeaseTermFact {
   key: 'notice' | 'terminated' | 'renews';
   label: string;
