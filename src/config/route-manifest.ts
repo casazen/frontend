@@ -401,6 +401,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/marketplace/marketplace-page')).MarketplacePage }),
   },
   {
+    path: '/app/short-rent/trusted-suppliers',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.trustedSuppliers',
+    navPlacement: 'secondary',
+    navOrder: 29,
+    icon: 'UserCheck',
+    component: async () => ({ default: (await import('@/pages/TrustedSuppliersPage')).TrustedSuppliersPage }),
+  },
+  {
     path: '/app/short-rent/alloggiati',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

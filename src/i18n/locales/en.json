@@ -659,6 +659,7 @@
     "users": "Users",
     "jobs": "Processes",
     "suppliers": "Suppliers",
+    "trustedSuppliers": "Trusted Suppliers",
     "guests": "Guests",
     "taxRates": "Tourist Tax",
     "seo": "SEO & Content",
