@@ -8326,6 +8326,13 @@
     "documentInPreparation": "testo in preparazione",
     "readSubprocessors": "Vedi l'elenco completo dei sub-responsabili"
   },
+  "bookingStatus": {
+    "Pending": "In attesa",
+    "Confirmed": "Confermata",
+    "CheckedIn": "Check-in effettuato",
+    "CheckedOut": "Check-out effettuato",
+    "Cancelled": "Annullata"
+  },
   "breadcrumb": {
     "home": "Home",
     "admin": "Admin",
@@ -10537,6 +10544,54 @@
     },
     "useAnother": "Usa un altro account",
     "useSameEmail": "Accedi con l’indirizzo a cui è arrivato l’invito."
+  },
+  "ownerPortal": {
+    "dashboard": {
+      "title": "Portale Proprietari",
+      "viewStatements": "Visualizza rendiconti",
+      "totalRevenue": "Ricavi totali",
+      "totalBookings": "Prenotazioni totali",
+      "avgOccupancy": "Occupazione media",
+      "allProperties": "Tutti gli immobili",
+      "acrossProperties": "Media tra gli immobili",
+      "yourProperties": "I tuoi immobili",
+      "noProperties": "Non ci sono immobili disponibili",
+      "revenue": "Ricavi",
+      "bookings": "Prenotazioni",
+      "occupancy": "Occupazione",
+      "recentBookings": "Prenotazioni recenti",
+      "error": "Errore nel caricamento",
+      "errorMessage": "Impossibile caricare i dati del portale. Riprova più tardi."
+    },
+    "properties": {
+      "title": "Dettaglio immobile",
+      "totalRevenue": "Ricavi totali",
+      "totalBookings": "Prenotazioni totali",
+      "occupancyRate": "Tasso di occupazione",
+      "recentBookings": "Prenotazioni recenti",
+      "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e importi visibili)",
+      "noBookings": "Nessuna prenotazione recente",
+      "channel": "Canale",
+      "notFound": "Immobile non trovato",
+      "notFoundMessage": "L’immobile richiesto non è disponibile o non hai i permessi per visualizzarlo.",
+      "backToDashboard": "Torna alla dashboard",
+      "error": "Errore nel caricamento",
+      "errorMessage": "Impossibile caricare i dettagli dell’immobile. Riprova più tardi."
+    },
+    "statements": {
+      "title": "Rendiconti",
+      "description": "Consulta i rendiconti mensili pubblicati. Scarica in formato PDF o CSV.",
+      "noStatements": "Nessun rendiconto disponibile",
+      "monthYear": "{{month}} {{year}}",
+      "totalRevenue": "Ricavi totali",
+      "agencyCommission": "Commissione agenzia",
+      "netAmount": "Importo netto",
+      "publishedAt": "Pubblicato il {{date}}",
+      "downloadSuccess": "Download completato",
+      "downloadError": "Impossibile scaricare il rendiconto. Riprova più tardi.",
+      "error": "Errore nel caricamento",
+      "errorMessage": "Impossibile caricare i rendiconti. Riprova più tardi."
+    }
   },
   "pageHeader": {
     "moreActions": "Altre azioni",
