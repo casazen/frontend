@@ -14,9 +14,12 @@ interface ConsoleLayoutProps {
 export function ConsoleLayout({ children }: ConsoleLayoutProps) {
   const { isAgency } = useOrg();
 
-  // TODO: When B2B navigation items are implemented, they should be
-  // conditionally rendered based on the isAgency flag:
-  // {isAgency && <B2BNavigationItems />}
-
-  return <>{children}</>;
+  return (
+    <>
+      {isAgency && (
+        <>{/* B2B navigation items (Proprietari, Rendiconti, Fatture, Bonifici, Ritenute, Fornitori fidati, Attivita interne) will be added by subsequent tasks */}</>
+      )}
+      {children}
+    </>
+  );
 }
