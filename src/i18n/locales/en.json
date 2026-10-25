@@ -8334,6 +8334,13 @@
     "documentInPreparation": "text being prepared",
     "readSubprocessors": "See the full list of subprocessors"
   },
+  "bookingStatus": {
+    "Pending": "Pending",
+    "Confirmed": "Confirmed",
+    "CheckedIn": "Checked in",
+    "CheckedOut": "Checked out",
+    "Cancelled": "Cancelled"
+  },
   "breadcrumb": {
     "home": "Home",
     "admin": "Admin",
@@ -10545,6 +10552,54 @@
     },
     "useAnother": "Use another account",
     "useSameEmail": "Sign in with the address the invitation was sent to."
+  },
+  "ownerPortal": {
+    "dashboard": {
+      "title": "Owner Portal",
+      "viewStatements": "View statements",
+      "totalRevenue": "Total revenue",
+      "totalBookings": "Total bookings",
+      "avgOccupancy": "Average occupancy",
+      "allProperties": "All properties",
+      "acrossProperties": "Across properties",
+      "yourProperties": "Your properties",
+      "noProperties": "No properties available",
+      "revenue": "Revenue",
+      "bookings": "Bookings",
+      "occupancy": "Occupancy",
+      "recentBookings": "Recent bookings",
+      "error": "Loading error",
+      "errorMessage": "Unable to load portal data. Please try again later."
+    },
+    "properties": {
+      "title": "Property details",
+      "totalRevenue": "Total revenue",
+      "totalBookings": "Total bookings",
+      "occupancyRate": "Occupancy rate",
+      "recentBookings": "Recent bookings",
+      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and amounts visible)",
+      "noBookings": "No recent bookings",
+      "channel": "Channel",
+      "notFound": "Property not found",
+      "notFoundMessage": "The requested property is not available or you do not have permission to view it.",
+      "backToDashboard": "Back to dashboard",
+      "error": "Loading error",
+      "errorMessage": "Unable to load property details. Please try again later."
+    },
+    "statements": {
+      "title": "Statements",
+      "description": "View your published monthly statements. Download in PDF or CSV format.",
+      "noStatements": "No statements available",
+      "monthYear": "{{month}} {{year}}",
+      "totalRevenue": "Total revenue",
+      "agencyCommission": "Agency commission",
+      "netAmount": "Net amount",
+      "publishedAt": "Published on {{date}}",
+      "downloadSuccess": "Download complete",
+      "downloadError": "Unable to download the statement. Please try again later.",
+      "error": "Loading error",
+      "errorMessage": "Unable to load statements. Please try again later."
+    }
   },
   "pageHeader": {
     "moreActions": "More actions",
