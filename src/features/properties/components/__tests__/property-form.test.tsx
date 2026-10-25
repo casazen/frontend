@@ -42,6 +42,8 @@ const PROPERTY: Property = {
   address: 'Via del Porto 3',
   city: 'Genova',
   postalCode: '16128',
+  country: 'IT',
+  currency: 'EUR',
   latitude: 44.41,
   longitude: 8.93,
   bedrooms: 0,
@@ -76,6 +78,8 @@ const ROUND_TRIP = {
   // No comune chosen from the official list yet (SU-04): sent as null, which keeps it empty.
   comuneIstatCode: null,
   postalCode: '16128',
+  country: 'IT',
+  currency: 'EUR',
   latitude: 44.41,
   longitude: 8.93,
   bedrooms: 0,
@@ -227,12 +231,13 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(screen.queryByRole('checkbox', { name: /attivo/i })).not.toBeInTheDocument();
   });
 
-  it('PropertyForm_HasNoCountryNorCurrencyField', () => {
+  it('PropertyForm_HasCountryAndCurrencyFields', () => {
     renderForm();
 
-    expect(screen.queryByLabelText(/Paese/)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/Valuta/)).not.toBeInTheDocument();
-    expect(screen.getByText(i18n.t('property.form.amountsInEuro'))).toBeInTheDocument();
+    expect(field('property.country')).toBeInTheDocument();
+    expect(field('property.currency')).toBeInTheDocument();
+    expect(field('property.country')).toHaveValue('IT');
+    expect(field('property.currency')).toHaveValue('EUR');
   });
 
   it('PropertyForm_PoliciesFailToLoad_ShowsTheErrorAndKeepsTheCurrentPolicy', async () => {
